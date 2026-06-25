@@ -10,6 +10,7 @@ from trace.tasks.three_d.shared.object_resources import (
     OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE,
     OBJECT_CLUSTER_SHAPE_TYPES,
 )
+from trace.tasks.three_d.shared.semantic_colors import COLOR_CONFUSION_EXCLUSIONS
 
 
 SCENE_ID = "carousel"
@@ -130,18 +131,6 @@ SEMANTIC_COLOR_RGB: Mapping[str, Tuple[int, int, int]] = {
     for name, rgb in available_named_colors()
 }
 SEMANTIC_COLOR_SUPPORT: Tuple[str, ...] = tuple(SEMANTIC_COLOR_RGB.keys())
-
-COLOR_CONFUSION_EXCLUSIONS: Mapping[str, Tuple[str, ...]] = {
-    "blue": ("cyan", "purple"),
-    "red": ("maroon", "magenta"),
-    "yellow": ("orange", "brown"),
-    "orange": ("yellow", "brown"),
-    "cyan": ("blue",),
-    "maroon": ("red", "magenta"),
-    "magenta": ("red", "maroon"),
-    "brown": ("yellow", "orange"),
-}
-
 
 def semantic_color_label(color_name: str) -> str:
     """Return prompt-facing canonical named color text."""

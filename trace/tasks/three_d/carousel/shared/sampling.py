@@ -20,6 +20,7 @@ from trace.tasks.three_d.shared.camera_projection import (
 )
 from trace.tasks.three_d.shared.object_resources import OBJECT_CLUSTER_DIMENSIONS
 from trace.tasks.three_d.shared.projected_object_geometry import object_reference_points
+from trace.tasks.three_d.shared.semantic_colors import sample_readout_palette as sample_semantic_readout_palette
 from trace.tasks.three_d.shared.task_support import (
     resolve_axis_variant_for_namespace,
     resolve_count_for_namespace,
@@ -29,7 +30,6 @@ from .state import (
     BELT_GEOMETRY,
     BELT_KEYS,
     BELT_LABELS,
-    COLOR_CONFUSION_EXCLUSIONS,
     CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
     CONVEYOR_OBJECT_SHAPE_TYPES,
     SCENE_ID,
@@ -99,17 +99,13 @@ def resolve_conveyor_axes(
     )
 
 
-def _confusable_color_names(color_name: str) -> set[str]:
-    return set(str(color) for color in COLOR_CONFUSION_EXCLUSIONS.get(str(color_name), ()))
-
-
 def _sample_readout_palette(rng: Any, *, target_color: str, size: int) -> Tuple[str, ...]:
-    blocked = _confusable_color_names(str(target_color)) | {str(target_color)}
-    candidates = [str(color) for color in SEMANTIC_COLOR_SUPPORT if str(color) not in blocked]
-    rng.shuffle(candidates)
-    selected = [str(target_color), *candidates[: max(0, int(size) - 1)]]
-    rng.shuffle(selected)
-    return tuple(selected[: int(size)])
+    return sample_semantic_readout_palette(
+        rng,
+        target_color=str(target_color),
+        support=SEMANTIC_COLOR_SUPPORT,
+        size=int(size),
+    )
 
 
 def _sample_shape(rng: Any, support: Sequence[str], *, exclude: Sequence[str] = ()) -> str:

@@ -5,6 +5,12 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
+from trace.tasks.three_d.shared.semantic_colors import (
+    COLOR_CONFUSION_EXCLUSIONS,
+    colors_conflict as shared_colors_conflict,
+    compatible_color_names,
+    confusable_color_names as shared_confusable_color_names,
+)
 
 from .layout import grid_for_total, layout_cells, resolve_repeated_layout_style, target_ids_from_indices
 from .rendering import layout_surface_element_grid
@@ -18,31 +24,17 @@ from .state import (
     semantic_color_label,
 )
 
-COLOR_CONFUSION_EXCLUSIONS: Mapping[str, Tuple[str, ...]] = {
-    "blue": ("cyan", "purple"),
-    "red": ("maroon", "magenta"),
-    "yellow": ("orange", "brown"),
-    "orange": ("yellow", "brown"),
-    "cyan": ("blue",),
-    "maroon": ("red", "magenta"),
-    "magenta": ("red", "maroon"),
-    "brown": ("yellow", "orange"),
-}
-
 
 def _confusable_color_names(color_name: str) -> Tuple[str, ...]:
     """Return named colors that should not distract from a semantic target."""
 
-    return tuple(str(color) for color in COLOR_CONFUSION_EXCLUSIONS.get(str(color_name), ()))
+    return shared_confusable_color_names(str(color_name))
 
 
 def _colors_conflict(left: str, right: str) -> bool:
     """Return whether two semantic colors are too close for generated color readout."""
 
-    return (
-        str(right) in set(_confusable_color_names(str(left)))
-        or str(left) in set(_confusable_color_names(str(right)))
-    )
+    return shared_colors_conflict(str(left), str(right))
 
 
 def _readout_color_support(
@@ -52,11 +44,11 @@ def _readout_color_support(
 ) -> Tuple[str, ...]:
     """Resolve generated color choices after removing target-confusable names."""
 
-    blocked = {str(color) for color in exclude}
-    for anchor in anchors:
-        blocked.add(str(anchor))
-        blocked.update(_confusable_color_names(str(anchor)))
-    return tuple(str(color) for color in SEMANTIC_COLOR_SUPPORT if str(color) not in blocked)
+    return compatible_color_names(
+        SEMANTIC_COLOR_SUPPORT,
+        anchors=tuple(str(color) for color in anchors),
+        exclude=tuple(str(color) for color in exclude),
+    )
 
 
 def _sample_nonconflicting_readout_colors(

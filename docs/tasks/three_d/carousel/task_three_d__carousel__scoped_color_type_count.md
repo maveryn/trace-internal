@@ -21,10 +21,12 @@ type.
 
 The answer is the integer count of finalized objects whose `belt_key`,
 `shape_type`, and `color_name` all match the sampled target predicate. The
-answer support is `0..5`. Generation includes partial-match distractors on the
-requested belt, including same-color wrong-type objects and same-type
-wrong-color objects. The other belt may contain objects with the target color
-and target type, but those are outside the requested scope and do not count.
+answer support is `0..5`. Color-readout generation avoids target-confusable
+named color distractors, such as red with maroon or blue with cyan. Generation
+includes partial-match distractors on the requested belt, including same-color
+wrong-type objects and same-type wrong-color objects. The other belt may contain
+objects with the target color and target type, but those are outside the
+requested scope and do not count.
 
 ## Annotation Contract
 Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around

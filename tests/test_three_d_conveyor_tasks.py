@@ -18,6 +18,7 @@ from trace.tasks.three_d.conveyor.scoped_color_type_count import (
     TASK_ID as COLOR_TYPE_TASK_ID,
 )
 from trace.tasks.three_d.conveyor.shared.state import CONVEYOR_OBJECT_SHAPE_TYPES
+from trace.tasks.three_d.shared.semantic_colors import confusable_color_names
 from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
@@ -218,6 +219,23 @@ def test_conveyor_scoped_color_type_count_uses_conjunction_distractors() -> None
         )
         if int(params["target_count"]) == 0:
             assert output.annotation_gt.value == []
+
+
+def test_conveyor_color_readout_excludes_target_confusable_colors() -> None:
+    cases = (
+        (SCOPED_TASK_ID, {"query_id": COLOR_QUERY_ID, "target_color_name": "red"}, 2026062613),
+        (COLOR_TYPE_TASK_ID, {"target_color_name": "red"}, 2026062614),
+    )
+    for task_id, params, seed in cases:
+        output = create_task(task_id).generate(
+            seed,
+            params={**params, "post_image_noise_apply_prob": 0.0},
+            max_attempts=120,
+        )
+        trace = output.trace_payload["execution_trace"]
+        colors = {str(spec["color_name"]) for spec in trace["object_specs"]}
+        assert str(trace["target_color_name"]) == "red"
+        assert colors.isdisjoint(set(confusable_color_names("red")))
 
 
 def test_conveyor_sampled_canvas_orientation_follows_long_axis() -> None:

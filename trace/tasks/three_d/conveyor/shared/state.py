@@ -11,6 +11,7 @@ from trace.tasks.three_d.shared.object_resources import (
     OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE,
     OBJECT_CLUSTER_SHAPE_TYPES,
 )
+from trace.tasks.three_d.shared.semantic_colors import COLOR_CONFUSION_EXCLUSIONS
 
 
 SCENE_ID = "conveyor"
@@ -183,6 +184,7 @@ def semantic_color_label(color_name: str) -> str:
 __all__ = [
     "CONVEYOR_COLOR_READOUT_SHAPE_TYPES",
     "CONVEYOR_OBJECT_SHAPE_TYPES",
+    "COLOR_CONFUSION_EXCLUSIONS",
     "HORIZONTAL_LANE_CENTER_BY_KEY",
     "HORIZONTAL_LANE_KEYS",
     "HORIZONTAL_LANE_LENGTH",

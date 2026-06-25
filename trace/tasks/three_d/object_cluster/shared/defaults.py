@@ -10,6 +10,7 @@ from trace.tasks.three_d.shared.object_resources import (
     OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE,
     OBJECT_CLUSTER_SHAPE_TYPES,
 )
+from trace.tasks.three_d.shared.semantic_colors import COLOR_CONFUSION_EXCLUSIONS
 
 
 SCENE_ID = "object_cluster"
@@ -173,17 +174,6 @@ COLOR_READOUT_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
     )
     if shape in set(COUNTABLE_SHAPE_TYPES)
 )
-
-COLOR_CONFUSION_EXCLUSIONS: Mapping[str, Tuple[str, ...]] = {
-    "blue": ("cyan", "purple"),
-    "red": ("maroon", "magenta"),
-    "yellow": ("orange", "brown"),
-    "orange": ("yellow", "brown"),
-    "cyan": ("blue",),
-    "maroon": ("red", "magenta"),
-    "magenta": ("red", "maroon"),
-    "brown": ("yellow", "orange"),
-}
 
 VISUAL_CONFUSION_GROUPS: Tuple[Tuple[str, ...], ...] = (
     ("pen", "pencil", "ruler", "tube", "stick"),

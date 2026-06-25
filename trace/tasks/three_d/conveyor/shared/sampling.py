@@ -18,6 +18,7 @@ from trace.tasks.three_d.shared.camera_projection import (
     vec_sub,
 )
 from trace.tasks.three_d.shared.projected_object_geometry import object_reference_points
+from trace.tasks.three_d.shared.semantic_colors import sample_readout_palette as sample_semantic_readout_palette
 from trace.tasks.three_d.shared.task_support import (
     resolve_axis_variant_for_namespace,
     resolve_count_for_namespace,
@@ -177,11 +178,12 @@ def _resolve_target_color(
 
 
 def _sample_readout_palette(rng: Any, *, target_color: str, size: int = 4) -> tuple[str, ...]:
-    candidates = [str(color) for color in SEMANTIC_COLOR_SUPPORT if str(color) != str(target_color)]
-    rng.shuffle(candidates)
-    selected = [str(target_color), *candidates[: max(0, int(size) - 1)]]
-    rng.shuffle(selected)
-    return tuple(selected[: int(size)])
+    return sample_semantic_readout_palette(
+        rng,
+        target_color=str(target_color),
+        support=SEMANTIC_COLOR_SUPPORT,
+        size=int(size),
+    )
 
 
 def _resolve_lane_count(

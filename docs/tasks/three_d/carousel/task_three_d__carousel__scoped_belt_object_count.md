@@ -22,11 +22,13 @@ at most 8 objects and the outer belt contains at most 12 objects.
 For `object_type_belt_count`, the task asks for the number of objects of one
 sampled object type on the requested belt. For `color_belt_count`, the task asks
 for the number of objects with one canonical named color on the requested belt.
+Color-readout generation avoids target-confusable named color distractors, such
+as red with maroon or blue with cyan.
 
 The answer is the integer count of finalized objects whose belt and target
 attribute match the query. The answer support is `0..5`. Object-type queries
 include same-belt objects of other types as distractors. Color queries include
-same-belt objects of other canonical named colors as distractors.
+same-belt objects of other non-confusable canonical named colors as distractors.
 
 ## Annotation Contract
 Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around

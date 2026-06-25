@@ -8,10 +8,13 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.color_format import format_named_color_with_hex
 from trace.tasks.three_d.shared.task_support import resolve_axis_variant_for_namespace
+from trace.tasks.three_d.shared.semantic_colors import (
+    colors_conflict as shared_colors_conflict,
+    confusable_color_names as shared_confusable_color_names,
+)
 
 from .defaults import (
     CLUSTER_COMPOSITION_MODES,
-    COLOR_CONFUSION_EXCLUSIONS,
     COLOR_READOUT_CLUSTER_SHAPE_TYPES,
     COLOR_SAFE_CLUSTER_SHAPE_TYPES,
     NAMED_CLUSTER_SHAPE_TYPES,
@@ -51,16 +54,13 @@ def semantic_color_label(color_name: str) -> str:
 def _confusable_color_names(color_name: str) -> Tuple[str, ...]:
     """Return generated color distractors too close to one semantic target."""
 
-    return tuple(str(color) for color in COLOR_CONFUSION_EXCLUSIONS.get(str(color_name), ()))
+    return shared_confusable_color_names(str(color_name))
 
 
 def _colors_conflict(left: str, right: str) -> bool:
     """Return whether two semantic colors are too visually close for readout."""
 
-    return (
-        str(right) in set(_confusable_color_names(str(left)))
-        or str(left) in set(_confusable_color_names(str(right)))
-    )
+    return shared_colors_conflict(str(left), str(right))
 
 
 def readout_color_support(*, anchors: Sequence[str] = (), exclude: Sequence[str] = ()) -> Tuple[str, ...]:

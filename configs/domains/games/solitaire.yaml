@@ -38,7 +38,7 @@ generation:
     - 4
     - 5
     - 6
-    tableau_destination_count_target_answer_support:
+    tableau_movable_card_count_target_answer_support:
     - 0
     - 1
     - 2

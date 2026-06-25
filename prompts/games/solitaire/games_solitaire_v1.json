@@ -36,12 +36,12 @@
         "{foundation_rule_text} How many exposed cards are legal foundation moves?",
         "{foundation_rule_text} Count the exposed tableau cards whose suit and rank match a foundation move."
       ],
-      "tableau_destination_count": [
-        "{tableau_destination_rule_text} How many tableau columns can the marked card move to?",
-        "{tableau_destination_rule_text} Count the tableau destinations that the marked card can legally move to.",
-        "{tableau_destination_rule_text} What is the number of tableau columns where the marked card can be placed?",
-        "{tableau_destination_rule_text} How many tableau destination columns are legal for the marked card?",
-        "{tableau_destination_rule_text} Count the tableau destinations available to the marked card."
+      "tableau_movable_card_count": [
+        "{tableau_rule_text} How many exposed tableau cards have at least one legal tableau move?",
+        "{tableau_rule_text} Count the exposed tableau cards that can move onto another exposed tableau card.",
+        "{tableau_rule_text} What is the number of exposed tableau cards with at least one legal tableau destination?",
+        "{tableau_rule_text} How many exposed tableau cards can be moved to another tableau column?",
+        "{tableau_rule_text} Count the exposed tableau cards that have a legal move within the tableau."
       ],
       "column_card_count": [
         "How many visible cards are in column {target_column_number}?",
@@ -86,8 +86,8 @@
     "query:foundation_ready_count": [
       "foundation_rule_text"
     ],
-    "query:tableau_destination_count": [
-      "tableau_destination_rule_text"
+    "query:tableau_movable_card_count": [
+      "tableau_rule_text"
     ],
     "query:column_card_count": [
       "target_column_number"
@@ -139,9 +139,6 @@
     "target_depth_ordinal": {
       "type": "string"
     },
-    "tableau_destination_rule_text": {
-      "type": "string"
-    },
     "tableau_rule_text": {
       "type": "string"
     }
@@ -149,16 +146,15 @@
   "code_prompt_defaults": {
     "object_description_solitaire_tableau": "a solitaire tableau with visible columns and foundation piles",
     "tableau_rule_text": "In tableau moves, a card can be placed on another tableau card only if the target is exactly one rank higher and the opposite color.",
-    "tableau_destination_rule_text": "A tableau destination is either an exposed top card that is exactly one rank higher and the opposite color, or an empty tableau column when the moving card is a King.",
     "foundation_rule_text": "A card can move to a foundation only if it matches that foundation suit and is exactly one rank above the foundation's current top card; an Ace can move to an empty foundation.",
     "annotation_hint_move_legality_label": "set \"annotation\" to an object mapping \"source_card\" and \"target\" to their bounding boxes [x0, y0, x1, y1]",
     "annotation_hint_foundation_ready_count": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for the counted exposed cards; use an empty array when no cards are counted",
-    "annotation_hint_tableau_destination_count": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for the legal tableau destination cards or empty-column slots; use an empty array when there are no legal destinations",
+    "annotation_hint_tableau_movable_card_count": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for every counted exposed tableau card; use an empty array when no cards are counted",
     "annotation_hint_column_card_count": "set \"annotation\" to an array of [x, y] image-pixel points, one point on the visible part of each card in the requested column",
     "annotation_hint_cascade_card_at_depth_label": "set \"annotation\" to one [x, y] image-pixel point on the visible part of the target card in the tableau column",
     "answer_hint_move_legality_label": "set \"answer\" to only the visible move option letter, for example \"C\"",
     "answer_hint_foundation_ready_count": "set \"answer\" to the number of exposed tableau cards that can move to a foundation pile now",
-    "answer_hint_tableau_destination_count": "set \"answer\" to the number of tableau columns whose exposed top card the marked card can legally move onto",
+    "answer_hint_tableau_movable_card_count": "set \"answer\" to the number of exposed tableau cards that have at least one legal tableau move",
     "answer_hint_column_card_count": "set \"answer\" to the number of visible cards in the requested column",
     "answer_hint_cascade_card_at_depth_label": "set \"answer\" to only the option letter showing the requested card"
   }

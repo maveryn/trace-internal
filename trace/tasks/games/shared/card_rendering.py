@@ -6,10 +6,10 @@ from typing import Dict, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font, resolve_text_stroke_fill, temporary_default_font_family
 
 from .style import CardTheme, suit_color
-from .text import draw_game_text_traced as draw_text_traced
 
 
 SUIT_SYMBOLS: Dict[str, str] = {

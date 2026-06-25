@@ -38,7 +38,7 @@ class SolitaireDefaults:
     cascade_depth_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
     foundation_ready_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     column_card_count_target_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
-    tableau_destination_count_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
+    tableau_movable_card_count_target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     tableau_column_count_support: Tuple[int, ...] = (7, 8)
 
 

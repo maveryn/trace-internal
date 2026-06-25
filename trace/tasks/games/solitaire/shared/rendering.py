@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
@@ -31,6 +32,10 @@ from .state import (
     SUPPORTED_PANEL_STYLE_VARIANTS,
     empty_tableau_slot_id,
 )
+
+
+CANONICAL_SOLITAIRE_RED_RGB = (190, 24, 45)
+CANONICAL_SOLITAIRE_BLACK_RGB = (24, 24, 24)
 
 def rgb(values: Sequence[int]) -> Tuple[int, int, int]:
     return tuple(max(0, min(255, int(value))) for value in values[:3])  # type: ignore[return-value]
@@ -306,6 +311,7 @@ def render_solitaire_scene(
 ) -> RenderedSolitaireScene:
     """Render the complete solitaire tableau and record every card, pile, and option bbox in pixel space."""
 
+    show_foundations = bool(sample.metadata.get("show_foundations", True))
     canvas_width = int_default(params, "canvas_width", DEFAULTS.canvas_width)
     canvas_height = int_default(params, "canvas_height", DEFAULTS.canvas_height)
     card_width = int_default(params, "card_width_px", DEFAULTS.card_width_px)
@@ -317,7 +323,8 @@ def render_solitaire_scene(
     radius = int_default(params, "card_corner_radius_px", DEFAULTS.card_corner_radius_px)
     if params.get("canvas_height") is None:
         max_column_len = max((len(column) for column in sample.columns), default=1)
-        tableau_bottom = 194 + (max(0, int(max_column_len) - 1) * column_step_y) + card_height
+        tableau_top_base = 194 if bool(show_foundations) else 92
+        tableau_bottom = tableau_top_base + (max(0, int(max_column_len) - 1) * column_step_y) + card_height
         foundation_bottom = 58 + card_height
         if sample.move_options:
             option_height = int_default(params, "option_height_px", DEFAULTS.option_height_px)
@@ -327,7 +334,7 @@ def render_solitaire_scene(
             needed_height = max(tableau_bottom, foundation_bottom) + 64 + card_height + 30 + margin
             canvas_height = min(int(canvas_height), max(700, int(needed_height)))
         else:
-            needed_height = max(tableau_bottom, foundation_bottom) + margin + 28
+            needed_height = max(tableau_bottom, foundation_bottom if bool(show_foundations) else 0) + margin + 28
             canvas_height = min(int(canvas_height), max(560, int(needed_height)))
     style, style_meta = resolve_game_panel_scene_style(
         instance_seed=int(instance_seed),
@@ -366,7 +373,13 @@ def render_solitaire_scene(
     option_font = load_font(int_default(params, "option_font_size_px", DEFAULTS.option_font_size_px), bold=True, font_family=str(font_family))
     solitaire_style, solitaire_style_meta = resolve_solitaire_visual_style(str(style_variant), style)
     card_face_style_variant = solitaire_card_face_style_variant(str(style_variant))
-    card_theme = build_games_card_theme(style_variant=str(card_face_style_variant))
+    card_theme = replace(
+        build_games_card_theme(style_variant=str(card_face_style_variant)),
+        center_symbol_rgb_black=CANONICAL_SOLITAIRE_BLACK_RGB,
+        center_symbol_rgb_red=CANONICAL_SOLITAIRE_RED_RGB,
+        rank_rgb_black=CANONICAL_SOLITAIRE_BLACK_RGB,
+        rank_rgb_red=CANONICAL_SOLITAIRE_RED_RGB,
+    )
     text_rgb = tuple(int(value) for value in solitaire_style.text_rgb)
     border_rgb = tuple(int(value) for value in solitaire_style.card_border_rgb)
     back_fill = tuple(int(value) for value in solitaire_style.card_back_rgb)
@@ -377,42 +390,43 @@ def render_solitaire_scene(
     foundation_start_x = int(canvas_width - margin - (4 * card_width) - (3 * foundation_gap) + round(dx))
     foundation_bboxes: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = []
-    for index, foundation in enumerate(sample.foundations):
-        x0 = foundation_start_x + index * (card_width + foundation_gap)
-        bbox = (float(x0), float(foundation_y), float(x0 + card_width), float(foundation_y + card_height))
-        draw_foundation(
-            image,
-            draw,
-            bbox,
-            foundation,
-            panel_fill_rgb=tuple(int(value) for value in solitaire_style.foundation_fill_rgb),
-            border_rgb=border_rgb,
-            text_rgb=text_rgb,
-            label_font=label_font,
-            card_theme=card_theme,
-            radius_px=radius,
-            rank_font_size_px=int_default(params, "rank_font_size_px", DEFAULTS.rank_font_size_px),
-            center_symbol_font_size_px=int_default(params, "card_center_font_size_px", DEFAULTS.card_center_font_size_px),
-        )
-        foundation_bboxes[str(foundation.foundation_id)] = [float(value) for value in bbox]
-        entities.append(
-            {
-                "entity_id": str(foundation.foundation_id),
-                "entity_type": "foundation",
-                "suit_name": str(foundation.suit_name),
-                "suit_symbol": str(SUIT_SYMBOLS[str(foundation.suit_name)]),
-                "top_rank_value": int(foundation.top_rank_value),
-                "bbox_px": [float(value) for value in bbox],
-            }
-        )
+    if bool(show_foundations):
+        for index, foundation in enumerate(sample.foundations):
+            x0 = foundation_start_x + index * (card_width + foundation_gap)
+            bbox = (float(x0), float(foundation_y), float(x0 + card_width), float(foundation_y + card_height))
+            draw_foundation(
+                image,
+                draw,
+                bbox,
+                foundation,
+                panel_fill_rgb=tuple(int(value) for value in solitaire_style.foundation_fill_rgb),
+                border_rgb=border_rgb,
+                text_rgb=text_rgb,
+                label_font=label_font,
+                card_theme=card_theme,
+                radius_px=radius,
+                rank_font_size_px=int_default(params, "rank_font_size_px", DEFAULTS.rank_font_size_px),
+                center_symbol_font_size_px=int_default(params, "card_center_font_size_px", DEFAULTS.card_center_font_size_px),
+            )
+            foundation_bboxes[str(foundation.foundation_id)] = [float(value) for value in bbox]
+            entities.append(
+                {
+                    "entity_id": str(foundation.foundation_id),
+                    "entity_type": "foundation",
+                    "suit_name": str(foundation.suit_name),
+                    "suit_symbol": str(SUIT_SYMBOLS[str(foundation.suit_name)]),
+                    "top_rank_value": int(foundation.top_rank_value),
+                    "bbox_px": [float(value) for value in bbox],
+                }
+            )
 
-    if str(sample.scene_variant) == "freecell_tableau":
+    if bool(show_foundations) and str(sample.scene_variant) == "freecell_tableau":
         for index in range(4):
             x0 = margin + int(round(dx)) + index * (card_width + foundation_gap)
             bbox = (float(x0), float(foundation_y), float(x0 + card_width), float(foundation_y + card_height))
             draw.rounded_rectangle(bbox, radius=radius, fill=tuple(style.panel_fill_rgb), outline=border_rgb, width=2)
             draw_text_center(draw, bbox, f"Free {index + 1}", font=label_font, fill=text_rgb, stroke_width=0)
-    else:
+    elif bool(show_foundations):
         stock_x = margin + int(round(dx))
         waste_x = margin + card_width + foundation_gap
         waste_x += int(round(dx))
@@ -429,7 +443,7 @@ def render_solitaire_scene(
         draw.rounded_rectangle(waste_bbox, radius=radius, fill=tuple(style.panel_fill_rgb), outline=border_rgb, width=2)
         draw_text_center(draw, waste_bbox, "waste", font=label_font, fill=text_rgb, stroke_width=0)
 
-    tableau_y = 194 + int(round(dy))
+    tableau_y = (194 if bool(show_foundations) else 92) + int(round(dy))
     column_count = len(sample.columns)
     total_columns_width = (column_count * card_width) + ((column_count - 1) * column_gap)
     start_x = int((canvas_width - total_columns_width) / 2 + round(dx))
@@ -636,6 +650,7 @@ def render_solitaire_scene(
         "card_face_style": {
             "style_variant": str(card_face_style_variant),
             "source": "games_shared_card_face",
+            "solitaire_suit_color_policy": "canonical_red_black",
         },
         "font_family": str(font_family),
         "text_style": {"font_family": str(font_family)},
@@ -651,6 +666,7 @@ def render_solitaire_scene(
             "card_face_style": {
                 "style_variant": str(card_face_style_variant),
                 "source": "games_shared_card_face",
+                "solitaire_suit_color_policy": "canonical_red_black",
             },
             "text_style": {
                 "font_family": str(font_family),

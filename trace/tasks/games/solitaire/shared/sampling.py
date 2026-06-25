@@ -24,9 +24,6 @@ from .state import (
     Foundation,
     MoveOption,
     SolitaireSample,
-    empty_tableau_slot_column_label,
-    empty_tableau_slot_id,
-    is_empty_tableau_slot_id,
 )
 
 
@@ -703,7 +700,7 @@ def sample_column_card_count(
     raise ValueError("failed to sample solitaire column-card count scene")
 
 
-def sample_tableau_destination_count(
+def sample_tableau_movable_card_count(
     rng,
     *,
     namespace: str,
@@ -711,66 +708,28 @@ def sample_tableau_destination_count(
     params: Mapping[str, Any],
     scene_variant: str,
 ) -> SolitaireSample:
-    """Construct a tableau with a marked exposed card and controlled legal destination count."""
+    """Construct a tableau with a controlled count of exposed cards that can move in tableau."""
 
     target_answer, target_probabilities = sample_integer_axis(
         namespace=str(namespace),
         instance_seed=int(instance_seed),
         params=params,
-        support_key="tableau_destination_count_target_answer_support",
+        support_key="tableau_movable_card_count_target_answer_support",
         explicit_key="target_answer",
-        fallback_support=DEFAULTS.tableau_destination_count_target_answer_support,
-        axis_name="tableau_destination_count_target_answer",
+        fallback_support=DEFAULTS.tableau_movable_card_count_target_answer_support,
+        axis_name="tableau_movable_card_count_target_answer",
         balanced_flag_key="balanced_target_answer_sampling",
     )
     if int(target_answer) < 0 or int(target_answer) > 4:
-        raise ValueError(f"unsupported solitaire tableau destination count: {target_answer}")
+        raise ValueError(f"unsupported solitaire tableau movable-card count: {target_answer}")
 
     column_count = 7 if str(scene_variant) == "klondike_tableau" else 8
-    for _attempt in range(600):
+    for _attempt in range(3000):
         pool = deck()
-        use_empty_destinations = int(target_answer) > 2 or (
-            int(target_answer) <= 2 and int(rng.randrange(4)) == 0
-        )
-        source_rank = 13 if use_empty_destinations else int(rng.randrange(1, 13))
-        source_suit = str(SUITS[int(rng.randrange(len(SUITS)))])
-        source_raw = (int(source_rank), str(source_suit))
-        if source_raw not in pool:
-            continue
-        remove_card(pool, source_raw)
-
-        selected_legal: List[Tuple[int, str]] = []
-        empty_destination_count = int(target_answer) if use_empty_destinations else 0
-        if not use_empty_destinations:
-            opposite_suits = [suit for suit in SUITS if card_color(str(suit)) != card_color(str(source_suit))]
-            legal_target_raw = [(int(source_rank) + 1, str(suit)) for suit in opposite_suits]
-            available_legal_targets = [raw for raw in legal_target_raw if raw in pool]
-            if len(available_legal_targets) < int(target_answer):
-                continue
-            rng.shuffle(available_legal_targets)
-            selected_legal = available_legal_targets[: int(target_answer)]
-            for raw in selected_legal:
-                remove_card(pool, raw)
-            excluded_legal = set(legal_target_raw)
-        else:
-            excluded_legal = set()
-
-        non_destination_pool = [raw for raw in pool if raw not in excluded_legal]
-        needed_non_destinations = int(column_count) - 1 - len(selected_legal) - int(empty_destination_count)
-        if len(non_destination_pool) < int(needed_non_destinations):
-            continue
-        rng.shuffle(non_destination_pool)
-        selected_non_destinations = non_destination_pool[: int(needed_non_destinations)]
-        for raw in selected_non_destinations:
-            remove_card(pool, raw)
-
+        rng.shuffle(pool)
         exposed_raw_or_empty: List[Tuple[int, str] | None] = [
-            source_raw,
-            *selected_legal,
-            *selected_non_destinations,
-            *([None] * int(empty_destination_count)),
+            pool.pop() for _ in range(int(column_count))
         ]
-        rng.shuffle(exposed_raw_or_empty)
         columns = build_columns_from_optional_exposed(
             rng,
             exposed_cards_or_empty=exposed_raw_or_empty,
@@ -778,52 +737,31 @@ def sample_tableau_destination_count(
             scene_variant=str(scene_variant),
         )
         exposed = visible_exposed_cards(columns)
-        source_card = next(
-            (
-                card
-                for card in exposed
-                if int(card.rank_value) == int(source_raw[0]) and str(card.suit_name) == str(source_raw[1])
-            ),
-            None,
+        movable_ids = tuple(
+            str(source.card_id)
+            for source in exposed
+            if any(
+                str(target.card_id) != str(source.card_id)
+                and is_legal_tableau_move(source, target)
+                for target in exposed
+            )
         )
-        if source_card is None:
+        if len(movable_ids) != int(target_answer):
             continue
-        card_destination_ids = [
-            str(card.card_id)
-            for card in exposed
-            if str(card.card_id) != str(source_card.card_id) and is_legal_tableau_move(source_card, card)
-        ]
-        empty_destination_ids = [
-            empty_tableau_slot_id(int(col_index))
-            for col_index, column in enumerate(columns)
-            if not column and int(source_card.rank_value) == 13
-        ]
-        destination_ids = tuple([*card_destination_ids, *empty_destination_ids])
-        if len(destination_ids) != int(target_answer):
-            continue
-        destination_column_labels = [
-            empty_tableau_slot_column_label(card_id)
-            if is_empty_tableau_slot_id(card_id)
-            else card_column_label(columns, card_id)
-            for card_id in destination_ids
-        ]
         return SolitaireSample(
             scene_variant=str(scene_variant),
             columns=tuple(columns),
-            foundations=sample_foundations(rng),
+            foundations=(),
             answer=int(target_answer),
             answer_type="integer",
-            annotation_entity_ids=tuple(destination_ids),
+            annotation_entity_ids=tuple(movable_ids),
             move_options=(),
             metadata={
                 "target_answer": int(target_answer),
                 "target_answer_probabilities": dict(target_probabilities),
-                "marked_card_id": str(source_card.card_id),
-                "marked_card_label": str(source_card.label),
-                "marked_card_column_label": card_column_label(columns, str(source_card.card_id)),
-                "tableau_destination_card_ids": list(destination_ids),
-                "tableau_destination_column_labels": list(destination_column_labels),
-                "tableau_destination_mode": "king_empty_columns" if use_empty_destinations else "top_card_targets",
+                "movable_card_ids": list(movable_ids),
+                "movable_card_column_labels": [card_column_label(columns, card_id) for card_id in movable_ids],
+                "show_foundations": False,
             },
         )
-    raise ValueError("failed to sample solitaire tableau-destination count scene")
+    raise ValueError("failed to sample solitaire tableau movable-card count scene")

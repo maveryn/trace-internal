@@ -1,4 +1,4 @@
-"""Scene state and catalogs for synthetic 3D conveyor sorting stations."""
+"""Scene state and catalogs for synthetic 3D conveyor carousel sorting."""
 
 from __future__ import annotations
 
@@ -15,23 +15,27 @@ from trace.tasks.three_d.shared.object_resources import (
 SCENE_ID = "conveyor_sorting"
 
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
-    "single_belt_scanner",
-    "dual_lane_sorter",
-    "triple_lane_sorter",
+    "airport_carousel",
+    "inspection_carousel",
+    "warehouse_carousel",
 )
 
-LANE_COUNT_BY_SCENE_VARIANT: Mapping[str, int] = {
-    "single_belt_scanner": 1,
-    "dual_lane_sorter": 2,
-    "triple_lane_sorter": 3,
+BELT_KEYS: Tuple[str, ...] = ("inner", "outer")
+BELT_LABELS: Mapping[str, str] = {
+    "inner": "INNER",
+    "outer": "OUTER",
 }
-
-LANE_LABELS: Tuple[str, ...] = ("A", "B", "C")
-SEGMENT_KEYS: Tuple[str, ...] = ("input", "scan", "output")
-SEGMENT_LABELS: Mapping[str, str] = {
-    "input": "INPUT",
-    "scan": "SCAN",
-    "output": "OUTPUT",
+BELT_GEOMETRY: Mapping[str, Mapping[str, float]] = {
+    "inner": {
+        "radius_x": 1.58,
+        "radius_y": 0.76,
+        "band_width": 0.36,
+    },
+    "outer": {
+        "radius_x": 2.78,
+        "radius_y": 1.42,
+        "band_width": 0.42,
+    },
 }
 
 CONVEYOR_OBJECT_SHAPE_TYPES: Tuple[str, ...] = tuple(
@@ -172,14 +176,13 @@ def public_object_plural(shape_type: str) -> str:
 
 
 __all__ = [
+    "BELT_GEOMETRY",
+    "BELT_KEYS",
+    "BELT_LABELS",
     "COLOR_CONFUSION_EXCLUSIONS",
     "CONVEYOR_COLOR_READOUT_SHAPE_TYPES",
     "CONVEYOR_OBJECT_SHAPE_TYPES",
-    "LANE_COUNT_BY_SCENE_VARIANT",
-    "LANE_LABELS",
     "SCENE_ID",
-    "SEGMENT_KEYS",
-    "SEGMENT_LABELS",
     "SEMANTIC_COLOR_RGB",
     "SEMANTIC_COLOR_SUPPORT",
     "SUPPORTED_SCENE_VARIANTS",

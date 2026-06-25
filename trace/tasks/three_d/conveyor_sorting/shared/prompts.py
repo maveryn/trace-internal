@@ -33,8 +33,7 @@ def dynamic_slots_for_conveyor(dataset: Mapping[str, Any]) -> dict[str, Any]:
 
     target_color_name = str(dataset.get("target_color_name", ""))
     return {
-        "lane_label": str(dataset.get("target_lane_label", "")),
-        "segment_label": str(dataset.get("target_segment_label", "")),
+        "belt_label": str(dataset.get("target_belt_label", "")),
         "target_object_plural": str(dataset.get("target_object_plural", "")),
         "target_color_label": semantic_color_label(target_color_name) if target_color_name else "",
     }

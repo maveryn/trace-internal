@@ -5,11 +5,11 @@
   "templates": {
     "scene": {
       "conveyor_sorting": [
-        "The image shows a 3D conveyor sorting station with small objects on labeled conveyor segments.",
-        "The scene shows small 3D objects placed on labeled segments of a conveyor sorting station.",
-        "A 3D sorting station is shown with objects on conveyor lanes and labeled belt segments.",
-        "The picture shows a conveyor sorting station where small 3D objects sit on labeled belt segments.",
-        "The visual shows small objects arranged on labeled conveyor segments in a 3D sorting station."
+        "The image shows a 3D airport-style conveyor carousel with INNER and OUTER elliptical belts.",
+        "The scene shows small 3D objects riding on two labeled elliptical conveyor belts.",
+        "A 3D conveyor carousel is shown with objects on the INNER and OUTER belts.",
+        "The picture shows a baggage-style conveyor carousel with small objects on two oval belts.",
+        "The visual shows small objects arranged on labeled inner and outer conveyor belts."
       ]
     },
     "task": {
@@ -22,19 +22,19 @@
       ]
     },
     "query": {
-      "object_type_segment_count": [
-        "How many {target_object_plural} are in the {segment_label} segment of lane {lane_label}?",
-        "Count the {target_object_plural} in lane {lane_label}'s {segment_label} segment. How many are there?",
-        "In the {segment_label} segment of lane {lane_label}, how many {target_object_plural} are visible?",
-        "Looking only at lane {lane_label}, how many {target_object_plural} are in the {segment_label} segment?",
-        "What is the number of {target_object_plural} in the {segment_label} segment on lane {lane_label}?"
+      "object_type_belt_count": [
+        "How many {target_object_plural} are on the {belt_label} belt?",
+        "Count the {target_object_plural} on the {belt_label} belt. How many are there?",
+        "Looking only at the {belt_label} belt, how many {target_object_plural} are visible?",
+        "On the {belt_label} conveyor belt, how many {target_object_plural} are there?",
+        "What is the number of {target_object_plural} on the {belt_label} belt?"
       ],
-      "color_segment_count": [
-        "How many {target_color_label} objects are in the {segment_label} segment of lane {lane_label}?",
-        "Count the {target_color_label} objects in lane {lane_label}'s {segment_label} segment. How many are there?",
-        "In the {segment_label} segment of lane {lane_label}, how many objects are {target_color_label}?",
-        "Looking only at lane {lane_label}, how many {target_color_label} objects are in the {segment_label} segment?",
-        "What is the number of {target_color_label} objects in the {segment_label} segment on lane {lane_label}?"
+      "color_belt_count": [
+        "How many {target_color_label} objects are on the {belt_label} belt?",
+        "Count the {target_color_label} objects on the {belt_label} belt. How many are there?",
+        "Looking only at the {belt_label} belt, how many objects are {target_color_label}?",
+        "On the {belt_label} conveyor belt, how many {target_color_label} objects are there?",
+        "What is the number of {target_color_label} objects on the {belt_label} belt?"
       ]
     },
     "output": {
@@ -55,27 +55,26 @@
     }
   },
   "static_slots_by_key": {
-    "query:object_type_segment_count": {
+    "query:object_type_belt_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted object in the requested conveyor segment",
+      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted object on the requested belt",
       "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
-    "query:color_segment_count": {
+    "query:color_belt_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted colored object in the requested conveyor segment",
+      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each counted colored object on the requested belt",
       "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     }
   },
   "dynamic_slots": {
-    "lane_label": {"type": "string"},
-    "segment_label": {"type": "string"},
+    "belt_label": {"type": "string"},
     "target_object_plural": {"type": "string"},
     "target_color_label": {"type": "string"}
   },
   "required_slots_by_key": {
-    "query:object_type_segment_count": ["lane_label", "segment_label", "target_object_plural"],
-    "query:color_segment_count": ["lane_label", "segment_label", "target_color_label"]
+    "query:object_type_belt_count": ["belt_label", "target_object_plural"],
+    "query:color_belt_count": ["belt_label", "target_color_label"]
   }
 }

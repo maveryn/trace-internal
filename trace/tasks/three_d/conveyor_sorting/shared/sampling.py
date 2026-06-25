@@ -1,7 +1,8 @@
-"""Sampling helpers for conveyor sorting scene axes and object layouts."""
+"""Sampling helpers for conveyor carousel scopes and object layouts."""
 
 from __future__ import annotations
 
+import math
 from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
@@ -10,9 +11,12 @@ from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.named_colors import sample_named_color_palette
 from trace.tasks.three_d.shared.camera_projection import (
+    CameraSpec,
     build_projection_frame,
     project_screen,
-    sample_camera,
+    vec_cross,
+    vec_norm,
+    vec_sub,
 )
 from trace.tasks.three_d.shared.object_resources import OBJECT_CLUSTER_DIMENSIONS
 from trace.tasks.three_d.shared.projected_object_geometry import object_reference_points
@@ -22,14 +26,13 @@ from trace.tasks.three_d.shared.task_support import (
 )
 
 from .state import (
+    BELT_GEOMETRY,
+    BELT_KEYS,
+    BELT_LABELS,
     COLOR_CONFUSION_EXCLUSIONS,
     CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
     CONVEYOR_OBJECT_SHAPE_TYPES,
-    LANE_COUNT_BY_SCENE_VARIANT,
-    LANE_LABELS,
     SCENE_ID,
-    SEGMENT_KEYS,
-    SEGMENT_LABELS,
     SEMANTIC_COLOR_RGB,
     SEMANTIC_COLOR_SUPPORT,
     SUPPORTED_SCENE_VARIANTS,
@@ -42,10 +45,10 @@ PREDICATE_OBJECT_TYPE = "object_type"
 PREDICATE_COLOR = "color"
 
 CAMERA_YAW_BANDS_DEGREES: Tuple[Tuple[float, float], ...] = (
-    (-70.0, -48.0),
-    (48.0, 70.0),
-    (-132.0, -112.0),
-    (112.0, 132.0),
+    (-66.0, -42.0),
+    (42.0, 66.0),
+    (-138.0, -114.0),
+    (114.0, 138.0),
 )
 
 
@@ -65,14 +68,6 @@ def _uniform_string_probability_map(values: Sequence[str], *, selected: str | No
     return {str(value): float(probability) for value in support}
 
 
-def _uniform_int_probability_map(values: Sequence[int], *, selected: int | None = None) -> Dict[str, float]:
-    support = tuple(int(value) for value in values)
-    if selected is not None:
-        return {str(value): (1.0 if int(value) == int(selected) else 0.0) for value in support}
-    probability = 1.0 / float(max(1, len(support)))
-    return {str(value): float(probability) for value in support}
-
-
 def _configured_int(params: Mapping[str, Any], gen_defaults: Mapping[str, Any], key: str, default: int) -> int:
     return int(params.get(str(key), group_default(gen_defaults, str(key), int(default))))
 
@@ -84,7 +79,7 @@ def resolve_conveyor_axes(
     instance_seed: int,
     namespace: str,
 ) -> ResolvedConveyorAxes:
-    """Resolve the conveyor station scene variant."""
+    """Resolve the conveyor carousel scene variant."""
 
     scene_variant, scene_probabilities = resolve_axis_variant_for_namespace(
         params,
@@ -154,38 +149,43 @@ def _resolve_target_color(
     return color, _uniform_string_probability_map(support)
 
 
-def _segment_ranges() -> Dict[str, Tuple[float, float]]:
-    x0, x1 = -2.88, 2.88
-    segment_width = (x1 - x0) / 3.0
-    return {
-        str(segment): (x0 + index * segment_width, x0 + (index + 1) * segment_width)
-        for index, segment in enumerate(SEGMENT_KEYS)
-    }
+def _resolve_target_belt(
+    *,
+    params: Mapping[str, Any],
+    rng: Any,
+) -> tuple[str, Dict[str, float]]:
+    explicit = params.get("target_belt_key")
+    support = tuple(str(key) for key in BELT_KEYS)
+    if explicit is not None:
+        belt_key = str(explicit)
+        if belt_key not in set(support):
+            raise ValueError(f"unsupported target_belt_key: {belt_key}")
+        return belt_key, _uniform_string_probability_map(support, selected=belt_key)
+    belt_key = str(support[int(rng.randrange(len(support)))])
+    return belt_key, _uniform_string_probability_map(support)
 
 
-def _lane_y_positions(lane_count: int) -> list[float]:
-    if int(lane_count) == 1:
-        return [0.0]
-    if int(lane_count) == 2:
-        return [-0.62, 0.62]
-    return [-1.06, 0.0, 1.06]
+def _belt_point(belt_key: str, theta: float, radial_offset: float = 0.0) -> tuple[float, float]:
+    geometry = BELT_GEOMETRY[str(belt_key)]
+    radius_x = float(geometry["radius_x"]) + float(radial_offset)
+    radius_y = float(geometry["radius_y"]) + float(radial_offset) * 0.62
+    return (round(radius_x * math.cos(float(theta)), 4), round(radius_y * math.sin(float(theta)), 4))
 
 
-def _slot_positions_for_cell(
+def _slot_positions_for_belt(
     *,
     rng: Any,
-    lane_index: int,
-    segment_key: str,
-    lane_y: float,
-) -> list[tuple[float, float]]:
-    x0, x1 = _segment_ranges()[str(segment_key)]
-    slots: list[tuple[float, float]] = []
-    for row_index, y_offset in enumerate((-0.23, 0.23)):
-        for col_index in range(4):
-            fraction = (col_index + 0.5) / 4.0
-            x = float(x0 + fraction * (x1 - x0) + rng.uniform(-0.09, 0.09))
-            y = float(lane_y + y_offset + rng.uniform(-0.045, 0.045))
-            slots.append((round(x, 4), round(y, 4)))
+    belt_key: str,
+    slots_per_belt: int,
+) -> list[tuple[float, float, float]]:
+    start = float(rng.uniform(0.0, 2.0 * math.pi))
+    slots: list[tuple[float, float, float]] = []
+    for index in range(int(slots_per_belt)):
+        theta = start + (2.0 * math.pi * float(index) / float(slots_per_belt)) + rng.uniform(-0.035, 0.035)
+        width = float(BELT_GEOMETRY[str(belt_key)]["band_width"])
+        radial_offset = rng.uniform(-0.18 * width, 0.18 * width)
+        x, y = _belt_point(str(belt_key), float(theta), radial_offset=float(radial_offset))
+        slots.append((float(x), float(y), round(math.degrees(float(theta)) % 360.0, 3)))
     rng.shuffle(slots)
     return slots
 
@@ -201,25 +201,18 @@ def _make_object_spec(
     object_id: str,
     shape_type: str,
     color_name: str,
-    xy: Sequence[float],
-    lane_index: int,
-    lane_label: str,
-    segment_key: str,
-    segment_label: str,
+    slot: Sequence[float],
+    belt_key: str,
     matches_query: bool,
     count_role: str,
     dimension_scale: float,
 ) -> Dict[str, Any]:
-    """Create one countable conveyor object spec.
-
-    Invariant: scene-local placement metadata, semantic target membership, and
-    shared object-rendering fields are bound in one record before projection so
-    answer, annotation, and trace all refer to the same object identity.
-    """
+    """Create one countable conveyor carousel object spec."""
 
     dimensions = _object_dimensions(str(shape_type), scale=float(dimension_scale))
     height = float(dimensions[2])
     color_rgb = SEMANTIC_COLOR_RGB[str(color_name)]
+    theta_degrees = float(slot[2])
     return {
         "object_id": str(object_id),
         "object_type": str(shape_type),
@@ -231,18 +224,17 @@ def _make_object_spec(
         "is_countable_object": True,
         "matches_query": bool(matches_query),
         "count_role": str(count_role),
-        "lane_index": int(lane_index),
-        "lane_label": str(lane_label),
-        "segment_key": str(segment_key),
-        "segment_label": str(segment_label),
+        "belt_key": str(belt_key),
+        "belt_label": str(BELT_LABELS[str(belt_key)]),
+        "angular_position_degrees": round(float(theta_degrees), 3),
         "color_name": str(color_name),
         "prompt_color_name": str(color_name),
         "fill_rgb": [int(channel) for channel in color_rgb],
         "semantic_color": True,
         "dimensions_xyz": [float(value) for value in dimensions],
-        "world_xyz": [round(float(xy[0]), 4), round(float(xy[1]), 4), round(0.08 + height * 0.5, 4)],
-        "base_xyz": [round(float(xy[0]), 4), round(float(xy[1]), 4), 0.08],
-        "orientation_deg": round(float(rng.uniform(-15.0, 15.0)), 3),
+        "world_xyz": [round(float(slot[0]), 4), round(float(slot[1]), 4), round(0.08 + height * 0.5, 4)],
+        "base_xyz": [round(float(slot[0]), 4), round(float(slot[1]), 4), 0.08],
+        "orientation_deg": round(float(theta_degrees + 90.0 + rng.uniform(-18.0, 18.0)), 3),
         "render_order_bias": round(float(rng.uniform(-0.015, 0.015)), 5),
         "renderer_id": "object_scene_shape",
         "object_role": "target" if bool(matches_query) else "distractor",
@@ -250,37 +242,71 @@ def _make_object_spec(
 
 
 def _sample_slot(
-    slots_by_cell: Dict[tuple[int, str], list[tuple[float, float]]],
+    slots_by_belt: Dict[str, list[tuple[float, float, float]]],
     *,
-    rng: Any,
-    lane_index: int,
-    segment_key: str,
-) -> tuple[float, float]:
-    key = (int(lane_index), str(segment_key))
-    slots = slots_by_cell.get(key, [])
+    belt_key: str,
+) -> tuple[float, float, float]:
+    slots = slots_by_belt.get(str(belt_key), [])
     if not slots:
-        raise ValueError(f"no free conveyor slots for {key}")
+        raise ValueError(f"no free conveyor carousel slots for {belt_key}")
     return slots.pop()
 
 
-def _sample_other_cell(
+def _sample_other_belt_slot(
+    slots_by_belt: Dict[str, list[tuple[float, float, float]]],
     *,
     rng: Any,
-    lane_count: int,
-    target_lane_index: int,
-    target_segment_key: str,
-    slots_by_cell: Mapping[tuple[int, str], Sequence[tuple[float, float]]],
-) -> tuple[int, str]:
+    target_belt_key: str,
+) -> tuple[str, tuple[float, float, float]]:
     candidates = [
-        (lane_index, segment_key)
-        for lane_index in range(int(lane_count))
-        for segment_key in SEGMENT_KEYS
-        if (lane_index != int(target_lane_index) or str(segment_key) != str(target_segment_key))
-        and bool(slots_by_cell.get((lane_index, str(segment_key))))
+        str(belt_key)
+        for belt_key in BELT_KEYS
+        if str(belt_key) != str(target_belt_key) and bool(slots_by_belt.get(str(belt_key)))
     ]
     if not candidates:
-        raise ValueError("no non-target conveyor slots available")
-    return candidates[int(rng.randrange(len(candidates)))]
+        raise ValueError("no non-target conveyor carousel slots available")
+    belt_key = str(candidates[int(rng.randrange(len(candidates)))])
+    return belt_key, _sample_slot(slots_by_belt, belt_key=belt_key)
+
+
+def _sample_carousel_camera(rng: Any, yaw_band_degrees: Sequence[float]) -> CameraSpec:
+    yaw_degrees = float(rng.uniform(float(yaw_band_degrees[0]), float(yaw_band_degrees[1])))
+    pitch_degrees = float(rng.uniform(39.0, 50.0))
+    distance = float(rng.uniform(7.8, 9.2))
+    yaw = math.radians(float(yaw_degrees))
+    pitch = math.radians(float(pitch_degrees))
+    target = (0.0, 0.0, 0.58)
+    camera_position = (
+        float(distance * math.cos(pitch) * math.sin(yaw)),
+        float(-distance * math.cos(pitch) * math.cos(yaw)),
+        float(target[2] + distance * math.sin(pitch)),
+    )
+    forward = vec_norm(vec_sub(target, camera_position))
+    right = vec_norm(vec_cross(forward, (0.0, 0.0, 1.0)))
+    up = vec_norm(vec_cross(right, forward))
+    return CameraSpec(
+        camera_position=tuple(camera_position),
+        target=tuple(target),
+        right=tuple(right),
+        up=tuple(up),
+        forward=tuple(forward),
+        yaw_degrees=float(yaw_degrees),
+        pitch_degrees=float(pitch_degrees),
+        distance=float(distance),
+    )
+
+
+def _carousel_reference_points() -> list[tuple[float, float, float]]:
+    points: list[tuple[float, float, float]] = []
+    for belt_key in BELT_KEYS:
+        width = float(BELT_GEOMETRY[str(belt_key)]["band_width"])
+        for angle_index in range(32):
+            theta = 2.0 * math.pi * float(angle_index) / 32.0
+            for radial_offset in (-0.5 * width, 0.5 * width):
+                x, y = _belt_point(str(belt_key), theta, radial_offset=float(radial_offset))
+                points.append((float(x), float(y), 0.04))
+    points.extend([(0.0, 0.0, 0.04), (0.0, 0.0, 0.62)])
+    return points
 
 
 def _finalize_camera_and_projection(
@@ -289,26 +315,16 @@ def _finalize_camera_and_projection(
     render_params: Any,
     object_specs: Sequence[Mapping[str, Any]],
 ) -> tuple[Any, Any, dict[str, Any], dict[str, Any]]:
-    """Sample camera and bind projection metadata for finalized objects.
-
-    The conveyor grammar is world-space first: belt geometry and object specs
-    are fixed before camera projection, then all object screen centers are
-    derived from this single camera/frame pair.
-    """
+    """Sample camera and bind projection metadata for finalized objects."""
 
     band_index = int(rng.randrange(len(CAMERA_YAW_BANDS_DEGREES)))
     yaw_band = CAMERA_YAW_BANDS_DEGREES[int(band_index)]
-    camera = sample_camera(rng, yaw_band_degrees=yaw_band)
-    belt_corners = [
-        (x, y, 0.02)
-        for x in (-3.05, 3.05)
-        for y in (-1.55, 1.55)
-    ]
+    camera = _sample_carousel_camera(rng, yaw_band)
     reference_points = [point for spec in object_specs for point in object_reference_points(spec)]
     frame = build_projection_frame(
         camera=camera,
         render_params=render_params,
-        point_worlds=[*belt_corners, *reference_points],
+        point_worlds=[*_carousel_reference_points(), *reference_points],
     )
     camera_meta = {
         "camera_position": [round(float(value), 4) for value in camera.camera_position],
@@ -348,7 +364,7 @@ def _screen_finalize_specs(
     return sorted(finalized, key=lambda item: str(item["object_id"]))
 
 
-def build_segment_count_dataset(
+def build_belt_count_dataset(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
@@ -358,21 +374,11 @@ def build_segment_count_dataset(
     predicate_kind: str,
     namespace: str,
 ) -> dict[str, Any]:
-    """Build a conveyor station dataset for one scoped segment count objective.
-
-    Public query ids are owned by the task module. Shared sampling only receives
-    the semantic predicate family needed to build the objective program.
-    """
+    """Build an elliptical conveyor carousel dataset for one belt-scoped count."""
 
     rng = spawn_rng(int(instance_seed), f"{namespace}.dataset")
-    lane_count = int(LANE_COUNT_BY_SCENE_VARIANT[str(axes.scene_variant)])
-    lane_positions = _lane_y_positions(int(lane_count))
-    target_lane_index = int(params.get("target_lane_index", rng.randrange(int(lane_count))))
-    if target_lane_index < 0 or target_lane_index >= int(lane_count):
-        raise ValueError(f"unsupported target_lane_index: {target_lane_index}")
-    target_segment_key = str(params.get("target_segment_key", SEGMENT_KEYS[int(rng.randrange(len(SEGMENT_KEYS)))]))
-    if target_segment_key not in set(SEGMENT_KEYS):
-        raise ValueError(f"unsupported target_segment_key: {target_segment_key}")
+    target_belt_key, target_belt_probabilities = _resolve_target_belt(params=params, rng=rng)
+    target_belt_label = str(BELT_LABELS[str(target_belt_key)])
     target_count, target_count_probabilities = resolve_count_for_namespace(
         params,
         namespace=f"{namespace}.target_count",
@@ -384,9 +390,9 @@ def build_segment_count_dataset(
         lower=1,
         upper=8,
     )
-    object_count_min = _configured_int(params, gen_defaults, "object_count_min", 8)
+    object_count_min = _configured_int(params, gen_defaults, "object_count_min", 9)
     object_count_max = _configured_int(params, gen_defaults, "object_count_max", 18)
-    total_min = max(int(target_count) + 3, int(object_count_min))
+    total_min = max(int(target_count) + 4, int(object_count_min))
     total_max = max(total_min, int(object_count_max))
     object_count, object_count_probabilities = resolve_count_for_namespace(
         params,
@@ -397,36 +403,24 @@ def build_segment_count_dataset(
         default_min=total_min,
         default_max=total_max,
         lower=total_min,
-        upper=24,
+        upper=22,
     )
+    slots_per_belt = max(14, _configured_int(params, gen_defaults, "slots_per_belt", 20))
     dimension_scale = float(params.get("object_dimension_scale", group_default(gen_defaults, "object_dimension_scale", 0.64)))
+    slots_by_belt = {
+        str(belt_key): _slot_positions_for_belt(rng=rng, belt_key=str(belt_key), slots_per_belt=int(slots_per_belt))
+        for belt_key in BELT_KEYS
+    }
+    belt_records = [
+        {
+            "belt_key": str(belt_key),
+            "belt_label": str(BELT_LABELS[str(belt_key)]),
+            "geometry": dict(BELT_GEOMETRY[str(belt_key)]),
+            "slot_count": int(slots_per_belt),
+        }
+        for belt_key in BELT_KEYS
+    ]
 
-    slots_by_cell: Dict[tuple[int, str], list[tuple[float, float]]] = {}
-    lane_records: list[dict[str, Any]] = []
-    segment_records: list[dict[str, Any]] = []
-    for lane_index, lane_y in enumerate(lane_positions):
-        lane_label = LANE_LABELS[int(lane_index)]
-        lane_records.append({"lane_index": int(lane_index), "lane_label": str(lane_label), "center_y": round(float(lane_y), 4)})
-        for segment_key in SEGMENT_KEYS:
-            slots_by_cell[(lane_index, str(segment_key))] = _slot_positions_for_cell(
-                rng=rng,
-                lane_index=int(lane_index),
-                segment_key=str(segment_key),
-                lane_y=float(lane_y),
-            )
-            x0, x1 = _segment_ranges()[str(segment_key)]
-            segment_records.append(
-                {
-                    "lane_index": int(lane_index),
-                    "lane_label": str(lane_label),
-                    "segment_key": str(segment_key),
-                    "segment_label": str(SEGMENT_LABELS[str(segment_key)]),
-                    "world_bbox_xy": [round(float(x0), 4), round(float(lane_y - 0.47), 4), round(float(x1), 4), round(float(lane_y + 0.47), 4)],
-                }
-            )
-
-    target_lane_label = LANE_LABELS[int(target_lane_index)]
-    target_segment_label = SEGMENT_LABELS[str(target_segment_key)]
     object_specs: List[Dict[str, Any]] = []
     target_object_ids: list[str] = []
 
@@ -439,7 +433,7 @@ def build_segment_count_dataset(
         target_color_name = ""
         target_color_probabilities: Dict[str, float] = {}
         for index in range(int(target_count)):
-            xy = _sample_slot(slots_by_cell, rng=rng, lane_index=target_lane_index, segment_key=target_segment_key)
+            slot = _sample_slot(slots_by_belt, belt_key=target_belt_key)
             color_name = str(color_names[index % len(color_names)])
             object_id = f"obj_{len(object_specs):03d}"
             target_object_ids.append(object_id)
@@ -449,58 +443,42 @@ def build_segment_count_dataset(
                     object_id=object_id,
                     shape_type=str(target_shape),
                     color_name=color_name,
-                    xy=xy,
-                    lane_index=target_lane_index,
-                    lane_label=target_lane_label,
-                    segment_key=target_segment_key,
-                    segment_label=target_segment_label,
+                    slot=slot,
+                    belt_key=target_belt_key,
                     matches_query=True,
                     count_role="target",
                     dimension_scale=float(dimension_scale),
                 )
             )
-        if slots_by_cell[(target_lane_index, target_segment_key)] and int(target_count) <= 6:
-            xy = _sample_slot(slots_by_cell, rng=rng, lane_index=target_lane_index, segment_key=target_segment_key)
+        if slots_by_belt[str(target_belt_key)] and int(target_count) <= 6:
+            slot = _sample_slot(slots_by_belt, belt_key=target_belt_key)
             object_specs.append(
                 _make_object_spec(
                     rng=rng,
                     object_id=f"obj_{len(object_specs):03d}",
                     shape_type=_sample_shape(rng, CONVEYOR_OBJECT_SHAPE_TYPES, exclude=(target_shape,)),
                     color_name=str(color_names[int(rng.randrange(len(color_names)))]),
-                    xy=xy,
-                    lane_index=target_lane_index,
-                    lane_label=target_lane_label,
-                    segment_key=target_segment_key,
-                    segment_label=target_segment_label,
+                    slot=slot,
+                    belt_key=target_belt_key,
                     matches_query=False,
-                    count_role="same_segment_distractor",
+                    count_role="same_belt_distractor",
                     dimension_scale=float(dimension_scale),
                 )
             )
         while len(object_specs) < int(object_count):
-            lane_index, segment_key = _sample_other_cell(
-                rng=rng,
-                lane_count=lane_count,
-                target_lane_index=target_lane_index,
-                target_segment_key=target_segment_key,
-                slots_by_cell=slots_by_cell,
-            )
-            same_shape_elsewhere = len(object_specs) < int(target_count) + 3 and rng.random() < 0.75
-            shape_type = str(target_shape) if same_shape_elsewhere else _sample_shape(rng, CONVEYOR_OBJECT_SHAPE_TYPES, exclude=())
-            xy = _sample_slot(slots_by_cell, rng=rng, lane_index=lane_index, segment_key=segment_key)
+            belt_key, slot = _sample_other_belt_slot(slots_by_belt, rng=rng, target_belt_key=target_belt_key)
+            same_shape_elsewhere = len(object_specs) < int(target_count) + 4 and rng.random() < 0.75
+            shape_type = str(target_shape) if same_shape_elsewhere else _sample_shape(rng, CONVEYOR_OBJECT_SHAPE_TYPES)
             object_specs.append(
                 _make_object_spec(
                     rng=rng,
                     object_id=f"obj_{len(object_specs):03d}",
                     shape_type=shape_type,
                     color_name=str(color_names[int(rng.randrange(len(color_names)))]),
-                    xy=xy,
-                    lane_index=lane_index,
-                    lane_label=LANE_LABELS[int(lane_index)],
-                    segment_key=segment_key,
-                    segment_label=SEGMENT_LABELS[str(segment_key)],
+                    slot=slot,
+                    belt_key=belt_key,
                     matches_query=False,
-                    count_role="outside_scope_distractor",
+                    count_role="other_belt_distractor",
                     dimension_scale=float(dimension_scale),
                 )
             )
@@ -511,7 +489,7 @@ def build_segment_count_dataset(
         target_shape_probabilities = {}
         color_names = _sample_readout_palette(rng, target_color=str(target_color_name), size=4)
         for _index in range(int(target_count)):
-            xy = _sample_slot(slots_by_cell, rng=rng, lane_index=target_lane_index, segment_key=target_segment_key)
+            slot = _sample_slot(slots_by_belt, belt_key=target_belt_key)
             object_id = f"obj_{len(object_specs):03d}"
             target_object_ids.append(object_id)
             object_specs.append(
@@ -520,59 +498,43 @@ def build_segment_count_dataset(
                     object_id=object_id,
                     shape_type=_sample_shape(rng, CONVEYOR_COLOR_READOUT_SHAPE_TYPES),
                     color_name=str(target_color_name),
-                    xy=xy,
-                    lane_index=target_lane_index,
-                    lane_label=target_lane_label,
-                    segment_key=target_segment_key,
-                    segment_label=target_segment_label,
+                    slot=slot,
+                    belt_key=target_belt_key,
                     matches_query=True,
                     count_role="target",
                     dimension_scale=float(dimension_scale),
                 )
             )
-        if slots_by_cell[(target_lane_index, target_segment_key)] and int(target_count) <= 6:
+        if slots_by_belt[str(target_belt_key)] and int(target_count) <= 6:
             wrong_colors = [color for color in color_names if str(color) != str(target_color_name)]
-            xy = _sample_slot(slots_by_cell, rng=rng, lane_index=target_lane_index, segment_key=target_segment_key)
+            slot = _sample_slot(slots_by_belt, belt_key=target_belt_key)
             object_specs.append(
                 _make_object_spec(
                     rng=rng,
                     object_id=f"obj_{len(object_specs):03d}",
                     shape_type=_sample_shape(rng, CONVEYOR_COLOR_READOUT_SHAPE_TYPES),
                     color_name=str(wrong_colors[int(rng.randrange(len(wrong_colors)))]),
-                    xy=xy,
-                    lane_index=target_lane_index,
-                    lane_label=target_lane_label,
-                    segment_key=target_segment_key,
-                    segment_label=target_segment_label,
+                    slot=slot,
+                    belt_key=target_belt_key,
                     matches_query=False,
-                    count_role="same_segment_distractor",
+                    count_role="same_belt_distractor",
                     dimension_scale=float(dimension_scale),
                 )
             )
         while len(object_specs) < int(object_count):
-            lane_index, segment_key = _sample_other_cell(
-                rng=rng,
-                lane_count=lane_count,
-                target_lane_index=target_lane_index,
-                target_segment_key=target_segment_key,
-                slots_by_cell=slots_by_cell,
-            )
-            same_color_elsewhere = len(object_specs) < int(target_count) + 3 and rng.random() < 0.75
+            belt_key, slot = _sample_other_belt_slot(slots_by_belt, rng=rng, target_belt_key=target_belt_key)
+            same_color_elsewhere = len(object_specs) < int(target_count) + 4 and rng.random() < 0.75
             color_name = str(target_color_name) if same_color_elsewhere else str(color_names[int(rng.randrange(len(color_names)))])
-            xy = _sample_slot(slots_by_cell, rng=rng, lane_index=lane_index, segment_key=segment_key)
             object_specs.append(
                 _make_object_spec(
                     rng=rng,
                     object_id=f"obj_{len(object_specs):03d}",
                     shape_type=_sample_shape(rng, CONVEYOR_COLOR_READOUT_SHAPE_TYPES),
                     color_name=color_name,
-                    xy=xy,
-                    lane_index=lane_index,
-                    lane_label=LANE_LABELS[int(lane_index)],
-                    segment_key=segment_key,
-                    segment_label=SEGMENT_LABELS[str(segment_key)],
+                    slot=slot,
+                    belt_key=belt_key,
                     matches_query=False,
-                    count_role="outside_scope_distractor",
+                    count_role="other_belt_distractor",
                     dimension_scale=float(dimension_scale),
                 )
             )
@@ -588,24 +550,20 @@ def build_segment_count_dataset(
     finalized_specs = _screen_finalize_specs(object_specs=object_specs, camera=camera, frame=frame)
     shape_counts = Counter(str(spec["shape_type"]) for spec in finalized_specs)
     color_counts = Counter(str(spec["color_name"]) for spec in finalized_specs)
-    segment_counts = Counter(f"{spec['lane_label']}:{spec['segment_key']}" for spec in finalized_specs)
-
-    target_segment_object_ids = [
+    belt_counts = Counter(str(spec["belt_key"]) for spec in finalized_specs)
+    target_belt_object_ids = [
         str(spec["object_id"])
         for spec in finalized_specs
-        if int(spec["lane_index"]) == int(target_lane_index) and str(spec["segment_key"]) == str(target_segment_key)
+        if str(spec["belt_key"]) == str(target_belt_key)
     ]
     return {
         "scene_id": SCENE_ID,
         "scene_variant": str(axes.scene_variant),
+        "layout_family": "elliptical_carousel",
         "predicate_kind": str(predicate_kind),
-        "lane_count": int(lane_count),
-        "lane_records": [dict(record) for record in lane_records],
-        "segment_records": [dict(record) for record in segment_records],
-        "target_lane_index": int(target_lane_index),
-        "target_lane_label": str(target_lane_label),
-        "target_segment_key": str(target_segment_key),
-        "target_segment_label": str(target_segment_label),
+        "belt_records": [dict(record) for record in belt_records],
+        "target_belt_key": str(target_belt_key),
+        "target_belt_label": str(target_belt_label),
         "target_shape_type": str(target_shape),
         "target_object_name": public_object_name(str(target_shape)) if target_shape else "",
         "target_object_plural": public_object_plural(str(target_shape)) if target_shape else "",
@@ -614,37 +572,31 @@ def build_segment_count_dataset(
         "answer_value": int(target_count),
         "target_count": int(target_count),
         "target_object_ids": list(target_object_ids),
-        "target_segment_object_ids": list(target_segment_object_ids),
+        "target_belt_object_ids": list(target_belt_object_ids),
         "object_count": int(len(finalized_specs)),
         "object_specs": [dict(spec) for spec in finalized_specs],
         "shape_counts": {str(key): int(value) for key, value in sorted(shape_counts.items())},
         "color_counts": {str(key): int(value) for key, value in sorted(color_counts.items())},
-        "segment_counts": {str(key): int(value) for key, value in sorted(segment_counts.items())},
+        "belt_counts": {str(key): int(value) for key, value in sorted(belt_counts.items())},
         "target_shape_type_probabilities": dict(target_shape_probabilities),
         "target_color_name_probabilities": dict(target_color_probabilities),
         "target_count_probabilities": dict(target_count_probabilities),
         "object_count_probabilities": dict(object_count_probabilities),
-        "lane_count_probabilities": _uniform_int_probability_map(
-            tuple(LANE_COUNT_BY_SCENE_VARIANT.values()),
-            selected=int(lane_count),
-        ),
-        "target_lane_probabilities": _uniform_string_probability_map(LANE_LABELS[: int(lane_count)]),
-        "target_segment_probabilities": _uniform_string_probability_map(SEGMENT_KEYS),
+        "target_belt_probabilities": dict(target_belt_probabilities),
         "semantic_color_palette": {str(key): list(value) for key, value in sorted(SEMANTIC_COLOR_RGB.items())},
         "camera": dict(camera_meta),
         "projection_frame": dict(frame_meta),
         "solver_trace": {
             "count_predicate": str(predicate_kind),
             "scope": {
-                "lane_label": str(target_lane_label),
-                "segment_key": str(target_segment_key),
-                "segment_label": str(target_segment_label),
+                "belt_key": str(target_belt_key),
+                "belt_label": str(target_belt_label),
             },
             "target_shape_type": str(target_shape),
             "target_color_name": str(target_color_name),
             "target_count": int(target_count),
             "target_object_ids": list(target_object_ids),
-            "target_segment_object_ids": list(target_segment_object_ids),
+            "target_belt_object_ids": list(target_belt_object_ids),
             "answer_value": int(target_count),
             "unique_integer_answer": True,
         },
@@ -655,6 +607,6 @@ __all__ = [
     "PREDICATE_COLOR",
     "PREDICATE_OBJECT_TYPE",
     "ResolvedConveyorAxes",
-    "build_segment_count_dataset",
+    "build_belt_count_dataset",
     "resolve_conveyor_axes",
 ]

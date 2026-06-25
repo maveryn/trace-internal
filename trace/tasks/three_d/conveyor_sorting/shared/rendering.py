@@ -1,7 +1,8 @@
-"""Rendering helpers for synthetic 3D conveyor sorting scenes."""
+"""Rendering helpers for synthetic 3D conveyor carousel scenes."""
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
@@ -20,12 +21,15 @@ from trace.tasks.three_d.shared.object_rendering import (
 )
 from trace.tasks.three_d.shared.object_scene_rendering import _bbox_union, _draw_line
 
-from .state import SEGMENT_KEYS, SEGMENT_LABELS
+from .state import BELT_GEOMETRY, BELT_KEYS, BELT_LABELS
+
+
+FLOOR_RGB = (244, 247, 249)
 
 
 @dataclass(frozen=True)
 class RenderedConveyorSorting:
-    """Rendered conveyor sorting scene with projected object geometry."""
+    """Rendered conveyor carousel scene with projected object geometry."""
 
     image: Image.Image
     entities: List[Dict[str, Any]]
@@ -35,8 +39,7 @@ class RenderedConveyorSorting:
     object_centers_px: Dict[str, List[float]]
     target_object_bboxes_px: Dict[str, List[float]]
     target_object_centers_px: Dict[str, List[float]]
-    lane_bboxes_px: Dict[str, List[float]]
-    segment_bboxes_px: Dict[str, List[float]]
+    belt_bboxes_px: Dict[str, List[float]]
 
 
 def _camera_from_dataset(dataset: Mapping[str, Any]) -> CameraSpec:
@@ -73,27 +76,128 @@ def _projected_bbox(points: Sequence[Sequence[float]]) -> List[float]:
     ]
 
 
-def _segment_polygon_world(record: Mapping[str, Any]) -> list[tuple[float, float, float]]:
-    x0, y0, x1, y1 = (float(value) for value in record["world_bbox_xy"])
-    z = 0.035
-    return [(x0, y0, z), (x1, y0, z), (x1, y1, z), (x0, y1, z)]
+def _ellipse_points(
+    *,
+    belt_key: str,
+    radial_offset: float,
+    z: float,
+    steps: int = 96,
+) -> list[tuple[float, float, float]]:
+    geometry = BELT_GEOMETRY[str(belt_key)]
+    radius_x = float(geometry["radius_x"]) + float(radial_offset)
+    radius_y = float(geometry["radius_y"]) + float(radial_offset) * 0.62
+    return [
+        (
+            float(radius_x * math.cos(2.0 * math.pi * float(index) / float(steps))),
+            float(radius_y * math.sin(2.0 * math.pi * float(index) / float(steps))),
+            float(z),
+        )
+        for index in range(int(steps))
+    ]
 
 
-def _draw_segment_label(
+def _draw_label_badge(
     draw: ImageDraw.ImageDraw,
     *,
     text: str,
     center_xy: Sequence[float],
     fill: Tuple[int, int, int],
 ) -> List[float]:
-    font = load_font(18, bold=True)
+    font = load_font(21, bold=True)
     text_bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=1)
     text_w = int(text_bbox[2] - text_bbox[0])
     text_h = int(text_bbox[3] - text_bbox[1])
-    x = float(center_xy[0]) - text_w * 0.5
-    y = float(center_xy[1]) - text_h * 0.5
-    draw.text((x, y), str(text), font=font, fill=fill, stroke_width=2, stroke_fill=(248, 250, 252))
-    return [round(x, 3), round(y, 3), round(x + text_w, 3), round(y + text_h, 3)]
+    pad_x = 12
+    pad_y = 7
+    x0 = float(center_xy[0]) - 0.5 * float(text_w) - float(pad_x)
+    y0 = float(center_xy[1]) - 0.5 * float(text_h) - float(pad_y)
+    x1 = x0 + float(text_w) + 2.0 * float(pad_x)
+    y1 = y0 + float(text_h) + 2.0 * float(pad_y)
+    draw.rounded_rectangle((x0, y0, x1, y1), radius=9, fill=fill, outline=(255, 255, 255), width=2)
+    draw.text((x0 + pad_x, y0 + pad_y - 1), str(text), font=font, fill=(255, 255, 255))
+    return [round(x0, 3), round(y0, 3), round(x1, 3), round(y1, 3)]
+
+
+def _draw_arrow(
+    draw: ImageDraw.ImageDraw,
+    *,
+    start_xy: Sequence[float],
+    end_xy: Sequence[float],
+    fill: Tuple[int, int, int],
+) -> None:
+    sx, sy = float(start_xy[0]), float(start_xy[1])
+    ex, ey = float(end_xy[0]), float(end_xy[1])
+    _draw_line(draw, (sx, sy), (ex, ey), fill=fill, width=3)
+    angle = math.atan2(ey - sy, ex - sx)
+    length = 11.0
+    spread = 0.58
+    left = (
+        ex - length * math.cos(angle - spread),
+        ey - length * math.sin(angle - spread),
+    )
+    right = (
+        ex - length * math.cos(angle + spread),
+        ey - length * math.sin(angle + spread),
+    )
+    draw.polygon([(ex, ey), left, right], fill=fill)
+
+
+def _draw_belt(
+    draw: ImageDraw.ImageDraw,
+    *,
+    belt_key: str,
+    camera: CameraSpec,
+    frame: ProjectionFrame,
+    fill: Tuple[int, int, int],
+    outline: Tuple[int, int, int],
+) -> tuple[List[float], Dict[str, Any]]:
+    """Draw one annular ellipse belt from shared belt geometry.
+
+    The belt bbox, visible label, and rendered surface all come from the same
+    projected centerline/band-width geometry used by the sampler, so belt scope
+    stays visually bound to metadata.
+    """
+
+    width = float(BELT_GEOMETRY[str(belt_key)]["band_width"])
+    outer_world = _ellipse_points(belt_key=str(belt_key), radial_offset=0.5 * width, z=0.035)
+    inner_world = _ellipse_points(belt_key=str(belt_key), radial_offset=-0.5 * width, z=0.04)
+    outer_screen = [project_xy(point, camera, frame) for point in outer_world]
+    inner_screen = [project_xy(point, camera, frame) for point in inner_world]
+    draw.polygon(outer_screen, fill=fill)
+    draw.polygon(inner_screen, fill=FLOOR_RGB)
+    draw.line([*outer_screen, outer_screen[0]], fill=outline, width=3)
+    draw.line([*inner_screen, inner_screen[0]], fill=outline, width=3)
+    for theta in (0.42 * math.pi, 1.06 * math.pi, 1.64 * math.pi):
+        radius_x = float(BELT_GEOMETRY[str(belt_key)]["radius_x"])
+        radius_y = float(BELT_GEOMETRY[str(belt_key)]["radius_y"])
+        start = (radius_x * math.cos(theta - 0.055), radius_y * math.sin(theta - 0.055), 0.065)
+        end = (radius_x * math.cos(theta + 0.055), radius_y * math.sin(theta + 0.055), 0.065)
+        _draw_arrow(draw, start_xy=project_xy(start, camera, frame), end_xy=project_xy(end, camera, frame), fill=(55, 69, 85))
+    label_theta = 0.18 * math.pi if str(belt_key) == "outer" else 1.18 * math.pi
+    label_point = (
+        float(BELT_GEOMETRY[str(belt_key)]["radius_x"]) * math.cos(label_theta),
+        float(BELT_GEOMETRY[str(belt_key)]["radius_y"]) * math.sin(label_theta),
+        0.075,
+    )
+    label_bbox = _draw_label_badge(
+        draw,
+        text=str(BELT_LABELS[str(belt_key)]),
+        center_xy=project_xy(label_point, camera, frame),
+        fill=(35, 46, 60),
+    )
+    bbox = _projected_bbox([*outer_screen, *inner_screen])
+    entity = {
+        "entity_id": f"belt_{belt_key}",
+        "entity_type": "three_d_conveyor_belt",
+        "bbox_px": list(bbox),
+        "attrs": {
+            "belt_key": str(belt_key),
+            "belt_label": str(BELT_LABELS[str(belt_key)]),
+            "label_bbox_px": list(label_bbox),
+            "geometry": dict(BELT_GEOMETRY[str(belt_key)]),
+        },
+    }
+    return list(bbox), entity
 
 
 def _draw_conveyor_belts(
@@ -102,96 +206,45 @@ def _draw_conveyor_belts(
     dataset: Mapping[str, Any],
     camera: CameraSpec,
     frame: ProjectionFrame,
-) -> tuple[Image.Image, List[float], Dict[str, List[float]], Dict[str, List[float]], List[Dict[str, Any]]]:
-    """Draw belt lanes, segment boxes, labels, and scanner context.
-
-    Conveyor segment polygons are projected from world-space lane records so the
-    visible labels and the object placement metadata share one geometric frame.
-    """
+) -> tuple[Image.Image, List[float], Dict[str, List[float]], List[Dict[str, Any]]]:
+    """Draw concentric airport-style carousel belts and labels."""
 
     draw = ImageDraw.Draw(image)
-    lane_bboxes: Dict[str, List[float]] = {}
-    segment_bboxes: Dict[str, List[float]] = {}
+    belt_bboxes: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = []
-    conveyor_bboxes: list[list[float]] = []
-    segment_fill = {
-        "input": (203, 217, 226),
-        "scan": (211, 225, 235),
-        "output": (199, 214, 223),
+    fills = {
+        "outer": (198, 214, 226),
+        "inner": (211, 224, 234),
     }
-    segment_outline = (88, 104, 120)
-    label_fill = (48, 58, 70)
-    for record in dataset["segment_records"]:
-        lane_label = str(record["lane_label"])
-        segment_key = str(record["segment_key"])
-        segment_label = str(record["segment_label"])
-        polygon_world = _segment_polygon_world(record)
-        polygon_screen = [project_xy(point, camera, frame) for point in polygon_world]
-        draw.polygon(polygon_screen, fill=segment_fill.get(segment_key, (205, 218, 228)))
-        draw.line([*polygon_screen, polygon_screen[0]], fill=segment_outline, width=2)
-        segment_bbox = _projected_bbox(polygon_screen)
-        segment_id = f"lane_{lane_label}_{segment_key}"
-        segment_bboxes[str(segment_id)] = list(segment_bbox)
-        conveyor_bboxes.append(segment_bbox)
-        center_world = (
-            (float(record["world_bbox_xy"][0]) + float(record["world_bbox_xy"][2])) * 0.5,
-            (float(record["world_bbox_xy"][1]) + float(record["world_bbox_xy"][3])) * 0.5,
-            0.055,
+    outlines = {
+        "outer": (82, 97, 115),
+        "inner": (92, 108, 126),
+    }
+    for belt_key in ("outer", "inner"):
+        bbox, entity = _draw_belt(
+            draw,
+            belt_key=str(belt_key),
+            camera=camera,
+            frame=frame,
+            fill=fills[str(belt_key)],
+            outline=outlines[str(belt_key)],
         )
-        center = project_xy(center_world, camera, frame)
-        text_bbox = _draw_segment_label(draw, text=str(segment_label), center_xy=center, fill=label_fill)
+        belt_bboxes[str(belt_key)] = list(bbox)
+        entities.append(dict(entity))
+    conveyor_bbox = _bbox_union(*belt_bboxes.values())
+    if str(dataset.get("scene_variant", "")) == "inspection_carousel":
+        x0, y0, x1, y1 = conveyor_bbox
+        scanner_bbox = [round(x1 - 126.0, 3), round(y0 + 28.0, 3), round(x1 - 42.0, 3), round(y0 + 126.0, 3)]
+        draw.rounded_rectangle(tuple(scanner_bbox), radius=10, outline=(66, 115, 165), width=4)
         entities.append(
             {
-                "entity_id": str(segment_id),
-                "entity_type": "three_d_conveyor_segment",
-                "bbox_px": list(segment_bbox),
-                "attrs": {
-                    "lane_label": str(lane_label),
-                    "segment_key": str(segment_key),
-                    "segment_label": str(segment_label),
-                    "label_bbox_px": list(text_bbox),
-                    "world_bbox_xy": list(record["world_bbox_xy"]),
-                },
+                "entity_id": "inspection_gate",
+                "entity_type": "three_d_conveyor_inspection_gate",
+                "bbox_px": list(scanner_bbox),
+                "attrs": {"scene_variant": str(dataset.get("scene_variant", ""))},
             }
         )
-    for lane in dataset["lane_records"]:
-        lane_label = str(lane["lane_label"])
-        lane_segments = [
-            segment_bboxes[f"lane_{lane_label}_{segment_key}"]
-            for segment_key in SEGMENT_KEYS
-        ]
-        lane_bbox = _bbox_union(*lane_segments)
-        lane_bboxes[str(lane_label)] = list(lane_bbox)
-        x0, y0, x1, y1 = lane_bbox
-        badge = [x0 - 26.0, y0 + 8.0, x0 + 18.0, y0 + 48.0]
-        draw.rounded_rectangle(tuple(badge), radius=7, fill=(35, 46, 60), outline=(255, 255, 255), width=2)
-        font = load_font(22, bold=True)
-        draw.text((badge[0] + 11.0, badge[1] + 6.0), lane_label, font=font, fill=(255, 255, 255))
-        entities.append(
-            {
-                "entity_id": f"lane_{lane_label}",
-                "entity_type": "three_d_conveyor_lane",
-                "bbox_px": list(lane_bbox),
-                "attrs": {"lane_label": str(lane_label), "badge_bbox_px": list(badge)},
-            }
-        )
-    conveyor_bbox = _bbox_union(*conveyor_bboxes) if conveyor_bboxes else [0.0, 0.0, float(image.width), float(image.height)]
-    scan_boxes = [bbox for key, bbox in segment_bboxes.items() if key.endswith("_scan")]
-    if scan_boxes:
-        scanner_bbox = _bbox_union(*scan_boxes)
-        sx0, sy0, sx1, sy1 = scanner_bbox
-        _draw_line(draw, (sx0, sy0 - 18.0), (sx0, sy1 + 18.0), fill=(66, 115, 165), width=4)
-        _draw_line(draw, (sx1, sy0 - 18.0), (sx1, sy1 + 18.0), fill=(66, 115, 165), width=4)
-        _draw_line(draw, (sx0, sy0 - 18.0), (sx1, sy0 - 18.0), fill=(66, 115, 165), width=4)
-        entities.append(
-            {
-                "entity_id": "scanner_frame",
-                "entity_type": "three_d_conveyor_scanner_frame",
-                "bbox_px": [round(sx0, 3), round(sy0 - 18.0, 3), round(sx1, 3), round(sy1 + 18.0, 3)],
-                "attrs": {"segment_key": "scan"},
-            }
-        )
-    return image, list(conveyor_bbox), lane_bboxes, segment_bboxes, entities
+    return image, list(conveyor_bbox), belt_bboxes, entities
 
 
 def _draw_object_shadow(draw: ImageDraw.ImageDraw, bbox: Sequence[float]) -> None:
@@ -213,14 +266,14 @@ def render_conveyor_sorting(
     dataset: Mapping[str, Any],
     render_params: Any,
 ) -> RenderedConveyorSorting:
-    """Render one conveyor sorting scene and project object boxes."""
+    """Render one conveyor carousel scene and project object boxes."""
 
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
-    draw.rectangle((0, 0, int(image.width), int(image.height)), fill=(244, 247, 249))
+    draw.rectangle((0, 0, int(image.width), int(image.height)), fill=FLOOR_RGB)
     camera = _camera_from_dataset(dataset)
     frame = _frame_from_dataset(dataset)
-    image, conveyor_bbox, lane_bboxes, segment_bboxes, entities = _draw_conveyor_belts(
+    image, conveyor_bbox, belt_bboxes, entities = _draw_conveyor_belts(
         image,
         dataset=dataset,
         camera=camera,
@@ -256,7 +309,7 @@ def render_conveyor_sorting(
                 render_params=render_params,
                 fill_rgb=fill,
                 scene_variant=str(dataset["scene_variant"]),
-                floor_rgb=(244, 247, 249),
+                floor_rgb=FLOOR_RGB,
             ),
         )
         object_id = str(spec["object_id"])
@@ -273,9 +326,8 @@ def render_conveyor_sorting(
                     "shape_type": str(spec["shape_type"]),
                     "object_name": str(spec["object_name"]),
                     "color_name": str(spec["color_name"]),
-                    "lane_label": str(spec["lane_label"]),
-                    "segment_key": str(spec["segment_key"]),
-                    "segment_label": str(spec["segment_label"]),
+                    "belt_key": str(spec["belt_key"]),
+                    "belt_label": str(spec["belt_label"]),
                     "matches_query": bool(spec.get("matches_query", False)),
                 },
             }
@@ -293,8 +345,7 @@ def render_conveyor_sorting(
         object_centers_px=dict(object_centers),
         target_object_bboxes_px=dict(target_bboxes),
         target_object_centers_px=dict(target_centers),
-        lane_bboxes_px=dict(lane_bboxes),
-        segment_bboxes_px=dict(segment_bboxes),
+        belt_bboxes_px=dict(belt_bboxes),
     )
 
 

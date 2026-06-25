@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from trace.tasks import create_task
-from trace.tasks.three_d.conveyor_sorting.scoped_segment_object_count import (
+from trace.tasks.three_d.conveyor_sorting.scoped_belt_object_count import (
     COLOR_QUERY_ID,
     OBJECT_TYPE_QUERY_ID,
     TASK_ID,
@@ -25,12 +25,14 @@ def _assert_count_output(output, *, expected_query_id: str) -> None:
     assert output.annotation_gt.value == [render_map["object_bboxes_px"][object_id] for object_id in target_ids]
     assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
     assert output.trace_payload["projected_annotation"]["pixel_bbox_set"] == output.annotation_gt.value
-    assert trace["target_lane_label"] in {"A", "B", "C"}
-    assert trace["target_segment_key"] in {"input", "scan", "output"}
-    assert trace["target_segment_label"] in {"INPUT", "SCAN", "OUTPUT"}
-    assert trace["target_segment_object_ids"]
+    assert trace["layout_family"] == "elliptical_carousel"
+    assert trace["target_belt_key"] in {"inner", "outer"}
+    assert trace["target_belt_label"] in {"INNER", "OUTER"}
+    assert trace["target_belt_object_ids"]
+    assert set(render_map["belt_bboxes_px"]) == {"inner", "outer"}
     assert "{target_" not in output.prompt
     assert "unlettered" not in output.prompt.lower()
+    assert "segment" not in output.prompt.lower()
     assert_three_d_canvas_contract(output)
 
     image_w, image_h = output.image.size
@@ -41,7 +43,7 @@ def _assert_count_output(output, *, expected_query_id: str) -> None:
         assert min(x1 - x0, y1 - y0) >= 24.0
 
 
-def test_conveyor_sorting_scoped_segment_count_query_ids() -> None:
+def test_conveyor_sorting_scoped_belt_count_query_ids() -> None:
     task = create_task(TASK_ID)
     cases = (
         (OBJECT_TYPE_QUERY_ID, 2026062401),

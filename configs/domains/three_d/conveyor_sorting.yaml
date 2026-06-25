@@ -1,19 +1,20 @@
 generation:
   shared:
     scene_variant_weights:
-      single_belt_scanner: 1.0
-      dual_lane_sorter: 1.0
-      triple_lane_sorter: 1.0
+      airport_carousel: 1.0
+      inspection_carousel: 1.0
+      warehouse_carousel: 1.0
     balanced_scene_variant_sampling: true
-    object_count_min: 8
+    object_count_min: 9
     object_count_max: 18
     target_count_min: 1
     target_count_max: 8
+    slots_per_belt: 20
     object_dimension_scale: 0.64
     min_rendered_bbox_side_px: 24.0
   task_overrides:
-    task_three_d__conveyor_sorting__scoped_segment_object_count:
-      object_count_min: 8
+    task_three_d__conveyor_sorting__scoped_belt_object_count:
+      object_count_min: 9
       object_count_max: 18
       target_count_min: 1
       target_count_max: 8
@@ -59,6 +60,6 @@ prompt:
     scene_key: conveyor_sorting
     task_key: conveyor_sorting_count_query
   task_overrides:
-    task_three_d__conveyor_sorting__scoped_segment_object_count:
+    task_three_d__conveyor_sorting__scoped_belt_object_count:
       scene_key: conveyor_sorting
       task_key: conveyor_sorting_count_query

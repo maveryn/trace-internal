@@ -1,4 +1,4 @@
-"""Count objects matching one attribute in a conveyor lane segment."""
+"""Count objects matching one attribute on an inner or outer carousel belt."""
 
 from __future__ import annotations
 
@@ -10,13 +10,13 @@ from ._lifecycle import run_conveyor_sorting_lifecycle
 from .shared.sampling import PREDICATE_COLOR, PREDICATE_OBJECT_TYPE
 
 
-TASK_ID = "task_three_d__conveyor_sorting__scoped_segment_object_count"
-OBJECT_TYPE_QUERY_ID = "object_type_segment_count"
-COLOR_QUERY_ID = "color_segment_count"
+TASK_ID = "task_three_d__conveyor_sorting__scoped_belt_object_count"
+OBJECT_TYPE_QUERY_ID = "object_type_belt_count"
+COLOR_QUERY_ID = "color_belt_count"
 SUPPORTED_QUERY_IDS = (OBJECT_TYPE_QUERY_ID, COLOR_QUERY_ID)
 PROMPT_QUERY_KEY_BY_BRANCH = {
-    OBJECT_TYPE_QUERY_ID: "object_type_segment_count",
-    COLOR_QUERY_ID: "color_segment_count",
+    OBJECT_TYPE_QUERY_ID: "object_type_belt_count",
+    COLOR_QUERY_ID: "color_belt_count",
 }
 PREDICATE_KIND_BY_BRANCH = {
     OBJECT_TYPE_QUERY_ID: PREDICATE_OBJECT_TYPE,
@@ -25,8 +25,8 @@ PREDICATE_KIND_BY_BRANCH = {
 
 
 @register_task
-class ThreeDConveyorSortingScopedSegmentObjectCountTask:
-    """Count objects matching one target attribute within a labeled conveyor segment."""
+class ThreeDConveyorSortingScopedBeltObjectCountTask:
+    """Count objects matching one target attribute on a labeled carousel belt."""
 
     task_id = TASK_ID
     domain = "three_d"
@@ -49,4 +49,4 @@ class ThreeDConveyorSortingScopedSegmentObjectCountTask:
         return output
 
 
-__all__ = ["SUPPORTED_QUERY_IDS", "TASK_ID", "ThreeDConveyorSortingScopedSegmentObjectCountTask"]
+__all__ = ["SUPPORTED_QUERY_IDS", "TASK_ID", "ThreeDConveyorSortingScopedBeltObjectCountTask"]

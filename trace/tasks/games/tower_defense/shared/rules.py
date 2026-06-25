@@ -11,7 +11,9 @@ from .state import Point, TowerDefenseSample, TowerDefenseTower
 MODE_MARKED_ENEMY = "enemy_tower_coverage"
 MODE_PATH_NODES = "path_node_coverage"
 MODE_BEST_POSITION = "candidate_tower_position"
+MODE_NEAREST_EXIT_ENEMY = "labeled_path_order"
 OPTION_LABELS = ("A", "B", "C", "D")
+ENEMY_OPTION_LABELS = ("A", "B", "C", "D", "E", "F")
 
 
 def tower_entity_id(index: int) -> str:
@@ -83,7 +85,7 @@ def covered_path_segment_ids(towers: Iterable[TowerDefenseTower], path_points: S
 def validate_tower_defense_sample(sample: TowerDefenseSample) -> None:
     """Validate one generated tower-defense sample contract."""
 
-    if str(sample.mode) not in {MODE_MARKED_ENEMY, MODE_PATH_NODES, MODE_BEST_POSITION}:
+    if str(sample.mode) not in {MODE_MARKED_ENEMY, MODE_PATH_NODES, MODE_BEST_POSITION, MODE_NEAREST_EXIT_ENEMY}:
         raise ValueError(f"unsupported tower-defense mode: {sample.mode}")
     if int(sample.map_width_px) <= 0 or int(sample.map_height_px) <= 0:
         raise ValueError("tower-defense map dimensions must be positive")
@@ -113,7 +115,7 @@ def validate_tower_defense_sample(sample: TowerDefenseSample) -> None:
     elif str(sample.mode) == MODE_PATH_NODES:
         expected_annotation = covered_path_segment_ids(sample.towers, sample.path_points_px)
         expected_answer = len(expected_annotation)
-    else:
+    elif str(sample.mode) == MODE_BEST_POSITION:
         candidate_counts: dict[str, int] = {}
         candidate_ids: dict[str, str] = {}
         for tower in sample.towers:
@@ -132,11 +134,26 @@ def validate_tower_defense_sample(sample: TowerDefenseSample) -> None:
         expected_annotation = (candidate_ids[str(expected_answer)],)
         if int(sample.target_answer) != int(max_count):
             raise ValueError("best-position target_answer must equal the winning coverage count")
+    else:
+        if len(sample.labeled_path_enemy_options) != 6:
+            raise ValueError("nearest-exit task requires exactly six labeled enemies")
+        option_labels = [str(label) for _index, label in sample.labeled_path_enemy_options]
+        if set(option_labels) != set(ENEMY_OPTION_LABELS):
+            raise ValueError("nearest-exit task requires enemy labels A-F")
+        index_by_label = {str(label): int(index) for index, label in sample.labeled_path_enemy_options}
+        if len(set(index_by_label.values())) != len(index_by_label):
+            raise ValueError("nearest-exit labeled enemies must occupy distinct path points")
+        if not all(0 <= int(index) < len(sample.path_points_px) - 1 for index in index_by_label.values()):
+            raise ValueError("nearest-exit labeled enemies must be before the exit endpoint")
+        expected_answer = max(index_by_label, key=lambda label: int(index_by_label[str(label)]))
+        expected_annotation = (path_segment_entity_id(index_by_label[str(expected_answer)]),)
+        if int(sample.target_answer) != len(sample.labeled_path_enemy_options):
+            raise ValueError("nearest-exit target_answer must equal option count")
     if tuple(str(value) for value in sample.annotation_entity_ids) != tuple(expected_annotation):
         raise ValueError("tower-defense annotation ids must match the task contract")
     if sample.answer != expected_answer:
         raise ValueError("tower-defense answer must match the task contract")
-    if str(sample.mode) != MODE_BEST_POSITION and int(sample.answer) != int(sample.target_answer):
+    if str(sample.mode) not in {MODE_BEST_POSITION, MODE_NEAREST_EXIT_ENEMY} and int(sample.answer) != int(sample.target_answer):
         raise ValueError("tower-defense answer must equal target_answer")
 
 
@@ -157,7 +174,9 @@ def visible_tower_trace(towers: Sequence[TowerDefenseTower]) -> tuple[dict, ...]
 __all__ = [
     "MODE_BEST_POSITION",
     "MODE_MARKED_ENEMY",
+    "MODE_NEAREST_EXIT_ENEMY",
     "MODE_PATH_NODES",
+    "ENEMY_OPTION_LABELS",
     "OPTION_LABELS",
     "candidate_tower_entity_id",
     "candidate_tower_label_from_id",

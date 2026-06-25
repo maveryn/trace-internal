@@ -303,6 +303,7 @@ def _draw_enemy(
     center: Point,
     radius: float,
     theme: TowerDefenseTheme,
+    draw_eyes: bool = True,
 ) -> BBox:
     bbox = _circle_bbox(center, radius)
     draw.ellipse(
@@ -311,6 +312,8 @@ def _draw_enemy(
         outline=theme.enemy_outline_rgb,
         width=max(2, int(round(radius * 0.18))),
     )
+    if not bool(draw_eyes):
+        return bbox
     cx, cy = float(center[0]), float(center[1])
     eye_r = max(1.5, float(radius) * 0.14)
     for dx in (-0.32 * float(radius), 0.32 * float(radius)):
@@ -318,11 +321,117 @@ def _draw_enemy(
     return bbox
 
 
+def _draw_enemy_label(
+    draw: ImageDraw.ImageDraw,
+    *,
+    center: Point,
+    label: str,
+    radius: float,
+    theme: TowerDefenseTheme,
+    params: TowerDefenseRenderParams,
+) -> BBox:
+    """Draw one A-F option label inside a path enemy marker."""
+
+    font = fit_font_to_box(
+        draw,
+        text=str(label),
+        max_width=max(12.0, float(radius) * 1.25),
+        max_height=max(12.0, float(radius) * 1.25),
+        bold=True,
+        font_family=str(params.font_family) or None,
+        min_size_px=10,
+        max_size_px=int(params.label_font_size_px),
+        fill_ratio=0.86,
+    )
+    text_bbox = draw_centered_game_text(
+        draw,
+        text=str(label),
+        center=(float(center[0]), float(center[1])),
+        font=font,
+        fill=(18, 24, 33),
+        stroke_fill=(255, 250, 235),
+        stroke_width=2,
+        role="enemy_option_label",
+        required=True,
+        surface_rgbs=(theme.enemy_fill_rgb, theme.enemy_outline_rgb),
+        preferred_rgbs=((18, 24, 33),),
+        instance_seed=int(round(float(center[0]) * 29.0 + float(center[1]) * 31.0)),
+        namespace="games.tower_defense.enemy_option_label",
+    )
+    return _round_bbox(text_bbox)
+
+
+def _draw_exit_marker(
+    draw: ImageDraw.ImageDraw,
+    *,
+    final_point: Point,
+    previous_point: Point,
+    map_bbox: BBox,
+    theme: TowerDefenseTheme,
+    params: TowerDefenseRenderParams,
+) -> BBox:
+    """Draw a compact exit badge just beyond the final path point."""
+
+    dx = float(final_point[0]) - float(previous_point[0])
+    dy = float(final_point[1]) - float(previous_point[1])
+    length = max(1.0, (dx * dx + dy * dy) ** 0.5)
+    ux, uy = dx / length, dy / length
+    raw_x = float(final_point[0]) + (ux * 34.0)
+    raw_y = float(final_point[1]) + (uy * 34.0)
+    left, top, right, bottom = [float(value) for value in map_bbox]
+    cx = max(left + 44.0, min(right - 44.0, raw_x))
+    cy = max(top + 20.0, min(bottom - 20.0, raw_y))
+    badge_bbox = _round_bbox((cx - 36.0, cy - 15.0, cx + 36.0, cy + 15.0))
+    draw.rounded_rectangle(
+        badge_bbox,
+        radius=10,
+        fill=(222, 247, 229),
+        outline=theme.map_outline_rgb,
+        width=2,
+    )
+    font = fit_font_to_box(
+        draw,
+        text="EXIT",
+        max_width=56,
+        max_height=18,
+        bold=True,
+        font_family=str(params.font_family) or None,
+        min_size_px=8,
+        max_size_px=16,
+        fill_ratio=0.90,
+    )
+    text_bbox = draw_centered_game_text(
+        draw,
+        text="EXIT",
+        center=(cx, cy),
+        font=font,
+        fill=theme.map_outline_rgb,
+        stroke_fill=(222, 247, 229),
+        stroke_width=1,
+        role="exit_marker",
+        required=True,
+        surface_rgbs=(theme.map_fill_rgb,),
+        preferred_rgbs=(theme.map_outline_rgb,),
+        instance_seed=int(round(cx * 17.0 + cy * 19.0)),
+        namespace="games.tower_defense.exit_marker",
+    )
+    return _round_bbox(
+        (
+            min(badge_bbox[0], text_bbox[0]),
+            min(badge_bbox[1], text_bbox[1]),
+            max(badge_bbox[2], text_bbox[2]),
+            max(badge_bbox[3], text_bbox[3]),
+        )
+    )
+
+
 def render_tower_defense_scene(
     *,
     path_points_px: Sequence[Point],
     towers: Sequence[TowerDefenseTower],
     enemy: TowerDefenseEnemy | None,
+    labeled_path_enemy_options: Sequence[tuple[int, str]] | Mapping[int, str] = (),
+    show_exit_marker: bool = False,
     background: Image.Image,
     style_variant: str,
     params: TowerDefenseRenderParams,
@@ -370,6 +479,10 @@ def render_tower_defense_scene(
     _draw_terrain_pattern(draw, bbox=map_bbox, theme=theme)
 
     global_path_points = [_local_to_global(point, map_bbox=map_bbox) for point in path_points_px]
+    if isinstance(labeled_path_enemy_options, Mapping):
+        label_by_path_index = {int(index): str(label) for index, label in labeled_path_enemy_options.items()}
+    else:
+        label_by_path_index = {int(index): str(label) for index, label in labeled_path_enemy_options}
     entities: list[Dict[str, Any]] = []
     entity_bboxes: Dict[str, BBox] = {}
     entity_points: Dict[str, Point] = {}
@@ -433,7 +546,18 @@ def render_tower_defense_scene(
             width=max(2, int(params.path_width_px)),
             joint="curve",
         )
+    exit_marker_bbox = None
+    if bool(show_exit_marker) and len(global_path_points) >= 2:
+        exit_marker_bbox = _draw_exit_marker(
+            draw,
+            final_point=global_path_points[-1],
+            previous_point=global_path_points[-2],
+            map_bbox=_round_bbox(map_bbox),
+            theme=theme,
+            params=params,
+        )
     for index, point in enumerate(global_path_points):
+        option_label = label_by_path_index.get(int(index))
         halo_bbox = _circle_bbox(point, float(params.path_node_radius_px) + 4.0)
         draw.ellipse(halo_bbox, fill=theme.map_fill_rgb, outline=theme.path_outline_rgb, width=2)
         node_bbox = _draw_enemy(
@@ -441,19 +565,32 @@ def render_tower_defense_scene(
             center=point,
             radius=max(7.0, float(params.path_node_radius_px)),
             theme=theme,
+            draw_eyes=option_label is None,
         )
+        label_bbox = None
+        if option_label is not None:
+            label_bbox = _draw_enemy_label(
+                draw,
+                center=point,
+                label=str(option_label),
+                radius=max(7.0, float(params.path_node_radius_px)),
+                theme=theme,
+                params=params,
+            )
         entity_id = path_segment_entity_id(index)
         entity_bboxes[entity_id] = node_bbox
         entity_points[entity_id] = (round(float(point[0]), 3), round(float(point[1]), 3))
-        entities.append(
-            {
-                "entity_id": entity_id,
-                "type": "path_enemy",
-                "path_index": int(index),
-                "bbox_px": list(node_bbox),
-                "point_px": list(entity_points[entity_id]),
-            }
-        )
+        path_entity = {
+            "entity_id": entity_id,
+            "type": "path_enemy",
+            "path_index": int(index),
+            "bbox_px": list(node_bbox),
+            "point_px": list(entity_points[entity_id]),
+        }
+        if option_label is not None:
+            path_entity["option_label"] = str(option_label)
+            path_entity["label_bbox_px"] = list(label_bbox or node_bbox)
+        entities.append(path_entity)
 
     tower_radius = max(8.0, float(params.tower_radius_px))
     for tower in towers:
@@ -541,6 +678,15 @@ def render_tower_defense_scene(
         "tower_range_bboxes_px": {str(key): list(value) for key, value in sorted(range_bboxes.items())},
         "tower_range_radii_px": {str(tower.tower_id): round(float(tower.range_radius_px), 3) for tower in towers},
         "marked_enemy_id": marked_enemy_id,
+        "labeled_path_enemy_options": [
+            {
+                "label": str(label),
+                "path_index": int(index),
+                "entity_id": path_segment_entity_id(int(index)),
+            }
+            for index, label in sorted(label_by_path_index.items())
+        ],
+        "exit_marker_bbox_px": [] if exit_marker_bbox is None else list(exit_marker_bbox),
         "panel_scene_style": game_panel_scene_style_metadata(panel_style) if panel_style is not None else {},
         "tower_defense_style": {
             "style_variant": str(style_variant),

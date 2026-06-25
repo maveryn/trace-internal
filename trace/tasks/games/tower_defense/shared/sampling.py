@@ -13,7 +13,9 @@ from .defaults import DEFAULTS, GEN_DEFAULTS
 from .rules import (
     MODE_BEST_POSITION,
     MODE_MARKED_ENEMY,
+    MODE_NEAREST_EXIT_ENEMY,
     MODE_PATH_NODES,
+    ENEMY_OPTION_LABELS,
     OPTION_LABELS,
     candidate_tower_entity_id,
     covered_path_segment_ids,
@@ -524,6 +526,46 @@ def _sample_nonexpanding_tower(
     raise ValueError("failed to place nonexpanding tower")
 
 
+def _sample_decorative_tower(
+    *,
+    rng,
+    tower_id: str,
+    path_points: Sequence[Point],
+    map_width_px: int,
+    map_height_px: int,
+    range_min: int,
+    range_max: int,
+    existing_centers: Sequence[Point],
+    tower_path_clearance_px: float,
+    tower_min_gap_px: float,
+) -> TowerDefenseTower:
+    """Sample one context tower without imposing an objective-specific relation."""
+
+    for _ in range(700):
+        radius = float(rng.randint(int(range_min), int(range_max)))
+        center = (
+            round(rng.uniform(float(radius) + 34.0, float(map_width_px) - float(radius) - 34.0), 3),
+            round(rng.uniform(float(radius) + 34.0, float(map_height_px) - float(radius) - 34.0), 3),
+        )
+        if _tower_center_is_valid(
+            center,
+            radius=float(radius),
+            map_width_px=int(map_width_px),
+            map_height_px=int(map_height_px),
+            path_points=path_points,
+            existing_centers=existing_centers,
+            tower_path_clearance_px=float(tower_path_clearance_px),
+            tower_min_gap_px=float(tower_min_gap_px),
+        ):
+            return TowerDefenseTower(
+                tower_id=str(tower_id),
+                center_px=center,
+                range_radius_px=float(radius),
+                covers_target=False,
+            )
+    raise ValueError("failed to place decorative tower")
+
+
 def _coverage_count_for_tower(tower: TowerDefenseTower, path_points: Sequence[Point]) -> int:
     """Count path enemies inside one tower range."""
 
@@ -721,6 +763,110 @@ def sample_best_tower_position_scene(
     return sample
 
 
+def sample_nearest_exit_enemy_label_scene(
+    *,
+    rng,
+    axes: TowerDefenseAxes,
+    render_params: TowerDefenseRenderParams,
+    params: Mapping[str, Any],
+) -> TowerDefenseSample:
+    """Construct six labeled enemies where one is closest to the path exit."""
+
+    map_width = int(render_params.map_width_px)
+    map_height = int(render_params.map_height_px)
+    path_points = sample_path_points(
+        rng=rng,
+        scene_variant=str(axes.scene_variant),
+        map_width_px=map_width,
+        map_height_px=map_height,
+        path_segment_count=int(axes.path_segment_count),
+    )
+    option_count = int(axes.target_answer)
+    labels = tuple(str(label) for label in ENEMY_OPTION_LABELS[:option_count])
+    if option_count != 6 or len(labels) != 6:
+        raise ValueError("nearest-exit enemy task requires six options")
+    answer_option_index = int(params.get("answer_option_index", 0)) % len(labels)
+    answer_label = str(labels[int(answer_option_index)])
+
+    candidate_indices = list(range(1, max(1, len(path_points) - 1)))
+    target_candidates = [
+        int(index)
+        for index in candidate_indices
+        if sum(1 for other in candidate_indices if int(other) < int(index)) >= option_count - 1
+    ]
+    if not target_candidates:
+        raise ValueError("not enough path points to place six ordered enemy labels")
+    target_index = int(rng.choice(target_candidates))
+    decoy_pool = [int(index) for index in candidate_indices if int(index) < int(target_index)]
+    decoy_indices = [int(index) for index in rng.sample(decoy_pool, option_count - 1)]
+    rng.shuffle(decoy_indices)
+
+    labeled_options: list[tuple[int, str]] = []
+    decoy_cursor = 0
+    for label in labels:
+        if str(label) == answer_label:
+            labeled_options.append((int(target_index), str(label)))
+        else:
+            labeled_options.append((int(decoy_indices[decoy_cursor]), str(label)))
+            decoy_cursor += 1
+
+    range_min = int(params.get("best_position_range_radius_min_px", GEN_DEFAULTS.get("best_position_range_radius_min_px", DEFAULTS.best_position_range_radius_min_px)))
+    range_max = int(params.get("best_position_range_radius_max_px", GEN_DEFAULTS.get("best_position_range_radius_max_px", DEFAULTS.best_position_range_radius_max_px)))
+    tower_path_clearance = float(params.get("tower_path_clearance_px", GEN_DEFAULTS.get("tower_path_clearance_px", DEFAULTS.tower_path_clearance_px)))
+    tower_min_gap = float(params.get("tower_min_gap_px", GEN_DEFAULTS.get("tower_min_gap_px", DEFAULTS.tower_min_gap_px)))
+    towers: list[TowerDefenseTower] = []
+    centers: list[Point] = []
+    for index in range(int(axes.tower_count)):
+        tower = _sample_decorative_tower(
+            rng=rng,
+            tower_id=tower_entity_id(int(index)),
+            path_points=path_points,
+            map_width_px=map_width,
+            map_height_px=map_height,
+            range_min=range_min,
+            range_max=range_max,
+            existing_centers=centers,
+            tower_path_clearance_px=tower_path_clearance,
+            tower_min_gap_px=tower_min_gap,
+        )
+        towers.append(tower)
+        centers.append(tower.center_px)
+
+    sample = TowerDefenseSample(
+        mode=MODE_NEAREST_EXIT_ENEMY,
+        scene_variant=str(axes.scene_variant),
+        style_variant=str(axes.style_variant),
+        map_width_px=int(map_width),
+        map_height_px=int(map_height),
+        path_points_px=tuple(path_points),
+        towers=tuple(towers),
+        enemy=None,
+        answer=str(answer_label),
+        target_answer=int(option_count),
+        annotation_entity_ids=(path_segment_entity_id(int(target_index)),),
+        construction_mode="construct_six_labeled_path_enemies_by_exit_order",
+        labeled_path_enemy_options=tuple(sorted(labeled_options, key=lambda item: str(item[1]))),
+        show_exit_marker=True,
+        metadata={
+            "enemy_option_labels": list(labels),
+            "answer_option_index": int(answer_option_index),
+            "answer_label": str(answer_label),
+            "answer_path_index": int(target_index),
+            "exit_path_index": int(len(path_points) - 1),
+            "labeled_enemy_options": [
+                {
+                    "label": str(label),
+                    "path_index": int(index),
+                    "entity_id": path_segment_entity_id(int(index)),
+                }
+                for index, label in sorted(labeled_options, key=lambda item: str(item[1]))
+            ],
+        },
+    )
+    validate_tower_defense_sample(sample)
+    return sample
+
+
 def sample_marked_enemy_scene(
     *,
     rng,
@@ -892,5 +1038,6 @@ __all__ = [
     "sample_best_tower_position_scene",
     "sample_covered_path_scene",
     "sample_marked_enemy_scene",
+    "sample_nearest_exit_enemy_label_scene",
     "sample_path_points",
 ]

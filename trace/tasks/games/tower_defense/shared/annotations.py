@@ -34,6 +34,16 @@ def path_node_point_set_annotation(
     return point_set_annotation_artifacts([points[str(entity_id)] for entity_id in entity_ids])
 
 
+def path_node_point_annotation(
+    rendered_scene: RenderedTowerDefenseScene,
+    entity_id: str,
+) -> AnnotationArtifacts:
+    """Return scalar point annotation artifacts for one visible path node."""
+
+    points = rendered_scene.render_map["entity_points_px"]
+    return point_annotation_artifacts(points[str(entity_id)])
+
+
 def tower_point_annotation(
     rendered_scene: RenderedTowerDefenseScene,
     entity_id: str,
@@ -44,4 +54,9 @@ def tower_point_annotation(
     return point_annotation_artifacts(points[str(entity_id)])
 
 
-__all__ = ["path_node_point_set_annotation", "tower_bbox_set_annotation", "tower_point_annotation"]
+__all__ = [
+    "path_node_point_annotation",
+    "path_node_point_set_annotation",
+    "tower_bbox_set_annotation",
+    "tower_point_annotation",
+]

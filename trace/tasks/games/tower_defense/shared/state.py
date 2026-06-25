@@ -31,10 +31,13 @@ class TowerDefenseDefaults:
 
     covered_path_tower_count_support: Tuple[int, ...] = (3, 4, 5, 6)
     best_position_candidate_count_support: Tuple[int, ...] = (4,)
+    nearest_exit_tower_count_support: Tuple[int, ...] = (1, 2)
+    nearest_exit_option_count_support: Tuple[int, ...] = (6,)
     path_segment_count_support: Tuple[int, ...] = (10, 11, 12, 13, 14, 15, 16)
     covered_path_target_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
     best_position_target_answer_support: Tuple[int, ...] = (2,)
     best_position_answer_option_index_support: Tuple[int, ...] = (0, 1, 2, 3)
+    nearest_exit_answer_option_index_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     canvas_width: int = 980
     canvas_height: int = 760
     map_width_px: int = 820
@@ -107,6 +110,8 @@ class TowerDefenseSample:
     target_answer: int
     annotation_entity_ids: Tuple[str, ...]
     construction_mode: str
+    labeled_path_enemy_options: Tuple[Tuple[int, str], ...] = ()
+    show_exit_marker: bool = False
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 

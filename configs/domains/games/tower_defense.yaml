@@ -22,6 +22,11 @@ generation:
     - 6
     best_position_candidate_count_support:
     - 4
+    nearest_exit_tower_count_support:
+    - 1
+    - 2
+    nearest_exit_option_count_support:
+    - 6
     path_segment_count_support:
     - 10
     - 11
@@ -44,6 +49,13 @@ generation:
     - 1
     - 2
     - 3
+    nearest_exit_answer_option_index_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
     covered_path_range_radius_min_px: 88
     covered_path_range_radius_max_px: 168
     best_position_range_radius_min_px: 86

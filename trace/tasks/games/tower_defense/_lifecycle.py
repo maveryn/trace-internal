@@ -14,7 +14,12 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import path_node_point_set_annotation, tower_bbox_set_annotation, tower_point_annotation
+from .shared.annotations import (
+    path_node_point_annotation,
+    path_node_point_set_annotation,
+    tower_bbox_set_annotation,
+    tower_point_annotation,
+)
 from .shared.defaults import GEN_DEFAULTS, POST_IMAGE_NOISE_DEFAULTS, PROMPT_DEFAULTS
 from .shared.prompts import build_tower_defense_prompt_artifacts
 from .shared.rendering import render_tower_defense_scene, resolve_tower_defense_render_params
@@ -59,6 +64,10 @@ def _annotation_for_objective(
         return tower_bbox_set_annotation(rendered_scene, sample.annotation_entity_ids)
     if str(annotation_kind) == "path_point_set":
         return path_node_point_set_annotation(rendered_scene, sample.annotation_entity_ids)
+    if str(annotation_kind) == "path_point":
+        if len(sample.annotation_entity_ids) != 1:
+            raise ValueError("path_point annotation requires exactly one witness id")
+        return path_node_point_annotation(rendered_scene, sample.annotation_entity_ids[0])
     if str(annotation_kind) == "tower_point":
         if len(sample.annotation_entity_ids) != 1:
             raise ValueError("tower_point annotation requires exactly one witness id")
@@ -125,6 +134,15 @@ def _trace_payload(
                 [round(float(point[0]), 3), round(float(point[1]), 3)]
                 for point in sample.path_points_px
             ],
+            "labeled_path_enemy_options": [
+                {
+                    "label": str(label),
+                    "path_index": int(index),
+                    "entity_id": f"path_segment_{int(index):02d}",
+                }
+                for index, label in sample.labeled_path_enemy_options
+            ],
+            "exit_path_index": int(len(sample.path_points_px) - 1),
             "marked_enemy": (
                 {
                     "enemy_id": str(sample.enemy.enemy_id),
@@ -216,6 +234,8 @@ def run_tower_defense_lifecycle(
         path_points_px=sample.path_points_px,
         towers=sample.towers,
         enemy=sample.enemy,
+        labeled_path_enemy_options=sample.labeled_path_enemy_options,
+        show_exit_marker=bool(sample.show_exit_marker),
         background=background,
         style_variant=str(axes.style_variant),
         params=render_params,

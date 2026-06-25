@@ -15,6 +15,7 @@ from trace.tasks.shared.config_defaults import split_generation_rendering_prompt
 
 COVERED_PATH_TASK_ID = "task_games__tower_defense__covered_path_segment_count"
 BEST_POSITION_TASK_ID = "task_games__tower_defense__best_tower_position_label"
+NEAREST_EXIT_TASK_ID = "task_games__tower_defense__nearest_exit_enemy_label"
 
 
 def _distance(point_a: list[float], point_b: list[float]) -> float:
@@ -37,10 +38,13 @@ def test_games_tower_defense_defaults_expose_axes_and_prompt_bundle() -> None:
     assert "target_answer_support" not in generation
     assert list(generation["covered_path_target_answer_support"]) == [1, 2, 3, 4, 5, 6]
     assert list(generation["best_position_target_answer_support"]) == [2]
+    assert list(generation["nearest_exit_option_count_support"]) == [6]
     assert list(generation["best_position_answer_option_index_support"]) == [0, 1, 2, 3]
+    assert list(generation["nearest_exit_answer_option_index_support"]) == [0, 1, 2, 3, 4, 5]
     assert "tower_count_support" not in generation
     assert list(generation["covered_path_tower_count_support"]) == [3, 4, 5, 6]
     assert list(generation["best_position_candidate_count_support"]) == [4]
+    assert list(generation["nearest_exit_tower_count_support"]) == [1, 2]
     assert int(rendering["map_width_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_tower_defense_v1"
     assert str(prompt["scene_key"]) == "tower_defense_map"
@@ -52,11 +56,15 @@ def test_games_tower_defense_prompt_bundle_has_coverage_queries() -> None:
     assert set(bundle["templates"]["query"].keys()) == {
         "covered_path_segment_count",
         "best_tower_position_label",
+        "nearest_exit_enemy_label",
     }
     assert bundle["required_slots_by_key"]["query:covered_path_segment_count"] == [
         "coverage_rule_text",
     ]
     assert bundle["required_slots_by_key"]["query:best_tower_position_label"] == [
+        "coverage_rule_text",
+    ]
+    assert bundle["required_slots_by_key"]["query:nearest_exit_enemy_label"] == [
         "coverage_rule_text",
     ]
 
@@ -137,6 +145,32 @@ def test_games_tower_defense_best_position_label_is_unique_maximum() -> None:
     assert out.annotation_gt.value == out.trace_payload["render_map"]["entity_points_px"]["candidate_C"]
 
 
+def test_games_tower_defense_nearest_exit_enemy_label_follows_path_order() -> None:
+    out = create_task(NEAREST_EXIT_TASK_ID).generate(
+        94511,
+        params={"answer_option_index": 5},
+        max_attempts=500,
+    )
+    execution = out.trace_payload["execution_trace"]
+    options = execution["labeled_path_enemy_options"]
+    index_by_label = {str(option["label"]): int(option["path_index"]) for option in options}
+    expected_label = max(index_by_label, key=lambda label: index_by_label[str(label)])
+    expected_entity = f"path_segment_{index_by_label[str(expected_label)]:02d}"
+
+    assert out.scene_id == "tower_defense"
+    assert out.query_id == "single"
+    assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "nearest_exit_enemy_label"
+    assert out.answer_gt.type == "string"
+    assert out.answer_gt.value == "F"
+    assert expected_label == "F"
+    assert sorted(index_by_label) == ["A", "B", "C", "D", "E", "F"]
+    assert max(index_by_label.values()) < int(execution["exit_path_index"])
+    assert execution["annotation_entity_ids"] == [expected_entity]
+    assert out.annotation_gt.type == "point"
+    assert out.annotation_gt.value == out.trace_payload["render_map"]["entity_points_px"][expected_entity]
+    assert out.trace_payload["render_map"]["exit_marker_bbox_px"]
+
+
 def test_games_tower_defense_taxonomy_mapping() -> None:
     path_taxonomy = resolve_task_taxonomy(COVERED_PATH_TASK_ID)
     assert path_taxonomy.domain == "games"
@@ -147,3 +181,8 @@ def test_games_tower_defense_taxonomy_mapping() -> None:
     assert best_position_taxonomy.domain == "games"
     assert best_position_taxonomy.scene_id == "tower_defense"
     assert best_position_taxonomy.source_domain == "games"
+
+    nearest_exit_taxonomy = resolve_task_taxonomy(NEAREST_EXIT_TASK_ID)
+    assert nearest_exit_taxonomy.domain == "games"
+    assert nearest_exit_taxonomy.scene_id == "tower_defense"
+    assert nearest_exit_taxonomy.source_domain == "games"

@@ -27,8 +27,10 @@ as red with maroon or blue with cyan.
 
 The answer is the integer count of finalized objects whose belt and target
 attribute match the query. The answer support is `0..5`. Object-type queries
-include same-belt objects of other types as distractors. Color queries include
-same-belt objects of other non-confusable canonical named colors as distractors.
+include same-belt objects of other visually non-confusable types as distractors.
+Color queries include same-belt objects of other non-confusable canonical named
+colors as distractors. The carousel object pool excludes long thin pen/ruler
+style objects that do not fit the belt grammar clearly.
 
 ## Annotation Contract
 Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around

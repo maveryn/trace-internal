@@ -24,11 +24,13 @@ answer support is `0..5`.
 
 For `object_type_belt_count`, the task asks for the number of objects of one
 sampled object type on the requested belt. Same-belt objects of other types are
-included as distractors. For `color_belt_count`, the task asks for the number
-of objects with one canonical named color on the requested belt. Same-belt
-objects of other non-confusable canonical named colors are included as
-distractors. Color-readout generation avoids target-confusable named color
-distractors, such as red with maroon or blue with cyan.
+included as visually non-confusable distractors. For `color_belt_count`, the
+task asks for the number of objects with one canonical named color on the
+requested belt. Same-belt objects of other non-confusable canonical named
+colors are included as distractors. Color-readout generation avoids
+target-confusable named color distractors, such as red with maroon or blue with
+cyan. The straight-conveyor object pool excludes long thin pen/ruler style
+objects that do not fit lane grammar clearly.
 
 ## Annotation Contract
 Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around

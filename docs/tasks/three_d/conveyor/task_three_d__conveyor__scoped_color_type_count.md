@@ -29,7 +29,10 @@ as red with maroon or blue with cyan. Generation includes partial-match
 distractors on the requested belt, including same-color wrong-type objects and
 same-type wrong-color objects. Other lanes may contain objects with the target
 color and target type, but those are outside the requested scope and do not
-count.
+count. Wrong-type distractors avoid target-confusable object families such as
+card/envelope/book, sphere/button, cup/bowl/tray, and lantern/candle. The
+straight-conveyor object pool excludes long thin pen/ruler style objects that
+do not fit lane grammar clearly.
 
 ## Annotation Contract
 Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around

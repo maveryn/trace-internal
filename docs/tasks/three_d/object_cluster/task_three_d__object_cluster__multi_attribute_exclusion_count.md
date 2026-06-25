@@ -15,7 +15,7 @@
 ## Contract
 The image shows many small synthetic perspective 3D colored objects arranged on a plain surface. The prompt asks for a count under one positive attribute while excluding a second attribute: either named type but not named color, or named color but not named type. Prompt-facing semantic colors include the canonical color hex label, for example `red [#E63232]`.
 
-The answer is the integer count of finalized clustered objects satisfying the requested exclusion predicate. Generation includes structured excluded-overlap distractors, such as red cubes when the prompt asks for cubes that are not red. Generated color distractors avoid near-color named pairs such as blue/cyan/purple and red/maroon/magenta.
+The answer is the integer count of finalized clustered objects satisfying the requested exclusion predicate. Generation includes structured excluded-overlap distractors, such as red cubes when the prompt asks for cubes that are not red. Generated color distractors avoid near-color named pairs such as blue/cyan/purple and red/maroon/magenta. Wrong-type distractors avoid target-confusable object families such as card/envelope/book, sphere/button, cup/bowl/tray, lantern/candle, and pencil/ruler.
 
 ## Annotation Contract
 Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around each counted object satisfying the requested exclusion predicate. The annotation set is unordered because all witnesses have the same role and annotation cardinality matches the answer.

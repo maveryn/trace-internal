@@ -17,7 +17,7 @@ The image shows many small synthetic perspective 3D colored objects arranged on 
 
 This task is distinct from `task_three_d__object_cluster__object_type_count`, which counts one object type regardless of color. Generation includes structured partial-match distractors: target-type objects in other colors, target-color objects of other types, and unrelated distractors.
 
-The answer is the integer count of finalized objects whose `shape_type` and `color_name` both match the sampled target predicate. Generated color distractors avoid near-color named pairs such as blue/cyan/purple and red/maroon/magenta. Pixels are render output, not verifier source of truth.
+The answer is the integer count of finalized objects whose `shape_type` and `color_name` both match the sampled target predicate. Generated color distractors avoid near-color named pairs such as blue/cyan/purple and red/maroon/magenta. Wrong-type distractors avoid target-confusable object families such as card/envelope/book, sphere/button, cup/bowl/tray, lantern/candle, and pencil/ruler. Pixels are render output, not verifier source of truth.
 
 ## Annotation Contract
 Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around each counted object matching both the requested type and color. The annotation set is unordered because all witnesses have the same role and annotation cardinality matches the answer.

@@ -64,6 +64,14 @@ from `trace.tasks.shared.named_colors` and should be rendered in prompts as
 unnamed visual/style variation that is not sampled as a named answer or prompt
 predicate.
 
+Named object count/readout tasks should use shared visual-confusion policies
+from `trace/tasks/three_d/shared/` when sampling wrong-type distractors. If the
+target object belongs to a near-confusable family, such as card/envelope/book,
+sphere/button, cup/bowl/tray, lantern/candle, or pencil/ruler, same-family
+objects should not be sampled as semantic wrong-type distractors for that
+target. Scene-specific object pools may be narrower for layout reasons, but
+confusion filtering should remain shared.
+
 Use the 3D object review surfaces for object-fidelity audits. Style, lighting,
 camera, and object-palette variation must not encode answer value, query id,
 correct option, relation truth, or construction order unless explicitly queried.

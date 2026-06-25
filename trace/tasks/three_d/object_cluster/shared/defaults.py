@@ -10,6 +10,10 @@ from trace.tasks.three_d.shared.object_resources import (
     OBJECT_CLUSTER_NAME_BY_SHAPE_TYPE,
     OBJECT_CLUSTER_SHAPE_TYPES,
 )
+from trace.tasks.three_d.shared.object_confusions import (
+    VISUAL_CONFUSION_GROUPS,
+    compatible_distractor_pool as shared_compatible_distractor_pool,
+)
 from trace.tasks.three_d.shared.semantic_colors import COLOR_CONFUSION_EXCLUSIONS
 
 
@@ -48,7 +52,6 @@ _REQUESTED_NAMED_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = (
     "cylinder",
     "diamond",
     "dice",
-    "drum",
     "mail_envelope",
     "fish",
     "flower",
@@ -175,23 +178,6 @@ COLOR_READOUT_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
     if shape in set(COUNTABLE_SHAPE_TYPES)
 )
 
-VISUAL_CONFUSION_GROUPS: Tuple[Tuple[str, ...], ...] = (
-    ("pen", "pencil", "ruler", "tube", "stick"),
-    ("card", "bookmark", "small_box", "ticket", "mail_envelope", "open_book"),
-    ("candy_disc", "cd", "berry", "button", "sphere", "marble", "bead", "coaster", "lid"),
-    ("screw", "hex_nut", "clip", "socket", "bolt", "hook", "tape_roll", "torus"),
-    ("fork", "spoon"),
-    ("plate", "bowl", "cup", "jar", "can", "lid", "bottle", "tray", "coaster", "basket"),
-    ("hammer", "paint_brush"),
-    ("flower", "rose", "cactus", "leaf", "egg", "apple", "carrot", "tomato"),
-    ("light_bulb", "lantern", "candle"),
-    ("horseshoe", "umbrella"),
-    ("mini_chair", "mini_table", "chair", "table", "stool"),
-    ("small_box", "cabinet"),
-    ("chess_piece", "trophy", "crown"),
-)
-
-
 def object_name_for_shape(shape_type: str) -> str:
     """Return the public object name for one cluster shape."""
 
@@ -223,17 +209,14 @@ def cluster_dimensions(shape_type: str) -> tuple[float, float, float]:
     return tuple(float(value) for value in OBJECT_CLUSTER_DIMENSIONS.get(str(shape_type), (0.52, 0.52, 0.52)))
 
 
-def compatible_distractor_pool(target_shape_type: str, *, support: Sequence[str] = COUNTABLE_SHAPE_TYPES) -> Tuple[str, ...]:
-    """Choose shape distractors while avoiding visually near-identical groups."""
+def compatible_distractor_pool(
+    target_shape_type: str,
+    *,
+    support: Sequence[str] = COUNTABLE_SHAPE_TYPES,
+) -> Tuple[str, ...]:
+    """Choose object distractors while avoiding visually near-identical groups."""
 
-    blocked = {str(target_shape_type)}
-    for group in VISUAL_CONFUSION_GROUPS:
-        if str(target_shape_type) in {str(item) for item in group}:
-            blocked.update(str(item) for item in group)
-    pool = tuple(str(shape) for shape in support if str(shape) not in blocked)
-    if not pool:
-        raise ValueError("object cluster needs at least one compatible distractor shape")
-    return pool
+    return shared_compatible_distractor_pool(str(target_shape_type), support=support)
 
 
 __all__ = [

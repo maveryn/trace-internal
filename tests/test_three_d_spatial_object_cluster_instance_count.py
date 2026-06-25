@@ -41,6 +41,7 @@ from trace.tasks.three_d.object_cluster.shared.relations import semantic_color_l
 from trace.tasks.three_d.object_cluster.object_type_count import TASK_ID
 from trace.tasks.three_d.object_cluster.total_object_count import TASK_ID as TOTAL_OBJECT_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.type_frequency_count import TASK_ID as TYPE_FREQUENCY_COUNT_TASK_ID
+from trace.tasks.three_d.shared.object_confusions import confusable_shape_names
 from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
@@ -97,7 +98,6 @@ EXPECTED_OBJECT_CLUSTER_NAMED_SHAPES = {
     "cylinder",
     "diamond",
     "dice",
-    "drum",
     "fish",
     "flower",
     "glove",
@@ -454,6 +454,8 @@ def test_object_cluster_countqa_additions_have_profiles_and_render() -> None:
     assert "apple" in set(NAMED_CLUSTER_SHAPE_TYPES)
     assert "stick" in set(COUNTABLE_SHAPE_TYPES)
     assert "bucket" not in set(NAMED_CLUSTER_SHAPE_TYPES)
+    assert "drum" not in set(NAMED_CLUSTER_SHAPE_TYPES)
+    assert "drum" not in set(COUNTABLE_SHAPE_TYPES)
     assert "pencil" in set(COUNTABLE_SHAPE_TYPES)
     assert "pen" not in set(COUNTABLE_SHAPE_TYPES)
     assert "pen" not in set(NAMED_CLUSTER_SHAPE_TYPES)
@@ -552,6 +554,33 @@ def test_object_cluster_multi_attribute_and_count_answer_and_annotation() -> Non
     assert any(str(spec["count_role"]) == "same_color_wrong_type" for spec in object_specs)
     assert all(bool(spec["matches_query"]) == (str(spec["shape_type"]) == "cube" and str(spec["color_name"]) == "red") for spec in object_specs)
     assert_three_d_canvas_contract(output)
+
+
+def test_object_cluster_type_color_distractors_avoid_visually_confusable_shapes() -> None:
+    output = create_task(MULTI_ATTRIBUTE_AND_TASK_ID).generate(
+        2026062623,
+        params={
+            "query_id": "single",
+            "scene_variant": "tabletop_pile",
+            "object_count": 18,
+            "target_count": 4,
+            "target_shape_type": "card",
+            "target_color_name": "red",
+            "post_image_noise_apply_prob": 0.0,
+        },
+        max_attempts=300,
+    )
+    trace = output.trace_payload["execution_trace"]
+    object_specs = list(trace["object_specs"])
+    confusable_shapes = set(confusable_shape_names("card"))
+
+    assert trace["target_shape_type"] == "card"
+    assert trace["target_color_name"] == "red"
+    assert all(
+        str(spec["shape_type"]) not in confusable_shapes
+        for spec in object_specs
+        if str(spec["shape_type"]) != "card"
+    )
 
 
 def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy() -> None:

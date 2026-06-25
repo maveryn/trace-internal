@@ -15,7 +15,7 @@
 ## Contract
 The image shows many small synthetic perspective 3D colored objects arranged on a plain surface. The prompt asks how many objects match an inclusive OR predicate: the object is the named type or the object has the named color. Prompt-facing semantic colors include the canonical color hex label, for example `red [#E63232]`. Objects matching both conditions are counted once.
 
-The answer is the integer count of finalized clustered objects whose recorded `shape_type` equals the sampled target type or whose `color_name` equals the sampled target color. Generated color distractors avoid near-color named pairs such as blue/cyan/purple and red/maroon/magenta.
+The answer is the integer count of finalized clustered objects whose recorded `shape_type` equals the sampled target type or whose `color_name` equals the sampled target color. Generated color distractors avoid near-color named pairs such as blue/cyan/purple and red/maroon/magenta. Wrong-type distractors avoid target-confusable object families such as card/envelope/book, sphere/button, cup/bowl/tray, lantern/candle, and pencil/ruler.
 
 ## Annotation Contract
 Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around each counted object satisfying at least one predicate condition. The annotation set is unordered because all counted witnesses have the same role and overlap objects are not duplicated.

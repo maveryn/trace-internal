@@ -20,6 +20,7 @@ from trace.tasks.three_d.carousel.scoped_color_type_count import (
     TASK_ID as COLOR_TYPE_TASK_ID,
 )
 from trace.tasks.three_d.carousel.shared.state import CONVEYOR_OBJECT_SHAPE_TYPES
+from trace.tasks.three_d.shared.object_confusions import confusable_shape_names
 from trace.tasks.three_d.shared.semantic_colors import confusable_color_names
 from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
@@ -27,6 +28,8 @@ from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 def test_carousel_object_pool_excludes_cylinder_confusers() -> None:
     assert "cylinder" in CONVEYOR_OBJECT_SHAPE_TYPES
     assert "drum" not in CONVEYOR_OBJECT_SHAPE_TYPES
+    assert "pencil" not in CONVEYOR_OBJECT_SHAPE_TYPES
+    assert "ruler" not in CONVEYOR_OBJECT_SHAPE_TYPES
 
 
 def _assert_count_output(output, *, expected_query_id: str) -> None:
@@ -143,6 +146,7 @@ def test_carousel_scoped_color_type_count_uses_conjunction_distractors() -> None
         target_shape = str(trace["target_shape_type"])
         target_color = str(trace["target_color_name"])
         target_belt = str(trace["target_belt_key"])
+        confusable_shapes = set(confusable_shape_names(target_shape))
 
         assert trace["predicate_kind"] == "color_type"
         assert int(output.answer_gt.value) == int(target_count)
@@ -159,6 +163,11 @@ def test_carousel_scoped_color_type_count_uses_conjunction_distractors() -> None
             for spec in trace["object_specs"]
             if str(spec["belt_key"]) == target_belt and not bool(spec["matches_query"])
         }
+        assert all(
+            str(spec["shape_type"]) not in confusable_shapes
+            for spec in trace["object_specs"]
+            if str(spec["shape_type"]) != target_shape
+        )
         assert "same_belt_same_color_wrong_type" in same_belt_roles
         assert "same_belt_same_type_wrong_color" in same_belt_roles
         assert any(
@@ -169,6 +178,29 @@ def test_carousel_scoped_color_type_count_uses_conjunction_distractors() -> None
         )
         if int(target_count) == 0:
             assert output.annotation_gt.value == []
+
+
+def test_carousel_color_type_distractors_avoid_visually_confusable_shapes() -> None:
+    output = create_task(COLOR_TYPE_TASK_ID).generate(
+        2026062621,
+        params={
+            "target_shape_type": "card",
+            "target_color_name": "red",
+            "target_count": 3,
+            "post_image_noise_apply_prob": 0.0,
+        },
+        max_attempts=120,
+    )
+    trace = output.trace_payload["execution_trace"]
+    confusable_shapes = set(confusable_shape_names("card"))
+
+    assert trace["target_shape_type"] == "card"
+    assert trace["target_color_name"] == "red"
+    assert all(
+        str(spec["shape_type"]) not in confusable_shapes
+        for spec in trace["object_specs"]
+        if str(spec["shape_type"]) != "card"
+    )
 
 
 def test_carousel_color_readout_excludes_target_confusable_colors() -> None:

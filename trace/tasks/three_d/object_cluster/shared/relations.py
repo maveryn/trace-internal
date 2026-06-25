@@ -480,7 +480,7 @@ def build_type_and_color_sequence(
         for _ in range(int(target_count))
     ]
     wrong_colors = list(readout_color_support(anchors=(str(color_name),)))
-    wrong_shapes = [shape for shape in color_readout_shape_support() if str(shape) != str(shape_type)]
+    wrong_shapes = list(compatible_distractor_pool(str(shape_type), support=color_readout_shape_support()))
     rng.shuffle(wrong_colors)
     rng.shuffle(wrong_shapes)
     if len(sequence) < int(object_count):
@@ -545,7 +545,7 @@ def build_or_sequence(
 
     if int(target_count) < 1:
         raise ValueError("inclusive OR count needs at least one target")
-    wrong_shapes = [shape for shape in color_readout_shape_support() if str(shape) != str(shape_type)]
+    wrong_shapes = list(compatible_distractor_pool(str(shape_type), support=color_readout_shape_support()))
     wrong_colors = list(readout_color_support(anchors=(str(color_name),)))
     sequence = [ClusterSequenceItem(str(shape_type), str(color_name), True, "target")]
     while len(sequence) < int(target_count):
@@ -580,7 +580,7 @@ def build_exclusion_sequence(
 ) -> tuple[list[ClusterSequenceItem], PredicateTarget]:
     """Build a count set that matches one attribute while excluding another."""
 
-    wrong_shapes = [shape for shape in color_readout_shape_support() if str(shape) != str(shape_type)]
+    wrong_shapes = list(compatible_distractor_pool(str(shape_type), support=color_readout_shape_support()))
     wrong_colors = list(readout_color_support(anchors=(str(color_name),)))
     sequence: list[ClusterSequenceItem] = []
     if str(mode) == "type_without_color":

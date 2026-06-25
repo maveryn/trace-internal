@@ -18,6 +18,7 @@ from trace.tasks.three_d.shared.camera_projection import (
     vec_sub,
 )
 from trace.tasks.three_d.shared.projected_object_geometry import object_reference_points
+from trace.tasks.three_d.shared.object_confusions import compatible_distractor_pool
 from trace.tasks.three_d.shared.semantic_colors import sample_readout_palette as sample_semantic_readout_palette
 from trace.tasks.three_d.shared.task_support import (
     resolve_axis_variant_for_namespace,
@@ -685,7 +686,9 @@ def build_scoped_belt_count_dataset(
 
     if str(predicate_kind) == PREDICATE_OBJECT_TYPE:
         target_shape, target_shape_probabilities = _resolve_shape(params=params, rng=rng)
-        distractor_shapes = [str(shape) for shape in CONVEYOR_OBJECT_SHAPE_TYPES if str(shape) != str(target_shape)]
+        distractor_shapes = list(
+            compatible_distractor_pool(str(target_shape), support=CONVEYOR_OBJECT_SHAPE_TYPES)
+        )
         color_names = sample_visual_color_names(rng, palette_size=4)
         target_color_name = ""
         target_color_probabilities: Dict[str, float] = {}
@@ -708,7 +711,9 @@ def build_scoped_belt_count_dataset(
             rng=rng,
             support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
         )
-        distractor_shapes = [str(shape) for shape in CONVEYOR_COLOR_READOUT_SHAPE_TYPES if str(shape) != str(target_shape)]
+        distractor_shapes = list(
+            compatible_distractor_pool(str(target_shape), support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES)
+        )
         target_color_name, target_color_probabilities = _resolve_target_color(params=params, rng=rng)
         color_names = _sample_readout_palette(rng, target_color=str(target_color_name), size=4)
     else:

@@ -23,7 +23,7 @@ The prompt asks for the final count of a queried property after applying exactly
 
 The edit always targets the exact queried property and changes the answer. Remove edits are generated only when enough starting target objects are visible, and generation keeps the final answer positive. Semantic color targets use the repo-wide canonical named color palette and prompt-facing hex labels.
 
-The image includes non-target distractors. For color+object targets, generation includes structured partial-match distractors when possible, such as same-type/wrong-color and same-color/wrong-type objects. The answer is computed from metadata as:
+The image includes non-target distractors. For color+object targets, generation includes structured partial-match distractors when possible, such as same-type/wrong-color and same-color/wrong-type objects. Wrong-type distractors avoid target-confusable object families such as card/envelope/book, sphere/button, cup/bowl/tray, lantern/candle, and pencil/ruler. The answer is computed from metadata as:
 
 `initial_visible_target_count + add_amount` or `initial_visible_target_count - remove_amount`
 

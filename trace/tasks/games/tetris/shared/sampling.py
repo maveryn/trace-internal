@@ -246,6 +246,80 @@ def random_piece_with_min_rows(rng, *, min_rows: int) -> Tuple[str, int]:
     return tuple(rng.choice(candidates))  # type: ignore[return-value]
 
 
+def positive_clear_profile_candidates(*, target_clear_count: int, board_rows: int, board_cols: int) -> List[Tuple[str, int, int]]:
+    """Return piece/orientation/column triples that can cover every target row."""
+
+    target = int(target_clear_count)
+    if target <= 0:
+        return []
+    candidates: List[Tuple[str, int, int]] = []
+    for piece, orientations in TETROMINOES.items():
+        for orientation_index, piece_shape in enumerate(orientations):
+            height, width = shape_size(piece_shape)
+            if int(height) > int(board_rows) or int(width) > int(board_cols) or int(target) > int(height):
+                continue
+            target_local_rows = set(range(int(height) - int(target), int(height)))
+            piece_local_rows = {int(row) for row, _col in piece_shape}
+            if not target_local_rows.issubset(piece_local_rows):
+                continue
+            for col in range(0, int(board_cols) - int(width) + 1):
+                candidates.append((str(piece), int(orientation_index), int(col)))
+    return candidates
+
+
+def construct_supported_profile_clear_board(
+    rng,
+    *,
+    piece: str,
+    orientation_index: int,
+    col: int,
+    target_clear_count: int,
+    scene_variant: str,
+    board_rows: int,
+    board_cols: int,
+) -> Tuple[Board, Placement, Any]:
+    """Build one supported stack profile for a candidate clear-producing placement."""
+
+    piece_shape = TETROMINOES[str(piece)][int(orientation_index)]
+    height, width = shape_size(piece_shape)
+    if int(height) > int(board_rows) or int(width) > int(board_cols):
+        raise ValueError("piece does not fit Tetris clear profile board")
+    top = int(board_rows) - int(height)
+    placement = Placement(str(piece), int(orientation_index), int(col), int(top))
+    piece_cell_set = set(piece_cells(placement))
+    target_rows = set(range(int(board_rows) - int(target_clear_count), int(board_rows)))
+    if not target_rows.issubset({int(row) for row, _col in piece_cell_set}):
+        raise ValueError("candidate piece does not occupy every target clear row")
+
+    max_extra = {"low_stack": 0, "notched_stack": 1, "high_stack": 2}.get(str(scene_variant), 1)
+    heights: List[int] = []
+    for column in range(int(board_cols)):
+        piece_rows_in_column = [int(row) for row, cell_col in piece_cell_set if int(cell_col) == int(column)]
+        if piece_rows_in_column:
+            heights.append(max(0, int(board_rows) - min(piece_rows_in_column)))
+            continue
+        heights.append(min(int(board_rows), int(target_clear_count) + int(rng.randint(0, int(max_extra)))))
+
+    board = supported_stack_from_heights(
+        rng,
+        board_rows=int(board_rows),
+        board_cols=int(board_cols),
+        heights=heights,
+        protected_empty=piece_cell_set,
+    )
+    if any(all(str(cell) != EMPTY for cell in row) for row in board):
+        raise ValueError("constructed Tetris profile has a full row before locking")
+    if not can_place(board, placement):
+        raise ValueError("constructed Tetris profile overlaps the placement")
+    dropped_top = hard_drop_top(board, piece=str(piece), orientation_index=int(orientation_index), col=int(col))
+    if dropped_top != int(top):
+        raise ValueError("constructed Tetris profile did not hard-drop to the planned placement")
+    outcome = evaluate_outcome(board, placement)
+    if int(outcome.clear_count) != int(target_clear_count):
+        raise ValueError(f"profile Tetris clear construction produced {outcome.clear_count} clears instead of {target_clear_count}")
+    return board, placement, outcome
+
+
 def construct_board_with_target_clear(
     rng,
     *,
@@ -258,43 +332,28 @@ def construct_board_with_target_clear(
 
     target = int(target_clear_count)
     if target > 0:
-        piece = "I"
-        orientation_index = 1
-        piece_shape = TETROMINOES[piece][orientation_index]
-        height, width = shape_size(piece_shape)
-        if int(height) > int(board_rows) or int(width) > int(board_cols):
-            raise ValueError("board is too small for Tetris clear-count construction")
-        gap_col = int(rng.randint(0, int(board_cols) - int(width)))
-        top = int(board_rows) - int(height)
-        placement = Placement(piece, int(orientation_index), int(gap_col), int(top))
-        piece_cell_set = set(piece_cells(placement))
-        notch_candidates = [col for col in range(int(board_cols)) if int(col) != int(gap_col)]
-        if not notch_candidates:
-            raise ValueError("board is too narrow for Tetris clear-count construction")
-        notch_col = int(rng.choice(notch_candidates))
-        heights: List[int] = []
-        for col in range(int(board_cols)):
-            if int(col) == int(gap_col):
-                heights.append(0)
-                continue
-            min_height = int(target)
-            max_extra = {"low_stack": 1, "notched_stack": 2, "high_stack": 3}.get(str(scene_variant), 2)
-            max_height = min(int(height), int(target) + int(max_extra))
-            heights.append(int(target) if int(col) == int(notch_col) else int(rng.randint(min_height, max_height)))
-        board = supported_stack_from_heights(
-            rng,
+        candidates = positive_clear_profile_candidates(
+            target_clear_count=int(target),
             board_rows=int(board_rows),
             board_cols=int(board_cols),
-            heights=heights,
-            protected_empty=piece_cell_set,
         )
-        dropped_top = hard_drop_top(board, piece=piece, orientation_index=int(orientation_index), col=int(gap_col))
-        if dropped_top != int(top):
-            raise ValueError("guided Tetris well did not produce expected hard-drop top")
-        outcome = evaluate_outcome(board, placement)
-        if int(outcome.clear_count) != int(target):
-            raise ValueError(f"guided Tetris well produced {outcome.clear_count} clears instead of {target}")
-        return board, placement, outcome
+        rng.shuffle(candidates)
+        for piece, orientation_index, col in candidates:
+            for _profile_attempt in range(4):
+                try:
+                    return construct_supported_profile_clear_board(
+                        rng,
+                        piece=str(piece),
+                        orientation_index=int(orientation_index),
+                        col=int(col),
+                        target_clear_count=int(target),
+                        scene_variant=str(scene_variant),
+                        board_rows=int(board_rows),
+                        board_cols=int(board_cols),
+                    )
+                except ValueError:
+                    continue
+        raise ValueError(f"failed to construct positive Tetris clear profile for {target} rows")
 
     for _attempt in range(900):
         piece, orientation_index = random_piece_with_min_rows(rng, min_rows=1)
@@ -347,7 +406,7 @@ def build_line_clear_sample(rng, *, scene_variant: str, board_rows: int, board_c
             annotation_entity_ids=("main", "next_piece"),
             annotation_kind="board_and_next_piece",
             metadata={
-                **supported_stack_generation_meta(strategy="line_clear_guided_well" if target > 0 else "line_clear_supported_stack"),
+                **supported_stack_generation_meta(strategy="line_clear_guided_profile" if target > 0 else "line_clear_supported_stack"),
                 "target_clear_count": int(best_clear),
                 "best_clear_count": int(best_clear),
                 "max_clear_placement_count": len(best_outcomes),
@@ -475,7 +534,7 @@ def build_drop_result_sample(
         annotation_entity_ids=(f"option_{str(answer_label).lower()}",),
         annotation_kind="option_panel",
         metadata={
-            **supported_stack_generation_meta(strategy="drop_result_guided_well" if int(outcome.clear_count) > 0 else "drop_result_supported_stack"),
+            **supported_stack_generation_meta(strategy="drop_result_guided_profile" if int(outcome.clear_count) > 0 else "drop_result_supported_stack"),
             "target_clear_count": int(outcome.clear_count),
         },
     )

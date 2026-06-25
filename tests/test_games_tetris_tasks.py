@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import trace.tasks  # noqa: F401
 from trace.core.taxonomy import resolve_task_taxonomy
+from trace.core.seed import spawn_rng
 from trace.tasks.games.tetris.active_piece_shape_label import GamesTetrisActivePieceShapeLabelTask
 from trace.tasks.games.tetris.drop_collision_time_value import GamesTetrisDropCollisionTimeValueTask
 from trace.tasks.games.tetris.drop_result_label import GamesTetrisDropResultLabelTask
@@ -19,6 +20,7 @@ from trace.tasks.games.tetris.shared.rules import (
     is_supported_stack_board,
     piece_cells,
 )
+from trace.tasks.games.tetris.shared.sampling import construct_board_with_target_clear
 from trace.tasks.games.tetris.shared.state import Placement
 
 
@@ -90,6 +92,34 @@ def test_games_tetris_line_clear_contract_and_rule_match() -> None:
     render_spec = out.trace_payload["render_spec"]
     assert render_spec["tetris_board_style"]["style_variant"]
     assert render_spec["text_style"]["font_family"]
+
+
+def test_games_tetris_positive_clear_constructor_uses_piece_variety() -> None:
+    for target_clear_count in (1, 2, 3):
+        pieces = set()
+        for offset in range(18):
+            rng = spawn_rng(26052600 + offset, f"tests.tetris.positive_clear.{target_clear_count}")
+            _board, placement, outcome = construct_board_with_target_clear(
+                rng,
+                target_clear_count=int(target_clear_count),
+                scene_variant="notched_stack",
+                board_rows=14,
+                board_cols=9,
+            )
+            assert int(outcome.clear_count) == int(target_clear_count)
+            pieces.add(str(placement.piece))
+        assert pieces - {"I"}
+
+    rng = spawn_rng(26052700, "tests.tetris.positive_clear.four")
+    _board, placement, outcome = construct_board_with_target_clear(
+        rng,
+        target_clear_count=4,
+        scene_variant="notched_stack",
+        board_rows=14,
+        board_cols=9,
+    )
+    assert int(outcome.clear_count) == 4
+    assert str(placement.piece) == "I"
 
 
 def test_games_tetris_drop_result_contract() -> None:

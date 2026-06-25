@@ -21,7 +21,7 @@ Computes the fewest movement-point cost for the blue unit to reach one visibly m
 ## Program Metadata
 - Program signatures: `value.shortest_movement_cost_to_marked_tile`
 - Base program contract: `value(shortest_movement_cost(unit, marked_tile, terrain_costs)); scene=rpg_tactical_map; scope=movement_cost_value`
-- Parameter axes: `terrain_layout`, `target_tile`, `movement_cost_range`, `canvas_profile`
+- Parameter axes: `terrain_layout`, `water_feature_style`, `target_tile`, `movement_cost_range`, `canvas_profile`
 - Arguments:
   - `unit`: blue_unit; the single reference unit visible in the scene; source `scene_ir.units`
   - `marked_tile`: terrain_tile; the tile with the visible target marker; source `render_map.target_tile_id`
@@ -47,5 +47,5 @@ Computes the fewest movement-point cost for the blue unit to reach one visibly m
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/rpg_tactical_map/illustrations_rpg_tactical_map_v0.json`.
 - Public prompts must state the terrain movement costs, that movement is orthogonal, and that water cannot be entered.
-- The task has no semantic query branch beyond `single`; sampled map layout, target tile, target movement cost, terrain colors, and canvas profile are trace metadata, not public query ids.
+- The task has no semantic query branch beyond `single`; sampled map layout, water feature style, target tile, target movement cost, terrain colors, and canvas profile are trace metadata, not public query ids.
 - Target tile id, target tile bbox, role-keyed annotation tile ids, shortest path tile ids for diagnostics, shortest path terrain labels, shortest path entry costs, shortest movement costs, terrain costs, start tile id, target Manhattan distance, and answer value must be recorded in the trace.

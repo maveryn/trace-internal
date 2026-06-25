@@ -21,7 +21,7 @@ Counts all visible terrain tiles of a requested special terrain type on a top-do
 ## Program Metadata
 - Program signatures: `count.tiles_by_terrain_type`
 - Base program contract: `count(tile where terrain_type(tile) == target_terrain); scene=rpg_tactical_map; scope=terrain_type_tile_count`
-- Parameter axes: `target_terrain`, `terrain_layout`, `canvas_profile`, `answer_count_range`
+- Parameter axes: `target_terrain`, `terrain_layout`, `water_feature_style`, `canvas_profile`, `answer_count_range`
 - Arguments:
   - `tile`: terrain_tile; visible terrain grid tile; source `scene_ir.tiles`
   - `target_terrain`: one of `forest|mountain|water`; source `query_spec.params.target_terrain`
@@ -42,6 +42,6 @@ Counts all visible terrain tiles of a requested special terrain type on a top-do
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/rpg_tactical_map/illustrations_rpg_tactical_map_v0.json`.
 - Public prompts must name the target terrain type clearly.
-- The task has no semantic query branch beyond `single`; sampled target terrain, map layout, terrain colors, and canvas profile are trace metadata, not public query ids.
+- The task has no semantic query branch beyond `single`; sampled target terrain, map layout, water feature style, terrain colors, and canvas profile are trace metadata, not public query ids.
 - The default generated answer range is `1..18` so count targets are present and large forest-count cases are avoided.
 - Counted tile ids, counted tile bboxes, target terrain, integer answer, and bbox-set annotation must be recorded in the trace.

@@ -21,7 +21,7 @@ Selects the single lettered tile that the blue unit cannot reach because a conti
 ## Program Metadata
 - Program signatures: `select.unreachable_tile_across_full_water_barrier`
 - Base program contract: `select(tile, unreachable_by_water_barrier_connectivity(unit, tile)); scene=rpg_tactical_map; scope=water_barrier_unreachable_tile_label`
-- Parameter axes: `barrier_orientation`, `barrier_style`, `barrier_position`, `candidate_tile_set`, `canvas_profile`
+- Parameter axes: `barrier_orientation`, `water_feature_style`, `barrier_position`, `candidate_tile_set`, `canvas_profile`
 - Arguments:
   - `unit`: blue_unit; the single reference unit visible in the scene; source `scene_ir.units`
   - `tile`: candidate_tile; visible lettered terrain tile; source `render_map.candidate_tile_ids_by_label`

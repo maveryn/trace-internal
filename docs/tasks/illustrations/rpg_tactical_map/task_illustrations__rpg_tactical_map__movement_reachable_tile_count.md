@@ -21,7 +21,7 @@ Counts all terrain tiles, excluding the blue unit's starting tile, that the blue
 ## Program Metadata
 - Program signatures: `count.reachable_tiles_under_movement_budget`
 - Base program contract: `count(tile where reachable_by_movement_budget(unit, tile, budget, terrain_costs) and tile != start_tile); scene=rpg_tactical_map; scope=movement_reachable_tile_count`
-- Parameter axes: `movement_budget`, `terrain_layout`, `canvas_profile`, `answer_count_range`
+- Parameter axes: `movement_budget`, `terrain_layout`, `water_feature_style`, `canvas_profile`, `answer_count_range`
 - Arguments:
   - `unit`: blue_unit; the single reference unit visible in the scene; source `scene_ir.units`
   - `tile`: terrain_tile; visible terrain grid tile; source `scene_ir.tiles`
@@ -45,6 +45,6 @@ Counts all terrain tiles, excluding the blue unit's starting tile, that the blue
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/rpg_tactical_map/illustrations_rpg_tactical_map_v0.json`.
 - Public prompts must state the movement budget, that the starting tile is excluded, the orthogonal movement rule, and terrain costs, including mountain cost `3`.
-- The task has no semantic query branch beyond `single`; sampled map layout, budget, terrain colors, and canvas profile are trace metadata, not public query ids.
+- The task has no semantic query branch beyond `single`; sampled map layout, water feature style, budget, terrain colors, and canvas profile are trace metadata, not public query ids.
 - The default generated answer range is `3..15` so counted movement areas remain visually manageable.
 - Counted tile ids, counted tile bboxes, shortest movement costs, movement budget, starting tile id, integer answer, and bbox-set annotation must be recorded in the trace.

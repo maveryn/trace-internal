@@ -37,8 +37,10 @@ from .shared.rendering import (
     DEFAULT_CANDIDATE_LABELS,
     DEFAULT_TILE_PX,
     SCENE_ID,
+    map_spanning_water_cells,
     render_rpg_tactical_map_scene,
     resolve_tactical_map_render_params,
+    resolve_water_feature_style,
 )
 from .shared.state import RpgTacticalMapScene, RpgTacticalTile
 
@@ -80,9 +82,7 @@ def _build_water_barrier_grid(
     orientation = str(explicit_orientation or rng.choice(("vertical", "horizontal")))
     if orientation not in {"vertical", "horizontal"}:
         raise ValueError("barrier_orientation must be vertical or horizontal")
-    style = str(explicit_style or rng.choice(("zigzag", "zigzag", "straight")))
-    if style not in {"straight", "zigzag"}:
-        raise ValueError("barrier_style must be straight or zigzag")
+    style = resolve_water_feature_style(None if explicit_style is None else str(explicit_style), rng=rng)
     max_thickness = 2
     if orientation == "vertical":
         max_thickness = max(1, min(2, int(cols) - 4))
@@ -99,7 +99,7 @@ def _build_water_barrier_grid(
         raise ValueError("grid is too small for a full water barrier with candidates on both sides")
     start_index = int(rng.randint(start_min, start_max))
 
-    barrier_cells = _water_barrier_cells(
+    barrier_cells = map_spanning_water_cells(
         orientation=orientation,
         style=style,
         cols=int(cols),
@@ -123,70 +123,6 @@ def _build_water_barrier_grid(
         for row, col in sorted(barrier_cells, key=lambda coord: (int(coord[0]), int(coord[1])))
     ]
     return grid, orientation, style, start_index, thickness, barrier_tile_ids
-
-
-def _water_barrier_cells(
-    *,
-    orientation: str,
-    style: str,
-    cols: int,
-    rows: int,
-    start_index: int,
-    thickness: int,
-    rng: random.Random,
-) -> set[tuple[int, int]]:
-    """Return connected water cells that span the map in one direction."""
-
-    barrier_cells: set[tuple[int, int]] = set()
-    if str(orientation) == "vertical":
-        current_col = int(start_index)
-        previous_col = int(current_col)
-        forced_step = max(1, int(rows) // 2)
-        for row in range(int(rows)):
-            if str(style) == "zigzag" and row > 0:
-                if int(row) == int(forced_step):
-                    delta = rng.choice((-1, 1))
-                elif rng.random() < 0.42:
-                    delta = rng.choice((-1, 0, 1))
-                else:
-                    delta = 0
-                current_col = _clamp_barrier_index(
-                    current_col + int(delta),
-                    min_index=1,
-                    max_index=int(cols) - int(thickness) - 1,
-                )
-            first_col = min(int(previous_col), int(current_col))
-            last_col_exclusive = max(int(previous_col), int(current_col)) + int(thickness)
-            for col in range(first_col, last_col_exclusive):
-                barrier_cells.add((int(row), int(col)))
-            previous_col = int(current_col)
-    else:
-        current_row = int(start_index)
-        previous_row = int(current_row)
-        forced_step = max(1, int(cols) // 2)
-        for col in range(int(cols)):
-            if str(style) == "zigzag" and col > 0:
-                if int(col) == int(forced_step):
-                    delta = rng.choice((-1, 1))
-                elif rng.random() < 0.42:
-                    delta = rng.choice((-1, 0, 1))
-                else:
-                    delta = 0
-                current_row = _clamp_barrier_index(
-                    current_row + int(delta),
-                    min_index=1,
-                    max_index=int(rows) - int(thickness) - 1,
-                )
-            first_row = min(int(previous_row), int(current_row))
-            last_row_exclusive = max(int(previous_row), int(current_row)) + int(thickness)
-            for row in range(first_row, last_row_exclusive):
-                barrier_cells.add((int(row), int(col)))
-            previous_row = int(current_row)
-    return barrier_cells
-
-
-def _clamp_barrier_index(value: int, *, min_index: int, max_index: int) -> int:
-    return max(int(min_index), min(int(max_index), int(value)))
 
 
 def _passable_components(scene: RpgTacticalMapScene) -> list[set[str]]:

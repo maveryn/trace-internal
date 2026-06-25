@@ -21,7 +21,7 @@ Selects the single lettered terrain tile that the blue unit can reach within a v
 ## Program Metadata
 - Program signatures: `select.reachable_tile_under_movement_budget`
 - Base program contract: `select(tile, reachable_by_movement_budget(unit, tile, budget, terrain_costs)); scene=rpg_tactical_map; scope=movement_reachable_tile_label`
-- Parameter axes: `movement_budget`, `candidate_tile_set`, `terrain_layout`, `canvas_profile`
+- Parameter axes: `movement_budget`, `candidate_tile_set`, `terrain_layout`, `water_feature_style`, `canvas_profile`
 - Arguments:
   - `unit`: blue_unit; the single reference unit visible in the scene; source `scene_ir.units`
   - `tile`: candidate_tile; visible lettered terrain tile; source `render_map.candidate_tile_ids_by_label`
@@ -44,5 +44,5 @@ Selects the single lettered terrain tile that the blue unit can reach within a v
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/rpg_tactical_map/illustrations_rpg_tactical_map_v0.json`.
 - Public prompts must state the movement budget, orthogonal movement rule, and terrain costs, including mountain cost `3`.
-- The task has no semantic query branch beyond `single`; sampled map layout, budget, tile labels, terrain colors, and canvas profile are trace metadata, not public query ids.
+- The task has no semantic query branch beyond `single`; sampled map layout, water feature style, budget, tile labels, terrain colors, and canvas profile are trace metadata, not public query ids.
 - Candidate tile ids, tile bboxes, label bboxes, terrain types, shortest movement costs, movement budget, selected label, selected tile id, and scalar bbox annotation must be recorded in the trace.

@@ -21,7 +21,7 @@ Selects the single lettered terrain tile that the blue unit can attack after fir
 ## Program Metadata
 - Program signatures: `select.attackable_tile_after_movement`
 - Base program contract: `select(tile, exists move_tile where reachable_by_movement_budget(unit, move_tile, movement_budget, terrain_costs) and cardinal_distance(move_tile, tile) in 1..attack_range); scene=rpg_tactical_map; scope=movement_attack_range_tile_label`
-- Parameter axes: `movement_budget`, `attack_range`, `candidate_tile_set`, `terrain_layout`, `canvas_profile`
+- Parameter axes: `movement_budget`, `attack_range`, `candidate_tile_set`, `terrain_layout`, `water_feature_style`, `canvas_profile`
 - Arguments:
   - `unit`: blue_unit; the single reference unit visible in the scene; source `scene_ir.units`
   - `move_tile`: terrain_tile; any tile reachable by the blue unit before attacking; source `execution_trace.reachable_move_tile_ids`
@@ -46,6 +46,6 @@ Selects the single lettered terrain tile that the blue unit can attack after fir
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/rpg_tactical_map/illustrations_rpg_tactical_map_v0.json`.
 - Public prompts must state the movement budget, terrain movement costs, that movement is orthogonal, that attack range is horizontal or vertical only, and that attack range ignores terrain cost.
-- The task has no semantic query branch beyond `single`; sampled map layout, movement budget, attack range, tile labels, terrain colors, and canvas profile are trace metadata, not public query ids.
+- The task has no semantic query branch beyond `single`; sampled map layout, water feature style, movement budget, attack range, tile labels, terrain colors, and canvas profile are trace metadata, not public query ids.
 - Candidate tile ids, selected tile id, movement costs, reachable movement tile ids, attackable tile ids, attack-source tile ids, movement budget, attack range, selected label, and scalar bbox annotation must be recorded in the trace.
 - Candidate selection should avoid making the selected tile consistently identifiable as the nearest lettered tile to the blue unit by raw Manhattan distance. Trace metadata must include `candidate_start_manhattan_by_label`, nearest-candidate labels, and whether the selected label is the unique nearest candidate.

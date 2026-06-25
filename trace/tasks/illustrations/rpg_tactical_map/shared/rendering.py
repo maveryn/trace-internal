@@ -34,6 +34,9 @@ SCENE_ID = "rpg_tactical_map"
 RENDERER_ID = "rpg_tactical_map_top_down_v0"
 DEFAULT_TILE_PX = 80
 DEFAULT_CANDIDATE_LABELS: tuple[str, ...] = ("A", "B", "C", "D")
+WATER_FEATURE_STYLE_STRAIGHT = "straight"
+WATER_FEATURE_STYLE_ZIGZAG = "zigzag"
+WATER_FEATURE_STYLES: tuple[str, str] = (WATER_FEATURE_STYLE_STRAIGHT, WATER_FEATURE_STYLE_ZIGZAG)
 TACTICAL_PROFILE_GRIDS: Mapping[str, tuple[int, int]] = {
     CANVAS_PROFILE_LANDSCAPE: (12, 8),
     CANVAS_PROFILE_SQUARE: (10, 10),
@@ -183,7 +186,7 @@ def render_rpg_tactical_map_scene(
     theme_id = str(_choose(rng, tuple(THEMES)))
     theme = THEMES[theme_id]
     if terrain_grid_override is None:
-        terrain_grid = _make_terrain_grid(cols=cols, rows=rows, rng=rng)
+        terrain_grid, terrain_generation_trace = _make_terrain_grid(cols=cols, rows=rows, rng=rng)
         terrain_grid_source = "generated"
     else:
         terrain_grid = _normalize_terrain_grid_override(
@@ -191,6 +194,7 @@ def render_rpg_tactical_map_scene(
             cols=cols,
             rows=rows,
         )
+        terrain_generation_trace = {"water_feature": {"kind": "override"}}
         terrain_grid_source = "override"
     tiles = _make_tiles(terrain_grid=terrain_grid, tile_px=tile_size)
     tiles_by_id = {str(tile.tile_id): tile for tile in tiles}
@@ -236,6 +240,7 @@ def render_rpg_tactical_map_scene(
         "blocked_terrain": [TERRAIN_WATER],
         "terrain_rows": [[str(value) for value in row] for row in terrain_grid],
         "terrain_grid_source": terrain_grid_source,
+        "terrain_generation": dict(terrain_generation_trace),
         "player_tile_id": resolved_player_tile_id,
         "candidate_tile_ids_by_label": {str(label): str(tile_id) for label, tile_id in (candidate_tile_ids_by_label or {}).items()},
         "target_tile_ids": list(resolved_target_tile_ids),
@@ -307,42 +312,162 @@ def _choose(rng: random.Random, values: Sequence[Any]) -> Any:
     return values[int(rng.randrange(len(values)))]
 
 
-def _make_terrain_grid(*, cols: int, rows: int, rng: random.Random) -> list[list[str]]:
+def _make_terrain_grid(*, cols: int, rows: int, rng: random.Random) -> tuple[list[list[str]], dict[str, Any]]:
     grid = [[TERRAIN_GRASS for _ in range(int(cols))] for _ in range(int(rows))]
-    _paint_water_feature(grid, rng=rng)
+    water_feature_trace = _paint_water_feature(grid, rng=rng)
     _paint_road_feature(grid, rng=rng)
     for _ in range(rng.randint(3, 5)):
         _paint_blob(grid, rng=rng, terrain=TERRAIN_FOREST, size=rng.randint(4, 12), avoid={TERRAIN_WATER, TERRAIN_BRIDGE, TERRAIN_ROAD})
     for _ in range(rng.randint(1, 3)):
         _paint_blob(grid, rng=rng, terrain=TERRAIN_MOUNTAIN, size=rng.randint(3, 6), avoid={TERRAIN_WATER, TERRAIN_BRIDGE, TERRAIN_ROAD})
-    return grid
+    return grid, {"water_feature": water_feature_trace}
 
 
-def _paint_water_feature(grid: list[list[str]], *, rng: random.Random) -> None:
+def _paint_water_feature(grid: list[list[str]], *, rng: random.Random) -> dict[str, Any]:
+    """Paint the scene-level water feature and record its sampled visual grammar."""
+
     rows = len(grid)
     cols = len(grid[0])
     orientation = str(_choose(rng, ("horizontal", "vertical", "pond")))
     if orientation == "horizontal" and rows >= 6:
-        row = rng.randrange(1, rows - 1)
-        for col in range(cols):
-            if rng.random() < 0.88:
-                grid[row][col] = TERRAIN_WATER
-            if row + 1 < rows and rng.random() < 0.25:
-                grid[row + 1][col] = TERRAIN_WATER
+        thickness = rng.randint(1, max(1, min(2, rows - 3)))
+        start_index = rng.randrange(1, rows - int(thickness))
+        style = resolve_water_feature_style(None, rng=rng)
+        cells = map_spanning_water_cells(
+            orientation=orientation,
+            style=style,
+            cols=cols,
+            rows=rows,
+            start_index=start_index,
+            thickness=thickness,
+            rng=rng,
+        )
+        for row, col in cells:
+            grid[int(row)][int(col)] = TERRAIN_WATER
+        return {
+            "kind": "river",
+            "orientation": orientation,
+            "style": style,
+            "start_index": int(start_index),
+            "thickness": int(thickness),
+            "water_tile_count": len(cells),
+        }
     elif orientation == "vertical" and cols >= 6:
-        col = rng.randrange(1, cols - 1)
-        for row in range(rows):
-            if rng.random() < 0.88:
-                grid[row][col] = TERRAIN_WATER
-            if col + 1 < cols and rng.random() < 0.25:
-                grid[row][col + 1] = TERRAIN_WATER
+        thickness = rng.randint(1, max(1, min(2, cols - 3)))
+        start_index = rng.randrange(1, cols - int(thickness))
+        style = resolve_water_feature_style(None, rng=rng)
+        cells = map_spanning_water_cells(
+            orientation=orientation,
+            style=style,
+            cols=cols,
+            rows=rows,
+            start_index=start_index,
+            thickness=thickness,
+            rng=rng,
+        )
+        for row, col in cells:
+            grid[int(row)][int(col)] = TERRAIN_WATER
+        return {
+            "kind": "river",
+            "orientation": orientation,
+            "style": style,
+            "start_index": int(start_index),
+            "thickness": int(thickness),
+            "water_tile_count": len(cells),
+        }
     else:
         center_row = rng.randrange(max(1, rows // 4), max(2, rows - rows // 4))
         center_col = rng.randrange(max(1, cols // 4), max(2, cols - cols // 4))
+        water_tile_count = 0
         for row in range(max(0, center_row - 1), min(rows, center_row + 2)):
             for col in range(max(0, center_col - 2), min(cols, center_col + 3)):
                 if rng.random() < 0.78:
                     grid[row][col] = TERRAIN_WATER
+                    water_tile_count += 1
+        return {
+            "kind": "pond",
+            "orientation": "blob",
+            "style": "blob",
+            "center": [int(center_row), int(center_col)],
+            "water_tile_count": int(water_tile_count),
+        }
+
+
+def resolve_water_feature_style(explicit_style: str | None, *, rng: random.Random) -> str:
+    """Resolve the shared tactical-map river style."""
+
+    style = str(explicit_style or _choose(rng, (WATER_FEATURE_STYLE_ZIGZAG, WATER_FEATURE_STYLE_ZIGZAG, WATER_FEATURE_STYLE_STRAIGHT)))
+    if style not in set(WATER_FEATURE_STYLES):
+        raise ValueError(f"water feature style must be one of {WATER_FEATURE_STYLES}")
+    return style
+
+
+def map_spanning_water_cells(
+    *,
+    orientation: str,
+    style: str,
+    cols: int,
+    rows: int,
+    start_index: int,
+    thickness: int,
+    rng: random.Random,
+) -> set[tuple[int, int]]:
+    """Return connected water cells that span the map in one direction."""
+
+    resolved_orientation = str(orientation)
+    resolved_style = resolve_water_feature_style(str(style), rng=rng)
+    if resolved_orientation not in {"vertical", "horizontal"}:
+        raise ValueError("water feature orientation must be vertical or horizontal")
+    barrier_cells: set[tuple[int, int]] = set()
+    if resolved_orientation == "vertical":
+        current_col = int(start_index)
+        previous_col = int(current_col)
+        forced_step = max(1, int(rows) // 2)
+        for row in range(int(rows)):
+            if resolved_style == WATER_FEATURE_STYLE_ZIGZAG and row > 0:
+                if int(row) == int(forced_step):
+                    delta = rng.choice((-1, 1))
+                elif rng.random() < 0.42:
+                    delta = rng.choice((-1, 0, 1))
+                else:
+                    delta = 0
+                current_col = _clamp_water_path_index(
+                    current_col + int(delta),
+                    min_index=1,
+                    max_index=int(cols) - int(thickness) - 1,
+                )
+            first_col = min(int(previous_col), int(current_col))
+            last_col_exclusive = max(int(previous_col), int(current_col)) + int(thickness)
+            for col in range(first_col, last_col_exclusive):
+                barrier_cells.add((int(row), int(col)))
+            previous_col = int(current_col)
+    else:
+        current_row = int(start_index)
+        previous_row = int(current_row)
+        forced_step = max(1, int(cols) // 2)
+        for col in range(int(cols)):
+            if resolved_style == WATER_FEATURE_STYLE_ZIGZAG and col > 0:
+                if int(col) == int(forced_step):
+                    delta = rng.choice((-1, 1))
+                elif rng.random() < 0.42:
+                    delta = rng.choice((-1, 0, 1))
+                else:
+                    delta = 0
+                current_row = _clamp_water_path_index(
+                    current_row + int(delta),
+                    min_index=1,
+                    max_index=int(rows) - int(thickness) - 1,
+                )
+            first_row = min(int(previous_row), int(current_row))
+            last_row_exclusive = max(int(previous_row), int(current_row)) + int(thickness)
+            for row in range(first_row, last_row_exclusive):
+                barrier_cells.add((int(row), int(col)))
+            previous_row = int(current_row)
+    return barrier_cells
+
+
+def _clamp_water_path_index(value: int, *, min_index: int, max_index: int) -> int:
+    return max(int(min_index), min(int(max_index), int(value)))
 
 
 def _paint_road_feature(grid: list[list[str]], *, rng: random.Random) -> None:
@@ -733,6 +858,11 @@ __all__ = [
     "TACTICAL_PROFILE_GRIDS",
     "TACTICAL_PROFILE_SUPPORT",
     "THEMES",
+    "WATER_FEATURE_STYLE_STRAIGHT",
+    "WATER_FEATURE_STYLE_ZIGZAG",
+    "WATER_FEATURE_STYLES",
+    "map_spanning_water_cells",
     "render_rpg_tactical_map_scene",
     "resolve_tactical_map_render_params",
+    "resolve_water_feature_style",
 ]

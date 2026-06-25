@@ -98,6 +98,30 @@ def test_rpg_tactical_map_renderer_is_deterministic_and_profile_safe() -> None:
             _assert_bbox_inside_canvas(list(unit.bbox_xyxy), width=width, height=height)
 
 
+def test_rpg_tactical_map_generated_rivers_use_shared_styles() -> None:
+    params = resolve_tactical_map_render_params({"canvas_profile": "square"}, {}, instance_seed=103)
+    styles_by_seed: dict[str, list[int]] = {}
+    for seed in range(2026062800, 2026062825):
+        scene = render_rpg_tactical_map_scene(
+            seed,
+            width=params["canvas_width"],
+            height=params["canvas_height"],
+            grid_cols=params["grid_cols"],
+            grid_rows=params["grid_rows"],
+            tile_px=params["tile_px"],
+            render_metadata=params,
+        )
+        water_feature = scene.trace["terrain_generation"]["water_feature"]
+        if water_feature["kind"] != "river":
+            continue
+        styles_by_seed.setdefault(str(water_feature["style"]), []).append(seed)
+        assert water_feature["orientation"] in {"horizontal", "vertical"}
+        assert int(water_feature["water_tile_count"]) > 0
+
+    assert styles_by_seed["straight"]
+    assert styles_by_seed["zigzag"]
+
+
 def test_rpg_tactical_map_target_marker_is_red_square_on_tile_border() -> None:
     params = resolve_tactical_map_render_params({"canvas_profile": "landscape"}, {}, instance_seed=102)
     seed = 67890

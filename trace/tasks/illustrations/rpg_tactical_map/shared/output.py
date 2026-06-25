@@ -160,6 +160,61 @@ def movement_reachable_count_render_map(
     }
 
 
+def water_barrier_unreachable_render_map(
+    *,
+    scene: RpgTacticalMapScene,
+    candidate_tile_ids_by_label: Mapping[str, str],
+    selected_label: str,
+    reachable_tile_ids: Sequence[str],
+    water_barrier_tile_ids: Sequence[str],
+    barrier_orientation: str,
+    barrier_start_index: int,
+    barrier_thickness: int,
+) -> dict[str, Any]:
+    """Return render-map fields for water-barrier connectivity selection."""
+
+    tiles_by_id = {str(tile.tile_id): tile for tile in scene.tiles}
+    selected_tile_id = str(candidate_tile_ids_by_label[str(selected_label)])
+    reachable_set = {str(tile_id) for tile_id in reachable_tile_ids}
+    candidate_tile_bboxes = {
+        str(label): rounded_bbox(tiles_by_id[str(tile_id)].bbox_xyxy)
+        for label, tile_id in candidate_tile_ids_by_label.items()
+    }
+    candidate_label_bboxes = {
+        str(label): rounded_bbox(scene.label_bboxes_by_tile_id[str(tile_id)])
+        for label, tile_id in candidate_tile_ids_by_label.items()
+        if str(tile_id) in scene.label_bboxes_by_tile_id
+    }
+    return {
+        "image_id": "img0",
+        "water_rule": "water_blocked_all_non_water_crossable",
+        "barrier_orientation": str(barrier_orientation),
+        "barrier_start_index": int(barrier_start_index),
+        "barrier_thickness": int(barrier_thickness),
+        "water_barrier_tile_ids": [str(tile_id) for tile_id in water_barrier_tile_ids],
+        "water_barrier_tile_bboxes_px": [
+            rounded_bbox(tiles_by_id[str(tile_id)].bbox_xyxy)
+            for tile_id in water_barrier_tile_ids
+        ],
+        "reachable_tile_ids": sorted(reachable_set),
+        "candidate_tile_ids_by_label": dict(candidate_tile_ids_by_label),
+        "candidate_tile_bboxes_px_by_label": candidate_tile_bboxes,
+        "candidate_label_bboxes_px_by_label": candidate_label_bboxes,
+        "candidate_terrain_by_label": {
+            str(label): str(tiles_by_id[str(tile_id)].terrain)
+            for label, tile_id in candidate_tile_ids_by_label.items()
+        },
+        "candidate_reachable_by_label": {
+            str(label): str(tile_id) in reachable_set
+            for label, tile_id in candidate_tile_ids_by_label.items()
+        },
+        "selected_label": str(selected_label),
+        "selected_tile_id": selected_tile_id,
+        "selected_tile_bbox_px": rounded_bbox(tiles_by_id[selected_tile_id].bbox_xyxy),
+        "player_unit": scene.units[0].as_dict() if scene.units else {},
+    }
+
+
 def movement_attack_range_render_map(
     *,
     scene: RpgTacticalMapScene,
@@ -333,4 +388,5 @@ __all__ = [
     "rpg_tactical_map_render_spec",
     "rpg_tactical_map_scene_ir",
     "terrain_type_count_render_map",
+    "water_barrier_unreachable_render_map",
 ]

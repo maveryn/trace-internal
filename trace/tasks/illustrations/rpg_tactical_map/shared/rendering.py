@@ -167,6 +167,7 @@ def render_rpg_tactical_map_scene(
     player_tile_id: str | None = None,
     candidate_tile_ids_by_label: Mapping[str, str] | None = None,
     target_tile_ids: Sequence[str] | None = None,
+    terrain_grid_override: Sequence[Sequence[str]] | None = None,
     label_font_family: str | None = None,
     label_font_trace: Mapping[str, Any] | None = None,
     render_metadata: Mapping[str, Any] | None = None,
@@ -181,7 +182,16 @@ def render_rpg_tactical_map_scene(
         raise ValueError("tactical map canvas must exactly match grid_cols/grid_rows * tile_px")
     theme_id = str(_choose(rng, tuple(THEMES)))
     theme = THEMES[theme_id]
-    terrain_grid = _make_terrain_grid(cols=cols, rows=rows, rng=rng)
+    if terrain_grid_override is None:
+        terrain_grid = _make_terrain_grid(cols=cols, rows=rows, rng=rng)
+        terrain_grid_source = "generated"
+    else:
+        terrain_grid = _normalize_terrain_grid_override(
+            terrain_grid_override,
+            cols=cols,
+            rows=rows,
+        )
+        terrain_grid_source = "override"
     tiles = _make_tiles(terrain_grid=terrain_grid, tile_px=tile_size)
     tiles_by_id = {str(tile.tile_id): tile for tile in tiles}
     resolved_player_tile_id = str(player_tile_id or _select_player_tile_id(tiles, rng=rng))
@@ -225,6 +235,7 @@ def render_rpg_tactical_map_scene(
         "terrain_movement_costs": {str(key): int(value) for key, value in TERRAIN_MOVEMENT_COSTS.items()},
         "blocked_terrain": [TERRAIN_WATER],
         "terrain_rows": [[str(value) for value in row] for row in terrain_grid],
+        "terrain_grid_source": terrain_grid_source,
         "player_tile_id": resolved_player_tile_id,
         "candidate_tile_ids_by_label": {str(label): str(tile_id) for label, tile_id in (candidate_tile_ids_by_label or {}).items()},
         "target_tile_ids": list(resolved_target_tile_ids),
@@ -258,6 +269,36 @@ def _uniform_probability_map(values: Sequence[str]) -> dict[str, float]:
     support = tuple(str(value) for value in values)
     probability = 1.0 / float(len(support))
     return {str(value): float(probability) for value in support}
+
+
+def _normalize_terrain_grid_override(
+    terrain_grid: Sequence[Sequence[str]],
+    *,
+    cols: int,
+    rows: int,
+) -> list[list[str]]:
+    """Validate and normalize a caller-supplied terrain grid."""
+
+    if len(terrain_grid) != int(rows):
+        raise ValueError("terrain_grid_override row count must match grid_rows")
+    valid_terrains = {
+        TERRAIN_BRIDGE,
+        TERRAIN_FOREST,
+        TERRAIN_GRASS,
+        TERRAIN_MOUNTAIN,
+        TERRAIN_ROAD,
+        TERRAIN_WATER,
+    }
+    normalized: list[list[str]] = []
+    for row in terrain_grid:
+        if len(row) != int(cols):
+            raise ValueError("terrain_grid_override column count must match grid_cols")
+        normalized_row = [str(value) for value in row]
+        unknown = sorted(set(normalized_row) - valid_terrains)
+        if unknown:
+            raise ValueError(f"terrain_grid_override contains unknown terrain values: {unknown}")
+        normalized.append(normalized_row)
+    return normalized
 
 
 def _choose(rng: random.Random, values: Sequence[Any]) -> Any:

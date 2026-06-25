@@ -6,6 +6,7 @@ from trace.tasks.illustrations.rpg_tactical_map.movement_cost_value import TASK_
 from trace.tasks.illustrations.rpg_tactical_map.movement_reachable_tile_count import TASK_ID as COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.movement_reachable_tile_label import TASK_ID as LABEL_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.terrain_type_tile_count import TASK_ID as TERRAIN_COUNT_TASK_ID
+from trace.tasks.illustrations.rpg_tactical_map.water_barrier_unreachable_tile_label import TASK_ID as WATER_BARRIER_TASK_ID
 from trace.tasks.illustrations.rpg_tactical_map.shared.relations import (
     TERRAIN_GRASS,
     TERRAIN_MOUNTAIN,
@@ -200,6 +201,71 @@ def test_rpg_tactical_map_movement_reachable_tile_contract() -> None:
     assert sorted(render_map["candidate_tile_ids_by_label"]) == ["A", "B", "C", "D"]
     assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_tactical_map_v0"
     assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_tactical_map"
+
+
+def test_rpg_tactical_map_water_barrier_unreachable_tile_contract() -> None:
+    task = create_task(WATER_BARRIER_TASK_ID)
+    out = task.generate(
+        2026062701,
+        params={
+            "canvas_profile": "square",
+            "barrier_orientation": "vertical",
+        },
+        max_attempts=40,
+    )
+    assert out.scene_id == "rpg_tactical_map"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value in {"A", "B", "C", "D"}
+    assert out.annotation_gt.type == "bbox"
+    width, height = out.image.size
+    _assert_bbox_inside_canvas(out.annotation_gt.value, width=width, height=height)
+    prompt_lower = out.prompt.lower()
+    assert "water" in prompt_lower
+    assert "cannot be crossed" in prompt_lower
+    assert "movement points" not in prompt_lower
+    assert "mountains cost" not in prompt_lower
+
+    trace = out.trace_payload
+    render_map = trace["render_map"]
+    answer_label = str(out.answer_gt.value)
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert render_map["selected_label"] == answer_label
+    assert render_map["selected_tile_bbox_px"] == out.annotation_gt.value
+    assert render_map["candidate_reachable_by_label"][answer_label] is False
+    assert [
+        label
+        for label, reachable in render_map["candidate_reachable_by_label"].items()
+        if not bool(reachable)
+    ] == [answer_label]
+    assert sorted(render_map["candidate_tile_ids_by_label"]) == ["A", "B", "C", "D"]
+    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_tactical_map_v0"
+    assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_tactical_map"
+
+    tiles_by_id = {str(tile["tile_id"]): tile for tile in trace["scene_ir"]["tiles"]}
+    selected_tile_id = str(render_map["selected_tile_id"])
+    assert selected_tile_id not in set(render_map["reachable_tile_ids"])
+    for label, tile_id in render_map["candidate_tile_ids_by_label"].items():
+        if str(label) == answer_label:
+            continue
+        assert str(tile_id) in set(render_map["reachable_tile_ids"])
+
+    barrier_ids = [str(tile_id) for tile_id in render_map["water_barrier_tile_ids"]]
+    assert barrier_ids
+    assert all(tiles_by_id[tile_id]["terrain"] == "water" for tile_id in barrier_ids)
+    orientation = str(render_map["barrier_orientation"])
+    thickness = int(render_map["barrier_thickness"])
+    if orientation == "vertical":
+        rows = {int(tiles_by_id[tile_id]["row"]) for tile_id in barrier_ids}
+        cols = {int(tiles_by_id[tile_id]["col"]) for tile_id in barrier_ids}
+        assert rows == set(range(int(trace["render_spec"]["style"]["grid_rows"])))
+        assert len(cols) == thickness
+    else:
+        rows = {int(tiles_by_id[tile_id]["row"]) for tile_id in barrier_ids}
+        cols = {int(tiles_by_id[tile_id]["col"]) for tile_id in barrier_ids}
+        assert len(rows) == thickness
+        assert cols == set(range(int(trace["render_spec"]["style"]["grid_cols"])))
 
 
 def test_rpg_tactical_map_movement_distractors_are_plausible_and_spread() -> None:

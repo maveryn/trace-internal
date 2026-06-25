@@ -36,6 +36,13 @@
             "",
             "",
             ""
+        ],
+        "water_barrier_unreachable_tile_label_task": [
+            "",
+            "",
+            "",
+            "",
+            ""
         ]
   },
   "required_slots_by_key": {
@@ -59,6 +66,9 @@
         ],
         "query:movement_cost_value": [
             "terrain_rules"
+        ],
+        "query:water_barrier_unreachable_tile": [
+            "water_rule"
         ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -109,6 +119,13 @@
             "The picture shows a pixel-art tactical movement map containing terrain tiles, a blue unit, and a target marker on one tile.",
             "The canvas contains a top-down RPG battle map with grass, roads, forests, water, bridges, mountains, one blue unit, and one marked target tile.",
             "This illustration shows a tactical RPG grid map where a blue unit can move across terrain toward the marked target tile."
+        ],
+        "rpg_tactical_map_water_barrier_canvas": [
+            "The image shows a top-down tactical RPG map with terrain tiles, one blue unit, a continuous water barrier, and lettered candidate tiles.",
+            "The scene shows a grid-based tactical map from above, with a blue unit, one water barrier crossing the map, and lettered target tiles.",
+            "The picture shows a pixel-art tactical map containing terrain tiles, a blue unit, a full water barrier, and lettered candidate tiles.",
+            "The canvas contains a top-down RPG battle map with one blue unit, lettered tiles, and a continuous strip of water separating two sides of the map.",
+            "This illustration shows a tactical RPG grid map where water divides the map and lettered tiles appear on both sides."
         ]
   },
   "query_templates": {
@@ -146,6 +163,13 @@
             "The blue unit starts on its current tile. {terrain_rules} How many movement points are needed to reach the marked destination tile using the cheapest path?",
             "{terrain_rules} Count the minimum total movement cost from the blue unit to the marked target tile.",
             "The blue unit may move only up, down, left, or right. {terrain_rules} What is the shortest movement cost to the marked target tile?"
+        ],
+        "water_barrier_unreachable_tile": [
+            "{water_rule} Which lettered tile cannot be reached from the blue unit?",
+            "The blue unit starts on its current tile. {water_rule} Select the lettered tile that is unreachable.",
+            "{water_rule} Which candidate letter marks a tile on a part of the map the blue unit cannot reach?",
+            "Using only the water-blocking rule, choose the lettered tile that cannot be reached from the blue unit. {water_rule}",
+            "From the blue unit's current tile, determine which lettered tile is cut off by water. {water_rule}"
         ]
   },
   "allow_empty_task_templates": true

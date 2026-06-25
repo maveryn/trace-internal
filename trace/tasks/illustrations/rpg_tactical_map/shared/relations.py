@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import deque
 from heapq import heappop, heappush
 from typing import Mapping
 
@@ -45,6 +46,33 @@ def orthogonal_neighbors(coord: TileCoord) -> tuple[TileCoord, TileCoord, TileCo
 
     row, col = int(coord[0]), int(coord[1])
     return ((row - 1, col), (row + 1, col), (row, col - 1), (row, col + 1))
+
+
+def connected_passable_tile_ids(
+    tiles_by_coord: Mapping[TileCoord, RpgTacticalTile],
+    *,
+    start_coord: TileCoord,
+) -> set[str]:
+    """Return passable tile ids connected to start by orthogonal moves."""
+
+    start = (int(start_coord[0]), int(start_coord[1]))
+    if start not in tiles_by_coord:
+        raise ValueError(f"start tile {start} is not in the tactical map")
+    if not bool(tiles_by_coord[start].passable):
+        raise ValueError(f"start tile {start} is not passable")
+    seen: set[TileCoord] = {start}
+    queue: deque[TileCoord] = deque([start])
+    while queue:
+        coord = queue.popleft()
+        for neighbor in orthogonal_neighbors(coord):
+            if neighbor in seen:
+                continue
+            tile = tiles_by_coord.get(neighbor)
+            if tile is None or not bool(tile.passable):
+                continue
+            seen.add(neighbor)
+            queue.append(neighbor)
+    return {str(tiles_by_coord[coord].tile_id) for coord in seen}
 
 
 def shortest_movement_costs(
@@ -139,6 +167,7 @@ __all__ = [
     "TERRAIN_ROAD",
     "TERRAIN_WATER",
     "is_passable_terrain",
+    "connected_passable_tile_ids",
     "movement_cost_for_terrain",
     "orthogonal_neighbors",
     "shortest_movement_costs",

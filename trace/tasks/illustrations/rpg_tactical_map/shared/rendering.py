@@ -679,19 +679,18 @@ def _draw_target_markers(
             raise ValueError(f"unknown target tile id {tile_id!r}")
         tile = tiles_by_id[str(tile_id)]
         x0, y0, x1, y1 = [int(round(value)) for value in tile.bbox_xyxy]
-        margin = max(7, int(tile_px * 0.13))
-        ring = (216, 26, 42)
-        ring_dark = (92, 12, 22)
-        fill = (255, 235, 95)
-        bbox = (x0 + margin, y0 + margin, x1 - margin, y1 - margin)
-        draw.ellipse(bbox, fill=fill, outline=ring_dark, width=max(4, int(tile_px * 0.07)))
-        inner_margin = max(8, int(tile_px * 0.23))
-        inner_bbox = (x0 + inner_margin, y0 + inner_margin, x1 - inner_margin, y1 - inner_margin)
-        draw.ellipse(inner_bbox, outline=ring, width=max(3, int(tile_px * 0.05)))
-        cx, cy = tile.point_xy
-        arm = max(12, int(tile_px * 0.25))
-        draw.line((cx - arm, cy, cx + arm, cy), fill=ring_dark, width=max(3, int(tile_px * 0.045)))
-        draw.line((cx, cy - arm, cx, cy + arm), fill=ring_dark, width=max(3, int(tile_px * 0.045)))
+        margin = max(6, int(tile_px * 0.10))
+        outline_width = max(4, int(tile_px * 0.06))
+        marker_bbox = (x0 + margin, y0 + margin, x1 - margin, y1 - margin)
+        draw.rectangle(marker_bbox, outline=(88, 10, 18), width=outline_width + 2)
+        inner_offset = max(1, outline_width // 2)
+        inner_bbox = (
+            marker_bbox[0] + inner_offset,
+            marker_bbox[1] + inner_offset,
+            marker_bbox[2] - inner_offset,
+            marker_bbox[3] - inner_offset,
+        )
+        draw.rectangle(inner_bbox, outline=(232, 24, 36), width=outline_width)
 
 
 __all__ = [

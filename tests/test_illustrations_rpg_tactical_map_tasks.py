@@ -96,6 +96,61 @@ def test_rpg_tactical_map_renderer_is_deterministic_and_profile_safe() -> None:
             _assert_bbox_inside_canvas(list(unit.bbox_xyxy), width=width, height=height)
 
 
+def test_rpg_tactical_map_target_marker_is_inset_red_square_outline() -> None:
+    params = resolve_tactical_map_render_params({"canvas_profile": "landscape"}, {}, instance_seed=102)
+    seed = 67890
+    probe = render_rpg_tactical_map_scene(
+        seed,
+        width=params["canvas_width"],
+        height=params["canvas_height"],
+        grid_cols=params["grid_cols"],
+        grid_rows=params["grid_rows"],
+        tile_px=params["tile_px"],
+        render_metadata=params,
+    )
+    player_tile_id = str(probe.units[0].tile_id)
+    target_tile = next(tile for tile in probe.tiles if str(tile.tile_id) != player_tile_id)
+    baseline = render_rpg_tactical_map_scene(
+        seed,
+        width=params["canvas_width"],
+        height=params["canvas_height"],
+        grid_cols=params["grid_cols"],
+        grid_rows=params["grid_rows"],
+        tile_px=params["tile_px"],
+        player_tile_id=player_tile_id,
+        render_metadata=params,
+    )
+    marked = render_rpg_tactical_map_scene(
+        seed,
+        width=params["canvas_width"],
+        height=params["canvas_height"],
+        grid_cols=params["grid_cols"],
+        grid_rows=params["grid_rows"],
+        tile_px=params["tile_px"],
+        player_tile_id=player_tile_id,
+        target_tile_ids=[str(target_tile.tile_id)],
+        render_metadata=params,
+    )
+
+    x0, y0, x1, y1 = [int(round(value)) for value in target_tile.bbox_xyxy]
+    cx, cy = [int(round(value)) for value in target_tile.point_xy]
+    assert marked.image.getpixel((cx, cy)) == baseline.image.getpixel((cx, cy))
+
+    crop_pixels = list(marked.image.crop((x0, y0, x1, y1)).getdata())
+    bright_red_pixels = [
+        pixel
+        for pixel in crop_pixels
+        if int(pixel[0]) > 180 and int(pixel[1]) < 70 and int(pixel[2]) < 80
+    ]
+    dark_red_pixels = [
+        pixel
+        for pixel in crop_pixels
+        if 60 <= int(pixel[0]) <= 130 and int(pixel[1]) < 45 and int(pixel[2]) < 60
+    ]
+    assert len(bright_red_pixels) > 80
+    assert len(dark_red_pixels) > 80
+
+
 def test_rpg_tactical_map_movement_reachable_tile_contract() -> None:
     task = create_task(LABEL_TASK_ID)
     out = task.generate(

@@ -102,6 +102,6 @@ prompt:
       json_output_contract: 'Return JSON with keys "annotation" and "answer".'
       json_output_contract_answer_only: 'Return JSON with key "answer".'
       answer_hint_movement_cost_value: set "answer" to the fewest number of movement points needed to reach the marked target tile
-      annotation_hint_movement_cost_value: set "annotation" to one [x0, y0, x1, y1] pixel bounding box around the marked target tile
-      json_example_movement_cost_value: '{"annotation":[320,160,400,240],"answer":7}'
+      annotation_hint_movement_cost_value: set "annotation" to an ordered list of [x0, y0, x1, y1] pixel bounding boxes for the shortest path tiles from the blue unit's starting tile through the marked target tile
+      json_example_movement_cost_value: '{"annotation":[[160,320,240,400],[240,320,320,400],[320,320,400,400]],"answer":7}'
       json_example_answer_only_movement_cost_value: '{"answer":7}'

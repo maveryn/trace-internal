@@ -27,6 +27,13 @@ def bbox_set_projection(bboxes: Sequence[Sequence[float]]) -> dict[str, Any]:
     return {"type": "bbox_set", "bbox_set": values, "pixel_bbox_set": values}
 
 
+def bbox_sequence_projection(bboxes: Sequence[Sequence[float]]) -> dict[str, Any]:
+    """Return the ordered bbox-sequence projection payload."""
+
+    values = [rounded_bbox(bbox) for bbox in bboxes]
+    return {"type": "bbox_sequence", "bbox_sequence": values, "pixel_bbox_sequence": values}
+
+
 def rpg_tactical_map_scene_ir(
     *,
     domain: str,
@@ -237,6 +244,7 @@ def movement_cost_value_render_map(
     *,
     scene: RpgTacticalMapScene,
     target_tile_id: str,
+    shortest_path_tile_ids: Sequence[str],
     movement_costs_by_tile_id: Mapping[str, int],
     start_tile_id: str,
     target_manhattan_distance: int,
@@ -246,12 +254,28 @@ def movement_cost_value_render_map(
 
     tiles_by_id = {str(tile.tile_id): tile for tile in scene.tiles}
     target_tile = tiles_by_id[str(target_tile_id)]
+    path_tile_ids = [str(tile_id) for tile_id in shortest_path_tile_ids]
     return {
         "image_id": "img0",
         "target_tile_id": str(target_tile_id),
         "target_tile_bbox_px": rounded_bbox(target_tile.bbox_xyxy),
         "target_terrain": str(target_tile.terrain),
         "start_tile_id": str(start_tile_id),
+        "shortest_path_tile_ids": list(path_tile_ids),
+        "shortest_path_tile_bboxes_px": [
+            rounded_bbox(tiles_by_id[str(tile_id)].bbox_xyxy)
+            for tile_id in path_tile_ids
+        ],
+        "shortest_path_terrains": [
+            str(tiles_by_id[str(tile_id)].terrain)
+            for tile_id in path_tile_ids
+        ],
+        "shortest_path_entry_costs": [
+            int(tiles_by_id[str(tile_id)].movement_cost)
+            if index > 0 and tiles_by_id[str(tile_id)].movement_cost is not None
+            else 0
+            for index, tile_id in enumerate(path_tile_ids)
+        ],
         "target_manhattan_distance": int(target_manhattan_distance),
         "movement_costs_by_tile_id": {
             str(tile_id): int(cost)
@@ -288,6 +312,7 @@ def terrain_type_count_render_map(
 
 __all__ = [
     "bbox_projection",
+    "bbox_sequence_projection",
     "bbox_set_projection",
     "movement_attack_range_render_map",
     "movement_cost_value_render_map",

@@ -21,7 +21,7 @@ from ._lifecycle import (
 )
 from .shared.output import movement_cost_value_render_map
 from .shared.prompts import rpg_tactical_map_terrain_rules_text
-from .shared.relations import TERRAIN_MOVEMENT_COSTS, TERRAIN_WATER, shortest_movement_costs
+from .shared.relations import TERRAIN_MOVEMENT_COSTS, TERRAIN_WATER, shortest_movement_costs_and_paths
 from .shared.rendering import SCENE_ID
 from .shared.state import RpgTacticalMapScene, RpgTacticalTile
 
@@ -67,7 +67,7 @@ def _select_movement_cost_attempt(
     tiles_by_id = _tile_by_id(scene)
     start_tile_id = str(scene.units[0].tile_id)
     start_tile = tiles_by_id[start_tile_id]
-    movement_costs = shortest_movement_costs(_tiles_by_coord(scene), start_coord=start_tile.coord)
+    movement_costs, movement_paths = shortest_movement_costs_and_paths(_tiles_by_coord(scene), start_coord=start_tile.coord)
     target_pool = [
         tile
         for tile in scene.tiles
@@ -108,6 +108,12 @@ def _select_movement_cost_attempt(
     target_tile = sorted(preferred_pool, key=target_sort_key)[0]
     answer_value = int(movement_costs[str(target_tile.tile_id)])
     target_manhattan = _tile_manhattan(start_tile, target_tile)
+    shortest_path_tile_ids = [str(tile_id) for tile_id in movement_paths[str(target_tile.tile_id)]]
+    shortest_path_terrains = [str(tiles_by_id[str(tile_id)].terrain) for tile_id in shortest_path_tile_ids]
+    shortest_path_entry_costs = [
+        0 if index == 0 else int(tiles_by_id[str(tile_id)].movement_cost or 0)
+        for index, tile_id in enumerate(shortest_path_tile_ids)
+    ]
     relation_fields = {
         "operation": "shortest_movement_cost_to_marked_tile",
         "terrain_movement_costs": dict(TERRAIN_MOVEMENT_COSTS),
@@ -117,6 +123,9 @@ def _select_movement_cost_attempt(
         "target_terrain": str(target_tile.terrain),
         "target_manhattan_distance": int(target_manhattan),
         "target_shortest_movement_cost": int(answer_value),
+        "shortest_path_tile_ids": list(shortest_path_tile_ids),
+        "shortest_path_terrains": list(shortest_path_terrains),
+        "shortest_path_entry_costs": list(shortest_path_entry_costs),
         "sampled_target_cost_bucket": int(desired_cost),
         "available_target_cost_buckets": list(available_costs),
         "movement_cost_range": [int(min_movement_cost), int(max_movement_cost)],
@@ -129,6 +138,7 @@ def _select_movement_cost_attempt(
     return RpgTacticalMapValueAttempt(
         target_tile_id=str(target_tile.tile_id),
         answer_value=int(answer_value),
+        annotation_tile_ids=list(shortest_path_tile_ids),
         relation_fields=relation_fields,
         execution_fields=execution_fields,
         witness_fields={
@@ -136,6 +146,9 @@ def _select_movement_cost_attempt(
             "target_terrain": str(target_tile.terrain),
             "target_manhattan_distance": int(target_manhattan),
             "target_shortest_movement_cost": int(answer_value),
+            "shortest_path_tile_ids": list(shortest_path_tile_ids),
+            "shortest_path_terrains": list(shortest_path_terrains),
+            "shortest_path_entry_costs": list(shortest_path_entry_costs),
             "terrain_cost_affects_answer": bool(answer_value > target_manhattan),
         },
     )
@@ -175,6 +188,7 @@ def _build_movement_cost_plan(
         return movement_cost_value_render_map(
             scene=scene,
             target_tile_id=str(attempt.target_tile_id),
+            shortest_path_tile_ids=execution["shortest_path_tile_ids"],
             movement_costs_by_tile_id=execution["movement_costs_by_tile_id"],
             start_tile_id=str(execution["start_tile_id"]),
             target_manhattan_distance=int(execution["target_manhattan_distance"]),

@@ -80,6 +80,55 @@ def shortest_movement_costs(
     }
 
 
+def shortest_movement_costs_and_paths(
+    tiles_by_coord: Mapping[TileCoord, RpgTacticalTile],
+    *,
+    start_coord: TileCoord,
+) -> tuple[dict[str, int], dict[str, list[str]]]:
+    """Run Dijkstra and return costs plus one deterministic shortest path per reachable tile."""
+
+    start = (int(start_coord[0]), int(start_coord[1]))
+    if start not in tiles_by_coord:
+        raise ValueError(f"start tile {start} is not in the tactical map")
+    if not bool(tiles_by_coord[start].passable):
+        raise ValueError(f"start tile {start} is not passable")
+
+    best_by_coord: dict[TileCoord, int] = {start: 0}
+    previous_by_coord: dict[TileCoord, TileCoord] = {}
+    heap: list[tuple[int, TileCoord]] = [(0, start)]
+    while heap:
+        current_cost, coord = heappop(heap)
+        if int(current_cost) != int(best_by_coord.get(coord, current_cost)):
+            continue
+        for neighbor in orthogonal_neighbors(coord):
+            tile = tiles_by_coord.get(neighbor)
+            if tile is None or not bool(tile.passable) or tile.movement_cost is None:
+                continue
+            new_cost = int(current_cost) + int(tile.movement_cost)
+            if new_cost < int(best_by_coord.get(neighbor, 10**9)):
+                best_by_coord[neighbor] = new_cost
+                previous_by_coord[neighbor] = coord
+                heappush(heap, (new_cost, neighbor))
+
+    costs_by_id = {
+        str(tiles_by_coord[coord].tile_id): int(cost)
+        for coord, cost in sorted(best_by_coord.items(), key=lambda item: (item[0][0], item[0][1]))
+    }
+    paths_by_id: dict[str, list[str]] = {}
+    for coord in sorted(best_by_coord, key=lambda item: (item[0], item[1])):
+        path_coords = [coord]
+        current = coord
+        while current != start:
+            current = previous_by_coord[current]
+            path_coords.append(current)
+        path_coords.reverse()
+        paths_by_id[str(tiles_by_coord[coord].tile_id)] = [
+            str(tiles_by_coord[path_coord].tile_id)
+            for path_coord in path_coords
+        ]
+    return costs_by_id, paths_by_id
+
+
 __all__ = [
     "BLOCKED_TERRAINS",
     "TERRAIN_BRIDGE",
@@ -93,4 +142,5 @@ __all__ = [
     "movement_cost_for_terrain",
     "orthogonal_neighbors",
     "shortest_movement_costs",
+    "shortest_movement_costs_and_paths",
 ]

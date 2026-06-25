@@ -379,18 +379,20 @@ def test_rpg_tactical_map_movement_cost_value_contract() -> None:
     assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert 3 <= int(out.answer_gt.value) <= 10
-    assert out.annotation_gt.type == "bbox"
+    assert out.annotation_gt.type == "bbox_sequence"
     width, height = out.image.size
-    _assert_bbox_inside_canvas(out.annotation_gt.value, width=width, height=height)
+    for bbox in out.annotation_gt.value:
+        _assert_bbox_inside_canvas(bbox, width=width, height=height)
     assert "marked" in out.prompt
     assert "movement" in out.prompt
     assert "water cannot be entered" in out.prompt
 
     trace = out.trace_payload
     render_map = trace["render_map"]
-    assert trace["projected_annotation"]["type"] == "bbox"
-    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
-    assert render_map["target_tile_bbox_px"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_sequence"
+    assert trace["projected_annotation"]["bbox_sequence"] == out.annotation_gt.value
+    assert render_map["shortest_path_tile_bboxes_px"] == out.annotation_gt.value
+    assert render_map["target_tile_bbox_px"] == out.annotation_gt.value[-1]
     assert int(render_map["answer_value"]) == int(out.answer_gt.value)
     assert int(render_map["target_shortest_movement_cost"]) == int(out.answer_gt.value)
     assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_tactical_map_v0"
@@ -402,6 +404,19 @@ def test_rpg_tactical_map_movement_cost_value_contract() -> None:
     assert target_tile_id != start_tile_id
     assert target_tile_id in tiles_by_id
     assert start_tile_id in tiles_by_id
+    path_tile_ids = [str(tile_id) for tile_id in render_map["shortest_path_tile_ids"]]
+    assert path_tile_ids[0] == start_tile_id
+    assert path_tile_ids[-1] == target_tile_id
+    assert trace["execution_trace"]["shortest_path_tile_ids"] == path_tile_ids
+    assert trace["execution_trace"]["annotation_tile_ids"] == path_tile_ids
+    assert len(path_tile_ids) == len(out.annotation_gt.value)
+    for left_id, right_id in zip(path_tile_ids, path_tile_ids[1:]):
+        left = tiles_by_id[left_id]
+        right = tiles_by_id[right_id]
+        step = abs(int(left["row"]) - int(right["row"])) + abs(int(left["col"]) - int(right["col"]))
+        assert step == 1
+    assert render_map["shortest_path_entry_costs"][0] == 0
+    assert sum(int(cost) for cost in render_map["shortest_path_entry_costs"]) == int(out.answer_gt.value)
     assert trace["scene_ir"]["relations"]["target_tile_id"] == target_tile_id
     assert trace["execution_trace"]["target_tile_id"] == target_tile_id
     assert trace["execution_trace"]["movement_costs_by_tile_id"][target_tile_id] == int(out.answer_gt.value)

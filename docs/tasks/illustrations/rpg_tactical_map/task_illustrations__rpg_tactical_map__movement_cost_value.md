@@ -36,13 +36,14 @@ Computes the fewest movement-point cost for the blue unit to reach one visibly m
 - Default answer range is `3..10`.
 
 ## Annotation Contract
-- Annotation schema: `bbox`
-- Generator `annotation_gt.type`: `bbox`
-- Annotation contains one pixel bounding box around the marked target tile.
-- Annotation excludes the blue unit, other terrain tiles, and the target marker artwork outside the selected tile boundary.
+- Annotation schema: `bbox_sequence`
+- Generator `annotation_gt.type`: `bbox_sequence`
+- Annotation contains an ordered sequence of pixel bounding boxes for the shortest path tiles used by the verifier.
+- The first bbox is the blue unit's starting tile, and the final bbox is the marked target tile.
+- Annotation excludes off-path terrain tiles and the target marker artwork outside tile boundaries.
 
 ## Prompt And Trace Requirements
 - Prompt text must come from `prompts/illustrations/rpg_tactical_map/illustrations_rpg_tactical_map_v0.json`.
 - Public prompts must state the terrain movement costs, that movement is orthogonal, and that water cannot be entered.
 - The task has no semantic query branch beyond `single`; sampled map layout, target tile, target movement cost, terrain colors, and canvas profile are trace metadata, not public query ids.
-- Target tile id, target tile bbox, shortest movement costs, terrain costs, start tile id, target Manhattan distance, answer value, and scalar bbox annotation must be recorded in the trace.
+- Target tile id, target tile bbox, shortest path tile ids, shortest path terrain labels, shortest path entry costs, shortest movement costs, terrain costs, start tile id, target Manhattan distance, answer value, and ordered bbox-sequence annotation must be recorded in the trace.

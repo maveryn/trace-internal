@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Mapping
-
+from trace.core.types import TypedValue
+from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
+from trace.tasks.shared.fixed_query import select_task_query_id
 
-from ._lifecycle import SolidCrossSectionObjectivePlan, run_solid_cross_section_public_entry
+from ._lifecycle import SolidCrossSectionObjectivePlan, prepare_solid_cross_section_task_parts
 from .shared.annotations import CONE_ANNOTATION_KEYS
 from .shared.defaults import DOMAIN, SCENE_ID
 from .shared.measurements import cone_problem_from_case
@@ -18,52 +19,6 @@ DEFAULT_QUERY_ID = QUERY_ID
 PROMPT_KEY = QUERY_ID
 
 
-def _prepare_cone_objective(
-    *,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    selected_query: str,
-    query_probabilities: Mapping[str, float],
-) -> SolidCrossSectionObjectivePlan:
-    """Bind the cone slice-area objective for one generated instance."""
-
-    case, support_probabilities, construction_case_count = resolve_cone_slice_case(
-        instance_seed=int(instance_seed),
-        params=params,
-        namespace=f"{TASK_ID}.{selected_query}",
-    )
-    problem = cone_problem_from_case(
-        case,
-        formula_family="cone_parallel_slice_area",
-        formula="parallel cone slice: r_slice/R = d/H, area = pi * r_slice^2",
-        answer_support_probabilities=support_probabilities,
-        construction_case_count_for_answer=int(construction_case_count),
-    )
-    trace_values = {
-        "solid_kind": "cone",
-        "base_radius": float(problem.base_radius or 0.0),
-        "solid_height": float(problem.solid_height),
-        "slice_distance_from_apex": float(problem.slice_distance_from_apex),
-        "similarity_scale": float(problem.slice_distance_from_apex) / float(problem.solid_height),
-        "slice_radius": float(problem.slice_radius or 0.0),
-        "answer_support_size": int(cone_answer_support_size()),
-        "construction_case_count_for_answer": int(construction_case_count),
-    }
-    return SolidCrossSectionObjectivePlan(
-        prompt_key=PROMPT_KEY,
-        problem=problem,
-        render_scene=render_cone_cross_section,
-        annotation_keys=CONE_ANNOTATION_KEYS,
-        answer_value=float(problem.answer),
-        query_params={
-            "query_id_probabilities": dict(query_probabilities),
-            "answer_support_probabilities": dict(support_probabilities),
-            **dict(trace_values),
-        },
-        trace_values=trace_values,
-    )
-
-
 @register_task
 class GeometryConeParallelSliceAreaTask:
     task_id = TASK_ID
@@ -71,14 +26,73 @@ class GeometryConeParallelSliceAreaTask:
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_query_id = DEFAULT_QUERY_ID
-    prepare_objective = staticmethod(_prepare_cone_objective)
 
-    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
-        """Generate one cone parallel-slice area task."""
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int) -> TaskOutput:
+        """Generate one cone parallel-slice area task with task-owned output binding."""
 
-        return run_solid_cross_section_public_entry(
-            self,
-            int(instance_seed),
+        query_id, probabilities, task_params = select_task_query_id(
+            instance_seed=int(instance_seed),
             params=params,
+            supported_query_ids=SUPPORTED_QUERY_IDS,
+            default_query_id=DEFAULT_QUERY_ID,
+            task_id=TASK_ID,
+            namespace=f"{TASK_ID}.query",
+        )
+        case, answer_probabilities, case_count = resolve_cone_slice_case(
+            instance_seed=int(instance_seed),
+            params=task_params,
+            namespace=f"{TASK_ID}.{query_id}",
+        )
+        problem = cone_problem_from_case(
+            case,
+            formula_family="cone_parallel_slice_area",
+            formula="parallel cone slice: r_slice/R = d/H, area = pi * r_slice^2",
+            answer_support_probabilities=answer_probabilities,
+            construction_case_count_for_answer=int(case_count),
+        )
+        if problem.base_radius is None or problem.slice_radius is None:
+            raise RuntimeError("cone slice area task requires base and slice radii")
+        cone_trace = {
+            "solid_kind": "cone",
+            "base_radius": float(problem.base_radius or 0.0),
+            "solid_height": float(problem.solid_height),
+            "slice_distance_from_apex": float(problem.slice_distance_from_apex),
+            "similarity_scale": float(problem.slice_distance_from_apex) / float(problem.solid_height),
+            "slice_radius": float(problem.slice_radius or 0.0),
+            "answer_support_size": int(cone_answer_support_size()),
+            "construction_case_count_for_answer": int(case_count),
+        }
+        plan = SolidCrossSectionObjectivePlan(
+            prompt_key=PROMPT_KEY,
+            problem=problem,
+            render_scene=render_cone_cross_section,
+            annotation_keys=CONE_ANNOTATION_KEYS,
+            answer_value=float(problem.answer),
+            query_params={
+                "query_id_probabilities": dict(probabilities),
+                "answer_support_probabilities": dict(answer_probabilities),
+                **cone_trace,
+            },
+            trace_values=cone_trace,
+        )
+        parts = prepare_solid_cross_section_task_parts(
+            task_id=TASK_ID,
+            selected_query=str(query_id),
+            query_probabilities=probabilities,
+            params=task_params,
+            plan=plan,
+            instance_seed=int(instance_seed),
             max_attempts=int(max_attempts),
+        )
+        return TaskOutput(
+            prompt=parts.prompt,
+            answer_gt=TypedValue(type="number", value=float(plan.answer_value)),
+            annotation_gt=TypedValue(type="bbox_map", value=dict(parts.annotation_value)),
+            image=parts.image,
+            image_id="img0",
+            trace_payload=parts.trace_payload,
+            task_versions=parts.task_versions,
+            scene_id=SCENE_ID,
+            query_id=str(query_id),
+            prompt_variants=dict(parts.prompt_variants),
         )

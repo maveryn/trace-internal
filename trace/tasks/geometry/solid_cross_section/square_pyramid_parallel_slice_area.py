@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from trace.core.types import TypedValue
+from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
+from trace.tasks.shared.fixed_query import select_task_query_id
 
-from ._lifecycle import SolidCrossSectionObjectivePlan, run_solid_cross_section_public_entry
+from ._lifecycle import SolidCrossSectionObjectivePlan, prepare_solid_cross_section_task_parts
 from .shared.annotations import PYRAMID_ANNOTATION_KEYS
 from .shared.defaults import DOMAIN, SCENE_ID
 from .shared.measurements import pyramid_problem_from_case
@@ -71,14 +74,42 @@ class GeometrySquarePyramidParallelSliceAreaTask:
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_query_id = DEFAULT_QUERY_ID
-    prepare_objective = staticmethod(_prepare_pyramid_objective)
 
-    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
-        """Generate one square-pyramid parallel-slice area task."""
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int) -> TaskOutput:
+        """Generate one square-pyramid parallel-slice area task with task-owned output binding."""
 
-        return run_solid_cross_section_public_entry(
-            self,
-            int(instance_seed),
+        selected_query, query_probabilities, task_params = select_task_query_id(
+            instance_seed=int(instance_seed),
             params=params,
+            supported_query_ids=SUPPORTED_QUERY_IDS,
+            default_query_id=DEFAULT_QUERY_ID,
+            task_id=TASK_ID,
+            namespace=f"{TASK_ID}.query",
+        )
+        plan = _prepare_pyramid_objective(
+            instance_seed=int(instance_seed),
+            params=task_params,
+            selected_query=str(selected_query),
+            query_probabilities=query_probabilities,
+        )
+        parts = prepare_solid_cross_section_task_parts(
+            task_id=TASK_ID,
+            selected_query=str(selected_query),
+            query_probabilities=query_probabilities,
+            params=task_params,
+            plan=plan,
+            instance_seed=int(instance_seed),
             max_attempts=int(max_attempts),
+        )
+        return TaskOutput(
+            prompt=parts.prompt,
+            answer_gt=TypedValue(type="number", value=float(plan.answer_value)),
+            annotation_gt=TypedValue(type="bbox_map", value=dict(parts.annotation_value)),
+            image=parts.image,
+            image_id="img0",
+            trace_payload=parts.trace_payload,
+            task_versions=parts.task_versions,
+            scene_id=SCENE_ID,
+            query_id=str(selected_query),
+            prompt_variants=dict(parts.prompt_variants),
         )

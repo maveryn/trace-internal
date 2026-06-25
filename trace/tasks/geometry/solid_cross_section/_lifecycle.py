@@ -7,10 +7,7 @@ from typing import Any, Callable, Mapping, Sequence
 
 from PIL import Image
 
-from trace.core.types import TypedValue
 from trace.core.visual.noise import apply_post_image_noise
-from trace.tasks.base import TaskOutput
-from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
@@ -47,52 +44,6 @@ class SolidCrossSectionTaskParts:
     trace_payload: dict[str, Any]
     task_versions: dict[str, str]
     scene_id: str
-
-
-def run_solid_cross_section_public_entry(
-    task: Any,
-    instance_seed: int,
-    *,
-    params: Mapping[str, Any],
-    max_attempts: int,
-) -> TaskOutput:
-    """Run shared plumbing after one public task binds its objective."""
-
-    selected_query, query_probabilities, task_params = select_task_query_id(
-        instance_seed=int(instance_seed),
-        params=params,
-        supported_query_ids=tuple(str(value) for value in task.supported_query_ids),
-        default_query_id=str(task.default_query_id),
-        task_id=str(task.task_id),
-        namespace=f"{task.task_id}.query",
-    )
-    plan = task.prepare_objective(
-        instance_seed=int(instance_seed),
-        params=task_params,
-        selected_query=str(selected_query),
-        query_probabilities=query_probabilities,
-    )
-    parts = prepare_solid_cross_section_task_parts(
-        task_id=str(task.task_id),
-        selected_query=str(selected_query),
-        query_probabilities=query_probabilities,
-        params=task_params,
-        plan=plan,
-        instance_seed=int(instance_seed),
-        max_attempts=int(max_attempts),
-    )
-    return TaskOutput(
-        prompt=parts.prompt,
-        answer_gt=TypedValue(type="number", value=float(plan.answer_value)),
-        annotation_gt=TypedValue(type="bbox_map", value=dict(parts.annotation_value)),
-        image=parts.image,
-        image_id="img0",
-        trace_payload=parts.trace_payload,
-        task_versions=parts.task_versions,
-        scene_id=SCENE_ID,
-        query_id=str(selected_query),
-        prompt_variants=dict(parts.prompt_variants),
-    )
 
 
 def _trace_payload(
@@ -247,7 +198,6 @@ def prepare_solid_cross_section_task_parts(
 
 __all__ = [
     "prepare_solid_cross_section_task_parts",
-    "run_solid_cross_section_public_entry",
     "SolidCrossSectionObjectivePlan",
     "SolidCrossSectionTaskParts",
 ]

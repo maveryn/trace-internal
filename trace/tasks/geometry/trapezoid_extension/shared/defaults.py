@@ -34,12 +34,11 @@ POST_IMAGE_NOISE_DEFAULTS: dict[str, Any] = {
 }
 
 
-def load_trapezoid_extension_defaults(source_name: str) -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
-    """Load generation/rendering/prompt defaults for one public source file."""
+def load_trapezoid_extension_defaults() -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+    """Load scene-level generation/rendering/prompt defaults."""
 
     generation_defaults, rendering_defaults, prompt_defaults = split_scene_generation_rendering_prompt_defaults(
         _SCENE_DEFAULTS,
-        task_id=str(source_name),
     )
     merged_prompt_defaults = {
         "bundle_id": PROMPT_BUNDLE_ID,

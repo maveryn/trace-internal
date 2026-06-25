@@ -7,7 +7,7 @@ from typing import Any, Mapping
 from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.registry import register_task
 
-from ._lifecycle import TrapezoidExtensionObjectivePlan, run_trapezoid_extension_public_entry
+from ._lifecycle import run_trapezoid_extension_public_entry
 from .shared.measurements import area_case_pool, case_trace_values, fmt_measure, trapezoid_area
 from .shared.rendering import render_trapezoid_extension_scene
 from .shared.sampling import choose_case_by_answer
@@ -27,7 +27,7 @@ def _prepare_area_from_extension_and_height(
     params: Mapping[str, Any],
     selected_query: str,
     branch_probabilities: Mapping[str, float],
-) -> TrapezoidExtensionObjectivePlan:
+) -> tuple[TrapezoidExtensionProblem, float, dict[str, Any]]:
     """Bind the area formula where the lower base is derived from the extension."""
 
     if str(selected_query) != SINGLE_QUERY_ID:
@@ -44,7 +44,6 @@ def _prepare_area_from_extension_and_height(
         "formula_family": "trapezoid_area_from_extension_and_height",
         "formula": "trapezoid area = h * (AB + DC) / 2, with DC = AB + BE",
         "target_support_probabilities": dict(answer_probabilities),
-        "query_id_probabilities": dict(branch_probabilities),
         **case_trace_values(case),
     }
     problem = TrapezoidExtensionProblem(
@@ -60,14 +59,7 @@ def _prepare_area_from_extension_and_height(
         ),
         target_support_probabilities=dict(answer_probabilities),
     )
-    return TrapezoidExtensionObjectivePlan(
-        prompt_key=TASK_PROMPT_KEY,
-        problem=problem,
-        render_scene=render_trapezoid_extension_scene,
-        answer_value=float(answer),
-        query_params=trace_values,
-        trace_values=trace_values,
-    )
+    return problem, float(answer), trace_values
 
 
 @register_task
@@ -79,6 +71,8 @@ class GeometryTrapezoidAreaFromExtensionAndHeightTask:
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_query_id = SINGLE_QUERY_ID
+    task_prompt_key = TASK_PROMPT_KEY
+    render_scene = staticmethod(render_trapezoid_extension_scene)
     prepare_objective = staticmethod(_prepare_area_from_extension_and_height)
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

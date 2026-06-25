@@ -7,7 +7,7 @@ from typing import Any, Mapping
 from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.registry import register_task
 
-from ._lifecycle import TrapezoidExtensionObjectivePlan, run_trapezoid_extension_public_entry
+from ._lifecycle import run_trapezoid_extension_public_entry
 from .shared.measurements import (
     case_trace_values,
     completion_length_from_perimeter,
@@ -32,7 +32,7 @@ def _prepare_extension_from_perimeter(
     params: Mapping[str, Any],
     selected_query: str,
     branch_probabilities: Mapping[str, float],
-) -> TrapezoidExtensionObjectivePlan:
+) -> tuple[TrapezoidExtensionProblem, float, dict[str, Any]]:
     """Bind the parallelogram-perimeter formula for one extension-length sample."""
 
     if str(selected_query) != SINGLE_QUERY_ID:
@@ -49,7 +49,6 @@ def _prepare_extension_from_perimeter(
         "formula_family": "extension_from_parallelogram_perimeter",
         "formula": "BE = parallelogram perimeter / 2 - AD - AB",
         "target_support_probabilities": dict(answer_probabilities),
-        "query_id_probabilities": dict(branch_probabilities),
         **case_trace_values(case),
     }
     problem = TrapezoidExtensionProblem(
@@ -71,14 +70,7 @@ def _prepare_extension_from_perimeter(
         target_support_probabilities=dict(answer_probabilities),
         include_height_in_support=False,
     )
-    return TrapezoidExtensionObjectivePlan(
-        prompt_key=TASK_PROMPT_KEY,
-        problem=problem,
-        render_scene=render_trapezoid_extension_scene,
-        answer_value=float(answer),
-        query_params=trace_values,
-        trace_values=trace_values,
-    )
+    return problem, float(answer), trace_values
 
 
 @register_task
@@ -90,6 +82,8 @@ class GeometryTrapezoidExtensionFromParallelogramPerimeterTask:
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_query_id = SINGLE_QUERY_ID
+    task_prompt_key = TASK_PROMPT_KEY
+    render_scene = staticmethod(render_trapezoid_extension_scene)
     prepare_objective = staticmethod(_prepare_extension_from_perimeter)
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):

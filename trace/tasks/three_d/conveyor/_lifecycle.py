@@ -21,8 +21,11 @@ from .shared.prompts import build_prompt_artifacts, dynamic_slots_for_conveyor
 from .shared.rendering import RenderedConveyor, render_conveyor
 from .shared.sampling import (
     PREDICATE_BELT_TOTAL,
+    PREDICATE_COLOR,
+    PREDICATE_OBJECT_TYPE,
     ResolvedConveyorAxes,
     build_belt_total_count_dataset,
+    build_scoped_belt_count_dataset,
     resolve_conveyor_axes,
 )
 from .shared.state import SCENE_ID
@@ -121,6 +124,8 @@ def _build_trace_payload(
         "target_shape_type": str(dataset.get("target_shape_type", "")),
         "target_object_name": str(dataset.get("target_object_name", "")),
         "target_object_plural": str(dataset.get("target_object_plural", "")),
+        "target_color_name": str(dataset.get("target_color_name", "")),
+        "target_color_label": str(dataset.get("target_color_label", "")),
         "target_object_ids": list(target_ids),
         "target_object_bboxes_px": dict(target_bboxes),
         "target_object_centers_px": dict(target_centers),
@@ -223,6 +228,9 @@ def _trace_params(
         "object_count": int(dataset["object_count"]),
         "target_shape_type": str(dataset.get("target_shape_type", "")),
         "target_shape_type_probabilities": dict(dataset["target_shape_type_probabilities"]),
+        "target_color_name": str(dataset.get("target_color_name", "")),
+        "target_color_label": str(dataset.get("target_color_label", "")),
+        "target_color_name_probabilities": dict(dataset.get("target_color_name_probabilities", {})),
     }
 
 
@@ -264,7 +272,7 @@ def run_conveyor_lifecycle(
     )
     prompt_query_key = str(prompt_query_key_by_branch[str(selected_branch)])
     predicate_kind = str(predicate_kind_by_branch[str(selected_branch)])
-    if predicate_kind != PREDICATE_BELT_TOTAL:
+    if predicate_kind not in {PREDICATE_BELT_TOTAL, PREDICATE_OBJECT_TYPE, PREDICATE_COLOR}:
         raise ValueError(f"unsupported straight conveyor predicate: {predicate_kind}")
     min_bbox_side_px = float(clean_params.get("min_rendered_bbox_side_px", gen_defaults.get("min_rendered_bbox_side_px", 24.0)))
     last_error: Exception | None = None
@@ -277,14 +285,25 @@ def run_conveyor_lifecycle(
                 instance_seed=int(attempt_seed),
                 namespace=f"{public_name}.canvas",
             )
-            dataset = build_belt_total_count_dataset(
-                instance_seed=int(attempt_seed),
-                params=clean_params,
-                gen_defaults=gen_defaults,
-                render_params=render_params,
-                axes=axes,
-                namespace=str(public_name),
-            )
+            if predicate_kind == PREDICATE_BELT_TOTAL:
+                dataset = build_belt_total_count_dataset(
+                    instance_seed=int(attempt_seed),
+                    params=clean_params,
+                    gen_defaults=gen_defaults,
+                    render_params=render_params,
+                    axes=axes,
+                    namespace=str(public_name),
+                )
+            else:
+                dataset = build_scoped_belt_count_dataset(
+                    instance_seed=int(attempt_seed),
+                    params=clean_params,
+                    gen_defaults=gen_defaults,
+                    render_params=render_params,
+                    axes=axes,
+                    predicate_kind=str(predicate_kind),
+                    namespace=str(public_name),
+                )
             plan = ConveyorTaskPlan(
                 dataset=dict(dataset),
                 answer_gt=TypedValue(type="integer", value=int(dataset["answer_value"])),

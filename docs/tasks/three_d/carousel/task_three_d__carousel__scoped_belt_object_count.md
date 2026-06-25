@@ -16,18 +16,17 @@
 The image shows one 3D airport-style conveyor carousel with two visible
 concentric elliptical belts: an inner belt and an outer belt. The belts are
 distinguished by position, not by text written on the image. Small 3D objects
-sit on the belt surfaces. Each generated instance uses one sampled object type
-across both belts; color and belt position provide the main visual variation.
+sit on the belt surfaces. For this scoped-count task, the inner belt contains
+at most 8 objects and the outer belt contains at most 12 objects.
 
 For `object_type_belt_count`, the task asks for the number of objects of one
 sampled object type on the requested belt. For `color_belt_count`, the task asks
 for the number of objects with one canonical named color on the requested belt.
 
 The answer is the integer count of finalized objects whose belt and target
-attribute match the query. For object-type queries, all visible objects share
-the queried type, so the task reduces to counting that object type on the
-requested belt. For color queries, all visible objects share one type and vary
-by canonical named color.
+attribute match the query. The answer support is `0..5`. Object-type queries
+include same-belt objects of other types as distractors. Color queries include
+same-belt objects of other canonical named colors as distractors.
 
 ## Annotation Contract
 Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around

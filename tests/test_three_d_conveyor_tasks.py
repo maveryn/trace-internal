@@ -9,6 +9,11 @@ from trace.tasks.three_d.conveyor.belt_total_object_count import (
     QUERY_ID as TOTAL_QUERY_ID,
     TASK_ID as TOTAL_TASK_ID,
 )
+from trace.tasks.three_d.conveyor.scoped_belt_object_count import (
+    COLOR_QUERY_ID,
+    OBJECT_TYPE_QUERY_ID,
+    TASK_ID as SCOPED_TASK_ID,
+)
 from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
@@ -16,10 +21,21 @@ def _assert_count_output(output) -> None:
     trace = output.trace_payload["execution_trace"]
     render_map = output.trace_payload["render_map"]
     target_ids = [str(object_id) for object_id in trace["target_object_ids"]]
+    predicate_kind = str(trace["predicate_kind"])
+    expected_query_id_by_predicate = {
+        "belt_total": SINGLE_QUERY_ID,
+        "object_type": OBJECT_TYPE_QUERY_ID,
+        "color": COLOR_QUERY_ID,
+    }
+    expected_internal_query_id_by_predicate = {
+        "belt_total": TOTAL_QUERY_ID,
+        "object_type": OBJECT_TYPE_QUERY_ID,
+        "color": COLOR_QUERY_ID,
+    }
 
     assert output.scene_id == "conveyor"
-    assert output.query_id == SINGLE_QUERY_ID
-    assert output.trace_payload["query_spec"]["internal_query_id"] == TOTAL_QUERY_ID
+    assert output.query_id == expected_query_id_by_predicate[predicate_kind]
+    assert output.trace_payload["query_spec"]["internal_query_id"] == expected_internal_query_id_by_predicate[predicate_kind]
     assert output.answer_gt.type == "integer"
     assert output.annotation_gt.type == "bbox_set"
     assert int(output.answer_gt.value) == len(target_ids)
@@ -31,17 +47,22 @@ def _assert_count_output(output) -> None:
     assert trace["layout_orientation"] in {"horizontal_lanes", "vertical_lanes"}
     assert trace["target_lane_key"] in {"top", "middle", "bottom", "left", "right"}
     assert trace["target_lane_label"] in {"TOP", "MIDDLE", "BOTTOM", "LEFT", "RIGHT"}
-    assert target_ids == trace["target_lane_object_ids"]
+    if predicate_kind == "belt_total":
+        assert target_ids == trace["target_lane_object_ids"]
+    else:
+        assert set(target_ids).issubset(set(str(object_id) for object_id in trace["target_lane_object_ids"]))
     assert set(render_map["belt_bboxes_px"]) in (
         {"top", "middle", "bottom"},
         {"left", "middle", "right"},
     )
-    assert len({str(spec["shape_type"]) for spec in trace["object_specs"]}) == 1
+    if predicate_kind == "belt_total":
+        assert len({str(spec["shape_type"]) for spec in trace["object_specs"]}) == 1
     assert trace["target_shape_type"] not in {"pencil", "ruler"}
     assert len({str(spec["color_name"]) for spec in trace["object_specs"]}) >= 2
     assert "{target_" not in output.prompt
-    assert "color" not in output.prompt.lower()
-    assert "type" not in output.prompt.lower()
+    if predicate_kind == "belt_total":
+        assert "color" not in output.prompt.lower()
+        assert "type" not in output.prompt.lower()
     assert "unlettered" not in output.prompt.lower()
     assert_three_d_canvas_contract(output)
 
@@ -56,6 +77,23 @@ def _assert_count_output(output) -> None:
         assert (conveyor_bbox[2] - conveyor_bbox[0]) / float(image_w) >= 0.78
     else:
         assert (conveyor_bbox[3] - conveyor_bbox[1]) / float(image_h) >= 0.62
+    if predicate_kind == "object_type":
+        same_lane_distractors = [
+            spec
+            for spec in trace["object_specs"]
+            if str(spec["lane_key"]) == str(trace["target_lane_key"]) and not bool(spec["matches_query"])
+        ]
+        assert same_lane_distractors
+        assert any(str(spec["shape_type"]) != str(trace["target_shape_type"]) for spec in same_lane_distractors)
+    if predicate_kind == "color":
+        same_lane_distractors = [
+            spec
+            for spec in trace["object_specs"]
+            if str(spec["lane_key"]) == str(trace["target_lane_key"]) and not bool(spec["matches_query"])
+        ]
+        assert same_lane_distractors
+        assert any(str(spec["color_name"]) != str(trace["target_color_name"]) for spec in same_lane_distractors)
+    assert max(int(value) for value in trace["lane_counts"].values()) <= 8
 
 
 def test_conveyor_belt_total_count_uses_lane_positions() -> None:
@@ -79,6 +117,50 @@ def test_conveyor_belt_total_count_uses_lane_positions() -> None:
             assert trace["layout_orientation"] == "horizontal_lanes"
         if params["canvas_preset"] == "portrait":
             assert trace["layout_orientation"] == "vertical_lanes"
+
+
+def test_conveyor_scoped_belt_count_query_ids() -> None:
+    task = create_task(SCOPED_TASK_ID)
+    cases = (
+        (OBJECT_TYPE_QUERY_ID, 2026062581),
+        (COLOR_QUERY_ID, 2026062582),
+    )
+    for query_id, seed in cases:
+        output = task.generate(
+            seed,
+            params={"query_id": query_id, "post_image_noise_apply_prob": 0.0},
+            max_attempts=120,
+        )
+        _assert_count_output(output)
+        assert output.query_id == query_id
+        assert 0 <= int(output.answer_gt.value) <= 5
+
+
+def test_conveyor_scoped_belt_count_supports_zero_and_five() -> None:
+    task = create_task(SCOPED_TASK_ID)
+    cases = (
+        (OBJECT_TYPE_QUERY_ID, "landscape", "top", 0, 2026062583),
+        (OBJECT_TYPE_QUERY_ID, "portrait", "left", 5, 2026062585),
+        (COLOR_QUERY_ID, "landscape", "middle", 0, 2026062585),
+        (COLOR_QUERY_ID, "portrait", "right", 5, 2026062586),
+    )
+    for query_id, canvas_preset, lane_key, target_count, seed in cases:
+        output = task.generate(
+            seed,
+            params={
+                "query_id": query_id,
+                "canvas_preset": canvas_preset,
+                "target_lane_key": lane_key,
+                "target_count": target_count,
+                "post_image_noise_apply_prob": 0.0,
+            },
+            max_attempts=120,
+        )
+        _assert_count_output(output)
+        assert output.query_id == query_id
+        assert int(output.answer_gt.value) == int(target_count)
+        if int(target_count) == 0:
+            assert output.annotation_gt.value == []
 
 
 def test_conveyor_sampled_canvas_orientation_follows_long_axis() -> None:

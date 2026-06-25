@@ -17,8 +17,8 @@ generation:
     task_three_d__carousel__scoped_belt_object_count:
       object_count_min: 9
       object_count_max: 18
-      target_count_min: 1
-      target_count_max: 8
+      target_count_min: 0
+      target_count_max: 5
     task_three_d__carousel__belt_total_object_count:
       target_count_min: 1
       target_count_max: 10

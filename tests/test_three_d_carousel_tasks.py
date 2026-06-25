@@ -38,7 +38,6 @@ def _assert_count_output(output, *, expected_query_id: str) -> None:
     assert trace["target_belt_label"] in {"INNER", "OUTER"}
     assert trace["target_belt_object_ids"]
     assert set(render_map["belt_bboxes_px"]) == {"inner", "outer"}
-    assert len({str(spec["shape_type"]) for spec in trace["object_specs"]}) == 1
     assert "{target_" not in output.prompt
     assert "unlettered" not in output.prompt.lower()
     assert "segment" not in output.prompt.lower()
@@ -50,6 +49,25 @@ def _assert_count_output(output, *, expected_query_id: str) -> None:
         assert 0.0 <= x0 < x1 <= float(image_w)
         assert 0.0 <= y0 < y1 <= float(image_h)
         assert min(x1 - x0, y1 - y0) >= 24.0
+    if trace["predicate_kind"] == "object_type":
+        same_belt_distractors = [
+            spec
+            for spec in trace["object_specs"]
+            if str(spec["belt_key"]) == str(trace["target_belt_key"]) and not bool(spec["matches_query"])
+        ]
+        assert same_belt_distractors
+        assert any(str(spec["shape_type"]) != str(trace["target_shape_type"]) for spec in same_belt_distractors)
+    if trace["predicate_kind"] == "color":
+        same_belt_distractors = [
+            spec
+            for spec in trace["object_specs"]
+            if str(spec["belt_key"]) == str(trace["target_belt_key"]) and not bool(spec["matches_query"])
+        ]
+        assert same_belt_distractors
+        assert any(str(spec["color_name"]) != str(trace["target_color_name"]) for spec in same_belt_distractors)
+    assert max(int(value) for value in trace["belt_counts"].values()) <= 12
+    assert int(trace["belt_counts"].get("inner", 0)) <= 8
+    assert int(trace["belt_counts"].get("outer", 0)) <= 12
 
 
 def test_carousel_scoped_belt_count_query_ids() -> None:
@@ -65,6 +83,32 @@ def test_carousel_scoped_belt_count_query_ids() -> None:
             max_attempts=120,
         )
         _assert_count_output(output, expected_query_id=query_id)
+        assert 0 <= int(output.answer_gt.value) <= 5
+
+
+def test_carousel_scoped_belt_count_supports_zero_and_five() -> None:
+    task = create_task(SCOPED_TASK_ID)
+    cases = (
+        (OBJECT_TYPE_QUERY_ID, "inner", 0, 2026062511),
+        (OBJECT_TYPE_QUERY_ID, "outer", 5, 2026062512),
+        (COLOR_QUERY_ID, "inner", 0, 2026062513),
+        (COLOR_QUERY_ID, "outer", 5, 2026062514),
+    )
+    for query_id, belt_key, target_count, seed in cases:
+        output = task.generate(
+            seed,
+            params={
+                "query_id": query_id,
+                "target_belt_key": belt_key,
+                "target_count": target_count,
+                "post_image_noise_apply_prob": 0.0,
+            },
+            max_attempts=120,
+        )
+        _assert_count_output(output, expected_query_id=query_id)
+        assert int(output.answer_gt.value) == int(target_count)
+        if int(target_count) == 0:
+            assert output.annotation_gt.value == []
 
 
 def test_carousel_belt_total_count_uses_belt_specific_support() -> None:

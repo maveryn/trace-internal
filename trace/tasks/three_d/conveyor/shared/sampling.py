@@ -24,6 +24,7 @@ from trace.tasks.three_d.shared.task_support import (
 )
 
 from .state import (
+    CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
     CONVEYOR_OBJECT_SHAPE_TYPES,
     HORIZONTAL_LANE_CENTER_BY_KEY,
     HORIZONTAL_LANE_KEYS,
@@ -35,6 +36,7 @@ from .state import (
     LANE_LABELS,
     SCENE_ID,
     SEMANTIC_COLOR_RGB,
+    SEMANTIC_COLOR_SUPPORT,
     SUPPORTED_SCENE_VARIANTS,
     VERTICAL_LANE_CENTER_BY_KEY,
     VERTICAL_LANE_KEYS,
@@ -44,10 +46,13 @@ from .state import (
     public_object_name,
     public_object_plural,
     sample_visual_color_names,
+    semantic_color_label,
 )
 
 
 PREDICATE_BELT_TOTAL = "belt_total"
+PREDICATE_OBJECT_TYPE = "object_type"
+PREDICATE_COLOR = "color"
 LAYOUT_HORIZONTAL = "horizontal_lanes"
 LAYOUT_VERTICAL = "vertical_lanes"
 
@@ -137,8 +142,13 @@ def _resolve_target_lane(
     return lane_key, _uniform_string_probability_map(support)
 
 
-def _resolve_shape(*, params: Mapping[str, Any], rng: Any) -> tuple[str, Dict[str, float]]:
-    support = tuple(str(shape) for shape in CONVEYOR_OBJECT_SHAPE_TYPES)
+def _resolve_shape(
+    *,
+    params: Mapping[str, Any],
+    rng: Any,
+    support: Sequence[str] = CONVEYOR_OBJECT_SHAPE_TYPES,
+) -> tuple[str, Dict[str, float]]:
+    support = tuple(str(shape) for shape in support)
     explicit = params.get("target_shape_type")
     if explicit is not None:
         shape = str(explicit)
@@ -147,6 +157,30 @@ def _resolve_shape(*, params: Mapping[str, Any], rng: Any) -> tuple[str, Dict[st
         return shape, _uniform_string_probability_map(support, selected=shape)
     shape = str(support[int(rng.randrange(len(support)))])
     return shape, _uniform_string_probability_map(support)
+
+
+def _resolve_target_color(
+    *,
+    params: Mapping[str, Any],
+    rng: Any,
+) -> tuple[str, Dict[str, float]]:
+    support = tuple(str(color) for color in SEMANTIC_COLOR_SUPPORT)
+    explicit = params.get("target_color_name")
+    if explicit is not None:
+        color = str(explicit)
+        if color not in set(support):
+            raise ValueError(f"unsupported target_color_name: {color}")
+        return color, _uniform_string_probability_map(support, selected=color)
+    color = str(support[int(rng.randrange(len(support)))])
+    return color, _uniform_string_probability_map(support)
+
+
+def _sample_readout_palette(rng: Any, *, target_color: str, size: int = 4) -> tuple[str, ...]:
+    candidates = [str(color) for color in SEMANTIC_COLOR_SUPPORT if str(color) != str(target_color)]
+    rng.shuffle(candidates)
+    selected = [str(target_color), *candidates[: max(0, int(size) - 1)]]
+    rng.shuffle(selected)
+    return tuple(selected[: int(size)])
 
 
 def _resolve_lane_count(
@@ -169,6 +203,44 @@ def _resolve_lane_count(
         upper=8,
     )
     return int(count), dict(probabilities)
+
+
+def _resolve_scoped_target_count(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> tuple[int, Dict[str, float]]:
+    count, probabilities = resolve_count_for_namespace(
+        params,
+        namespace=str(namespace),
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        key="target_count",
+        default_min=0,
+        default_max=5,
+        lower=0,
+        upper=5,
+    )
+    return int(count), dict(probabilities)
+
+
+def _sample_scoped_lane_counts(
+    *,
+    rng: Any,
+    lane_keys: Sequence[str],
+    target_lane_key: str,
+    target_count: int,
+) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for lane_key in lane_keys:
+        if str(lane_key) == str(target_lane_key):
+            min_count = min(8, max(2, int(target_count) + 1))
+        else:
+            min_count = 2
+        counts[str(lane_key)] = int(rng.randrange(int(min_count), 9))
+    return counts
 
 
 def _lane_center_value(layout_orientation: str, lane_key: str) -> float:
@@ -374,6 +446,96 @@ def _screen_finalize_specs(
     return sorted(finalized, key=lambda item: str(item["object_id"]))
 
 
+def _base_dataset_metadata(
+    *,
+    axes: ResolvedConveyorAxes,
+    layout_orientation: str,
+    layout_orientation_probabilities: Mapping[str, float],
+    target_lane_key: str,
+    target_lane_probabilities: Mapping[str, float],
+    target_shape: str,
+    target_shape_probabilities: Mapping[str, float],
+    target_color_name: str,
+    target_color_probabilities: Mapping[str, float],
+    target_count: int,
+    target_count_probabilities: Mapping[str, float],
+    object_specs: Sequence[Mapping[str, Any]],
+    target_object_ids: Sequence[str],
+    predicate_kind: str,
+    camera_meta: Mapping[str, Any],
+    frame_meta: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Assemble trace metadata after one finalized straight-conveyor sample.
+
+    The key invariant is that target ids, lane totals, answer value, and solver
+    trace are all derived from the same finalized object specs that rendering
+    receives, so annotation boxes and answer counts cannot diverge.
+    """
+
+    finalized_specs = [dict(spec) for spec in object_specs]
+    shape_counts = Counter(str(spec["shape_type"]) for spec in finalized_specs)
+    color_counts = Counter(str(spec["color_name"]) for spec in finalized_specs)
+    lane_counts_final = Counter(str(spec["lane_key"]) for spec in finalized_specs)
+    target_lane_object_ids = [
+        str(spec["object_id"])
+        for spec in finalized_specs
+        if str(spec["lane_key"]) == str(target_lane_key)
+    ]
+    return {
+        "scene_id": SCENE_ID,
+        "scene_variant": str(axes.scene_variant),
+        "layout_family": "straight_parallel_conveyors",
+        "layout_orientation": str(layout_orientation),
+        "layout_orientation_probabilities": dict(layout_orientation_probabilities),
+        "predicate_kind": str(predicate_kind),
+        "lane_records": _lane_records(str(layout_orientation)),
+        "target_lane_key": str(target_lane_key),
+        "target_lane_label": str(LANE_LABELS[str(target_lane_key)]),
+        "target_belt_key": str(target_lane_key),
+        "target_belt_label": str(LANE_LABELS[str(target_lane_key)]),
+        "target_shape_type": str(target_shape),
+        "target_object_name": public_object_name(str(target_shape)),
+        "target_object_plural": public_object_plural(str(target_shape)),
+        "target_color_name": str(target_color_name),
+        "target_color_label": semantic_color_label(str(target_color_name)) if str(target_color_name) else "",
+        "answer_value": int(target_count),
+        "target_count": int(target_count),
+        "target_object_ids": [str(object_id) for object_id in target_object_ids],
+        "target_lane_object_ids": list(target_lane_object_ids),
+        "target_belt_object_ids": list(target_lane_object_ids),
+        "object_count": int(len(finalized_specs)),
+        "object_specs": [dict(spec) for spec in finalized_specs],
+        "shape_counts": {str(key): int(value) for key, value in sorted(shape_counts.items())},
+        "color_counts": {str(key): int(value) for key, value in sorted(color_counts.items())},
+        "lane_counts": {str(key): int(value) for key, value in sorted(lane_counts_final.items())},
+        "belt_counts": {str(key): int(value) for key, value in sorted(lane_counts_final.items())},
+        "target_shape_type_probabilities": dict(target_shape_probabilities),
+        "target_color_name_probabilities": dict(target_color_probabilities),
+        "target_count_probabilities": dict(target_count_probabilities),
+        "lane_count_probabilities": {},
+        "target_lane_key_probabilities": dict(target_lane_probabilities),
+        "target_belt_key_probabilities": dict(target_lane_probabilities),
+        "target_belt_probabilities": dict(target_lane_probabilities),
+        "semantic_color_palette": {str(key): list(value) for key, value in sorted(SEMANTIC_COLOR_RGB.items())},
+        "camera": dict(camera_meta),
+        "projection_frame": dict(frame_meta),
+        "solver_trace": {
+            "count_predicate": str(predicate_kind),
+            "scope": {
+                "lane_key": str(target_lane_key),
+                "lane_label": str(LANE_LABELS[str(target_lane_key)]),
+            },
+            "target_shape_type": str(target_shape),
+            "target_color_name": str(target_color_name),
+            "target_count": int(target_count),
+            "target_object_ids": [str(object_id) for object_id in target_object_ids],
+            "target_lane_object_ids": list(target_lane_object_ids),
+            "answer_value": int(target_count),
+            "unique_integer_answer": True,
+        },
+    }
+
+
 def build_belt_total_count_dataset(
     *,
     instance_seed: int,
@@ -460,70 +622,160 @@ def build_belt_total_count_dataset(
         object_specs=object_specs,
     )
     finalized_specs = _screen_finalize_specs(object_specs=object_specs, camera=camera, frame=frame)
-    shape_counts = Counter(str(spec["shape_type"]) for spec in finalized_specs)
-    color_counts = Counter(str(spec["color_name"]) for spec in finalized_specs)
-    lane_counts_final = Counter(str(spec["lane_key"]) for spec in finalized_specs)
-    target_lane_object_ids = [
-        str(spec["object_id"])
-        for spec in finalized_specs
-        if str(spec["lane_key"]) == str(target_lane_key)
-    ]
-    return {
-        "scene_id": SCENE_ID,
-        "scene_variant": str(axes.scene_variant),
-        "layout_family": "straight_parallel_conveyors",
-        "layout_orientation": str(layout_orientation),
-        "layout_orientation_probabilities": dict(layout_orientation_probabilities),
-        "predicate_kind": PREDICATE_BELT_TOTAL,
-        "lane_records": _lane_records(str(layout_orientation)),
-        "target_lane_key": str(target_lane_key),
-        "target_lane_label": str(target_lane_label),
-        "target_belt_key": str(target_lane_key),
-        "target_belt_label": str(target_lane_label),
-        "target_shape_type": str(target_shape),
-        "target_object_name": public_object_name(str(target_shape)),
-        "target_object_plural": public_object_plural(str(target_shape)),
-        "answer_value": int(target_count),
-        "target_count": int(target_count),
-        "target_object_ids": list(target_object_ids),
-        "target_lane_object_ids": list(target_lane_object_ids),
-        "target_belt_object_ids": list(target_lane_object_ids),
-        "object_count": int(len(finalized_specs)),
-        "object_specs": [dict(spec) for spec in finalized_specs],
-        "shape_counts": {str(key): int(value) for key, value in sorted(shape_counts.items())},
-        "color_counts": {str(key): int(value) for key, value in sorted(color_counts.items())},
-        "lane_counts": {str(key): int(value) for key, value in sorted(lane_counts_final.items())},
-        "belt_counts": {str(key): int(value) for key, value in sorted(lane_counts_final.items())},
-        "target_shape_type_probabilities": dict(target_shape_probabilities),
-        "target_count_probabilities": dict(target_count_probabilities),
-        "lane_count_probabilities": {str(key): dict(value) for key, value in lane_count_probabilities.items()},
-        "target_lane_key_probabilities": dict(target_lane_probabilities),
-        "target_belt_key_probabilities": dict(target_lane_probabilities),
-        "target_belt_probabilities": dict(target_lane_probabilities),
-        "semantic_color_palette": {str(key): list(value) for key, value in sorted(SEMANTIC_COLOR_RGB.items())},
-        "camera": dict(camera_meta),
-        "projection_frame": dict(frame_meta),
-        "solver_trace": {
-            "count_predicate": PREDICATE_BELT_TOTAL,
-            "scope": {
-                "lane_key": str(target_lane_key),
-                "lane_label": str(target_lane_label),
-            },
-            "target_shape_type": str(target_shape),
-            "target_count": int(target_count),
-            "target_object_ids": list(target_object_ids),
-            "target_lane_object_ids": list(target_lane_object_ids),
-            "answer_value": int(target_count),
-            "unique_integer_answer": True,
-        },
-    }
+    dataset = _base_dataset_metadata(
+        axes=axes,
+        layout_orientation=str(layout_orientation),
+        layout_orientation_probabilities=layout_orientation_probabilities,
+        target_lane_key=str(target_lane_key),
+        target_lane_probabilities=target_lane_probabilities,
+        target_shape=str(target_shape),
+        target_shape_probabilities=target_shape_probabilities,
+        target_color_name="",
+        target_color_probabilities={},
+        target_count=int(target_count),
+        target_count_probabilities=target_count_probabilities,
+        object_specs=finalized_specs,
+        target_object_ids=target_object_ids,
+        predicate_kind=PREDICATE_BELT_TOTAL,
+        camera_meta=camera_meta,
+        frame_meta=frame_meta,
+    )
+    dataset["lane_count_probabilities"] = {str(key): dict(value) for key, value in lane_count_probabilities.items()}
+    return dataset
+
+
+def build_scoped_belt_count_dataset(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    render_params: Any,
+    axes: ResolvedConveyorAxes,
+    predicate_kind: str,
+    namespace: str,
+) -> dict[str, Any]:
+    """Build a straight three-lane conveyor dataset for one scoped lane count."""
+
+    rng = spawn_rng(int(instance_seed), f"{namespace}.dataset")
+    layout_orientation, layout_orientation_probabilities = _resolve_layout_orientation(
+        params=params,
+        rng=rng,
+        render_params=render_params,
+    )
+    lane_keys = _lane_keys_for_orientation(str(layout_orientation))
+    target_lane_key, target_lane_probabilities = _resolve_target_lane(params=params, rng=rng, lane_keys=lane_keys)
+    target_count, target_count_probabilities = _resolve_scoped_target_count(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.{target_lane_key}.target_count",
+    )
+    lane_counts = _sample_scoped_lane_counts(
+        rng=rng,
+        lane_keys=lane_keys,
+        target_lane_key=str(target_lane_key),
+        target_count=int(target_count),
+    )
+    dimension_scale = float(params.get("object_dimension_scale", group_default(gen_defaults, "object_dimension_scale", 0.66)))
+    object_specs: List[Dict[str, Any]] = []
+    target_object_ids: list[str] = []
+
+    if str(predicate_kind) == PREDICATE_OBJECT_TYPE:
+        target_shape, target_shape_probabilities = _resolve_shape(params=params, rng=rng)
+        distractor_shapes = [str(shape) for shape in CONVEYOR_OBJECT_SHAPE_TYPES if str(shape) != str(target_shape)]
+        color_names = sample_visual_color_names(rng, palette_size=4)
+        target_color_name = ""
+        target_color_probabilities: Dict[str, float] = {}
+    elif str(predicate_kind) == PREDICATE_COLOR:
+        target_shape, target_shape_probabilities = _resolve_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        distractor_shapes = [str(target_shape)]
+        target_color_name, target_color_probabilities = _resolve_target_color(params=params, rng=rng)
+        color_names = _sample_readout_palette(rng, target_color=str(target_color_name), size=4)
+    else:
+        raise ValueError(f"unsupported straight conveyor scoped predicate: {predicate_kind}")
+    if not color_names:
+        raise ValueError("empty conveyor visual color palette")
+    wrong_colors = [str(color) for color in color_names if str(color) != str(target_color_name)]
+
+    for lane_key in lane_keys:
+        slots = _slot_positions_for_lane(
+            rng=rng,
+            layout_orientation=str(layout_orientation),
+            lane_key=str(lane_key),
+            count=int(lane_counts[str(lane_key)]),
+        )
+        for index, slot in enumerate(slots):
+            matches_query = str(lane_key) == str(target_lane_key) and int(index) < int(target_count)
+            if str(predicate_kind) == PREDICATE_OBJECT_TYPE:
+                shape_type = str(target_shape) if bool(matches_query) or (str(lane_key) != str(target_lane_key) and rng.random() < 0.35) else str(
+                    distractor_shapes[int(rng.randrange(len(distractor_shapes)))]
+                )
+                color_name = str(color_names[(index + len(object_specs)) % len(color_names)])
+            else:
+                shape_type = str(target_shape)
+                if bool(matches_query):
+                    color_name = str(target_color_name)
+                elif str(lane_key) != str(target_lane_key) and rng.random() < 0.35:
+                    color_name = str(target_color_name)
+                else:
+                    color_name = str(wrong_colors[(index + len(object_specs)) % len(wrong_colors)])
+            object_id = f"obj_{len(object_specs):03d}"
+            if bool(matches_query):
+                target_object_ids.append(str(object_id))
+            object_specs.append(
+                _make_object_spec(
+                    rng=rng,
+                    object_id=str(object_id),
+                    shape_type=str(shape_type),
+                    color_name=str(color_name),
+                    lane_key=str(lane_key),
+                    layout_orientation=str(layout_orientation),
+                    slot=slot,
+                    matches_query=bool(matches_query),
+                    count_role="target" if bool(matches_query) else ("same_belt_distractor" if str(lane_key) == str(target_lane_key) else "lane_distractor"),
+                    dimension_scale=float(dimension_scale),
+                )
+            )
+
+    camera, frame, camera_meta, frame_meta = _finalize_camera_and_projection(
+        rng=rng,
+        render_params=render_params,
+        layout_orientation=str(layout_orientation),
+        object_specs=object_specs,
+    )
+    finalized_specs = _screen_finalize_specs(object_specs=object_specs, camera=camera, frame=frame)
+    return _base_dataset_metadata(
+        axes=axes,
+        layout_orientation=str(layout_orientation),
+        layout_orientation_probabilities=layout_orientation_probabilities,
+        target_lane_key=str(target_lane_key),
+        target_lane_probabilities=target_lane_probabilities,
+        target_shape=str(target_shape),
+        target_shape_probabilities=target_shape_probabilities,
+        target_color_name=str(target_color_name),
+        target_color_probabilities=target_color_probabilities,
+        target_count=int(target_count),
+        target_count_probabilities=target_count_probabilities,
+        object_specs=finalized_specs,
+        target_object_ids=target_object_ids,
+        predicate_kind=str(predicate_kind),
+        camera_meta=camera_meta,
+        frame_meta=frame_meta,
+    )
 
 
 __all__ = [
     "LAYOUT_HORIZONTAL",
     "LAYOUT_VERTICAL",
     "PREDICATE_BELT_TOTAL",
+    "PREDICATE_COLOR",
+    "PREDICATE_OBJECT_TYPE",
     "ResolvedConveyorAxes",
     "build_belt_total_count_dataset",
+    "build_scoped_belt_count_dataset",
     "resolve_conveyor_axes",
 ]

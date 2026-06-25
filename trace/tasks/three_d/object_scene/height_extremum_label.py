@@ -34,11 +34,10 @@ from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.object_resources import (
-    SPATIAL_HEIGHT_ELEVATED_CANDIDATE_SHAPE_TYPES,
-    SPATIAL_HEIGHT_FLOOR_CANDIDATE_SHAPE_TYPES,
+    SPATIAL_HEIGHT_SAFE_CANDIDATE_SHAPE_TYPES,
     SPATIAL_HEIGHT_SUPPORT_PLACEMENTS,
 )
-from ..shared.option_panel import apply_independent_prompt_colors_to_dataset, build_text_option_choices
+from ..shared.option_panel import build_text_option_choices
 from ..shared.object_scene import (
     POINT_LABELS,
     SCENE_ID,
@@ -65,10 +64,7 @@ SUPPORT_PLACEMENTS: Tuple[Tuple[str, str | None, Tuple[float, float]], ...] = tu
     placement for placement in SPATIAL_HEIGHT_SUPPORT_PLACEMENTS if str(placement[0]) != "table_top"
 )
 HEIGHT_OPTION_COUNT = 4
-FLOOR_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_HEIGHT_FLOOR_CANDIDATE_SHAPE_TYPES
-ELEVATED_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(
-    shape_type for shape_type in SPATIAL_HEIGHT_ELEVATED_CANDIDATE_SHAPE_TYPES if str(shape_type) not in {"candle", "hat"}
-)
+HEIGHT_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_HEIGHT_SAFE_CANDIDATE_SHAPE_TYPES
 
 
 
@@ -254,21 +250,14 @@ def _build_height_scene_dataset(
         remaining_labels = [str(label) for label in labels if str(label) != str(answer_label)]
         rng.shuffle(remaining_labels)
 
-        floor_shape_pool = list(FLOOR_CANDIDATE_SHAPE_TYPES)
-        elevated_shape_pool = list(ELEVATED_CANDIDATE_SHAPE_TYPES)
-        rng.shuffle(floor_shape_pool)
-        rng.shuffle(elevated_shape_pool)
+        shape_pool = list(HEIGHT_CANDIDATE_SHAPE_TYPES)
+        rng.shuffle(shape_pool)
+        if len(shape_pool) < int(point_count):
+            raise ValueError(f"{TASK_ID} needs at least {point_count} height-safe candidate shapes")
         candidate_specs: List[Dict[str, Any]] = []
-        floor_shape_index = 0
-        elevated_shape_index = 0
         for index, placement in enumerate(placement_records):
             label = str(answer_label) if str(placement["placement_id"]) == str(answer_placement["placement_id"]) else str(remaining_labels.pop())
-            if placement.get("support_object_id"):
-                shape_type = str(elevated_shape_pool[elevated_shape_index % len(elevated_shape_pool)])
-                elevated_shape_index += 1
-            else:
-                shape_type = str(floor_shape_pool[floor_shape_index % len(floor_shape_pool)])
-                floor_shape_index += 1
+            shape_type = str(shape_pool[int(index)])
             if placement.get("support_shape_type") == "open_box":
                 jitter = 0.04
             elif placement.get("support_object_id"):
@@ -518,10 +507,6 @@ class ThreeDSpatialHeightExtremumLabelTask:
             instance_seed=int(instance_seed),
             answer_label_index=int(answer_label_index),
             camera_yaw_band=camera_yaw_band,
-        )
-        dataset = apply_independent_prompt_colors_to_dataset(
-            dataset,
-            rng=spawn_rng(int(instance_seed), f"{TASK_ID}.prompt_colors"),
         )
         background, background_meta = make_background_canvas(
             canvas_width=int(render_params.canvas_width),

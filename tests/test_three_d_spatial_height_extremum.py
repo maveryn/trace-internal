@@ -42,7 +42,9 @@ def test_height_extremum_answer_and_annotation(query_id: str) -> None:
     assert all(spec["is_answer_candidate"] for spec in point_specs)
     assert all(not spec["is_answer_candidate"] for spec in context_specs)
     assert not any(str(spec.get("support_name")) == "table" for spec in point_specs)
-    assert not any(str(spec.get("shape_type")) == "hat" and spec.get("support_name") for spec in point_specs)
+    assert len({str(spec["shape_type"]) for spec in point_specs}) == len(point_specs)
+    assert not any(str(spec.get("shape_type")) in {"bottle", "candle", "drum", "flask", "goblet", "hat", "lantern"} for spec in point_specs)
+    assert not any("option_color_name" in spec for spec in point_specs)
     answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_label)
     expected_bbox = output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
     assert output.annotation_gt.type == "bbox"
@@ -61,9 +63,8 @@ def test_height_extremum_answer_and_annotation(query_id: str) -> None:
     assert float(trace["solver_trace"]["height_margin"]) >= 0.18
 
 
-def test_height_extremum_answer_color_and_shape_vary_across_seeds() -> None:
+def test_height_extremum_uses_distinct_object_descriptors_across_seeds() -> None:
     task = create_task(TASK_ID)
-    answer_colors = set()
     answer_shapes = set()
     for seed in range(20260600, 20260608):
         output = task.generate(
@@ -79,10 +80,15 @@ def test_height_extremum_answer_color_and_shape_vary_across_seeds() -> None:
         )
         trace = output.trace_payload["execution_trace"]
         answer_spec = next(spec for spec in trace["point_specs"] if str(spec["point_label"]) == str(trace["answer_label"]))
-        answer_colors.add(str(answer_spec["option_color_name"]))
         answer_shapes.add(str(answer_spec["shape_type"]))
+        choices = [dict(choice) for choice in output.trace_payload["render_map"]["option_choices"]]
+        descriptors = [str(choice["descriptor"]) for choice in choices]
+        name_by_label = {str(spec["point_label"]): str(spec["object_name"]) for spec in trace["point_specs"]}
+        assert len(set(descriptors)) == len(descriptors)
+        assert all(choice.get("color_name") is None for choice in choices)
+        assert all(str(choice["descriptor"]) == name_by_label[str(choice["label"])] for choice in choices)
+        assert not any("option_color_name" in spec for spec in trace["point_specs"])
 
-    assert len(answer_colors) >= 3
     assert len(answer_shapes) >= 4
 
 

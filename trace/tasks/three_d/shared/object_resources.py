@@ -558,6 +558,23 @@ SPATIAL_HEIGHT_ELEVATED_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = (
     "helmet",
     "mushroom",
 )
+# Height-extremum candidates need reliable support contact and unique object-name
+# descriptors. Keep this pool narrower than the general object_cluster pool.
+SPATIAL_HEIGHT_SAFE_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = (
+    "sphere",
+    "cube",
+    "cylinder",
+    "cone",
+    "pyramid",
+    "wedge",
+    "torus",
+    "dice",
+    "apple",
+    "helmet",
+    "mushroom",
+    "cup",
+    "trophy",
+)
 
 
 ROOM_QUERY_OBJECT_TYPE_BY_VARIANT: Dict[str, str] = {

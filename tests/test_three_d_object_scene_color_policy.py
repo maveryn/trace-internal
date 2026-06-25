@@ -12,7 +12,6 @@ from trace.tasks.three_d.shared.option_panel import PROMPT_COLOR_RGB_BY_NAME
 OBJECT_SCENE_OPTION_TASKS = (
     "task_three_d__object_scene__between_references_label",
     "task_three_d__object_scene__camera_distance_extremum_label",
-    "task_three_d__object_scene__height_extremum_label",
     "task_three_d__object_scene__object_relation_label",
     "task_three_d__object_scene__occlusion_order_label",
     "task_three_d__object_scene__reference_nearest_label",

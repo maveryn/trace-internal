@@ -67,6 +67,7 @@ Approved domain-shared categories:
 - camera/projection math, floor-plane projection, vector operations, and
   visibility geometry used by multiple scenes;
 - deterministic non-semantic color/style variation for 3D objects;
+- deterministic neutral surface-tone and conveyor-belt style variation;
 - canonical named-object resources: profile ids, canonical ids, prompt-facing
   names, scene-role profiles, dimensions, renderers, resource kinds, support
   and mounting metadata;
@@ -91,6 +92,7 @@ Domain-shared modules that should generally remain domain-shared:
 | `object_schema.py` | Normalized `ThreeDObjectRecord` payload. |
 | `scene_schema.py` | Renderer-neutral placement/style specs. |
 | `canvas.py` | Canonical three_d source-canvas presets, deterministic preset resolution, bbox/point/entity coordinate transforms, and final pixel-cap downscale helpers. |
+| `visual_styles.py` | Domain-approved neutral floor/canvas tones and conveyor-belt style palettes. Use this for renderer variation instead of scene-local fixed palettes. |
 | `object_variants.py` | Renderer-style and render-only variant metadata. |
 | `projected_object_geometry.py` | Scene-neutral object reference points, projected bbox, and bbox-overlap geometry. |
 | `object_rendering.py` | Shared object renderer dispatch and object-record construction. |

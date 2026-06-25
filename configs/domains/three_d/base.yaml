@@ -20,28 +20,218 @@ rendering:
       portrait: 1.0
       square: 1.0
     max_final_pixels: 1280000
+    surface_tones:
+      styles:
+        concrete:
+          floor_rgb: [238, 241, 240]
+          grid_rgb: [184, 193, 191]
+          edge_rgb: [96, 108, 113]
+          surface_accent_rgb: [214, 221, 219]
+        cool_concrete:
+          floor_rgb: [235, 241, 244]
+          grid_rgb: [179, 190, 198]
+          edge_rgb: [89, 103, 116]
+          surface_accent_rgb: [210, 220, 225]
+        warm_concrete:
+          floor_rgb: [241, 238, 229]
+          grid_rgb: [190, 183, 168]
+          edge_rgb: [113, 104, 88]
+          surface_accent_rgb: [219, 214, 199]
+        warehouse_gray:
+          floor_rgb: [226, 231, 229]
+          grid_rgb: [174, 184, 181]
+          edge_rgb: [91, 102, 105]
+          surface_accent_rgb: [205, 214, 211]
+        pale_sand:
+          floor_rgb: [242, 238, 224]
+          grid_rgb: [193, 184, 164]
+          edge_rgb: [121, 109, 87]
+          surface_accent_rgb: [222, 215, 194]
+        green_gray:
+          floor_rgb: [229, 235, 228]
+          grid_rgb: [174, 186, 174]
+          edge_rgb: [88, 105, 91]
+          surface_accent_rgb: [207, 218, 207]
+        blue_gray:
+          floor_rgb: [229, 236, 241]
+          grid_rgb: [171, 184, 196]
+          edge_rgb: [83, 99, 113]
+          surface_accent_rgb: [205, 217, 225]
+        clay_gray:
+          floor_rgb: [235, 229, 222]
+          grid_rgb: [184, 173, 164]
+          edge_rgb: [111, 96, 86]
+          surface_accent_rgb: [215, 205, 196]
+        off_white:
+          floor_rgb: [246, 247, 244]
+          grid_rgb: [192, 197, 193]
+          edge_rgb: [102, 111, 108]
+          surface_accent_rgb: [224, 228, 224]
+        industrial_dim:
+          floor_rgb: [216, 222, 225]
+          grid_rgb: [164, 174, 181]
+          edge_rgb: [78, 90, 101]
+          surface_accent_rgb: [196, 205, 210]
+      weights:
+        concrete: 1.0
+        cool_concrete: 1.0
+        warm_concrete: 1.0
+        warehouse_gray: 1.0
+        pale_sand: 1.0
+        green_gray: 1.0
+        blue_gray: 1.0
+        clay_gray: 1.0
+        off_white: 1.0
+        industrial_dim: 1.0
+    conveyor_belt_styles:
+      styles:
+        galvanized_steel:
+          fill_rgb: [196, 211, 222]
+          fill_alt_rgb: [205, 219, 229]
+          fill_secondary_rgb: [188, 204, 216]
+          outline_rgb: [75, 91, 108]
+          outline_secondary_rgb: [87, 103, 121]
+          rail_rgb: [112, 126, 139]
+          arrow_rgb: [132, 145, 157]
+          shadow_rgb: [94, 104, 114]
+        dark_rubber:
+          fill_rgb: [112, 119, 125]
+          fill_alt_rgb: [124, 132, 138]
+          fill_secondary_rgb: [103, 111, 118]
+          outline_rgb: [48, 55, 62]
+          outline_secondary_rgb: [58, 66, 74]
+          rail_rgb: [92, 100, 108]
+          arrow_rgb: [172, 180, 186]
+          shadow_rgb: [70, 78, 86]
+        airport_silver:
+          fill_rgb: [211, 219, 224]
+          fill_alt_rgb: [221, 228, 232]
+          fill_secondary_rgb: [201, 211, 218]
+          outline_rgb: [89, 102, 113]
+          outline_secondary_rgb: [101, 114, 125]
+          rail_rgb: [134, 145, 154]
+          arrow_rgb: [143, 154, 164]
+          shadow_rgb: [104, 112, 121]
+        blue_gray_belt:
+          fill_rgb: [169, 190, 205]
+          fill_alt_rgb: [181, 202, 216]
+          fill_secondary_rgb: [158, 179, 195]
+          outline_rgb: [66, 84, 100]
+          outline_secondary_rgb: [76, 94, 111]
+          rail_rgb: [101, 119, 135]
+          arrow_rgb: [120, 136, 150]
+          shadow_rgb: [84, 97, 108]
+        muted_teal:
+          fill_rgb: [164, 194, 193]
+          fill_alt_rgb: [176, 205, 204]
+          fill_secondary_rgb: [153, 183, 183]
+          outline_rgb: [62, 92, 94]
+          outline_secondary_rgb: [75, 104, 106]
+          rail_rgb: [98, 126, 127]
+          arrow_rgb: [118, 143, 144]
+          shadow_rgb: [80, 100, 102]
+        graphite:
+          fill_rgb: [132, 141, 149]
+          fill_alt_rgb: [145, 154, 162]
+          fill_secondary_rgb: [121, 130, 139]
+          outline_rgb: [55, 63, 72]
+          outline_secondary_rgb: [66, 74, 84]
+          rail_rgb: [103, 112, 121]
+          arrow_rgb: [168, 176, 184]
+          shadow_rgb: [76, 84, 93]
+        olive_gray:
+          fill_rgb: [174, 188, 170]
+          fill_alt_rgb: [186, 199, 181]
+          fill_secondary_rgb: [162, 177, 159]
+          outline_rgb: [76, 92, 73]
+          outline_secondary_rgb: [89, 105, 86]
+          rail_rgb: [112, 127, 108]
+          arrow_rgb: [135, 147, 130]
+          shadow_rgb: [85, 96, 84]
+        tan_industrial:
+          fill_rgb: [195, 183, 158]
+          fill_alt_rgb: [207, 196, 171]
+          fill_secondary_rgb: [183, 172, 149]
+          outline_rgb: [97, 84, 66]
+          outline_secondary_rgb: [110, 97, 78]
+          rail_rgb: [136, 124, 101]
+          arrow_rgb: [151, 139, 117]
+          shadow_rgb: [104, 94, 79]
+        pale_metal:
+          fill_rgb: [220, 226, 226]
+          fill_alt_rgb: [230, 235, 235]
+          fill_secondary_rgb: [210, 218, 219]
+          outline_rgb: [94, 105, 107]
+          outline_secondary_rgb: [106, 117, 119]
+          rail_rgb: [143, 153, 154]
+          arrow_rgb: [151, 160, 161]
+          shadow_rgb: [111, 119, 120]
+        slate_rail:
+          fill_rgb: [181, 194, 204]
+          fill_alt_rgb: [193, 206, 215]
+          fill_secondary_rgb: [170, 184, 195]
+          outline_rgb: [63, 78, 92]
+          outline_secondary_rgb: [75, 90, 105]
+          rail_rgb: [82, 97, 112]
+          arrow_rgb: [127, 141, 154]
+          shadow_rgb: [83, 96, 107]
+      weights:
+        galvanized_steel: 1.0
+        dark_rubber: 1.0
+        airport_silver: 1.0
+        blue_gray_belt: 1.0
+        muted_teal: 1.0
+        graphite: 1.0
+        olive_gray: 1.0
+        tan_industrial: 1.0
+        pale_metal: 1.0
+        slate_rail: 1.0
 
 visual:
   background:
     enabled: true
     styles:
-      solid_light:
+      concrete:
         kind: solid
-        color: [248, 249, 251]
-      cool_light:
+        color: [238, 241, 240]
+      cool_concrete:
         kind: solid
-        color: [245, 249, 251]
-      warm_light:
+        color: [235, 241, 244]
+      warm_concrete:
         kind: solid
-        color: [251, 249, 244]
-      paper_light:
+        color: [241, 238, 229]
+      warehouse_gray:
         kind: solid
-        color: [250, 248, 241]
+        color: [226, 231, 229]
+      pale_sand:
+        kind: solid
+        color: [242, 238, 224]
+      green_gray:
+        kind: solid
+        color: [229, 235, 228]
+      blue_gray:
+        kind: solid
+        color: [229, 236, 241]
+      clay_gray:
+        kind: solid
+        color: [235, 229, 222]
+      off_white:
+        kind: solid
+        color: [246, 247, 244]
+      industrial_dim:
+        kind: solid
+        color: [216, 222, 225]
     weights:
-      solid_light: 1.0
-      cool_light: 1.0
-      warm_light: 1.0
-      paper_light: 1.0
+      concrete: 1.0
+      cool_concrete: 1.0
+      warm_concrete: 1.0
+      warehouse_gray: 1.0
+      pale_sand: 1.0
+      green_gray: 1.0
+      blue_gray: 1.0
+      clay_gray: 1.0
+      off_white: 1.0
+      industrial_dim: 1.0
   noise:
     apply_prob: 0.35
     edit_count_range: [1, 1]

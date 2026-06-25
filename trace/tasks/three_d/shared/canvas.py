@@ -306,12 +306,27 @@ def expand_canvas_size_to_pixel_cap(
 
 
 def render_params_canvas_metadata(render_params: Any) -> Dict[str, Any]:
-    return {
+    metadata = {
         "scene_canvas_preset": str(getattr(render_params, "canvas_preset", "unknown")),
         "scene_canvas_width": int(getattr(render_params, "canvas_width")),
         "scene_canvas_height": int(getattr(render_params, "canvas_height")),
         "scene_canvas_policy": str(getattr(render_params, "canvas_policy", "unknown")),
     }
+    tone_id = getattr(render_params, "background_tone_id", None)
+    if tone_id is not None:
+        metadata["background_tone_id"] = str(tone_id)
+        metadata["background_tone_rgb"] = list(getattr(render_params, "background_tone_rgb", getattr(render_params, "floor_rgb", ())))
+        metadata["background_floor_rgb"] = list(getattr(render_params, "floor_rgb", ()))
+        metadata["background_grid_rgb"] = list(getattr(render_params, "grid_rgb", ()))
+        metadata["background_edge_rgb"] = list(getattr(render_params, "edge_rgb", ()))
+        metadata["background_surface_accent_rgb"] = list(getattr(render_params, "surface_accent_rgb", ()))
+    belt_style_id = getattr(render_params, "conveyor_belt_style_id", None)
+    if belt_style_id is not None:
+        metadata["conveyor_belt_style_id"] = str(belt_style_id)
+        metadata["conveyor_belt_fill_rgb"] = list(getattr(render_params, "conveyor_belt_fill_rgb", ()))
+        metadata["conveyor_belt_outline_rgb"] = list(getattr(render_params, "conveyor_belt_outline_rgb", ()))
+        metadata["conveyor_belt_arrow_rgb"] = list(getattr(render_params, "conveyor_belt_arrow_rgb", ()))
+    return metadata
 
 
 def final_canvas_metadata(image: Image.Image) -> Dict[str, Any]:

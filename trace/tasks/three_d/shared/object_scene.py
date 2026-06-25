@@ -12,6 +12,7 @@ from ...shared.color_distance import coerce_rgb as _rgb
 from ...shared.text_rendering import load_font
 from .task_support import float_value as _float_value
 from .task_support import int_value as _int_value
+from .visual_styles import resolve_conveyor_belt_style, resolve_three_d_surface_tone
 from .color_variation import resolve_three_d_object_fill_rgb
 from .camera_projection import (
     CameraSpec as _CameraSpec,
@@ -148,6 +149,18 @@ class _RenderParams:
     text_stroke_rgb: Tuple[int, int, int]
     full_bleed_floor: bool
     full_bleed_floor_extent_multiplier: float
+    background_tone_id: str = "custom"
+    background_tone_rgb: Tuple[int, int, int] = (232, 239, 242)
+    surface_accent_rgb: Tuple[int, int, int] = (214, 221, 219)
+    conveyor_belt_style_id: str | None = None
+    conveyor_belt_fill_rgb: Tuple[int, int, int] | None = None
+    conveyor_belt_fill_alt_rgb: Tuple[int, int, int] | None = None
+    conveyor_belt_fill_secondary_rgb: Tuple[int, int, int] | None = None
+    conveyor_belt_outline_rgb: Tuple[int, int, int] | None = None
+    conveyor_belt_outline_secondary_rgb: Tuple[int, int, int] | None = None
+    conveyor_belt_rail_rgb: Tuple[int, int, int] | None = None
+    conveyor_belt_arrow_rgb: Tuple[int, int, int] | None = None
+    conveyor_belt_shadow_rgb: Tuple[int, int, int] | None = None
     canvas_preset: str = "explicit"
     canvas_policy: str = "explicit_dimensions"
 
@@ -203,6 +216,22 @@ def _resolve_render_params(
         fallback_width=_int_value(merged, "canvas_width", 1200),
         fallback_height=_int_value(merged, "canvas_height", 800),
     )
+    tone = resolve_three_d_surface_tone(
+        params=params,
+        render_defaults=render_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.surface_tone",
+    )
+    belt_style = (
+        resolve_conveyor_belt_style(
+            params=params,
+            render_defaults=render_defaults,
+            instance_seed=int(instance_seed),
+            namespace=f"{namespace}.conveyor_belt_style",
+        )
+        if _bool_value(merged, "enable_conveyor_belt_styles", False)
+        else None
+    )
     return _RenderParams(
         canvas_width=int(canvas.canvas_width),
         canvas_height=int(canvas.canvas_height),
@@ -218,13 +247,25 @@ def _resolve_render_params(
         marker_radius_px=_int_value(merged, "marker_radius_px", 22),
         label_font_size_px=_int_value(merged, "label_font_size_px", 24),
         line_width_px=_int_value(merged, "line_width_px", 2),
-        floor_rgb=_rgb(merged.get("floor_rgb", (232, 239, 242)), (232, 239, 242)),
-        grid_rgb=_rgb(merged.get("grid_rgb", (184, 197, 207)), (184, 197, 207)),
-        edge_rgb=_rgb(merged.get("edge_rgb", (93, 108, 124)), (93, 108, 124)),
-        text_rgb=_rgb(merged.get("text_rgb", (30, 34, 42)), (30, 34, 42)),
-        text_stroke_rgb=_rgb(merged.get("text_stroke_rgb", (255, 255, 255)), (255, 255, 255)),
+        floor_rgb=tuple(int(value) for value in tone.floor_rgb),
+        grid_rgb=tuple(int(value) for value in tone.grid_rgb),
+        edge_rgb=tuple(int(value) for value in tone.edge_rgb),
+        text_rgb=tuple(int(value) for value in tone.text_rgb),
+        text_stroke_rgb=tuple(int(value) for value in tone.text_stroke_rgb),
         full_bleed_floor=_bool_value(merged, "full_bleed_floor", False),
         full_bleed_floor_extent_multiplier=_float_value(merged, "full_bleed_floor_extent_multiplier", 3.0),
+        background_tone_id=str(tone.tone_id),
+        background_tone_rgb=tuple(int(value) for value in tone.floor_rgb),
+        surface_accent_rgb=tuple(int(value) for value in tone.surface_accent_rgb),
+        conveyor_belt_style_id=str(belt_style.style_id) if belt_style is not None else None,
+        conveyor_belt_fill_rgb=tuple(int(value) for value in belt_style.fill_rgb) if belt_style is not None else None,
+        conveyor_belt_fill_alt_rgb=tuple(int(value) for value in belt_style.fill_alt_rgb) if belt_style is not None else None,
+        conveyor_belt_fill_secondary_rgb=tuple(int(value) for value in belt_style.fill_secondary_rgb) if belt_style is not None else None,
+        conveyor_belt_outline_rgb=tuple(int(value) for value in belt_style.outline_rgb) if belt_style is not None else None,
+        conveyor_belt_outline_secondary_rgb=tuple(int(value) for value in belt_style.outline_secondary_rgb) if belt_style is not None else None,
+        conveyor_belt_rail_rgb=tuple(int(value) for value in belt_style.rail_rgb) if belt_style is not None else None,
+        conveyor_belt_arrow_rgb=tuple(int(value) for value in belt_style.arrow_rgb) if belt_style is not None else None,
+        conveyor_belt_shadow_rgb=tuple(int(value) for value in belt_style.shadow_rgb) if belt_style is not None else None,
     )
 
 

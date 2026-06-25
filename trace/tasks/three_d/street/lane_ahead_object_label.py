@@ -30,6 +30,7 @@ from ...shared.prompt_variants import (
     render_task_prompt_variants,
 )
 from ..shared.object_resources import STREET_LANE_AHEAD_REFERENCE_OBJECT_TYPE, STREET_OBJECT_TYPES
+from ..shared.canvas import render_params_canvas_metadata
 from ..shared.option_panel import build_text_option_choices
 from ..shared.task_support import (
     normalize_unit as _normalize_unit,
@@ -1083,6 +1084,7 @@ class ThreeDStreetLaneAheadObjectLabelTask:
                 "scene_canvas_width": int(render_params.canvas_width),
                 "scene_canvas_height": int(render_params.canvas_height),
                 "scene_canvas_policy": str(render_params.canvas_policy),
+                **render_params_canvas_metadata(render_params),
                 "final_canvas_width": int(image.width),
                 "final_canvas_height": int(image.height),
                 "final_canvas_pixels": int(image.width) * int(image.height),

@@ -31,8 +31,8 @@ from .state import (
 )
 
 
-FLOOR_RGB = (242, 246, 248)
-BELT_ARROW_RGB = (130, 142, 154)
+FALLBACK_FLOOR_RGB = (242, 246, 248)
+FALLBACK_BELT_ARROW_RGB = (130, 142, 154)
 
 
 @dataclass(frozen=True)
@@ -136,6 +136,7 @@ def _draw_lane_belt(
     frame: ProjectionFrame,
     fill: Tuple[int, int, int],
     outline: Tuple[int, int, int],
+    arrow_rgb: Tuple[int, int, int],
 ) -> tuple[List[float], Dict[str, Any]]:
     """Draw one lane from the same projected rectangle used for lane metadata.
 
@@ -156,7 +157,7 @@ def _draw_lane_belt(
                 draw,
                 start_xy=project_xy((x - 0.24, y, 0.065), camera, frame),
                 end_xy=project_xy((x + 0.24, y, 0.065), camera, frame),
-                fill=BELT_ARROW_RGB,
+                fill=arrow_rgb,
             )
     else:
         x = _lane_center_value(str(layout_orientation), str(lane_key))
@@ -165,7 +166,7 @@ def _draw_lane_belt(
                 draw,
                 start_xy=project_xy((x, y - 0.22, 0.065), camera, frame),
                 end_xy=project_xy((x, y + 0.22, 0.065), camera, frame),
-                fill=BELT_ARROW_RGB,
+                fill=arrow_rgb,
             )
 
     bbox = _projected_bbox(polygon_screen)
@@ -190,12 +191,18 @@ def _draw_conveyor_belts(
     dataset: Mapping[str, Any],
     camera: CameraSpec,
     frame: ProjectionFrame,
+    render_params: Any,
 ) -> tuple[Image.Image, List[float], Dict[str, List[float]], List[Dict[str, Any]]]:
     draw = ImageDraw.Draw(image)
     layout_orientation = str(dataset["layout_orientation"])
     lane_keys = HORIZONTAL_LANE_KEYS if layout_orientation == LAYOUT_HORIZONTAL else VERTICAL_LANE_KEYS
-    fill_cycle = ((194, 211, 224), (205, 219, 230), (188, 205, 219))
-    outlines = (76, 92, 110)
+    fill_cycle = (
+        tuple(int(value) for value in (getattr(render_params, "conveyor_belt_fill_rgb", None) or (194, 211, 224))),
+        tuple(int(value) for value in (getattr(render_params, "conveyor_belt_fill_alt_rgb", None) or (205, 219, 230))),
+        tuple(int(value) for value in (getattr(render_params, "conveyor_belt_fill_secondary_rgb", None) or (188, 205, 219))),
+    )
+    outline = tuple(int(value) for value in (getattr(render_params, "conveyor_belt_outline_rgb", None) or (76, 92, 110)))
+    arrow_rgb = tuple(int(value) for value in (getattr(render_params, "conveyor_belt_arrow_rgb", None) or FALLBACK_BELT_ARROW_RGB))
     belt_bboxes: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = []
     for index, lane_key in enumerate(lane_keys):
@@ -206,7 +213,8 @@ def _draw_conveyor_belts(
             camera=camera,
             frame=frame,
             fill=fill_cycle[index % len(fill_cycle)],
-            outline=outlines,
+            outline=outline,
+            arrow_rgb=arrow_rgb,
         )
         belt_bboxes[str(lane_key)] = list(bbox)
         entities.append(dict(entity))
@@ -214,7 +222,7 @@ def _draw_conveyor_belts(
     return image, list(conveyor_bbox), belt_bboxes, entities
 
 
-def _draw_object_shadow(draw: ImageDraw.ImageDraw, bbox: Sequence[float]) -> None:
+def _draw_object_shadow(draw: ImageDraw.ImageDraw, bbox: Sequence[float], *, fill: Tuple[int, int, int]) -> None:
     x0, y0, x1, y1 = (float(value) for value in bbox)
     width = max(6.0, x1 - x0)
     height = max(5.0, y1 - y0)
@@ -224,7 +232,7 @@ def _draw_object_shadow(draw: ImageDraw.ImageDraw, bbox: Sequence[float]) -> Non
         x1 - width * 0.10,
         y1 + height * 0.07,
     ]
-    draw.ellipse(tuple(shadow), fill=(95, 105, 115))
+    draw.ellipse(tuple(shadow), fill=fill)
 
 
 def _draw_anchor_markers(
@@ -307,7 +315,9 @@ def render_conveyor(
 
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
-    draw.rectangle((0, 0, int(image.width), int(image.height)), fill=FLOOR_RGB)
+    floor_rgb = tuple(int(value) for value in getattr(render_params, "floor_rgb", FALLBACK_FLOOR_RGB))
+    shadow_rgb = tuple(int(value) for value in (getattr(render_params, "conveyor_belt_shadow_rgb", None) or (95, 105, 115)))
+    draw.rectangle((0, 0, int(image.width), int(image.height)), fill=floor_rgb)
     camera = _camera_from_dataset(dataset)
     frame = _frame_from_dataset(dataset)
     image, conveyor_bbox, belt_bboxes, entities = _draw_conveyor_belts(
@@ -315,6 +325,7 @@ def render_conveyor(
         dataset=dataset,
         camera=camera,
         frame=frame,
+        render_params=render_params,
     )
     draw = ImageDraw.Draw(image)
     object_specs = [dict(spec) for spec in dataset["object_specs"]]
@@ -334,7 +345,7 @@ def render_conveyor(
             float(spec["screen_xy"][0]) + 20.0,
             float(spec["screen_xy"][1]) + 14.0,
         ]
-        _draw_object_shadow(draw, estimated_bbox)
+        _draw_object_shadow(draw, estimated_bbox, fill=shadow_rgb)
     for spec in ordered_specs:
         fill = tuple(int(channel) for channel in spec["fill_rgb"])
         rendered = render_three_d_object(
@@ -346,7 +357,7 @@ def render_conveyor(
                 render_params=render_params,
                 fill_rgb=fill,
                 scene_variant=str(dataset["scene_variant"]),
-                floor_rgb=FLOOR_RGB,
+                floor_rgb=floor_rgb,
             ),
         )
         object_id = str(spec["object_id"])

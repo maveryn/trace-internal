@@ -82,6 +82,7 @@ rendering:
       - 255
     full_bleed_floor: true
     full_bleed_floor_extent_multiplier: 3.2
+    enable_conveyor_belt_styles: true
 
 prompt:
   shared:

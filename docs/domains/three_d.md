@@ -76,6 +76,13 @@ Use the 3D object review surfaces for object-fidelity audits. Style, lighting,
 camera, and object-palette variation must not encode answer value, query id,
 correct option, relation truth, or construction order unless explicitly queried.
 
+Neutral floor/canvas tone variation is domain-shared. Use
+`trace.tasks.three_d.shared.visual_styles.resolve_three_d_surface_tone` through
+the scene render-parameter resolver instead of hardcoding scene-local floor,
+grid, edge, or canvas colors. Conveyor-like belt scenes should use the shared
+named conveyor belt styles from the same module; belt style is render metadata,
+not a task/query axis.
+
 Object-cluster instances may apply a bounded per-object `orientation_deg`
 rendering jitter for visual variety. This value must be recorded in trace
 metadata and projected-geometry calculations, but remains a renderer axis rather

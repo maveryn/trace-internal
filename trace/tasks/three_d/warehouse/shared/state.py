@@ -26,6 +26,7 @@ from ...shared.object_scene import _CameraSpec, _ProjectionFrame, _project_scree
 from ...shared.canvas import resolve_three_d_canvas_spec
 from ...shared.task_support import float_value as _float_value
 from ...shared.task_support import int_value as _int_value
+from ...shared.visual_styles import resolve_three_d_surface_tone
 
 
 SCENE_ID = "warehouse"
@@ -73,6 +74,9 @@ class _WarehouseRenderParams:
     path_rgb: Tuple[int, int, int]
     text_rgb: Tuple[int, int, int]
     text_stroke_rgb: Tuple[int, int, int]
+    background_tone_id: str = "custom"
+    background_tone_rgb: Tuple[int, int, int] = (221, 226, 220)
+    surface_accent_rgb: Tuple[int, int, int] = (207, 215, 211)
     canvas_preset: str = "explicit"
     canvas_policy: str = "explicit_dimensions"
 
@@ -94,6 +98,12 @@ def _resolve_render_params(
         fallback_width=_int_value(merged, "canvas_width", 1200),
         fallback_height=_int_value(merged, "canvas_height", 800),
     )
+    tone = resolve_three_d_surface_tone(
+        params=params,
+        render_defaults=render_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.surface_tone",
+    )
     return _WarehouseRenderParams(
         canvas_width=int(canvas.canvas_width),
         canvas_height=int(canvas.canvas_height),
@@ -108,13 +118,16 @@ def _resolve_render_params(
         marker_radius_px=_int_value(merged, "marker_radius_px", 20),
         label_font_size_px=_int_value(merged, "label_font_size_px", 25),
         line_width_px=_int_value(merged, "line_width_px", 2),
-        floor_rgb=_rgb(merged.get("floor_rgb", (221, 226, 220)), (221, 226, 220)),
-        grid_rgb=_rgb(merged.get("grid_rgb", (174, 184, 179)), (174, 184, 179)),
-        aisle_rgb=_rgb(merged.get("aisle_rgb", (207, 215, 211)), (207, 215, 211)),
-        shelf_zone_rgb=_rgb(merged.get("shelf_zone_rgb", (190, 196, 194)), (190, 196, 194)),
+        floor_rgb=_rgb(params.get("floor_rgb", tone.floor_rgb), tone.floor_rgb),
+        grid_rgb=_rgb(params.get("grid_rgb", tone.grid_rgb), tone.grid_rgb),
+        aisle_rgb=_rgb(params.get("aisle_rgb", tone.surface_accent_rgb), tone.surface_accent_rgb),
+        shelf_zone_rgb=_rgb(params.get("shelf_zone_rgb", tone.grid_rgb), tone.grid_rgb),
         path_rgb=_rgb(merged.get("path_rgb", (236, 195, 72)), (236, 195, 72)),
-        text_rgb=_rgb(merged.get("text_rgb", (24, 28, 36)), (24, 28, 36)),
-        text_stroke_rgb=_rgb(merged.get("text_stroke_rgb", (255, 255, 255)), (255, 255, 255)),
+        text_rgb=_rgb(params.get("text_rgb", tone.text_rgb), tone.text_rgb),
+        text_stroke_rgb=_rgb(params.get("text_stroke_rgb", tone.text_stroke_rgb), tone.text_stroke_rgb),
+        background_tone_id=str(tone.tone_id),
+        background_tone_rgb=tuple(int(value) for value in tone.floor_rgb),
+        surface_accent_rgb=tuple(int(value) for value in tone.surface_accent_rgb),
     )
 
 
@@ -224,10 +237,7 @@ def _bbox_area(bbox: Sequence[float]) -> float:
 
 
 def _scene_palette(scene_variant: str, render_params: _WarehouseRenderParams) -> Tuple[Tuple[int, int, int], Tuple[int, int, int], Tuple[int, int, int], Tuple[int, int, int]]:
-    if str(scene_variant) == "loading_zone":
-        return (218, 222, 217), (162, 172, 168), (198, 207, 203), (183, 190, 188)
-    if str(scene_variant) == "packing_floor":
-        return (226, 224, 214), (178, 174, 158), (211, 208, 194), (190, 186, 170)
+    del scene_variant
     return render_params.floor_rgb, render_params.grid_rgb, render_params.aisle_rgb, render_params.shelf_zone_rgb
 
 

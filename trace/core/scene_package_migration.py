@@ -63,6 +63,7 @@ MIGRATED_SCENE_PACKAGE_SCENES: dict[str, frozenset[str]] = {
             "triangle_congruence_correspondence",
             "triangle_relations",
             "volume_equivalence_conversion",
+            "wire_shape_conversion",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "flow_network", "graph_options", "metro", "node_link", "pedigree_chart", "phylogeny_tree", "pipe_network"}),
@@ -120,6 +121,7 @@ SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES: dict[str, frozenset[str]] = {
             "triangle_congruence_correspondence",
             "triangle_relations",
             "volume_equivalence_conversion",
+            "wire_shape_conversion",
         }
     ),
     "graph": frozenset({"adjacency", "automaton", "binary_tree", "flow_network", "graph_options", "metro", "node_link", "pedigree_chart", "phylogeny_tree", "pipe_network"}),

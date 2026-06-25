@@ -1,0 +1,152 @@
+{
+  "bundle_id": "geometry_wire_shape_conversion_v1",
+  "schema_version": "v1",
+  "templates": {
+    "scene": {
+      "wire_shape_conversion_scene": [
+        "The diagram shows {object_description}.",
+        "The figure shows {object_description}.",
+        "This geometry diagram shows {object_description}.",
+        "The image shows {object_description}.",
+        "The labeled diagram shows {object_description}."
+      ]
+    },
+    "task": {
+      "wire_length_value_query": [
+        "Use the visible wire shape and its labeled dimensions.",
+        "Use the shown shape measurements to find the total wire length.",
+        "Use the labeled dimensions on the single wire shape.",
+        "Find the complete wire length from the displayed measurements.",
+        "Use the diagram labels to compute the length of wire around the shape."
+      ],
+      "frame_edge_length_value_query": [
+        "Use the source wire shape and target frame made from the same wire.",
+        "Use the same-wire conversion into the target 3D frame.",
+        "Use the source wire length to find the missing target frame edge.",
+        "Find the target frame dimension when the source wire is reused.",
+        "Use the labeled source and target frame measurements."
+      ],
+      "missing_dimension_value_query": [
+        "Use the source wire shape and target shape made from the same wire.",
+        "Use the same-wire conversion between the source and target shapes.",
+        "Use the source wire length to find the missing target dimension.",
+        "Find the target shape side when the source wire is reused.",
+        "Use the labeled source and target shape measurements."
+      ]
+    },
+    "query": {
+      "trapezoid_wire_length": [
+        "What is the total wire length around the trapezoid?",
+        "Using the shown side lengths, find the complete trapezoid wire length.",
+        "What integer length replaces the wire-length ? label?",
+        "Compute the full perimeter of the trapezoid wire.",
+        "How long is the wire forming the trapezoid?"
+      ],
+      "parallelogram_wire_length": [
+        "What is the total wire length around the parallelogram?",
+        "Using the shown side lengths, find the complete parallelogram wire length.",
+        "What integer length replaces the wire-length ? label?",
+        "Compute the full perimeter of the parallelogram wire.",
+        "How long is the wire forming the parallelogram?"
+      ],
+      "circle_wire_length_from_area": [
+        "Using pi=3, what is the total wire length around the circle?",
+        "Given the shown circle area and pi=3, find the wire length.",
+        "What integer circumference replaces the wire-length ? label?",
+        "Compute the circular wire length from the displayed area.",
+        "How long is the wire forming the circle?"
+      ],
+      "trapezoid_wire_to_cube_frame": [
+        "The same wire is reshaped into the cube frame. What edge length replaces ?",
+        "Find the cube-frame edge length made from the same trapezoid wire.",
+        "What integer edge length should be written on the target cube frame?",
+        "Compute the missing cube-frame edge from the source wire length.",
+        "What is the target cube edge length when the same wire is reused?"
+      ],
+      "parallelogram_wire_to_cuboid_frame": [
+        "The same wire is reshaped into the cuboid frame. What height replaces ?",
+        "Find the missing cuboid-frame height made from the same parallelogram wire.",
+        "What integer height should be written on the target cuboid frame?",
+        "Compute the missing cuboid-frame edge from the source wire length.",
+        "What is the target cuboid height when the same wire is reused?"
+      ],
+      "same_wire_circle_to_trapezoid_side": [
+        "The same circular wire is reshaped into the trapezoid. What equal side length replaces ?",
+        "Find the missing trapezoid side length made from the same circle wire.",
+        "What integer side length should be written on the target trapezoid?",
+        "Compute the missing trapezoid side from the source circular wire length.",
+        "What is the target trapezoid side length when the same wire is reused?"
+      ],
+      "same_wire_polygon_to_rectangle_side": [
+        "The same trapezoid wire is reshaped into the rectangle. What side length replaces ?",
+        "Find the missing rectangle side length made from the same trapezoid wire.",
+        "What integer side length should be written on the target rectangle?",
+        "Compute the missing rectangle side from the source wire length.",
+        "What is the target rectangle side length when the same wire is reused?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFormat for the \"answer\" field: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "required_slots_by_key": {
+    "scene:wire_shape_conversion_scene": [
+      "object_description"
+    ],
+    "output:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "output:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  },
+  "static_slots_by_key": {
+    "scene:wire_shape_conversion_scene": {
+      "object_description": "a wire reshaped between geometric shapes with visible dimensions"
+    },
+    "task:wire_length_value_query": {
+      "annotation_hint": "set \"annotation\" to a JSON object with pixel boxes for wire_shape_bbox and dimension_region_bbox",
+      "answer_hint": "set \"answer\" to the requested wire length as an integer"
+    },
+    "task:frame_edge_length_value_query": {
+      "annotation_hint": "set \"annotation\" to a JSON object with pixel boxes for source_wire_shape_bbox, target_frame_bbox, source_dimension_region_bbox, target_known_dimension_region_bbox, and target_unknown_edge_bbox",
+      "answer_hint": "set \"answer\" to the requested frame edge length as an integer"
+    },
+    "task:missing_dimension_value_query": {
+      "annotation_hint": "set \"annotation\" to a JSON object with pixel boxes for source_wire_shape_bbox, target_shape_bbox, source_dimension_region_bbox, target_known_dimension_region_bbox, and target_unknown_side_bbox",
+      "answer_hint": "set \"answer\" to the requested missing dimension as an integer"
+    },
+    "output:answer_only": {
+      "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."
+    },
+    "output:answer_and_annotation": {
+      "json_output_contract": "Return a JSON object with exactly two keys: \"annotation\" and \"answer\"."
+    }
+  },
+  "dynamic_slots": {
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    }
+  }
+}

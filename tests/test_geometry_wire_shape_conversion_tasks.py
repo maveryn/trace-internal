@@ -8,17 +8,21 @@ import pytest
 
 from trace.core.taxonomy import lookup_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.wire_shape_conversion.frame_edge_length_value import GeometryWireShapeConversionFrameEdgeLengthValueTask
-from trace.tasks.geometry.wire_shape_conversion.missing_dimension_value import GeometryWireShapeConversionMissingDimensionValueTask
-from trace.tasks.geometry.wire_shape_conversion.wire_length_value import (
+from trace.tasks.geometry.wire_shape_conversion.frame_edge_length_value import (
     FRAME_EDGE_ANNOTATION_KEYS,
+    QUERY_ID_TRAPEZOID_WIRE_TO_CUBE_FRAME,
+    TASK_ID_FRAME_EDGE_LENGTH,
+    GeometryWireShapeConversionFrameEdgeLengthValueTask,
+)
+from trace.tasks.geometry.wire_shape_conversion.missing_dimension_value import (
     MISSING_DIMENSION_ANNOTATION_KEYS,
     QUERY_ID_SAME_WIRE_CIRCLE_TO_TRAPEZOID_SIDE,
-    QUERY_ID_TRAPEZOID_WIRE_LENGTH,
-    QUERY_ID_TRAPEZOID_WIRE_TO_CUBE_FRAME,
-    SCENE_ID,
-    TASK_ID_FRAME_EDGE_LENGTH,
     TASK_ID_MISSING_DIMENSION,
+    GeometryWireShapeConversionMissingDimensionValueTask,
+)
+from trace.tasks.geometry.wire_shape_conversion.shared.defaults import SCENE_ID
+from trace.tasks.geometry.wire_shape_conversion.wire_length_value import (
+    QUERY_ID_TRAPEZOID_WIRE_LENGTH,
     TASK_ID_WIRE_LENGTH,
     WIRE_LENGTH_ANNOTATION_KEYS,
     GeometryWireShapeConversionWireLengthValueTask,
@@ -57,6 +61,7 @@ def test_trapezoid_wire_length_formula_and_annotation() -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id == QUERY_ID_TRAPEZOID_WIRE_LENGTH
     assert out.answer_gt.type == "integer"
+    assert out.annotation_gt.type == "bbox_map"
     assert out.answer_gt.value == 22 == execution["answer"]
     assert execution["source_shape"] == "isosceles_trapezoid_wire"
     assert execution["target_shape"] == ""
@@ -65,8 +70,8 @@ def test_trapezoid_wire_length_formula_and_annotation() -> None:
 
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == WIRE_LENGTH_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_wire_shape_conversion_v0"
+    assert trace["projected_annotation"]["bbox_map"] == annotation
+    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_wire_shape_conversion_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size, keys=WIRE_LENGTH_ANNOTATION_KEYS)
 
@@ -84,6 +89,7 @@ def test_trapezoid_to_cube_frame_formula_and_annotation() -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id == QUERY_ID_TRAPEZOID_WIRE_TO_CUBE_FRAME
     assert out.answer_gt.type == "integer"
+    assert out.annotation_gt.type == "bbox_map"
     assert out.answer_gt.value == 2 == execution["answer"]
     assert execution["source_shape"] == "isosceles_trapezoid_wire"
     assert execution["target_shape"] == "cube_frame"
@@ -92,7 +98,7 @@ def test_trapezoid_to_cube_frame_formula_and_annotation() -> None:
 
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == FRAME_EDGE_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
+    assert trace["projected_annotation"]["bbox_map"] == annotation
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size, keys=FRAME_EDGE_ANNOTATION_KEYS)
 
@@ -110,6 +116,7 @@ def test_same_wire_circle_to_trapezoid_side_formula_and_annotation() -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id == QUERY_ID_SAME_WIRE_CIRCLE_TO_TRAPEZOID_SIDE
     assert out.answer_gt.type == "integer"
+    assert out.annotation_gt.type == "bbox_map"
     assert out.answer_gt.value == 6 == execution["answer"]
     assert execution["source_shape"] == "circle_wire"
     assert execution["target_shape"] == "isosceles_trapezoid_wire"
@@ -118,7 +125,7 @@ def test_same_wire_circle_to_trapezoid_side_formula_and_annotation() -> None:
 
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == MISSING_DIMENSION_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
+    assert trace["projected_annotation"]["bbox_map"] == annotation
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size, keys=MISSING_DIMENSION_ANNOTATION_KEYS)
 

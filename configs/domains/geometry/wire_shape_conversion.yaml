@@ -9,19 +9,5 @@ rendering:
     small_label_font_size: 17
 prompt:
   shared:
-    bundle_id: geometry_wire_shape_conversion_v0
+    bundle_id: geometry_wire_shape_conversion_v1
     scene_key: wire_shape_conversion_scene
-    task_key: wire_length_value_query
-  task_overrides:
-    task_geometry__wire_shape_conversion__wire_length_value:
-      bundle_id: geometry_wire_shape_conversion_v0
-      scene_key: wire_shape_conversion_scene
-      task_key: wire_length_value_query
-    task_geometry__wire_shape_conversion__frame_edge_length_value:
-      bundle_id: geometry_wire_shape_conversion_v0
-      scene_key: wire_shape_conversion_scene
-      task_key: frame_edge_length_value_query
-    task_geometry__wire_shape_conversion__missing_dimension_value:
-      bundle_id: geometry_wire_shape_conversion_v0
-      scene_key: wire_shape_conversion_scene
-      task_key: missing_dimension_value_query

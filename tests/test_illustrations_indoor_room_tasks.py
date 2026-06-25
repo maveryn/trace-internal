@@ -16,11 +16,13 @@ SURFACE_TASK_ID = "task_illustrations__indoor_room__surface_object_count"
 FURNITURE_TASK_ID = "task_illustrations__indoor_room__furniture_side_count"
 ROTATED_TILE_TASK_ID = "task_illustrations__indoor_room__rotated_tile_label"
 MISSING_PATCH_TASK_ID = "task_illustrations__indoor_room__missing_patch_label"
+SWAPPED_TILE_PAIR_TASK_ID = "task_illustrations__indoor_room__swapped_tile_pair_label"
 TASK_SOURCE_STEMS = {
     SURFACE_TASK_ID: "surface_object_count.py",
     FURNITURE_TASK_ID: "furniture_side_count.py",
     ROTATED_TILE_TASK_ID: "rotated_tile_label.py",
     MISSING_PATCH_TASK_ID: "missing_patch_label.py",
+    SWAPPED_TILE_PAIR_TASK_ID: "swapped_tile_pair_label.py",
 }
 
 
@@ -334,3 +336,38 @@ def test_missing_patch_label_contract() -> None:
     assert len(render_map["option_bboxes_px_by_label"]) == 4
     assert len(render_map["option_source_crop_boxes_px"]) == 4
     assert render_map["option_source_crop_boxes_px"][2] == render_map["source_crop_box_px"]
+
+
+def test_swapped_tile_pair_label_contract() -> None:
+    _assert_scene_packaged_task(SWAPPED_TILE_PAIR_TASK_ID)
+    out = create_task(SWAPPED_TILE_PAIR_TASK_ID).generate(
+        hash64(2026063001, "indoor-swapped-tile-pair", 0),
+        params={"theme_id": "living_room", "source_object_count": 16, "correct_index": 2, "canvas_profile": "landscape"},
+        max_attempts=160,
+    )
+    trace = out.trace_payload
+    _assert_scene_prompt_metadata(trace)
+    execution = trace["execution_trace"]
+    render_map = trace["render_map"]
+
+    assert out.scene_id == "indoor_room"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value == "C"
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 2
+    assert execution["query_id"] == "single"
+    assert execution["prompt_query_key"] == "swapped_tile_pair_label"
+    assert execution["answer_label"] == out.answer_gt.value
+    assert execution["grid_shape"] == [3, 3]
+    assert render_map["grid_shape"] == [3, 3]
+    assert len(render_map["tile_bboxes_px_by_number"]) == 9
+    assert len(render_map["option_bboxes_px_by_label"]) == 4
+    assert sorted(render_map["option_pairs_by_label"]) == ["A", "B", "C", "D"]
+    assert render_map["option_pairs_by_label"][out.answer_gt.value] == execution["swapped_cell_numbers"]
+    assert render_map["option_pair_indices_by_label"][out.answer_gt.value] == execution["swapped_pair_indices"]
+    assert sorted(out.annotation_gt.value) == sorted(render_map["swapped_cell_bboxes_px"])
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert sorted(trace["projected_annotation"]["bbox_set"]) == sorted(out.annotation_gt.value)
+    assert int(trace["query_spec"]["params"]["source_size"][0]) % 3 == 0
+    assert int(trace["query_spec"]["params"]["source_size"][1]) % 3 == 0

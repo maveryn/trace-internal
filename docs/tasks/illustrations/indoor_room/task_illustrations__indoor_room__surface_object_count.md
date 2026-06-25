@@ -37,7 +37,7 @@ Counts visible small indoor objects of a sampled object type that are placed on 
 ## Annotation Contract
 - Annotation schema: `bbox_set`
 - Generator `annotation_gt.type`: `bbox_set`
-- Annotation is an unordered set of final-image pixel points, one near the center of each counted object on the target surface.
+- Annotation is an unordered set of final-image pixel boxes, one around each counted object on the target surface.
 - Annotation excludes the surface, labels, numeric annotations, and distractor/context objects.
 
 ## Prompt And Trace Requirements

@@ -842,6 +842,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__indoor_room__rotated_tile_label": _entry(
         "illustrations", "indoor_room", "illustrations", "indoor_room"
     ),
+    "task_illustrations__indoor_room__swapped_tile_pair_label": _entry(
+        "illustrations", "indoor_room", "illustrations", "indoor_room"
+    ),
     "task_illustrations__park_playground__person_count": _entry(
         "illustrations", "park_playground", "illustrations", "park_playground"
     ),

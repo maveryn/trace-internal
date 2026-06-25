@@ -153,6 +153,39 @@ generation:
         - potted_plant
         - flower
         - mushroom
+    task_illustrations__indoor_room__swapped_tile_pair_label:
+      source_object_count_min: 12
+      source_object_count_max: 18
+      min_tile_detail_score: 130
+      min_pair_difference: 7
+      indoor_object_type_support:
+        - apple
+        - backpack
+        - egg
+        - soccer_ball
+        - rugby_ball
+        - spoon
+        - plate
+        - book
+        - camera
+        - remote
+        - pencil
+        - ruler
+        - clock
+        - gift
+        - vase
+        - bowl
+        - candle
+        - lightbulb
+        - mug
+        - teapot
+        - bottle
+        - key
+        - scissors
+        - lamp
+        - potted_plant
+        - flower
+        - mushroom
 
 rendering:
   shared:
@@ -255,6 +288,21 @@ rendering:
         soft_shadow: 1.0
         ink_sketch: 1.0
         watercolor_wash: 1.0
+    task_illustrations__indoor_room__swapped_tile_pair_label:
+      art_style_support:
+        - flat_vector
+        - outlined_cartoon
+        - paper_cutout
+        - soft_shadow
+        - ink_sketch
+        - watercolor_wash
+      art_style_weights:
+        flat_vector: 1.0
+        outlined_cartoon: 1.0
+        paper_cutout: 1.0
+        soft_shadow: 1.0
+        ink_sketch: 1.0
+        watercolor_wash: 1.0
 
 prompt:
   task_overrides:
@@ -291,3 +339,11 @@ prompt:
       annotation_hint_missing_patch: set "annotation" to a JSON object with keys "missing_region" and "selected_option", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates
       json_example_missing_patch: '{"annotation":{"missing_region":[214,128,374,252],"selected_option":[562,676,722,800]},"answer":"C"}'
       json_example_answer_only_missing_patch: '{"answer":"C"}'
+    task_illustrations__indoor_room__swapped_tile_pair_label:
+      bundle_id: illustrations_indoor_room_v0
+      scene_key: indoor_room_canvas
+      task_key: swapped_tile_pair_label_task
+      answer_hint_swapped_tile_pair: set "answer" to the selected option letter
+      annotation_hint_swapped_tile_pair: set "annotation" to a JSON array containing two [x0, y0, x1, y1] boxes around the two swapped numbered cells
+      json_example_swapped_tile_pair: '{"annotation":[[0,0,400,266],[800,532,1200,798]],"answer":"C"}'
+      json_example_answer_only_swapped_tile_pair: '{"answer":"C"}'

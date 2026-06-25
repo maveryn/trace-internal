@@ -18,6 +18,15 @@ generation:
     - 3
     - 4
     - 5
+  task_overrides:
+    task_games__slot_machine__paytable_score_value:
+      balanced_score_task_winning_payline_count_sampling: true
+      score_task_winning_payline_count_support:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
 rendering:
   shared:
     canvas_width: 760
@@ -31,6 +40,9 @@ rendering:
     cabinet_pad_px: 34
     label_font_size_px: 24
     symbol_font_size_px: 28
+  task_overrides:
+    task_games__slot_machine__paytable_score_value:
+      canvas_width: 980
 prompt:
   shared:
     bundle_id: games_slot_machine_v1

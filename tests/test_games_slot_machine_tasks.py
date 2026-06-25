@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from trace.core.taxonomy import resolve_task_taxonomy
+from trace.tasks.games.slot_machine.paytable_score_value import GamesSlotMachinePaytableScoreValueTask
 from trace.tasks.games.slot_machine.winning_payline_count import GamesSlotMachineWinningPaylineCountTask
 
 
@@ -53,3 +54,39 @@ def test_games_slot_machine_winning_payline_count_support_and_taxonomy() -> None
     assert taxonomy.domain == "games"
     assert taxonomy.scene_id == "slot_machine"
     assert seen == {0, 1, 2, 3, 4, 5}
+
+
+def test_games_slot_machine_paytable_score_value_contract() -> None:
+    out = GamesSlotMachinePaytableScoreValueTask().generate(
+        26062501,
+        params={"target_score_winning_payline_count": 3},
+        max_attempts=64,
+    )
+    execution = out.trace_payload["execution_trace"]
+    winning_payline_ids = tuple(str(payline_id) for payline_id in execution["winning_payline_ids"])
+    expected_segments = [
+        out.trace_payload["render_map"]["payline_segments_px"][f"payline_{payline_id}"]
+        for payline_id in winning_payline_ids
+    ]
+    expected_score = sum(int(detail["score_value"]) for detail in execution["winning_payline_score_details"])
+
+    assert out.scene_id == "slot_machine"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "integer"
+    assert int(out.answer_gt.value) == expected_score
+    assert len(winning_payline_ids) == 3
+    assert out.annotation_gt.type == "segment_set"
+    assert out.annotation_gt.value == expected_segments
+    assert len(execution["paytable_scores"]) == 6
+    assert out.trace_payload["query_spec"]["params"]["target_score_winning_payline_count"] == 3
+    assert execution["prompt_query_key"] == "paytable_score_value"
+
+
+def test_games_slot_machine_paytable_score_value_taxonomy() -> None:
+    taxonomy = resolve_task_taxonomy(
+        "task_games__slot_machine__paytable_score_value",
+        source_domain="games",
+        source_scene_id="",
+    )
+    assert taxonomy.domain == "games"
+    assert taxonomy.scene_id == "slot_machine"

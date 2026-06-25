@@ -494,6 +494,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__solitaire__column_card_count_value": _entry("games", "solitaire", "games", "solitaire"),
     "task_games__solitaire__foundation_ready_count": _entry("games", "solitaire", "games", "solitaire"),
     "task_games__solitaire__move_legality_label": _entry("games", "solitaire", "games", "solitaire"),
+    "task_games__slot_machine__paytable_score_value": _entry("games", "slot_machine", "games", "slot_machine"),
     "task_games__slot_machine__winning_payline_count": _entry("games", "slot_machine", "games", "slot_machine"),
     "task_games__space_shooter__enemy_ship_count": _entry("games", "space_shooter", "games", "space_shooter"),
     "task_games__space_shooter__clear_shot_count": _entry("games", "space_shooter", "games", "space_shooter"),

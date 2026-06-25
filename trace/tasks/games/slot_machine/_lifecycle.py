@@ -9,14 +9,14 @@ from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts
-from trace.tasks.shared.fixed_query import select_task_query_id
+from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID, select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
 from .shared.annotations import payline_segment_set_annotation
 from .shared.defaults import SCENE_ID, SCENE_NAMESPACE
 from .shared.output import build_slot_machine_common_trace_params, build_slot_machine_trace_payload
-from .shared.prompts import build_slot_machine_prompt_artifacts
+from .shared.prompts import build_slot_machine_prompt_artifacts, slot_integer_segment_set_json_examples, slot_output_slots
 from .shared.rendering import resolve_slot_machine_render_params, render_slot_machine_scene
 from .shared.sampling import resolve_slot_machine_axes
 from .shared.state import SlotMachineAxes, SlotMachineScene
@@ -49,6 +49,56 @@ class SlotMachineObjectivePlan:
     query_params: Mapping[str, Any]
     prompt_dynamic_slots: Mapping[str, Any]
     construct_attempt: AttemptBuilder
+
+
+def build_slot_attempt_result(
+    *,
+    scene: SlotMachineScene,
+    answer_value: int,
+    annotation_payline_ids: Sequence[str],
+    execution_extra: Mapping[str, Any],
+) -> SlotMachineAttemptResult:
+    """Package task-computed answer and annotation ids for lifecycle assembly."""
+
+    return SlotMachineAttemptResult(
+        scene=scene,
+        answer_gt=TypedValue(type="integer", value=int(answer_value)),
+        annotation_payline_ids=tuple(str(payline_id) for payline_id in annotation_payline_ids),
+        query_params={},
+        execution_extra=dict(execution_extra),
+    )
+
+
+def build_fixed_query_objective_plan(
+    *,
+    attempt_namespace: str,
+    prompt_query_key: str,
+    query_probabilities: Mapping[str, float],
+    query_params: Mapping[str, Any],
+    construct_attempt: AttemptBuilder,
+    example_answer_value: int,
+    prompt_extra_slots: Mapping[str, Any] | None = None,
+) -> SlotMachineObjectivePlan:
+    """Assemble repeated prompt/query plumbing for fixed-query objectives."""
+
+    json_example, json_example_answer_only = slot_integer_segment_set_json_examples(
+        answer_value=int(example_answer_value)
+    )
+    return SlotMachineObjectivePlan(
+        attempt_namespace=str(attempt_namespace),
+        prompt_query_key=str(prompt_query_key),
+        query_params={
+            **dict(query_params),
+            "query_id_probabilities": dict(query_probabilities),
+        },
+        prompt_dynamic_slots=slot_output_slots(
+            prompt_query_key=str(prompt_query_key),
+            json_example=json_example,
+            json_example_answer_only=json_example_answer_only,
+            extra_slots=prompt_extra_slots,
+        ),
+        construct_attempt=construct_attempt,
+    )
 
 
 def run_slot_machine_lifecycle(
@@ -151,8 +201,38 @@ def run_slot_machine_lifecycle(
     raise RuntimeError(f"failed to generate {task_id} after {max_attempts} attempts") from last_error
 
 
+def run_fixed_query_slot_machine_lifecycle(
+    *,
+    task_id: str,
+    domain: str,
+    gen_defaults: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    instance_seed: int,
+    params: Mapping[str, Any],
+    max_attempts: int,
+    prepare_objective: ObjectivePreparer,
+) -> TaskOutput:
+    """Run the scene lifecycle for tasks with one internal query branch."""
+
+    return run_slot_machine_lifecycle(
+        task_id=str(task_id),
+        domain=str(domain),
+        supported_query_ids=(DEFAULT_QUERY_ID,),
+        default_query_id=DEFAULT_QUERY_ID,
+        gen_defaults=gen_defaults,
+        render_defaults=render_defaults,
+        instance_seed=int(instance_seed),
+        params=dict(params or {}),
+        max_attempts=int(max_attempts),
+        prepare_objective=prepare_objective,
+    )
+
+
 __all__ = [
     "SlotMachineAttemptResult",
     "SlotMachineObjectivePlan",
+    "build_fixed_query_objective_plan",
+    "build_slot_attempt_result",
+    "run_fixed_query_slot_machine_lifecycle",
     "run_slot_machine_lifecycle",
 ]

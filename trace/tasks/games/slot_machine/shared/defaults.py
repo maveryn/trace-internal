@@ -21,6 +21,7 @@ PAYLINE_COORDS: Tuple[Tuple[Tuple[int, int], ...], ...] = (
     ((2, 0), (1, 1), (0, 2)),
 )
 SYMBOL_KEYS: Tuple[str, ...] = ("seven", "bar", "gem", "star", "bell", "coin")
+PAYTABLE_SCORE_VALUES: Tuple[int, ...] = (2, 3, 4, 5, 6, 8)
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("front_cabinet",)
 SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
     "classic_red",
@@ -30,6 +31,7 @@ SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
     "paper_ticket",
 )
 WINNING_PAYLINE_COUNT_SUPPORT: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
+SCORE_TASK_WINNING_PAYLINE_COUNT_SUPPORT: Tuple[int, ...] = (1, 2, 3, 4, 5)
 
 
 @dataclass(frozen=True)
@@ -57,11 +59,13 @@ __all__ = [
     "DEFAULTS",
     "PAYLINE_COORDS",
     "PAYLINE_IDS",
+    "PAYTABLE_SCORE_VALUES",
     "POST_IMAGE_NOISE_DEFAULTS",
     "REEL_COUNT",
     "ROW_COUNT",
     "SCENE_ID",
     "SCENE_NAMESPACE",
+    "SCORE_TASK_WINNING_PAYLINE_COUNT_SUPPORT",
     "SUPPORTED_SCENE_VARIANTS",
     "SUPPORTED_STYLE_VARIANTS",
     "SYMBOL_KEYS",

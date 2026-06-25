@@ -11,6 +11,7 @@ from trace.tasks.shared.config_defaults import group_default
 
 from .defaults import (
     PAYLINE_IDS,
+    PAYTABLE_SCORE_VALUES,
     REEL_COUNT,
     ROW_COUNT,
     SCENE_NAMESPACE,
@@ -18,7 +19,7 @@ from .defaults import (
     SUPPORTED_STYLE_VARIANTS,
     SYMBOL_KEYS,
 )
-from .state import SlotCell, SlotMachineAxes, SlotMachineScene, validate_slot_machine_scene, winning_payline_ids_for_grid
+from .state import PaytableEntry, SlotCell, SlotMachineAxes, SlotMachineScene, validate_slot_machine_scene, winning_payline_ids_for_grid
 
 
 def _uniform_probability(values: Sequence[str]) -> dict[str, float]:
@@ -114,6 +115,7 @@ def sample_slot_machine_grid(
     rng: Any,
     axes: SlotMachineAxes,
     target_winning_count: int,
+    paytable_entries: Sequence[PaytableEntry] = (),
 ) -> SlotMachineScene:
     """Sample a 3 x 3 reel window with exactly the requested winning paylines."""
 
@@ -141,12 +143,24 @@ def sample_slot_machine_grid(
         style_variant=str(axes.style_variant),
         cells=tuple(cells),
         winning_payline_ids=winning_payline_ids_for_grid(grid),
+        paytable_entries=tuple(paytable_entries),
     )
     validate_slot_machine_scene(scene)
     return scene
 
 
+def sample_slot_paytable(rng: Any) -> tuple[PaytableEntry, ...]:
+    """Sample a complete visible paytable for all slot symbols."""
+
+    values = list(rng.sample(list(PAYTABLE_SCORE_VALUES), len(SYMBOL_KEYS)))
+    return tuple(
+        PaytableEntry(symbol_key=str(symbol_key), score_value=int(score_value))
+        for symbol_key, score_value in zip(SYMBOL_KEYS, values)
+    )
+
+
 __all__ = [
     "resolve_slot_machine_axes",
+    "sample_slot_paytable",
     "sample_slot_machine_grid",
 ]

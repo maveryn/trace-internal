@@ -18,6 +18,14 @@ class SlotCell:
 
 
 @dataclass(frozen=True)
+class PaytableEntry:
+    """One visible score value for a slot symbol."""
+
+    symbol_key: str
+    score_value: int
+
+
+@dataclass(frozen=True)
 class SlotMachineScene:
     """Generated slot-machine state before rendering."""
 
@@ -25,6 +33,7 @@ class SlotMachineScene:
     style_variant: str
     cells: Tuple[SlotCell, ...]
     winning_payline_ids: Tuple[str, ...]
+    paytable_entries: Tuple[PaytableEntry, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -79,6 +88,49 @@ def winning_payline_ids_for_grid(grid: tuple[tuple[str, ...], ...]) -> tuple[str
     return tuple(winners)
 
 
+def payline_symbol_key(grid: tuple[tuple[str, ...], ...], payline_key: str) -> str:
+    """Return the matching symbol for a winning payline."""
+
+    key = str(payline_key)
+    cells = PAYLINE_CELLS_BY_ID[key]
+    symbols = tuple(str(grid[int(row)][int(col)]) for row, col in cells)
+    if len(set(symbols)) != 1:
+        raise ValueError(f"payline is not winning: {key}")
+    return str(symbols[0])
+
+
+def paytable_score_map(scene: SlotMachineScene) -> dict[str, int]:
+    """Return the scene paytable as a symbol-keyed score map."""
+
+    return {str(entry.symbol_key): int(entry.score_value) for entry in scene.paytable_entries}
+
+
+def winning_payline_score_details(scene: SlotMachineScene) -> tuple[dict[str, object], ...]:
+    """Return per-winning-payline score details from the visible paytable."""
+
+    grid = cell_grid(scene)
+    score_by_symbol = paytable_score_map(scene)
+    details: list[dict[str, object]] = []
+    for payline_key in scene.winning_payline_ids:
+        symbol_key = payline_symbol_key(grid, str(payline_key))
+        if symbol_key not in score_by_symbol:
+            raise ValueError(f"paytable has no score for winning symbol: {symbol_key}")
+        details.append(
+            {
+                "payline_id": str(payline_key),
+                "symbol_key": str(symbol_key),
+                "score_value": int(score_by_symbol[symbol_key]),
+            }
+        )
+    return tuple(details)
+
+
+def total_winning_payline_score(scene: SlotMachineScene) -> int:
+    """Return the total score over all winning paylines."""
+
+    return sum(int(detail["score_value"]) for detail in winning_payline_score_details(scene))
+
+
 def validate_slot_machine_scene(scene: SlotMachineScene) -> None:
     """Validate scene consistency independent of one public objective."""
 
@@ -98,16 +150,28 @@ def validate_slot_machine_scene(scene: SlotMachineScene) -> None:
     actual_winning_paylines = winning_payline_ids_for_grid(grid)
     if tuple(scene.winning_payline_ids) != actual_winning_paylines:
         raise ValueError("slot-machine winning paylines must match the symbol grid")
+    if scene.paytable_entries:
+        symbols = tuple(str(entry.symbol_key) for entry in scene.paytable_entries)
+        if tuple(symbols) != tuple(SYMBOL_KEYS):
+            raise ValueError("slot-machine paytable must list every supported symbol in stable order")
+        if any(int(entry.score_value) <= 0 for entry in scene.paytable_entries):
+            raise ValueError("slot-machine paytable scores must be positive integers")
+        total_winning_payline_score(scene)
 
 
 __all__ = [
+    "PaytableEntry",
     "SlotCell",
     "SlotMachineAxes",
     "SlotMachineScene",
     "PAYLINE_CELLS_BY_ID",
     "cell_grid",
     "payline_entity_id",
+    "payline_symbol_key",
+    "paytable_score_map",
     "slot_cell_id",
+    "total_winning_payline_score",
     "validate_slot_machine_scene",
+    "winning_payline_score_details",
     "winning_payline_ids_for_grid",
 ]

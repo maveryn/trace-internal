@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence
 
 from .rendering import RenderedSlotMachineScene
-from .state import SlotMachineAxes, SlotMachineScene, cell_grid
+from .state import SlotMachineAxes, SlotMachineScene, cell_grid, winning_payline_score_details
 
 
 def build_slot_machine_common_trace_params(
@@ -47,6 +47,10 @@ def build_slot_machine_trace_payload(
                 "style_variant": str(axes.style_variant),
                 "winning_payline_ids": [str(payline_id) for payline_id in scene.winning_payline_ids],
                 "annotation_payline_ids": [str(payline_id) for payline_id in annotation_payline_ids],
+                "paytable_scores": {
+                    str(entry.symbol_key): int(entry.score_value)
+                    for entry in scene.paytable_entries
+                },
             },
         },
         "query_spec": dict(query_spec),
@@ -63,6 +67,11 @@ def build_slot_machine_trace_payload(
             "style_variant": str(axes.style_variant),
             "symbol_grid": [list(row) for row in cell_grid(scene)],
             "winning_payline_ids": [str(payline_id) for payline_id in scene.winning_payline_ids],
+            "winning_payline_score_details": [dict(detail) for detail in winning_payline_score_details(scene)] if scene.paytable_entries else [],
+            "paytable_scores": {
+                str(entry.symbol_key): int(entry.score_value)
+                for entry in scene.paytable_entries
+            },
             "answer": int(answer_value),
             "annotation_payline_ids": [str(payline_id) for payline_id in annotation_payline_ids],
             **dict(execution_extra or {}),

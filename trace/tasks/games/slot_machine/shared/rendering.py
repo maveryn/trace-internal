@@ -178,6 +178,72 @@ def _draw_symbol(draw: ImageDraw.ImageDraw, bbox: Sequence[float], symbol_key: s
         draw.ellipse([cx - size * 0.22, cy - size * 0.22, cx + size * 0.22, cy + size * 0.22], fill=(255, 210, 88), outline=(166, 89, 26), width=2)
 
 
+def _draw_paytable(
+    draw: ImageDraw.ImageDraw,
+    *,
+    scene: SlotMachineScene,
+    cabinet_right: float,
+    cabinet_top: float,
+    colors: Mapping[str, tuple[int, int, int]],
+) -> tuple[dict[str, list[float]], list[dict[str, Any]], list[float] | None]:
+    """Draw a side paytable when the scene carries score entries."""
+
+    if not scene.paytable_entries:
+        return {}, [], None
+    panel_left = float(cabinet_right) + 26.0
+    panel_top = float(cabinet_top) + 84.0
+    panel_width = 170.0
+    title_height = 44.0
+    row_height = 48.0
+    panel_height = title_height + row_height * len(scene.paytable_entries) + 18.0
+    panel_bbox = [panel_left, panel_top, panel_left + panel_width, panel_top + panel_height]
+    draw.rounded_rectangle(panel_bbox, radius=18, fill=(250, 246, 231), outline=colors["trim"], width=4)
+    draw_centered_game_text(
+        draw,
+        text="PAYTABLE",
+        center=(panel_left + panel_width / 2.0, panel_top + title_height / 2.0 + 2.0),
+        font=_font(18, bold=True),
+        fill=colors["cabinet_dark"],
+        stroke_fill=(250, 246, 231),
+        surface_rgbs=((250, 246, 231),),
+        role="readout",
+        required=True,
+    )
+
+    entry_bboxes: dict[str, list[float]] = {}
+    entities: list[dict[str, Any]] = []
+    for index, entry in enumerate(scene.paytable_entries):
+        row_top = panel_top + title_height + index * row_height + 4.0
+        row_bbox = [panel_left + 10.0, row_top, panel_left + panel_width - 10.0, row_top + row_height - 6.0]
+        draw.rounded_rectangle(row_bbox, radius=10, fill=(255, 252, 241), outline=(208, 193, 160), width=1)
+        symbol_bbox = [row_bbox[0] + 8.0, row_bbox[1] + 4.0, row_bbox[0] + 46.0, row_bbox[3] - 4.0]
+        _draw_symbol(draw, symbol_bbox, str(entry.symbol_key), colors=colors)
+        draw_centered_game_text(
+            draw,
+            text=f"= {int(entry.score_value)}",
+            center=(row_bbox[0] + 104.0, (row_bbox[1] + row_bbox[3]) / 2.0),
+            font=_font(22, bold=True),
+            fill=colors["cabinet_dark"],
+            stroke_fill=(255, 252, 241),
+            surface_rgbs=((255, 252, 241),),
+            role="readout",
+            required=True,
+        )
+        key = f"paytable_{entry.symbol_key}"
+        bbox = [round(float(value), 3) for value in row_bbox]
+        entry_bboxes[key] = bbox
+        entities.append(
+            {
+                "id": key,
+                "kind": "paytable_entry",
+                "symbol_key": str(entry.symbol_key),
+                "score_value": int(entry.score_value),
+                "bbox_px": bbox,
+            }
+        )
+    return entry_bboxes, entities, [round(float(value), 3) for value in panel_bbox]
+
+
 def render_slot_machine_scene(
     *,
     scene: SlotMachineScene,
@@ -286,6 +352,14 @@ def render_slot_machine_scene(
     lever_y1 = top + 312
     draw.line([(lever_x, lever_y0), (lever_x + 54, lever_y1)], fill=colors["cabinet_dark"], width=11)
     draw.ellipse([lever_x + 34, lever_y1 - 18, lever_x + 76, lever_y1 + 24], fill=colors["trim"], outline=colors["cabinet_dark"], width=3)
+    paytable_bboxes, paytable_entities, paytable_panel_bbox = _draw_paytable(
+        draw,
+        scene=scene,
+        cabinet_right=right,
+        cabinet_top=top,
+        colors=colors,
+    )
+    scene_entities.extend(paytable_entities)
 
     noisy_image, post_noise_meta = apply_post_image_noise(
         image,
@@ -299,6 +373,8 @@ def render_slot_machine_scene(
             "cell_bboxes_px": cell_bboxes,
             "cell_centers_px": cell_centers,
             "payline_segments_px": payline_segments,
+            "paytable_entry_bboxes_px": paytable_bboxes,
+            "paytable_panel_bbox_px": paytable_panel_bbox,
             "cabinet_bbox_px": [round(left, 3), round(top, 3), round(right, 3), round(bottom, 3)],
             "window_bbox_px": [round(float(v), 3) for v in window_bbox],
             "style_colors": {key: list(value) for key, value in colors.items()},

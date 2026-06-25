@@ -25,18 +25,18 @@ _PROMPT_WIRING_KEYS = (
 )
 
 
-def slot_integer_segment_set_json_examples() -> tuple[str, str]:
+def slot_integer_segment_set_json_examples(answer_value: int = 2) -> tuple[str, str]:
     """Return valid JSON examples for count tasks with segment-set annotation."""
 
     return (
         json.dumps(
             {
                 "annotation": [[[250, 250], [510, 250]], [[250, 470], [510, 250]]],
-                "answer": 2,
+                "answer": int(answer_value),
             },
             separators=(",", ":"),
         ),
-        json.dumps({"answer": 2}, separators=(",", ":")),
+        json.dumps({"answer": int(answer_value)}, separators=(",", ":")),
     )
 
 

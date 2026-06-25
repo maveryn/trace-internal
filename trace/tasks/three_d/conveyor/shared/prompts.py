@@ -31,12 +31,26 @@ _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS = load_scene_gen
 def dynamic_slots_for_conveyor(dataset: Mapping[str, Any]) -> dict[str, Any]:
     """Return dynamic prompt slots bound to one conveyor dataset."""
 
-    return {
+    slots = {
         "lane_label": str(dataset.get("target_lane_label", dataset.get("target_belt_label", ""))),
         "belt_label": str(dataset.get("target_belt_label", dataset.get("target_lane_label", ""))),
         "target_object_plural": str(dataset.get("target_object_plural", "")),
         "target_color_label": str(dataset.get("target_color_label", "")),
     }
+    if "arithmetic_operation" in dataset:
+        scope_keys = [str(scope) for scope in dataset.get("scope_keys", [])]
+        annotation_keys = [str(dataset["annotation_key_by_scope"][scope]) for scope in scope_keys]
+        first_label = str(dataset["scope_labels"][scope_keys[0]])
+        second_label = str(dataset["scope_labels"][scope_keys[1]])
+        slots.update(
+            {
+                "first_lane_label": first_label,
+                "second_lane_label": second_label,
+                "first_annotation_key": str(annotation_keys[0]),
+                "second_annotation_key": str(annotation_keys[1]),
+            }
+        )
+    return slots
 
 
 def build_prompt_artifacts(

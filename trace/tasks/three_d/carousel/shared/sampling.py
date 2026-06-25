@@ -39,6 +39,7 @@ from .state import (
     SUPPORTED_SCENE_VARIANTS,
     public_object_name,
     public_object_plural,
+    semantic_color_label,
 )
 
 
@@ -46,6 +47,10 @@ PREDICATE_OBJECT_TYPE = "object_type"
 PREDICATE_COLOR = "color"
 PREDICATE_COLOR_TYPE = "color_type"
 PREDICATE_BELT_TOTAL = "belt_total"
+PREDICATE_OBJECT_TYPE_ARITHMETIC = "object_type_count_arithmetic"
+PREDICATE_COLOR_ARITHMETIC = "color_count_arithmetic"
+ARITHMETIC_SUM = "sum"
+ARITHMETIC_DIFFERENCE = "difference"
 
 CAMERA_YAW_BANDS_DEGREES: Tuple[Tuple[float, float], ...] = (
     (-66.0, -42.0),
@@ -208,6 +213,81 @@ def _sample_scoped_belt_totals(
         else:
             min_count = 2
         min_count = min(int(max_count), int(min_count))
+        totals[str(belt_key)] = int(rng.randrange(int(min_count), int(max_count) + 1))
+    return totals
+
+
+def _resolve_arithmetic_operand_counts(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    rng: Any,
+    instance_seed: int,
+    namespace: str,
+    operation: str,
+) -> tuple[int, int, int, Dict[str, float], Dict[str, float]]:
+    """Resolve two belt operand counts and the arithmetic answer."""
+
+    operation = str(operation)
+    if operation == ARITHMETIC_SUM:
+        default_min = _configured_int(params, gen_defaults, "sum_answer_min", 1)
+        default_max = _configured_int(params, gen_defaults, "sum_answer_max", 12)
+        lower, upper = 1, 12
+    elif operation == ARITHMETIC_DIFFERENCE:
+        default_min = _configured_int(params, gen_defaults, "difference_answer_min", 1)
+        default_max = _configured_int(params, gen_defaults, "difference_answer_max", 5)
+        lower, upper = 1, 5
+    else:
+        raise ValueError(f"unsupported carousel count arithmetic operation: {operation}")
+
+    answer_value, answer_probabilities = resolve_count_for_namespace(
+        params,
+        namespace=f"{namespace}.{operation}.answer_value",
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        key="answer_value",
+        default_min=int(default_min),
+        default_max=int(default_max),
+        lower=int(lower),
+        upper=int(upper),
+    )
+    explicit_first = params.get("first_scope_count")
+    explicit_second = params.get("second_scope_count")
+    if explicit_first is not None or explicit_second is not None:
+        if explicit_first is None or explicit_second is None:
+            raise ValueError("first_scope_count and second_scope_count must be provided together")
+        first_count = int(explicit_first)
+        second_count = int(explicit_second)
+        if not (0 <= first_count <= 6 and 0 <= second_count <= 6):
+            raise ValueError("carousel arithmetic operand counts must be in 0..6")
+        expected = first_count + second_count if operation == ARITHMETIC_SUM else abs(first_count - second_count)
+        if int(expected) != int(answer_value):
+            raise ValueError("explicit carousel arithmetic operands do not match answer_value")
+        return int(first_count), int(second_count), int(answer_value), dict(answer_probabilities), {"first_scope_count": 1.0, "second_scope_count": 1.0}
+
+    if operation == ARITHMETIC_SUM:
+        pairs = [(a, int(answer_value) - a) for a in range(0, 7) if 0 <= int(answer_value) - a <= 6]
+    else:
+        pairs = [(a, b) for a in range(0, 7) for b in range(0, 7) if abs(a - b) == int(answer_value)]
+    if not pairs:
+        raise ValueError(f"no carousel arithmetic operands for answer {answer_value}")
+    first_count, second_count = pairs[int(rng.randrange(len(pairs)))]
+    operand_probabilities = {
+        f"{first_count},{second_count}": 1.0,
+    }
+    return int(first_count), int(second_count), int(answer_value), dict(answer_probabilities), operand_probabilities
+
+
+def _sample_arithmetic_belt_totals(
+    *,
+    rng: Any,
+    operand_counts_by_belt: Mapping[str, int],
+) -> dict[str, int]:
+    totals: dict[str, int] = {}
+    for belt_key in BELT_KEYS:
+        target_count = int(operand_counts_by_belt[str(belt_key)])
+        max_count = int(_belt_max_object_count(str(belt_key)))
+        min_count = min(max_count, max(2, target_count + (1 if target_count < max_count else 0)))
         totals[str(belt_key)] = int(rng.randrange(int(min_count), int(max_count) + 1))
     return totals
 
@@ -922,12 +1002,227 @@ def build_belt_count_dataset(
     }
 
 
+def build_belt_count_arithmetic_dataset(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    render_params: Any,
+    axes: ResolvedConveyorAxes,
+    predicate_kind: str,
+    operation: str,
+    namespace: str,
+) -> dict[str, Any]:
+    """Build a two-belt carousel dataset for scoped count arithmetic."""
+
+    rng = spawn_rng(int(instance_seed), f"{namespace}.dataset")
+    first_count, second_count, answer_value, answer_probabilities, operand_probabilities = _resolve_arithmetic_operand_counts(
+        params=params,
+        gen_defaults=gen_defaults,
+        rng=rng,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+        operation=str(operation),
+    )
+    belt_keys = ("inner", "outer")
+    operand_counts_by_belt = {
+        "inner": int(first_count),
+        "outer": int(second_count),
+    }
+    scoped_belt_totals = _sample_arithmetic_belt_totals(
+        rng=rng,
+        operand_counts_by_belt=operand_counts_by_belt,
+    )
+    slots_per_belt = max(24, _configured_int(params, gen_defaults, "slots_per_belt", 30))
+    min_angle_gap_degrees = float(params.get("min_same_belt_angle_gap_degrees", group_default(gen_defaults, "min_same_belt_angle_gap_degrees", 20.0)))
+    dimension_scale = float(params.get("object_dimension_scale", group_default(gen_defaults, "object_dimension_scale", 0.64)))
+    slots_by_belt = {
+        str(belt_key): _slot_positions_for_belt(rng=rng, belt_key=str(belt_key), slots_per_belt=int(slots_per_belt))
+        for belt_key in BELT_KEYS
+    }
+    used_angles_by_belt: Dict[str, list[float]] = {str(belt_key): [] for belt_key in BELT_KEYS}
+    belt_records = [
+        {
+            "belt_key": str(belt_key),
+            "belt_label": str(BELT_LABELS[str(belt_key)]),
+            "geometry": dict(BELT_GEOMETRY[str(belt_key)]),
+            "slot_count": int(slots_per_belt),
+        }
+        for belt_key in BELT_KEYS
+    ]
+    object_specs: List[Dict[str, Any]] = []
+    target_object_ids_by_belt: dict[str, list[str]] = {str(belt_key): [] for belt_key in BELT_KEYS}
+
+    if str(predicate_kind) == PREDICATE_OBJECT_TYPE_ARITHMETIC:
+        target_shape, target_shape_probabilities = _resolve_target_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_OBJECT_SHAPE_TYPES,
+        )
+        distractor_shapes = list(compatible_distractor_pool(str(target_shape), support=CONVEYOR_OBJECT_SHAPE_TYPES))
+        active_colors = sample_named_color_palette(rng, palette_size=4)
+        color_names = tuple(str(name) for name, _rgb in active_colors)
+        if not color_names:
+            raise ValueError("empty carousel visual color palette")
+        target_color_name = ""
+        target_color_probabilities: Dict[str, float] = {}
+        wrong_colors = list(color_names)
+    elif str(predicate_kind) == PREDICATE_COLOR_ARITHMETIC:
+        target_shape, target_shape_probabilities = _resolve_target_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        distractor_shapes = [str(target_shape)]
+        target_color_name, target_color_probabilities = _resolve_target_color(params=params, rng=rng)
+        color_names = _sample_readout_palette(rng, target_color=str(target_color_name), size=4)
+        wrong_colors = [str(color) for color in color_names if str(color) != str(target_color_name)]
+        if not wrong_colors:
+            raise ValueError("carousel arithmetic color task needs non-target colors")
+    else:
+        raise ValueError(f"unsupported carousel arithmetic predicate: {predicate_kind}")
+
+    for belt_key in belt_keys:
+        target_count = int(operand_counts_by_belt[str(belt_key)])
+        total_count = int(scoped_belt_totals[str(belt_key)])
+        for _index in range(target_count):
+            slot = _sample_slot(
+                slots_by_belt,
+                used_angles_by_belt,
+                belt_key=str(belt_key),
+                min_angle_gap_degrees=float(min_angle_gap_degrees),
+            )
+            object_id = f"obj_{len(object_specs):03d}"
+            target_object_ids_by_belt[str(belt_key)].append(str(object_id))
+            object_specs.append(
+                _make_object_spec(
+                    rng=rng,
+                    object_id=str(object_id),
+                    shape_type=str(target_shape),
+                    color_name=str(target_color_name) if str(predicate_kind) == PREDICATE_COLOR_ARITHMETIC else str(color_names[len(object_specs) % len(color_names)]),
+                    slot=slot,
+                    belt_key=str(belt_key),
+                    matches_query=True,
+                    count_role=f"{belt_key}_operand_target",
+                    dimension_scale=float(dimension_scale),
+                )
+            )
+        for index in range(max(0, total_count - target_count)):
+            slot = _sample_slot(
+                slots_by_belt,
+                used_angles_by_belt,
+                belt_key=str(belt_key),
+                min_angle_gap_degrees=float(min_angle_gap_degrees),
+            )
+            if str(predicate_kind) == PREDICATE_OBJECT_TYPE_ARITHMETIC:
+                shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
+                color_name = str(color_names[(index + len(object_specs)) % len(color_names)])
+            else:
+                shape_type = str(distractor_shapes[0])
+                color_name = str(wrong_colors[(index + len(object_specs)) % len(wrong_colors)])
+            object_specs.append(
+                _make_object_spec(
+                    rng=rng,
+                    object_id=f"obj_{len(object_specs):03d}",
+                    shape_type=str(shape_type),
+                    color_name=str(color_name),
+                    slot=slot,
+                    belt_key=str(belt_key),
+                    matches_query=False,
+                    count_role=f"{belt_key}_operand_distractor",
+                    dimension_scale=float(dimension_scale),
+                )
+            )
+
+    camera, frame, camera_meta, frame_meta = _finalize_camera_and_projection(
+        rng=rng,
+        render_params=render_params,
+        object_specs=object_specs,
+    )
+    finalized_specs = _screen_finalize_specs(object_specs=object_specs, camera=camera, frame=frame)
+    shape_counts = Counter(str(spec["shape_type"]) for spec in finalized_specs)
+    color_counts = Counter(str(spec["color_name"]) for spec in finalized_specs)
+    belt_counts = Counter(str(spec["belt_key"]) for spec in finalized_specs)
+    target_object_ids = [
+        str(object_id)
+        for belt_key in belt_keys
+        for object_id in target_object_ids_by_belt[str(belt_key)]
+    ]
+    annotation_key_by_belt = {str(belt_key): f"{belt_key}_objects" for belt_key in belt_keys}
+    target_object_ids_by_annotation_key = {
+        str(annotation_key_by_belt[str(belt_key)]): [str(object_id) for object_id in target_object_ids_by_belt[str(belt_key)]]
+        for belt_key in belt_keys
+    }
+    operand_counts_by_scope = {
+        str(annotation_key_by_belt[str(belt_key)]): int(operand_counts_by_belt[str(belt_key)])
+        for belt_key in belt_keys
+    }
+    return {
+        "scene_id": SCENE_ID,
+        "scene_variant": str(axes.scene_variant),
+        "layout_family": "elliptical_carousel",
+        "predicate_kind": str(predicate_kind),
+        "arithmetic_operation": str(operation),
+        "scope_keys": list(belt_keys),
+        "scope_labels": {str(belt_key): str(BELT_LABELS[str(belt_key)]) for belt_key in belt_keys},
+        "annotation_key_by_scope": dict(annotation_key_by_belt),
+        "target_object_ids_by_annotation_key": dict(target_object_ids_by_annotation_key),
+        "operand_counts_by_scope": dict(operand_counts_by_scope),
+        "operand_count_probabilities": dict(operand_probabilities),
+        "belt_records": [dict(record) for record in belt_records],
+        "target_belt_key": "inner_outer",
+        "target_belt_label": "INNER and OUTER",
+        "target_shape_type": str(target_shape),
+        "target_object_name": public_object_name(str(target_shape)),
+        "target_object_plural": public_object_plural(str(target_shape)),
+        "target_color_name": str(target_color_name),
+        "target_color_label": semantic_color_label(str(target_color_name)) if str(target_color_name) else "",
+        "answer_value": int(answer_value),
+        "target_count": int(answer_value),
+        "target_object_ids": list(target_object_ids),
+        "target_belt_object_ids": list(target_object_ids),
+        "object_count": int(len(finalized_specs)),
+        "object_specs": [dict(spec) for spec in finalized_specs],
+        "shape_counts": {str(key): int(value) for key, value in sorted(shape_counts.items())},
+        "color_counts": {str(key): int(value) for key, value in sorted(color_counts.items())},
+        "belt_counts": {str(key): int(value) for key, value in sorted(belt_counts.items())},
+        "target_shape_type_probabilities": dict(target_shape_probabilities),
+        "target_color_name_probabilities": dict(target_color_probabilities),
+        "target_count_probabilities": dict(answer_probabilities),
+        "object_count_probabilities": {str(len(finalized_specs)): 1.0},
+        "target_belt_key_probabilities": {"inner_outer": 1.0},
+        "target_belt_probabilities": {"inner_outer": 1.0},
+        "slots_per_belt": int(slots_per_belt),
+        "min_same_belt_angle_gap_degrees": round(float(min_angle_gap_degrees), 3),
+        "semantic_color_palette": {str(key): list(value) for key, value in sorted(SEMANTIC_COLOR_RGB.items())},
+        "camera": dict(camera_meta),
+        "projection_frame": dict(frame_meta),
+        "solver_trace": {
+            "count_predicate": str(predicate_kind),
+            "operation": str(operation),
+            "scopes": {str(belt_key): str(BELT_LABELS[str(belt_key)]) for belt_key in belt_keys},
+            "target_shape_type": str(target_shape),
+            "target_color_name": str(target_color_name),
+            "operand_counts_by_scope": dict(operand_counts_by_scope),
+            "target_object_ids_by_annotation_key": dict(target_object_ids_by_annotation_key),
+            "target_object_ids": list(target_object_ids),
+            "answer_value": int(answer_value),
+            "unique_integer_answer": True,
+        },
+    }
+
+
 __all__ = [
+    "ARITHMETIC_DIFFERENCE",
+    "ARITHMETIC_SUM",
     "PREDICATE_BELT_TOTAL",
     "PREDICATE_COLOR",
+    "PREDICATE_COLOR_ARITHMETIC",
     "PREDICATE_COLOR_TYPE",
     "PREDICATE_OBJECT_TYPE",
+    "PREDICATE_OBJECT_TYPE_ARITHMETIC",
     "ResolvedConveyorAxes",
+    "build_belt_count_arithmetic_dataset",
     "build_belt_count_dataset",
     "resolve_conveyor_axes",
 ]

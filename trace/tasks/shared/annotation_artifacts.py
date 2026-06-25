@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 from ...core.types import TypedValue
 
@@ -67,6 +67,33 @@ def bbox_set_annotation_artifacts(
         annotation_type="bbox_set",
         value=[list(bbox) for bbox in value],
         annotation_gt=TypedValue(type="bbox_set", value=[list(bbox) for bbox in value]),
+        projected_annotation=projected_annotation,
+    )
+
+
+def bbox_set_map_annotation_artifacts(
+    keyed_bboxes: Mapping[str, Sequence[Sequence[float]]],
+    *,
+    ndigits: int = 3,
+) -> AnnotationArtifacts:
+    """Build public annotation artifacts for role-keyed bbox sets."""
+
+    value = {
+        str(key): [_round_bbox(bbox, ndigits=int(ndigits)) for bbox in bboxes]
+        for key, bboxes in dict(keyed_bboxes).items()
+    }
+    projected_annotation = {
+        "type": "bbox_set_map",
+        "bbox_set_map": {str(key): [list(bbox) for bbox in bboxes] for key, bboxes in value.items()},
+        "pixel_bbox_set_map": {str(key): [list(bbox) for bbox in bboxes] for key, bboxes in value.items()},
+    }
+    return AnnotationArtifacts(
+        annotation_type="bbox_set_map",
+        value={str(key): [list(bbox) for bbox in bboxes] for key, bboxes in value.items()},
+        annotation_gt=TypedValue(
+            type="bbox_set_map",
+            value={str(key): [list(bbox) for bbox in bboxes] for key, bboxes in value.items()},
+        ),
         projected_annotation=projected_annotation,
     )
 
@@ -168,6 +195,7 @@ __all__ = [
     "AnnotationArtifacts",
     "bbox_annotation_artifacts",
     "bbox_set_annotation_artifacts",
+    "bbox_set_map_annotation_artifacts",
     "point_annotation_artifacts",
     "segment_annotation_artifacts",
     "segment_set_annotation_artifacts",

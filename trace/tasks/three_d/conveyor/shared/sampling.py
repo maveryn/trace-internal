@@ -56,6 +56,10 @@ PREDICATE_BELT_TOTAL = "belt_total"
 PREDICATE_OBJECT_TYPE = "object_type"
 PREDICATE_COLOR = "color"
 PREDICATE_COLOR_TYPE = "color_type"
+PREDICATE_OBJECT_TYPE_ARITHMETIC = "object_type_count_arithmetic"
+PREDICATE_COLOR_ARITHMETIC = "color_count_arithmetic"
+ARITHMETIC_SUM = "sum"
+ARITHMETIC_DIFFERENCE = "difference"
 LAYOUT_HORIZONTAL = "horizontal_lanes"
 LAYOUT_VERTICAL = "vertical_lanes"
 
@@ -228,6 +232,85 @@ def _resolve_scoped_target_count(
         upper=5,
     )
     return int(count), dict(probabilities)
+
+
+def _resolve_arithmetic_operand_counts(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    rng: Any,
+    instance_seed: int,
+    namespace: str,
+    operation: str,
+) -> tuple[int, int, int, Dict[str, float], Dict[str, float]]:
+    """Resolve two lane operand counts and the arithmetic answer."""
+
+    operation = str(operation)
+    if operation == ARITHMETIC_SUM:
+        default_min = int(params.get("sum_answer_min", group_default(gen_defaults, "sum_answer_min", 1)))
+        default_max = int(params.get("sum_answer_max", group_default(gen_defaults, "sum_answer_max", 12)))
+        lower, upper = 1, 12
+    elif operation == ARITHMETIC_DIFFERENCE:
+        default_min = int(params.get("difference_answer_min", group_default(gen_defaults, "difference_answer_min", 1)))
+        default_max = int(params.get("difference_answer_max", group_default(gen_defaults, "difference_answer_max", 5)))
+        lower, upper = 1, 5
+    else:
+        raise ValueError(f"unsupported conveyor count arithmetic operation: {operation}")
+    answer_value, answer_probabilities = resolve_count_for_namespace(
+        params,
+        namespace=f"{namespace}.{operation}.answer_value",
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        key="answer_value",
+        default_min=int(default_min),
+        default_max=int(default_max),
+        lower=int(lower),
+        upper=int(upper),
+    )
+    explicit_first = params.get("first_scope_count")
+    explicit_second = params.get("second_scope_count")
+    if explicit_first is not None or explicit_second is not None:
+        if explicit_first is None or explicit_second is None:
+            raise ValueError("first_scope_count and second_scope_count must be provided together")
+        first_count = int(explicit_first)
+        second_count = int(explicit_second)
+        if not (0 <= first_count <= 6 and 0 <= second_count <= 6):
+            raise ValueError("conveyor arithmetic operand counts must be in 0..6")
+        expected = first_count + second_count if operation == ARITHMETIC_SUM else abs(first_count - second_count)
+        if int(expected) != int(answer_value):
+            raise ValueError("explicit conveyor arithmetic operands do not match answer_value")
+        return int(first_count), int(second_count), int(answer_value), dict(answer_probabilities), {"first_scope_count": 1.0, "second_scope_count": 1.0}
+
+    if operation == ARITHMETIC_SUM:
+        pairs = [(a, int(answer_value) - a) for a in range(0, 7) if 0 <= int(answer_value) - a <= 6]
+    else:
+        pairs = [(a, b) for a in range(0, 7) for b in range(0, 7) if abs(a - b) == int(answer_value)]
+    if not pairs:
+        raise ValueError(f"no conveyor arithmetic operands for answer {answer_value}")
+    first_count, second_count = pairs[int(rng.randrange(len(pairs)))]
+    return int(first_count), int(second_count), int(answer_value), dict(answer_probabilities), {f"{first_count},{second_count}": 1.0}
+
+
+def _resolve_arithmetic_lanes(
+    *,
+    params: Mapping[str, Any],
+    rng: Any,
+    lane_keys: Sequence[str],
+) -> tuple[tuple[str, str], Dict[str, float]]:
+    support = tuple(str(key) for key in lane_keys)
+    explicit_first = params.get("first_lane_key")
+    explicit_second = params.get("second_lane_key")
+    if explicit_first is not None or explicit_second is not None:
+        if explicit_first is None or explicit_second is None:
+            raise ValueError("first_lane_key and second_lane_key must be provided together")
+        first = str(explicit_first)
+        second = str(explicit_second)
+        if first == second or first not in set(support) or second not in set(support):
+            raise ValueError("conveyor arithmetic lanes must be two distinct visible lane keys")
+        return (first, second), {str(key): (1.0 if str(key) in {first, second} else 0.0) for key in support}
+    pairs = [(support[i], support[j]) for i in range(len(support)) for j in range(i + 1, len(support))]
+    selected = pairs[int(rng.randrange(len(pairs)))]
+    return (str(selected[0]), str(selected[1])), {str(key): (1.0 if str(key) in set(selected) else 0.0) for key in support}
 
 
 def _sample_scoped_lane_counts(
@@ -827,15 +910,219 @@ def build_scoped_belt_count_dataset(
     )
 
 
+def build_lane_count_arithmetic_dataset(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    render_params: Any,
+    axes: ResolvedConveyorAxes,
+    predicate_kind: str,
+    operation: str,
+    namespace: str,
+) -> dict[str, Any]:
+    """Build a three-lane conveyor dataset for two-lane count arithmetic."""
+
+    rng = spawn_rng(int(instance_seed), f"{namespace}.dataset")
+    layout_orientation, layout_orientation_probabilities = _resolve_layout_orientation(
+        params=params,
+        rng=rng,
+        render_params=render_params,
+    )
+    lane_keys = _lane_keys_for_orientation(str(layout_orientation))
+    selected_lanes, selected_lane_probabilities = _resolve_arithmetic_lanes(
+        params=params,
+        rng=rng,
+        lane_keys=lane_keys,
+    )
+    first_count, second_count, answer_value, answer_probabilities, operand_probabilities = _resolve_arithmetic_operand_counts(
+        params=params,
+        gen_defaults=gen_defaults,
+        rng=rng,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+        operation=str(operation),
+    )
+    operand_counts_by_lane = {
+        str(selected_lanes[0]): int(first_count),
+        str(selected_lanes[1]): int(second_count),
+    }
+    lane_counts: Dict[str, int] = {}
+    for lane_key in lane_keys:
+        if str(lane_key) in operand_counts_by_lane:
+            target_count = int(operand_counts_by_lane[str(lane_key)])
+            min_count = min(8, max(2, target_count + (1 if target_count < 8 else 0)))
+            lane_counts[str(lane_key)] = int(rng.randrange(int(min_count), 9))
+        else:
+            lane_counts[str(lane_key)] = int(rng.randrange(2, 9))
+
+    dimension_scale = float(params.get("object_dimension_scale", group_default(gen_defaults, "object_dimension_scale", 0.74)))
+    object_specs: List[Dict[str, Any]] = []
+    target_object_ids_by_lane: dict[str, list[str]] = {str(lane_key): [] for lane_key in selected_lanes}
+
+    if str(predicate_kind) == PREDICATE_OBJECT_TYPE_ARITHMETIC:
+        target_shape, target_shape_probabilities = _resolve_shape(params=params, rng=rng)
+        distractor_shapes = list(compatible_distractor_pool(str(target_shape), support=CONVEYOR_OBJECT_SHAPE_TYPES))
+        color_names = sample_visual_color_names(rng, palette_size=4)
+        target_color_name = ""
+        target_color_probabilities: Dict[str, float] = {}
+        wrong_colors = list(color_names)
+    elif str(predicate_kind) == PREDICATE_COLOR_ARITHMETIC:
+        target_shape, target_shape_probabilities = _resolve_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        distractor_shapes = [str(target_shape)]
+        target_color_name, target_color_probabilities = _resolve_target_color(params=params, rng=rng)
+        color_names = _sample_readout_palette(rng, target_color=str(target_color_name), size=4)
+        wrong_colors = [str(color) for color in color_names if str(color) != str(target_color_name)]
+        if not wrong_colors:
+            raise ValueError("conveyor arithmetic color task needs non-target colors")
+    else:
+        raise ValueError(f"unsupported straight conveyor arithmetic predicate: {predicate_kind}")
+    if not color_names:
+        raise ValueError("empty conveyor arithmetic color palette")
+
+    for lane_key in lane_keys:
+        slots = _slot_positions_for_lane(
+            rng=rng,
+            layout_orientation=str(layout_orientation),
+            lane_key=str(lane_key),
+            count=int(lane_counts[str(lane_key)]),
+        )
+        target_count = int(operand_counts_by_lane.get(str(lane_key), 0))
+        for index, slot in enumerate(slots):
+            in_selected_scope = str(lane_key) in set(str(value) for value in selected_lanes)
+            matches_query = bool(in_selected_scope and int(index) < int(target_count))
+            if str(predicate_kind) == PREDICATE_OBJECT_TYPE_ARITHMETIC:
+                if bool(matches_query) or (not in_selected_scope and rng.random() < 0.35):
+                    shape_type = str(target_shape)
+                else:
+                    shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
+                color_name = str(wrong_colors[(index + len(object_specs)) % len(wrong_colors)])
+            else:
+                shape_type = str(distractor_shapes[0])
+                if bool(matches_query) or (not in_selected_scope and rng.random() < 0.35):
+                    color_name = str(target_color_name)
+                else:
+                    color_name = str(wrong_colors[(index + len(object_specs)) % len(wrong_colors)])
+            object_id = f"obj_{len(object_specs):03d}"
+            if bool(matches_query):
+                target_object_ids_by_lane[str(lane_key)].append(str(object_id))
+            object_specs.append(
+                _make_object_spec(
+                    rng=rng,
+                    object_id=str(object_id),
+                    shape_type=str(shape_type),
+                    color_name=str(color_name),
+                    lane_key=str(lane_key),
+                    layout_orientation=str(layout_orientation),
+                    slot=slot,
+                    matches_query=bool(matches_query),
+                    count_role="operand_target" if bool(matches_query) else ("selected_lane_distractor" if bool(in_selected_scope) else "outside_scope_distractor"),
+                    dimension_scale=float(dimension_scale),
+                )
+            )
+
+    camera, frame, camera_meta, frame_meta = _finalize_camera_and_projection(
+        rng=rng,
+        render_params=render_params,
+        layout_orientation=str(layout_orientation),
+        object_specs=object_specs,
+    )
+    finalized_specs = _screen_finalize_specs(object_specs=object_specs, camera=camera, frame=frame)
+    shape_counts = Counter(str(spec["shape_type"]) for spec in finalized_specs)
+    color_counts = Counter(str(spec["color_name"]) for spec in finalized_specs)
+    lane_counts_final = Counter(str(spec["lane_key"]) for spec in finalized_specs)
+    target_object_ids = [
+        str(object_id)
+        for lane_key in selected_lanes
+        for object_id in target_object_ids_by_lane[str(lane_key)]
+    ]
+    annotation_key_by_lane = {str(lane_key): f"{lane_key}_objects" for lane_key in selected_lanes}
+    target_object_ids_by_annotation_key = {
+        str(annotation_key_by_lane[str(lane_key)]): [str(object_id) for object_id in target_object_ids_by_lane[str(lane_key)]]
+        for lane_key in selected_lanes
+    }
+    operand_counts_by_scope = {
+        str(annotation_key_by_lane[str(lane_key)]): int(operand_counts_by_lane[str(lane_key)])
+        for lane_key in selected_lanes
+    }
+    return {
+        "scene_id": SCENE_ID,
+        "scene_variant": str(axes.scene_variant),
+        "layout_family": "straight_parallel_conveyors",
+        "layout_orientation": str(layout_orientation),
+        "layout_orientation_probabilities": dict(layout_orientation_probabilities),
+        "predicate_kind": str(predicate_kind),
+        "arithmetic_operation": str(operation),
+        "lane_records": _lane_records(str(layout_orientation)),
+        "scope_keys": [str(lane_key) for lane_key in selected_lanes],
+        "scope_labels": {str(lane_key): str(LANE_LABELS[str(lane_key)]) for lane_key in selected_lanes},
+        "annotation_key_by_scope": dict(annotation_key_by_lane),
+        "target_object_ids_by_annotation_key": dict(target_object_ids_by_annotation_key),
+        "operand_counts_by_scope": dict(operand_counts_by_scope),
+        "operand_count_probabilities": dict(operand_probabilities),
+        "target_lane_key": "_".join(str(lane_key) for lane_key in selected_lanes),
+        "target_lane_label": " and ".join(str(LANE_LABELS[str(lane_key)]) for lane_key in selected_lanes),
+        "target_belt_key": "_".join(str(lane_key) for lane_key in selected_lanes),
+        "target_belt_label": " and ".join(str(LANE_LABELS[str(lane_key)]) for lane_key in selected_lanes),
+        "target_shape_type": str(target_shape),
+        "target_object_name": public_object_name(str(target_shape)),
+        "target_object_plural": public_object_plural(str(target_shape)),
+        "target_color_name": str(target_color_name),
+        "target_color_label": semantic_color_label(str(target_color_name)) if str(target_color_name) else "",
+        "answer_value": int(answer_value),
+        "target_count": int(answer_value),
+        "target_object_ids": list(target_object_ids),
+        "target_lane_object_ids": list(target_object_ids),
+        "target_belt_object_ids": list(target_object_ids),
+        "object_count": int(len(finalized_specs)),
+        "object_specs": [dict(spec) for spec in finalized_specs],
+        "shape_counts": {str(key): int(value) for key, value in sorted(shape_counts.items())},
+        "color_counts": {str(key): int(value) for key, value in sorted(color_counts.items())},
+        "lane_counts": {str(key): int(value) for key, value in sorted(lane_counts_final.items())},
+        "belt_counts": {str(key): int(value) for key, value in sorted(lane_counts_final.items())},
+        "target_shape_type_probabilities": dict(target_shape_probabilities),
+        "target_color_name_probabilities": dict(target_color_probabilities),
+        "target_count_probabilities": dict(answer_probabilities),
+        "lane_count_probabilities": {str(lane_key): {str(count): 1.0} for lane_key, count in lane_counts.items()},
+        "target_lane_key_probabilities": {"_".join(str(lane_key) for lane_key in selected_lanes): 1.0},
+        "target_belt_key_probabilities": {"_".join(str(lane_key) for lane_key in selected_lanes): 1.0},
+        "target_belt_probabilities": {"_".join(str(lane_key) for lane_key in selected_lanes): 1.0},
+        "semantic_color_palette": {str(key): list(value) for key, value in sorted(SEMANTIC_COLOR_RGB.items())},
+        "camera": dict(camera_meta),
+        "projection_frame": dict(frame_meta),
+        "solver_trace": {
+            "count_predicate": str(predicate_kind),
+            "operation": str(operation),
+            "scopes": {str(lane_key): str(LANE_LABELS[str(lane_key)]) for lane_key in selected_lanes},
+            "target_shape_type": str(target_shape),
+            "target_color_name": str(target_color_name),
+            "operand_counts_by_scope": dict(operand_counts_by_scope),
+            "target_object_ids_by_annotation_key": dict(target_object_ids_by_annotation_key),
+            "target_object_ids": list(target_object_ids),
+            "answer_value": int(answer_value),
+            "unique_integer_answer": True,
+        },
+    }
+
+
 __all__ = [
+    "ARITHMETIC_DIFFERENCE",
+    "ARITHMETIC_SUM",
     "LAYOUT_HORIZONTAL",
     "LAYOUT_VERTICAL",
     "PREDICATE_BELT_TOTAL",
     "PREDICATE_COLOR",
+    "PREDICATE_COLOR_ARITHMETIC",
     "PREDICATE_COLOR_TYPE",
     "PREDICATE_OBJECT_TYPE",
+    "PREDICATE_OBJECT_TYPE_ARITHMETIC",
     "ResolvedConveyorAxes",
     "build_belt_total_count_dataset",
+    "build_lane_count_arithmetic_dataset",
     "build_scoped_belt_count_dataset",
     "resolve_conveyor_axes",
 ]

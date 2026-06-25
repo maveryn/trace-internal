@@ -16,16 +16,19 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from trace.tasks.three_d.shared.object_scene import _resolve_render_params
 
-from .shared.annotations import bbox_set_annotation_for_objects
+from .shared.annotations import bbox_set_annotation_for_objects, bbox_set_map_annotation_for_object_groups
 from .shared.prompts import build_prompt_artifacts, dynamic_slots_for_conveyor
 from .shared.rendering import RenderedConveyor, render_conveyor
 from .shared.sampling import (
     PREDICATE_BELT_TOTAL,
     PREDICATE_COLOR,
+    PREDICATE_COLOR_ARITHMETIC,
     PREDICATE_COLOR_TYPE,
     PREDICATE_OBJECT_TYPE,
+    PREDICATE_OBJECT_TYPE_ARITHMETIC,
     ResolvedConveyorAxes,
     build_belt_total_count_dataset,
+    build_lane_count_arithmetic_dataset,
     build_scoped_belt_count_dataset,
     resolve_conveyor_axes,
 )
@@ -40,6 +43,7 @@ class ConveyorTaskPlan:
     answer_gt: TypedValue
     target_object_ids: tuple[str, ...]
     objective_params: Mapping[str, Any]
+    target_object_ids_by_annotation_key: Mapping[str, tuple[str, ...]] | None = None
 
 
 _DOMAIN_DEFAULTS = get_domain_defaults("three_d")
@@ -144,6 +148,41 @@ def _build_trace_payload(
         "question_format": str(selected_branch),
         "solver_trace": dict(solver_trace),
     }
+    if "arithmetic_operation" in dataset:
+        target_ids_by_key = {
+            str(key): [str(object_id) for object_id in object_ids]
+            for key, object_ids in dict(dataset.get("target_object_ids_by_annotation_key", {})).items()
+        }
+        execution_trace.update(
+            {
+                "arithmetic_operation": str(dataset["arithmetic_operation"]),
+                "scope_keys": [str(key) for key in dataset.get("scope_keys", [])],
+                "scope_labels": dict(dataset.get("scope_labels", {})),
+                "annotation_key_by_scope": dict(dataset.get("annotation_key_by_scope", {})),
+                "operand_counts_by_scope": dict(dataset.get("operand_counts_by_scope", {})),
+                "target_object_ids_by_annotation_key": dict(target_ids_by_key),
+            }
+        )
+    witness_symbolic = {
+        "type": "conveyor_lane_object_set",
+        "object_ids": list(target_ids),
+        "count": int(dataset["answer_value"]),
+        "scope": {
+            "lane_key": str(dataset["target_lane_key"]),
+            "lane_label": str(dataset["target_lane_label"]),
+        },
+    }
+    if "arithmetic_operation" in dataset:
+        witness_symbolic = {
+            "type": "conveyor_count_arithmetic_object_sets",
+            "operation": str(dataset["arithmetic_operation"]),
+            "object_ids_by_annotation_key": {
+                str(key): [str(object_id) for object_id in object_ids]
+                for key, object_ids in dict(dataset.get("target_object_ids_by_annotation_key", {})).items()
+            },
+            "operand_counts_by_scope": dict(dataset.get("operand_counts_by_scope", {})),
+            "answer_value": int(dataset["answer_value"]),
+        }
     return {
         "scene_ir": {
             "scene_kind": f"three_d_conveyor_{public_name.rsplit('__', 1)[-1]}",
@@ -189,15 +228,7 @@ def _build_trace_payload(
             "belt_bboxes_px": dict(rendered.belt_bboxes_px),
         },
         "execution_trace": execution_trace,
-        "witness_symbolic": {
-            "type": "conveyor_lane_object_set",
-            "object_ids": list(target_ids),
-            "count": int(dataset["answer_value"]),
-            "scope": {
-                "lane_key": str(dataset["target_lane_key"]),
-                "lane_label": str(dataset["target_lane_label"]),
-            },
-        },
+        "witness_symbolic": dict(witness_symbolic),
         "projected_annotation": dict(annotation_artifacts.projected_annotation),
         "background": dict(background_meta),
         "post_image_noise": dict(post_noise_meta),
@@ -210,7 +241,7 @@ def _trace_params(
     dataset: Mapping[str, Any],
     branch_probabilities: Mapping[str, float],
 ) -> Dict[str, Any]:
-    return {
+    params = {
         "predicate_kind": str(dataset["predicate_kind"]),
         "query_id_probabilities": dict(branch_probabilities),
         "scene_variant": str(axes.scene_variant),
@@ -233,6 +264,16 @@ def _trace_params(
         "target_color_label": str(dataset.get("target_color_label", "")),
         "target_color_name_probabilities": dict(dataset.get("target_color_name_probabilities", {})),
     }
+    if "arithmetic_operation" in dataset:
+        params.update(
+            {
+                "arithmetic_operation": str(dataset["arithmetic_operation"]),
+                "scope_keys": [str(key) for key in dataset.get("scope_keys", [])],
+                "annotation_key_by_scope": dict(dataset.get("annotation_key_by_scope", {})),
+                "operand_counts_by_scope": dict(dataset.get("operand_counts_by_scope", {})),
+            }
+        )
+    return params
 
 
 def run_conveyor_lifecycle(
@@ -374,4 +415,141 @@ def run_conveyor_lifecycle(
     raise RuntimeError(f"{public_name} failed to generate a valid straight conveyor scene after {max_attempts} attempts: {last_error}")
 
 
-__all__ = ["ConveyorTaskPlan", "run_conveyor_lifecycle"]
+def run_conveyor_count_arithmetic_lifecycle(
+    *,
+    public_name: str,
+    domain_name: str,
+    prompt_query_key_by_branch: Mapping[str, str],
+    predicate_kind_by_branch: Mapping[str, str],
+    operation_by_branch: Mapping[str, str],
+    supported_branches: Sequence[str],
+    default_branch: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    max_attempts: int,
+) -> TaskOutput:
+    """Run the two-lane count-arithmetic lifecycle for straight conveyor tasks."""
+
+    from trace.core.scene_config import get_scene_defaults
+    from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
+
+    scene_defaults = get_scene_defaults(str(domain_name), SCENE_ID)
+    gen_defaults, render_defaults, _prompt_defaults = split_scene_generation_rendering_prompt_defaults(
+        scene_defaults if isinstance(scene_defaults, Mapping) else {},
+        task_id=str(public_name),
+    )
+    selected_branch, branch_probabilities, clean_params = select_task_query_id(
+        instance_seed=int(instance_seed),
+        params=params,
+        supported_query_ids=tuple(str(branch) for branch in supported_branches),
+        default_query_id=str(default_branch),
+        task_id=str(public_name),
+        namespace=f"{public_name}.query",
+    )
+    axes = resolve_conveyor_axes(
+        params=clean_params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=str(public_name),
+    )
+    prompt_query_key = str(prompt_query_key_by_branch[str(selected_branch)])
+    predicate_kind = str(predicate_kind_by_branch[str(selected_branch)])
+    if predicate_kind not in {PREDICATE_OBJECT_TYPE_ARITHMETIC, PREDICATE_COLOR_ARITHMETIC}:
+        raise ValueError(f"unsupported straight conveyor arithmetic predicate: {predicate_kind}")
+    operation = str(operation_by_branch[str(selected_branch)])
+    min_bbox_side_px = float(clean_params.get("min_rendered_bbox_side_px", gen_defaults.get("min_rendered_bbox_side_px", 24.0)))
+    last_error: Exception | None = None
+    for attempt_index in range(max(1, int(max_attempts))):
+        attempt_seed = _attempt_seed(int(instance_seed), public_name=str(public_name), attempt_index=int(attempt_index))
+        try:
+            render_params = _resolve_render_params(
+                clean_params,
+                render_defaults=render_defaults,
+                instance_seed=int(attempt_seed),
+                namespace=f"{public_name}.canvas",
+            )
+            dataset = build_lane_count_arithmetic_dataset(
+                instance_seed=int(attempt_seed),
+                params=clean_params,
+                gen_defaults=gen_defaults,
+                render_params=render_params,
+                axes=axes,
+                predicate_kind=str(predicate_kind),
+                operation=str(operation),
+                namespace=str(public_name),
+            )
+            target_ids_by_key = {
+                str(key): tuple(str(object_id) for object_id in object_ids)
+                for key, object_ids in dict(dataset["target_object_ids_by_annotation_key"]).items()
+            }
+            plan = ConveyorTaskPlan(
+                dataset=dict(dataset),
+                answer_gt=TypedValue(type="integer", value=int(dataset["answer_value"])),
+                target_object_ids=tuple(str(object_id) for object_id in dataset["target_object_ids"]),
+                objective_params={},
+                target_object_ids_by_annotation_key=dict(target_ids_by_key),
+            )
+            background, background_meta = make_background_canvas(
+                canvas_width=int(render_params.canvas_width),
+                canvas_height=int(render_params.canvas_height),
+                instance_seed=int(attempt_seed),
+                params=clean_params,
+                default_config=_BACKGROUND_DEFAULTS,
+            )
+            rendered = render_conveyor(background, dataset=plan.dataset, render_params=render_params)
+            if not _rendered_bboxes_are_readable(rendered, min_side_px=float(min_bbox_side_px)):
+                raise ValueError("rendered conveyor object boxes failed readability constraints")
+            image, post_noise_meta = apply_post_image_noise(
+                rendered.image,
+                instance_seed=int(attempt_seed),
+                params=clean_params,
+                default_config=_NOISE_DEFAULTS,
+            )
+            annotation_artifacts = bbox_set_map_annotation_for_object_groups(rendered, target_ids_by_key)
+            _prompt_defaults, prompt_artifacts = build_prompt_artifacts(
+                prompt_query_key=str(prompt_query_key),
+                dynamic_slot_values=dynamic_slots_for_conveyor(plan.dataset),
+                instance_seed=int(attempt_seed),
+            )
+            query_spec = build_prompt_query_spec(
+                prompt_artifacts=prompt_artifacts,
+                query_id=str(selected_branch),
+                params=_trace_params(
+                    axes=axes,
+                    dataset=plan.dataset,
+                    branch_probabilities=branch_probabilities,
+                ),
+            )
+            trace_payload = _build_trace_payload(
+                public_name=str(public_name),
+                selected_branch=str(selected_branch),
+                axes=axes,
+                plan=plan,
+                rendered=rendered,
+                annotation_artifacts=annotation_artifacts,
+                prompt_artifacts=prompt_artifacts,
+                query_spec=query_spec,
+                render_params=render_params,
+                image=image,
+                background_meta=background_meta,
+                post_noise_meta=post_noise_meta,
+            )
+            return TaskOutput(
+                prompt=str(prompt_artifacts.prompt),
+                prompt_variants=dict(prompt_artifacts.prompt_variants),
+                answer_gt=plan.answer_gt,
+                annotation_gt=annotation_artifacts.annotation_gt,
+                image=image,
+                image_id="img0",
+                trace_payload=trace_payload,
+                task_versions=default_task_versions(),
+                scene_id=SCENE_ID,
+                query_id=str(selected_branch),
+            )
+        except Exception as exc:
+            last_error = exc
+            continue
+    raise RuntimeError(f"{public_name} failed to generate a valid straight conveyor arithmetic scene after {max_attempts} attempts: {last_error}")
+
+
+__all__ = ["ConveyorTaskPlan", "run_conveyor_count_arithmetic_lifecycle", "run_conveyor_lifecycle"]

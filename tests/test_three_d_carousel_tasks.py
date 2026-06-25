@@ -11,6 +11,13 @@ from trace.tasks.three_d.carousel.belt_total_object_count import (
     QUERY_ID as TOTAL_QUERY_ID,
     TASK_ID as TOTAL_TASK_ID,
 )
+from trace.tasks.three_d.carousel.belt_count_arithmetic_value import (
+    COLOR_DIFFERENCE_QUERY_ID as ARITH_COLOR_DIFFERENCE_QUERY_ID,
+    COLOR_SUM_QUERY_ID as ARITH_COLOR_SUM_QUERY_ID,
+    OBJECT_DIFFERENCE_QUERY_ID as ARITH_OBJECT_DIFFERENCE_QUERY_ID,
+    OBJECT_SUM_QUERY_ID as ARITH_OBJECT_SUM_QUERY_ID,
+    TASK_ID as ARITH_TASK_ID,
+)
 from trace.tasks.three_d.carousel.scoped_belt_object_count import (
     COLOR_QUERY_ID,
     OBJECT_TYPE_QUERY_ID,
@@ -267,6 +274,55 @@ def test_carousel_belt_total_count_uses_belt_specific_support() -> None:
             assert 0.0 <= x0 < x1 <= float(image_w)
             assert 0.0 <= y0 < y1 <= float(image_h)
             assert min(x1 - x0, y1 - y0) >= 24.0
+
+
+def test_carousel_belt_count_arithmetic_query_ids() -> None:
+    task = create_task(ARITH_TASK_ID)
+    cases = (
+        (ARITH_COLOR_SUM_QUERY_ID, 2026062701),
+        (ARITH_COLOR_DIFFERENCE_QUERY_ID, 2026062702),
+        (ARITH_OBJECT_SUM_QUERY_ID, 2026062703),
+        (ARITH_OBJECT_DIFFERENCE_QUERY_ID, 2026062704),
+    )
+    for query_id, seed in cases:
+        output = task.generate(
+            seed,
+            params={"query_id": query_id, "post_image_noise_apply_prob": 0.0},
+            max_attempts=160,
+        )
+        trace = output.trace_payload["execution_trace"]
+        render_map = output.trace_payload["render_map"]
+        operands = {str(key): int(value) for key, value in trace["operand_counts_by_scope"].items()}
+
+        assert output.scene_id == "carousel"
+        assert output.query_id == query_id
+        assert output.answer_gt.type == "integer"
+        assert output.annotation_gt.type == "bbox_set_map"
+        assert set(output.annotation_gt.value) == {"inner_objects", "outer_objects"}
+        assert output.trace_payload["projected_annotation"]["bbox_set_map"] == output.annotation_gt.value
+        assert output.trace_payload["projected_annotation"]["pixel_bbox_set_map"] == output.annotation_gt.value
+        assert "{target_" not in output.prompt
+        assert "unlettered" not in output.prompt.lower()
+        assert_three_d_canvas_contract(output)
+
+        if trace["arithmetic_operation"] == "sum":
+            assert int(output.answer_gt.value) == operands["inner_objects"] + operands["outer_objects"]
+            assert 1 <= int(output.answer_gt.value) <= 12
+        else:
+            assert int(output.answer_gt.value) == abs(operands["inner_objects"] - operands["outer_objects"])
+            assert 1 <= int(output.answer_gt.value) <= 5
+        for key, ids in trace["target_object_ids_by_annotation_key"].items():
+            expected = [render_map["object_bboxes_px"][str(object_id)] for object_id in ids]
+            assert output.annotation_gt.value[str(key)] == expected
+            assert len(expected) == operands[str(key)]
+        assert int(trace["belt_counts"].get("inner", 0)) <= 8
+        assert int(trace["belt_counts"].get("outer", 0)) <= 12
+        if "color_count" in query_id:
+            assert trace["predicate_kind"] == "color_count_arithmetic"
+            assert trace["target_color_label"]
+        else:
+            assert trace["predicate_kind"] == "object_type_count_arithmetic"
+            assert trace["target_object_plural"]
 
 
 def test_carousel_renderer_has_no_unqueried_gate_decoration() -> None:

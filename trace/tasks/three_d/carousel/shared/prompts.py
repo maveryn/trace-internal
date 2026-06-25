@@ -32,11 +32,22 @@ def dynamic_slots_for_conveyor(dataset: Mapping[str, Any]) -> dict[str, Any]:
     """Return dynamic prompt slots bound to one conveyor dataset."""
 
     target_color_name = str(dataset.get("target_color_name", ""))
-    return {
+    slots = {
         "belt_label": str(dataset.get("target_belt_label", "")),
         "target_object_plural": str(dataset.get("target_object_plural", "")),
         "target_color_label": semantic_color_label(target_color_name) if target_color_name else "",
     }
+    if "arithmetic_operation" in dataset:
+        annotation_keys = [str(dataset["annotation_key_by_scope"][scope]) for scope in dataset.get("scope_keys", [])]
+        slots.update(
+            {
+                "first_belt_label": "INNER",
+                "second_belt_label": "OUTER",
+                "first_annotation_key": str(annotation_keys[0]),
+                "second_annotation_key": str(annotation_keys[1]),
+            }
+        )
+    return slots
 
 
 def build_prompt_artifacts(

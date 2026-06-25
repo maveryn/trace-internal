@@ -9,6 +9,13 @@ from trace.tasks.three_d.conveyor.belt_total_object_count import (
     QUERY_ID as TOTAL_QUERY_ID,
     TASK_ID as TOTAL_TASK_ID,
 )
+from trace.tasks.three_d.conveyor.lane_count_arithmetic_value import (
+    COLOR_DIFFERENCE_QUERY_ID as ARITH_COLOR_DIFFERENCE_QUERY_ID,
+    COLOR_SUM_QUERY_ID as ARITH_COLOR_SUM_QUERY_ID,
+    OBJECT_DIFFERENCE_QUERY_ID as ARITH_OBJECT_DIFFERENCE_QUERY_ID,
+    OBJECT_SUM_QUERY_ID as ARITH_OBJECT_SUM_QUERY_ID,
+    TASK_ID as ARITH_TASK_ID,
+)
 from trace.tasks.three_d.conveyor.scoped_belt_object_count import (
     COLOR_QUERY_ID,
     OBJECT_TYPE_QUERY_ID,
@@ -340,3 +347,54 @@ def test_conveyor_replay_uses_single_public_query_id() -> None:
     replay_row = task_review_distribution.random_collector(output, 2026062507)
     assert replay_row["generation_params"]["query_id"] == SINGLE_QUERY_ID
     assert replay_row["generation_params"]["internal_query_id"] == TOTAL_QUERY_ID
+
+
+def test_conveyor_lane_count_arithmetic_query_ids() -> None:
+    task = create_task(ARITH_TASK_ID)
+    cases = (
+        (ARITH_COLOR_SUM_QUERY_ID, {"canvas_preset": "landscape"}, 2026062705),
+        (ARITH_COLOR_DIFFERENCE_QUERY_ID, {"canvas_preset": "portrait"}, 2026062706),
+        (ARITH_OBJECT_SUM_QUERY_ID, {"canvas_preset": "landscape"}, 2026062707),
+        (ARITH_OBJECT_DIFFERENCE_QUERY_ID, {"canvas_preset": "portrait"}, 2026062708),
+    )
+    for query_id, params, seed in cases:
+        output = task.generate(
+            seed,
+            params={**params, "query_id": query_id, "post_image_noise_apply_prob": 0.0},
+            max_attempts=160,
+        )
+        trace = output.trace_payload["execution_trace"]
+        render_map = output.trace_payload["render_map"]
+        operands = {str(key): int(value) for key, value in trace["operand_counts_by_scope"].items()}
+        expected_keys = {f"{lane_key}_objects" for lane_key in trace["scope_keys"]}
+
+        assert output.scene_id == "conveyor"
+        assert output.query_id == query_id
+        assert output.answer_gt.type == "integer"
+        assert output.annotation_gt.type == "bbox_set_map"
+        assert set(output.annotation_gt.value) == expected_keys
+        assert len(expected_keys) == 2
+        assert output.trace_payload["projected_annotation"]["bbox_set_map"] == output.annotation_gt.value
+        assert output.trace_payload["projected_annotation"]["pixel_bbox_set_map"] == output.annotation_gt.value
+        assert "{target_" not in output.prompt
+        assert "unlettered" not in output.prompt.lower()
+        assert_three_d_canvas_contract(output)
+
+        if trace["arithmetic_operation"] == "sum":
+            assert int(output.answer_gt.value) == sum(operands.values())
+            assert 1 <= int(output.answer_gt.value) <= 12
+        else:
+            operand_values = list(operands.values())
+            assert int(output.answer_gt.value) == abs(int(operand_values[0]) - int(operand_values[1]))
+            assert 1 <= int(output.answer_gt.value) <= 5
+        for key, ids in trace["target_object_ids_by_annotation_key"].items():
+            expected = [render_map["object_bboxes_px"][str(object_id)] for object_id in ids]
+            assert output.annotation_gt.value[str(key)] == expected
+            assert len(expected) == operands[str(key)]
+        assert max(int(value) for value in trace["lane_counts"].values()) <= 8
+        if "color_count" in query_id:
+            assert trace["predicate_kind"] == "color_count_arithmetic"
+            assert trace["target_color_label"]
+        else:
+            assert trace["predicate_kind"] == "object_type_count_arithmetic"
+            assert trace["target_object_plural"]

@@ -30,6 +30,7 @@ def _assert_count_output(output, *, expected_query_id: str) -> None:
     assert trace["target_belt_label"] in {"INNER", "OUTER"}
     assert trace["target_belt_object_ids"]
     assert set(render_map["belt_bboxes_px"]) == {"inner", "outer"}
+    assert len({str(spec["shape_type"]) for spec in trace["object_specs"]}) == 1
     assert "{target_" not in output.prompt
     assert "unlettered" not in output.prompt.lower()
     assert "segment" not in output.prompt.lower()

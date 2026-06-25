@@ -121,9 +121,10 @@ def _resolve_target_shape(
     *,
     params: Mapping[str, Any],
     rng: Any,
+    support: Sequence[str] = CONVEYOR_OBJECT_SHAPE_TYPES,
 ) -> tuple[str, Dict[str, float]]:
     explicit = params.get("target_shape_type")
-    support = tuple(str(shape) for shape in CONVEYOR_OBJECT_SHAPE_TYPES)
+    support = tuple(str(shape) for shape in support)
     if explicit is not None:
         shape = str(explicit)
         if shape not in set(support):
@@ -451,7 +452,11 @@ def build_belt_count_dataset(
     target_object_ids: list[str] = []
 
     if str(predicate_kind) == PREDICATE_OBJECT_TYPE:
-        target_shape, target_shape_probabilities = _resolve_target_shape(params=params, rng=rng)
+        target_shape, target_shape_probabilities = _resolve_target_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_OBJECT_SHAPE_TYPES,
+        )
         active_colors = sample_named_color_palette(rng, palette_size=4)
         color_names = tuple(str(name) for name, _rgb in active_colors)
         if not color_names:
@@ -481,26 +486,6 @@ def build_belt_count_dataset(
                     dimension_scale=float(dimension_scale),
                 )
             )
-        if slots_by_belt[str(target_belt_key)] and int(target_count) <= 6:
-            slot = _sample_slot(
-                slots_by_belt,
-                used_angles_by_belt,
-                belt_key=target_belt_key,
-                min_angle_gap_degrees=float(min_angle_gap_degrees),
-            )
-            object_specs.append(
-                _make_object_spec(
-                    rng=rng,
-                    object_id=f"obj_{len(object_specs):03d}",
-                    shape_type=_sample_shape(rng, CONVEYOR_OBJECT_SHAPE_TYPES, exclude=(target_shape,)),
-                    color_name=str(color_names[int(rng.randrange(len(color_names)))]),
-                    slot=slot,
-                    belt_key=target_belt_key,
-                    matches_query=False,
-                    count_role="same_belt_distractor",
-                    dimension_scale=float(dimension_scale),
-                )
-            )
         while len(object_specs) < int(object_count):
             belt_key, slot = _sample_other_belt_slot(
                 slots_by_belt,
@@ -509,13 +494,11 @@ def build_belt_count_dataset(
                 target_belt_key=target_belt_key,
                 min_angle_gap_degrees=float(min_angle_gap_degrees),
             )
-            same_shape_elsewhere = len(object_specs) < int(target_count) + 4 and rng.random() < 0.75
-            shape_type = str(target_shape) if same_shape_elsewhere else _sample_shape(rng, CONVEYOR_OBJECT_SHAPE_TYPES)
             object_specs.append(
                 _make_object_spec(
                     rng=rng,
                     object_id=f"obj_{len(object_specs):03d}",
-                    shape_type=shape_type,
+                    shape_type=str(target_shape),
                     color_name=str(color_names[int(rng.randrange(len(color_names)))]),
                     slot=slot,
                     belt_key=belt_key,
@@ -527,8 +510,11 @@ def build_belt_count_dataset(
         target_prompt_phrase = public_object_plural(str(target_shape))
     elif str(predicate_kind) == PREDICATE_COLOR:
         target_color_name, target_color_probabilities = _resolve_target_color(params=params, rng=rng)
-        target_shape = ""
-        target_shape_probabilities = {}
+        target_shape, target_shape_probabilities = _resolve_target_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
         color_names = _sample_readout_palette(rng, target_color=str(target_color_name), size=4)
         for _index in range(int(target_count)):
             slot = _sample_slot(
@@ -543,7 +529,7 @@ def build_belt_count_dataset(
                 _make_object_spec(
                     rng=rng,
                     object_id=object_id,
-                    shape_type=_sample_shape(rng, CONVEYOR_COLOR_READOUT_SHAPE_TYPES),
+                    shape_type=str(target_shape),
                     color_name=str(target_color_name),
                     slot=slot,
                     belt_key=target_belt_key,
@@ -564,7 +550,7 @@ def build_belt_count_dataset(
                 _make_object_spec(
                     rng=rng,
                     object_id=f"obj_{len(object_specs):03d}",
-                    shape_type=_sample_shape(rng, CONVEYOR_COLOR_READOUT_SHAPE_TYPES),
+                    shape_type=str(target_shape),
                     color_name=str(wrong_colors[int(rng.randrange(len(wrong_colors)))]),
                     slot=slot,
                     belt_key=target_belt_key,
@@ -587,7 +573,7 @@ def build_belt_count_dataset(
                 _make_object_spec(
                     rng=rng,
                     object_id=f"obj_{len(object_specs):03d}",
-                    shape_type=_sample_shape(rng, CONVEYOR_COLOR_READOUT_SHAPE_TYPES),
+                    shape_type=str(target_shape),
                     color_name=color_name,
                     slot=slot,
                     belt_key=belt_key,
@@ -623,8 +609,8 @@ def build_belt_count_dataset(
         "target_belt_key": str(target_belt_key),
         "target_belt_label": str(target_belt_label),
         "target_shape_type": str(target_shape),
-        "target_object_name": public_object_name(str(target_shape)) if target_shape else "",
-        "target_object_plural": public_object_plural(str(target_shape)) if target_shape else "",
+        "target_object_name": public_object_name(str(target_shape)),
+        "target_object_plural": public_object_plural(str(target_shape)),
         "target_color_name": str(target_color_name),
         "target_prompt_phrase": str(target_prompt_phrase),
         "answer_value": int(target_count),

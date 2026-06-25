@@ -24,7 +24,6 @@ PATH_TASK_ID = "task_illustrations__pixel_village__person_path_count"
 ROTATED_TILE_TASK_ID = "task_illustrations__pixel_village__rotated_tile_label"
 SWAPPED_TILE_PAIR_TASK_ID = "task_illustrations__pixel_village__swapped_tile_pair_label"
 TERRITORY_TASK_ID = "task_illustrations__pixel_village__territory_object_count"
-TERRITORY_TILE_TASK_ID = "task_illustrations__pixel_village__territory_tile_membership_label"
 RIVER_SIDE_TASK_ID = "task_illustrations__pixel_village__river_side_object_count"
 TARGETS = ("building", "person", "tree", "lamp_post", "well", "pond")
 RIVER_SIDE_TARGETS = ("building", "person", "tree")
@@ -46,7 +45,6 @@ TASK_SOURCE_STEMS = {
     ROTATED_TILE_TASK_ID: "rotated_tile_label.py",
     SWAPPED_TILE_PAIR_TASK_ID: "swapped_tile_pair_label.py",
     TERRITORY_TASK_ID: "territory_object_count.py",
-    TERRITORY_TILE_TASK_ID: "territory_tile_membership_label.py",
     RIVER_SIDE_TASK_ID: "river_side_object_count.py",
 }
 
@@ -425,54 +423,6 @@ def test_pixel_village_territory_object_count_targets_are_metadata_grounded() ->
             entity = entities[entity_id]
             assert entity["public_name"] == public_name
             assert entity["metadata"]["territory_id"] == territory_id
-
-
-def test_pixel_village_territory_tile_membership_label_uses_named_territory() -> None:
-    _assert_scene_packaged_task(TERRITORY_TILE_TASK_ID)
-    task = create_task(TERRITORY_TILE_TASK_ID)
-    for index, territory in enumerate(("cemetery", "orchard")):
-        out = task.generate(
-            hash64(20260625, TERRITORY_TILE_TASK_ID, index),
-            params={"target_territory": territory, "correct_index": 1},
-            max_attempts=200,
-        )
-        trace = out.trace_payload
-        _assert_scene_prompt_metadata(trace)
-        params = trace["query_spec"]["params"]
-        render_map = trace["render_map"]
-        answer_label = str(out.answer_gt.value)
-        membership = render_map["candidate_membership_by_label"]
-        distances = render_map["candidate_distance_to_target_territory_by_label"]
-        territory_tiles = _footprint(render_map["target_territory_tile_xywh"])
-        candidate_tiles = {
-            str(label): tuple(int(value) for value in tile)
-            for label, tile in render_map["candidate_tiles_by_label"].items()
-        }
-
-        assert out.scene_id == "pixel_village"
-        assert out.query_id == "single"
-        assert params["target_territory"] == territory
-        assert out.answer_gt.type == "option_letter"
-        assert out.annotation_gt.type == "bbox"
-        assert answer_label == "B"
-        assert sorted(candidate_tiles) == ["A", "B", "C", "D"]
-        assert list(membership.values()).count(True) == 1
-        assert membership[answer_label] is True
-        assert distances[answer_label] == 0
-        assert candidate_tiles[answer_label] in territory_tiles
-        for label, tile in candidate_tiles.items():
-            if label == answer_label:
-                continue
-            assert tile not in territory_tiles
-            assert membership[label] is False
-            assert 1 <= int(distances[label]) <= int(params["distractor_distance_to_target_territory_max"])
-
-        assert out.annotation_gt.value == render_map["selected_tile_bbox_px"]
-        assert out.annotation_gt.value == render_map["candidate_tile_bboxes_px_by_label"][answer_label]
-        assert trace["projected_annotation"]["type"] == "bbox"
-        assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
-        assert "lettered ground tile" in out.prompt.lower() or "marked ground tile" in out.prompt.lower()
-        _assert_bbox_inside_canvas(out.annotation_gt.value, width=out.image.width, height=out.image.height)
 
 
 def test_pixel_village_river_side_object_count_uses_strict_tile_side_membership() -> None:

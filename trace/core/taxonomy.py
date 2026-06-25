@@ -876,9 +876,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__pixel_village__territory_object_count": _entry(
         "illustrations", "pixel_village", "illustrations", "pixel_village"
     ),
-    "task_illustrations__pixel_village__territory_tile_membership_label": _entry(
-        "illustrations", "pixel_village", "illustrations", "pixel_village"
-    ),
     "task_illustrations__pixel_village__river_side_object_count": _entry(
         "illustrations", "pixel_village", "illustrations", "pixel_village"
     ),

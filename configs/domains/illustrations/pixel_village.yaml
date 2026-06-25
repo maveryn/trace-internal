@@ -50,12 +50,6 @@ generation:
         - cemetery_grave_marker
         - orchard_tree
       target_answer_count_max: 9
-    task_illustrations__pixel_village__territory_tile_membership_label:
-      query_id_support:
-        - single
-      target_territory_support:
-        - cemetery
-        - orchard
     task_illustrations__pixel_village__river_side_object_count:
       query_id_support:
         - single
@@ -117,13 +111,6 @@ rendering:
       pixel_village_orchard_mode: auto
       pixel_village_windmill_mode: auto
       annotation_padding_px: 0.0
-    task_illustrations__pixel_village__territory_tile_membership_label:
-      pixel_village_theme_mode: auto
-      pixel_village_cemetery_mode: force
-      pixel_village_orchard_mode: force
-      pixel_village_windmill_mode: auto
-      pixel_village_river_mode: auto
-      annotation_padding_px: 0.0
     task_illustrations__pixel_village__river_side_object_count:
       pixel_village_theme_mode: auto
       pixel_village_cemetery_mode: auto
@@ -184,14 +171,6 @@ prompt:
       annotation_hint_pixel_village_territory_object: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted {target_unit} in the {territory_name}
       json_example_pixel_village_territory_object: '{"annotation":[[112,208,176,272],[176,208,240,272],[240,208,304,272]],"answer":3}'
       json_example_answer_only_pixel_village_territory_object: '{"answer":3}'
-    task_illustrations__pixel_village__territory_tile_membership_label:
-      bundle_id: illustrations_pixel_village_v0
-      scene_key: pixel_village_canvas
-      task_key: pixel_village_territory_tile_membership_label_task
-      answer_hint_territory_tile_membership: set "answer" to the selected tile letter
-      annotation_hint_territory_tile_membership: set "annotation" to the [x0, y0, x1, y1] box around the selected ground tile in image pixel coordinates
-      json_example_territory_tile_membership: '{"annotation":[240,288,288,336],"answer":"B"}'
-      json_example_answer_only_territory_tile_membership: '{"answer":"B"}'
     task_illustrations__pixel_village__river_side_object_count:
       bundle_id: illustrations_pixel_village_v0
       scene_key: pixel_village_canvas

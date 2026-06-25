@@ -102,6 +102,37 @@ def test_phylogeny_leaf_spacing_has_terminal_line_headroom() -> None:
     assert min(right - left for left, right in zip(leaf_ys, leaf_ys[1:])) >= 42.0
 
 
+def test_phylogeny_rectangular_edges_do_not_route_vertically_on_leaf_rail() -> None:
+    out = create_task(MRCA_TASK_ID).generate(
+        667839716113664,
+        params={
+            "scene_variant": "rectangular_cladogram",
+            "target_mrca_leaf_count": 4,
+            "node_color_name": "maroon",
+        },
+        max_attempts=240,
+    )
+    entities = out.trace_payload["scene_ir"]["entities"]
+    leaf_node_ids = {
+        str(entity["node_id"])
+        for entity in entities
+        if entity.get("entity_kind") == "phylogeny_leaf"
+    }
+    leaf_edge_paths = [
+        entity["path_px"]
+        for entity in entities
+        if entity.get("entity_kind") == "phylogeny_branch"
+        and str(entity.get("child_id")) in leaf_node_ids
+    ]
+    assert out.trace_payload["query_spec"]["params"]["scene_variant"] == "rectangular_cladogram"
+    assert leaf_edge_paths
+    for path in leaf_edge_paths:
+        assert len(path) == 3
+        assert path[0][0] == path[1][0]
+        assert path[1][1] == path[2][1]
+        assert path[1][0] != path[2][0]
+
+
 def test_phylogeny_topology_outlier_contract() -> None:
     out = create_task(TOPOLOGY_TASK_ID).generate(6104, params={}, max_attempts=240)
     trace = out.trace_payload

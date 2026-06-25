@@ -255,11 +255,9 @@ def _draw_cladogram_into_panel(
         cx, cy = child_center
         if str(scene_variant) == "diagonal_cladogram":
             return ((int(round(px)), int(round(py))), (int(round(cx)), int(round(cy))))
-        mid_x = max(px + 10.0, cx)
         return (
             (int(round(px)), int(round(py))),
-            (int(round(mid_x)), int(round(py))),
-            (int(round(mid_x)), int(round(cy))),
+            (int(round(px)), int(round(cy))),
             (int(round(cx)), int(round(cy))),
         )
 

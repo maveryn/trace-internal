@@ -41,7 +41,7 @@ class PhylogenyDefaults:
     option_leaf_count_max: int = 8
     option_count: int = 6
     canvas_width: int = 920
-    canvas_height: int = 660
+    canvas_height: int = 800
     outer_margin_px: int = 28
     panel_padding_px: int = 24
     panel_corner_radius_px: int = 20

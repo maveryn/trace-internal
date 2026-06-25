@@ -16,6 +16,7 @@
 ## Generation Notes
 1. The path is drawn with small visible enemy markers along a winding or switchback route.
 2. Four candidate tower positions are labeled `A`, `B`, `C`, and `D`, each with a circular range ring.
-3. A candidate covers a path enemy when the enemy center lies inside that candidate's range ring.
-4. Exactly one candidate covers the most path enemies by construction.
-5. Annotation is the point at the center of the selected candidate tower.
+3. All four candidate tower range rings use the same radius within an instance.
+4. A candidate covers a path enemy when the enemy center lies inside that candidate's range ring.
+5. Exactly one candidate covers the most path enemies by construction.
+6. Annotation is the point at the center of the selected candidate tower.

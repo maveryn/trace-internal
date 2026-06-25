@@ -530,113 +530,126 @@ def _coverage_count_for_tower(tower: TowerDefenseTower, path_points: Sequence[Po
     return sum(1 for point in path_points if tower_covers_point(tower, point))
 
 
-def _candidate_center_for_target_count(
+def _sample_fixed_radius_candidate_center(
     *,
     rng,
-    target_count: int,
     path_points: Sequence[Point],
     map_width_px: int,
     map_height_px: int,
-    range_min: int,
-    range_max: int,
-    existing_centers: Sequence[Point],
+    radius: float,
     tower_path_clearance_px: float,
     tower_min_gap_px: float,
-) -> tuple[Point, float]:
-    """Sample a center/radius pair that covers exactly target_count path enemies."""
+) -> Point:
+    """Sample one valid candidate center for a fixed-radius tower ring."""
 
-    if int(target_count) < 0 or int(target_count) > len(path_points):
-        raise ValueError("candidate tower target count outside path support")
-    for _ in range(1200):
-        if int(target_count) == 0:
-            center = (
-                round(rng.uniform(float(range_min) + 34.0, float(map_width_px) - float(range_min) - 34.0), 3),
-                round(rng.uniform(float(range_min) + 34.0, float(map_height_px) - float(range_min) - 34.0), 3),
-            )
-        else:
-            anchor_index = int(rng.randrange(1, max(2, len(path_points) - 1)))
-            anchor = path_points[int(anchor_index)]
-            tangent = _path_tangent_at_index(path_points, int(anchor_index))
-            perpendicular = (-float(tangent[1]), float(tangent[0]))
-            side = -1.0 if rng.random() < 0.5 else 1.0
-            tangent_jitter = rng.uniform(-22.0, 22.0)
-            offset = rng.uniform(max(float(tower_path_clearance_px) + 22.0, 68.0), 124.0)
-            center = (
-                round(float(anchor[0]) + (perpendicular[0] * side * offset) + (tangent[0] * tangent_jitter), 3),
-                round(float(anchor[1]) + (perpendicular[1] * side * offset) + (tangent[1] * tangent_jitter), 3),
-            )
-        distances = sorted(local_distance(center, point) for point in path_points)
-        if int(target_count) == 0:
-            max_radius = min(float(range_max), float(distances[0]) - 12.0)
-            if max_radius < float(range_min):
-                continue
-            radius = rng.uniform(float(range_min), float(max_radius))
-        else:
-            inner_distance = float(distances[int(target_count) - 1])
-            outer_distance = float(distances[int(target_count)]) if int(target_count) < len(distances) else inner_distance + 60.0
-            if outer_distance - inner_distance < 10.0:
-                continue
-            radius = max(float(range_min), inner_distance + 4.0)
-            radius = min(radius + rng.uniform(0.0, 8.0), outer_distance - 4.0)
-            if radius < float(range_min) or radius > float(range_max):
-                continue
+    radius_value = float(radius)
+    min_offset = max(float(tower_path_clearance_px) + 18.0, 58.0)
+    max_offset = max(float(min_offset) + 3.0, float(radius_value) - 7.0)
+    draw_mode = rng.random()
+    if draw_mode < 0.42 and len(path_points) >= 2:
+        pair_index = int(rng.randrange(0, len(path_points) - 1))
+        start, end = path_points[pair_index], path_points[pair_index + 1]
+        anchor = (
+            round((float(start[0]) + float(end[0])) * 0.5, 3),
+            round((float(start[1]) + float(end[1])) * 0.5, 3),
+        )
+        tangent = _path_tangent_at_index(path_points, int(pair_index))
+    elif draw_mode < 0.90:
+        anchor_index = int(rng.randrange(0, len(path_points)))
+        anchor = path_points[int(anchor_index)]
+        tangent = _path_tangent_at_index(path_points, int(anchor_index))
+    else:
+        edge_margin = float(radius_value) + 28.0
+        return (
+            round(rng.uniform(edge_margin, float(map_width_px) - edge_margin), 3),
+            round(rng.uniform(edge_margin, float(map_height_px) - edge_margin), 3),
+        )
+    perpendicular = (-float(tangent[1]), float(tangent[0]))
+    sign = -1.0 if rng.random() < 0.5 else 1.0
+    tangent_jitter = rng.uniform(-18.0, 18.0)
+    offset = rng.uniform(float(min_offset), float(max_offset))
+    return (
+        round(float(anchor[0]) + (perpendicular[0] * sign * offset) + (tangent[0] * tangent_jitter), 3),
+        round(float(anchor[1]) + (perpendicular[1] * sign * offset) + (tangent[1] * tangent_jitter), 3),
+    )
+
+
+def _sample_best_position_candidate_layout(
+    *,
+    rng,
+    path_points: Sequence[Point],
+    map_width_px: int,
+    map_height_px: int,
+    radius: float,
+    answer_label: str,
+    tower_path_clearance_px: float,
+    tower_min_gap_px: float,
+) -> tuple[tuple[TowerDefenseTower, ...], dict[str, int]]:
+    """Build four same-radius candidates with one count-2 winner and three count-1 decoys."""
+
+    pools: dict[int, list[Point]] = {1: [], 2: []}
+    for _ in range(7000):
+        center = _sample_fixed_radius_candidate_center(
+            rng=rng,
+            path_points=path_points,
+            map_width_px=int(map_width_px),
+            map_height_px=int(map_height_px),
+            radius=float(radius),
+            tower_path_clearance_px=float(tower_path_clearance_px),
+            tower_min_gap_px=float(tower_min_gap_px),
+        )
         if not _tower_center_is_valid(
             center,
             radius=float(radius),
             map_width_px=int(map_width_px),
             map_height_px=int(map_height_px),
             path_points=path_points,
-            existing_centers=existing_centers,
+            existing_centers=(),
             tower_path_clearance_px=float(tower_path_clearance_px),
             tower_min_gap_px=float(tower_min_gap_px),
         ):
             continue
-        tower = TowerDefenseTower(
+        probe = TowerDefenseTower(
             tower_id="candidate_probe",
             center_px=center,
             range_radius_px=float(radius),
             covers_target=False,
         )
-        if _coverage_count_for_tower(tower, path_points) == int(target_count):
-            return center, float(radius)
-    raise ValueError("failed to sample candidate tower with exact coverage count")
-
-
-def _sample_candidate_tower(
-    *,
-    rng,
-    tower_id: str,
-    target_count: int,
-    path_points: Sequence[Point],
-    map_width_px: int,
-    map_height_px: int,
-    range_min: int,
-    range_max: int,
-    existing_centers: Sequence[Point],
-    tower_path_clearance_px: float,
-    tower_min_gap_px: float,
-    covers_target: bool,
-) -> TowerDefenseTower:
-    """Return one labeled candidate tower with a controlled coverage count."""
-
-    center, radius = _candidate_center_for_target_count(
-        rng=rng,
-        target_count=int(target_count),
-        path_points=path_points,
-        map_width_px=int(map_width_px),
-        map_height_px=int(map_height_px),
-        range_min=int(range_min),
-        range_max=int(range_max),
-        existing_centers=existing_centers,
-        tower_path_clearance_px=float(tower_path_clearance_px),
-        tower_min_gap_px=float(tower_min_gap_px),
-    )
-    return TowerDefenseTower(
-        tower_id=str(tower_id),
-        center_px=center,
-        range_radius_px=float(radius),
-        covers_target=bool(covers_target),
-    )
+        coverage_count = _coverage_count_for_tower(probe, path_points)
+        if coverage_count in pools:
+            pools[int(coverage_count)].append(center)
+        if len(pools[1]) >= 18 and len(pools[2]) >= 6:
+            break
+    if not pools[2] or len(pools[1]) < 3:
+        raise ValueError("failed to find enough fixed-radius candidate positions")
+    best_candidates = list(pools[2])
+    decoy_candidates = list(pools[1])
+    rng.shuffle(best_candidates)
+    rng.shuffle(decoy_candidates)
+    labels = list(OPTION_LABELS)
+    answer = str(answer_label)
+    remaining_labels = [str(label) for label in labels if str(label) != answer]
+    for best_center in best_candidates:
+        selected: list[tuple[str, Point, int]] = [(answer, best_center, 2)]
+        for decoy_center in decoy_candidates:
+            if all(local_distance(decoy_center, existing_center) >= float(tower_min_gap_px) for _, existing_center, _ in selected):
+                selected.append((remaining_labels[len(selected) - 1], decoy_center, 1))
+                if len(selected) == 4:
+                    break
+        if len(selected) != 4:
+            continue
+        towers_by_label = {
+            str(label): TowerDefenseTower(
+                tower_id=candidate_tower_entity_id(str(label)),
+                center_px=center,
+                range_radius_px=float(radius),
+                covers_target=(str(label) == answer),
+            )
+            for label, center, _count in selected
+        }
+        counts_by_label = {str(label): int(count) for label, _center, count in selected}
+        return tuple(towers_by_label[str(label)] for label in labels), counts_by_label
+    raise ValueError("failed to choose separated same-radius candidate positions")
 
 
 def sample_best_tower_position_scene(
@@ -664,51 +677,22 @@ def sample_best_tower_position_scene(
     target_count = int(axes.target_answer)
     if target_count <= 0:
         raise ValueError("best-position task needs a positive winning coverage count")
+    radius_floor = max(float(range_min), float(tower_path_clearance) + 44.0)
+    radius_ceiling = max(float(radius_floor), float(range_max))
+    target_radius = float(radius_floor) + (float(target_count - 1) * 8.0) + rng.uniform(0.0, 4.0)
+    shared_radius = float(min(float(radius_ceiling), max(float(radius_floor), float(target_radius))))
     target_label_index = int(params.get("answer_option_index", 0)) % len(OPTION_LABELS)
     best_label = str(OPTION_LABELS[int(target_label_index)])
-    remaining_labels = [str(label) for label in OPTION_LABELS if str(label) != best_label]
-    rng.shuffle(remaining_labels)
-    decoy_counts = [int(rng.randrange(0, int(target_count))) for _ in remaining_labels]
-    towers_by_label: dict[str, TowerDefenseTower] = {}
-    centers: list[Point] = []
-    best_tower = _sample_candidate_tower(
+    towers, coverage_counts = _sample_best_position_candidate_layout(
         rng=rng,
-        tower_id=candidate_tower_entity_id(best_label),
-        target_count=int(target_count),
         path_points=path_points,
         map_width_px=map_width,
         map_height_px=map_height,
-        range_min=range_min,
-        range_max=range_max,
-        existing_centers=centers,
+        radius=shared_radius,
+        answer_label=best_label,
         tower_path_clearance_px=tower_path_clearance,
         tower_min_gap_px=tower_min_gap,
-        covers_target=True,
     )
-    towers_by_label[best_label] = best_tower
-    centers.append(best_tower.center_px)
-    for label, decoy_count in zip(remaining_labels, decoy_counts):
-        tower = _sample_candidate_tower(
-            rng=rng,
-            tower_id=candidate_tower_entity_id(str(label)),
-            target_count=int(decoy_count),
-            path_points=path_points,
-            map_width_px=map_width,
-            map_height_px=map_height,
-            range_min=range_min,
-            range_max=range_max,
-            existing_centers=centers,
-            tower_path_clearance_px=tower_path_clearance,
-            tower_min_gap_px=tower_min_gap,
-            covers_target=False,
-        )
-        towers_by_label[str(label)] = tower
-        centers.append(tower.center_px)
-    towers = tuple(towers_by_label[str(label)] for label in OPTION_LABELS)
-    coverage_counts = {
-        str(label): _coverage_count_for_tower(towers_by_label[str(label)], path_points)
-        for label in OPTION_LABELS
-    }
     if coverage_counts[str(best_label)] != int(target_count):
         raise ValueError("best candidate coverage count drifted after construction")
     if max(coverage_counts.values()) != int(target_count) or list(coverage_counts.values()).count(int(target_count)) != 1:
@@ -729,6 +713,7 @@ def sample_best_tower_position_scene(
         metadata={
             "candidate_labels": list(OPTION_LABELS),
             "candidate_coverage_counts": {str(label): int(value) for label, value in coverage_counts.items()},
+            "candidate_range_radius_px": round(float(shared_radius), 3),
             "answer_option_index": int(target_label_index),
         },
     )

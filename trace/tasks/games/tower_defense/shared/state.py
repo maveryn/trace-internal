@@ -33,7 +33,7 @@ class TowerDefenseDefaults:
     best_position_candidate_count_support: Tuple[int, ...] = (4,)
     path_segment_count_support: Tuple[int, ...] = (10, 11, 12, 13, 14, 15, 16)
     covered_path_target_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
-    best_position_target_answer_support: Tuple[int, ...] = (1, 2, 3, 4)
+    best_position_target_answer_support: Tuple[int, ...] = (2,)
     best_position_answer_option_index_support: Tuple[int, ...] = (0, 1, 2, 3)
     canvas_width: int = 980
     canvas_height: int = 760
@@ -48,8 +48,8 @@ class TowerDefenseDefaults:
     label_font_size_px: int = 25
     covered_path_range_radius_min_px: int = 88
     covered_path_range_radius_max_px: int = 168
-    best_position_range_radius_min_px: int = 72
-    best_position_range_radius_max_px: int = 210
+    best_position_range_radius_min_px: int = 86
+    best_position_range_radius_max_px: int = 104
     tower_path_clearance_px: int = 42
     tower_min_gap_px: int = 46
     uncovered_margin_px: int = 28

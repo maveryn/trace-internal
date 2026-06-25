@@ -405,7 +405,7 @@ def render_tower_defense_scene(
         range_bbox = _circle_bbox(center, radius)
         range_draw.ellipse(
             range_bbox,
-            fill=(*color, 30),
+            fill=None,
             outline=(*color, 220),
             width=max(4, int(params.range_outline_width_px)),
         )

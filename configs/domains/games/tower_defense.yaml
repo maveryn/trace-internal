@@ -38,10 +38,7 @@ generation:
     - 5
     - 6
     best_position_target_answer_support:
-    - 1
     - 2
-    - 3
-    - 4
     best_position_answer_option_index_support:
     - 0
     - 1
@@ -49,8 +46,8 @@ generation:
     - 3
     covered_path_range_radius_min_px: 88
     covered_path_range_radius_max_px: 168
-    best_position_range_radius_min_px: 72
-    best_position_range_radius_max_px: 210
+    best_position_range_radius_min_px: 86
+    best_position_range_radius_max_px: 104
     tower_path_clearance_px: 42
     tower_min_gap_px: 46
     uncovered_margin_px: 28

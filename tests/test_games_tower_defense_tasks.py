@@ -36,7 +36,7 @@ def test_games_tower_defense_defaults_expose_axes_and_prompt_bundle() -> None:
     }
     assert "target_answer_support" not in generation
     assert list(generation["covered_path_target_answer_support"]) == [1, 2, 3, 4, 5, 6]
-    assert list(generation["best_position_target_answer_support"]) == [1, 2, 3, 4]
+    assert list(generation["best_position_target_answer_support"]) == [2]
     assert list(generation["best_position_answer_option_index_support"]) == [0, 1, 2, 3]
     assert "tower_count_support" not in generation
     assert list(generation["covered_path_tower_count_support"]) == [3, 4, 5, 6]
@@ -102,16 +102,18 @@ def test_games_tower_defense_covered_path_supports_single_answer() -> None:
 def test_games_tower_defense_best_position_label_is_unique_maximum() -> None:
     out = create_task(BEST_POSITION_TASK_ID).generate(
         93107,
-        params={"target_answer": 4, "answer_option_index": 2},
+        params={"target_answer": 2, "answer_option_index": 2},
         max_attempts=800,
     )
     execution = out.trace_payload["execution_trace"]
     path_points = execution["path_points_px_local"]
     candidate_counts = {}
+    candidate_radii = []
     for tower in execution["towers"]:
         tower_id = str(tower["tower_id"])
         if not tower_id.startswith("candidate_"):
             continue
+        candidate_radii.append(round(float(tower["range_radius_px"]), 3))
         label = tower_id.removeprefix("candidate_")
         candidate_counts[label] = sum(
             1
@@ -127,7 +129,8 @@ def test_games_tower_defense_best_position_label_is_unique_maximum() -> None:
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == "C"
     assert best_labels == ["C"]
-    assert int(best_count) == 4
+    assert int(best_count) == 2
+    assert len(set(candidate_radii)) == 1
     assert execution["sample_metadata"]["candidate_coverage_counts"] == candidate_counts
     assert execution["annotation_entity_ids"] == ["candidate_C"]
     assert out.annotation_gt.type == "point"

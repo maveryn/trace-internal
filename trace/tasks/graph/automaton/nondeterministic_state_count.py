@@ -15,7 +15,7 @@ from ...shared.deterministic_sampling import resolve_selection_index, uniform_pr
 from ...shared.output_metadata import default_task_versions
 from ..shared.graph_scene import RenderedGraphScene, projected_edge_label_bbox_annotation, projected_node_point_annotation, render_graph_scene
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
-from ..shared.task_support import resolve_forced_graph_query_id, resolve_graph_named_variant, resolve_graph_render_params
+from ..shared.task_support import resolve_graph_named_variant, resolve_graph_render_params
 from ..shared.visual_defaults import load_graph_scene_background_defaults, load_graph_scene_noise_defaults
 from .shared.labels import sorted_state_label_tuple, state_labels
 from .shared.prompts import PROMPT_BUNDLE_ID as AUTOMATON_PROMPT_BUNDLE_ID
@@ -91,12 +91,6 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_graph_scene_background_defaults(scene_id=S
 POST_IMAGE_NOISE_DEFAULTS = load_graph_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.5)
 PROMPT_BUNDLE_ID = str(group_default(_PROMPT_DEFAULTS, 'bundle_id', AUTOMATON_PROMPT_BUNDLE_ID))
 
-def _query_id_from_alias(value: Any) -> str | None:
-    """Return the public query id encoded by one query/task alias."""
-    text = str(value or '').strip()
-    aliases = {'nondeterministic_state_count': QUERY_ID, 'default': None}
-    return aliases.get(text)
-
 def _resolve_named_variant(instance_seed: int, *, params: Mapping[str, Any], explicit_key: str, weights_key: str, balance_flag_key: str, supported: Tuple[str, ...], namespace: str) -> Tuple[str, Dict[str, float]]:
     """Resolve one balanced automaton visual/query axis."""
     return resolve_graph_named_variant(spawn_rng(int(instance_seed), f'{TASK_ID}.{str(namespace)}'), params=params, gen_defaults=_GEN_DEFAULTS, explicit_key=str(explicit_key), weights_key=str(weights_key), balance_flag_key=str(balance_flag_key), supported=tuple((str(value) for value in supported)), instance_seed=int(instance_seed), task_id=TASK_ID, namespace=str(namespace))
@@ -107,9 +101,6 @@ def _uniform_probability(values: Sequence[int | str], *, selected: int | str | N
 
 def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _ResolvedQuery:
     """Resolve sampling axes for the nondeterministic-state count objective."""
-    forced_query_id = resolve_forced_graph_query_id(params, query_id_from_alias=_query_id_from_alias)
-    if forced_query_id is not None and str(forced_query_id) != QUERY_ID:
-        raise ValueError('unsupported automaton nondeterministic-state query id')
     query_id = QUERY_ID
     query_id_probabilities = {QUERY_ID: 1.0}
     state_count_min = int(params.get('state_count_min', group_default(_GEN_DEFAULTS, 'state_count_min', _DEFAULTS.state_count_min)))

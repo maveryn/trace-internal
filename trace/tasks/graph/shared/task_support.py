@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from typing import Any, Dict, Mapping, Tuple
 
 from ....core.sampling import normalize_positive_weights, weighted_choice
@@ -243,19 +243,6 @@ def graph_balanced_axis_count(
     return max(1, int(active_count))
 
 
-def graph_query_probabilities_from_alias_map(
-    probabilities: Mapping[str, float],
-    alias_map: Mapping[str, str],
-) -> Dict[str, float]:
-    """Convert internal graph-axis probabilities to public query-id probabilities."""
-
-    return {
-        str(alias_map[str(key)]): float(probability)
-        for key, probability in probabilities.items()
-        if str(key) in alias_map
-    }
-
-
 def graph_uniform_label_probability_map(values: Sequence[str], *, selected: str | None = None) -> Dict[str, float]:
     """Return a deterministic uniform probability map over graph text labels."""
 
@@ -313,40 +300,6 @@ def graph_semantic_node_style_by_label(
         str(label): dict(style_by_color[str(color_name)])
         for label, color_name in node_color_names_by_label.items()
     }
-
-
-def resolve_forced_graph_edit_operation(
-    params: Mapping[str, Any],
-    *,
-    operation_from_query_alias: Callable[[Any], str | None],
-) -> str | None:
-    """Return an explicitly requested edge-edit operation, if present."""
-
-    for key in ("edit_operation", "edge_edit_operation", "query_id", "query_variant"):
-        value = params.get(str(key))
-        if value is None:
-            continue
-        operation = operation_from_query_alias(value)
-        if operation is None:
-            if str(key) in {"edit_operation", "edge_edit_operation"}:
-                raise ValueError(f"unsupported edge-edit operation: {value}")
-            continue
-        return str(operation)
-    return None
-
-
-def resolve_forced_graph_query_id(
-    params: Mapping[str, Any],
-    *,
-    query_id_from_alias: Callable[[Any], str | None],
-) -> str | None:
-    """Resolve an explicitly requested graph query id, if present."""
-
-    for key in ("query_id", "query_variant"):
-        query_id = query_id_from_alias(params.get(str(key)))
-        if query_id is not None:
-            return str(query_id)
-    return None
 
 
 def resolve_graph_render_params(
@@ -541,11 +494,8 @@ __all__ = [
     "graph_edge_label_entries",
     "graph_int_support",
     "graph_palette_rgb_by_name",
-    "graph_query_probabilities_from_alias_map",
     "graph_semantic_node_style_by_label",
     "graph_uniform_label_probability_map",
-    "resolve_forced_graph_edit_operation",
-    "resolve_forced_graph_query_id",
     "resolve_graph_balanced_node_color_name",
     "resolve_graph_edge_label_support_from_params",
     "resolve_graph_named_variant",

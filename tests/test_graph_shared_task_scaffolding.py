@@ -31,7 +31,7 @@ def test_graph_hashed_axis_selection_index_matches_namespaced_hash() -> None:
 def test_graph_decoupled_selection_index_divides_balanced_axes() -> None:
     params = {}
     gen_defaults = {
-        "balanced_query_id_sampling": True,
+        "balanced_primary_axis_sampling": True,
         "balanced_degree_mode_sampling": True,
     }
     base = resolve_selection_index(
@@ -49,9 +49,9 @@ def test_graph_decoupled_selection_index_divides_balanced_axes() -> None:
         axis_specs=(
             GraphBalancedAxisSpec(
                 probabilities={"a": 0.5, "b": 0.5},
-                balance_flag_key="balanced_query_id_sampling",
-                explicit_keys=("query_id",),
-                weights_key="query_id_weights",
+                balance_flag_key="balanced_primary_axis_sampling",
+                explicit_keys=("primary_axis",),
+                weights_key="primary_axis_weights",
             ),
             GraphBalancedAxisSpec(
                 probabilities={"in": 1.0, "out": 1.0, "total": 1.0},
@@ -66,9 +66,9 @@ def test_graph_decoupled_selection_index_divides_balanced_axes() -> None:
 
 
 def test_graph_decoupled_selection_index_respects_axis_overrides() -> None:
-    params = {"query_id": "a"}
+    params = {"primary_axis": "a"}
     gen_defaults = {
-        "balanced_query_id_sampling": True,
+        "balanced_primary_axis_sampling": True,
         "balanced_degree_mode_sampling": True,
     }
     base = resolve_selection_index(
@@ -86,9 +86,9 @@ def test_graph_decoupled_selection_index_respects_axis_overrides() -> None:
         axis_specs=(
             GraphBalancedAxisSpec(
                 probabilities={"a": 0.5, "b": 0.5},
-                balance_flag_key="balanced_query_id_sampling",
-                explicit_keys=("query_id",),
-                weights_key="query_id_weights",
+                balance_flag_key="balanced_primary_axis_sampling",
+                explicit_keys=("primary_axis",),
+                weights_key="primary_axis_weights",
             ),
             GraphBalancedAxisSpec(
                 probabilities={"in": 1.0, "out": 1.0},
@@ -114,7 +114,7 @@ def test_resolve_node_link_visual_axes_honors_explicit_params() -> None:
             "node_color_name": "orange",
         },
         gen_defaults={},
-        task_id="task_graph__node_link__example",
+        selection_salt="node_link_visual_axes_test",
     )
 
     assert axes.layout_variant == "shell"
@@ -133,7 +133,7 @@ def test_resolve_node_link_visual_axes_supports_custom_color_keys() -> None:
         302,
         params={"theme_node_color_name": "green"},
         gen_defaults={},
-        task_id="task_graph__node_link__example",
+        selection_salt="node_link_visual_axes_test",
         node_color_explicit_key="theme_node_color_name",
         node_color_weights_key="theme_node_color_name_weights",
         node_color_balance_flag_key="balanced_theme_node_color_name_sampling",
@@ -157,7 +157,7 @@ def test_resolve_node_link_visual_axes_can_skip_optional_axes() -> None:
             "layout_transform_variant": "identity",
         },
         gen_defaults={},
-        task_id="task_graph__node_link__example",
+        selection_salt="node_link_visual_axes_test",
         include_edge_routing_axis=False,
         include_node_color_axis=False,
     )

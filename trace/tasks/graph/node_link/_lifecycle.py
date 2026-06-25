@@ -195,19 +195,26 @@ def _resolve_axes(
 ) -> NodeLinkAxes:
     """Resolve task-supplied query ids, numeric supports, and visual axes."""
 
-    query_rng = spawn_rng(int(instance_seed), f"{plan.public_id}.query")
-    selected_query, query_probabilities = resolve_graph_named_variant(
-        query_rng,
-        params=params,
-        gen_defaults=gen_defaults,
-        explicit_key="query_id",
-        weights_key="query_id_weights",
-        balance_flag_key="balanced_query_id_sampling",
-        supported=tuple(plan.supported_query_ids),
-        instance_seed=int(instance_seed),
-        task_id=str(plan.public_id),
-        namespace="query_id",
-    )
+    supported_queries = tuple(str(value) for value in plan.supported_query_ids)
+    if not supported_queries:
+        raise ValueError(f"{plan.public_id} has no supported query ids")
+    requested_query = params.get("query_id")
+    if requested_query is not None and str(requested_query) not in {"", "default"}:
+        selected_query = str(requested_query)
+        if selected_query not in set(supported_queries):
+            raise ValueError(f"unsupported query_id for {plan.public_id}: {selected_query}")
+        query_probabilities = {str(selected_query): 1.0}
+    else:
+        query_index = int(
+            resolve_selection_index(
+                params=params,
+                instance_seed=int(instance_seed),
+                namespace=f"{plan.public_id}:query_id",
+            )
+        )
+        selected_query = str(supported_queries[int(query_index % len(supported_queries))])
+        probability = 1.0 / float(len(supported_queries))
+        query_probabilities = {str(query_id): float(probability) for query_id in supported_queries}
     node_count, node_probabilities = _resolve_int_axis(
         key="node_count",
         params=params,

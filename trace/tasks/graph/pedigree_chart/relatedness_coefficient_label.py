@@ -47,10 +47,9 @@ class GraphPedigreeRelatednessCoefficientLabelTask:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Sample one relatedness objective and bind fraction-option answer plus person-box witnesses."""
 
-        for selector_key in ("query_id", "query_variant"):
-            requested = params.get(selector_key)
-            if requested is not None and str(requested) not in {"", "default", SINGLE_QUERY_ID}:
-                raise ValueError(f"unsupported query_id for {self.task_id}: {requested}")
+        requested = params.get("query_id")
+        if requested is not None and str(requested) not in {"", "default", SINGLE_QUERY_ID}:
+            raise ValueError(f"unsupported query_id for {self.task_id}: {requested}")
         gen_defaults, render_defaults, prompt_defaults = _sections_for_task(self.task_id)
         style = _resolve_style(int(instance_seed), params=params, gen_defaults=gen_defaults, rng_namespace=self.task_id)
         target_relatedness, relatedness_probs = _select_variant(

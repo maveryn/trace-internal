@@ -24,7 +24,7 @@ the total number of visible objects on the requested belt.
 
 The target belt is sampled as a generation axis. If the target belt is `inner`,
 the answer support is `1..8`. If the target belt is `outer`, the answer support
-is `1..12`.
+is `1..10`.
 
 ## Annotation Contract
 Annotation is a `bbox_set` containing one `[x0, y0, x1, y1]` pixel box around

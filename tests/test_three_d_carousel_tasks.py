@@ -71,7 +71,7 @@ def test_carousel_belt_total_count_uses_belt_specific_support() -> None:
     task = create_task(TOTAL_TASK_ID)
     cases = (
         ("inner", 8, 2026062501),
-        ("outer", 12, 2026062502),
+        ("outer", 10, 2026062502),
     )
     for belt_key, target_count, seed in cases:
         output = task.generate(

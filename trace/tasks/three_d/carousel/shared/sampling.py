@@ -177,7 +177,7 @@ def _resolve_belt_total_target_count(
 ) -> tuple[int, Dict[str, float]]:
     """Resolve answer count with belt-specific support for total belt counts."""
 
-    default_max = 8 if str(belt_key) == "inner" else 12
+    default_max = 8 if str(belt_key) == "inner" else 10
     count, probabilities = resolve_count_for_namespace(
         params,
         namespace=f"{namespace}.{belt_key}.target_count",
@@ -502,7 +502,7 @@ def build_belt_count_dataset(
         target_color_name = ""
         target_color_probabilities: Dict[str, float] = {}
         other_belt_key = str("outer" if str(target_belt_key) == "inner" else "inner")
-        other_default_max = 8 if other_belt_key == "inner" else 12
+        other_default_max = 8 if other_belt_key == "inner" else 10
         other_count, _other_count_probabilities = resolve_count_for_namespace(
             params,
             namespace=f"{namespace}.{other_belt_key}.distractor_count",

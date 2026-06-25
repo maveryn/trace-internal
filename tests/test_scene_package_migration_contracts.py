@@ -644,8 +644,9 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
         "geometry": frozenset((*expected_candidate_scenes["geometry"], "parallel_segment_proportion", "polygon_angle_chase", "pythagorean_dissection", "pythagorean_tree", "rectangular_solid", "regular_polygon_decomposition", "right_triangle_altitude_theorem", "sector", "shape_gallery", "similar_figure_measure_transfer", "solid_cross_section", "solid_formula", "solid_revolution", "special_quadrilateral", "split_triangle_angle_chase", "split_triangle_trig_chain", "survey_traverse", "tangent_packing", "trapezoid_extension", "triangle_congruence_correspondence", "triangle_relations", "volume_equivalence_conversion", "wire_shape_conversion")),
         "icons": frozenset((*expected_candidate_scenes["icons"], "named_strip", "overlap_grid", "wallpaper_panels")),
         "illustrations": frozenset((*expected_candidate_scenes["illustrations"], "rpg_tactical_map")),
-        "graph": frozenset((*expected_candidate_scenes["graph"], "phylogeny_tree", "pipe_network")),
+        "symbolic": frozenset({"abacus", "agent_automaton", "braille_cell", "clock", "dice", "life_automaton", "logic_gate_circuit", "music_staff"}),
         "three_d": frozenset((*expected_candidate_scenes["three_d"], "carousel", "conveyor", "object_scene", "room", "street", "warehouse")),
+        "graph": frozenset((*expected_candidate_scenes["graph"], "pedigree_chart", "phylogeny_tree", "pipe_network")),
     }
     assert MIGRATED_SCENE_PACKAGE_SCENES == expected_candidate_scenes
     assert SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES == expected_candidate_scenes
@@ -684,7 +685,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     assert scene_package_migration.is_scene_package_task('task_geometry__special_quadrilateral__diagonal_angle_value', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_geometry__split_triangle_angle_chase__target_angle_value', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_geometry__split_triangle_trig_chain__side_length_value', domain='geometry')
-    assert scene_package_migration.is_scene_package_task('task_geometry__survey_traverse__bearing_angle_value', domain='geometry')
+    assert scene_package_migration.is_scene_package_task('task_geometry__survey_traverse__forward_bearing_from_back_bearing_value', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_geometry__tangent_packing__circle_in_square_gap_area', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_geometry__triangle_congruence_correspondence__corresponding_side_value', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_geometry__triangle_relations__similar_triangles_side_length', domain='geometry')
@@ -705,6 +706,8 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     assert scene_package_migration.is_scene_package_task('task_icons__pattern_grid__attribute_pattern_violation_index', domain='icons')
     assert scene_package_migration.is_scene_package_task('task_illustrations__rpg_house__swapped_tile_pair_label', domain='illustrations')
     assert scene_package_migration.is_scene_package_task('task_illustrations__rpg_tactical_map__movement_reachable_tile_label', domain='illustrations')
+    assert scene_package_migration.is_scene_package_task('task_symbolic__abacus__displayed_value_readout', domain='symbolic')
+    assert scene_package_migration.is_scene_package_task('task_symbolic__abacus__target_value_match_label', domain='symbolic')
     assert scene_package_migration.is_scene_package_task('task_three_d__carousel__scoped_belt_object_count', domain='three_d')
     assert scene_package_migration.is_scene_package_task('task_three_d__conveyor__belt_total_object_count', domain='three_d')
     assert scene_package_migration.is_scene_package_task('task_three_d__surface_fixture__repeated_element_count', domain='three_d')

@@ -5,12 +5,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping
 
+from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
+from trace.tasks.shared.fixed_query import select_task_query_id
 
-from ._lifecycle import SurveyRenderedAttempt, SurveyTraceFields, render_survey_attempts, run_survey_public_task
+from ._lifecycle import SurveyRenderedAttempt, build_survey_trace_payload, render_survey_attempts, survey_output_metadata
 from .shared.annotations import point_scene_annotation
 from .shared.defaults import load_survey_traverse_defaults
+from .shared.prompts import build_survey_traverse_prompt_artifacts
 from .shared.rendering import render_leveling_station_scene, render_slope_elevation_scene
 from .shared.sampling import LEVELING_CASES, SLOPE_ELEVATION_CASES, choose_from_support, choose_station_labels3
 from .shared.state import (
@@ -26,7 +29,7 @@ SLOPE_BRANCH = "slope_distance_elevation_change"
 SUPPORTED_QUERY_IDS: tuple[str, ...] = (LEVELING_BRANCH, SLOPE_BRANCH)
 TASK_PROMPT_KEY = "station_elevation_value_query"
 
-_GENERATION_DEFAULTS_UNUSED, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_survey_traverse_defaults(TASK_ID)
+_GENERATION_DEFAULTS_UNUSED, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_survey_traverse_defaults()
 
 
 @dataclass(frozen=True)
@@ -163,10 +166,10 @@ def _answer_value(problem: ResolvedElevationProblem) -> int:
     return int(problem.answer)
 
 
-def _build_elevation_trace_fields(problem: ResolvedElevationProblem, rendered_attempt: SurveyRenderedAttempt, answer_value: int) -> SurveyTraceFields:
-    """Expose elevation-specific formula fields to the common trace envelope."""
+def _formula_fields(problem: ResolvedElevationProblem, rendered_attempt: SurveyRenderedAttempt) -> dict[str, Any]:
+    """Return task-owned elevation formula fields for trace output."""
 
-    formula_fields = {
+    return {
         "reference_elevation": int(problem.reference_elevation),
         "target_elevation": int(problem.target_elevation),
         "backsight": problem.backsight,
@@ -177,16 +180,6 @@ def _build_elevation_trace_fields(problem: ResolvedElevationProblem, rendered_at
         "total_rise": problem.total_rise,
         **dict(rendered_attempt.rendered.witness),
     }
-    return SurveyTraceFields(
-        formula_family=str(problem.formula_family),
-        query_params_extra={
-            "case_probabilities": dict(problem.case_probabilities),
-            **dict(rendered_attempt.rendered.witness),
-        },
-        execution_extra=formula_fields,
-        witness_extra=dict(rendered_attempt.rendered.witness),
-        relation_extra={},
-    )
 
 
 @register_task
@@ -199,19 +192,65 @@ class GeometrySurveyTraverseStationElevationValueTask:
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        return run_survey_public_task(
-            task_identity=TASK_ID,
-            supported_branches=SUPPORTED_QUERY_IDS,
-            default_branch=LEVELING_BRANCH,
+        """Bind the selected elevation formula, prompt, annotation, and output."""
+
+        branch_name, branch_probabilities, task_params = select_task_query_id(
+            instance_seed=int(instance_seed),
+            params=params,
+            supported_query_ids=SUPPORTED_QUERY_IDS,
+            default_query_id=LEVELING_BRANCH,
+            task_id=TASK_ID,
+            namespace=f"{TASK_ID}.query",
+        )
+        problem = _resolve_elevation_problem(
+            branch_name=str(branch_name),
+            branch_probabilities=branch_probabilities,
+            instance_seed=int(instance_seed),
+            params=task_params,
+        )
+        rendered_attempt = _render_elevation_attempt(
+            problem=problem,
+            instance_seed=int(instance_seed),
+            params=task_params,
+            max_attempts=int(max_attempts),
+        )
+        answer = _answer_value(problem)
+        prompt_artifacts = build_survey_traverse_prompt_artifacts(
             task_prompt_key=TASK_PROMPT_KEY,
             prompt_defaults=_PROMPT_DEFAULTS,
             instance_seed=int(instance_seed),
-            params=params,
-            max_attempts=int(max_attempts),
-            resolve_problem=_resolve_elevation_problem,
-            render_attempt=_render_elevation_attempt,
-            answer_value=_answer_value,
-            trace_fields=_build_elevation_trace_fields,
+            prompt_branch_key=str(problem.branch_name),
+            annotation_roles=rendered_attempt.rendered.annotation_roles,
+            annotation_kind=str(rendered_attempt.annotation_artifacts.annotation_type),
+            answer_value=int(answer),
+        )
+        formula_fields = _formula_fields(problem, rendered_attempt)
+        trace_payload = build_survey_trace_payload(
+            task_identity=TASK_ID,
+            query_id=str(problem.branch_name),
+            formula_family=str(problem.formula_family),
+            rendered_attempt=rendered_attempt,
+            prompt_artifacts=prompt_artifacts,
+            answer_value=int(answer),
+            query_probabilities=problem.branch_probabilities,
+            query_params_extra={
+                "case_probabilities": dict(problem.case_probabilities),
+                **dict(rendered_attempt.rendered.witness),
+            },
+            execution_extra=formula_fields,
+            witness_extra=dict(rendered_attempt.rendered.witness),
+        )
+        return TaskOutput(
+            prompt=str(prompt_artifacts.prompt),
+            answer_gt=TypedValue(type="integer", value=int(answer)),
+            annotation_gt=TypedValue(
+                type=str(rendered_attempt.annotation_artifacts.annotation_type),
+                value=rendered_attempt.annotation_artifacts.value,
+            ),
+            image=rendered_attempt.image,
+            image_id="img0",
+            trace_payload=dict(trace_payload),
+            **survey_output_metadata(prompt_artifacts=prompt_artifacts, query_name=str(problem.branch_name)),
         )
 
 

@@ -3,9 +3,10 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `survey_traverse`
-3. Supported `query_id`s: `coordinate_traverse_area`, `offset_trapezoid_area`
-4. Answer schema: `integer`
-5. Annotation schema: `bbox_map`
+3. Task id: `task_geometry__survey_traverse__traverse_area_value`
+4. Supported `query_id`s: `coordinate_traverse_area`, `offset_trapezoid_area`
+5. Answer schema: `integer`
+6. Annotation schema: `bbox_map`
 
 ## Program Contract
 - `survey_traverse_area_value(visible_traverse_shape, visible_field_note, branch=coordinate_traverse_area|offset_trapezoid_area) -> enclosed_area; scene=survey_traverse; scope=traverse_area_value`

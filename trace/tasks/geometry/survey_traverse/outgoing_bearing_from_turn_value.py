@@ -1,0 +1,199 @@
+"""Compute an outgoing survey bearing from an incoming bearing and turn."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Dict, Mapping
+
+from trace.core.types import TypedValue
+from trace.tasks.base import TaskOutput
+from trace.tasks.registry import register_task
+from trace.tasks.shared.fixed_query import select_task_query_id
+
+from ._lifecycle import SurveyRenderedAttempt, build_survey_trace_payload, render_survey_attempts, survey_output_metadata
+from .shared.annotations import point_scene_annotation
+from .shared.defaults import load_survey_traverse_defaults
+from .shared.measurements import normalize_bearing
+from .shared.prompts import build_survey_traverse_prompt_artifacts
+from .shared.rendering import render_closed_traverse_scene
+from .shared.sampling import BEARING_SUPPORT, choose_from_support, choose_station_labels3, choose_turn
+from .shared.state import DOMAIN, SCENE_ID, BearingTurnCase
+
+TASK_ID = "task_geometry__survey_traverse__outgoing_bearing_from_turn_value"
+SINGLE_QUERY_ID = "single"
+SUPPORTED_QUERY_IDS: tuple[str, ...] = (SINGLE_QUERY_ID,)
+TASK_PROMPT_KEY = "outgoing_bearing_from_turn_value_query"
+
+_GENERATION_DEFAULTS_UNUSED, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_survey_traverse_defaults()
+
+
+@dataclass(frozen=True)
+class ResolvedOutgoingBearingProblem:
+    """Task-owned outgoing-bearing problem with formula inputs bound."""
+
+    query_id: str
+    answer: int
+    base_bearing: int
+    turn_angle: int
+    turn_direction: str
+    station_labels: tuple[str, str, str]
+    query_probabilities: dict[str, float]
+    bearing_probabilities: dict[str, float]
+    turn_probabilities: dict[str, float]
+
+
+def _resolve_problem(*, query_id: str, query_probabilities: Mapping[str, float], instance_seed: int, params: Mapping[str, Any]) -> ResolvedOutgoingBearingProblem:
+    """Resolve the single traverse-turn objective into concrete bearing inputs."""
+
+    labels = choose_station_labels3(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}.labels")
+    base_bearing, bearing_probabilities = choose_from_support(
+        values=BEARING_SUPPORT,
+        params=params,
+        explicit_key="base_bearing",
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.base_bearing",
+    )
+    turn_angle, turn_direction, turn_probabilities = choose_turn(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.turn",
+    )
+    answer = (
+        normalize_bearing(int(base_bearing) - int(turn_angle))
+        if str(turn_direction) == "left"
+        else normalize_bearing(int(base_bearing) + int(turn_angle))
+    )
+    if int(answer) == 0:
+        answer = 360
+    if int(answer) >= 360:
+        raise ValueError("closed traverse generated unsupported 360-degree answer")
+    return ResolvedOutgoingBearingProblem(
+        query_id=str(query_id),
+        answer=int(answer),
+        base_bearing=int(base_bearing),
+        turn_angle=int(turn_angle),
+        turn_direction=str(turn_direction),
+        station_labels=labels,
+        query_probabilities=dict(query_probabilities),
+        bearing_probabilities=dict(bearing_probabilities),
+        turn_probabilities=dict(turn_probabilities),
+    )
+
+
+def _render_attempt(
+    *,
+    problem: ResolvedOutgoingBearingProblem,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    max_attempts: int,
+) -> SurveyRenderedAttempt:
+    """Render the traverse-turn scene bound to this public task."""
+
+    def render_scene(context, attempt_seed: int):
+        return render_closed_traverse_scene(
+            context,
+            BearingTurnCase(
+                answer=int(problem.answer),
+                base_bearing=int(problem.base_bearing),
+                turn_angle=int(problem.turn_angle),
+                turn_direction=str(problem.turn_direction),
+                station_labels=problem.station_labels,
+                bearing_probabilities=dict(problem.bearing_probabilities),
+                turn_probabilities=dict(problem.turn_probabilities),
+            ),
+            instance_seed=int(attempt_seed),
+        )
+
+    return render_survey_attempts(
+        instance_seed=int(instance_seed),
+        params=params,
+        max_attempts=int(max_attempts),
+        render_defaults=_RENDER_DEFAULTS,
+        render_scene=render_scene,
+        build_annotation=point_scene_annotation,
+    )
+
+
+@register_task
+class GeometrySurveyTraverseOutgoingBearingFromTurnValueTask:
+    """Compute an outgoing bearing from the shown traverse turn."""
+
+    task_id = TASK_ID
+    domain = DOMAIN
+    default_dataset_enabled = True
+    supported_query_ids = SUPPORTED_QUERY_IDS
+
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+        """Bind the single traverse-turn formula, prompt, annotation, and output."""
+
+        query_id, query_probabilities, task_params = select_task_query_id(
+            instance_seed=int(instance_seed),
+            params=params,
+            supported_query_ids=SUPPORTED_QUERY_IDS,
+            default_query_id=SINGLE_QUERY_ID,
+            task_id=TASK_ID,
+            namespace=f"{TASK_ID}.query",
+        )
+        problem = _resolve_problem(
+            query_id=str(query_id),
+            query_probabilities=query_probabilities,
+            instance_seed=int(instance_seed),
+            params=task_params,
+        )
+        rendered_attempt = _render_attempt(
+            problem=problem,
+            instance_seed=int(instance_seed),
+            params=task_params,
+            max_attempts=int(max_attempts),
+        )
+        answer = int(problem.answer)
+        prompt_artifacts = build_survey_traverse_prompt_artifacts(
+            prompt_defaults=_PROMPT_DEFAULTS,
+            task_prompt_key=TASK_PROMPT_KEY,
+            prompt_branch_key=str(problem.query_id),
+            annotation_roles=rendered_attempt.rendered.annotation_roles,
+            annotation_kind=str(rendered_attempt.annotation_artifacts.annotation_type),
+            answer_value=int(answer),
+            instance_seed=int(instance_seed),
+        )
+        trace_payload = build_survey_trace_payload(
+            task_identity=TASK_ID,
+            query_id=str(problem.query_id),
+            formula_family="survey_outgoing_bearing_from_turn",
+            rendered_attempt=rendered_attempt,
+            prompt_artifacts=prompt_artifacts,
+            answer_value=int(answer),
+            query_probabilities=problem.query_probabilities,
+            query_params_extra={
+                "bearing_probabilities": dict(problem.bearing_probabilities),
+                "turn_probabilities": dict(problem.turn_probabilities),
+                **dict(rendered_attempt.rendered.witness),
+            },
+            execution_extra={
+                "known_bearing": int(problem.base_bearing),
+                "turn_angle": int(problem.turn_angle),
+                "turn_direction": str(problem.turn_direction),
+                "target_bearing": int(problem.answer),
+                **dict(rendered_attempt.rendered.witness),
+            },
+            witness_extra=dict(rendered_attempt.rendered.witness),
+        )
+        return TaskOutput(
+            prompt=str(prompt_artifacts.prompt),
+            answer_gt=TypedValue(type="integer", value=int(answer)),
+            annotation_gt=TypedValue(
+                type=str(rendered_attempt.annotation_artifacts.annotation_type),
+                value=rendered_attempt.annotation_artifacts.value,
+            ),
+            image=rendered_attempt.image,
+            image_id="img0",
+            trace_payload=dict(trace_payload),
+            **survey_output_metadata(prompt_artifacts=prompt_artifacts, query_name=str(problem.query_id)),
+        )
+
+
+__all__ = [
+    "GeometrySurveyTraverseOutgoingBearingFromTurnValueTask",
+    "SUPPORTED_QUERY_IDS",
+    "TASK_ID",
+]

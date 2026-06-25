@@ -103,23 +103,31 @@ def test_geometry_segment_set_prompt_examples_are_valid(task_id: str) -> None:
 
 
 def test_survey_traverse_bearing_prompt_uses_query_specific_annotation_keys() -> None:
-    collected = collect_query_id_samples(
-        task_id="task_geometry__survey_traverse__bearing_angle_value",
+    forward = collect_query_id_samples(
+        task_id="task_geometry__survey_traverse__forward_bearing_from_back_bearing_value",
         target_count_per_query_id=1,
-        seed=int(hash64(20260609, "geometry.prompt_examples.survey_traverse_bearing", 0)),
+        seed=int(hash64(20260609, "geometry.prompt_examples.survey_traverse_forward_bearing", 0)),
+        max_attempts_per_instance=200,
+        max_total_samples_per_task=800,
+        workers=1,
+        collector=_prompt_record,
+    )
+    outgoing = collect_query_id_samples(
+        task_id="task_geometry__survey_traverse__outgoing_bearing_from_turn_value",
+        target_count_per_query_id=1,
+        seed=int(hash64(20260609, "geometry.prompt_examples.survey_traverse_outgoing_bearing", 0)),
         max_attempts_per_instance=200,
         max_total_samples_per_task=800,
         workers=1,
         collector=_prompt_record,
     )
 
-    assert collected["incomplete_query_ids"] == []
-    prompts = {
-        str(query_id): str(samples[0]["prompt"])
-        for query_id, samples in collected["samples_by_query_id"].items()
-    }
-    assert "turn_vertex" not in prompts["bearing_from_back_bearing"]
-    assert "turn_vertex" in prompts["closed_traverse_missing_bearing"]
+    assert forward["incomplete_query_ids"] == []
+    assert outgoing["incomplete_query_ids"] == []
+    forward_prompt = str(forward["samples_by_query_id"]["single"][0]["prompt"])
+    outgoing_prompt = str(outgoing["samples_by_query_id"]["single"][0]["prompt"])
+    assert "turn_vertex" not in forward_prompt
+    assert "turn_vertex" in outgoing_prompt
 
 
 def test_rectangular_solid_open_box_prompt_uses_query_specific_answer_hint() -> None:

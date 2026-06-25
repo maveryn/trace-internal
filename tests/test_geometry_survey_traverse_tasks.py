@@ -8,10 +8,13 @@ import pytest
 
 from trace.core.taxonomy import lookup_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.survey_traverse.bearing_angle_value import (
-    SUPPORTED_QUERY_IDS as BEARING_QUERY_IDS,
-    TASK_ID as TASK_ID_BEARING_ANGLE,
-    GeometrySurveyTraverseBearingAngleValueTask,
+from trace.tasks.geometry.survey_traverse.forward_bearing_from_back_bearing_value import (
+    TASK_ID as TASK_ID_FORWARD_BEARING,
+    GeometrySurveyTraverseForwardBearingFromBackBearingValueTask,
+)
+from trace.tasks.geometry.survey_traverse.outgoing_bearing_from_turn_value import (
+    TASK_ID as TASK_ID_OUTGOING_BEARING,
+    GeometrySurveyTraverseOutgoingBearingFromTurnValueTask,
 )
 from trace.tasks.geometry.survey_traverse.shared.state import SCENE_ID
 from trace.tasks.geometry.survey_traverse.station_elevation_value import (
@@ -26,22 +29,28 @@ from trace.tasks.geometry.survey_traverse.traverse_area_value import (
 )
 
 
-def _generate(seed: int, *, task_id: str = TASK_ID_BEARING_ANGLE, **params):
+def _generate(seed: int, *, task_id: str = TASK_ID_FORWARD_BEARING, **params):
     task = create_task(task_id)
     return task.generate(seed, params=dict(params), max_attempts=20)
 
 
 def test_survey_traverse_bearing_angle_registered_public_task() -> None:
-    assert TASK_ID_BEARING_ANGLE in TASK_REGISTRY
+    assert TASK_ID_FORWARD_BEARING in TASK_REGISTRY
+    assert TASK_ID_OUTGOING_BEARING in TASK_REGISTRY
     assert TASK_ID_STATION_ELEVATION in TASK_REGISTRY
     assert TASK_ID_TRAVERSE_AREA in TASK_REGISTRY
-    assert TASK_REGISTRY[TASK_ID_BEARING_ANGLE] is GeometrySurveyTraverseBearingAngleValueTask
+    assert TASK_REGISTRY[TASK_ID_FORWARD_BEARING] is GeometrySurveyTraverseForwardBearingFromBackBearingValueTask
+    assert TASK_REGISTRY[TASK_ID_OUTGOING_BEARING] is GeometrySurveyTraverseOutgoingBearingFromTurnValueTask
     assert TASK_REGISTRY[TASK_ID_STATION_ELEVATION] is GeometrySurveyTraverseStationElevationValueTask
     assert TASK_REGISTRY[TASK_ID_TRAVERSE_AREA] is GeometrySurveyTraverseTraverseAreaValueTask
-    bearing_taxonomy = lookup_task_taxonomy(TASK_ID_BEARING_ANGLE)
-    assert bearing_taxonomy is not None
-    assert bearing_taxonomy.domain == "geometry"
-    assert bearing_taxonomy.scene_id == SCENE_ID
+    forward_taxonomy = lookup_task_taxonomy(TASK_ID_FORWARD_BEARING)
+    assert forward_taxonomy is not None
+    assert forward_taxonomy.domain == "geometry"
+    assert forward_taxonomy.scene_id == SCENE_ID
+    outgoing_taxonomy = lookup_task_taxonomy(TASK_ID_OUTGOING_BEARING)
+    assert outgoing_taxonomy is not None
+    assert outgoing_taxonomy.domain == "geometry"
+    assert outgoing_taxonomy.scene_id == SCENE_ID
     elevation_taxonomy = lookup_task_taxonomy(TASK_ID_STATION_ELEVATION)
     assert elevation_taxonomy is not None
     assert elevation_taxonomy.domain == "geometry"
@@ -55,7 +64,7 @@ def test_survey_traverse_bearing_angle_registered_public_task() -> None:
 def test_back_bearing_contract_and_formula() -> None:
     out = _generate(
         20260611,
-        query_id="bearing_from_back_bearing",
+        query_id="single",
         target_bearing=50,
         station_labels=("A", "B", "C"),
     )
@@ -63,9 +72,10 @@ def test_back_bearing_contract_and_formula() -> None:
     execution = trace["execution_trace"]
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == "bearing_from_back_bearing"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 50
+    assert execution["formula_family"] == "survey_forward_bearing_from_back_bearing"
     assert execution["known_back_bearing"] == 230
     assert execution["target_forward_bearing"] == 50
 
@@ -83,7 +93,8 @@ def test_back_bearing_contract_and_formula() -> None:
 def test_closed_traverse_contract_and_formula() -> None:
     out = _generate(
         20260612,
-        query_id="closed_traverse_missing_bearing",
+        task_id=TASK_ID_OUTGOING_BEARING,
+        query_id="single",
         base_bearing=100,
         turn_angle=45,
         turn_direction="right",
@@ -93,9 +104,10 @@ def test_closed_traverse_contract_and_formula() -> None:
     execution = trace["execution_trace"]
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == "closed_traverse_missing_bearing"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 145
+    assert execution["formula_family"] == "survey_outgoing_bearing_from_turn"
     assert execution["known_bearing"] == 100
     assert execution["turn_angle"] == 45
     assert execution["turn_direction"] == "right"
@@ -245,11 +257,10 @@ def test_offset_trapezoid_area_contract_and_formula() -> None:
     assert "task_variant" not in json.dumps(trace)
 
 
-@pytest.mark.parametrize("query_id", BEARING_QUERY_IDS)
-def test_survey_traverse_bearing_generation_is_deterministic(query_id: str) -> None:
-    params = {"query_id": query_id}
-    first = _generate(20260613, **params)
-    second = _generate(20260613, **params)
+@pytest.mark.parametrize("task_id", (TASK_ID_FORWARD_BEARING, TASK_ID_OUTGOING_BEARING))
+def test_survey_traverse_bearing_generation_is_deterministic(task_id: str) -> None:
+    first = _generate(20260613, task_id=task_id, query_id="single")
+    second = _generate(20260613, task_id=task_id, query_id="single")
 
     assert first.prompt == second.prompt
     assert first.answer_gt == second.answer_gt
@@ -285,19 +296,22 @@ def test_survey_traverse_area_generation_is_deterministic(query_id: str) -> None
 
 
 def test_survey_traverse_bearing_rejects_invalid_params() -> None:
-    task = create_task(TASK_ID_BEARING_ANGLE)
+    forward_task = create_task(TASK_ID_FORWARD_BEARING)
     with pytest.raises(ValueError):
-        task.generate(1, params={"query_id": "bad_query"}, max_attempts=1)
+        forward_task.generate(1, params={"query_id": "bad_query"}, max_attempts=1)
     with pytest.raises(ValueError):
-        task.generate(1, params={"query_id": "bearing_from_back_bearing", "target_bearing": 17}, max_attempts=1)
+        forward_task.generate(1, params={"query_id": "single", "target_bearing": 17}, max_attempts=1)
+    outgoing_task = create_task(TASK_ID_OUTGOING_BEARING)
     with pytest.raises(ValueError):
-        task.generate(
+        outgoing_task.generate(1, params={"query_id": "bad_query"}, max_attempts=1)
+    with pytest.raises(ValueError):
+        outgoing_task.generate(
             1,
-            params={"query_id": "closed_traverse_missing_bearing", "turn_direction": "clockwise"},
+            params={"query_id": "single", "turn_direction": "clockwise"},
             max_attempts=1,
         )
     with pytest.raises(ValueError):
-        task.generate(1, params={"station_labels": ("A", "A", "B")}, max_attempts=1)
+        forward_task.generate(1, params={"station_labels": ("A", "A", "B")}, max_attempts=1)
 
 
 def test_survey_traverse_station_elevation_rejects_invalid_params() -> None:

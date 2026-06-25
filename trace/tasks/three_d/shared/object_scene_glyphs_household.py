@@ -117,19 +117,32 @@ def _draw_candle_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     width, depth, height = (float(value) for value in spec["dimensions_xyz"])
-    wax = _sub_box_spec(spec, offset_xyz=(0.0, 0.0, -height * 0.08), dimensions_xyz=(width * 0.32, depth * 0.32, height * 0.72))
-    wax_bbox = _draw_cylinder_object(draw, wax, camera=camera, frame=frame, fill=_tint(fill, 0.14))
+    wax = _sub_box_spec(spec, offset_xyz=(0.0, 0.0, -height * 0.12), dimensions_xyz=(width * 0.42, depth * 0.42, height * 0.56))
+    wax_bbox = _draw_box_object(draw, wax, camera=camera, frame=frame, fill=_tint(fill, 0.08))
+    top = _project_xy((float(wax["world_xyz"][0]), float(wax["world_xyz"][1]), float(wax["base_xyz"][2]) + float(wax["dimensions_xyz"][2])), camera, frame)
+    top_radius = max(4.0, _radius_px_for_object(wax, camera, frame) * 0.45)
+    draw.ellipse(
+        (
+            top[0] - top_radius,
+            top[1] - top_radius * 0.38,
+            top[0] + top_radius,
+            top[1] + top_radius * 0.38,
+        ),
+        fill=_tint(fill, 0.24),
+        outline=(28, 35, 45),
+        width=1,
+    )
     flame_profile = [(0.0, 1.0), (0.30, 0.24), (0.12, -0.42), (0.0, -0.76), (-0.12, -0.42), (-0.30, 0.24)]
-    flame_spec = _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.62), dimensions_xyz=(width * 0.34, depth * 0.14, height * 0.58))
+    flame_spec = _sub_box_spec(spec, offset_xyz=(0.0, 0.0, height * 0.36), dimensions_xyz=(width * 0.26, depth * 0.12, height * 0.34))
     flame = _project_face(_upright_profile_world_points(flame_spec, camera=camera, profile_xz=flame_profile), camera, frame)
     draw.polygon(flame, fill=(244, 132, 46))
     _draw_polyline(draw, flame, fill=(135, 71, 32), width=1)
     inner_flame = _project_face(_upright_profile_world_points(flame_spec, camera=camera, profile_xz=[(0.0, 0.58), (0.12, 0.02), (0.0, -0.42), (-0.12, 0.02)]), camera, frame)
     draw.polygon(inner_flame, fill=(255, 213, 88))
-    wick_top = _project_xy(_upright_profile_world_points(spec, camera=camera, profile_xz=[(0.0, 0.48)])[0], camera, frame)
-    wick_bottom = _project_xy(_upright_profile_world_points(spec, camera=camera, profile_xz=[(0.0, 0.32)])[0], camera, frame)
+    wick_top = _project_xy(_upright_profile_world_points(wax, camera=camera, profile_xz=[(0.0, 0.54)])[0], camera, frame)
+    wick_bottom = _project_xy(_upright_profile_world_points(wax, camera=camera, profile_xz=[(0.0, 0.38)])[0], camera, frame)
     _draw_line(draw, wick_bottom, wick_top, fill=(42, 35, 28), width=2)
-    return _bbox_union(wax_bbox, _bbox_from_screen_points(flame), _bbox_from_screen_points(inner_flame), _bbox_from_screen_points([wick_top, wick_bottom]))
+    return _bbox_union(wax_bbox, [top[0] - top_radius, top[1] - top_radius * 0.38, top[0] + top_radius, top[1] + top_radius * 0.38], _bbox_from_screen_points(flame), _bbox_from_screen_points(inner_flame), _bbox_from_screen_points([wick_top, wick_bottom]))
 
 
 def _draw_scroll_object(

@@ -31,7 +31,7 @@ def test_view_relation_count_answer_and_annotation() -> None:
         params={
             "query_id": "left_of_reference_in_view_count",
             "scene_variant": "floor_grid_room",
-            "object_count": 11,
+            "object_count": 8,
             "target_count": 4,
             "post_image_noise_apply_prob": 0.0,
         },
@@ -53,7 +53,7 @@ def test_view_relation_count_answer_and_annotation() -> None:
     assert output.annotation_gt.type == "bbox_set"
     assert reference_object_id not in target_set
     assert int(trace["reference_prompt_name_count"]) == 1
-    assert str(trace["reference_object_name"]) in output.prompt
+    assert "red-boxed reference object" in output.prompt
     assert "red-boxed" in output.prompt
     assert output.trace_payload["render_map"]["reference_highlight_entity_id"] == reference_highlight_entity_id
     assert any(entity["entity_id"] == reference_highlight_entity_id for entity in output.trace_payload["scene_ir"]["entities"])
@@ -88,7 +88,7 @@ def test_view_relation_count_query_variants_generate() -> None:
             params={
                 "query_id": query_id,
                 "scene_variant": "studio_platform",
-                "object_count": 10,
+                "object_count": 8 if query_id in {"left_of_reference_in_view_count", "right_of_reference_in_view_count"} else 10,
                 "target_count": 3,
                 "post_image_noise_apply_prob": 0.0,
             },

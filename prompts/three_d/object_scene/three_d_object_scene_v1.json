@@ -303,32 +303,32 @@
         "How many of the small objects are within the {reference_name}?"
       ],
       "left_of_reference_in_view_count": [
-        "How many other small objects appear to the left of the red-boxed {reference_name} in the image?",
-        "In the image, count the other small objects that appear to the left of the red-boxed {reference_name}. How many are there?",
-        "What is the number of other small objects visible to the left of the red-boxed {reference_name}?",
-        "Looking at the image, how many other small objects appear image-left of the red-boxed {reference_name}?",
-        "How many small objects, excluding the red-boxed {reference_name}, appear to its left in the image?"
+        "How many other small objects appear to the left of the red-boxed reference object in the image?",
+        "In the image, count the other small objects that appear to the left of the red-boxed reference object. How many are there?",
+        "What is the number of other small objects visible to the left of the red-boxed reference object?",
+        "Looking at the image, how many other small objects appear image-left of the red-boxed reference object?",
+        "How many small objects, excluding the red-boxed reference object, appear to its left in the image?"
       ],
       "right_of_reference_in_view_count": [
-        "How many other small objects appear to the right of the red-boxed {reference_name} in the image?",
-        "In the image, count the other small objects that appear to the right of the red-boxed {reference_name}. How many are there?",
-        "What is the number of other small objects visible to the right of the red-boxed {reference_name}?",
-        "Looking at the image, how many other small objects appear image-right of the red-boxed {reference_name}?",
-        "How many small objects, excluding the red-boxed {reference_name}, appear to its right in the image?"
+        "How many other small objects appear to the right of the red-boxed reference object in the image?",
+        "In the image, count the other small objects that appear to the right of the red-boxed reference object. How many are there?",
+        "What is the number of other small objects visible to the right of the red-boxed reference object?",
+        "Looking at the image, how many other small objects appear image-right of the red-boxed reference object?",
+        "How many small objects, excluding the red-boxed reference object, appear to its right in the image?"
       ],
       "closer_to_camera_than_reference_count": [
-        "How many other small objects are closer to the camera than the red-boxed {reference_name}?",
-        "Using the perspective depth cues, count the other small objects that are closer to the camera than the red-boxed {reference_name}. How many are there?",
-        "What is the number of other small objects with a smaller camera distance than the red-boxed {reference_name}?",
-        "How many small objects, excluding the red-boxed {reference_name}, are nearer to the camera than it is?",
-        "From this camera view, how many other small objects are closer than the red-boxed {reference_name}?"
+        "How many other small objects are closer to the camera than the red-boxed reference object?",
+        "Using the perspective depth cues, count the other small objects that are closer to the camera than the red-boxed reference object. How many are there?",
+        "What is the number of other small objects with a smaller camera distance than the red-boxed reference object?",
+        "How many small objects, excluding the red-boxed reference object, are nearer to the camera than it is?",
+        "From this camera view, how many other small objects are closer than the red-boxed reference object?"
       ],
       "farther_from_camera_than_reference_count": [
-        "How many other small objects are farther from the camera than the red-boxed {reference_name}?",
-        "Using the perspective depth cues, count the other small objects that are farther from the camera than the red-boxed {reference_name}. How many are there?",
-        "What is the number of other small objects with a larger camera distance than the red-boxed {reference_name}?",
-        "How many small objects, excluding the red-boxed {reference_name}, are farther away from the camera than it is?",
-        "From this camera view, how many other small objects are farther away than the red-boxed {reference_name}?"
+        "How many other small objects are farther from the camera than the red-boxed reference object?",
+        "Using the perspective depth cues, count the other small objects that are farther from the camera than the red-boxed reference object. How many are there?",
+        "What is the number of other small objects with a larger camera distance than the red-boxed reference object?",
+        "How many small objects, excluding the red-boxed reference object, are farther away from the camera than it is?",
+        "From this camera view, how many other small objects are farther away than the red-boxed reference object?"
       ]
     },
     "output": {

@@ -173,10 +173,10 @@ generation:
         floor_grid_room: 1.0
         tabletop_room: 1.0
         studio_platform: 1.0
-      object_count_min: 10
-      object_count_max: 13
+      object_count_min: 8
+      object_count_max: 8
       target_count_min: 1
-      target_count_max: 6
+      target_count_max: 5
       balanced_scene_variant_sampling: true
     task_three_d__object_scene__camera_depth_relation_count:
       scene_variant_weights:

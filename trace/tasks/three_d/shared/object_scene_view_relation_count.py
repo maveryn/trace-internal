@@ -71,7 +71,10 @@ VIEW_SCENE_SLOTS: Tuple[Tuple[float, float], ...] = tuple(
     for y in (-2.42, -1.34, -0.26, 0.82, 1.90)
     for x in (-2.58, -1.48, -0.38, 0.72, 1.82, 2.70)
 )
+SCREEN_SIDE_AXIS_EXTENT = 3.05
+SCREEN_SIDE_DEPTH_EXTENT = 0.52
 COUNTABLE_DIMENSION_SCALE = 1.08
+SCREEN_SIDE_COUNTABLE_DIMENSION_SCALE = 0.90
 MIN_PROJECTED_OBJECT_AREA_PX = 520.0
 MAX_PAIRWISE_OVERLAP_PX = 3600.0
 MIN_REFERENCE_X_MARGIN_PX = 60.0
@@ -114,16 +117,17 @@ def _make_countable_object(
     object_id: str,
     shape_type: str,
     xy: Tuple[float, float],
+    dimension_scale_factor: float = COUNTABLE_DIMENSION_SCALE,
 ) -> Dict[str, Any]:
     dimensions_xyz, dimension_scale = _sample_shape_dimensions(str(shape_type), object_role="candidate", rng=rng)
-    scaled_dimensions = _scale_dimensions(dimensions_xyz, COUNTABLE_DIMENSION_SCALE)
+    scaled_dimensions = _scale_dimensions(dimensions_xyz, float(dimension_scale_factor))
     spec = _make_object_spec(
         object_id=str(object_id),
         shape_type=str(shape_type),
         object_role="candidate",
         xy=tuple(float(value) for value in xy),
         dimensions_xyz=scaled_dimensions,
-        dimension_scale=float(dimension_scale) * float(COUNTABLE_DIMENSION_SCALE),
+        dimension_scale=float(dimension_scale) * float(dimension_scale_factor),
         label=None,
     )
     spec.update(
@@ -187,6 +191,45 @@ def _place_countable_objects(*, rng, shape_types: Sequence[str]) -> List[Dict[st
                 break
         else:
             raise ValueError("could not place enough view-relation 3D objects")
+    return list(placed)
+
+
+def _place_screen_side_countable_objects(
+    *,
+    rng,
+    camera,
+    shape_types: Sequence[str],
+) -> List[Dict[str, Any]]:
+    """Place objects along the camera's screen-right floor axis for clear left/right counts."""
+
+    object_count = len(shape_types)
+    if object_count < 3:
+        raise ValueError("screen-side relation needs at least three objects")
+    right_xy = (float(camera.right[0]), float(camera.right[1]))
+    forward_xy = (float(camera.forward[0]), float(camera.forward[1]))
+    axis_step = 0.0 if object_count == 1 else (2.0 * float(SCREEN_SIDE_AXIS_EXTENT)) / float(object_count - 1)
+    depth_offsets = [float(value) for value in (-SCREEN_SIDE_DEPTH_EXTENT, -0.18, 0.18, SCREEN_SIDE_DEPTH_EXTENT)]
+    rng.shuffle(depth_offsets)
+
+    placed: List[Dict[str, Any]] = []
+    for index, shape_type in enumerate(shape_types):
+        axis_position = -float(SCREEN_SIDE_AXIS_EXTENT) + float(index) * float(axis_step)
+        depth_position = depth_offsets[int(index) % len(depth_offsets)] + rng.uniform(-0.05, 0.05)
+        axis_jitter = rng.uniform(-0.035, 0.035)
+        candidate_xy = (
+            float((axis_position + axis_jitter) * right_xy[0] + depth_position * forward_xy[0]),
+            float((axis_position + axis_jitter) * right_xy[1] + depth_position * forward_xy[1]),
+        )
+        spec = _make_countable_object(
+            rng=rng,
+            object_id=f"view_object_{int(index):02d}",
+            shape_type=str(shape_type),
+            xy=candidate_xy,
+            dimension_scale_factor=SCREEN_SIDE_COUNTABLE_DIMENSION_SCALE,
+        )
+        if not _can_place(spec, placed, clearance=0.02):
+            raise ValueError("could not place screen-side view-relation objects with enough spacing")
+        placed.append(spec)
     return list(placed)
 
 
@@ -407,7 +450,11 @@ def _build_view_relation_count_scene_dataset(
     for _attempt in range(520):
         camera = _sample_camera(rng, yaw_band_degrees=selected_camera_yaw_band)
         shape_types = _sample_unique_shapes(rng=rng, object_count=int(object_count))
-        object_specs = _place_countable_objects(rng=rng, shape_types=shape_types)
+        object_specs = (
+            _place_screen_side_countable_objects(rng=rng, camera=camera, shape_types=shape_types)
+            if str(query_id) in SCREEN_SIDE_QUERY_IDS
+            else _place_countable_objects(rng=rng, shape_types=shape_types)
+        )
         prompt_name_counts = Counter(str(spec["prompt_name"]) for spec in object_specs)
         if any(int(count) != 1 for count in prompt_name_counts.values()):
             continue
@@ -536,6 +583,7 @@ class _ThreeDSpatialViewRelationCountBase:
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         task_id = str(self.task_id)
         last_error: Exception | None = None
+        axis_seed = int(instance_seed)
         for attempt_index in range(max(1, int(max_attempts))):
             attempt_seed = (
                 int(instance_seed)
@@ -543,19 +591,20 @@ class _ThreeDSpatialViewRelationCountBase:
                 else int(spawn_rng(int(instance_seed), f"{task_id}.attempt_seed.{attempt_index}").randrange(1, 2**62))
             )
             try:
-                return self._generate_once(int(attempt_seed), params=params)
+                return self._generate_once(int(attempt_seed), params=params, axis_seed=axis_seed)
             except Exception as exc:  # pragma: no cover - unlucky sampling fallback.
                 last_error = exc
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts: {last_error}")
 
-    def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
+    def _generate_once(self, instance_seed: int, *, params: Dict[str, Any], axis_seed: int | None = None) -> TaskOutput:
         task_id = str(self.task_id)
+        sampling_seed = int(axis_seed) if axis_seed is not None else int(instance_seed)
         gen_defaults, render_defaults, prompt_defaults_config, _visual_defaults = _resolve_task_defaults(task_id)
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=task_id,
             gen_defaults=gen_defaults,
-            instance_seed=int(instance_seed),
+            instance_seed=int(sampling_seed),
             supported_variants=self.supported_query_ids,
             explicit_key="query_id",
             weights_key="query_id_weights",
@@ -566,7 +615,7 @@ class _ThreeDSpatialViewRelationCountBase:
             params,
             task_id=task_id,
             gen_defaults=gen_defaults,
-            instance_seed=int(instance_seed),
+            instance_seed=int(sampling_seed),
             supported_variants=SUPPORTED_SCENE_VARIANTS,
             explicit_key="scene_variant",
             weights_key="scene_variant_weights",
@@ -577,7 +626,7 @@ class _ThreeDSpatialViewRelationCountBase:
             params,
             task_id=task_id,
             gen_defaults=gen_defaults,
-            instance_seed=int(instance_seed),
+            instance_seed=int(sampling_seed),
             prefix="object_count",
             minimum_default=int(group_default(gen_defaults, "object_count_min", 10)),
             maximum_default=int(group_default(gen_defaults, "object_count_max", 13)),
@@ -588,7 +637,7 @@ class _ThreeDSpatialViewRelationCountBase:
             params,
             task_id=task_id,
             gen_defaults=gen_defaults,
-            instance_seed=int(instance_seed),
+            instance_seed=int(sampling_seed),
             prefix="target_count",
             minimum_default=int(group_default(gen_defaults, "target_count_min", 2)),
             maximum_default=int(group_default(gen_defaults, "target_count_max", 5)),

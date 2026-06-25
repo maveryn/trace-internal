@@ -20,6 +20,7 @@ The verifier computes the answer from finalized scene metadata and projection re
 ## Annotation Contract
 Annotation is an unordered `bbox_set` containing one box around each counted object. The set may be empty when the answer is zero.
 All witnesses have the same counted-object role, so ordering is not meaningful.
+Remove edits are sampled only from properties present in the visible starting scene. Later remove steps must not depend on hidden exact colors or object types assigned by an earlier broad add step.
 
 ## Prompt And Trace
 The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.

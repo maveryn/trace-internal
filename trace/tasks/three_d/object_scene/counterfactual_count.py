@@ -400,26 +400,36 @@ def _candidate_edit_predicates(target_predicate: Mapping[str, Any], *, relation:
     ]
 
 
-def _remove_from_counts(
+def _remove_visible_from_counts(
     *,
     rng,
     current_counts: Counter[Tuple[str, str]],
+    visible_remaining_counts: Counter[Tuple[str, str]],
     predicate: Mapping[str, Any],
     amount: int,
 ) -> Dict[str, int]:
+    """Remove only objects that existed in the visible starting scene."""
+
     remaining = int(amount)
-    exact_keys = [key for key in _all_exact_property_keys() if _predicate_matches_key(predicate, key) and int(current_counts[key]) > 0]
+    exact_keys = [
+        key
+        for key in _all_exact_property_keys()
+        if _predicate_matches_key(predicate, key)
+        and int(visible_remaining_counts[key]) > 0
+        and int(current_counts[key]) > 0
+    ]
     rng.shuffle(exact_keys)
     removed: Dict[str, int] = {}
     for key in exact_keys:
         if remaining <= 0:
             break
-        take = min(int(current_counts[key]), int(remaining))
+        take = min(int(visible_remaining_counts[key]), int(current_counts[key]), int(remaining))
+        visible_remaining_counts[key] -= int(take)
         current_counts[key] -= int(take)
         removed[f"{key[1]}_{key[0]}"] = int(take)
         remaining -= int(take)
     if remaining != 0:
-        raise ValueError("counterfactual step would remove more objects than available")
+        raise ValueError("counterfactual step would remove more visible starting objects than available")
     return dict(removed)
 
 
@@ -446,6 +456,7 @@ def _sample_edit_step(
     *,
     rng,
     current_counts: Counter[Tuple[str, str]],
+    visible_remaining_counts: Counter[Tuple[str, str]],
     target_predicate: Mapping[str, Any],
     relation: str,
 ) -> Dict[str, Any]:
@@ -456,7 +467,11 @@ def _sample_edit_step(
     operations = ("remove", "add") if prefer_remove else ("add", "remove")
     for operation in operations:
         for predicate in candidate_predicates:
-            available = _predicate_count(current_counts, predicate)
+            available = (
+                _predicate_count(visible_remaining_counts, predicate)
+                if str(operation) == "remove"
+                else _predicate_count(current_counts, predicate)
+            )
             if operation == "remove" and int(available) <= 0:
                 continue
             max_amount = min(2, int(available)) if operation == "remove" else 2
@@ -470,9 +485,10 @@ def _sample_edit_step(
             if relation_to_target == "ambiguous":
                 continue
             if operation == "remove":
-                exact_deltas = _remove_from_counts(
+                exact_deltas = _remove_visible_from_counts(
                     rng=rng,
                     current_counts=current_counts,
+                    visible_remaining_counts=visible_remaining_counts,
                     predicate=predicate,
                     amount=int(amount),
                 )
@@ -513,6 +529,7 @@ def _build_counterfactual_steps(
     edit_step_count: int,
 ) -> Tuple[List[Dict[str, Any]], str, int]:
     current_counts: Counter[Tuple[str, str]] = Counter(initial_counts)
+    visible_remaining_counts: Counter[Tuple[str, str]] = Counter(initial_counts)
     initial_target_count = _predicate_count(current_counts, target_predicate)
     target_step_indices = {0}
     if int(edit_step_count) >= 3:
@@ -523,6 +540,7 @@ def _build_counterfactual_steps(
         step = _sample_edit_step(
             rng=rng,
             current_counts=current_counts,
+            visible_remaining_counts=visible_remaining_counts,
             target_predicate=target_predicate,
             relation=str(relation),
         )

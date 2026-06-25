@@ -67,7 +67,7 @@ SUPPORT_PLACEMENTS: Tuple[Tuple[str, str | None, Tuple[float, float]], ...] = tu
 HEIGHT_OPTION_COUNT = 4
 FLOOR_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_HEIGHT_FLOOR_CANDIDATE_SHAPE_TYPES
 ELEVATED_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(
-    shape_type for shape_type in SPATIAL_HEIGHT_ELEVATED_CANDIDATE_SHAPE_TYPES if str(shape_type) != "hat"
+    shape_type for shape_type in SPATIAL_HEIGHT_ELEVATED_CANDIDATE_SHAPE_TYPES if str(shape_type) not in {"candle", "hat"}
 )
 
 

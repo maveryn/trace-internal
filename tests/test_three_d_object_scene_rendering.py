@@ -18,6 +18,7 @@ from trace.tasks.three_d.shared.object_resources import (
     profile_dimensions_xyz,
     scene_profile_ids,
 )
+from trace.tasks.three_d.shared.camera_projection import CameraSpec
 from trace.tasks.three_d.shared.scene_schema import ThreeDPlacementSpec, ThreeDSceneStyleSpec
 from trace.tasks.three_d.object_scene import camera_distance_extremum_label as camera_distance
 
@@ -47,6 +48,27 @@ def test_object_scene_rendering_reexports_primitive_helpers() -> None:
     assert object_scene_rendering._draw_cylinder_object is object_scene_primitives._draw_cylinder_object
     assert object_scene_rendering._draw_torus_object is object_scene_primitives._draw_torus_object
     assert object_scene_rendering._sub_box_spec is object_scene_primitives._sub_box_spec
+
+
+def test_box_visible_faces_use_rotated_local_axes() -> None:
+    camera = CameraSpec(
+        camera_position=(10.0, 2.0, 5.0),
+        target=(0.0, 0.0, 0.0),
+        right=(1.0, 0.0, 0.0),
+        up=(0.0, 0.0, 1.0),
+        forward=(-1.0, 0.0, 0.0),
+        yaw_degrees=0.0,
+        pitch_degrees=25.0,
+        distance=10.0,
+    )
+    spec = {
+        "world_xyz": (0.0, 0.0, 0.25),
+        "base_xyz": (0.0, 0.0, 0.0),
+        "dimensions_xyz": (0.5, 0.5, 0.5),
+        "orientation_deg": 180.0,
+    }
+
+    assert object_scene_primitives._camera_facing_local_signs(spec, camera) == (-1, -1)
 
 
 def test_object_scene_delegates_shape_dispatch_to_shared_renderer() -> None:

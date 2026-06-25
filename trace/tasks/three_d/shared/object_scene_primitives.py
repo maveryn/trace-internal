@@ -115,6 +115,21 @@ def _project_face(face: Sequence[Sequence[float]], camera: _CameraSpec, frame: _
     return [_project_xy(point, camera, frame) for point in face]
 
 
+def _camera_facing_local_signs(spec: Mapping[str, Any], camera: _CameraSpec) -> Tuple[int, int]:
+    """Return the local x/y sides of an oriented box that face the camera."""
+
+    x, y, _z = (float(value) for value in spec["world_xyz"])
+    camera_dx = float(camera.camera_position[0]) - x
+    camera_dy = float(camera.camera_position[1]) - y
+    local_x_axis = _oriented_offset_xy(spec, 1.0, 0.0)
+    local_y_axis = _oriented_offset_xy(spec, 0.0, 1.0)
+    local_x_dot = camera_dx * float(local_x_axis[0]) + camera_dy * float(local_x_axis[1])
+    local_y_dot = camera_dx * float(local_y_axis[0]) + camera_dy * float(local_y_axis[1])
+    sx = 1 if local_x_dot >= 0.0 else -1
+    sy = 1 if local_y_dot >= 0.0 else -1
+    return sx, sy
+
+
 def _project_local_xy_point(
     spec: Mapping[str, Any],
     camera: _CameraSpec,
@@ -169,8 +184,7 @@ def _draw_box_object(
     fill: Tuple[int, int, int],
 ) -> List[float]:
     vertices = _object_vertices(spec)
-    sx = 1 if camera.camera_position[0] >= float(spec["world_xyz"][0]) else -1
-    sy = 1 if camera.camera_position[1] >= float(spec["world_xyz"][1]) else -1
+    sx, sy = _camera_facing_local_signs(spec, camera)
     faces = [
         (
             [vertices[f"{-sx}{-sy}1"], vertices[f"{sx}{-sy}1"], vertices[f"{sx}{sy}1"], vertices[f"{-sx}{sy}1"]],

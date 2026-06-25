@@ -27,8 +27,8 @@ def test_games_ultimate_tictactoe_defaults_and_prompt_bundle() -> None:
         "neon_board",
         "tournament_board",
     }
-    assert int(rendering["canvas_width"]) == 820
-    assert int(rendering["canvas_height"]) == 820
+    assert int(rendering["canvas_width"]) == 760
+    assert int(rendering["canvas_height"]) == 760
     assert bool(rendering["dynamic_canvas_size_enabled"])
     assert float(rendering["unit_size_scale_max"]) / float(rendering["unit_size_scale_min"]) >= 2.0
     assert list(generation["won_board_count_support"]) == [1, 2, 3, 4, 5]

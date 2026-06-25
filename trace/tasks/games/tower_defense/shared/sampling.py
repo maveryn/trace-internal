@@ -161,15 +161,23 @@ def resolve_tower_defense_axes(
         key=str(target_answer_support_key),
         fallback=tuple(int(value) for value in target_answer_fallback),
     )
+    tower_support = resolve_integer_support(
+        params,
+        gen_defaults=GEN_DEFAULTS,
+        key=str(tower_count_support_key),
+        fallback=tuple(int(value) for value in tower_count_fallback),
+    )
+    tower_support_min = min(int(value) for value in tower_support)
+    tower_support_max = max(int(value) for value in tower_support)
     if bool(path_count_must_cover_target):
         path_segment_count = min(16, max(int(path_segment_count), int(target_answer)))
     if bool(tower_count_must_cover_target):
-        tower_count = max(5, int(tower_count), int(target_answer))
+        tower_count = max(int(tower_count), int(target_answer))
     elif int(target_answer) > int(tower_count):
         tower_count = int(target_answer)
     if not bool(tower_count_must_cover_target) and int(target_answer) > 0:
-        tower_count = max(int(tower_count), min(8, int(target_answer) + 2))
-    tower_count = max(5, int(tower_count))
+        tower_count = max(int(tower_count), min(int(tower_support_max), int(target_answer) + 2))
+    tower_count = min(int(tower_support_max), max(int(tower_support_min), int(tower_count)))
     return TowerDefenseAxes(
         scene_variant=str(scene_variant),
         style_variant=str(style_variant),

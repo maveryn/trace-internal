@@ -35,9 +35,9 @@ def test_games_tower_defense_defaults_expose_axes_and_prompt_bundle() -> None:
         "paper_map",
     }
     assert list(generation["target_answer_support"]) == [0, 1, 2, 3, 4, 5]
-    assert list(generation["covered_path_target_answer_support"]) == [3, 4, 5, 6, 7, 8, 9, 10]
-    assert list(generation["tower_count_support"]) == [5, 6, 7, 8]
-    assert list(generation["covered_path_tower_count_support"]) == [5, 6, 7, 8, 9, 10]
+    assert list(generation["covered_path_target_answer_support"]) == [3, 4, 5, 6]
+    assert list(generation["tower_count_support"]) == [3, 4, 5, 6]
+    assert list(generation["covered_path_tower_count_support"]) == [3, 4, 5, 6]
     assert int(rendering["map_width_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_tower_defense_v1"
     assert str(prompt["scene_key"]) == "tower_defense_map"
@@ -105,7 +105,7 @@ def test_games_tower_defense_zero_answer_uses_empty_bbox_set() -> None:
 def test_games_tower_defense_covered_path_answer_matches_distance_trace() -> None:
     out = create_task(COVERED_PATH_TASK_ID).generate(
         92043,
-        params={"target_answer": 7},
+        params={"target_answer": 6},
         max_attempts=500,
     )
     execution = out.trace_payload["execution_trace"]
@@ -118,9 +118,9 @@ def test_games_tower_defense_covered_path_answer_matches_distance_trace() -> Non
     assert out.query_id == "single"
     assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "covered_path_segment_count"
     assert out.answer_gt.type == "integer"
-    assert int(out.answer_gt.value) == 7
+    assert int(out.answer_gt.value) == 6
     assert covered_ids == list(execution["annotation_entity_ids"])
-    assert len(out.annotation_gt.value) == 7
+    assert len(out.annotation_gt.value) == 6
     assert out.annotation_gt.type == "point_set"
     assert out.trace_payload["projected_annotation"]["type"] == "point_set"
     assert execution["marked_enemy"] is None

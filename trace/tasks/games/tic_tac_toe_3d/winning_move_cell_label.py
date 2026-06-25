@@ -58,6 +58,7 @@ def _prepare_winning_move_objective(
         construct_attempt=construct_attempt,
         trace_params={
             "target_player": target_player,
+            "winning_move_branch": str(selected_branch),
             "winning_move_branch_probabilities": dict(branch_probabilities),
             "available_option_labels": list(OPTION_LABELS),
         },

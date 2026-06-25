@@ -57,6 +57,7 @@ def _prepare_layer_piece_count_objective(
         construct_attempt=construct_attempt,
         trace_params={
             "target_player": target_player,
+            "layer_count_branch": str(selected_branch),
             "layer_count_branch_probabilities": dict(branch_probabilities),
         },
     )

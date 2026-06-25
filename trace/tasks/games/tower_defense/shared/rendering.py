@@ -325,29 +325,43 @@ def render_tower_defense_scene(
         extra_colors=(
             theme.map_fill_rgb,
             theme.map_outline_rgb,
+            theme.terrain_accent_rgb,
             theme.path_fill_rgb,
             theme.path_outline_rgb,
+            theme.path_node_rgb,
             theme.tower_fill_rgb,
+            theme.tower_inner_rgb,
+            theme.tower_outline_rgb,
             theme.enemy_fill_rgb,
         ),
     )
     range_palette = resolve_contrasting_palette(
         theme.range_palette_rgb,
         anchor_colors=anchor_colors,
-        min_anchor_distance=38.0,
-        min_pairwise_distance=18.0,
+        min_anchor_distance=55.0,
+        min_pairwise_distance=24.0,
         distance_space="lab",
     )
     overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
-    overlay_draw = ImageDraw.Draw(overlay)
+    range_layer = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    range_draw = ImageDraw.Draw(range_layer)
     range_bboxes: Dict[str, BBox] = {}
     for index, tower in enumerate(towers):
         center = _local_to_global(tower.center_px, map_bbox=map_bbox)
         radius = float(tower.range_radius_px)
         color = tuple(int(value) for value in range_palette[int(index) % len(range_palette)])
         range_bbox = _circle_bbox(center, radius)
-        overlay_draw.ellipse(range_bbox, fill=(*color, 34), outline=(*color, 128), width=max(2, int(params.range_outline_width_px)))
+        range_draw.ellipse(
+            range_bbox,
+            fill=(*color, 30),
+            outline=(*color, 220),
+            width=max(4, int(params.range_outline_width_px)),
+        )
         range_bboxes[str(tower.tower_id)] = range_bbox
+    map_mask = Image.new("L", image.size, 0)
+    mask_draw = ImageDraw.Draw(map_mask)
+    mask_draw.rounded_rectangle(map_bbox, radius=20, fill=255)
+    overlay = Image.composite(range_layer, overlay, map_mask)
     image = Image.alpha_composite(image.convert("RGBA"), overlay).convert("RGB")
     draw = ImageDraw.Draw(image)
 
@@ -366,11 +380,18 @@ def render_tower_defense_scene(
         )
     for index, point in enumerate(global_path_points):
         node_bbox = _circle_bbox(point, float(params.path_node_radius_px))
+        halo_bbox = _circle_bbox(point, float(params.path_node_radius_px) + 3.0)
+        draw.ellipse(
+            halo_bbox,
+            fill=theme.map_fill_rgb,
+            outline=theme.path_outline_rgb,
+            width=max(2, int(round(params.path_node_radius_px * 0.18))),
+        )
         draw.ellipse(
             node_bbox,
             fill=theme.path_node_rgb,
             outline=theme.path_outline_rgb,
-            width=max(1, int(round(params.path_node_radius_px * 0.16))),
+            width=max(2, int(round(params.path_node_radius_px * 0.18))),
         )
         entity_id = path_segment_entity_id(index)
         entity_bboxes[entity_id] = node_bbox
@@ -461,6 +482,7 @@ def render_tower_defense_scene(
                 round(float(min_color_distance_to_anchors(color, anchor_colors, distance_space="lab")), 3)
                 for color in range_palette
             ],
+            "range_clip_policy": "clipped_to_map_rounded_rect",
         },
     }
     return RenderedTowerDefenseScene(

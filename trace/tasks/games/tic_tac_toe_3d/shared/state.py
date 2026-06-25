@@ -28,7 +28,7 @@ class TicTacToe3DDefaults:
     """Stable fallback defaults for visible 3D Tic-Tac-Toe scenes."""
 
     layer_piece_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
-    option_count_support: Tuple[int, ...] = (4, 6)
+    option_count_support: Tuple[int, ...] = (4,)
     canvas_width: int = 760
     canvas_height: int = 900
     canvas_min_width_px: int = 580

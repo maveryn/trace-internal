@@ -56,7 +56,10 @@ def _draw_centered_text(
     x0, y0, x1, y1 = [float(value) for value in bbox]
     draw_text_traced(
         draw,
-        (float(x0 + ((x1 - x0) - text_w) / 2.0), float(y0 + ((y1 - y0) - text_h) / 2.0)),
+        (
+            float(x0 + ((x1 - x0) - text_w) / 2.0 - float(text_bbox[0])),
+            float(y0 + ((y1 - y0) - text_h) / 2.0 - float(text_bbox[1])),
+        ),
         str(text),
         font=font,
         fill=tuple(fill),
@@ -90,7 +93,7 @@ def resolve_ultimate_board_visual_style(style_variant: str, panel_style) -> tupl
             border_rgb=(46, 61, 92),
             highlight_rgb=(232, 162, 42),
             x_rgb=(42, 92, 205),
-            o_rgb=(203, 58, 68),
+            o_rgb=(42, 92, 205),
             option_fill_rgb=(255, 232, 102),
             option_outline_rgb=(48, 63, 95),
             option_text_rgb=(32, 36, 45),
@@ -102,7 +105,7 @@ def resolve_ultimate_board_visual_style(style_variant: str, panel_style) -> tupl
             border_rgb=(86, 103, 112),
             highlight_rgb=(78, 158, 151),
             x_rgb=(44, 118, 172),
-            o_rgb=(190, 91, 101),
+            o_rgb=(44, 118, 172),
             option_fill_rgb=(239, 220, 143),
             option_outline_rgb=(65, 101, 109),
             option_text_rgb=(36, 45, 48),
@@ -114,7 +117,7 @@ def resolve_ultimate_board_visual_style(style_variant: str, panel_style) -> tupl
             border_rgb=(95, 68, 48),
             highlight_rgb=(185, 108, 54),
             x_rgb=(45, 82, 130),
-            o_rgb=(157, 64, 62),
+            o_rgb=(45, 82, 130),
             option_fill_rgb=(252, 218, 128),
             option_outline_rgb=(113, 79, 45),
             option_text_rgb=(52, 40, 31),
@@ -126,7 +129,7 @@ def resolve_ultimate_board_visual_style(style_variant: str, panel_style) -> tupl
             border_rgb=(73, 232, 237),
             highlight_rgb=(252, 211, 64),
             x_rgb=(87, 229, 244),
-            o_rgb=(255, 99, 182),
+            o_rgb=(87, 229, 244),
             option_fill_rgb=(255, 224, 76),
             option_outline_rgb=(255, 255, 255),
             option_text_rgb=(28, 31, 39),
@@ -138,7 +141,7 @@ def resolve_ultimate_board_visual_style(style_variant: str, panel_style) -> tupl
             border_rgb=(40, 91, 64),
             highlight_rgb=(216, 158, 59),
             x_rgb=(32, 93, 164),
-            o_rgb=(181, 58, 55),
+            o_rgb=(32, 93, 164),
             option_fill_rgb=(247, 230, 134),
             option_outline_rgb=(36, 92, 67),
             option_text_rgb=(26, 44, 35),
@@ -250,7 +253,7 @@ def render_ultimate_tictactoe_scene(
         font_family=str(font_family),
     )
     option_font = load_font(
-        scale_games_px(int_render_default(params, "option_font_size_px", DEFAULTS.option_font_size_px), unit_scale, min_px=13),
+        scale_games_px(int_render_default(params, "option_font_size_px", DEFAULTS.option_font_size_px), unit_scale, min_px=16),
         bold=True,
         font_family=str(font_family),
     )
@@ -347,7 +350,7 @@ def render_ultimate_tictactoe_scene(
         for option_index, cell_index in enumerate(sample.option_cells):
             label = OPTION_LABELS[int(option_index)]
             bbox = board_cell_bboxes[int(sample.highlighted_board_index)][int(cell_index)]
-            radius = max(9.0, local_cell * 0.23)
+            radius = max(14.0, local_cell * 0.3)
             label_bbox = (bbox[2] - 2 * radius - 3, bbox[1] + 3, bbox[2] - 3, bbox[1] + 2 * radius + 3)
             draw.ellipse(label_bbox, fill=tuple(board_style.option_fill_rgb), outline=mark_rgb, width=2)
             _draw_centered_text(draw, label_bbox, label, font=option_font, fill=tuple(board_style.option_text_rgb), stroke_width=0)
@@ -388,4 +391,3 @@ def render_ultimate_tictactoe_scene(
         },
         background_meta=dict(background_meta),
     )
-

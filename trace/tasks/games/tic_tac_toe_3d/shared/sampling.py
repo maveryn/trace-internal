@@ -58,6 +58,7 @@ def _resolve_integer_axis(
     fallback_support: Sequence[int],
     namespace: str,
     balanced_flag_key: str,
+    use_instance_seed_cycle: bool = False,
 ) -> tuple[int, dict[str, float]]:
     """Resolve one integer axis with a scene-local namespace."""
 
@@ -70,6 +71,7 @@ def _resolve_integer_axis(
         fallback_support=tuple(int(value) for value in fallback_support),
         namespace=str(namespace),
         balanced_flag_key=str(balanced_flag_key),
+        use_instance_seed_cycle=bool(use_instance_seed_cycle),
         namespace_support_permutation=True,
     )
     return int(value), dict(probabilities)
@@ -118,6 +120,7 @@ def resolve_tic_tac_toe_3d_axes(
         fallback_support=tuple(range(int(option_count))),
         namespace=f"{namespace_root}.answer_option_index.{int(option_count)}",
         balanced_flag_key="balanced_answer_option_sampling",
+        use_instance_seed_cycle=True,
     )
     target_layer, target_layer_probs = _resolve_named_axis(
         instance_seed=int(instance_seed),
@@ -178,6 +181,7 @@ def axis_support_metadata(params: Mapping[str, Any], axes: TicTacToe3DAxes) -> d
         "option_count": int(axes.option_count),
         "option_count_support": [int(value) for value in option_support],
         "option_count_probabilities": dict(axes.option_count_probabilities),
+        "answer_option": int(axes.answer_option_index),
         "answer_option_index": int(axes.answer_option_index),
         "answer_option_index_support": [int(value) for value in range(int(axes.option_count))],
         "answer_option_probabilities": dict(axes.answer_option_probabilities),

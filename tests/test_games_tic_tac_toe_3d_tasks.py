@@ -41,7 +41,7 @@ def test_games_tic_tac_toe_3d_defaults_and_prompt_bundle() -> None:
     assert int(rendering["canvas_height"]) == 900
     assert float(rendering["unit_size_scale_max"]) / float(rendering["unit_size_scale_min"]) >= 2.0
     assert list(generation["layer_piece_count_support"]) == [0, 1, 2, 3, 4, 5, 6]
-    assert list(generation["option_count_support"]) == [4, 5, 6]
+    assert list(generation["option_count_support"]) == [4]
     assert str(prompt["bundle_id"]) == "games_tic_tac_toe_3d_v1"
 
 
@@ -76,7 +76,7 @@ def test_games_tic_tac_toe_3d_has_all_49_lines() -> None:
 def test_games_tic_tac_toe_3d_winning_move_has_unique_option() -> None:
     out = create_task(WINNING_MOVE_TASK_ID).generate(
         83031,
-        params={"query_id": "x_winning_move_label", "option_count": 6, "answer_option_index": 4},
+        params={"query_id": "x_winning_move_label", "option_count": 4, "answer_option_index": 2},
         max_attempts=500,
     )
     trace = out.trace_payload["execution_trace"]
@@ -88,9 +88,9 @@ def test_games_tic_tac_toe_3d_winning_move_has_unique_option() -> None:
 
     assert out.query_id == "x_winning_move_label"
     assert out.answer_gt.type == "string"
-    assert out.answer_gt.value == "E"
-    assert correct_labels == ["E"]
-    assert tuple(trace["answer_cell"]) == option_cells["E"]
+    assert out.answer_gt.value == "C"
+    assert correct_labels == ["C"]
+    assert tuple(trace["answer_cell"]) == option_cells["C"]
     assert len(trace["support_cells"]) == 2
     assert len(out.annotation_gt.value) == 3
     assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"

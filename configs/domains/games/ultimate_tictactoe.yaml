@@ -40,24 +40,24 @@ generation:
     - 6
 rendering:
   shared:
-    canvas_width: 820
-    canvas_height: 820
-    panel_margin_px: 42
+    canvas_width: 760
+    canvas_height: 760
+    panel_margin_px: 36
     board_inner_margin_px: 48
     local_cell_size_px: 58
     local_gap_px: 3
     macro_gap_px: 10
     symbol_font_size_px: 33
-    option_font_size_px: 18
+    option_font_size_px: 22
     label_font_size_px: 18
     small_board_border_width_px: 8
     highlight_width_px: 6
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
     dynamic_canvas_size_enabled: true
-    canvas_min_width_px: 560
-    canvas_min_height_px: 560
-    canvas_side_padding_px: 72
+    canvas_min_width_px: 500
+    canvas_min_height_px: 500
+    canvas_side_padding_px: 48
 prompt:
   shared:
     bundle_id: games_ultimate_tictactoe_v1

@@ -51,15 +51,15 @@ class UltimateDefaults:
     neither_won_board_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
     macro_threat_board_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     option_count_support: Tuple[int, ...] = (5,)
-    canvas_width: int = 820
-    canvas_height: int = 820
-    panel_margin_px: int = 42
+    canvas_width: int = 760
+    canvas_height: int = 760
+    panel_margin_px: int = 36
     board_inner_margin_px: int = 48
     local_cell_size_px: int = 58
     local_gap_px: int = 3
     macro_gap_px: int = 10
     symbol_font_size_px: int = 33
-    option_font_size_px: int = 18
+    option_font_size_px: int = 22
     label_font_size_px: int = 18
     small_board_border_width_px: int = 8
     highlight_width_px: int = 6
@@ -115,4 +115,3 @@ class UltimateBoardVisualStyle:
     option_fill_rgb: Tuple[int, int, int]
     option_outline_rgb: Tuple[int, int, int]
     option_text_rgb: Tuple[int, int, int]
-

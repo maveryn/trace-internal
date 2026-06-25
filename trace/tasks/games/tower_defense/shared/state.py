@@ -29,11 +29,11 @@ SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
 class TowerDefenseDefaults:
     """Stable fallback defaults for tower-defense scenes."""
 
-    tower_count_support: Tuple[int, ...] = (5, 6, 7, 8)
-    covered_path_tower_count_support: Tuple[int, ...] = (5, 6, 7, 8, 9, 10)
+    tower_count_support: Tuple[int, ...] = (3, 4, 5, 6)
+    covered_path_tower_count_support: Tuple[int, ...] = (3, 4, 5, 6)
     path_segment_count_support: Tuple[int, ...] = (10, 11, 12, 13, 14, 15, 16)
     target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
-    covered_path_target_answer_support: Tuple[int, ...] = (3, 4, 5, 6, 7, 8, 9, 10)
+    covered_path_target_answer_support: Tuple[int, ...] = (3, 4, 5, 6)
     canvas_width: int = 980
     canvas_height: int = 760
     map_width_px: int = 820

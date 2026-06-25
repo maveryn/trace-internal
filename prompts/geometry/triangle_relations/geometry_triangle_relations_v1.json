@@ -1,0 +1,261 @@
+{
+  "bundle_id": "geometry_triangle_relations_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "triangle_relations_scene": [
+        "The diagram shows a labeled triangle-relation geometry figure.",
+        "The figure shows a labeled triangle-relation geometry diagram.",
+        "The image shows a triangle-relation diagram with visible labels.",
+        "This geometry diagram shows a labeled triangle relation.",
+        "The labeled diagram shows a triangle-relation construction."
+      ]
+    },
+    "task": {
+      "angle_bisector_segment_value_angle_bisector_base_length_query": [
+        "What is the length of BC?",
+        "Find BC.",
+        "Determine the length of BC.",
+        "What is the missing base length BC?",
+        "Find the segment length BC."
+      ],
+      "angle_bisector_segment_value_angle_bisector_split_length_query": [
+        "What is the length of DC?",
+        "Find DC.",
+        "Determine the length of DC.",
+        "What is the missing split length DC?",
+        "Find the segment length DC."
+      ],
+      "angle_bisector_variable_value_query": [
+        "Use the displayed angle-bisector relation to solve for x.",
+        "Use the visible labels and angle bisector to find x.",
+        "Solve for x from the marked angle-bisector diagram.",
+        "What is the value of x?",
+        "Determine x from the angle-bisector relation."
+      ],
+      "angle_of_elevation_value_query": [
+        "What is the angle θ?",
+        "Find angle θ.",
+        "Determine the measure of θ.",
+        "What is the angle of elevation θ?",
+        "Find the displayed angle θ."
+      ],
+      "centroid_median_segment_value_centroid_vertex_segment_length_query": [
+        "What is the length of AG?",
+        "Find AG.",
+        "Determine the length of AG.",
+        "What is the missing centroid segment AG?",
+        "Find the segment length AG."
+      ],
+      "centroid_median_segment_value_centroid_whole_median_length_query": [
+        "What is the length of AD?",
+        "Find AD.",
+        "Determine the length of AD.",
+        "What is the whole median length AD?",
+        "Find the segment length AD."
+      ],
+      "parallel_section_base_length_query": [
+        "What is the length of BC?",
+        "Find BC.",
+        "Determine the length of BC.",
+        "What is the missing base length BC?",
+        "Find the segment length BC."
+      ],
+      "parallel_section_cross_length_query": [
+        "What is the length of DE?",
+        "Find DE.",
+        "Determine the length of DE.",
+        "What is the missing parallel segment length DE?",
+        "Find the segment length DE."
+      ],
+      "pythagorean_length_value_chained_rectangle_diagonal_length_query": [
+        "What is the length of DB?",
+        "Find DB.",
+        "Determine the length of DB.",
+        "What is the missing diagonal length DB?",
+        "Find the segment length DB."
+      ],
+      "pythagorean_length_value_rectangle_triangle_shared_height_length_query": [
+        "What is the length of CD?",
+        "Find CD.",
+        "Determine the length of CD.",
+        "What is the missing slanted side length CD?",
+        "Find the segment length CD."
+      ],
+      "right_triangle_inverse_trig_angle_angle_from_adjacent_hypotenuse_query": [
+        "What is the angle θ?",
+        "Find angle θ.",
+        "Determine the measure of θ.",
+        "What is the displayed angle θ?",
+        "Find θ."
+      ],
+      "right_triangle_inverse_trig_angle_angle_from_opposite_adjacent_query": [
+        "What is the angle θ?",
+        "Find angle θ.",
+        "Determine the measure of θ.",
+        "What is the displayed angle θ?",
+        "Find θ."
+      ],
+      "right_triangle_inverse_trig_angle_angle_from_opposite_hypotenuse_query": [
+        "What is the angle θ?",
+        "Find angle θ.",
+        "Determine the measure of θ.",
+        "What is the displayed angle θ?",
+        "Find θ."
+      ],
+      "right_triangle_missing_side_value_ground_from_angle_and_height_query": [
+        "What is the ground length?",
+        "Find the ground length.",
+        "Determine the missing ground length.",
+        "What is the length of the ground side?",
+        "Find the missing ground side."
+      ],
+      "right_triangle_missing_side_value_ground_from_angle_and_hypotenuse_query": [
+        "What is the ground length?",
+        "Find the ground length.",
+        "Determine the missing ground length.",
+        "What is the length of the ground side?",
+        "Find the missing ground side."
+      ],
+      "right_triangle_missing_side_value_height_from_angle_and_ground_query": [
+        "What is the height?",
+        "Find the height.",
+        "Determine the missing height.",
+        "What is the length of the height side?",
+        "Find the missing height side."
+      ],
+      "right_triangle_missing_side_value_height_from_angle_and_hypotenuse_query": [
+        "What is the height?",
+        "Find the height.",
+        "Determine the missing height.",
+        "What is the length of the height side?",
+        "Find the missing height side."
+      ],
+      "right_triangle_missing_side_value_hypotenuse_from_angle_and_height_query": [
+        "What is the slope length?",
+        "Find the slope length.",
+        "Determine the missing slope length.",
+        "What is the length of the slope side?",
+        "Find the missing slope side."
+      ],
+      "similar_triangles_side_length_query": [
+        "What is the length of EC?",
+        "Find EC.",
+        "Determine the length of EC.",
+        "What is the missing side length EC?",
+        "Find the segment length EC."
+      ]
+    },
+    "query": {
+      "single": [
+        "Use the visible labels in the diagram.",
+        "Use the measurements shown on the diagram.",
+        "Use the given labels and marks in the figure.",
+        "Use the visible geometric measurements.",
+        "Use the labels shown in the figure."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_instruction}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_instruction}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_instruction}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_instruction}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_instruction}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "global": {
+      "json_output_contract": "Return a JSON object with exactly two keys: \"annotation\" and \"answer\".",
+      "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\".",
+      "answer_hint": "set \"answer\" to the requested value as a number"
+    },
+    "task:angle_bisector_segment_value_angle_bisector_base_length_query": {
+      "answer_hint": "set \"answer\" to the requested segment length as an integer"
+    },
+    "task:angle_bisector_segment_value_angle_bisector_split_length_query": {
+      "answer_hint": "set \"answer\" to the requested segment length as an integer"
+    },
+    "task:angle_bisector_variable_value_query": {
+      "answer_hint": "set \"answer\" to x as an integer"
+    },
+    "task:centroid_median_segment_value_centroid_vertex_segment_length_query": {
+      "answer_hint": "set \"answer\" to the requested segment length as an integer"
+    },
+    "task:centroid_median_segment_value_centroid_whole_median_length_query": {
+      "answer_hint": "set \"answer\" to the requested segment length as an integer"
+    },
+    "task:parallel_section_base_length_query": {
+      "answer_hint": "set \"answer\" to the requested segment length as an integer"
+    },
+    "task:parallel_section_cross_length_query": {
+      "answer_hint": "set \"answer\" to the requested segment length as an integer"
+    },
+    "task:pythagorean_length_value_chained_rectangle_diagonal_length_query": {
+      "answer_hint": "set \"answer\" to the requested segment length as an integer"
+    },
+    "task:pythagorean_length_value_rectangle_triangle_shared_height_length_query": {
+      "answer_hint": "set \"answer\" to the requested segment length as an integer"
+    },
+    "task:right_triangle_inverse_trig_angle_angle_from_adjacent_hypotenuse_query": {
+      "answer_hint": "set \"answer\" to the angle measure as a number rounded to one decimal place"
+    },
+    "task:right_triangle_inverse_trig_angle_angle_from_opposite_adjacent_query": {
+      "answer_hint": "set \"answer\" to the angle measure as a number rounded to one decimal place"
+    },
+    "task:right_triangle_inverse_trig_angle_angle_from_opposite_hypotenuse_query": {
+      "answer_hint": "set \"answer\" to the angle measure as a number rounded to one decimal place"
+    },
+    "task:right_triangle_missing_side_value_ground_from_angle_and_height_query": {
+      "answer_hint": "set \"answer\" to the requested length as a number rounded to one decimal place"
+    },
+    "task:right_triangle_missing_side_value_ground_from_angle_and_hypotenuse_query": {
+      "answer_hint": "set \"answer\" to the requested length as a number rounded to one decimal place"
+    },
+    "task:right_triangle_missing_side_value_height_from_angle_and_ground_query": {
+      "answer_hint": "set \"answer\" to the requested length as a number rounded to one decimal place"
+    },
+    "task:right_triangle_missing_side_value_height_from_angle_and_hypotenuse_query": {
+      "answer_hint": "set \"answer\" to the requested length as a number rounded to one decimal place"
+    },
+    "task:right_triangle_missing_side_value_hypotenuse_from_angle_and_height_query": {
+      "answer_hint": "set \"answer\" to the requested length as a number rounded to one decimal place"
+    },
+    "task:similar_triangles_side_length_query": {
+      "answer_hint": "set \"answer\" to the requested segment length as an integer"
+    }
+  },
+  "dynamic_slots": {
+    "annotation_instruction": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    }
+  },
+  "required_slots_by_key": {
+    "output:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "output:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_instruction",
+      "answer_hint",
+      "json_example"
+    ]
+  }
+}

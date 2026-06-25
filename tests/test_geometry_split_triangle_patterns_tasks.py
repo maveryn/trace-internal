@@ -10,8 +10,7 @@ TASK_QUERIES = {
         "two_step_adjacent_triangle_angle_sum",
     ),
     "task_geometry__triangle_relations__angle_bisector_variable_value": (
-        "split_segment_ratio_variable",
-        "adjacent_side_ratio_variable",
+        "single",
     ),
     "task_geometry__split_triangle_trig_chain__side_length_value": (
         "shared_altitude_two_angles_side",
@@ -70,9 +69,9 @@ def test_split_triangle_pattern_answers_match_trace_values() -> None:
         for query_id in query_ids:
             output = _generate(task_id, query_id, seed=20260617)
             trace = output.trace_payload["execution_trace"]
-            values = trace["values"]
+            values = trace.get("values", trace)
             assert output.answer_gt.value == trace["answer"]
-            assert output.answer_gt.value == values["answer"]
+            assert output.answer_gt.value == values.get("answer", trace["answer"])
             if task_id.endswith("__target_angle_value"):
                 assert output.answer_gt.type == "integer"
                 assert 0 < int(output.answer_gt.value) < 180

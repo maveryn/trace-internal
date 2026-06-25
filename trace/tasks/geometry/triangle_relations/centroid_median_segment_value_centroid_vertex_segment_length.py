@@ -1,74 +1,45 @@
-"""Legacy analytical measurement geometry value tasks.
-
-Remaining public tasks in this module still use legacy measurement scene-package
-routing while their scenes are migrated to scene packages. Shared rendering,
-case construction, and generation logic live in geometry shared modules.
-"""
+"""Infer the vertex-to-centroid segment on a median."""
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Mapping
 
-from ...base import TaskOutput
-from ...registry import register_task
-from trace.core.scene_config import get_scene_defaults
-from ..shared.composite_measurement_cases import (
-    _ANGLE_BISECTOR_SEGMENT_CASES,
-    _CENTROID_MEDIAN_SEGMENT_CASES,
-    _COMPOSITE_AREA_CASES,
-    _COMPOSITE_PERIMETER_CASES,
-    _PARALLEL_SECTION_SCALE_CASES,
-    _PYTHAGOREAN_CASES,
-    _SIMILARITY_CASES,
-    _cases_for_query,
-)
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.tasks.registry import register_task
 
-SCENE_ID = "triangle_relations"
-SUPPORTED_QUERY_IDS = ('centroid_vertex_segment_length', )
-from ..shared.composite_measurement_task import _CompositeMeasurementBaseTask
+from ._lifecycle import TriangleRelationsObjectivePlan, bind_triangle_relations_plan, run_triangle_relations_public_entry
+from .shared.construction import case_trace_values, centroid_vertex_cases
+from .shared.sampling import choose_case_by_answer
+from .shared.state import DOMAIN, SCENE_ID
+
+TASK_ID = "task_geometry__triangle_relations__centroid_median_segment_value_centroid_vertex_segment_length"
+TASK_PROMPT_KEY = "centroid_median_segment_value_centroid_vertex_segment_length_query"
+SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
+_CASE_POOL = centroid_vertex_cases()
 
 
+def _prepare_centroid_vertex(*, instance_seed: int, params: Mapping[str, Any], selected_branch: str, branch_probabilities: Mapping[str, float]) -> TriangleRelationsObjectivePlan:
+    """Bind one centroid vertex-segment case."""
 
-
-
-
-
-
-
-
-
-
-
-
+    if str(selected_branch) != SINGLE_QUERY_ID:
+        raise ValueError(f"unsupported query branch for {TASK_ID}: {selected_branch}")
+    case, answer_probs = choose_case_by_answer(cases=_CASE_POOL, answer_fn=lambda item: item.answer, params=params, instance_seed=int(instance_seed), namespace=TASK_ID)
+    return bind_triangle_relations_plan(prompt_key=TASK_PROMPT_KEY, case=case, answer_support_probabilities=answer_probs, branch_probabilities=branch_probabilities, trace_values=case_trace_values(case))
 
 
 @register_task
-class GeometryCentroidMedianVertexSegmentLengthTask(_CompositeMeasurementBaseTask):
-    """Infer the vertex-to-centroid segment length on a median."""
+class GeometryCentroidMedianVertexSegmentLengthTask:
+    """Infer the vertex-to-centroid segment on a median."""
 
-    task_id = "task_geometry__triangle_relations__centroid_median_segment_value_centroid_vertex_segment_length"
-    public_scene_id = "triangle_relations"
-    scene_id = public_scene_id
-    defaults_map = get_scene_defaults("geometry", SCENE_ID)
-    defaults_are_scene_aligned = True
-    prompts_are_scene_aligned = True
+    task_id = TASK_ID
+    domain = DOMAIN
+    default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
-    scene_kind = "geometry_triangle_special_segment"
-    reasoning_kind = "centroid_median_segment"
-    cases = _cases_for_query(_CENTROID_MEDIAN_SEGMENT_CASES, "centroid_vertex_segment_length")
+    default_query_id = SINGLE_QUERY_ID
+    prepare_objective = staticmethod(_prepare_centroid_vertex)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        generation_seed = int(instance_seed)
-        task_params = dict(params)
-        attempt_budget = int(max_attempts)
-        output = super().generate(generation_seed, params=task_params, max_attempts=attempt_budget)
-        return output
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        return run_triangle_relations_public_entry(self, int(instance_seed), params=params, max_attempts=int(max_attempts))
 
 
-
-
-
-
-
-
-
+__all__ = ["GeometryCentroidMedianVertexSegmentLengthTask", "SCENE_ID", "SUPPORTED_QUERY_IDS", "TASK_ID"]

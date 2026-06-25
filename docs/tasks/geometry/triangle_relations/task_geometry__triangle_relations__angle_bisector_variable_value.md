@@ -3,32 +3,20 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `triangle_relations`
-5. Query id: `split_segment_ratio_variable` or `adjacent_side_ratio_variable`
+5. Query id: `single`
 6. Answer schema: `integer`
-7. Annotation schema: `keyed_point_map`
+7. Annotation schema: `point_map`
+8. Scalar annotation checked: true
 
 ## Program Contract
 - `solve_formula(angle_bisector_theorem_variable, unknown_role=variable_value, formula_schema=angle_bisector_side_split_ratio); scene=triangle_relations; scope=angle_bisector_variable_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from `geometry_split_triangle_patterns_v0`.
+- Prompt text is loaded from the scene prompt bundle configured for `triangle_relations`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses keyed pixel points for the angle-bisector vertex, split point, and role-bound side or split-segment endpoints:
-
-- `angle_vertex`
-- `split_point`
-- `left_side_start`
-- `left_side_end`
-- `right_side_start`
-- `right_side_end`
-- `left_split_start`
-- `left_split_end`
-- `right_split_start`
-- `right_split_end`
-
-Expression labels, tick marks, vertex labels, and solved variable values remain visible annotations plus private verifier metadata.
+Prompt-facing annotation uses keyed pixel points for the labeled construction points `A`, `B`, `C`, and `D`. Expression labels, tick marks, and solved variable values remain visible diagram content plus private verifier metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

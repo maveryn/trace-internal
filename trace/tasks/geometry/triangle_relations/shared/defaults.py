@@ -1,0 +1,25 @@
+"""Config defaults for triangle-relations scene-package tasks."""
+
+from __future__ import annotations
+
+from typing import Any, Mapping
+
+from trace.core.scene_config import get_scene_defaults
+from trace.tasks.geometry.shared.noise_defaults import load_geometry_noise_defaults
+from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
+
+from .state import SCENE_ID
+
+POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id=SCENE_ID)
+
+
+def load_triangle_relations_defaults(_owner: str = "") -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+    """Load scene defaults without task-owned routing or query overrides."""
+
+    return split_scene_generation_rendering_prompt_defaults(
+        get_scene_defaults("geometry", SCENE_ID),
+        task_id="",
+    )
+
+
+__all__ = ["POST_IMAGE_NOISE_DEFAULTS", "load_triangle_relations_defaults"]

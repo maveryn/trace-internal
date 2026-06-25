@@ -641,7 +641,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
         **expected_candidate_scenes,
         "charts": frozenset((*expected_candidate_scenes["charts"], "size_encoding", "small_multiple", "style_legend", "sunburst", "surface_3d", "table", "treemap", "uncertainty_band", "violin", "waterfall")),
         "games": frozenset((*expected_candidate_scenes["games"], "slot_machine", "tetris", "tic_tac_toe_3d", "tower_defense", "tower_draughts_board", "ultimate_tictactoe")),
-        "geometry": frozenset((*expected_candidate_scenes["geometry"], "parallel_segment_proportion", "polygon_angle_chase", "pythagorean_dissection", "pythagorean_tree", "rectangular_solid", "regular_polygon_decomposition", "right_triangle_altitude_theorem", "sector", "shape_gallery", "similar_figure_measure_transfer", "solid_cross_section", "solid_formula", "solid_revolution", "special_quadrilateral", "split_triangle_angle_chase", "split_triangle_trig_chain", "survey_traverse", "tangent_packing", "trapezoid_extension", "triangle_congruence_correspondence")),
+        "geometry": frozenset((*expected_candidate_scenes["geometry"], "parallel_segment_proportion", "polygon_angle_chase", "pythagorean_dissection", "pythagorean_tree", "rectangular_solid", "regular_polygon_decomposition", "right_triangle_altitude_theorem", "sector", "shape_gallery", "similar_figure_measure_transfer", "solid_cross_section", "solid_formula", "solid_revolution", "special_quadrilateral", "split_triangle_angle_chase", "split_triangle_trig_chain", "survey_traverse", "tangent_packing", "trapezoid_extension", "triangle_congruence_correspondence", "triangle_relations")),
         "icons": frozenset((*expected_candidate_scenes["icons"], "named_strip", "overlap_grid", "wallpaper_panels")),
         "illustrations": frozenset((*expected_candidate_scenes["illustrations"], "rpg_tactical_map")),
         "graph": frozenset((*expected_candidate_scenes["graph"], "phylogeny_tree", "pipe_network")),
@@ -687,6 +687,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     assert scene_package_migration.is_scene_package_task('task_geometry__survey_traverse__bearing_angle_value', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_geometry__tangent_packing__circle_in_square_gap_area', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_geometry__triangle_congruence_correspondence__corresponding_side_value', domain='geometry')
+    assert scene_package_migration.is_scene_package_task('task_geometry__triangle_relations__similar_triangles_side_length', domain='geometry')
     assert scene_package_migration.is_scene_package_task('task_graph__adjacency__traversal_kth_label', domain='graph')
     assert scene_package_migration.is_scene_package_task('task_graph__automaton__state_after_input_label', domain='graph')
     assert scene_package_migration.is_scene_package_task('task_graph__flow_network__max_flow_value', domain='graph')

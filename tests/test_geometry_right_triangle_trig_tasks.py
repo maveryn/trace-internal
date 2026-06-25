@@ -31,16 +31,23 @@ TASK_CLASSES = (
 )
 
 QUERY_IDS_BY_TASK = {
-    GeometryRightTriangleHeightFromAngleAndGroundTask: ("height_from_angle_and_ground",),
-    GeometryRightTriangleGroundFromAngleAndHeightTask: ("ground_from_angle_and_height",),
-    GeometryRightTriangleHypotenuseFromAngleAndHeightTask: ("hypotenuse_from_angle_and_height",),
-    GeometryRightTriangleHeightFromAngleAndHypotenuseTask: ("height_from_angle_and_hypotenuse",),
-    GeometryRightTriangleGroundFromAngleAndHypotenuseTask: ("ground_from_angle_and_hypotenuse",),
-    GeometryRightTriangleAngleOppositeAdjacentTask: ("angle_from_opposite_adjacent",),
-    GeometryRightTriangleAngleOppositeHypotenuseTask: ("angle_from_opposite_hypotenuse",),
-    GeometryRightTriangleAngleAdjacentHypotenuseTask: ("angle_from_adjacent_hypotenuse",),
-    GeometryAngleOfElevationValueTask: ("angle_of_elevation_from_height_and_distance",),
+    GeometryRightTriangleHeightFromAngleAndGroundTask: ("single",),
+    GeometryRightTriangleGroundFromAngleAndHeightTask: ("single",),
+    GeometryRightTriangleHypotenuseFromAngleAndHeightTask: ("single",),
+    GeometryRightTriangleHeightFromAngleAndHypotenuseTask: ("single",),
+    GeometryRightTriangleGroundFromAngleAndHypotenuseTask: ("single",),
+    GeometryRightTriangleAngleOppositeAdjacentTask: ("single",),
+    GeometryRightTriangleAngleOppositeHypotenuseTask: ("single",),
+    GeometryRightTriangleAngleAdjacentHypotenuseTask: ("single",),
+    GeometryAngleOfElevationValueTask: ("single",),
 }
+
+ANGLE_TASK_CLASSES = (
+    GeometryRightTriangleAngleOppositeAdjacentTask,
+    GeometryRightTriangleAngleOppositeHypotenuseTask,
+    GeometryRightTriangleAngleAdjacentHypotenuseTask,
+    GeometryAngleOfElevationValueTask,
+)
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
@@ -49,10 +56,14 @@ def test_right_triangle_trig_tasks_emit_public_contract(task_cls) -> None:
     out = task.generate(57001, params={}, max_attempts=20)
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id
+    assert out.query_id == "single"
     assert out.answer_gt.type == "number"
-    assert out.annotation_gt.type == "bbox_set"
-    assert 2 <= len(out.annotation_gt.value) <= 3
+    if task_cls in ANGLE_TASK_CLASSES:
+        assert out.annotation_gt.type == "point"
+        assert len(out.annotation_gt.value) == 2
+    else:
+        assert out.annotation_gt.type == "segment"
+        assert len(out.annotation_gt.value) == 2
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
@@ -60,7 +71,7 @@ def test_right_triangle_trig_tasks_emit_public_contract(task_cls) -> None:
     assert trace["query_spec"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["type"] == out.annotation_gt.type
     assert trace["execution_trace"]["answer_rounding"] == "nearest_tenth"
 
 
@@ -104,11 +115,14 @@ def test_right_triangle_trig_annotation_stays_inside_canvas(task_cls) -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.annotation_gt.value:
-            assert 0.0 <= x0 < x1 <= float(width)
-            assert 0.0 <= y0 < y1 <= float(height)
-            assert (x1 - x0) > 8.0
-            assert (y1 - y0) > 8.0
+        if out.annotation_gt.type == "point":
+            x, y = out.annotation_gt.value
+            assert 0.0 <= x <= float(width)
+            assert 0.0 <= y <= float(height)
+        else:
+            for x, y in out.annotation_gt.value:
+                assert 0.0 <= x <= float(width)
+                assert 0.0 <= y <= float(height)
 
 
 def test_right_triangle_trig_tasks_reject_unknown_query_id() -> None:

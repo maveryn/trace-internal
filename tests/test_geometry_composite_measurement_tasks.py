@@ -65,11 +65,15 @@ def test_composite_measurement_tasks_emit_public_contract(task_cls) -> None:
     assert out.query_id
     assert out.answer_gt.type == "integer"
     if scene_id == "angle_relations":
-        assert out.annotation_gt.type == "keyed_point_map"
+        assert out.annotation_gt.type == "point_map"
         assert 2 <= len(out.annotation_gt.value) <= 4
     elif scene_id == "composite_shape":
-        assert out.annotation_gt.type == "keyed_point_map"
+        assert out.annotation_gt.type == "point_map"
         assert 3 <= len(out.annotation_gt.value) <= 8
+    elif scene_id == "triangle_relations":
+        assert out.query_id == "single"
+        assert out.annotation_gt.type == "segment"
+        assert len(out.annotation_gt.value) == 2
     else:
         assert out.annotation_gt.type == "bbox_set"
         assert 2 <= len(out.annotation_gt.value) <= 6
@@ -102,13 +106,13 @@ def test_composite_measurement_tasks_support_explicit_query_selection() -> None:
     task = GeometryPythagoreanLengthRectangleTriangleSharedHeightTask()
     out = task.generate(
         44021,
-        params={"query_id": "single", "case_index": 0},
+        params={"query_id": "single", "target_answer": 37},
         max_attempts=20,
     )
 
     assert out.query_id == "single"
-    assert out.trace_payload["query_spec"]["params"]["internal_query_id"] == "rectangle_triangle_shared_height_length"
-    assert out.answer_gt.value == 15
+    assert out.trace_payload["query_spec"]["params"]["internal_case_kind"] == "rectangle_triangle_shared_height"
+    assert out.answer_gt.value == 37
     assert out.trace_payload["query_spec"]["params"]["query_id_probabilities"] == {
         "single": 1.0
     }
@@ -116,17 +120,17 @@ def test_composite_measurement_tasks_support_explicit_query_selection() -> None:
 
 def test_parallel_section_scale_task_supports_every_query() -> None:
     tasks = (
-        (GeometryTriangleRelationsSimilarTrianglesSideLengthTask(), "similar_triangles_side_length"),
-        (GeometryTriangleRelationsParallelSectionBaseLengthTask(), "parallel_section_base_length"),
-        (GeometryTriangleRelationsParallelSectionCrossLengthTask(), "parallel_section_cross_length"),
+        (GeometryTriangleRelationsSimilarTrianglesSideLengthTask(), "nested_similarity_side"),
+        (GeometryTriangleRelationsParallelSectionBaseLengthTask(), "parallel_base_scale"),
+        (GeometryTriangleRelationsParallelSectionCrossLengthTask(), "parallel_cross_section"),
     )
-    for task, internal_query_id in tasks:
-        out = task.generate(44025, params={"query_id": "single", "case_index": 0}, max_attempts=20)
+    for task, internal_case_kind in tasks:
+        out = task.generate(44025, params={"query_id": "single", "target_answer": 10}, max_attempts=20)
         assert out.scene_id == "triangle_relations"
         assert out.query_id == "single"
-        assert out.trace_payload["query_spec"]["params"]["internal_query_id"] == internal_query_id
+        assert out.trace_payload["query_spec"]["params"]["internal_case_kind"] == internal_case_kind
         assert out.answer_gt.type == "integer"
-        assert out.annotation_gt.type == "bbox_set"
+        assert out.annotation_gt.type == "segment"
 
 
 def test_algebraic_triangle_cases_keep_annotation_inside_canvas() -> None:
@@ -139,7 +143,7 @@ def test_algebraic_triangle_cases_keep_annotation_inside_canvas() -> None:
                 max_attempts=20,
             )
             width, height = out.image.size
-            assert out.annotation_gt.type == "keyed_point_map"
+            assert out.annotation_gt.type == "point_map"
             for x, y in out.annotation_gt.value.values():
                 assert 0.0 <= x <= float(width)
                 assert 0.0 <= y <= float(height)
@@ -157,8 +161,8 @@ def test_angle_relations_public_annotation_uses_angle_primitives_not_label_boxes
     task = task_cls()
     for query_id in task.supported_query_ids:
         out = task.generate(44061, params={"query_id": query_id, "case_index": 0}, max_attempts=20)
-        assert out.annotation_gt.type == "keyed_point_map"
-        assert out.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
+        assert out.annotation_gt.type == "point_map"
+        assert out.trace_payload["projected_annotation"]["type"] == "point_map"
         assert set(out.annotation_gt.value) == set(out.trace_payload["execution_trace"]["annotation_roles"])
         roles = out.trace_payload["execution_trace"]["annotation_roles"]
         assert all("label" not in str(role) for role in roles)
@@ -229,11 +233,11 @@ def test_rectilinear_composite_public_annotation_uses_labeled_points(task_cls, e
     task = task_cls()
     for query_id in tuple(task.supported_query_ids):
         out = task.generate(44121, params={"query_id": query_id, "case_index": 0}, max_attempts=20)
-        assert out.annotation_gt.type == "keyed_point_map"
+        assert out.annotation_gt.type == "point_map"
         assert set(out.annotation_gt.value) == expected_keys_by_query[str(query_id)]
-        assert out.trace_payload["projected_annotation"]["type"] == "keyed_point_map"
-        assert out.trace_payload["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
-        assert out.trace_payload["projected_annotation"]["pixel_keyed_point_map"] == out.annotation_gt.value
+        assert out.trace_payload["projected_annotation"]["type"] == "point_map"
+        assert out.trace_payload["projected_annotation"]["point_map"] == out.annotation_gt.value
+        assert out.trace_payload["projected_annotation"]["pixel_point_map"] == out.annotation_gt.value
         assert set(out.annotation_gt.value) == set(out.trace_payload["execution_trace"]["annotation_roles"])
         assert all("label" not in str(role) for role in out.trace_payload["execution_trace"]["annotation_roles"])
         assert "measurement_label_bboxes" in out.trace_payload["render_map"]

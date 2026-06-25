@@ -1,65 +1,45 @@
-"""Compute an angle from adjacent side and hypotenuse in a right-triangle diagram."""
+"""Compute a right-triangle angle from adjacent side and hypotenuse."""
 
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from typing import Any, Mapping
 
-from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
 
-from .shared.right_triangle_trig_runtime import SCENE_ID, RightTriangleTrigRuntime
-
+from ._lifecycle import TriangleRelationsObjectivePlan, bind_triangle_relations_plan, run_triangle_relations_public_entry
+from .shared.construction import angle_from_adjacent_hypotenuse_cases, case_trace_values
+from .shared.sampling import choose_case_by_answer
+from .shared.state import DOMAIN, SCENE_ID
 
 TASK_ID = "task_geometry__triangle_relations__right_triangle_inverse_trig_angle_angle_from_adjacent_hypotenuse"
-QUERY_ID = "angle_from_adjacent_hypotenuse"
-REASONING_KIND = "right_triangle_angle"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
+TASK_PROMPT_KEY = "right_triangle_inverse_trig_angle_angle_from_adjacent_hypotenuse_query"
+SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
+_CASE_POOL = angle_from_adjacent_hypotenuse_cases()
+
+
+def _prepare_angle_ah(*, instance_seed: int, params: Mapping[str, Any], selected_branch: str, branch_probabilities: Mapping[str, float]) -> TriangleRelationsObjectivePlan:
+    """Bind one cosine inverse-angle case."""
+
+    if str(selected_branch) != SINGLE_QUERY_ID:
+        raise ValueError(f"unsupported query branch for {TASK_ID}: {selected_branch}")
+    case, answer_probs = choose_case_by_answer(cases=_CASE_POOL, answer_fn=lambda item: item.answer, params=params, instance_seed=int(instance_seed), namespace=TASK_ID)
+    return bind_triangle_relations_plan(prompt_key=TASK_PROMPT_KEY, case=case, answer_support_probabilities=answer_probs, branch_probabilities=branch_probabilities, trace_values=case_trace_values(case))
 
 
 @register_task
 class GeometryRightTriangleAngleAdjacentHypotenuseTask:
-    """Compute an angle from adjacent side and hypotenuse in a right-triangle diagram."""
+    """Compute a right-triangle angle from adjacent side and hypotenuse."""
 
     task_id = TASK_ID
-    domain = "geometry"
-    scene_id = SCENE_ID
-    public_scene_id = SCENE_ID
+    domain = DOMAIN
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
+    default_query_id = SINGLE_QUERY_ID
+    prepare_objective = staticmethod(_prepare_angle_ah)
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        query_id, query_probabilities, task_params = select_task_query_id(
-            instance_seed=int(instance_seed),
-            params=params,
-            supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=QUERY_ID,
-            task_id=TASK_ID,
-            namespace=f"{TASK_ID}.query",
-        )
-        artifact = RightTriangleTrigRuntime().generate_artifact(
-            int(instance_seed),
-            params=task_params,
-            max_attempts=int(max_attempts),
-            public_task_id=TASK_ID,
-            query_id=str(query_id),
-            query_id_probabilities=query_probabilities,
-            reasoning_kind=REASONING_KIND,
-        )
-        final_output = TaskOutput(
-            prompt=str(artifact.prompt),
-            answer_gt=TypedValue(type=str(artifact.answer_type), value=artifact.answer_value),
-            annotation_gt=TypedValue(type=str(artifact.annotation_type), value=artifact.annotation_value),
-            image=artifact.image,
-            image_id="img0",
-            trace_payload=artifact.trace_payload,
-            task_versions=artifact.task_versions,
-            scene_id=SCENE_ID,
-            query_id=str(artifact.query_id),
-            prompt_variants=dict(artifact.prompt_variants),
-        )
-        return final_output
+    def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
+        return run_triangle_relations_public_entry(self, int(instance_seed), params=params, max_attempts=int(max_attempts))
 
 
-__all__ = ["GeometryRightTriangleAngleAdjacentHypotenuseTask", "SUPPORTED_QUERY_IDS", "TASK_ID"]
+__all__ = ["GeometryRightTriangleAngleAdjacentHypotenuseTask", "SCENE_ID", "SUPPORTED_QUERY_IDS", "TASK_ID"]

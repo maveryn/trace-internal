@@ -13,7 +13,6 @@ from trace.tasks.registry import create_task
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
-TOWER_COVERAGE_TASK_ID = "task_games__tower_defense__tower_coverage_count"
 COVERED_PATH_TASK_ID = "task_games__tower_defense__covered_path_segment_count"
 
 
@@ -34,9 +33,9 @@ def test_games_tower_defense_defaults_expose_axes_and_prompt_bundle() -> None:
         "night_ops",
         "paper_map",
     }
-    assert list(generation["target_answer_support"]) == [0, 1, 2, 3, 4, 5]
-    assert list(generation["covered_path_target_answer_support"]) == [3, 4, 5, 6]
-    assert list(generation["tower_count_support"]) == [3, 4, 5, 6]
+    assert "target_answer_support" not in generation
+    assert list(generation["covered_path_target_answer_support"]) == [1, 2, 3, 4, 5, 6]
+    assert "tower_count_support" not in generation
     assert list(generation["covered_path_tower_count_support"]) == [3, 4, 5, 6]
     assert int(rendering["map_width_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_tower_defense_v1"
@@ -47,59 +46,11 @@ def test_games_tower_defense_defaults_expose_axes_and_prompt_bundle() -> None:
 def test_games_tower_defense_prompt_bundle_has_coverage_queries() -> None:
     bundle = json.loads(Path("prompts/games/tower_defense/games_tower_defense_v1.json").read_text(encoding="utf-8"))
     assert set(bundle["templates"]["query"].keys()) == {
-        "marked_enemy_covered_by_tower_count",
         "covered_path_segment_count",
     }
-    assert bundle["required_slots_by_key"]["query:marked_enemy_covered_by_tower_count"] == [
-        "coverage_rule_text",
-    ]
     assert bundle["required_slots_by_key"]["query:covered_path_segment_count"] == [
         "coverage_rule_text",
     ]
-    assert "bounding boxes" in bundle["code_prompt_defaults"]["annotation_hint_marked_enemy_covered_by_tower_count"]
-
-
-def test_games_tower_defense_target_answer_matches_distance_trace() -> None:
-    out = create_task(TOWER_COVERAGE_TASK_ID).generate(
-        92041,
-        params={"target_answer": 3},
-        max_attempts=300,
-    )
-    execution = out.trace_payload["execution_trace"]
-    enemy_center = execution["marked_enemy"]["center_px_local"]
-    covering_ids = []
-    for tower in execution["towers"]:
-        if _distance(tower["center_px_local"], enemy_center) <= float(tower["range_radius_px"]) + 1e-6:
-            covering_ids.append(str(tower["tower_id"]))
-
-    assert out.scene_id == "tower_defense"
-    assert out.query_id == "single"
-    assert out.trace_payload["query_spec"]["params"]["prompt_query_key"] == "marked_enemy_covered_by_tower_count"
-    assert out.answer_gt.type == "integer"
-    assert int(out.answer_gt.value) == 3
-    assert covering_ids == list(execution["annotation_entity_ids"])
-    assert len(out.annotation_gt.value) == 3
-    assert out.annotation_gt.type == "bbox_set"
-    assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
-    expected_bboxes = [out.trace_payload["render_map"]["entity_bboxes_px"][entity_id] for entity_id in covering_ids]
-    assert out.annotation_gt.value == expected_bboxes
-    assert out.trace_payload["render_map"]["marked_enemy_id"] == "marked_enemy"
-
-
-def test_games_tower_defense_zero_answer_uses_empty_bbox_set() -> None:
-    out = create_task(TOWER_COVERAGE_TASK_ID).generate(
-        92042,
-        params={"target_answer": 0},
-        max_attempts=300,
-    )
-    execution = out.trace_payload["execution_trace"]
-
-    assert out.answer_gt.type == "integer"
-    assert int(out.answer_gt.value) == 0
-    assert execution["annotation_entity_ids"] == []
-    assert out.annotation_gt.type == "bbox_set"
-    assert out.annotation_gt.value == []
-    assert out.trace_payload["projected_annotation"]["bbox_set"] == []
 
 
 def test_games_tower_defense_covered_path_answer_matches_distance_trace() -> None:
@@ -127,13 +78,20 @@ def test_games_tower_defense_covered_path_answer_matches_distance_trace() -> Non
     assert out.trace_payload["render_map"]["marked_enemy_id"] is None
 
 
+def test_games_tower_defense_covered_path_supports_single_answer() -> None:
+    out = create_task(COVERED_PATH_TASK_ID).generate(
+        92044,
+        params={"target_answer": 1},
+        max_attempts=500,
+    )
+
+    assert out.answer_gt.type == "integer"
+    assert int(out.answer_gt.value) == 1
+    assert out.annotation_gt.type == "point_set"
+    assert len(out.annotation_gt.value) == 1
+
+
 def test_games_tower_defense_taxonomy_mapping() -> None:
-    taxonomy = resolve_task_taxonomy(TOWER_COVERAGE_TASK_ID)
-
-    assert taxonomy.domain == "games"
-    assert taxonomy.scene_id == "tower_defense"
-    assert taxonomy.source_domain == "games"
-
     path_taxonomy = resolve_task_taxonomy(COVERED_PATH_TASK_ID)
     assert path_taxonomy.domain == "games"
     assert path_taxonomy.scene_id == "tower_defense"

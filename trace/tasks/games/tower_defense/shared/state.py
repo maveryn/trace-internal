@@ -29,11 +29,9 @@ SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
 class TowerDefenseDefaults:
     """Stable fallback defaults for tower-defense scenes."""
 
-    tower_count_support: Tuple[int, ...] = (3, 4, 5, 6)
     covered_path_tower_count_support: Tuple[int, ...] = (3, 4, 5, 6)
     path_segment_count_support: Tuple[int, ...] = (10, 11, 12, 13, 14, 15, 16)
-    target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
-    covered_path_target_answer_support: Tuple[int, ...] = (3, 4, 5, 6)
+    covered_path_target_answer_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
     canvas_width: int = 980
     canvas_height: int = 760
     map_width_px: int = 820
@@ -44,8 +42,6 @@ class TowerDefenseDefaults:
     tower_radius_px: int = 19
     enemy_radius_px: int = 13
     range_outline_width_px: int = 3
-    range_radius_min_px: int = 118
-    range_radius_max_px: int = 190
     covered_path_range_radius_min_px: int = 88
     covered_path_range_radius_max_px: int = 168
     tower_path_clearance_px: int = 42

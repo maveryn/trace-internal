@@ -14,11 +14,6 @@ generation:
     balanced_tower_count_sampling: true
     balanced_path_segment_count_sampling: true
     balanced_target_answer_sampling: true
-    tower_count_support:
-    - 3
-    - 4
-    - 5
-    - 6
     covered_path_tower_count_support:
     - 3
     - 4
@@ -32,20 +27,13 @@ generation:
     - 14
     - 15
     - 16
-    target_answer_support:
-    - 0
+    covered_path_target_answer_support:
     - 1
     - 2
     - 3
     - 4
     - 5
-    covered_path_target_answer_support:
-    - 3
-    - 4
-    - 5
     - 6
-    range_radius_min_px: 118
-    range_radius_max_px: 190
     covered_path_range_radius_min_px: 88
     covered_path_range_radius_max_px: 168
     tower_path_clearance_px: 42

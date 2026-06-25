@@ -201,18 +201,6 @@ def _draw_conveyor_belts(
         belt_bboxes[str(belt_key)] = list(bbox)
         entities.append(dict(entity))
     conveyor_bbox = _bbox_union(*belt_bboxes.values())
-    if str(dataset.get("scene_variant", "")) == "inspection_carousel":
-        x0, y0, x1, y1 = conveyor_bbox
-        scanner_bbox = [round(x1 - 126.0, 3), round(y0 + 28.0, 3), round(x1 - 42.0, 3), round(y0 + 126.0, 3)]
-        draw.rounded_rectangle(tuple(scanner_bbox), radius=10, outline=(66, 115, 165), width=4)
-        entities.append(
-            {
-                "entity_id": "inspection_gate",
-                "entity_type": "three_d_conveyor_inspection_gate",
-                "bbox_px": list(scanner_bbox),
-                "attrs": {"scene_variant": str(dataset.get("scene_variant", ""))},
-            }
-        )
     return image, list(conveyor_bbox), belt_bboxes, entities
 
 

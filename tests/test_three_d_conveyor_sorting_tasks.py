@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from trace.tasks import create_task
 from trace.tasks.three_d.conveyor_sorting.scoped_belt_object_count import (
     COLOR_QUERY_ID,
@@ -57,3 +59,10 @@ def test_conveyor_sorting_scoped_belt_count_query_ids() -> None:
             max_attempts=120,
         )
         _assert_count_output(output, expected_query_id=query_id)
+
+
+def test_conveyor_sorting_renderer_has_no_unqueried_gate_decoration() -> None:
+    source = Path("trace/tasks/three_d/conveyor_sorting/shared/rendering.py").read_text()
+
+    assert "inspection_gate" not in source
+    assert "three_d_conveyor_inspection_gate" not in source

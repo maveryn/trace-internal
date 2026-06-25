@@ -10,12 +10,33 @@ from .state import Point, TowerDefenseSample, TowerDefenseTower
 
 MODE_MARKED_ENEMY = "enemy_tower_coverage"
 MODE_PATH_NODES = "path_node_coverage"
+MODE_BEST_POSITION = "candidate_tower_position"
+OPTION_LABELS = ("A", "B", "C", "D")
 
 
 def tower_entity_id(index: int) -> str:
     """Return stable entity id for one tower."""
 
     return f"tower_{int(index):02d}"
+
+
+def candidate_tower_entity_id(label: str) -> str:
+    """Return stable entity id for one labeled candidate tower position."""
+
+    normalized = str(label).strip().upper()
+    if normalized not in OPTION_LABELS:
+        raise ValueError(f"unsupported tower-defense candidate label: {label!r}")
+    return f"candidate_{normalized}"
+
+
+def candidate_tower_label_from_id(tower_id: str) -> str | None:
+    """Return the A-D label encoded in one candidate tower id, if any."""
+
+    text = str(tower_id)
+    if not text.startswith("candidate_"):
+        return None
+    label = text.removeprefix("candidate_").strip().upper()
+    return label if label in OPTION_LABELS else None
 
 
 def path_segment_entity_id(index: int) -> str:
@@ -62,7 +83,7 @@ def covered_path_segment_ids(towers: Iterable[TowerDefenseTower], path_points: S
 def validate_tower_defense_sample(sample: TowerDefenseSample) -> None:
     """Validate one generated tower-defense sample contract."""
 
-    if str(sample.mode) not in {MODE_MARKED_ENEMY, MODE_PATH_NODES}:
+    if str(sample.mode) not in {MODE_MARKED_ENEMY, MODE_PATH_NODES, MODE_BEST_POSITION}:
         raise ValueError(f"unsupported tower-defense mode: {sample.mode}")
     if int(sample.map_width_px) <= 0 or int(sample.map_height_px) <= 0:
         raise ValueError("tower-defense map dimensions must be positive")
@@ -88,13 +109,34 @@ def validate_tower_defense_sample(sample: TowerDefenseSample) -> None:
         if local_distance(sample.enemy.center_px, expected_enemy_point) > 1e-6:
             raise ValueError("marked enemy center must lie on its path point")
         expected_annotation = covered_tower_ids(sample.towers, sample.enemy.center_px)
-    else:
+        expected_answer = len(expected_annotation)
+    elif str(sample.mode) == MODE_PATH_NODES:
         expected_annotation = covered_path_segment_ids(sample.towers, sample.path_points_px)
+        expected_answer = len(expected_annotation)
+    else:
+        candidate_counts: dict[str, int] = {}
+        candidate_ids: dict[str, str] = {}
+        for tower in sample.towers:
+            label = candidate_tower_label_from_id(str(tower.tower_id))
+            if label is None:
+                continue
+            candidate_ids[str(label)] = str(tower.tower_id)
+            candidate_counts[str(label)] = sum(1 for point in sample.path_points_px if tower_covers_point(tower, point))
+        if set(candidate_counts.keys()) != set(OPTION_LABELS):
+            raise ValueError("best-position scene requires exactly candidates A-D")
+        max_count = max(int(value) for value in candidate_counts.values())
+        best_labels = [label for label, value in candidate_counts.items() if int(value) == int(max_count)]
+        if len(best_labels) != 1:
+            raise ValueError("best-position scene must have one unique best candidate")
+        expected_answer = str(best_labels[0])
+        expected_annotation = (candidate_ids[str(expected_answer)],)
+        if int(sample.target_answer) != int(max_count):
+            raise ValueError("best-position target_answer must equal the winning coverage count")
     if tuple(str(value) for value in sample.annotation_entity_ids) != tuple(expected_annotation):
         raise ValueError("tower-defense annotation ids must match the task contract")
-    if int(sample.answer) != len(expected_annotation):
-        raise ValueError("tower-defense answer must equal annotation count")
-    if int(sample.answer) != int(sample.target_answer):
+    if sample.answer != expected_answer:
+        raise ValueError("tower-defense answer must match the task contract")
+    if str(sample.mode) != MODE_BEST_POSITION and int(sample.answer) != int(sample.target_answer):
         raise ValueError("tower-defense answer must equal target_answer")
 
 
@@ -113,8 +155,12 @@ def visible_tower_trace(towers: Sequence[TowerDefenseTower]) -> tuple[dict, ...]
 
 
 __all__ = [
+    "MODE_BEST_POSITION",
     "MODE_MARKED_ENEMY",
     "MODE_PATH_NODES",
+    "OPTION_LABELS",
+    "candidate_tower_entity_id",
+    "candidate_tower_label_from_id",
     "covered_path_segment_ids",
     "covered_tower_ids",
     "enemy_entity_id",

@@ -28,6 +28,13 @@
         "{coverage_rule_text} What is the number of covered path enemies?",
         "{coverage_rule_text} Report how many path enemies lie inside at least one tower range ring.",
         "{coverage_rule_text} Count only the path enemies covered by at least one tower."
+      ],
+      "best_tower_position_label": [
+        "{coverage_rule_text} Which candidate tower position covers the most path enemies?",
+        "{coverage_rule_text} Choose the candidate tower position that covers the most path enemies.",
+        "{coverage_rule_text} Which labeled candidate tower covers the largest number of path enemies?",
+        "{coverage_rule_text} Select the candidate position whose range ring contains the most path enemies.",
+        "{coverage_rule_text} Which candidate tower would cover the most enemies on the path?"
       ]
     },
     "output": {
@@ -52,6 +59,9 @@
       "object_description"
     ],
     "query:covered_path_segment_count": [
+      "coverage_rule_text"
+    ],
+    "query:best_tower_position_label": [
       "coverage_rule_text"
     ],
     "answer_or_annotation:answer_only": [
@@ -97,6 +107,11 @@
     "object_description_switchback_path_covered_path_segment_count": "a tower-defense map with a switchback path, circular tower range rings, and small enemy markers on the path",
     "coverage_rule_text_covered_path_segment_count": "A path enemy is covered when its center is inside at least one visible tower range ring.",
     "annotation_hint_covered_path_segment_count": "set \"annotation\" to [x, y] pixel points at the centers of every covered path enemy",
-    "answer_hint_covered_path_segment_count": "set \"answer\" to the number of path enemies covered by at least one tower range ring"
+    "answer_hint_covered_path_segment_count": "set \"answer\" to the number of path enemies covered by at least one tower range ring",
+    "object_description_winding_path_best_tower_position_label": "a tower-defense map with a winding path, small enemy markers on the path, and four labeled candidate tower positions A through D",
+    "object_description_switchback_path_best_tower_position_label": "a tower-defense map with a switchback path, small enemy markers on the path, and four labeled candidate tower positions A through D",
+    "coverage_rule_text_best_tower_position_label": "A candidate covers a path enemy when that enemy's center is inside the candidate's visible range ring.",
+    "annotation_hint_best_tower_position_label": "set \"annotation\" to the [x, y] pixel point at the center of the chosen candidate tower",
+    "answer_hint_best_tower_position_label": "set \"answer\" to the chosen candidate label, one of A, B, C, or D"
   }
 }

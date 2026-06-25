@@ -25,18 +25,20 @@ _PROMPT_WIRING_KEYS = (
 )
 
 
-def format_json_examples(*, annotation_type: str, answer: int = 2) -> tuple[str, str]:
+def format_json_examples(*, annotation_type: str, answer: int | str = 2) -> tuple[str, str]:
     """Return schema-valid format examples for one annotation family."""
 
     if str(annotation_type) == "bbox_set":
         annotation: Any = [[220, 180, 260, 220], [510, 300, 550, 340]]
     elif str(annotation_type) == "point_set":
         annotation = [[246, 314], [514, 226]]
+    elif str(annotation_type) == "point":
+        annotation = [420, 260]
     else:
         raise ValueError(f"unsupported tower-defense annotation type: {annotation_type}")
     return (
-        json.dumps({"annotation": annotation, "answer": int(answer)}, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
-        json.dumps({"answer": int(answer)}, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps({"annotation": annotation, "answer": answer}, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
+        json.dumps({"answer": answer}, ensure_ascii=True, allow_nan=False, separators=(",", ":")),
     )
 
 
@@ -46,6 +48,7 @@ def build_tower_defense_prompt_artifacts(
     scene_variant: str,
     prompt_query_key: str,
     annotation_type: str,
+    example_answer: int | str,
     instance_seed: int,
 ) -> tuple[Mapping[str, Any], PromptTraceArtifacts]:
     """Render external tower-defense prompt assets for one task objective."""
@@ -65,7 +68,10 @@ def build_tower_defense_prompt_artifacts(
         ),
         context=f"tower-defense prompt defaults for {prompt_query_key}",
     )
-    json_example, json_example_answer_only = format_json_examples(annotation_type=str(annotation_type))
+    json_example, json_example_answer_only = format_json_examples(
+        annotation_type=str(annotation_type),
+        answer=example_answer,
+    )
     prompt_selection = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,

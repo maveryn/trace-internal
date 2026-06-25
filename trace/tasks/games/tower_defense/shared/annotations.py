@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_set_annotation_artifacts, point_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import (
+    AnnotationArtifacts,
+    bbox_set_annotation_artifacts,
+    point_annotation_artifacts,
+    point_set_annotation_artifacts,
+)
 
 from .state import RenderedTowerDefenseScene
 
@@ -29,4 +34,14 @@ def path_node_point_set_annotation(
     return point_set_annotation_artifacts([points[str(entity_id)] for entity_id in entity_ids])
 
 
-__all__ = ["path_node_point_set_annotation", "tower_bbox_set_annotation"]
+def tower_point_annotation(
+    rendered_scene: RenderedTowerDefenseScene,
+    entity_id: str,
+) -> AnnotationArtifacts:
+    """Return scalar point annotation artifacts for one selected tower center."""
+
+    points = rendered_scene.render_map["entity_points_px"]
+    return point_annotation_artifacts(points[str(entity_id)])
+
+
+__all__ = ["path_node_point_set_annotation", "tower_bbox_set_annotation", "tower_point_annotation"]

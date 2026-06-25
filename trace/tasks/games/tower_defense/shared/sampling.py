@@ -11,8 +11,11 @@ from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling,
 
 from .defaults import DEFAULTS, GEN_DEFAULTS
 from .rules import (
+    MODE_BEST_POSITION,
     MODE_MARKED_ENEMY,
     MODE_PATH_NODES,
+    OPTION_LABELS,
+    candidate_tower_entity_id,
     covered_path_segment_ids,
     covered_tower_ids,
     enemy_entity_id,
@@ -521,6 +524,218 @@ def _sample_nonexpanding_tower(
     raise ValueError("failed to place nonexpanding tower")
 
 
+def _coverage_count_for_tower(tower: TowerDefenseTower, path_points: Sequence[Point]) -> int:
+    """Count path enemies inside one tower range."""
+
+    return sum(1 for point in path_points if tower_covers_point(tower, point))
+
+
+def _candidate_center_for_target_count(
+    *,
+    rng,
+    target_count: int,
+    path_points: Sequence[Point],
+    map_width_px: int,
+    map_height_px: int,
+    range_min: int,
+    range_max: int,
+    existing_centers: Sequence[Point],
+    tower_path_clearance_px: float,
+    tower_min_gap_px: float,
+) -> tuple[Point, float]:
+    """Sample a center/radius pair that covers exactly target_count path enemies."""
+
+    if int(target_count) < 0 or int(target_count) > len(path_points):
+        raise ValueError("candidate tower target count outside path support")
+    for _ in range(1200):
+        if int(target_count) == 0:
+            center = (
+                round(rng.uniform(float(range_min) + 34.0, float(map_width_px) - float(range_min) - 34.0), 3),
+                round(rng.uniform(float(range_min) + 34.0, float(map_height_px) - float(range_min) - 34.0), 3),
+            )
+        else:
+            anchor_index = int(rng.randrange(1, max(2, len(path_points) - 1)))
+            anchor = path_points[int(anchor_index)]
+            tangent = _path_tangent_at_index(path_points, int(anchor_index))
+            perpendicular = (-float(tangent[1]), float(tangent[0]))
+            side = -1.0 if rng.random() < 0.5 else 1.0
+            tangent_jitter = rng.uniform(-22.0, 22.0)
+            offset = rng.uniform(max(float(tower_path_clearance_px) + 22.0, 68.0), 124.0)
+            center = (
+                round(float(anchor[0]) + (perpendicular[0] * side * offset) + (tangent[0] * tangent_jitter), 3),
+                round(float(anchor[1]) + (perpendicular[1] * side * offset) + (tangent[1] * tangent_jitter), 3),
+            )
+        distances = sorted(local_distance(center, point) for point in path_points)
+        if int(target_count) == 0:
+            max_radius = min(float(range_max), float(distances[0]) - 12.0)
+            if max_radius < float(range_min):
+                continue
+            radius = rng.uniform(float(range_min), float(max_radius))
+        else:
+            inner_distance = float(distances[int(target_count) - 1])
+            outer_distance = float(distances[int(target_count)]) if int(target_count) < len(distances) else inner_distance + 60.0
+            if outer_distance - inner_distance < 10.0:
+                continue
+            radius = max(float(range_min), inner_distance + 4.0)
+            radius = min(radius + rng.uniform(0.0, 8.0), outer_distance - 4.0)
+            if radius < float(range_min) or radius > float(range_max):
+                continue
+        if not _tower_center_is_valid(
+            center,
+            radius=float(radius),
+            map_width_px=int(map_width_px),
+            map_height_px=int(map_height_px),
+            path_points=path_points,
+            existing_centers=existing_centers,
+            tower_path_clearance_px=float(tower_path_clearance_px),
+            tower_min_gap_px=float(tower_min_gap_px),
+        ):
+            continue
+        tower = TowerDefenseTower(
+            tower_id="candidate_probe",
+            center_px=center,
+            range_radius_px=float(radius),
+            covers_target=False,
+        )
+        if _coverage_count_for_tower(tower, path_points) == int(target_count):
+            return center, float(radius)
+    raise ValueError("failed to sample candidate tower with exact coverage count")
+
+
+def _sample_candidate_tower(
+    *,
+    rng,
+    tower_id: str,
+    target_count: int,
+    path_points: Sequence[Point],
+    map_width_px: int,
+    map_height_px: int,
+    range_min: int,
+    range_max: int,
+    existing_centers: Sequence[Point],
+    tower_path_clearance_px: float,
+    tower_min_gap_px: float,
+    covers_target: bool,
+) -> TowerDefenseTower:
+    """Return one labeled candidate tower with a controlled coverage count."""
+
+    center, radius = _candidate_center_for_target_count(
+        rng=rng,
+        target_count=int(target_count),
+        path_points=path_points,
+        map_width_px=int(map_width_px),
+        map_height_px=int(map_height_px),
+        range_min=int(range_min),
+        range_max=int(range_max),
+        existing_centers=existing_centers,
+        tower_path_clearance_px=float(tower_path_clearance_px),
+        tower_min_gap_px=float(tower_min_gap_px),
+    )
+    return TowerDefenseTower(
+        tower_id=str(tower_id),
+        center_px=center,
+        range_radius_px=float(radius),
+        covers_target=bool(covers_target),
+    )
+
+
+def sample_best_tower_position_scene(
+    *,
+    rng,
+    axes: TowerDefenseAxes,
+    render_params: TowerDefenseRenderParams,
+    params: Mapping[str, Any],
+) -> TowerDefenseSample:
+    """Construct four candidate tower positions with a unique best coverage label."""
+
+    map_width = int(render_params.map_width_px)
+    map_height = int(render_params.map_height_px)
+    path_points = sample_path_points(
+        rng=rng,
+        scene_variant=str(axes.scene_variant),
+        map_width_px=map_width,
+        map_height_px=map_height,
+        path_segment_count=int(axes.path_segment_count),
+    )
+    range_min = int(params.get("best_position_range_radius_min_px", GEN_DEFAULTS.get("best_position_range_radius_min_px", DEFAULTS.best_position_range_radius_min_px)))
+    range_max = int(params.get("best_position_range_radius_max_px", GEN_DEFAULTS.get("best_position_range_radius_max_px", DEFAULTS.best_position_range_radius_max_px)))
+    tower_path_clearance = float(params.get("tower_path_clearance_px", GEN_DEFAULTS.get("tower_path_clearance_px", DEFAULTS.tower_path_clearance_px)))
+    tower_min_gap = float(params.get("tower_min_gap_px", GEN_DEFAULTS.get("tower_min_gap_px", DEFAULTS.tower_min_gap_px)))
+    target_count = int(axes.target_answer)
+    if target_count <= 0:
+        raise ValueError("best-position task needs a positive winning coverage count")
+    target_label_index = int(params.get("answer_option_index", 0)) % len(OPTION_LABELS)
+    best_label = str(OPTION_LABELS[int(target_label_index)])
+    remaining_labels = [str(label) for label in OPTION_LABELS if str(label) != best_label]
+    rng.shuffle(remaining_labels)
+    decoy_counts = [int(rng.randrange(0, int(target_count))) for _ in remaining_labels]
+    towers_by_label: dict[str, TowerDefenseTower] = {}
+    centers: list[Point] = []
+    best_tower = _sample_candidate_tower(
+        rng=rng,
+        tower_id=candidate_tower_entity_id(best_label),
+        target_count=int(target_count),
+        path_points=path_points,
+        map_width_px=map_width,
+        map_height_px=map_height,
+        range_min=range_min,
+        range_max=range_max,
+        existing_centers=centers,
+        tower_path_clearance_px=tower_path_clearance,
+        tower_min_gap_px=tower_min_gap,
+        covers_target=True,
+    )
+    towers_by_label[best_label] = best_tower
+    centers.append(best_tower.center_px)
+    for label, decoy_count in zip(remaining_labels, decoy_counts):
+        tower = _sample_candidate_tower(
+            rng=rng,
+            tower_id=candidate_tower_entity_id(str(label)),
+            target_count=int(decoy_count),
+            path_points=path_points,
+            map_width_px=map_width,
+            map_height_px=map_height,
+            range_min=range_min,
+            range_max=range_max,
+            existing_centers=centers,
+            tower_path_clearance_px=tower_path_clearance,
+            tower_min_gap_px=tower_min_gap,
+            covers_target=False,
+        )
+        towers_by_label[str(label)] = tower
+        centers.append(tower.center_px)
+    towers = tuple(towers_by_label[str(label)] for label in OPTION_LABELS)
+    coverage_counts = {
+        str(label): _coverage_count_for_tower(towers_by_label[str(label)], path_points)
+        for label in OPTION_LABELS
+    }
+    if coverage_counts[str(best_label)] != int(target_count):
+        raise ValueError("best candidate coverage count drifted after construction")
+    if max(coverage_counts.values()) != int(target_count) or list(coverage_counts.values()).count(int(target_count)) != 1:
+        raise ValueError("candidate tower positions must have one unique maximum")
+    sample = TowerDefenseSample(
+        mode=MODE_BEST_POSITION,
+        scene_variant=str(axes.scene_variant),
+        style_variant=str(axes.style_variant),
+        map_width_px=int(map_width),
+        map_height_px=int(map_height),
+        path_points_px=tuple(path_points),
+        towers=towers,
+        enemy=None,
+        answer=str(best_label),
+        target_answer=int(target_count),
+        annotation_entity_ids=(candidate_tower_entity_id(best_label),),
+        construction_mode="construct_four_candidate_positions_by_path_enemy_coverage",
+        metadata={
+            "candidate_labels": list(OPTION_LABELS),
+            "candidate_coverage_counts": {str(label): int(value) for label, value in coverage_counts.items()},
+            "answer_option_index": int(target_label_index),
+        },
+    )
+    validate_tower_defense_sample(sample)
+    return sample
+
+
 def sample_marked_enemy_scene(
     *,
     rng,
@@ -689,6 +904,7 @@ def sample_covered_path_scene(
 __all__ = [
     "axis_support_metadata",
     "resolve_tower_defense_axes",
+    "sample_best_tower_position_scene",
     "sample_covered_path_scene",
     "sample_marked_enemy_scene",
     "sample_path_points",

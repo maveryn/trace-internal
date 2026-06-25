@@ -6,8 +6,12 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.tasks.shared.font_assets import get_font_family_record, sample_font_family
+from trace.tasks.shared.text_rendering import fit_font_to_box
+from trace.tasks.games.shared.text import draw_centered_game_text
 from ....shared.color_distance import min_color_distance_to_anchors, resolve_contrasting_palette
 from .rules import (
+    candidate_tower_label_from_id,
     enemy_entity_id,
     path_segment_entity_id,
 )
@@ -144,6 +148,12 @@ def resolve_tower_defense_render_params(
 ) -> TowerDefenseRenderParams:
     """Resolve deterministic render controls for one tower-defense map."""
 
+    font_family = sample_font_family(
+        role="readout",
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.text_font",
+        params=params,
+    )
     return TowerDefenseRenderParams(
         canvas_width=_int_default(params, "canvas_width", DEFAULTS.canvas_width),
         canvas_height=_int_default(params, "canvas_height", DEFAULTS.canvas_height),
@@ -155,12 +165,14 @@ def resolve_tower_defense_render_params(
         tower_radius_px=_int_default(params, "tower_radius_px", DEFAULTS.tower_radius_px),
         enemy_radius_px=_int_default(params, "enemy_radius_px", DEFAULTS.enemy_radius_px),
         range_outline_width_px=_int_default(params, "range_outline_width_px", DEFAULTS.range_outline_width_px),
+        label_font_size_px=_int_default(params, "label_font_size_px", DEFAULTS.label_font_size_px),
         layout_jitter_meta=resolve_games_layout_jitter(
             params,
             RENDER_DEFAULTS,
             instance_seed=int(instance_seed),
             namespace=f"{SCENE_NAMESPACE}.layout_jitter",
         ),
+        font_family=str(font_family),
     )
 
 
@@ -240,6 +252,46 @@ def _draw_tower(
         width=max(1, int(round(radius * 0.08))),
     )
     return bbox
+
+
+def _draw_candidate_label(
+    draw: ImageDraw.ImageDraw,
+    *,
+    center: Point,
+    label: str,
+    radius: float,
+    theme: TowerDefenseTheme,
+    params: TowerDefenseRenderParams,
+) -> BBox:
+    """Draw a centered A-D label on one candidate tower."""
+
+    font = fit_font_to_box(
+        draw,
+        text=str(label),
+        max_width=max(12.0, float(radius) * 1.15),
+        max_height=max(12.0, float(radius) * 1.15),
+        bold=True,
+        font_family=str(params.font_family) or None,
+        min_size_px=10,
+        max_size_px=int(params.label_font_size_px),
+        fill_ratio=0.88,
+    )
+    text_bbox = draw_centered_game_text(
+        draw,
+        text=str(label),
+        center=(float(center[0]), float(center[1])),
+        font=font,
+        fill=(20, 24, 31),
+        stroke_fill=(255, 255, 255),
+        stroke_width=2,
+        role="candidate_label",
+        required=True,
+        surface_rgbs=(theme.tower_fill_rgb, theme.tower_inner_rgb),
+        preferred_rgbs=((20, 24, 31),),
+        instance_seed=int(round(float(center[0]) * 19.0 + float(center[1]) * 23.0)),
+        namespace="games.tower_defense.candidate_label",
+    )
+    return _round_bbox(text_bbox)
 
 
 def _draw_enemy(
@@ -404,19 +456,32 @@ def render_tower_defense_scene(
     for tower in towers:
         center = _local_to_global(tower.center_px, map_bbox=map_bbox)
         bbox = _draw_tower(draw, center=center, radius=tower_radius, theme=theme)
+        candidate_label = candidate_tower_label_from_id(str(tower.tower_id))
+        label_bbox = None
+        if candidate_label is not None:
+            label_bbox = _draw_candidate_label(
+                draw,
+                center=center,
+                label=str(candidate_label),
+                radius=tower_radius,
+                theme=theme,
+                params=params,
+            )
         entity_bboxes[str(tower.tower_id)] = bbox
         entity_points[str(tower.tower_id)] = (round(float(center[0]), 3), round(float(center[1]), 3))
-        entities.append(
-            {
-                "entity_id": str(tower.tower_id),
-                "type": "tower",
-                "bbox_px": list(bbox),
-                "point_px": list(entity_points[str(tower.tower_id)]),
-                "range_bbox_px": list(range_bboxes[str(tower.tower_id)]),
-                "range_radius_px": round(float(tower.range_radius_px), 3),
-                "covers_marked_enemy": bool(tower.covers_target),
-            }
-        )
+        tower_entity = {
+            "entity_id": str(tower.tower_id),
+            "type": "tower",
+            "bbox_px": list(bbox),
+            "point_px": list(entity_points[str(tower.tower_id)]),
+            "range_bbox_px": list(range_bboxes[str(tower.tower_id)]),
+            "range_radius_px": round(float(tower.range_radius_px), 3),
+            "covers_marked_enemy": bool(tower.covers_target),
+        }
+        if candidate_label is not None:
+            tower_entity["candidate_label"] = str(candidate_label)
+            tower_entity["label_bbox_px"] = list(label_bbox or bbox)
+        entities.append(tower_entity)
 
     marked_enemy_id = None
     if enemy is not None:
@@ -471,6 +536,8 @@ def render_tower_defense_scene(
         "tower_defense_style": {
             "style_variant": str(style_variant),
             "terrain_pattern": str(theme.terrain_pattern),
+            "font_family": str(params.font_family),
+            "font_asset": get_font_family_record(str(params.font_family)).to_trace(),
             "range_palette_rgb": [list(color) for color in range_palette],
             "range_anchor_lab_distances": [
                 round(float(min_color_distance_to_anchors(color, anchor_colors, distance_space="lab")), 3)

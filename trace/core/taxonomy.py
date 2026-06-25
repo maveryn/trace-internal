@@ -510,6 +510,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__tetris__row_occupancy_status_count": _entry("games", "tetris", "games", "tetris"),
     "task_games__tic_tac_toe_3d__layer_piece_count": _entry("games", "tic_tac_toe_3d", "games", "tic_tac_toe_3d"),
     "task_games__tic_tac_toe_3d__winning_move_cell_label": _entry("games", "tic_tac_toe_3d", "games", "tic_tac_toe_3d"),
+    "task_games__tower_defense__best_tower_position_label": _entry("games", "tower_defense", "games", "tower_defense"),
     "task_games__tower_defense__covered_path_segment_count": _entry("games", "tower_defense", "games", "tower_defense"),
     "task_games__tower_draughts_board__controlled_stack_count": _entry("games", "tower_draughts_board", "games", "tower_draughts_board"),
     "task_games__tower_draughts_board__marked_stack_capture_count": _entry("games", "tower_draughts_board", "games", "tower_draughts_board"),

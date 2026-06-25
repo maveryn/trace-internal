@@ -14,11 +14,14 @@ generation:
     balanced_tower_count_sampling: true
     balanced_path_segment_count_sampling: true
     balanced_target_answer_sampling: true
+    balanced_answer_option_sampling: true
     covered_path_tower_count_support:
     - 3
     - 4
     - 5
     - 6
+    best_position_candidate_count_support:
+    - 4
     path_segment_count_support:
     - 10
     - 11
@@ -34,8 +37,20 @@ generation:
     - 4
     - 5
     - 6
+    best_position_target_answer_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    best_position_answer_option_index_support:
+    - 0
+    - 1
+    - 2
+    - 3
     covered_path_range_radius_min_px: 88
     covered_path_range_radius_max_px: 168
+    best_position_range_radius_min_px: 72
+    best_position_range_radius_max_px: 210
     tower_path_clearance_px: 42
     tower_min_gap_px: 46
     uncovered_margin_px: 28
@@ -51,6 +66,7 @@ rendering:
     tower_radius_px: 19
     enemy_radius_px: 13
     range_outline_width_px: 3
+    label_font_size_px: 25
 prompt:
   shared:
     bundle_id: games_tower_defense_v1

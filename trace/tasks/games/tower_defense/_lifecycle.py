@@ -14,7 +14,7 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import path_node_point_set_annotation, tower_bbox_set_annotation
+from .shared.annotations import path_node_point_set_annotation, tower_bbox_set_annotation, tower_point_annotation
 from .shared.defaults import GEN_DEFAULTS, POST_IMAGE_NOISE_DEFAULTS, PROMPT_DEFAULTS
 from .shared.prompts import build_tower_defense_prompt_artifacts
 from .shared.rendering import render_tower_defense_scene, resolve_tower_defense_render_params
@@ -40,6 +40,8 @@ class TowerDefenseObjectivePlan:
     target_answer_support_key: str
     target_answer_fallback: Sequence[int]
     construct_attempt: AttemptBuilder
+    answer_type: str = "integer"
+    json_example_answer: int | str = 2
     path_count_must_cover_target: bool = False
     tower_count_must_cover_target: bool = False
     trace_params: Mapping[str, Any] = field(default_factory=dict)
@@ -57,6 +59,10 @@ def _annotation_for_objective(
         return tower_bbox_set_annotation(rendered_scene, sample.annotation_entity_ids)
     if str(annotation_kind) == "path_point_set":
         return path_node_point_set_annotation(rendered_scene, sample.annotation_entity_ids)
+    if str(annotation_kind) == "tower_point":
+        if len(sample.annotation_entity_ids) != 1:
+            raise ValueError("tower_point annotation requires exactly one witness id")
+        return tower_point_annotation(rendered_scene, sample.annotation_entity_ids[0])
     raise ValueError(f"unsupported tower-defense annotation kind: {annotation_kind}")
 
 
@@ -133,8 +139,9 @@ def _trace_payload(
             ),
             "towers": list(visible_tower_trace(sample.towers)),
             "annotation_entity_ids": [str(entity_id) for entity_id in sample.annotation_entity_ids],
+            "sample_metadata": dict(sample.metadata),
             "construction_mode": str(sample.construction_mode),
-            "answer": int(sample.answer),
+            "answer": sample.answer,
             "target_answer": int(sample.target_answer),
             **dict(query_params),
         },
@@ -230,13 +237,14 @@ def run_tower_defense_lifecycle(
         scene_variant=str(axes.scene_variant),
         prompt_query_key=str(objective.prompt_query_key),
         annotation_type=str(annotation_artifacts.annotation_type),
+        example_answer=objective.json_example_answer,
         instance_seed=int(instance_seed),
     )
     query_params = {
         **axis_support_metadata(axes),
         "query_id_probabilities": dict(query_probabilities),
         "prompt_query_key": str(objective.prompt_query_key),
-        "answer": int(sample.answer),
+        "answer": sample.answer,
         **dict(objective.trace_params),
     }
     prompt_query_spec = build_prompt_query_spec(
@@ -262,7 +270,7 @@ def run_tower_defense_lifecycle(
     return TaskOutput(
         prompt=str(prompt_artifacts.prompt),
         prompt_variants=dict(prompt_artifacts.prompt_variants),
-        answer_gt=TypedValue(type="integer", value=int(sample.answer)),
+        answer_gt=TypedValue(type=str(objective.answer_type), value=sample.answer),
         annotation_gt=annotation_artifacts.annotation_gt,
         image=image,
         image_id="img0",

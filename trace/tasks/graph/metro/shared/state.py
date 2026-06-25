@@ -46,6 +46,7 @@ class MetroRouteNetworkSample:
     query_label: str = ""
     source_label: str = ""
     goal_label: str = ""
+    query_route_ids: Tuple[str, ...] = ()
     target_labels: Tuple[str, ...] = ()
     target_terminal_count: int = 0
     target_single_route_count: int = 0

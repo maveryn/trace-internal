@@ -63,6 +63,22 @@ def single_route_coords(routes: Sequence[MetroRouteTemplate]) -> Tuple[GridPoint
     return tuple(coord for coord in station_coords if len(route_ids_by_coord[coord]) == 1)
 
 
+def route_transfer_station_coords(routes: Sequence[MetroRouteTemplate], *, route_id: str) -> Tuple[GridPoint, ...]:
+    """Return stations on one route that are served by at least two routes."""
+
+    _, route_ids_by_coord, coords_by_route, _ = route_combo_coords(routes)
+    route_coords = tuple(coords_by_route[str(route_id)])
+    return tuple(coord for coord in route_coords if len(route_ids_by_coord[coord]) >= 2)
+
+
+def route_single_route_station_coords(routes: Sequence[MetroRouteTemplate], *, route_id: str) -> Tuple[GridPoint, ...]:
+    """Return stations on one route that are served only by that route."""
+
+    _, route_ids_by_coord, coords_by_route, _ = route_combo_coords(routes)
+    route_coords = tuple(coords_by_route[str(route_id)])
+    return tuple(coord for coord in route_coords if len(route_ids_by_coord[coord]) == 1)
+
+
 def bfs_dist_count(adjacency: Mapping[GridPoint, Sequence[GridPoint]], *, start: GridPoint) -> Tuple[Dict[GridPoint, int], Dict[GridPoint, int]]:
     """Return shortest distances and shortest-path counts from one station."""
 
@@ -120,6 +136,22 @@ def matching_single_route_station_route_combos(*, target_count: int, route_count
     return tuple(routes for routes in route_combinations_for_count(route_count_min=route_count_min, route_count_max=route_count_max) if len(single_route_coords(routes)) == int(target_count))
 
 
+def matching_route_transfer_station_route_combos(*, target_count: int, route_count_min: int, route_count_max: int) -> Tuple[Tuple[MetroRouteTemplate, ...], ...]:
+    combos = []
+    for routes in route_combinations_for_count(route_count_min=route_count_min, route_count_max=route_count_max):
+        if any(len(route_transfer_station_coords(routes, route_id=str(route.route_id))) == int(target_count) for route in routes):
+            combos.append(tuple(routes))
+    return tuple(combos)
+
+
+def matching_route_single_route_station_route_combos(*, target_count: int, route_count_min: int, route_count_max: int) -> Tuple[Tuple[MetroRouteTemplate, ...], ...]:
+    combos = []
+    for routes in route_combinations_for_count(route_count_min=route_count_min, route_count_max=route_count_max):
+        if any(len(route_single_route_station_coords(routes, route_id=str(route.route_id))) == int(target_count) for route in routes):
+            combos.append(tuple(routes))
+    return tuple(combos)
+
+
 def matching_exact_distance_route_combos(*, target_count: int, route_count_min: int, route_count_max: int, query_distance: int) -> Tuple[Tuple[MetroRouteTemplate, ...], ...]:
     combos = []
     for routes in route_combinations_for_count(route_count_min=route_count_min, route_count_max=route_count_max):
@@ -150,6 +182,22 @@ def feasible_single_route_station_counts(*, route_count_min: int, route_count_ma
     return tuple(sorted({len(single_route_coords(routes)) for routes in route_combinations_for_count(route_count_min=route_count_min, route_count_max=route_count_max)}))
 
 
+def feasible_route_transfer_station_counts(*, route_count_min: int, route_count_max: int) -> Tuple[int, ...]:
+    values: set[int] = set()
+    for routes in route_combinations_for_count(route_count_min=route_count_min, route_count_max=route_count_max):
+        for route in routes:
+            values.add(int(len(route_transfer_station_coords(routes, route_id=str(route.route_id)))))
+    return tuple(sorted(values))
+
+
+def feasible_route_single_route_station_counts(*, route_count_min: int, route_count_max: int) -> Tuple[int, ...]:
+    values: set[int] = set()
+    for routes in route_combinations_for_count(route_count_min=route_count_min, route_count_max=route_count_max):
+        for route in routes:
+            values.add(int(len(route_single_route_station_coords(routes, route_id=str(route.route_id)))))
+    return tuple(sorted(values))
+
+
 def feasible_exact_distance_counts(*, route_count_min: int, route_count_max: int, query_distance: int) -> Tuple[int, ...]:
     values: set[int] = set()
     for routes in route_combinations_for_count(route_count_min=route_count_min, route_count_max=route_count_max):
@@ -173,8 +221,12 @@ def feasible_shortest_path_lengths(*, route_count_min: int, route_count_max: int
 
 __all__ = [
     "exact_distance_coords", "feasible_exact_distance_counts", "feasible_shortest_path_lengths",
+    "feasible_route_single_route_station_counts", "feasible_route_transfer_station_counts",
     "feasible_single_route_station_counts", "feasible_transfer_station_counts",
-    "matching_exact_distance_route_combos", "matching_shortest_path_route_combos", "matching_single_route_station_route_combos",
-    "matching_transfer_station_route_combos", "route_combo_coords", "single_route_coords", "station_sort_key",
+    "matching_exact_distance_route_combos", "matching_route_single_route_station_route_combos",
+    "matching_route_transfer_station_route_combos", "matching_shortest_path_route_combos",
+    "matching_single_route_station_route_combos", "matching_transfer_station_route_combos",
+    "route_combo_coords", "route_single_route_station_coords", "route_transfer_station_coords",
+    "single_route_coords", "station_sort_key",
     "unique_shortest_coord_path",
 ]

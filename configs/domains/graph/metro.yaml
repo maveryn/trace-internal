@@ -30,6 +30,11 @@ generation:
       query_distance_max: 3
       route_count_min: 3
       route_count_max: 5
+    task_graph__metro__route_condition_station_count:
+      target_count_min: 0
+      target_count_max: 5
+      route_count_min: 2
+      route_count_max: 5
     task_graph__metro__shortest_path_length:
       target_shortest_path_length_min: 2
       target_shortest_path_length_max: 6

@@ -36,6 +36,20 @@
         "How many labeled stations appear on just one colored route?",
         "Count stations that are not transfer stations because they are on a single route."
       ],
+      "metro_route_transfer_station_count": [
+        "On the {route_name} route, how many stations are served by two or more colored routes?",
+        "Count the transfer stations on the {route_name} route.",
+        "How many stations on the {route_name} route are shared with another colored route?",
+        "What is the number of {route_name} route stations that are transfer stations?",
+        "Following the {route_name} route, count stations where at least one other colored route also stops."
+      ],
+      "metro_route_single_route_station_count": [
+        "On the {route_name} route, how many stations are served only by that route?",
+        "Count the non-transfer stations on the {route_name} route.",
+        "How many stations on the {route_name} route do not belong to any other colored route?",
+        "What is the number of {route_name} route stations served by exactly one colored route?",
+        "Following the {route_name} route, count stations where no other colored route also stops."
+      ],
       "metro_exact_distance_count": [
         "How many stations have shortest metro-route distance exactly {query_distance} route segments from station {query_label}?",
         "Count stations exactly {query_distance} route segments away from {query_label}.",
@@ -80,6 +94,12 @@
       "source_label",
       "goal_label"
     ],
+    "query:metro_route_transfer_station_count": [
+      "route_name"
+    ],
+    "query:metro_route_single_route_station_count": [
+      "route_name"
+    ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -123,6 +143,9 @@
     "query_label": {
       "type": "label"
     },
+    "route_name": {
+      "type": "string"
+    },
     "source_label": {
       "type": "label"
     },
@@ -142,6 +165,8 @@
     "json_example_answer_only": "{\"answer\":2}",
     "annotation_hint_transfer_station_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all transfer stations",
     "annotation_hint_single_route_station_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all stations served by exactly one route",
+    "annotation_hint_route_transfer_station_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all transfer stations on the {route_name} route; use an empty array when there are none",
+    "annotation_hint_route_single_route_station_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all stations served only by the {route_name} route",
     "annotation_hint_exact_distance_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all stations whose shortest metro-route distance from {query_label} is exactly {query_distance} route segments",
     "annotation_hint_shortest_path_length": "set \"annotation\" to an ordered array of [x,y] pixel points at station centers along the unique shortest path from {source_label} to {goal_label}, excluding {source_label} and including {goal_label}"
   }

@@ -12,10 +12,14 @@ from .algorithms import (
     canonical_label_edge,
     exact_distance_coords,
     matching_exact_distance_route_combos,
+    matching_route_single_route_station_route_combos,
+    matching_route_transfer_station_route_combos,
     matching_shortest_path_route_combos,
     matching_single_route_station_route_combos,
     matching_transfer_station_route_combos,
     route_combo_coords,
+    route_single_route_station_coords,
+    route_transfer_station_coords,
     single_route_coords,
     unique_shortest_coord_path,
 )
@@ -95,6 +99,52 @@ def sample_single_route_station_network(rng: random.Random, *, target_count: int
     return MetroRouteNetworkSample(**{**sample.__dict__, "target_labels": labels, "target_single_route_count": int(len(labels))})
 
 
+def sample_route_transfer_station_network(rng: random.Random, *, target_count: int, route_count: int, label_variant: str) -> MetroRouteNetworkSample:
+    routes = choose_routes(rng, matching_route_transfer_station_route_combos(target_count=int(target_count), route_count_min=int(route_count), route_count_max=int(route_count)))
+    sample = build_labeled_metro_sample(rng, routes=routes, label_variant=str(label_variant))
+    candidates = [
+        str(route.route_id)
+        for route in routes
+        if len(route_transfer_station_coords(routes, route_id=str(route.route_id))) == int(target_count)
+    ]
+    if not candidates:
+        raise ValueError("sampled metro route-transfer target has no matching route")
+    route_id = str(rng.choice(candidates))
+    target_coords = route_transfer_station_coords(routes, route_id=route_id)
+    labels = tuple(sorted((str(sample.label_by_coord[coord]) for coord in target_coords), key=graph_label_sort_key))
+    return MetroRouteNetworkSample(
+        **{
+            **sample.__dict__,
+            "query_route_ids": (route_id,),
+            "target_labels": labels,
+            "target_transfer_count": int(len(labels)),
+        }
+    )
+
+
+def sample_route_single_route_station_network(rng: random.Random, *, target_count: int, route_count: int, label_variant: str) -> MetroRouteNetworkSample:
+    routes = choose_routes(rng, matching_route_single_route_station_route_combos(target_count=int(target_count), route_count_min=int(route_count), route_count_max=int(route_count)))
+    sample = build_labeled_metro_sample(rng, routes=routes, label_variant=str(label_variant))
+    candidates = [
+        str(route.route_id)
+        for route in routes
+        if len(route_single_route_station_coords(routes, route_id=str(route.route_id))) == int(target_count)
+    ]
+    if not candidates:
+        raise ValueError("sampled metro route-single-route target has no matching route")
+    route_id = str(rng.choice(candidates))
+    target_coords = route_single_route_station_coords(routes, route_id=route_id)
+    labels = tuple(sorted((str(sample.label_by_coord[coord]) for coord in target_coords), key=graph_label_sort_key))
+    return MetroRouteNetworkSample(
+        **{
+            **sample.__dict__,
+            "query_route_ids": (route_id,),
+            "target_labels": labels,
+            "target_single_route_count": int(len(labels)),
+        }
+    )
+
+
 def sample_exact_distance_station_network(rng: random.Random, *, target_count: int, route_count: int, query_distance: int, label_variant: str) -> MetroRouteNetworkSample:
     routes = choose_routes(rng, matching_exact_distance_route_combos(target_count=int(target_count), route_count_min=int(route_count), route_count_max=int(route_count), query_distance=int(query_distance)))
     sample = build_labeled_metro_sample(rng, routes=routes, label_variant=str(label_variant))
@@ -126,6 +176,7 @@ def sample_shortest_path_network(rng: random.Random, *, target_length: int, rout
 
 
 __all__ = [
-    "sample_exact_distance_station_network", "sample_shortest_path_network", "sample_single_route_station_network",
-    "sample_transfer_station_network",
+    "sample_exact_distance_station_network", "sample_route_single_route_station_network",
+    "sample_route_transfer_station_network", "sample_shortest_path_network",
+    "sample_single_route_station_network", "sample_transfer_station_network",
 ]

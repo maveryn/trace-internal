@@ -278,6 +278,18 @@ def finish_metro_result(*, assets: MetroPreparedAssets, branch_name: str) -> Tas
     )
 
 
+def with_query_id_probabilities(trace_payload: Mapping[str, Any], branch_probs: Mapping[str, float]) -> Dict[str, Any]:
+    """Attach query selection probabilities to an already-built trace payload."""
+
+    trace = dict(trace_payload)
+    spec = dict(trace.get("query_spec") or {})
+    params = dict(spec.get("params") or {})
+    params["query_id_probabilities"] = {str(key): float(value) for key, value in branch_probs.items()}
+    spec["params"] = params
+    trace["query_spec"] = spec
+    return trace
+
+
 def station_annotation(sample: MetroRouteNetworkSample, rendered_scene: Any, *, labels: Sequence[str], ordered: bool, answer_value: int, witness_extra: Mapping[str, Any] | None = None) -> MetroAnswerAnnotation:
     """Project station labels and bind a point-set or point-sequence answer annotation."""
 
@@ -340,12 +352,17 @@ def _route_entities(rendered_scene: Any) -> list[Dict[str, Any]]:
 
 
 def _common_trace_fields(sample: MetroRouteNetworkSample, axes: MetroRouteResolvedAxes) -> Dict[str, Any]:
+    route_by_id = {str(route.route_id): route for route in sample.route_templates}
+    query_route_ids = tuple(str(route_id) for route_id in getattr(sample, "query_route_ids", ()) or ())
+    query_route_names = tuple(str(route_by_id[route_id].route_name) for route_id in query_route_ids if route_id in route_by_id)
     return {
         "target_count": int(axes.target_count),
         "route_count": int(axes.route_count),
         "station_count": int(sample.station_count),
         "query_distance": int(axes.query_distance),
         "query_label": str(sample.query_label),
+        "query_route_ids": list(query_route_ids),
+        "query_route_names": list(query_route_names),
         "source_label": str(sample.source_label),
         "goal_label": str(sample.goal_label),
         "matching_labels": list(sample.target_labels or sample.transfer_labels),
@@ -445,6 +462,8 @@ def prepare_metro_assets(
         "goal_label": format_graph_prompt_label(str(sample.goal_label), label_variant=str(sample.label_variant)),
         "query_distance": int(axes.query_distance),
     }
+    query_route_names = list(_common_trace_fields(sample, axes).get("query_route_names") or [])
+    question_slots["route_name"] = str(query_route_names[0]) if query_route_names else ""
     prompt_json_example, prompt_json_example_answer_only = json_examples_for_annotation(str(answer_annotation.annotation_type))
     if json_example_key:
         prompt_json_example = str(prompt_defaults_required[str(json_example_key)])
@@ -574,4 +593,5 @@ __all__ = [
     "select_support_value",
     "station_annotation",
     "support_from_bounds",
+    "with_query_id_probabilities",
 ]

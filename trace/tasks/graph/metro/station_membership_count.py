@@ -18,6 +18,7 @@ from ._lifecycle import (
     route_count_support_for_target,
     select_support_value,
     support_from_bounds,
+    with_query_id_probabilities,
 )
 from .shared.output import MetroRouteResolvedAxes
 from .shared.state import SCENE_ID
@@ -79,16 +80,6 @@ def _resolve_axes(instance_seed: int, params: Mapping[str, Any], *, branch_name:
     return MetroRouteResolvedAxes(int(target_count), int(route_count), str(label_variant), str(node_color_name), 0, dict(target_probs), dict(route_probs), dict(label_probs), dict(color_probs))
 
 
-def _trace_with_branch_probabilities(trace_payload: Mapping[str, Any], branch_probs: Mapping[str, float]) -> Dict[str, Any]:
-    trace = dict(trace_payload)
-    spec = dict(trace.get("query_spec") or {})
-    params = dict(spec.get("params") or {})
-    params["query_id_probabilities"] = {str(key): float(value) for key, value in branch_probs.items()}
-    spec["params"] = params
-    trace["query_spec"] = spec
-    return trace
-
-
 @register_task
 class GraphCountingMetroStationMembershipCountTask:
     """Count stations by transfer or single-route membership."""
@@ -140,7 +131,7 @@ class GraphCountingMetroStationMembershipCountTask:
             annotation_gt=TypedValue(type=str(assets.answer_annotation.annotation_type), value=list(assets.answer_annotation.annotation_value)),
             image=assets.image,
             image_id="img0",
-            trace_payload=_trace_with_branch_probabilities(assets.trace_payload, branch_probs),
+            trace_payload=with_query_id_probabilities(assets.trace_payload, branch_probs),
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(branch_name),

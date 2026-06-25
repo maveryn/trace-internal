@@ -10,10 +10,10 @@
 7. Annotation schema: `bbox`
 
 ## Program Contract
-`shape_label(active_falling_tetromino); scene=tetris; scope=active_piece_shape_label`
+`label(option where option.shape_name = shape_label(active_falling_tetromino)); scene=tetris; scope=active_piece_shape_label`
 
 ## Generation Notes
-1. The renderer shows a Tetris board with one active falling piece and a visual legend of the seven tetromino labels.
-2. The answer is the tetromino label `I`, `O`, `T`, `L`, `J`, `S`, or `Z`.
+1. The renderer shows a Tetris board with one active falling piece and four text options naming tetromino shapes.
+2. The answer is the selected option letter whose shape name matches the falling piece.
 3. Annotation is the scalar bbox enclosing the falling-piece cells on the board.
 4. Scalar annotation checked: true.

@@ -494,7 +494,18 @@ def build_active_piece_shape_sample(
     piece = str(target_piece)
     if piece not in PIECE_ORDER:
         raise ValueError(f"unsupported Tetris target piece: {piece}")
+    option_labels = tuple(OPTION_LABELS[:4])
     for _attempt in range(300):
+        distractor_pieces = [str(candidate) for candidate in PIECE_ORDER if str(candidate) != str(piece)]
+        rng.shuffle(distractor_pieces)
+        option_pieces = distractor_pieces[:3]
+        answer_index = int(rng.randrange(len(option_labels)))
+        option_pieces.insert(answer_index, str(piece))
+        option_entries = tuple(
+            {"label": str(option_labels[index]), "piece": str(option_pieces[index])}
+            for index in range(len(option_labels))
+        )
+        answer_label = str(option_labels[answer_index])
         orientation_index = int(rng.randrange(len(TETROMINOES[piece])))
         piece_shape = TETROMINOES[piece][orientation_index]
         height, width = shape_size(piece_shape)
@@ -512,7 +523,7 @@ def build_active_piece_shape_sample(
             continue
         falling_ids = tuple(f"main_cell_{int(row)}_{int(col_index)}" for row, col_index in piece_cells(falling))
         return TetrisSample(
-            answer=str(piece),
+            answer=str(answer_label),
             answer_type="string",
             board=board,
             piece=str(piece),
@@ -526,7 +537,10 @@ def build_active_piece_shape_sample(
             metadata={
                 **supported_stack_generation_meta(strategy="active_piece_supported_stack"),
                 "target_piece": str(piece),
-                "shape_options": list(PIECE_ORDER),
+                "shape_options": [str(entry["piece"]) for entry in option_entries],
+                "shape_option_entries": [dict(entry) for entry in option_entries],
+                "correct_option_label": str(answer_label),
+                "correct_shape": str(piece),
                 "falling_placement": placement_trace(falling),
                 "falling_piece_cell_ids": [str(entity_id) for entity_id in falling_ids],
             },

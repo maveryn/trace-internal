@@ -168,15 +168,22 @@ def test_games_tetris_active_piece_shape_label_contract() -> None:
     assert out.scene_id == "tetris"
     assert out.query_id == "single"
     assert out.answer_gt.type == "string"
-    assert str(out.answer_gt.value) == "T"
+    assert str(out.answer_gt.value) in {"A", "B", "C", "D"}
     assert execution["prompt_query_key"] == "active_piece_shape_label"
     assert execution["piece"] == "T"
     assert execution["target_piece"] == "T"
-    assert execution["shape_options"] == ["I", "O", "T", "L", "J", "S", "Z"]
+    assert len(execution["shape_options"]) == 4
+    assert execution["shape_options"].count("T") == 1
+    assert execution["correct_shape"] == "T"
+    assert execution["correct_option_label"] == str(out.answer_gt.value)
+    assert len(execution["shape_option_entries"]) == 4
+    assert {str(entry["label"]) for entry in execution["shape_option_entries"]} == {"A", "B", "C", "D"}
+    assert next(str(entry["piece"]) for entry in execution["shape_option_entries"] if str(entry["label"]) == str(out.answer_gt.value)) == "T"
     assert out.annotation_gt.type == "bbox"
     assert out.annotation_gt.value == expected_bbox
     assert out.trace_payload["projected_annotation"]["type"] == "bbox"
-    assert out.trace_payload["render_map"]["shape_option_labels"] == ["I", "O", "T", "L", "J", "S", "Z"]
+    assert out.trace_payload["render_map"]["shape_option_labels"] == ["A", "B", "C", "D"]
+    assert out.trace_payload["render_map"]["shape_option_pieces"] == execution["shape_options"]
 
 
 def test_games_tetris_row_occupancy_status_contract_and_rule_match() -> None:

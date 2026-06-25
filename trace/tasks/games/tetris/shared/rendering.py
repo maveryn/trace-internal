@@ -16,7 +16,7 @@ from trace.tasks.games.shared.text import draw_game_text_traced as draw_text_tra
 
 from .defaults import DEFAULTS, RENDER_DEFAULTS
 from .rules import TETROMINOES, board_size, piece_cells, shape_size
-from .state import Board, Coord, EMPTY, PIECE_ORDER, RenderParams, RenderedTetrisScene, SUPPORTED_STYLE_VARIANTS, TetrisSample
+from .state import Board, Coord, EMPTY, OPTION_LABELS, PIECE_ORDER, RenderParams, RenderedTetrisScene, SUPPORTED_STYLE_VARIANTS, TetrisSample
 
 RENDER_MODE_STATIC_BOARD = "static_board"
 RENDER_MODE_LINE_CLEAR = "line_clear"
@@ -64,7 +64,6 @@ def piece_color(piece: str, *, style_variant: str, state_colors: Sequence[Sequen
         "classic_blocks": {"I": (38, 180, 210), "O": (239, 193, 50), "T": (154, 90, 204), "S": (78, 174, 86), "Z": (220, 72, 82), "J": (65, 112, 210), "L": (230, 145, 52)},
         "beveled_blocks": {"I": (33, 166, 196), "O": (226, 177, 42), "T": (142, 82, 190), "S": (64, 156, 78), "Z": (207, 63, 78), "J": (54, 103, 194), "L": (218, 126, 42)},
         "paper_tiles": {"I": (88, 166, 184), "O": (214, 178, 86), "T": (151, 113, 174), "S": (105, 166, 112), "Z": (195, 102, 107), "J": (95, 128, 188), "L": (206, 142, 82)},
-        "glass_blocks": {"I": (76, 200, 224), "O": (248, 208, 74), "T": (182, 112, 228), "S": (96, 204, 112), "Z": (244, 96, 112), "J": (88, 138, 232), "L": (248, 166, 72)},
         "neon_blocks": {"I": (42, 230, 244), "O": (255, 228, 78), "T": (210, 96, 255), "S": (86, 242, 126), "Z": (255, 86, 116), "J": (92, 164, 255), "L": (255, 172, 70)},
     }
     fallback = palettes["classic_blocks"]
@@ -94,8 +93,6 @@ def draw_tetris_block(draw: ImageDraw.ImageDraw, *, bbox: Tuple[int, int, int, i
     elif variant == "paper_tiles":
         accent = tuple(max(0, int(v) - 42) for v in fill_rgb)
         draw.line((x0 + inset, y1 - inset, x1 - inset, y0 + inset), fill=accent, width=1)
-    elif variant == "glass_blocks":
-        draw.rounded_rectangle((x0 + inset, y0 + inset, x1 - inset, y0 + max(inset + 2, (y1 - y0) // 2)), radius=max(2, inset), fill=(255, 255, 255, 72), outline=None)
     elif variant == "neon_blocks":
         glow = tuple(min(255, int(v) + 40) for v in fill_rgb)
         draw.rounded_rectangle((x0 + 2, y0 + 2, x1 - 2, y1 - 2), radius=max(3, inset), outline=glow + (230,), width=max(2, int(params.cell_outline_width_px) + 1))
@@ -119,13 +116,13 @@ def piece_preview_panel_size(params: RenderParams) -> Tuple[int, int]:
     return int(preview_w + (2 * int(params.panel_pad_px))), int(preview_h + (2 * int(params.panel_pad_px)) + int(params.label_band_height_px))
 
 
-def shape_legend_panel_size(params: RenderParams) -> Tuple[int, int]:
-    """Return the footprint for the fixed seven-shape visual legend."""
+def shape_legend_panel_size(params: RenderParams, *, option_count: int = 4) -> Tuple[int, int]:
+    """Return the footprint for four text shape-name option cards."""
 
-    cell = max(10, int(round(int(params.cell_size_px) * 0.42)))
-    option_w = (4 * cell) + 18
-    option_h = (4 * cell) + int(params.label_band_height_px) + 12
-    legend_w = (7 * option_w) + (6 * 8) + (2 * int(params.panel_pad_px))
+    count = max(1, int(option_count))
+    option_w = max(92, int(round(int(params.cell_size_px) * 2.65)))
+    option_h = int(params.label_band_height_px) + 30
+    legend_w = (count * option_w) + ((count - 1) * 10) + (2 * int(params.panel_pad_px))
     legend_h = option_h + (2 * int(params.panel_pad_px))
     return int(legend_w), int(legend_h)
 
@@ -134,7 +131,24 @@ def compact_canvas_params_for_mode(params: RenderParams, *, render_mode: str, bo
     """Shrink non-option Tetris canvases around the board while keeping readable cells."""
 
     if str(render_mode) == RENDER_MODE_RESULT_OPTIONS:
-        return params
+        grid_rows = 3
+        grid_cols = 2
+        margin = max(24, int(params.panel_margin_px))
+        gap = int(params.board_gap_px)
+        panel_pad = int(params.panel_pad_px)
+        label_band = int(params.label_band_height_px)
+        cell_gap = int(params.cell_gap_px)
+        usable_h = (
+            int(params.canvas_height)
+            - (2 * margin)
+            - ((grid_rows - 1) * gap)
+            - (grid_rows * ((2 * panel_pad) + label_band))
+            - (grid_rows * (max(0, int(board_rows) - 1) * cell_gap))
+        )
+        fitted_cell = max(10, min(int(params.cell_size_px), usable_h // max(1, grid_rows * int(board_rows))))
+        panel_w = (int(board_cols) * fitted_cell) + (max(0, int(board_cols) - 1) * cell_gap) + (2 * panel_pad)
+        compact_w = (grid_cols * panel_w) + ((grid_cols - 1) * gap) + (2 * margin)
+        return replace(params, canvas_width=max(560, min(int(params.canvas_width), int(compact_w))))
     row_params = replace(params, cell_size_px=int(params.line_cell_size_px))
     board_w, board_h = board_panel_size(row_params, board_rows=int(board_rows), board_cols=int(board_cols))
     margin = max(24, int(params.panel_margin_px))
@@ -241,7 +255,7 @@ def draw_board_panel(
                 draw.rounded_rectangle((bbox[0] + 3, bbox[1] + 3, bbox[2] - 3, bbox[3] - 3), radius=5, fill=tuple(ghost_fill) + (78,), outline=tuple(style.mark_rgb) + (255,), width=int(params.ghost_outline_width_px))
             if (row, col) in falling_set:
                 falling_fill = piece_color(str(falling_piece or "I"), style_variant=str(style_variant), state_colors=style.state_colors)
-                draw.rounded_rectangle((bbox[0] + 3, bbox[1] + 3, bbox[2] - 3, bbox[3] - 3), radius=5, fill=tuple(falling_fill) + (210,), outline=tuple(style.mark_rgb) + (255,), width=max(2, int(params.ghost_outline_width_px)))
+                draw_tetris_block(draw, bbox=bbox, fill=falling_fill, style=style, params=params, style_variant=str(style_variant), outline=style.grid_rgb)
             cell_id = f"{entity_prefix}_cell_{row}_{col}"
             cell_bboxes[cell_id] = [float(bbox[0]), float(bbox[1]), float(bbox[2]), float(bbox[3])]
             entities.append({"id": cell_id, "type": "tetris_cell", "row": int(row), "col": int(col), "value": str(cell_value), "ghost": bool((row, col) in ghost_set), "falling": bool((row, col) in falling_set), "bbox_px": list(cell_bboxes[cell_id])})
@@ -291,25 +305,32 @@ def draw_shape_legend_panel(
     image: Image.Image,
     *,
     panel_bbox: Tuple[int, int, int, int],
+    option_entries: Sequence[Mapping[str, str]],
     style,
     params: RenderParams,
     style_variant: str,
 ) -> Tuple[Dict[str, Any], Tuple[Dict[str, Any], ...]]:
-    """Draw the I/O/T/L/J/S/Z option legend without binding an answer."""
+    """Draw text shape-name options without visual mini-piece distractors."""
 
     draw = ImageDraw.Draw(image, "RGBA")
     draw_panel_option_card(draw, bbox=panel_bbox, style=style, radius=12, border_width=2)
     inner_left = int(panel_bbox[0] + params.panel_pad_px)
     inner_top = int(panel_bbox[1] + params.panel_pad_px)
-    cell = max(10, int(round(int(params.cell_size_px) * 0.42)))
-    option_gap = 8
-    option_w = (4 * cell) + 18
-    option_h = (4 * cell) + int(params.label_band_height_px) + 12
+    option_gap = 10
+    raw_entries = tuple(option_entries)
+    option_count = max(1, len(raw_entries))
+    option_w = max(92, int((int(panel_bbox[2]) - int(panel_bbox[0]) - (2 * int(params.panel_pad_px)) - ((option_count - 1) * option_gap)) / option_count))
+    option_h = int(panel_bbox[3]) - int(panel_bbox[1]) - (2 * int(params.panel_pad_px))
     option_bboxes: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = [
         {"id": "shape_options", "type": "tetris_shape_option_legend", "bbox_px": [float(v) for v in panel_bbox]}
     ]
-    for index, piece in enumerate(PIECE_ORDER):
+    normalized_entries: List[Dict[str, str]] = []
+    for index, raw_entry in enumerate(raw_entries):
+        label = str(raw_entry.get("label", OPTION_LABELS[index]))
+        piece = str(raw_entry.get("piece", "")).strip().upper()
+        if piece not in PIECE_ORDER:
+            raise ValueError(f"unsupported Tetris shape option piece: {piece}")
         x0 = int(inner_left + index * (option_w + option_gap))
         y0 = int(inner_top)
         option_bbox = (x0, y0, int(x0 + option_w), int(y0 + option_h))
@@ -320,47 +341,28 @@ def draw_shape_legend_panel(
             outline=tuple(style.grid_rgb),
             width=1,
         )
-        label_bbox = (x0 + 4, y0 + 2, x0 + option_w - 4, y0 + int(params.label_band_height_px))
+        label_bbox = (x0 + 5, y0 + 4, x0 + option_w - 5, y0 + option_h - 4)
         label_text(
             draw,
             label_bbox,
-            str(piece),
-            font_size=int(params.small_label_font_size_px),
+            f"{label}: {piece}",
+            font_size=max(int(params.label_font_size_px), int(params.small_label_font_size_px) + 2),
             fill=style.text_rgb,
             font_family=str(params.font_family),
         )
-        shape_cells = TETROMINOES[str(piece)][0]
-        shape_h, shape_w = shape_size(shape_cells)
-        grid_left = int(x0 + (option_w - (int(shape_w) * cell)) / 2.0)
-        grid_top = int(y0 + int(params.label_band_height_px) + 6 + ((4 - int(shape_h)) * cell) / 2.0)
-        for row, col in shape_cells:
-            bbox = (
-                int(grid_left + int(col) * cell),
-                int(grid_top + int(row) * cell),
-                int(grid_left + (int(col) + 1) * cell),
-                int(grid_top + (int(row) + 1) * cell),
-            )
-            draw_tetris_block(
-                draw,
-                bbox=bbox,
-                fill=piece_color(str(piece), style_variant=str(style_variant), state_colors=style.state_colors),
-                style=style,
-                params=params,
-                style_variant=str(style_variant),
-                outline=style.grid_rgb,
-            )
-        entity_id = f"shape_option_{str(piece).lower()}"
+        entity_id = f"shape_option_{str(label).lower()}"
         option_bboxes[entity_id] = [float(value) for value in option_bbox]
+        normalized_entries.append({"label": str(label), "piece": str(piece), "entity_id": str(entity_id)})
         entities.append(
             {
                 "id": entity_id,
                 "type": "tetris_shape_option",
                 "piece": str(piece),
-                "label": str(piece),
+                "label": str(label),
                 "bbox_px": list(option_bboxes[entity_id]),
             }
         )
-    return {"panel_bbox_px": [float(v) for v in panel_bbox], "option_bboxes_px": dict(option_bboxes)}, tuple(entities)
+    return {"panel_bbox_px": [float(v) for v in panel_bbox], "option_bboxes_px": dict(option_bboxes), "option_entries": tuple(normalized_entries)}, tuple(entities)
 
 
 def result_option_grid_params(params: RenderParams, *, panel_count: int, board_rows: int, board_cols: int) -> RenderParams:
@@ -442,7 +444,8 @@ def render_tetris_scene(*, sample: TetrisSample, render_mode: str, style_variant
     if str(render_mode) in {RENDER_MODE_STATIC_BOARD, RENDER_MODE_COLLISION, RENDER_MODE_ACTIVE_SHAPE}:
         row_params = replace(params, cell_size_px=int(params.line_cell_size_px))
         board_w, board_h = board_panel_size(row_params, board_rows=board_rows, board_cols=board_cols)
-        legend_w, legend_h = shape_legend_panel_size(row_params) if str(render_mode) == RENDER_MODE_ACTIVE_SHAPE else (0, 0)
+        shape_option_entries = tuple(sample.metadata.get("shape_option_entries") or ())
+        legend_w, legend_h = shape_legend_panel_size(row_params, option_count=len(shape_option_entries) or 4) if str(render_mode) == RENDER_MODE_ACTIVE_SHAPE else (0, 0)
         total_w = max(int(board_w), int(legend_w))
         total_h = int(board_h) + (int(row_params.board_gap_px) + int(legend_h) if str(render_mode) == RENDER_MODE_ACTIVE_SHAPE else 0)
         left = int((int(row_params.canvas_width) - total_w) / 2.0)
@@ -478,6 +481,7 @@ def render_tetris_scene(*, sample: TetrisSample, render_mode: str, style_variant
             legend_map, legend_entities = draw_shape_legend_panel(
                 image,
                 panel_bbox=legend_bbox,
+                option_entries=shape_option_entries,
                 style=style,
                 params=row_params,
                 style_variant=str(style_variant),
@@ -485,7 +489,9 @@ def render_tetris_scene(*, sample: TetrisSample, render_mode: str, style_variant
             entities.extend(legend_entities)
             render_map["panels"]["shape_options"] = legend_map["panel_bbox_px"]
             render_map["shape_option_bboxes_px"] = dict(legend_map["option_bboxes_px"])
-            render_map["shape_option_labels"] = list(PIECE_ORDER)
+            render_map["shape_option_entries"] = list(legend_map["option_entries"])
+            render_map["shape_option_labels"] = [str(entry["label"]) for entry in legend_map["option_entries"]]
+            render_map["shape_option_pieces"] = [str(entry["piece"]) for entry in legend_map["option_entries"]]
     elif str(render_mode) == RENDER_MODE_LINE_CLEAR:
         line_params = replace(params, cell_size_px=int(params.line_cell_size_px))
         board_w, board_h = board_panel_size(line_params, board_rows=board_rows, board_cols=board_cols)

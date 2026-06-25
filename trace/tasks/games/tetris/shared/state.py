@@ -18,7 +18,6 @@ SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
     "classic_blocks",
     "beveled_blocks",
     "paper_tiles",
-    "glass_blocks",
     "neon_blocks",
 )
 

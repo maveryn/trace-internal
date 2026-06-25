@@ -18,7 +18,7 @@ from .shared.state import PIECE_ORDER
 TASK_ID = "task_games__tetris__active_piece_shape_label"
 SUPPORTED_QUERY_IDS = (DEFAULT_QUERY_ID,)
 PROMPT_QUERY_KEY = "active_piece_shape_label"
-JSON_EXAMPLE, JSON_EXAMPLE_ANSWER_ONLY = format_json_examples(annotation=[246, 92, 352, 166], answer="T")
+JSON_EXAMPLE, JSON_EXAMPLE_ANSWER_ONLY = format_json_examples(annotation=[246, 92, 352, 166], answer="B")
 
 
 def _target_piece(instance_seed: int, task_params: Mapping[str, Any]) -> tuple[str, dict[str, float]]:
@@ -71,7 +71,8 @@ def _prepare_active_piece_shape_objective(
         query_params={
             "target_piece": str(target_piece),
             "target_piece_probabilities": dict(piece_probabilities),
-            "shape_options": list(PIECE_ORDER),
+            "shape_option_count": 4,
+            "shape_option_policy": "four_text_options_in_image",
             "active_piece_query_probabilities": dict(query_probabilities),
         },
         construct_attempt=construct_attempt,

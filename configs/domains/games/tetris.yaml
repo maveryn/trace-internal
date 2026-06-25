@@ -8,7 +8,6 @@ generation:
       classic_blocks: 1.0
       beveled_blocks: 1.0
       paper_tiles: 1.0
-      glass_blocks: 1.0
       neon_blocks: 1.0
     balanced_scene_variant_sampling: true
     balanced_style_variant_sampling: true

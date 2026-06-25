@@ -31,16 +31,10 @@ def cone_net_prompt_artifacts(
             "bundle_id",
             "scene_key",
             "task_key",
-            "object_description",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            "annotation_hint",
-            "answer_hint_number",
         ),
         context="prompt defaults for cone_net",
     )
     annotation_key_list = ", ".join(f'"{key}"' for key in annotation_keys)
-    annotation_hint = str(defaults["annotation_hint"]).format(annotation_keys=annotation_key_list)
     json_example, json_example_answer_only = build_keyed_point_prompt_json_examples(
         annotation_keys=tuple(str(key) for key in annotation_keys),
         answer=float(answer_value),
@@ -54,12 +48,8 @@ def cone_net_prompt_artifacts(
         task_key=str(defaults["task_key"]),
         query_key=str(prompt_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={
-            "object_description": str(defaults["object_description"]),
-            "json_output_contract": str(defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(annotation_hint),
-            "answer_hint": str(defaults["answer_hint_number"]),
+        dynamic_slots={
+            "annotation_keys": str(annotation_key_list),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
         },

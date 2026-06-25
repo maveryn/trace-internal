@@ -5,18 +5,24 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping
 
+from trace.core.visual.noise import apply_post_image_noise
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
+from trace.tasks.shared.fixed_query import geometry_selected_probability_map, select_task_query_id
+from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from ._lifecycle import prepare_cone_net_task_parts
-from .shared.defaults import DOMAIN, SCENE_ID
+from .shared.annotations import cone_net_annotation
+from .shared.defaults import DOMAIN, POST_IMAGE_NOISE_DEFAULTS, SCENE_ID, load_cone_net_task_defaults
 from .shared.measurements import (
     base_radius_from_sector,
     base_radius_support_values,
     cone_net_diagram_spec,
 )
+from .shared.output import cone_net_trace_payload
+from .shared.prompts import cone_net_prompt_artifacts
+from .shared.rendering import render_cone_net_with_retries
 from .shared.sampling import CONE_NET_CASES, resolve_cone_net_case
 
 TASK_ID = "task_geometry__cone_net__base_radius_from_sector_angle"
@@ -38,6 +44,101 @@ class _BaseRadiusRequest:
     answer_value: float
     answer_support: tuple[float, ...]
     diagram_spec: Any
+
+
+def _base_radius_prompt_and_trace(
+    *,
+    request: _BaseRadiusRequest,
+    instance_seed: int,
+    max_attempts: int,
+) -> tuple[str, dict[str, str], Any, Any, dict[str, Any], dict[str, str], str]:
+    """Render the diagram and bind prompt, annotation, and trace fields."""
+
+    render_defaults, prompt_defaults = load_cone_net_task_defaults(TASK_ID)
+    rendered, render_meta = render_cone_net_with_retries(
+        spec=request.diagram_spec,
+        instance_seed=int(instance_seed),
+        params=request.params,
+        render_defaults=render_defaults,
+        max_attempts=int(max_attempts),
+        random_namespace=f"{TASK_ID}.{INTERNAL_QUERY_ID}.render",
+    )
+    image, noise_meta = apply_post_image_noise(
+        rendered.image,
+        instance_seed=int(instance_seed),
+        params=request.params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    annotation_artifacts = cone_net_annotation(rendered)
+    _prompt_defaults, prompt_artifacts = cone_net_prompt_artifacts(
+        prompt_defaults=prompt_defaults,
+        prompt_key=INTERNAL_QUERY_ID,
+        annotation_keys=tuple(annotation_artifacts.value.keys()),
+        answer_value=float(request.answer_value),
+        instance_seed=int(instance_seed),
+    )
+    measurement_fields = dict(rendered.measurements)
+    annotation_roles = [str(role) for role in rendered.annotation_roles]
+    support_probabilities = geometry_selected_probability_map(
+        request.answer_support,
+        float(request.answer_value),
+        is_selected=lambda value, selected: float(value) == float(selected),
+    )
+    query_params = {
+        "scene_id": SCENE_ID,
+        "query_id": request.selected_query,
+        "internal_query_id": INTERNAL_QUERY_ID,
+        "query_id_probabilities": dict(request.query_probabilities),
+        "case_index": int(request.case_index),
+        "target_support_probabilities": dict(support_probabilities),
+        **measurement_fields,
+    }
+    query_spec = build_prompt_query_spec(
+        prompt_artifacts=prompt_artifacts,
+        query_id=request.selected_query,
+        params=query_params,
+    )
+    query_spec["scene_id"] = SCENE_ID
+    trace_payload = cone_net_trace_payload(
+        rendered=rendered,
+        annotation_artifacts=annotation_artifacts,
+        query_spec=query_spec,
+        render_meta=render_meta,
+        noise_meta=noise_meta,
+        image_size=(int(image.size[0]), int(image.size[1])),
+        relations={
+            "query_id": request.selected_query,
+            "internal_query_id": INTERNAL_QUERY_ID,
+            "answer_value": float(request.answer_value),
+            "annotation_roles": list(annotation_roles),
+        },
+        execution_trace={
+            "query_id": request.selected_query,
+            "internal_query_id": INTERNAL_QUERY_ID,
+            "query_id_probabilities": dict(request.query_probabilities),
+            "answer_type": "number",
+            "answer_value": float(request.answer_value),
+            "answer_rounding": "nearest_tenth",
+            "annotation_roles": list(annotation_roles),
+            "reasoning_steps": int(measurement_fields.get("reasoning_steps", 1)),
+            **measurement_fields,
+        },
+        witness_symbolic={
+            "query_id": request.selected_query,
+            "internal_query_id": INTERNAL_QUERY_ID,
+            "answer_value": float(request.answer_value),
+            **measurement_fields,
+        },
+    )
+    return (
+        str(prompt_artifacts.prompt),
+        dict(prompt_artifacts.prompt_variants),
+        image,
+        annotation_artifacts,
+        trace_payload,
+        default_task_versions(),
+        SCENE_ID,
+    )
 
 
 def _radius_public_branch(*, instance_seed: int, params: Mapping[str, Any]) -> tuple[str, Mapping[str, float], Mapping[str, Any]]:
@@ -104,33 +205,25 @@ class GeometryConeNetBaseRadiusFromSectorAngleTask:
             instance_seed=int(instance_seed),
             params=params,
         )
-        parts = prepare_cone_net_task_parts(
-            public_identifier=TASK_ID,
-            internal_prompt_key=INTERNAL_QUERY_ID,
-            selected_query=request.selected_query,
-            query_probabilities=request.query_probabilities,
-            spec=request.diagram_spec,
-            case_index=request.case_index,
-            support_values=request.answer_support,
+        prompt, prompt_variants, image, annotation_artifacts, trace_payload, task_versions, scene_id = _base_radius_prompt_and_trace(
+            request=request,
             instance_seed=int(instance_seed),
-            params=request.params,
             max_attempts=int(max_attempts),
         )
         radius_answer = TypedValue(type="number", value=request.answer_value)
         radius_annotation = TypedValue(
-            type=parts.annotation_artifacts.annotation_type,
-            value=parts.annotation_artifacts.value,
+            type=annotation_artifacts.annotation_type,
+            value=annotation_artifacts.value,
         )
-        prompt_variant_map = dict(parts.prompt_variants)
         return TaskOutput(
-            prompt=parts.prompt,
+            prompt=prompt,
             answer_gt=radius_answer,
             annotation_gt=radius_annotation,
-            image=parts.image,
+            image=image,
             image_id="img0",
-            trace_payload=parts.trace_payload,
-            task_versions=parts.task_versions,
-            scene_id=parts.scene_id,
+            trace_payload=trace_payload,
+            task_versions=task_versions,
+            scene_id=scene_id,
             query_id=request.selected_query,
-            prompt_variants=prompt_variant_map,
+            prompt_variants=prompt_variants,
         )

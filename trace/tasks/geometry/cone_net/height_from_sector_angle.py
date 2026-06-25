@@ -4,18 +4,24 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping
 
+from trace.core.visual.noise import apply_post_image_noise
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
+from trace.tasks.shared.fixed_query import geometry_selected_probability_map, select_task_query_id
+from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from ._lifecycle import prepare_cone_net_task_parts
-from .shared.defaults import DOMAIN
+from .shared.annotations import cone_net_annotation
+from .shared.defaults import DOMAIN, POST_IMAGE_NOISE_DEFAULTS, SCENE_ID, load_cone_net_task_defaults
 from .shared.measurements import (
     cone_net_diagram_spec,
     height_from_sector,
     height_support_values,
 )
+from .shared.output import cone_net_trace_payload
+from .shared.prompts import cone_net_prompt_artifacts
+from .shared.rendering import render_cone_net_with_retries
 from .shared.sampling import CONE_NET_CASES, resolve_cone_net_case
 
 TASK_ID = "task_geometry__cone_net__height_from_sector_angle"
@@ -65,6 +71,106 @@ def _height_diagram_spec(*, instance_seed: int, params: Mapping[str, Any]) -> tu
     return diagram_spec, int(case_index), height_value
 
 
+def _height_prompt_and_trace(
+    *,
+    selected_query: str,
+    query_probabilities: Mapping[str, float],
+    task_params: Mapping[str, Any],
+    diagram_spec: Any,
+    case_index: int,
+    height_value: float,
+    instance_seed: int,
+    max_attempts: int,
+) -> tuple[str, dict[str, str], Any, Any, dict[str, Any], dict[str, str], str]:
+    """Render the diagram and bind height-specific prompt and trace fields."""
+
+    render_defaults, prompt_defaults = load_cone_net_task_defaults(TASK_ID)
+    rendered, render_meta = render_cone_net_with_retries(
+        spec=diagram_spec,
+        instance_seed=int(instance_seed),
+        params=task_params,
+        render_defaults=render_defaults,
+        max_attempts=int(max_attempts),
+        random_namespace=f"{TASK_ID}.{INTERNAL_QUERY_ID}.render",
+    )
+    image, noise_meta = apply_post_image_noise(
+        rendered.image,
+        instance_seed=int(instance_seed),
+        params=task_params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    annotation_artifacts = cone_net_annotation(rendered)
+    _prompt_defaults, prompt_artifacts = cone_net_prompt_artifacts(
+        prompt_defaults=prompt_defaults,
+        prompt_key=INTERNAL_QUERY_ID,
+        annotation_keys=tuple(annotation_artifacts.value.keys()),
+        answer_value=float(height_value),
+        instance_seed=int(instance_seed),
+    )
+    measurement_fields = dict(rendered.measurements)
+    annotation_roles = [str(role) for role in rendered.annotation_roles]
+    support_probabilities = geometry_selected_probability_map(
+        height_support_values(CONE_NET_CASES),
+        float(height_value),
+        is_selected=lambda value, selected: float(value) == float(selected),
+    )
+    query_params = {
+        "scene_id": SCENE_ID,
+        "query_id": str(selected_query),
+        "internal_query_id": INTERNAL_QUERY_ID,
+        "query_id_probabilities": dict(query_probabilities),
+        "case_index": int(case_index),
+        "target_support_probabilities": dict(support_probabilities),
+        **measurement_fields,
+    }
+    query_spec = build_prompt_query_spec(
+        prompt_artifacts=prompt_artifacts,
+        query_id=str(selected_query),
+        params=query_params,
+    )
+    query_spec["scene_id"] = SCENE_ID
+    trace_payload = cone_net_trace_payload(
+        rendered=rendered,
+        annotation_artifacts=annotation_artifacts,
+        query_spec=query_spec,
+        render_meta=render_meta,
+        noise_meta=noise_meta,
+        image_size=(int(image.size[0]), int(image.size[1])),
+        relations={
+            "query_id": str(selected_query),
+            "internal_query_id": INTERNAL_QUERY_ID,
+            "answer_value": float(height_value),
+            "annotation_roles": list(annotation_roles),
+        },
+        execution_trace={
+            "query_id": str(selected_query),
+            "internal_query_id": INTERNAL_QUERY_ID,
+            "query_id_probabilities": dict(query_probabilities),
+            "answer_type": "number",
+            "answer_value": float(height_value),
+            "answer_rounding": "nearest_tenth",
+            "annotation_roles": list(annotation_roles),
+            "reasoning_steps": int(measurement_fields.get("reasoning_steps", 1)),
+            **measurement_fields,
+        },
+        witness_symbolic={
+            "query_id": str(selected_query),
+            "internal_query_id": INTERNAL_QUERY_ID,
+            "answer_value": float(height_value),
+            **measurement_fields,
+        },
+    )
+    return (
+        str(prompt_artifacts.prompt),
+        dict(prompt_artifacts.prompt_variants),
+        image,
+        annotation_artifacts,
+        trace_payload,
+        default_task_versions(),
+        SCENE_ID,
+    )
+
+
 @register_task
 class GeometryConeNetHeightFromSectorAngleTask:
     """Return the cone height after deriving radius from the sector arc."""
@@ -85,29 +191,25 @@ class GeometryConeNetHeightFromSectorAngleTask:
             instance_seed=int(instance_seed),
             params=task_params,
         )
-        support_values = height_support_values(CONE_NET_CASES)
-        parts = prepare_cone_net_task_parts(
-            public_identifier=TASK_ID,
-            internal_prompt_key=INTERNAL_QUERY_ID,
+        prompt, prompt_variants, image, annotation_artifacts, trace_payload, task_versions, scene_id = _height_prompt_and_trace(
             selected_query=str(selected_query),
             query_probabilities=query_probabilities,
-            spec=diagram_spec,
+            task_params=task_params,
+            diagram_spec=diagram_spec,
             case_index=int(case_index),
-            support_values=support_values,
-            instance_seed=int(instance_seed),
-            params=task_params,
-            max_attempts=int(max_attempts),
+            height_value=float(height_value),
+            instance_seed=instance_seed,
+            max_attempts=max_attempts,
         )
-        annotation_value = parts.annotation_artifacts.value
         return TaskOutput(
-            parts.prompt,
+            prompt,
             TypedValue(type="number", value=height_value),
-            TypedValue(type=parts.annotation_artifacts.annotation_type, value=annotation_value),
-            parts.image,
+            TypedValue(type=annotation_artifacts.annotation_type, value=annotation_artifacts.value),
+            image,
             "img0",
-            parts.trace_payload,
-            parts.task_versions,
-            parts.scene_id,
+            trace_payload,
+            task_versions,
+            scene_id,
             str(selected_query),
-            dict(parts.prompt_variants),
+            prompt_variants,
         )

@@ -32,6 +32,6 @@ rendering:
       small_label_font_size: 18
 prompt:
   shared:
-    bundle_id: geometry_cone_sector_net_v0
+    bundle_id: geometry_cone_sector_net_v1
     scene_key: cone_sector_net_scene
     task_key: cone_sector_net_value_query

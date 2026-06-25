@@ -514,7 +514,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__tower_defense__covered_path_segment_count": _entry("games", "tower_defense", "games", "tower_defense"),
     "task_games__tower_draughts_board__controlled_stack_count": _entry("games", "tower_draughts_board", "games", "tower_draughts_board"),
     "task_games__tower_draughts_board__marked_stack_capture_count": _entry("games", "tower_draughts_board", "games", "tower_draughts_board"),
-    "task_games__tower_draughts_board__marked_stack_destination_count": _entry("games", "tower_draughts_board", "games", "tower_draughts_board"),
     "task_games__ultimate_tictactoe__line_completion_move_label": _entry("games", "ultimate_tictactoe", "games", "ultimate_tictactoe"),
     "task_games__ultimate_tictactoe__macro_threat_board_count": _entry("games", "ultimate_tictactoe", "games", "ultimate_tictactoe"),
     "task_games__ultimate_tictactoe__small_board_status_count": _entry("games", "ultimate_tictactoe", "games", "ultimate_tictactoe"),

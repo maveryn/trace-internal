@@ -13,11 +13,8 @@ from .defaults import DEFAULTS, GEN_DEFAULTS
 from .rules import (
     capture_paths,
     capture_targets,
-    destination_candidates,
-    legal_destinations,
     max_capture_count_for_board,
     max_controlled_count_for_board,
-    max_destination_count_for_board,
     opponent,
     playable_coords,
     player_from_name,
@@ -285,78 +282,16 @@ def viable_marked_coords(
     board_size: int,
     owner: int,
     crowned: bool,
-    min_destinations: int = 0,
     min_captures: int = 0,
 ) -> Tuple[Coord, ...]:
     """Return marked-stack coordinates with enough geometric move/capture slots."""
 
     out: list[Coord] = []
     for coord in playable_coords(int(board_size)):
-        destinations = destination_candidates(coord=coord, owner=int(owner), crowned=bool(crowned), board_size=int(board_size))
         captures = capture_paths(coord=coord, owner=int(owner), crowned=bool(crowned), board_size=int(board_size))
-        if len(destinations) >= int(min_destinations) and len(captures) >= int(min_captures):
+        if len(captures) >= int(min_captures):
             out.append(coord)
     return tuple(out)
-
-
-def sample_marked_stack_destination_count_scene(*, rng: Any, axes: TowerDraughtsAxes) -> TowerDraughtsSample:
-    """Construct a board with exactly the target number of legal destinations."""
-
-    target = int(axes.target_answer)
-    board_size = int(axes.board_size)
-    crowned = str(axes.top_kind) == "crowned"
-    viable = list(
-        viable_marked_coords(
-            board_size=board_size,
-            owner=int(axes.marked_player),
-            crowned=bool(crowned),
-            min_destinations=target,
-        )
-    )
-    if not viable:
-        raise ValueError("no marked stack can realize destination target")
-    rng.shuffle(viable)
-    marked_coord = tuple(viable[0])
-    candidates = list(
-        destination_candidates(
-            coord=marked_coord,
-            owner=int(axes.marked_player),
-            crowned=bool(crowned),
-            board_size=board_size,
-        )
-    )
-    rng.shuffle(candidates)
-    annotation = set(candidates[:target])
-    blocked = [coord for coord in candidates if coord not in annotation]
-    stacks: list[StackSpec] = [
-        make_stack(rng=rng, coord=marked_coord, owner=int(axes.marked_player), crowned=bool(crowned))
-    ]
-    for coord in blocked:
-        stacks.append(make_stack(rng=rng, coord=coord, owner=int(rng.choice([RED, BLACK])), crowned=bool(rng.random() < 0.2)))
-    desired_count = desired_occupied_count(rng=rng, board_size=board_size, minimum=len(stacks))
-    fill_extra_stacks(
-        rng=rng,
-        board_size=board_size,
-        stacks=stacks,
-        protected_empty={tuple(coord) for coord in annotation},
-        desired_count=desired_count,
-    )
-    actual = legal_destinations(stacks=tuple(stacks), marked_coord=marked_coord, board_size=board_size)
-    if set(actual) != annotation:
-        raise ValueError("constructed destination count mismatch")
-    return TowerDraughtsSample(
-        board_size=int(board_size),
-        style_variant=str(axes.style_variant),
-        stacks=tuple(sorted(stacks, key=lambda stack: stack.coord)),
-        marked_coord=marked_coord,
-        target_player=int(axes.target_player),
-        marked_player=int(axes.marked_player),
-        top_kind=str(axes.top_kind),
-        annotation_coords=tuple(sorted(actual)),
-        answer=int(len(actual)),
-        construction_mode="target_conditioned_marked_stack_destinations",
-        metadata={"legal_destinations": [[int(coord[0]), int(coord[1])] for coord in sorted(actual)]},
-    )
 
 
 def sample_marked_stack_capture_count_scene(*, rng: Any, axes: TowerDraughtsAxes) -> TowerDraughtsSample:
@@ -440,11 +375,9 @@ __all__ = [
     "make_stack",
     "max_capture_count_for_board",
     "max_controlled_count_for_board",
-    "max_destination_count_for_board",
     "random_stack_height",
     "resolve_tower_draughts_axes",
     "sample_controlled_stack_count_scene",
     "sample_marked_stack_capture_count_scene",
-    "sample_marked_stack_destination_count_scene",
     "viable_marked_coords",
 ]

@@ -45,7 +45,6 @@ class TowerDraughtsDefaults:
 
     board_size_support: Tuple[int, ...] = (4, 5, 6)
     controlled_stack_count_support: Tuple[int, ...] = tuple(range(0, 11))
-    marked_destination_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     marked_capture_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4)
     stack_height_support: Tuple[int, ...] = (1, 2, 3, 4)
     min_occupied_fraction: float = 0.40

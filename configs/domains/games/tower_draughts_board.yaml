@@ -37,12 +37,6 @@ generation:
     - 8
     - 9
     - 10
-    marked_destination_count_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
     marked_capture_count_support:
     - 0
     - 1

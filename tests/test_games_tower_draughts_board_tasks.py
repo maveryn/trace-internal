@@ -10,8 +10,7 @@ from trace.core.scene_config import get_scene_defaults
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks.games.tower_draughts_board.controlled_stack_count import TASK_ID as CONTROLLED_STACK_TASK_ID
 from trace.tasks.games.tower_draughts_board.marked_stack_capture_count import TASK_ID as MARKED_CAPTURE_TASK_ID
-from trace.tasks.games.tower_draughts_board.marked_stack_destination_count import TASK_ID as MARKED_DESTINATION_TASK_ID
-from trace.tasks.games.tower_draughts_board.shared.rules import capture_targets, destination_candidates, legal_destinations, playable_coords
+from trace.tasks.games.tower_draughts_board.shared.rules import capture_targets, destination_candidates, playable_coords
 from trace.tasks.games.tower_draughts_board.shared.state import BLACK, RED, StackSpec
 from trace.tasks.registry import create_task
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
@@ -20,7 +19,6 @@ from trace.core.query_ids import SINGLE_QUERY_ID
 
 TASK_IDS = (
     CONTROLLED_STACK_TASK_ID,
-    MARKED_DESTINATION_TASK_ID,
     MARKED_CAPTURE_TASK_ID,
 )
 
@@ -72,7 +70,6 @@ def test_games_tower_draughts_board_defaults_and_prompt_bundle() -> None:
     assert set(generation["top_kind_weights"].keys()) == {"regular", "crowned"}
     assert list(generation["board_size_support"]) == [4, 5, 6]
     assert list(generation["controlled_stack_count_support"]) == list(range(11))
-    assert list(generation["marked_destination_count_support"]) == [0, 1, 2, 3, 4]
     assert list(generation["marked_capture_count_support"]) == [0, 1, 2, 3, 4]
     assert list(generation["stack_height_support"]) == [1, 2, 3, 4]
     assert int(rendering["cell_size_min_px"]) == 56
@@ -89,7 +86,6 @@ def test_games_tower_draughts_board_prompt_bundle_has_queries() -> None:
     assert set(bundle["templates"]["query"].keys()) == {
         "controlled_stack_count",
         "marked_stack_capture_count",
-        "marked_stack_destination_count",
     }
     assert bool(bundle["allow_empty_task_templates"])
 
@@ -140,26 +136,6 @@ def test_games_tower_draughts_board_controlled_count_matches_trace() -> None:
     assert trace["prompt_query_key"] == "controlled_stack_count"
 
 
-def test_games_tower_draughts_board_destination_count_matches_trace() -> None:
-    out = _generate_with_seed_search(MARKED_DESTINATION_TASK_ID, target_answer=4, board_size=6)
-    trace = out.trace_payload["execution_trace"]
-    expected = legal_destinations(
-        stacks=_trace_stacks(trace),
-        marked_coord=tuple(trace["marked_coord"]),  # type: ignore[arg-type]
-        board_size=int(trace["board_size"]),
-    )
-
-    assert out.scene_id == "tower_draughts_board"
-    assert out.query_id == SINGLE_QUERY_ID
-    assert out.answer_gt.type == "integer"
-    assert int(out.answer_gt.value) == len(expected) == 4
-    assert tuple(tuple(coord) for coord in trace["annotation_coords"]) == expected
-    assert tuple(tuple(coord) for coord in trace["legal_destinations"]) == expected
-    assert len(out.annotation_gt.value) == len(expected)
-    assert out.annotation_gt.type == "bbox_set"
-    assert trace["prompt_query_key"] == "marked_stack_destination_count"
-
-
 def test_games_tower_draughts_board_capture_count_matches_trace() -> None:
     out = _generate_with_seed_search(MARKED_CAPTURE_TASK_ID, target_answer=4, board_size=6)
     trace = out.trace_payload["execution_trace"]
@@ -184,8 +160,6 @@ def test_games_tower_draughts_board_support_endpoints_are_constructible() -> Non
     cases = (
         (CONTROLLED_STACK_TASK_ID, 0, 4),
         (CONTROLLED_STACK_TASK_ID, 10, 6),
-        (MARKED_DESTINATION_TASK_ID, 0, 4),
-        (MARKED_DESTINATION_TASK_ID, 4, 6),
         (MARKED_CAPTURE_TASK_ID, 0, 4),
         (MARKED_CAPTURE_TASK_ID, 4, 6),
     )

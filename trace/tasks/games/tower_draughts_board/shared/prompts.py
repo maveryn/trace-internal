@@ -25,7 +25,6 @@ _PROMPT_WIRING_KEYS = (
     "json_output_contract_answer_only",
     "object_description",
     "ownership_rule_text",
-    "movement_rule_text",
     "capture_rule_text",
 )
 
@@ -75,7 +74,6 @@ def build_tower_draughts_prompt_artifacts(
             "target_player_name": player_name(int(target_player)),
             "marked_player_name": player_name(int(marked_player)),
             "ownership_rule_text": str(defaults["ownership_rule_text"]),
-            "movement_rule_text": str(defaults["movement_rule_text"]),
             "capture_rule_text": str(defaults["capture_rule_text"]),
             "json_output_contract": str(defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(defaults["json_output_contract_answer_only"]),

@@ -222,6 +222,7 @@ def _draw_tower(
     center: Point,
     radius: float,
     theme: TowerDefenseTheme,
+    draw_inner_detail: bool = True,
 ) -> BBox:
     bbox = _circle_bbox(center, radius)
     draw.ellipse(
@@ -230,6 +231,8 @@ def _draw_tower(
         outline=theme.tower_outline_rgb,
         width=max(2, int(round(radius * 0.16))),
     )
+    if not bool(draw_inner_detail):
+        return bbox
     inner_radius = max(5.0, float(radius) * 0.42)
     draw.ellipse(
         _circle_bbox(center, inner_radius),
@@ -455,8 +458,14 @@ def render_tower_defense_scene(
     tower_radius = max(8.0, float(params.tower_radius_px))
     for tower in towers:
         center = _local_to_global(tower.center_px, map_bbox=map_bbox)
-        bbox = _draw_tower(draw, center=center, radius=tower_radius, theme=theme)
         candidate_label = candidate_tower_label_from_id(str(tower.tower_id))
+        bbox = _draw_tower(
+            draw,
+            center=center,
+            radius=tower_radius,
+            theme=theme,
+            draw_inner_detail=candidate_label is None,
+        )
         label_bbox = None
         if candidate_label is not None:
             label_bbox = _draw_candidate_label(

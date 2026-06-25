@@ -15,6 +15,8 @@ from trace.tasks.three_d.shared.object_rendering import (
     render_three_d_object,
 )
 from trace.tasks.three_d.shared.object_scene_rendering import _bbox_union, _draw_line
+from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.shared.text_rendering import load_font
 
 from .sampling import LAYOUT_HORIZONTAL, LAYOUT_VERTICAL
 from .state import (
@@ -225,6 +227,76 @@ def _draw_object_shadow(draw: ImageDraw.ImageDraw, bbox: Sequence[float]) -> Non
     draw.ellipse(tuple(shadow), fill=(95, 105, 115))
 
 
+def _draw_anchor_markers(
+    image: Image.Image,
+    *,
+    object_bboxes: Mapping[str, Sequence[float]],
+    entities: List[Dict[str, Any]],
+    dataset: Mapping[str, Any],
+) -> None:
+    """Draw red A/B reference boxes around marked anchor objects."""
+
+    marker_records = [dict(record) for record in dataset.get("marked_anchor_records", [])]
+    if not marker_records:
+        return
+    draw = ImageDraw.Draw(image)
+    font = load_font(26, bold=True)
+    outline = (214, 28, 48)
+    badge_fill = (214, 28, 48)
+    badge_text = (255, 255, 255)
+    image_w, image_h = int(image.width), int(image.height)
+    for record in marker_records:
+        object_id = str(record.get("object_id", ""))
+        if object_id not in object_bboxes:
+            continue
+        x0, y0, x1, y1 = (float(value) for value in object_bboxes[str(object_id)])
+        pad = max(5.0, 0.08 * max(float(x1 - x0), float(y1 - y0)))
+        box = [
+            max(2.0, x0 - pad),
+            max(2.0, y0 - pad),
+            min(float(image_w - 2), x1 + pad),
+            min(float(image_h - 2), y1 + pad),
+        ]
+        draw.rectangle(tuple(box), outline=outline, width=4)
+        label = str(record.get("anchor_label", ""))
+        if label:
+            text_bbox = draw.textbbox((0, 0), label, font=font, stroke_width=1)
+            text_w = float(text_bbox[2] - text_bbox[0])
+            text_h = float(text_bbox[3] - text_bbox[1])
+            badge_w = max(28.0, text_w + 14.0)
+            badge_h = max(28.0, text_h + 10.0)
+            bx0 = min(max(2.0, box[0]), float(image_w) - badge_w - 2.0)
+            by0 = box[1] - badge_h - 4.0
+            if by0 < 2.0:
+                by0 = min(box[3] + 4.0, float(image_h) - badge_h - 2.0)
+            badge = [bx0, by0, bx0 + badge_w, by0 + badge_h]
+            draw.rounded_rectangle(tuple(badge), radius=6, fill=badge_fill, outline=(255, 255, 255), width=2)
+            draw_text_traced(
+                draw,
+                (badge[0] + badge_w * 0.5, badge[1] + badge_h * 0.5),
+                label,
+                font=font,
+                fill=badge_text,
+                stroke_width=0,
+                stroke_fill=badge_fill,
+                anchor="mm",
+                role="three_d_conveyor_anchor_label",
+                required=True,
+            )
+        entities.append(
+            {
+                "entity_id": f"anchor_marker_{object_id}",
+                "entity_type": "three_d_conveyor_anchor_marker",
+                "bbox_px": [round(float(value), 3) for value in box],
+                "attrs": {
+                    "object_id": str(object_id),
+                    "anchor_label": str(record.get("anchor_label", "")),
+                    "anchor_role": str(record.get("anchor_role", "")),
+                },
+            }
+        )
+
+
 def render_conveyor(
     background: Image.Image,
     *,
@@ -302,6 +374,12 @@ def render_conveyor(
         if str(object_id) in set(str(value) for value in dataset["target_object_ids"]):
             target_bboxes[str(object_id)] = list(bbox)
             target_centers[str(object_id)] = list(center)
+    _draw_anchor_markers(
+        image,
+        object_bboxes=object_bboxes,
+        entities=entities,
+        dataset=dataset,
+    )
     scene_bbox = _bbox_union(conveyor_bbox, *object_bboxes.values()) if object_bboxes else conveyor_bbox
     return RenderedConveyor(
         image=image,

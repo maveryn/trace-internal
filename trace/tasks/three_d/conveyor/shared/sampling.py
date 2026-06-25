@@ -62,6 +62,8 @@ PREDICATE_ORDERED_OBJECT_PAIR = "ordered_object_pair"
 PREDICATE_ORDERED_COLOR_PAIR = "ordered_color_pair"
 PREDICATE_OBJECT_TYPE_TRANSFER = "object_type_transfer"
 PREDICATE_COLOR_TRANSFER = "color_transfer"
+PREDICATE_BETWEEN_COLOR_ANCHORS = "between_color_anchors"
+PREDICATE_BETWEEN_OBJECT_ANCHORS = "between_object_anchors"
 ARITHMETIC_SUM = "sum"
 ARITHMETIC_DIFFERENCE = "difference"
 TRANSFER_OPERATION = "move_to_destination"
@@ -258,6 +260,31 @@ def _resolve_ordered_pair_count(
         upper=4,
     )
     return int(count), dict(probabilities)
+
+
+def _resolve_between_items_count(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> tuple[int, Dict[str, float]]:
+    del namespace
+    min_count = int(params.get("target_count_min", group_default(gen_defaults, "target_count_min", 1)))
+    max_count = int(params.get("target_count_max", group_default(gen_defaults, "target_count_max", 5)))
+    min_count = max(1, min(5, int(min_count)))
+    max_count = max(min_count, min(5, int(max_count)))
+    support = tuple(range(int(min_count), int(max_count) + 1))
+    explicit = params.get("target_count")
+    if explicit is not None:
+        count = int(explicit)
+        if count not in set(support):
+            raise ValueError(f"unsupported target_count: {count}")
+        return int(count), {str(value): (1.0 if int(value) == int(count) else 0.0) for value in support}
+    balanced_seed = int(params.get("_balanced_answer_seed", int(instance_seed)))
+    count = int(support[abs(int(balanced_seed)) % len(support)])
+    probability = 1.0 / float(len(support))
+    return int(count), {str(value): float(probability) for value in support}
 
 
 def _resolve_transfer_answer_and_counts(
@@ -1790,6 +1817,284 @@ def build_ordered_pair_count_dataset(
     }
 
 
+def build_between_marked_items_count_dataset(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    render_params: Any,
+    axes: ResolvedConveyorAxes,
+    predicate_kind: str,
+    namespace: str,
+) -> dict[str, Any]:
+    """Build a straight-conveyor dataset for counting objects between marked anchors."""
+
+    rng = spawn_rng(int(instance_seed), f"{namespace}.dataset")
+    layout_orientation, layout_orientation_probabilities = _resolve_layout_orientation(
+        params=params,
+        rng=rng,
+        render_params=render_params,
+    )
+    lane_keys = _lane_keys_for_orientation(str(layout_orientation))
+    target_lane_key, target_lane_probabilities = _resolve_target_lane(params=params, rng=rng, lane_keys=lane_keys)
+    target_count, target_count_probabilities = _resolve_between_items_count(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.{target_lane_key}.target_count",
+    )
+    target_total_min = max(6, int(target_count) + 2)
+    target_total = int(rng.randrange(int(target_total_min), 9))
+    lane_counts: Dict[str, int] = {
+        str(lane_key): (int(target_total) if str(lane_key) == str(target_lane_key) else int(rng.randrange(3, 9)))
+        for lane_key in lane_keys
+    }
+    start_index = int(rng.randrange(0, int(target_total) - int(target_count) - 1))
+    end_index = int(start_index + int(target_count) + 1)
+    between_indices = set(range(int(start_index) + 1, int(end_index)))
+    dimension_scale = float(params.get("object_dimension_scale", group_default(gen_defaults, "object_dimension_scale", 0.74)))
+
+    if str(predicate_kind) == PREDICATE_BETWEEN_COLOR_ANCHORS:
+        target_shape, target_shape_probabilities = _resolve_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        first_color, first_color_probabilities = _resolve_target_color(params=params, rng=rng)
+        palette = list(_sample_readout_palette(rng, target_color=str(first_color), size=6))
+        second_explicit = params.get("second_target_color_name")
+        if second_explicit is not None:
+            second_color = str(second_explicit)
+            if second_color == str(first_color) or second_color not in set(palette):
+                raise ValueError(f"unsupported second_target_color_name: {second_color}")
+        else:
+            candidates = [str(color) for color in palette if str(color) != str(first_color)]
+            second_color = str(candidates[int(rng.randrange(len(candidates)))])
+        filler_symbols = [str(color) for color in palette if str(color) not in {str(first_color), str(second_color)}]
+        target_color_name = str(first_color)
+        second_target_color_name = str(second_color)
+        target_color_probabilities = dict(first_color_probabilities)
+        target_shape_pair = ("", "")
+        target_object_name_pair = ("", "")
+        target_object_plural_pair = ("", "")
+        color_palette = list(palette)
+        shape_palette = [str(target_shape)]
+    elif str(predicate_kind) == PREDICATE_BETWEEN_OBJECT_ANCHORS:
+        first_shape, target_shape_probabilities = _resolve_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        second_explicit = params.get("second_target_shape_type")
+        second_candidates = list(compatible_distractor_pool(str(first_shape), support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES))
+        if second_explicit is not None:
+            second_shape = str(second_explicit)
+            if second_shape not in set(second_candidates):
+                raise ValueError(f"unsupported second_target_shape_type: {second_shape}")
+        else:
+            second_shape = str(second_candidates[int(rng.randrange(len(second_candidates)))])
+        filler_pool = list(compatible_distractor_pool(str(first_shape), support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES))
+        filler_pool = list(compatible_distractor_pool(str(second_shape), support=filler_pool))
+        filler_symbols = [str(shape) for shape in filler_pool if str(shape) not in {str(first_shape), str(second_shape)}]
+        target_shape = str(first_shape)
+        target_shape_pair = (str(first_shape), str(second_shape))
+        target_object_name_pair = (public_object_name(str(first_shape)), public_object_name(str(second_shape)))
+        target_object_plural_pair = (public_object_plural(str(first_shape)), public_object_plural(str(second_shape)))
+        target_color_name = ""
+        second_target_color_name = ""
+        target_color_probabilities = {}
+        color_palette = list(sample_visual_color_names(rng, palette_size=4))
+        shape_palette = [str(first_shape), str(second_shape), *list(filler_symbols)]
+    else:
+        raise ValueError(f"unsupported straight conveyor between-anchor predicate: {predicate_kind}")
+    if not filler_symbols:
+        raise ValueError("between-anchor task needs at least one filler symbol")
+    if not color_palette:
+        raise ValueError("between-anchor task needs a visual color palette")
+
+    target_sequence: list[str] = []
+    for index in range(int(target_total)):
+        if int(index) == int(start_index):
+            target_sequence.append(str(target_color_name if predicate_kind == PREDICATE_BETWEEN_COLOR_ANCHORS else target_shape_pair[0]))
+        elif int(index) == int(end_index):
+            target_sequence.append(str(second_target_color_name if predicate_kind == PREDICATE_BETWEEN_COLOR_ANCHORS else target_shape_pair[1]))
+        else:
+            target_sequence.append(str(filler_symbols[(index + rng.randrange(len(filler_symbols))) % len(filler_symbols)]))
+
+    object_specs: List[Dict[str, Any]] = []
+    object_sequences_by_lane: Dict[str, list[str]] = {}
+    target_object_ids: list[str] = []
+    start_anchor_object_id = ""
+    end_anchor_object_id = ""
+
+    for lane_key in lane_keys:
+        slots = _ordered_slot_positions_for_lane(
+            rng=rng,
+            layout_orientation=str(layout_orientation),
+            lane_key=str(lane_key),
+            count=int(lane_counts[str(lane_key)]),
+        )
+        if str(lane_key) == str(target_lane_key):
+            sequence = tuple(target_sequence)
+        elif str(predicate_kind) == PREDICATE_BETWEEN_COLOR_ANCHORS:
+            sequence = tuple(str(color_palette[int(rng.randrange(len(color_palette)))]) for _ in slots)
+        else:
+            sequence = tuple(str(shape_palette[int(rng.randrange(len(shape_palette)))]) for _ in slots)
+
+        lane_object_ids: list[str] = []
+        for index, slot in enumerate(slots):
+            object_id = f"obj_{len(object_specs):03d}"
+            lane_object_ids.append(str(object_id))
+            if str(predicate_kind) == PREDICATE_BETWEEN_COLOR_ANCHORS:
+                shape_type = str(target_shape)
+                color_name = str(sequence[index])
+            else:
+                shape_type = str(sequence[index])
+                color_name = str(color_palette[(index + len(object_specs)) % len(color_palette)])
+
+            is_start_anchor = str(lane_key) == str(target_lane_key) and int(index) == int(start_index)
+            is_end_anchor = str(lane_key) == str(target_lane_key) and int(index) == int(end_index)
+            matches_query = str(lane_key) == str(target_lane_key) and int(index) in between_indices
+            if is_start_anchor:
+                start_anchor_object_id = str(object_id)
+                count_role = "start_anchor"
+            elif is_end_anchor:
+                end_anchor_object_id = str(object_id)
+                count_role = "end_anchor"
+            elif matches_query:
+                count_role = "between_counted_object"
+                target_object_ids.append(str(object_id))
+            else:
+                count_role = "same_lane_distractor" if str(lane_key) == str(target_lane_key) else "lane_distractor"
+            object_specs.append(
+                _make_object_spec(
+                    rng=rng,
+                    object_id=str(object_id),
+                    shape_type=str(shape_type),
+                    color_name=str(color_name),
+                    lane_key=str(lane_key),
+                    layout_orientation=str(layout_orientation),
+                    slot=slot,
+                    matches_query=bool(matches_query),
+                    count_role=str(count_role),
+                    dimension_scale=float(dimension_scale),
+                )
+            )
+        object_sequences_by_lane[str(lane_key)] = list(lane_object_ids)
+
+    if not start_anchor_object_id or not end_anchor_object_id:
+        raise ValueError("between-anchor task failed to assign marked anchors")
+    if len(target_object_ids) != int(target_count):
+        raise ValueError("between-anchor dataset target count mismatch")
+
+    camera, frame, camera_meta, frame_meta = _finalize_camera_and_projection(
+        rng=rng,
+        render_params=render_params,
+        layout_orientation=str(layout_orientation),
+        object_specs=object_specs,
+    )
+    finalized_specs = _screen_finalize_specs(object_specs=object_specs, camera=camera, frame=frame)
+    shape_counts = Counter(str(spec["shape_type"]) for spec in finalized_specs)
+    color_counts = Counter(str(spec["color_name"]) for spec in finalized_specs)
+    lane_counts_final = Counter(str(spec["lane_key"]) for spec in finalized_specs)
+    target_lane_object_ids = [
+        str(spec["object_id"])
+        for spec in finalized_specs
+        if str(spec["lane_key"]) == str(target_lane_key)
+    ]
+    start_spec = next(spec for spec in finalized_specs if str(spec["object_id"]) == str(start_anchor_object_id))
+    end_spec = next(spec for spec in finalized_specs if str(spec["object_id"]) == str(end_anchor_object_id))
+    marked_anchor_records = [
+        {
+            "anchor_label": "A",
+            "anchor_role": "start_anchor",
+            "object_id": str(start_anchor_object_id),
+            "shape_type": str(start_spec["shape_type"]),
+            "object_name": public_object_name(str(start_spec["shape_type"])),
+            "object_plural": public_object_plural(str(start_spec["shape_type"])),
+            "color_name": str(start_spec["color_name"]),
+            "color_label": semantic_color_label(str(start_spec["color_name"])),
+        },
+        {
+            "anchor_label": "B",
+            "anchor_role": "end_anchor",
+            "object_id": str(end_anchor_object_id),
+            "shape_type": str(end_spec["shape_type"]),
+            "object_name": public_object_name(str(end_spec["shape_type"])),
+            "object_plural": public_object_plural(str(end_spec["shape_type"])),
+            "color_name": str(end_spec["color_name"]),
+            "color_label": semantic_color_label(str(end_spec["color_name"])),
+        },
+    ]
+    return {
+        "scene_id": SCENE_ID,
+        "scene_variant": str(axes.scene_variant),
+        "layout_family": "straight_parallel_conveyors",
+        "layout_orientation": str(layout_orientation),
+        "layout_orientation_probabilities": dict(layout_orientation_probabilities),
+        "predicate_kind": str(predicate_kind),
+        "lane_records": _lane_records(str(layout_orientation)),
+        "target_lane_key": str(target_lane_key),
+        "target_lane_label": str(LANE_LABELS[str(target_lane_key)]),
+        "target_belt_key": str(target_lane_key),
+        "target_belt_label": str(LANE_LABELS[str(target_lane_key)]),
+        "target_shape_type": str(target_shape),
+        "target_object_name": public_object_name(str(target_shape)),
+        "target_object_plural": public_object_plural(str(target_shape)),
+        "target_shape_pair": [str(shape) for shape in target_shape_pair],
+        "target_object_name_pair": [str(name) for name in target_object_name_pair],
+        "target_object_plural_pair": [str(name) for name in target_object_plural_pair],
+        "target_color_name": str(target_color_name),
+        "second_target_color_name": str(second_target_color_name),
+        "target_color_label": semantic_color_label(str(target_color_name)) if str(target_color_name) else "",
+        "second_target_color_label": semantic_color_label(str(second_target_color_name)) if str(second_target_color_name) else "",
+        "start_anchor_object_id": str(start_anchor_object_id),
+        "end_anchor_object_id": str(end_anchor_object_id),
+        "marked_anchor_object_ids": [str(start_anchor_object_id), str(end_anchor_object_id)],
+        "marked_anchor_records": [dict(record) for record in marked_anchor_records],
+        "between_object_ids": [str(object_id) for object_id in target_object_ids],
+        "start_anchor_index": int(start_index),
+        "end_anchor_index": int(end_index),
+        "answer_value": int(target_count),
+        "target_count": int(target_count),
+        "target_object_ids": [str(object_id) for object_id in target_object_ids],
+        "target_lane_object_ids": list(target_lane_object_ids),
+        "target_belt_object_ids": list(target_lane_object_ids),
+        "object_sequences_by_lane": {str(key): list(value) for key, value in object_sequences_by_lane.items()},
+        "object_count": int(len(finalized_specs)),
+        "object_specs": [dict(spec) for spec in finalized_specs],
+        "shape_counts": {str(key): int(value) for key, value in sorted(shape_counts.items())},
+        "color_counts": {str(key): int(value) for key, value in sorted(color_counts.items())},
+        "lane_counts": {str(key): int(value) for key, value in sorted(lane_counts_final.items())},
+        "belt_counts": {str(key): int(value) for key, value in sorted(lane_counts_final.items())},
+        "target_shape_type_probabilities": dict(target_shape_probabilities),
+        "target_color_name_probabilities": dict(target_color_probabilities),
+        "target_count_probabilities": dict(target_count_probabilities),
+        "lane_count_probabilities": {str(lane_key): {str(count): 1.0} for lane_key, count in lane_counts.items()},
+        "target_lane_key_probabilities": dict(target_lane_probabilities),
+        "target_belt_key_probabilities": dict(target_lane_probabilities),
+        "target_belt_probabilities": dict(target_lane_probabilities),
+        "semantic_color_palette": {str(key): list(value) for key, value in sorted(SEMANTIC_COLOR_RGB.items())},
+        "camera": dict(camera_meta),
+        "projection_frame": dict(frame_meta),
+        "solver_trace": {
+            "count_predicate": str(predicate_kind),
+            "scope": {
+                "lane_key": str(target_lane_key),
+                "lane_label": str(LANE_LABELS[str(target_lane_key)]),
+            },
+            "anchors": [dict(record) for record in marked_anchor_records],
+            "start_anchor_object_id": str(start_anchor_object_id),
+            "end_anchor_object_id": str(end_anchor_object_id),
+            "between_object_ids": [str(object_id) for object_id in target_object_ids],
+            "target_count": int(target_count),
+            "target_object_ids": [str(object_id) for object_id in target_object_ids],
+            "answer_value": int(target_count),
+            "unique_integer_answer": True,
+        },
+    }
+
+
 __all__ = [
     "ARITHMETIC_DIFFERENCE",
     "ARITHMETIC_SUM",
@@ -1800,6 +2105,8 @@ __all__ = [
     "PREDICATE_COLOR_ARITHMETIC",
     "PREDICATE_COLOR_TYPE",
     "PREDICATE_COLOR_TRANSFER",
+    "PREDICATE_BETWEEN_COLOR_ANCHORS",
+    "PREDICATE_BETWEEN_OBJECT_ANCHORS",
     "PREDICATE_ORDERED_COLOR_PAIR",
     "PREDICATE_ORDERED_OBJECT_PAIR",
     "PREDICATE_OBJECT_TYPE",
@@ -1807,6 +2114,7 @@ __all__ = [
     "PREDICATE_OBJECT_TYPE_TRANSFER",
     "ResolvedConveyorAxes",
     "TRANSFER_OPERATION",
+    "build_between_marked_items_count_dataset",
     "build_belt_total_count_dataset",
     "build_lane_count_arithmetic_dataset",
     "build_ordered_pair_count_dataset",

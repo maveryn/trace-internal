@@ -43,6 +43,10 @@ generation:
       answer_value_min: 2
       answer_value_max: 12
       object_dimension_scale: 0.64
+    task_three_d__carousel__between_marked_items_count:
+      target_count_min: 1
+      target_count_max: 5
+      object_dimension_scale: 0.60
 
 rendering:
   shared:
@@ -101,5 +105,8 @@ prompt:
       scene_key: carousel
       task_key: carousel_count_query
     task_three_d__carousel__scope_count_after_transfer_value:
+      scene_key: carousel
+      task_key: carousel_count_query
+    task_three_d__carousel__between_marked_items_count:
       scene_key: carousel
       task_key: carousel_count_query

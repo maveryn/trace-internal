@@ -24,11 +24,14 @@ from .shared.annotations import (
 from .shared.prompts import build_prompt_artifacts, dynamic_slots_for_conveyor
 from .shared.rendering import RenderedConveyor, render_conveyor
 from .shared.sampling import (
+    PREDICATE_BETWEEN_COLOR_ANCHORS,
+    PREDICATE_BETWEEN_OBJECT_ANCHORS,
     PREDICATE_COLOR_TRANSFER,
     PREDICATE_ORDERED_COLOR_PAIR,
     PREDICATE_ORDERED_OBJECT_PAIR,
     PREDICATE_OBJECT_TYPE_TRANSFER,
     ResolvedConveyorAxes,
+    build_between_marked_items_count_dataset,
     build_belt_count_arithmetic_dataset,
     build_belt_count_dataset,
     build_ordered_pair_count_dataset,
@@ -140,6 +143,15 @@ def _build_trace_payload(
         ]
         for pair in target_pair_ids
     ]
+    marked_anchor_ids = [str(object_id) for object_id in dataset.get("marked_anchor_object_ids", [])]
+    marked_anchor_bboxes = {
+        str(object_id): list(rendered.object_bboxes_px[str(object_id)])
+        for object_id in marked_anchor_ids
+    }
+    marked_anchor_centers = {
+        str(object_id): list(rendered.object_centers_px[str(object_id)])
+        for object_id in marked_anchor_ids
+    }
     solver_trace = dict(dataset["solver_trace"])
     solver_trace.update(
         {
@@ -154,6 +166,14 @@ def _build_trace_payload(
             {
                 "target_pair_object_id_pairs": [list(pair) for pair in target_pair_ids],
                 "target_pair_segments_px": [[list(point) for point in segment] for segment in target_pair_segments],
+            }
+        )
+    if marked_anchor_ids:
+        solver_trace.update(
+            {
+                "marked_anchor_object_ids": list(marked_anchor_ids),
+                "marked_anchor_object_bboxes_px": dict(marked_anchor_bboxes),
+                "marked_anchor_object_centers_px": dict(marked_anchor_centers),
             }
         )
     execution_trace = {
@@ -180,6 +200,15 @@ def _build_trace_payload(
         "target_object_centers_px": dict(target_centers),
         "target_pair_object_id_pairs": [list(pair) for pair in target_pair_ids],
         "target_pair_segments_px": [[list(point) for point in segment] for segment in target_pair_segments],
+        "start_anchor_object_id": str(dataset.get("start_anchor_object_id", "")),
+        "end_anchor_object_id": str(dataset.get("end_anchor_object_id", "")),
+        "marked_anchor_object_ids": list(marked_anchor_ids),
+        "marked_anchor_object_bboxes_px": dict(marked_anchor_bboxes),
+        "marked_anchor_object_centers_px": dict(marked_anchor_centers),
+        "marked_anchor_records": [dict(record) for record in dataset.get("marked_anchor_records", [])],
+        "between_object_ids": [str(object_id) for object_id in dataset.get("between_object_ids", [])],
+        "start_anchor_index": int(dataset.get("start_anchor_index", -1)),
+        "end_anchor_index": int(dataset.get("end_anchor_index", -1)),
         "target_belt_object_ids": list(dataset["target_belt_object_ids"]),
         "object_sequences_by_belt": {
             str(key): [str(object_id) for object_id in value]
@@ -274,6 +303,19 @@ def _build_trace_payload(
                 "belt_label": str(dataset["target_belt_label"]),
             },
         }
+    if marked_anchor_ids:
+        witness_symbolic = {
+            "type": "carousel_between_marked_item_set",
+            "object_ids": list(target_ids),
+            "count": int(dataset["answer_value"]),
+            "start_anchor_object_id": str(dataset.get("start_anchor_object_id", "")),
+            "end_anchor_object_id": str(dataset.get("end_anchor_object_id", "")),
+            "marked_anchor_object_ids": list(marked_anchor_ids),
+            "scope": {
+                "belt_key": str(dataset["target_belt_key"]),
+                "belt_label": str(dataset["target_belt_label"]),
+            },
+        }
     return {
         "scene_ir": {
             "scene_kind": f"three_d_conveyor_{public_name.rsplit('__', 1)[-1]}",
@@ -315,6 +357,8 @@ def _build_trace_payload(
             "target_object_bboxes_px": dict(target_bboxes),
             "target_object_centers_px": dict(target_centers),
             "target_pair_segments_px": [[list(point) for point in segment] for segment in target_pair_segments],
+            "marked_anchor_object_bboxes_px": dict(marked_anchor_bboxes),
+            "marked_anchor_object_centers_px": dict(marked_anchor_centers),
             "belt_bboxes_px": dict(rendered.belt_bboxes_px),
         },
         "execution_trace": execution_trace,
@@ -650,6 +694,135 @@ def run_conveyor_ordered_pair_count_lifecycle(
     raise RuntimeError(f"{public_name} failed to generate a valid carousel ordered-pair scene after {max_attempts} attempts: {last_error}")
 
 
+def run_conveyor_between_marked_items_count_lifecycle(
+    *,
+    public_name: str,
+    domain_name: str,
+    prompt_query_key_by_branch: Mapping[str, str],
+    predicate_kind_by_branch: Mapping[str, str],
+    supported_branches: Sequence[str],
+    default_branch: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    max_attempts: int,
+) -> TaskOutput:
+    """Run the marked-anchor between-items count lifecycle for carousel tasks."""
+
+    from trace.core.scene_config import get_scene_defaults
+    from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
+
+    scene_defaults = get_scene_defaults(str(domain_name), SCENE_ID)
+    gen_defaults, render_defaults, _prompt_defaults = split_scene_generation_rendering_prompt_defaults(
+        scene_defaults if isinstance(scene_defaults, Mapping) else {},
+        task_id=str(public_name),
+    )
+    selected_branch, branch_probabilities, clean_params = select_task_query_id(
+        instance_seed=int(instance_seed),
+        params=params,
+        supported_query_ids=tuple(str(branch) for branch in supported_branches),
+        default_query_id=str(default_branch),
+        task_id=str(public_name),
+        namespace=f"{public_name}.query",
+    )
+    axes = resolve_conveyor_axes(
+        params=clean_params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=str(public_name),
+    )
+    prompt_query_key = str(prompt_query_key_by_branch[str(selected_branch)])
+    predicate_kind = str(predicate_kind_by_branch[str(selected_branch)])
+    if predicate_kind not in {PREDICATE_BETWEEN_COLOR_ANCHORS, PREDICATE_BETWEEN_OBJECT_ANCHORS}:
+        raise ValueError(f"unsupported carousel between-anchor predicate: {predicate_kind}")
+    min_bbox_side_px = float(clean_params.get("min_rendered_bbox_side_px", gen_defaults.get("min_rendered_bbox_side_px", 24.0)))
+    last_error: Exception | None = None
+    for attempt_index in range(max(1, int(max_attempts))):
+        attempt_seed = _attempt_seed(int(instance_seed), public_name=str(public_name), attempt_index=int(attempt_index))
+        try:
+            render_params = _resolve_render_params(
+                clean_params,
+                render_defaults=render_defaults,
+                instance_seed=int(attempt_seed),
+                namespace=f"{public_name}.canvas",
+            )
+            dataset = build_between_marked_items_count_dataset(
+                instance_seed=int(attempt_seed),
+                params={**dict(clean_params), "_balanced_answer_seed": int(instance_seed)},
+                gen_defaults=gen_defaults,
+                render_params=render_params,
+                axes=axes,
+                predicate_kind=str(predicate_kind),
+                namespace=str(public_name),
+            )
+            plan = ConveyorTaskPlan(
+                dataset=dict(dataset),
+                answer_gt=TypedValue(type="integer", value=int(dataset["answer_value"])),
+                target_object_ids=tuple(str(object_id) for object_id in dataset["target_object_ids"]),
+                objective_params={},
+            )
+            background, background_meta = make_background_canvas(
+                canvas_width=int(render_params.canvas_width),
+                canvas_height=int(render_params.canvas_height),
+                instance_seed=int(attempt_seed),
+                params=clean_params,
+                default_config=_BACKGROUND_DEFAULTS,
+            )
+            rendered = render_conveyor(background, dataset=plan.dataset, render_params=render_params)
+            if not _rendered_bboxes_are_readable(rendered, min_side_px=float(min_bbox_side_px)):
+                raise ValueError("rendered carousel object boxes failed readability constraints")
+            image, post_noise_meta = apply_post_image_noise(
+                rendered.image,
+                instance_seed=int(attempt_seed),
+                params=clean_params,
+                default_config=_NOISE_DEFAULTS,
+            )
+            annotation_artifacts = bbox_set_annotation_for_objects(rendered, plan.target_object_ids)
+            _prompt_defaults, prompt_artifacts = build_prompt_artifacts(
+                prompt_query_key=str(prompt_query_key),
+                dynamic_slot_values=dynamic_slots_for_conveyor(plan.dataset),
+                instance_seed=int(attempt_seed),
+            )
+            query_spec = build_prompt_query_spec(
+                prompt_artifacts=prompt_artifacts,
+                query_id=str(selected_branch),
+                params=_trace_params(
+                    axes=axes,
+                    dataset=plan.dataset,
+                    branch_probabilities=branch_probabilities,
+                ),
+            )
+            trace_payload = _build_trace_payload(
+                public_name=str(public_name),
+                selected_branch=str(selected_branch),
+                axes=axes,
+                plan=plan,
+                rendered=rendered,
+                annotation_artifacts=annotation_artifacts,
+                prompt_artifacts=prompt_artifacts,
+                query_spec=query_spec,
+                render_params=render_params,
+                image=image,
+                background_meta=background_meta,
+                post_noise_meta=post_noise_meta,
+            )
+            return TaskOutput(
+                prompt=str(prompt_artifacts.prompt),
+                prompt_variants=dict(prompt_artifacts.prompt_variants),
+                answer_gt=plan.answer_gt,
+                annotation_gt=annotation_artifacts.annotation_gt,
+                image=image,
+                image_id="img0",
+                trace_payload=trace_payload,
+                task_versions=default_task_versions(),
+                scene_id=SCENE_ID,
+                query_id=str(selected_branch),
+            )
+        except Exception as exc:
+            last_error = exc
+            continue
+    raise RuntimeError(f"{public_name} failed to generate a valid carousel between-anchor scene after {max_attempts} attempts: {last_error}")
+
+
 def run_conveyor_lifecycle(
     *,
     public_name: str,
@@ -914,6 +1087,7 @@ def run_conveyor_count_arithmetic_lifecycle(
 
 __all__ = [
     "ConveyorTaskPlan",
+    "run_conveyor_between_marked_items_count_lifecycle",
     "run_conveyor_count_arithmetic_lifecycle",
     "run_conveyor_lifecycle",
     "run_conveyor_ordered_pair_count_lifecycle",

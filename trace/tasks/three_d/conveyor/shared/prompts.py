@@ -31,6 +31,9 @@ _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS = load_scene_gen
 def dynamic_slots_for_conveyor(dataset: Mapping[str, Any]) -> dict[str, Any]:
     """Return dynamic prompt slots bound to one conveyor dataset."""
 
+    anchor_records = [dict(record) for record in dataset.get("marked_anchor_records", [])]
+    start_anchor = anchor_records[0] if len(anchor_records) > 0 else {}
+    end_anchor = anchor_records[1] if len(anchor_records) > 1 else {}
     slots = {
         "lane_label": str(dataset.get("target_lane_label", dataset.get("target_belt_label", ""))),
         "belt_label": str(dataset.get("target_belt_label", dataset.get("target_lane_label", ""))),
@@ -50,6 +53,12 @@ def dynamic_slots_for_conveyor(dataset: Mapping[str, Any]) -> dict[str, Any]:
         ),
         "source_lane_label": str(dataset.get("source_lane_label", dataset.get("source_belt_label", ""))),
         "destination_lane_label": str(dataset.get("destination_lane_label", dataset.get("destination_belt_label", ""))),
+        "start_anchor_label": str(start_anchor.get("anchor_label", "A")),
+        "end_anchor_label": str(end_anchor.get("anchor_label", "B")),
+        "start_anchor_color_label": str(start_anchor.get("color_label", "")),
+        "end_anchor_color_label": str(end_anchor.get("color_label", "")),
+        "start_anchor_object_name": str(start_anchor.get("object_name", "")),
+        "end_anchor_object_name": str(end_anchor.get("object_name", "")),
     }
     if "arithmetic_operation" in dataset:
         scope_keys = [str(scope) for scope in dataset.get("scope_keys", [])]

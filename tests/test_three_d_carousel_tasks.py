@@ -12,6 +12,11 @@ from trace.tasks.three_d.carousel.adjacent_pair_count import (
     OBJECT_ORDERED_PAIR_QUERY_ID,
     TASK_ID as ADJACENT_PAIR_TASK_ID,
 )
+from trace.tasks.three_d.carousel.between_marked_items_count import (
+    BETWEEN_COLOR_ANCHORS_QUERY_ID,
+    BETWEEN_OBJECT_ANCHORS_QUERY_ID,
+    TASK_ID as BETWEEN_MARKED_TASK_ID,
+)
 from trace.tasks.three_d.carousel.belt_total_object_count import (
     QUERY_ID as TOTAL_QUERY_ID,
     TASK_ID as TOTAL_TASK_ID,
@@ -417,6 +422,94 @@ def test_carousel_adjacent_pair_count_supports_zero_and_four() -> None:
         assert int(output.answer_gt.value) == int(target_count)
         assert len(output.annotation_gt.value) == int(target_count)
         assert len(trace["target_pair_object_id_pairs"]) == int(target_count)
+        assert int(trace["belt_counts"].get("inner", 0)) <= 8
+        assert int(trace["belt_counts"].get("outer", 0)) <= 12
+
+
+def test_carousel_between_marked_items_count_query_ids() -> None:
+    task = create_task(BETWEEN_MARKED_TASK_ID)
+    cases = (
+        (BETWEEN_COLOR_ANCHORS_QUERY_ID, 2026062835),
+        (BETWEEN_OBJECT_ANCHORS_QUERY_ID, 2026062836),
+    )
+    for query_id, seed in cases:
+        output = task.generate(
+            seed,
+            params={"query_id": query_id, "post_image_noise_apply_prob": 0.0},
+            max_attempts=220,
+        )
+        trace = output.trace_payload["execution_trace"]
+        render_map = output.trace_payload["render_map"]
+        target_ids = [str(object_id) for object_id in trace["target_object_ids"]]
+        target_belt = str(trace["target_belt_key"])
+        belt_sequence = [str(object_id) for object_id in trace["object_sequences_by_belt"][target_belt]]
+        start_index = int(trace["start_anchor_index"])
+        end_index = int(trace["end_anchor_index"])
+        expected_between_ids = [
+            belt_sequence[(start_index + offset) % len(belt_sequence)]
+            for offset in range(1, int(output.answer_gt.value) + 1)
+        ]
+
+        assert output.scene_id == "carousel"
+        assert output.query_id == query_id
+        assert output.answer_gt.type == "integer"
+        assert output.annotation_gt.type == "bbox_set"
+        assert 1 <= int(output.answer_gt.value) <= 5
+        assert int(output.answer_gt.value) == len(target_ids)
+        assert target_ids == expected_between_ids
+        assert target_ids == [str(object_id) for object_id in trace["between_object_ids"]]
+        assert trace["marked_anchor_object_ids"] == [trace["start_anchor_object_id"], trace["end_anchor_object_id"]]
+        assert trace["start_anchor_object_id"] == belt_sequence[start_index]
+        assert trace["end_anchor_object_id"] == belt_sequence[end_index]
+        assert end_index == (start_index + int(output.answer_gt.value) + 1) % len(belt_sequence)
+        assert trace["start_anchor_object_id"] not in target_ids
+        assert trace["end_anchor_object_id"] not in target_ids
+        assert output.annotation_gt.value == [render_map["object_bboxes_px"][object_id] for object_id in target_ids]
+        assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
+        assert output.trace_payload["projected_annotation"]["pixel_bbox_set"] == output.annotation_gt.value
+        assert set(render_map["marked_anchor_object_bboxes_px"]) == {
+            str(trace["start_anchor_object_id"]),
+            str(trace["end_anchor_object_id"]),
+        }
+        assert "{target_" not in output.prompt
+        assert "unlettered" not in output.prompt.lower()
+        assert_three_d_canvas_contract(output)
+        if query_id == BETWEEN_COLOR_ANCHORS_QUERY_ID:
+            assert trace["predicate_kind"] == "between_color_anchors"
+            assert trace["target_color_label"]
+            assert trace["second_target_color_label"]
+        else:
+            assert trace["predicate_kind"] == "between_object_anchors"
+            assert trace["target_object_name_pair"][0]
+            assert trace["target_object_name_pair"][1]
+        assert int(trace["belt_counts"].get("inner", 0)) <= 8
+        assert int(trace["belt_counts"].get("outer", 0)) <= 12
+
+
+def test_carousel_between_marked_items_count_supports_one_and_five() -> None:
+    task = create_task(BETWEEN_MARKED_TASK_ID)
+    cases = (
+        (BETWEEN_COLOR_ANCHORS_QUERY_ID, "inner", 1, 2026062837),
+        (BETWEEN_OBJECT_ANCHORS_QUERY_ID, "outer", 5, 2026062838),
+    )
+    for query_id, belt_key, target_count, seed in cases:
+        output = task.generate(
+            seed,
+            params={
+                "query_id": query_id,
+                "target_belt_key": belt_key,
+                "target_count": target_count,
+                "post_image_noise_apply_prob": 0.0,
+            },
+            max_attempts=220,
+        )
+        trace = output.trace_payload["execution_trace"]
+        belt_sequence = [str(object_id) for object_id in trace["object_sequences_by_belt"][str(trace["target_belt_key"])]]
+
+        assert int(output.answer_gt.value) == int(target_count)
+        assert len(output.annotation_gt.value) == int(target_count)
+        assert len(trace["between_object_ids"]) == int(target_count)
+        assert int(trace["end_anchor_index"]) == (int(trace["start_anchor_index"]) + int(target_count) + 1) % len(belt_sequence)
         assert int(trace["belt_counts"].get("inner", 0)) <= 8
         assert int(trace["belt_counts"].get("outer", 0)) <= 12
 

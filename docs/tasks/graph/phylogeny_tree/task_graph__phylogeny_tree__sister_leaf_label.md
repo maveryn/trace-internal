@@ -8,7 +8,7 @@
 5. Objective: identify the sister taxon leaf of a queried taxon.
 
 ## Program Contract
-select(label(leaf) where shares_immediate_parent(leaf, queried_leaf)); output=string; annotation=bbox_map(target_leaf,sister_leaf,shared_parent); scene=phylogeny_tree; scope=sister_leaf_label
+select(label(leaf) where shares_immediate_parent(leaf, queried_leaf)); output=string; annotation=point(sister_leaf_center); scene=phylogeny_tree; scope=sister_leaf_label
 
 ## Query IDs
 1. Supported `query_id`: `single`.
@@ -16,9 +16,9 @@ select(label(leaf) where shares_immediate_parent(leaf, queried_leaf)); output=st
 
 ## Answer And Annotation
 1. Answer type: `string`.
-2. Annotation schema: `bbox_map`.
-3. Annotation keys are `target_leaf`, `sister_leaf`, and `shared_parent`.
-4. Annotation marks minimal visual witnesses for the relation, not answer-option text.
+2. Annotation schema: `point`.
+3. Annotation is the center point of the answer sister taxon leaf.
+4. Query leaf, sister leaf, and shared-parent ids are recorded in trace metadata.
 
 ## Rendering Contract
 1. The scene renders a rooted cladogram with labeled terminal taxa.

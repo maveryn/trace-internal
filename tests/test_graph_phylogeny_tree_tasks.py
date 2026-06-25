@@ -60,10 +60,10 @@ def test_phylogeny_sister_leaf_label_contract() -> None:
     trace = out.trace_payload
     assert out.query_id == "single"
     assert out.answer_gt.type == "string"
-    assert out.annotation_gt.type == "bbox_map"
-    assert set(out.annotation_gt.value.keys()) == {"target_leaf", "sister_leaf", "shared_parent"}
+    assert out.annotation_gt.type == "point"
     assert out.answer_gt.value == trace["execution_trace"]["sister_leaf_label"]
-    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["point"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["point_map"]["sister_leaf"] == out.annotation_gt.value
 
 
 def test_phylogeny_mrca_leaf_count_contract() -> None:
@@ -141,10 +141,10 @@ def test_phylogeny_topology_outlier_contract() -> None:
     assert out.answer_gt.type == "string"
     assert out.annotation_gt.type == "bbox"
     assert len(out.annotation_gt.value) == 4
-    assert out.answer_gt.value in {"A", "B", "C", "D", "E", "F"}
+    assert out.answer_gt.value in {"A", "B", "C", "D"}
     option_records = trace["execution_trace"]["option_records"]
-    assert len(option_records) == 6
-    assert [record["option_label"] for record in option_records] == list("ABCDEF")
+    assert len(option_records) == 4
+    assert [record["option_label"] for record in option_records] == list("ABCD")
     assert [record["role"] for record in option_records].count("outlier") == 1
     selected = [record for record in option_records if record["option_label"] == out.answer_gt.value][0]
     assert selected["role"] == "outlier"
@@ -166,14 +166,14 @@ def test_phylogeny_topology_option_signatures_have_one_outlier() -> None:
         8106,
         leaf_count_min=6,
         leaf_count_max=8,
-        option_count=6,
+        option_count=4,
         max_attempts=200,
     )
     base_signature = tuple(dataset["base_sample"].canonical_signature)
     outlier_signature = tuple(dataset["outlier_sample"].canonical_signature)
     assert base_signature != outlier_signature
     roles = {str(spec["option_label"]): str(spec["role"]) for spec in dataset["option_specs"]}
-    assert set(roles) == set("ABCDEF")
+    assert set(roles) == set("ABCD")
     assert list(roles.values()).count("outlier") == 1
     for spec in dataset["option_specs"]:
         signature = tuple(spec["canonical_signature"])

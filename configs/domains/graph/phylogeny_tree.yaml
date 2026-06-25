@@ -21,7 +21,7 @@ generation:
       target_mrca_leaf_count_min: 2
       target_mrca_leaf_count_max: 8
     task_graph__phylogeny_tree__topology_outlier_label:
-      option_count: 6
+      option_count: 4
       option_leaf_count_min: 6
       option_leaf_count_max: 8
 rendering:

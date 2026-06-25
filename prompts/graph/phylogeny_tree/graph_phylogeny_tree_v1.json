@@ -51,8 +51,8 @@
         "Count the terminal taxa in the MRCA clade for \"{query_label_a}\" and \"{query_label_b}\"."
       ],
       "topology_outlier_label": [
-        "Five options have the same rooted topology, ignoring branch order and layout. Which option is the outlier?",
-        "Which option has a different rooted clade structure from the other five options?",
+        "Three options have the same rooted topology, ignoring branch order and layout. Which option is the outlier?",
+        "Which option has a different rooted clade structure from the other three options?",
         "Ignoring rotations and drawing layout, select the one cladogram whose topology differs.",
         "Find the option whose set of nested clades is not the same as the other options.",
         "Which labeled option is the topology outlier?"
@@ -83,9 +83,9 @@
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:sister_leaf_label": {
-      "annotation_hint": "set \"annotation\" to a JSON object with keys \"target_leaf\", \"sister_leaf\", and \"shared_parent\"; each value is a [x0,y0,x1,y1] pixel box around that visual witness",
+      "annotation_hint": "set \"annotation\" to the [x,y] pixel point at the center of the sister taxon leaf",
       "answer_hint": "set \"answer\" to the sister taxon label as a string exactly as shown",
-      "json_example": "{\"annotation\":{\"target_leaf\":[720,180,746,204],\"sister_leaf\":[720,248,746,272],\"shared_parent\":[510,208,528,226]},\"answer\":\"B\"}",
+      "json_example": "{\"annotation\":[742,248],\"answer\":\"B\"}",
       "json_example_answer_only": "{\"answer\":\"B\"}"
     },
     "query:mrca_leaf_count": {

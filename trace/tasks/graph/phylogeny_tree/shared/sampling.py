@@ -225,13 +225,13 @@ def sample_topology_outlier_options(
     *,
     leaf_count_min: int,
     leaf_count_max: int,
-    option_count: int = 6,
+    option_count: int = 4,
     max_attempts: int = 200,
 ) -> Dict[str, Any]:
-    """Build six option cladograms with one rooted-topology outlier."""
+    """Build four option cladograms with one rooted-topology outlier."""
 
-    if int(option_count) != 6:
-        raise ValueError("phylogeny topology options require exactly six options")
+    if int(option_count) != 4:
+        raise ValueError("phylogeny topology options require exactly four options")
     rng = spawn_rng(int(instance_seed), "phylogeny_tree.topology_options")
     leaf_count = int(rng.randint(int(leaf_count_min), int(leaf_count_max)))
     base = sample_phylogeny_tree(

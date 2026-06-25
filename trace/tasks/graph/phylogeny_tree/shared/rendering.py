@@ -389,10 +389,10 @@ def render_phylogeny_option_scene(
     layout_seed: int,
     base_image: Image.Image,
 ) -> RenderedPhylogenyScene:
-    """Render six phylogeny options into fixed A-F option panels."""
+    """Render four phylogeny options into fixed A-D option panels."""
 
-    if len(option_specs) != 6:
-        raise ValueError("phylogeny option scene requires exactly six options")
+    if len(option_specs) != 4:
+        raise ValueError("phylogeny option scene requires exactly four options")
     image = base_image.copy()
     draw = ImageDraw.Draw(image)
     margin_x = float(render_params.outer_margin_px)
@@ -401,14 +401,14 @@ def render_phylogeny_option_scene(
     gap_y = 22.0
     width = float(render_params.canvas_width)
     height = float(render_params.canvas_height)
-    panel_w = (width - (2.0 * margin_x) - (2.0 * gap_x)) / 3.0
+    panel_w = (width - (2.0 * margin_x) - gap_x) / 2.0
     panel_h = (height - (2.0 * margin_y) - gap_y) / 2.0
     option_panel_bboxes: Dict[str, List[float]] = {}
     all_nodes: List[RenderedPhylogenyNode] = []
     all_edges: List[RenderedPhylogenyEdge] = []
     for index, spec in enumerate(option_specs):
-        row = int(index // 3)
-        col = int(index % 3)
+        row = int(index // 2)
+        col = int(index % 2)
         left = margin_x + (float(col) * (panel_w + gap_x))
         top = margin_y + (float(row) * (panel_h + gap_y))
         panel_bbox = round_bbox((left, top, left + panel_w, top + panel_h))

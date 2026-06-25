@@ -39,7 +39,7 @@ class PhylogenyDefaults:
     target_mrca_leaf_count_max: int = 8
     option_leaf_count_min: int = 6
     option_leaf_count_max: int = 8
-    option_count: int = 6
+    option_count: int = 4
     canvas_width: int = 920
     canvas_height: int = 800
     outer_margin_px: int = 28
@@ -274,7 +274,7 @@ def render_option_trees(
     style: ResolvedPhylogenyStyle,
     option_specs: Any,
 ) -> RenderedPhylogenyBundle:
-    """Render the six phylogeny option panels and apply post-render visual effects."""
+    """Render the phylogeny option panels and apply post-render visual effects."""
 
     render_params = resolve_graph_render_params(
         params,

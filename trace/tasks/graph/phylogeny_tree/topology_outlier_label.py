@@ -29,7 +29,7 @@ QUERY_ID = SINGLE_QUERY_ID
 PROMPT_QUERY_KEY = "topology_outlier_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
 SAMPLING_NAMESPACE = "graph.phylogeny_tree.topology_outlier_label"
-OBJECT_DESCRIPTION = "six labeled rooted phylogeny cladograms with the same taxon labels"
+OBJECT_DESCRIPTION = "four labeled rooted phylogeny cladograms with the same taxon labels"
 
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = scene_default_sections(TASK_ID)
 PROMPT_BUNDLE_ID = str(group_default(_PROMPT_DEFAULTS, "bundle_id", PHYLOGENY_PROMPT_BUNDLE_ID))
@@ -62,7 +62,7 @@ class GraphPhylogenyTreeTopologyOutlierLabelTask:
     default_dataset_enabled = True
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int):
-        """Sample six option cladograms, bind the outlier option letter and panel box."""
+        """Sample four option cladograms, bind the outlier option letter and panel box."""
 
         selected_query, query_probabilities, task_params = select_task_query_id(
             instance_seed=int(instance_seed),

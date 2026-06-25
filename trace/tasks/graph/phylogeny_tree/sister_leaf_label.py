@@ -65,11 +65,12 @@ def _bind_sister_result(case: SingleTreeCase, rendered: Any, selected_query: str
         "shared_parent": shared_parent_id,
     }
     annotation_projection = projected_keyed_phylogeny_annotation(rendered.rendered_scene, role_to_node_id=role_to_node)
+    answer_point = [int(value) for value in annotation_projection["point_map"]["sister_leaf"]]
     return BoundPhylogenyResult(
         answer_type="string",
         answer_value=sister_leaf,
-        annotation_type="bbox_map",
-        annotation_value=dict(annotation_projection["bbox_map"]),
+        annotation_type="point",
+        annotation_value=list(answer_point),
         prompt_slots={"query_label": target_leaf},
         trace_params={},
         scene_relations={},
@@ -86,7 +87,13 @@ def _bind_sister_result(case: SingleTreeCase, rendered: Any, selected_query: str
             "sister_leaf_label": sister_leaf,
             "shared_parent_id": shared_parent_id,
         },
-        projected_annotation={"type": "bbox_map", **dict(annotation_projection)},
+        projected_annotation={
+            "type": "point",
+            "point": list(answer_point),
+            "pixel_point": list(answer_point),
+            "point_map": dict(annotation_projection["point_map"]),
+            "pixel_point_map": dict(annotation_projection["pixel_point_map"]),
+        },
     )
 
 

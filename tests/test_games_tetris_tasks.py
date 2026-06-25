@@ -125,7 +125,7 @@ def test_games_tetris_positive_clear_constructor_uses_piece_variety() -> None:
 def test_games_tetris_drop_result_contract() -> None:
     out = GamesTetrisDropResultLabelTask().generate(
         26052421,
-        params={"query_id": "single_clear_result"},
+        params={"query_id": "single", "target_clear_count": 1},
         max_attempts=240,
     )
     execution = out.trace_payload["execution_trace"]
@@ -135,7 +135,7 @@ def test_games_tetris_drop_result_contract() -> None:
     _assert_supported_stack_execution(execution)
 
     assert out.scene_id == "tetris"
-    assert out.query_id == "single_clear_result"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "string"
     assert answer in options
     assert bool(options[answer]["is_answer"])
@@ -151,7 +151,7 @@ def test_games_tetris_drop_result_contract() -> None:
 def test_games_tetris_drop_result_four_option_layout_stays_in_bounds() -> None:
     out = GamesTetrisDropResultLabelTask().generate(
         6227121074877783,
-        params={"query_id": "single_clear_result", "board_rows": 15, "board_cols": 11},
+        params={"query_id": "single", "target_clear_count": 1, "board_rows": 15, "board_cols": 11},
         max_attempts=240,
     )
     width, height = out.image.size

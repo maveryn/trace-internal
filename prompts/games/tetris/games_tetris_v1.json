@@ -36,21 +36,7 @@
         "Select the option with the correct falling-piece shape name.",
         "Which option label matches the active falling piece shape?"
       ],
-      "no_clear_result": [
-        "{fixed_drop_rule_text} {line_clear_rule_text} Which labeled board shows the final state?",
-        "{fixed_drop_rule_text} {line_clear_rule_text} Choose the result board after the falling piece locks.",
-        "{fixed_drop_rule_text} {line_clear_rule_text} Which option matches the board after this fixed drop resolves?",
-        "{fixed_drop_rule_text} {line_clear_rule_text} Which labeled board shows the final state?",
-        "{fixed_drop_rule_text} {line_clear_rule_text} Select the correct resulting board."
-      ],
-      "single_clear_result": [
-        "{fixed_drop_rule_text} {line_clear_rule_text} Which labeled board shows the final state?",
-        "{fixed_drop_rule_text} {line_clear_rule_text} Choose the result board after the falling piece locks.",
-        "{fixed_drop_rule_text} {line_clear_rule_text} Which option matches the board after this fixed drop resolves?",
-        "{fixed_drop_rule_text} {line_clear_rule_text} Which labeled board shows the final state?",
-        "{fixed_drop_rule_text} {line_clear_rule_text} Select the correct resulting board."
-      ],
-      "multi_clear_result": [
+      "drop_result_label": [
         "{fixed_drop_rule_text} {line_clear_rule_text} Which labeled board shows the final state?",
         "{fixed_drop_rule_text} {line_clear_rule_text} Choose the result board after the falling piece locks.",
         "{fixed_drop_rule_text} {line_clear_rule_text} Which option matches the board after this fixed drop resolves?",
@@ -147,15 +133,7 @@
       "line_clear_rule_text"
     ],
     "query:active_piece_shape_label": [],
-    "query:no_clear_result": [
-      "fixed_drop_rule_text",
-      "line_clear_rule_text"
-    ],
-    "query:single_clear_result": [
-      "fixed_drop_rule_text",
-      "line_clear_rule_text"
-    ],
-    "query:multi_clear_result": [
+    "query:drop_result_label": [
       "fixed_drop_rule_text",
       "line_clear_rule_text"
     ],

@@ -5,8 +5,10 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from trace.tasks.registry import register_task
+from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 
-from ._lifecycle import TetrisObjectivePlan, run_tetris_lifecycle
+from ._lifecycle import TetrisObjectivePlan, resolve_tetris_integer_target, run_tetris_lifecycle
+from .shared.defaults import DEFAULTS
 from .shared.prompts import format_json_examples
 from .shared.rendering import RENDER_MODE_RESULT_OPTIONS
 from .shared.sampling import build_drop_result_sample, sample_label
@@ -14,28 +16,30 @@ from .shared.state import OPTION_LABELS
 
 
 TASK_ID = "task_games__tetris__drop_result_label"
-SUPPORTED_QUERY_IDS = ("no_clear_result", "single_clear_result", "multi_clear_result")
+PROMPT_QUERY_KEY = "drop_result_label"
+SUPPORTED_QUERY_IDS = (DEFAULT_QUERY_ID,)
 RESULT_OPTION_COUNT = 4
-_CLEAR_COUNT_BY_QUERY = {
-    "no_clear_result": 0,
-    "single_clear_result": 1,
-    "multi_clear_result": 2,
-}
 JSON_EXAMPLE, JSON_EXAMPLE_ANSWER_ONLY = format_json_examples(annotation=[520, 180, 760, 520], answer="B")
 
 
 def _prepare_drop_result_objective(
     instance_seed: int,
     task_params: Mapping[str, Any],
-    selected_query: str,
-    query_probabilities: Mapping[str, float],
+    _selected_query: str,
+    _query_probabilities: Mapping[str, float],
     axes,
 ) -> TetrisObjectivePlan:
-    """Bind the fixed-drop clear-count branch and answer option label."""
+    """Resolve the fixed-drop clear-count target and answer option label."""
 
-    if str(selected_query) not in _CLEAR_COUNT_BY_QUERY:
-        raise ValueError(f"unsupported Tetris drop-result query: {selected_query}")
-    target_clear_count = int(_CLEAR_COUNT_BY_QUERY[str(selected_query)])
+    target_clear_count, target_probabilities, target_support = resolve_tetris_integer_target(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        support_key="drop_result_clear_count_support",
+        explicit_key="target_clear_count",
+        fallback_support=DEFAULTS.drop_result_clear_count_support,
+        namespace=f"{TASK_ID}.target_clear_count",
+        balanced_flag_key="balanced_target_clear_count_sampling",
+    )
     labels = OPTION_LABELS[:RESULT_OPTION_COUNT]
     if task_params.get("_sample_cursor") is not None:
         answer_label = str(labels[abs(int(task_params["_sample_cursor"])) % int(RESULT_OPTION_COUNT)])
@@ -59,8 +63,8 @@ def _prepare_drop_result_objective(
         )
 
     return TetrisObjectivePlan(
-        attempt_namespace=f"games.tetris.drop_result.{str(selected_query)}.{str(answer_label)}",
-        prompt_query_key=str(selected_query),
+        attempt_namespace=f"games.tetris.drop_result.{int(target_clear_count)}.{str(answer_label)}",
+        prompt_query_key=PROMPT_QUERY_KEY,
         answer_hint_key="answer_hint_drop_result_label",
         annotation_hint_key="annotation_hint_drop_result_label",
         json_example=JSON_EXAMPLE,
@@ -68,9 +72,10 @@ def _prepare_drop_result_objective(
         render_mode=RENDER_MODE_RESULT_OPTIONS,
         query_params={
             "target_clear_count": int(target_clear_count),
+            "target_clear_count_support": [int(value) for value in target_support],
+            "target_clear_count_probabilities": dict(target_probabilities),
             "option_count": int(RESULT_OPTION_COUNT),
             "result_option_count_policy": "fixed_four_options",
-            "drop_result_branch_probabilities": dict(query_probabilities),
             "answer_label": str(answer_label),
             "answer_label_probabilities": dict(answer_label_probabilities),
         },

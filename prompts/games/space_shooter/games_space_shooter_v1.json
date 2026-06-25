@@ -43,12 +43,12 @@
         "A blue player shot can hit one enemy ship above it in the same lane. If several ships are in that lane, lower ships are hit first. Which labeled enemy ship will be hit?",
         "Which labeled enemy ship can be destroyed by the current blue shots? {space_shooter_lane_rule_text} Blue shots hit lower same-lane ships first."
       ],
-      "first_player_shot_hit_label": [
-        "{space_shooter_lane_rule_text} A blue shot's first target is the nearest enemy ship above it in the same lane. Which labeled blue shot reaches an enemy first?",
-        "Blue player shots move upward in their lanes. For each labeled blue shot, compare the distance to the nearest enemy ship above it. Which labeled shot hits first?",
-        "{space_shooter_lane_rule_text} Which labeled blue player shot has the shortest upward path to its first enemy ship?",
-        "A labeled blue shot hits the nearest enemy ship above it in the same vertical lane. Which labeled blue shot will hit an enemy first?",
-        "Look at the labeled blue shots. Each travels straight upward and first hits the nearest enemy above it in the same lane. Which one hits first?"
+      "first_hit_enemy_ship_label": [
+        "{space_shooter_lane_rule_text} A blue shot first hits the nearest enemy ship above it in the same lane. Among the labeled enemy ships, which ship is hit first?",
+        "Blue player shots move upward in their lanes. Compare when the labeled enemy ships would be hit by the current blue shots. Which labeled ship is hit first?",
+        "{space_shooter_lane_rule_text} Which labeled enemy ship has the shortest upward shot path reaching it?",
+        "Each blue shot travels straight upward and first hits the nearest enemy ship above it in the same lane. Which labeled enemy ship is hit first?",
+        "Look at the labeled enemy ships. Blue shots move upward in their own lanes and hit lower same-lane ships first. Which labeled ship gets hit first?"
       ],
       "safe_lane_count": [
         "{space_shooter_lane_rule_text} Count bottom lane pads with no red enemy shot in that lane.",
@@ -86,7 +86,7 @@
     "query:hit_enemy_ship_label": [
       "space_shooter_lane_rule_text"
     ],
-    "query:first_player_shot_hit_label": [
+    "query:first_hit_enemy_ship_label": [
       "space_shooter_lane_rule_text"
     ],
     "query:safe_lane_count": [
@@ -139,8 +139,8 @@
     "answer_hint_enemy_ship_hit_count": "set \"answer\" to the number of enemy ships that can be destroyed by the current blue shots",
     "annotation_hint_hit_enemy_ship_label": "set \"annotation\" to the bounding box [x0, y0, x1, y1] for the labeled enemy ship selected as the answer",
     "answer_hint_hit_enemy_ship_label": "set \"answer\" to the selected enemy ship label",
-    "annotation_hint_first_player_shot_hit_label": "set \"annotation\" to the bounding box [x0, y0, x1, y1] for the selected blue projectile itself, not the nearby label badge",
-    "answer_hint_first_player_shot_hit_label": "set \"answer\" to the selected blue shot label",
+    "annotation_hint_first_hit_enemy_ship_label": "set \"annotation\" to the bounding box [x0, y0, x1, y1] for the labeled enemy ship selected as the answer",
+    "answer_hint_first_hit_enemy_ship_label": "set \"answer\" to the selected enemy ship label",
     "annotation_hint_safe_lane_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for the safe bottom lane pads",
     "answer_hint_safe_lane_count": "set \"answer\" to the number of bottom lane pads with no red enemy shot in that lane"
   }

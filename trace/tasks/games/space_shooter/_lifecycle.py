@@ -41,9 +41,6 @@ class SpaceShooterObjective:
     json_example_answer_only: str = ""
     show_enemy_labels: bool = True
     visible_enemy_label_ids: tuple[str, ...] | None = None
-    show_projectile_labels: bool = False
-    visible_projectile_label_ids: tuple[str, ...] | None = None
-    projectile_label_by_id: Mapping[str, str] | None = None
 
 
 class SpaceShooterLifecycleTask:
@@ -131,9 +128,6 @@ def run_space_shooter_lifecycle(
         highlight_player_lane=bool(highlight_player_lane),
         show_enemy_labels=bool(objective.show_enemy_labels),
         visible_enemy_label_ids=objective.visible_enemy_label_ids,
-        show_projectile_labels=bool(objective.show_projectile_labels),
-        visible_projectile_label_ids=objective.visible_projectile_label_ids,
-        projectile_label_by_id=objective.projectile_label_by_id,
         panel_style=panel_style,
     )
     if rendered.render_map.get("panel_scene_style") is None:

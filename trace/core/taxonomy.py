@@ -499,7 +499,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__slot_machine__winning_payline_count": _entry("games", "slot_machine", "games", "slot_machine"),
     "task_games__space_shooter__enemy_ship_count": _entry("games", "space_shooter", "games", "space_shooter"),
     "task_games__space_shooter__enemy_ship_hit_count": _entry("games", "space_shooter", "games", "space_shooter"),
-    "task_games__space_shooter__first_player_shot_hit_label": _entry("games", "space_shooter", "games", "space_shooter"),
+    "task_games__space_shooter__first_hit_enemy_ship_label": _entry("games", "space_shooter", "games", "space_shooter"),
     "task_games__space_shooter__hit_enemy_ship_label": _entry("games", "space_shooter", "games", "space_shooter"),
     "task_games__space_shooter__safe_lane_count": _entry("games", "space_shooter", "games", "space_shooter"),
     "task_games__tetris__active_piece_shape_label": _entry("games", "tetris", "games", "tetris"),

@@ -1,4 +1,4 @@
-"""Space-shooter first blue-shot hit label task."""
+"""Space-shooter first hit enemy-ship label task."""
 
 from __future__ import annotations
 
@@ -22,8 +22,8 @@ from .shared.state import (
 )
 
 
-TASK_ID = "task_games__space_shooter__first_player_shot_hit_label"
-PROMPT_QUERY_KEY = "first_player_shot_hit_label"
+TASK_ID = "task_games__space_shooter__first_hit_enemy_ship_label"
+PROMPT_QUERY_KEY = "first_hit_enemy_ship_label"
 SUPPORTED_QUERY_IDS = (DEFAULT_QUERY_ID,)
 OPTION_LABELS = ("A", "B", "C", "D")
 JSON_EXAMPLE = '{"annotation":[414,510,438,546],"answer":"B"}'
@@ -67,15 +67,15 @@ def _resolve_correct_option_index(
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> tuple[int, tuple[int, ...], dict[str, float]]:
-    """Resolve the balanced A-D position for the first-hitting blue shot."""
+    """Resolve the balanced A-D position for the first-hit enemy ship."""
 
     target_index, probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=GEN_DEFAULTS,
-        support_key="first_player_shot_hit_label_option_support",
+        support_key="first_hit_enemy_ship_label_option_support",
         explicit_key="correct_option_index",
-        fallback_support=DEFAULTS.first_player_shot_hit_label_option_support,
+        fallback_support=DEFAULTS.first_hit_enemy_ship_label_option_support,
         namespace=f"{TASK_ID}.correct_option_index",
         balanced_flag_key="balanced_correct_option_sampling",
         namespace_support_permutation=True,
@@ -83,8 +83,8 @@ def _resolve_correct_option_index(
     support = resolve_integer_support(
         params,
         gen_defaults=GEN_DEFAULTS,
-        key="first_player_shot_hit_label_option_support",
-        fallback=DEFAULTS.first_player_shot_hit_label_option_support,
+        key="first_hit_enemy_ship_label_option_support",
+        fallback=DEFAULTS.first_hit_enemy_ship_label_option_support,
     )
     return int(target_index), tuple(int(value) for value in support), dict(probabilities)
 
@@ -100,17 +100,17 @@ def _slot_pairs_for_distance(distance: int) -> tuple[tuple[int, int], ...]:
     return tuple(pairs)
 
 
-def _prepare_first_player_shot_hit_label_objective(
+def _prepare_first_hit_enemy_ship_label_objective(
     rng,
     params: Mapping[str, Any],
     axes: SceneAxes,
     instance_seed: int,
 ) -> SpaceShooterObjective:
-    """Construct four labeled blue shots and choose the one that hits first."""
+    """Construct four labeled enemy ships and choose the first one hit."""
 
     lane_count = int(axes.lane_count)
     if lane_count < 4:
-        raise ValueError("first_player_shot_hit_label requires at least four lanes")
+        raise ValueError("first_hit_enemy_ship_label requires at least four lanes")
     correct_index, support, probabilities = _resolve_correct_option_index(
         instance_seed=int(instance_seed),
         params=params,
@@ -133,9 +133,9 @@ def _prepare_first_player_shot_hit_label_objective(
     projectiles: list[SpaceProjectile] = []
     candidate_projectile_ids: list[str] = []
     candidate_enemy_ids: list[str] = []
-    projectile_label_by_id: dict[str, str] = {}
     hit_enemy_by_projectile: dict[str, str] = {}
-    first_hit_distance_by_projectile: dict[str, int] = {}
+    hit_projectile_by_enemy: dict[str, str] = {}
+    first_hit_distance_by_enemy: dict[str, int] = {}
 
     for option_index, lane in enumerate(candidate_lanes):
         distance = int(distance_by_option[int(option_index)])
@@ -153,9 +153,9 @@ def _prepare_first_player_shot_hit_label_objective(
         label = str(OPTION_LABELS[int(option_index)])
         candidate_projectile_ids.append(str(projectile.projectile_id))
         candidate_enemy_ids.append(str(enemy.enemy_id))
-        projectile_label_by_id[str(projectile.projectile_id)] = label
         hit_enemy_by_projectile[str(projectile.projectile_id)] = str(enemy.enemy_id)
-        first_hit_distance_by_projectile[str(projectile.projectile_id)] = int(distance)
+        hit_projectile_by_enemy[str(enemy.enemy_id)] = str(projectile.projectile_id)
+        first_hit_distance_by_enemy[str(enemy.enemy_id)] = int(distance)
 
     unused_lanes = [lane for lane in range(lane_count) if lane not in set(candidate_lanes)]
     rng.shuffle(unused_lanes)
@@ -201,8 +201,8 @@ def _prepare_first_player_shot_hit_label_objective(
                 )
             )
 
-    selected_projectile_id = str(candidate_projectile_ids[int(correct_index)])
-    selected_enemy_id = str(hit_enemy_by_projectile[selected_projectile_id])
+    selected_enemy_id = str(candidate_enemy_ids[int(correct_index)])
+    selected_projectile_id = str(hit_projectile_by_enemy[selected_enemy_id])
     sample = SpaceShooterSample(
         lane_count=lane_count,
         scene_variant=str(axes.scene_variant),
@@ -211,18 +211,19 @@ def _prepare_first_player_shot_hit_label_objective(
         enemies=tuple(enemies),
         projectiles=tuple(projectiles),
         safe_lane_indices=tuple(),
-        annotation_entity_ids=(selected_projectile_id,),
+        annotation_entity_ids=(selected_enemy_id,),
         target_answer=None,
-        construction_mode="first_blue_shot_hit",
+        construction_mode="first_hit_enemy_ship",
         metadata={
             "candidate_projectile_ids": list(candidate_projectile_ids),
             "candidate_enemy_ids": list(candidate_enemy_ids),
             "candidate_labels": {
-                str(projectile_id): str(OPTION_LABELS[index])
-                for index, projectile_id in enumerate(candidate_projectile_ids)
+                str(enemy_id): str(OPTION_LABELS[index])
+                for index, enemy_id in enumerate(candidate_enemy_ids)
             },
             "hit_enemy_by_projectile": dict(hit_enemy_by_projectile),
-            "first_hit_distance_by_projectile": dict(first_hit_distance_by_projectile),
+            "hit_projectile_by_enemy": dict(hit_projectile_by_enemy),
+            "first_hit_distance_by_enemy": dict(first_hit_distance_by_enemy),
             "selected_projectile_id": selected_projectile_id,
             "selected_enemy_id": selected_enemy_id,
             "correct_option": int(correct_index),
@@ -233,10 +234,10 @@ def _prepare_first_player_shot_hit_label_objective(
         },
     )
     validate_basic_space_shooter_sample(sample)
-    if min(first_hit_distance_by_projectile.values()) != int(correct_distance):
-        raise ValueError("first-player-shot construction has wrong minimum distance")
-    if sum(1 for distance in first_hit_distance_by_projectile.values() if int(distance) == int(correct_distance)) != 1:
-        raise ValueError("first-player-shot construction must have a unique earliest shot")
+    if min(first_hit_distance_by_enemy.values()) != int(correct_distance):
+        raise ValueError("first-hit-enemy construction has wrong minimum distance")
+    if sum(1 for distance in first_hit_distance_by_enemy.values() if int(distance) == int(correct_distance)) != 1:
+        raise ValueError("first-hit-enemy construction must have a unique earliest ship")
     return SpaceShooterObjective(
         sample=sample,
         answer_gt=TypedValue(type="option_letter", value=str(sample.answer)),
@@ -244,16 +245,14 @@ def _prepare_first_player_shot_hit_label_objective(
         build_annotation=single_entity_bbox,
         json_example=JSON_EXAMPLE,
         json_example_answer_only=JSON_EXAMPLE_ANSWER_ONLY,
-        show_enemy_labels=False,
-        show_projectile_labels=True,
-        visible_projectile_label_ids=tuple(candidate_projectile_ids),
-        projectile_label_by_id=projectile_label_by_id,
+        show_enemy_labels=True,
+        visible_enemy_label_ids=tuple(candidate_enemy_ids),
     )
 
 
 @register_task
-class GamesSpaceShooterFirstPlayerShotHitLabelTask(SpaceShooterLifecycleTask):
-    """Choose which labeled blue shot reaches an enemy first."""
+class GamesSpaceShooterFirstHitEnemyShipLabelTask(SpaceShooterLifecycleTask):
+    """Choose which labeled enemy ship is hit first."""
 
     task_id = TASK_ID
     supported_query_ids = SUPPORTED_QUERY_IDS
@@ -267,8 +266,8 @@ class GamesSpaceShooterFirstPlayerShotHitLabelTask(SpaceShooterLifecycleTask):
             task_params=params,
             instance_seed=int(instance_seed),
             max_attempts=int(max_attempts),
-            build_objective=_prepare_first_player_shot_hit_label_objective,
+            build_objective=_prepare_first_hit_enemy_ship_label_objective,
         )
 
 
-__all__ = ["GamesSpaceShooterFirstPlayerShotHitLabelTask"]
+__all__ = ["GamesSpaceShooterFirstHitEnemyShipLabelTask"]

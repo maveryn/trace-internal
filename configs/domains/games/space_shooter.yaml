@@ -52,7 +52,7 @@ generation:
     - 1
     - 2
     - 3
-    first_player_shot_hit_label_option_support:
+    first_hit_enemy_ship_label_option_support:
     - 0
     - 1
     - 2

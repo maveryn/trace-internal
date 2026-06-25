@@ -31,7 +31,7 @@
    - answer is the count of remaining isolated nodes.
 
 ## 3) Prompt contract
-1. Bundle: `graph_counting_v0`
+1. Bundle: `graph_node_link_counting_v1`
 2. `scene_key`: `single_graph_counting`
 3. `task_key`: `isolated_node_count_after_node_removal_query`
 4. Modes: `answer_only`, `answer_and_annotation`

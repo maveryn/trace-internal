@@ -1,5 +1,5 @@
 {
-  "bundle_id": "graph_order_v0",
+  "bundle_id": "graph_node_link_order_v1",
   "schema_version": "v0",
   "task_templates": {
     "topological_endpoint_node_label_query": [

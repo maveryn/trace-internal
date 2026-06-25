@@ -1712,7 +1712,7 @@ rendering:
 prompt:
   task_overrides:
     task_graph__node_link__component_size_after_edge_edit:
-      bundle_id: graph_relation_v0
+      bundle_id: graph_node_link_relation_v1
       scene_key: single_graph_relation
       task_key: component_size_after_edge_edit_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -1732,7 +1732,7 @@ prompt:
         connected component as {query_label} after adding an edge between {edit_label_a}
         and {edit_label_b}, including {query_label}
     task_graph__node_link__largest_component_size:
-      bundle_id: graph_comparison_v0
+      bundle_id: graph_node_link_comparison_v1
       scene_key: single_graph_comparison
       task_key: largest_component_size_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -1746,7 +1746,7 @@ prompt:
       json_example: '{"annotation":[[180,220],[310,180],[430,260],[520,340]],"answer":4}'
       json_example_answer_only: '{"answer":4}'
     task_graph__node_link__same_component_count:
-      bundle_id: graph_relation_v0
+      bundle_id: graph_node_link_relation_v1
       scene_key: single_graph_relation
       task_key: same_component_count_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -1761,7 +1761,7 @@ prompt:
       json_example: '{"annotation":[[180,220],[310,180],[430,260]],"answer":3}'
       json_example_answer_only: '{"answer":3}'
     task_graph__node_link__shortest_path_length:
-      bundle_id: graph_path_v0
+      bundle_id: graph_node_link_path_v1
       scene_key: single_graph_path
       task_key: shortest_path_length_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -1781,7 +1781,7 @@ prompt:
       json_example: '{"annotation":[[180,220],[310,180],[430,260]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     task_graph__node_link__mst_weight:
-      bundle_id: graph_optimization_v0
+      bundle_id: graph_node_link_optimization_v1
       scene_key: single_graph_optimization
       task_key: minimum_spanning_tree_weight_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -1797,7 +1797,7 @@ prompt:
       json_example: '{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]],[[430,260],[520,340]]],"answer":12}'
       json_example_answer_only: '{"answer":12}'
     task_graph__node_link__topological_endpoint_node_label:
-      bundle_id: graph_order_v0
+      bundle_id: graph_node_link_order_v1
       scene_key: single_graph_order
       task_key: topological_endpoint_node_label_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -1813,7 +1813,7 @@ prompt:
       json_example: '{"annotation":[180,160],"answer":"A"}'
       json_example_answer_only: '{"answer":"A"}'
     task_graph__node_link__degree_value_filter_count:
-      bundle_id: graph_counting_v0
+      bundle_id: graph_node_link_counting_v1
       scene_key: single_graph_counting
       task_key: degree_count_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -1835,7 +1835,7 @@ prompt:
       json_example: '{"annotation":[[180,220],[310,180]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
     task_graph__node_link__articulation_point_count:
-      bundle_id: graph_counting_v0
+      bundle_id: graph_node_link_counting_v1
       scene_key: single_graph_counting
       task_key: articulation_point_count_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -1863,7 +1863,7 @@ prompt:
       annotation_hint: set "annotation" to an array of [x,y] pixel points at the centers
         of all articulation-point nodes
     task_graph__node_link__bridge_count:
-      bundle_id: graph_counting_v0
+      bundle_id: graph_node_link_counting_v1
       scene_key: single_graph_counting
       task_key: bridge_count_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -1892,7 +1892,7 @@ prompt:
         y1], [x2, y2]], using the centers of the two endpoint nodes of one bridge
         edge
     task_graph__node_link__common_related_node_count:
-      bundle_id: graph_relation_v0
+      bundle_id: graph_node_link_relation_v1
       scene_key: single_graph_relation
       task_key: common_neighbor_count_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -1919,7 +1919,7 @@ prompt:
         pixel points at the centers of every node that points directly to both {query_label_a}
         and {query_label_b}; use an empty array when the answer is zero
     task_graph__node_link__cross_color_edge_count:
-      bundle_id: graph_counting_v0
+      bundle_id: graph_node_link_counting_v1
       scene_key: single_graph_counting
       task_key: cross_color_edge_count_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -1952,7 +1952,7 @@ prompt:
         node centers for one arrow from a {source_color_label} node to a {target_color_label}
         node; use [] when the answer is zero
     task_graph__node_link__degree_after_removal_filter_count:
-      bundle_id: graph_counting_v0
+      bundle_id: graph_node_link_counting_v1
       scene_key: single_graph_counting
       task_key: node_count_after_degree_filter_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -1977,7 +1977,7 @@ prompt:
         after removing every node with out-degree 1; use an empty array when the answer
         is zero
     task_graph__node_link__degree_extremum_value:
-      bundle_id: graph_comparison_v0
+      bundle_id: graph_node_link_comparison_v1
       scene_key: single_graph_comparison
       task_key: extreme_degree_value_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -1999,7 +1999,7 @@ prompt:
       annotation_hint_max_out_degree_value: set "annotation" to one [x,y] pixel point
         at the center of the node whose out-degree equals the maximum out-degree value
     task_graph__node_link__edge_between_nodes_label:
-      bundle_id: graph_relation_v0
+      bundle_id: graph_node_link_relation_v1
       scene_key: single_graph_relation
       task_key: edge_attribute_label_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -2024,7 +2024,7 @@ prompt:
         pixel box around the visible text label on the arrow from {source_label} to
         {target_label}
     task_graph__node_link__edge_color_count:
-      bundle_id: graph_counting_v0
+      bundle_id: graph_node_link_counting_v1
       scene_key: single_graph_counting
       task_key: edge_color_count_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -2053,7 +2053,7 @@ prompt:
         {target_color_label}; for directed graphs, use the source and target node
         centers; use [] when the answer is zero
     task_graph__node_link__edge_text_count:
-      bundle_id: graph_counting_v0
+      bundle_id: graph_node_link_counting_v1
       scene_key: single_graph_counting
       task_key: edge_text_label_count_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -2082,7 +2082,7 @@ prompt:
       annotation_hint: set "annotation" to an array of [x0,y0,x1,y1] pixel boxes around
         every visible edge-label text box that reads "{target_edge_label}"
     task_graph__node_link__hamiltonian_cycle_neighbor_label:
-      bundle_id: graph_relation_v0
+      bundle_id: graph_node_link_relation_v1
       scene_key: single_graph_relation
       task_key: hamiltonian_cycle_neighbor_label_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -2108,7 +2108,7 @@ prompt:
         from node {orientation_final_label}. Which node comes immediately before the
         final node {orientation_final_label} along this cycle?
     task_graph__node_link__isolated_after_removal_count:
-      bundle_id: graph_counting_v0
+      bundle_id: graph_node_link_counting_v1
       scene_key: single_graph_counting
       task_key: isolated_node_count_after_node_removal_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -2137,7 +2137,7 @@ prompt:
         of all remaining nodes that would be isolated after removing {query_label};
         use an empty array when the answer is zero
     task_graph__node_link__largest_chordless_cycle_size:
-      bundle_id: graph_relation_v0
+      bundle_id: graph_node_link_relation_v1
       scene_key: single_graph_relation
       task_key: largest_chordless_cycle_size_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -2158,7 +2158,7 @@ prompt:
         no extra edge connecting two non-adjacent nodes in that cycle. What is the
         size, in nodes, of the largest chordless cycle in the graph?
     task_graph__node_link__longest_path_length:
-      bundle_id: graph_path_v0
+      bundle_id: graph_node_link_path_v1
       scene_key: single_graph_path
       task_key: longest_path_length_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -2187,7 +2187,7 @@ prompt:
         at node centers along the unique longest directed path, from its start node
         to its end node
     task_graph__node_link__named_node_degree_value:
-      bundle_id: graph_counting_v0
+      bundle_id: graph_node_link_counting_v1
       scene_key: single_graph_counting
       task_key: named_node_degree_value_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -2225,7 +2225,7 @@ prompt:
         segments. Each segment is [[x1, y1], [x2, y2]], using the endpoint node centers
         of one arrow touching node {query_label}; use [] when the answer is zero
     task_graph__node_link__node_color_count:
-      bundle_id: graph_counting_v0
+      bundle_id: graph_node_link_counting_v1
       scene_key: single_graph_counting
       task_key: node_color_count_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -2252,7 +2252,7 @@ prompt:
       annotation_hint: set "annotation" to an array of [x,y] pixel points at the centers
         of all nodes colored {target_color_label}
     task_graph__node_link__reachable_count:
-      bundle_id: graph_relation_v0
+      bundle_id: graph_node_link_relation_v1
       scene_key: single_graph_relation
       task_key: reachable_count_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -2276,7 +2276,7 @@ prompt:
         points at the centers of all nodes reachable from {query_label}, excluding
         {query_label} itself
     task_graph__node_link__reachable_count_after_edge_edit:
-      bundle_id: graph_relation_v0
+      bundle_id: graph_node_link_relation_v1
       scene_key: single_graph_relation
       task_key: reachable_count_after_edge_edit_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -2302,7 +2302,7 @@ prompt:
         from {query_label} after adding an arrow from {edit_label_a} to {edit_label_b},
         including {query_label}
     task_graph__node_link__unique_cycle_size:
-      bundle_id: graph_relation_v0
+      bundle_id: graph_node_link_relation_v1
       scene_key: single_graph_relation
       task_key: unique_cycle_size_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
@@ -2321,7 +2321,7 @@ prompt:
       question_text_unique_cycle_size: The graph contains exactly one cycle. How many
         nodes are in that cycle?
     task_graph__node_link__unique_related_node_label:
-      bundle_id: graph_relation_v0
+      bundle_id: graph_node_link_relation_v1
       scene_key: single_graph_relation
       task_key: unique_node_label_query
       json_output_contract: Use a valid JSON object with keys "annotation" and "answer"

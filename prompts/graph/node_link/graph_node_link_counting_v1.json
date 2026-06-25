@@ -1,5 +1,5 @@
 {
-  "bundle_id": "graph_counting_v0",
+  "bundle_id": "graph_node_link_counting_v1",
   "schema_version": "v0",
   "task_templates": {
     "degree_count_query": [

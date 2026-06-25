@@ -31,7 +31,7 @@
 4. Edge labels are lowercase text of `3..5` characters and are filtered so they do not duplicate any visible node label.
 
 ## 3) Prompt contract
-1. Bundle: `graph_counting_v0`
+1. Bundle: `graph_node_link_counting_v1`
 2. `scene_key`: `single_graph_counting`
 3. `task_key`: `edge_text_label_count_query`
 4. Modes: `answer_only`, `answer_and_annotation`

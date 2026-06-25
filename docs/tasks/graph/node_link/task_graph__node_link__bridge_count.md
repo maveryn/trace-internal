@@ -46,7 +46,7 @@
    - these style axes are non-semantic for this task and are recorded in trace metadata.
 
 ## 3) Prompt contract
-1. Bundle: `graph_counting_v0`
+1. Bundle: `graph_node_link_counting_v1`
 2. `scene_key`: `single_graph_counting`
 3. `task_key`: `bridge_count_query`
 4. Required slots:

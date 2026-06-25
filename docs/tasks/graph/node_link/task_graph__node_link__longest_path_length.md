@@ -29,7 +29,7 @@
    - answer is the number of directed edges in that unique longest path.
 
 ## 3) Prompt contract
-1. Bundle: `graph_path_v0`
+1. Bundle: `graph_node_link_path_v1`
 2. `scene_key`: `single_graph_path`
 3. `task_key`: `longest_path_length_query`
 4. Modes: `answer_only`, `answer_and_annotation`

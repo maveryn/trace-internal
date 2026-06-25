@@ -101,7 +101,7 @@ def test_graph_node_link_representative_prompt_defaults_are_active() -> None:
         "prompt",
         task_id="task_graph__node_link__degree_value_filter_count",
     )
-    assert degree_prompt["bundle_id"] == "graph_counting_v0"
+    assert degree_prompt["bundle_id"] == "graph_node_link_counting_v1"
     assert degree_prompt["scene_key"] == "single_graph_counting"
     assert degree_prompt["task_key"] == "degree_count_query"
 

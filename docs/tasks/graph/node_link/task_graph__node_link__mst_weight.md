@@ -50,7 +50,7 @@
    - these style axes are non-semantic for this task and are recorded in trace metadata.
 
 ## 3) Prompt contract
-1. Bundle: `graph_optimization_v0`
+1. Bundle: `graph_node_link_optimization_v1`
 2. `scene_key`: `single_graph_optimization`
 3. `task_key`: `minimum_spanning_tree_weight_query`
 4. Required slots:

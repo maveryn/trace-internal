@@ -1,5 +1,5 @@
 {
-  "bundle_id": "graph_relation_v0",
+  "bundle_id": "graph_node_link_relation_v1",
   "schema_version": "v0",
   "task_templates": {
     "same_component_count_query": [

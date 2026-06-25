@@ -528,7 +528,7 @@ def test_icons_venn_field_bundle_supports_region_count_queries() -> None:
 
 
 def test_graph_counting_bundle_supports_degree_count_query() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_counting_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_counting_v1")
     assert "single_graph_counting" in bundle.scene_templates
     assert len(bundle.task_templates["degree_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["named_node_degree_value_query"]) == REQUIRED_PROMPT_VARIANTS
@@ -558,14 +558,14 @@ def test_graph_counting_bundle_supports_degree_count_query() -> None:
 
 
 def test_graph_counting_bundle_supports_articulation_point_count_query() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_counting_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_counting_v1")
     assert "single_graph_counting" in bundle.scene_templates
     assert len(bundle.task_templates["articulation_point_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["articulation_point_count"]) == REQUIRED_PROMPT_VARIANTS
 
 
 def test_graph_counting_bundle_supports_bridge_count_query() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_counting_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_counting_v1")
     assert "single_graph_counting" in bundle.scene_templates
     assert len(bundle.task_templates["bridge_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["bridge_count"]) == REQUIRED_PROMPT_VARIANTS
@@ -594,7 +594,7 @@ def test_graph_path_bundle_supports_metro_shortest_path_length_query() -> None:
 
 
 def test_graph_relation_bundle_supports_same_component_count_query() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_relation_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
     assert len(bundle.task_templates["same_component_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["same_component_count"]) == REQUIRED_PROMPT_VARIANTS
@@ -602,7 +602,7 @@ def test_graph_relation_bundle_supports_same_component_count_query() -> None:
 
 
 def test_graph_relation_bundle_supports_reachable_count_query() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_relation_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
     assert len(bundle.task_templates["reachable_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["reachable_count"]) == REQUIRED_PROMPT_VARIANTS
@@ -610,7 +610,7 @@ def test_graph_relation_bundle_supports_reachable_count_query() -> None:
 
 
 def test_graph_relation_bundle_supports_common_neighbor_count_query() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_relation_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
     assert len(bundle.task_templates["common_neighbor_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["common_neighbor_count"]) == REQUIRED_PROMPT_VARIANTS
@@ -622,7 +622,7 @@ def test_graph_relation_bundle_supports_common_neighbor_count_query() -> None:
 
 
 def test_graph_relation_bundle_supports_component_size_after_edge_edit_query() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_relation_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
     assert len(bundle.task_templates["component_size_after_edge_edit_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["component_size_after_edge_removal"]) == REQUIRED_PROMPT_VARIANTS
@@ -640,7 +640,7 @@ def test_graph_relation_bundle_supports_component_size_after_edge_edit_query() -
 
 
 def test_graph_relation_bundle_supports_reachable_count_after_edge_edit_query() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_relation_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
     assert len(bundle.task_templates["reachable_count_after_edge_edit_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["reachable_count_after_edge_removal"]) == REQUIRED_PROMPT_VARIANTS
@@ -658,21 +658,21 @@ def test_graph_relation_bundle_supports_reachable_count_after_edge_edit_query() 
 
 
 def test_graph_relation_bundle_supports_unique_cycle_size_query() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_relation_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
     assert len(bundle.task_templates["unique_cycle_size_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["unique_cycle_size"]) == REQUIRED_PROMPT_VARIANTS
 
 
 def test_graph_relation_bundle_supports_largest_chordless_cycle_size_query() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_relation_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
     assert len(bundle.task_templates["largest_chordless_cycle_size_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["largest_chordless_cycle_size"]) == REQUIRED_PROMPT_VARIANTS
 
 
 def test_graph_relation_bundle_supports_hamiltonian_cycle_neighbor_label_query() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_relation_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
     assert len(bundle.task_templates["hamiltonian_cycle_neighbor_label_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["next_in_hamiltonian_cycle_label"]) == REQUIRED_PROMPT_VARIANTS
@@ -967,7 +967,7 @@ def test_pages_mixed_infographic_page_scene_bundle_supports_lookup_queries() -> 
 
 
 def test_graph_comparison_bundle_supports_largest_component_size_query() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_comparison_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_comparison_v1")
     assert "single_graph_comparison" in bundle.scene_templates
     assert len(bundle.task_templates["largest_component_size_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["extreme_degree_value_query"]) == REQUIRED_PROMPT_VARIANTS
@@ -987,7 +987,7 @@ def test_graph_comparison_bundle_supports_largest_component_size_query() -> None
 
 
 def test_graph_path_bundle_supports_shortest_path_length_query() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_path_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_path_v1")
     assert "single_graph_path" in bundle.scene_templates
     assert len(bundle.task_templates["shortest_path_length_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["longest_path_length_query"]) == REQUIRED_PROMPT_VARIANTS
@@ -998,7 +998,7 @@ def test_graph_path_bundle_supports_shortest_path_length_query() -> None:
 
 
 def test_graph_order_bundle_supports_topological_endpoint_queries() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_order_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_order_v1")
     assert "single_graph_order" in bundle.scene_templates
     assert len(bundle.task_templates["topological_endpoint_node_label_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["first_in_topological_order_label"]) == REQUIRED_PROMPT_VARIANTS
@@ -1098,7 +1098,7 @@ def test_pages_schema_bundle_supports_relationship_endpoint_query() -> None:
 
 
 def test_graph_optimization_bundle_supports_minimum_spanning_tree_weight_query() -> None:
-    bundle = load_prompt_bundle("graph", "node_link", "graph_optimization_v0")
+    bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_optimization_v1")
     assert "single_graph_optimization" in bundle.scene_templates
     assert len(bundle.task_templates["minimum_spanning_tree_weight_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["minimum_spanning_tree_weight"]) == REQUIRED_PROMPT_VARIANTS

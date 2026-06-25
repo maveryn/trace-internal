@@ -1,5 +1,5 @@
 {
-  "bundle_id": "graph_path_v0",
+  "bundle_id": "graph_node_link_path_v1",
   "schema_version": "v0",
   "task_templates": {
     "shortest_path_length_query": [

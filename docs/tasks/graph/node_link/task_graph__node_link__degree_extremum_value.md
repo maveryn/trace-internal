@@ -36,7 +36,7 @@
    - every generated instance has exactly one node attaining the queried extreme value.
 
 ## 3) Prompt contract
-1. Bundle: `graph_comparison_v0`
+1. Bundle: `graph_node_link_comparison_v1`
 2. `scene_key`: `single_graph_comparison`
 3. `task_key`: `extreme_degree_value_query`
 4. Modes: `answer_only`, `answer_and_annotation`

@@ -47,7 +47,7 @@
    - these style axes are non-semantic for this task and are recorded in trace metadata.
 
 ## 3) Prompt contract
-1. Bundle: `graph_relation_v0`
+1. Bundle: `graph_node_link_relation_v1`
 2. `scene_key`: `single_graph_relation`
 3. `task_key`: `unique_cycle_size_query`
 4. Required slots:

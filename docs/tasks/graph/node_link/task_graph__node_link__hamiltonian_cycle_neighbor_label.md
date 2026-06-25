@@ -35,7 +35,7 @@
 5. Final verification uses the finalized adjacency map; answers and annotation are not inferred from the construction recipe alone.
 
 ## Prompt Contract
-1. Prompt text comes from `graph_relation_v0`, not hardcoded task text.
+1. Prompt text comes from `graph_node_link_relation_v1`, not hardcoded task text.
 2. Answer-only mode emits `{"answer": ...}`.
 3. Answer-and-annotation mode emits `{"annotation": ..., "answer": ...}` with single-point annotation.
 

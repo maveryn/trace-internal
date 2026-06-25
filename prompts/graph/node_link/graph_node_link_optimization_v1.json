@@ -1,5 +1,5 @@
 {
-  "bundle_id": "graph_optimization_v0",
+  "bundle_id": "graph_node_link_optimization_v1",
   "schema_version": "v0",
   "task_templates": {
     "minimum_spanning_tree_weight_query": [

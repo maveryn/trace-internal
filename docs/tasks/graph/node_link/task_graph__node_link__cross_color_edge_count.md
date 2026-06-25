@@ -22,7 +22,7 @@
 9. The queried source/target color names are sampled as an ordered distinct pair unless both are provided explicitly.
 
 ## 3) Prompt contract
-1. Bundle: `graph_counting_v0`
+1. Bundle: `graph_node_link_counting_v1`
 2. `scene_key`: `single_graph_counting`
 3. `task_key`: `cross_color_edge_count_query`
 4. Modes: `answer_only`, `answer_and_annotation`

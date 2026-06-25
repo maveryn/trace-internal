@@ -1,5 +1,5 @@
 {
-  "bundle_id": "graph_comparison_v0",
+  "bundle_id": "graph_node_link_comparison_v1",
   "schema_version": "v0",
   "task_templates": {
     "largest_component_size_query": [

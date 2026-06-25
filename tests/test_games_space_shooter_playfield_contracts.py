@@ -195,6 +195,23 @@ def test_games_space_shooter_hit_enemy_ship_label_matches_trace() -> None:
     assert float(out.annotation_gt.value[3]) - float(out.annotation_gt.value[1]) >= 24.0
 
 
+def test_games_space_shooter_hit_enemy_ship_label_not_tied_to_player_lane() -> None:
+    same_lane_count = 0
+    sample_count = 80
+    for seed in range(88220, 88220 + sample_count):
+        out = GamesSpaceShooterHitEnemyShipLabelTask().generate(
+            seed,
+            params={},
+            max_attempts=256,
+        )
+        execution = out.trace_payload["execution_trace"]
+        selected_id = str(execution["selected_enemy_id"])
+        selected_enemy = next(enemy for enemy in execution["enemies"] if str(enemy["enemy_id"]) == selected_id)
+        same_lane_count += int(int(selected_enemy["lane"]) == int(execution["player_lane"]))
+
+    assert same_lane_count <= 30
+
+
 def test_games_space_shooter_safe_lane_count_matches_trace() -> None:
     out = GamesSpaceShooterSafeLaneCountTask().generate(
         88140,

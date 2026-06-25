@@ -473,7 +473,7 @@ def sample_enemy_ship_hit_scene(*, rng, axes: SceneAxes, target_answer: int) -> 
         lane_count=lane_count,
         scene_variant=str(axes.scene_variant),
         answer=int(len(annotation_ids)),
-        player_lane=int(rng.choice(lanes_with_hits if lanes_with_hits else tuple(range(lane_count)))),
+        player_lane=int(rng.randrange(lane_count)),
         enemies=tuple(enemies),
         projectiles=tuple(projectiles),
         safe_lane_indices=tuple(),

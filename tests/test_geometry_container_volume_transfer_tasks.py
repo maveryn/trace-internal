@@ -96,12 +96,12 @@ def test_cone_to_cylinder_fill_count_formula_and_annotation() -> None:
     assert execution["fill_count"] == execution["target_volume"] // execution["source_volume"]
     assert execution["formula_family"] == "container_volume_transfer_fill_count"
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v0"
+    assert trace["projected_annotation"]["bbox_map"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox_map"] == annotation
+    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size)
 
@@ -128,12 +128,12 @@ def test_cone_pours_to_cylinder_resulting_height_formula_and_annotation() -> Non
     assert execution["resulting_height"] == 7.5
     assert execution["formula_family"] == "container_volume_transfer_resulting_height"
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == RESULTING_HEIGHT_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v0"
+    assert trace["projected_annotation"]["bbox_map"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox_map"] == annotation
+    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size, keys=RESULTING_HEIGHT_ANNOTATION_KEYS)
 
@@ -160,11 +160,11 @@ def test_cylinder_pours_to_cuboid_resulting_height_formula_and_annotation() -> N
     assert execution["resulting_height"] == 2.4
     assert execution["formula_family"] == "container_volume_transfer_resulting_height"
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == RESULTING_HEIGHT_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v0"
+    assert trace["projected_annotation"]["bbox_map"] == annotation
+    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size, keys=RESULTING_HEIGHT_ANNOTATION_KEYS)
 
@@ -191,12 +191,12 @@ def test_cone_source_target_capacity_formula_and_annotation() -> None:
     assert execution["target_volume"] == execution["source_volume"] * execution["pour_count"]
     assert execution["formula_family"] == "container_volume_transfer_target_capacity"
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == TARGET_CAPACITY_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v0"
+    assert trace["projected_annotation"]["bbox_map"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox_map"] == annotation
+    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size, keys=TARGET_CAPACITY_ANNOTATION_KEYS)
 
@@ -223,11 +223,11 @@ def test_cylinder_source_target_capacity_formula_and_annotation() -> None:
     assert execution["target_volume"] == execution["source_volume"] * execution["pour_count"]
     assert execution["formula_family"] == "container_volume_transfer_target_capacity"
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == TARGET_CAPACITY_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v0"
+    assert trace["projected_annotation"]["bbox_map"] == annotation
+    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size, keys=TARGET_CAPACITY_ANNOTATION_KEYS)
 
@@ -253,12 +253,12 @@ def test_cone_repeated_pours_total_volume_formula_and_annotation() -> None:
     assert execution["target_volume"] == execution["source_volume"] * execution["pour_count"]
     assert execution["formula_family"] == "container_volume_transfer_transferred_volume"
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == TRANSFERRED_VOLUME_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v0"
+    assert trace["projected_annotation"]["bbox_map"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox_map"] == annotation
+    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size, keys=TRANSFERRED_VOLUME_ANNOTATION_KEYS)
 
@@ -283,11 +283,11 @@ def test_cylinder_to_cuboid_fill_count_formula_and_annotation() -> None:
     assert execution["fill_count"] == execution["target_volume"] // execution["source_volume"]
     assert execution["formula_family"] == "container_volume_transfer_fill_count"
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     annotation = out.annotation_gt.value
     assert tuple(annotation.keys()) == ANNOTATION_KEYS
-    assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v0"
+    assert trace["projected_annotation"]["bbox_map"] == annotation
+    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_map_inside_image(annotation, out.image.size)
 

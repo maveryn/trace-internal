@@ -1,16 +1,15 @@
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
 
-from ._lifecycle import (
-    ContainerVolumeQueryProgram,
-    ContainerVolumeTaskBinding,
-    prepare_container_volume_transfer_task_parts,
-    resolve_container_volume_problem,
-)
-from .shared.defaults import DOMAIN
+from ._lifecycle import build_container_volume_result
+from .shared.defaults import DOMAIN, load_container_volume_transfer_task_defaults
 from .shared.annotations import CONTAINER_BBOX_ANNOTATION_KEYS
 from .shared.measurements import json_answer_value, resolve_transferred_volume
+from .shared.relations import (
+    ContainerVolumeQueryProgram,
+    ContainerVolumeTaskBinding,
+    resolve_container_volume_problem,
+)
 from .shared.sampling import TRANSFERRED_VOLUME_CASES, select_repeated_cone_volume_case, select_repeated_cylinder_volume_case
 
 TASK_ID = "task_geometry__container_volume_transfer__transferred_volume_value"
@@ -43,21 +42,23 @@ def _build_problem(*, selected_query, query_probabilities, instance_seed, params
     if program is None:
         raise ValueError(f"unsupported query_id for {TASK_ID}: {selected_query}")
     return resolve_container_volume_problem(
-        public_identifier=TASK_ID,
         program=program,
         query_probabilities=query_probabilities,
         instance_seed=int(instance_seed),
         params=params,
+        random_namespace=f"{TASK_ID}.{program.namespace_suffix}.case",
     )
-
 
 @register_task
 class GeometryContainerVolumeTransferTransferredVolumeValueTask:
     task_id = TASK_ID
     domain = DOMAIN
+    default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
-    def generate(self, instance_seed, *, params, max_attempts) -> TaskOutput:
+    def generate(self, instance_seed, *, params, max_attempts):
+        """Bind the selected transfer-volume branch and return final output."""
+
         selected_query, query_probabilities, task_params = select_task_query_id(
             instance_seed=int(instance_seed),
             params=params,
@@ -71,15 +72,18 @@ class GeometryContainerVolumeTransferTransferredVolumeValueTask:
             instance_seed=int(instance_seed),
             params=task_params,
         )
-        parts = prepare_container_volume_transfer_task_parts(
-            public_identifier=TASK_ID,
-            selected_query=str(selected_query),
-            internal_prompt_key=str(selected_query),
-            query_probabilities=query_probabilities,
-            problem=problem,
-            binding=TASK_BINDING,
-            instance_seed=int(instance_seed),
-            params=task_params,
-            max_attempts=int(max_attempts),
+        render_defaults, prompt_defaults = load_container_volume_transfer_task_defaults(TASK_ID)
+        return build_container_volume_result(
+            str(selected_query),
+            str(selected_query),
+            query_probabilities,
+            problem,
+            TASK_BINDING,
+            json_answer_value(problem.answer),
+            render_defaults,
+            prompt_defaults,
+            int(instance_seed),
+            task_params,
+            int(max_attempts),
+            f"{TASK_ID}.render",
         )
-        return TaskOutput(*parts.output_args(answer_type=TASK_BINDING.answer_type, answer_value=json_answer_value(problem.answer), query_id=str(selected_query)))

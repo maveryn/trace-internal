@@ -46,5 +46,5 @@ rendering:
       small_label_font_size: 18
 prompt:
   shared:
-    bundle_id: geometry_container_volume_transfer_v0
+    bundle_id: geometry_container_volume_transfer_v1
     scene_key: container_volume_transfer_scene

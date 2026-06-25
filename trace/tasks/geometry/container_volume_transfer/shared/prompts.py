@@ -43,10 +43,6 @@ def container_volume_prompt_artifacts(
         (
             "bundle_id",
             "scene_key",
-            "object_description",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            "annotation_hint",
             str(answer_hint_key),
         ),
         context="prompt defaults for container_volume_transfer",
@@ -61,11 +57,8 @@ def container_volume_prompt_artifacts(
         task_key=str(task_key),
         query_key=str(query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={
-            "object_description": str(prompt_defaults["object_description"]),
-            "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(prompt_defaults["annotation_hint"]).format(annotation_keys=annotation_names),
+        dynamic_slots={
+            "annotation_keys": str(annotation_names),
             "answer_hint": str(prompt_defaults[str(answer_hint_key)]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),

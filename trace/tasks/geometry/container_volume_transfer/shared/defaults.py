@@ -9,7 +9,7 @@ from trace.tasks.shared.config_defaults import load_scene_generation_rendering_p
 
 DOMAIN = "geometry"
 SCENE_ID = "container_volume_transfer"
-PROMPT_BUNDLE_ID = "geometry_container_volume_transfer_v0"
+PROMPT_BUNDLE_ID = "geometry_container_volume_transfer_v1"
 SCENE_KIND = "geometry_container_volume_transfer"
 
 

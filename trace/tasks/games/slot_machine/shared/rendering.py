@@ -179,10 +179,13 @@ def _draw_symbol(draw: ImageDraw.ImageDraw, bbox: Sequence[float], symbol_key: s
             radius = r1 if index % 2 == 0 else r2
             pts.append((cx + math.cos(angle) * radius, cy + math.sin(angle) * radius))
         draw.polygon(pts, fill=(245, 181, 46), outline=outline)
-    elif key == "bell":
-        draw.ellipse([cx - size * 0.28, cy - size * 0.50, cx + size * 0.28, cy - size * 0.08], fill=(240, 196, 66), outline=outline, width=2)
-        draw.rounded_rectangle([cx - size * 0.38, cy - size * 0.18, cx + size * 0.38, cy + size * 0.32], radius=int(size * 0.18), fill=(237, 178, 54), outline=outline, width=2)
-        draw.ellipse([cx - size * 0.10, cy + size * 0.28, cx + size * 0.10, cy + size * 0.48], fill=(95, 57, 31), outline=outline)
+    elif key == "cherry":
+        left_cherry = [cx - size * 0.44, cy - size * 0.08, cx - size * 0.04, cy + size * 0.34]
+        right_cherry = [cx + size * 0.02, cy - size * 0.02, cx + size * 0.42, cy + size * 0.40]
+        draw.line([(cx - size * 0.22, cy - size * 0.08), (cx, cy - size * 0.46), (cx + size * 0.22, cy - size * 0.04)], fill=(52, 113, 59), width=max(2, int(size * 0.06)))
+        draw.ellipse(left_cherry, fill=(203, 38, 49), outline=outline, width=2)
+        draw.ellipse(right_cherry, fill=(221, 50, 60), outline=outline, width=2)
+        draw.ellipse([cx + size * 0.02, cy - size * 0.54, cx + size * 0.34, cy - size * 0.28], fill=(72, 151, 77), outline=outline, width=1)
     else:
         draw.ellipse([cx - size * 0.42, cy - size * 0.42, cx + size * 0.42, cy + size * 0.42], fill=(236, 149, 48), outline=outline, width=3)
         draw.ellipse([cx - size * 0.22, cy - size * 0.22, cx + size * 0.22, cy + size * 0.22], fill=(255, 210, 88), outline=(166, 89, 26), width=2)

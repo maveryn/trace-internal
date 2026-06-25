@@ -37,6 +37,7 @@ def _assert_count_output(output) -> None:
         {"left", "middle", "right"},
     )
     assert len({str(spec["shape_type"]) for spec in trace["object_specs"]}) == 1
+    assert trace["target_shape_type"] not in {"pencil", "ruler"}
     assert len({str(spec["color_name"]) for spec in trace["object_specs"]}) >= 2
     assert "{target_" not in output.prompt
     assert "color" not in output.prompt.lower()
@@ -50,6 +51,11 @@ def _assert_count_output(output) -> None:
         assert 0.0 <= x0 < x1 <= float(image_w)
         assert 0.0 <= y0 < y1 <= float(image_h)
         assert min(x1 - x0, y1 - y0) >= 24.0
+    conveyor_bbox = [float(value) for value in render_map["conveyor_bbox_px"]]
+    if trace["layout_orientation"] == "horizontal_lanes":
+        assert (conveyor_bbox[2] - conveyor_bbox[0]) / float(image_w) >= 0.78
+    else:
+        assert (conveyor_bbox[3] - conveyor_bbox[1]) / float(image_h) >= 0.62
 
 
 def test_conveyor_belt_total_count_uses_lane_positions() -> None:

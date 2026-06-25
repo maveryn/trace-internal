@@ -25,12 +25,21 @@ from trace.tasks.three_d.shared.task_support import (
 
 from .state import (
     CONVEYOR_OBJECT_SHAPE_TYPES,
+    HORIZONTAL_LANE_CENTER_BY_KEY,
     HORIZONTAL_LANE_KEYS,
+    HORIZONTAL_LANE_LENGTH,
+    HORIZONTAL_SLOT_LENGTH,
+    LANE_SLOT_JITTER_ACROSS,
+    LANE_SLOT_JITTER_ALONG,
+    LANE_HALF_WIDTH,
     LANE_LABELS,
     SCENE_ID,
     SEMANTIC_COLOR_RGB,
     SUPPORTED_SCENE_VARIANTS,
+    VERTICAL_LANE_CENTER_BY_KEY,
     VERTICAL_LANE_KEYS,
+    VERTICAL_LANE_LENGTH,
+    VERTICAL_SLOT_LENGTH,
     object_dimensions,
     public_object_name,
     public_object_plural,
@@ -164,8 +173,8 @@ def _resolve_lane_count(
 
 def _lane_center_value(layout_orientation: str, lane_key: str) -> float:
     if str(layout_orientation) == LAYOUT_HORIZONTAL:
-        return {"top": 1.55, "middle": 0.0, "bottom": -1.55}[str(lane_key)]
-    return {"left": -2.25, "middle": 0.0, "right": 2.25}[str(lane_key)]
+        return float(HORIZONTAL_LANE_CENTER_BY_KEY[str(lane_key)])
+    return float(VERTICAL_LANE_CENTER_BY_KEY[str(lane_key)])
 
 
 def _lane_records(layout_orientation: str) -> list[dict[str, Any]]:
@@ -197,20 +206,20 @@ def _slot_positions_for_lane(
     center = _lane_center_value(str(layout_orientation), str(lane_key))
     slots: list[tuple[float, float, float]] = []
     if str(layout_orientation) == LAYOUT_HORIZONTAL:
-        length = 6.15
+        length = float(HORIZONTAL_SLOT_LENGTH)
         spacing = length / float(max(1, count))
         start = -0.5 * length + 0.5 * spacing
         for index in range(count):
-            x = start + spacing * float(index) + rng.uniform(-0.13, 0.13)
-            y = center + rng.uniform(-0.10, 0.10)
+            x = start + spacing * float(index) + rng.uniform(-float(LANE_SLOT_JITTER_ALONG), float(LANE_SLOT_JITTER_ALONG))
+            y = center + rng.uniform(-float(LANE_SLOT_JITTER_ACROSS), float(LANE_SLOT_JITTER_ACROSS))
             slots.append((round(float(x), 4), round(float(y), 4), 0.0))
     else:
-        length = 5.15
+        length = float(VERTICAL_SLOT_LENGTH)
         spacing = length / float(max(1, count))
         start = -0.5 * length + 0.5 * spacing
         for index in range(count):
-            x = center + rng.uniform(-0.10, 0.10)
-            y = start + spacing * float(index) + rng.uniform(-0.13, 0.13)
+            x = center + rng.uniform(-float(LANE_SLOT_JITTER_ACROSS), float(LANE_SLOT_JITTER_ACROSS))
+            y = start + spacing * float(index) + rng.uniform(-float(LANE_SLOT_JITTER_ALONG), float(LANE_SLOT_JITTER_ALONG))
             slots.append((round(float(x), 4), round(float(y), 4), 90.0))
     rng.shuffle(slots)
     return slots
@@ -272,8 +281,8 @@ def _make_object_spec(
 
 def _sample_line_camera(rng: Any) -> CameraSpec:
     yaw_degrees = float(rng.uniform(-4.0, 4.0))
-    pitch_degrees = float(rng.uniform(53.0, 59.0))
-    distance = float(rng.uniform(8.0, 8.8))
+    pitch_degrees = float(rng.uniform(65.0, 71.0))
+    distance = float(rng.uniform(8.2, 9.0))
     yaw = math.radians(float(yaw_degrees))
     pitch = math.radians(float(pitch_degrees))
     target = (0.0, 0.0, 0.42)
@@ -299,14 +308,16 @@ def _sample_line_camera(rng: Any) -> CameraSpec:
 
 def _lane_reference_points(layout_orientation: str) -> list[tuple[float, float, float]]:
     points: list[tuple[float, float, float]] = []
-    half_width = 0.33
+    half_width = float(LANE_HALF_WIDTH)
     if str(layout_orientation) == LAYOUT_HORIZONTAL:
-        x0, x1 = -3.45, 3.45
+        half_length = 0.5 * float(HORIZONTAL_LANE_LENGTH)
+        x0, x1 = -half_length, half_length
         for lane_key in HORIZONTAL_LANE_KEYS:
             y = _lane_center_value(str(layout_orientation), str(lane_key))
             points.extend([(x0, y - half_width, 0.02), (x0, y + half_width, 0.02), (x1, y - half_width, 0.02), (x1, y + half_width, 0.02)])
     else:
-        y0, y1 = -2.95, 2.95
+        half_length = 0.5 * float(VERTICAL_LANE_LENGTH)
+        y0, y1 = -half_length, half_length
         for lane_key in VERTICAL_LANE_KEYS:
             x = _lane_center_value(str(layout_orientation), str(lane_key))
             points.extend([(x - half_width, y0, 0.02), (x + half_width, y0, 0.02), (x - half_width, y1, 0.02), (x + half_width, y1, 0.02)])

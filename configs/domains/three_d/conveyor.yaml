@@ -20,7 +20,7 @@ rendering:
     scene_margin_right_px: 52
     scene_margin_top_px: 52
     scene_margin_bottom_px: 52
-    room_extent: 4.0
+    room_extent: 2.6
     room_height: 2.8
     grid_step: 0.0
     marker_radius_px: 22

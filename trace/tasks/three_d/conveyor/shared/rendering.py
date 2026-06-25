@@ -17,7 +17,16 @@ from trace.tasks.three_d.shared.object_rendering import (
 from trace.tasks.three_d.shared.object_scene_rendering import _bbox_union, _draw_line
 
 from .sampling import LAYOUT_HORIZONTAL, LAYOUT_VERTICAL
-from .state import HORIZONTAL_LANE_KEYS, LANE_LABELS, VERTICAL_LANE_KEYS
+from .state import (
+    HORIZONTAL_LANE_CENTER_BY_KEY,
+    HORIZONTAL_LANE_KEYS,
+    HORIZONTAL_LANE_LENGTH,
+    LANE_HALF_WIDTH,
+    LANE_LABELS,
+    VERTICAL_LANE_CENTER_BY_KEY,
+    VERTICAL_LANE_KEYS,
+    VERTICAL_LANE_LENGTH,
+)
 
 
 FLOOR_RGB = (242, 246, 248)
@@ -74,17 +83,19 @@ def _projected_bbox(points: Sequence[Sequence[float]]) -> List[float]:
 
 def _lane_center_value(layout_orientation: str, lane_key: str) -> float:
     if str(layout_orientation) == LAYOUT_HORIZONTAL:
-        return {"top": 1.55, "middle": 0.0, "bottom": -1.55}[str(lane_key)]
-    return {"left": -2.25, "middle": 0.0, "right": 2.25}[str(lane_key)]
+        return float(HORIZONTAL_LANE_CENTER_BY_KEY[str(lane_key)])
+    return float(VERTICAL_LANE_CENTER_BY_KEY[str(lane_key)])
 
 
 def _lane_polygon_world(layout_orientation: str, lane_key: str) -> list[tuple[float, float, float]]:
-    half_width = 0.34
+    half_width = float(LANE_HALF_WIDTH)
     if str(layout_orientation) == LAYOUT_HORIZONTAL:
-        x0, x1 = -3.45, 3.45
+        half_length = 0.5 * float(HORIZONTAL_LANE_LENGTH)
+        x0, x1 = -half_length, half_length
         y = _lane_center_value(str(layout_orientation), str(lane_key))
         return [(x0, y - half_width, 0.03), (x1, y - half_width, 0.03), (x1, y + half_width, 0.03), (x0, y + half_width, 0.03)]
-    y0, y1 = -2.95, 2.95
+    half_length = 0.5 * float(VERTICAL_LANE_LENGTH)
+    y0, y1 = -half_length, half_length
     x = _lane_center_value(str(layout_orientation), str(lane_key))
     return [(x - half_width, y0, 0.03), (x + half_width, y0, 0.03), (x + half_width, y1, 0.03), (x - half_width, y1, 0.03)]
 
@@ -137,20 +148,20 @@ def _draw_lane_belt(
 
     if str(layout_orientation) == LAYOUT_HORIZONTAL:
         y = _lane_center_value(str(layout_orientation), str(lane_key))
-        for x in (-2.15, 0.15, 2.45):
+        for x in (-2.65, 0.0, 2.65):
             _draw_arrow(
                 draw,
-                start_xy=project_xy((x - 0.30, y, 0.065), camera, frame),
-                end_xy=project_xy((x + 0.30, y, 0.065), camera, frame),
+                start_xy=project_xy((x - 0.38, y, 0.065), camera, frame),
+                end_xy=project_xy((x + 0.38, y, 0.065), camera, frame),
                 fill=(60, 74, 88),
             )
     else:
         x = _lane_center_value(str(layout_orientation), str(lane_key))
-        for y in (-1.95, 0.00, 1.95):
+        for y in (-2.75, 0.0, 2.75):
             _draw_arrow(
                 draw,
-                start_xy=project_xy((x, y - 0.26, 0.065), camera, frame),
-                end_xy=project_xy((x, y + 0.26, 0.065), camera, frame),
+                start_xy=project_xy((x, y - 0.34, 0.065), camera, frame),
+                end_xy=project_xy((x, y + 0.34, 0.065), camera, frame),
                 fill=(60, 74, 88),
             )
 

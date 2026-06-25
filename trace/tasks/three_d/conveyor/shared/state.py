@@ -27,6 +27,13 @@ SEMANTIC_COLOR_RGB: Mapping[str, Tuple[int, int, int]] = {
 
 HORIZONTAL_LANE_KEYS: Tuple[str, ...] = ("top", "middle", "bottom")
 VERTICAL_LANE_KEYS: Tuple[str, ...] = ("left", "middle", "right")
+LANE_HALF_WIDTH: float = 0.46
+LANE_SLOT_JITTER_ACROSS: float = 0.07
+LANE_SLOT_JITTER_ALONG: float = 0.10
+HORIZONTAL_LANE_LENGTH: float = 7.65
+VERTICAL_LANE_LENGTH: float = 7.65
+HORIZONTAL_SLOT_LENGTH: float = 6.95
+VERTICAL_SLOT_LENGTH: float = 6.95
 
 LANE_LABELS: Mapping[str, str] = {
     "top": "TOP",
@@ -34,6 +41,18 @@ LANE_LABELS: Mapping[str, str] = {
     "left": "LEFT",
     "right": "RIGHT",
     "middle": "MIDDLE",
+}
+
+HORIZONTAL_LANE_CENTER_BY_KEY: Mapping[str, float] = {
+    "top": 1.85,
+    "middle": 0.0,
+    "bottom": -1.85,
+}
+
+VERTICAL_LANE_CENTER_BY_KEY: Mapping[str, float] = {
+    "left": -1.85,
+    "middle": 0.0,
+    "right": 1.85,
 }
 
 CONVEYOR_OBJECT_SHAPE_TYPES: Tuple[str, ...] = tuple(
@@ -69,14 +88,12 @@ CONVEYOR_OBJECT_SHAPE_TYPES: Tuple[str, ...] = tuple(
         "lantern",
         "leaf",
         "mushroom",
-        "pencil",
         "plate",
         "plug",
         "puzzle_piece",
         "pyramid",
         "remote_control",
         "torus",
-        "ruler",
         "shield",
         "star_prism",
         "tray",
@@ -122,12 +139,21 @@ def sample_visual_color_names(rng: object, *, palette_size: int = 4) -> tuple[st
 
 __all__ = [
     "CONVEYOR_OBJECT_SHAPE_TYPES",
+    "HORIZONTAL_LANE_CENTER_BY_KEY",
     "HORIZONTAL_LANE_KEYS",
+    "HORIZONTAL_LANE_LENGTH",
+    "HORIZONTAL_SLOT_LENGTH",
+    "LANE_HALF_WIDTH",
     "LANE_LABELS",
+    "LANE_SLOT_JITTER_ACROSS",
+    "LANE_SLOT_JITTER_ALONG",
     "SCENE_ID",
     "SEMANTIC_COLOR_RGB",
     "SUPPORTED_SCENE_VARIANTS",
+    "VERTICAL_LANE_CENTER_BY_KEY",
     "VERTICAL_LANE_KEYS",
+    "VERTICAL_LANE_LENGTH",
+    "VERTICAL_SLOT_LENGTH",
     "object_dimensions",
     "public_object_name",
     "public_object_plural",

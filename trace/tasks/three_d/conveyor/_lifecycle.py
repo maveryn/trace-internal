@@ -1,4 +1,4 @@
-"""Scene-private lifecycle orchestration for conveyor sorting public tasks."""
+"""Scene-private lifecycle orchestration for conveyor public tasks."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from trace.tasks.three_d.shared.object_scene import _resolve_render_params
 
 from .shared.annotations import bbox_set_annotation_for_objects
 from .shared.prompts import build_prompt_artifacts, dynamic_slots_for_conveyor
-from .shared.rendering import RenderedConveyorSorting, render_conveyor_sorting
+from .shared.rendering import RenderedConveyor, render_conveyor
 from .shared.sampling import (
     ResolvedConveyorAxes,
     build_belt_count_dataset,
@@ -44,7 +44,7 @@ DatasetBuilder = Callable[
 
 @dataclass(frozen=True)
 class ConveyorTaskPlan:
-    """Task-owned objective data for one conveyor sorting instance."""
+    """Task-owned objective data for one conveyor instance."""
 
     dataset: Mapping[str, Any]
     answer_gt: TypedValue
@@ -70,7 +70,7 @@ def _bbox_inside_image(bbox: Sequence[float], *, width: int, height: int) -> boo
 
 
 def _rendered_bboxes_are_readable(
-    rendered: RenderedConveyorSorting,
+    rendered: RenderedConveyor,
     *,
     min_side_px: float,
 ) -> bool:
@@ -90,7 +90,7 @@ def _build_trace_payload(
     selected_branch: str,
     axes: ResolvedConveyorAxes,
     plan: ConveyorTaskPlan,
-    rendered: RenderedConveyorSorting,
+    rendered: RenderedConveyor,
     annotation_artifacts: Any,
     prompt_artifacts: Any,
     query_spec: Mapping[str, Any],
@@ -155,7 +155,7 @@ def _build_trace_payload(
     }
     return {
         "scene_ir": {
-            "scene_kind": f"three_d_conveyor_sorting_{public_name.rsplit('__', 1)[-1]}",
+            "scene_kind": f"three_d_conveyor_{public_name.rsplit('__', 1)[-1]}",
             "entities": [dict(entity) for entity in rendered.entities],
             "relations": {
                 "scene_variant": str(axes.scene_variant),
@@ -237,7 +237,7 @@ def _trace_params(
     }
 
 
-def run_conveyor_sorting_lifecycle(
+def run_conveyor_lifecycle(
     *,
     public_name: str,
     domain_name: str,
@@ -308,7 +308,7 @@ def run_conveyor_sorting_lifecycle(
                 params=clean_params,
                 default_config=_BACKGROUND_DEFAULTS,
             )
-            rendered = render_conveyor_sorting(background, dataset=plan.dataset, render_params=render_params)
+            rendered = render_conveyor(background, dataset=plan.dataset, render_params=render_params)
             if not _rendered_bboxes_are_readable(rendered, min_side_px=float(min_bbox_side_px)):
                 raise ValueError("rendered conveyor object boxes failed readability constraints")
             image, post_noise_meta = apply_post_image_noise(
@@ -361,7 +361,7 @@ def run_conveyor_sorting_lifecycle(
         except Exception as exc:
             last_error = exc
             continue
-    raise RuntimeError(f"{public_name} failed to generate a valid conveyor sorting scene after {max_attempts} attempts: {last_error}")
+    raise RuntimeError(f"{public_name} failed to generate a valid conveyor scene after {max_attempts} attempts: {last_error}")
 
 
-__all__ = ["ConveyorTaskPlan", "run_conveyor_sorting_lifecycle"]
+__all__ = ["ConveyorTaskPlan", "run_conveyor_lifecycle"]

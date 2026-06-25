@@ -7,7 +7,7 @@ in `docs/ACTIVE_TASK_INVENTORY.md` and `docs/tasks/three_d/`.
 `three_d` covers rendered 3D scenes with explicit camera pose, world-space
 geometry, projection metadata, and metadata-grounded verifiers. Tasks reason
 over spatial relations, camera distance, height, occlusion, support surfaces,
-multi-view correspondence, object counts, fixtures, conveyor sorting stations,
+multi-view correspondence, object counts, fixtures, conveyor scenes,
 streets, rooms, or warehouse layouts.
 
 Use `three_d` for perspective 3D environments. Use `geometry` for abstract
@@ -15,7 +15,7 @@ geometric solids and `puzzles` for abstract 3D puzzle boards.
 
 ## Scene Boundary
 A three_d scene is the stable 3D environment grammar: object scene, object
-cluster, surface fixture, conveyor sorting station, room, street, warehouse, or
+cluster, surface fixture, conveyor, room, street, warehouse, or
 another camera-projected world. Scene variants may vary room/platform type,
 camera orbit band, surface style, object profiles, lighting, or palette when the
 same projection and verifier contract holds.

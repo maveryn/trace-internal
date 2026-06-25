@@ -1,4 +1,4 @@
-"""Scene state and catalogs for synthetic 3D conveyor carousel sorting."""
+"""Scene state and catalogs for synthetic 3D conveyor scenes."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from trace.tasks.three_d.shared.object_resources import (
 )
 
 
-SCENE_ID = "conveyor_sorting"
+SCENE_ID = "conveyor"
 
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "airport_carousel",

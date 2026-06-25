@@ -27,7 +27,7 @@ FLOOR_RGB = (244, 247, 249)
 
 
 @dataclass(frozen=True)
-class RenderedConveyorSorting:
+class RenderedConveyor:
     """Rendered conveyor carousel scene with projected object geometry."""
 
     image: Image.Image
@@ -217,12 +217,12 @@ def _draw_object_shadow(draw: ImageDraw.ImageDraw, bbox: Sequence[float]) -> Non
     draw.ellipse(tuple(shadow), fill=(92, 102, 112))
 
 
-def render_conveyor_sorting(
+def render_conveyor(
     background: Image.Image,
     *,
     dataset: Mapping[str, Any],
     render_params: Any,
-) -> RenderedConveyorSorting:
+) -> RenderedConveyor:
     """Render one conveyor carousel scene and project object boxes."""
 
     image = background.convert("RGB")
@@ -293,7 +293,7 @@ def render_conveyor_sorting(
             target_bboxes[str(object_id)] = list(bbox)
             target_centers[str(object_id)] = list(center)
     scene_bbox = _bbox_union(conveyor_bbox, *object_bboxes.values()) if object_bboxes else conveyor_bbox
-    return RenderedConveyorSorting(
+    return RenderedConveyor(
         image=image,
         entities=entities,
         scene_bbox_px=list(scene_bbox),
@@ -306,4 +306,4 @@ def render_conveyor_sorting(
     )
 
 
-__all__ = ["RenderedConveyorSorting", "render_conveyor_sorting"]
+__all__ = ["RenderedConveyor", "render_conveyor"]

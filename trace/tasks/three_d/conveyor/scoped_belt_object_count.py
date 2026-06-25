@@ -6,11 +6,11 @@ from typing import Any, Dict
 
 from ...base import TaskOutput
 from ...registry import register_task
-from ._lifecycle import run_conveyor_sorting_lifecycle
+from ._lifecycle import run_conveyor_lifecycle
 from .shared.sampling import PREDICATE_COLOR, PREDICATE_OBJECT_TYPE
 
 
-TASK_ID = "task_three_d__conveyor_sorting__scoped_belt_object_count"
+TASK_ID = "task_three_d__conveyor__scoped_belt_object_count"
 OBJECT_TYPE_QUERY_ID = "object_type_belt_count"
 COLOR_QUERY_ID = "color_belt_count"
 SUPPORTED_QUERY_IDS = (OBJECT_TYPE_QUERY_ID, COLOR_QUERY_ID)
@@ -25,7 +25,7 @@ PREDICATE_KIND_BY_BRANCH = {
 
 
 @register_task
-class ThreeDConveyorSortingScopedBeltObjectCountTask:
+class ThreeDConveyorScopedBeltObjectCountTask:
     """Count objects matching one target attribute on an inner or outer carousel belt."""
 
     task_id = TASK_ID
@@ -35,7 +35,7 @@ class ThreeDConveyorSortingScopedBeltObjectCountTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         clean_params = dict(params)
-        output = run_conveyor_sorting_lifecycle(
+        output = run_conveyor_lifecycle(
             public_name=TASK_ID,
             domain_name=self.domain,
             prompt_query_key_by_branch=PROMPT_QUERY_KEY_BY_BRANCH,
@@ -49,4 +49,4 @@ class ThreeDConveyorSortingScopedBeltObjectCountTask:
         return output
 
 
-__all__ = ["SUPPORTED_QUERY_IDS", "TASK_ID", "ThreeDConveyorSortingScopedBeltObjectCountTask"]
+__all__ = ["SUPPORTED_QUERY_IDS", "TASK_ID", "ThreeDConveyorScopedBeltObjectCountTask"]

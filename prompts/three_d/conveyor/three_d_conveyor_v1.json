@@ -1,10 +1,10 @@
 {
-  "bundle_id": "three_d_conveyor_sorting_v1",
+  "bundle_id": "three_d_conveyor_v1",
   "schema_version": "v1",
   "allow_empty_task_templates": true,
   "templates": {
     "scene": {
-      "conveyor_sorting": [
+      "conveyor": [
         "The image shows a 3D airport-style conveyor carousel with an inner and an outer elliptical belt.",
         "The scene shows small 3D objects riding on two concentric elliptical conveyor belts.",
         "A 3D conveyor carousel is shown with objects on the inner and outer belts.",
@@ -13,7 +13,7 @@
       ]
     },
     "task": {
-      "conveyor_sorting_count_query": [
+      "conveyor_count_query": [
         "",
         "",
         "",

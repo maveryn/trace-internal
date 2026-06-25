@@ -1,4 +1,4 @@
-"""Tests for synthetic 3D conveyor sorting tasks."""
+"""Tests for synthetic 3D conveyor tasks."""
 
 from __future__ import annotations
 
@@ -7,11 +7,11 @@ from pathlib import Path
 from trace.core import task_review_distribution
 from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks import create_task
-from trace.tasks.three_d.conveyor_sorting.belt_total_object_count import (
+from trace.tasks.three_d.conveyor.belt_total_object_count import (
     QUERY_ID as TOTAL_QUERY_ID,
     TASK_ID as TOTAL_TASK_ID,
 )
-from trace.tasks.three_d.conveyor_sorting.scoped_belt_object_count import (
+from trace.tasks.three_d.conveyor.scoped_belt_object_count import (
     COLOR_QUERY_ID,
     OBJECT_TYPE_QUERY_ID,
     TASK_ID as SCOPED_TASK_ID,
@@ -24,7 +24,7 @@ def _assert_count_output(output, *, expected_query_id: str) -> None:
     render_map = output.trace_payload["render_map"]
     target_ids = [str(object_id) for object_id in trace["target_object_ids"]]
 
-    assert output.scene_id == "conveyor_sorting"
+    assert output.scene_id == "conveyor"
     assert output.query_id == expected_query_id
     assert output.answer_gt.type == "integer"
     assert output.annotation_gt.type == "bbox_set"
@@ -52,7 +52,7 @@ def _assert_count_output(output, *, expected_query_id: str) -> None:
         assert min(x1 - x0, y1 - y0) >= 24.0
 
 
-def test_conveyor_sorting_scoped_belt_count_query_ids() -> None:
+def test_conveyor_scoped_belt_count_query_ids() -> None:
     task = create_task(SCOPED_TASK_ID)
     cases = (
         (OBJECT_TYPE_QUERY_ID, 2026062401),
@@ -67,7 +67,7 @@ def test_conveyor_sorting_scoped_belt_count_query_ids() -> None:
         _assert_count_output(output, expected_query_id=query_id)
 
 
-def test_conveyor_sorting_belt_total_count_uses_belt_specific_support() -> None:
+def test_conveyor_belt_total_count_uses_belt_specific_support() -> None:
     task = create_task(TOTAL_TASK_ID)
     cases = (
         ("inner", 8, 2026062501),
@@ -87,7 +87,7 @@ def test_conveyor_sorting_belt_total_count_uses_belt_specific_support() -> None:
         render_map = output.trace_payload["render_map"]
         target_ids = [str(object_id) for object_id in trace["target_object_ids"]]
 
-        assert output.scene_id == "conveyor_sorting"
+        assert output.scene_id == "conveyor"
         assert output.query_id == SINGLE_QUERY_ID
         assert output.trace_payload["query_spec"]["internal_query_id"] == TOTAL_QUERY_ID
         replay_row = task_review_distribution.random_collector(output, seed)
@@ -116,8 +116,8 @@ def test_conveyor_sorting_belt_total_count_uses_belt_specific_support() -> None:
             assert min(x1 - x0, y1 - y0) >= 24.0
 
 
-def test_conveyor_sorting_renderer_has_no_unqueried_gate_decoration() -> None:
-    source = Path("trace/tasks/three_d/conveyor_sorting/shared/rendering.py").read_text()
+def test_conveyor_renderer_has_no_unqueried_gate_decoration() -> None:
+    source = Path("trace/tasks/three_d/conveyor/shared/rendering.py").read_text()
 
     assert "inspection_gate" not in source
     assert "three_d_conveyor_inspection_gate" not in source

@@ -1,16 +1,16 @@
-# `task_three_d__conveyor_sorting__belt_total_object_count`
+# `task_three_d__conveyor__belt_total_object_count`
 
 ## Summary
 - Domain: `three_d`
-- Scene id: `conveyor_sorting`
-- Scene package: `conveyor_sorting`
+- Scene id: `conveyor`
+- Scene package: `conveyor`
 - Query ids: `single` publicly; internal query id `belt_total_count`
 - Answer type: `integer`
 - Annotation type: unordered `bbox_set`
 - Annotation schema: `bbox_set`
 
 ## Program Contract
-- `count(filter(conveyor_objects, belt_key=target_belt_key)); scene=conveyor_sorting; scope=belt_total_object_count`
+- `count(filter(conveyor_objects, belt_key=target_belt_key)); scene=conveyor; scope=belt_total_object_count`
 
 ## Contract
 The image shows one 3D conveyor carousel with two visible concentric
@@ -32,8 +32,8 @@ each counted object on the requested belt. Objects on the other belt, belt
 surfaces, arrows, and decorative station context are not annotation.
 
 ## Prompt And Trace
-The prompt bundle is `three_d_conveyor_sorting_v1` under
-`prompts/three_d/conveyor_sorting/`. The prompt asks for total objects on the
+The prompt bundle is `three_d_conveyor_v1` under
+`prompts/three_d/conveyor/`. The prompt asks for total objects on the
 `INNER` or `OUTER` belt and does not mention the sampled object type or colors.
 
 The trace records scene variant, belt records, target belt, sampled object type,

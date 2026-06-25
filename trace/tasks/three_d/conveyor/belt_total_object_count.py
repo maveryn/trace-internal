@@ -6,11 +6,11 @@ from typing import Any, Dict
 
 from ...base import TaskOutput
 from ...registry import register_task
-from ._lifecycle import run_conveyor_sorting_lifecycle
+from ._lifecycle import run_conveyor_lifecycle
 from .shared.sampling import PREDICATE_BELT_TOTAL
 
 
-TASK_ID = "task_three_d__conveyor_sorting__belt_total_object_count"
+TASK_ID = "task_three_d__conveyor__belt_total_object_count"
 QUERY_ID = "belt_total_count"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 PROMPT_QUERY_KEY_BY_BRANCH = {
@@ -22,7 +22,7 @@ PREDICATE_KIND_BY_BRANCH = {
 
 
 @register_task
-class ThreeDConveyorSortingBeltTotalObjectCountTask:
+class ThreeDConveyorBeltTotalObjectCountTask:
     """Count all visible objects on one selected conveyor belt."""
 
     task_id = TASK_ID
@@ -31,7 +31,7 @@ class ThreeDConveyorSortingBeltTotalObjectCountTask:
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        output = run_conveyor_sorting_lifecycle(
+        output = run_conveyor_lifecycle(
             public_name=TASK_ID,
             domain_name=self.domain,
             prompt_query_key_by_branch=PROMPT_QUERY_KEY_BY_BRANCH,
@@ -45,4 +45,4 @@ class ThreeDConveyorSortingBeltTotalObjectCountTask:
         return output
 
 
-__all__ = ["QUERY_ID", "SUPPORTED_QUERY_IDS", "TASK_ID", "ThreeDConveyorSortingBeltTotalObjectCountTask"]
+__all__ = ["QUERY_ID", "SUPPORTED_QUERY_IDS", "TASK_ID", "ThreeDConveyorBeltTotalObjectCountTask"]

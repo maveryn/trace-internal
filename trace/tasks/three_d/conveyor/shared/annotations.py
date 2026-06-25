@@ -1,4 +1,4 @@
-"""Annotation helpers for rendered conveyor sorting objects."""
+"""Annotation helpers for rendered conveyor objects."""
 
 from __future__ import annotations
 
@@ -6,11 +6,11 @@ from typing import Sequence
 
 from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_set_annotation_artifacts
 
-from .rendering import RenderedConveyorSorting
+from .rendering import RenderedConveyor
 
 
 def object_bboxes_for_ids(
-    rendered: RenderedConveyorSorting,
+    rendered: RenderedConveyor,
     object_ids: Sequence[str],
 ) -> list[list[float]]:
     """Return pixel boxes for selected conveyor objects."""
@@ -19,7 +19,7 @@ def object_bboxes_for_ids(
 
 
 def bbox_set_annotation_for_objects(
-    rendered: RenderedConveyorSorting,
+    rendered: RenderedConveyor,
     object_ids: Sequence[str],
 ) -> AnnotationArtifacts:
     """Build unordered bbox-set annotation artifacts for selected objects."""

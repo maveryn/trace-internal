@@ -1,4 +1,4 @@
-"""Prompt assembly for conveyor sorting tasks."""
+"""Prompt assembly for conveyor tasks."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from .state import SCENE_ID, semantic_color_label
 
 
 DOMAIN = "three_d"
-PROMPT_BUNDLE_ID = "three_d_conveyor_sorting_v1"
+PROMPT_BUNDLE_ID = "three_d_conveyor_v1"
 PROMPT_WIRING_KEYS = ("bundle_id", "scene_key", "task_key")
 
 _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
@@ -45,12 +45,12 @@ def build_prompt_artifacts(
     dynamic_slot_values: Mapping[str, Any],
     instance_seed: int,
 ) -> tuple[dict[str, Any], PromptTraceArtifacts]:
-    """Build prompt artifacts for one conveyor sorting objective."""
+    """Build prompt artifacts for one conveyor objective."""
 
     prompt_defaults = required_group_defaults(
         _PROMPT_DEFAULTS,
         PROMPT_WIRING_KEYS,
-        context="conveyor_sorting prompt wiring defaults",
+        context="conveyor prompt wiring defaults",
     )
     rendered_prompt = render_scene_prompt_variants(
         domain=DOMAIN,

@@ -18,7 +18,7 @@ from ._lifecycle import (
     scene_default_sections,
 )
 from .shared.algorithms import descendant_leaf_labels
-from .shared.annotations import projected_keyed_phylogeny_annotation
+from .shared.annotations import projected_leaf_point_annotation
 from .shared.prompts import PROMPT_BUNDLE_ID as PHYLOGENY_PROMPT_BUNDLE_ID
 from .shared.sampling import sample_phylogeny_with_mrca_size
 
@@ -122,14 +122,15 @@ def _bind_mrca_result(case: SingleTreeCase, rendered: Any, selected_query: str) 
         "query_leaf_2": leaf_node_id(case.sample, leaf_b),
         "mrca": mrca_node_id,
     }
-    annotation_projection = projected_keyed_phylogeny_annotation(rendered.rendered_scene, role_to_node_id=role_to_node)
     descendant_labels = descendant_leaf_labels(case.sample, mrca_node_id)
+    annotation_projection = projected_leaf_point_annotation(rendered.rendered_scene, descendant_labels)
+    annotation_points = [[int(point[0]), int(point[1])] for point in annotation_projection["pixel_point_set"]]
     answer_value = int(len(descendant_labels))
     return BoundPhylogenyResult(
         answer_type="integer",
         answer_value=int(answer_value),
-        annotation_type="bbox_map",
-        annotation_value=dict(annotation_projection["bbox_map"]),
+        annotation_type="point_set",
+        annotation_value=list(annotation_points),
         prompt_slots={"query_label_a": leaf_a, "query_label_b": leaf_b},
         trace_params={},
         scene_relations={
@@ -149,7 +150,12 @@ def _bind_mrca_result(case: SingleTreeCase, rendered: Any, selected_query: str) 
             "mrca_node_id": mrca_node_id,
             "mrca_descendant_leaf_labels": list(descendant_labels),
         },
-        projected_annotation={"type": "bbox_map", **dict(annotation_projection)},
+        projected_annotation={
+            "type": "point_set",
+            "point_set": list(annotation_points),
+            "pixel_point_set": list(annotation_points),
+            "leaf_label_bbox_map": dict(annotation_projection["leaf_label_bbox_map"]),
+        },
     )
 
 

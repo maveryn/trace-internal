@@ -72,10 +72,11 @@ def test_phylogeny_mrca_leaf_count_contract() -> None:
     expected_labels = trace["execution_trace"]["mrca_descendant_leaf_labels"]
     assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "bbox_map"
-    assert set(out.annotation_gt.value.keys()) == {"query_leaf_1", "query_leaf_2", "mrca"}
+    assert out.annotation_gt.type == "point_set"
     assert out.answer_gt.value == len(expected_labels)
-    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
+    assert len(out.annotation_gt.value) == len(expected_labels)
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["scene_ir"]["relations"]["mrca_descendant_leaf_labels"] == expected_labels
 
 
 def test_phylogeny_mrca_case_does_not_request_visual_clade_marker() -> None:

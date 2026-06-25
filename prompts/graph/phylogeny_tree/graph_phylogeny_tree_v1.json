@@ -89,9 +89,9 @@
       "json_example_answer_only": "{\"answer\":\"B\"}"
     },
     "query:mrca_leaf_count": {
-      "annotation_hint": "set \"annotation\" to a JSON object with keys \"query_leaf_1\", \"query_leaf_2\", and \"mrca\"; each value is a [x0,y0,x1,y1] pixel box around that visual witness",
+      "annotation_hint": "set \"annotation\" to a JSON array of [x,y] pixel points at the terminal centers of every taxon descending from the most recent common ancestor",
       "answer_hint": "set \"answer\" to the number of taxa descending from the most recent common ancestor as an integer",
-      "json_example": "{\"annotation\":{\"query_leaf_1\":[720,180,746,204],\"query_leaf_2\":[720,360,746,384],\"mrca\":[440,250,458,268]},\"answer\":4}",
+      "json_example": "{\"annotation\":[[742,180],[742,240],[742,300],[742,360]],\"answer\":4}",
       "json_example_answer_only": "{\"answer\":4}"
     },
     "query:topology_outlier_label": {

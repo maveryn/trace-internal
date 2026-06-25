@@ -8,7 +8,7 @@
 5. Objective: count descendant taxa of the most recent common ancestor of two queried taxa.
 
 ## Program Contract
-count(leaves(descendant_of(mrca(query_leaf_1,query_leaf_2)))); output=integer; annotation=bbox_map(query_leaf_1,query_leaf_2,mrca); scene=phylogeny_tree; scope=mrca_clade_membership_count
+count(leaves(descendant_of(mrca(query_leaf_1,query_leaf_2)))); output=integer; annotation=point_set(descendant_leaf_terminal_centers); scene=phylogeny_tree; scope=mrca_clade_membership_count
 
 ## Query IDs
 1. Supported `query_id`: `single`.
@@ -16,9 +16,10 @@ count(leaves(descendant_of(mrca(query_leaf_1,query_leaf_2)))); output=integer; a
 
 ## Answer And Annotation
 1. Answer type: `integer`.
-2. Annotation schema: `bbox_map`.
-3. Annotation keys are `query_leaf_1`, `query_leaf_2`, and `mrca`.
-4. Descendant leaf labels are recorded in trace metadata; annotation marks only the role-bound visual witnesses.
+2. Annotation schema: `point_set`.
+3. Annotation points are the terminal centers of every descendant taxon counted under the MRCA clade.
+4. Count tasks require `answer_gt.value == len(annotation_gt.value)`.
+5. Query leaf labels, MRCA node id, and descendant leaf labels are also recorded in trace metadata.
 
 ## Rendering Contract
 1. The scene renders a rooted cladogram with labeled terminal taxa.

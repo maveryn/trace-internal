@@ -17,7 +17,7 @@ def test_games_space_shooter_defaults_present() -> None:
     cfg = get_scene_defaults("games", "space_shooter")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="task_games__space_shooter__clear_shot_count",
+        task_id="task_games__space_shooter__enemy_ship_count",
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
@@ -30,10 +30,6 @@ def test_games_space_shooter_defaults_present() -> None:
     assert set(generation["style_variant_weights"].keys()) == set(SUPPORTED_STYLE_VARIANTS)
     assert list(generation["lane_count_support"]) == [4, 5, 6, 7, 8]
     assert list(generation["enemy_count_support"]) == [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-    assert list(generation["clear_shot_count_support"]) == [1, 2, 3, 4, 5]
-    assert list(generation["clear_shot_score_enemy_count_support"]) == [1, 2, 3, 4, 5]
-    assert list(generation["clear_shot_score_value_support"]) == [1, 2, 3, 5, 10]
-    assert list(generation["projectile_intercept_count_support"]) == [1, 2, 3, 4, 5]
     assert list(generation["safe_lane_count_support"]) == [1, 2, 3, 4, 5]
     assert list(generation["enemy_projectile_per_lane_support"]) == [1, 2, 3]
     assert int(rendering["canvas_width"]) == 1060
@@ -56,7 +52,6 @@ def test_games_space_shooter_defaults_present() -> None:
     assert "bottom lane pads" in str(code_defaults["space_shooter_lane_rule_text"]).lower()
     assert "shield" not in json.dumps(bundle).lower()
     assert "asteroid" not in json.dumps(bundle).lower()
-    assert "total score" in str(code_defaults["answer_hint_clear_shot_score_value"]).lower()
     assert "visible enemy ships" in str(code_defaults["answer_hint_enemy_ship_count"]).lower()
     assert "every visible enemy ship" in str(code_defaults["annotation_hint_enemy_ship_count"]).lower()
     assert "bounding boxes" in str(code_defaults["annotation_hint_safe_lane_count"])

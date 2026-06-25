@@ -16,10 +16,6 @@ from .state import SCENE_ID
 class SpaceShooterDefaults:
     """Stable fallback defaults for visible space-shooter scenes."""
 
-    clear_shot_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
-    clear_shot_score_enemy_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
-    clear_shot_score_value_support: Tuple[int, ...] = (1, 2, 3, 5, 10)
-    projectile_intercept_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     safe_lane_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     lane_count_support: Tuple[int, ...] = (4, 5, 6, 7, 8)
     enemy_count_support: Tuple[int, ...] = (4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)

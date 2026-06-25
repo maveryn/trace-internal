@@ -7,7 +7,6 @@ from typing import Any, Mapping, Sequence, Tuple
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 
 from .defaults import DEFAULTS, GEN_DEFAULTS
-from .rules import clear_shot_enemy_ids, enemy_projectile_ids_in_lane
 from .state import (
     ENEMY_LABELS,
     SUPPORTED_SCENE_VARIANTS,
@@ -70,12 +69,6 @@ def resolve_scene_axes(*, namespace: str, instance_seed: int, params: Mapping[st
         balanced_flag_key="balanced_enemy_count_sampling",
         namespace_support_permutation=True,
     )
-    score_support = resolve_integer_support(
-        params,
-        gen_defaults=GEN_DEFAULTS,
-        key="clear_shot_score_value_support",
-        fallback=DEFAULTS.clear_shot_score_value_support,
-    )
     enemy_projectile_per_lane_support = resolve_integer_support(
         params,
         gen_defaults=GEN_DEFAULTS,
@@ -87,7 +80,6 @@ def resolve_scene_axes(*, namespace: str, instance_seed: int, params: Mapping[st
         style_variant=str(style_variant),
         lane_count=int(lane_count),
         enemy_count=int(enemy_count),
-        clear_shot_score_value_support=score_support,
         enemy_projectile_per_lane_support=tuple(int(value) for value in enemy_projectile_per_lane_support),
         scene_variant_probabilities=dict(scene_variant_probabilities),
         style_variant_probabilities=dict(style_variant_probabilities),
@@ -182,30 +174,6 @@ def _claim_position(
     return int(lane), int(slot)
 
 
-def _claim_enemy_projectile_position(
-    *,
-    rng,
-    occupied: set[Tuple[int, int]],
-    lane_candidates: Sequence[int],
-    slot_candidates: Sequence[int],
-    enemies: Sequence[SpaceEnemy],
-) -> Tuple[int, int]:
-    """Claim a red projectile position below a visible same-lane enemy ship."""
-
-    candidates = [
-        (int(lane), int(slot))
-        for lane in lane_candidates
-        for slot in slot_candidates
-        if (int(lane), int(slot)) not in occupied
-        and any(int(enemy.lane) == int(lane) and int(enemy.y_slot) < int(slot) for enemy in enemies)
-    ]
-    if not candidates:
-        raise ValueError("no free below-enemy space-shooter projectile position remains")
-    lane, slot = rng.choice(candidates)
-    occupied.add((int(lane), int(slot)))
-    return int(lane), int(slot)
-
-
 def _add_enemy_projectile_line(
     *,
     rng,
@@ -250,119 +218,6 @@ def _add_enemy_projectile_line(
             )
         )
     return int(shot_count)
-
-
-def sample_clear_shot_scene(
-    *,
-    rng,
-    axes: SceneAxes,
-    target_answer: int,
-    score_query: bool,
-) -> SpaceShooterSample:
-    """Construct a clear-front-enemy count or score scene."""
-
-    required_lanes = int(target_answer) + 1 if bool(score_query) else int(target_answer)
-    lane_count = max(required_lanes, int(axes.lane_count))
-    target = min(int(target_answer), lane_count)
-    lanes = list(range(lane_count))
-    rng.shuffle(lanes)
-    clear_lanes = set(lanes[:target])
-    blocked_lanes = [lane for lane in lanes[target:]]
-    enemies: list[SpaceEnemy] = []
-    projectiles: list[SpaceProjectile] = []
-    occupied: set[Tuple[int, int]] = set()
-
-    for lane in range(lane_count):
-        if lane in clear_lanes:
-            _, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=(3, 4, 5))
-            enemies.append(
-                _make_enemy(
-                    enemy_index=len(enemies),
-                    lane=lane,
-                    y_slot=slot,
-                    rng=rng,
-                    score_value=int(rng.choice(axes.clear_shot_score_value_support)) if score_query else None,
-                )
-            )
-        else:
-            _, player_shot_slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=(4, 5))
-            projectiles.append(
-                _make_projectile(
-                    projectile_index=len(projectiles),
-                    lane=lane,
-                    y_slot=player_shot_slot,
-                    owner="player",
-                    rng=rng,
-                )
-            )
-            upper_slots = tuple(slot for slot in (1, 2, 3) if int(slot) < int(player_shot_slot))
-            _, slot = _claim_position(rng=rng, occupied=occupied, lane_candidates=(lane,), slot_candidates=upper_slots)
-            enemies.append(
-                _make_enemy(
-                    enemy_index=len(enemies),
-                    lane=lane,
-                    y_slot=slot,
-                    rng=rng,
-                    score_value=int(rng.choice(axes.clear_shot_score_value_support)) if score_query else None,
-                )
-            )
-    for index in range(max(1, lane_count // 4)):
-        try:
-            lane, slot = _claim_enemy_projectile_position(
-                rng=rng,
-                occupied=occupied,
-                lane_candidates=blocked_lanes or range(lane_count),
-                slot_candidates=(3, 4, 5),
-                enemies=enemies,
-            )
-        except ValueError:
-            continue
-        projectiles.append(
-            _make_projectile(
-                projectile_index=len(projectiles),
-                lane=lane,
-                y_slot=slot,
-                owner="enemy",
-                rng=rng,
-            )
-        )
-
-    clear_ids = clear_shot_enemy_ids(tuple(enemies), tuple(projectiles))
-    clear_id_set = set(clear_ids)
-    answer = (
-        sum(int(enemy.score_value or 0) for enemy in enemies if str(enemy.enemy_id) in clear_id_set)
-        if bool(score_query)
-        else int(len(clear_ids))
-    )
-    sample = SpaceShooterSample(
-        lane_count=lane_count,
-        scene_variant=str(axes.scene_variant),
-        answer=int(answer),
-        player_lane=int(rng.randrange(lane_count)),
-        enemies=tuple(enemies),
-        projectiles=tuple(projectiles),
-        clear_enemy_ids=tuple(clear_ids),
-        intercept_projectile_ids=tuple(),
-        lowest_enemy_id=str(enemies[0].enemy_id),
-        lowest_enemy_label=str(enemies[0].label),
-        safe_lane_indices=tuple(),
-        annotation_entity_ids=tuple(clear_ids),
-        target_answer=int(target),
-        construction_mode="front_enemy_clear_shot_score_sum" if bool(score_query) else "front_enemy_clear_shot_lanes",
-        metadata={
-            "score_query": bool(score_query),
-            "target_answer": int(target),
-            "target_answer_support": list(DEFAULTS.clear_shot_score_enemy_count_support if bool(score_query) else DEFAULTS.clear_shot_count_support),
-        },
-    )
-    validate_basic_space_shooter_sample(sample)
-    if len(clear_ids) != int(target):
-        raise ValueError("clear-shot sample did not achieve target count")
-    if bool(score_query) and not any(
-        str(enemy.enemy_id) not in clear_id_set and enemy.score_value is not None for enemy in enemies
-    ):
-        raise ValueError("clear-shot score scene requires scored blocked enemies as distractors")
-    return sample
 
 
 def sample_enemy_ship_count_scene(*, rng, axes: SceneAxes) -> SpaceShooterSample:
@@ -433,10 +288,6 @@ def sample_enemy_ship_count_scene(*, rng, axes: SceneAxes) -> SpaceShooterSample
         player_lane=int(rng.randrange(lane_count)),
         enemies=tuple(enemies),
         projectiles=tuple(projectiles),
-        clear_enemy_ids=tuple(),
-        intercept_projectile_ids=tuple(),
-        lowest_enemy_id=str(enemies[0].enemy_id),
-        lowest_enemy_label=str(enemies[0].label),
         safe_lane_indices=tuple(),
         annotation_entity_ids=annotation_ids,
         target_answer=int(len(enemies)),
@@ -445,191 +296,6 @@ def sample_enemy_ship_count_scene(*, rng, axes: SceneAxes) -> SpaceShooterSample
             "target_answer": int(len(enemies)),
             "target_answer_support": list(DEFAULTS.enemy_count_support),
         },
-    )
-    validate_basic_space_shooter_sample(sample)
-    return sample
-
-
-def sample_projectile_intercept_scene(
-    *,
-    rng,
-    axes: SceneAxes,
-    target_answer: int,
-) -> SpaceShooterSample:
-    """Construct a scene where target projectiles share the player lane."""
-
-    lane_count = int(axes.lane_count)
-    target = int(target_answer)
-    player_lane = int(rng.randrange(lane_count))
-    occupied: set[Tuple[int, int]] = set()
-    enemies: list[SpaceEnemy] = []
-    occupied.add((int(player_lane), 0))
-    enemies.append(_make_enemy(enemy_index=0, lane=player_lane, y_slot=0, rng=rng))
-    projectiles: list[SpaceProjectile] = []
-    target_slots = list(range(1, 6))
-    rng.shuffle(target_slots)
-    for slot in target_slots[:target]:
-        occupied.add((int(player_lane), int(slot)))
-        projectiles.append(
-            _make_projectile(
-                projectile_index=len(projectiles),
-                lane=player_lane,
-                y_slot=int(slot),
-                owner="enemy",
-                rng=rng,
-            )
-        )
-    while len(enemies) < int(axes.enemy_count):
-        lane, slot = _claim_position(
-            rng=rng,
-            occupied=occupied,
-            lane_candidates=range(lane_count),
-            slot_candidates=(0, 1, 2, 3, 4, 5),
-        )
-        enemies.append(_make_enemy(enemy_index=len(enemies), lane=lane, y_slot=slot, rng=rng))
-    for lane in range(lane_count):
-        if lane == player_lane:
-            continue
-        if rng.random() < 0.45:
-            try:
-                _, slot = _claim_enemy_projectile_position(
-                    rng=rng,
-                    occupied=occupied,
-                    lane_candidates=(lane,),
-                    slot_candidates=(2, 3, 4, 5),
-                    enemies=enemies,
-                )
-            except ValueError:
-                continue
-            projectiles.append(
-                _make_projectile(
-                    projectile_index=len(projectiles),
-                    lane=lane,
-                    y_slot=slot,
-                    owner="enemy",
-                    rng=rng,
-                )
-            )
-    non_player_lanes = tuple(lane for lane in range(lane_count) if int(lane) != int(player_lane))
-    for _ in range(max(1, lane_count // 4)):
-        try:
-            lane, slot = _claim_position(
-                rng=rng,
-                occupied=occupied,
-                lane_candidates=non_player_lanes,
-                slot_candidates=(4, 5),
-            )
-        except ValueError:
-            continue
-        projectiles.append(
-            _make_projectile(
-                projectile_index=len(projectiles),
-                lane=lane,
-                y_slot=slot,
-                owner="player",
-                rng=rng,
-            )
-        )
-    intercept_ids = enemy_projectile_ids_in_lane(tuple(projectiles), int(player_lane))
-    sample = SpaceShooterSample(
-        lane_count=lane_count,
-        scene_variant=str(axes.scene_variant),
-        answer=int(len(intercept_ids)),
-        player_lane=int(player_lane),
-        enemies=tuple(enemies),
-        projectiles=tuple(projectiles),
-        clear_enemy_ids=tuple(),
-        intercept_projectile_ids=intercept_ids,
-        lowest_enemy_id=str(enemies[0].enemy_id),
-        lowest_enemy_label=str(enemies[0].label),
-        safe_lane_indices=tuple(),
-        annotation_entity_ids=intercept_ids,
-        target_answer=int(target),
-        construction_mode="player_lane_projectile_intercepts",
-        metadata={
-            "target_answer": int(target),
-            "target_answer_support": list(DEFAULTS.projectile_intercept_count_support),
-        },
-    )
-    validate_basic_space_shooter_sample(sample)
-    if len(intercept_ids) != int(target):
-        raise ValueError("projectile scene did not achieve target count")
-    return sample
-
-
-def sample_unique_lowest_enemy_scene(*, rng, axes: SceneAxes) -> SpaceShooterSample:
-    """Construct a scene with a unique lowest enemy."""
-
-    lane_count = int(axes.lane_count)
-    enemy_count = int(axes.enemy_count)
-    target_index = int(rng.randrange(enemy_count))
-    occupied: set[Tuple[int, int]] = set()
-    enemies: list[SpaceEnemy] = []
-    target_lane, target_slot = _claim_position(
-        rng=rng,
-        occupied=occupied,
-        lane_candidates=range(lane_count),
-        slot_candidates=(5,),
-    )
-    for index in range(enemy_count):
-        if index == target_index:
-            lane, y_slot = target_lane, target_slot
-        else:
-            lane, y_slot = _claim_position(
-                rng=rng,
-                occupied=occupied,
-                lane_candidates=range(lane_count),
-                slot_candidates=(0, 1, 2, 3, 4),
-            )
-        enemies.append(_make_enemy(enemy_index=index, lane=lane, y_slot=y_slot, rng=rng))
-    projectiles: list[SpaceProjectile] = []
-    for _ in range(max(2, lane_count // 2)):
-        try:
-            if rng.random() < 0.65:
-                lane, slot = _claim_enemy_projectile_position(
-                    rng=rng,
-                    occupied=occupied,
-                    lane_candidates=range(lane_count),
-                    slot_candidates=(3, 4, 5),
-                    enemies=enemies,
-                )
-                owner = "enemy"
-            else:
-                lane, slot = _claim_position(
-                    rng=rng,
-                    occupied=occupied,
-                    lane_candidates=range(lane_count),
-                    slot_candidates=(3, 4, 5),
-                )
-                owner = "player"
-        except ValueError:
-            continue
-        projectiles.append(
-            _make_projectile(
-                projectile_index=len(projectiles),
-                lane=lane,
-                y_slot=slot,
-                owner=owner,
-                rng=rng,
-            )
-        )
-    target_enemy = enemies[target_index]
-    sample = SpaceShooterSample(
-        lane_count=lane_count,
-        scene_variant=str(axes.scene_variant),
-        answer=str(target_enemy.label),
-        player_lane=int(rng.randrange(lane_count)),
-        enemies=tuple(enemies),
-        projectiles=tuple(projectiles),
-        clear_enemy_ids=tuple(),
-        intercept_projectile_ids=tuple(),
-        lowest_enemy_id=str(target_enemy.enemy_id),
-        lowest_enemy_label=str(target_enemy.label),
-        safe_lane_indices=tuple(),
-        annotation_entity_ids=(str(target_enemy.enemy_id),),
-        target_answer=None,
-        construction_mode="unique_lowest_enemy_threat",
-        metadata={"target_answer": None},
     )
     validate_basic_space_shooter_sample(sample)
     return sample
@@ -689,10 +355,6 @@ def sample_safe_lane_scene(*, rng, axes: SceneAxes, target_answer: int) -> Space
         player_lane=int(rng.randrange(lane_count)),
         enemies=tuple(enemies),
         projectiles=tuple(projectiles),
-        clear_enemy_ids=tuple(),
-        intercept_projectile_ids=tuple(),
-        lowest_enemy_id=str(enemies[0].enemy_id),
-        lowest_enemy_label=str(enemies[0].label),
         safe_lane_indices=safe_lanes,
         annotation_entity_ids=annotation_ids,
         target_answer=int(target),

@@ -54,10 +54,6 @@ class SpaceShooterSample:
     player_lane: int
     enemies: Tuple[SpaceEnemy, ...]
     projectiles: Tuple[SpaceProjectile, ...]
-    clear_enemy_ids: Tuple[str, ...]
-    intercept_projectile_ids: Tuple[str, ...]
-    lowest_enemy_id: str
-    lowest_enemy_label: str
     safe_lane_indices: Tuple[int, ...]
     annotation_entity_ids: Tuple[str, ...]
     target_answer: int | None
@@ -73,7 +69,6 @@ class SceneAxes:
     style_variant: str
     lane_count: int
     enemy_count: int
-    clear_shot_score_value_support: Tuple[int, ...]
     enemy_projectile_per_lane_support: Tuple[int, ...]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]
@@ -110,13 +105,5 @@ def validate_basic_space_shooter_sample(sample: SpaceShooterSample) -> None:
     }
     if not set(str(entity_id) for entity_id in sample.annotation_entity_ids) <= known_entities:
         raise ValueError("space shooter annotation references unknown entities")
-    if not set(str(entity_id) for entity_id in sample.clear_enemy_ids) <= set(enemy_ids):
-        raise ValueError("space shooter clear shot ids must reference enemies")
-    if not set(str(entity_id) for entity_id in sample.intercept_projectile_ids) <= set(projectile_ids):
-        raise ValueError("space shooter intercept ids must reference projectiles")
-    if str(sample.lowest_enemy_id) not in set(enemy_ids):
-        raise ValueError("space shooter lowest enemy id must reference an enemy")
-    if str(sample.lowest_enemy_label) not in {str(enemy.label) for enemy in sample.enemies}:
-        raise ValueError("space shooter lowest enemy label must reference an enemy")
     if not set(int(lane) for lane in sample.safe_lane_indices) <= set(range(lane_count)):
         raise ValueError("space shooter safe lanes out of range")

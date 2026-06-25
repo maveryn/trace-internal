@@ -679,18 +679,9 @@ def _draw_target_markers(
             raise ValueError(f"unknown target tile id {tile_id!r}")
         tile = tiles_by_id[str(tile_id)]
         x0, y0, x1, y1 = [int(round(value)) for value in tile.bbox_xyxy]
-        margin = max(6, int(tile_px * 0.10))
         outline_width = max(4, int(tile_px * 0.06))
-        marker_bbox = (x0 + margin, y0 + margin, x1 - margin, y1 - margin)
-        draw.rectangle(marker_bbox, outline=(88, 10, 18), width=outline_width + 2)
-        inner_offset = max(1, outline_width // 2)
-        inner_bbox = (
-            marker_bbox[0] + inner_offset,
-            marker_bbox[1] + inner_offset,
-            marker_bbox[2] - inner_offset,
-            marker_bbox[3] - inner_offset,
-        )
-        draw.rectangle(inner_bbox, outline=(232, 24, 36), width=outline_width)
+        marker_bbox = (x0, y0, x1 - 1, y1 - 1)
+        draw.rectangle(marker_bbox, outline=(232, 24, 36), width=outline_width)
 
 
 __all__ = [

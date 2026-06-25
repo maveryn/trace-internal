@@ -96,7 +96,7 @@ def test_rpg_tactical_map_renderer_is_deterministic_and_profile_safe() -> None:
             _assert_bbox_inside_canvas(list(unit.bbox_xyxy), width=width, height=height)
 
 
-def test_rpg_tactical_map_target_marker_is_inset_red_square_outline() -> None:
+def test_rpg_tactical_map_target_marker_is_red_square_on_tile_border() -> None:
     params = resolve_tactical_map_render_params({"canvas_profile": "landscape"}, {}, instance_seed=102)
     seed = 67890
     probe = render_rpg_tactical_map_scene(
@@ -136,19 +136,27 @@ def test_rpg_tactical_map_target_marker_is_inset_red_square_outline() -> None:
     cx, cy = [int(round(value)) for value in target_tile.point_xy]
     assert marked.image.getpixel((cx, cy)) == baseline.image.getpixel((cx, cy))
 
+    edge_points = [
+        (x0, y0),
+        (x1 - 1, y0),
+        (x0, y1 - 1),
+        (x1 - 1, y1 - 1),
+        ((x0 + x1) // 2, y0),
+        ((x0 + x1) // 2, y1 - 1),
+        (x0, (y0 + y1) // 2),
+        (x1 - 1, (y0 + y1) // 2),
+    ]
+    for point in edge_points:
+        pixel = marked.image.getpixel(point)
+        assert int(pixel[0]) > 180 and int(pixel[1]) < 70 and int(pixel[2]) < 80
+
     crop_pixels = list(marked.image.crop((x0, y0, x1, y1)).getdata())
     bright_red_pixels = [
         pixel
         for pixel in crop_pixels
         if int(pixel[0]) > 180 and int(pixel[1]) < 70 and int(pixel[2]) < 80
     ]
-    dark_red_pixels = [
-        pixel
-        for pixel in crop_pixels
-        if 60 <= int(pixel[0]) <= 130 and int(pixel[1]) < 45 and int(pixel[2]) < 60
-    ]
     assert len(bright_red_pixels) > 80
-    assert len(dark_red_pixels) > 80
 
 
 def test_rpg_tactical_map_movement_reachable_tile_contract() -> None:

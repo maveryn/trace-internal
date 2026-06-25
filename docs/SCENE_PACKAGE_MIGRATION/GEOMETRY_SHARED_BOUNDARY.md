@@ -102,13 +102,11 @@ normal API cleanup:
 |---|---|
 | `annotation_values.py` | Public annotation artifact normalization and JSON-ready point/bbox payload helpers. |
 | `background_defaults.py` | Geometry background default loading. |
-| `conic_geometry.py` | Neutral circle/ellipse sampling, drawing, and graph-paper geometry. |
 | `coordinate_panel_grid.py` | Coordinate panel layout and graph-to-pixel projection primitives. |
 | `diagram_style.py` | Geometry diagram style/background/readability adapters. |
 | `graph_panel_layout.py` | Graph panel layout and coordinate-frame helpers. |
 | `graph_paper.py` | Lattice/grid sizing and graph-paper sampling primitives. |
 | `graph_rendering.py` | Graph-paper style, scaling, and coordinate-frame rendering primitives. |
-| `length_geometry.py` | Neutral segment/vector length sampling and rendering helpers. |
 | `measurement_rendering.py` | Bbox/readout/dimension-line/right-angle drawing helpers. Labels remain plain by default; backplates are opt-in. |
 | `metadata_serialization.py` | Geometry trace metadata JSON normalization. |
 | `noise_defaults.py` | Geometry post-image noise default loading. |
@@ -116,7 +114,6 @@ normal API cleanup:
 | `quadrilateral_prototypes.py` | Neutral quadrilateral prototype construction and classification. |
 | `scene_transform.py` | Whole-scene transform and annotation projection support. |
 | `shape_style.py` | Geometry shape-style sampling and background contrast adapters. |
-| `slope_geometry.py` | Neutral slope/line sampling helpers for graph-paper scenes. |
 | `vector2d.py` | Point/vector math and point serialization. |
 
 ### Keep Domain-Shared As Approved Families
@@ -126,31 +123,35 @@ scene migration, do not add task/query dispatch to them.
 
 | Module | Family |
 |---|---|
-| `angle_geometry.py` | Graph-paper and free-diagram angle primitives. |
 | `comparison.py` | Multi-object spatial clearance/comparison geometry primitives. |
 | `labeled_point_annotation.py` | Graph-point annotation artifacts. |
-| `multi_angle_scene.py` | Multi-angle object placement/clearance primitives. |
 | `multi_polygon_scene.py` | Multi-polygon scene object drawing primitives. |
-| `multi_shape_scene.py` | Mixed shape object drawing primitives. |
 | `point_labels.py` | Neutral point-label drawing helpers. |
-| `polygon_geometry.py` | Polygon templates, sampling, drawing, and geometry primitives. |
 | `polygon_scene_helpers.py` | Pixel/graph polygon conversion and reference polygon drawing. |
 | `polygon_transformations.py` | Neutral polygon transformations and vertex mapping. |
 | `pythagorean.py` | Integer right-triangle enumeration and validation for scenes that need Pythagorean case pools. |
 | `render_variation.py` | Small scene-neutral render parameter sampling. |
 | `single_object_scene.py` | Graph-scene canvas/finalization helpers shared by graph-style scenes. |
 
-### Retire Or Decompose During Scene Migration
+### Retired During Scene Migration
 
-These are not acceptable as final domain-shared ownership surfaces.
+These were removed as final domain-shared ownership surfaces. Do not reintroduce
+them during scene migration.
 
 | Module | Target |
 |---|---|
-| `composite_measurement_cases.py` | Decompose concrete case builders into owning scenes. Keep only genuinely neutral drawing/math helpers if two or more migrated scenes need them. |
-| `composite_measurement_task.py` | Retire. Public task files must own final `TaskOutput`, prompt slots, answer binding, and annotation binding. |
-| `consolidated_source.py` | Retire after dependent graph-paper tasks are migrated off output rewriting. |
-| `consolidated_sampling.py` | Retire unless replaced by repo-global query-selection helpers used from public task files. |
-| `prompt_text.py` | Avoid expanding. Prompt prose belongs in prompt assets; keep only mechanical prompt-slot helpers if still needed. |
+| `angle_geometry.py` | Removed after migration because no active geometry scene referenced it. |
+| `composite_measurement_cases.py` | Removed. The remaining angle-relations primitives live in `angle_relations/shared/spatial_primitives.py`; concrete case builders belong to owning scenes. |
+| `composite_measurement_task.py` | Removed. Public task files own final `TaskOutput`, prompt slots, answer binding, and annotation binding. |
+| `consolidated_source.py` | Removed. Migrated scenes must not rewrite source-task outputs. |
+| `consolidated_sampling.py` | Removed. Use task-owned query selection or repo-global neutral sampling helpers. |
+| `conic_geometry.py` | Removed after migration because no active geometry scene referenced it. |
+| `length_geometry.py` | Removed after migration because no active geometry scene referenced it. |
+| `multi_angle_scene.py` | Removed after migration because no active geometry scene referenced it. |
+| `multi_shape_scene.py` | Removed after migration because no active geometry scene referenced it. |
+| `polygon_geometry.py` | Removed after migration because no active geometry scene referenced it. |
+| `prompt_text.py` | Removed. Prompt prose belongs in prompt assets. |
+| `slope_geometry.py` | Removed after migration because no active geometry scene referenced it. |
 
 ## Family Promotion Candidates
 

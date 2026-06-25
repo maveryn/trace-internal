@@ -15,7 +15,7 @@ TASK_CLASSES = (
 
 QUERY_IDS_BY_TASK = {
     GeometryAreaPartitionTotalAreaValueTask: (
-        "total_area_from_shaded_partition",
+        "single",
     ),
 }
 
@@ -45,9 +45,9 @@ def test_area_partition_tasks_emit_public_contract(task_cls) -> None:
     scene_id = SCENE_ID_BY_TASK[task_cls]
 
     assert out.scene_id == scene_id
-    assert out.query_id == "total_area_from_shaded_partition"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     assert len(out.annotation_gt.value) == 2
     assert set(out.annotation_gt.value) == {"outer_shape", "shaded_region"}
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
@@ -63,8 +63,8 @@ def test_area_partition_tasks_emit_public_contract(task_cls) -> None:
     assert trace["witness_symbolic"]["scene_id"] == scene_id
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert set(trace["projected_annotation"]["keyed_bbox_map"]) == {
+    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert set(trace["projected_annotation"]["bbox_map"]) == {
         "outer_shape",
         "shaded_region",
     }
@@ -160,7 +160,7 @@ def test_area_partition_annotation_stays_inside_canvas(task_cls) -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        assert out.annotation_gt.type == "keyed_bbox_map"
+        assert out.annotation_gt.type == "bbox_map"
         for x0, y0, x1, y1 in out.annotation_gt.value.values():
             assert 0.0 <= x0 < x1 <= float(width)
             assert 0.0 <= y0 < y1 <= float(height)

@@ -7,10 +7,10 @@ from typing import Any, Callable, Dict, Mapping, Tuple
 
 from PIL import Image
 
-from ...shared.composite_measurement_cases import (
+from .spatial_primitives import (
     BBox,
     Point,
-    _RenderContext,
+    RenderContext,
 )
 
 SCENE_ID = "angle_relations"
@@ -37,7 +37,7 @@ class AngleRelationCase:
     """One constructively valid angle-relations diagram case."""
 
     answer: int
-    build: Callable[[_RenderContext], RenderedAngleRelationScene]
+    build: Callable[[RenderContext], RenderedAngleRelationScene]
 
 
 ANGLE_ABC = "ABC"

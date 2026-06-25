@@ -14,10 +14,6 @@ from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from trace.tasks.shared.text_rendering import load_font
 
-from ...shared.composite_measurement_cases import (
-    _COMPOSITE_MEASUREMENT_NOISE_DEFAULTS,
-    _RenderContext,
-)
 from ...shared.diagram_style import (
     GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
     geometry_diagram_style_metadata,
@@ -25,6 +21,7 @@ from ...shared.diagram_style import (
     prepare_geometry_diagram_style_and_background,
 )
 from ...shared.scene_transform import LazySceneTransform
+from .spatial_primitives import ANGLE_RELATIONS_NOISE_DEFAULTS, RenderContext
 from .state import SCENE_ID, AngleRelationCase, RenderedAngleRelationScene
 
 
@@ -43,7 +40,7 @@ def make_angle_relation_render_context(
     instance_seed: int,
     params: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
-) -> tuple[_RenderContext, Dict[str, Any]]:
+) -> tuple[RenderContext, Dict[str, Any]]:
     """Resolve style and canvas inputs for one angle-relations rendering attempt."""
 
     rng = spawn_rng(int(instance_seed), "geometry.angle_relations.render")
@@ -93,7 +90,7 @@ def make_angle_relation_render_context(
         float(rng.randint(-32, 32)),
         float(rng.randint(-20, 22)),
     )
-    ctx = _RenderContext(
+    ctx = RenderContext(
         rng=rng,
         image=image,
         draw=ImageDraw.Draw(image),
@@ -167,7 +164,7 @@ def render_angle_relation_case(
                 rendered_scene.image,
                 instance_seed=int(instance_seed),
                 params=params,
-                default_config=_COMPOSITE_MEASUREMENT_NOISE_DEFAULTS,
+                default_config=ANGLE_RELATIONS_NOISE_DEFAULTS,
             )
             return RenderedAngleRelationContext(
                 rendered_scene=rendered_scene,

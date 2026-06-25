@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import math
 
-from ...shared.composite_measurement_cases import (
-    _RenderContext,
+from .spatial_primitives import (
+    RenderContext,
     _angle_annotation_point,
     _bbox_from_points,
     _draw_angle_label,
@@ -38,7 +38,7 @@ from .state import (
 )
 
 
-def _draw_parallel_arrow_marks(ctx: _RenderContext, segments: tuple[tuple[tuple[float, float], tuple[float, float]], ...]) -> tuple[float, float, float, float]:
+def _draw_parallel_arrow_marks(ctx: RenderContext, segments: tuple[tuple[tuple[float, float], tuple[float, float]], ...]) -> tuple[float, float, float, float]:
     """Draw arrow-style parallel markers on each parallel segment."""
 
     marker_points: list[tuple[float, float]] = []
@@ -77,7 +77,7 @@ def make_triangle_exterior_case(given_a: int, answer_b: int) -> AngleRelationCas
     exterior = exterior_angle_value(given_a, answer_b)
     right_interior = 180 - int(exterior)
 
-    def build(ctx: _RenderContext) -> RenderedAngleRelationScene:
+    def build(ctx: RenderContext) -> RenderedAngleRelationScene:
         """Render triangle/exterior geometry without choosing task identity."""
 
         a, b, c = _triangle_from_base_angles(
@@ -130,7 +130,7 @@ def make_parallel_supplement_case(given: int) -> AngleRelationCase:
 
     answer = supplement_angle_value(given)
 
-    def build(ctx: _RenderContext) -> RenderedAngleRelationScene:
+    def build(ctx: RenderContext) -> RenderedAngleRelationScene:
         """Render parallel-line geometry without choosing task identity."""
 
         top_l, top_r = (135.0, 170.0), (585.0, 170.0)
@@ -194,7 +194,7 @@ def make_algebraic_single_extension_case(
     exterior_const = int(exterior_c) - (int(exterior_coeff) * int(x_value))
     angle_c = 180 - int(given_angle_a) - int(answer_angle_b)
 
-    def build(ctx: _RenderContext) -> RenderedAngleRelationScene:
+    def build(ctx: RenderContext) -> RenderedAngleRelationScene:
         """Render single-extension algebraic geometry for task-owned solving."""
 
         a, b, c = _triangle_from_base_angles(
@@ -258,7 +258,7 @@ def make_algebraic_double_extension_case(
     exterior_const = int(exterior_c) - (int(exterior_coeff) * int(x_value))
     angle_c = 180 - int(given_angle_a) - int(answer_angle_b)
 
-    def build(ctx: _RenderContext) -> RenderedAngleRelationScene:
+    def build(ctx: RenderContext) -> RenderedAngleRelationScene:
         """Render double-extension algebraic geometry for task-owned solving."""
 
         a, b, c = _triangle_from_base_angles(

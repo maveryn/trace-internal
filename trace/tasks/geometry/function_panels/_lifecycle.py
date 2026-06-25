@@ -201,6 +201,7 @@ def build_property_components(
             "panel_columns": int(rendered.panel_columns),
             "panel_rows": int(rendered.panel_rows),
         },
+        "render_map": {"coord_space": "pixel"},
         "projected_annotation": dict(annotation.projected_annotation),
         "witness_symbolic": dict(annotation.witness_symbolic),
         "execution_trace": {
@@ -306,6 +307,7 @@ def build_intersection_components(
             "object_colors": [list(color) for color in rendered.object_colors],
             "intersection_color_selection": dict(rendered.intersection_color_meta),
         },
+        "render_map": {"coord_space": "pixel"},
         "projected_annotation": dict(annotation.projected_annotation),
         "witness_symbolic": dict(annotation.witness_symbolic),
         "execution_trace": {

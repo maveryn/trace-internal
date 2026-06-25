@@ -8,7 +8,6 @@ from typing import Any, Dict, Mapping, Tuple
 
 from trace.core.scene_config import get_scene_defaults
 from trace.core.types import TypedValue
-from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.base import TaskOutput
 from trace.tasks.geometry.shared.pythagorean import IntegerRightTriangle, integer_right_triangles
 from trace.tasks.registry import register_task
@@ -17,9 +16,8 @@ from trace.tasks.shared.deterministic_sampling import resolve_selection_index, u
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 
-from ._lifecycle import build_trace_payload, render_with_attempts
-from .shared.defaults import DOMAIN, POST_IMAGE_NOISE_DEFAULTS, SCENE_ID
-from .shared.prompts import resolve_cylinder_wrap_prompt
+from ._lifecycle import build_trace_payload, render_cylinder_wrap_runtime
+from .shared.defaults import DOMAIN, SCENE_ID
 from .shared.rendering import render_surface_path_scene
 from .shared.state import SurfacePathProblem
 
@@ -150,48 +148,39 @@ class GeometryCylinderWrapSurfacePathLengthValueTask:
             instance_seed=int(instance_seed),
             params=params,
         )
-        rendered, render_meta = render_with_attempts(
+        runtime = render_cylinder_wrap_runtime(
             instance_seed=int(instance_seed),
             params=request.params,
             render_defaults=_RENDER_DEFAULTS,
+            prompt_defaults=_PROMPT_DEFAULTS,
+            field_prefix=PROMPT_FIELD_PREFIX,
             max_attempts=int(max_attempts),
             problem=request.problem,
             render_scene=render_surface_path_scene,
         )
 
-        image, noise_meta = apply_post_image_noise(
-            rendered.image,
-            instance_seed=int(instance_seed),
-            params=request.params,
-            default_config=POST_IMAGE_NOISE_DEFAULTS,
-        )
-        prompt_defaults, prompt_artifacts = resolve_cylinder_wrap_prompt(
-            prompt_defaults=_PROMPT_DEFAULTS,
-            field_prefix=PROMPT_FIELD_PREFIX,
-            instance_seed=int(instance_seed),
-        )
-        annotation_value = dict(rendered.annotation_value)
-        answer_gt = TypedValue(type="integer", value=int(rendered.answer))
-        annotation_gt = TypedValue(type=str(rendered.annotation_type), value=dict(annotation_value))
+        answer_gt = TypedValue(type="integer", value=int(runtime.rendered.answer))
+        annotation_value = dict(runtime.annotation_value)
+        annotation_gt = TypedValue(type=str(runtime.rendered.annotation_type), value=dict(annotation_value))
         return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
+            prompt=str(runtime.prompt_artifacts.prompt),
             answer_gt=answer_gt,
             annotation_gt=annotation_gt,
-            image=image,
+            image=runtime.image,
             image_id="img0",
             trace_payload=build_trace_payload(
                 scene_variant=SCENE_VARIANT,
                 formula_schema=FORMULA_SCHEMA,
                 selected_query=str(request.selected_query),
                 query_probabilities=dict(request.query_probabilities),
-                rendered=rendered,
-                prompt_defaults=prompt_defaults,
-                prompt_artifacts=prompt_artifacts,
-                render_meta=dict(render_meta),
-                noise_meta=dict(noise_meta),
-                image_size=(int(image.size[0]), int(image.size[1])),
+                rendered=runtime.rendered,
+                prompt_defaults=runtime.prompt_defaults,
+                prompt_artifacts=runtime.prompt_artifacts,
+                render_meta=dict(runtime.render_meta),
+                noise_meta=dict(runtime.noise_meta),
+                image_size=(int(runtime.image.size[0]), int(runtime.image.size[1])),
                 annotation_value=annotation_value,
-                answer_value=int(rendered.answer),
+                answer_value=int(runtime.rendered.answer),
                 query_params={
                     "answer_support": [int(value) for value in request.answer_support],
                     "path_length_probabilities": dict(request.path_length_probabilities),
@@ -201,7 +190,7 @@ class GeometryCylinderWrapSurfacePathLengthValueTask:
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(request.selected_query),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
+            prompt_variants=dict(runtime.prompt_artifacts.prompt_variants),
         )
 
 

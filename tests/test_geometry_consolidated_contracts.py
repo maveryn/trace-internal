@@ -9,8 +9,8 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.geometry.graph_paper.angle_extremum_label import GeometryComparisonValueTask
-from trace.tasks.geometry.graph_paper.angle_type_count import GeometryCountingValueTask
+from trace.tasks.geometry.graph_paper.area_extremum_label import GeometryGraphPaperAreaExtremumLabelTask
+from trace.tasks.geometry.graph_paper.triangle_type_count import GeometryGraphPaperTriangleTypeCountTask
 from tests.helpers import read_jsonl
 
 
@@ -18,12 +18,12 @@ from tests.helpers import read_jsonl
     ("task_cls", "params"),
     (
         (
-            GeometryComparisonValueTask,
-            {"scene_variant": "rectangle", "query_id": "area_extremum", "extremum_direction": "largest"},
+            GeometryGraphPaperAreaExtremumLabelTask,
+            {"query_id": "largest"},
         ),
         (
-            GeometryCountingValueTask,
-            {"scene_variant": "triangle", "query_id": "triangle_type_count", "triangle_type": "right"},
+            GeometryGraphPaperTriangleTypeCountTask,
+            {"triangle_type": "right"},
         ),
     ),
 )
@@ -41,33 +41,29 @@ def test_geometry_consolidated_tasks_are_deterministic(task_cls, params) -> None
 @pytest.mark.parametrize(
     ("task_cls", "params"),
     (
-        (GeometryComparisonValueTask, {"scene_variant": "rectangle", "query_id": "largest_area"}),
-        (
-            GeometryCountingValueTask,
-            {"scene_variant": "triangle", "query_id": "triangle_type_count", "triangle_type": "right"},
-        ),
+        (GeometryGraphPaperAreaExtremumLabelTask, {"query_id": "largest_area"}),
+        (GeometryGraphPaperTriangleTypeCountTask, {"query_id": "triangle_type_count"}),
     ),
 )
-def test_geometry_consolidated_tasks_accept_query_id_alias(task_cls, params) -> None:
+def test_geometry_split_graph_paper_tasks_reject_legacy_query_ids(task_cls, params) -> None:
     task = task_cls()
-    out = task.generate(23121, params=params, max_attempts=40)
-    expected_variant = "area_extremum" if params["query_id"] == "largest_area" else params["query_id"]
-    assert out.query_id == expected_variant
+    with pytest.raises(ValueError):
+        task.generate(23121, params=params, max_attempts=40)
 
 
 @pytest.mark.parametrize(
     ("task_id", "scene_id"),
     (
-        ("task_geometry__graph_paper__polygon_area_value", "measurement"),
-        ("task_geometry__graph_paper__area_extremum_label", "comparison"),
-        ("task_geometry__graph_paper__triangle_type_count", "counting"),
+        ("task_geometry__graph_paper__polygon_area_value", "graph_paper"),
+        ("task_geometry__graph_paper__area_extremum_label", "graph_paper"),
+        ("task_geometry__graph_paper__triangle_type_count", "graph_paper"),
         ("task_geometry__function_panels__function_status_label", "function_panels"),
         ("task_geometry__function_panels__intersection_property_label", "function_panels"),
-        ("task_geometry__circle_theorem__secant_secant_length_value", "circle"),
-        ("task_geometry__coordinate_plane__segment_relation_count", "coordinate"),
-        ("task_geometry__function_graph__extremum_count_turning_point_count", "graphing"),
-        ("task_geometry__shape_gallery__congruent_count", "similarity"),
-        ("task_geometry__shape_gallery__reflection_match", "transformation"),
+        ("task_geometry__circle_theorem__secant_secant_length_value", "circle_theorem"),
+        ("task_geometry__coordinate_plane__segment_relation_count", "coordinate_plane"),
+        ("task_geometry__function_graph__extremum_count_turning_point_count", "function_graph"),
+        ("task_geometry__shape_gallery__congruent_count", "shape_gallery"),
+        ("task_geometry__shape_gallery__reflection_match", "shape_gallery"),
     ),
 )
 def test_geometry_consolidated_build_smoke(task_id: str, scene_id: str, tmp_path: Path) -> None:

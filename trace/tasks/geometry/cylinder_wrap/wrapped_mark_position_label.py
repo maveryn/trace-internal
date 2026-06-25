@@ -8,7 +8,6 @@ from typing import Any, Dict, Mapping, Tuple
 from trace.core.scene_config import get_scene_defaults
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
-from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
@@ -18,9 +17,8 @@ from trace.tasks.shared.labeling import LABEL_POOL_SAFE_UPPER, assign_random_shu
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.geometry.shared.option_count import resolve_geometry_option_count
 
-from ._lifecycle import build_trace_payload, render_with_attempts
-from .shared.defaults import DOMAIN, POST_IMAGE_NOISE_DEFAULTS, SCENE_ID
-from .shared.prompts import resolve_cylinder_wrap_prompt
+from ._lifecycle import build_trace_payload, render_cylinder_wrap_runtime
+from .shared.defaults import DOMAIN, SCENE_ID
 from .shared.rendering import render_wrapped_mark_scene
 from .shared.state import WrappedMarkProblem
 
@@ -135,48 +133,39 @@ class GeometryCylinderWrapWrappedMarkPositionLabelTask:
             instance_seed=int(instance_seed),
             params=params,
         )
-        rendered, render_meta = render_with_attempts(
+        runtime = render_cylinder_wrap_runtime(
             instance_seed=int(instance_seed),
             params=request.params,
             render_defaults=_RENDER_DEFAULTS,
+            prompt_defaults=_PROMPT_DEFAULTS,
+            field_prefix=PROMPT_FIELD_PREFIX,
             max_attempts=int(max_attempts),
             problem=request.problem,
             render_scene=render_wrapped_mark_scene,
         )
 
-        image, noise_meta = apply_post_image_noise(
-            rendered.image,
-            instance_seed=int(instance_seed),
-            params=request.params,
-            default_config=POST_IMAGE_NOISE_DEFAULTS,
-        )
-        prompt_defaults, prompt_artifacts = resolve_cylinder_wrap_prompt(
-            prompt_defaults=_PROMPT_DEFAULTS,
-            field_prefix=PROMPT_FIELD_PREFIX,
-            instance_seed=int(instance_seed),
-        )
-        annotation_value = dict(rendered.annotation_value)
-        answer_gt = TypedValue(type="option_letter", value=str(rendered.answer))
-        annotation_gt = TypedValue(type=str(rendered.annotation_type), value=dict(annotation_value))
+        annotation_value = dict(runtime.annotation_value)
+        answer_gt = TypedValue(type="option_letter", value=str(runtime.rendered.answer))
+        annotation_gt = TypedValue(type=str(runtime.rendered.annotation_type), value=dict(annotation_value))
         return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
+            prompt=str(runtime.prompt_artifacts.prompt),
             answer_gt=answer_gt,
             annotation_gt=annotation_gt,
-            image=image,
+            image=runtime.image,
             image_id="img0",
             trace_payload=build_trace_payload(
                 scene_variant=SCENE_VARIANT,
                 formula_schema=FORMULA_SCHEMA,
                 selected_query=str(request.selected_query),
                 query_probabilities=dict(request.query_probabilities),
-                rendered=rendered,
-                prompt_defaults=prompt_defaults,
-                prompt_artifacts=prompt_artifacts,
-                render_meta=dict(render_meta),
-                noise_meta=dict(noise_meta),
-                image_size=(int(image.size[0]), int(image.size[1])),
+                rendered=runtime.rendered,
+                prompt_defaults=runtime.prompt_defaults,
+                prompt_artifacts=runtime.prompt_artifacts,
+                render_meta=dict(runtime.render_meta),
+                noise_meta=dict(runtime.noise_meta),
+                image_size=(int(runtime.image.size[0]), int(runtime.image.size[1])),
                 annotation_value=annotation_value,
-                answer_value=str(rendered.answer),
+                answer_value=str(runtime.rendered.answer),
                 query_params={
                     "answer_support": list(LABEL_POOL_SAFE_UPPER),
                     "target_index_probabilities": dict(request.target_index_probabilities),
@@ -186,7 +175,7 @@ class GeometryCylinderWrapWrappedMarkPositionLabelTask:
             task_versions=default_task_versions(),
             scene_id=SCENE_ID,
             query_id=str(request.selected_query),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
+            prompt_variants=dict(runtime.prompt_artifacts.prompt_variants),
         )
 
 

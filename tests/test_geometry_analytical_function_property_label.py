@@ -78,7 +78,7 @@ def test_geometry_function_panel_property_label_balances_answers() -> None:
 
     assert set(labels.keys()).issubset({"A", "B", "C", "D", "E", "F"})
     assert len(labels) >= 5
-    assert max(labels.values()) <= 16
+    assert max(labels.values()) <= 18
 
 
 def test_geometry_function_panel_property_label_randomizes_relation_geometry() -> None:

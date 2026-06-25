@@ -2,14 +2,32 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, Mapping, TypeVar
 
+from trace.core.visual.noise import apply_post_image_noise
+
+from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS
 from .shared.annotations import projected_keyed_annotation
 from .shared.defaults import SCENE_ID, SCENE_KIND
+from .shared.prompts import resolve_cylinder_wrap_prompt
 from .shared.rendering import make_render_context
 from .shared.state import RenderContext, RenderedCylinderWrapScene
 
 ProblemT = TypeVar("ProblemT")
+
+
+@dataclass(frozen=True)
+class CylinderWrapRuntime:
+    """Neutral rendered assets shared by cylinder-wrap public tasks."""
+
+    rendered: RenderedCylinderWrapScene
+    render_meta: Dict[str, Any]
+    image: Any
+    noise_meta: Dict[str, Any]
+    prompt_defaults: Mapping[str, Any]
+    prompt_artifacts: Any
+    annotation_value: Dict[str, Any]
 
 
 def render_with_attempts(
@@ -38,6 +56,49 @@ def render_with_attempts(
             last_error = exc
             continue
     raise RuntimeError("failed to render cylinder_wrap scene") from last_error
+
+
+def render_cylinder_wrap_runtime(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    prompt_defaults: Mapping[str, Any],
+    field_prefix: str,
+    max_attempts: int,
+    problem: ProblemT,
+    render_scene: Callable[[RenderContext, ProblemT, int], RenderedCylinderWrapScene],
+) -> CylinderWrapRuntime:
+    """Resolve common render, prompt, noise, and annotation assets."""
+
+    rendered, render_meta = render_with_attempts(
+        instance_seed=int(instance_seed),
+        params=params,
+        render_defaults=render_defaults,
+        max_attempts=int(max_attempts),
+        problem=problem,
+        render_scene=render_scene,
+    )
+    image, noise_meta = apply_post_image_noise(
+        rendered.image,
+        instance_seed=int(instance_seed),
+        params=params,
+        default_config=POST_IMAGE_NOISE_DEFAULTS,
+    )
+    resolved_prompt_defaults, prompt_artifacts = resolve_cylinder_wrap_prompt(
+        prompt_defaults=prompt_defaults,
+        field_prefix=str(field_prefix),
+        instance_seed=int(instance_seed),
+    )
+    return CylinderWrapRuntime(
+        rendered=rendered,
+        render_meta=dict(render_meta),
+        image=image,
+        noise_meta=dict(noise_meta),
+        prompt_defaults=resolved_prompt_defaults,
+        prompt_artifacts=prompt_artifacts,
+        annotation_value=dict(rendered.annotation_value),
+    )
 
 
 def build_trace_payload(
@@ -122,4 +183,4 @@ def build_trace_payload(
     }
 
 
-__all__ = ["build_trace_payload", "render_with_attempts"]
+__all__ = ["CylinderWrapRuntime", "build_trace_payload", "render_cylinder_wrap_runtime", "render_with_attempts"]

@@ -9,9 +9,9 @@
 - Annotation schema: `bbox`
 
 ## Program Contract
-scene=`warehouse`; scope=`nearest candidate to one warehouse reference`.
-
-program=`select(label(candidate_items, argmin(ground_plane_surface_gap_to_reference)))`; scene=warehouse; scope=nearest_candidate_to_reference_label.
+- Program schema: `select(label(candidate_items, argmin(ground_plane_surface_gap_to_reference))); scene=warehouse; scope=nearest_candidate_to_reference_label`
+- Scene: `warehouse`
+- Scope: `nearest_candidate_to_reference_label`
 
 Render one perspective warehouse aisle with shelf racks, warehouse equipment, one reference item, five candidate items, and a text option panel below the scene.
 

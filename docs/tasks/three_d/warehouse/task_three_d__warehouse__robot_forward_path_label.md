@@ -9,9 +9,9 @@
 - Annotation schema: `bbox`
 
 ## Program Contract
-scene=`warehouse`; scope=`single red-boxed robot forward-path option selection`.
-
-program=`select(label(candidate_objects, argmin(positive_forward_distance_in_robot_path_corridor)))`; scene=warehouse; scope=robot_forward_path_label.
+- Program schema: `select(label(candidate_objects, argmin(positive_forward_distance_in_robot_path_corridor))); scene=warehouse; scope=robot_forward_path_label`
+- Scene: `warehouse`
+- Scope: `robot_forward_path_label`
 
 Render one perspective warehouse aisle with shelf racks, warehouse equipment, one red-boxed robot, a red travel-direction arrow, candidate warehouse objects, and a text option panel below the scene. The robot body may vary across low-cart, sensor-tower, and stacker-like designs while remaining the red-boxed reference.
 

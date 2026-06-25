@@ -9,9 +9,9 @@
 - Annotation schema: `bbox_set`
 
 ## Program Contract
-scene=`warehouse`; scope=`colored rack shelf-level item count`.
-
-program=`count(shelf_items where rack_color==target_color and shelf_level==target_level)`; scene=warehouse; scope=scoped_attribute_count.
+- Program schema: `count(filter(shelf_items, rack_color=target_color, shelf_level=target_level)); scene=warehouse; scope=scoped_attribute_count`
+- Scene: `warehouse`
+- Scope: `scoped_attribute_count`
 
 Render one perspective warehouse shelf area with a gridded floor, two to four shelf racks, and visible countable shelf items. Each rack frame uses one unique canonical named prompt color, rendered with the same RGB triplet referenced in the prompt as `<color name> [#RRGGBB]`.
 

@@ -23,7 +23,7 @@ LABEL_POOL: Tuple[str, ...] = tuple("ABCDEFGHJKLMNPQRSTUVXYZ")
 class GraphOptionsDefaults:
     """Stable fallback generation defaults for graph option scenes."""
 
-    option_count: int = 6
+    option_count: int = 4
     same_structure_node_count_min: int = 4
     same_structure_node_count_max: int = 6
     node_count_min: int = 5

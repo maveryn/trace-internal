@@ -35,8 +35,8 @@ def _object_description(edge_mode: str) -> str:
     """Return objective-specific scene wording from prompt defaults."""
 
     if str(edge_mode) == "directed":
-        return "a Target Graph above six labeled directed-graph options; arrow directions matter"
-    return "a Target Graph above six labeled graph options"
+        return "a Target Graph above four labeled directed-graph options; arrow directions matter"
+    return "a Target Graph above four labeled graph options"
 
 
 @register_task

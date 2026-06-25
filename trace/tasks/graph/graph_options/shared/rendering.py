@@ -458,7 +458,7 @@ def _render_scene(
     )
 
     option_count = int(dataset.option_count)
-    cols = 3
+    cols = 2 if int(option_count) <= 4 else 3
     rows = int(math.ceil(float(option_count) / float(cols)))
     options_top = ref_bottom + float(render_params.reference_to_options_gap_px)
     usable_width = float(render_params.canvas_width - (2 * render_params.margin_x_px))

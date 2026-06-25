@@ -87,11 +87,11 @@
   "code_prompt_defaults": {
     "scene_key": "graph_options",
     "task_key": "structure_match_label_query",
-    "object_description_undirected": "a reference or target labeled graph above six labeled graph options",
-    "object_description_directed": "a reference or target labeled directed graph above six labeled directed-graph options; arrow directions matter",
-    "object_description_same_structure_undirected": "a Reference labeled graph above six labeled graph options",
-    "object_description_same_structure_directed": "a Reference labeled directed graph above six labeled directed-graph options; arrow directions matter",
-    "object_description_contained_subgraph_undirected": "a Target Graph above six labeled graph options",
-    "object_description_contained_subgraph_directed": "a Target Graph above six labeled directed-graph options; arrow directions matter"
+    "object_description_undirected": "a reference or target labeled graph above four labeled graph options",
+    "object_description_directed": "a reference or target labeled directed graph above four labeled directed-graph options; arrow directions matter",
+    "object_description_same_structure_undirected": "a Reference labeled graph above four labeled graph options",
+    "object_description_same_structure_directed": "a Reference labeled directed graph above four labeled directed-graph options; arrow directions matter",
+    "object_description_contained_subgraph_undirected": "a Target Graph above four labeled graph options",
+    "object_description_contained_subgraph_directed": "a Target Graph above four labeled directed-graph options; arrow directions matter"
   }
 }

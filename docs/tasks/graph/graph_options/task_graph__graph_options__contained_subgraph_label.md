@@ -13,7 +13,7 @@
 3. Public sampling is at the task-id level.
 
 ## Taxonomy Contract
-1. Program contract: compare the Target Graph with six visual option graphs and choose the option whose node labels and edges are all present in the Target Graph.
+1. Program contract: compare the Target Graph with four visual option graphs and choose the option whose node labels and edges are all present in the Target Graph.
 2. Answer schema: `option_letter`.
 3. Annotation schema: `bbox`.
 4. Edge direction, target node count, subgraph node count, correct option slot, style, font, background, and layout jitter are generation/render metadata, not public query branches.
@@ -28,7 +28,7 @@
 4. The selected option panel and answer letter come from the same execution trace.
 
 ## Rendering Contract
-1. The scene shows one Target Graph above six visual graph-option panels.
+1. The scene shows one Target Graph above four visual graph-option panels.
 2. Directed samples use arrows and require exact direction matching.
 3. Visual style, fonts, panel treatment, layout jitter, and post-render noise are non-semantic and recorded in trace metadata.
 4. Annotation projection is computed after final layout and style placement.

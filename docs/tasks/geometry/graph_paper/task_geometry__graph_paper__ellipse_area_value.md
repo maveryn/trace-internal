@@ -9,7 +9,7 @@
 6. Annotation schema: `bbox`
 
 ## Program Contract
-- `compute_ellipse_area_from_grid_radii(target=ellipse_A, output_role=exact_pi_expression); scene=graph_paper; scope=single_ellipse`
+- `compute_ellipse_area_from_grid_radii(target=ellipse, output_role=exact_pi_expression); scene=graph_paper; scope=single_ellipse`
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.

@@ -14,8 +14,19 @@ from ._lifecycle import (
 )
 
 TASK_ID = "task_geometry__graph_paper__quadrilateral_type_count"
-QUERY_ID = "single"
-SUPPORTED_QUERY_IDS = (QUERY_ID,)
+QUADRILATERAL_TYPE_QUERY_TO_CLASS = {
+    "square_count": "square",
+    "non_square_rectangle_count": "non_square_rectangle",
+    "non_square_rhombus_count": "non_square_rhombus",
+    "slanted_parallelogram_count": "slanted_parallelogram",
+}
+QUADRILATERAL_TYPE_QUERY_TO_TEXT = {
+    "square_count": "squares",
+    "non_square_rectangle_count": "non-square rectangles",
+    "non_square_rhombus_count": "non-square rhombuses",
+    "slanted_parallelogram_count": "slanted parallelograms",
+}
+SUPPORTED_QUERY_IDS = tuple(QUADRILATERAL_TYPE_QUERY_TO_CLASS)
 
 
 def _build_quadrilateral_type_count_plan() -> GraphPaperTaskPlan:
@@ -25,7 +36,9 @@ def _build_quadrilateral_type_count_plan() -> GraphPaperTaskPlan:
         builder=_build_quadrilateral_type_count,
         prompt_key="quadrilateral_type_count",
         salt="quadrilateral_type_count_seed",
-        target_field="quadrilateral_type",
+        default_branch=SUPPORTED_QUERY_IDS[0],
+        target_class_by_branch=QUADRILATERAL_TYPE_QUERY_TO_CLASS,
+        target_text_by_branch=QUADRILATERAL_TYPE_QUERY_TO_TEXT,
     )
 
 

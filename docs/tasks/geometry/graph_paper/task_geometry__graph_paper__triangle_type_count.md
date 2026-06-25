@@ -4,12 +4,12 @@
 1. Domain: `geometry`
 2. Scene id: `graph_paper`
 3. Task id: `task_geometry__graph_paper__triangle_type_count`
-4. Supported `query_id`: `single`
+4. Supported `query_id`: `equilateral_triangle_count`, `right_triangle_count`, `scalene_triangle_count`, `non_equilateral_isosceles_triangle_count`
 5. Answer schema: `integer`
 6. Annotation schema: `bbox_set`
 
 ## Program Contract
-- `count_triangle_class(target_class={equilateral|isosceles|right|scalene}, output_role=count); scene=graph_paper; scope=triangle_set`
+- `count_triangle_class(query_id={equilateral_triangle_count|right_triangle_count|scalene_triangle_count|non_equilateral_isosceles_triangle_count}, target_class={equilateral|right|scalene|non_equilateral_isosceles}, output_role=count); scene=graph_paper; scope=triangle_set`
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.

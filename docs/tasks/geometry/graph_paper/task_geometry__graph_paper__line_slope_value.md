@@ -9,7 +9,7 @@
 6. Annotation schema: `segment`
 
 ## Program Contract
-- `compute_segment_slope_from_grid_rise_run(target=segment_A, output_role=slope_number); scene=graph_paper; scope=single_segment`
+- `compute_segment_slope_from_grid_rise_run(target=line_segment, output_role=slope_number); scene=graph_paper; scope=single_segment`
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.

@@ -14,8 +14,19 @@ from ._lifecycle import (
 )
 
 TASK_ID = "task_geometry__graph_paper__triangle_type_count"
-QUERY_ID = "single"
-SUPPORTED_QUERY_IDS = (QUERY_ID,)
+TRIANGLE_TYPE_QUERY_TO_CLASS = {
+    "equilateral_triangle_count": "equilateral",
+    "right_triangle_count": "right",
+    "scalene_triangle_count": "scalene",
+    "non_equilateral_isosceles_triangle_count": "non_equilateral_isosceles",
+}
+TRIANGLE_TYPE_QUERY_TO_TEXT = {
+    "equilateral_triangle_count": "equilateral triangles",
+    "right_triangle_count": "right triangles",
+    "scalene_triangle_count": "scalene triangles",
+    "non_equilateral_isosceles_triangle_count": "non-equilateral isosceles triangles",
+}
+SUPPORTED_QUERY_IDS = tuple(TRIANGLE_TYPE_QUERY_TO_CLASS)
 
 
 def _build_triangle_type_count_plan() -> GraphPaperTaskPlan:
@@ -25,7 +36,9 @@ def _build_triangle_type_count_plan() -> GraphPaperTaskPlan:
         builder=_build_triangle_type_count,
         prompt_key="triangle_type_count",
         salt="triangle_type_count_seed",
-        target_field="triangle_type",
+        default_branch=SUPPORTED_QUERY_IDS[0],
+        target_class_by_branch=TRIANGLE_TYPE_QUERY_TO_CLASS,
+        target_text_by_branch=TRIANGLE_TYPE_QUERY_TO_TEXT,
     )
 
 

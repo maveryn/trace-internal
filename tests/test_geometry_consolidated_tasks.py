@@ -14,9 +14,14 @@ from trace.tasks.geometry.coordinate_plane.segment_relation_count import Geometr
 from trace.tasks.geometry.graph_paper.angle_extremum_label import GeometryGraphPaperAngleExtremumLabelTask
 from trace.tasks.geometry.graph_paper.angle_type_count import GeometryGraphPaperAngleTypeCountTask
 from trace.tasks.geometry.graph_paper.area_extremum_label import GeometryGraphPaperAreaExtremumLabelTask
+from trace.tasks.geometry.graph_paper.circle_circumference_value import GeometryGraphPaperCircleCircumferenceValueTask
+from trace.tasks.geometry.graph_paper.ellipse_area_value import GeometryGraphPaperEllipseAreaValueTask
 from trace.tasks.geometry.graph_paper.length_extremum_label import GeometryGraphPaperLengthExtremumLabelTask
+from trace.tasks.geometry.graph_paper.line_slope_value import GeometryGraphPaperLineSlopeValueTask
 from trace.tasks.geometry.graph_paper.perimeter_extremum_label import GeometryGraphPaperPerimeterExtremumLabelTask
+from trace.tasks.geometry.graph_paper.polygon_area_value import GeometryGraphPaperPolygonAreaValueTask
 from trace.tasks.geometry.graph_paper.polygon_convexity_count import GeometryGraphPaperPolygonConvexityCountTask
+from trace.tasks.geometry.graph_paper.polygon_perimeter_value import GeometryGraphPaperPolygonPerimeterValueTask
 from trace.tasks.geometry.graph_paper.quadrilateral_type_count import GeometryGraphPaperQuadrilateralTypeCountTask
 from trace.tasks.geometry.graph_paper.shape_type_count import GeometryGraphPaperShapeTypeCountTask
 from trace.tasks.geometry.graph_paper.triangle_type_count import GeometryGraphPaperTriangleTypeCountTask
@@ -125,30 +130,32 @@ def test_geometry_graph_paper_extremum_split_tasks_track_query_ids(
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "params", "program_code"),
+    ("task_cls", "query_id", "target_class", "program_code"),
     (
-        (GeometryGraphPaperAngleTypeCountTask, {"angle_type": "acute"}, "angle_set.class_count"),
-        (GeometryGraphPaperTriangleTypeCountTask, {"triangle_type": "right"}, "triangle_set.class_count"),
-        (GeometryGraphPaperQuadrilateralTypeCountTask, {"quadrilateral_type": "square"}, "quadrilateral_set.class_count"),
-        (GeometryGraphPaperShapeTypeCountTask, {"shape_type": "ellipse"}, "shape_set.class_count"),
-        (GeometryGraphPaperPolygonConvexityCountTask, {"convexity_kind": "concave"}, "polygon_set.convexity_count"),
+        (GeometryGraphPaperAngleTypeCountTask, "acute_angle_count", "acute", "angle_set.class_count"),
+        (GeometryGraphPaperTriangleTypeCountTask, "right_triangle_count", "right", "triangle_set.class_count"),
+        (GeometryGraphPaperQuadrilateralTypeCountTask, "non_square_rectangle_count", "non_square_rectangle", "quadrilateral_set.class_count"),
+        (GeometryGraphPaperShapeTypeCountTask, "ellipse_count", "ellipse", "shape_set.class_count"),
+        (GeometryGraphPaperPolygonConvexityCountTask, "concave_polygon_count", "concave", "polygon_set.convexity_count"),
     ),
 )
 def test_geometry_graph_paper_count_split_tasks_track_query_ids(
     task_cls,
-    params: dict[str, str],
+    query_id: str,
+    target_class: str,
     program_code: str,
 ) -> None:
     task = task_cls()
-    out = task.generate(23021, params={**params, "object_count": 8}, max_attempts=40)
+    out = task.generate(23021, params={"query_id": query_id, "object_count": 8}, max_attempts=40)
     trace = out.trace_payload
     assert out.answer_gt.type == "integer"
     assert out.annotation_gt.type == "bbox_set"
-    assert out.query_id == "single"
+    assert out.query_id == query_id
     assert out.scene_id == "graph_paper"
     assert trace["execution_trace"]["scene_id"] == "graph_paper"
-    assert trace["execution_trace"]["query_id"] == "single"
+    assert trace["execution_trace"]["query_id"] == query_id
     assert trace["execution_trace"]["program_code"] == program_code
+    assert trace["execution_trace"]["target_class"] == target_class
     assert "source_task_id" not in trace["execution_trace"]
 
 
@@ -156,13 +163,138 @@ def test_geometry_graph_paper_count_split_tasks_track_query_ids(
     ("task_cls", "query_id"),
     (
         (GeometryGraphPaperAreaExtremumLabelTask, "area_extremum"),
-        (GeometryGraphPaperTriangleTypeCountTask, "triangle_type_count"),
+        (GeometryGraphPaperTriangleTypeCountTask, "single"),
     ),
 )
 def test_geometry_graph_paper_split_tasks_reject_legacy_query_ids(task_cls, query_id: str) -> None:
     task = task_cls()
     with pytest.raises(ValueError):
         task.generate(23051, params={"query_id": query_id}, max_attempts=20)
+
+
+def test_geometry_graph_paper_type_count_tasks_expose_semantic_query_ids() -> None:
+    assert GeometryGraphPaperAngleTypeCountTask.supported_query_ids == (
+        "acute_angle_count",
+        "right_angle_count",
+        "obtuse_angle_count",
+    )
+    assert GeometryGraphPaperTriangleTypeCountTask.supported_query_ids == (
+        "equilateral_triangle_count",
+        "right_triangle_count",
+        "scalene_triangle_count",
+        "non_equilateral_isosceles_triangle_count",
+    )
+    assert GeometryGraphPaperQuadrilateralTypeCountTask.supported_query_ids == (
+        "square_count",
+        "non_square_rectangle_count",
+        "non_square_rhombus_count",
+        "slanted_parallelogram_count",
+    )
+    assert GeometryGraphPaperShapeTypeCountTask.supported_query_ids == (
+        "triangle_count",
+        "quadrilateral_count",
+        "pentagon_count",
+        "hexagon_count",
+        "circle_count",
+        "ellipse_count",
+    )
+    assert GeometryGraphPaperPolygonConvexityCountTask.supported_query_ids == (
+        "convex_polygon_count",
+        "concave_polygon_count",
+    )
+    assert "single" not in GeometryGraphPaperAngleTypeCountTask.supported_query_ids
+    assert "single" not in GeometryGraphPaperTriangleTypeCountTask.supported_query_ids
+    assert "single" not in GeometryGraphPaperQuadrilateralTypeCountTask.supported_query_ids
+    assert "single" not in GeometryGraphPaperShapeTypeCountTask.supported_query_ids
+    assert "single" not in GeometryGraphPaperPolygonConvexityCountTask.supported_query_ids
+
+
+def _assert_lattice_point(point: object) -> None:
+    x, y = point
+    assert float(x).is_integer()
+    assert float(y).is_integer()
+
+
+def _assert_all_graph_points_are_lattice(output) -> None:
+    for entity in output.trace_payload["scene_ir"]["entities"]:
+        for point in entity.get("graph_points", []):
+            _assert_lattice_point(point)
+
+
+@pytest.mark.parametrize(
+    ("task_cls", "forbidden_text"),
+    (
+        (GeometryGraphPaperLineSlopeValueTask, "segment A"),
+        (GeometryGraphPaperCircleCircumferenceValueTask, "circle A"),
+        (GeometryGraphPaperEllipseAreaValueTask, "ellipse A"),
+        (GeometryGraphPaperPolygonAreaValueTask, "polygon A"),
+        (GeometryGraphPaperPolygonPerimeterValueTask, "polygon A"),
+    ),
+)
+def test_geometry_graph_paper_single_measurement_tasks_do_not_label_single_object(
+    task_cls,
+    forbidden_text: str,
+) -> None:
+    out = task_cls().generate(23131, params={}, max_attempts=40)
+    assert forbidden_text not in out.prompt
+    assert all(
+        not str(entity["label"]) for entity in out.trace_payload["scene_ir"]["entities"]
+    )
+
+
+@pytest.mark.parametrize(
+    "task_cls",
+    (
+        GeometryGraphPaperLineSlopeValueTask,
+        GeometryGraphPaperPolygonAreaValueTask,
+        GeometryGraphPaperPolygonPerimeterValueTask,
+        GeometryGraphPaperAreaExtremumLabelTask,
+        GeometryGraphPaperPerimeterExtremumLabelTask,
+    ),
+)
+def test_geometry_graph_paper_lattice_measurement_vertices(task_cls) -> None:
+    params = (
+        {"query_id": "largest"}
+        if task_cls
+        in (GeometryGraphPaperAreaExtremumLabelTask, GeometryGraphPaperPerimeterExtremumLabelTask)
+        else {}
+    )
+    out = task_cls().generate(23141, params=params, max_attempts=40)
+    _assert_all_graph_points_are_lattice(out)
+
+
+@pytest.mark.parametrize(
+    "task_cls",
+    (
+        GeometryGraphPaperCircleCircumferenceValueTask,
+        GeometryGraphPaperEllipseAreaValueTask,
+    ),
+)
+def test_geometry_graph_paper_circle_and_ellipse_axis_witnesses_are_lattice(task_cls) -> None:
+    out = task_cls().generate(23151, params={}, max_attempts=40)
+    witness = out.trace_payload["witness_symbolic"]
+    _assert_lattice_point(witness["center"])
+    if "radius_endpoint" in witness:
+        _assert_lattice_point(witness["radius_endpoint"])
+    if "major_axis" in witness:
+        for point in witness["major_axis"]:
+            _assert_lattice_point(point)
+        for point in witness["minor_axis"]:
+            _assert_lattice_point(point)
+
+
+def test_geometry_graph_paper_length_extremum_includes_oblique_lattice_segments() -> None:
+    out = GeometryGraphPaperLengthExtremumLabelTask().generate(
+        23161,
+        params={"query_id": "largest", "object_count": 6},
+        max_attempts=40,
+    )
+    _assert_all_graph_points_are_lattice(out)
+    vectors = [
+        (int(entity["extra"]["dx"]), int(entity["extra"]["dy"]))
+        for entity in out.trace_payload["scene_ir"]["entities"]
+    ]
+    assert any(dx != 0 and dy != 0 for dx, dy in vectors)
 
 
 @pytest.mark.parametrize(

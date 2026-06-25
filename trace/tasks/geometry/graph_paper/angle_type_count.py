@@ -14,8 +14,17 @@ from ._lifecycle import (
 )
 
 TASK_ID = "task_geometry__graph_paper__angle_type_count"
-QUERY_ID = "single"
-SUPPORTED_QUERY_IDS = (QUERY_ID,)
+ANGLE_TYPE_QUERY_TO_CLASS = {
+    "acute_angle_count": "acute",
+    "right_angle_count": "right",
+    "obtuse_angle_count": "obtuse",
+}
+ANGLE_TYPE_QUERY_TO_TEXT = {
+    "acute_angle_count": "acute angles",
+    "right_angle_count": "right angles",
+    "obtuse_angle_count": "obtuse angles",
+}
+SUPPORTED_QUERY_IDS = tuple(ANGLE_TYPE_QUERY_TO_CLASS)
 
 
 def _build_angle_type_count_plan() -> GraphPaperTaskPlan:
@@ -25,7 +34,9 @@ def _build_angle_type_count_plan() -> GraphPaperTaskPlan:
         builder=_build_angle_type_count,
         prompt_key="angle_type_count",
         salt="angle_type_count_seed",
-        target_field="angle_type",
+        default_branch=SUPPORTED_QUERY_IDS[0],
+        target_class_by_branch=ANGLE_TYPE_QUERY_TO_CLASS,
+        target_text_by_branch=ANGLE_TYPE_QUERY_TO_TEXT,
     )
 
 

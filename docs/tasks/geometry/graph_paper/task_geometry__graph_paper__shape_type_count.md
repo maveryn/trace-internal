@@ -4,12 +4,12 @@
 1. Domain: `geometry`
 2. Scene id: `graph_paper`
 3. Task id: `task_geometry__graph_paper__shape_type_count`
-4. Supported `query_id`: `single`
+4. Supported `query_id`: `triangle_count`, `quadrilateral_count`, `pentagon_count`, `hexagon_count`, `circle_count`, `ellipse_count`
 5. Answer schema: `integer`
 6. Annotation schema: `bbox_set`
 
 ## Program Contract
-- `count_shape_class(target_class={triangle|quadrilateral|pentagon|hexagon|circle|ellipse}, output_role=count); scene=graph_paper; scope=mixed_shape_set`
+- `count_shape_class(query_id={triangle_count|quadrilateral_count|pentagon_count|hexagon_count|circle_count|ellipse_count}, target_class={triangle|quadrilateral|pentagon|hexagon|circle|ellipse}, output_role=count); scene=graph_paper; scope=mixed_shape_set`
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.

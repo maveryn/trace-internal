@@ -4,12 +4,12 @@
 1. Domain: `geometry`
 2. Scene id: `graph_paper`
 3. Task id: `task_geometry__graph_paper__quadrilateral_type_count`
-4. Supported `query_id`: `single`
+4. Supported `query_id`: `square_count`, `non_square_rectangle_count`, `non_square_rhombus_count`, `slanted_parallelogram_count`
 5. Answer schema: `integer`
 6. Annotation schema: `bbox_set`
 
 ## Program Contract
-- `count_quadrilateral_class(target_class={square|rectangle|rhombus|parallelogram}, output_role=count); scene=graph_paper; scope=quadrilateral_set`
+- `count_quadrilateral_class(query_id={square_count|non_square_rectangle_count|non_square_rhombus_count|slanted_parallelogram_count}, target_class={square|non_square_rectangle|non_square_rhombus|slanted_parallelogram}, output_role=count); scene=graph_paper; scope=quadrilateral_set`
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.

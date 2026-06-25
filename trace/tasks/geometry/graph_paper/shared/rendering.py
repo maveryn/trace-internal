@@ -243,6 +243,20 @@ def random_center_for_radii(
     return (float(center_x), float(center_y))
 
 
+def draw_measurement_guide(
+    ctx: GraphPaperContext,
+    start: Point,
+    end: Point,
+    *,
+    color: Color | None = None,
+) -> None:
+    """Draw a subtle unlabeled guide segment between graph lattice points."""
+
+    start_px = project(ctx, start)
+    end_px = project(ctx, end)
+    ctx.draw.line([start_px, end_px], fill=color or ctx.axis_color, width=2)
+
+
 def graph_bbox(
     ctx: GraphPaperContext, points: Sequence[Point], *, pad_px: float = 8.0
 ) -> BBox:

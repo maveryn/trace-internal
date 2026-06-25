@@ -34,6 +34,7 @@ from .shared.rendering import (
     angle_points,
     draw_angle,
     draw_ellipse_or_circle,
+    draw_measurement_guide,
     draw_polygon,
     draw_segment,
     make_context,
@@ -83,6 +84,8 @@ class GraphPaperTaskPlan:
     target_field: str = ""
     prompt_keys_by_branch: Mapping[str, str] = field(default_factory=dict)
     role_by_branch: Mapping[str, str] = field(default_factory=dict)
+    target_class_by_branch: Mapping[str, str] = field(default_factory=dict)
+    target_text_by_branch: Mapping[str, str] = field(default_factory=dict)
 
     def prompt_key_for(self, branch_name: str) -> str:
         """Return the public-file prompt key for a selected branch."""
@@ -97,6 +100,20 @@ class GraphPaperTaskPlan:
         if self.role_by_branch:
             return str(self.role_by_branch[str(branch_name)])
         return str(branch_name)
+
+    def target_class_for(self, branch_name: str, fallback: str) -> str:
+        """Return the semantic target class owned by the selected branch."""
+
+        if self.target_class_by_branch:
+            return str(self.target_class_by_branch[str(branch_name)])
+        return str(fallback)
+
+    def target_text_for(self, branch_name: str, fallback: str) -> str:
+        """Return the prompt-facing target phrase for the selected branch."""
+
+        if self.target_text_by_branch:
+            return str(self.target_text_by_branch[str(branch_name)])
+        return str(fallback)
 
 
 def graph_paper_prompt_plan(
@@ -401,6 +418,81 @@ def _component_payload(
     return components, TypedValue(type=str(answer_type), value=answer_value)
 
 
+def _integer_shift_points(
+    ctx: GraphPaperContext,
+    points: Sequence[Point],
+    rng: Any,
+    *,
+    margin_units: float = 1.0,
+) -> tuple[Point, ...]:
+    """Translate integer graph points by an integer in-bounds offset."""
+
+    return random_shift_points(
+        ctx,
+        points,
+        rng,
+        margin_units=float(margin_units),
+        step=1.0,
+    )
+
+
+def _corner_rectangle_points(width: int, height: int) -> tuple[Point, ...]:
+    """Return integer-lattice rectangle vertices from the origin corner."""
+
+    return (
+        (0.0, 0.0),
+        (float(width), 0.0),
+        (float(width), float(height)),
+        (0.0, float(height)),
+    )
+
+
+def _corner_right_triangle_points(width: int, height: int) -> tuple[Point, ...]:
+    """Return integer-lattice right-triangle vertices from the origin corner."""
+
+    return ((0.0, 0.0), (float(width), 0.0), (0.0, float(height)))
+
+
+def _translated_corner_shape(
+    *,
+    left: int,
+    bottom: int,
+    width: int,
+    height: int,
+    shape_kind: str,
+) -> tuple[Point, ...]:
+    """Return an integer-lattice rectangle or right triangle near a slot."""
+
+    base = (
+        _corner_right_triangle_points(width, height)
+        if str(shape_kind) == "right_triangle"
+        else _corner_rectangle_points(width, height)
+    )
+    return tuple(
+        (float(point[0]) + float(left), float(point[1]) + float(bottom))
+        for point in base
+    )
+
+
+def _slot_anchor(
+    ctx: GraphPaperContext,
+    center: Point,
+    *,
+    width: int,
+    height: int,
+    margin_units: float = 1.0,
+) -> tuple[int, int]:
+    """Snap a slot center to an integer-lattice lower-left anchor in bounds."""
+
+    limit = int(float(ctx.graph_half_range) - float(margin_units))
+    lower = -limit
+    left = int(round(float(center[0]) - (float(width) / 2.0)))
+    bottom = int(round(float(center[1]) - (float(height) / 2.0)))
+    left = max(lower, min(limit - int(width), left))
+    bottom = max(lower, min(limit - int(height), bottom))
+    return left, bottom
+
+
 def _build_line_slope_value(
     context: Mapping[str, Any], plan: GraphPaperTaskPlan
 ) -> tuple[GraphPaperComponents, TypedValue]:
@@ -413,12 +505,13 @@ def _build_line_slope_value(
     if dy == 0:
         dy = 2
     reduced_dy, reduced_dx = reduced_slope(dy, dx)
-    start = (-float(dx) / 2.0, -float(dy) / 2.0)
-    end = (float(dx) / 2.0, float(dy) / 2.0)
-    start, end = random_shift_points(
-        ctx, (start, end), rng, margin_units=1.2, step=0.5
+    start, end = _integer_shift_points(
+        ctx,
+        ((0.0, 0.0), (float(dx), float(dy))),
+        rng,
+        margin_units=1.2,
     )
-    segment = draw_segment(ctx, "A", start, end, color=ctx.accent_color)
+    segment = draw_segment(ctx, "", start, end, color=ctx.accent_color)
     annotation_value, projected = scalar_segment_artifacts(
         segment.points_px[0], segment.points_px[1]
     )
@@ -430,7 +523,7 @@ def _build_line_slope_value(
         annotation_hint='set "annotation" to the line segment as [[x0,y0],[x1,y1]] in pixels',
         json_example='{"annotation":[[210,420],[460,250]],"answer":-1.5}',
         json_example_answer_only='{"answer":-1.5}',
-        target_text="segment A",
+        target_text="the line segment",
         metric_text="slope",
     )
     return _component_payload(
@@ -450,7 +543,7 @@ def _build_line_slope_value(
         prompt_key=plan.prompt_key_for(str(context["branch_name"])),
         program_code="single_segment.slope_value",
         scene_kind="geometry_graph_paper_single_segment",
-        semantic_args={"segment_label": "A", "dx": int(dx), "dy": int(dy)},
+        semantic_args={"dx": int(dx), "dy": int(dy)},
     )
 
 
@@ -464,11 +557,12 @@ def _build_circle_circumference_value(
     radius = int(task_params.get("radius", rng.randint(2, 5)))
     answer_value = pi_expression(2 * radius)
     center = random_center_for_radii(
-        ctx, radius, radius, rng, margin_units=1.2, step=0.5
+        ctx, radius, radius, rng, margin_units=1.2, step=1.0
     )
+    radius_endpoint = (float(center[0]) + float(radius), float(center[1]))
     circle = draw_ellipse_or_circle(
         ctx,
-        "A",
+        "",
         center,
         radius,
         radius,
@@ -476,6 +570,7 @@ def _build_circle_circumference_value(
         color=ctx.accent_color,
         filled=False,
     )
+    draw_measurement_guide(ctx, center, radius_endpoint)
     annotation_value, projected = scalar_bbox_artifacts(circle.bbox_px)
     prompt_plan = _make_prompt(
         context["prompt_defaults"],
@@ -484,7 +579,7 @@ def _build_circle_circumference_value(
         annotation_hint='set "annotation" to the circle bounding box [x0,y0,x1,y1] in pixels',
         json_example='{"annotation":[180,180,540,540],"answer":"8π"}',
         json_example_answer_only='{"answer":"8π"}',
-        target_text="circle A",
+        target_text="the circle",
         metric_text="circumference",
     )
     return _component_payload(
@@ -496,12 +591,16 @@ def _build_circle_circumference_value(
         annotation_type="bbox",
         annotation_value=annotation_value,
         projected_annotation=projected,
-        witness_symbolic={"circle_label": "A", "radius_units": int(radius)},
+        witness_symbolic={
+            "center": center,
+            "radius_endpoint": radius_endpoint,
+            "radius_units": int(radius),
+        },
         objects=(circle,),
         prompt_key=plan.prompt_key_for(str(context["branch_name"])),
         program_code="circle.radius_to_circumference_exact_pi",
         scene_kind="geometry_graph_paper_single_circle",
-        semantic_args={"circle_label": "A", "radius_units": int(radius)},
+        semantic_args={"radius_units": int(radius)},
     )
 
 
@@ -531,11 +630,19 @@ def _build_ellipse_area_value(
         )
     answer_value = pi_expression(radius_x * radius_y)
     center = random_center_for_radii(
-        ctx, radius_x, radius_y, rng, margin_units=1.2, step=0.5
+        ctx, radius_x, radius_y, rng, margin_units=1.2, step=1.0
+    )
+    major_axis = (
+        (float(center[0]) - float(radius_x), float(center[1])),
+        (float(center[0]) + float(radius_x), float(center[1])),
+    )
+    minor_axis = (
+        (float(center[0]), float(center[1]) - float(radius_y)),
+        (float(center[0]), float(center[1]) + float(radius_y)),
     )
     ellipse = draw_ellipse_or_circle(
         ctx,
-        "A",
+        "",
         center,
         radius_x,
         radius_y,
@@ -543,6 +650,8 @@ def _build_ellipse_area_value(
         color=ctx.accent_color,
         filled=False,
     )
+    draw_measurement_guide(ctx, major_axis[0], major_axis[1])
+    draw_measurement_guide(ctx, minor_axis[0], minor_axis[1])
     annotation_value, projected = scalar_bbox_artifacts(ellipse.bbox_px)
     prompt_plan = _make_prompt(
         context["prompt_defaults"],
@@ -551,7 +660,7 @@ def _build_ellipse_area_value(
         annotation_hint='set "annotation" to the ellipse bounding box [x0,y0,x1,y1] in pixels',
         json_example='{"annotation":[160,230,560,500],"answer":"12π"}',
         json_example_answer_only='{"answer":"12π"}',
-        target_text="ellipse A",
+        target_text="the ellipse",
         metric_text="area",
     )
     return _component_payload(
@@ -564,7 +673,9 @@ def _build_ellipse_area_value(
         annotation_value=annotation_value,
         projected_annotation=projected,
         witness_symbolic={
-            "ellipse_label": "A",
+            "center": center,
+            "major_axis": major_axis,
+            "minor_axis": minor_axis,
             "radius_x_units": int(radius_x),
             "radius_y_units": int(radius_y),
         },
@@ -573,7 +684,6 @@ def _build_ellipse_area_value(
         program_code="ellipse.radii_to_area_exact_pi",
         scene_kind="geometry_graph_paper_single_ellipse",
         semantic_args={
-            "ellipse_label": "A",
             "radius_x_units": int(radius_x),
             "radius_y_units": int(radius_y),
         },
@@ -602,12 +712,12 @@ def _single_polygon_points(
     )
     if shape_kind == "right_triangle_3_4_5":
         scale = int(task_params.get("scale", rng.choice([1, 2])))
-        return right_triangle_points((0.0, 0.0), 3 * scale, 4 * scale), "right triangle"
+        return _corner_right_triangle_points(3 * scale, 4 * scale), "right triangle"
     width = int(task_params.get("width", rng.randint(3, 6)))
     height = int(task_params.get("height", rng.randint(3, 6)))
     if shape_kind == "right_triangle":
-        return right_triangle_points((0.0, 0.0), width, height), "right triangle"
-    return rectangle_points((0.0, 0.0), width, height), "rectangle"
+        return _corner_right_triangle_points(width, height), "right triangle"
+    return _corner_rectangle_points(width, height), "rectangle"
 
 
 def _build_polygon_area_value(
@@ -617,11 +727,11 @@ def _build_polygon_area_value(
 
     rng, ctx = _new_context(context, plan.salt)
     points, shape_text = _single_polygon_points(context, salt="area_shape")
-    points = random_shift_points(ctx, points, rng, margin_units=1.2, step=0.5)
+    points = _integer_shift_points(ctx, points, rng, margin_units=1.2)
     answer_value = int(round(polygon_area(points)))
     polygon = draw_polygon(
         ctx,
-        "A",
+        "",
         points,
         class_name=shape_text.replace(" ", "_"),
         color=ctx.accent_color,
@@ -636,7 +746,7 @@ def _build_polygon_area_value(
         json_example='{"annotation":[[250,420],[460,420],[250,270]],"answer":12}',
         json_example_answer_only='{"answer":12}',
         shape_text=shape_text,
-        target_text="polygon A",
+        target_text="the polygon",
         metric_text="area",
     )
     return _component_payload(
@@ -666,11 +776,11 @@ def _build_polygon_perimeter_value(
     points, shape_text = _single_polygon_points(
         context, salt="perim_shape", perimeter_mode=True
     )
-    points = random_shift_points(ctx, points, rng, margin_units=1.2, step=0.5)
+    points = _integer_shift_points(ctx, points, rng, margin_units=1.2)
     answer_value = int(round(polygon_perimeter(points)))
     polygon = draw_polygon(
         ctx,
-        "A",
+        "",
         points,
         class_name=shape_text.replace(" ", "_"),
         color=ctx.accent_color,
@@ -685,7 +795,7 @@ def _build_polygon_perimeter_value(
         json_example='{"annotation":[[250,420],[460,420],[250,270]],"answer":12}',
         json_example_answer_only='{"answer":12}',
         shape_text=shape_text,
-        target_text="polygon A",
+        target_text="the polygon",
         metric_text="perimeter",
     )
     return _component_payload(
@@ -787,16 +897,62 @@ def _build_length_extremum_label(
         ),
     )
     labels = label_subset(object_count)
-    values = unique_metric_values(rng, count=object_count, low=3, high=10)
+    vector_candidates = [
+        (2, 0),
+        (3, 0),
+        (4, 0),
+        (0, 2),
+        (0, 3),
+        (0, 4),
+        (2, 1),
+        (1, 2),
+        (3, 1),
+        (1, 3),
+        (2, 2),
+        (3, 2),
+        (2, 3),
+        (4, 1),
+        (1, 4),
+        (4, 2),
+        (2, 4),
+    ]
+    rng.shuffle(vector_candidates)
+    values: list[tuple[int, int, int]] = []
+    used_squares: set[int] = set()
+    for dx, dy in vector_candidates:
+        square = int(dx * dx + dy * dy)
+        if square in used_squares:
+            continue
+        used_squares.add(square)
+        values.append((int(dx), int(dy), square))
+        if len(values) == object_count:
+            break
+    if values and not any(dx != 0 and dy != 0 for dx, dy, _square in values):
+        for dx, dy in vector_candidates:
+            square = int(dx * dx + dy * dy)
+            if dx != 0 and dy != 0 and square not in {
+                value[2] for value in values[:-1]
+            }:
+                values[-1] = (int(dx), int(dy), square)
+                break
     objects = []
-    for index, (label, value, center) in enumerate(
-        zip(labels, values, slot_centers(ctx, object_count, rng=rng), strict=True)
+    for index, (label, (dx, dy, square)) in enumerate(
+        zip(labels, values, strict=True)
     ):
-        length_units = float(value) * 0.25
-        start = (center[0] - length_units / 2.0, center[1])
-        end = (center[0] + length_units / 2.0, center[1])
+        start, end = _integer_shift_points(
+            ctx,
+            ((0.0, 0.0), (float(dx), float(dy))),
+            rng,
+            margin_units=1.2,
+        )
         obj = draw_segment(ctx, label, start, end, color=object_color(ctx, index))
-        objects.append(replace(obj, metric_value=float(value)))
+        objects.append(
+            replace(
+                obj,
+                metric_value=float(square),
+                extra={"dx": int(dx), "dy": int(dy), "length_squared": int(square)},
+            )
+        )
     winner = (
         max(objects, key=lambda item: item.metric_value)
         if plan.role_for(str(context["branch_name"])) == "max"
@@ -827,7 +983,7 @@ def _build_length_extremum_label(
         projected_annotation=projected,
         witness_symbolic={
             "selected_label": str(winner.label),
-            "relative_length": int(winner.metric_value),
+            "relative_length_squared": int(winner.metric_value),
         },
         objects=tuple(objects),
         prompt_key=plan.prompt_key_for(branch_name),
@@ -863,15 +1019,22 @@ def _shape_extremum_objects(
     objects = []
     used_values: set[int] = set()
     for index, (label, center) in enumerate(
-        zip(labels, slot_centers(ctx, object_count, rng=rng), strict=True)
+        zip(
+            labels,
+            slot_centers(ctx, object_count, rng=rng, footprint_units=2.4),
+            strict=True,
+        )
     ):
         for _ in range(30):
-            width = rng.choice([1.2, 1.6, 2.0, 2.4])
-            height = rng.choice([1.0, 1.4, 1.8, 2.2])
-            points = (
-                right_triangle_points(center, width, height)
-                if shape_kind == "right_triangle"
-                else rectangle_points(center, width, height)
+            width = int(rng.choice([2, 3, 4, 5]))
+            height = int(rng.choice([2, 3, 4, 5]))
+            left, bottom = _slot_anchor(ctx, center, width=width, height=height)
+            points = _translated_corner_shape(
+                left=left,
+                bottom=bottom,
+                width=width,
+                height=height,
+                shape_kind=shape_kind,
             )
             value = (
                 polygon_area(points) if metric == "area" else polygon_perimeter(points)
@@ -962,8 +1125,14 @@ def _build_perimeter_extremum_label(
 
 ANGLE_CLASSES = ("acute", "right", "obtuse")
 ANGLE_VALUE_BY_CLASS = {"acute": 45, "right": 90, "obtuse": 125}
-TRIANGLE_CLASSES = ("equilateral", "isosceles", "right", "scalene")
-QUADRILATERAL_CLASSES = ("square", "rectangle", "rhombus", "parallelogram")
+
+TRIANGLE_CLASSES = ("equilateral", "right", "scalene", "non_equilateral_isosceles")
+QUADRILATERAL_CLASSES = (
+    "square",
+    "non_square_rectangle",
+    "non_square_rhombus",
+    "slanted_parallelogram",
+)
 SHAPE_CLASSES = (
     "triangle",
     "quadrilateral",
@@ -981,10 +1150,10 @@ def _triangle_points(center: Point, class_name: str) -> tuple[Point, ...]:
     cx, cy = float(center[0]), float(center[1])
     if class_name == "equilateral":
         return regular_polygon(center, 3, 0.9, phase=1.57)
-    if class_name == "isosceles":
+    if class_name == "non_equilateral_isosceles":
         return ((cx - 0.9, cy - 0.7), (cx + 0.9, cy - 0.7), (cx, cy + 0.9))
     if class_name == "right":
-        return right_triangle_points(center, 1.6, 1.6)
+        return right_triangle_points(center, 1.8, 1.2)
     return ((cx - 1.0, cy - 0.7), (cx + 0.8, cy - 0.45), (cx - 0.2, cy + 0.9))
 
 
@@ -994,10 +1163,17 @@ def _quadrilateral_points(center: Point, class_name: str) -> tuple[Point, ...]:
     cx, cy = float(center[0]), float(center[1])
     if class_name == "square":
         return rectangle_points(center, 1.6, 1.6)
-    if class_name == "rectangle":
+    if class_name == "non_square_rectangle":
         return rectangle_points(center, 2.0, 1.2)
-    if class_name == "rhombus":
+    if class_name == "non_square_rhombus":
         return ((cx, cy + 0.95), (cx + 1.0, cy), (cx, cy - 0.95), (cx - 1.0, cy))
+    if class_name == "slanted_parallelogram":
+        return (
+            (cx - 0.9, cy - 0.65),
+            (cx + 0.9, cy - 0.65),
+            (cx + 1.2, cy + 0.65),
+            (cx - 0.6, cy + 0.65),
+        )
     return (
         (cx - 0.9, cy - 0.65),
         (cx + 0.9, cy - 0.65),
@@ -1007,7 +1183,12 @@ def _quadrilateral_points(center: Point, class_name: str) -> tuple[Point, ...]:
 
 
 def _count_setup(
-    context: Mapping[str, Any], *, salt: str, target_field: str, classes: Sequence[str]
+    context: Mapping[str, Any],
+    plan: GraphPaperTaskPlan,
+    *,
+    salt: str,
+    target_field: str,
+    classes: Sequence[str],
 ):
     """Resolve the target class, target count, and shuffled class sequence."""
 
@@ -1016,7 +1197,8 @@ def _count_setup(
     object_count = min(
         9, resolve_count(task_params, context["generation_defaults"], fallback=8)
     )
-    target_class = str(
+    branch_name = str(context["branch_name"])
+    fallback_target_class = str(
         task_params.get(
             str(target_field),
             choose_from_seed(
@@ -1026,6 +1208,7 @@ def _count_setup(
             ),
         )
     )
+    target_class = plan.target_class_for(branch_name, fallback_target_class)
     target_total = count_target(
         task_params,
         context["generation_defaults"],
@@ -1051,6 +1234,7 @@ def _count_components(
     ctx: GraphPaperContext,
     objects: Sequence[GraphObject],
     target_class: str,
+    target_text: str,
     target_total: int,
     prompt_key: str,
     program_code: str,
@@ -1069,7 +1253,7 @@ def _count_components(
         annotation_hint=f'set "annotation" to bounding boxes for every matching {noun}',
         json_example='{"annotation":[[120,120,210,210],[340,270,430,360]],"answer":2}',
         json_example_answer_only='{"answer":2}',
-        target_text=str(target_class),
+        target_text=str(target_text),
         metric_text="count",
     )
     return _component_payload(
@@ -1083,6 +1267,7 @@ def _count_components(
         projected_annotation=projected,
         witness_symbolic={
             "target_class": str(target_class),
+            "target_text": str(target_text),
             "matching_count": int(target_total),
         },
         objects=tuple(objects),
@@ -1091,6 +1276,7 @@ def _count_components(
         scene_kind=str(scene_kind),
         semantic_args={
             "target_class": str(target_class),
+            "target_text": str(target_text),
             "object_count": int(object_count),
         },
     )
@@ -1103,6 +1289,7 @@ def _build_angle_type_count(
 
     rng, object_count, target_class, target_total, class_sequence = _count_setup(
         context,
+        plan,
         salt=plan.salt,
         target_field=plan.target_field,
         classes=ANGLE_CLASSES,
@@ -1139,6 +1326,9 @@ def _build_angle_type_count(
         ctx=ctx,
         objects=tuple(objects),
         target_class=target_class,
+        target_text=plan.target_text_for(
+            str(context["branch_name"]), f"{target_class} angles"
+        ),
         target_total=target_total,
         prompt_key=plan.prompt_key_for(str(context["branch_name"])),
         program_code="angle_set.class_count",
@@ -1155,6 +1345,7 @@ def _build_triangle_type_count(
 
     rng, object_count, target_class, target_total, class_sequence = _count_setup(
         context,
+        plan,
         salt=plan.salt,
         target_field=plan.target_field,
         classes=TRIANGLE_CLASSES,
@@ -1183,6 +1374,9 @@ def _build_triangle_type_count(
         ctx=ctx,
         objects=tuple(objects),
         target_class=target_class,
+        target_text=plan.target_text_for(
+            str(context["branch_name"]), f"{target_class.replace('_', ' ')} triangles"
+        ),
         target_total=target_total,
         prompt_key=plan.prompt_key_for(str(context["branch_name"])),
         program_code="triangle_set.class_count",
@@ -1199,6 +1393,7 @@ def _build_quadrilateral_type_count(
 
     rng, object_count, target_class, target_total, class_sequence = _count_setup(
         context,
+        plan,
         salt=plan.salt,
         target_field=plan.target_field,
         classes=QUADRILATERAL_CLASSES,
@@ -1227,6 +1422,10 @@ def _build_quadrilateral_type_count(
         ctx=ctx,
         objects=tuple(objects),
         target_class=target_class,
+        target_text=plan.target_text_for(
+            str(context["branch_name"]),
+            f"{target_class.replace('_', ' ')} quadrilaterals",
+        ),
         target_total=target_total,
         prompt_key=plan.prompt_key_for(str(context["branch_name"])),
         program_code="quadrilateral_set.class_count",
@@ -1243,6 +1442,7 @@ def _build_shape_type_count(
 
     rng, object_count, target_class, target_total, class_sequence = _count_setup(
         context,
+        plan,
         salt=plan.salt,
         target_field=plan.target_field,
         classes=SHAPE_CLASSES,
@@ -1322,6 +1522,9 @@ def _build_shape_type_count(
         ctx=ctx,
         objects=tuple(objects),
         target_class=target_class,
+        target_text=plan.target_text_for(
+            str(context["branch_name"]), f"{target_class.replace('_', ' ')} shapes"
+        ),
         target_total=target_total,
         prompt_key=plan.prompt_key_for(str(context["branch_name"])),
         program_code="shape_set.class_count",
@@ -1338,6 +1541,7 @@ def _build_polygon_convexity_count(
 
     rng, object_count, target_class, target_total, class_sequence = _count_setup(
         context,
+        plan,
         salt=plan.salt,
         target_field=plan.target_field,
         classes=CONVEXITY_CLASSES,
@@ -1371,6 +1575,9 @@ def _build_polygon_convexity_count(
         ctx=ctx,
         objects=tuple(objects),
         target_class=target_class,
+        target_text=plan.target_text_for(
+            str(context["branch_name"]), f"{target_class} polygons"
+        ),
         target_total=target_total,
         prompt_key=plan.prompt_key_for(str(context["branch_name"])),
         program_code="polygon_set.convexity_count",

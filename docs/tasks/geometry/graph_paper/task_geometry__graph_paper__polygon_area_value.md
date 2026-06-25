@@ -9,7 +9,7 @@
 6. Annotation schema: `point_set`
 
 ## Program Contract
-- `compute_lattice_polygon_area(target=polygon_A, shape_family={rectangle|right_triangle}, output_role=area_integer); scene=graph_paper; scope=single_polygon`
+- `compute_lattice_polygon_area(target=polygon, shape_family={rectangle|right_triangle}, output_role=area_integer); scene=graph_paper; scope=single_polygon`
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.

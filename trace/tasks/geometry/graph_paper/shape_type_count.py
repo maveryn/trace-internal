@@ -14,8 +14,23 @@ from ._lifecycle import (
 )
 
 TASK_ID = "task_geometry__graph_paper__shape_type_count"
-QUERY_ID = "single"
-SUPPORTED_QUERY_IDS = (QUERY_ID,)
+SHAPE_TYPE_QUERY_TO_CLASS = {
+    "triangle_count": "triangle",
+    "quadrilateral_count": "quadrilateral",
+    "pentagon_count": "pentagon",
+    "hexagon_count": "hexagon",
+    "circle_count": "circle",
+    "ellipse_count": "ellipse",
+}
+SHAPE_TYPE_QUERY_TO_TEXT = {
+    "triangle_count": "triangles",
+    "quadrilateral_count": "quadrilaterals",
+    "pentagon_count": "pentagons",
+    "hexagon_count": "hexagons",
+    "circle_count": "circles",
+    "ellipse_count": "ellipses",
+}
+SUPPORTED_QUERY_IDS = tuple(SHAPE_TYPE_QUERY_TO_CLASS)
 
 
 def _build_shape_type_count_plan() -> GraphPaperTaskPlan:
@@ -25,7 +40,9 @@ def _build_shape_type_count_plan() -> GraphPaperTaskPlan:
         builder=_build_shape_type_count,
         prompt_key="shape_type_count",
         salt="shape_type_count_seed",
-        target_field="shape_type",
+        default_branch=SUPPORTED_QUERY_IDS[0],
+        target_class_by_branch=SHAPE_TYPE_QUERY_TO_CLASS,
+        target_text_by_branch=SHAPE_TYPE_QUERY_TO_TEXT,
     )
 
 

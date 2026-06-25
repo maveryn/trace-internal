@@ -23,7 +23,7 @@ from tests.helpers import read_jsonl
         ),
         (
             GeometryGraphPaperTriangleTypeCountTask,
-            {"triangle_type": "right"},
+            {"query_id": "right_triangle_count"},
         ),
     ),
 )
@@ -42,7 +42,7 @@ def test_geometry_consolidated_tasks_are_deterministic(task_cls, params) -> None
     ("task_cls", "params"),
     (
         (GeometryGraphPaperAreaExtremumLabelTask, {"query_id": "largest_area"}),
-        (GeometryGraphPaperTriangleTypeCountTask, {"query_id": "triangle_type_count"}),
+        (GeometryGraphPaperTriangleTypeCountTask, {"query_id": "single"}),
     ),
 )
 def test_geometry_split_graph_paper_tasks_reject_legacy_query_ids(task_cls, params) -> None:

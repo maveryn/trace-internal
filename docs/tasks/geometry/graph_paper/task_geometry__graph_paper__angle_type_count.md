@@ -4,12 +4,12 @@
 1. Domain: `geometry`
 2. Scene id: `graph_paper`
 3. Task id: `task_geometry__graph_paper__angle_type_count`
-4. Supported `query_id`: `single`
+4. Supported `query_id`: `acute_angle_count`, `right_angle_count`, `obtuse_angle_count`
 5. Answer schema: `integer`
 6. Annotation schema: `bbox_set`
 
 ## Program Contract
-- `count_labeled_angle_class(target_class={acute|right|obtuse}, output_role=count); scene=graph_paper; scope=angle_set`
+- `count_angle_class(query_id={acute_angle_count|right_angle_count|obtuse_angle_count}, target_class={acute|right|obtuse}, output_role=count); scene=graph_paper; scope=angle_set`
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.

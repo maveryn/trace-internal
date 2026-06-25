@@ -114,39 +114,39 @@
         "Which {shape_text} has the least perimeter?"
       ],
       "angle_type_count": [
-        "How many {target_text} angles are shown?",
-        "Count the {target_text} angles.",
-        "How many angles are {target_text}?",
-        "Find the number of {target_text} angles in the diagram.",
-        "What is the count of {target_text} angles?"
+        "How many {target_text} are shown?",
+        "Count the {target_text}.",
+        "How many shown angles are {target_text}?",
+        "Find the number of {target_text} in the diagram.",
+        "What is the count of {target_text}?"
       ],
       "triangle_type_count": [
-        "How many {target_text} triangles are shown?",
-        "Count the {target_text} triangles.",
-        "How many triangles are {target_text}?",
-        "Find the number of {target_text} triangles in the diagram.",
-        "What is the count of {target_text} triangles?"
+        "How many {target_text} are shown?",
+        "Count the {target_text}.",
+        "How many shown triangles are {target_text}?",
+        "Find the number of {target_text} in the diagram.",
+        "What is the count of {target_text}?"
       ],
       "quadrilateral_type_count": [
-        "How many {target_text} quadrilaterals are shown?",
-        "Count the {target_text} quadrilaterals.",
-        "How many quadrilaterals are {target_text}?",
-        "Find the number of {target_text} quadrilaterals in the diagram.",
-        "What is the count of {target_text} quadrilaterals?"
+        "How many {target_text} are shown?",
+        "Count the {target_text}.",
+        "How many shown quadrilaterals are {target_text}?",
+        "Find the number of {target_text} in the diagram.",
+        "What is the count of {target_text}?"
       ],
       "shape_type_count": [
-        "How many {target_text} shapes are shown?",
-        "Count the {target_text} shapes.",
-        "How many shapes are {target_text}s?",
-        "Find the number of {target_text} shapes in the diagram.",
-        "What is the count of {target_text} shapes?"
+        "How many {target_text} are shown?",
+        "Count the {target_text}.",
+        "How many shown objects are {target_text}?",
+        "Find the number of {target_text} in the diagram.",
+        "What is the count of {target_text}?"
       ],
       "polygon_convexity_count": [
-        "How many {target_text} polygons are shown?",
-        "Count the {target_text} polygons.",
-        "How many polygons are {target_text}?",
-        "Find the number of {target_text} polygons in the diagram.",
-        "What is the count of {target_text} polygons?"
+        "How many {target_text} are shown?",
+        "Count the {target_text}.",
+        "How many shown polygons are {target_text}?",
+        "Find the number of {target_text} in the diagram.",
+        "What is the count of {target_text}?"
       ]
     },
     "output": {

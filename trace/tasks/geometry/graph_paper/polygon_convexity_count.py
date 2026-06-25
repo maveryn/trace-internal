@@ -14,8 +14,15 @@ from ._lifecycle import (
 )
 
 TASK_ID = "task_geometry__graph_paper__polygon_convexity_count"
-QUERY_ID = "single"
-SUPPORTED_QUERY_IDS = (QUERY_ID,)
+POLYGON_CONVEXITY_QUERY_TO_CLASS = {
+    "convex_polygon_count": "convex",
+    "concave_polygon_count": "concave",
+}
+POLYGON_CONVEXITY_QUERY_TO_TEXT = {
+    "convex_polygon_count": "convex polygons",
+    "concave_polygon_count": "concave polygons",
+}
+SUPPORTED_QUERY_IDS = tuple(POLYGON_CONVEXITY_QUERY_TO_CLASS)
 
 
 def _build_polygon_convexity_count_plan() -> GraphPaperTaskPlan:
@@ -25,7 +32,9 @@ def _build_polygon_convexity_count_plan() -> GraphPaperTaskPlan:
         builder=_build_polygon_convexity_count,
         prompt_key="polygon_convexity_count",
         salt="polygon_convexity_count_seed",
-        target_field="convexity_type",
+        default_branch=SUPPORTED_QUERY_IDS[0],
+        target_class_by_branch=POLYGON_CONVEXITY_QUERY_TO_CLASS,
+        target_text_by_branch=POLYGON_CONVEXITY_QUERY_TO_TEXT,
     )
 
 

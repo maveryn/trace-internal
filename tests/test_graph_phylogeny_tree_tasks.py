@@ -7,7 +7,9 @@ from io import BytesIO
 import trace.tasks  # noqa: F401
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks.graph.phylogeny_tree.clade_leaf_count import TASK_ID as CLADE_COUNT_TASK_ID
+from trace.tasks.graph.phylogeny_tree.clade_leaf_count import _prepare_clade_case
 from trace.tasks.graph.phylogeny_tree.mrca_clade_membership_count import MRCA_TASK_ID
+from trace.tasks.graph.phylogeny_tree.mrca_clade_membership_count import _prepare_mrca_case
 from trace.tasks.graph.phylogeny_tree.sister_leaf_label import SISTER_TASK_ID
 from trace.tasks.graph.phylogeny_tree.topology_outlier_label import TOPOLOGY_TASK_ID
 from trace.tasks.graph.phylogeny_tree.shared.sampling import sample_topology_outlier_options
@@ -74,6 +76,15 @@ def test_phylogeny_mrca_leaf_count_contract() -> None:
     assert set(out.annotation_gt.value.keys()) == {"query_leaf_1", "query_leaf_2", "mrca"}
     assert out.answer_gt.value == len(expected_labels)
     assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
+
+
+def test_phylogeny_mrca_case_does_not_request_visual_clade_marker() -> None:
+    mrca_case = _prepare_mrca_case(5104, {}, 240)
+    assert mrca_case.marked_node_id is None
+    assert str(mrca_case.semantic_payload["mrca_node_id"])
+
+    clade_case = _prepare_clade_case(3102, {}, 200)
+    assert clade_case.marked_node_id == str(clade_case.semantic_payload["target_node_id"])
 
 
 def test_phylogeny_topology_outlier_contract() -> None:

@@ -22,7 +22,7 @@ count(leaves(descendant_of(mrca(query_leaf_1,query_leaf_2)))); output=integer; a
 
 ## Rendering Contract
 1. The scene renders a rooted cladogram with labeled terminal taxa.
-2. The MRCA clade may be highlighted as a visual aid, but the answer is derived from the generated tree topology.
+2. The queried MRCA clade is not visually highlighted; the solver must infer it from the two named taxa and the generated tree topology.
 3. Annotation projection is computed after final layout and style placement.
 
 ## Prompt Contract

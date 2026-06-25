@@ -28,6 +28,9 @@ from .algorithms import canonical_node_edge, label_edge, parse_pipe_grid_shape
 from .state import PIPE_VISUAL_STYLE_IDS, PipeJunctionNetworkSample, RenderedPipeJunctionEdge, RenderedPipeJunctionNode, RenderedPipeJunctionScene
 
 
+BLOCKED_PIPE_X_RGB: Tuple[int, int, int] = (220, 38, 38)
+
+
 def _resolve_pipe_panel_geometry(render_params: GraphRenderParams) -> Dict[str, Any]:
     """Resolve the single-panel pipe scene geometry."""
 
@@ -424,13 +427,13 @@ def _draw_blocked_valve_marker(
         valve_box = (mx - half_short, my - half_long, mx + half_short, my + half_long)
     else:
         valve_box = (mx - half_long, my - half_short, mx + half_long, my + half_short)
-    marker = tuple(int(value) for value in style["blocked_marker_rgb"])
-    outline = _mix_rgb(marker, (20, 20, 20), 0.38)
-    draw.rounded_rectangle(valve_box, radius=6, fill=marker, outline=outline, width=3)
+    marker_fill = tuple(int(value) for value in style["blocked_highlight_rgb"])
+    marker_outline = _mix_rgb(tuple(int(value) for value in style["blocked_outline_rgb"]), (20, 20, 20), 0.30)
+    draw.rounded_rectangle(valve_box, radius=6, fill=marker_fill, outline=marker_outline, width=3)
     _draw_blocked_pipe_marker(
         draw,
         segment=segment,
-        color_rgb=(248, 250, 252),
+        color_rgb=BLOCKED_PIPE_X_RGB,
         width_px=max(4, int(round(float(width_px) * 0.42))),
     )
 
@@ -725,4 +728,4 @@ def render_pipe_network_scene(
     )
 
 
-__all__ = ["render_pipe_network_scene"]
+__all__ = ["BLOCKED_PIPE_X_RGB", "render_pipe_network_scene"]

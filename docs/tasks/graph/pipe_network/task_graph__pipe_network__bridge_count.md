@@ -29,7 +29,7 @@
 5. The answer equals the number of annotation segments, and both come from the same finalized open-pipe graph.
 
 ## Rendering Contract
-1. The scene shows labeled junction fittings connected by open pipes and visible blocked pipes.
+1. The scene shows labeled junction fittings connected by open pipes and visible blocked pipes marked with a red X.
 2. Blocked pipes are visible distractors and are ignored by the bridge computation.
 3. Visual style, fonts, panel treatment, layout jitter, context text, and post-render noise are non-semantic and recorded in trace metadata.
 4. Annotation projection is computed after final layout and style placement.

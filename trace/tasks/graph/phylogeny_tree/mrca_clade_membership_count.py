@@ -101,7 +101,7 @@ def _prepare_mrca_case(instance_seed: int, task_params: Mapping[str, Any], max_a
     leaf_a, leaf_b = tuple(str(label) for label in leaf_pair)
     return SingleTreeCase(
         sample=sample,
-        marked_node_id=str(mrca_node_id),
+        marked_node_id=None,
         trace_params={
             "target_mrca_leaf_count": int(target_count),
             "target_count_probabilities": dict(target_probabilities),

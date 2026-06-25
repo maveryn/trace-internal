@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import networkx as nx
+from PIL import Image, ImageDraw
 
 from trace.tasks.graph.pipe_network.bridge_count import GraphCountingPipeBridgeCountTask
 from trace.tasks.graph.pipe_network.pipe_exact_distance_count import GraphRelationPipeExactDistanceCountTask
 from trace.tasks.graph.pipe_network.pipe_reachable_junction_count import GraphRelationPipeReachableJunctionCountTask
+from trace.tasks.graph.pipe_network.shared.rendering import BLOCKED_PIPE_X_RGB, _draw_blocked_valve_marker
 from trace.tasks.graph.pipe_network.shortest_path_length import GraphPathPipeShortestPathLengthTask
 
 
@@ -61,6 +63,21 @@ def test_pipe_bridge_count_contract() -> None:
     assert out.answer_gt.value == bridge_count
     assert out.annotation_gt.type == "segment_set"
     assert len(out.annotation_gt.value) == bridge_count
+
+
+def test_pipe_blocked_marker_draws_red_x() -> None:
+    image = Image.new("RGB", (140, 100), (255, 255, 255))
+    draw = ImageDraw.Draw(image)
+    _draw_blocked_valve_marker(
+        draw,
+        segment=((20, 50), (120, 50)),
+        style={
+            "blocked_highlight_rgb": (242, 244, 246),
+            "blocked_outline_rgb": (90, 104, 107),
+        },
+        width_px=18,
+    )
+    assert BLOCKED_PIPE_X_RGB in set(image.getdata())
 
 
 def test_pipe_exact_distance_count_contract() -> None:

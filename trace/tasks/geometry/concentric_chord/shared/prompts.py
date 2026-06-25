@@ -28,13 +28,6 @@ def concentric_chord_prompt_artifacts(
             "bundle_id",
             "scene_key",
             "task_key",
-            "object_description",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            "annotation_hint",
-            "answer_hint_integer",
-            "json_example",
-            "json_example_answer_only",
         ),
         context="prompt defaults for concentric_chord",
     )
@@ -46,15 +39,7 @@ def concentric_chord_prompt_artifacts(
         task_key=str(defaults["task_key"]),
         query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={
-            "object_description": str(defaults["object_description"]),
-            "json_output_contract": str(defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(defaults["annotation_hint"]),
-            "answer_hint": str(defaults["answer_hint_integer"]),
-            "json_example": str(defaults["json_example"]),
-            "json_example_answer_only": str(defaults["json_example_answer_only"]),
-        },
+        dynamic_slots={},
         instance_seed=int(instance_seed),
     )
     return dict(defaults), build_prompt_trace_artifacts(prompt_selection)

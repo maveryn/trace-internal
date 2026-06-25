@@ -32,6 +32,6 @@ rendering:
       small_label_font_size: 18
 prompt:
   shared:
-    bundle_id: geometry_concentric_circle_chord_v0
+    bundle_id: geometry_concentric_circle_chord_v1
     scene_key: concentric_circle_chord_scene
     task_key: concentric_circle_chord_value_query

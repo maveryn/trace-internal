@@ -1,4 +1,4 @@
-"""Neutral rendering and trace preparation for concentric-chord tasks."""
+"""Neutral lifecycle runner for concentric-chord public tasks."""
 
 from __future__ import annotations
 
@@ -7,103 +7,34 @@ from typing import Any, Mapping
 
 from PIL import Image
 
-from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.geometry.shared.annotation_values import PixelAnnotationArtifacts
-from trace.tasks.shared.fixed_query import geometry_selected_probability_map
+from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import concentric_chord_annotation
-from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS, SCENE_ID, SCENE_KIND, SCENE_VARIANT, load_concentric_chord_task_defaults
-from .shared.prompts import concentric_chord_prompt_artifacts
-from .shared.rendering import render_concentric_chord_with_retries
-from .shared.state import ConcentricChordDiagramSpec, RenderedConcentricChordScene
-
-
-def _concentric_chord_trace_payload(
-    *,
-    rendered: RenderedConcentricChordScene,
-    annotation_artifacts: PixelAnnotationArtifacts,
-    prompt_artifacts: Any,
-    query_id: str,
-    query_probabilities: Mapping[str, float],
-    internal_query_id: str,
-    answer_value: int,
-    case_index: int,
-    target_support_probabilities: Mapping[str, float],
-    render_meta: Mapping[str, Any],
-    noise_meta: Mapping[str, Any],
-    image_size: tuple[int, int],
-    measurement_fields: Mapping[str, Any],
-) -> dict[str, Any]:
-    """Build trace sections using identity already selected by a public task."""
-
-    annotation_roles = [str(role) for role in rendered.annotation_roles]
-    query_params = {
-        "scene_id": SCENE_ID,
-        "query_id": str(query_id),
-        "internal_query_id": str(internal_query_id),
-        "query_id_probabilities": dict(query_probabilities),
-        "case_index": int(case_index),
-        "target_support_probabilities": dict(target_support_probabilities),
-        **dict(measurement_fields),
-    }
-    query_spec = build_prompt_query_spec(
-        prompt_artifacts=prompt_artifacts,
-        query_id=str(query_id),
-        params=query_params,
-    )
-    query_spec["scene_id"] = SCENE_ID
-    return {
-        "scene_ir": {
-            "scene_kind": SCENE_KIND,
-            "scene_id": SCENE_ID,
-            "entities": [dict(entity) for entity in rendered.scene_entities],
-            "relations": {
-                "query_id": str(query_id),
-                "internal_query_id": str(internal_query_id),
-                "scene_variant": SCENE_VARIANT,
-                "answer_value": int(answer_value),
-                "annotation_roles": list(annotation_roles),
-            },
-        },
-        "query_spec": query_spec,
-        "render_spec": {
-            "canvas_size": [int(image_size[0]), int(image_size[1])],
-            "coord_space": "pixel",
-            "post_image_noise": dict(noise_meta),
-            **dict(render_meta),
-        },
-        "render_map": {"coord_space": "pixel", **dict(rendered.render_map)},
-        "execution_trace": {
-            "scene_id": SCENE_ID,
-            "scene_variant": SCENE_VARIANT,
-            "query_id": str(query_id),
-            "internal_query_id": str(internal_query_id),
-            "query_id_probabilities": dict(query_probabilities),
-            "answer_type": "integer",
-            "answer_value": int(answer_value),
-            "annotation_roles": list(annotation_roles),
-            "reasoning_steps": 1,
-            **dict(measurement_fields),
-        },
-        "witness_symbolic": {
-            "type": "concentric_circle_chord_formula",
-            "scene_id": SCENE_ID,
-            "query_id": str(query_id),
-            "internal_query_id": str(internal_query_id),
-            "answer_value": int(answer_value),
-            "source_witness_type": annotation_artifacts.annotation_type,
-            "original_annotation_value": annotation_artifacts.value,
-            **dict(measurement_fields),
-        },
-        "projected_annotation": dict(annotation_artifacts.projected_annotation),
-    }
+from .shared.defaults import SCENE_ID, load_concentric_chord_task_defaults
+from .shared.output import (
+    ConcentricChordArtifacts,
+    concentric_trace_base,
+    prepare_concentric_chord_artifacts,
+)
+from .shared.state import ConcentricChordDiagramSpec
 
 
 @dataclass(frozen=True)
-class ConcentricChordTaskParts:
-    """Prepared non-verifier output fields for one task-owned objective."""
+class ConcentricChordObjectivePlan:
+    """Task-selected formula case and trace metadata."""
+
+    spec: ConcentricChordDiagramSpec
+    case_index: int
+    answer_probabilities: Mapping[str, float]
+    prompt_query_key: str
+    random_namespace: str
+
+
+@dataclass(frozen=True)
+class ConcentricChordPreparedParts:
+    """Prepared fields for a public task to assemble its TaskOutput."""
 
     prompt: str
     prompt_variants: dict[str, str]
@@ -112,87 +43,120 @@ class ConcentricChordTaskParts:
     trace_payload: dict[str, Any]
     task_versions: dict[str, str]
     scene_id: str
+    selected_query: str
+    answer_value: int
 
 
-def prepare_concentric_chord_task_parts(
+def _build_trace_payload(
     *,
-    task_id: str,
-    internal_query_id: str,
+    artifacts: ConcentricChordArtifacts,
     selected_query: str,
     query_probabilities: Mapping[str, float],
-    spec: ConcentricChordDiagramSpec,
-    case_index: int,
+    plan: ConcentricChordObjectivePlan,
+) -> dict[str, Any]:
+    """Build common trace metadata after the public task binds the objective."""
+
+    base = concentric_trace_base(
+        rendered=artifacts.rendered,
+        annotation_artifacts=artifacts.annotation_artifacts,
+        spec=plan.spec,
+        case_index=int(plan.case_index),
+        answer_probabilities=plan.answer_probabilities,
+        render_meta=artifacts.render_meta,
+        noise_meta=artifacts.noise_meta,
+        image_size=(int(artifacts.image.size[0]), int(artifacts.image.size[1])),
+    )
+    query_spec = build_prompt_query_spec(
+        prompt_artifacts=artifacts.prompt_artifacts,
+        query_id=str(selected_query),
+        params={
+            **dict(base["query_params"]),
+            "query_id": str(selected_query),
+            "internal_query_id": str(plan.prompt_query_key),
+            "query_id_probabilities": dict(query_probabilities),
+        },
+    )
+    query_spec["scene_id"] = SCENE_ID
+    return {
+        "scene_ir": {
+            **dict(base["scene_ir_base"]),
+            "relations": {
+                **dict(base["relation_base"]),
+                "query_id": str(selected_query),
+                "internal_query_id": str(plan.prompt_query_key),
+            },
+        },
+        "query_spec": query_spec,
+        "render_spec": dict(base["render_spec"]),
+        "render_map": dict(base["render_map"]),
+        "execution_trace": {
+            **dict(base["execution_base"]),
+            "query_id": str(selected_query),
+            "internal_query_id": str(plan.prompt_query_key),
+            "query_id_probabilities": dict(query_probabilities),
+        },
+        "witness_symbolic": {
+            **dict(base["witness_base"]),
+            "query_id": str(selected_query),
+            "internal_query_id": str(plan.prompt_query_key),
+        },
+        "projected_annotation": dict(base["projected_annotation"]),
+    }
+
+
+def prepare_concentric_chord_parts(
+    task: Any,
     instance_seed: int,
+    *,
     params: Mapping[str, Any],
     max_attempts: int,
-    target_support_probabilities: Mapping[str, float] | None = None,
-    support_values: tuple[int, ...] = (),
-) -> ConcentricChordTaskParts:
-    """Prepare shared visual artifacts after the public task has bound its answer."""
+) -> ConcentricChordPreparedParts:
+    """Run shared rendering after a public task prepares its objective plan."""
 
-    render_defaults, prompt_defaults = load_concentric_chord_task_defaults(str(task_id))
-    rendered, render_meta = render_concentric_chord_with_retries(
-        spec=spec,
+    selected_query, query_probabilities, task_params = select_task_query_id(
         instance_seed=int(instance_seed),
         params=params,
-        render_defaults=render_defaults,
-        max_attempts=int(max_attempts),
-        random_namespace=f"{task_id}.render",
+        supported_query_ids=task.supported_query_ids,
+        default_query_id=task.default_query_id,
+        task_id=task.task_id,
     )
-    image, noise_meta = apply_post_image_noise(
-        rendered.image,
+    plan = task.prepare_objective(
         instance_seed=int(instance_seed),
-        params=params,
-        default_config=POST_IMAGE_NOISE_DEFAULTS,
-    )
-    _prompt_defaults, prompt_artifacts = concentric_chord_prompt_artifacts(
-        prompt_defaults=prompt_defaults,
-        prompt_query_key=str(internal_query_id),
-        instance_seed=int(instance_seed),
-    )
-    annotation_artifacts = concentric_chord_annotation(rendered)
-    if target_support_probabilities is None:
-        support_probabilities = geometry_selected_probability_map(
-            support_values,
-            int(spec.answer),
-            is_selected=lambda value, selected: int(value) == int(selected),
-        )
-    else:
-        support_probabilities = {str(key): float(value) for key, value in target_support_probabilities.items()}
-    measurement_fields = {
-        "formula_family": "concentric_circle_tangent_chord",
-        "unknown_measure": str(spec.unknown_measure),
-        "outer_radius": int(spec.outer_radius),
-        "inner_radius": int(spec.inner_radius),
-        "half_chord": int(spec.half_chord),
-        "chord_length": int(spec.chord_length),
-        "pythagorean_relation": "R^2 = r^2 + (c/2)^2",
-        "answer_value": int(spec.answer),
-    }
-    trace_payload = _concentric_chord_trace_payload(
-        rendered=rendered,
-        annotation_artifacts=annotation_artifacts,
-        prompt_artifacts=prompt_artifacts,
-        query_id=str(selected_query),
+        task_params=task_params,
+        selected_query=str(selected_query),
         query_probabilities=query_probabilities,
-        internal_query_id=str(internal_query_id),
-        answer_value=int(spec.answer),
-        case_index=int(case_index),
-        target_support_probabilities=support_probabilities,
-        render_meta=render_meta,
-        noise_meta=noise_meta,
-        image_size=(int(image.size[0]), int(image.size[1])),
-        measurement_fields=measurement_fields,
     )
-    return ConcentricChordTaskParts(
-        prompt=str(prompt_artifacts.prompt),
-        prompt_variants=dict(prompt_artifacts.prompt_variants),
-        image=image,
-        annotation_artifacts=annotation_artifacts,
-        trace_payload=trace_payload,
+    render_defaults, prompt_defaults = load_concentric_chord_task_defaults(task.task_id)
+    artifacts = prepare_concentric_chord_artifacts(
+        spec=plan.spec,
+        instance_seed=int(instance_seed),
+        params=task_params,
+        render_defaults=render_defaults,
+        prompt_defaults=prompt_defaults,
+        prompt_query_key=str(plan.prompt_query_key),
+        max_attempts=int(max_attempts),
+        random_namespace=str(plan.random_namespace),
+    )
+    return ConcentricChordPreparedParts(
+        prompt=str(artifacts.prompt_artifacts.prompt),
+        prompt_variants=dict(artifacts.prompt_artifacts.prompt_variants),
+        image=artifacts.image,
+        annotation_artifacts=artifacts.annotation_artifacts,
+        trace_payload=_build_trace_payload(
+            artifacts=artifacts,
+            selected_query=str(selected_query),
+            query_probabilities=query_probabilities,
+            plan=plan,
+        ),
         task_versions=default_task_versions(),
         scene_id=SCENE_ID,
+        selected_query=str(selected_query),
+        answer_value=int(plan.spec.answer),
     )
 
 
-__all__ = ["ConcentricChordTaskParts", "prepare_concentric_chord_task_parts"]
+__all__ = [
+    "ConcentricChordObjectivePlan",
+    "ConcentricChordPreparedParts",
+    "prepare_concentric_chord_parts",
+]

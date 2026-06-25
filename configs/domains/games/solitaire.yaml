@@ -38,6 +38,12 @@ generation:
     - 4
     - 5
     - 6
+    tableau_destination_count_target_answer_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
 rendering:
   shared:
     canvas_width: 1060

@@ -43,6 +43,7 @@ def test_games_solitaire_defaults_expose_scene_axes_and_prompt_bundle() -> None:
     assert list(generation["cascade_depth_support"]) == [1, 2, 3, 4, 5, 6]
     assert list(generation["foundation_ready_target_answer_support"]) == [0, 1, 2, 3, 4]
     assert list(generation["column_card_count_target_answer_support"]) == [1, 2, 3, 4, 5, 6]
+    assert list(generation["tableau_destination_count_target_answer_support"]) == [0, 1, 2, 3, 4]
     assert int(rendering["canvas_width"]) == 1060
     assert int(rendering["card_width_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_solitaire_v1"
@@ -50,12 +51,13 @@ def test_games_solitaire_defaults_expose_scene_axes_and_prompt_bundle() -> None:
     assert "foundation" in str(bundle["code_prompt_defaults"]["foundation_rule_text"])
 
 
-def test_games_solitaire_prompt_bundle_has_four_queries() -> None:
+def test_games_solitaire_prompt_bundle_has_five_queries() -> None:
     bundle = json.loads(Path("prompts/games/solitaire/games_solitaire_v1.json").read_text(encoding="utf-8"))
     assert bundle["schema_version"] == "v1"
     assert set(bundle["templates"]["query"].keys()) == {
         "move_legality_label",
         "foundation_ready_count",
+        "tableau_destination_count",
         "column_card_count",
         "cascade_card_at_depth_label",
     }
@@ -119,6 +121,46 @@ def test_games_solitaire_foundation_ready_count_matches_trace() -> None:
     assert len(out.annotation_gt.value) == 3
     assert execution["annotation_entity_ids"] == execution["ready_card_ids"]
     assert all(card["badge_text"] is None for card in execution["card_specs"])
+
+
+def test_games_solitaire_tableau_destination_count_matches_trace() -> None:
+    out = create_task("task_games__solitaire__tableau_destination_count_value").generate(
+        81346,
+        params={"target_answer": 4},
+        max_attempts=300,
+    )
+    execution = out.trace_payload["execution_trace"]
+    cards = {str(spec["card_id"]): dict(spec) for spec in execution["card_specs"]}
+    source = cards[str(execution["marked_card_id"])]
+    exposed_cards = [
+        card
+        for card in cards.values()
+        if bool(card["is_exposed"]) and str(card["card_id"]) != str(source["card_id"])
+    ]
+    destination_ids = [
+        str(card["card_id"])
+        for card in exposed_cards
+        if _is_legal_tableau(source, card)
+    ]
+    if int(source["rank_value"]) == 13:
+        occupied_columns = {int(card["column_index"]) for card in cards.values()}
+        destination_ids.extend(
+            f"col_{column_index + 1:02d}_empty_slot"
+            for column_index in range(int(out.trace_payload["render_spec"]["column_count"]))
+            if column_index not in occupied_columns
+        )
+
+    assert out.answer_gt.type == "integer"
+    assert int(out.answer_gt.value) == 4
+    assert out.query_id == "single"
+    assert execution["prompt_query_key"] == "tableau_destination_count"
+    assert str(execution["marked_card_id"])
+    assert execution["tableau_destination_card_ids"] == destination_ids
+    assert execution["annotation_entity_ids"] == destination_ids
+    assert out.annotation_gt.type == "bbox_set"
+    assert len(out.annotation_gt.value) == 4
+    assert out.trace_payload["render_map"]["marked_card_id"] == execution["marked_card_id"]
+    assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
 
 
 def test_games_solitaire_column_card_count_matches_trace() -> None:

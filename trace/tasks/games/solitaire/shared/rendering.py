@@ -21,7 +21,16 @@ from trace.tasks.games.shared.text import draw_game_text_traced as draw_text_tra
 
 from .defaults import DEFAULTS, GEN_DEFAULTS, RENDER_DEFAULTS, int_default
 from .rules import card_color
-from .state import RANK_LABEL, Card, Foundation, RenderedSolitaireScene, SolitaireSample, SolitaireVisualStyle, SUPPORTED_PANEL_STYLE_VARIANTS
+from .state import (
+    RANK_LABEL,
+    Card,
+    Foundation,
+    RenderedSolitaireScene,
+    SolitaireSample,
+    SolitaireVisualStyle,
+    SUPPORTED_PANEL_STYLE_VARIANTS,
+    empty_tableau_slot_id,
+)
 
 def rgb(values: Sequence[int]) -> Tuple[int, int, int]:
     return tuple(max(0, min(255, int(value))) for value in values[:3])  # type: ignore[return-value]
@@ -465,7 +474,10 @@ def render_solitaire_scene(
                 badge_text_rgb=badge_text,
             )
             if str(card.card_id) == marked_card_id:
-                marker_bottom = min(float(y0 + card_height), float(y0 + column_step_y + 6))
+                if row_index == len(column) - 1:
+                    marker_bottom = float(y0 + card_height)
+                else:
+                    marker_bottom = min(float(y0 + card_height), float(y0 + column_step_y + 6))
                 draw.rounded_rectangle(
                     (float(x0 - 4), float(y0 - 4), float(x0 + card_width + 4), float(marker_bottom)),
                     radius=max(4, int(radius // 2)),
@@ -493,6 +505,28 @@ def render_solitaire_scene(
                     "is_exposed": bool(row_index == len(column) - 1),
                     "is_marked": bool(str(card.card_id) == marked_card_id),
                     "bbox_px": [float(value) for value in bbox],
+                }
+            )
+        if not column:
+            slot_id = empty_tableau_slot_id(int(col_index))
+            slot_bbox = (float(x0), float(tableau_y), float(x0 + card_width), float(tableau_y + card_height))
+            draw.rounded_rectangle(
+                slot_bbox,
+                radius=radius,
+                fill=tuple(int(value) for value in solitaire_style.foundation_fill_rgb),
+                outline=border_rgb,
+                width=2,
+            )
+            draw_text_center(draw, slot_bbox, "empty", font=label_font, fill=text_rgb, stroke_width=0)
+            card_bboxes[str(slot_id)] = [float(value) for value in slot_bbox]
+            entities.append(
+                {
+                    "entity_id": str(slot_id),
+                    "entity_type": "empty_tableau_slot",
+                    "column_index": int(col_index),
+                    "row_index": 0,
+                    "is_exposed": True,
+                    "bbox_px": [float(value) for value in slot_bbox],
                 }
             )
 

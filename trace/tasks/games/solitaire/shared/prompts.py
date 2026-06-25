@@ -36,6 +36,7 @@ def build_solitaire_prompt(
             f"answer_hint_{str(prompt_query_key)}",
             f"annotation_hint_{str(prompt_query_key)}",
             "tableau_rule_text",
+            "tableau_destination_rule_text",
             "foundation_rule_text",
         ),
         context=f"prompt defaults for {str(prompt_query_key)}",
@@ -49,6 +50,7 @@ def build_solitaire_prompt(
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
         "tableau_rule_text": str(prompt_defaults["tableau_rule_text"]),
+        "tableau_destination_rule_text": str(prompt_defaults["tableau_destination_rule_text"]),
         "foundation_rule_text": str(prompt_defaults["foundation_rule_text"]),
     }
     if prompt_slots:
@@ -72,4 +74,3 @@ def build_solitaire_prompt(
         "prompt_variant_active_key": str(prompt_artifacts.prompt_variant_active_key),
         "prompt_variants_for_trace": dict(prompt_artifacts.prompt_variants_for_trace),
     }
-

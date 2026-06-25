@@ -18,6 +18,7 @@ SUPPORTED_PANEL_STYLE_VARIANTS: Tuple[str, ...] = (
     "slate_cards",
     "paper_tableau",
 )
+EMPTY_TABLEAU_SLOT_SUFFIX = "_empty_slot"
 MOVE_OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 SUITS: Tuple[str, ...] = ("hearts", "diamonds", "spades", "clubs")
 SUIT_SHORT: Dict[str, str] = {
@@ -47,6 +48,24 @@ RANK_LABEL: Dict[int, str] = {
     12: "Q",
     13: "K",
 }
+
+
+def empty_tableau_slot_id(column_index: int) -> str:
+    """Return the entity id for one empty tableau column slot."""
+
+    return f"col_{int(column_index) + 1:02d}{EMPTY_TABLEAU_SLOT_SUFFIX}"
+
+
+def is_empty_tableau_slot_id(entity_id: str) -> bool:
+    """Return whether an entity id denotes an empty tableau column slot."""
+
+    return str(entity_id).endswith(EMPTY_TABLEAU_SLOT_SUFFIX)
+
+
+def empty_tableau_slot_column_label(entity_id: str) -> str:
+    """Return the display column label for an empty tableau slot id."""
+
+    return f"Col {int(str(entity_id)[4:6])}"
 
 
 @dataclass(frozen=True)

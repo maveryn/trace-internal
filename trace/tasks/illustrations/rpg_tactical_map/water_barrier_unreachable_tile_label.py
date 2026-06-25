@@ -73,12 +73,16 @@ def _build_water_barrier_grid(
     rows: int,
     rng: random.Random,
     explicit_orientation: str | None,
-) -> tuple[list[list[str]], str, int, int, list[str]]:
+    explicit_style: str | None,
+) -> tuple[list[list[str]], str, str, int, int, list[str]]:
     """Build terrain with one full-width/full-height water barrier and no bridges."""
 
     orientation = str(explicit_orientation or rng.choice(("vertical", "horizontal")))
     if orientation not in {"vertical", "horizontal"}:
         raise ValueError("barrier_orientation must be vertical or horizontal")
+    style = str(explicit_style or rng.choice(("zigzag", "zigzag", "straight")))
+    if style not in {"straight", "zigzag"}:
+        raise ValueError("barrier_style must be straight or zigzag")
     max_thickness = 2
     if orientation == "vertical":
         max_thickness = max(1, min(2, int(cols) - 4))
@@ -95,48 +99,112 @@ def _build_water_barrier_grid(
         raise ValueError("grid is too small for a full water barrier with candidates on both sides")
     start_index = int(rng.randint(start_min, start_max))
 
+    barrier_cells = _water_barrier_cells(
+        orientation=orientation,
+        style=style,
+        cols=int(cols),
+        rows=int(rows),
+        start_index=int(start_index),
+        thickness=int(thickness),
+        rng=rng,
+    )
     grid = [[TERRAIN_GRASS for _ in range(int(cols))] for _ in range(int(rows))]
     for row in range(int(rows)):
         for col in range(int(cols)):
-            if orientation == "vertical" and start_index <= col < start_index + thickness:
-                grid[row][col] = TERRAIN_WATER
-            elif orientation == "horizontal" and start_index <= row < start_index + thickness:
+            if (int(row), int(col)) in barrier_cells:
                 grid[row][col] = TERRAIN_WATER
             elif rng.random() < 0.10:
                 grid[row][col] = TERRAIN_ROAD
             elif rng.random() < 0.13:
                 grid[row][col] = TERRAIN_FOREST
 
-    barrier_tile_ids: list[str] = []
-    if orientation == "vertical":
-        for row in range(int(rows)):
-            for col in range(start_index, start_index + thickness):
-                barrier_tile_ids.append(f"r{int(row):02d}_c{int(col):02d}")
-    else:
-        for row in range(start_index, start_index + thickness):
-            for col in range(int(cols)):
-                barrier_tile_ids.append(f"r{int(row):02d}_c{int(col):02d}")
-    return grid, orientation, start_index, thickness, barrier_tile_ids
+    barrier_tile_ids = [
+        f"r{int(row):02d}_c{int(col):02d}"
+        for row, col in sorted(barrier_cells, key=lambda coord: (int(coord[0]), int(coord[1])))
+    ]
+    return grid, orientation, style, start_index, thickness, barrier_tile_ids
 
 
-def _side_for_tile(
-    tile: RpgTacticalTile,
+def _water_barrier_cells(
     *,
-    barrier_orientation: str,
-    barrier_start_index: int,
-    barrier_thickness: int,
-) -> str:
-    if str(barrier_orientation) == "vertical":
-        if int(tile.col) < int(barrier_start_index):
-            return "low"
-        if int(tile.col) >= int(barrier_start_index) + int(barrier_thickness):
-            return "high"
+    orientation: str,
+    style: str,
+    cols: int,
+    rows: int,
+    start_index: int,
+    thickness: int,
+    rng: random.Random,
+) -> set[tuple[int, int]]:
+    """Return connected water cells that span the map in one direction."""
+
+    barrier_cells: set[tuple[int, int]] = set()
+    if str(orientation) == "vertical":
+        current_col = int(start_index)
+        previous_col = int(current_col)
+        forced_step = max(1, int(rows) // 2)
+        for row in range(int(rows)):
+            if str(style) == "zigzag" and row > 0:
+                if int(row) == int(forced_step):
+                    delta = rng.choice((-1, 1))
+                elif rng.random() < 0.42:
+                    delta = rng.choice((-1, 0, 1))
+                else:
+                    delta = 0
+                current_col = _clamp_barrier_index(
+                    current_col + int(delta),
+                    min_index=1,
+                    max_index=int(cols) - int(thickness) - 1,
+                )
+            first_col = min(int(previous_col), int(current_col))
+            last_col_exclusive = max(int(previous_col), int(current_col)) + int(thickness)
+            for col in range(first_col, last_col_exclusive):
+                barrier_cells.add((int(row), int(col)))
+            previous_col = int(current_col)
     else:
-        if int(tile.row) < int(barrier_start_index):
-            return "low"
-        if int(tile.row) >= int(barrier_start_index) + int(barrier_thickness):
-            return "high"
-    return "barrier"
+        current_row = int(start_index)
+        previous_row = int(current_row)
+        forced_step = max(1, int(cols) // 2)
+        for col in range(int(cols)):
+            if str(style) == "zigzag" and col > 0:
+                if int(col) == int(forced_step):
+                    delta = rng.choice((-1, 1))
+                elif rng.random() < 0.42:
+                    delta = rng.choice((-1, 0, 1))
+                else:
+                    delta = 0
+                current_row = _clamp_barrier_index(
+                    current_row + int(delta),
+                    min_index=1,
+                    max_index=int(rows) - int(thickness) - 1,
+                )
+            first_row = min(int(previous_row), int(current_row))
+            last_row_exclusive = max(int(previous_row), int(current_row)) + int(thickness)
+            for row in range(first_row, last_row_exclusive):
+                barrier_cells.add((int(row), int(col)))
+            previous_row = int(current_row)
+    return barrier_cells
+
+
+def _clamp_barrier_index(value: int, *, min_index: int, max_index: int) -> int:
+    return max(int(min_index), min(int(max_index), int(value)))
+
+
+def _passable_components(scene: RpgTacticalMapScene) -> list[set[str]]:
+    """Return orthogonally connected passable components for the tactical grid."""
+
+    tiles_by_coord = _tiles_by_coord(scene)
+    remaining = {str(tile.tile_id) for tile in scene.tiles if bool(tile.passable)}
+    tiles_by_id = _tile_by_id(scene)
+    components: list[set[str]] = []
+    while remaining:
+        start_tile_id = min(remaining)
+        component = connected_passable_tile_ids(
+            tiles_by_coord,
+            start_coord=tiles_by_id[start_tile_id].coord,
+        )
+        components.append(set(component))
+        remaining -= set(component)
+    return sorted(components, key=lambda component: (-len(component), sorted(component)[0]))
 
 
 def _choose_spread_tiles(
@@ -184,62 +252,48 @@ def _choose_spread_tiles(
 def _select_unreachable_candidate_layout(
     *,
     scene: RpgTacticalMapScene,
-    barrier_orientation: str,
-    barrier_start_index: int,
-    barrier_thickness: int,
     candidate_count: int,
     instance_seed: int,
 ) -> tuple[str, dict[str, str], str, set[str]]:
     """Select the blue-unit tile plus one unreachable and three reachable candidates."""
 
     rng = random.Random(f"{int(instance_seed)}:water_barrier_unreachable_candidates")
-    side_ids = ("low", "high")
-    player_side = str(side_ids[int(rng.randrange(len(side_ids)))])
-    unreachable_side = "high" if player_side == "low" else "low"
+    passable_components = _passable_components(scene)
+    player_component_candidates = [
+        component for component in passable_components if len(component) >= int(candidate_count)
+    ]
+    if not player_component_candidates or len(passable_components) < 2:
+        raise ValueError("water barrier must create at least two passable regions with enough candidate space")
+    player_component = set(rng.choice(player_component_candidates))
+    unreachable_component_candidates = [
+        component for component in passable_components if set(component) != player_component and component
+    ]
+    if not unreachable_component_candidates:
+        raise ValueError("water barrier did not create an unreachable passable region")
+    unreachable_component = set(rng.choice(unreachable_component_candidates))
+
     passable_tiles = [tile for tile in scene.tiles if bool(tile.passable)]
-    same_side_pool = [
-        tile
-        for tile in passable_tiles
-        if _side_for_tile(
-            tile,
-            barrier_orientation=barrier_orientation,
-            barrier_start_index=barrier_start_index,
-            barrier_thickness=barrier_thickness,
-        )
-        == player_side
-    ]
-    opposite_side_pool = [
-        tile
-        for tile in passable_tiles
-        if _side_for_tile(
-            tile,
-            barrier_orientation=barrier_orientation,
-            barrier_start_index=barrier_start_index,
-            barrier_thickness=barrier_thickness,
-        )
-        == unreachable_side
-    ]
-    if len(same_side_pool) < int(candidate_count) or not opposite_side_pool:
-        raise ValueError("not enough passable tiles on both sides of the water barrier")
+    same_region_pool = [tile for tile in passable_tiles if str(tile.tile_id) in player_component]
+    unreachable_region_pool = [tile for tile in passable_tiles if str(tile.tile_id) in unreachable_component]
 
     interior_same_side = [
         tile
-        for tile in same_side_pool
+        for tile in same_region_pool
         if 0 < int(tile.row) < max(int(other.row) for other in scene.tiles)
         and 0 < int(tile.col) < max(int(other.col) for other in scene.tiles)
-    ] or same_side_pool
+    ] or same_region_pool
     player_tile = rng.choice(interior_same_side)
     reachable_tile_ids = connected_passable_tile_ids(_tiles_by_coord(scene), start_coord=player_tile.coord)
 
     same_side_candidates = _choose_spread_tiles(
-        [tile for tile in same_side_pool if str(tile.tile_id) in reachable_tile_ids],
+        [tile for tile in same_region_pool if str(tile.tile_id) in reachable_tile_ids],
         count=int(candidate_count) - 1,
         rng=rng,
         excluded_tile_ids={str(player_tile.tile_id)},
         anchors=[player_tile],
     )
     opposite_candidates = _choose_spread_tiles(
-        [tile for tile in opposite_side_pool if str(tile.tile_id) not in reachable_tile_ids],
+        [tile for tile in unreachable_region_pool if str(tile.tile_id) not in reachable_tile_ids],
         count=1,
         rng=rng,
         excluded_tile_ids=set(),
@@ -316,6 +370,7 @@ class IllustrationsRpgTacticalMapWaterBarrierUnreachableTileLabelTask:
         selected_reachable_tile_ids: set[str] | None = None
         selected_barrier_tile_ids: list[str] | None = None
         selected_barrier_orientation: str | None = None
+        selected_barrier_style: str | None = None
         selected_barrier_start_index: int | None = None
         selected_barrier_thickness: int | None = None
         attempt_errors: list[str] = []
@@ -323,11 +378,19 @@ class IllustrationsRpgTacticalMapWaterBarrierUnreachableTileLabelTask:
             scene_seed = int(instance_seed) + int(attempt) * 7919
             rng = random.Random(f"{scene_seed}:water_barrier_grid")
             try:
-                terrain_grid, barrier_orientation, barrier_start_index, barrier_thickness, barrier_tile_ids = _build_water_barrier_grid(
+                (
+                    terrain_grid,
+                    barrier_orientation,
+                    barrier_style,
+                    barrier_start_index,
+                    barrier_thickness,
+                    barrier_tile_ids,
+                ) = _build_water_barrier_grid(
                     cols=int(render_params["grid_cols"]),
                     rows=int(render_params["grid_rows"]),
                     rng=rng,
                     explicit_orientation=task_params.get("barrier_orientation"),
+                    explicit_style=task_params.get("barrier_style"),
                 )
                 base_scene = render_rpg_tactical_map_scene(
                     scene_seed,
@@ -341,9 +404,6 @@ class IllustrationsRpgTacticalMapWaterBarrierUnreachableTileLabelTask:
                 )
                 player_tile_id, candidates, answer_label, reachable_tile_ids = _select_unreachable_candidate_layout(
                     scene=base_scene,
-                    barrier_orientation=barrier_orientation,
-                    barrier_start_index=int(barrier_start_index),
-                    barrier_thickness=int(barrier_thickness),
                     candidate_count=int(candidate_count),
                     instance_seed=int(instance_seed) + int(attempt) * 104729,
                 )
@@ -369,6 +429,7 @@ class IllustrationsRpgTacticalMapWaterBarrierUnreachableTileLabelTask:
             selected_reachable_tile_ids = set(reachable_tile_ids)
             selected_barrier_tile_ids = list(barrier_tile_ids)
             selected_barrier_orientation = str(barrier_orientation)
+            selected_barrier_style = str(barrier_style)
             selected_barrier_start_index = int(barrier_start_index)
             selected_barrier_thickness = int(barrier_thickness)
             break
@@ -379,6 +440,7 @@ class IllustrationsRpgTacticalMapWaterBarrierUnreachableTileLabelTask:
             or selected_reachable_tile_ids is None
             or selected_barrier_tile_ids is None
             or selected_barrier_orientation is None
+            or selected_barrier_style is None
             or selected_barrier_start_index is None
             or selected_barrier_thickness is None
         ):
@@ -402,6 +464,7 @@ class IllustrationsRpgTacticalMapWaterBarrierUnreachableTileLabelTask:
             reachable_tile_ids=sorted(selected_reachable_tile_ids),
             water_barrier_tile_ids=selected_barrier_tile_ids,
             barrier_orientation=str(selected_barrier_orientation),
+            barrier_style=str(selected_barrier_style),
             barrier_start_index=int(selected_barrier_start_index),
             barrier_thickness=int(selected_barrier_thickness),
         )
@@ -415,6 +478,7 @@ class IllustrationsRpgTacticalMapWaterBarrierUnreachableTileLabelTask:
             "selected_label": str(selected_label),
             "selected_tile_id": selected_tile_id,
             "barrier_orientation": str(selected_barrier_orientation),
+            "barrier_style": str(selected_barrier_style),
             "barrier_start_index": int(selected_barrier_start_index),
             "barrier_thickness": int(selected_barrier_thickness),
             "water_barrier_tile_ids": list(selected_barrier_tile_ids),
@@ -431,6 +495,7 @@ class IllustrationsRpgTacticalMapWaterBarrierUnreachableTileLabelTask:
                     "water_rule": "water_blocked_all_non_water_crossable",
                     "blocked_terrain": [TERRAIN_WATER],
                     "barrier_orientation": str(selected_barrier_orientation),
+                    "barrier_style": str(selected_barrier_style),
                     "barrier_start_index": int(selected_barrier_start_index),
                     "barrier_thickness": int(selected_barrier_thickness),
                     "water_barrier_tile_ids": list(selected_barrier_tile_ids),
@@ -458,6 +523,10 @@ class IllustrationsRpgTacticalMapWaterBarrierUnreachableTileLabelTask:
                 "scene_id": SCENE_ID,
                 "answer": str(selected_label),
                 "water_rule": "water_blocked_all_non_water_crossable",
+                "barrier_orientation": str(selected_barrier_orientation),
+                "barrier_style": str(selected_barrier_style),
+                "barrier_start_index": int(selected_barrier_start_index),
+                "barrier_thickness": int(selected_barrier_thickness),
                 "candidate_tile_ids_by_label": dict(selected_candidates),
                 "candidate_reachable_by_label": dict(candidate_reachable_by_label),
                 "selected_label": str(selected_label),

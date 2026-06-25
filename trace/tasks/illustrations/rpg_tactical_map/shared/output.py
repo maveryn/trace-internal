@@ -168,6 +168,7 @@ def water_barrier_unreachable_render_map(
     reachable_tile_ids: Sequence[str],
     water_barrier_tile_ids: Sequence[str],
     barrier_orientation: str,
+    barrier_style: str,
     barrier_start_index: int,
     barrier_thickness: int,
 ) -> dict[str, Any]:
@@ -189,6 +190,7 @@ def water_barrier_unreachable_render_map(
         "image_id": "img0",
         "water_rule": "water_blocked_all_non_water_crossable",
         "barrier_orientation": str(barrier_orientation),
+        "barrier_style": str(barrier_style),
         "barrier_start_index": int(barrier_start_index),
         "barrier_thickness": int(barrier_thickness),
         "water_barrier_tile_ids": [str(tile_id) for tile_id in water_barrier_tile_ids],

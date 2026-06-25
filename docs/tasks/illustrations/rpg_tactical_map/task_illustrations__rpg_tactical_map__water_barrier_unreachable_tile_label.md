@@ -21,11 +21,11 @@ Selects the single lettered tile that the blue unit cannot reach because a conti
 ## Program Metadata
 - Program signatures: `select.unreachable_tile_across_full_water_barrier`
 - Base program contract: `select(tile, unreachable_by_water_barrier_connectivity(unit, tile)); scene=rpg_tactical_map; scope=water_barrier_unreachable_tile_label`
-- Parameter axes: `barrier_orientation`, `barrier_position`, `candidate_tile_set`, `canvas_profile`
+- Parameter axes: `barrier_orientation`, `barrier_style`, `barrier_position`, `candidate_tile_set`, `canvas_profile`
 - Arguments:
   - `unit`: blue_unit; the single reference unit visible in the scene; source `scene_ir.units`
   - `tile`: candidate_tile; visible lettered terrain tile; source `render_map.candidate_tile_ids_by_label`
-  - `water_barrier`: full map-crossing water strip; source `render_map.water_barrier_tile_ids`
+  - `water_barrier`: full map-crossing water strip or meandering barrier; source `render_map.water_barrier_tile_ids`
 - Argument metadata status: `curated`
 - Supported query ids: `single`
 
@@ -44,5 +44,5 @@ Selects the single lettered tile that the blue unit cannot reach because a conti
 - Prompt text must come from `prompts/illustrations/rpg_tactical_map/illustrations_rpg_tactical_map_v0.json`.
 - Public prompts must state that water tiles cannot be crossed, all non-water tiles can be crossed, and movement is only up, down, left, or right.
 - Public prompts must not mention movement budgets or terrain movement costs.
-- The task has no semantic query branch beyond `single`; sampled map layout, barrier orientation, tile labels, terrain colors, and canvas profile are trace metadata, not public query ids.
-- Candidate tile ids, tile bboxes, label bboxes, candidate reachability flags, water-barrier tile ids, barrier orientation, selected label, selected tile id, reachable tile ids, and scalar bbox annotation must be recorded in the trace.
+- The task has no semantic query branch beyond `single`; sampled map layout, barrier orientation/style, tile labels, terrain colors, and canvas profile are trace metadata, not public query ids.
+- Candidate tile ids, tile bboxes, label bboxes, candidate reachability flags, water-barrier tile ids, barrier orientation/style, selected label, selected tile id, reachable tile ids, and scalar bbox annotation must be recorded in the trace.

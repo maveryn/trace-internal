@@ -11,6 +11,7 @@ from trace.tasks.illustrations.rpg_tactical_map.shared.relations import (
     TERRAIN_GRASS,
     TERRAIN_MOUNTAIN,
     TERRAIN_WATER,
+    orthogonal_neighbors,
     shortest_movement_costs,
 )
 from trace.tasks.illustrations.rpg_tactical_map.shared.rendering import (
@@ -210,6 +211,7 @@ def test_rpg_tactical_map_water_barrier_unreachable_tile_contract() -> None:
         params={
             "canvas_profile": "square",
             "barrier_orientation": "vertical",
+            "barrier_style": "zigzag",
         },
         max_attempts=40,
     )
@@ -255,17 +257,55 @@ def test_rpg_tactical_map_water_barrier_unreachable_tile_contract() -> None:
     assert barrier_ids
     assert all(tiles_by_id[tile_id]["terrain"] == "water" for tile_id in barrier_ids)
     orientation = str(render_map["barrier_orientation"])
+    style = str(render_map["barrier_style"])
     thickness = int(render_map["barrier_thickness"])
+    barrier_coords = {
+        (int(tiles_by_id[tile_id]["row"]), int(tiles_by_id[tile_id]["col"]))
+        for tile_id in barrier_ids
+    }
+    pending = {next(iter(barrier_coords))}
+    seen: set[tuple[int, int]] = set()
+    while pending:
+        coord = pending.pop()
+        if coord in seen:
+            continue
+        seen.add(coord)
+        pending.update(
+            neighbor
+            for neighbor in orthogonal_neighbors(coord)
+            if neighbor in barrier_coords and neighbor not in seen
+        )
+    assert seen == barrier_coords
     if orientation == "vertical":
         rows = {int(tiles_by_id[tile_id]["row"]) for tile_id in barrier_ids}
         cols = {int(tiles_by_id[tile_id]["col"]) for tile_id in barrier_ids}
         assert rows == set(range(int(trace["render_spec"]["style"]["grid_rows"])))
-        assert len(cols) == thickness
+        assert len(cols) >= thickness
+        if style == "zigzag":
+            cols_by_row = {
+                row: {
+                    int(tiles_by_id[tile_id]["col"])
+                    for tile_id in barrier_ids
+                    if int(tiles_by_id[tile_id]["row"]) == row
+                }
+                for row in rows
+            }
+            assert len({min(cols) for cols in cols_by_row.values()}) > 1
     else:
         rows = {int(tiles_by_id[tile_id]["row"]) for tile_id in barrier_ids}
         cols = {int(tiles_by_id[tile_id]["col"]) for tile_id in barrier_ids}
-        assert len(rows) == thickness
+        assert len(rows) >= thickness
         assert cols == set(range(int(trace["render_spec"]["style"]["grid_cols"])))
+        if style == "zigzag":
+            rows_by_col = {
+                col: {
+                    int(tiles_by_id[tile_id]["row"])
+                    for tile_id in barrier_ids
+                    if int(tiles_by_id[tile_id]["col"]) == col
+                }
+                for col in cols
+            }
+            assert len({min(rows) for rows in rows_by_col.values()}) > 1
 
 
 def test_rpg_tactical_map_movement_distractors_are_plausible_and_spread() -> None:

@@ -26,7 +26,7 @@ ordered predicate is `first_shape_type` immediately followed by
 `second_shape_type`. The reverse order is not counted. Non-target lanes are
 visual distractors.
 
-Answer support is `1..5`. Each lane contains at most 10 objects for this task.
+Answer support is `0..4`. Each lane contains at most 8 objects for this task.
 
 ## Annotation Contract
 Annotation is a `segment_set`. Each segment marks one counted adjacent ordered

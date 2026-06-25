@@ -360,7 +360,7 @@ def test_carousel_adjacent_pair_count_query_ids() -> None:
         assert output.query_id == query_id
         assert output.answer_gt.type == "integer"
         assert output.annotation_gt.type == "segment_set"
-        assert 1 <= int(output.answer_gt.value) <= 5
+        assert 0 <= int(output.answer_gt.value) <= 4
         assert len(pair_ids) == int(output.answer_gt.value)
         assert output.annotation_gt.value == [_rounded_segment_for_pair(render_map, pair) for pair in pair_ids]
         assert output.trace_payload["projected_annotation"]["segment_set"] == output.annotation_gt.value
@@ -386,6 +386,34 @@ def test_carousel_adjacent_pair_count_query_ids() -> None:
                 assert str(object_by_id[second_id]["shape_type"]) == str(trace["target_shape_pair"][1])
                 assert trace["target_object_plural_pair"][0]
                 assert trace["target_object_plural_pair"][1]
+        assert int(trace["belt_counts"].get("inner", 0)) <= 8
+        assert int(trace["belt_counts"].get("outer", 0)) <= 12
+
+
+def test_carousel_adjacent_pair_count_supports_zero_and_four() -> None:
+    task = create_task(ADJACENT_PAIR_TASK_ID)
+    cases = (
+        (COLOR_ORDERED_PAIR_QUERY_ID, 0, "inner", 2026062813),
+        (OBJECT_ORDERED_PAIR_QUERY_ID, 4, "outer", 2026062814),
+    )
+    for query_id, target_count, belt_key, seed in cases:
+        output = task.generate(
+            seed,
+            params={
+                "query_id": query_id,
+                "target_belt_key": belt_key,
+                "target_count": target_count,
+                "post_image_noise_apply_prob": 0.0,
+            },
+            max_attempts=220,
+        )
+        trace = output.trace_payload["execution_trace"]
+
+        assert int(output.answer_gt.value) == int(target_count)
+        assert len(output.annotation_gt.value) == int(target_count)
+        assert len(trace["target_pair_object_id_pairs"]) == int(target_count)
+        assert int(trace["belt_counts"].get("inner", 0)) <= 8
+        assert int(trace["belt_counts"].get("outer", 0)) <= 12
 
 
 def test_carousel_renderer_has_no_unqueried_gate_decoration() -> None:

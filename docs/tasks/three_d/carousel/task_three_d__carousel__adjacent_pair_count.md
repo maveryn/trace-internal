@@ -24,9 +24,10 @@ by `second_color`. For object queries, the ordered predicate is
 `first_shape_type` immediately followed by `second_shape_type`. The reverse
 order is not counted. The non-target belt is a visual distractor.
 
-Answer support is `1..5`. Belt sequences are cyclic for the program contract:
-the final visible object on the selected belt is adjacent to the first visible
-object in belt order.
+Answer support is `0..4`. The inner belt contains at most 8 objects and the
+outer belt contains at most 12 objects. Belt sequences are cyclic for the
+program contract: the final visible object on the selected belt is adjacent to
+the first visible object in belt order.
 
 ## Annotation Contract
 Annotation is a `segment_set`. Each segment marks one counted adjacent ordered

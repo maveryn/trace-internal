@@ -210,10 +210,10 @@ def _resolve_ordered_pair_count(
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
         key="target_count",
-        default_min=int(params.get("target_count_min", group_default(gen_defaults, "target_count_min", 1))),
-        default_max=int(params.get("target_count_max", group_default(gen_defaults, "target_count_max", 5))),
-        lower=1,
-        upper=5,
+        default_min=int(params.get("target_count_min", group_default(gen_defaults, "target_count_min", 0))),
+        default_max=int(params.get("target_count_max", group_default(gen_defaults, "target_count_max", 4))),
+        lower=0,
+        upper=4,
     )
     return int(count), dict(probabilities)
 
@@ -1324,7 +1324,7 @@ def build_ordered_pair_count_dataset(
         namespace=f"{namespace}.{target_belt_key}.target_count",
     )
     target_total_min = max(6, 2 * int(target_count))
-    target_total_max = max(int(_belt_max_object_count(str(target_belt_key))), int(target_total_min))
+    target_total_max = int(_belt_max_object_count(str(target_belt_key)))
     belt_counts: Dict[str, int] = {}
     for belt_key in BELT_KEYS:
         if str(belt_key) == str(target_belt_key):

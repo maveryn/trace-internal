@@ -303,7 +303,6 @@ _ENVIRONMENT_THEMES = ("park_road", "river_meadow", "road_and_river", "canal_cit
 _INDOOR_THEMES = ("living_room", "kitchen", "study", "bedroom")
 _LIBRARY_SETTINGS = ("reading_room", "archive_room", "childrens_corner")
 _PARK_SETTINGS = ("playground_lawn", "picnic_park", "pond_playground", "flower_garden")
-_TRANSIT_SETTINGS = ("rail_station", "bus_terminal", "airport_concourse")
 _CONSTRUCTION_SETTINGS = ("urban_build", "roadwork", "foundation_yard", "scaffold_site")
 
 
@@ -314,7 +313,6 @@ def _background_entries() -> Tuple[CatalogEntry, ...]:
         ("indoor_theme", "indoor_room", _INDOOR_THEMES),
         ("library_setting", "library", _LIBRARY_SETTINGS),
         ("park_setting", "park_playground", _PARK_SETTINGS),
-        ("transit_setting", "transit_terminal", _TRANSIT_SETTINGS),
         ("construction_setting", "construction_site", _CONSTRUCTION_SETTINGS),
     )
     entries: list[CatalogEntry] = []
@@ -476,93 +474,6 @@ def _park_entries() -> Tuple[CatalogEntry, ...]:
                 renderer_id="park_person",
                 variant_id=activity,
                 label_text=label,
-            )
-        )
-    return tuple(entries)
-
-
-_TRANSIT_AREAS: Dict[str, str] = {
-    "area_a": "Boarding Area A",
-    "area_b": "Boarding Area B",
-    "area_c": "Boarding Area C",
-    "area_d": "Boarding Area D",
-}
-_TRANSIT_LUGGAGE: Dict[str, str] = {
-    "suitcase": "suitcases",
-    "backpack": "backpacks",
-    "luggage_cart": "luggage carts",
-}
-_TRANSIT_SERVICE_POINTS: Dict[str, str] = {
-    "security_queue": "security queue",
-    "ticket_counter": "ticket counter queue",
-    "gate_queue": "gate queue",
-}
-_TRANSIT_PERSON_POSES = ("standing", "walking", "seated", "with_luggage")
-
-
-def _transit_entries() -> Tuple[CatalogEntry, ...]:
-    entries: list[CatalogEntry] = []
-    for area_id, label in _TRANSIT_AREAS.items():
-        entries.append(
-            _entry(
-                f"transit_area.{area_id}",
-                object_type="boarding_area",
-                public_name=label,
-                family="scene_region",
-                render_layer="region",
-                size_class="scene_scale",
-                placement_tags=("transit_boarding_area",),
-                scene_tags=("transit_terminal",),
-                renderer_id="transit_area",
-                variant_id=area_id,
-                label_text=label,
-            )
-        )
-    for luggage_type, plural in _TRANSIT_LUGGAGE.items():
-        entries.append(
-            _entry(
-                f"transit_luggage.{luggage_type}",
-                object_type="luggage",
-                public_name=plural[:-1] if plural.endswith("s") else plural,
-                family="object",
-                render_layer="foreground",
-                size_class="small" if luggage_type != "luggage_cart" else "medium",
-                placement_tags=("transit_luggage",),
-                scene_tags=("transit_terminal",),
-                renderer_id="transit_luggage",
-                variant_id=luggage_type,
-                plural_name=plural,
-            )
-        )
-    for service_id, label in _TRANSIT_SERVICE_POINTS.items():
-        entries.append(
-            _entry(
-                f"transit_service.{service_id}",
-                object_type="service_point",
-                public_name=label,
-                family="fixture",
-                render_layer="fixture",
-                size_class="large",
-                placement_tags=("transit_service_point",),
-                scene_tags=("transit_terminal",),
-                renderer_id="transit_service_point",
-                variant_id=service_id,
-                label_text=label,
-            )
-        )
-    for pose_id in _TRANSIT_PERSON_POSES:
-        entries.append(
-            _entry(
-                f"transit_person_pose.{pose_id}",
-                object_type="person",
-                public_name=pose_id.replace("_", " "),
-                family="person",
-                render_layer="foreground",
-                size_class="medium",
-                placement_tags=("transit_person_pose",),
-                scene_tags=("transit_terminal",),
-                renderer_id="transit_person",
-                variant_id=pose_id,
             )
         )
     return tuple(entries)
@@ -731,7 +642,6 @@ CATALOG_ENTRIES: Tuple[CatalogEntry, ...] = (
     *_environment_feature_entries(),
     *_library_entries(),
     *_park_entries(),
-    *_transit_entries(),
     *_construction_entries(),
     *_indoor_fixture_entries(),
 )
@@ -760,11 +670,6 @@ _TAG_VARIANT_ORDER: Dict[str, Tuple[str, ...]] = {
     "park_equipment": tuple(_PARK_EQUIPMENT),
     "park_zone": tuple(_PARK_ZONES),
     "park_person_activity": tuple(_PARK_PERSON_ACTIVITIES),
-    "transit_setting": _TRANSIT_SETTINGS,
-    "transit_boarding_area": tuple(_TRANSIT_AREAS),
-    "transit_luggage": tuple(_TRANSIT_LUGGAGE),
-    "transit_service_point": tuple(_TRANSIT_SERVICE_POINTS),
-    "transit_person_pose": _TRANSIT_PERSON_POSES,
     "construction_setting": _CONSTRUCTION_SETTINGS,
     "construction_worker": ("worker",),
     "construction_zone": tuple(_CONSTRUCTION_ZONES),

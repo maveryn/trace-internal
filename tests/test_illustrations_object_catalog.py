@@ -8,7 +8,6 @@ from trace.tasks.illustrations.environment.shared import rendering as environmen
 from trace.tasks.illustrations.library.shared import state as library
 from trace.tasks.illustrations.shared import mixed_object_rendering as mixed
 from trace.tasks.illustrations.park_playground.shared import state as park
-from trace.tasks.illustrations.shared import transit_terminal_rendering as transit
 from trace.tasks.illustrations.indoor_room.shared import rendering as indoor
 from trace.tasks.illustrations.shared.object_catalog import (
     catalog_entries,
@@ -60,8 +59,6 @@ def test_scene_variant_maps_are_catalog_derived() -> None:
     assert park.PARK_EQUIPMENT_TYPES == variant_ids_with_tag("park_equipment")
     assert park.PARK_EQUIPMENT_LABELS == plural_name_map_for_tag("park_equipment")
     assert park.PARK_ZONE_LABELS == label_map_for_tag("park_zone")
-    assert transit.TRANSIT_LUGGAGE_TYPES == variant_ids_with_tag("transit_luggage")
-    assert transit.TRANSIT_LUGGAGE_LABELS == plural_name_map_for_tag("transit_luggage")
     assert construction_state.CONSTRUCTION_MATERIAL_TYPES == variant_ids_with_tag("construction_material")
     assert construction_labels.CONSTRUCTION_MATERIAL_LABELS == plural_name_map_for_tag("construction_material")
     assert construction_labels.CONSTRUCTION_EQUIPMENT_LABELS == plural_name_map_for_tag("construction_equipment")

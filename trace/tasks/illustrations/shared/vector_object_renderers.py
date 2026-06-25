@@ -29,11 +29,9 @@ PERSON_RENDERER_IDS = frozenset(
         "construction_worker",
         "object_library_person",
         "park_person",
-        "transit_person",
     }
 )
 BENCH_RENDERER_IDS = frozenset({"fixture_bench"})
-LUGGAGE_RENDERER_IDS = frozenset({"transit_luggage"})
 PARK_EQUIPMENT_RENDERER_IDS = frozenset({"park_equipment"})
 CONSTRUCTION_MATERIAL_RENDERER_IDS = frozenset({"construction_material"})
 CONSTRUCTION_EQUIPMENT_RENDERER_IDS = frozenset({"construction_equipment"})
@@ -50,8 +48,6 @@ def render_registered_vector_object(spec: Any, context: Any) -> VectorPersonRend
         return _render_person(spec, context, renderer_id)
     if renderer_id in BENCH_RENDERER_IDS:
         return _render_bench(spec, context, renderer_id)
-    if renderer_id in LUGGAGE_RENDERER_IDS:
-        return _render_luggage(spec, context, renderer_id)
     if renderer_id in PARK_EQUIPMENT_RENDERER_IDS:
         return _render_park_equipment(spec, context, renderer_id)
     if renderer_id in CONSTRUCTION_MATERIAL_RENDERER_IDS:
@@ -121,76 +117,6 @@ def _render_bench(spec: Any, context: Any, renderer_id: str) -> VectorObjectRend
             "outline_color_rgb": [int(v) for v in outline],
             "style_id": style_id,
         },
-        parts=parts,
-    )
-
-
-def _render_luggage(spec: Any, context: Any, renderer_id: str) -> VectorObjectRenderResult:
-    draw, box, visual, semantic = _required_draw_box(spec, context)
-    scale = max(1, int(getattr(context, "render_scale", 1)))
-    style_id = str(visual.get("style_id", getattr(context, "style_id", "flat_vector")))
-    outline_style, line_width, shadow = style_outline_params(style_id)
-    outline = tuple(outline_style or (66, 73, 84))  # type: ignore[arg-type]
-    color = _rgb(visual.get("primary_color_rgb", getattr(context, "primary_color_rgb", (83, 154, 177))))
-    if shadow:
-        _shadow(draw, box, scale=scale)
-    x0, y0, x1, y1 = box
-    width = x1 - x0
-    height = y1 - y0
-    luggage_type = _renderer_variant_id(spec, visual, semantic) or str(semantic.get("luggage_type", "suitcase"))
-    parts: list[dict[str, Any]] = []
-    counts: dict[str, int] = {}
-    if luggage_type == "luggage_cart":
-        body = _rel(box, 0.08, 0.24, 0.94, 0.82)
-        _rect(draw, body, fill=color, outline=outline, width=int(line_width), scale=scale, radius=5)
-        _line(draw, [(x0 + 0.06 * width, y1 - 0.12 * height), (x1 - 0.02 * width, y1 - 0.12 * height)], fill=outline, width=max(2, int(line_width) + 1), scale=scale)
-        handle = (x1 - 0.16 * width, y0 + 0.12 * height, x1 - 0.02 * width, y0 - 0.10 * height)
-        _line(draw, [(handle[0], handle[1]), (handle[2], handle[3])], fill=outline, width=max(2, int(line_width)), scale=scale)
-        _part(parts, counts, str(getattr(spec, "object_id")), "handle", _expand(handle, 3.0))
-        for wx in (x0 + 0.18 * width, x1 - 0.22 * width):
-            wheel = (wx - 4.0, y1 - 8.0, wx + 6.0, y1 + 2.0)
-            _ellipse(draw, wheel, fill=(45, 49, 55), outline=None, width=1, scale=scale)
-            _part(parts, counts, str(getattr(spec, "object_id")), "wheel", wheel)
-    elif luggage_type == "backpack":
-        body = _rel(box, 0.10, 0.08, 0.92, 0.98)
-        pocket = _rel(box, 0.24, 0.44, 0.82, 0.84)
-        _rect(draw, body, fill=color, outline=outline, width=int(line_width), scale=scale, radius=10)
-        _rect(draw, pocket, fill=color, outline=outline, width=1, scale=scale, radius=5)
-        _line(draw, [(x0 + 0.28 * width, y0 + 0.10 * height), (x0 + 0.05 * width, y0 + 0.54 * height)], fill=outline, width=max(2, int(line_width)), scale=scale)
-        _line(draw, [(x1 - 0.28 * width, y0 + 0.10 * height), (x1 - 0.04 * width, y0 + 0.54 * height)], fill=outline, width=max(2, int(line_width)), scale=scale)
-        _part(parts, counts, str(getattr(spec, "object_id")), "pocket", pocket)
-    else:
-        body = _rel(box, 0.10, 0.20, 0.94, 0.94)
-        lid = _rel(box, 0.18, 0.20, 0.86, 0.34)
-        handle_box = _rel(box, 0.38, 0.02, 0.70, 0.24)
-        wheel_boxes = (_rel(box, 0.22, 0.88, 0.34, 1.00), _rel(box, 0.70, 0.88, 0.82, 1.00))
-        handle_path = [
-            (handle_box[0], handle_box[3]),
-            (handle_box[0], handle_box[1]),
-            (handle_box[2], handle_box[1]),
-            (handle_box[2], handle_box[3]),
-        ]
-        _rect(draw, body, fill=color, outline=outline, width=int(line_width), scale=scale, radius=10)
-        _rect(draw, lid, fill=_blend_rgb(color, (255, 255, 255), 0.16), outline=outline, width=max(1, int(line_width) - 1), scale=scale, radius=8)
-        _line(draw, handle_path, fill=outline, width=max(2, int(line_width)), scale=scale)
-        _line(draw, [(body[0] + 0.12 * (body[2] - body[0]), body[1] + 0.46 * (body[3] - body[1])), (body[2] - 0.12 * (body[2] - body[0]), body[1] + 0.46 * (body[3] - body[1]))], fill=_blend_rgb(color, (0, 0, 0), 0.18), width=max(1, int(line_width)), scale=scale)
-        _line(draw, [(body[0] + 0.50 * (body[2] - body[0]), body[1] + 0.10 * (body[3] - body[1])), (body[0] + 0.50 * (body[2] - body[0]), body[3] - 0.08 * (body[3] - body[1]))], fill=_blend_rgb(color, (255, 255, 255), 0.22), width=max(1, int(line_width)), scale=scale)
-        for wheel in wheel_boxes:
-            _ellipse(draw, wheel, fill=(45, 49, 55), outline=None, width=1, scale=scale)
-            _part(parts, counts, str(getattr(spec, "object_id")), "wheel", wheel)
-        for corner in (
-            _rel(box, 0.16, 0.26, 0.27, 0.38),
-            _rel(box, 0.77, 0.26, 0.88, 0.38),
-            _rel(box, 0.16, 0.72, 0.27, 0.84),
-            _rel(box, 0.77, 0.72, 0.88, 0.84),
-        ):
-            _line(draw, [(corner[0], corner[1]), (corner[2], corner[1]), (corner[2], corner[3])], fill=_blend_rgb(color, (0, 0, 0), 0.20), width=max(1, int(line_width) - 1), scale=scale)
-        _part(parts, counts, str(getattr(spec, "object_id")), "handle", _expand(handle_box, 3.0))
-    return _result(
-        box,
-        renderer_id=renderer_id,
-        renderer_variant_id=luggage_type,
-        visual_attributes={"primary_color_rgb": [int(v) for v in color], "style_id": style_id},
         parts=parts,
     )
 

@@ -24,11 +24,6 @@ _ENTITY_TYPE_OBJECT_MAP: dict[str, str] = {
     "library_section": "library_section",
     "park_decor": "decor",
     "park_person": "person",
-    "transit_boarding_area": "boarding_area",
-    "transit_decor": "decor",
-    "transit_luggage": "luggage",
-    "transit_person": "person",
-    "transit_service_point": "service_point",
 }
 
 

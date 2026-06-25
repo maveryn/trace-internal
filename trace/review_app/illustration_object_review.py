@@ -147,8 +147,6 @@ _VECTOR_CATALOG_RENDERERS = {
     "indoor_surface",
     "park_equipment",
     "park_person",
-    "transit_luggage",
-    "transit_person",
 }
 
 
@@ -672,7 +670,6 @@ def _vector_bbox(object_type: str, renderer_id: str) -> tuple[float, float, floa
             "indoor_furniture": 1.45,
             "indoor_surface": 1.75,
             "park_equipment": 1.55,
-            "transit_luggage": 0.95,
         }.get(renderer_id, 0.62 if "person" in renderer_id or renderer_id == "construction_worker" else 1.2)
     else:
         aspect = aspect_ratio_for_object(object_type)
@@ -758,8 +755,6 @@ def _catalog_semantic_attributes(entry: CatalogEntry) -> Mapping[str, Any]:
     attrs: dict[str, Any] = {"family": str(entry.family)}
     if renderer_id == "fixture_bench":
         attrs["fixture_type"] = variant
-    elif renderer_id == "transit_luggage":
-        attrs["luggage_type"] = variant
     elif renderer_id == "park_equipment":
         attrs["equipment_type"] = variant
     elif renderer_id == "construction_material":
@@ -768,8 +763,6 @@ def _catalog_semantic_attributes(entry: CatalogEntry) -> Mapping[str, Any]:
         attrs["equipment_type"] = variant
     elif renderer_id == "park_person":
         attrs["activity"] = variant
-    elif renderer_id == "transit_person":
-        attrs["pose_id"] = variant
     elif renderer_id == "construction_worker":
         attrs["tool_type"] = "hammer"
     elif renderer_id == "indoor_furniture":
@@ -795,7 +788,7 @@ def _catalog_visual_attributes(entry: CatalogEntry) -> Mapping[str, Any]:
                 "accent_color_rgb": (238, 194, 64),
             }
         )
-    elif renderer_id in {"park_person", "transit_person"}:
+    elif renderer_id == "park_person":
         attrs.update({"person_variant_id": "adult", "primary_color_rgb": (75, 124, 174), "accent_color_rgb": (229, 169, 72)})
     elif renderer_id == "indoor_surface":
         attrs.update(_indoor_surface_visuals(variant))

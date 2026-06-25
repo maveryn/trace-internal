@@ -55,10 +55,10 @@ sampling, rendering, annotations, prompts, and output fragments.
 
 For illustrations, use the annotated-series pattern for single-task scenes and
 small scenes. Use `_lifecycle.py` only for scenes where several public tasks
-share a real scene lifecycle, such as `park_playground`, `transit_terminal`, or
-`pixel_village`, and only if public task files still own objective selection,
-answer binding, annotation binding, task-specific prompt slots, retry
-semantics, and final public fields.
+share a real scene lifecycle, such as `park_playground` or `pixel_village`, and
+only if public task files still own objective selection, answer binding,
+annotation binding, task-specific prompt slots, retry semantics, and final
+public fields.
 
 ## Domain Shared
 
@@ -142,23 +142,19 @@ scene is migrated:
 | `environment_object_scene.py`, `environment_object_rendering.py`, `environment_task_common.py` | `trace/tasks/illustrations/environment/shared/{state,layout,rendering,annotations,prompts,output,sampling,regions}.py` as needed. |
 | `library_scene.py`, `library_rendering.py`, `library_task_common.py` | `trace/tasks/illustrations/library/shared/{state,layout,rendering,annotations,prompts,output,sampling}.py` as needed. |
 | `park_playground_scene.py`, `park_playground_rendering.py`, `park_task_common.py` | `trace/tasks/illustrations/park_playground/shared/{state,layout,rendering,annotations,prompts,output,sampling,regions}.py` as needed. |
-| `transit_terminal_scene.py`, `transit_terminal_rendering.py`, `transit_task_common.py` | `trace/tasks/illustrations/transit_terminal/shared/{state,layout,rendering,annotations,prompts,output,sampling,regions}.py` as needed. |
 | `mixed_object_scene.py`, `mixed_object_rendering.py`, `mixed_task_common.py` | Scene-local package for the public scene that owns the mixed-object grammar, if retained. |
 | `pixel_village_rendering.py`, `pixel_territory_rendering.py` | Migrated to `trace/tasks/illustrations/pixel_village/shared/{rendering,regions}.py`; keep future pixel-map helpers scene-local unless another accepted pixel-map scene needs the same primitive. |
 
 Legacy shared surfaces that require decomposition before their owning scenes
 can become review-candidate scenes:
 
-- `trace/tasks/illustrations/shared/merged_counting_task.py` rewrites branch
-  outputs to public task identities. Migrated public task files should produce
-  public query metadata directly.
 - `trace/tasks/illustrations/indoor_room/shared/task_common.py` is a
   task-common role file and passes `task_id` into scene rendering. It should be
   split into role files, and public task files should pass neutral namespaces or
   resolved semantic arguments instead of task identity.
-- Private branch modules under `trace/tasks/illustrations/counting/` may be
-  useful extraction sources, but migrated public task files must not remain
-  thin wrappers around private branch task classes.
+- Retired generic task packages such as `counting`, `single_object_figure`, and
+  `source_scene_edit` should stay deleted. Do not restore compatibility wrappers
+  for retired public task ids.
 
 ## Scene Shared
 
@@ -243,16 +239,9 @@ only by class attributes, forced query ids, or task ids.
 
 ## Config And Prompt Migration
 
-Current illustrations configs are partially scene-keyed but still include
-legacy group-level files:
-
-- `configs/domains/illustrations/counting.yaml` contains scene-specific
-  settings for `construction_site`, `environment`, `library`, `park_playground`,
-  and `transit_terminal`.
-- `configs/domains/illustrations/indoor_room.yaml`,
-  `single_object_figure.yaml`, and
-  `source_scene_edit.yaml` are already scene-keyed but still need review for
-  task/query routing keys before a scene is registered.
+Current illustrations configs should be one file per public scene. Retired
+generic config files such as `counting.yaml`, `single_object_figure.yaml`, and
+`source_scene_edit.yaml` should not be recreated.
 
 Scene-package migration should create or update one config per public scene:
 
@@ -270,8 +259,7 @@ Prompt assets should move toward scene-scoped bundles such as:
 prompts/illustrations/<scene_id>/illustrations_<scene_id>_v1.json
 ```
 
-The broad `prompts/illustrations/counting/` bundle should be split as the
-counting scenes migrate. Retired generic visual-scene prompt bundles should not
-be restored; future jigsaw or patch prompts belong under the source scene's
-prompt bundle. User-facing prompt prose must remain in prompt assets; task code
-should supply only prompt keys and dynamic slot values.
+Retired generic visual-scene prompt bundles should not be restored. Future
+jigsaw or patch prompts belong under the source scene's prompt bundle.
+User-facing prompt prose must remain in prompt assets; task code should supply
+only prompt keys and dynamic slot values.

@@ -27,7 +27,6 @@ def _install_trace_tasks_namespace() -> None:
 _install_trace_tasks_namespace()
 
 from trace.tasks.shared.text_rendering import load_font
-from trace.tasks.illustrations.counterfactual import visible_part_count as cf_visible
 from trace.tasks.illustrations.shared import construction_site_rendering as construction
 from trace.tasks.illustrations.environment.shared import rendering as environment
 from trace.tasks.illustrations.indoor_room.shared import rendering as indoor
@@ -37,7 +36,6 @@ from trace.tasks.illustrations.shared.object_catalog import CatalogEntry, catalo
 from trace.tasks.illustrations.shared.object_rendering import render_vector_scene_object
 from trace.tasks.illustrations.park_playground.shared import rendering as park
 from trace.tasks.illustrations.shared.person_rendering import PERSON_GENDER_IDS, sample_person_gender
-from trace.tasks.illustrations.shared import transit_terminal_rendering as transit
 
 
 OUT_DIR = Path("review/task-reviews/assets/illustrations/object_spritesheets")
@@ -293,79 +291,6 @@ def _draw_zone_swatch(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Seque
     _center_text(draw, bounds, str(item["name"]), size=15, fill=(54, 63, 57), bold=True)
 
 
-def _draw_transit_luggage(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
-    luggage_type = str(item["id"])
-    aspect = 1.45 if luggage_type == "luggage_cart" else 0.86
-    box = _object_box(bounds, aspect)
-    render_vector_scene_object(
-        draw,
-        object_id=f"sheet_{luggage_type}",
-        object_type="luggage",
-        bbox_xyxy=box,
-        renderer_id="transit_luggage",
-        renderer_variant_id=luggage_type,
-        semantic_attributes={"luggage_type": luggage_type},
-        visual_attributes={"color_rgb": [93, 126, 176], "style_id": "outlined_cartoon"},
-        role="preview",
-        source_entity_type="transit_luggage",
-        render_scale=SCALE,
-        style_id="outlined_cartoon",
-    )
-
-
-def _draw_transit_person(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
-    box = _object_box(bounds, 0.54)
-    pose_id = str(item["id"])
-    render_vector_scene_object(
-        draw,
-        object_id=f"sheet_{pose_id}",
-        object_type="person",
-        bbox_xyxy=box,
-        renderer_id="transit_person",
-        renderer_variant_id=pose_id,
-        semantic_attributes={"pose_id": pose_id, "area_id": "preview"},
-        visual_attributes={
-            "primary_color_rgb": [82, 124, 178],
-            "accent_color_rgb": [235, 172, 76],
-            "skin_color_rgb": [178, 126, 83],
-            "gender_id": str(item.get("gender_id", "female" if pose_id == "seated" else "male")),
-            "style_id": "outlined_cartoon",
-        },
-        role="preview",
-        source_entity_type="transit_person",
-        render_scale=SCALE,
-        style_id="outlined_cartoon",
-    )
-
-
-def _draw_transit_area(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
-    transit._draw_area(draw, rng=rng, setting_id="rail_station", area_id=str(item["id"]), area_box=(bounds[0], bounds[1] - 4.0, bounds[2], bounds[3] + 12.0), scale=SCALE, style_id="outlined_cartoon")
-
-
-def _draw_transit_service(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
-    service_id = str(item["id"])
-    colors = {
-        "security_queue": (88, 120, 170),
-        "ticket_counter": (63, 143, 122),
-        "gate_queue": (150, 102, 166),
-    }
-    label = {
-        "security_queue": "SECURITY",
-        "ticket_counter": "TICKETS",
-        "gate_queue": "GATE",
-    }[service_id]
-    x0, y0, x1, y1 = [float(v) for v in bounds]
-    counter = (x0 + 8.0, y0 + 8.0, x1 - 8.0, y0 + 42.0)
-    sign = (counter[0] + 12.0, counter[1] + 6.0, counter[2] - 12.0, counter[3] - 6.0)
-    queue = (x0 + 28.0, y0 + 54.0, x1 - 28.0, y1 - 2.0)
-    transit._rect(draw, counter, fill=colors[service_id], outline=(42, 49, 58), width=2, scale=SCALE, radius=6)
-    transit._draw_fit_text(draw, text=label, bbox=sign, scale=SCALE, fill=(250, 246, 232), max_size_px=18, stroke_fill=(42, 49, 58))
-    for px in (queue[0] + 8.0, queue[2] - 8.0):
-        transit._line(draw, [(px, queue[1] + 3.0), (px, queue[3] - 3.0)], fill=(72, 77, 84), width=3, scale=SCALE)
-    transit._line(draw, [(queue[0] + 8.0, queue[1] + 12.0), (queue[2] - 8.0, queue[1] + 12.0)], fill=(162, 72, 76), width=3, scale=SCALE)
-    transit._line(draw, [(queue[0] + 8.0, queue[3] - 12.0), (queue[2] - 8.0, queue[3] - 12.0)], fill=(162, 72, 76), width=3, scale=SCALE)
-
-
 def _draw_construction_worker(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
     hard_hat_color = str(item.get("hard_hat_color", "yellow"))
     vest_color = str(item.get("vest_color", "orange"))
@@ -519,138 +444,6 @@ def _draw_environment_feature(draw: ImageDraw.ImageDraw, item: SpriteItem, bound
         environment._draw_buildings(draw, rng=rng, width=int(x1), horizon_y=y1 - 8.0, scale=SCALE, max_buildings=3, lit_window_count_override=6)
 
 
-def _draw_counterfactual_object(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Sequence[float], rng: random.Random) -> None:
-    query_id = str(item["query_id"])
-    style = str(item.get("style_id", item.get("id", "")))
-    colors = cf_visible._sample_colors(query_id, rng)
-    aspect = {
-        cf_visible.BUTTERFLY_VARIANT: 1.25,
-        cf_visible.BICYCLE_VARIANT: 1.60,
-        cf_visible.TRAFFIC_LIGHT_VARIANT: 0.58,
-        cf_visible.CLOVER_VARIANT: 1.0,
-        cf_visible.STAR_VARIANT: 1.0,
-        cf_visible.GLOVE_VARIANT: 0.92,
-        cf_visible.FORK_VARIANT: 0.55,
-        cf_visible.SNOWFLAKE_VARIANT: 1.0,
-        cf_visible.CHAIR_VARIANT: 0.86,
-    }.get(query_id, 1.4)
-    box = _object_box(bounds, aspect)
-    visible_count = int(item.get("visible_count", cf_visible.CANONICAL_BIAS_ANSWER[query_id]))
-    if query_id == cf_visible.BIRD_VARIANT:
-        cf_visible._draw_bird(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_id == cf_visible.QUADRUPED_VARIANT:
-        cf_visible._draw_quadruped(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_id == cf_visible.AIRPLANE_VARIANT:
-        cf_visible._draw_airplane(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_id == cf_visible.BUTTERFLY_VARIANT:
-        cf_visible._draw_butterfly(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_id == cf_visible.BICYCLE_VARIANT:
-        cf_visible._draw_bicycle(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_id == cf_visible.TRAFFIC_LIGHT_VARIANT:
-        cf_visible._draw_traffic_light(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_id == cf_visible.CLOVER_VARIANT:
-        cf_visible._draw_clover(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_id == cf_visible.STAR_VARIANT:
-        cf_visible._draw_star(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_id == cf_visible.GLOVE_VARIANT:
-        cf_visible._draw_glove(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_id == cf_visible.FORK_VARIANT:
-        cf_visible._draw_fork(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    elif query_id == cf_visible.SNOWFLAKE_VARIANT:
-        cf_visible._draw_snowflake(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-    else:
-        cf_visible._draw_chair(draw, box=box, style=style, visible_count=visible_count, scale=SCALE, pad=5.0, colors=colors)
-
-
-def _part_phrase(part_kind: str, count: int) -> str:
-    noun = str(part_kind)
-    if int(count) != 1:
-        noun = {"lens": "lenses", "leaf": "leaves"}.get(noun, f"{noun}s")
-    return f"{int(count)} {noun}"
-
-
-def _part_plural(part_kind: str) -> str:
-    return {"lens": "lenses", "leaf": "leaves"}.get(str(part_kind), f"{part_kind}s")
-
-
-def _make_counterfactual_count_sheet(*, manifest: list[dict[str, Any]], taxonomy: list[dict[str, Any]]) -> None:
-    query_ids = [
-        cf_visible.BIRD_VARIANT,
-        cf_visible.QUADRUPED_VARIANT,
-        cf_visible.AIRPLANE_VARIANT,
-        cf_visible.BUTTERFLY_VARIANT,
-        cf_visible.BICYCLE_VARIANT,
-        cf_visible.TRAFFIC_LIGHT_VARIANT,
-        cf_visible.CLOVER_VARIANT,
-        cf_visible.STAR_VARIANT,
-        cf_visible.GLOVE_VARIANT,
-        cf_visible.FORK_VARIANT,
-        cf_visible.SNOWFLAKE_VARIANT,
-        cf_visible.CHAIR_VARIANT,
-    ]
-    row_specs = [(query_id, style_id) for query_id in query_ids for style_id in cf_visible.STYLE_SUPPORT[query_id]]
-    label_w = 230
-    tile_w = 158
-    row_h = 164
-    cols = 6
-    width = label_w + cols * tile_w
-    height = HEADER_H + len(row_specs) * row_h
-    image = Image.new("RGB", (width * SCALE, height * SCALE), BG)
-    draw = ImageDraw.Draw(image)
-    _draw_text(draw, (22, 18), "Counterfactual Property Counts", size=24, fill=TEXT, bold=True)
-    _draw_text(draw, (22, 50), "Each object style gets one row: canonical/original count first, then every noncanonical visible count.", size=12, fill=MUTED, bold=False)
-    generated_items: list[dict[str, Any]] = []
-
-    for row_index, (query_id, style_id) in enumerate(row_specs):
-        row_y = HEADER_H + row_index * row_h
-        part_kind = str(cf_visible.COUNTED_PART_KIND[query_id])
-        canonical = int(cf_visible.CANONICAL_BIAS_ANSWER[query_id])
-        support = tuple(int(value) for value in cf_visible._support_for_variant(query_id, {}))
-        counts = (canonical, *(count for count in support if int(count) != canonical))
-        object_name = cf_visible.OBJECT_DESCRIPTION[query_id].replace("a stylized ", "")
-        label_panel = (12.0, row_y + 10.0, label_w - 14.0, row_y + row_h - 10.0)
-        draw.rounded_rectangle(_scale_box(label_panel), radius=9 * SCALE, fill=(246, 247, 241), outline=(211, 214, 204), width=max(1, SCALE))
-        _draw_text(draw, (label_panel[0] + 12.0, label_panel[1] + 18.0), object_name, size=14, fill=TEXT, bold=True)
-        _draw_text(draw, (label_panel[0] + 12.0, label_panel[1] + 44.0), f"count visible {_part_plural(part_kind)}", size=10, fill=MUTED)
-        _draw_text(draw, (label_panel[0] + 12.0, label_panel[1] + 64.0), f"style: {style_id.replace('_', ' ')}", size=9, fill=MUTED)
-
-        for col_index, visible_count in enumerate(counts):
-            x = label_w + col_index * tile_w
-            panel = (x + 8.0, row_y + 10.0, x + tile_w - 8.0, row_y + row_h - 10.0)
-            is_original = int(visible_count) == canonical
-            draw.rounded_rectangle(_scale_box(panel), radius=9 * SCALE, fill=PANEL_BG, outline=(218, 214, 202), width=max(1, SCALE))
-            badge = (panel[0] + 8.0, panel[1] + 8.0, panel[0] + (72.0 if is_original else 112.0), panel[1] + 29.0)
-            draw.rounded_rectangle(_scale_box(badge), radius=5 * SCALE, fill=(229, 239, 229) if is_original else (238, 232, 231), outline=(184, 200, 184) if is_original else (207, 190, 187), width=max(1, SCALE))
-            _center_text(draw, badge, "original" if is_original else "counterfactual", size=8, fill=(51, 80, 58) if is_original else (92, 60, 56), bold=True)
-            item = {
-                "id": f"{query_id}_{style_id}_{visible_count}",
-                "name": f"{object_name}: {_part_phrase(part_kind, int(visible_count))}",
-                "group": part_kind,
-                "query_id": query_id,
-                "style_id": style_id,
-                "visible_count": int(visible_count),
-                "is_original": bool(is_original),
-            }
-            object_area = (panel[0] + 12.0, panel[1] + 34.0, panel[2] - 12.0, panel[3] - 36.0)
-            if query_id == cf_visible.TRAFFIC_LIGHT_VARIANT:
-                object_area = (panel[0] + 4.0, panel[1] + 30.0, panel[2] - 4.0, panel[3] - 8.0)
-            elif query_id == cf_visible.FORK_VARIANT:
-                object_area = (panel[0] + 8.0, panel[1] + 28.0, panel[2] - 8.0, panel[3] - 34.0)
-            elif query_id in {cf_visible.GLOVE_VARIANT, cf_visible.CHAIR_VARIANT}:
-                object_area = (panel[0] + 8.0, panel[1] + 30.0, panel[2] - 8.0, panel[3] - 36.0)
-            elif query_id == cf_visible.BUTTERFLY_VARIANT:
-                object_area = (object_area[0] + 8.0, object_area[1] + 18.0, object_area[2] - 8.0, object_area[3] - 3.0)
-            _draw_counterfactual_object(draw, item, object_area, random.Random(_seed(str(item["id"]))))
-            _center_text(draw, (panel[0] + 6.0, panel[3] - 29.0, panel[2] - 6.0, panel[3] - 10.0), _part_phrase(part_kind, int(visible_count)), size=10, fill=TEXT, bold=True)
-            generated_items.append(item)
-
-    output = OUT_DIR / "05_counterfactual_property_counts.png"
-    image = image.resize((width, height), Image.Resampling.LANCZOS)
-    image.save(output)
-    manifest.append({"file": str(output), "title": "Counterfactual Property Counts", "item_count": len(generated_items)})
-    taxonomy.extend(_taxonomy_record("counterfactual_property_counts", item) for item in generated_items)
-
-
 def _taxonomy_record(category_id: str, item: SpriteItem) -> dict[str, Any]:
     return {
         "category_id": category_id,
@@ -678,16 +471,12 @@ def _entry_group(entry: CatalogEntry) -> str:
         return "market item"
     if "library_book_orientation" in tags:
         return "book"
-    if "transit_luggage" in tags:
-        return "luggage"
     if "construction_material" in tags:
         return "material"
     if "construction_tool" in tags:
         return "tool"
     if "park_person_activity" in tags:
         return "activity"
-    if "transit_person_pose" in tags:
-        return "pose"
     if "construction_worker" in tags:
         return "worker"
     if "market_shop" in tags:
@@ -696,8 +485,6 @@ def _entry_group(entry: CatalogEntry) -> str:
         return "section"
     if "park_equipment" in tags or "construction_equipment" in tags:
         return "equipment"
-    if "transit_service_point" in tags:
-        return "service"
     if "indoor_surface" in tags:
         return "surface"
     if "indoor_container" in tags:
@@ -769,7 +556,6 @@ def _draw_background_swatch(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds:
         "urban_market_canvas": ((229, 239, 244), (204, 190, 164)),
         "library_canvas": ((229, 222, 210), (176, 143, 108)),
         "park_playground_canvas": ((207, 229, 239), (132, 179, 113)),
-        "transit_terminal_canvas": ((226, 232, 238), (190, 196, 202)),
         "construction_site_canvas": ((196, 219, 228), (180, 168, 138)),
     }
     top, bottom = palette.get(str(scene_tag), ((232, 236, 240), (209, 205, 192)))
@@ -801,14 +587,6 @@ def _draw_catalog_entry(draw: ImageDraw.ImageDraw, item: SpriteItem, bounds: Seq
         _draw_zone_swatch(draw, item, bounds, rng)
     elif renderer_id == "park_person":
         _draw_park_activity(draw, item, bounds, rng)
-    elif renderer_id == "transit_luggage":
-        _draw_transit_luggage(draw, item, bounds, rng)
-    elif renderer_id == "transit_person":
-        _draw_transit_person(draw, item, bounds, rng)
-    elif renderer_id == "transit_area":
-        _draw_transit_area(draw, item, bounds, rng)
-    elif renderer_id == "transit_service_point":
-        _draw_transit_service(draw, item, bounds, rng)
     elif renderer_id == "construction_worker":
         _draw_construction_worker(draw, item, bounds, rng)
     elif renderer_id == "construction_material":
@@ -903,7 +681,7 @@ def main() -> int:
         "01_foreground_props_inventory_materials.png",
         category_id="foreground_props_inventory_materials",
         title="Foreground Props, Inventory, Materials",
-        subtitle="Countable foreground entries outside the shared pool: inventory, books, luggage, materials, and tools.",
+        subtitle="Countable foreground entries outside the shared pool: inventory, books, materials, and tools.",
         entries=scene_foreground_entries,
         cols=6,
         manifest=manifest,
@@ -913,7 +691,7 @@ def main() -> int:
     manifest.append(
         _make_sheet(
             "02_people_activity_pose_worker_variants.png",
-            title="People, Activity, Pose, Worker Variants",
+        title="People, Activity, Worker Variants",
             subtitle="Person-family entries with render-only male/female appearance variants.",
             items=person_items,
             draw_item=_draw_catalog_entry,
@@ -925,7 +703,7 @@ def main() -> int:
         "03_fixtures_structures_equipment.png",
         category_id="fixtures_structures_equipment",
         title="Fixtures, Structures, Equipment",
-        subtitle="Large or anchored drawable entries: shops, sections, surfaces, service points, structures, and equipment.",
+        subtitle="Large or anchored drawable entries: shops, sections, surfaces, structures, and equipment.",
         entries=fixture_entries,
         cols=5,
         manifest=manifest,
@@ -935,14 +713,12 @@ def main() -> int:
         "04_regions_and_backgrounds.png",
         category_id="regions_and_backgrounds",
         title="Regions And Backgrounds",
-        subtitle="Scene-scale backgrounds plus semantic regions such as roads, rivers, zones, and boarding areas.",
+        subtitle="Scene-scale backgrounds plus semantic regions such as roads, rivers, and zones.",
         entries=region_background_entries,
         cols=5,
         manifest=manifest,
         taxonomy=taxonomy,
     )
-
-    _make_counterfactual_count_sheet(manifest=manifest, taxonomy=taxonomy)
 
     (OUT_DIR / "object_category_preview.json").write_text(json.dumps(taxonomy, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     index_lines = [

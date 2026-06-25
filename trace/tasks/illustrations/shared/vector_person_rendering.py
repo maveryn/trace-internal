@@ -373,12 +373,6 @@ def draw_vector_person(
             ball = _rel(box, 0.36, 0.00, 0.64, 0.09)
             _ellipse(draw, ball, fill=accent, outline=outline, width=1, scale=scale)
             boxes.append(ball)
-        if renderer == "transit_person" and pose == "with_luggage":
-            bag = (x1 + 2.0, y1 - 0.35 * height, x1 + 0.22 * height, y1 - 2.0)
-            _rect(draw, bag, fill=accent, outline=outline, width=1, scale=scale, radius=4)
-            _line(draw, [(bag[0] + 0.5 * (bag[2] - bag[0]), bag[1]), (bag[0] + 0.5 * (bag[2] - bag[0]), bag[1] - 14.0)], fill=outline, width=2, scale=scale)
-            support_items.append({"support_type": "person_luggage", "bbox": [round(float(value), 3) for value in bag], "attributes": {}})
-            boxes.append(bag)
         if str(object_type) == "pedestrian_with_bag":
             bag = _rel(box, 0.70, 0.42, 0.92, 0.66)
             _rect(draw, bag, fill=accent, outline=outline, width=line_width, scale=scale, radius=5)

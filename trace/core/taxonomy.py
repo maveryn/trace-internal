@@ -933,23 +933,8 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_illustrations__isometric_harbor__shoreline_nearest_boat_label": _entry(
         "illustrations", "isometric_harbor", "illustrations", "isometric_harbor"
     ),
-    "task_illustrations__transit_terminal__person_in_boarding_area_count": _entry(
-        "illustrations", "transit_terminal", "illustrations", "counting"
-    ),
-    "task_illustrations__transit_terminal__luggage_in_boarding_area_count": _entry(
-        "illustrations", "transit_terminal", "illustrations", "counting"
-    ),
-    "task_illustrations__transit_terminal__person_in_queue_count": _entry(
-        "illustrations", "transit_terminal", "illustrations", "counting"
-    ),
     "task_illustrations__construction_site__worker_attribute_count": _entry(
         "illustrations", "construction_site", "illustrations", "construction_site"
-    ),
-    "task_illustrations__single_object_figure__visible_part_count": _entry(
-        "illustrations", "single_object_figure", "illustrations", "single_object_figure"
-    ),
-    "task_illustrations__source_scene_edit__object_count_after_edit": _entry(
-        "illustrations", "source_scene_edit", "illustrations", "source_scene_edit"
     ),
     "task_illustrations__indoor_room__furniture_side_count": _entry(
         "illustrations", "indoor_room", "illustrations", "indoor_room"

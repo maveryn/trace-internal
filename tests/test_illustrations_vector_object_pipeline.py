@@ -50,13 +50,6 @@ from trace.tasks.illustrations.park_playground.shared.rendering import (
     ParkPersonSpec,
     render_park_playground_scene,
 )
-from trace.tasks.illustrations.shared.transit_terminal_rendering import (
-    TRANSIT_LUGGAGE_TYPES,
-    TransitLuggageSpec,
-    TransitPersonSpec,
-    render_transit_terminal_scene,
-    transit_scene_entities,
-)
 
 
 def _assert_vector_object_record(entity: dict) -> None:
@@ -102,16 +95,6 @@ def test_registered_vector_person_renderers_emit_parts_and_renderer_metadata() -
             source_entity_type="park_person",
         ),
         IllustrationObjectSpec(
-            object_id="transit_00",
-            object_type="person",
-            bbox_xyxy=(134, 26, 172, 128),
-            renderer_id="transit_person",
-            renderer_variant_id="with_luggage",
-            semantic_attributes={"pose_id": "with_luggage", "area_id": "area_a"},
-            visual_attributes={"primary_color_rgb": [194, 83, 85], "accent_color_rgb": [83, 154, 177], "gender_id": "female"},
-            source_entity_type="transit_person",
-        ),
-        IllustrationObjectSpec(
             object_id="worker_00",
             object_type="worker",
             bbox_xyxy=(240, 24, 288, 136),
@@ -126,15 +109,12 @@ def test_registered_vector_person_renderers_emit_parts_and_renderer_metadata() -
 
     assert [item.object_record["visual_attributes"]["renderer_id"] for item in rendered] == [
         "park_person",
-        "transit_person",
         "construction_worker",
     ]
     for item in rendered:
         part_kinds = {part["part_kind"] for part in item.parts}
         assert {"head", "arm", "leg"} <= part_kinds
         assert item.object_record["parts"] == list(item.parts)
-    assert rendered[1].support_items
-    assert rendered[1].support_items[0]["support_type"] == "person_luggage"
 
 
 def test_registered_vector_object_renderers_emit_renderer_metadata() -> None:
@@ -151,16 +131,6 @@ def test_registered_vector_object_renderers_emit_renderer_metadata() -> None:
             semantic_attributes={"fixture_type": "bench"},
             visual_attributes={"style_id": "flat_vector"},
             source_entity_type="park_decor",
-        ),
-        IllustrationObjectSpec(
-            object_id="luggage_00",
-            object_type="luggage",
-            bbox_xyxy=(185, 30, 240, 102),
-            renderer_id="transit_luggage",
-            renderer_variant_id="suitcase",
-            semantic_attributes={"luggage_type": "suitcase"},
-            visual_attributes={"primary_color_rgb": [83, 154, 177], "style_id": "flat_vector"},
-            source_entity_type="transit_luggage",
         ),
         IllustrationObjectSpec(
             object_id="equipment_00",
@@ -243,7 +213,6 @@ def test_registered_vector_object_renderers_emit_renderer_metadata() -> None:
 
     assert [item.object_record["visual_attributes"]["renderer_id"] for item in rendered] == [
         "fixture_bench",
-        "transit_luggage",
         "park_equipment",
         "construction_material",
         "construction_equipment",
@@ -253,7 +222,6 @@ def test_registered_vector_object_renderers_emit_renderer_metadata() -> None:
     ]
     assert [item.object_record["visual_attributes"]["renderer_variant_id"] for item in rendered] == [
         "bench",
-        "suitcase",
         "slide",
         "brick_stack",
         "dump_truck",
@@ -262,7 +230,6 @@ def test_registered_vector_object_renderers_emit_renderer_metadata() -> None:
         "basket",
     ]
     assert {part["part_kind"] for part in rendered[0].parts} == {"leg"}
-    assert {part["part_kind"] for part in rendered[1].parts} == {"handle", "wheel"}
     for item in rendered:
         assert item.object_record["visual_attributes"]["renderer_style"] == "vector"
         assert item.object_record["parts"] == list(item.parts)
@@ -340,11 +307,6 @@ def test_migrated_scene_person_renderers_do_not_keep_local_duplicate_drawers() -
             "def _draw_seesaw(",
             "def _draw_slide(",
             "def _draw_swing(",
-        ),
-        "trace/tasks/illustrations/shared/transit_terminal_rendering.py": (
-            "def _draw_person(",
-            "def _draw_bench(",
-            "def _draw_luggage_item(",
         ),
         "trace/tasks/illustrations/construction_site/shared/rendering.py": (
             "_draw_worker",
@@ -510,33 +472,6 @@ def test_park_playground_scene_uses_shared_vector_records_for_people_and_decor()
     assert equipment_entities
     assert all("equipment_type" in entity["object_record"]["semantic_attributes"] for entity in equipment_entities)
     assert all(entity["object_record"]["visual_attributes"]["renderer_id"] == "park_equipment" for entity in equipment_entities)
-
-
-def test_transit_terminal_scene_uses_shared_vector_records_for_local_entities() -> None:
-    scene = render_transit_terminal_scene(
-        rng=random.Random(606),
-        person_specs=(
-            TransitPersonSpec("area_a", "target"),
-            TransitPersonSpec("area_b", "distractor", {"queue_member": True, "service_point_id": "ticket_counter"}),
-        ),
-        luggage_specs=(TransitLuggageSpec("area_a", TRANSIT_LUGGAGE_TYPES[0], "target"),),
-        render_scale=1,
-        show_service_points=True,
-    )
-
-    entities = transit_scene_entities(scene)
-    assert entities
-    for entity in entities:
-        _assert_vector_object_record(entity)
-    person_entities = [entity for entity in entities if entity["entity_type"] == "transit_person"]
-    assert person_entities
-    assert all(entity["object_record"]["visual_attributes"]["renderer_id"] == "transit_person" for entity in person_entities)
-    assert all(entity["object_record"]["parts"] for entity in person_entities)
-    luggage_entities = [entity for entity in entities if entity["entity_type"] == "transit_luggage"]
-    assert luggage_entities
-    assert all(entity["object_record"]["visual_attributes"]["renderer_id"] == "transit_luggage" for entity in luggage_entities)
-    assert any(entity["entity_type"] == "transit_boarding_area" for entity in entities)
-    assert any(entity["entity_type"] == "transit_service_point" for entity in entities)
 
 
 def test_construction_site_scene_uses_shared_vector_records_for_local_entities() -> None:

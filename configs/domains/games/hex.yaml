@@ -60,11 +60,11 @@ generation:
       - F
 rendering:
   shared:
-    canvas_width: 980
-    canvas_height: 900
-    panel_margin_px: 54
-    max_board_width_px: 820
-    max_board_height_px: 760
+    canvas_width: 760
+    canvas_height: 720
+    panel_margin_px: 42
+    max_board_width_px: 620
+    max_board_height_px: 580
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
     hex_border_width_px: 3
@@ -72,10 +72,10 @@ rendering:
     candidate_label_font_size_px: 30
     side_band_width_px: 8
     dynamic_canvas_size_enabled: true
-    canvas_min_width_px: 600
-    canvas_min_height_px: 560
-    canvas_side_padding_px: 110
-    canvas_vertical_padding_px: 110
+    canvas_min_width_px: 520
+    canvas_min_height_px: 500
+    canvas_side_padding_px: 45
+    canvas_vertical_padding_px: 45
 prompt:
   shared:
     bundle_id: games_hex_v1

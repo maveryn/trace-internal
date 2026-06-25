@@ -36,10 +36,10 @@ generation:
       black_piece_reaches_target_count_support: [0, 1, 2, 3, 4, 5, 6]
 rendering:
   shared:
-    canvas_width: 900
-    canvas_height: 900
-    panel_margin_px: 48
-    max_board_size_px: 700
+    canvas_width: 840
+    canvas_height: 840
+    panel_margin_px: 40
+    max_board_size_px: 640
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
     board_frame_width_px: 8
@@ -48,10 +48,10 @@ rendering:
     piece_bbox_fraction: 0.72
     marker_width_px: 5
     dynamic_canvas_size_enabled: true
-    canvas_min_width_px: 620
-    canvas_min_height_px: 620
-    canvas_side_padding_px: 150
-    canvas_vertical_padding_px: 150
+    canvas_min_width_px: 560
+    canvas_min_height_px: 560
+    canvas_side_padding_px: 80
+    canvas_vertical_padding_px: 80
 prompt:
   shared:
     bundle_id: games_circular_chess_v1

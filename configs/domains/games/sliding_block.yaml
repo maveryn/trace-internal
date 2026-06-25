@@ -35,12 +35,12 @@ generation:
       block_orientation_count_generation_attempts: 512
 rendering:
   shared:
-    canvas_width: 980
-    canvas_height: 900
-    board_size_px: 660
+    canvas_width: 820
+    canvas_height: 780
+    board_size_px: 560
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
-    panel_padding_px: 44
+    panel_padding_px: 30
     panel_corner_radius_px: 28
     block_corner_radius_px: 16
     board_border_width_px: 5

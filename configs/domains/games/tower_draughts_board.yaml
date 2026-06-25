@@ -53,10 +53,10 @@ generation:
     crowned_top_probability: 0.25
 rendering:
   shared:
-    canvas_width: 760
-    canvas_height: 740
-    panel_margin_px: 50
-    max_board_size_px: 520
+    canvas_width: 700
+    canvas_height: 680
+    panel_margin_px: 40
+    max_board_size_px: 500
     cell_size_min_px: 56
     cell_size_max_px: 80
     board_frame_width_px: 8
@@ -64,10 +64,10 @@ rendering:
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
     dynamic_canvas_size_enabled: true
-    canvas_min_width_px: 520
-    canvas_min_height_px: 500
-    canvas_side_padding_px: 136
-    canvas_vertical_padding_px: 136
+    canvas_min_width_px: 480
+    canvas_min_height_px: 460
+    canvas_side_padding_px: 84
+    canvas_vertical_padding_px: 84
 prompt:
   shared:
     bundle_id: games_tower_draughts_board_v1

@@ -25,10 +25,10 @@ generation:
     max_total_piece_count: 16
 rendering:
   shared:
-    canvas_width: 780
-    canvas_height: 760
-    panel_margin_px: 52
-    max_board_size_px: 560
+    canvas_width: 700
+    canvas_height: 680
+    panel_margin_px: 42
+    max_board_size_px: 500
     edge_width_px: 5
     point_radius_px: 13
     piece_radius_px: 23
@@ -36,10 +36,10 @@ rendering:
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
     dynamic_canvas_size_enabled: true
-    canvas_min_width_px: 560
-    canvas_min_height_px: 540
-    canvas_side_padding_px: 150
-    canvas_vertical_padding_px: 150
+    canvas_min_width_px: 500
+    canvas_min_height_px: 500
+    canvas_side_padding_px: 80
+    canvas_vertical_padding_px: 80
 prompt:
   shared:
     bundle_id: games_radial_hunt_board_v1

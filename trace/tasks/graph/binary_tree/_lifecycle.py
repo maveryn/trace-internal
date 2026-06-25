@@ -105,6 +105,7 @@ class BinaryTreeRelationPlan:
     default_branch_name: str
     relation_kind_by_branch: Mapping[str, str]
     annotation_roles_by_branch: Mapping[str, tuple[str, ...]]
+    relation_answer_scope_weights_by_branch: Mapping[str, Mapping[str, float]] | None = None
 
 
 @dataclass(frozen=True)
@@ -375,6 +376,42 @@ def _resolve_axis_value(
     )
     value = int(support[int(selection_index % len(support))])
     return int(value), uniform_probability_map(support)
+
+
+def _resolve_weighted_string_axis(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    owner_id: str,
+    axis_name: str,
+    weights: Mapping[str, float],
+) -> tuple[str, dict[str, float]]:
+    support = tuple(str(key) for key, value in weights.items() if float(value) > 0.0)
+    if not support:
+        return "", {}
+    explicit_value = params.get(str(axis_name))
+    if explicit_value is not None:
+        value = str(explicit_value)
+        if value not in support:
+            raise ValueError(f"{axis_name} is outside configured binary-tree support")
+        return value, {str(key): (1.0 if str(key) == value else 0.0) for key in support}
+    total_weight = sum(float(weights[str(key)]) for key in support)
+    threshold = (
+        resolve_selection_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{owner_id}:{axis_name}",
+        )
+        % 1_000_000
+    ) / 1_000_000.0 * float(total_weight)
+    cumulative = 0.0
+    selected = support[-1]
+    for key in support:
+        cumulative += float(weights[str(key)])
+        if threshold < cumulative:
+            selected = str(key)
+            break
+    return str(selected), {str(key): float(weights[str(key)]) / float(total_weight) for key in support}
 
 
 def run_binary_tree_count_plan(
@@ -710,6 +747,15 @@ def run_binary_tree_relation_plan(
     )
     relation_kind = str(plan.relation_kind_by_branch[str(branch_name)])
     annotation_roles = tuple(str(role) for role in plan.annotation_roles_by_branch[str(branch_name)])
+    answer_scope_weights_by_branch = plan.relation_answer_scope_weights_by_branch or {}
+    answer_scope_weights = answer_scope_weights_by_branch.get(str(branch_name), {})
+    relation_answer_scope, relation_answer_scope_probs = _resolve_weighted_string_axis(
+        instance_seed=int(instance_seed),
+        params=forced_params,
+        owner_id=str(plan.owner_id),
+        axis_name="relation_answer_scope",
+        weights=answer_scope_weights,
+    )
     frame = prepare_binary_tree_frame(
         instance_seed=int(instance_seed),
         forced_params=forced_params,
@@ -722,6 +768,7 @@ def run_binary_tree_relation_plan(
     sample, relation = sample_relation_tree(
         int(instance_seed),
         relation_kind=relation_kind,
+        relation_answer_scope=str(relation_answer_scope),
         node_count_min=int(group_default(gen_defaults, "node_count_min", defaults.node_count_min)),
         node_count_max=int(group_default(gen_defaults, "node_count_max", defaults.node_count_max)),
         max_depth=int(group_default(gen_defaults, "max_depth", defaults.max_depth)),
@@ -741,6 +788,19 @@ def run_binary_tree_relation_plan(
     annotation_keyed_points = keyed_points_for_roles(roles=annotation_roles, projection=annotation_projection)
     annotation_role_to_label = role_to_label_map(roles=annotation_roles, labels=relation.annotation_labels)
     annotation_roles_by_label = roles_by_label(annotation_role_to_label)
+    relation_answer_scope_fields = (
+        {"answer_scope": str(relation.answer_scope)}
+        if str(relation.answer_scope)
+        else {}
+    )
+    query_answer_scope_fields = (
+        {
+            "relation_answer_scope": str(relation_answer_scope),
+            "relation_answer_scope_probabilities": dict(relation_answer_scope_probs),
+        }
+        if str(relation_answer_scope)
+        else {}
+    )
     prompt_defaults_map = dict(prompt_defaults)
     prompt_query_labels = tuple(
         format_graph_prompt_label(str(label), label_variant=str(frame.visual_axes.label_variant))
@@ -784,6 +844,7 @@ def run_binary_tree_relation_plan(
             "answer_label": str(relation.answer_label),
             "answer_node_id": str(relation.answer_node_id),
             "annotation_role_to_label": dict(annotation_role_to_label),
+            **relation_answer_scope_fields,
         },
     )
     trace_payload = binary_tree_trace_payload(
@@ -794,6 +855,7 @@ def run_binary_tree_relation_plan(
         query_params={
             "relation_kind": str(relation_kind),
             "query_id_probabilities": dict(branch_probs),
+            **query_answer_scope_fields,
         },
         rendered=rendered,
         frame=frame,
@@ -807,6 +869,7 @@ def run_binary_tree_relation_plan(
             "annotation_roles": list(annotation_roles),
             "annotation_role_to_label": dict(annotation_role_to_label),
             "annotation_labels": list(relation.annotation_labels),
+            **relation_answer_scope_fields,
         },
         witness_symbolic={
             "type": "binary_tree_node_label_relation",
@@ -815,6 +878,7 @@ def run_binary_tree_relation_plan(
             "query_labels": list(relation.query_labels),
             "answer_label": str(relation.answer_label),
             "annotation_role_to_label": dict(annotation_role_to_label),
+            **relation_answer_scope_fields,
         },
         projected_annotation={
             "type": "keyed_point_map",

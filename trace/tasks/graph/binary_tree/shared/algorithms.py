@@ -117,6 +117,7 @@ def choose_relation(
     *,
     sample: BinaryTreeSample,
     relation_kind: str,
+    answer_scope: str | None = None,
 ) -> RelationSelection:
     """Choose one satisfiable relation instance from a sampled tree."""
 
@@ -184,7 +185,7 @@ def choose_relation(
         )
 
     if relation == "lowest_common_ancestor":
-        candidates_lca = []
+        candidates_lca_by_scope = {"root": [], "non_root": []}
         nodes = list(sample.nodes)
         for index_a, node_a in enumerate(nodes):
             for node_b in nodes[index_a + 1 :]:
@@ -193,16 +194,29 @@ def choose_relation(
                     continue
                 if len(str(node_a.node_id)) <= len(lca_id) or len(str(node_b.node_id)) <= len(lca_id):
                     continue
-                candidates_lca.append((node_a, node_b, node_by_id[str(lca_id)]))
+                scope = "root" if str(lca_id) == "" else "non_root"
+                candidates_lca_by_scope[str(scope)].append((node_a, node_b, node_by_id[str(lca_id)]))
+        requested_scope = str(answer_scope or "")
+        if requested_scope:
+            if requested_scope not in candidates_lca_by_scope:
+                raise ValueError(f"unsupported lowest-common-ancestor answer scope: {answer_scope}")
+            candidates_lca = list(candidates_lca_by_scope[str(requested_scope)])
+        else:
+            candidates_lca = [
+                *candidates_lca_by_scope["root"],
+                *candidates_lca_by_scope["non_root"],
+            ]
         if not candidates_lca:
             raise ValueError("no lowest-common-ancestor candidates")
         node_a, node_b, answer = rng.choice(candidates_lca)
+        selected_scope = "root" if str(answer.node_id) == "" else "non_root"
         return RelationSelection(
             query_labels=(str(node_a.label), str(node_b.label)),
             answer_label=str(answer.label),
             annotation_labels=(str(node_a.label), str(node_b.label), str(answer.label)),
             query_node_ids=(str(node_a.node_id), str(node_b.node_id)),
             answer_node_id=str(answer.node_id),
+            answer_scope=str(selected_scope),
         )
 
     raise ValueError(f"unsupported binary-tree relation kind: {relation_kind}")

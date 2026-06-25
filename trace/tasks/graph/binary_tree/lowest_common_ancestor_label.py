@@ -37,6 +37,7 @@ def _build_objective_plan() -> BinaryTreeRelationPlan:
         default_branch_name=QUERY_ID,
         relation_kind_by_branch={QUERY_ID: "lowest_common_ancestor"},
         annotation_roles_by_branch={QUERY_ID: _ANNOTATION_ROLES},
+        relation_answer_scope_weights_by_branch={QUERY_ID: {"non_root": 0.75, "root": 0.25}},
     )
 
 

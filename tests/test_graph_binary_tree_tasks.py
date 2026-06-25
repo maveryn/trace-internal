@@ -186,6 +186,26 @@ def test_graph_relation_binary_tree_node_label_contracts() -> None:
         assert "[x,y]" in out.prompt_variants["answer_and_annotation"]
 
 
+def test_graph_binary_tree_lca_answer_scope_can_be_forced() -> None:
+    task = GraphRelationBinaryTreeLowestCommonAncestorLabelTask()
+    for scope, expected_answer_node_id in (("non_root", "L"), ("root", "")):
+        out = task.generate(
+            2000,
+            params={
+                "label_variant": "letters",
+                "scene_variant": "boxed_tree",
+                "relation_answer_scope": scope,
+            },
+            max_attempts=500,
+        )
+        execution = out.trace_payload["execution_trace"]
+        params = out.trace_payload["query_spec"]["params"]
+        assert execution["answer_scope"] == scope
+        assert execution["answer_node_id"] == expected_answer_node_id
+        assert params["relation_answer_scope"] == scope
+        assert params["relation_answer_scope_probabilities"][scope] == 1.0
+
+
 def test_graph_relation_bst_path_operation_label_contracts() -> None:
     task = GraphRelationBstPathOperationLabelTask()
     query_ids = (

@@ -13,6 +13,7 @@
 ## Query IDs
 1. `lowest_common_ancestor_label`
 2. Query ids are internal replay metadata; public sampling is at the task-id level.
+3. The hidden generation axis `relation_answer_scope` targets non-root LCAs 75% of the time and root LCAs 25% of the time; it is recorded in trace metadata and is not a public query branch.
 
 ## Answer And Annotation
 1. Answer type: `string`.

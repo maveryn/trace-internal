@@ -108,6 +108,7 @@ class RelationSelection:
     annotation_labels: Tuple[str, ...]
     query_node_ids: Tuple[str, ...]
     answer_node_id: str
+    answer_scope: str = ""
 
 
 @dataclass(frozen=True)

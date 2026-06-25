@@ -510,6 +510,7 @@ def sample_relation_tree(
     instance_seed: int,
     *,
     relation_kind: str,
+    relation_answer_scope: str = "",
     node_count_min: int,
     node_count_max: int,
     max_depth: int,
@@ -536,6 +537,7 @@ def sample_relation_tree(
                 rng,
                 sample=sample,
                 relation_kind=str(relation_kind),
+                answer_scope=str(relation_answer_scope),
             )
             return sample, relation
         except Exception as exc:

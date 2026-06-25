@@ -16,6 +16,8 @@ from trace.tasks.games.rule_override_board.piece_result_count import (
     PIECE_WIN_QUERY_ID,
     GamesRuleOverridePieceResultCountTask,
 )
+from trace.tasks.games.rule_override_board.shared.rendering import theme
+from trace.tasks.games.rule_override_board.shared.state import SUPPORTED_BOARD_STYLES
 from tests.helpers import read_jsonl
 
 
@@ -90,6 +92,12 @@ def test_games_rule_override_answer_range_can_be_empty_or_full() -> None:
     assert empty.annotation_gt.value == []
     assert int(full.answer_gt.value) == 6
     assert len(full.annotation_gt.value) == 6
+
+
+def test_games_rule_override_line_marks_share_xo_color() -> None:
+    for style_name in SUPPORTED_BOARD_STYLES:
+        colors = theme(str(style_name))
+        assert colors["x"] == colors["o"]
 
 
 def test_games_rule_override_board_build_smoke(tmp_path: Path) -> None:

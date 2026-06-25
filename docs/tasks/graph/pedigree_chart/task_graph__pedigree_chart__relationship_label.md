@@ -15,7 +15,7 @@
 ## Answer And Annotation
 1. Answer type: `option_letter`.
 2. Annotation schema: `bbox_set`.
-3. Annotation boxes mark the queried people plus any intermediate/shared person symbols needed to verify the relationship.
+3. Annotation boxes mark the queried people plus any intermediate/shared person symbols in the family connection.
 4. Role-to-person ids are recorded in trace metadata.
 5. The selected option is the answer, not annotation.
 

@@ -28,15 +28,18 @@ from .shared.sampling import (
     PREDICATE_COLOR,
     PREDICATE_COLOR_ARITHMETIC,
     PREDICATE_COLOR_TYPE,
+    PREDICATE_COLOR_TRANSFER,
     PREDICATE_ORDERED_COLOR_PAIR,
     PREDICATE_ORDERED_OBJECT_PAIR,
     PREDICATE_OBJECT_TYPE,
     PREDICATE_OBJECT_TYPE_ARITHMETIC,
+    PREDICATE_OBJECT_TYPE_TRANSFER,
     ResolvedConveyorAxes,
     build_belt_total_count_dataset,
     build_lane_count_arithmetic_dataset,
     build_ordered_pair_count_dataset,
     build_scoped_belt_count_dataset,
+    build_transfer_count_dataset,
     resolve_conveyor_axes,
 )
 from .shared.state import SCENE_ID
@@ -185,19 +188,38 @@ def _build_trace_payload(
         "question_format": str(selected_branch),
         "solver_trace": dict(solver_trace),
     }
-    if "arithmetic_operation" in dataset:
+    if "target_object_ids_by_annotation_key" in dataset:
         target_ids_by_key = {
             str(key): [str(object_id) for object_id in object_ids]
             for key, object_ids in dict(dataset.get("target_object_ids_by_annotation_key", {})).items()
         }
         execution_trace.update(
             {
-                "arithmetic_operation": str(dataset["arithmetic_operation"]),
                 "scope_keys": [str(key) for key in dataset.get("scope_keys", [])],
                 "scope_labels": dict(dataset.get("scope_labels", {})),
                 "annotation_key_by_scope": dict(dataset.get("annotation_key_by_scope", {})),
                 "operand_counts_by_scope": dict(dataset.get("operand_counts_by_scope", {})),
                 "target_object_ids_by_annotation_key": dict(target_ids_by_key),
+            }
+        )
+    if "arithmetic_operation" in dataset:
+        execution_trace.update({"arithmetic_operation": str(dataset["arithmetic_operation"])})
+    if "transfer_operation" in dataset:
+        execution_trace.update(
+            {
+                "transfer_operation": str(dataset["transfer_operation"]),
+                "source_lane_key": str(dataset.get("source_lane_key", "")),
+                "source_lane_label": str(dataset.get("source_lane_label", "")),
+                "source_belt_key": str(dataset.get("source_belt_key", "")),
+                "source_belt_label": str(dataset.get("source_belt_label", "")),
+                "destination_lane_key": str(dataset.get("destination_lane_key", "")),
+                "destination_lane_label": str(dataset.get("destination_lane_label", "")),
+                "destination_belt_key": str(dataset.get("destination_belt_key", "")),
+                "destination_belt_label": str(dataset.get("destination_belt_label", "")),
+                "moved_count": int(dataset.get("moved_count", 0)),
+                "destination_existing_count": int(dataset.get("destination_existing_count", 0)),
+                "source_moved_object_ids": [str(object_id) for object_id in dataset.get("source_moved_object_ids", [])],
+                "destination_existing_object_ids": [str(object_id) for object_id in dataset.get("destination_existing_object_ids", [])],
             }
         )
     witness_symbolic = {
@@ -219,6 +241,23 @@ def _build_trace_payload(
             },
             "operand_counts_by_scope": dict(dataset.get("operand_counts_by_scope", {})),
             "answer_value": int(dataset["answer_value"]),
+        }
+    if "transfer_operation" in dataset:
+        witness_symbolic = {
+            "type": "conveyor_transfer_count_object_sets",
+            "operation": str(dataset["transfer_operation"]),
+            "source_moved_object_ids": [str(object_id) for object_id in dataset.get("source_moved_object_ids", [])],
+            "destination_existing_object_ids": [str(object_id) for object_id in dataset.get("destination_existing_object_ids", [])],
+            "operand_counts_by_scope": dict(dataset.get("operand_counts_by_scope", {})),
+            "answer_value": int(dataset["answer_value"]),
+            "source": {
+                "lane_key": str(dataset.get("source_lane_key", "")),
+                "lane_label": str(dataset.get("source_lane_label", "")),
+            },
+            "destination": {
+                "lane_key": str(dataset.get("destination_lane_key", "")),
+                "lane_label": str(dataset.get("destination_lane_label", "")),
+            },
         }
     if target_pair_ids:
         witness_symbolic = {
@@ -327,7 +366,156 @@ def _trace_params(
                 "operand_counts_by_scope": dict(dataset.get("operand_counts_by_scope", {})),
             }
         )
+    if "transfer_operation" in dataset:
+        params.update(
+            {
+                "transfer_operation": str(dataset["transfer_operation"]),
+                "scope_keys": [str(key) for key in dataset.get("scope_keys", [])],
+                "annotation_key_by_scope": dict(dataset.get("annotation_key_by_scope", {})),
+                "operand_counts_by_scope": dict(dataset.get("operand_counts_by_scope", {})),
+                "source_lane_key": str(dataset.get("source_lane_key", "")),
+                "source_lane_label": str(dataset.get("source_lane_label", "")),
+                "destination_lane_key": str(dataset.get("destination_lane_key", "")),
+                "destination_lane_label": str(dataset.get("destination_lane_label", "")),
+                "moved_count": int(dataset.get("moved_count", 0)),
+                "destination_existing_count": int(dataset.get("destination_existing_count", 0)),
+            }
+        )
     return params
+
+
+def run_conveyor_transfer_count_lifecycle(
+    *,
+    public_name: str,
+    domain_name: str,
+    prompt_query_key_by_branch: Mapping[str, str],
+    predicate_kind_by_branch: Mapping[str, str],
+    supported_branches: Sequence[str],
+    default_branch: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    max_attempts: int,
+) -> TaskOutput:
+    """Run the counterfactual source-to-destination transfer count lifecycle."""
+
+    from trace.core.scene_config import get_scene_defaults
+    from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
+
+    scene_defaults = get_scene_defaults(str(domain_name), SCENE_ID)
+    gen_defaults, render_defaults, _prompt_defaults = split_scene_generation_rendering_prompt_defaults(
+        scene_defaults if isinstance(scene_defaults, Mapping) else {},
+        task_id=str(public_name),
+    )
+    selected_branch, branch_probabilities, clean_params = select_task_query_id(
+        instance_seed=int(instance_seed),
+        params=params,
+        supported_query_ids=tuple(str(branch) for branch in supported_branches),
+        default_query_id=str(default_branch),
+        task_id=str(public_name),
+        namespace=f"{public_name}.query",
+    )
+    axes = resolve_conveyor_axes(
+        params=clean_params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=str(public_name),
+    )
+    prompt_query_key = str(prompt_query_key_by_branch[str(selected_branch)])
+    predicate_kind = str(predicate_kind_by_branch[str(selected_branch)])
+    if predicate_kind not in {PREDICATE_OBJECT_TYPE_TRANSFER, PREDICATE_COLOR_TRANSFER}:
+        raise ValueError(f"unsupported straight conveyor transfer predicate: {predicate_kind}")
+    min_bbox_side_px = float(clean_params.get("min_rendered_bbox_side_px", gen_defaults.get("min_rendered_bbox_side_px", 24.0)))
+    last_error: Exception | None = None
+    for attempt_index in range(max(1, int(max_attempts))):
+        attempt_seed = _attempt_seed(int(instance_seed), public_name=str(public_name), attempt_index=int(attempt_index))
+        try:
+            render_params = _resolve_render_params(
+                clean_params,
+                render_defaults=render_defaults,
+                instance_seed=int(attempt_seed),
+                namespace=f"{public_name}.canvas",
+            )
+            dataset = build_transfer_count_dataset(
+                instance_seed=int(attempt_seed),
+                params=clean_params,
+                gen_defaults=gen_defaults,
+                render_params=render_params,
+                axes=axes,
+                predicate_kind=str(predicate_kind),
+                namespace=str(public_name),
+            )
+            target_ids_by_key = {
+                str(key): tuple(str(object_id) for object_id in object_ids)
+                for key, object_ids in dict(dataset["target_object_ids_by_annotation_key"]).items()
+            }
+            plan = ConveyorTaskPlan(
+                dataset=dict(dataset),
+                answer_gt=TypedValue(type="integer", value=int(dataset["answer_value"])),
+                target_object_ids=tuple(str(object_id) for object_id in dataset["target_object_ids"]),
+                objective_params={},
+                target_object_ids_by_annotation_key=dict(target_ids_by_key),
+            )
+            background, background_meta = make_background_canvas(
+                canvas_width=int(render_params.canvas_width),
+                canvas_height=int(render_params.canvas_height),
+                instance_seed=int(attempt_seed),
+                params=clean_params,
+                default_config=_BACKGROUND_DEFAULTS,
+            )
+            rendered = render_conveyor(background, dataset=plan.dataset, render_params=render_params)
+            if not _rendered_bboxes_are_readable(rendered, min_side_px=float(min_bbox_side_px)):
+                raise ValueError("rendered conveyor object boxes failed readability constraints")
+            image, post_noise_meta = apply_post_image_noise(
+                rendered.image,
+                instance_seed=int(attempt_seed),
+                params=clean_params,
+                default_config=_NOISE_DEFAULTS,
+            )
+            annotation_artifacts = bbox_set_map_annotation_for_object_groups(rendered, target_ids_by_key)
+            _prompt_defaults, prompt_artifacts = build_prompt_artifacts(
+                prompt_query_key=str(prompt_query_key),
+                dynamic_slot_values=dynamic_slots_for_conveyor(plan.dataset),
+                instance_seed=int(attempt_seed),
+            )
+            query_spec = build_prompt_query_spec(
+                prompt_artifacts=prompt_artifacts,
+                query_id=str(selected_branch),
+                params=_trace_params(
+                    axes=axes,
+                    dataset=plan.dataset,
+                    branch_probabilities=branch_probabilities,
+                ),
+            )
+            trace_payload = _build_trace_payload(
+                public_name=str(public_name),
+                selected_branch=str(selected_branch),
+                axes=axes,
+                plan=plan,
+                rendered=rendered,
+                annotation_artifacts=annotation_artifacts,
+                prompt_artifacts=prompt_artifacts,
+                query_spec=query_spec,
+                render_params=render_params,
+                image=image,
+                background_meta=background_meta,
+                post_noise_meta=post_noise_meta,
+            )
+            return TaskOutput(
+                prompt=str(prompt_artifacts.prompt),
+                prompt_variants=dict(prompt_artifacts.prompt_variants),
+                answer_gt=plan.answer_gt,
+                annotation_gt=annotation_artifacts.annotation_gt,
+                image=image,
+                image_id="img0",
+                trace_payload=trace_payload,
+                task_versions=default_task_versions(),
+                scene_id=SCENE_ID,
+                query_id=str(selected_branch),
+            )
+        except Exception as exc:
+            last_error = exc
+            continue
+    raise RuntimeError(f"{public_name} failed to generate a valid straight conveyor transfer scene after {max_attempts} attempts: {last_error}")
 
 
 def run_conveyor_ordered_pair_count_lifecycle(
@@ -745,4 +933,5 @@ __all__ = [
     "run_conveyor_count_arithmetic_lifecycle",
     "run_conveyor_lifecycle",
     "run_conveyor_ordered_pair_count_lifecycle",
+    "run_conveyor_transfer_count_lifecycle",
 ]

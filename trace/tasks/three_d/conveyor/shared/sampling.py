@@ -60,8 +60,11 @@ PREDICATE_OBJECT_TYPE_ARITHMETIC = "object_type_count_arithmetic"
 PREDICATE_COLOR_ARITHMETIC = "color_count_arithmetic"
 PREDICATE_ORDERED_OBJECT_PAIR = "ordered_object_pair"
 PREDICATE_ORDERED_COLOR_PAIR = "ordered_color_pair"
+PREDICATE_OBJECT_TYPE_TRANSFER = "object_type_transfer"
+PREDICATE_COLOR_TRANSFER = "color_transfer"
 ARITHMETIC_SUM = "sum"
 ARITHMETIC_DIFFERENCE = "difference"
+TRANSFER_OPERATION = "move_to_destination"
 LAYOUT_HORIZONTAL = "horizontal_lanes"
 LAYOUT_VERTICAL = "vertical_lanes"
 
@@ -257,6 +260,66 @@ def _resolve_ordered_pair_count(
     return int(count), dict(probabilities)
 
 
+def _resolve_transfer_answer_and_counts(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    rng: Any,
+    instance_seed: int,
+    namespace: str,
+    destination_cap: int,
+) -> tuple[int, int, int, Dict[str, float], Dict[str, float]]:
+    """Resolve final count, moved count, and original destination count."""
+
+    answer_value, answer_probabilities = resolve_count_for_namespace(
+        params,
+        namespace=f"{namespace}.answer_value",
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        key="answer_value",
+        default_min=int(params.get("answer_value_min", group_default(gen_defaults, "answer_value_min", 2))),
+        default_max=int(params.get("answer_value_max", group_default(gen_defaults, "answer_value_max", 12))),
+        lower=2,
+        upper=12,
+    )
+    moved_explicit = params.get("moved_count")
+    destination_explicit = params.get("destination_existing_count")
+    if moved_explicit is not None or destination_explicit is not None:
+        if moved_explicit is None or destination_explicit is None:
+            raise ValueError("moved_count and destination_existing_count must be provided together")
+        moved_count = int(moved_explicit)
+        destination_existing_count = int(destination_explicit)
+        if not (1 <= moved_count <= 4):
+            raise ValueError("moved_count must be in 1..4")
+        if not (1 <= destination_existing_count <= int(destination_cap)):
+            raise ValueError("destination_existing_count exceeds lane cap")
+        if int(moved_count + destination_existing_count) != int(answer_value):
+            raise ValueError("explicit transfer counts do not match answer_value")
+        return (
+            int(answer_value),
+            int(moved_count),
+            int(destination_existing_count),
+            dict(answer_probabilities),
+            {f"{moved_count},{destination_existing_count}": 1.0},
+        )
+
+    pairs = [
+        (moved_count, int(answer_value) - moved_count)
+        for moved_count in range(1, 5)
+        if 1 <= int(answer_value) - moved_count <= int(destination_cap)
+    ]
+    if not pairs:
+        raise ValueError(f"no conveyor transfer operands for answer {answer_value}")
+    moved_count, destination_existing_count = pairs[int(rng.randrange(len(pairs)))]
+    return (
+        int(answer_value),
+        int(moved_count),
+        int(destination_existing_count),
+        dict(answer_probabilities),
+        {f"{moved_count},{destination_existing_count}": 1.0},
+    )
+
+
 def _resolve_arithmetic_operand_counts(
     *,
     params: Mapping[str, Any],
@@ -334,6 +397,37 @@ def _resolve_arithmetic_lanes(
     pairs = [(support[i], support[j]) for i in range(len(support)) for j in range(i + 1, len(support))]
     selected = pairs[int(rng.randrange(len(pairs)))]
     return (str(selected[0]), str(selected[1])), {str(key): (1.0 if str(key) in set(selected) else 0.0) for key in support}
+
+
+def _resolve_transfer_lanes(
+    *,
+    params: Mapping[str, Any],
+    rng: Any,
+    lane_keys: Sequence[str],
+) -> tuple[str, str, Dict[str, float], Dict[str, float]]:
+    support = tuple(str(key) for key in lane_keys)
+    source_explicit = params.get("source_lane_key", params.get("source_belt_key"))
+    destination_explicit = params.get("destination_lane_key", params.get("destination_belt_key"))
+    if source_explicit is not None or destination_explicit is not None:
+        if source_explicit is None or destination_explicit is None:
+            raise ValueError("source_lane_key and destination_lane_key must be provided together")
+        source = str(source_explicit)
+        destination = str(destination_explicit)
+        if source == destination or source not in set(support) or destination not in set(support):
+            raise ValueError("conveyor transfer source and destination must be distinct visible lane keys")
+        return (
+            source,
+            destination,
+            _uniform_string_probability_map(support, selected=source),
+            _uniform_string_probability_map(support, selected=destination),
+        )
+    source, destination = rng.sample(list(support), 2)
+    return (
+        str(source),
+        str(destination),
+        _uniform_string_probability_map(support, selected=str(source)),
+        _uniform_string_probability_map(support, selected=str(destination)),
+    )
 
 
 def _sample_scoped_lane_counts(
@@ -1202,6 +1296,259 @@ def build_lane_count_arithmetic_dataset(
     }
 
 
+def build_transfer_count_dataset(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    render_params: Any,
+    axes: ResolvedConveyorAxes,
+    predicate_kind: str,
+    namespace: str,
+) -> dict[str, Any]:
+    """Build a three-lane conveyor dataset for a counterfactual transfer count."""
+
+    rng = spawn_rng(int(instance_seed), f"{namespace}.dataset")
+    layout_orientation, layout_orientation_probabilities = _resolve_layout_orientation(
+        params=params,
+        rng=rng,
+        render_params=render_params,
+    )
+    lane_keys = _lane_keys_for_orientation(str(layout_orientation))
+    source_lane_key, destination_lane_key, source_lane_probabilities, destination_lane_probabilities = _resolve_transfer_lanes(
+        params=params,
+        rng=rng,
+        lane_keys=lane_keys,
+    )
+    answer_value, moved_count, destination_existing_count, answer_probabilities, operand_probabilities = _resolve_transfer_answer_and_counts(
+        params=params,
+        gen_defaults=gen_defaults,
+        rng=rng,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+        destination_cap=8,
+    )
+    lane_counts: Dict[str, int] = {}
+    for lane_key in lane_keys:
+        if str(lane_key) == str(source_lane_key):
+            min_count = max(int(moved_count), min(8, int(moved_count) + 1))
+            lane_counts[str(lane_key)] = int(rng.randrange(int(min_count), 9))
+        elif str(lane_key) == str(destination_lane_key):
+            lane_counts[str(lane_key)] = int(destination_existing_count)
+        else:
+            lane_counts[str(lane_key)] = int(rng.randrange(2, 9))
+
+    dimension_scale = float(params.get("object_dimension_scale", group_default(gen_defaults, "object_dimension_scale", 0.74)))
+    object_specs: List[Dict[str, Any]] = []
+    source_moved_ids: list[str] = []
+    destination_existing_ids: list[str] = []
+
+    if str(predicate_kind) == PREDICATE_COLOR_TRANSFER:
+        target_shape, target_shape_probabilities = _resolve_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        target_color_name, target_color_probabilities = _resolve_target_color(params=params, rng=rng)
+        color_names = _sample_readout_palette(rng, target_color=str(target_color_name), size=5)
+        wrong_colors = [str(color) for color in color_names if str(color) != str(target_color_name)]
+        distractor_shapes = list(compatible_distractor_pool(str(target_shape), support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES))
+    elif str(predicate_kind) == PREDICATE_OBJECT_TYPE_TRANSFER:
+        target_shape, target_shape_probabilities = _resolve_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        target_color_name = ""
+        target_color_probabilities = {}
+        color_names = tuple(sample_visual_color_names(rng, palette_size=4))
+        wrong_colors = list(color_names)
+        distractor_shapes = list(compatible_distractor_pool(str(target_shape), support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES))
+    else:
+        raise ValueError(f"unsupported straight conveyor transfer predicate: {predicate_kind}")
+    if not wrong_colors or not distractor_shapes:
+        raise ValueError("conveyor transfer task needs non-target distractors")
+
+    for lane_key in lane_keys:
+        slots = _slot_positions_for_lane(
+            rng=rng,
+            layout_orientation=str(layout_orientation),
+            lane_key=str(lane_key),
+            count=int(lane_counts[str(lane_key)]),
+        )
+        for index, slot in enumerate(slots):
+            object_id = f"obj_{len(object_specs):03d}"
+            if str(lane_key) == str(source_lane_key) and int(index) < int(moved_count):
+                if str(predicate_kind) == PREDICATE_COLOR_TRANSFER:
+                    shape_type = str(target_shape if index % 2 == 0 else distractor_shapes[index % len(distractor_shapes)])
+                    color_name = str(target_color_name)
+                else:
+                    shape_type = str(target_shape)
+                    color_name = str(color_names[index % len(color_names)])
+                matches_query = True
+                count_role = "source_moved_object"
+                source_moved_ids.append(str(object_id))
+            elif str(lane_key) == str(source_lane_key):
+                if str(predicate_kind) == PREDICATE_COLOR_TRANSFER:
+                    shape_type = str(distractor_shapes[index % len(distractor_shapes)])
+                    color_name = str(wrong_colors[index % len(wrong_colors)])
+                else:
+                    shape_type = str(distractor_shapes[index % len(distractor_shapes)])
+                    color_name = str(color_names[index % len(color_names)])
+                matches_query = False
+                count_role = "source_non_moved_distractor"
+            elif str(lane_key) == str(destination_lane_key):
+                if str(predicate_kind) == PREDICATE_COLOR_TRANSFER:
+                    shape_type = str(target_shape if index % 3 == 0 else distractor_shapes[index % len(distractor_shapes)])
+                    color_name = str(color_names[index % len(color_names)])
+                else:
+                    shape_type = str(target_shape if index % 3 == 0 else distractor_shapes[index % len(distractor_shapes)])
+                    color_name = str(color_names[index % len(color_names)])
+                matches_query = True
+                count_role = "destination_existing_object"
+                destination_existing_ids.append(str(object_id))
+            else:
+                if str(predicate_kind) == PREDICATE_COLOR_TRANSFER and index % 3 == 0:
+                    shape_type = str(target_shape)
+                    color_name = str(target_color_name)
+                elif str(predicate_kind) == PREDICATE_OBJECT_TYPE_TRANSFER and index % 3 == 0:
+                    shape_type = str(target_shape)
+                    color_name = str(color_names[index % len(color_names)])
+                else:
+                    shape_type = str(distractor_shapes[index % len(distractor_shapes)])
+                    color_name = str(color_names[index % len(color_names)])
+                matches_query = False
+                count_role = "outside_scope_distractor"
+            object_specs.append(
+                _make_object_spec(
+                    rng=rng,
+                    object_id=str(object_id),
+                    shape_type=str(shape_type),
+                    color_name=str(color_name),
+                    lane_key=str(lane_key),
+                    layout_orientation=str(layout_orientation),
+                    slot=slot,
+                    matches_query=bool(matches_query),
+                    count_role=str(count_role),
+                    dimension_scale=float(dimension_scale),
+                )
+            )
+
+    camera, frame, camera_meta, frame_meta = _finalize_camera_and_projection(
+        rng=rng,
+        render_params=render_params,
+        layout_orientation=str(layout_orientation),
+        object_specs=object_specs,
+    )
+    finalized_specs = _screen_finalize_specs(object_specs=object_specs, camera=camera, frame=frame)
+    shape_counts = Counter(str(spec["shape_type"]) for spec in finalized_specs)
+    color_counts = Counter(str(spec["color_name"]) for spec in finalized_specs)
+    lane_counts_final = Counter(str(spec["lane_key"]) for spec in finalized_specs)
+    annotation_key_by_scope = {
+        "source_moved": "source_moved_objects",
+        "destination_existing": "destination_existing_objects",
+    }
+    target_object_ids_by_annotation_key = {
+        "source_moved_objects": list(source_moved_ids),
+        "destination_existing_objects": list(destination_existing_ids),
+    }
+    target_object_ids = [*list(source_moved_ids), *list(destination_existing_ids)]
+    return {
+        "scene_id": SCENE_ID,
+        "scene_variant": str(axes.scene_variant),
+        "layout_family": "straight_parallel_conveyors",
+        "layout_orientation": str(layout_orientation),
+        "layout_orientation_probabilities": dict(layout_orientation_probabilities),
+        "predicate_kind": str(predicate_kind),
+        "transfer_operation": TRANSFER_OPERATION,
+        "lane_records": _lane_records(str(layout_orientation)),
+        "scope_keys": [str(source_lane_key), str(destination_lane_key)],
+        "scope_labels": {
+            str(source_lane_key): str(LANE_LABELS[str(source_lane_key)]),
+            str(destination_lane_key): str(LANE_LABELS[str(destination_lane_key)]),
+        },
+        "source_lane_key": str(source_lane_key),
+        "source_lane_label": str(LANE_LABELS[str(source_lane_key)]),
+        "destination_lane_key": str(destination_lane_key),
+        "destination_lane_label": str(LANE_LABELS[str(destination_lane_key)]),
+        "source_belt_key": str(source_lane_key),
+        "source_belt_label": str(LANE_LABELS[str(source_lane_key)]),
+        "destination_belt_key": str(destination_lane_key),
+        "destination_belt_label": str(LANE_LABELS[str(destination_lane_key)]),
+        "annotation_key_by_scope": dict(annotation_key_by_scope),
+        "target_object_ids_by_annotation_key": dict(target_object_ids_by_annotation_key),
+        "operand_counts_by_scope": {
+            "source_moved_objects": int(moved_count),
+            "destination_existing_objects": int(destination_existing_count),
+        },
+        "operand_count_probabilities": dict(operand_probabilities),
+        "target_lane_key": str(destination_lane_key),
+        "target_lane_label": str(LANE_LABELS[str(destination_lane_key)]),
+        "target_belt_key": str(destination_lane_key),
+        "target_belt_label": str(LANE_LABELS[str(destination_lane_key)]),
+        "target_shape_type": str(target_shape),
+        "target_object_name": public_object_name(str(target_shape)),
+        "target_object_plural": public_object_plural(str(target_shape)),
+        "target_color_name": str(target_color_name),
+        "target_color_label": semantic_color_label(str(target_color_name)) if str(target_color_name) else "",
+        "answer_value": int(answer_value),
+        "target_count": int(answer_value),
+        "moved_count": int(moved_count),
+        "destination_existing_count": int(destination_existing_count),
+        "target_object_ids": [str(object_id) for object_id in target_object_ids],
+        "source_moved_object_ids": list(source_moved_ids),
+        "destination_existing_object_ids": list(destination_existing_ids),
+        "target_lane_object_ids": [
+            str(spec["object_id"])
+            for spec in finalized_specs
+            if str(spec["lane_key"]) == str(destination_lane_key)
+        ],
+        "target_belt_object_ids": [
+            str(spec["object_id"])
+            for spec in finalized_specs
+            if str(spec["lane_key"]) == str(destination_lane_key)
+        ],
+        "object_count": int(len(finalized_specs)),
+        "object_specs": [dict(spec) for spec in finalized_specs],
+        "shape_counts": {str(key): int(value) for key, value in sorted(shape_counts.items())},
+        "color_counts": {str(key): int(value) for key, value in sorted(color_counts.items())},
+        "lane_counts": {str(key): int(value) for key, value in sorted(lane_counts_final.items())},
+        "belt_counts": {str(key): int(value) for key, value in sorted(lane_counts_final.items())},
+        "target_shape_type_probabilities": dict(target_shape_probabilities),
+        "target_color_name_probabilities": dict(target_color_probabilities),
+        "target_count_probabilities": dict(answer_probabilities),
+        "lane_count_probabilities": {str(lane_key): {str(count): 1.0} for lane_key, count in lane_counts.items()},
+        "target_lane_key_probabilities": dict(destination_lane_probabilities),
+        "target_belt_key_probabilities": dict(destination_lane_probabilities),
+        "target_belt_probabilities": dict(destination_lane_probabilities),
+        "source_lane_key_probabilities": dict(source_lane_probabilities),
+        "source_belt_key_probabilities": dict(source_lane_probabilities),
+        "semantic_color_palette": {str(key): list(value) for key, value in sorted(SEMANTIC_COLOR_RGB.items())},
+        "camera": dict(camera_meta),
+        "projection_frame": dict(frame_meta),
+        "solver_trace": {
+            "count_predicate": str(predicate_kind),
+            "operation": TRANSFER_OPERATION,
+            "source": {
+                "lane_key": str(source_lane_key),
+                "lane_label": str(LANE_LABELS[str(source_lane_key)]),
+            },
+            "destination": {
+                "lane_key": str(destination_lane_key),
+                "lane_label": str(LANE_LABELS[str(destination_lane_key)]),
+            },
+            "target_shape_type": str(target_shape),
+            "target_color_name": str(target_color_name),
+            "moved_count": int(moved_count),
+            "destination_existing_count": int(destination_existing_count),
+            "answer_value": int(answer_value),
+            "target_object_ids_by_annotation_key": dict(target_object_ids_by_annotation_key),
+            "target_object_ids": [str(object_id) for object_id in target_object_ids],
+            "unique_integer_answer": True,
+        },
+    }
+
+
 def build_ordered_pair_count_dataset(
     *,
     instance_seed: int,
@@ -1452,14 +1799,18 @@ __all__ = [
     "PREDICATE_COLOR",
     "PREDICATE_COLOR_ARITHMETIC",
     "PREDICATE_COLOR_TYPE",
+    "PREDICATE_COLOR_TRANSFER",
     "PREDICATE_ORDERED_COLOR_PAIR",
     "PREDICATE_ORDERED_OBJECT_PAIR",
     "PREDICATE_OBJECT_TYPE",
     "PREDICATE_OBJECT_TYPE_ARITHMETIC",
+    "PREDICATE_OBJECT_TYPE_TRANSFER",
     "ResolvedConveyorAxes",
+    "TRANSFER_OPERATION",
     "build_belt_total_count_dataset",
     "build_lane_count_arithmetic_dataset",
     "build_ordered_pair_count_dataset",
     "build_scoped_belt_count_dataset",
+    "build_transfer_count_dataset",
     "resolve_conveyor_axes",
 ]

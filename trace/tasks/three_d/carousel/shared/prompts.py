@@ -48,6 +48,8 @@ def dynamic_slots_for_conveyor(dataset: Mapping[str, Any]) -> dict[str, Any]:
             if len(dataset.get("target_object_plural_pair", [])) > 1
             else ""
         ),
+        "source_belt_label": str(dataset.get("source_belt_label", "")),
+        "destination_belt_label": str(dataset.get("destination_belt_label", "")),
     }
     if "arithmetic_operation" in dataset:
         annotation_keys = [str(dataset["annotation_key_by_scope"][scope]) for scope in dataset.get("scope_keys", [])]

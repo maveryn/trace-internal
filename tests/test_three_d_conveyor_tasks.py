@@ -29,6 +29,11 @@ from trace.tasks.three_d.conveyor.scoped_belt_object_count import (
 from trace.tasks.three_d.conveyor.scoped_color_type_count import (
     TASK_ID as COLOR_TYPE_TASK_ID,
 )
+from trace.tasks.three_d.conveyor.scope_count_after_transfer_value import (
+    COLOR_TRANSFER_QUERY_ID,
+    OBJECT_TRANSFER_QUERY_ID,
+    TASK_ID as TRANSFER_TASK_ID,
+)
 from trace.tasks.three_d.conveyor.shared.state import CONVEYOR_OBJECT_SHAPE_TYPES
 from trace.tasks.three_d.shared.object_confusions import confusable_shape_names
 from trace.tasks.three_d.shared.semantic_colors import confusable_color_names
@@ -486,4 +491,88 @@ def test_conveyor_adjacent_pair_count_supports_zero_and_four() -> None:
         assert int(output.answer_gt.value) == int(target_count)
         assert len(output.annotation_gt.value) == int(target_count)
         assert len(trace["target_pair_object_id_pairs"]) == int(target_count)
+        assert max(int(value) for value in trace["lane_counts"].values()) <= 8
+
+
+def test_conveyor_scope_count_after_transfer_query_ids() -> None:
+    task = create_task(TRANSFER_TASK_ID)
+    cases = (
+        (COLOR_TRANSFER_QUERY_ID, {"canvas_preset": "landscape"}, 2026062821),
+        (OBJECT_TRANSFER_QUERY_ID, {"canvas_preset": "portrait"}, 2026062822),
+    )
+    for query_id, params, seed in cases:
+        output = task.generate(
+            seed,
+            params={**params, "query_id": query_id, "post_image_noise_apply_prob": 0.0},
+            max_attempts=220,
+        )
+        trace = output.trace_payload["execution_trace"]
+        render_map = output.trace_payload["render_map"]
+        operands = {str(key): int(value) for key, value in trace["operand_counts_by_scope"].items()}
+        target_ids_by_key = {
+            str(key): [str(object_id) for object_id in object_ids]
+            for key, object_ids in trace["target_object_ids_by_annotation_key"].items()
+        }
+        object_by_id = {str(spec["object_id"]): spec for spec in trace["object_specs"]}
+
+        assert output.scene_id == "conveyor"
+        assert output.query_id == query_id
+        assert output.answer_gt.type == "integer"
+        assert output.annotation_gt.type == "bbox_set_map"
+        assert set(output.annotation_gt.value) == {"source_moved_objects", "destination_existing_objects"}
+        assert output.trace_payload["projected_annotation"]["bbox_set_map"] == output.annotation_gt.value
+        assert output.trace_payload["projected_annotation"]["pixel_bbox_set_map"] == output.annotation_gt.value
+        assert int(output.answer_gt.value) == operands["source_moved_objects"] + operands["destination_existing_objects"]
+        assert 1 <= operands["source_moved_objects"] <= 4
+        assert 1 <= operands["destination_existing_objects"] <= 8
+        assert 2 <= int(output.answer_gt.value) <= 12
+        assert str(trace["source_lane_key"]) != str(trace["destination_lane_key"])
+        assert "{target_" not in output.prompt
+        assert "unlettered" not in output.prompt.lower()
+        assert_three_d_canvas_contract(output)
+
+        for key, ids in target_ids_by_key.items():
+            expected = [render_map["object_bboxes_px"][str(object_id)] for object_id in ids]
+            assert output.annotation_gt.value[str(key)] == expected
+            assert len(expected) == operands[str(key)]
+        for object_id in target_ids_by_key["source_moved_objects"]:
+            spec = object_by_id[str(object_id)]
+            assert str(spec["lane_key"]) == str(trace["source_lane_key"])
+            if query_id == COLOR_TRANSFER_QUERY_ID:
+                assert trace["predicate_kind"] == "color_transfer"
+                assert str(spec["color_name"]) == str(trace["target_color_name"])
+            else:
+                assert trace["predicate_kind"] == "object_type_transfer"
+                assert str(spec["shape_type"]) == str(trace["target_shape_type"])
+        for object_id in target_ids_by_key["destination_existing_objects"]:
+            assert str(object_by_id[str(object_id)]["lane_key"]) == str(trace["destination_lane_key"])
+        assert target_ids_by_key["destination_existing_objects"] == trace["target_lane_object_ids"]
+        assert max(int(value) for value in trace["lane_counts"].values()) <= 8
+
+
+def test_conveyor_scope_count_after_transfer_supports_answer_extremes() -> None:
+    task = create_task(TRANSFER_TASK_ID)
+    cases = (
+        (COLOR_TRANSFER_QUERY_ID, 2, 1, 1, 2026062823),
+        (OBJECT_TRANSFER_QUERY_ID, 12, 4, 8, 2026062824),
+    )
+    for query_id, answer_value, moved_count, destination_existing_count, seed in cases:
+        output = task.generate(
+            seed,
+            params={
+                "query_id": query_id,
+                "answer_value": answer_value,
+                "moved_count": moved_count,
+                "destination_existing_count": destination_existing_count,
+                "post_image_noise_apply_prob": 0.0,
+            },
+            max_attempts=220,
+        )
+        trace = output.trace_payload["execution_trace"]
+
+        assert int(output.answer_gt.value) == int(answer_value)
+        assert int(trace["moved_count"]) == int(moved_count)
+        assert int(trace["destination_existing_count"]) == int(destination_existing_count)
+        assert len(output.annotation_gt.value["source_moved_objects"]) == int(moved_count)
+        assert len(output.annotation_gt.value["destination_existing_objects"]) == int(destination_existing_count)
         assert max(int(value) for value in trace["lane_counts"].values()) <= 8

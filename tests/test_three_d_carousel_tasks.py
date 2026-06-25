@@ -31,6 +31,11 @@ from trace.tasks.three_d.carousel.scoped_belt_object_count import (
 from trace.tasks.three_d.carousel.scoped_color_type_count import (
     TASK_ID as COLOR_TYPE_TASK_ID,
 )
+from trace.tasks.three_d.carousel.scope_count_after_transfer_value import (
+    COLOR_TRANSFER_QUERY_ID,
+    OBJECT_TRANSFER_QUERY_ID,
+    TASK_ID as TRANSFER_TASK_ID,
+)
 from trace.tasks.three_d.carousel.shared.state import CONVEYOR_OBJECT_SHAPE_TYPES
 from trace.tasks.three_d.shared.object_confusions import confusable_shape_names
 from trace.tasks.three_d.shared.semantic_colors import confusable_color_names
@@ -412,6 +417,97 @@ def test_carousel_adjacent_pair_count_supports_zero_and_four() -> None:
         assert int(output.answer_gt.value) == int(target_count)
         assert len(output.annotation_gt.value) == int(target_count)
         assert len(trace["target_pair_object_id_pairs"]) == int(target_count)
+        assert int(trace["belt_counts"].get("inner", 0)) <= 8
+        assert int(trace["belt_counts"].get("outer", 0)) <= 12
+
+
+def test_carousel_scope_count_after_transfer_query_ids() -> None:
+    task = create_task(TRANSFER_TASK_ID)
+    cases = (
+        (COLOR_TRANSFER_QUERY_ID, 2026062825),
+        (OBJECT_TRANSFER_QUERY_ID, 2026062826),
+    )
+    for query_id, seed in cases:
+        output = task.generate(
+            seed,
+            params={"query_id": query_id, "post_image_noise_apply_prob": 0.0},
+            max_attempts=220,
+        )
+        trace = output.trace_payload["execution_trace"]
+        render_map = output.trace_payload["render_map"]
+        operands = {str(key): int(value) for key, value in trace["operand_counts_by_scope"].items()}
+        target_ids_by_key = {
+            str(key): [str(object_id) for object_id in object_ids]
+            for key, object_ids in trace["target_object_ids_by_annotation_key"].items()
+        }
+        object_by_id = {str(spec["object_id"]): spec for spec in trace["object_specs"]}
+        destination_cap = 8 if str(trace["destination_belt_key"]) == "inner" else 12
+
+        assert output.scene_id == "carousel"
+        assert output.query_id == query_id
+        assert output.answer_gt.type == "integer"
+        assert output.annotation_gt.type == "bbox_set_map"
+        assert set(output.annotation_gt.value) == {"source_moved_objects", "destination_existing_objects"}
+        assert output.trace_payload["projected_annotation"]["bbox_set_map"] == output.annotation_gt.value
+        assert output.trace_payload["projected_annotation"]["pixel_bbox_set_map"] == output.annotation_gt.value
+        assert int(output.answer_gt.value) == operands["source_moved_objects"] + operands["destination_existing_objects"]
+        assert 1 <= operands["source_moved_objects"] <= 4
+        assert 1 <= operands["destination_existing_objects"] <= destination_cap
+        assert 2 <= int(output.answer_gt.value) <= destination_cap
+        assert str(trace["source_belt_key"]) != str(trace["destination_belt_key"])
+        assert "{target_" not in output.prompt
+        assert "unlettered" not in output.prompt.lower()
+        assert_three_d_canvas_contract(output)
+
+        for key, ids in target_ids_by_key.items():
+            expected = [render_map["object_bboxes_px"][str(object_id)] for object_id in ids]
+            assert output.annotation_gt.value[str(key)] == expected
+            assert len(expected) == operands[str(key)]
+        for object_id in target_ids_by_key["source_moved_objects"]:
+            spec = object_by_id[str(object_id)]
+            assert str(spec["belt_key"]) == str(trace["source_belt_key"])
+            if query_id == COLOR_TRANSFER_QUERY_ID:
+                assert trace["predicate_kind"] == "color_transfer"
+                assert str(spec["color_name"]) == str(trace["target_color_name"])
+            else:
+                assert trace["predicate_kind"] == "object_type_transfer"
+                assert str(spec["shape_type"]) == str(trace["target_shape_type"])
+        for object_id in target_ids_by_key["destination_existing_objects"]:
+            assert str(object_by_id[str(object_id)]["belt_key"]) == str(trace["destination_belt_key"])
+        assert target_ids_by_key["destination_existing_objects"] == trace["target_belt_object_ids"]
+        assert int(trace["belt_counts"].get("inner", 0)) <= 8
+        assert int(trace["belt_counts"].get("outer", 0)) <= 12
+
+
+def test_carousel_scope_count_after_transfer_supports_destination_caps() -> None:
+    task = create_task(TRANSFER_TASK_ID)
+    cases = (
+        (COLOR_TRANSFER_QUERY_ID, "outer", "inner", 8, 4, 4, 2026062827),
+        (OBJECT_TRANSFER_QUERY_ID, "inner", "outer", 12, 4, 8, 2026062828),
+    )
+    for query_id, source_belt, destination_belt, answer_value, moved_count, destination_existing_count, seed in cases:
+        output = task.generate(
+            seed,
+            params={
+                "query_id": query_id,
+                "source_belt_key": source_belt,
+                "destination_belt_key": destination_belt,
+                "answer_value": answer_value,
+                "moved_count": moved_count,
+                "destination_existing_count": destination_existing_count,
+                "post_image_noise_apply_prob": 0.0,
+            },
+            max_attempts=220,
+        )
+        trace = output.trace_payload["execution_trace"]
+
+        assert int(output.answer_gt.value) == int(answer_value)
+        assert str(trace["source_belt_key"]) == str(source_belt)
+        assert str(trace["destination_belt_key"]) == str(destination_belt)
+        assert int(trace["moved_count"]) == int(moved_count)
+        assert int(trace["destination_existing_count"]) == int(destination_existing_count)
+        assert len(output.annotation_gt.value["source_moved_objects"]) == int(moved_count)
+        assert len(output.annotation_gt.value["destination_existing_objects"]) == int(destination_existing_count)
         assert int(trace["belt_counts"].get("inner", 0)) <= 8
         assert int(trace["belt_counts"].get("outer", 0)) <= 12
 

@@ -51,8 +51,11 @@ PREDICATE_OBJECT_TYPE_ARITHMETIC = "object_type_count_arithmetic"
 PREDICATE_COLOR_ARITHMETIC = "color_count_arithmetic"
 PREDICATE_ORDERED_OBJECT_PAIR = "ordered_object_pair"
 PREDICATE_ORDERED_COLOR_PAIR = "ordered_color_pair"
+PREDICATE_OBJECT_TYPE_TRANSFER = "object_type_transfer"
+PREDICATE_COLOR_TRANSFER = "color_transfer"
 ARITHMETIC_SUM = "sum"
 ARITHMETIC_DIFFERENCE = "difference"
+TRANSFER_OPERATION = "move_to_destination"
 
 CAMERA_YAW_BANDS_DEGREES: Tuple[Tuple[float, float], ...] = (
     (-66.0, -42.0),
@@ -172,6 +175,36 @@ def _resolve_target_belt(
     return belt_key, _uniform_string_probability_map(support)
 
 
+def _resolve_transfer_belts(
+    *,
+    params: Mapping[str, Any],
+    rng: Any,
+) -> tuple[str, str, Dict[str, float], Dict[str, float]]:
+    support = tuple(str(key) for key in BELT_KEYS)
+    source_explicit = params.get("source_belt_key")
+    destination_explicit = params.get("destination_belt_key")
+    if source_explicit is not None or destination_explicit is not None:
+        if source_explicit is None or destination_explicit is None:
+            raise ValueError("source_belt_key and destination_belt_key must be provided together")
+        source = str(source_explicit)
+        destination = str(destination_explicit)
+        if source == destination or source not in set(support) or destination not in set(support):
+            raise ValueError("carousel transfer source and destination must be distinct visible belt keys")
+        return (
+            source,
+            destination,
+            _uniform_string_probability_map(support, selected=source),
+            _uniform_string_probability_map(support, selected=destination),
+        )
+    source, destination = rng.sample(list(support), 2)
+    return (
+        str(source),
+        str(destination),
+        _uniform_string_probability_map(support, selected=str(source)),
+        _uniform_string_probability_map(support, selected=str(destination)),
+    )
+
+
 def _resolve_belt_total_target_count(
     *,
     params: Mapping[str, Any],
@@ -195,6 +228,66 @@ def _resolve_belt_total_target_count(
         upper=int(default_max),
     )
     return int(count), dict(probabilities)
+
+
+def _resolve_transfer_answer_and_counts(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    rng: Any,
+    instance_seed: int,
+    namespace: str,
+    destination_cap: int,
+) -> tuple[int, int, int, Dict[str, float], Dict[str, float]]:
+    """Resolve final count, moved count, and original destination count."""
+
+    answer_value, answer_probabilities = resolve_count_for_namespace(
+        params,
+        namespace=f"{namespace}.answer_value",
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        key="answer_value",
+        default_min=int(params.get("answer_value_min", group_default(gen_defaults, "answer_value_min", 2))),
+        default_max=int(params.get("answer_value_max", group_default(gen_defaults, "answer_value_max", int(destination_cap)))),
+        lower=2,
+        upper=int(destination_cap),
+    )
+    moved_explicit = params.get("moved_count")
+    destination_explicit = params.get("destination_existing_count")
+    if moved_explicit is not None or destination_explicit is not None:
+        if moved_explicit is None or destination_explicit is None:
+            raise ValueError("moved_count and destination_existing_count must be provided together")
+        moved_count = int(moved_explicit)
+        destination_existing_count = int(destination_explicit)
+        if not (1 <= moved_count <= 4):
+            raise ValueError("moved_count must be in 1..4")
+        if not (1 <= destination_existing_count <= int(destination_cap)):
+            raise ValueError("destination_existing_count exceeds belt cap")
+        if int(moved_count + destination_existing_count) != int(answer_value):
+            raise ValueError("explicit transfer counts do not match answer_value")
+        return (
+            int(answer_value),
+            int(moved_count),
+            int(destination_existing_count),
+            dict(answer_probabilities),
+            {f"{moved_count},{destination_existing_count}": 1.0},
+        )
+
+    pairs = [
+        (moved_count, int(answer_value) - moved_count)
+        for moved_count in range(1, 5)
+        if 1 <= int(answer_value) - moved_count <= int(destination_cap)
+    ]
+    if not pairs:
+        raise ValueError(f"no carousel transfer operands for answer {answer_value}")
+    moved_count, destination_existing_count = pairs[int(rng.randrange(len(pairs)))]
+    return (
+        int(answer_value),
+        int(moved_count),
+        int(destination_existing_count),
+        dict(answer_probabilities),
+        {f"{moved_count},{destination_existing_count}": 1.0},
+    )
 
 
 def _resolve_ordered_pair_count(
@@ -1302,6 +1395,241 @@ def build_belt_count_arithmetic_dataset(
     }
 
 
+def build_transfer_count_dataset(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    render_params: Any,
+    axes: ResolvedConveyorAxes,
+    predicate_kind: str,
+    namespace: str,
+) -> dict[str, Any]:
+    """Build a two-belt carousel dataset for a counterfactual transfer count."""
+
+    rng = spawn_rng(int(instance_seed), f"{namespace}.dataset")
+    source_belt_key, destination_belt_key, source_belt_probabilities, destination_belt_probabilities = _resolve_transfer_belts(
+        params=params,
+        rng=rng,
+    )
+    destination_cap = int(_belt_max_object_count(str(destination_belt_key)))
+    answer_value, moved_count, destination_existing_count, answer_probabilities, operand_probabilities = _resolve_transfer_answer_and_counts(
+        params=params,
+        gen_defaults=gen_defaults,
+        rng=rng,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+        destination_cap=int(destination_cap),
+    )
+    belt_counts: Dict[str, int] = {}
+    for belt_key in BELT_KEYS:
+        cap = int(_belt_max_object_count(str(belt_key)))
+        if str(belt_key) == str(source_belt_key):
+            min_count = max(int(moved_count), min(cap, int(moved_count) + 1))
+            belt_counts[str(belt_key)] = int(rng.randrange(int(min_count), int(cap) + 1))
+        elif str(belt_key) == str(destination_belt_key):
+            belt_counts[str(belt_key)] = int(destination_existing_count)
+
+    slots_per_belt = max(24, _configured_int(params, gen_defaults, "slots_per_belt", 30))
+    min_angle_gap_degrees = float(params.get("min_same_belt_angle_gap_degrees", group_default(gen_defaults, "min_same_belt_angle_gap_degrees", 20.0)))
+    dimension_scale = float(params.get("object_dimension_scale", group_default(gen_defaults, "object_dimension_scale", 0.64)))
+    slots_by_belt = {
+        str(belt_key): _slot_positions_for_belt(rng=rng, belt_key=str(belt_key), slots_per_belt=int(slots_per_belt))
+        for belt_key in BELT_KEYS
+    }
+    used_angles_by_belt: Dict[str, list[float]] = {str(belt_key): [] for belt_key in BELT_KEYS}
+    belt_records = [
+        {
+            "belt_key": str(belt_key),
+            "belt_label": str(BELT_LABELS[str(belt_key)]),
+            "geometry": dict(BELT_GEOMETRY[str(belt_key)]),
+            "slot_count": int(slots_per_belt),
+        }
+        for belt_key in BELT_KEYS
+    ]
+
+    if str(predicate_kind) == PREDICATE_COLOR_TRANSFER:
+        target_shape, target_shape_probabilities = _resolve_target_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        target_color_name, target_color_probabilities = _resolve_target_color(params=params, rng=rng)
+        color_names = _sample_readout_palette(rng, target_color=str(target_color_name), size=5)
+        wrong_colors = [str(color) for color in color_names if str(color) != str(target_color_name)]
+        distractor_shapes = list(compatible_distractor_pool(str(target_shape), support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES))
+    elif str(predicate_kind) == PREDICATE_OBJECT_TYPE_TRANSFER:
+        target_shape, target_shape_probabilities = _resolve_target_shape(
+            params=params,
+            rng=rng,
+            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
+        )
+        target_color_name = ""
+        target_color_probabilities = {}
+        active_colors = sample_named_color_palette(rng, palette_size=4)
+        color_names = tuple(str(name) for name, _rgb in active_colors)
+        wrong_colors = list(color_names)
+        distractor_shapes = list(compatible_distractor_pool(str(target_shape), support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES))
+    else:
+        raise ValueError(f"unsupported carousel transfer predicate: {predicate_kind}")
+    if not wrong_colors or not distractor_shapes or not color_names:
+        raise ValueError("carousel transfer task needs non-target distractors")
+
+    object_specs: List[Dict[str, Any]] = []
+    source_moved_ids: list[str] = []
+    destination_existing_ids: list[str] = []
+    for belt_key in BELT_KEYS:
+        total_count = int(belt_counts[str(belt_key)])
+        for index in range(total_count):
+            slot = _sample_slot(
+                slots_by_belt,
+                used_angles_by_belt,
+                belt_key=str(belt_key),
+                min_angle_gap_degrees=float(min_angle_gap_degrees),
+            )
+            object_id = f"obj_{len(object_specs):03d}"
+            if str(belt_key) == str(source_belt_key) and int(index) < int(moved_count):
+                if str(predicate_kind) == PREDICATE_COLOR_TRANSFER:
+                    shape_type = str(target_shape if index % 2 == 0 else distractor_shapes[index % len(distractor_shapes)])
+                    color_name = str(target_color_name)
+                else:
+                    shape_type = str(target_shape)
+                    color_name = str(color_names[index % len(color_names)])
+                matches_query = True
+                count_role = "source_moved_object"
+                source_moved_ids.append(str(object_id))
+            elif str(belt_key) == str(source_belt_key):
+                if str(predicate_kind) == PREDICATE_COLOR_TRANSFER:
+                    shape_type = str(distractor_shapes[index % len(distractor_shapes)])
+                    color_name = str(wrong_colors[index % len(wrong_colors)])
+                else:
+                    shape_type = str(distractor_shapes[index % len(distractor_shapes)])
+                    color_name = str(color_names[index % len(color_names)])
+                matches_query = False
+                count_role = "source_non_moved_distractor"
+            else:
+                if str(predicate_kind) == PREDICATE_COLOR_TRANSFER:
+                    shape_type = str(target_shape if index % 3 == 0 else distractor_shapes[index % len(distractor_shapes)])
+                    color_name = str(color_names[index % len(color_names)])
+                else:
+                    shape_type = str(target_shape if index % 3 == 0 else distractor_shapes[index % len(distractor_shapes)])
+                    color_name = str(color_names[index % len(color_names)])
+                matches_query = True
+                count_role = "destination_existing_object"
+                destination_existing_ids.append(str(object_id))
+            object_specs.append(
+                _make_object_spec(
+                    rng=rng,
+                    object_id=str(object_id),
+                    shape_type=str(shape_type),
+                    color_name=str(color_name),
+                    slot=slot,
+                    belt_key=str(belt_key),
+                    matches_query=bool(matches_query),
+                    count_role=str(count_role),
+                    dimension_scale=float(dimension_scale),
+                )
+            )
+
+    camera, frame, camera_meta, frame_meta = _finalize_camera_and_projection(
+        rng=rng,
+        render_params=render_params,
+        object_specs=object_specs,
+    )
+    finalized_specs = _screen_finalize_specs(object_specs=object_specs, camera=camera, frame=frame)
+    shape_counts = Counter(str(spec["shape_type"]) for spec in finalized_specs)
+    color_counts = Counter(str(spec["color_name"]) for spec in finalized_specs)
+    belt_counts_final = Counter(str(spec["belt_key"]) for spec in finalized_specs)
+    target_object_ids_by_annotation_key = {
+        "source_moved_objects": list(source_moved_ids),
+        "destination_existing_objects": list(destination_existing_ids),
+    }
+    target_object_ids = [*list(source_moved_ids), *list(destination_existing_ids)]
+    return {
+        "scene_id": SCENE_ID,
+        "scene_variant": str(axes.scene_variant),
+        "layout_family": "elliptical_carousel",
+        "predicate_kind": str(predicate_kind),
+        "transfer_operation": TRANSFER_OPERATION,
+        "belt_records": [dict(record) for record in belt_records],
+        "scope_keys": [str(source_belt_key), str(destination_belt_key)],
+        "scope_labels": {
+            str(source_belt_key): str(BELT_LABELS[str(source_belt_key)]),
+            str(destination_belt_key): str(BELT_LABELS[str(destination_belt_key)]),
+        },
+        "source_belt_key": str(source_belt_key),
+        "source_belt_label": str(BELT_LABELS[str(source_belt_key)]),
+        "destination_belt_key": str(destination_belt_key),
+        "destination_belt_label": str(BELT_LABELS[str(destination_belt_key)]),
+        "annotation_key_by_scope": {
+            "source_moved": "source_moved_objects",
+            "destination_existing": "destination_existing_objects",
+        },
+        "target_object_ids_by_annotation_key": dict(target_object_ids_by_annotation_key),
+        "operand_counts_by_scope": {
+            "source_moved_objects": int(moved_count),
+            "destination_existing_objects": int(destination_existing_count),
+        },
+        "operand_count_probabilities": dict(operand_probabilities),
+        "target_belt_key": str(destination_belt_key),
+        "target_belt_label": str(BELT_LABELS[str(destination_belt_key)]),
+        "target_shape_type": str(target_shape),
+        "target_object_name": public_object_name(str(target_shape)),
+        "target_object_plural": public_object_plural(str(target_shape)),
+        "target_color_name": str(target_color_name),
+        "target_color_label": semantic_color_label(str(target_color_name)) if str(target_color_name) else "",
+        "answer_value": int(answer_value),
+        "target_count": int(answer_value),
+        "moved_count": int(moved_count),
+        "destination_existing_count": int(destination_existing_count),
+        "target_object_ids": [str(object_id) for object_id in target_object_ids],
+        "source_moved_object_ids": list(source_moved_ids),
+        "destination_existing_object_ids": list(destination_existing_ids),
+        "target_belt_object_ids": [
+            str(spec["object_id"])
+            for spec in finalized_specs
+            if str(spec["belt_key"]) == str(destination_belt_key)
+        ],
+        "object_count": int(len(finalized_specs)),
+        "object_specs": [dict(spec) for spec in finalized_specs],
+        "shape_counts": {str(key): int(value) for key, value in sorted(shape_counts.items())},
+        "color_counts": {str(key): int(value) for key, value in sorted(color_counts.items())},
+        "belt_counts": {str(key): int(value) for key, value in sorted(belt_counts_final.items())},
+        "target_shape_type_probabilities": dict(target_shape_probabilities),
+        "target_color_name_probabilities": dict(target_color_probabilities),
+        "target_count_probabilities": dict(answer_probabilities),
+        "object_count_probabilities": {str(len(finalized_specs)): 1.0},
+        "target_belt_key_probabilities": dict(destination_belt_probabilities),
+        "target_belt_probabilities": dict(destination_belt_probabilities),
+        "source_belt_key_probabilities": dict(source_belt_probabilities),
+        "slots_per_belt": int(slots_per_belt),
+        "min_same_belt_angle_gap_degrees": round(float(min_angle_gap_degrees), 3),
+        "semantic_color_palette": {str(key): list(value) for key, value in sorted(SEMANTIC_COLOR_RGB.items())},
+        "camera": dict(camera_meta),
+        "projection_frame": dict(frame_meta),
+        "solver_trace": {
+            "count_predicate": str(predicate_kind),
+            "operation": TRANSFER_OPERATION,
+            "source": {
+                "belt_key": str(source_belt_key),
+                "belt_label": str(BELT_LABELS[str(source_belt_key)]),
+            },
+            "destination": {
+                "belt_key": str(destination_belt_key),
+                "belt_label": str(BELT_LABELS[str(destination_belt_key)]),
+            },
+            "target_shape_type": str(target_shape),
+            "target_color_name": str(target_color_name),
+            "moved_count": int(moved_count),
+            "destination_existing_count": int(destination_existing_count),
+            "answer_value": int(answer_value),
+            "target_object_ids_by_annotation_key": dict(target_object_ids_by_annotation_key),
+            "target_object_ids": [str(object_id) for object_id in target_object_ids],
+            "unique_integer_answer": True,
+        },
+    }
+
+
 def build_ordered_pair_count_dataset(
     *,
     instance_seed: int,
@@ -1551,13 +1879,17 @@ __all__ = [
     "PREDICATE_COLOR",
     "PREDICATE_COLOR_ARITHMETIC",
     "PREDICATE_COLOR_TYPE",
+    "PREDICATE_COLOR_TRANSFER",
     "PREDICATE_ORDERED_COLOR_PAIR",
     "PREDICATE_ORDERED_OBJECT_PAIR",
     "PREDICATE_OBJECT_TYPE",
     "PREDICATE_OBJECT_TYPE_ARITHMETIC",
+    "PREDICATE_OBJECT_TYPE_TRANSFER",
     "ResolvedConveyorAxes",
+    "TRANSFER_OPERATION",
     "build_belt_count_arithmetic_dataset",
     "build_belt_count_dataset",
     "build_ordered_pair_count_dataset",
+    "build_transfer_count_dataset",
     "resolve_conveyor_axes",
 ]

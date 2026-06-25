@@ -34,12 +34,11 @@ POST_IMAGE_NOISE_DEFAULTS: dict[str, Any] = {
 }
 
 
-def load_tangent_packing_defaults(namespace: str) -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
-    """Load generation/rendering/prompt defaults for one public task namespace."""
+def load_tangent_packing_defaults() -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+    """Load scene-level generation/rendering/prompt defaults."""
 
     generation_defaults, rendering_defaults, prompt_defaults = split_scene_generation_rendering_prompt_defaults(
         _SCENE_DEFAULTS,
-        task_id=str(namespace),
     )
     merged_prompt_defaults = {
         "bundle_id": PROMPT_BUNDLE_ID,

@@ -19,21 +19,9 @@ from .shared.annotations import tangent_packing_annotation
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS, load_tangent_packing_defaults
 from .shared.prompts import build_tangent_packing_prompt_artifacts
 from .shared.rendering import create_render_context
-from .shared.state import DOMAIN, SCENE_ID, SCENE_KIND, RenderContext, RenderedTangentPackingScene, TangentPackingProblem
+from .shared.state import SCENE_ID, SCENE_KIND, RenderContext, RenderedTangentPackingScene, TangentPackingProblem
 
 RenderBuilder = Callable[[RenderContext, TangentPackingProblem], RenderedTangentPackingScene]
-
-
-@dataclass(frozen=True)
-class TangentPackingObjectivePlan:
-    """Task-owned objective binding prepared by one public task file."""
-
-    prompt_key: str
-    problem: TangentPackingProblem
-    render_scene: RenderBuilder
-    answer_value: float
-    query_params: Mapping[str, Any]
-    trace_values: Mapping[str, Any]
 
 
 @dataclass(frozen=True)
@@ -47,9 +35,10 @@ class TangentPackingRenderedAttempt:
     annotation_artifacts: PixelAnnotationArtifacts
 
 
-def _render_attempts(
+def render_tangent_packing_attempts(
     *,
-    plan: TangentPackingObjectivePlan,
+    problem: TangentPackingProblem,
+    render_scene: RenderBuilder,
     instance_seed: int,
     params: Mapping[str, Any],
     max_attempts: int,
@@ -67,7 +56,7 @@ def _render_attempts(
                 render_defaults=render_defaults,
                 namespace=str(namespace),
             )
-            rendered = plan.render_scene(context, plan.problem)
+            rendered = render_scene(context, problem)
             render_meta = dict(render_meta_attempt)
             render_meta["single_object_scene_rotation"] = context.scene_transform.metadata()
             image, noise_meta = apply_post_image_noise(
@@ -89,21 +78,24 @@ def _render_attempts(
     raise RuntimeError("failed to render tangent-packing scene") from last_error
 
 
-def _trace_payload(
+def build_tangent_packing_trace_payload(
     *,
     task_identity: str,
     selected_query: str,
     branch_probabilities: Mapping[str, float],
     prompt_artifacts: Any,
     attempt: TangentPackingRenderedAttempt,
-    plan: TangentPackingObjectivePlan,
+    answer_value: float,
+    reasoning_steps: int,
+    query_params_extra: Mapping[str, Any],
+    trace_values: Mapping[str, Any],
 ) -> dict[str, Any]:
     """Build trace sections from task-owned objective metadata."""
 
     query_params = {
         "scene_id": SCENE_ID,
         "query_id_probabilities": dict(branch_probabilities),
-        **dict(plan.query_params),
+        **dict(query_params_extra),
     }
     query_spec = build_prompt_query_spec(
         prompt_artifacts=prompt_artifacts,
@@ -122,7 +114,7 @@ def _trace_payload(
             "entities": [dict(entity) for entity in rendered.scene_entities],
             "relations": {
                 "query_id": str(selected_query),
-                "answer_value": float(plan.answer_value),
+                "answer_value": float(answer_value),
                 "annotation_roles": list(rendered.annotation_roles),
             },
         },
@@ -148,11 +140,11 @@ def _trace_payload(
             "scene_id": SCENE_ID,
             "query_id": str(selected_query),
             "answer_type": "number",
-            "answer_value": float(plan.answer_value),
+            "answer_value": float(answer_value),
             "answer_rounding": "one_decimal",
             "annotation_roles": list(rendered.annotation_roles),
-            "reasoning_steps": int(plan.problem.reasoning_steps),
-            **dict(plan.trace_values),
+            "reasoning_steps": int(reasoning_steps),
+            **dict(trace_values),
         },
         "witness_symbolic": {
             "task_id": str(task_identity),
@@ -160,10 +152,21 @@ def _trace_payload(
             "query_id": str(selected_query),
             "type": "circle_square_tangent_packing_formula",
             "source_witness_type": "bbox_map",
-            "answer_value": float(plan.answer_value),
-            **dict(plan.trace_values),
+            "answer_value": float(answer_value),
+            **dict(trace_values),
         },
         "projected_annotation": dict(attempt.annotation_artifacts.projected_annotation),
+    }
+
+
+def tangent_packing_output_metadata(*, prompt_artifacts: Any, selected_query: str) -> dict[str, Any]:
+    """Return neutral TaskOutput metadata that is not objective-specific."""
+
+    return {
+        "task_versions": default_task_versions(),
+        "scene_id": SCENE_ID,
+        "query_id": str(selected_query),
+        "prompt_variants": dict(prompt_artifacts.prompt_variants),
     }
 
 
@@ -174,7 +177,7 @@ def run_tangent_packing_public_entry(
     params: Mapping[str, Any],
     max_attempts: int,
 ) -> TaskOutput:
-    """Run shared plumbing after one public task binds its objective."""
+    """Run neutral lifecycle plumbing around task-owned formula hooks."""
 
     selected_query, branch_probabilities, task_params = select_task_query_id(
         instance_seed=int(instance_seed),
@@ -184,15 +187,16 @@ def run_tangent_packing_public_entry(
         task_id=str(task.task_id),
         namespace=f"{task.task_id}.query",
     )
-    _generation_defaults, render_defaults, prompt_defaults = load_tangent_packing_defaults(str(task.task_id))
-    plan = task.prepare_objective(
+    _generation_defaults, render_defaults, prompt_defaults = load_tangent_packing_defaults()
+    problem, answer_value, trace_values = task.prepare_objective(
         instance_seed=int(instance_seed),
         params=task_params,
         selected_query=str(selected_query),
         branch_probabilities=branch_probabilities,
     )
-    attempt = _render_attempts(
-        plan=plan,
+    attempt = render_tangent_packing_attempts(
+        problem=problem,
+        render_scene=task.render_scene,
         instance_seed=int(instance_seed),
         params=task_params,
         max_attempts=int(max_attempts),
@@ -201,34 +205,43 @@ def run_tangent_packing_public_entry(
     )
     prompt_artifacts = build_tangent_packing_prompt_artifacts(
         prompt_defaults=prompt_defaults,
-        task_prompt_key=str(plan.prompt_key),
+        task_prompt_key=str(task.task_prompt_key),
         prompt_query_key=str(selected_query),
         annotation_roles=attempt.rendered.annotation_roles,
-        answer_value=float(plan.answer_value),
+        answer_value=float(answer_value),
         instance_seed=int(instance_seed),
     )
     return TaskOutput(
         prompt=str(prompt_artifacts.prompt),
-        answer_gt=TypedValue(type="number", value=float(plan.answer_value)),
+        answer_gt=TypedValue(type="number", value=float(answer_value)),
         annotation_gt=TypedValue(
             type=str(attempt.annotation_artifacts.annotation_type),
             value=attempt.annotation_artifacts.value,
         ),
         image=attempt.image,
         image_id="img0",
-        trace_payload=_trace_payload(
+        trace_payload=build_tangent_packing_trace_payload(
             task_identity=str(task.task_id),
             selected_query=str(selected_query),
             branch_probabilities=branch_probabilities,
             prompt_artifacts=prompt_artifacts,
             attempt=attempt,
-            plan=plan,
+            answer_value=float(answer_value),
+            reasoning_steps=int(problem.reasoning_steps),
+            query_params_extra=trace_values,
+            trace_values=trace_values,
         ),
-        task_versions=default_task_versions(),
-        scene_id=SCENE_ID,
-        query_id=str(selected_query),
-        prompt_variants=dict(prompt_artifacts.prompt_variants),
+        **tangent_packing_output_metadata(
+            prompt_artifacts=prompt_artifacts,
+            selected_query=str(selected_query),
+        ),
     )
 
 
-__all__ = ["TangentPackingObjectivePlan", "run_tangent_packing_public_entry"]
+__all__ = [
+    "TangentPackingRenderedAttempt",
+    "build_tangent_packing_trace_payload",
+    "render_tangent_packing_attempts",
+    "run_tangent_packing_public_entry",
+    "tangent_packing_output_metadata",
+]

@@ -3,9 +3,10 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `tangent_packing`
-5. Query id: `single`
-6. Answer schema: `number` rounded to one decimal place
-7. Annotation schema: `bbox_map`
+3. Task id: `task_geometry__tangent_packing__two_circles_in_rectangle_gap_area`
+4. Supported `query_id`: `single`
+5. Answer schema: `number` rounded to one decimal place
+6. Annotation schema: `bbox_map`
 
 ## Program Contract
 - `curvilinear_gap_area(container=rectangle, packed_shape=two_equal_circles, given=rectangle_width, target=shaded_area); scene=tangent_packing; scope=two_circles_in_rectangle_gap_area`

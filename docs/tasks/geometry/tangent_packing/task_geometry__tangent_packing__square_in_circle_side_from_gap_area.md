@@ -3,9 +3,10 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `tangent_packing`
-5. Query id: `single`
-6. Answer schema: `number` rounded to one decimal place
-7. Annotation schema: `bbox_map`
+3. Task id: `task_geometry__tangent_packing__square_in_circle_side_from_gap_area`
+4. Supported `query_id`: `single`
+5. Answer schema: `number` rounded to one decimal place
+6. Annotation schema: `bbox_map`
 
 ## Program Contract
 - `inverse_curvilinear_gap_measure(container=circle, packed_shape=square, given=shaded_area, target=square_side); scene=tangent_packing; scope=square_in_circle_side_from_gap_area`

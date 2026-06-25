@@ -307,6 +307,11 @@ def test_rpg_tactical_map_movement_attack_range_tile_contract() -> None:
         if bool(is_attackable)
     ]
     assert attackable_labels == [answer_label]
+    assert sorted(render_map["candidate_start_manhattan_by_label"]) == ["A", "B", "C", "D"]
+    assert render_map["minimum_candidate_start_manhattan"] == min(render_map["candidate_start_manhattan_by_label"].values())
+    assert render_map["nearest_candidate_labels"]
+    assert render_map["selected_start_manhattan"] == render_map["candidate_start_manhattan_by_label"][answer_label]
+    assert trace["execution_trace"]["candidate_start_manhattan_by_label"] == render_map["candidate_start_manhattan_by_label"]
     tiles_by_id = {str(tile["tile_id"]): tile for tile in trace["scene_ir"]["tiles"]}
     selected_tile_id = str(render_map["selected_tile_id"])
     selected_tile = tiles_by_id[selected_tile_id]
@@ -324,3 +329,35 @@ def test_rpg_tactical_map_movement_attack_range_tile_contract() -> None:
     costs_by_tile_id = trace["execution_trace"]["movement_costs_by_tile_id"]
     for move_tile_id in render_map["reachable_move_tile_ids"]:
         assert int(costs_by_tile_id[str(move_tile_id)]) <= int(render_map["movement_budget"])
+
+
+def test_rpg_tactical_map_attack_candidates_do_not_default_to_nearest_tile() -> None:
+    task = create_task(ATTACK_TASK_ID)
+    sample_count = 60
+    unique_nearest_count = 0
+    for seed_offset in range(sample_count):
+        out = task.generate(
+            202606260000 + seed_offset,
+            params={},
+            max_attempts=50,
+        )
+        render_map = out.trace_payload["render_map"]
+        answer_label = str(out.answer_gt.value)
+        distances = {
+            str(label): int(distance)
+            for label, distance in render_map["candidate_start_manhattan_by_label"].items()
+        }
+        assert sorted(distances) == ["A", "B", "C", "D"]
+        assert render_map["candidate_attackable_by_label"][answer_label] is True
+        assert [
+            label
+            for label, is_attackable in render_map["candidate_attackable_by_label"].items()
+            if bool(is_attackable)
+        ] == [answer_label]
+        minimum_distance = min(distances.values())
+        nearest_labels = sorted(label for label, distance in distances.items() if int(distance) == minimum_distance)
+        assert render_map["nearest_candidate_labels"] == nearest_labels
+        if nearest_labels == [answer_label]:
+            unique_nearest_count += 1
+
+    assert unique_nearest_count <= 12

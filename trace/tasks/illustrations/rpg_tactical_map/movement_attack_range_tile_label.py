@@ -73,6 +73,44 @@ def _direction_bucket(origin: RpgTacticalTile, tile: RpgTacticalTile) -> str:
     return f"{row_part}{col_part}" or "same"
 
 
+def _candidate_start_distances(
+    *,
+    start_tile: RpgTacticalTile,
+    candidate_tile_ids_by_label: Mapping[str, str],
+    tiles_by_id: Mapping[str, RpgTacticalTile],
+) -> dict[str, int]:
+    """Return raw grid distance from the unit start to each candidate tile."""
+
+    return {
+        str(label): _tile_manhattan(start_tile, tiles_by_id[str(tile_id)])
+        for label, tile_id in candidate_tile_ids_by_label.items()
+    }
+
+
+def _nearest_distance_diagnostic(*, selected_label: str, candidate_start_distances: Mapping[str, int]) -> dict[str, Any]:
+    """Return review diagnostics for the raw nearest-candidate shortcut."""
+
+    selected_distance = int(candidate_start_distances[str(selected_label)])
+    minimum_distance = min(int(distance) for distance in candidate_start_distances.values())
+    nearest_labels = sorted(
+        str(label)
+        for label, distance in candidate_start_distances.items()
+        if int(distance) == int(minimum_distance)
+    )
+    return {
+        "candidate_start_manhattan_by_label": {
+            str(label): int(distance)
+            for label, distance in candidate_start_distances.items()
+        },
+        "selected_start_manhattan": int(selected_distance),
+        "minimum_candidate_start_manhattan": int(minimum_distance),
+        "nearest_candidate_labels": list(nearest_labels),
+        "selected_is_unique_nearest_by_start_manhattan": bool(
+            selected_distance == minimum_distance and nearest_labels == [str(selected_label)]
+        ),
+    }
+
+
 def _reachable_and_attackable_tiles(
     *,
     scene: RpgTacticalMapScene,
@@ -168,11 +206,12 @@ def _select_attack_candidates(
         return (
             0 if str(tile.tile_id) not in reachable_set else 1,
             -source_distance(tile),
-            _tile_manhattan(start_tile, tile),
+            -_tile_manhattan(start_tile, tile),
             tile_jitter[str(tile.tile_id)],
         )
 
     answer_tile = sorted(answer_pool, key=answer_sort_key)[0]
+    answer_start_distance = _tile_manhattan(start_tile, answer_tile)
 
     def invalid_plausibility(tile: RpgTacticalTile) -> tuple[int, int, int, float]:
         line_distances = [
@@ -200,21 +239,69 @@ def _select_attack_candidates(
             -tile_jitter[str(tile.tile_id)],
         )
 
-    def choose_spread_distractors(*, minimum_distance: int) -> list[RpgTacticalTile]:
+    def invalid_distance_bucket(tile: RpgTacticalTile) -> tuple[int, int]:
+        distance = _tile_manhattan(start_tile, tile)
+        return (abs(int(distance) - int(answer_start_distance)), int(distance))
+
+    def ranked_invalid_pool(pool: Sequence[RpgTacticalTile]) -> list[RpgTacticalTile]:
+        return sorted(
+            pool,
+            key=lambda tile: (
+                invalid_distance_bucket(tile),
+                invalid_plausibility(tile),
+                tile_jitter[str(tile.tile_id)],
+            ),
+        )
+
+    def choose_reserved_near_distractor(*, selected_tile_ids: set[str]) -> RpgTacticalTile | None:
+        near_or_closer = [
+            tile
+            for tile in invalid_pool
+            if str(tile.tile_id) not in selected_tile_ids
+            and _tile_manhattan(start_tile, tile) <= int(answer_start_distance)
+        ]
+        if near_or_closer:
+            return ranked_invalid_pool(near_or_closer)[0]
+        nearly_matched = [
+            tile
+            for tile in invalid_pool
+            if str(tile.tile_id) not in selected_tile_ids
+            and _tile_manhattan(start_tile, tile) <= int(answer_start_distance) + 1
+        ]
+        if nearly_matched:
+            return ranked_invalid_pool(nearly_matched)[0]
+        return None
+
+    def choose_spread_distractors(*, minimum_distance: int, reserve_near: bool) -> list[RpgTacticalTile]:
         selected = [answer_tile]
         distractors: list[RpgTacticalTile] = []
         selected_tile_ids = {str(answer_tile.tile_id), start_tile_id}
         used_buckets = {_direction_bucket(start_tile, answer_tile)}
-        remaining = sorted(invalid_pool, key=invalid_plausibility)
+        if bool(reserve_near):
+            reserved = choose_reserved_near_distractor(selected_tile_ids=selected_tile_ids)
+            if reserved is not None and _tile_manhattan(reserved, answer_tile) >= int(minimum_distance):
+                distractors.append(reserved)
+                selected.append(reserved)
+                selected_tile_ids.add(str(reserved.tile_id))
+                used_buckets.add(_direction_bucket(start_tile, reserved))
+        remaining = ranked_invalid_pool(invalid_pool)
         while len(distractors) < int(candidate_count) - 1:
             eligible = [
                 tile
                 for tile in remaining
                 if str(tile.tile_id) not in selected_tile_ids
                 and min(_tile_manhattan(tile, existing) for existing in selected) >= int(minimum_distance)
+                and _tile_manhattan(start_tile, tile) <= int(answer_start_distance) + max(2, int(attack_range) + 1)
             ]
             if not eligible:
-                break
+                eligible = [
+                    tile
+                    for tile in remaining
+                    if str(tile.tile_id) not in selected_tile_ids
+                    and min(_tile_manhattan(tile, existing) for existing in selected) >= int(minimum_distance)
+                ]
+                if not eligible:
+                    break
             chosen = max(eligible, key=lambda tile: spread_score(tile, selected, used_buckets))
             distractors.append(chosen)
             selected.append(chosen)
@@ -225,9 +312,24 @@ def _select_attack_candidates(
 
     distractors: list[RpgTacticalTile] = []
     for min_distance in (3, 2, 1):
-        distractors = choose_spread_distractors(minimum_distance=min_distance)
+        distractors = choose_spread_distractors(minimum_distance=min_distance, reserve_near=True)
         if len(distractors) >= int(candidate_count) - 1:
             break
+    if (
+        len(distractors) >= int(candidate_count) - 1
+        and _tile_manhattan(start_tile, answer_tile) < min(_tile_manhattan(start_tile, tile) for tile in distractors)
+    ):
+        selected_tile_ids = {str(answer_tile.tile_id), start_tile_id, *(str(tile.tile_id) for tile in distractors)}
+        replacement = choose_reserved_near_distractor(selected_tile_ids={str(answer_tile.tile_id), start_tile_id})
+        if replacement is not None and str(replacement.tile_id) not in selected_tile_ids:
+            farthest_index = max(
+                range(len(distractors)),
+                key=lambda index: (
+                    _tile_manhattan(start_tile, distractors[index]),
+                    tile_jitter[str(distractors[index].tile_id)],
+                ),
+            )
+            distractors[farthest_index] = replacement
     if len(distractors) < int(candidate_count) - 1:
         raise ValueError("could not build enough attack-range distractors")
 
@@ -237,6 +339,15 @@ def _select_attack_candidates(
     for label, tile in zip((label for label in labels if str(label) != selected_label), distractors, strict=True):
         candidates_by_label[str(label)] = str(tile.tile_id)
     candidates_by_label = {str(label): str(candidates_by_label[str(label)]) for label in labels}
+    candidate_start_distances = _candidate_start_distances(
+        start_tile=start_tile,
+        candidate_tile_ids_by_label=candidates_by_label,
+        tiles_by_id=tiles_by_id,
+    )
+    nearest_diagnostic = _nearest_distance_diagnostic(
+        selected_label=selected_label,
+        candidate_start_distances=candidate_start_distances,
+    )
     selected_sources = [str(source_id) for source_id in attack_sources[str(answer_tile.tile_id)]]
     return RpgTacticalMapOptionAttempt(
         candidate_tile_ids_by_label=candidates_by_label,
@@ -254,6 +365,7 @@ def _select_attack_candidates(
             "attackable_tile_ids": list(attackable_tile_ids),
             "attack_sources_by_tile_id": {str(tile_id): list(source_ids) for tile_id, source_ids in attack_sources.items()},
             "selected_attack_source_tile_ids": list(selected_sources),
+            **nearest_diagnostic,
         },
         execution_fields={
             "movement_budget": int(movement_budget),
@@ -264,11 +376,13 @@ def _select_attack_candidates(
             "attackable_tile_ids": list(attackable_tile_ids),
             "attack_sources_by_tile_id": {str(tile_id): list(source_ids) for tile_id, source_ids in attack_sources.items()},
             "selected_attack_source_tile_ids": list(selected_sources),
+            **nearest_diagnostic,
         },
         witness_fields={
             "movement_budget": int(movement_budget),
             "attack_range": int(attack_range),
             "selected_attack_source_tile_ids": list(selected_sources),
+            **nearest_diagnostic,
         },
     )
 

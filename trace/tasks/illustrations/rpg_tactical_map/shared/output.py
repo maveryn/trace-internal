@@ -159,6 +159,8 @@ def movement_attack_range_render_map(
 
     tiles_by_id = {str(tile.tile_id): tile for tile in scene.tiles}
     selected_tile_id = str(candidate_tile_ids_by_label[str(selected_label)])
+    start_tile_id = str(scene.units[0].tile_id) if scene.units else ""
+    start_tile = tiles_by_id.get(start_tile_id)
     candidate_tile_bboxes = {
         str(label): rounded_bbox(tiles_by_id[str(tile_id)].bbox_xyxy)
         for label, tile_id in candidate_tile_ids_by_label.items()
@@ -169,6 +171,22 @@ def movement_attack_range_render_map(
         if str(tile_id) in scene.label_bboxes_by_tile_id
     }
     attackable_set = {str(tile_id) for tile_id in attackable_tile_ids}
+    candidate_start_distances = {
+        str(label): (
+            abs(int(tiles_by_id[str(tile_id)].row) - int(start_tile.row))
+            + abs(int(tiles_by_id[str(tile_id)].col) - int(start_tile.col))
+        )
+        for label, tile_id in candidate_tile_ids_by_label.items()
+    } if start_tile is not None else {}
+    nearest_labels: list[str] = []
+    minimum_candidate_distance: int | None = None
+    if candidate_start_distances:
+        minimum_candidate_distance = min(int(distance) for distance in candidate_start_distances.values())
+        nearest_labels = sorted(
+            str(label)
+            for label, distance in candidate_start_distances.items()
+            if int(distance) == int(minimum_candidate_distance)
+        )
     return {
         "image_id": "img0",
         "movement_budget": int(movement_budget),
@@ -197,6 +215,15 @@ def movement_attack_range_render_map(
             str(label): [str(source_id) for source_id in attack_sources_by_tile_id.get(str(tile_id), ())]
             for label, tile_id in candidate_tile_ids_by_label.items()
         },
+        "candidate_start_manhattan_by_label": dict(candidate_start_distances),
+        "minimum_candidate_start_manhattan": minimum_candidate_distance,
+        "nearest_candidate_labels": list(nearest_labels),
+        "selected_start_manhattan": (
+            int(candidate_start_distances[str(selected_label)])
+            if str(selected_label) in candidate_start_distances
+            else None
+        ),
+        "selected_is_unique_nearest_by_start_manhattan": bool(nearest_labels == [str(selected_label)]),
         "reachable_move_tile_ids": [str(tile_id) for tile_id in reachable_move_tile_ids],
         "attackable_tile_ids": [str(tile_id) for tile_id in attackable_tile_ids],
         "selected_label": str(selected_label),

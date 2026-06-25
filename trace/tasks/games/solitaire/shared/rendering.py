@@ -430,7 +430,6 @@ def render_solitaire_scene(
     for col_index, column in enumerate(sample.columns):
         x0 = start_x + int(col_index) * (card_width + column_gap)
         header_bbox = (float(x0), float(tableau_y - 28), float(x0 + card_width), float(tableau_y - 4))
-        draw_text_center(draw, header_bbox, f"Col {col_index + 1}", font=label_font, fill=text_rgb, stroke_width=0)
         if str(sample.scene_variant) == "klondike_tableau" and len(column) >= 3:
             back_bbox = (float(x0), float(tableau_y - 12), float(x0 + card_width), float(tableau_y - 12 + card_height))
             draw_card_back(
@@ -441,6 +440,14 @@ def render_solitaire_scene(
                 accent_rgb=tuple(int(value) for value in solitaire_style.card_back_accent_rgb),
                 radius_px=radius,
             )
+        draw.rounded_rectangle(
+            header_bbox,
+            radius=7,
+            fill=tuple(int(value) for value in solitaire_style.option_fill_rgb),
+            outline=border_rgb,
+            width=1,
+        )
+        draw_text_center(draw, header_bbox, f"Col {col_index + 1}", font=label_font, fill=text_rgb, stroke_width=0)
         for row_index, card in enumerate(column):
             y0 = tableau_y + int(row_index) * column_step_y
             bbox = (float(x0), float(y0), float(x0 + card_width), float(y0 + card_height))

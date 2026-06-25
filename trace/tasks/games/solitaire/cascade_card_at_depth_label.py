@@ -10,7 +10,7 @@ from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 from trace.tasks.shared.support_sampling import resolve_integer_choice
 
 from ._lifecycle import SolitaireLifecycleTask, SolitaireObjective, run_solitaire_lifecycle
-from .shared.annotations import entity_bbox
+from .shared.annotations import entity_point
 from .shared.defaults import DEFAULTS, GEN_DEFAULTS
 from .shared.sampling import sample_cascade_card_at_depth
 
@@ -18,7 +18,7 @@ from .shared.sampling import sample_cascade_card_at_depth
 TASK_ID = "task_games__solitaire__cascade_card_at_depth_label"
 PROMPT_QUERY_KEY = "cascade_card_at_depth_label"
 SUPPORTED_QUERY_IDS = (DEFAULT_QUERY_ID,)
-JSON_EXAMPLE = '{"annotation":[[286,290,360,394]],"answer":"B"}'
+JSON_EXAMPLE = '{"annotation":[323,306],"answer":"B"}'
 JSON_EXAMPLE_ANSWER_ONLY = '{"answer":"B"}'
 
 
@@ -64,7 +64,7 @@ def _prepare_cascade_card_at_depth_objective(
         sample=sample,
         answer_gt=TypedValue(type="option_letter", value=str(sample.answer)),
         prompt_query_key=PROMPT_QUERY_KEY,
-        build_annotation=entity_bbox,
+        build_annotation=entity_point,
         json_example=JSON_EXAMPLE,
         json_example_answer_only=JSON_EXAMPLE_ANSWER_ONLY,
         prompt_slots={

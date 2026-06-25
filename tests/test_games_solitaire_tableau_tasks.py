@@ -172,6 +172,7 @@ def test_games_solitaire_cascade_card_at_depth_label_matches_trace() -> None:
     assert str(answer_option["label"]) == "D"
     assert str(answer_option["card_label"]) == str(execution["target_card_label"])
     assert len(execution["card_options"]) == 6
-    assert out.annotation_gt.type == "bbox"
-    assert out.annotation_gt.value == out.trace_payload["render_map"]["entity_bboxes_px"][target_card_id]
-    assert out.trace_payload["projected_annotation"]["type"] == "bbox"
+    assert out.annotation_gt.type == "point"
+    assert out.annotation_gt.value == out.trace_payload["render_map"]["entity_points_px"][target_card_id]
+    assert out.trace_payload["projected_annotation"]["type"] == "point"
+    assert out.trace_payload["projected_annotation"]["point"] == out.annotation_gt.value

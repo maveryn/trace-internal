@@ -140,7 +140,7 @@
     "annotation_hint_move_legality_label": "set \"annotation\" to an object mapping \"source_card\" and \"target\" to their bounding boxes [x0, y0, x1, y1]",
     "annotation_hint_foundation_ready_count": "set \"annotation\" to an array of bounding boxes [x0, y0, x1, y1] for the counted exposed cards; use an empty array when no cards are counted",
     "annotation_hint_column_card_count": "set \"annotation\" to an array of [x, y] image-pixel points, one point on the visible part of each card in the requested column",
-    "annotation_hint_cascade_card_at_depth_label": "set \"annotation\" to the bounding box [x0, y0, x1, y1] of the target card in the tableau column",
+    "annotation_hint_cascade_card_at_depth_label": "set \"annotation\" to one [x, y] image-pixel point on the visible part of the target card in the tableau column",
     "answer_hint_move_legality_label": "set \"answer\" to only the visible move option letter, for example \"C\"",
     "answer_hint_foundation_ready_count": "set \"answer\" to the number of exposed tableau cards that can move to a foundation pile now",
     "answer_hint_column_card_count": "set \"answer\" to the number of visible cards in the requested column",

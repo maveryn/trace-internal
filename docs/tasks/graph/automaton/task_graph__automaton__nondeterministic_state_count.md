@@ -5,7 +5,7 @@
 1. Scene id: `automaton`
 1. Source package: `automaton`
 1. Task id: `task_graph__automaton__nondeterministic_state_count`
-1. Query id: `nondeterministic_state_count`
+1. Query id: `single`
 
 ## Contract
 The image shows a finite-state transition diagram with state labels, directed
@@ -19,6 +19,9 @@ A state counts as nondeterministic when either:
 1. It has two or more outgoing transitions with the same input label.
 
 Missing outgoing transitions do not count as nondeterminism.
+
+## Program Contract
+- `count(filter(states, has_epsilon_outgoing(state) or has_duplicate_outgoing_symbol(state))); output=integer; annotation=point_set(nondeterministic_state_centers); scene=automaton; scope=nondeterministic_state_count`
 
 ## Answer And Annotation
 1. Answer type: `integer`.

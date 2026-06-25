@@ -49,7 +49,6 @@ def test_graph_counting_named_node_degree_value_build_smoke(tmp_path: Path) -> N
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "graph" for record in train_records)
-    assert all(record["scene_id"] == "counting" for record in train_records)
     assert all(record["scene_id"] == "node_link" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))

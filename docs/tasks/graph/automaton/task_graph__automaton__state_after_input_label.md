@@ -21,8 +21,11 @@
    - default state count is `4..6` and default input length is `3..6`.
 6. Query contract:
    - `final_state_label` asks for the state reached after reading the full input,
-   - `transition_step_state_label` asks for the state reached after the first `k` input symbols,
+    - `transition_step_state_label` asks for the state reached after the first `k` input symbols,
    - the simulation path is deterministic by construction for the shown input.
+
+## Program Contract
+- `state_label_after(simulate_dfa(transition_graph, input_string, stop_step)); output=string; annotation=point_sequence(visited_state_centers); scene=automaton; scope=state_after_input_label`
 
 ## 3) Prompt Contract
 1. Bundle: `automaton_v1`

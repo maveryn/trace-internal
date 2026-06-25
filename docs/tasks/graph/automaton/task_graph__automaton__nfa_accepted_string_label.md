@@ -11,6 +11,9 @@
 1. `nfa_accepted_string_label`
 2. Query ids are internal replay metadata; public sampling is at the task-id level.
 
+## Program Contract
+- `select(candidate_label for candidate_string in options if accepts(nfa_transition_graph, candidate_string)); output=string; annotation=point_sequence(accepted_state_path); scene=automaton; scope=nfa_accepted_string_label`
+
 ## Answer And Annotation
 1. Answer type: `string`.
 2. Annotation type: `point_sequence`.

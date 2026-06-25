@@ -54,7 +54,7 @@ def _assert_acceptance_contract(out) -> None:
 
     assert "task_graph__automaton__dfa_accepted_string_label" in TASK_REGISTRY
     assert out.scene_id == "automaton"
-    assert out.query_id in {"dfa_accepted_string_label", "nfa_accepted_string_label"}
+    assert out.query_id == "single"
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value in set(candidates)
     assert out.answer_gt.value == answer_option
@@ -78,7 +78,6 @@ def test_graph_relation_automaton_dfa_acceptance_contract_matches_trace() -> Non
     out = task.generate(
         91301,
         params={
-            "query_id": "dfa_accepted_string_label",
             "state_count": 5,
             "input_length_min": 4,
             "input_length_max": 4,
@@ -88,7 +87,7 @@ def test_graph_relation_automaton_dfa_acceptance_contract_matches_trace() -> Non
         max_attempts=100,
     )
 
-    assert out.query_id == "dfa_accepted_string_label"
+    assert out.query_id == "single"
     assert out.trace_payload["execution_trace"]["automaton_kind"] == "dfa"
     assert "deterministic automaton" in out.prompt
     _assert_acceptance_contract(out)
@@ -99,7 +98,6 @@ def test_graph_relation_automaton_nfa_acceptance_contract_matches_trace() -> Non
     out = task.generate(
         91302,
         params={
-            "query_id": "nfa_accepted_string_label",
             "state_count": 6,
             "input_length_min": 3,
             "input_length_max": 5,
@@ -108,7 +106,7 @@ def test_graph_relation_automaton_nfa_acceptance_contract_matches_trace() -> Non
         max_attempts=100,
     )
 
-    assert out.query_id == "nfa_accepted_string_label"
+    assert out.query_id == "single"
     assert out.trace_payload["execution_trace"]["automaton_kind"] == "nfa"
     assert "nondeterministic automaton" in out.prompt
     _assert_acceptance_contract(out)
@@ -118,7 +116,7 @@ def test_graph_relation_automaton_string_acceptance_prompt_examples_match_contra
     task = GraphRelationAutomatonDfaAcceptedStringLabelTask()
     out = task.generate(
         91303,
-        params={"query_id": "dfa_accepted_string_label", "state_count": 4, "input_length_min": 3, "input_length_max": 3},
+        params={"state_count": 4, "input_length_min": 3, "input_length_max": 3},
         max_attempts=100,
     )
 
@@ -149,8 +147,7 @@ def test_graph_relation_automaton_string_acceptance_balanced_sampling_covers_que
         state_counts[int(execution["state_count"])] += 1
         _assert_acceptance_contract(out)
 
-    assert set(query_ids) == {"dfa_accepted_string_label", "nfa_accepted_string_label"}
-    assert all(count > 0 for count in query_ids.values())
+    assert set(query_ids) == {"single"}
     assert set(answer_options) == set("ABCDEF")
     assert set(state_counts) == {4, 5, 6}
 

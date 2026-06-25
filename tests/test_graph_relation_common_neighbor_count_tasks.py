@@ -7,7 +7,7 @@ from collections import Counter
 
 from trace.core.seed import hash64
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.graph.relation.common_neighbor_count import GraphRelationCommonNeighborCountTask
+from trace.tasks.graph.node_link.common_related_node_count import GraphRelationCommonNeighborCountTask
 
 
 def _extract_prompt_json_example(prompt: str) -> dict:

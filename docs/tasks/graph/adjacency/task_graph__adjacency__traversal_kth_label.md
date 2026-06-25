@@ -16,6 +16,9 @@
 2. Stable schemas: answer is `string`; annotation is `bbox_sequence`.
 3. The BFS versus DFS operator is a semantic query branch. Source label, visit position, node labels, node count, extra edge count, font, style, and layout are generation/render metadata.
 
+## Program Contract
+- `label_at(traverse(adjacency_list_graph, source_node, traversal_operator), visit_position); output=string; annotation=bbox_sequence(visited_row_label_prefix); scene=adjacency; scope=traversal_kth_label`
+
 ## Annotation
 1. Answer type: `string`.
 2. Annotation type: `bbox_sequence`.

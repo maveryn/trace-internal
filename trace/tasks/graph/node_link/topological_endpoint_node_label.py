@@ -29,7 +29,7 @@ def _sample_graph(rng: Any, axes: NodeLinkAxes, attempts: int) -> Any:
 
 def _build_objective_plan() -> NodeLinkObjectivePlan:
     """Bind query ids, sampler, answer, and annotation for this objective."""
-    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphOrderTopologicalEndpointNodeLabelTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='string', answer_field='answer_label', annotation_type='point_set', annotation_kind='node_point_set', annotation_field='annotation_labels', prompt_query_key=lambda axes: str(axes.query_id), annotation_hint_key=lambda axes: 'annotation_hint_' + str(axes.query_id), graph_directionality='directed', scene_kind='graph_topological_endpoint_node_label', question_format=lambda axes: str(axes.query_id), value_ranges={}, annotation_example=[[180, 160]], answer_example='A')
+    return NodeLinkObjectivePlan(public_id=TASK_ID, class_name='GraphOrderTopologicalEndpointNodeLabelTask', supported_query_ids=SUPPORTED_QUERY_IDS, sample_graph=_sample_graph, answer_type='string', answer_field='answer_label', annotation_type='point', annotation_kind='node_point', annotation_field='annotation_labels', prompt_query_key=lambda axes: str(axes.query_id), annotation_hint_key=lambda axes: 'annotation_hint_' + str(axes.query_id), graph_directionality='directed', scene_kind='graph_topological_endpoint_node_label', question_format=lambda axes: str(axes.query_id), value_ranges={}, annotation_example=[180, 160], answer_example='A')
 
 @register_task
 class GraphOrderTopologicalEndpointNodeLabelTask:

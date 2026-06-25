@@ -16,7 +16,7 @@
 
 ## Answer And Annotation
 1. Answer type: `string`.
-2. Annotation type: `point_set`.
+2. Annotation type: `point`.
 3. Annotation marks one minimal pixel-space witness: the answered node center.
 4. The scene generator guarantees a unique topological order before selecting the endpoint.
 

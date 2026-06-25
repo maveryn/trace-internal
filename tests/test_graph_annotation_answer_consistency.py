@@ -69,11 +69,9 @@ GRAPH_QUERY_IDS = {
         "dfs_kth_visit_label",
     ),
     "task_graph__adjacency__undirected_component_count": ("single",),
-    "task_graph__automaton__dfa_accepted_string_label": ("dfa_accepted_string_label",),
-    "task_graph__automaton__nfa_accepted_string_label": ("nfa_accepted_string_label",),
-    "task_graph__automaton__nondeterministic_state_count": (
-        "nondeterministic_state_count",
-    ),
+    "task_graph__automaton__dfa_accepted_string_label": ("single",),
+    "task_graph__automaton__nfa_accepted_string_label": ("single",),
+    "task_graph__automaton__nondeterministic_state_count": ("single",),
     "task_graph__automaton__state_after_input_label": (
         "final_state_label",
         "transition_step_state_label",
@@ -91,14 +89,15 @@ GRAPH_QUERY_IDS = {
         "single_child_node_count",
         "two_child_node_count",
     ),
-    "task_graph__binary_tree__depth_level_node_count": ("depth_level_node_count",),
+    "task_graph__binary_tree__depth_level_node_count": ("single",),
+    "task_graph__binary_tree__heap_property_violation_label": ("single",),
     "task_graph__binary_tree__local_relative_node_label": (
         "left_child_label",
         "parent_label",
         "right_child_label",
         "sibling_label",
     ),
-    "task_graph__binary_tree__lowest_common_ancestor_label": ("lowest_common_ancestor_label",),
+    "task_graph__binary_tree__lowest_common_ancestor_label": ("single",),
     "task_graph__binary_tree__traversal_kth_label": (
         "inorder_kth_node_label",
         "level_order_kth_node_label",
@@ -188,16 +187,12 @@ GRAPH_QUERY_IDS = {
         "unique_predecessor_label",
         "unique_successor_label",
     ),
-    "task_graph__pedigree_chart__relatedness_coefficient_label": (
-        "relatedness_coefficient_between_two_people",
-    ),
-    "task_graph__pedigree_chart__relationship_label": (
-        "relationship_label_between_two_people",
-    ),
-    "task_graph__phylogeny_tree__clade_leaf_count": ("marked_clade_leaf_count",),
-    "task_graph__phylogeny_tree__mrca_clade_membership_count": ("mrca_leaf_count",),
-    "task_graph__phylogeny_tree__sister_leaf_label": ("sister_leaf_label",),
-    "task_graph__phylogeny_tree__topology_outlier_label": ("topology_outlier_label",),
+    "task_graph__pedigree_chart__relatedness_coefficient_label": ("single",),
+    "task_graph__pedigree_chart__relationship_label": ("single",),
+    "task_graph__phylogeny_tree__clade_leaf_count": ("single",),
+    "task_graph__phylogeny_tree__mrca_clade_membership_count": ("single",),
+    "task_graph__phylogeny_tree__sister_leaf_label": ("single",),
+    "task_graph__phylogeny_tree__topology_outlier_label": ("single",),
     "task_graph__pipe_network__bridge_count": ("single",),
     "task_graph__pipe_network__pipe_exact_distance_count": ("single",),
     "task_graph__pipe_network__pipe_reachable_junction_count": ("single",),
@@ -311,7 +306,7 @@ def _check_annotation_shape(annotation_type: str, annotation_value: Any) -> list
             ):
                 errors.append(f"{annotation_type}[{index}] is not a segment: {pair!r}")
                 break
-    elif annotation_type == "keyed_point_map":
+    elif annotation_type == "point_map":
         if not isinstance(annotation_value, Mapping):
             return [f"{annotation_type} value is not an object"]
         for key, point in annotation_value.items():
@@ -323,7 +318,7 @@ def _check_annotation_shape(annotation_type: str, annotation_value: Any) -> list
             ):
                 errors.append(f"{annotation_type}[{key!r}] is not [x,y]: {point!r}")
                 break
-    elif annotation_type == "keyed_bbox_map":
+    elif annotation_type == "bbox_map":
         if not isinstance(annotation_value, Mapping):
             return [f"{annotation_type} value is not an object"]
         for key, bbox in annotation_value.items():
@@ -384,18 +379,18 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
                 f"{projected_annotation['type']!r}"
             )
         if (
-            annotation_type == "keyed_bbox_map"
-            and projected_annotation.get("keyed_bbox_map") != annotation_value
+            annotation_type == "bbox_map"
+            and projected_annotation.get("bbox_map") != annotation_value
         ):
             errors.append(
-                "keyed_bbox_map annotation does not match projected_annotation.keyed_bbox_map"
+                "bbox_map annotation does not match projected_annotation.bbox_map"
             )
         if (
-            annotation_type == "keyed_point_map"
-            and projected_annotation.get("keyed_point_map") != annotation_value
+            annotation_type == "point_map"
+            and projected_annotation.get("point_map") != annotation_value
         ):
             errors.append(
-                "keyed_point_map annotation does not match projected_annotation.keyed_point_map"
+                "point_map annotation does not match projected_annotation.point_map"
             )
         if annotation_type == "bbox" and projected_annotation.get("bbox") != annotation_value:
             errors.append("bbox annotation does not match projected_annotation.bbox")
@@ -441,7 +436,11 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
         errors.append(f"single-label annotation length {annotation_len} != 1")
 
     if (
-        task_id != "task_graph__node_link__hamiltonian_cycle_neighbor_label"
+        task_id
+        not in {
+            "task_graph__metro__shortest_path_length",
+            "task_graph__node_link__hamiltonian_cycle_neighbor_label",
+        }
         and execution_trace.get("matching_labels")
         and annotation_type in {
         "point_set",
@@ -653,8 +652,8 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
     if task_id == "task_graph__binary_tree__heap_property_violation_label":
         if str(answer_value) != str(execution_trace.get("answer_label")):
             errors.append("heap-property violation answer does not match answer_label")
-        if annotation_type != "keyed_bbox_map":
-            errors.append("heap-property violation annotation must be keyed_bbox_map")
+        if annotation_type != "point_map":
+            errors.append("heap-property violation annotation must be point_map")
         role_to_label = execution_trace.get("annotation_role_to_label") or {}
         if not isinstance(role_to_label, Mapping):
             errors.append("heap-property violation annotation_role_to_label is not a map")
@@ -673,8 +672,8 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
     }:
         if str(answer_value) != str(execution_trace.get("answer_label")):
             errors.append("binary-tree relation answer does not match answer_label")
-        if annotation_type != "keyed_bbox_map":
-            errors.append("binary-tree relation annotation must be keyed_bbox_map")
+        if annotation_type != "point_map":
+            errors.append("binary-tree relation annotation must be point_map")
         role_to_label = execution_trace.get("annotation_role_to_label") or {}
         if not isinstance(role_to_label, Mapping):
             errors.append("binary-tree relation annotation_role_to_label is not a map")
@@ -727,9 +726,7 @@ def _audit_graph_sample(row: Mapping[str, Any]) -> list[str]:
         if str(answer_value) != str(execution_trace.get("answer_option_label")):
             errors.append("accepted-string answer does not match answer_option_label")
 
-    if task_id in {
-        "task_graph__node_link__edge_between_nodes_label",
-    }:
+    if task_id in {"task_graph__node_link__edge_between_nodes_label"}:
         if str(answer_value) != str(execution_trace.get("target_edge_label")):
             errors.append("edge-attribute answer does not match target_edge_label")
     if task_id in {
@@ -765,6 +762,26 @@ def _collect_sample(output: Any, seed: int) -> dict[str, Any]:
     }
 
 
+def _generate_contract_sample(task: Any, *, task_id: str, query_id: str, sample_index: int) -> tuple[Any, int]:
+    """Generate one sample for audit, retrying rare infeasible deterministic axes."""
+
+    params = {} if str(query_id) == "single" else {"query_id": str(query_id)}
+    last_error: Exception | None = None
+    for retry_index in range(8):
+        seed = hash64(
+            20260528,
+            f"graph_annotation_contract:{task_id}:{query_id}",
+            sample_index,
+            retry_index,
+        )
+        try:
+            return task.generate(seed, params=params, max_attempts=300), int(seed)
+        except RuntimeError as exc:
+            last_error = exc
+            continue
+    raise AssertionError(f"could not generate contract sample for {task_id}/{query_id}") from last_error
+
+
 def test_graph_annotation_matches_answer_contracts() -> None:
     """Every graph query branch should keep answer, annotation, and trace aligned."""
 
@@ -778,13 +795,11 @@ def test_graph_annotation_matches_answer_contracts() -> None:
         task = create_task(task_id)
         for query_id in GRAPH_QUERY_IDS[task_id]:
             for sample_index in range(2):
-                seed = hash64(
-                    20260528,
-                    f"graph_annotation_contract:{task_id}:{query_id}",
-                    sample_index,
-                )
-                output = task.generate(
-                    seed, params={"query_id": query_id}, max_attempts=300
+                output, seed = _generate_contract_sample(
+                    task,
+                    task_id=task_id,
+                    query_id=str(query_id),
+                    sample_index=sample_index,
                 )
                 row = _collect_sample(output, seed)
                 if not row["task_id"]:

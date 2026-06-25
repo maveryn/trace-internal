@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from collections import Counter
 from trace.core.seed import hash64
-from trace.tasks.graph.relation.same_component_count import GraphRelationSameComponentCountTask
+from trace.tasks.graph.node_link.same_component_count import GraphRelationSameComponentCountTask
 from trace.tasks.graph.shared.graph_sample_types import SUPPORTED_LAYOUT_VARIANTS
 from trace.tasks.shared.named_colors import named_color
 

@@ -17,7 +17,7 @@
 
 ## Answer And Annotation
 1. Answer type: `string`.
-2. Annotation type: `point_set`.
+2. Annotation type: `point`.
 3. Annotation is a single node-center pixel point for the answer node.
 4. The answer is the visible label of the requested previous or next node in that traversal.
 

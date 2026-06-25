@@ -17,7 +17,7 @@
 4. Supported directed `degree_mode` values: `in_degree`, `out_degree`
 5. Supported `scene_variant` values: `circular`, `shell`, `spring`, `grid_jitter`, `layered`, `component_clustered`, `path_spine`, `radial_tree`
 6. `answer_gt.type`: `integer`
-7. `annotation_gt.type`: `point_set`
+7. `annotation_gt.type`: `point`
 8. Scene contract:
    - one single-panel labeled node-link graph,
    - simple unweighted graph only,
@@ -46,7 +46,7 @@
 8. If the node label format is `named`, prompt references quote the node label, for example node `"Lima"`.
 
 ## 4) Annotation + trace contract
-1. Prompt-facing annotation is the `point_set` containing the one node center whose branch-specific degree value equals the requested maximum or minimum.
+1. Prompt-facing annotation is one point at the node center whose branch-specific degree value equals the requested maximum or minimum.
 2. `answer_gt.value == execution_trace.target_degree` by construction.
 3. `len(annotation_gt.value) == 1` by construction.
 4. `execution_trace.graph_directionality` records `undirected` or `directed`; `execution_trace.degree_mode` records `degree`, `in_degree`, or `out_degree`.
@@ -55,7 +55,7 @@
 7. `execution_trace.queried_degrees_by_label` stores the degree map used to compute the answer.
 8. `execution_trace.matching_labels` and `witness_symbolic.labels` store the label attaining the queried extreme value.
 9. `scene_ir.entities` stores node labels, total degrees, directed degrees, queried degree values, center points, bboxes, and `is_extreme_degree_node`.
-10. `projected_annotation` includes `point_set`.
+10. `projected_annotation` includes `point`.
 
 ## 5) Visual policy
 1. Rendering uses the shared graph light-panel style from `configs/domains/graph/base.yaml`.

@@ -22,7 +22,7 @@ def test_graph_relation_hamiltonian_cycle_neighbor_label_deterministic() -> None
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.answer_gt.type == "string"
-    assert out_a.annotation_gt.type == "point_set"
+    assert out_a.annotation_gt.type == "point"
 
 
 def test_graph_relation_hamiltonian_cycle_neighbor_label_build_smoke(tmp_path: Path) -> None:

@@ -57,13 +57,13 @@ def test_graph_relation_automaton_nondeterministic_state_count_contract_matches_
 
     assert "task_graph__automaton__nondeterministic_state_count" in TASK_REGISTRY
     assert out.scene_id == "automaton"
-    assert out.query_id == "nondeterministic_state_count"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 2
     assert out.annotation_gt.type == "point_set"
     assert len(out.annotation_gt.value) == 2
     assert trace["scene_ir"]["scene_kind"] == "automaton_nondeterministic_state_count"
-    assert execution["query_id"] == "nondeterministic_state_count"
+    assert execution["query_id"] == "single"
     assert execution["state_count"] == 5
     assert execution["target_count"] == 2
     assert execution["layout_variant_requested"] == "shell"

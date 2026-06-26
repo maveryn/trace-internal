@@ -19,6 +19,7 @@ from trace.tasks.three_d.shared.object_inventory_preview import (
     ObjectProfilePreview,
     render_three_d_object_profile_preview,
 )
+from trace.tasks.three_d.object_cluster.shared.defaults import NAMED_CLUSTER_SHAPE_TYPES
 from trace.tasks.three_d.shared.object_resources import (
     OBJECT_CLUSTER_EXTRA_SHAPE_TYPES,
     ThreeDObjectProfile,
@@ -216,6 +217,19 @@ def _scene_profiles(scene_id: str) -> List[ThreeDObjectProfile]:
     return sorted(object_profiles(source_scene=str(scene_id)), key=lambda profile: (profile.role, profile.display_name, profile.object_type))
 
 
+def _profiles_for_shape_types(
+    shape_types: Sequence[str],
+    *,
+    source_scene: str,
+    role: str,
+) -> List[ThreeDObjectProfile]:
+    profile_by_type = {
+        str(profile.object_type): profile
+        for profile in object_profiles(source_scene=str(source_scene), role=str(role))
+    }
+    return [profile_by_type[str(shape_type)] for shape_type in shape_types if str(shape_type) in profile_by_type]
+
+
 def _build_sheet_specs() -> List[Dict[str, Any]]:
     object_small = sorted(
         object_profiles(source_scene="object_scene", role="spatial_small_shape"),
@@ -228,6 +242,11 @@ def _build_sheet_specs() -> List[Dict[str, Any]]:
     cluster_pool = sorted(
         object_profiles(source_scene="object_cluster", role="cluster_small_shape"),
         key=lambda profile: (profile.display_name, profile.object_type),
+    )
+    cluster_named_pool = _profiles_for_shape_types(
+        NAMED_CLUSTER_SHAPE_TYPES,
+        source_scene="object_cluster",
+        role="cluster_small_shape",
     )
     cluster_extra_types = {str(value) for value in OBJECT_CLUSTER_EXTRA_SHAPE_TYPES}
     cluster_extra = tuple(profile for profile in cluster_pool if str(profile.object_type) in cluster_extra_types)
@@ -270,63 +289,70 @@ def _build_sheet_specs() -> List[Dict[str, Any]]:
             8,
         ),
         (
-            "03_object_cluster_extra_countqa_objects.png",
+            "03_object_cluster_configured_named_pool.png",
+            "Object Cluster Configured Named Pool",
+            f"The current {len(cluster_named_pool)} NAMED_CLUSTER_SHAPE_TYPES entries, in configured sampling order.",
+            cluster_named_pool,
+            8,
+        ),
+        (
+            "04_object_cluster_extra_countqa_objects.png",
             "Object Cluster CountQA Additions",
             f"The {len(cluster_extra)} cluster-specific object types added for dense counting coverage.",
             cluster_extra,
             5,
         ),
         (
-            "04_room_wall_objects.png",
+            "05_room_wall_objects.png",
             "Room Wall Object Pool",
             "Wall-mounted room objects and wall decor variants.",
             room_wall,
             4,
         ),
         (
-            "05_room_surface_variants.png",
+            "06_room_surface_variants.png",
             "Room Surface Object Variants",
             "Small room objects rendered on furniture supports.",
             room_surface,
             4,
         ),
         (
-            "06_room_floor_props.png",
+            "07_room_floor_props.png",
             "Room Floor Prop Pool",
             "Furniture and large floor props used by room scenes.",
             room_floor_props,
             4,
         ),
         (
-            "07_room_floor_variants.png",
+            "08_room_floor_variants.png",
             "Room Floor Object Variants",
             "Floor-standing variants of normally wall-mounted room objects.",
             room_floor_variants,
             4,
         ),
         (
-            "08_street_candidate_objects.png",
+            "09_street_candidate_objects.png",
             "Street Candidate Object Pool",
             "Answerable street objects that may be lettered or queried; excludes scene context such as buildings and greenery.",
             street_candidates,
             4,
         ),
         (
-            "09_street_context_objects.png",
+            "10_street_context_objects.png",
             "Street Context Object Pool",
             "Non-answerable street scene context such as buildings, signs, benches, traffic lights, trees, and shrubs.",
             street_context,
             4,
         ),
         (
-            "10_warehouse_objects.png",
+            "11_warehouse_objects.png",
             "Warehouse Object Pool",
             "Robots, racks, reference objects, and warehouse equipment.",
             warehouse_profiles,
             4,
         ),
         (
-            "11_surface_fixture_variants.png",
+            "12_surface_fixture_variants.png",
             "Surface Fixture Variant Pool",
             "Repeated mounted surface elements and panel variants used by surface_fixture tasks.",
             surface_fixture_profiles,
@@ -370,10 +396,37 @@ def _write_readme(sheet_records: Sequence[Mapping[str, Any]]) -> None:
     (OUT_DIR / "README.md").write_text("\n".join(lines), encoding="utf-8")
 
 
+def _write_object_cluster_named_pool_manifest(profiles: Sequence[ThreeDObjectProfile]) -> None:
+    records = [
+        {
+            "index": int(index),
+            "shape_type": str(profile.object_type),
+            "display_name": str(profile.display_name),
+            "profile_id": str(profile.profile_id),
+            "canonical_id": str(profile.canonical_id),
+            "renderer": str(profile.renderer),
+            "dimensions_xyz": list(profile.dimensions_xyz or ()),
+        }
+        for index, profile in enumerate(profiles)
+    ]
+    payload = {
+        "domain": "three_d",
+        "scene_id": "object_cluster",
+        "pool_id": "NAMED_CLUSTER_SHAPE_TYPES",
+        "description": "Current configured object_cluster named object pool, in sampling/support order.",
+        "item_count": int(len(records)),
+        "items": records,
+    }
+    (OUT_DIR / "object_cluster_named_pool_manifest.json").write_text(
+        json.dumps(payload, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+
+
 def _clear_existing_outputs() -> None:
     for path in OUT_DIR.glob("*.png"):
         path.unlink()
-    for filename in ("README.md", "object_profile_preview_manifest.json"):
+    for filename in ("README.md", "object_profile_preview_manifest.json", "object_cluster_named_pool_manifest.json"):
         path = OUT_DIR / filename
         if path.exists():
             path.unlink()
@@ -382,8 +435,15 @@ def _clear_existing_outputs() -> None:
 def main() -> int:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     _clear_existing_outputs()
-    sheet_records = [_make_sheet(**spec) for spec in _build_sheet_specs()]
+    sheet_specs = _build_sheet_specs()
+    sheet_records = [_make_sheet(**spec) for spec in sheet_specs]
     all_failures = [failure for record in sheet_records for failure in record.get("failures", [])]
+    cluster_named_profiles = _profiles_for_shape_types(
+        NAMED_CLUSTER_SHAPE_TYPES,
+        source_scene="object_cluster",
+        role="cluster_small_shape",
+    )
+    _write_object_cluster_named_pool_manifest(cluster_named_profiles)
     manifest = {
         "domain": "three_d",
         "profile_count": int(len(object_profiles())),

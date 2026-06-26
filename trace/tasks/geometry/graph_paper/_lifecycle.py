@@ -1424,6 +1424,24 @@ def _quadrilateral_matches_target(points: Sequence[Point], target_class: str) ->
     return False
 
 
+def _triangle_class_name_matches_target(class_name: str, target_class: str) -> bool:
+    """Return whether one triangle construction class satisfies a target predicate."""
+
+    if str(target_class) == "scalene":
+        return str(class_name) in {"right", "scalene"}
+    return str(class_name) == str(target_class)
+
+
+def _quadrilateral_class_name_matches_target(
+    class_name: str, target_class: str
+) -> bool:
+    """Return whether one quadrilateral construction class satisfies a target predicate."""
+
+    if str(target_class) == "slanted_parallelogram":
+        return str(class_name) in {"non_square_rhombus", "slanted_parallelogram"}
+    return str(class_name) == str(target_class)
+
+
 def _object_class_matches(entity: GraphObject, target_class: str) -> bool:
     """Fallback exact class matcher for count objectives."""
 
@@ -1475,13 +1493,14 @@ def _count_setup(
     salt: str,
     target_field: str,
     classes: Sequence[str],
+    class_matches_target: Callable[[str, str], bool] | None = None,
 ):
     """Resolve the target class, target count, and shuffled class sequence."""
 
     task_params = dict(context["task_params"])
     rng = rng_for(int(context["instance_seed"]), str(salt))
     object_count = min(
-        9, resolve_count(task_params, context["generation_defaults"], fallback=8)
+        6, resolve_count(task_params, context["generation_defaults"], fallback=6)
     )
     branch_name = str(context["branch_name"])
     fallback_target_class = str(
@@ -1495,18 +1514,30 @@ def _count_setup(
         )
     )
     target_class = plan.target_class_for(branch_name, fallback_target_class)
-    target_total = count_target(
-        task_params,
-        context["generation_defaults"],
-        object_count=object_count,
-        instance_seed=int(context["instance_seed"]),
-        salt=str(salt),
+    target_total = max(
+        1,
+        min(
+            5,
+            count_target(
+                task_params,
+                context["generation_defaults"],
+                object_count=object_count,
+                instance_seed=int(context["instance_seed"]),
+                salt=str(salt),
+            ),
+        ),
     )
+    matches_target = class_matches_target or (
+        lambda class_name, target: str(class_name) == str(target)
+    )
+    distractor_classes = [
+        str(value)
+        for value in classes
+        if not matches_target(str(value), str(target_class))
+    ]
     class_sequence = make_class_sequence(
         target_class=target_class,
-        distractor_classes=[
-            str(value) for value in classes if str(value) != target_class
-        ],
+        distractor_classes=distractor_classes,
         object_count=object_count,
         target_count=target_total,
         rng=rng,
@@ -1644,6 +1675,7 @@ def _build_triangle_type_count(
         salt=plan.salt,
         target_field=plan.target_field,
         classes=TRIANGLE_CLASSES,
+        class_matches_target=_triangle_class_name_matches_target,
     )
     ctx = make_context(
         instance_seed=int(context["instance_seed"]),
@@ -1695,6 +1727,7 @@ def _build_quadrilateral_type_count(
         salt=plan.salt,
         target_field=plan.target_field,
         classes=QUADRILATERAL_CLASSES,
+        class_matches_target=_quadrilateral_class_name_matches_target,
     )
     ctx = make_context(
         instance_seed=int(context["instance_seed"]),

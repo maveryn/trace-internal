@@ -241,16 +241,23 @@ def test_geometry_graph_paper_concave_polygon_has_clear_inward_notch() -> None:
 
 
 def test_geometry_graph_paper_scalene_count_includes_right_scalene_triangles() -> None:
+    right_triangle = graph_paper_lifecycle._triangle_points((0.0, 0.0), "right")
+    assert graph_paper_lifecycle._triangle_matches_target(right_triangle, "scalene")
+
     out = GeometryGraphPaperTriangleTypeCountTask().generate(
         4284304800355367,
         params={"query_id": "scalene_triangle_count"},
         max_attempts=40,
     )
-    classes = [
-        str(entity["class_name"]) for entity in out.trace_payload["scene_ir"]["entities"]
-    ]
-    assert "right" in classes
-    assert out.answer_gt.value == classes.count("scalene") + classes.count("right")
+    expected = sum(
+        1
+        for entity in out.trace_payload["scene_ir"]["entities"]
+        if graph_paper_lifecycle._triangle_matches_target(
+            tuple(tuple(point) for point in entity["graph_points"]),
+            "scalene",
+        )
+    )
+    assert out.answer_gt.value == expected
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
 
 
@@ -267,6 +274,31 @@ def test_geometry_graph_paper_quadrilateral_predicates_are_standard_and_unambigu
     assert graph_paper_lifecycle._quadrilateral_matches_target(
         rhombus_points, "slanted_parallelogram"
     )
+
+
+@pytest.mark.parametrize(
+    ("task_cls", "query_id"),
+    (
+        (GeometryGraphPaperAngleTypeCountTask, "acute_angle_count"),
+        (GeometryGraphPaperTriangleTypeCountTask, "scalene_triangle_count"),
+        (GeometryGraphPaperQuadrilateralTypeCountTask, "slanted_parallelogram_count"),
+        (GeometryGraphPaperShapeTypeCountTask, "ellipse_count"),
+        (GeometryGraphPaperPolygonConvexityCountTask, "concave_polygon_count"),
+    ),
+)
+def test_geometry_graph_paper_count_tasks_cap_objects_and_answer_support(
+    task_cls,
+    query_id: str,
+) -> None:
+    out = task_cls().generate(
+        23107,
+        params={"query_id": query_id, "object_count": 8, "target_count": 6},
+        max_attempts=40,
+    )
+    assert int(out.trace_payload["execution_trace"]["object_count"]) == 6
+    assert len(out.trace_payload["scene_ir"]["entities"]) == 6
+    assert 1 <= int(out.answer_gt.value) <= 5
+    assert len(out.annotation_gt.value) == int(out.answer_gt.value)
 
 
 def _assert_all_graph_points_are_lattice(output) -> None:

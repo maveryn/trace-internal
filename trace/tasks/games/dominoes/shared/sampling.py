@@ -10,6 +10,7 @@ from trace.tasks.games.shared.sampling import resolve_games_integer_axis, resolv
 from trace.tasks.games.shared.style import SUPPORTED_DOMINO_STYLE_VARIANTS
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.font_assets import sample_font_family
+from trace.tasks.shared.support_sampling import resolve_integer_support
 
 from .defaults import DEFAULTS, DOMINOES_NAMESPACE, SUPPORTED_DOMINO_SCENE_VARIANTS
 from .rendering import DominoRenderParams

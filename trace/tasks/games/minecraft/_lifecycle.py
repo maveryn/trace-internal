@@ -299,8 +299,8 @@ def _render_scene(
     panel_style, panel_style_meta = resolve_game_panel_scene_style(
         instance_seed=int(instance_seed),
         namespace=f"{namespace}.panel_scene",
-        treatment_weights=render_defaults.get("panel_treatment_weights", {}),
-        palette_weights=render_defaults.get("panel_palette_weights", {}),
+        treatment_weights=render_defaults.get("panel_scene_treatment_weights"),
+        palette_weights=render_defaults.get("panel_scene_palette_weights"),
     )
     background, background_meta = make_panel_scene_background(
         canvas_width=int(render_params.canvas_width),

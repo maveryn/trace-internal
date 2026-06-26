@@ -312,8 +312,8 @@ def render_marble_scene(
     style, style_meta = resolve_game_panel_scene_style(
         instance_seed=int(instance_seed),
         namespace=f"{str(namespace)}.marble_chain_panel_style",
-        treatment_weights=group_default(render_defaults, "panel_treatment_weights", {}),
-        palette_weights=group_default(render_defaults, "panel_palette_weights", {}),
+        treatment_weights=group_default(render_defaults, "panel_scene_treatment_weights", None),
+        palette_weights=group_default(render_defaults, "panel_scene_palette_weights", None),
     )
     image, background_meta = make_panel_scene_background(
         canvas_width=int(canvas_width),

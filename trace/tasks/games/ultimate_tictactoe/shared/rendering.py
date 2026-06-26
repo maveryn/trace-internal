@@ -171,8 +171,8 @@ def render_ultimate_tictactoe_scene(
     style, style_meta = resolve_game_panel_scene_style(
         instance_seed=int(instance_seed),
         namespace=f"{str(namespace)}.panel_style",
-        treatment_weights=group_default(GEN_DEFAULTS, "panel_treatment_weights", {}),
-        palette_weights=group_default(GEN_DEFAULTS, "panel_palette_weights", {}),
+        treatment_weights=group_default(GEN_DEFAULTS, "panel_scene_treatment_weights", None),
+        palette_weights=group_default(GEN_DEFAULTS, "panel_scene_palette_weights", None),
     )
     layout_jitter = resolve_games_layout_jitter(
         params,

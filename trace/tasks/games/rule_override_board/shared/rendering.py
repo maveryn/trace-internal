@@ -172,8 +172,8 @@ def make_rule_override_background(
     panel_style, panel_style_meta = resolve_game_panel_scene_style(
         instance_seed=int(instance_seed),
         namespace=f"{SCENE_NAMESPACE}.panel_scene",
-        treatment_weights=group_default(gen_defaults, "panel_treatment_weights", {}),
-        palette_weights=group_default(gen_defaults, "panel_palette_weights", {}),
+        treatment_weights=group_default(gen_defaults, "panel_scene_treatment_weights", None),
+        palette_weights=group_default(gen_defaults, "panel_scene_palette_weights", None),
     )
     background, background_meta = make_panel_scene_background(
         canvas_width=int(render_params.canvas_width),

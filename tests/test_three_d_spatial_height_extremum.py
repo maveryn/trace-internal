@@ -8,6 +8,8 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
+from trace.tasks.three_d.shared.object_scene_primitives import _sub_box_spec
+from trace.tasks.three_d.shared.object_resources import SPATIAL_HEIGHT_SAFE_CANDIDATE_SHAPE_TYPES
 from trace.tasks.three_d.object_scene.height_extremum_label import SUPPORTED_QUERY_IDS, TASK_ID
 from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
@@ -44,7 +46,7 @@ def test_height_extremum_answer_and_annotation(query_id: str) -> None:
     assert {str(spec["shape_type"]) for spec in context_specs} == {"platform"}
     assert not any(str(spec.get("support_shape_type")) in {"chair", "shelf", "open_box", "table"} for spec in point_specs)
     assert len({str(spec["shape_type"]) for spec in point_specs}) == len(point_specs)
-    assert not any(str(spec.get("shape_type")) in {"bottle", "candle", "cup", "drum", "flask", "goblet", "hat", "lantern", "wedge"} for spec in point_specs)
+    assert not any(str(spec.get("shape_type")) in {"bottle", "candle", "drum", "flask", "goblet", "hat", "lantern", "wedge"} for spec in point_specs)
     assert not any("option_color_name" in spec for spec in point_specs)
     answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_label)
     expected_bbox = output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
@@ -91,6 +93,23 @@ def test_height_extremum_uses_distinct_object_descriptors_across_seeds() -> None
         assert not any("option_color_name" in spec for spec in trace["point_specs"])
 
     assert len(answer_shapes) >= 4
+
+
+def test_sub_box_spec_preserves_elevated_parent_base_height() -> None:
+    parent = {
+        "world_xyz": [1.0, 2.0, 1.85],
+        "base_xyz": [1.0, 2.0, 1.5],
+        "dimensions_xyz": [0.6, 0.6, 0.7],
+    }
+
+    sub_box = _sub_box_spec(parent, offset_xyz=(0.0, 0.0, 0.1), dimensions_xyz=(0.3, 0.3, 0.4))
+
+    assert sub_box["base_xyz"][2] == 1.6
+    assert sub_box["world_xyz"][2] == 1.8
+
+
+def test_height_extremum_candidate_pool_keeps_cup_after_elevated_subpart_fix() -> None:
+    assert "cup" in SPATIAL_HEIGHT_SAFE_CANDIDATE_SHAPE_TYPES
 
 
 def test_height_extremum_task_registered_in_three_d_taxonomy() -> None:

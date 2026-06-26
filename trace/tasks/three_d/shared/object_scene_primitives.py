@@ -215,11 +215,13 @@ def _sub_box_spec(
     dimensions_xyz: Tuple[float, float, float],
 ) -> Dict[str, Any]:
     x, y, _z = (float(value) for value in spec["world_xyz"])
+    raw_base = spec.get("base_xyz", (x, y, 0.0))
+    parent_base_z = float(raw_base[2]) if isinstance(raw_base, Sequence) and len(raw_base) >= 3 else 0.0
     width, depth, height = (float(value) for value in dimensions_xyz)
     ox, oy = _oriented_offset_xy(spec, float(offset_xyz[0]), float(offset_xyz[1]))
     cx = float(x + ox)
     cy = float(y + oy)
-    base_z = float(offset_xyz[2])
+    base_z = float(parent_base_z) + float(offset_xyz[2])
     return {
         **dict(spec),
         "world_xyz": [round(cx, 4), round(cy, 4), round(base_z + height * 0.5, 4)],

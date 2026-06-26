@@ -568,6 +568,7 @@ SPATIAL_HEIGHT_SAFE_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = (
     "apple",
     "helmet",
     "mushroom",
+    "cup",
     "trophy",
 )
 

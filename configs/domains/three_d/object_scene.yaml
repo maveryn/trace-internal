@@ -92,12 +92,6 @@ generation:
       context_object_count_min: 5
       context_object_count_max: 5
       balanced_scene_variant_sampling: true
-    task_three_d__object_scene__landmark_correspondence_label:
-      scene_variant_weights:
-        floor_grid_room: 1.0
-        tabletop_room: 1.0
-        studio_platform: 1.0
-      balanced_scene_variant_sampling: true
     task_three_d__object_scene__multiview_object_match_label:
       scene_variant_weights:
         floor_grid_room: 1.0
@@ -128,45 +122,15 @@ generation:
       target_count_min: 1
       target_count_max: 5
       balanced_scene_variant_sampling: true
-    task_three_d__object_scene__multi_attribute_and_count:
-      scene_variant_weights:
-        floor_grid_room: 1.0
-        tabletop_room: 1.0
-        studio_platform: 1.0
-      object_count_min: 12
-      object_count_max: 15
-      target_count_min: 1
-      target_count_max: 5
-      balanced_scene_variant_sampling: true
-    task_three_d__object_scene__multi_attribute_or_count:
-      scene_variant_weights:
-        floor_grid_room: 1.0
-        tabletop_room: 1.0
-        studio_platform: 1.0
-      object_count_min: 12
-      object_count_max: 15
-      target_count_min: 1
-      target_count_max: 5
-      balanced_scene_variant_sampling: true
-    task_three_d__object_scene__multi_attribute_exclusion_count:
-      scene_variant_weights:
-        floor_grid_room: 1.0
-        tabletop_room: 1.0
-        studio_platform: 1.0
-      object_count_min: 12
-      object_count_max: 15
-      target_count_min: 1
-      target_count_max: 5
-      balanced_scene_variant_sampling: true
     task_three_d__object_scene__image_plane_lateral_relation_count:
       scene_variant_weights:
         floor_grid_room: 1.0
         tabletop_room: 1.0
         studio_platform: 1.0
-      object_count_min: 8
-      object_count_max: 8
+      object_count_min: 9
+      object_count_max: 9
       target_count_min: 1
-      target_count_max: 5
+      target_count_max: 6
       balanced_scene_variant_sampling: true
     task_three_d__object_scene__camera_depth_relation_count:
       scene_variant_weights:
@@ -305,21 +269,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-    task_three_d__object_scene__landmark_correspondence_label:
-      canvas_width: 1480
-      canvas_height: 900
-      scene_margin_left_px: 54
-      scene_margin_right_px: 54
-      scene_margin_top_px: 42
-      scene_margin_bottom_px: 48
-      room_extent: 3.2
-      room_height: 3.0
-      grid_step: 0.8
-      marker_radius_px: 22
-      label_font_size_px: 24
-      line_width_px: 2
-      full_bleed_floor: true
-      full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__multiview_object_match_label:
       canvas_width: 1480
       canvas_height: 900
@@ -351,51 +300,6 @@ rendering:
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__single_attribute_membership_count:
-      canvas_width: 1180
-      canvas_height: 900
-      scene_margin_left_px: 48
-      scene_margin_right_px: 48
-      scene_margin_top_px: 38
-      scene_margin_bottom_px: 44
-      room_extent: 3.2
-      room_height: 3.0
-      grid_step: 0.8
-      marker_radius_px: 22
-      label_font_size_px: 24
-      line_width_px: 2
-      full_bleed_floor: true
-      full_bleed_floor_extent_multiplier: 3.4
-    task_three_d__object_scene__multi_attribute_and_count:
-      canvas_width: 1180
-      canvas_height: 900
-      scene_margin_left_px: 48
-      scene_margin_right_px: 48
-      scene_margin_top_px: 38
-      scene_margin_bottom_px: 44
-      room_extent: 3.2
-      room_height: 3.0
-      grid_step: 0.8
-      marker_radius_px: 22
-      label_font_size_px: 24
-      line_width_px: 2
-      full_bleed_floor: true
-      full_bleed_floor_extent_multiplier: 3.4
-    task_three_d__object_scene__multi_attribute_or_count:
-      canvas_width: 1180
-      canvas_height: 900
-      scene_margin_left_px: 48
-      scene_margin_right_px: 48
-      scene_margin_top_px: 38
-      scene_margin_bottom_px: 44
-      room_extent: 3.2
-      room_height: 3.0
-      grid_step: 0.8
-      marker_radius_px: 22
-      label_font_size_px: 24
-      line_width_px: 2
-      full_bleed_floor: true
-      full_bleed_floor_extent_multiplier: 3.4
-    task_three_d__object_scene__multi_attribute_exclusion_count:
       canvas_width: 1180
       canvas_height: 900
       scene_margin_left_px: 48
@@ -471,9 +375,6 @@ prompt:
     task_three_d__object_scene__height_extremum_label:
       scene_key: object_scene
       task_key: height_extremum_query
-    task_three_d__object_scene__landmark_correspondence_label:
-      scene_key: object_scene
-      task_key: landmark_correspondence_query
     task_three_d__object_scene__multiview_object_match_label:
       scene_key: object_scene
       task_key: multiview_object_match_query
@@ -481,15 +382,6 @@ prompt:
       scene_key: object_scene
       task_key: spatial_relation_count_query
     task_three_d__object_scene__single_attribute_membership_count:
-      scene_key: object_scene
-      task_key: logical_predicate_count_query
-    task_three_d__object_scene__multi_attribute_and_count:
-      scene_key: object_scene
-      task_key: logical_predicate_count_query
-    task_three_d__object_scene__multi_attribute_or_count:
-      scene_key: object_scene
-      task_key: logical_predicate_count_query
-    task_three_d__object_scene__multi_attribute_exclusion_count:
       scene_key: object_scene
       task_key: logical_predicate_count_query
     task_three_d__object_scene__image_plane_lateral_relation_count:

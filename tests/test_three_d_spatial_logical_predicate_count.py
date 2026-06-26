@@ -10,9 +10,6 @@ from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.shared.named_colors import available_named_colors
 from trace.tasks.three_d.shared.object_scene_logical_predicate_count import (
-    MULTI_ATTRIBUTE_AND_COUNT_TASK_ID,
-    MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
-    MULTI_ATTRIBUTE_OR_COUNT_TASK_ID,
     PROMPT_COLOR_RGB,
     SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID,
 )
@@ -22,10 +19,6 @@ TASK_ID_BY_QUERY_ID = {
     "object_type_count": SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID,
     "object_type_union_count": SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID,
     "color_union_count": SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID,
-    "object_type_and_color_count": MULTI_ATTRIBUTE_AND_COUNT_TASK_ID,
-    "object_type_or_color_count": MULTI_ATTRIBUTE_OR_COUNT_TASK_ID,
-    "object_type_and_not_color_count": MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
-    "color_and_not_object_type_count": MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
 }
 
 
@@ -43,7 +36,6 @@ def _spec_matches_target(spec: dict, target_spec: dict) -> bool:
     color_name = str(spec["color_name"])
     query_id = str(target_spec["query_id"])
     target_shape_type = target_spec.get("target_shape_type")
-    target_color_name = target_spec.get("target_color_name")
     target_shape_types = {str(value) for value in target_spec.get("target_shape_types", [])}
     target_color_names = {str(value) for value in target_spec.get("target_color_names", [])}
 
@@ -53,14 +45,6 @@ def _spec_matches_target(spec: dict, target_spec: dict) -> bool:
         return shape_type in target_shape_types
     if query_id == "color_union_count":
         return color_name in target_color_names
-    if query_id == "object_type_and_color_count":
-        return shape_type == str(target_shape_type) and color_name == str(target_color_name)
-    if query_id == "object_type_or_color_count":
-        return shape_type == str(target_shape_type) or color_name == str(target_color_name)
-    if query_id == "object_type_and_not_color_count":
-        return shape_type == str(target_shape_type) and color_name != str(target_color_name)
-    if query_id == "color_and_not_object_type_count":
-        return color_name == str(target_color_name) and shape_type != str(target_shape_type)
     raise AssertionError(f"unsupported query_id in test: {query_id}")
 
 
@@ -70,10 +54,6 @@ def _spec_matches_target(spec: dict, target_spec: dict) -> bool:
         ("object_type_count", {"target_shape_type": "cylinder"}),
         ("object_type_union_count", {"target_shape_types": ["sphere", "cone"]}),
         ("color_union_count", {"target_color_names": ["red", "blue"]}),
-        ("object_type_and_color_count", {"target_shape_type": "cube", "target_color_name": "red"}),
-        ("object_type_or_color_count", {"target_shape_type": "cube", "target_color_name": "red"}),
-        ("object_type_and_not_color_count", {"target_shape_type": "cube", "target_color_name": "red"}),
-        ("color_and_not_object_type_count", {"target_shape_type": "cube", "target_color_name": "red"}),
     ],
 )
 def test_logical_predicate_count_answer_and_annotation(query_id: str, params: dict) -> None:

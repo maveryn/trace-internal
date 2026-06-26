@@ -41,6 +41,7 @@ from .shared.labels import bbox_union as _bbox_union
 
 TASK_ID = "task_three_d__object_scene__marked_point_depth_extremum_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("closest_marked_point", "farthest_marked_point")
+MIN_SCREEN_DEPTH_MARGIN_PX = 32.0
 
 
 def _demote_small_context_spec(spec: Mapping[str, Any], *, index: int) -> Dict[str, Any]:
@@ -108,30 +109,9 @@ def _sample_marker_world_points(
     objects: Sequence[Mapping[str, Any]],
     room_extent: float,
 ) -> List[Dict[str, Any]]:
-    """Sample marked surface points with enough projected separation for a unique camera-depth extremum."""
-    object_pool = [dict(spec) for spec in objects]
-    rng.shuffle(object_pool)
-    top_count = min(max(1, int(point_count) // 3), len(object_pool), int(point_count) - 2)
+    """Sample marked floor points with enough separation for a visible depth extremum."""
     records: List[Dict[str, Any]] = []
     existing: List[Tuple[float, float, float]] = []
-
-    for index, spec in enumerate(object_pool[:top_count]):
-        base = spec["base_xyz"]
-        height = float(spec["dimensions_xyz"][2])
-        world = (
-            round(float(base[0]), 4),
-            round(float(base[1]), 4),
-            round(float(base[2]) + height + 0.075, 4),
-        )
-        records.append(
-            {
-                "marker_id": f"raw_marked_point_{index}",
-                "surface_kind": "object_top",
-                "attached_object_id": str(spec["object_id"]),
-                "world_xyz": [float(value) for value in world],
-            }
-        )
-        existing.append(world)
 
     while len(records) < int(point_count):
         world = _sample_floor_marker_world(
@@ -266,6 +246,15 @@ def _build_marked_point_scene_dataset(
             depth_margin = float(sorted_by_depth[-1]["camera_distance"]) - float(sorted_by_depth[-2]["camera_distance"])
         if float(depth_margin) < 0.38:
             continue
+        screen_y_values = sorted(float(item["screen_xy"][1]) for item in finalized_markers)
+        answer_marker = next(item for item in finalized_markers if str(item["marker_id"]) == str(answer_marker_id))
+        answer_y = float(answer_marker["screen_xy"][1])
+        if str(query_id) == "closest_marked_point":
+            screen_depth_margin = float(answer_y) - float(screen_y_values[-2])
+        else:
+            screen_depth_margin = float(screen_y_values[1]) - float(answer_y)
+        if float(screen_depth_margin) < MIN_SCREEN_DEPTH_MARGIN_PX:
+            continue
         relabeled_markers = _assign_answer_label(
             records=finalized_markers,
             answer_marker_id=str(answer_marker_id),
@@ -275,6 +264,11 @@ def _build_marked_point_scene_dataset(
         )
         answer_marker = next(item for item in relabeled_markers if str(item["marker_id"]) == str(answer_marker_id))
         sorted_relabeled_by_depth = sorted(relabeled_markers, key=lambda item: (float(item["camera_distance"]), str(item["point_label"])))
+        sorted_relabeled_by_screen_depth = sorted(
+            relabeled_markers,
+            key=lambda item: (float(item["screen_xy"][1]), str(item["point_label"])),
+            reverse=True,
+        )
         return {
             "query_id": str(query_id),
             "scene_variant": str(scene_variant),
@@ -312,12 +306,14 @@ def _build_marked_point_scene_dataset(
                 "sort_key": "camera_distance",
                 "camera_distance_order_near_to_far": [str(item["point_label"]) for item in sorted_relabeled_by_depth],
                 "marker_id_order_near_to_far": [str(item["marker_id"]) for item in sorted_relabeled_by_depth],
+                "screen_y_order_front_to_back": [str(item["point_label"]) for item in sorted_relabeled_by_screen_depth],
                 "camera_distances_by_label": {
                     str(item["point_label"]): round(float(item["camera_distance"]), 4)
                     for item in sorted(relabeled_markers, key=lambda marker: str(marker["point_label"]))
                 },
                 "unique_camera_distance_margin": round(float(_min_pairwise([float(item["camera_distance"]) for item in relabeled_markers])), 4),
                 "answer_depth_margin": round(float(depth_margin), 4),
+                "answer_screen_depth_margin_px": round(float(screen_depth_margin), 3),
             },
         }
     raise ValueError("could not construct a valid 3D marked-point depth scene")

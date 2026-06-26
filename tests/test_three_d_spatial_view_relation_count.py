@@ -31,8 +31,8 @@ def test_view_relation_count_answer_and_annotation() -> None:
         params={
             "query_id": "left_of_reference_in_view_count",
             "scene_variant": "floor_grid_room",
-            "object_count": 8,
-            "target_count": 4,
+            "object_count": 9,
+            "target_count": 6,
             "post_image_noise_apply_prob": 0.0,
         },
         max_attempts=220,
@@ -49,7 +49,7 @@ def test_view_relation_count_answer_and_annotation() -> None:
     assert output.scene_id == "object_scene"
     assert output.query_id == "left_of_reference_in_view_count"
     assert output.answer_gt.type == "integer"
-    assert output.answer_gt.value == 4
+    assert output.answer_gt.value == 6
     assert output.annotation_gt.type == "bbox_set"
     assert reference_object_id not in target_set
     assert int(trace["reference_prompt_name_count"]) == 1
@@ -88,7 +88,7 @@ def test_view_relation_count_query_variants_generate() -> None:
             params={
                 "query_id": query_id,
                 "scene_variant": "studio_platform",
-                "object_count": 8 if query_id in {"left_of_reference_in_view_count", "right_of_reference_in_view_count"} else 10,
+                "object_count": 9 if query_id in {"left_of_reference_in_view_count", "right_of_reference_in_view_count"} else 10,
                 "target_count": 3,
                 "post_image_noise_apply_prob": 0.0,
             },

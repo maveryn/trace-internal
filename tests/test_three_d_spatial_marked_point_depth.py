@@ -50,7 +50,11 @@ def test_marked_point_depth_answer_and_annotation(query_id: str) -> None:
     assert len(trace["context_object_specs"]) == 6
     assert set(point["point_label"] for point in marked_points) == {"A", "B", "C", "D", "E", "F"}
     assert output.trace_payload["query_spec"]["params"]["answer_support"] == ["A", "B", "C", "D", "E", "F"]
-    assert {str(point["surface_kind"]) for point in marked_points} == {"floor", "object_top"}
+    assert {str(point["surface_kind"]) for point in marked_points} == {"floor"}
+    screen_depth_order = sorted(marked_points, key=lambda point: (float(point["screen_xy"][1]), str(point["point_label"])), reverse=True)
+    expected_by_screen_depth = screen_depth_order[0] if query_id == "closest_marked_point" else screen_depth_order[-1]
+    assert str(expected_by_screen_depth["point_label"]) == expected_label
+    assert float(trace["solver_trace"]["answer_screen_depth_margin_px"]) >= 32.0
     assert output.trace_payload["scene_ir"]["relations"]["answer_point_id"] == str(expected["point_id"])
     assert output.trace_payload["witness_symbolic"]["ids_by_role"]["selected_point"] == str(expected["point_id"])
     assert render_map["marked_point_label_bboxes_px"][expected_label] == render_map["marked_point_glyph_bboxes_px"][expected_label]

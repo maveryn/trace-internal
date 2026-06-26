@@ -53,9 +53,6 @@ from .object_scene import (
 
 
 SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID = "task_three_d__object_scene__single_attribute_membership_count"
-MULTI_ATTRIBUTE_AND_COUNT_TASK_ID = "task_three_d__object_scene__multi_attribute_and_count"
-MULTI_ATTRIBUTE_OR_COUNT_TASK_ID = "task_three_d__object_scene__multi_attribute_or_count"
-MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID = "task_three_d__object_scene__multi_attribute_exclusion_count"
 TASK_ID = SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID
 SOURCE_ID = "three_d_object_scene_logical_predicate_count_source"
 SINGLE_ATTRIBUTE_QUERY_IDS: Tuple[str, ...] = (
@@ -63,19 +60,7 @@ SINGLE_ATTRIBUTE_QUERY_IDS: Tuple[str, ...] = (
     "object_type_union_count",
     "color_union_count",
 )
-MULTI_ATTRIBUTE_AND_QUERY_IDS: Tuple[str, ...] = ("object_type_and_color_count",)
-MULTI_ATTRIBUTE_OR_QUERY_IDS: Tuple[str, ...] = ("object_type_or_color_count",)
-MULTI_ATTRIBUTE_EXCLUSION_QUERY_IDS: Tuple[str, ...] = (
-    "object_type_and_not_color_count",
-    "color_and_not_object_type_count",
-)
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
-    *SINGLE_ATTRIBUTE_QUERY_IDS,
-    "object_type_and_color_count",
-    "object_type_or_color_count",
-    "object_type_and_not_color_count",
-    "color_and_not_object_type_count",
-)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = SINGLE_ATTRIBUTE_QUERY_IDS
 COLOR_SAFE_SHAPE_TYPES: Tuple[str, ...] = (
     "sphere",
     "cube",
@@ -173,23 +158,11 @@ def _target_spec_matches_key(target_spec: Mapping[str, Any], key: Tuple[str, str
         return str(shape_type) in target_shape_types
     if query_id == "color_union_count":
         return str(color_name) in target_color_names
-    if query_id == "object_type_and_color_count":
-        return str(shape_type) == str(target_shape_type) and str(color_name) == str(target_color_name)
-    if query_id == "object_type_or_color_count":
-        return str(shape_type) == str(target_shape_type) or str(color_name) == str(target_color_name)
-    if query_id == "object_type_and_not_color_count":
-        return str(shape_type) == str(target_shape_type) and str(color_name) != str(target_color_name)
-    if query_id == "color_and_not_object_type_count":
-        return str(color_name) == str(target_color_name) and str(shape_type) != str(target_shape_type)
     raise ValueError(f"unsupported logical predicate query_id: {query_id}")
 
 
 def _target_property_phrase(target_spec: Mapping[str, Any], *, count: int | None = None) -> str:
     query_id = str(target_spec["query_id"])
-    amount = int(count) if count is not None else 2
-    noun = "object" if int(amount) == 1 else "objects"
-    target_shape_type = target_spec.get("target_shape_type")
-    target_color_name = target_spec.get("target_color_name")
     target_object_plural = str(target_spec.get("target_object_plural", "objects"))
 
     if query_id == "object_type_count":
@@ -198,16 +171,6 @@ def _target_property_phrase(target_spec: Mapping[str, Any], *, count: int | None
         return str(target_spec["target_object_union_phrase"])
     if query_id == "color_union_count":
         return str(target_spec["target_color_union_phrase"])
-    if query_id == "object_type_and_color_count":
-        object_name = _object_name_for_shape(str(target_shape_type))
-        object_noun = object_name if int(amount) == 1 else _object_plural(object_name)
-        return f"{target_color_name} {object_noun}"
-    if query_id == "object_type_or_color_count":
-        return f"{target_object_plural} or {target_color_name} {noun}"
-    if query_id == "object_type_and_not_color_count":
-        return f"{target_object_plural} that are not {target_color_name}"
-    if query_id == "color_and_not_object_type_count":
-        return f"{target_color_name} {noun} that are not {target_object_plural}"
     raise ValueError(f"unsupported logical predicate query_id: {query_id}")
 
 
@@ -516,10 +479,6 @@ def _predicate_logic_load(query_id: str) -> float:
     return {
         "object_type_union_count": 0.42,
         "color_union_count": 0.42,
-        "object_type_and_color_count": 0.46,
-        "object_type_or_color_count": 0.70,
-        "object_type_and_not_color_count": 0.72,
-        "color_and_not_object_type_count": 0.72,
     }.get(str(query_id), 0.55)
 
 
@@ -635,51 +594,7 @@ def _build_target_spec(
         }
         return dict(target_spec), {}, dict(color_probabilities)
 
-    explicit_shape = params.get("target_shape_type")
-    if explicit_shape is not None:
-        target_shape_type = str(explicit_shape)
-        if target_shape_type not in set(shape_support):
-            raise ValueError(f"unsupported target_shape_type for {task_id}: {target_shape_type}")
-    else:
-        shape_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{task_id}.{query}.target_shape_type",
-        )
-        target_shape_type = str(shape_support[abs(int(shape_index)) % len(shape_support)])
-    shape_probabilities = _uniform_string_probability_map(
-        shape_support,
-        selected=str(target_shape_type) if explicit_shape is not None else None,
-    )
-
-    explicit_color = params.get("target_color_name")
-    if explicit_color is not None:
-        target_color_name = str(explicit_color)
-        if target_color_name not in set(color_support):
-            raise ValueError(f"unsupported target_color_name for {task_id}: {target_color_name}")
-    else:
-        color_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{task_id}.{query}.target_color_name",
-        )
-        target_color_name = str(color_support[abs(int(color_index)) % len(color_support)])
-    color_probabilities = _uniform_string_probability_map(
-        color_support,
-        selected=str(target_color_name) if explicit_color is not None else None,
-    )
-
-    object_name = _object_name_for_shape(str(target_shape_type))
-    object_plural = _object_plural(str(object_name))
-    target_spec = {
-        "query_id": str(query),
-        "target_shape_type": str(target_shape_type),
-        "target_object_name": str(object_name),
-        "target_object_plural": str(object_plural),
-        "target_color_name": str(target_color_name),
-    }
-    target_spec["target_property_phrase"] = _target_property_phrase(target_spec)
-    return dict(target_spec), dict(shape_probabilities), dict(color_probabilities)
+    raise ValueError(f"unsupported logical predicate query_id for {task_id}: {query}")
 
 
 _SCENE_DEFAULTS = get_scene_defaults("three_d", SCENE_ID)
@@ -979,12 +894,6 @@ class _ThreeDSpatialLogicalPredicateCountBase:
 
 
 __all__ = [
-    "MULTI_ATTRIBUTE_AND_COUNT_TASK_ID",
-    "MULTI_ATTRIBUTE_AND_QUERY_IDS",
-    "MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID",
-    "MULTI_ATTRIBUTE_EXCLUSION_QUERY_IDS",
-    "MULTI_ATTRIBUTE_OR_COUNT_TASK_ID",
-    "MULTI_ATTRIBUTE_OR_QUERY_IDS",
     "SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID",
     "SINGLE_ATTRIBUTE_QUERY_IDS",
     "_ThreeDSpatialLogicalPredicateCountBase",

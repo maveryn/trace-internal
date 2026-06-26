@@ -17,7 +17,7 @@ The image uses the `object_scene` renderer: a perspective 3D floor, table, or pl
 
 The verifier computes the answer from finalized scene metadata and projection records, not from pixels. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
 
-The lateral relation layout uses a small set of objects spread along the camera's screen-right floor axis so every non-reference object is visually on one side of the red-boxed reference object. The supported answer count range is positive.
+The lateral relation layout uses nine objects spread along the camera's screen-right floor axis so every non-reference object is visually on one side of the red-boxed reference object. The supported answer count range is `1..6`.
 
 ## Annotation Contract
 Annotation is an unordered `bbox_set` containing one box around each counted object.

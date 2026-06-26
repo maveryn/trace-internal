@@ -8,7 +8,6 @@ OBJECT_SCENE_TASK_FILES = (
     Path("trace/tasks/three_d/object_scene/marked_point_depth_extremum_label.py"),
     Path("trace/tasks/three_d/object_scene/marked_point_vertical_relation_label.py"),
     Path("trace/tasks/three_d/object_scene/multiview_object_match_label.py"),
-    Path("trace/tasks/three_d/object_scene/landmark_correspondence_label.py"),
     Path("trace/tasks/three_d/object_scene/camera_distance_extremum_label.py"),
     Path("trace/tasks/three_d/object_scene/shared/labels.py"),
 )

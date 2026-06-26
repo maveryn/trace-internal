@@ -10,12 +10,12 @@
 - Annotation schema: `point`
 
 ## Program Contract
-`select(label(marked_points, extremum(camera_distance, requested_extremum))); scene=object_scene; scope=marked_point_depth_extremum_label`
+`select(label(floor_marked_points, extremum(camera_distance, requested_extremum))); scene=object_scene; scope=marked_point_depth_extremum_label`
 
 ## Contract
-The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
+The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects and lettered point markers placed on the floor plane. The public task id defines the stable objective contract; query ids select closest vs farthest marked floor point. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
 
-The verifier computes the answer from finalized scene metadata and projection records, not from pixels. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
+The verifier computes the answer from finalized floor-marker metadata and projection records, not from pixels. Generation also enforces that the selected closest/farthest floor marker is visually consistent with screen-depth ordering in the final perspective view. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
 
 ## Annotation Contract
 Annotation is a scalar `point` at the selected marked point center.

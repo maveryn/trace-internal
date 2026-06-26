@@ -26,6 +26,7 @@ from trace.tasks.geometry.graph_paper.polygon_perimeter_value import GeometryGra
 from trace.tasks.geometry.graph_paper.quadrilateral_type_count import GeometryGraphPaperQuadrilateralTypeCountTask
 from trace.tasks.geometry.graph_paper.shared.construction import concave_polygon
 from trace.tasks.geometry.graph_paper.shared.state import LABEL_POOL
+from trace.tasks.geometry.graph_paper import _lifecycle as graph_paper_lifecycle
 from trace.tasks.geometry.graph_paper.shape_type_count import GeometryGraphPaperShapeTypeCountTask
 from trace.tasks.geometry.graph_paper.triangle_type_count import GeometryGraphPaperTriangleTypeCountTask
 from trace.tasks.geometry.shape_gallery.congruent_count import GeometryShapeGalleryCongruentCountTask
@@ -239,6 +240,35 @@ def test_geometry_graph_paper_concave_polygon_has_clear_inward_notch() -> None:
         assert _has_concave_turn(points)
 
 
+def test_geometry_graph_paper_scalene_count_includes_right_scalene_triangles() -> None:
+    out = GeometryGraphPaperTriangleTypeCountTask().generate(
+        4284304800355367,
+        params={"query_id": "scalene_triangle_count"},
+        max_attempts=40,
+    )
+    classes = [
+        str(entity["class_name"]) for entity in out.trace_payload["scene_ir"]["entities"]
+    ]
+    assert "right" in classes
+    assert out.answer_gt.value == classes.count("scalene") + classes.count("right")
+    assert len(out.annotation_gt.value) == int(out.answer_gt.value)
+
+
+def test_geometry_graph_paper_quadrilateral_predicates_are_standard_and_unambiguous() -> None:
+    rhombus_points = graph_paper_lifecycle._quadrilateral_points(
+        (0.0, 0.0), "non_square_rhombus"
+    )
+    assert graph_paper_lifecycle._quadrilateral_matches_target(
+        rhombus_points, "non_square_rhombus"
+    )
+    assert not graph_paper_lifecycle._quadrilateral_matches_target(
+        rhombus_points, "square"
+    )
+    assert graph_paper_lifecycle._quadrilateral_matches_target(
+        rhombus_points, "slanted_parallelogram"
+    )
+
+
 def _assert_all_graph_points_are_lattice(output) -> None:
     for entity in output.trace_payload["scene_ir"]["entities"]:
         for point in entity.get("graph_points", []):
@@ -392,6 +422,30 @@ def test_geometry_graph_paper_polygon_measurements_sample_all_shape_families(tas
         out = task_cls().generate(seed, params={}, max_attempts=40)
         seen.add(str(out.trace_payload["execution_trace"]["shape_kind"]))
     assert {"rectangle", "triangle", "parallelogram"} <= seen
+
+
+def test_geometry_graph_paper_polygon_perimeter_has_diverse_triangle_support() -> None:
+    seen_shapes: set[tuple[tuple[float, float], ...]] = set()
+    for seed in range(80):
+        out = GeometryGraphPaperPolygonPerimeterValueTask().generate(
+            seed,
+            params={"shape_kind": "triangle"},
+            max_attempts=40,
+        )
+        points = out.trace_payload["scene_ir"]["entities"][0]["graph_points"]
+        min_x = min(float(point[0]) for point in points)
+        min_y = min(float(point[1]) for point in points)
+        normalized = tuple(
+            sorted(
+                (
+                    round(float(point[0]) - min_x, 3),
+                    round(float(point[1]) - min_y, 3),
+                )
+                for point in points
+            )
+        )
+        seen_shapes.add(normalized)
+    assert len(seen_shapes) >= 6
 
 
 @pytest.mark.parametrize(

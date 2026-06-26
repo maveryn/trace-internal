@@ -10,6 +10,7 @@
 
 ## Program Contract
 - `count_triangle_class(query_id={equilateral_triangle_count|right_triangle_count|scalene_triangle_count|non_equilateral_isosceles_triangle_count}, target_class={equilateral|right|scalene|non_equilateral_isosceles}, output_role=count); scene=graph_paper; scope=triangle_set`
+- Matching uses standard triangle predicates from the rendered vertices. In particular, `scalene_triangle_count` includes any right triangle whose three side lengths are unequal, while `non_equilateral_isosceles_triangle_count` excludes equilateral triangles.
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.

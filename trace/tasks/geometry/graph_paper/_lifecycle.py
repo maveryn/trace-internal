@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
+from math import isclose, sqrt
 from typing import Any, Callable, Mapping, Sequence
 
 from trace.core.types import TypedValue
@@ -518,9 +519,60 @@ def _slot_anchor(
     return left, bottom
 
 
+def _normalize_points_to_origin(points: Sequence[Point]) -> tuple[Point, ...]:
+    """Translate graph points so the lower-left bbox corner is at the origin."""
+
+    min_x = min(float(point[0]) for point in points)
+    min_y = min(float(point[1]) for point in points)
+    return tuple((float(point[0]) - min_x, float(point[1]) - min_y) for point in points)
+
+
+def _integer_perimeter_triangle_candidates() -> tuple[tuple[Point, Point, Point], ...]:
+    """Return small lattice triangles whose side lengths and perimeter are integer."""
+
+    candidates: dict[
+        tuple[tuple[Point, ...], tuple[int, int, int]], tuple[int, tuple[Point, ...]]
+    ] = {}
+    grid_points = [(x, y) for x in range(0, 9) for y in range(0, 9)]
+    for first_index, first in enumerate(grid_points):
+        for second_index in range(first_index + 1, len(grid_points)):
+            second = grid_points[second_index]
+            for third in grid_points[second_index + 1 :]:
+                raw_points = (first, second, third)
+                area2 = abs(
+                    (second[0] - first[0]) * (third[1] - first[1])
+                    - (second[1] - first[1]) * (third[0] - first[0])
+                )
+                if area2 == 0:
+                    continue
+                sides = []
+                for start, end in ((first, second), (second, third), (third, first)):
+                    length = sqrt(
+                        float(start[0] - end[0]) ** 2 + float(start[1] - end[1]) ** 2
+                    )
+                    if not isclose(length, round(length), abs_tol=1e-9):
+                        break
+                    sides.append(int(round(length)))
+                else:
+                    ordered = _normalize_points_to_origin(raw_points)
+                    width = max(point[0] for point in ordered)
+                    height = max(point[1] for point in ordered)
+                    if width <= 8.0 and height <= 8.0:
+                        key = (
+                            tuple(sorted(ordered)),
+                            tuple(sorted(sides)),
+                        )
+                        candidates[key] = (int(sum(sides)), ordered)
+    return tuple(
+        ordered
+        for _key, (_perimeter, ordered) in sorted(
+            candidates.items(), key=lambda item: (item[1][0], item[0][1], item[0][0])
+        )
+    )
+
+
 _INTEGER_PERIMETER_TRIANGLES: tuple[tuple[Point, Point, Point], ...] = (
-    ((0.0, 0.0), (6.0, 0.0), (3.0, 4.0)),
-    ((0.0, 0.0), (8.0, 0.0), (4.0, 3.0)),
+    _integer_perimeter_triangle_candidates()
 )
 
 
@@ -546,7 +598,9 @@ def _is_right_triangle_lattice(base_width: int, apex_x: int, height: int) -> boo
     return int(h * h) == int(x * (base - x))
 
 
-def _sample_area_triangle_points(rng: Any, task_params: Mapping[str, Any]) -> tuple[Point, ...]:
+def _sample_area_triangle_points(
+    rng: Any, task_params: Mapping[str, Any]
+) -> tuple[Point, ...]:
     """Sample a non-right lattice triangle with integer area."""
 
     explicit_shape_params = {
@@ -782,11 +836,7 @@ def _single_polygon_points(
     )
     if shape_kind == "parallelogram":
         base_width = int(task_params.get("base_width", rng.randint(3, 6)))
-        side_dx, side_dy = (
-            (3, 4)
-            if int(rng.randrange(0, 2)) == 0
-            else (4, 3)
-        )
+        side_dx, side_dy = (3, 4) if int(rng.randrange(0, 2)) == 0 else (4, 3)
         if "side_dx" in task_params and "side_dy" in task_params:
             side_dx = int(task_params["side_dx"])
             side_dy = int(task_params["side_dy"])
@@ -1013,15 +1063,15 @@ def _build_length_extremum_label(
     if values and not any(dx != 0 and dy != 0 for dx, dy, _square in values):
         for dx, dy in vector_candidates:
             square = int(dx * dx + dy * dy)
-            if dx != 0 and dy != 0 and square not in {
-                value[2] for value in values[:-1]
-            }:
+            if (
+                dx != 0
+                and dy != 0
+                and square not in {value[2] for value in values[:-1]}
+            ):
                 values[-1] = (int(dx), int(dy), square)
                 break
     objects = []
-    for index, (label, (dx, dy, square)) in enumerate(
-        zip(labels, values, strict=True)
-    ):
+    for index, (label, (dx, dy, square)) in enumerate(zip(labels, values, strict=True)):
         start, end = _integer_shift_points(
             ctx,
             ((0.0, 0.0), (float(dx), float(dy))),
@@ -1227,6 +1277,159 @@ SHAPE_CLASSES = (
 CONVEXITY_CLASSES = ("convex", "concave")
 
 
+def _squared_distance(first: Point, second: Point) -> float:
+    """Return squared distance between two graph points."""
+
+    return (float(first[0]) - float(second[0])) ** 2 + (
+        float(first[1]) - float(second[1])
+    ) ** 2
+
+
+def _polygon_side_squares(points: Sequence[Point]) -> tuple[float, ...]:
+    """Return squared side lengths for consecutive polygon vertices."""
+
+    pts = tuple(points)
+    return tuple(
+        _squared_distance(pts[index], pts[(index + 1) % len(pts)])
+        for index in range(len(pts))
+    )
+
+
+def _all_close(values: Sequence[float], *, tolerance: float = 1e-3) -> bool:
+    """Return whether all values are equal within graph-space tolerance."""
+
+    if not values:
+        return False
+    reference = float(values[0])
+    return all(
+        isclose(float(value), reference, abs_tol=float(tolerance)) for value in values
+    )
+
+
+def _distinct_value_count(values: Sequence[float], *, tolerance: float = 1e-3) -> int:
+    """Count value groups after tolerance-based equality."""
+
+    groups: list[float] = []
+    for value in values:
+        numeric = float(value)
+        if not any(
+            isclose(numeric, group, abs_tol=float(tolerance)) for group in groups
+        ):
+            groups.append(numeric)
+    return len(groups)
+
+
+def _dot_at(vertex: Point, first: Point, second: Point) -> float:
+    """Return dot product for angle first-vertex-second."""
+
+    return (float(first[0]) - float(vertex[0])) * (
+        float(second[0]) - float(vertex[0])
+    ) + (float(first[1]) - float(vertex[1])) * (float(second[1]) - float(vertex[1]))
+
+
+def _has_right_angle(points: Sequence[Point], *, tolerance: float = 1e-3) -> bool:
+    """Return whether any polygon vertex is right angled."""
+
+    pts = tuple(points)
+    for index, vertex in enumerate(pts):
+        previous = pts[(index - 1) % len(pts)]
+        following = pts[(index + 1) % len(pts)]
+        if isclose(_dot_at(vertex, previous, following), 0.0, abs_tol=float(tolerance)):
+            return True
+    return False
+
+
+def _parallel_vectors(
+    first_start: Point,
+    first_end: Point,
+    second_start: Point,
+    second_end: Point,
+    *,
+    tolerance: float = 1e-3,
+) -> bool:
+    """Return whether two graph-space vectors are parallel."""
+
+    first_dx = float(first_end[0]) - float(first_start[0])
+    first_dy = float(first_end[1]) - float(first_start[1])
+    second_dx = float(second_end[0]) - float(second_start[0])
+    second_dy = float(second_end[1]) - float(second_start[1])
+    return isclose(
+        (first_dx * second_dy) - (first_dy * second_dx),
+        0.0,
+        abs_tol=float(tolerance),
+    )
+
+
+def _is_parallelogram(points: Sequence[Point]) -> bool:
+    """Return whether a four-point polygon is a parallelogram."""
+
+    pts = tuple(points)
+    if len(pts) != 4:
+        return False
+    return _parallel_vectors(pts[0], pts[1], pts[3], pts[2]) and _parallel_vectors(
+        pts[1], pts[2], pts[0], pts[3]
+    )
+
+
+def _is_rectangle(points: Sequence[Point]) -> bool:
+    """Return whether a four-point polygon is a rectangle, regardless of rotation."""
+
+    return (
+        len(tuple(points)) == 4
+        and _is_parallelogram(points)
+        and _has_right_angle(points)
+    )
+
+
+def _is_rhombus(points: Sequence[Point]) -> bool:
+    """Return whether a four-point polygon has four equal sides."""
+
+    pts = tuple(points)
+    return len(pts) == 4 and _all_close(_polygon_side_squares(pts))
+
+
+def _is_square(points: Sequence[Point]) -> bool:
+    """Return whether a four-point polygon is a square, regardless of rotation."""
+
+    return _is_rectangle(points) and _is_rhombus(points)
+
+
+def _triangle_matches_target(points: Sequence[Point], target_class: str) -> bool:
+    """Match triangle predicates using standard geometry definitions."""
+
+    sides = _polygon_side_squares(tuple(points))
+    distinct_side_count = _distinct_value_count(sides)
+    if str(target_class) == "equilateral":
+        return _all_close(sides)
+    if str(target_class) == "right":
+        return _has_right_angle(points)
+    if str(target_class) == "scalene":
+        return distinct_side_count == 3
+    if str(target_class) == "non_equilateral_isosceles":
+        return distinct_side_count == 2 and not _all_close(sides)
+    return False
+
+
+def _quadrilateral_matches_target(points: Sequence[Point], target_class: str) -> bool:
+    """Match quadrilateral predicates using standard geometry definitions."""
+
+    if str(target_class) == "square":
+        return _is_square(points)
+    if str(target_class) == "non_square_rectangle":
+        return _is_rectangle(points) and not _is_square(points)
+    if str(target_class) == "non_square_rhombus":
+        return _is_rhombus(points) and not _is_square(points)
+    if str(target_class) == "slanted_parallelogram":
+        return _is_parallelogram(points) and not _is_rectangle(points)
+    return False
+
+
+def _object_class_matches(entity: GraphObject, target_class: str) -> bool:
+    """Fallback exact class matcher for count objectives."""
+
+    return str(entity.class_name) == str(target_class)
+
+
 def _triangle_points(center: Point, class_name: str) -> tuple[Point, ...]:
     """Return a compact triangle prototype for classification-count scenes."""
 
@@ -1249,7 +1452,7 @@ def _quadrilateral_points(center: Point, class_name: str) -> tuple[Point, ...]:
     if class_name == "non_square_rectangle":
         return rectangle_points(center, 2.0, 1.2)
     if class_name == "non_square_rhombus":
-        return ((cx, cy + 0.95), (cx + 1.0, cy), (cx, cy - 0.95), (cx - 1.0, cy))
+        return ((cx, cy + 1.15), (cx + 0.7, cy), (cx, cy - 1.15), (cx - 0.7, cy))
     if class_name == "slanted_parallelogram":
         return (
             (cx - 0.9, cy - 0.65),
@@ -1324,10 +1527,16 @@ def _count_components(
     scene_kind: str,
     object_count: int,
     noun: str,
+    match_predicate: Callable[[GraphObject], bool] | None = None,
 ) -> tuple[GraphPaperComponents, TypedValue]:
     """Build shared count-task components once the public class family is rendered."""
 
-    matching = [obj.bbox_px for obj in objects if obj.class_name == str(target_class)]
+    resolved_predicate = match_predicate or (
+        lambda entity: _object_class_matches(entity, str(target_class))
+    )
+    matching_objects = [obj for obj in objects if resolved_predicate(obj)]
+    actual_target_total = len(matching_objects)
+    matching = [obj.bbox_px for obj in matching_objects]
     annotation_value, projected = bbox_set_artifacts(matching)
     prompt_plan = _make_prompt(
         context["prompt_defaults"],
@@ -1344,14 +1553,15 @@ def _count_components(
         ctx=ctx,
         prompt_plan=prompt_plan,
         answer_type="integer",
-        answer_value=int(target_total),
+        answer_value=int(actual_target_total),
         annotation_type="bbox_set",
         annotation_value=annotation_value,
         projected_annotation=projected,
         witness_symbolic={
             "target_class": str(target_class),
             "target_text": str(target_text),
-            "matching_count": int(target_total),
+            "planned_target_count": int(target_total),
+            "matching_count": int(actual_target_total),
         },
         objects=tuple(objects),
         prompt_key=str(prompt_key),
@@ -1361,6 +1571,8 @@ def _count_components(
             "target_class": str(target_class),
             "target_text": str(target_text),
             "object_count": int(object_count),
+            "planned_target_count": int(target_total),
+            "matching_count": int(actual_target_total),
         },
     )
 
@@ -1466,6 +1678,9 @@ def _build_triangle_type_count(
         scene_kind="geometry_graph_paper_triangle_set",
         object_count=object_count,
         noun="triangle",
+        match_predicate=lambda entity: _triangle_matches_target(
+            entity.graph_points, str(target_class)
+        ),
     )
 
 
@@ -1515,6 +1730,9 @@ def _build_quadrilateral_type_count(
         scene_kind="geometry_graph_paper_quadrilateral_set",
         object_count=object_count,
         noun="quadrilateral",
+        match_predicate=lambda entity: _quadrilateral_matches_target(
+            entity.graph_points, str(target_class)
+        ),
     )
 
 

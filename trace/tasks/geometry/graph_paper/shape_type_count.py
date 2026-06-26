@@ -28,7 +28,7 @@ SHAPE_TYPE_QUERY_TO_TEXT = {
     "pentagon_count": "pentagons",
     "hexagon_count": "hexagons",
     "circle_count": "circles",
-    "ellipse_count": "ellipses",
+    "ellipse_count": "non-circular ellipses",
 }
 SUPPORTED_QUERY_IDS = tuple(SHAPE_TYPE_QUERY_TO_CLASS)
 

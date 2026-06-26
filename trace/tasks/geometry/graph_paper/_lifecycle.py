@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
-from math import isclose, sqrt
+from math import cos, pi, sin, isclose, sqrt
 from typing import Any, Callable, Mapping, Sequence
 
 from trace.core.types import TypedValue
@@ -21,12 +21,14 @@ from .shared.annotations import (
 )
 from .shared.construction import (
     concave_polygon,
+    irregular_convex_polygon,
     pi_expression,
     polygon_area,
     polygon_perimeter,
     rectangle_points,
     regular_polygon,
     right_triangle_points,
+    rotate_points,
 )
 from .shared.defaults import split_defaults_for
 from .shared.prompts import prompt_defaults as resolve_prompt_defaults
@@ -1448,35 +1450,176 @@ def _object_class_matches(entity: GraphObject, target_class: str) -> bool:
     return str(entity.class_name) == str(target_class)
 
 
-def _triangle_points(center: Point, class_name: str) -> tuple[Point, ...]:
-    """Return a compact triangle prototype for classification-count scenes."""
+def _random_angle(rng: Any | None, *, fallback: float = 0.0) -> float:
+    """Return one optional rotation angle in radians."""
+
+    if rng is None:
+        return float(fallback)
+    return float(rng.uniform(0.0, 2.0 * pi))
+
+
+def _random_choice(rng: Any | None, values: Sequence[Any]) -> Any:
+    """Choose from values with a deterministic first-item fallback."""
+
+    options = tuple(values)
+    if not options:
+        raise ValueError("cannot choose from an empty sequence")
+    if rng is None:
+        return options[0]
+    return options[int(rng.randrange(0, len(options)))]
+
+
+def _rotated_rectangle_points(
+    center: Point, width: float, height: float, rng: Any | None
+) -> tuple[Point, ...]:
+    """Return a rectangle with optional graph-space rotation."""
+
+    return rotate_points(
+        rectangle_points(center, float(width), float(height)),
+        center,
+        _random_angle(rng),
+    )
+
+
+def _parallelogram_points(
+    center: Point,
+    *,
+    half_u: float,
+    half_v: float,
+    angle_radians: float,
+    rotation_radians: float,
+) -> tuple[Point, ...]:
+    """Return a centered parallelogram from two graph-space half-vectors."""
+
+    cx, cy = float(center[0]), float(center[1])
+    u = (float(half_u), 0.0)
+    v = (
+        float(half_v) * cos(float(angle_radians)),
+        float(half_v) * sin(float(angle_radians)),
+    )
+    points = (
+        (cx - u[0] - v[0], cy - u[1] - v[1]),
+        (cx + u[0] - v[0], cy + u[1] - v[1]),
+        (cx + u[0] + v[0], cy + u[1] + v[1]),
+        (cx - u[0] + v[0], cy - u[1] + v[1]),
+    )
+    return rotate_points(points, center, float(rotation_radians))
+
+
+def _triangle_points(
+    center: Point, class_name: str, rng: Any | None = None
+) -> tuple[Point, ...]:
+    """Return a compact triangle for classification-count scenes."""
 
     cx, cy = float(center[0]), float(center[1])
     if class_name == "equilateral":
-        return regular_polygon(center, 3, 0.9, phase=1.57)
+        radius = 0.78 if rng is None else float(rng.uniform(0.74, 1.02))
+        return regular_polygon(
+            center, 3, radius, phase=_random_angle(rng, fallback=1.57)
+        )
     if class_name == "non_equilateral_isosceles":
-        return ((cx - 0.9, cy - 0.7), (cx + 0.9, cy - 0.7), (cx, cy + 0.9))
+        for _ in range(20):
+            base = 1.55 if rng is None else float(rng.uniform(1.35, 2.05))
+            height = 1.65 if rng is None else float(rng.uniform(1.15, 2.05))
+            points = (
+                (cx - base / 2.0, cy - height / 3.0),
+                (cx + base / 2.0, cy - height / 3.0),
+                (cx, cy + (2.0 * height / 3.0)),
+            )
+            points = rotate_points(points, center, _random_angle(rng))
+            if _triangle_matches_target(points, "non_equilateral_isosceles"):
+                return points
+        return rotate_points(
+            ((cx - 0.9, cy - 0.7), (cx + 0.9, cy - 0.7), (cx, cy + 0.9)),
+            center,
+            _random_angle(rng),
+        )
     if class_name == "right":
-        return right_triangle_points(center, 1.8, 1.2)
-    return ((cx - 1.0, cy - 0.7), (cx + 0.8, cy - 0.45), (cx - 0.2, cy + 0.9))
+        for _ in range(20):
+            base = 1.8 if rng is None else float(rng.uniform(1.35, 2.05))
+            height = 1.2 if rng is None else float(rng.uniform(1.0, 1.85))
+            if abs(base - height) < 0.18:
+                continue
+            points = rotate_points(
+                right_triangle_points(center, base, height),
+                center,
+                _random_angle(rng),
+            )
+            if _triangle_matches_target(points, "right"):
+                return points
+        return rotate_points(right_triangle_points(center, 1.8, 1.2), center, 0.0)
+    templates = (
+        ((cx - 1.0, cy - 0.7), (cx + 0.8, cy - 0.45), (cx - 0.2, cy + 0.9)),
+        ((cx - 0.95, cy - 0.55), (cx + 0.95, cy - 0.8), (cx + 0.15, cy + 0.95)),
+        ((cx - 0.8, cy - 0.85), (cx + 1.05, cy - 0.15), (cx - 0.45, cy + 0.8)),
+        ((cx - 1.0, cy - 0.15), (cx + 0.65, cy - 0.85), (cx + 0.2, cy + 0.95)),
+    )
+    for _ in range(20):
+        points = tuple(_random_choice(rng, templates))
+        scale = 1.0 if rng is None else float(rng.uniform(0.86, 1.12))
+        scaled = tuple(
+            (cx + ((x - cx) * scale), cy + ((y - cy) * scale)) for x, y in points
+        )
+        candidate = rotate_points(scaled, center, _random_angle(rng))
+        if _triangle_matches_target(candidate, "scalene") and not _has_right_angle(
+            candidate
+        ):
+            return candidate
+    return templates[0]
 
 
-def _quadrilateral_points(center: Point, class_name: str) -> tuple[Point, ...]:
-    """Return a compact quadrilateral prototype for classification-count scenes."""
+def _quadrilateral_points(
+    center: Point, class_name: str, rng: Any | None = None
+) -> tuple[Point, ...]:
+    """Return a compact quadrilateral for classification-count scenes."""
 
     cx, cy = float(center[0]), float(center[1])
     if class_name == "square":
-        return rectangle_points(center, 1.6, 1.6)
+        side = 1.55 if rng is None else float(rng.uniform(1.3, 1.85))
+        return _rotated_rectangle_points(center, side, side, rng)
     if class_name == "non_square_rectangle":
-        return rectangle_points(center, 2.0, 1.2)
+        for _ in range(20):
+            width = 2.0 if rng is None else float(rng.uniform(1.55, 2.25))
+            height = 1.2 if rng is None else float(rng.uniform(0.9, 1.45))
+            if abs(width - height) >= 0.35:
+                return _rotated_rectangle_points(center, width, height, rng)
+        return _rotated_rectangle_points(center, 2.0, 1.2, rng)
     if class_name == "non_square_rhombus":
-        return ((cx, cy + 1.15), (cx + 0.7, cy), (cx, cy - 1.15), (cx - 0.7, cy))
+        side_half = 0.82 if rng is None else float(rng.uniform(0.72, 0.98))
+        angle = _random_choice(
+            rng,
+            (
+                pi * 0.34,
+                pi * 0.39,
+                pi * 0.61,
+                pi * 0.66,
+            ),
+        )
+        return _parallelogram_points(
+            center,
+            half_u=side_half,
+            half_v=side_half,
+            angle_radians=float(angle),
+            rotation_radians=_random_angle(rng),
+        )
     if class_name == "slanted_parallelogram":
-        return (
-            (cx - 0.9, cy - 0.65),
-            (cx + 0.9, cy - 0.65),
-            (cx + 1.2, cy + 0.65),
-            (cx - 0.6, cy + 0.65),
+        half_u = 0.95 if rng is None else float(rng.uniform(0.78, 1.1))
+        half_v = 0.7 if rng is None else float(rng.uniform(0.55, 0.82))
+        angle = _random_choice(
+            rng,
+            (
+                pi * 0.32,
+                pi * 0.38,
+                pi * 0.62,
+                pi * 0.68,
+            ),
+        )
+        return _parallelogram_points(
+            center,
+            half_u=half_u,
+            half_v=half_v,
+            angle_radians=float(angle),
+            rotation_radians=_random_angle(rng),
         )
     return (
         (cx - 0.9, cy - 0.65),
@@ -1690,7 +1833,7 @@ def _build_triangle_type_count(
         obj = draw_polygon(
             ctx,
             "",
-            _triangle_points(center, cls_name),
+            _triangle_points(center, cls_name, rng),
             class_name=str(cls_name),
             color=object_color(ctx, index),
             filled=False,
@@ -1742,7 +1885,7 @@ def _build_quadrilateral_type_count(
         obj = draw_polygon(
             ctx,
             "",
-            _quadrilateral_points(center, cls_name),
+            _quadrilateral_points(center, cls_name, rng),
             class_name=str(cls_name),
             color=object_color(ctx, index),
             filled=False,
@@ -1793,59 +1936,86 @@ def _build_shape_type_count(
     ):
         color = object_color(ctx, index)
         if cls_name == "triangle":
+            triangle_class = _random_choice(
+                rng,
+                (
+                    "equilateral",
+                    "right",
+                    "scalene",
+                    "non_equilateral_isosceles",
+                ),
+            )
             obj = draw_polygon(
                 ctx,
                 "",
-                right_triangle_points(center, 1.6, 1.5),
+                _triangle_points(center, str(triangle_class), rng),
                 class_name="triangle",
                 color=color,
                 filled=False,
             )
+            obj = replace(obj, extra={"shape_variant": str(triangle_class)})
         elif cls_name == "quadrilateral":
+            quadrilateral_class = _random_choice(
+                rng,
+                (
+                    "square",
+                    "non_square_rectangle",
+                    "non_square_rhombus",
+                    "slanted_parallelogram",
+                ),
+            )
             obj = draw_polygon(
                 ctx,
                 "",
-                rectangle_points(center, 1.8, 1.3),
+                _quadrilateral_points(center, str(quadrilateral_class), rng),
                 class_name="quadrilateral",
                 color=color,
                 filled=False,
             )
+            obj = replace(obj, extra={"shape_variant": str(quadrilateral_class)})
         elif cls_name == "pentagon":
             obj = draw_polygon(
                 ctx,
                 "",
-                regular_polygon(center, 5, 0.9),
+                irregular_convex_polygon(center, 5, 0.9, rng),
                 class_name="pentagon",
                 color=color,
                 filled=False,
             )
+            obj = replace(obj, extra={"side_count": 5})
         elif cls_name == "hexagon":
             obj = draw_polygon(
                 ctx,
                 "",
-                regular_polygon(center, 6, 0.9),
+                irregular_convex_polygon(center, 6, 0.9, rng),
                 class_name="hexagon",
                 color=color,
                 filled=False,
             )
+            obj = replace(obj, extra={"side_count": 6})
         elif cls_name == "circle":
+            radius = float(rng.uniform(0.64, 0.9))
             obj = draw_ellipse_or_circle(
                 ctx,
                 "",
                 center,
-                0.75,
-                0.75,
+                radius,
+                radius,
                 class_name="circle",
                 color=color,
                 filled=False,
             )
         else:
+            radius_x = float(rng.uniform(0.8, 1.08))
+            radius_y = float(rng.uniform(0.48, 0.7))
+            if int(rng.randrange(0, 2)) == 1:
+                radius_x, radius_y = radius_y, radius_x
             obj = draw_ellipse_or_circle(
                 ctx,
                 "",
                 center,
-                0.95,
-                0.6,
+                radius_x,
+                radius_y,
                 class_name="ellipse",
                 color=color,
                 filled=False,
@@ -1890,10 +2060,11 @@ def _build_polygon_convexity_count(
     for index, (cls_name, center) in enumerate(
         zip(class_sequence, slot_centers(ctx, object_count, rng=rng), strict=True)
     ):
+        side_count = int(rng.randint(5, 7))
         points = (
-            regular_polygon(center, 5, 0.9)
+            irregular_convex_polygon(center, side_count, 0.9, rng)
             if cls_name == "convex"
-            else concave_polygon(center, 5, 0.95, rng)
+            else concave_polygon(center, side_count, 0.95, rng)
         )
         obj = draw_polygon(
             ctx,
@@ -1903,7 +2074,11 @@ def _build_polygon_convexity_count(
             color=object_color(ctx, index),
             filled=False,
         )
-        objects.append(replace(obj, class_name=str(cls_name)))
+        objects.append(
+            replace(
+                obj, class_name=str(cls_name), extra={"side_count": int(side_count)}
+            )
+        )
     return _count_components(
         context,
         ctx=ctx,

@@ -24,7 +24,10 @@ from trace.tasks.geometry.graph_paper.polygon_area_value import GeometryGraphPap
 from trace.tasks.geometry.graph_paper.polygon_convexity_count import GeometryGraphPaperPolygonConvexityCountTask
 from trace.tasks.geometry.graph_paper.polygon_perimeter_value import GeometryGraphPaperPolygonPerimeterValueTask
 from trace.tasks.geometry.graph_paper.quadrilateral_type_count import GeometryGraphPaperQuadrilateralTypeCountTask
-from trace.tasks.geometry.graph_paper.shared.construction import concave_polygon
+from trace.tasks.geometry.graph_paper.shared.construction import (
+    concave_polygon,
+    irregular_convex_polygon,
+)
 from trace.tasks.geometry.graph_paper.shared.state import LABEL_POOL
 from trace.tasks.geometry.graph_paper import _lifecycle as graph_paper_lifecycle
 from trace.tasks.geometry.graph_paper.shape_type_count import GeometryGraphPaperShapeTypeCountTask
@@ -235,9 +238,66 @@ def _has_concave_turn(points: object) -> bool:
 
 
 def test_geometry_graph_paper_concave_polygon_has_clear_inward_notch() -> None:
-    for seed in range(20):
-        points = concave_polygon((0.0, 0.0), 5, 0.95, Random(seed))
-        assert _has_concave_turn(points)
+    for sides in (5, 6, 7):
+        for seed in range(20):
+            points = concave_polygon((0.0, 0.0), sides, 0.95, Random(seed))
+            assert len(points) == sides
+            assert _has_concave_turn(points)
+
+
+def _side_square_signature(points: object) -> tuple[float, ...]:
+    return tuple(
+        sorted(
+            round(float(value), 3)
+            for value in graph_paper_lifecycle._polygon_side_squares(points)
+        )
+    )
+
+
+def test_geometry_graph_paper_count_shape_constructors_have_visual_variety() -> None:
+    triangle_classes = (
+        "equilateral",
+        "right",
+        "scalene",
+        "non_equilateral_isosceles",
+    )
+    for class_name in triangle_classes:
+        signatures = {
+            _side_square_signature(
+                graph_paper_lifecycle._triangle_points(
+                    (0.0, 0.0), class_name, Random(seed)
+                )
+            )
+            for seed in range(24)
+        }
+        assert len(signatures) >= 3
+
+    quadrilateral_classes = (
+        "square",
+        "non_square_rectangle",
+        "non_square_rhombus",
+        "slanted_parallelogram",
+    )
+    for class_name in quadrilateral_classes:
+        signatures = {
+            _side_square_signature(
+                graph_paper_lifecycle._quadrilateral_points(
+                    (0.0, 0.0), class_name, Random(seed)
+                )
+            )
+            for seed in range(24)
+        }
+        assert len(signatures) >= 3
+
+
+def test_geometry_graph_paper_convexity_polygons_vary_side_count() -> None:
+    for constructor in (irregular_convex_polygon, concave_polygon):
+        seen_side_counts = {
+            len(constructor((0.0, 0.0), sides, 0.95, Random(seed)))
+            for sides in (5, 6, 7)
+            for seed in range(8)
+        }
+        assert seen_side_counts == {5, 6, 7}
 
 
 def test_geometry_graph_paper_scalene_count_includes_right_scalene_triangles() -> None:

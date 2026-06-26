@@ -10,6 +10,7 @@
 
 ## Program Contract
 - `count_polygon_convexity_class(query_id={convex_polygon_count|concave_polygon_count}, target_class={convex|concave}, output_role=count); scene=graph_paper; scope=polygon_set`
+- Convex and concave polygons vary their side count from 5 to 7. Convex polygons are not required to be regular, and concave polygons use a visible inward notch.
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.

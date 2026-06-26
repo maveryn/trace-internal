@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from math import pi
+from math import cos, pi, sin
 from random import Random
 from typing import Sequence
 
@@ -30,6 +30,22 @@ def right_triangle_points(
         (cx + base / 2.0, cy - height / 2.0),
         (cx - base / 2.0, cy + height / 2.0),
     )
+
+
+def rotate_points(
+    points: Sequence[Point], center: Point, angle_radians: float
+) -> tuple[Point, ...]:
+    """Rotate graph-unit points around a graph-unit center."""
+
+    cx, cy = float(center[0]), float(center[1])
+    cosine = cos(float(angle_radians))
+    sine = sin(float(angle_radians))
+    rotated: list[Point] = []
+    for point in points:
+        dx = float(point[0]) - cx
+        dy = float(point[1]) - cy
+        rotated.append((cx + (dx * cosine - dy * sine), cy + (dx * sine + dy * cosine)))
+    return tuple(rotated)
 
 
 def polygon_area(points: Sequence[Point]) -> float:
@@ -83,24 +99,65 @@ def regular_polygon(
     )
 
 
+def irregular_convex_polygon(
+    center: Point, sides: int, radius: float, rng: Random
+) -> tuple[Point, ...]:
+    """Return a convex non-regular polygon with a stable side count."""
+
+    resolved_sides = max(5, min(7, int(sides)))
+    cx, cy = float(center[0]), float(center[1])
+    phase = float(rng.uniform(0.0, 2.0 * pi))
+    rotation = float(rng.uniform(0.0, 2.0 * pi))
+    scale_x = float(rng.uniform(0.78, 1.16))
+    scale_y = float(rng.uniform(0.78, 1.16))
+    if abs(scale_x - scale_y) < 0.12:
+        scale_y = max(0.72, min(1.22, scale_y + (0.16 if scale_y < 1.0 else -0.16)))
+    shear = float(rng.uniform(-0.16, 0.16))
+    cosine = cos(rotation)
+    sine = sin(rotation)
+    points: list[Point] = []
+    for index in range(resolved_sides):
+        angle = phase + (2.0 * pi * index / resolved_sides)
+        local_x = float(radius) * cos(angle)
+        local_y = float(radius) * sin(angle)
+        aff_x = (scale_x * local_x) + (shear * local_y)
+        aff_y = scale_y * local_y
+        points.append(
+            (
+                cx + (aff_x * cosine - aff_y * sine),
+                cy + (aff_x * sine + aff_y * cosine),
+            )
+        )
+    return tuple(points)
+
+
 def concave_polygon(
     center: Point, sides: int, radius: float, rng: Random
 ) -> tuple[Point, ...]:
-    """Return a visually clear inward-notch polygon for convexity counting."""
+    """Return a visually clear inward-notch polygon with a stable side count."""
 
-    del sides
+    resolved_sides = max(5, min(7, int(sides)))
     cx, cy = float(center[0]), float(center[1])
-    scale = float(radius)
-    points = [
-        (-1.0, -0.85),
-        (1.0, -0.85),
-        (-0.2, 0.0),
-        (1.0, 0.85),
-        (-1.0, 0.85),
-    ]
-    if int(rng.randrange(0, 2)) == 1:
-        points = [(-x, y) for x, y in points]
-    quarter_turns = int(rng.randrange(0, 4))
-    for _ in range(quarter_turns):
-        points = [(-y, x) for x, y in points]
-    return tuple((cx + (scale * x), cy + (scale * y)) for x, y in points)
+    phase = float(rng.uniform(0.0, 2.0 * pi))
+    rotation = float(rng.uniform(0.0, 2.0 * pi))
+    scale_x = float(rng.uniform(0.86, 1.12))
+    scale_y = float(rng.uniform(0.86, 1.12))
+    notch_index = int(rng.randrange(0, resolved_sides))
+    notch_factor = float(rng.uniform(0.06, 0.16))
+    cosine = cos(rotation)
+    sine = sin(rotation)
+    points: list[Point] = []
+    for index in range(resolved_sides):
+        angle = phase + (2.0 * pi * index / resolved_sides)
+        radial = float(radius) * (notch_factor if index == notch_index else 1.0)
+        local_x = radial * cos(angle)
+        local_y = radial * sin(angle)
+        aff_x = scale_x * local_x
+        aff_y = scale_y * local_y
+        points.append(
+            (
+                cx + (aff_x * cosine - aff_y * sine),
+                cy + (aff_x * sine + aff_y * cosine),
+            )
+        )
+    return tuple(points)

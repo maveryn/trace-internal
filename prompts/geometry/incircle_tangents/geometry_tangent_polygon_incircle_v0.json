@@ -36,7 +36,7 @@
         "What is the value of the triangle perimeter?",
         "Use the labeled diagram to find the perimeter of triangle ABC."
       ],
-      "inradius_from_area_and_tangent_segments": [
+      "inradius_from_tangent_segments": [
         "What is the radius of the incircle?",
         "Find the incircle radius.",
         "Determine the radius of the circle inside the triangle.",
@@ -88,9 +88,9 @@
       "json_example_answer_only": "{\"answer\":42}"
     },
     "task:incircle_radius_from_area_value_query": {
-      "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible label-box keys: \"AD_AF\", \"BD_BE\", \"CE_CF\", \"area\"; each value must be that label's pixel box [x0,y0,x1,y1]",
+      "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible label-box keys: \"AD_AF\", \"BD_BE\", \"CE_CF\"; each value must be that label's pixel box [x0,y0,x1,y1]",
       "answer_hint": "set \"answer\" to the incircle radius rounded to one decimal place",
-      "json_example": "{\"annotation\":{\"AD_AF\":[104,421,203,447],\"BD_BE\":[540,421,639,447],\"CE_CF\":[311,55,410,81],\"area\":[536,82,656,108]},\"answer\":4.2}",
+      "json_example": "{\"annotation\":{\"AD_AF\":[104,421,203,447],\"BD_BE\":[540,421,639,447],\"CE_CF\":[311,55,410,81]},\"answer\":4.2}",
       "json_example_answer_only": "{\"answer\":4.2}"
     },
     "output:answer_only": {

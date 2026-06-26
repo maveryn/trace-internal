@@ -43,10 +43,10 @@ def perimeter_answer_for_case(case: TangentTriangleCase) -> int:
 
 
 def radius_answer_for_case(case: TangentTriangleCase) -> float:
-    """Return the incircle radius computed from the displayed area label."""
+    """Return the incircle radius implied by the tangent lengths."""
 
     values = triangle_measurements_from_tangents(case)
-    return round1(float(values["displayed_area"]) / float(values["semiperimeter"]))
+    return round1(float(values["inradius"]))
 
 
 def incircle_spec_from_case(

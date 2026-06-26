@@ -81,6 +81,15 @@ def _draw_tick(ctx: RenderContext, start: Point, end: Point, *, count: int, colo
         )
 
 
+def _draw_contact_point_label(ctx: RenderContext, *, label: str, point: Point, incenter: Point) -> None:
+    """Draw a labeled tangent-contact point with the label offset away from the incircle."""
+
+    ux, uy = _unit_vector(incenter, point)
+    label_center = (float(point[0]) + ux * 22.0, float(point[1]) + uy * 22.0)
+    ctx.draw.ellipse((point[0] - 4.5, point[1] - 4.5, point[0] + 4.5, point[1] + 4.5), fill=ctx.accent_color)
+    draw_label(ctx, label, label_center, small=True)
+
+
 def _make_render_context(
     *,
     random_namespace: str,
@@ -190,8 +199,8 @@ def _render_incircle_scene(ctx: RenderContext, spec: IncircleDiagramSpec) -> Ren
         outline=ctx.accent_color,
         width=max(2, ctx.line_width - 1),
     )
-    for point in (d, e, f):
-        ctx.draw.ellipse((point[0] - 4.0, point[1] - 4.0, point[0] + 4.0, point[1] + 4.0), fill=ctx.accent_color)
+    for label, point in (("D", d), ("E", e), ("F", f)):
+        _draw_contact_point_label(ctx, label=label, point=point, incenter=o)
     for label, point, offset in (
         ("A", a, (-20.0, 22.0)),
         ("B", b, (20.0, 22.0)),
@@ -239,6 +248,11 @@ def _render_incircle_scene(ctx: RenderContext, spec: IncircleDiagramSpec) -> Ren
                 "A": [round(a[0], 3), round(a[1], 3)],
                 "B": [round(b[0], 3), round(b[1], 3)],
                 "C": [round(c[0], 3), round(c[1], 3)],
+            },
+            "tangent_points": {
+                "D": [round(d[0], 3), round(d[1], 3)],
+                "E": [round(e[0], 3), round(e[1], 3)],
+                "F": [round(f[0], 3), round(f[1], 3)],
             },
             "side_lengths": {
                 "AB": round(float(spec.side_ab), 3),

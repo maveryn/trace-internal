@@ -1,4 +1,4 @@
-"""Compute incircle radius from triangle area and tangent labels."""
+"""Compute incircle radius from tangent segment labels."""
 
 from __future__ import annotations
 
@@ -14,8 +14,8 @@ from .shared.state import IncircleDiagramSpec
 
 TASK_ID = "task_geometry__incircle_tangents__incircle_radius_from_area_value"
 SUPPORTED_QUERY_IDS: tuple[str, ...] = ("single",)
-INTERNAL_QUERY_ID = "inradius_from_area_and_tangent_segments"
-ANNOTATION_ROLES: tuple[str, ...] = ("AD_AF", "BD_BE", "CE_CF", "area")
+INTERNAL_QUERY_ID = "inradius_from_tangent_segments"
+ANNOTATION_ROLES: tuple[str, ...] = ("AD_AF", "BD_BE", "CE_CF")
 
 _CASES_BY_ANSWER = group_cases_by_answer(
     cases=all_tangent_triangle_cases(),
@@ -49,11 +49,11 @@ def _build_radius_spec(*, instance_seed: int, params: Mapping[str, Any]) -> tupl
             case=case,
             answer=float(answer),
             answer_type="number",
-            answer_rounding="nearest_tenth_from_displayed_area",
+            answer_rounding="nearest_tenth_from_tangent_lengths",
             unknown_measure="radius_length",
             formula_family=INTERNAL_QUERY_ID,
             unknown_label="r=?",
-            show_area_label=True,
+            show_area_label=False,
             show_radius_segment=True,
             annotation_roles=ANNOTATION_ROLES,
         ),

@@ -22,7 +22,7 @@ QUERY_IDS_BY_TASK = {
 
 INTERNAL_QUERY_BY_TASK = {
     GeometryIncircleTangentPerimeterValueTask: "triangle_perimeter_from_tangent_segments",
-    GeometryIncircleRadiusFromAreaValueTask: "inradius_from_area_and_tangent_segments",
+    GeometryIncircleRadiusFromAreaValueTask: "inradius_from_tangent_segments",
 }
 
 
@@ -38,7 +38,7 @@ def test_tangent_polygon_incircle_tasks_emit_public_contract(task_cls) -> None:
         assert set(out.annotation_gt.value) == {"AD_AF", "BD_BE", "CE_CF"}
     else:
         assert out.answer_gt.type == "number"
-        assert set(out.annotation_gt.value) == {"AD_AF", "BD_BE", "CE_CF", "area"}
+        assert set(out.annotation_gt.value) == {"AD_AF", "BD_BE", "CE_CF"}
     assert out.annotation_gt.type == "bbox_map"
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
@@ -54,17 +54,13 @@ def test_tangent_polygon_incircle_tasks_emit_public_contract(task_cls) -> None:
     if task_cls is GeometryIncircleTangentPerimeterValueTask:
         assert out.answer_gt.value == int(round(2.0 * trace["execution_trace"]["semiperimeter"]))
     else:
+        assert "area" not in out.annotation_gt.value
+        assert trace["execution_trace"]["answer_rounding"] == "nearest_tenth_from_tangent_lengths"
         assert out.answer_gt.value == pytest.approx(
-            round(
-                trace["execution_trace"]["area"]
-                / (
-                    trace["execution_trace"]["tangent_a"]
-                    + trace["execution_trace"]["tangent_b"]
-                    + trace["execution_trace"]["tangent_c"]
-                ),
-                1,
-            )
+            round(trace["execution_trace"]["inradius"], 1)
         )
+    triangle = trace["scene_ir"]["entities"][0]
+    assert set(triangle["tangent_points"]) == {"D", "E", "F"}
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)

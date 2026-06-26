@@ -4,19 +4,19 @@
 1. Domain: `geometry`
 2. Scene id: `incircle_tangents`
 3. Query id: `single`
-4. Internal query id: `inradius_from_area_and_tangent_segments`
+4. Internal query id: `inradius_from_tangent_segments`
 5. Answer schema: `number` rounded to one decimal place
-6. Annotation schema: `bbox_map` with keys `AD_AF`, `BD_BE`, `CE_CF`, `area`
+6. Annotation schema: `bbox_map` with keys `AD_AF`, `BD_BE`, `CE_CF`
 
 ## Program Contract
-- `radius(area_label, incircle_tangent_triangle, tangent_equalities={AD=AF,BD=BE,CE=CF}); scene=incircle_tangents; scope=incircle_radius_from_area_value`
+- `radius(incircle_tangent_triangle, tangent_equalities={AD=AF,BD=BE,CE=CF}); scene=incircle_tangents; scope=incircle_radius_from_area_value`
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_tangent_polygon_incircle_v0`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space keyed boxes for the three visible tangent-equality labels and the visible area label needed to compute the incircle radius. Formula metadata, case ids, and unrendered measurements remain private verifier metadata.
+Prompt-facing annotation uses pixel-space keyed boxes for the three visible tangent-equality labels. The incircle radius is computed from the tangent lengths using the tangent-triangle relation; formula metadata, case ids, and unrendered measurements remain private verifier metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

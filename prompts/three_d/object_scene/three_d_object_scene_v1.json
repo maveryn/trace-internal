@@ -368,7 +368,7 @@
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:multiview_object_match_query": {
-      "object_description": "two side-by-side perspective views of the same 3D setup with an asymmetric platform anchor, one red-boxed floor object in the left view, and four matching-looking lettered floor objects in the right view",
+      "object_description": "two side-by-side views of the same 3D setup",
       "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the matching lettered object in the right view",
       "answer_hint": "set \"answer\" to the selected object letter from the right view",
       "json_example": "{\"annotation\":[842,228,902,296],\"answer\":\"C\"}",

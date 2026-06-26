@@ -9,7 +9,10 @@ from ...shared.color_distance import color_distance
 from ...shared.text_legibility import READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO, resolve_readable_text_style
 from ...shared.visual_style.technical_diagram import (
     Color,
-    TECHNICAL_DIAGRAM_TREATMENTS,
+    TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL,
+    TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER,
+    TECHNICAL_DIAGRAM_PROFILE_THEME_IDS,
+    TECHNICAL_DIAGRAM_THEMES,
     TechnicalDiagramStyle,
     make_technical_diagram_background,
     resolve_technical_diagram_style,
@@ -40,14 +43,16 @@ COORDINATE_GRID_SCENE_IDS: frozenset[str] = frozenset(
 )
 
 ANALYTICAL_DIAGRAM_TREATMENTS: tuple[str, ...] = tuple(
-    treatment_id
-    for treatment_id, treatment in TECHNICAL_DIAGRAM_TREATMENTS.items()
-    if str(treatment.grid_kind) == "none"
+    dict.fromkeys(
+        TECHNICAL_DIAGRAM_THEMES[theme_id].treatment_id
+        for theme_id in TECHNICAL_DIAGRAM_PROFILE_THEME_IDS[TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL]
+    )
 )
 COORDINATE_GRID_TREATMENTS: tuple[str, ...] = tuple(
-    treatment_id
-    for treatment_id, treatment in TECHNICAL_DIAGRAM_TREATMENTS.items()
-    if str(treatment.grid_kind) != "none"
+    dict.fromkeys(
+        TECHNICAL_DIAGRAM_THEMES[theme_id].treatment_id
+        for theme_id in TECHNICAL_DIAGRAM_PROFILE_THEME_IDS[TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER]
+    )
 )
 
 _GEOMETRY_LABEL_DARK_RGB: Color = (10, 14, 22)
@@ -77,6 +82,15 @@ def _profile_treatments(style_profile: str | None) -> tuple[str, ...] | None:
         return ANALYTICAL_DIAGRAM_TREATMENTS
     if normalized == GEOMETRY_STYLE_PROFILE_COORDINATE_GRID:
         return COORDINATE_GRID_TREATMENTS
+    return None
+
+
+def _technical_profile_for_geometry_profile(style_profile: str | None) -> str | None:
+    normalized = _normalize_style_profile(style_profile)
+    if normalized == GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM:
+        return TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL
+    if normalized == GEOMETRY_STYLE_PROFILE_COORDINATE_GRID:
+        return TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER
     return None
 
 
@@ -213,6 +227,7 @@ def resolve_geometry_diagram_style(
 
     resolved_params = params or {}
     normalized_profile = _normalize_style_profile(style_profile) or _default_style_profile_for_scene(str(scene_id))
+    technical_profile = _technical_profile_for_geometry_profile(normalized_profile)
     requested_treatments = treatments or resolved_params.get("technical_diagram_treatments")
     resolved_treatments = _resolve_profile_treatments(
         style_profile=normalized_profile,
@@ -225,6 +240,9 @@ def resolve_geometry_diagram_style(
     style, metadata = resolve_technical_diagram_style(
         instance_seed=int(instance_seed),
         namespace=f"geometry.{str(scene_id)}.technical_diagram_style",
+        theme_profile=technical_profile,
+        themes=resolved_params.get("technical_diagram_themes"),
+        theme_weights=resolved_params.get("technical_diagram_theme_weights", {}),
         treatments=resolved_treatments,
         treatment_weights=resolved_params.get("technical_diagram_treatment_weights", {}),
         palettes=resolved_params.get("technical_diagram_palettes"),
@@ -240,9 +258,13 @@ def resolve_geometry_diagram_style(
     if isinstance(metadata, Mapping) and isinstance(metadata.get("selection"), Mapping):
         adjusted_metadata["selection"] = dict(metadata["selection"])
     adjusted_metadata["geometry_style_profile"] = normalized_profile
+    adjusted_metadata["technical_profile"] = technical_profile
     adjusted_metadata["profile_treatments"] = list(_profile_treatments(normalized_profile) or [])
     if normalized_profile is not None:
         adjusted_metadata["available_treatments"] = list(_profile_treatments(normalized_profile) or [])
+        adjusted_metadata["available_theme_ids"] = list(
+            TECHNICAL_DIAGRAM_PROFILE_THEME_IDS.get(str(technical_profile), ())
+        )
     normalized_requested_treatments = _normalize_treatment_sequence(requested_treatments)
     adjusted_metadata["requested_treatments_before_profile"] = (
         list(normalized_requested_treatments) if normalized_requested_treatments is not None else None
@@ -305,13 +327,19 @@ def prepare_geometry_diagram_style_and_background(
     )
     normalized_profile = _normalize_style_profile(style_profile) or _default_style_profile_for_scene(str(scene_id))
     if normalized_profile is not None and isinstance(background_meta, dict):
+        technical_profile = _technical_profile_for_geometry_profile(normalized_profile)
         background_meta["geometry_style_profile"] = normalized_profile
+        background_meta["technical_profile"] = technical_profile
         style_spec = background_meta.get("style_spec")
         if isinstance(style_spec, dict):
             profile_treatments = list(_profile_treatments(normalized_profile) or [])
             style_spec["geometry_style_profile"] = normalized_profile
+            style_spec["technical_profile"] = technical_profile
             style_spec["profile_treatments"] = profile_treatments
             style_spec["available_treatments"] = profile_treatments
+            style_spec["available_theme_ids"] = list(
+                TECHNICAL_DIAGRAM_PROFILE_THEME_IDS.get(str(technical_profile), ())
+            )
     return background, background_meta, diagram_style, diagram_style_meta
 
 

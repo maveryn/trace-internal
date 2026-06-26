@@ -51,6 +51,13 @@ Early mechanics tasks should keep vectors axis-aligned unless vector
 decomposition is the objective. Labels and arrows must be legible and
 collision-aware.
 
+Physics technical diagrams share the same technical style profiles as geometry.
+Use `analytical_diagram` for apparatus, circuit, mechanics, optics, and formula
+diagrams that do not rely on a coordinate grid. Use `graph_paper` only when the
+visible grid or axes are part of the measurement or coordinate contract.
+Semantic colors for charges, fields, wires, rays, and components must remain
+protected against sampled non-semantic theme colors.
+
 ## Shared Code
 Reusable physical formulas, component sampling, diagram projection, rendering,
 and annotation helpers belong under `trace/tasks/physics/shared/`. Scene-local

@@ -10,6 +10,10 @@ from trace.tasks.physics.shared.diagram_style import (
 from trace.tasks.geometry.shared.diagram_style import resolve_geometry_diagram_style
 from trace.tasks.shared.text_legibility import READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO
 from trace.tasks.shared.visual_style.technical_diagram import (
+    TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL,
+    TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER,
+    TECHNICAL_DIAGRAM_PROFILE_THEME_IDS,
+    TECHNICAL_DIAGRAM_THEMES,
     TECHNICAL_DIAGRAM_PALETTES,
     TECHNICAL_DIAGRAM_TREATMENTS,
     make_technical_diagram_background,
@@ -39,13 +43,30 @@ def test_technical_diagram_registry_breadth_and_metadata() -> None:
     style, metadata = resolve_technical_diagram_style(
         instance_seed=12001,
         namespace="tests.technical_diagram",
-        allow_dark=False,
+        theme_profile=TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL,
+        allow_dark=True,
         protected_colors=PHYSICS_ELECTROSTATICS_SEMANTIC_COLORS,
     )
 
-    assert len(TECHNICAL_DIAGRAM_TREATMENTS) == 20
-    assert len(TECHNICAL_DIAGRAM_PALETTES) == 20
+    assert len(TECHNICAL_DIAGRAM_TREATMENTS) >= 20
+    assert len(TECHNICAL_DIAGRAM_PALETTES) >= 20
+    assert len(TECHNICAL_DIAGRAM_PROFILE_THEME_IDS[TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL]) == 25
+    assert len(TECHNICAL_DIAGRAM_PROFILE_THEME_IDS[TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER]) == 25
+    for profile in (TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER):
+        themes = [TECHNICAL_DIAGRAM_THEMES[theme_id] for theme_id in TECHNICAL_DIAGRAM_PROFILE_THEME_IDS[profile]]
+        assert sum("light" in theme.compatibility for theme in themes) == 20
+        assert sum("dark" in theme.compatibility for theme in themes) == 5
+    assert all(
+        TECHNICAL_DIAGRAM_TREATMENTS[TECHNICAL_DIAGRAM_THEMES[theme_id].treatment_id].grid_kind == "none"
+        for theme_id in TECHNICAL_DIAGRAM_PROFILE_THEME_IDS[TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL]
+    )
+    assert all(
+        TECHNICAL_DIAGRAM_TREATMENTS[TECHNICAL_DIAGRAM_THEMES[theme_id].treatment_id].grid_kind in {"square", "lab_grid"}
+        for theme_id in TECHNICAL_DIAGRAM_PROFILE_THEME_IDS[TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER]
+    )
     assert metadata["kind"] == "technical_diagram_style"
+    assert metadata["technical_profile"] == TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL
+    assert metadata["theme_id"] in TECHNICAL_DIAGRAM_PROFILE_THEME_IDS[TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL]
     assert metadata["treatment"] == style.treatment
     assert metadata["palette_id"] == style.palette_id
     assert metadata["roles_rgb"]["axis"] == list(style.axis_rgb)
@@ -111,6 +132,21 @@ def test_geometry_adapter_strengthens_label_contrast_on_light_panels() -> None:
     assert metadata["geometry_label_contrast_guard"]["shared_text_legibility"]["passes"] is True
     assert metadata["roles_rgb"]["label"] == list(style.label_rgb)
     assert metadata["roles_rgb"]["label_stroke"] == list(style.label_stroke_rgb)
+    assert metadata["technical_profile"] == TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL
+    assert metadata["theme_id"] in TECHNICAL_DIAGRAM_PROFILE_THEME_IDS[TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL]
+
+
+def test_geometry_graph_paper_profile_uses_coordinate_safe_themes() -> None:
+    style, metadata = resolve_geometry_diagram_style(
+        instance_seed=12005,
+        params={},
+        scene_id="graph_paper",
+    )
+
+    assert metadata["geometry_style_profile"] == "coordinate_grid"
+    assert metadata["technical_profile"] == TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER
+    assert metadata["theme_id"] in TECHNICAL_DIAGRAM_PROFILE_THEME_IDS[TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER]
+    assert style.grid_kind in {"square", "lab_grid"}
 
 
 def test_physics_diagram_adapter_preserves_electrostatics_semantic_colors() -> None:
@@ -128,3 +164,4 @@ def test_physics_diagram_adapter_preserves_electrostatics_semantic_colors() -> N
     assert theme.axis_rgb == style.axis_rgb
     assert theme.grid_rgb == style.grid_minor_rgb
     assert metadata["selection"]["allow_dark"] is False
+    assert metadata["technical_profile"] == TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL

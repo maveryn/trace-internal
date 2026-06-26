@@ -64,6 +64,14 @@ labels, and annotations through one projection path. Non-measurement scenes
 should avoid unnecessary graph-paper backgrounds unless grid cues are part of
 the task contract.
 
+Geometry uses two shared technical-diagram style profiles. Analytical diagram
+scenes use the `analytical_diagram` profile: plain paper, textbook, whiteboard,
+exam, print, and dark board/slide themes that do not add coordinate grids.
+Coordinate and graph-paper scenes use the `graph_paper` profile: square or
+lab-grid themes only, with axes, grid spacing, and lattice readability preserved.
+Do not use ruled, isometric, crosshair, or decorative grid treatments for
+Cartesian graph-paper tasks.
+
 ## Shared Code
 Cross-scene geometry helpers belong in `trace/tasks/geometry/shared/`.
 Scene-local `shared/` modules should own construction primitives, projection,

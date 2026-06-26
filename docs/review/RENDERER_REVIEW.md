@@ -155,6 +155,9 @@ Visual variety should be safe and contract-preserving.
 Good variety includes:
 
 - background treatments and palettes that keep contrast safe;
+- technical-diagram theme profiles matched to the scene contract: analytical
+  profiles may vary paper/board/slide surfaces, while graph-paper profiles must
+  preserve Cartesian grid, axis, and lattice readability;
 - domain-appropriate board, object, chart, or page style variants;
 - font variety where text remains readable;
 - layout jitter that updates annotation coordinates correctly.

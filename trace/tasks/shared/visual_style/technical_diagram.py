@@ -76,12 +76,27 @@ class TechnicalDiagramTreatment:
 
 
 @dataclass(frozen=True)
+class TechnicalDiagramTheme:
+    """One curated treatment/palette/frame combination for a technical profile."""
+
+    theme_id: str
+    technical_profile: str
+    compatibility: Tuple[str, ...]
+    treatment_id: str
+    palette_id: str
+    frame_mode: str
+
+
+@dataclass(frozen=True)
 class TechnicalDiagramStyle:
     """Resolved technical-diagram style after treatment and palette sampling."""
 
     treatment: str
     palette_id: str
     style_pack: str
+    technical_profile: str | None
+    theme_id: str | None
+    theme_compatibility: Tuple[str, ...]
     background_kind: str
     grid_kind: str
     frame_mode: str
@@ -720,6 +735,98 @@ TECHNICAL_DIAGRAM_PALETTES: dict[str, TechnicalDiagramPalette] = {
 }
 
 
+TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL = "analytical_diagram"
+TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER = "graph_paper"
+TECHNICAL_DIAGRAM_PROFILES: Tuple[str, ...] = (
+    TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL,
+    TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER,
+)
+
+
+def _theme(
+    theme_id: str,
+    technical_profile: str,
+    compatibility: str,
+    treatment_id: str,
+    palette_id: str,
+    frame_mode: str = "none",
+) -> TechnicalDiagramTheme:
+    return TechnicalDiagramTheme(
+        theme_id=str(theme_id),
+        technical_profile=str(technical_profile),
+        compatibility=(str(compatibility),),
+        treatment_id=str(treatment_id),
+        palette_id=str(palette_id),
+        frame_mode=str(frame_mode),
+    )
+
+
+TECHNICAL_DIAGRAM_THEMES: dict[str, TechnicalDiagramTheme] = {
+    theme.theme_id: theme
+    for theme in (
+        _theme("analytical_plain_neutral", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "bare_canvas", "neutral_ink"),
+        _theme("analytical_plain_cool", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "bare_canvas", "cool_gray_blue", "plain_outline"),
+        _theme("analytical_paper_warm", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "off_white_paper", "warm_paper_ink"),
+        _theme("analytical_paper_sepia", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "off_white_paper", "sepia_print", "matching_outline"),
+        _theme("analytical_textbook_indigo", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "textbook_figure", "geometry_indigo"),
+        _theme("analytical_textbook_graphite", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "textbook_figure", "graphite_blue", "plain_outline"),
+        _theme("analytical_slide_blue", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "presentation_slide", "cool_gray_blue"),
+        _theme("analytical_slide_steel", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "presentation_slide", "steel_crimson"),
+        _theme("analytical_whiteboard_marker", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "whiteboard", "whiteboard_marker"),
+        _theme("analytical_whiteboard_green", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "whiteboard", "green_grid"),
+        _theme("analytical_clean_lab", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "clean_panel", "lab_teal", "plain_outline"),
+        _theme("analytical_clean_violet", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "clean_panel", "violet_annotation"),
+        _theme("analytical_scan_neutral", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "subtle_scan_sheet", "neutral_ink"),
+        _theme("analytical_scan_olive", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "subtle_scan_sheet", "olive_field"),
+        _theme("analytical_exam_graphite", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "exam_problem_box", "graphite_blue"),
+        _theme("analytical_exam_physics", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "exam_problem_box", "physics_orange"),
+        _theme("analytical_print_neutral", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "monochrome_print", "neutral_ink"),
+        _theme("analytical_print_steel", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "monochrome_print", "steel_crimson"),
+        _theme("analytical_clean_magenta", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "clean_panel", "magenta_cyan", "matching_outline"),
+        _theme("analytical_paper_slate", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "light", "off_white_paper", "slate_mint", "plain_outline"),
+        _theme("analytical_chalk_soft", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "dark", "chalkboard_dark", "chalk_soft"),
+        _theme("analytical_chalk_blueprint", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "dark", "chalkboard_dark", "blueprint_white"),
+        _theme("analytical_dark_slide_navy", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "dark", "dark_slide", "navy_lab"),
+        _theme("analytical_slate_amber", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "dark", "slate_problem_box", "blueprint_amber"),
+        _theme("analytical_slate_chalk", TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL, "dark", "slate_problem_box", "chalk_soft", "plain_outline"),
+        _theme("graph_square_neutral", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "graph_paper_light", "neutral_ink"),
+        _theme("graph_square_green", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "graph_paper_light", "green_grid"),
+        _theme("graph_square_indigo", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "graph_paper_light", "geometry_indigo"),
+        _theme("graph_square_violet", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "graph_paper_light", "violet_annotation"),
+        _theme("graph_square_orange", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "graph_paper_light", "physics_orange"),
+        _theme("graph_engineering_cyan", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "engineering_grid", "engineering_cyan"),
+        _theme("graph_engineering_graphite", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "engineering_grid", "graphite_blue"),
+        _theme("graph_engineering_steel", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "engineering_grid", "steel_crimson"),
+        _theme("graph_engineering_slate", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "engineering_grid", "slate_mint"),
+        _theme("graph_millimeter_neutral", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "millimeter_paper", "neutral_ink"),
+        _theme("graph_millimeter_cool", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "millimeter_paper", "cool_gray_blue"),
+        _theme("graph_millimeter_sepia", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "millimeter_paper", "sepia_print"),
+        _theme("graph_millimeter_olive", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "millimeter_paper", "olive_field"),
+        _theme("graph_lab_notebook_lab", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "lab_notebook", "lab_teal"),
+        _theme("graph_lab_notebook_warm", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "lab_notebook", "warm_paper_ink"),
+        _theme("graph_lab_notebook_olive", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "lab_notebook", "olive_field"),
+        _theme("graph_lab_card_lab", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "lab_card", "lab_teal"),
+        _theme("graph_lab_card_slate", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "lab_card", "slate_mint"),
+        _theme("graph_lab_card_magenta", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "lab_card", "magenta_cyan"),
+        _theme("graph_lab_card_steel", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "light", "lab_card", "steel_crimson"),
+        _theme("graph_blueprint_white", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "dark", "blueprint_grid", "blueprint_white"),
+        _theme("graph_blueprint_amber", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "dark", "blueprint_grid", "blueprint_amber"),
+        _theme("graph_dark_blueprint_white", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "dark", "dark_blueprint", "blueprint_white"),
+        _theme("graph_dark_blueprint_navy", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "dark", "dark_blueprint", "navy_lab"),
+        _theme("graph_dark_lab_navy", TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER, "dark", "dark_lab_grid", "navy_lab", "plain_outline"),
+    )
+}
+TECHNICAL_DIAGRAM_PROFILE_THEME_IDS: dict[str, Tuple[str, ...]] = {
+    profile: tuple(
+        theme_id
+        for theme_id, theme in TECHNICAL_DIAGRAM_THEMES.items()
+        if str(theme.technical_profile) == str(profile)
+    )
+    for profile in TECHNICAL_DIAGRAM_PROFILES
+}
+TECHNICAL_DIAGRAM_THEME_IDS: Tuple[str, ...] = tuple(TECHNICAL_DIAGRAM_THEMES.keys())
+
+
 DEFAULT_TECHNICAL_DIAGRAM_STYLE: TechnicalDiagramStyle
 
 
@@ -830,12 +937,147 @@ def _protected_color_distances(
     return (round(float(min(lab_distances)), 3), round(float(min(rgb_distances)), 3))
 
 
+def _normalize_technical_profile(profile: str | None) -> str | None:
+    if profile is None:
+        return None
+    normalized = str(profile).strip().lower()
+    if not normalized:
+        return None
+    if normalized not in set(TECHNICAL_DIAGRAM_PROFILES):
+        raise ValueError(f"unknown technical diagram profile: {profile!r}")
+    return normalized
+
+
+def _theme_is_eligible(
+    *,
+    theme: TechnicalDiagramTheme,
+    allow_dark: bool,
+    require_grid: bool | None,
+    requested_treatments: Sequence[str],
+    requested_palettes: Sequence[str],
+) -> bool:
+    if theme.treatment_id not in TECHNICAL_DIAGRAM_TREATMENTS:
+        return False
+    if theme.palette_id not in TECHNICAL_DIAGRAM_PALETTES:
+        return False
+    if theme.treatment_id not in set(requested_treatments):
+        return False
+    if theme.palette_id not in set(requested_palettes):
+        return False
+    if not bool(allow_dark) and "dark" in set(str(item) for item in theme.compatibility):
+        return False
+    treatment = TECHNICAL_DIAGRAM_TREATMENTS[str(theme.treatment_id)]
+    palette = TECHNICAL_DIAGRAM_PALETTES[str(theme.palette_id)]
+    if not _palette_is_compatible(palette=palette, treatment=treatment):
+        return False
+    if require_grid is not None and (treatment.grid_kind != "none") != bool(require_grid):
+        return False
+    return True
+
+
+def _resolve_profile_theme(
+    *,
+    instance_seed: int,
+    namespace: str,
+    theme_profile: str,
+    themes: Sequence[str] | str | None,
+    theme_weights: Mapping[str, float] | None,
+    treatments: Sequence[str] | str | None,
+    palettes: Sequence[str] | str | None,
+    allow_dark: bool,
+    require_grid: bool | None,
+    protected_colors: Sequence[Color],
+    min_protected_lab_distance: float,
+) -> tuple[TechnicalDiagramTheme, dict[str, Any]]:
+    profile_theme_ids = TECHNICAL_DIAGRAM_PROFILE_THEME_IDS[str(theme_profile)]
+    requested_theme_ids = _coerce_id_sequence(themes, default=profile_theme_ids)
+    requested_treatments = _coerce_id_sequence(treatments, default=TECHNICAL_DIAGRAM_TREATMENT_IDS)
+    requested_palettes = _coerce_id_sequence(palettes, default=tuple(sorted(TECHNICAL_DIAGRAM_PALETTES.keys())))
+    candidate_theme_ids = [
+        theme_id
+        for theme_id in requested_theme_ids
+        if theme_id in TECHNICAL_DIAGRAM_THEMES
+        and TECHNICAL_DIAGRAM_THEMES[str(theme_id)].technical_profile == str(theme_profile)
+        and _theme_is_eligible(
+            theme=TECHNICAL_DIAGRAM_THEMES[str(theme_id)],
+            allow_dark=bool(allow_dark),
+            require_grid=require_grid,
+            requested_treatments=requested_treatments,
+            requested_palettes=requested_palettes,
+        )
+    ]
+    if not candidate_theme_ids:
+        candidate_theme_ids = [
+            theme_id
+            for theme_id in profile_theme_ids
+            if _theme_is_eligible(
+                theme=TECHNICAL_DIAGRAM_THEMES[str(theme_id)],
+                allow_dark=bool(allow_dark),
+                require_grid=require_grid,
+                requested_treatments=TECHNICAL_DIAGRAM_TREATMENT_IDS,
+                requested_palettes=tuple(sorted(TECHNICAL_DIAGRAM_PALETTES.keys())),
+            )
+        ]
+    protected = tuple(_normalize_color(color) for color in (protected_colors or ()))
+    protected_threshold = max(0.0, float(min_protected_lab_distance))
+    protected_safe_theme_ids = [
+        theme_id
+        for theme_id in candidate_theme_ids
+        if _protected_color_distances(
+            palette=TECHNICAL_DIAGRAM_PALETTES[TECHNICAL_DIAGRAM_THEMES[str(theme_id)].palette_id],
+            protected_colors=protected,
+        )[0]
+        >= protected_threshold
+    ]
+    protected_filter_fallback = False
+    if protected and protected_safe_theme_ids:
+        candidate_theme_ids = protected_safe_theme_ids
+    elif protected and not protected_safe_theme_ids:
+        protected_filter_fallback = True
+    if not candidate_theme_ids:
+        fallback_ids = [
+            theme_id
+            for theme_id in profile_theme_ids
+            if _theme_is_eligible(
+                theme=TECHNICAL_DIAGRAM_THEMES[str(theme_id)],
+                allow_dark=False,
+                require_grid=require_grid,
+                requested_treatments=TECHNICAL_DIAGRAM_TREATMENT_IDS,
+                requested_palettes=tuple(sorted(TECHNICAL_DIAGRAM_PALETTES.keys())),
+            )
+        ]
+        candidate_theme_ids = fallback_ids or [profile_theme_ids[0]]
+    theme_id = _weighted_choice(
+        values=tuple(candidate_theme_ids),
+        weights=theme_weights or {},
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.theme.{theme_profile}",
+    )
+    metadata = {
+        "technical_profile": str(theme_profile),
+        "requested_themes": list(requested_theme_ids),
+        "eligible_themes": list(candidate_theme_ids),
+        "available_theme_ids": list(profile_theme_ids),
+        "requested_treatments": list(requested_treatments),
+        "requested_palettes": list(requested_palettes),
+        "theme_weights": {
+            str(theme_id): float((theme_weights or {}).get(str(theme_id), 1.0))
+            for theme_id in candidate_theme_ids
+        },
+        "protected_palette_filter_fallback": bool(protected_filter_fallback),
+    }
+    return TECHNICAL_DIAGRAM_THEMES[str(theme_id)], metadata
+
+
 def _style_from_treatment_palette(
     *,
     treatment: TechnicalDiagramTreatment,
     palette: TechnicalDiagramPalette,
     frame_mode: str = "none",
     protected_colors: Sequence[Color],
+    technical_profile: str | None = None,
+    theme_id: str | None = None,
+    theme_compatibility: Sequence[str] = (),
 ) -> TechnicalDiagramStyle:
     resolved_frame_mode = str(frame_mode)
     if resolved_frame_mode not in set(TECHNICAL_DIAGRAM_FRAME_MODES):
@@ -844,6 +1086,9 @@ def _style_from_treatment_palette(
         treatment=str(treatment.treatment_id),
         palette_id=str(palette.palette_id),
         style_pack=f"{str(treatment.treatment_id)}:{str(palette.palette_id)}:{resolved_frame_mode}",
+        technical_profile=str(technical_profile) if technical_profile is not None else None,
+        theme_id=str(theme_id) if theme_id is not None else None,
+        theme_compatibility=tuple(str(item) for item in theme_compatibility),
         background_kind=str(treatment.background_kind),
         grid_kind=str(treatment.grid_kind),
         frame_mode=str(resolved_frame_mode),
@@ -926,6 +1171,9 @@ def resolve_technical_diagram_style(
     *,
     instance_seed: int,
     namespace: str,
+    theme_profile: str | None = None,
+    themes: Sequence[str] | str | None = None,
+    theme_weights: Mapping[str, float] | None = None,
     treatments: Sequence[str] | None = None,
     treatment_weights: Mapping[str, float] | None = None,
     palettes: Sequence[str] | None = None,
@@ -938,6 +1186,57 @@ def resolve_technical_diagram_style(
     min_protected_lab_distance: float = 18.0,
 ) -> tuple[TechnicalDiagramStyle, dict[str, Any]]:
     """Resolve one non-semantic technical-diagram style for a scene."""
+
+    normalized_theme_profile = _normalize_technical_profile(theme_profile)
+    if normalized_theme_profile is not None:
+        theme, theme_meta = _resolve_profile_theme(
+            instance_seed=int(instance_seed),
+            namespace=str(namespace),
+            theme_profile=str(normalized_theme_profile),
+            themes=themes,
+            theme_weights=theme_weights or {},
+            treatments=treatments,
+            palettes=palettes,
+            allow_dark=bool(allow_dark),
+            require_grid=require_grid,
+            protected_colors=protected_colors or (),
+            min_protected_lab_distance=float(min_protected_lab_distance),
+        )
+        treatment = TECHNICAL_DIAGRAM_TREATMENTS[str(theme.treatment_id)]
+        palette = TECHNICAL_DIAGRAM_PALETTES[str(theme.palette_id)]
+        protected = tuple(_normalize_color(color) for color in (protected_colors or ()))
+        style = _style_from_treatment_palette(
+            treatment=treatment,
+            palette=palette,
+            frame_mode=str(theme.frame_mode),
+            protected_colors=protected,
+            technical_profile=str(theme.technical_profile),
+            theme_id=str(theme.theme_id),
+            theme_compatibility=tuple(theme.compatibility),
+        )
+        style, text_legibility = _resolve_technical_text_legibility(
+            style,
+            instance_seed=int(instance_seed),
+            namespace=str(namespace),
+        )
+        metadata = technical_diagram_style_metadata(style)
+        metadata["text_legibility"] = dict(text_legibility)
+        metadata["selection"] = {
+            "namespace": str(namespace),
+            "allow_dark": bool(allow_dark),
+            "require_grid": None if require_grid is None else bool(require_grid),
+            "selected_theme_id": str(theme.theme_id),
+            "selected_theme_compatibility": list(theme.compatibility),
+            "selected_theme_treatment": str(theme.treatment_id),
+            "selected_theme_palette": str(theme.palette_id),
+            "selected_theme_frame_mode": str(theme.frame_mode),
+            "requested_frame_modes": [],
+            "eligible_frame_modes": [str(theme.frame_mode)],
+            "frame_mode_weights": {str(theme.frame_mode): 1.0},
+            "min_protected_lab_distance_required": max(0.0, float(min_protected_lab_distance)),
+            **dict(theme_meta),
+        }
+        return style, metadata
 
     requested_treatments = _coerce_id_sequence(treatments, default=TECHNICAL_DIAGRAM_TREATMENT_IDS)
     valid_treatments = [
@@ -1083,6 +1382,14 @@ def technical_diagram_style_metadata(style: TechnicalDiagramStyle) -> dict[str, 
         "kind": "technical_diagram_style",
         "treatment": str(style.treatment),
         "palette_id": str(style.palette_id),
+        "technical_profile": style.technical_profile,
+        "theme_id": style.theme_id,
+        "theme_compatibility": list(style.theme_compatibility),
+        "available_theme_ids": (
+            list(TECHNICAL_DIAGRAM_PROFILE_THEME_IDS.get(str(style.technical_profile), ()))
+            if style.technical_profile is not None
+            else []
+        ),
         "style_pack": str(style.style_pack),
         "frame_mode": str(style.frame_mode),
         "background_style": {
@@ -1390,10 +1697,17 @@ __all__ = [
     "DEFAULT_TECHNICAL_DIAGRAM_FRAME_WEIGHTS",
     "TECHNICAL_DIAGRAM_FRAME_MODES",
     "TECHNICAL_DIAGRAM_PALETTES",
+    "TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL",
+    "TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER",
+    "TECHNICAL_DIAGRAM_PROFILE_THEME_IDS",
+    "TECHNICAL_DIAGRAM_PROFILES",
+    "TECHNICAL_DIAGRAM_THEME_IDS",
+    "TECHNICAL_DIAGRAM_THEMES",
     "TECHNICAL_DIAGRAM_TREATMENTS",
     "TECHNICAL_DIAGRAM_TREATMENT_IDS",
     "TechnicalDiagramPalette",
     "TechnicalDiagramStyle",
+    "TechnicalDiagramTheme",
     "TechnicalDiagramTreatment",
     "make_technical_diagram_background",
     "resolve_technical_diagram_style",

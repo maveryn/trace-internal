@@ -6,6 +6,8 @@ from typing import Any, Mapping, Sequence
 
 from ...shared.visual_style.technical_diagram import (
     Color,
+    TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL,
+    TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER,
     TechnicalDiagramStyle,
     make_technical_diagram_background,
     resolve_technical_diagram_style,
@@ -26,6 +28,25 @@ PHYSICS_ELECTROSTATICS_SEMANTIC_COLORS: tuple[Color, ...] = (
 )
 
 
+def _resolve_physics_technical_profile(
+    *,
+    params: Mapping[str, Any] | None,
+    style_profile: str | None,
+    require_grid: bool | None,
+) -> str:
+    requested = style_profile or (params or {}).get("technical_diagram_style_profile")
+    if requested is not None and str(requested).strip():
+        normalized = str(requested).strip().lower()
+        if normalized in {"coordinate_grid", "graph_paper"}:
+            return TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER
+        if normalized in {"analytical", "analytical_diagram"}:
+            return TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL
+        raise ValueError(f"unknown physics technical diagram style profile: {requested!r}")
+    if require_grid is True:
+        return TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER
+    return TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL
+
+
 def resolve_physics_diagram_style(
     *,
     instance_seed: int,
@@ -35,13 +56,22 @@ def resolve_physics_diagram_style(
     protected_colors: Sequence[Color] | None = None,
     allow_dark: bool = False,
     require_grid: bool | None = None,
+    style_profile: str | None = None,
 ) -> tuple[PhysicsDiagramStyle, dict[str, Any]]:
     """Resolve the shared technical style for one physics scene."""
 
     resolved_params = params or {}
+    technical_profile = _resolve_physics_technical_profile(
+        params=resolved_params,
+        style_profile=style_profile,
+        require_grid=require_grid,
+    )
     return resolve_technical_diagram_style(
         instance_seed=int(instance_seed),
         namespace=f"physics.{str(scene_id)}.{str(scene_id)}.technical_diagram_style",
+        theme_profile=technical_profile,
+        themes=resolved_params.get("technical_diagram_themes"),
+        theme_weights=resolved_params.get("technical_diagram_theme_weights", {}),
         treatments=treatments or resolved_params.get("technical_diagram_treatments"),
         treatment_weights=resolved_params.get("technical_diagram_treatment_weights", {}),
         palettes=resolved_params.get("technical_diagram_palettes"),
@@ -84,6 +114,7 @@ def prepare_physics_diagram_style_and_background(
     allow_dark: bool = False,
     require_grid: bool | None = None,
     treatments: Sequence[str] | None = None,
+    style_profile: str | None = None,
     namespace_suffix: str = "technical_diagram_background",
 ) -> tuple[Any, dict[str, Any], PhysicsDiagramStyle, dict[str, Any]]:
     """Resolve one physics technical style and create its background before rendering."""
@@ -96,6 +127,7 @@ def prepare_physics_diagram_style_and_background(
         protected_colors=protected_colors or (),
         allow_dark=bool(allow_dark),
         require_grid=require_grid,
+        style_profile=style_profile,
     )
     background, background_meta = make_physics_diagram_background(
         canvas_width=int(canvas_width),

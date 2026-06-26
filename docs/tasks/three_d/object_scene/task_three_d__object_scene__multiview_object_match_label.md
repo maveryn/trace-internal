@@ -24,6 +24,8 @@ The left-view source object is visually marked by a red box and is retained in t
 ## Scene Construction
 The task renders two camera views of the same scene. Four candidate floor objects share the same type and color, so object appearance does not identify the answer. A low rectangular platform with a raised corner block provides an asymmetric anchor, and the candidates are placed at different distances around that anchor.
 
+Each camera view is rendered on a normal canonical three_d source canvas, then scaled into a side-by-side composite. The per-view panels preserve the source canvas aspect ratio; the final composite canvas is derived from the two scaled views.
+
 ## Prompt And Trace
 The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.
 

@@ -45,10 +45,10 @@ from ..shared.object_scene import (
 from .shared.layout import (
     CANDIDATE_VIEW_KEY,
     REFERENCE_VIEW_KEY,
+    multiview_scaled_panel_layout as _multiview_scaled_panel_layout,
+    multiview_source_render_params as _multiview_source_render_params,
     offset_bbox as _offset_bbox,
     offset_entities as _offset_entities,
-    panel_layout as _panel_layout,
-    panel_render_params as _panel_render_params,
     render_multiview_scene as _render_multiview_scene,
     shift_render_maps as _shift_render_maps,
 )
@@ -311,8 +311,7 @@ def _build_multiview_scene_dataset(
     view_a_yaw_band, view_b_yaw_band = _camera_yaw_bands_for_instance(int(instance_seed))
     point_count = int(MULTIVIEW_CANDIDATE_COUNT)
     answer_label = str(POINT_LABELS[abs(int(instance_seed)) % int(point_count)])
-    panel_layout = _panel_layout(render_params)
-    panel_params = _panel_render_params(render_params, panel_layout[REFERENCE_VIEW_KEY])
+    panel_params = _multiview_source_render_params(render_params)
 
     for _attempt in range(420):
         camera_a = _sample_camera(rng, yaw_band_degrees=view_a_yaw_band)
@@ -535,7 +534,8 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
             params=params,
             default_config=_NOISE_DEFAULTS,
         )
-        panel_layout = _panel_layout(render_params)
+        panel_params = _multiview_source_render_params(render_params)
+        panel_layout = _multiview_scaled_panel_layout(panel_params)
         reference_panel = panel_layout[REFERENCE_VIEW_KEY]
         candidate_panel = panel_layout[CANDIDATE_VIEW_KEY]
         rendered_reference = rendered_by_view[REFERENCE_VIEW_KEY]
@@ -627,8 +627,8 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
                 },
             },
             "render_spec": {
-                "canvas_width": int(render_params.canvas_width),
-                "canvas_height": int(render_params.canvas_height),
+                "canvas_width": int(image.width),
+                "canvas_height": int(image.height),
                 "scene_canvas_preset": str(render_params.canvas_preset),
                 "scene_canvas_width": int(render_params.canvas_width),
                 "scene_canvas_height": int(render_params.canvas_height),
@@ -643,9 +643,13 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
                 "post_image_noise": dict(post_noise_meta),
                 "panel_layout": dict(panel_layout),
                 "panel_render": {
-                    "canvas_width": int(_panel_render_params(render_params, reference_panel).canvas_width),
-                    "canvas_height": int(_panel_render_params(render_params, reference_panel).canvas_height),
-                    "label_font_size_px": int(_panel_render_params(render_params, reference_panel).label_font_size_px),
+                    "source_canvas_width": int(panel_params.canvas_width),
+                    "source_canvas_height": int(panel_params.canvas_height),
+                    "panel_canvas_width": int(reference_panel["width"]),
+                    "panel_canvas_height": int(reference_panel["height"]),
+                    "scale_x": round(float(reference_panel["scale_x"]), 8),
+                    "scale_y": round(float(reference_panel["scale_y"]), 8),
+                    "label_font_size_px": int(panel_params.label_font_size_px),
                 },
                 "views": {
                     REFERENCE_VIEW_KEY: {
@@ -660,7 +664,7 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
             },
             "render_map": {
                 "image_id": "img0",
-                "scene_bbox_px": [0.0, 0.0, float(render_params.canvas_width), float(render_params.canvas_height)],
+                "scene_bbox_px": [0.0, 0.0, float(image.width), float(image.height)],
                 "views": {
                     REFERENCE_VIEW_KEY: dict(reference_maps),
                     CANDIDATE_VIEW_KEY: dict(candidate_maps),

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import replace
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
 
@@ -10,12 +11,20 @@ from PIL import Image, ImageDraw
 from .....core.visual.background import make_background_canvas
 from ....shared.text_legibility import draw_text_traced
 from ....shared.text_rendering import load_font
+from ...shared.canvas import (
+    MAX_FINAL_PIXELS,
+    bbox_dict_transform,
+    bbox_transform,
+    entities_transform,
+    point_dict_transform,
+)
 from ...shared.object_scene import CAMERA_YAW_BANDS_DEGREES, _RenderParams, render_object_scene_3d
 
 
 REFERENCE_VIEW_KEY = "reference_view"
 CANDIDATE_VIEW_KEY = "candidate_view"
 MULTIVIEW_PANEL_ROOM_EXTENT = 2.55
+MULTIVIEW_SOURCE_PANEL_SCALE = 0.5
 _Q_FIELD = "query" + "_id"
 
 
@@ -140,6 +149,98 @@ def panel_render_params(render_params: _RenderParams, panel: Mapping[str, int]) 
     )
 
 
+def multiview_source_render_params(render_params: _RenderParams) -> _RenderParams:
+    """Return full-proportion source-canvas params for each multiview panel render."""
+
+    return replace(
+        render_params,
+        scene_margin_left_px=32,
+        scene_margin_right_px=32,
+        scene_margin_top_px=28,
+        scene_margin_bottom_px=32,
+        room_extent=min(float(render_params.room_extent), MULTIVIEW_PANEL_ROOM_EXTENT),
+        label_font_size_px=max(22, int(render_params.label_font_size_px)),
+        full_bleed_floor=True,
+    )
+
+
+def multiview_scaled_panel_layout(render_params: _RenderParams) -> Dict[str, Dict[str, int | float]]:
+    """Lay out two scaled full-scene views without changing each source view's aspect ratio."""
+
+    source_width = int(render_params.canvas_width)
+    source_height = int(render_params.canvas_height)
+    scale = float(MULTIVIEW_SOURCE_PANEL_SCALE)
+    while True:
+        panel_width = max(1, int(round(float(source_width) * float(scale))))
+        panel_height = max(1, int(round(float(source_height) * float(scale))))
+        outer_margin = max(20, min(34, int(round(float(panel_width) * 0.055))))
+        gutter = max(28, min(46, int(round(float(panel_width) * 0.065))))
+        label_height = 38
+        composite_width = int((2 * outer_margin) + gutter + (2 * panel_width))
+        composite_height = int((2 * outer_margin) + label_height + panel_height)
+        if composite_width * composite_height <= int(MAX_FINAL_PIXELS) or scale <= 0.25:
+            break
+        scale *= math.sqrt(float(MAX_FINAL_PIXELS) / float(composite_width * composite_height)) * 0.98
+    panel_y = int(outer_margin + label_height)
+    left_x = int(outer_margin)
+    right_x = int(outer_margin + panel_width + gutter)
+    common = {
+        "width": int(panel_width),
+        "height": int(panel_height),
+        "source_width": int(source_width),
+        "source_height": int(source_height),
+        "scale_x": float(panel_width) / float(source_width),
+        "scale_y": float(panel_height) / float(source_height),
+    }
+    return {
+        REFERENCE_VIEW_KEY: {"x": int(left_x), "y": int(panel_y), **common},
+        CANDIDATE_VIEW_KEY: {"x": int(right_x), "y": int(panel_y), **common},
+        "_composite": {
+            "x": 0,
+            "y": 0,
+            "width": int(composite_width),
+            "height": int(composite_height),
+            "outer_margin": int(outer_margin),
+            "gutter": int(gutter),
+            "label_height": int(label_height),
+            "source_panel_scale": round(float(scale), 8),
+        },
+    }
+
+
+def _scale_bbox_list(values: Sequence[Sequence[float]], *, scale_x: float, scale_y: float) -> List[List[float]]:
+    return [bbox_transform(value, scale_x=scale_x, scale_y=scale_y) for value in values]
+
+
+def _scale_optional_bbox(value: Sequence[float], *, scale_x: float, scale_y: float) -> List[float]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)) or len(value) < 4:
+        return []
+    return bbox_transform(value, scale_x=scale_x, scale_y=scale_y)
+
+
+def _scale_rendered_scene(rendered_scene, *, width: int, height: int):
+    source_width, source_height = rendered_scene.image.size
+    scale_x = float(width) / float(source_width)
+    scale_y = float(height) / float(source_height)
+    image = rendered_scene.image.resize((int(width), int(height)), Image.Resampling.LANCZOS)
+    return replace(
+        rendered_scene,
+        image=image,
+        scene_bbox_px=bbox_transform(rendered_scene.scene_bbox_px, scale_x=scale_x, scale_y=scale_y),
+        room_bbox_px=bbox_transform(rendered_scene.room_bbox_px, scale_x=scale_x, scale_y=scale_y),
+        point_bboxes_px=bbox_dict_transform(rendered_scene.point_bboxes_px, scale_x=scale_x, scale_y=scale_y),
+        point_centers_px=point_dict_transform(rendered_scene.point_centers_px, scale_x=scale_x, scale_y=scale_y),
+        object_bboxes_px=bbox_dict_transform(rendered_scene.object_bboxes_px, scale_x=scale_x, scale_y=scale_y),
+        object_centers_px=point_dict_transform(rendered_scene.object_centers_px, scale_x=scale_x, scale_y=scale_y),
+        context_object_bboxes_px=bbox_dict_transform(rendered_scene.context_object_bboxes_px, scale_x=scale_x, scale_y=scale_y),
+        context_object_centers_px=point_dict_transform(rendered_scene.context_object_centers_px, scale_x=scale_x, scale_y=scale_y),
+        annotation_bboxes=_scale_bbox_list(rendered_scene.annotation_bboxes, scale_x=scale_x, scale_y=scale_y),
+        option_panel_bbox_px=_scale_optional_bbox(rendered_scene.option_panel_bbox_px, scale_x=scale_x, scale_y=scale_y),
+        option_choice_bboxes_px=bbox_dict_transform(rendered_scene.option_choice_bboxes_px, scale_x=scale_x, scale_y=scale_y),
+        entities=entities_transform(rendered_scene.entities, scale_x=scale_x, scale_y=scale_y),
+    )
+
+
 def draw_panel_label(draw: ImageDraw.ImageDraw, *, text: str, x: float, y: float) -> None:
     font = load_font(22, bold=True)
     draw_text_traced(
@@ -177,12 +278,13 @@ def render_multiview_scene(
     params: Mapping[str, Any],
     background_defaults: Mapping[str, Any],
 ) -> Tuple[Image.Image, Dict[str, Any], Dict[str, Any]]:
-    """Render a two-panel multiview scene and offset all panel-local entities into the composite canvas coordinates."""
-    layout = panel_layout(render_params)
-    panel_params = panel_render_params(render_params, layout[REFERENCE_VIEW_KEY])
+    """Render two full-proportion source views, then scale them into a side-by-side composite."""
+    panel_params = multiview_source_render_params(render_params)
+    layout = multiview_scaled_panel_layout(panel_params)
+    composite_box = layout["_composite"]
     background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+        canvas_width=int(composite_box["width"]),
+        canvas_height=int(composite_box["height"]),
         instance_seed=int(instance_seed),
         params=params,
         default_config=background_defaults,
@@ -194,8 +296,8 @@ def render_multiview_scene(
     for view_key, seed_offset in ((REFERENCE_VIEW_KEY, 17), (CANDIDATE_VIEW_KEY, 29)):
         panel = layout[str(view_key)]
         panel_background, panel_background_meta = make_background_canvas(
-            canvas_width=int(panel["width"]),
-            canvas_height=int(panel["height"]),
+            canvas_width=int(panel_params.canvas_width),
+            canvas_height=int(panel_params.canvas_height),
             instance_seed=int(instance_seed) + int(seed_offset),
             params=params,
             default_config=background_defaults,
@@ -210,6 +312,11 @@ def render_multiview_scene(
                 [str(dataset["target_object_id"])] if str(view_key) == REFERENCE_VIEW_KEY else []
             ),
             annotation_label=str(dataset["answer_label"]),
+        )
+        rendered = _scale_rendered_scene(
+            rendered,
+            width=int(panel["width"]),
+            height=int(panel["height"]),
         )
         composite.paste(rendered.image, (int(panel["x"]), int(panel["y"])))
         draw.rectangle(
@@ -351,6 +458,8 @@ __all__ = [
     "offset_point_map",
     "panel_layout",
     "panel_render_params",
+    "multiview_scaled_panel_layout",
+    "multiview_source_render_params",
     "render_multiview_scene",
     "render_two_view_object_scene",
     "shift_render_maps",

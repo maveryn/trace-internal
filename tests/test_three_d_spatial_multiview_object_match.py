@@ -29,6 +29,7 @@ def test_multiview_object_match_answer_and_annotation() -> None:
 
     trace = output.trace_payload["execution_trace"]
     render_map = output.trace_payload["render_map"]
+    render_spec = output.trace_payload["render_spec"]
     solver_trace = dict(trace["solver_trace"])
     answer_label = str(output.answer_gt.value)
     target_object_id = str(trace["target_object_id"])
@@ -54,6 +55,15 @@ def test_multiview_object_match_answer_and_annotation() -> None:
     assert solver_trace["same_object_unique_answer"] is True
     assert solver_trace["candidate_appearance_control"] == "same_type_same_color"
     assert solver_trace["anchor_structure"] == "low_rectangular_platform_with_corner_block"
+    reference_panel = render_spec["panel_layout"][REFERENCE_VIEW_KEY]
+    candidate_panel = render_spec["panel_layout"][CANDIDATE_VIEW_KEY]
+    source_width = int(render_spec["scene_canvas_width"])
+    source_height = int(render_spec["scene_canvas_height"])
+    assert int(reference_panel["source_width"]) == source_width
+    assert int(reference_panel["source_height"]) == source_height
+    assert int(candidate_panel["width"]) == int(reference_panel["width"])
+    assert int(candidate_panel["height"]) == int(reference_panel["height"])
+    assert abs((float(reference_panel["width"]) / float(reference_panel["height"])) - (float(source_width) / float(source_height))) < 0.01
     assert any(
         entity["entity_type"] == "red_reference_box"
         for entity in output.trace_payload["scene_ir"]["entities"]

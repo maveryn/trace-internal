@@ -139,7 +139,7 @@ def _support_visibility_offset(support_spec: Mapping[str, Any] | None) -> float:
         return 0.0
     shape_type = str(support_spec["shape_type"])
     if shape_type == "platform":
-        return 0.08
+        return 0.0
     return 0.0
 
 

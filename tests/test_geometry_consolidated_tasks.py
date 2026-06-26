@@ -367,6 +367,114 @@ def _assert_all_graph_points_are_lattice(output) -> None:
             _assert_lattice_point(point)
 
 
+def _graph_bbox_from_entity(entity: dict, *, pad_units: float = 0.45) -> tuple[float, float, float, float]:
+    points = entity["graph_points"]
+    xs = [float(point[0]) for point in points]
+    ys = [float(point[1]) for point in points]
+    return (
+        min(xs) - float(pad_units),
+        min(ys) - float(pad_units),
+        max(xs) + float(pad_units),
+        max(ys) + float(pad_units),
+    )
+
+
+@pytest.mark.parametrize(
+    "query_id",
+    GeometryGraphPaperTriangleTypeCountTask.supported_query_ids,
+)
+def test_geometry_graph_paper_triangle_count_uses_lattice_vertices_where_possible(
+    query_id: str,
+) -> None:
+    out = GeometryGraphPaperTriangleTypeCountTask().generate(
+        23111,
+        params={"query_id": query_id, "object_count": 6},
+        max_attempts=40,
+    )
+    for entity in out.trace_payload["scene_ir"]["entities"]:
+        if str(entity["class_name"]) == "equilateral":
+            continue
+        for point in entity["graph_points"]:
+            _assert_lattice_point(point)
+
+
+@pytest.mark.parametrize(
+    "query_id",
+    GeometryGraphPaperQuadrilateralTypeCountTask.supported_query_ids,
+)
+def test_geometry_graph_paper_quadrilateral_count_uses_lattice_vertices(
+    query_id: str,
+) -> None:
+    out = GeometryGraphPaperQuadrilateralTypeCountTask().generate(
+        23112,
+        params={"query_id": query_id, "object_count": 6},
+        max_attempts=40,
+    )
+    _assert_all_graph_points_are_lattice(out)
+
+
+@pytest.mark.parametrize(
+    "query_id",
+    GeometryGraphPaperShapeTypeCountTask.supported_query_ids,
+)
+def test_geometry_graph_paper_shape_count_uses_lattice_vertices_and_axes(
+    query_id: str,
+) -> None:
+    out = GeometryGraphPaperShapeTypeCountTask().generate(
+        23113,
+        params={"query_id": query_id, "object_count": 6},
+        max_attempts=40,
+    )
+    _assert_all_graph_points_are_lattice(out)
+    for entity in out.trace_payload["scene_ir"]["entities"]:
+        if entity["kind"] not in {"circle", "ellipse"}:
+            continue
+        assert float(entity["extra"]["radius_x"]).is_integer()
+        assert float(entity["extra"]["radius_y"]).is_integer()
+
+
+@pytest.mark.parametrize(
+    "query_id",
+    GeometryGraphPaperPolygonConvexityCountTask.supported_query_ids,
+)
+def test_geometry_graph_paper_convexity_count_uses_lattice_vertices(
+    query_id: str,
+) -> None:
+    out = GeometryGraphPaperPolygonConvexityCountTask().generate(
+        23114,
+        params={"query_id": query_id, "object_count": 6},
+        max_attempts=40,
+    )
+    _assert_all_graph_points_are_lattice(out)
+
+
+@pytest.mark.parametrize(
+    ("task_cls", "query_id"),
+    (
+        (GeometryGraphPaperAreaExtremumLabelTask, "largest"),
+        (GeometryGraphPaperAreaExtremumLabelTask, "smallest"),
+        (GeometryGraphPaperPerimeterExtremumLabelTask, "largest"),
+        (GeometryGraphPaperPerimeterExtremumLabelTask, "smallest"),
+    ),
+)
+def test_geometry_graph_paper_shape_extremum_objects_do_not_overlap(
+    task_cls,
+    query_id: str,
+) -> None:
+    out = task_cls().generate(
+        23115,
+        params={"query_id": query_id, "object_count": 6},
+        max_attempts=40,
+    )
+    boxes = [
+        _graph_bbox_from_entity(entity)
+        for entity in out.trace_payload["scene_ir"]["entities"]
+    ]
+    for index, first in enumerate(boxes):
+        for second in boxes[index + 1 :]:
+            assert not graph_paper_lifecycle._graph_bboxes_overlap(first, second)
+
+
 @pytest.mark.parametrize(
     ("task_cls", "forbidden_text"),
     (

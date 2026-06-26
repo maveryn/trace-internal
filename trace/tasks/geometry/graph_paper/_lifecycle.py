@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
-from math import cos, pi, sin, isclose, sqrt
+from math import isclose, sqrt
 from typing import Any, Callable, Mapping, Sequence
 
 from trace.core.types import TypedValue
@@ -20,15 +20,9 @@ from .shared.annotations import (
     scalar_segment_artifacts,
 )
 from .shared.construction import (
-    concave_polygon,
-    irregular_convex_polygon,
     pi_expression,
     polygon_area,
     polygon_perimeter,
-    rectangle_points,
-    regular_polygon,
-    right_triangle_points,
-    rotate_points,
 )
 from .shared.defaults import split_defaults_for
 from .shared.prompts import prompt_defaults as resolve_prompt_defaults
@@ -1140,7 +1134,8 @@ def _shape_extremum_objects(
             context["task_params"], context["generation_defaults"], fallback=6
         ),
     )
-    labels = label_subset(object_count)
+    labels = list(label_subset(object_count))
+    rng.shuffle(labels)
     shape_kind = str(
         dict(context["task_params"]).get(
             "shape_kind",
@@ -1153,31 +1148,62 @@ def _shape_extremum_objects(
     )
     objects = []
     used_values: set[int] = set()
-    for index, (label, center) in enumerate(
-        zip(
-            labels,
-            slot_centers(ctx, object_count, rng=rng, footprint_units=2.4),
-            strict=True,
+    dimension_choices = [2, 3, 4] if str(metric) == "area" else [1, 2, 3, 4]
+    max_dimension = max(dimension_choices)
+    dimension_candidates: list[tuple[int, int, int]] = []
+    seen_candidate_values: set[int] = set()
+    size_pairs = [
+        (int(width), int(height))
+        for width in dimension_choices
+        for height in dimension_choices
+    ]
+    rng.shuffle(size_pairs)
+    for width, height in size_pairs:
+        points = _translated_corner_shape(
+            left=0,
+            bottom=0,
+            width=width,
+            height=height,
+            shape_kind=shape_kind,
         )
+        value = polygon_area(points) if metric == "area" else polygon_perimeter(points)
+        encoded = int(round(value * 100))
+        if encoded in seen_candidate_values:
+            continue
+        seen_candidate_values.add(encoded)
+        dimension_candidates.append((width, height, encoded))
+    if len(dimension_candidates) < object_count:
+        raise ValueError(f"not enough unique {shape_kind} values for {metric}")
+
+    selected_dimensions = dimension_candidates[:object_count]
+    selected_dimensions.sort(key=lambda item: item[0] * item[1], reverse=True)
+    limit = int(float(ctx.graph_half_range))
+    left_slots = [
+        -limit,
+        -limit + max_dimension + 1,
+        limit - max_dimension,
+    ]
+    bottom_slots = [-limit, limit - max_dimension]
+    placement_slots = [(left, bottom) for bottom in bottom_slots for left in left_slots]
+    rng.shuffle(placement_slots)
+    if len(placement_slots) < object_count:
+        raise ValueError("not enough non-overlapping graph-paper placement slots")
+
+    for index, (label, (width, height, expected_encoded), (slot_left, slot_bottom)) in enumerate(
+        zip(labels, selected_dimensions, placement_slots, strict=True)
     ):
-        for _ in range(30):
-            width = int(rng.choice([2, 3, 4, 5]))
-            height = int(rng.choice([2, 3, 4, 5]))
-            left, bottom = _slot_anchor(ctx, center, width=width, height=height)
-            points = _translated_corner_shape(
-                left=left,
-                bottom=bottom,
-                width=width,
-                height=height,
-                shape_kind=shape_kind,
-            )
-            value = (
-                polygon_area(points) if metric == "area" else polygon_perimeter(points)
-            )
-            encoded = int(round(value * 100))
-            if encoded not in used_values:
-                used_values.add(encoded)
-                break
+        points = _translated_corner_shape(
+            left=int(slot_left),
+            bottom=int(slot_bottom),
+            width=width,
+            height=height,
+            shape_kind=shape_kind,
+        )
+        value = polygon_area(points) if metric == "area" else polygon_perimeter(points)
+        encoded = int(round(value * 100))
+        if encoded != expected_encoded or encoded in used_values:
+            raise ValueError("shape extremum metric candidate changed unexpectedly")
+        used_values.add(encoded)
         obj = draw_polygon(
             ctx,
             label,
@@ -1450,14 +1476,6 @@ def _object_class_matches(entity: GraphObject, target_class: str) -> bool:
     return str(entity.class_name) == str(target_class)
 
 
-def _random_angle(rng: Any | None, *, fallback: float = 0.0) -> float:
-    """Return one optional rotation angle in radians."""
-
-    if rng is None:
-        return float(fallback)
-    return float(rng.uniform(0.0, 2.0 * pi))
-
-
 def _random_choice(rng: Any | None, values: Sequence[Any]) -> Any:
     """Choose from values with a deterministic first-item fallback."""
 
@@ -1469,41 +1487,141 @@ def _random_choice(rng: Any | None, values: Sequence[Any]) -> Any:
     return options[int(rng.randrange(0, len(options)))]
 
 
-def _rotated_rectangle_points(
-    center: Point, width: float, height: float, rng: Any | None
-) -> tuple[Point, ...]:
-    """Return a rectangle with optional graph-space rotation."""
-
-    return rotate_points(
-        rectangle_points(center, float(width), float(height)),
-        center,
-        _random_angle(rng),
-    )
-
-
-def _parallelogram_points(
-    center: Point,
+def _lattice_transform_points(
+    points: Sequence[Point],
+    rng: Any | None,
     *,
-    half_u: float,
-    half_v: float,
-    angle_radians: float,
-    rotation_radians: float,
+    allow_swap: bool = True,
+    allow_mirror: bool = True,
 ) -> tuple[Point, ...]:
-    """Return a centered parallelogram from two graph-space half-vectors."""
+    """Apply integer-grid-preserving orientation changes."""
 
-    cx, cy = float(center[0]), float(center[1])
-    u = (float(half_u), 0.0)
-    v = (
-        float(half_v) * cos(float(angle_radians)),
-        float(half_v) * sin(float(angle_radians)),
+    transformed = [(float(x), float(y)) for x, y in points]
+    if allow_swap and rng is not None and int(rng.randrange(0, 2)) == 1:
+        transformed = [(y, x) for x, y in transformed]
+    if allow_mirror and rng is not None and int(rng.randrange(0, 2)) == 1:
+        transformed = [(-x, y) for x, y in transformed]
+    if allow_mirror and rng is not None and int(rng.randrange(0, 2)) == 1:
+        transformed = [(x, -y) for x, y in transformed]
+    return _normalize_points_to_origin(transformed)
+
+
+def _anchor_points_near_center(points: Sequence[Point], center: Point) -> tuple[Point, ...]:
+    """Place origin-normalized lattice points near a slot center."""
+
+    normalized = _normalize_points_to_origin(points)
+    min_x = min(float(point[0]) for point in normalized)
+    max_x = max(float(point[0]) for point in normalized)
+    min_y = min(float(point[1]) for point in normalized)
+    max_y = max(float(point[1]) for point in normalized)
+    width = max_x - min_x
+    height = max_y - min_y
+    left = int(round(float(center[0]) - (width / 2.0)))
+    bottom = int(round(float(center[1]) - (height / 2.0)))
+    return tuple((float(x) + float(left), float(y) + float(bottom)) for x, y in normalized)
+
+
+def _integer_center_near_slot(
+    ctx: GraphPaperContext,
+    center: Point,
+    radius_x: int,
+    radius_y: int,
+    *,
+    margin_units: float = 1.0,
+) -> Point:
+    """Snap an ellipse or circle center near a slot while keeping axes on grid points."""
+
+    limit = int(float(ctx.graph_half_range) - float(margin_units))
+    x = int(round(float(center[0])))
+    y = int(round(float(center[1])))
+    x = max(-limit + int(radius_x), min(limit - int(radius_x), x))
+    y = max(-limit + int(radius_y), min(limit - int(radius_y), y))
+    return (float(x), float(y))
+
+
+def _graph_bbox_units(
+    points: Sequence[Point], *, pad_units: float = 0.25
+) -> tuple[float, float, float, float]:
+    """Return a padded graph-unit bounding box."""
+
+    xs = [float(point[0]) for point in points]
+    ys = [float(point[1]) for point in points]
+    return (
+        min(xs) - float(pad_units),
+        min(ys) - float(pad_units),
+        max(xs) + float(pad_units),
+        max(ys) + float(pad_units),
     )
-    points = (
-        (cx - u[0] - v[0], cy - u[1] - v[1]),
-        (cx + u[0] - v[0], cy + u[1] - v[1]),
-        (cx + u[0] + v[0], cy + u[1] + v[1]),
-        (cx - u[0] + v[0], cy - u[1] + v[1]),
+
+
+def _graph_bboxes_overlap(
+    first: tuple[float, float, float, float],
+    second: tuple[float, float, float, float],
+) -> bool:
+    """Return whether two graph-unit boxes overlap."""
+
+    return not (
+        first[2] <= second[0]
+        or second[2] <= first[0]
+        or first[3] <= second[1]
+        or second[3] <= first[1]
     )
-    return rotate_points(points, center, float(rotation_radians))
+
+
+def _lattice_convex_polygon_points(
+    center: Point, side_count: int, rng: Any | None
+) -> tuple[Point, ...]:
+    """Return an irregular convex polygon with integer-lattice vertices."""
+
+    templates: dict[int, tuple[tuple[Point, ...], ...]] = {
+        5: (
+            ((0, 0), (3, 0), (4, 2), (2, 4), (0, 3)),
+            ((0, 1), (2, 0), (4, 1), (3, 3), (1, 4)),
+            ((0, 0), (4, 0), (5, 1), (3, 3), (1, 2)),
+        ),
+        6: (
+            ((0, 1), (2, 0), (4, 1), (5, 3), (3, 5), (1, 4)),
+            ((0, 0), (3, 0), (5, 2), (4, 4), (2, 5), (0, 3)),
+            ((0, 2), (1, 0), (4, 0), (5, 2), (4, 4), (1, 5)),
+        ),
+        7: (
+            ((0, 1), (2, 0), (4, 0), (5, 2), (4, 4), (2, 5), (0, 3)),
+            ((0, 2), (1, 0), (3, 0), (5, 1), (5, 3), (3, 5), (1, 4)),
+            ((0, 1), (2, 0), (4, 1), (5, 3), (4, 5), (2, 5), (0, 3)),
+        ),
+    }
+    sides = max(5, min(7, int(side_count)))
+    template = tuple(_random_choice(rng, templates[sides]))
+    transformed = _lattice_transform_points(template, rng)
+    return _anchor_points_near_center(transformed, center)
+
+
+def _lattice_concave_polygon_points(
+    center: Point, side_count: int, rng: Any | None
+) -> tuple[Point, ...]:
+    """Return a concave polygon with integer-lattice vertices."""
+
+    templates: dict[int, tuple[tuple[Point, ...], ...]] = {
+        5: (
+            ((0, 0), (4, 0), (2, 1), (4, 3), (0, 3)),
+            ((0, 0), (3, 0), (3, 3), (1, 2), (0, 4)),
+            ((0, 1), (4, 0), (3, 2), (4, 4), (0, 3)),
+        ),
+        6: (
+            ((0, 0), (4, 0), (4, 3), (2, 2), (1, 4), (0, 3)),
+            ((0, 0), (3, 0), (5, 2), (3, 2), (3, 4), (0, 4)),
+            ((0, 1), (2, 0), (4, 1), (3, 3), (4, 5), (0, 4)),
+        ),
+        7: (
+            ((0, 1), (2, 0), (5, 1), (4, 3), (5, 5), (2, 4), (0, 5)),
+            ((0, 0), (3, 0), (5, 2), (3, 2), (4, 4), (2, 5), (0, 3)),
+            ((0, 1), (2, 0), (4, 0), (5, 2), (3, 2), (4, 5), (0, 4)),
+        ),
+    }
+    sides = max(5, min(7, int(side_count)))
+    template = tuple(_random_choice(rng, templates[sides]))
+    transformed = _lattice_transform_points(template, rng)
+    return _anchor_points_near_center(transformed, center)
 
 
 def _triangle_points(
@@ -1511,61 +1629,47 @@ def _triangle_points(
 ) -> tuple[Point, ...]:
     """Return a compact triangle for classification-count scenes."""
 
-    cx, cy = float(center[0]), float(center[1])
     if class_name == "equilateral":
-        radius = 0.78 if rng is None else float(rng.uniform(0.74, 1.02))
-        return regular_polygon(
-            center, 3, radius, phase=_random_angle(rng, fallback=1.57)
+        base = float(_random_choice(rng, (2, 3, 4)))
+        height = float(sqrt(3.0) * base / 2.0)
+        local = ((0.0, 0.0), (base, 0.0), (base / 2.0, height))
+        if rng is not None and int(rng.randrange(0, 2)) == 1:
+            local = tuple((x, -y) for x, y in local)
+        return _anchor_points_near_center(local, center)
+
+    templates_by_class: dict[str, tuple[tuple[Point, ...], ...]] = {
+        "non_equilateral_isosceles": (
+            ((0, 0), (4, 0), (2, 1)),
+            ((0, 0), (4, 0), (2, 2)),
+            ((0, 0), (6, 0), (3, 2)),
+            ((0, 0), (6, 0), (3, 4)),
+        ),
+        "right": (
+            ((0, 0), (3, 0), (0, 2)),
+            ((0, 0), (4, 0), (0, 3)),
+            ((0, 0), (2, 0), (0, 5)),
+            ((0, 0), (5, 0), (0, 2)),
+        ),
+        "scalene": (
+            ((0, 0), (4, 0), (1, 3)),
+            ((0, 0), (3, 0), (1, 4)),
+            ((0, 0), (5, 0), (2, 3)),
+            ((0, 0), (4, 0), (3, 2)),
+            ((0, 0), (5, 0), (1, 2)),
+        ),
+    }
+    templates = templates_by_class.get(str(class_name), templates_by_class["scalene"])
+    for _ in range(30):
+        template = tuple(_random_choice(rng, templates))
+        points = _anchor_points_near_center(
+            _lattice_transform_points(template, rng), center
         )
-    if class_name == "non_equilateral_isosceles":
-        for _ in range(20):
-            base = 1.55 if rng is None else float(rng.uniform(1.35, 2.05))
-            height = 1.65 if rng is None else float(rng.uniform(1.15, 2.05))
-            points = (
-                (cx - base / 2.0, cy - height / 3.0),
-                (cx + base / 2.0, cy - height / 3.0),
-                (cx, cy + (2.0 * height / 3.0)),
-            )
-            points = rotate_points(points, center, _random_angle(rng))
-            if _triangle_matches_target(points, "non_equilateral_isosceles"):
-                return points
-        return rotate_points(
-            ((cx - 0.9, cy - 0.7), (cx + 0.9, cy - 0.7), (cx, cy + 0.9)),
-            center,
-            _random_angle(rng),
-        )
-    if class_name == "right":
-        for _ in range(20):
-            base = 1.8 if rng is None else float(rng.uniform(1.35, 2.05))
-            height = 1.2 if rng is None else float(rng.uniform(1.0, 1.85))
-            if abs(base - height) < 0.18:
-                continue
-            points = rotate_points(
-                right_triangle_points(center, base, height),
-                center,
-                _random_angle(rng),
-            )
-            if _triangle_matches_target(points, "right"):
-                return points
-        return rotate_points(right_triangle_points(center, 1.8, 1.2), center, 0.0)
-    templates = (
-        ((cx - 1.0, cy - 0.7), (cx + 0.8, cy - 0.45), (cx - 0.2, cy + 0.9)),
-        ((cx - 0.95, cy - 0.55), (cx + 0.95, cy - 0.8), (cx + 0.15, cy + 0.95)),
-        ((cx - 0.8, cy - 0.85), (cx + 1.05, cy - 0.15), (cx - 0.45, cy + 0.8)),
-        ((cx - 1.0, cy - 0.15), (cx + 0.65, cy - 0.85), (cx + 0.2, cy + 0.95)),
-    )
-    for _ in range(20):
-        points = tuple(_random_choice(rng, templates))
-        scale = 1.0 if rng is None else float(rng.uniform(0.86, 1.12))
-        scaled = tuple(
-            (cx + ((x - cx) * scale), cy + ((y - cy) * scale)) for x, y in points
-        )
-        candidate = rotate_points(scaled, center, _random_angle(rng))
-        if _triangle_matches_target(candidate, "scalene") and not _has_right_angle(
-            candidate
-        ):
-            return candidate
-    return templates[0]
+        if _triangle_matches_target(points, str(class_name)):
+            return points
+    fallback = _anchor_points_near_center(templates[0], center)
+    if not _triangle_matches_target(fallback, str(class_name)):
+        raise ValueError(f"triangle template does not match {class_name}")
+    return fallback
 
 
 def _quadrilateral_points(
@@ -1573,60 +1677,46 @@ def _quadrilateral_points(
 ) -> tuple[Point, ...]:
     """Return a compact quadrilateral for classification-count scenes."""
 
-    cx, cy = float(center[0]), float(center[1])
-    if class_name == "square":
-        side = 1.55 if rng is None else float(rng.uniform(1.3, 1.85))
-        return _rotated_rectangle_points(center, side, side, rng)
-    if class_name == "non_square_rectangle":
-        for _ in range(20):
-            width = 2.0 if rng is None else float(rng.uniform(1.55, 2.25))
-            height = 1.2 if rng is None else float(rng.uniform(0.9, 1.45))
-            if abs(width - height) >= 0.35:
-                return _rotated_rectangle_points(center, width, height, rng)
-        return _rotated_rectangle_points(center, 2.0, 1.2, rng)
-    if class_name == "non_square_rhombus":
-        side_half = 0.82 if rng is None else float(rng.uniform(0.72, 0.98))
-        angle = _random_choice(
-            rng,
-            (
-                pi * 0.34,
-                pi * 0.39,
-                pi * 0.61,
-                pi * 0.66,
-            ),
-        )
-        return _parallelogram_points(
-            center,
-            half_u=side_half,
-            half_v=side_half,
-            angle_radians=float(angle),
-            rotation_radians=_random_angle(rng),
-        )
-    if class_name == "slanted_parallelogram":
-        half_u = 0.95 if rng is None else float(rng.uniform(0.78, 1.1))
-        half_v = 0.7 if rng is None else float(rng.uniform(0.55, 0.82))
-        angle = _random_choice(
-            rng,
-            (
-                pi * 0.32,
-                pi * 0.38,
-                pi * 0.62,
-                pi * 0.68,
-            ),
-        )
-        return _parallelogram_points(
-            center,
-            half_u=half_u,
-            half_v=half_v,
-            angle_radians=float(angle),
-            rotation_radians=_random_angle(rng),
-        )
-    return (
-        (cx - 0.9, cy - 0.65),
-        (cx + 0.9, cy - 0.65),
-        (cx + 1.2, cy + 0.65),
-        (cx - 0.6, cy + 0.65),
+    templates_by_class: dict[str, tuple[tuple[Point, ...], ...]] = {
+        "square": (
+            ((0, 0), (2, 0), (2, 2), (0, 2)),
+            ((0, 0), (3, 0), (3, 3), (0, 3)),
+            ((1, 0), (2, 1), (1, 2), (0, 1)),
+            ((2, 0), (4, 2), (2, 4), (0, 2)),
+        ),
+        "non_square_rectangle": (
+            ((0, 0), (3, 0), (3, 2), (0, 2)),
+            ((0, 0), (4, 0), (4, 2), (0, 2)),
+            ((0, 0), (5, 0), (5, 2), (0, 2)),
+        ),
+        "non_square_rhombus": (
+            ((0, 0), (2, 1), (3, 3), (1, 2)),
+            ((0, 0), (3, 1), (4, 4), (1, 3)),
+            ((0, 0), (1, 2), (3, 3), (2, 1)),
+            ((0, 0), (3, 2), (5, 5), (2, 3)),
+            ((0, 0), (4, 1), (5, 5), (1, 4)),
+        ),
+        "slanted_parallelogram": (
+            ((0, 0), (3, 0), (4, 2), (1, 2)),
+            ((0, 0), (4, 0), (5, 2), (1, 2)),
+            ((0, 0), (3, 0), (5, 2), (2, 2)),
+            ((0, 0), (4, 0), (6, 3), (2, 3)),
+        ),
+    }
+    templates = templates_by_class.get(
+        str(class_name), templates_by_class["slanted_parallelogram"]
     )
+    for _ in range(30):
+        template = tuple(_random_choice(rng, templates))
+        points = _anchor_points_near_center(
+            _lattice_transform_points(template, rng), center
+        )
+        if _quadrilateral_matches_target(points, str(class_name)):
+            return points
+    fallback = _anchor_points_near_center(templates[0], center)
+    if not _quadrilateral_matches_target(fallback, str(class_name)):
+        raise ValueError(f"quadrilateral template does not match {class_name}")
+    return fallback
 
 
 def _count_setup(
@@ -1637,6 +1727,7 @@ def _count_setup(
     target_field: str,
     classes: Sequence[str],
     class_matches_target: Callable[[str, str], bool] | None = None,
+    distractor_classes_override: Sequence[str] | None = None,
 ):
     """Resolve the target class, target count, and shuffled class sequence."""
 
@@ -1673,11 +1764,18 @@ def _count_setup(
     matches_target = class_matches_target or (
         lambda class_name, target: str(class_name) == str(target)
     )
-    distractor_classes = [
-        str(value)
-        for value in classes
-        if not matches_target(str(value), str(target_class))
-    ]
+    if distractor_classes_override is None:
+        distractor_classes = [
+            str(value)
+            for value in classes
+            if not matches_target(str(value), str(target_class))
+        ]
+    else:
+        distractor_classes = [
+            str(value)
+            for value in distractor_classes_override
+            if not matches_target(str(value), str(target_class))
+        ]
     class_sequence = make_class_sequence(
         target_class=target_class,
         distractor_classes=distractor_classes,
@@ -1819,6 +1917,11 @@ def _build_triangle_type_count(
         target_field=plan.target_field,
         classes=TRIANGLE_CLASSES,
         class_matches_target=_triangle_class_name_matches_target,
+        distractor_classes_override=(
+            tuple(value for value in TRIANGLE_CLASSES if value != "equilateral")
+            if plan.target_class_for(str(context["branch_name"]), "") != "equilateral"
+            else None
+        ),
     )
     ctx = make_context(
         instance_seed=int(context["instance_seed"]),
@@ -1828,7 +1931,11 @@ def _build_triangle_type_count(
     )
     objects = []
     for index, (cls_name, center) in enumerate(
-        zip(class_sequence, slot_centers(ctx, object_count, rng=rng), strict=True)
+        zip(
+            class_sequence,
+            slot_centers(ctx, object_count, rng=rng, footprint_units=2.9),
+            strict=True,
+        )
     ):
         obj = draw_polygon(
             ctx,
@@ -1880,7 +1987,11 @@ def _build_quadrilateral_type_count(
     )
     objects = []
     for index, (cls_name, center) in enumerate(
-        zip(class_sequence, slot_centers(ctx, object_count, rng=rng), strict=True)
+        zip(
+            class_sequence,
+            slot_centers(ctx, object_count, rng=rng, footprint_units=3.0),
+            strict=True,
+        )
     ):
         obj = draw_polygon(
             ctx,
@@ -1932,14 +2043,17 @@ def _build_shape_type_count(
     )
     objects = []
     for index, (cls_name, center) in enumerate(
-        zip(class_sequence, slot_centers(ctx, object_count, rng=rng), strict=True)
+        zip(
+            class_sequence,
+            slot_centers(ctx, object_count, rng=rng, footprint_units=3.0),
+            strict=True,
+        )
     ):
         color = object_color(ctx, index)
         if cls_name == "triangle":
             triangle_class = _random_choice(
                 rng,
                 (
-                    "equilateral",
                     "right",
                     "scalene",
                     "non_equilateral_isosceles",
@@ -1977,7 +2091,7 @@ def _build_shape_type_count(
             obj = draw_polygon(
                 ctx,
                 "",
-                irregular_convex_polygon(center, 5, 0.9, rng),
+                _lattice_convex_polygon_points(center, 5, rng),
                 class_name="pentagon",
                 color=color,
                 filled=False,
@@ -1987,35 +2101,34 @@ def _build_shape_type_count(
             obj = draw_polygon(
                 ctx,
                 "",
-                irregular_convex_polygon(center, 6, 0.9, rng),
+                _lattice_convex_polygon_points(center, 6, rng),
                 class_name="hexagon",
                 color=color,
                 filled=False,
             )
             obj = replace(obj, extra={"side_count": 6})
         elif cls_name == "circle":
-            radius = float(rng.uniform(0.64, 0.9))
+            radius = int(_random_choice(rng, (1, 2)))
+            ellipse_center = _integer_center_near_slot(ctx, center, radius, radius)
             obj = draw_ellipse_or_circle(
                 ctx,
                 "",
-                center,
-                radius,
-                radius,
+                ellipse_center,
+                float(radius),
+                float(radius),
                 class_name="circle",
                 color=color,
                 filled=False,
             )
         else:
-            radius_x = float(rng.uniform(0.8, 1.08))
-            radius_y = float(rng.uniform(0.48, 0.7))
-            if int(rng.randrange(0, 2)) == 1:
-                radius_x, radius_y = radius_y, radius_x
+            radius_x, radius_y = _random_choice(rng, ((2, 1), (3, 1), (1, 2), (1, 3)))
+            ellipse_center = _integer_center_near_slot(ctx, center, radius_x, radius_y)
             obj = draw_ellipse_or_circle(
                 ctx,
                 "",
-                center,
-                radius_x,
-                radius_y,
+                ellipse_center,
+                float(radius_x),
+                float(radius_y),
                 class_name="ellipse",
                 color=color,
                 filled=False,
@@ -2058,13 +2171,17 @@ def _build_polygon_convexity_count(
     )
     objects = []
     for index, (cls_name, center) in enumerate(
-        zip(class_sequence, slot_centers(ctx, object_count, rng=rng), strict=True)
+        zip(
+            class_sequence,
+            slot_centers(ctx, object_count, rng=rng, footprint_units=3.1),
+            strict=True,
+        )
     ):
         side_count = int(rng.randint(5, 7))
         points = (
-            irregular_convex_polygon(center, side_count, 0.9, rng)
+            _lattice_convex_polygon_points(center, side_count, rng)
             if cls_name == "convex"
-            else concave_polygon(center, side_count, 0.95, rng)
+            else _lattice_concave_polygon_points(center, side_count, rng)
         )
         obj = draw_polygon(
             ctx,

@@ -453,6 +453,16 @@ def _corner_right_triangle_points(width: int, height: int) -> tuple[Point, ...]:
     return ((0.0, 0.0), (float(width), 0.0), (0.0, float(height)))
 
 
+def _corner_triangle_points(
+    base_width: int,
+    apex_x: int,
+    height: int,
+) -> tuple[Point, ...]:
+    """Return a non-rotated lattice triangle with a horizontal base."""
+
+    return ((0.0, 0.0), (float(base_width), 0.0), (float(apex_x), float(height)))
+
+
 def _corner_parallelogram_points(
     base_width: int,
     side_dx: int,
@@ -506,6 +516,57 @@ def _slot_anchor(
     left = max(lower, min(limit - int(width), left))
     bottom = max(lower, min(limit - int(height), bottom))
     return left, bottom
+
+
+_INTEGER_PERIMETER_TRIANGLES: tuple[tuple[Point, Point, Point], ...] = (
+    ((0.0, 0.0), (6.0, 0.0), (3.0, 4.0)),
+    ((0.0, 0.0), (8.0, 0.0), (4.0, 3.0)),
+)
+
+
+def _normalize_polygon_measurement_shape(value: Any) -> str:
+    """Return the public shape family for single-polygon measurement tasks."""
+
+    text = str(value).strip().lower().replace("-", "_").replace(" ", "_")
+    if text in {"right_triangle", "right_triangle_3_4_5"}:
+        return "triangle"
+    if text in {"rectangle", "triangle", "parallelogram"}:
+        return str(text)
+    return "rectangle"
+
+
+def _is_right_triangle_lattice(base_width: int, apex_x: int, height: int) -> bool:
+    """Return whether the sampled horizontal-base triangle is right angled."""
+
+    base = int(base_width)
+    x = int(apex_x)
+    h = int(height)
+    if x <= 0 or x >= base:
+        return True
+    return int(h * h) == int(x * (base - x))
+
+
+def _sample_area_triangle_points(rng: Any, task_params: Mapping[str, Any]) -> tuple[Point, ...]:
+    """Sample a non-right lattice triangle with integer area."""
+
+    explicit_shape_params = {
+        "base_width",
+        "apex_x",
+        "height",
+    } <= set(str(key) for key in task_params)
+    for _ in range(50):
+        base_width = int(task_params.get("base_width", rng.randint(4, 8)))
+        height = int(task_params.get("height", rng.randint(3, 6)))
+        apex_x = int(task_params.get("apex_x", rng.randint(1, max(1, base_width - 1))))
+        if (
+            0 < apex_x < base_width
+            and (base_width * height) % 2 == 0
+            and not _is_right_triangle_lattice(base_width, apex_x, height)
+        ):
+            return _corner_triangle_points(base_width, apex_x, height)
+        if explicit_shape_params:
+            break
+    return _corner_triangle_points(6, 2, 4)
 
 
 def _build_line_slope_value(
@@ -712,8 +773,8 @@ def _single_polygon_points(
 
     task_params = dict(context["task_params"])
     rng = rng_for(int(context["instance_seed"]), str(salt))
-    shapes = ("rectangle", "right_triangle", "parallelogram")
-    shape_kind = str(
+    shapes = ("rectangle", "triangle", "parallelogram")
+    shape_kind = _normalize_polygon_measurement_shape(
         task_params.get(
             "shape_kind",
             choose_from_seed(
@@ -721,8 +782,6 @@ def _single_polygon_points(
             ),
         )
     )
-    if shape_kind == "right_triangle_3_4_5":
-        shape_kind = "right_triangle"
     if shape_kind == "parallelogram":
         base_width = int(task_params.get("base_width", rng.randint(3, 6)))
         side_dx, side_dy = (
@@ -739,21 +798,10 @@ def _single_polygon_points(
         )
     width = int(task_params.get("width", rng.randint(3, 6)))
     height = int(task_params.get("height", rng.randint(3, 6)))
-    if shape_kind == "right_triangle":
+    if shape_kind == "triangle":
         if perimeter_mode:
-            scale = int(task_params.get("scale", rng.choice([1, 2])))
-            return (
-                _corner_right_triangle_points(3 * scale, 4 * scale),
-                "right triangle",
-            )
-        for _ in range(20):
-            if (width * height) % 2 == 0:
-                break
-            width = int(rng.randint(3, 6))
-            height = int(rng.randint(3, 6))
-        if (width * height) % 2 != 0:
-            width += 1
-        return _corner_right_triangle_points(width, height), "right triangle"
+            return rng.choice(_INTEGER_PERIMETER_TRIANGLES), "triangle"
+        return _sample_area_triangle_points(rng, task_params), "triangle"
     return _corner_rectangle_points(width, height), "rectangle"
 
 

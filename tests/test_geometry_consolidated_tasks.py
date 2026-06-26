@@ -301,10 +301,10 @@ def test_geometry_graph_paper_length_extremum_includes_oblique_lattice_segments(
     ("task_cls", "shape_kind"),
     (
         (GeometryGraphPaperPolygonAreaValueTask, "rectangle"),
-        (GeometryGraphPaperPolygonAreaValueTask, "right_triangle"),
+        (GeometryGraphPaperPolygonAreaValueTask, "triangle"),
         (GeometryGraphPaperPolygonAreaValueTask, "parallelogram"),
         (GeometryGraphPaperPolygonPerimeterValueTask, "rectangle"),
-        (GeometryGraphPaperPolygonPerimeterValueTask, "right_triangle"),
+        (GeometryGraphPaperPolygonPerimeterValueTask, "triangle"),
         (GeometryGraphPaperPolygonPerimeterValueTask, "parallelogram"),
     ),
 )
@@ -321,7 +321,7 @@ def test_geometry_graph_paper_polygon_measurement_shape_families_are_lattice_int
     assert isinstance(out.answer_gt.value, int)
     assert out.trace_payload["execution_trace"]["shape_kind"] in {
         "rectangle",
-        "right triangle",
+        "triangle",
         "parallelogram",
     }
     _assert_all_graph_points_are_lattice(out)
@@ -339,7 +339,7 @@ def test_geometry_graph_paper_polygon_measurements_sample_all_shape_families(tas
     for seed in range(100):
         out = task_cls().generate(seed, params={}, max_attempts=40)
         seen.add(str(out.trace_payload["execution_trace"]["shape_kind"]))
-    assert {"rectangle", "right triangle", "parallelogram"} <= seen
+    assert {"rectangle", "triangle", "parallelogram"} <= seen
 
 
 @pytest.mark.parametrize(

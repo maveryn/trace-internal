@@ -513,8 +513,10 @@ SPATIAL_BETWEEN_REFERENCE_SHAPE_TYPES: Tuple[str, ...] = (
 )
 SPATIAL_HEIGHT_SUPPORT_PLACEMENTS: Tuple[Tuple[str, str | None, Tuple[float, float]], ...] = (
     ("floor_spot", None, (-2.58, -2.42)),
-    ("low_platform", "platform", (2.34, 0.16)),
-    ("mid_platform", "platform", (1.46, 2.24)),
+    ("lowest_platform", "platform", (2.46, -2.18)),
+    ("low_platform", "platform", (-0.74, -1.62)),
+    ("mid_platform", "platform", (2.34, 0.16)),
+    ("upper_platform", "platform", (1.46, 2.24)),
     ("high_platform", "platform", (-1.44, 2.20)),
 )
 SPATIAL_HEIGHT_FLOOR_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = (

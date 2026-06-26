@@ -10,7 +10,13 @@ from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.shared.object_scene_primitives import _sub_box_spec
 from trace.tasks.three_d.shared.object_resources import SPATIAL_HEIGHT_SAFE_CANDIDATE_SHAPE_TYPES
-from trace.tasks.three_d.object_scene.height_extremum_label import SUPPORTED_QUERY_IDS, TASK_ID
+from trace.tasks.three_d.object_scene.height_extremum_label import (
+    HEIGHT_NON_OPTION_OBJECT_COUNT,
+    HEIGHT_PLACED_OBJECT_COUNT,
+    HEIGHT_SUPPORT_COUNT,
+    SUPPORTED_QUERY_IDS,
+    TASK_ID,
+)
 from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
@@ -23,7 +29,7 @@ def test_height_extremum_answer_and_annotation(query_id: str) -> None:
             "query_id": query_id,
             "scene_variant": "floor_grid_room",
             "point_count": 4,
-            "context_object_count": 3,
+            "context_object_count": 5,
             "post_image_noise_apply_prob": 0.0,
         },
         max_attempts=220,
@@ -32,6 +38,9 @@ def test_height_extremum_answer_and_annotation(query_id: str) -> None:
     trace = output.trace_payload["execution_trace"]
     point_specs = list(trace["point_specs"])
     context_specs = list(trace["context_object_specs"])
+    non_option_specs = list(trace["non_option_object_specs"])
+    support_context_specs = [spec for spec in context_specs if str(spec["shape_type"]) == "platform"]
+    visible_small_specs = [*point_specs, *non_option_specs]
     height_by_label = {str(label): float(value) for label, value in trace["height_by_label"].items()}
     sorted_labels = [str(label) for label, _value in sorted(height_by_label.items(), key=lambda item: (float(item[1]), str(item[0])))]
     expected_label = sorted_labels[-1] if query_id == "highest_above_floor" else sorted_labels[0]
@@ -40,10 +49,17 @@ def test_height_extremum_answer_and_annotation(query_id: str) -> None:
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == expected_label
     assert len(point_specs) == 4
-    assert len(context_specs) == 3
+    assert len(non_option_specs) == HEIGHT_NON_OPTION_OBJECT_COUNT
+    assert len(support_context_specs) == HEIGHT_SUPPORT_COUNT
+    assert len(context_specs) == HEIGHT_SUPPORT_COUNT + HEIGHT_NON_OPTION_OBJECT_COUNT
+    assert len(visible_small_specs) == HEIGHT_PLACED_OBJECT_COUNT
     assert all(spec["is_answer_candidate"] for spec in point_specs)
     assert all(not spec["is_answer_candidate"] for spec in context_specs)
-    assert {str(spec["shape_type"]) for spec in context_specs} == {"platform"}
+    assert {str(spec["shape_type"]) for spec in support_context_specs} == {"platform"}
+    assert all(str(spec.get("height_option_role")) == "option_candidate" for spec in point_specs)
+    assert all(str(spec.get("height_option_role")) == "visible_non_option" for spec in non_option_specs)
+    assert sum(1 for spec in visible_small_specs if spec.get("support_shape_type") is None) == 1
+    assert sum(1 for spec in visible_small_specs if str(spec.get("support_shape_type")) == "platform") == HEIGHT_SUPPORT_COUNT
     assert not any(str(spec.get("support_shape_type")) in {"chair", "shelf", "open_box", "table"} for spec in point_specs)
     assert len({str(spec["shape_type"]) for spec in point_specs}) == len(point_specs)
     assert not any(str(spec.get("shape_type")) in {"bottle", "candle", "drum", "flask", "goblet", "hat", "lantern", "wedge"} for spec in point_specs)
@@ -76,7 +92,7 @@ def test_height_extremum_uses_distinct_object_descriptors_across_seeds() -> None
                 "query_id": "highest_above_floor",
                 "scene_variant": "floor_grid_room",
                 "point_count": 4,
-                "context_object_count": 3,
+                "context_object_count": 5,
                 "post_image_noise_apply_prob": 0.0,
             },
             max_attempts=220,
@@ -93,6 +109,33 @@ def test_height_extremum_uses_distinct_object_descriptors_across_seeds() -> None
         assert not any("option_color_name" in spec for spec in trace["point_specs"])
 
     assert len(answer_shapes) >= 4
+
+
+def test_lowest_extremum_not_always_floor_candidate() -> None:
+    task = create_task(TASK_ID)
+    answer_floor_flags = set()
+    floor_option_flags = set()
+    for seed in range(20260700, 20260724):
+        output = task.generate(
+            seed,
+            params={
+                "query_id": "lowest_above_floor",
+                "scene_variant": "floor_grid_room",
+                "point_count": 4,
+                "context_object_count": 5,
+                "post_image_noise_apply_prob": 0.0,
+            },
+            max_attempts=220,
+        )
+        trace = output.trace_payload["execution_trace"]
+        answer_spec = next(spec for spec in trace["point_specs"] if str(spec["point_label"]) == str(trace["answer_label"]))
+        answer_is_floor = answer_spec.get("support_shape_type") is None
+        answer_floor_flags.add(bool(answer_is_floor))
+        floor_option_flags.add(bool(trace["floor_object_is_option"]))
+        assert bool(answer_is_floor) == bool(trace["floor_object_is_option"])
+
+    assert answer_floor_flags == {False, True}
+    assert floor_option_flags == {False, True}
 
 
 def test_sub_box_spec_preserves_elevated_parent_base_height() -> None:

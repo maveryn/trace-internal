@@ -247,18 +247,18 @@
         "Choose the option for the object that appears closer than, and overlaps, the {reference_name}."
       ],
       "highest_above_floor": [
-        "Which option describes the object sitting highest above the floor?",
-        "Among the candidate objects, which option is placed highest above the floor?",
-        "Which option describes the object at the greatest height above the floor?",
-        "Using the 3D height cues, choose the option for the object highest above the floor.",
-        "Which option describes the object raised the highest from the floor?"
+        "Among the listed options, which object is sitting highest above the floor?",
+        "Among the candidate options, which object is placed highest above the floor?",
+        "Which listed option describes the object at the greatest height above the floor?",
+        "Using the 3D height cues, choose the listed option for the object highest above the floor.",
+        "Which listed option describes the object raised the highest from the floor?"
       ],
       "lowest_above_floor": [
-        "Which option describes the object sitting lowest above the floor?",
-        "Among the candidate objects, which option is closest to the floor?",
-        "Which option describes the object at the lowest height above the floor?",
-        "Using the 3D height cues, choose the option for the object lowest above the floor.",
-        "Which option describes the object raised the least from the floor?"
+        "Among the listed options, which object is sitting lowest above the floor?",
+        "Among the candidate options, which object is closest to the floor?",
+        "Which listed option describes the object at the lowest height above the floor?",
+        "Using the 3D height cues, choose the listed option for the object lowest above the floor.",
+        "Which listed option describes the object raised the least from the floor?"
       ],
       "landmark_correspondence": [
         "Which candidate point in the right view corresponds to the red REF point in the left view?",

@@ -20,8 +20,9 @@ The verifier computes the answer from finalized scene metadata and projection re
 ## Annotation Contract
 Annotation is a scalar `bbox` around the selected visible object.
 The selected object is the only visual witness; option text is not annotation.
-The rendered task presents four option-panel candidates.
-Candidate supports use one floor spot plus low, mid, and high plain platforms. Container or furniture supports such as open boxes, tables, chairs, and shelves are excluded because their projected geometry can obscure whether an object is sitting on top.
+The rendered task presents four option-panel candidates selected from a larger visible set of six small objects.
+Each scene contains one floor object plus five platform-supported objects. Two visible small objects are intentionally not listed as MCQ options; the answer is the highest or lowest object among the listed options only.
+Candidate supports use five plain platforms at distinct heights. Container or furniture supports such as open boxes, tables, chairs, and shelves are excluded because their projected geometry can obscure whether an object is sitting on top.
 Candidate object types are sampled without replacement from a narrow height-safe pool. The pool excludes objects with ambiguous support contact, weak semantic color rendering, or confusing height silhouettes. `cup` and `trophy` are allowed; `bottle`, `candle`, `drum`, `flask`, `goblet`, `hat`, `lantern`, and `wedge/ramp` are excluded. Composite candidates such as `cup` must preserve the elevated parent base height for all rendered subparts.
 Option descriptors use distinct object names only, not prompt-color names.
 

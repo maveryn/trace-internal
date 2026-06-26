@@ -48,26 +48,47 @@ def _blend_color(color_a: Color, color_b: Color, ratio_b: float) -> Color:
     )
 
 
-def _object_palette(base: Color) -> tuple[Color, ...]:
-    red, green, blue = (int(base[0]), int(base[1]), int(base[2]))
-    return (
-        (red, green, blue),
-        (
-            max(24, min(210, blue + 35)),
-            max(24, min(185, red + 16)),
-            max(24, min(195, green - 18)),
-        ),
-        (
-            max(24, min(195, green + 24)),
-            max(24, min(195, blue - 8)),
-            max(24, min(195, red + 40)),
-        ),
-        (
-            max(24, min(205, red - 20)),
-            max(24, min(195, green + 30)),
-            max(24, min(205, blue + 20)),
-        ),
+def _relative_luminance(color: Color) -> float:
+    """Return approximate perceived brightness for theme-aware stroke colors."""
+
+    red, green, blue = (float(color[0]), float(color[1]), float(color[2]))
+    return (0.299 * red) + (0.587 * green) + (0.114 * blue)
+
+
+def _object_palette(panel_fill: Color) -> tuple[Color, ...]:
+    """Return distinct non-semantic object strokes for all graph-paper labels."""
+
+    light_panel_palette: tuple[Color, ...] = (
+        (28, 105, 205),
+        (200, 50, 65),
+        (25, 135, 80),
+        (120, 80, 205),
+        (190, 95, 20),
+        (0, 135, 155),
+        (200, 65, 145),
+        (115, 120, 30),
+        (65, 80, 170),
+        (150, 70, 45),
+        (0, 120, 115),
+        (120, 70, 120),
     )
+    dark_panel_palette: tuple[Color, ...] = (
+        (65, 220, 80),
+        (120, 120, 250),
+        (240, 55, 135),
+        (245, 170, 35),
+        (30, 210, 225),
+        (190, 110, 255),
+        (255, 95, 55),
+        (165, 235, 70),
+        (255, 125, 195),
+        (80, 175, 255),
+        (230, 220, 55),
+        (135, 255, 195),
+    )
+    if _relative_luminance(panel_fill) < 128.0:
+        return dark_panel_palette
+    return light_panel_palette
 
 
 def make_context(
@@ -129,7 +150,7 @@ def make_context(
     axis_color = _coerce_color(style_spec.get("axis_color"), (112, 124, 144))
     grid_color = _coerce_color(style_spec.get("line_color"), (222, 228, 236))
     label_color = tuple(int(channel) for channel in shape_style.label_color)
-    object_colors = _object_palette(tuple(int(channel) for channel in shape_style.line_color))
+    object_colors = _object_palette(panel_fill)
     shape_fill = _blend_color(panel_fill, object_colors[0], 0.18)
     layout = shared_context.graph_panel_layout
     panel_box = tuple(float(value) for value in layout.panel_bbox_px)

@@ -23,6 +23,7 @@ from trace.tasks.geometry.graph_paper.polygon_area_value import GeometryGraphPap
 from trace.tasks.geometry.graph_paper.polygon_convexity_count import GeometryGraphPaperPolygonConvexityCountTask
 from trace.tasks.geometry.graph_paper.polygon_perimeter_value import GeometryGraphPaperPolygonPerimeterValueTask
 from trace.tasks.geometry.graph_paper.quadrilateral_type_count import GeometryGraphPaperQuadrilateralTypeCountTask
+from trace.tasks.geometry.graph_paper.shared.state import LABEL_POOL
 from trace.tasks.geometry.graph_paper.shape_type_count import GeometryGraphPaperShapeTypeCountTask
 from trace.tasks.geometry.graph_paper.triangle_type_count import GeometryGraphPaperTriangleTypeCountTask
 from trace.tasks.geometry.shape_gallery.congruent_count import GeometryShapeGalleryCongruentCountTask
@@ -308,6 +309,21 @@ def test_geometry_graph_paper_length_extremum_includes_oblique_lattice_segments(
         for entity in out.trace_payload["scene_ir"]["entities"]
     ]
     assert any(dx != 0 and dy != 0 for dx, dy in vectors)
+
+
+def test_geometry_graph_paper_labeled_objects_use_unique_palette_entries() -> None:
+    out = GeometryGraphPaperPerimeterExtremumLabelTask().generate(
+        857547986464506,
+        params={"query_id": "largest", "object_count": 6},
+        max_attempts=40,
+    )
+    object_count = int(out.trace_payload["execution_trace"]["object_count"])
+    colors = [
+        tuple(int(channel) for channel in color)
+        for color in out.trace_payload["render_spec"]["object_colors"]
+    ]
+    assert len(colors) >= len(LABEL_POOL)
+    assert len(set(colors[:object_count])) == object_count
 
 
 @pytest.mark.parametrize(

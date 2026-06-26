@@ -11,8 +11,9 @@ from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.shared.object_scene_primitives import _sub_box_spec
 from trace.tasks.three_d.shared.object_resources import SPATIAL_HEIGHT_SAFE_CANDIDATE_SHAPE_TYPES
 from trace.tasks.three_d.object_scene.height_extremum_label import (
-    HEIGHT_NON_OPTION_OBJECT_COUNT,
+    HEIGHT_EMPTY_SLOT_COUNT,
     HEIGHT_PLACED_OBJECT_COUNT,
+    HEIGHT_SLOT_COUNT,
     HEIGHT_SUPPORT_COUNT,
     SUPPORTED_QUERY_IDS,
     TASK_ID,
@@ -40,7 +41,7 @@ def test_height_extremum_answer_and_annotation(query_id: str) -> None:
     context_specs = list(trace["context_object_specs"])
     non_option_specs = list(trace["non_option_object_specs"])
     support_context_specs = [spec for spec in context_specs if str(spec["shape_type"]) == "platform"]
-    visible_small_specs = [*point_specs, *non_option_specs]
+    visible_small_specs = list(point_specs)
     height_by_label = {str(label): float(value) for label, value in trace["height_by_label"].items()}
     sorted_labels = [str(label) for label, _value in sorted(height_by_label.items(), key=lambda item: (float(item[1]), str(item[0])))]
     expected_label = sorted_labels[-1] if query_id == "highest_above_floor" else sorted_labels[0]
@@ -49,17 +50,22 @@ def test_height_extremum_answer_and_annotation(query_id: str) -> None:
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == expected_label
     assert len(point_specs) == 4
-    assert len(non_option_specs) == HEIGHT_NON_OPTION_OBJECT_COUNT
+    assert len(non_option_specs) == 0
     assert len(support_context_specs) == HEIGHT_SUPPORT_COUNT
-    assert len(context_specs) == HEIGHT_SUPPORT_COUNT + HEIGHT_NON_OPTION_OBJECT_COUNT
+    assert len(context_specs) == HEIGHT_SUPPORT_COUNT
     assert len(visible_small_specs) == HEIGHT_PLACED_OBJECT_COUNT
+    assert trace["height_slot_count"] == HEIGHT_SLOT_COUNT
+    assert trace["empty_slot_count"] == HEIGHT_EMPTY_SLOT_COUNT
+    assert len(trace["empty_slot_placement_ids"]) == HEIGHT_EMPTY_SLOT_COUNT
+    assert len(trace["option_placement_ids"]) == HEIGHT_PLACED_OBJECT_COUNT
+    assert set(trace["empty_slot_placement_ids"]).isdisjoint(set(trace["option_placement_ids"]))
     assert all(spec["is_answer_candidate"] for spec in point_specs)
     assert all(not spec["is_answer_candidate"] for spec in context_specs)
     assert {str(spec["shape_type"]) for spec in support_context_specs} == {"platform"}
     assert all(str(spec.get("height_option_role")) == "option_candidate" for spec in point_specs)
-    assert all(str(spec.get("height_option_role")) == "visible_non_option" for spec in non_option_specs)
-    assert sum(1 for spec in visible_small_specs if spec.get("support_shape_type") is None) == 1
-    assert sum(1 for spec in visible_small_specs if str(spec.get("support_shape_type")) == "platform") == HEIGHT_SUPPORT_COUNT
+    assert sum(1 for spec in visible_small_specs if spec.get("support_shape_type") is None) in {0, 1}
+    assert sum(1 for spec in visible_small_specs if str(spec.get("support_shape_type")) == "platform") in {3, 4}
+    assert (sum(1 for spec in visible_small_specs if spec.get("support_shape_type") is None) == 1) == bool(trace["floor_object_is_option"])
     assert not any(str(spec.get("support_shape_type")) in {"chair", "shelf", "open_box", "table"} for spec in point_specs)
     assert len({str(spec["shape_type"]) for spec in point_specs}) == len(point_specs)
     assert not any(str(spec.get("shape_type")) in {"bottle", "candle", "drum", "flask", "goblet", "hat", "lantern", "wedge"} for spec in point_specs)

@@ -69,8 +69,9 @@ ELEVATED_SUPPORT_PLACEMENTS: Tuple[Tuple[str, str | None, Tuple[float, float]], 
 )
 HEIGHT_OPTION_COUNT = 4
 HEIGHT_SUPPORT_COUNT = 5
-HEIGHT_PLACED_OBJECT_COUNT = HEIGHT_SUPPORT_COUNT + 1
-HEIGHT_NON_OPTION_OBJECT_COUNT = HEIGHT_PLACED_OBJECT_COUNT - HEIGHT_OPTION_COUNT
+HEIGHT_SLOT_COUNT = HEIGHT_SUPPORT_COUNT + 1
+HEIGHT_PLACED_OBJECT_COUNT = HEIGHT_OPTION_COUNT
+HEIGHT_EMPTY_SLOT_COUNT = HEIGHT_SLOT_COUNT - HEIGHT_PLACED_OBJECT_COUNT
 HEIGHT_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_HEIGHT_SAFE_CANDIDATE_SHAPE_TYPES
 PLATFORM_DIMENSIONS_BY_PLACEMENT: Dict[str, Tuple[float, float, float]] = {
     "lowest_platform": (1.26, 0.86, 0.34),
@@ -256,12 +257,17 @@ def _build_height_scene_dataset(
                 }
             )
         heights = [float(record["base_z"]) for record in placement_records]
-        if len(placement_records) != HEIGHT_PLACED_OBJECT_COUNT:
-            raise ValueError(f"{TASK_ID} expects {HEIGHT_PLACED_OBJECT_COUNT} visible placed objects")
+        if len(placement_records) != HEIGHT_SLOT_COUNT:
+            raise ValueError(f"{TASK_ID} expects {HEIGHT_SLOT_COUNT} possible height slots")
 
         option_placements = list(placement_records)
         rng.shuffle(option_placements)
         option_placement_ids = {str(record["placement_id"]) for record in option_placements[: int(point_count)]}
+        empty_slot_placement_ids = sorted(
+            str(record["placement_id"])
+            for record in placement_records
+            if str(record["placement_id"]) not in option_placement_ids
+        )
         sorted_option_placements = sorted(
             [record for record in placement_records if str(record["placement_id"]) in option_placement_ids],
             key=lambda item: (float(item["base_z"]), str(item["placement_id"])),
@@ -282,29 +288,29 @@ def _build_height_scene_dataset(
 
         shape_pool = list(HEIGHT_CANDIDATE_SHAPE_TYPES)
         rng.shuffle(shape_pool)
-        if len(shape_pool) < len(placement_records):
-            raise ValueError(f"{TASK_ID} needs at least {len(placement_records)} height-safe candidate shapes")
+        if len(shape_pool) < int(point_count):
+            raise ValueError(f"{TASK_ID} needs at least {point_count} height-safe candidate shapes")
         candidate_specs: List[Dict[str, Any]] = []
-        non_option_object_specs: List[Dict[str, Any]] = []
-        for index, placement in enumerate(placement_records):
-            is_option_candidate = str(placement["placement_id"]) in option_placement_ids
+        shape_index = 0
+        for placement in placement_records:
+            if str(placement["placement_id"]) not in option_placement_ids:
+                continue
             label = (
                 str(answer_label)
                 if str(placement["placement_id"]) == str(answer_placement["placement_id"])
                 else str(remaining_labels.pop())
-                if bool(is_option_candidate)
-                else None
             )
-            shape_type = str(shape_pool[int(index)])
+            shape_type = str(shape_pool[int(shape_index)])
+            shape_index += 1
             jitter = 0.02 if placement.get("support_object_id") else 0.10
             base_xy = tuple(float(value) for value in placement["candidate_xy"])
             spec = _make_sampled_object(
                 rng=rng,
-                object_id=f"object_{label}" if label is not None else f"visible_non_option_{placement['placement_id']}",
+                object_id=f"object_{label}",
                 shape_type=shape_type,
                 object_role="candidate",
                 xy=(float(base_xy[0] + rng.uniform(-jitter, jitter)), float(base_xy[1] + rng.uniform(-jitter, jitter))),
-                label=str(label) if label is not None else None,
+                label=str(label),
                 base_z=float(placement["base_z"]),
             )
             spec.update(
@@ -314,27 +320,23 @@ def _build_height_scene_dataset(
                     "support_object_id": placement.get("support_object_id"),
                     "support_shape_type": placement.get("support_shape_type"),
                     "support_name": placement.get("support_name"),
-                    "height_option_role": "option_candidate" if bool(is_option_candidate) else "visible_non_option",
+                    "height_option_role": "option_candidate",
                 }
             )
             if placement.get("support_object_id"):
                 spec["render_order_bias"] = -10.0
-            if bool(is_option_candidate):
-                candidate_specs.append(spec)
-            else:
-                non_option_object_specs.append(spec)
+            candidate_specs.append(spec)
 
-        all_specs = [*candidate_specs, *non_option_object_specs, *context_specs]
+        all_specs = [*candidate_specs, *context_specs]
         reference_points = [point for spec in all_specs for point in _object_reference_points(spec)]
         frame = _build_projection_frame(camera=camera, render_params=render_params, point_worlds=reference_points)
         finalized_candidates = _finalize_specs(candidate_specs, camera=camera, frame=frame)
-        finalized_non_options = _finalize_specs(non_option_object_specs, camera=camera, frame=frame)
         finalized_support_context = _finalize_specs(context_specs, camera=camera, frame=frame)
-        finalized_context = [*finalized_support_context, *finalized_non_options]
+        finalized_context = list(finalized_support_context)
         all_finalized = [*finalized_candidates, *finalized_context]
         small_object_screen_centers = [
             (float(spec["screen_xy"][0]), float(spec["screen_xy"][1]))
-            for spec in [*finalized_candidates, *finalized_non_options]
+            for spec in finalized_candidates
         ]
         if any(
             math.hypot(a[0] - b[0], a[1] - b[1]) < 34.0
@@ -343,7 +345,7 @@ def _build_height_scene_dataset(
         ):
             continue
 
-        small_object_bboxes = [_object_screen_bbox(spec, camera, frame, pad_px=16.0) for spec in [*finalized_candidates, *finalized_non_options]]
+        small_object_bboxes = [_object_screen_bbox(spec, camera, frame, pad_px=16.0) for spec in finalized_candidates]
         if any(
             _bbox_intersection_area(a, b) > 13000.0
             for index, a in enumerate(small_object_bboxes)
@@ -353,7 +355,7 @@ def _build_height_scene_dataset(
 
         support_pair_ids = {
             frozenset({str(spec["object_id"]), str(spec["support_object_id"])})
-            for spec in [*finalized_candidates, *finalized_non_options]
+            for spec in finalized_candidates
             if spec.get("support_object_id")
         }
         all_bboxes = [
@@ -379,27 +381,29 @@ def _build_height_scene_dataset(
 
         sorted_candidates = sorted(finalized_candidates, key=lambda spec: str(spec["point_label"]))
         sorted_context = sorted(finalized_context, key=lambda spec: str(spec["object_id"]))
-        sorted_non_options = sorted(finalized_non_options, key=lambda spec: str(spec["object_id"]))
         return {
             "query_id": str(query_id),
             "scene_variant": str(scene_variant),
             "point_count": int(point_count),
             "candidate_count": int(point_count),
             "support_object_count": int(context_object_count),
-            "non_option_object_count": len(sorted_non_options),
+            "empty_slot_count": len(empty_slot_placement_ids),
+            "non_option_object_count": 0,
             "context_object_count": len(sorted_context),
             "visible_placed_object_count": HEIGHT_PLACED_OBJECT_COUNT,
+            "height_slot_count": HEIGHT_SLOT_COUNT,
             "object_count": len(sorted_candidates) + len(sorted_context),
             "point_specs": list(sorted_candidates),
             "context_object_specs": list(sorted_context),
-            "non_option_object_specs": list(sorted_non_options),
+            "non_option_object_specs": [],
             "object_specs": sorted([*sorted_candidates, *sorted_context], key=lambda spec: str(spec["object_id"])),
             "answer_label": str(answer_label),
             "answer_point_id": f"object_{answer_label}",
             "height_by_label": dict(sorted(height_by_label.items())),
             "height_order_low_to_high": [str(spec["point_label"]) for spec in sorted_by_height],
             "option_placement_ids": sorted(str(item) for item in option_placement_ids),
-            "non_option_object_ids": [str(spec["object_id"]) for spec in sorted_non_options],
+            "empty_slot_placement_ids": list(empty_slot_placement_ids),
+            "non_option_object_ids": [],
             "floor_object_is_option": "floor_spot" in option_placement_ids,
             "support_pair_ids": [sorted(list(pair)) for pair in sorted(support_pair_ids, key=lambda pair: tuple(sorted(pair)))],
             "camera": {
@@ -431,6 +435,7 @@ def _build_height_scene_dataset(
                 "height_margin": round(float(answer_height_margin), 4),
                 "min_pairwise_height_gap": round(float(_min_pairwise(list(height_by_label.values()))), 4),
                 "option_placement_ids": sorted(str(item) for item in option_placement_ids),
+                "empty_slot_placement_ids": list(empty_slot_placement_ids),
                 "floor_object_is_option": "floor_spot" in option_placement_ids,
                 "support_pair_ids": [sorted(list(pair)) for pair in sorted(support_pair_ids, key=lambda pair: tuple(sorted(pair)))],
             },
@@ -620,6 +625,8 @@ class ThreeDSpatialHeightExtremumLabelTask:
                     "point_count": int(point_count),
                     "candidate_count": int(point_count),
                     "support_object_count": int(dataset["support_object_count"]),
+                    "height_slot_count": int(dataset["height_slot_count"]),
+                    "empty_slot_count": int(dataset["empty_slot_count"]),
                     "non_option_object_count": int(dataset["non_option_object_count"]),
                     "context_object_count": int(dataset["context_object_count"]),
                     "visible_placed_object_count": int(dataset["visible_placed_object_count"]),
@@ -634,6 +641,7 @@ class ThreeDSpatialHeightExtremumLabelTask:
                     "height_by_label": dict(dataset["height_by_label"]),
                     "height_order_low_to_high": list(dataset["height_order_low_to_high"]),
                     "option_placement_ids": list(dataset["option_placement_ids"]),
+                    "empty_slot_placement_ids": list(dataset["empty_slot_placement_ids"]),
                     "non_option_object_ids": list(dataset["non_option_object_ids"]),
                     "floor_object_is_option": bool(dataset["floor_object_is_option"]),
                     "answer_point_id": str(dataset["answer_point_id"]),
@@ -654,6 +662,8 @@ class ThreeDSpatialHeightExtremumLabelTask:
                     "point_count": int(point_count),
                     "candidate_count": int(point_count),
                     "support_object_count": int(dataset["support_object_count"]),
+                    "height_slot_count": int(dataset["height_slot_count"]),
+                    "empty_slot_count": int(dataset["empty_slot_count"]),
                     "context_object_count": int(context_object_count),
                     "rendered_context_object_count": int(dataset["context_object_count"]),
                     "non_option_object_count": int(dataset["non_option_object_count"]),
@@ -705,6 +715,8 @@ class ThreeDSpatialHeightExtremumLabelTask:
                 "point_count": int(point_count),
                 "candidate_count": int(point_count),
                 "support_object_count": int(dataset["support_object_count"]),
+                "height_slot_count": int(dataset["height_slot_count"]),
+                "empty_slot_count": int(dataset["empty_slot_count"]),
                 "context_object_count": int(dataset["context_object_count"]),
                 "non_option_object_count": int(dataset["non_option_object_count"]),
                 "visible_placed_object_count": int(dataset["visible_placed_object_count"]),
@@ -723,6 +735,7 @@ class ThreeDSpatialHeightExtremumLabelTask:
                 "height_by_label": dict(dataset["height_by_label"]),
                 "height_order_low_to_high": list(dataset["height_order_low_to_high"]),
                 "option_placement_ids": list(dataset["option_placement_ids"]),
+                "empty_slot_placement_ids": list(dataset["empty_slot_placement_ids"]),
                 "non_option_object_ids": list(dataset["non_option_object_ids"]),
                 "floor_object_is_option": bool(dataset["floor_object_is_option"]),
                 "support_pair_ids": [list(pair) for pair in dataset["support_pair_ids"]],

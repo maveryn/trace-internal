@@ -368,10 +368,10 @@
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:multiview_object_match_query": {
-      "object_description": "two side-by-side perspective views of the same open 3D setup with a gridded floor or platform, one red-boxed object in the left view, and lettered candidate objects in the right view",
-      "annotation_hint": "set \"annotation\" to an object with keys \"reference_view_object\" and \"second_view_match\"; each value is a bounding box [x0, y0, x1, y1] around the red-boxed object in the left view and the matching lettered object in the right view",
+      "object_description": "two side-by-side perspective views of the same 3D setup with an asymmetric platform anchor, one red-boxed floor object in the left view, and four matching-looking lettered floor objects in the right view",
+      "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the matching lettered object in the right view",
       "answer_hint": "set \"answer\" to the selected object letter from the right view",
-      "json_example": "{\"annotation\":{\"reference_view_object\":[112,210,168,276],\"second_view_match\":[842,228,902,296]},\"answer\":\"C\"}",
+      "json_example": "{\"annotation\":[842,228,902,296],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:spatial_relation_count_query": {

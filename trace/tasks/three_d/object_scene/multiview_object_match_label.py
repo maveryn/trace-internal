@@ -9,15 +9,12 @@ from ....core.seed import spawn_rng
 from ....core.scene_config import (
     get_domain_defaults,
     get_scene_defaults,
-    resolve_scene_section_defaults,
 )
 from ....core.types import TypedValue
-from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import (
-    group_default,
     required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
@@ -28,27 +25,22 @@ from ...shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 from ..shared.canvas import render_params_canvas_metadata
-from ..shared.color_variation import resolve_three_d_object_fill_rgb
-from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
-from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.object_scene import (
     CAMERA_YAW_BANDS_DEGREES,
-    CONTEXT_OBJECT_COLORS,
-    POINT_COLORS,
     POINT_LABELS,
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
     _RenderParams,
     _bbox_intersection_area,
     _build_projection_frame,
+    _make_object_spec,
     _min_pairwise,
     _object_reference_points,
     _object_screen_bbox,
     _project_screen,
     _resolve_render_params,
     _sample_camera,
-    _sample_scene_object_specs,
 )
 from .shared.layout import (
     CANDIDATE_VIEW_KEY,
@@ -64,9 +56,32 @@ from .shared.layout import (
 
 TASK_ID = "task_three_d__object_scene__multiview_object_match_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("same_object_in_second_view",)
-MULTIVIEW_CANDIDATE_POSITION_SCALE = 0.82
-MULTIVIEW_CANDIDATE_DIMENSION_SCALE = 1.18
+MULTIVIEW_CANDIDATE_COUNT = 4
 MULTIVIEW_MIN_CANDIDATE_BBOX_AREA_PX = 980.0
+MULTIVIEW_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = (
+    "cube",
+    "cylinder",
+    "cone",
+    "pyramid",
+    "wedge",
+    "half_cylinder",
+)
+MULTIVIEW_CANDIDATE_COLORS: Tuple[Tuple[int, int, int], ...] = (
+    (218, 76, 68),
+    (63, 123, 214),
+    (52, 159, 96),
+    (151, 88, 204),
+    (222, 143, 45),
+    (43, 164, 184),
+)
+MULTIVIEW_ANCHOR_PLATFORM_DIMS = (1.76, 1.10, 0.18)
+MULTIVIEW_ANCHOR_MARKER_DIMS = (0.38, 0.30, 0.30)
+MULTIVIEW_CANDIDATE_POSITIONS: Tuple[Tuple[float, float], ...] = (
+    (-1.56, -1.06),
+    (1.88, -1.38),
+    (-2.04, 1.16),
+    (1.32, 1.82),
+)
 
 
 def _bbox_area(bbox: Sequence[float]) -> float:
@@ -116,96 +131,123 @@ def _finalize_specs(
     return list(finalized_specs)
 
 
-def _scale_candidate_for_multiview(spec: Mapping[str, Any]) -> Dict[str, Any]:
+def _with_base_z(spec: Mapping[str, Any], *, base_z: float) -> Dict[str, Any]:
     updated = dict(spec)
-    base_xyz = updated.get("base_xyz", updated.get("world_xyz", (0.0, 0.0, 0.0)))
-    base_x = float(base_xyz[0]) * MULTIVIEW_CANDIDATE_POSITION_SCALE
-    base_y = float(base_xyz[1]) * MULTIVIEW_CANDIDATE_POSITION_SCALE
-    base_z = float(base_xyz[2]) if isinstance(base_xyz, Sequence) and len(base_xyz) >= 3 else 0.0
-    width, depth, height = (
-        round(float(value) * MULTIVIEW_CANDIDATE_DIMENSION_SCALE, 4)
-        for value in updated["dimensions_xyz"]
-    )
-    footprint = 0.5 * math.sqrt(float(width) * float(width) + float(depth) * float(depth))
-    updated["dimensions_xyz"] = [float(width), float(depth), float(height)]
+    width, depth, height = (float(value) for value in updated["dimensions_xyz"])
+    base_x, base_y, _old_z = (float(value) for value in updated["base_xyz"])
     updated["base_xyz"] = [round(float(base_x), 4), round(float(base_y), 4), round(float(base_z), 4)]
-    updated["world_xyz"] = [round(float(base_x), 4), round(float(base_y), 4), round(float(base_z + height * 0.5), 4)]
-    updated["footprint_radius"] = round(float(footprint), 4)
-    updated["dimension_scale"] = round(
-        float(updated.get("dimension_scale", 1.0)) * MULTIVIEW_CANDIDATE_DIMENSION_SCALE,
-        4,
-    )
-    updated["multiview_position_scale"] = round(float(MULTIVIEW_CANDIDATE_POSITION_SCALE), 4)
-    updated["multiview_dimension_scale"] = round(float(MULTIVIEW_CANDIDATE_DIMENSION_SCALE), 4)
+    updated["world_xyz"] = [round(float(base_x), 4), round(float(base_y), 4), round(float(base_z) + height * 0.5, 4)]
+    updated["footprint_radius"] = round(0.5 * math.sqrt(float(width) * float(width) + float(depth) * float(depth)), 4)
     return updated
 
 
-def _canonicalize_specs(
+def _candidate_dimensions_for_shape(shape_type: str) -> Tuple[float, float, float]:
+    if str(shape_type) in {"cone", "pyramid"}:
+        return (0.50, 0.50, 0.56)
+    if str(shape_type) in {"wedge", "half_cylinder"}:
+        return (0.58, 0.42, 0.38)
+    return (0.50, 0.50, 0.46)
+
+
+def _sample_anchor_context_specs(rng) -> List[Dict[str, Any]]:
+    """Return the two-part asymmetric landmark that makes cross-view correspondence spatial."""
+
+    platform = _make_object_spec(
+        object_id="anchor_platform",
+        shape_type="cube",
+        object_role="context",
+        xy=(0.0, 0.0),
+        dimensions_xyz=tuple(float(value) for value in MULTIVIEW_ANCHOR_PLATFORM_DIMS),
+        dimension_scale=1.0,
+        label=None,
+    )
+    platform.update(
+        {
+            "object_name": "low platform",
+            "prompt_name": "low platform",
+            "is_multiview_anchor": True,
+            "anchor_part": "platform",
+            "fill_rgb": [138, 151, 164],
+            "render_order_bias": 2.0,
+        }
+    )
+    platform_height = float(MULTIVIEW_ANCHOR_PLATFORM_DIMS[2])
+    marker_x = float(MULTIVIEW_ANCHOR_PLATFORM_DIMS[0]) * 0.34 + float(rng.uniform(-0.03, 0.03))
+    marker_y = float(MULTIVIEW_ANCHOR_PLATFORM_DIMS[1]) * 0.32 + float(rng.uniform(-0.03, 0.03))
+    marker = _make_object_spec(
+        object_id="anchor_corner_marker",
+        shape_type="cube",
+        object_role="context",
+        xy=(marker_x, marker_y),
+        dimensions_xyz=tuple(float(value) for value in MULTIVIEW_ANCHOR_MARKER_DIMS),
+        dimension_scale=1.0,
+        label=None,
+    )
+    marker = _with_base_z(marker, base_z=platform_height)
+    marker.update(
+        {
+            "object_name": "corner block",
+            "prompt_name": "corner block",
+            "is_multiview_anchor": True,
+            "anchor_part": "corner_marker",
+            "fill_rgb": [87, 110, 178],
+            "render_order_bias": -2.0,
+        }
+    )
+    return [platform, marker]
+
+
+def _sample_identical_candidate_specs(
     *,
-    candidate_specs: Sequence[Mapping[str, Any]],
-    context_specs: Sequence[Mapping[str, Any]],
+    rng,
     answer_label: str,
     target_index: int,
-    rng,
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], str]:
-    """Canonicalize multiview object specs so both views share stable object identity and comparable distractors."""
-    labels = [str(label) for label in POINT_LABELS[: len(candidate_specs)]]
+) -> Tuple[List[Dict[str, Any]], str, str, List[int]]:
+    """Return four same-type, same-color floor candidates so appearance cannot determine the match."""
+
+    shape_type = str(MULTIVIEW_CANDIDATE_SHAPE_TYPES[int(rng.randrange(len(MULTIVIEW_CANDIDATE_SHAPE_TYPES)))])
+    fill_rgb = tuple(int(value) for value in MULTIVIEW_CANDIDATE_COLORS[int(rng.randrange(len(MULTIVIEW_CANDIDATE_COLORS)))])
+    labels = [str(label) for label in POINT_LABELS[:MULTIVIEW_CANDIDATE_COUNT]]
     remaining_labels = [str(label) for label in labels if str(label) != str(answer_label)]
     rng.shuffle(remaining_labels)
-    canonical_candidates: List[Dict[str, Any]] = []
-    for index, spec in enumerate(candidate_specs):
-        object_id = f"object_{int(index):02d}"
-        label = str(answer_label) if int(index) == int(target_index) else str(remaining_labels.pop())
-        updated = _scale_candidate_for_multiview(spec)
-        updated.update(
+    position_order = list(range(MULTIVIEW_CANDIDATE_COUNT))
+    rng.shuffle(position_order)
+    specs: List[Dict[str, Any]] = []
+    dimensions_xyz = _candidate_dimensions_for_shape(shape_type)
+    for stable_index, position_index in enumerate(position_order):
+        label = str(answer_label) if int(stable_index) == int(target_index) else str(remaining_labels.pop())
+        base_x, base_y = MULTIVIEW_CANDIDATE_POSITIONS[int(position_index)]
+        jittered_xy = (
+            float(base_x) + float(rng.uniform(-0.055, 0.055)),
+            float(base_y) + float(rng.uniform(-0.055, 0.055)),
+        )
+        object_id = f"object_{stable_index:02d}"
+        spec = _make_object_spec(
+            object_id=str(object_id),
+            shape_type=str(shape_type),
+            object_role="candidate",
+            xy=jittered_xy,
+            dimensions_xyz=tuple(float(value) for value in dimensions_xyz),
+            dimension_scale=1.0,
+            label=str(label),
+        )
+        spec.update(
             {
                 "object_id": str(object_id),
                 "point_id": str(object_id),
                 "canonical_object_id": str(object_id),
-                "stable_object_index": int(index),
+                "stable_object_index": int(stable_index),
                 "point_label": str(label),
                 "object_label": str(label),
                 "is_answer_candidate": True,
+                "fill_rgb": [int(channel) for channel in fill_rgb],
+                "multiview_candidate_shape_type": str(shape_type),
+                "multiview_identical_candidate_group": "floor_candidates",
+                "multiview_position_slot": int(position_index),
             }
         )
-        base_color = POINT_COLORS[int(index) % len(POINT_COLORS)]
-        updated["fill_rgb"] = [
-            int(channel)
-            for channel in resolve_three_d_object_fill_rgb(
-                updated,
-                base_rgb=base_color,
-                salt="multiview_object_match.candidate",
-                variation_strength=0.12,
-            )
-        ]
-        canonical_candidates.append(updated)
-
-    canonical_context: List[Dict[str, Any]] = []
-    for index, spec in enumerate(context_specs):
-        object_id = f"context_{int(index):02d}_{spec['shape_type']}"
-        updated = dict(spec)
-        updated.update(
-            {
-                "object_id": str(object_id),
-                "canonical_object_id": str(object_id),
-                "is_answer_candidate": False,
-            }
-        )
-        updated.pop("point_label", None)
-        updated.pop("object_label", None)
-        updated.pop("point_id", None)
-        updated["fill_rgb"] = [
-            int(channel)
-            for channel in resolve_three_d_object_fill_rgb(
-                updated,
-                palette=CONTEXT_OBJECT_COLORS,
-                salt="multiview_object_match.context",
-                variation_strength=0.24,
-            )
-        ]
-        canonical_context.append(updated)
-
-    return list(canonical_candidates), list(canonical_context), f"object_{int(target_index):02d}"
+        specs.append(spec)
+    return list(specs), f"object_{int(target_index):02d}", str(shape_type), [int(channel) for channel in fill_rgb]
 
 
 def _view_is_valid(
@@ -264,9 +306,10 @@ def _build_multiview_scene_dataset(
     render_params: _RenderParams,
     instance_seed: int,
 ) -> Dict[str, Any]:
-    """Build two camera views of the same 3D scene with one answer candidate matching the reference object."""
+    """Build two camera views of the same 3D scene with identical floor candidates around an asymmetric anchor."""
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     view_a_yaw_band, view_b_yaw_band = _camera_yaw_bands_for_instance(int(instance_seed))
+    point_count = int(MULTIVIEW_CANDIDATE_COUNT)
     answer_label = str(POINT_LABELS[abs(int(instance_seed)) % int(point_count)])
     panel_layout = _panel_layout(render_params)
     panel_params = _panel_render_params(render_params, panel_layout[REFERENCE_VIEW_KEY])
@@ -276,19 +319,13 @@ def _build_multiview_scene_dataset(
         camera_b = _sample_camera(rng, yaw_band_degrees=view_b_yaw_band)
         if _yaw_separation_degrees(float(camera_a.yaw_degrees), float(camera_b.yaw_degrees)) < 72.0:
             continue
-        raw_candidates, raw_context = _sample_scene_object_specs(
-            rng=rng,
-            candidate_count=int(point_count),
-            context_object_count=int(context_object_count),
-        )
         target_index = int(rng.randrange(int(point_count)))
-        candidate_specs, context_specs, target_object_id = _canonicalize_specs(
-            candidate_specs=raw_candidates,
-            context_specs=raw_context,
+        candidate_specs, target_object_id, candidate_shape_type, candidate_fill_rgb = _sample_identical_candidate_specs(
+            rng=rng,
             answer_label=str(answer_label),
             target_index=int(target_index),
-            rng=rng,
         )
+        context_specs = _sample_anchor_context_specs(rng)
         all_specs = [*candidate_specs, *context_specs]
         reference_points = [point for spec in all_specs for point in _object_reference_points(spec)]
         frame_a = _build_projection_frame(camera=camera_a, render_params=panel_params, point_worlds=reference_points)
@@ -321,6 +358,7 @@ def _build_multiview_scene_dataset(
             continue
         camera_a_distances = [float(spec["camera_distance"]) for spec in view_a_candidates]
         camera_b_distances = [float(spec["camera_distance"]) for spec in view_b_candidates]
+        context_object_count = len(context_specs)
         return {
             "query_id": str(query_id),
             "scene_variant": str(scene_variant),
@@ -333,6 +371,8 @@ def _build_multiview_scene_dataset(
             "target_object_id": str(target_object_id),
             "target_shape_type": str(matched_spec["shape_type"]),
             "target_object_name": str(matched_spec["object_name"]),
+            "candidate_shape_type": str(candidate_shape_type),
+            "candidate_fill_rgb": [int(channel) for channel in candidate_fill_rgb],
             "point_specs": sorted(view_b_candidates, key=lambda spec: str(spec["point_label"])),
             "context_object_specs": sorted(view_b_context, key=lambda spec: str(spec["object_id"])),
             "object_specs": sorted([*view_b_candidates, *view_b_context], key=lambda spec: str(spec["object_id"])),
@@ -363,6 +403,10 @@ def _build_multiview_scene_dataset(
                     for spec in sorted(view_b_candidates, key=lambda spec: str(spec["object_id"]))
                 },
                 "same_object_unique_answer": True,
+                "candidate_appearance_control": "same_type_same_color",
+                "anchor_structure": "low_rectangular_platform_with_corner_block",
+                "candidate_shape_type": str(candidate_shape_type),
+                "candidate_fill_rgb": [int(channel) for channel in candidate_fill_rgb],
                 "view_yaw_separation_degrees": round(
                     float(_yaw_separation_degrees(float(camera_a.yaw_degrees), float(camera_b.yaw_degrees))),
                     4,
@@ -435,7 +479,7 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
         raise RuntimeError(f"{self.task_id} failed to generate a valid scene after {max_attempts} attempts: {last_error}")
 
     def _generate_once(self, instance_seed: int, *, params: Dict[str, Any]) -> TaskOutput:
-        """Generate one multiview object-match instance with answer label and bbox map tied to the two accepted panels."""
+        """Generate one multiview object-match instance with identical candidates and a scalar answer bbox."""
         query_id, query_probabilities = _shared_resolve_axis_variant(
             params,
             task_id=TASK_ID,
@@ -458,28 +502,10 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
             balance_flag_key="balanced_scene_variant_sampling",
             axis_namespace="scene_variant",
         )
-        point_count, point_count_probabilities = _shared_resolve_count(
-            params,
-            task_id=TASK_ID,
-            gen_defaults=_GEN_DEFAULTS,
-            instance_seed=int(instance_seed),
-            prefix="point_count",
-            minimum_default=int(group_default(_GEN_DEFAULTS, "point_count_min", 6)),
-            maximum_default=int(group_default(_GEN_DEFAULTS, "point_count_max", 6)),
-            lower=4,
-            upper=8,
-        )
-        context_object_count, context_object_count_probabilities = _shared_resolve_count(
-            params,
-            task_id=TASK_ID,
-            gen_defaults=_GEN_DEFAULTS,
-            instance_seed=int(instance_seed),
-            prefix="context_object_count",
-            minimum_default=int(group_default(_GEN_DEFAULTS, "context_object_count_min", 2)),
-            maximum_default=int(group_default(_GEN_DEFAULTS, "context_object_count_max", 2)),
-            lower=0,
-            upper=3,
-        )
+        point_count = int(MULTIVIEW_CANDIDATE_COUNT)
+        context_object_count = 2
+        point_count_probabilities = {str(point_count): 1.0}
+        context_object_count_probabilities = {str(context_object_count): 1.0}
         render_params = _resolve_render_params(
             params,
             render_defaults=_RENDER_DEFAULTS,
@@ -494,6 +520,8 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
             render_params=render_params,
             instance_seed=int(instance_seed),
         )
+        point_count = int(dataset["point_count"])
+        context_object_count = int(dataset["context_object_count"])
         rendered_image, rendered_by_view, background_meta = _render_multiview_scene(
             dataset=dataset,
             render_params=render_params,
@@ -524,10 +552,7 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
             dx=float(candidate_panel["x"]),
             dy=float(candidate_panel["y"]),
         )
-        annotation_bbox_map = {
-            "reference_view_object": list(reference_bbox),
-            "second_view_match": list(candidate_bbox),
-        }
+        annotation_bbox = list(candidate_bbox)
 
         prompt_defaults = required_group_defaults(
             _PROMPT_DEFAULTS,
@@ -553,7 +578,7 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        annotation_gt = TypedValue(type="bbox_map", value=dict(annotation_bbox_map))
+        annotation_gt = TypedValue(type="bbox", value=list(annotation_bbox))
         solver_trace = dict(dataset["solver_trace"])
         reference_maps = _shift_render_maps(rendered_reference, panel=reference_panel)
         candidate_maps = _shift_render_maps(rendered_candidate, panel=candidate_panel)
@@ -683,7 +708,7 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
                 "solver_trace": dict(solver_trace),
             },
             "witness_symbolic": {
-                "type": "keyed_object_match",
+                "type": "object_match",
                 "ids_by_role": {
                     "reference_view_object": str(target_object_id),
                     "second_view_match": str(target_object_id),
@@ -691,9 +716,9 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
                 "answer_label": str(answer_label),
             },
             "projected_annotation": {
-                "type": "bbox_map",
-                "bbox_map": dict(annotation_bbox_map),
-                "pixel_bbox_map": dict(annotation_bbox_map),
+                "type": "bbox",
+                "bbox": list(annotation_bbox),
+                "pixel_bbox": list(annotation_bbox),
             },
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),

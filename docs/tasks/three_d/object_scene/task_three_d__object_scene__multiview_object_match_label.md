@@ -6,11 +6,11 @@
 - Package: `trace/tasks/three_d/object_scene/`
 - Supported `query_id`: `single`
 - Answer type: `option_letter`
-- Annotation type: `bbox_map`
-- Annotation schema: `bbox_map`
+- Annotation type: `bbox`
+- Annotation schema: `bbox`
 
 ## Program Contract
-`select(label(second_view_objects, canonical_object_id = reference_view_object_id)); scene=object_scene; scope=multiview_object_match_label`
+`select(label(second_view_floor_candidates, same_physical_object_as(red_boxed_reference_floor_object))); scene=object_scene; scope=multiview_object_match_label`
 
 ## Contract
 The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
@@ -18,8 +18,11 @@ The image uses the `object_scene` renderer: a perspective 3D floor, table, or pl
 The verifier computes the answer from finalized scene metadata and projection records, not from pixels. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
 
 ## Annotation Contract
-Annotation is a `bbox_map` with distinct reference-view and second-view matched object roles.
-Map keys bind the source-view object and the matching second-view object, which are not interchangeable.
+Annotation is a scalar `bbox` around the selected matching object in the right view.
+The left-view source object is visually marked by a red box and is retained in trace metadata for debugging, but it is not part of the requested annotation.
+
+## Scene Construction
+The task renders two camera views of the same scene. Four candidate floor objects share the same type and color, so object appearance does not identify the answer. A low rectangular platform with a raised corner block provides an asymmetric anchor, and the candidates are placed at different distances around that anchor.
 
 ## Prompt And Trace
 The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.

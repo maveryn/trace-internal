@@ -97,10 +97,10 @@ generation:
         floor_grid_room: 1.0
         tabletop_room: 1.0
         studio_platform: 1.0
-      point_count_min: 6
-      point_count_max: 6
-      context_object_count_min: 0
-      context_object_count_max: 0
+      point_count_min: 4
+      point_count_max: 4
+      context_object_count_min: 2
+      context_object_count_max: 2
       balanced_scene_variant_sampling: true
     task_three_d__object_scene__relation_attribute_count:
       scene_variant_weights:

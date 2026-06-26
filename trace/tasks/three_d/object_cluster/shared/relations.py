@@ -579,8 +579,8 @@ def build_xor_sequence(
 ) -> tuple[list[ClusterSequenceItem], PredicateTarget]:
     """Build an exclusive OR set: target type or target color, but not both."""
 
-    if int(target_count) < 2:
-        raise ValueError("exclusive OR count needs at least two targets")
+    if int(target_count) < 1:
+        raise ValueError("exclusive OR count needs at least one target")
     wrong_shapes = list(compatible_distractor_pool(str(shape_type), support=color_readout_shape_support()))
     wrong_colors = list(readout_color_support(anchors=(str(color_name),)))
     sequence: list[ClusterSequenceItem] = []

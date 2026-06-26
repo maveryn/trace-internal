@@ -39,8 +39,8 @@ generation:
     task_three_d__object_cluster__multi_attribute_and_count:
       object_count_min: 16
       object_count_max: 20
-      target_count_min: 2
-      target_count_max: 8
+      target_count_min: 1
+      target_count_max: 6
     task_three_d__object_cluster__color_membership_count:
       object_count_min: 16
       object_count_max: 20
@@ -57,18 +57,18 @@ generation:
     task_three_d__object_cluster__multi_attribute_or_count:
       object_count_min: 16
       object_count_max: 20
-      target_count_min: 4
+      target_count_min: 3
       target_count_max: 8
     task_three_d__object_cluster__multi_attribute_xor_count:
       object_count_min: 16
       object_count_max: 20
-      target_count_min: 4
-      target_count_max: 8
+      target_count_min: 1
+      target_count_max: 6
     task_three_d__object_cluster__multi_attribute_exclusion_count:
       object_count_min: 16
       object_count_max: 20
-      target_count_min: 3
-      target_count_max: 8
+      target_count_min: 1
+      target_count_max: 6
     task_three_d__object_cluster__count_arithmetic:
       object_count_min: 16
       object_count_max: 20

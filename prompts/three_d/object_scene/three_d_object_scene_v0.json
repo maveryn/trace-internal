@@ -30,13 +30,6 @@
       "",
       ""
     ],
-    "logical_predicate_count_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
     "object_relation_query": [
       "",
       "",
@@ -178,20 +171,6 @@
       "Begin with the visible objects, then update the scene with these steps:\n{edit_steps_text}\nHow many {target_property_phrase} remain afterward?",
       "After these add/remove edits are applied:\n{edit_steps_text}\nHow many {target_property_phrase} are in the scene?"
     ],
-    "object_type_union_count": [
-      "How many {target_object_union_phrase} are there in total?",
-      "Count the objects that are {target_object_union_phrase}. How many are there?",
-      "What is the total number of {target_object_union_phrase} visible in the scene?",
-      "Looking across the scene objects, how many are {target_object_union_phrase}?",
-      "How many objects belong to either of these types: {target_object_union_phrase}?"
-    ],
-    "color_union_count": [
-      "How many {target_color_union_phrase} are there in total?",
-      "Count the objects that are {target_color_union_phrase}. How many are there?",
-      "What is the total number of {target_color_union_phrase} visible in the scene?",
-      "Looking across the scene objects, how many are {target_color_union_phrase}?",
-      "How many objects match either of these colors: {target_color_union_phrase}?"
-    ],
     "on_top_of_prop": [
       "Which option describes the small 3D object on top of the {reference_name}?",
       "Choose the option for the object sitting on the {reference_name}.",
@@ -254,13 +233,6 @@
       "Match the red-boxed object from the left view to the right view. Which letter is on that same object?",
       "Using the two camera views, choose the right-view letter for the object boxed in red on the left.",
       "Which option letter in the right view marks the same object that is boxed in red in the left view?"
-    ],
-    "object_type_count": [
-      "How many {target_object_plural} are in the scene?",
-      "Count the {target_object_plural} in the scene. How many are there?",
-      "What is the total number of {target_object_plural} visible in the scene?",
-      "Looking across the scene objects, how many {target_object_plural} are present?",
-      "How many of the objects are {target_object_plural}?"
     ],
     "on_top_of_reference_count": [
       "How many small objects are on top of the {reference_name}?",

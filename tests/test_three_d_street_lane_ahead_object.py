@@ -40,7 +40,7 @@ def test_street_lane_ahead_answer_annotation_and_geometry(
             "scene_variant": scene_variant,
             "intersection_layout": intersection_layout,
             "travel_mode": travel_mode,
-            "candidate_count": 5,
+            "candidate_count": 4,
             "context_object_count": 8,
             "post_image_noise_apply_prob": 0.0,
         },
@@ -87,8 +87,8 @@ def test_street_lane_ahead_answer_annotation_and_geometry(
     assert str(reference["road_arm"]) in set(trace["present_road_arms"])
     assert str(trace["travel_mode"]) == str(travel_mode)
     assert len(reference["travel_direction_vector_xy"]) == 2
-    assert sorted(str(spec["point_label"]) for spec in candidates) == list("ABCDE")
-    assert len(candidates) == 5
+    assert sorted(str(spec["point_label"]) for spec in candidates) == list("ABCD")
+    assert len(candidates) == 4
     assert len(trace["context_object_specs"]) == 8
     assert len(trace["reference_object_specs"]) == 1
     assert trace["reference_object_specs"][0]["object_role"] == "street_reference"

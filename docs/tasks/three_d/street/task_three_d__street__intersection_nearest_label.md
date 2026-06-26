@@ -16,7 +16,7 @@ The public query id is `single`; nearest-to-intersection is the fixed objective 
 ## Contract
 The image shows a synthetic perspective 3D street intersection or T intersection with roads, sidewalks, crosswalk markings, unlettered street context, unlettered street-object candidates, and a below-scene text option panel. The street surface renders full-bleed: sidewalk ground fills the canvas and road strips continue to the visible image edges.
 
-Each instance renders `6` unlettered candidate street objects. Exactly one candidate has the smallest finalized ground-plane distance from its object center to the intersection center, with a margin from the next-nearest candidate.
+Each instance renders `4` unlettered candidate street objects. Exactly one candidate has the smallest finalized ground-plane distance from its object center to the intersection center, with a margin from the next-nearest candidate.
 
 Street context can include buildings, storefronts, trees, shrubs, traffic lights, street signs, benches, and other unlettered objects. Context objects are visual context only and are excluded from answer candidates.
 

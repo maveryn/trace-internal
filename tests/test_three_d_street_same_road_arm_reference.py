@@ -37,7 +37,7 @@ def test_street_same_road_arm_reference_answer_annotation_and_geometry(
             "query_id": "single",
             "scene_variant": scene_variant,
             "intersection_layout": intersection_layout,
-            "candidate_count": 6,
+            "candidate_count": 4,
             "context_object_count": 10,
             "post_image_noise_apply_prob": 0.0,
         },
@@ -79,8 +79,8 @@ def test_street_same_road_arm_reference_answer_annotation_and_geometry(
     assert trace["same_road_arm_candidate_labels"] == [answer_label]
     assert str(answer_spec["road_arm"]) == str(reference["road_arm"])
     assert str(reference["road_arm"]) in set(trace["present_road_arms"])
-    assert sorted(str(spec["point_label"]) for spec in candidates) == list("ABCDEF")
-    assert len(candidates) == 6
+    assert sorted(str(spec["point_label"]) for spec in candidates) == list("ABCD")
+    assert len(candidates) == 4
     assert len(trace["context_object_specs"]) == 10
     assert len(trace["reference_object_specs"]) == 1
     assert trace["reference_object_specs"][0]["object_role"] == "street_reference"

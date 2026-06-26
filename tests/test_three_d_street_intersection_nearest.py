@@ -30,7 +30,7 @@ def test_street_intersection_nearest_answer_annotation_and_geometry(scene_varian
         params={
             "query_id": "single",
             "scene_variant": scene_variant,
-            "candidate_count": 6,
+            "candidate_count": 4,
             "context_object_count": 10,
             "post_image_noise_apply_prob": 0.0,
         },
@@ -74,8 +74,8 @@ def test_street_intersection_nearest_answer_annotation_and_geometry(scene_varian
     assert trace["distance_order_near_to_far"] == sorted_labels
     assert sorted_labels[0] == answer_label
     assert float(trace["nearest_distance_margin"]) >= MIN_NEAREST_DISTANCE_MARGIN
-    assert sorted(str(spec["point_label"]) for spec in candidates) == list("ABCDEF")
-    assert len(candidates) == 6
+    assert sorted(str(spec["point_label"]) for spec in candidates) == list("ABCD")
+    assert len(candidates) == 4
     assert len(trace["context_object_specs"]) == 10
     building_styles = {
         str(spec["building_style"])

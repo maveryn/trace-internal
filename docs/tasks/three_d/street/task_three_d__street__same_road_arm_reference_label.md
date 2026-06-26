@@ -16,7 +16,7 @@ The public query id is `single`; same-road-arm selection is the fixed objective 
 ## Contract
 The image shows a synthetic perspective 3D street intersection or T intersection with roads, sidewalks, crosswalk markings, unlettered street context, one red-boxed reference street object, unlettered street-object candidates, and a below-scene text option panel.
 
-Each instance renders `6` unlettered candidate street objects. The reference object is unlettered and marked with a red bounding box. Candidate object types exclude the reference type. Exactly one candidate has the same finalized `road_arm` metadata as the reference. Distractor candidates are placed on other present road arms, and T-intersection layouts remove candidates from the missing road arm.
+Each instance renders `4` unlettered candidate street objects. The reference object is unlettered and marked with a red bounding box. Candidate object types exclude the reference type. Exactly one candidate has the same finalized `road_arm` metadata as the reference. Distractor candidates are placed on other present road arms, and T-intersection layouts remove candidates from the missing road arm.
 
 Street context can include buildings, storefronts, trees, shrubs, traffic lights, street signs, and benches. Context objects are visual context only and are excluded from answer candidates.
 

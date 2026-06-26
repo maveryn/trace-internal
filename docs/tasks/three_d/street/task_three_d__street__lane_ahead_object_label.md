@@ -16,7 +16,7 @@ The public query id is `single`; ahead-along-lane selection is the fixed objecti
 ## Contract
 The image shows a synthetic perspective 3D street intersection or T intersection with roads, sidewalks, crosswalk markings, unlettered street context, one red-boxed reference street object with a red travel-direction arrow, unlettered street-object candidates, and a below-scene text option panel.
 
-Each instance renders `5` unlettered candidate street objects plus unlettered street context. The reference object is an unlettered car marked with a red bounding box and red direction arrow. Exactly one candidate is ahead of the reference along the same finalized lane corridor and travel direction. Distractors include objects behind the reference, objects ahead in an adjacent lane, objects off the lane, and objects on other present road arms.
+Each instance renders `4` unlettered candidate street objects plus unlettered street context. The reference object is an unlettered car marked with a red bounding box and red direction arrow. Exactly one candidate is ahead of the reference along the same finalized lane corridor and travel direction. Distractors include objects behind the reference, objects ahead in an adjacent lane, objects off the lane, and objects on other present road arms.
 
 The verifier uses finalized metadata, not pixels: reference road arm, lane id, travel direction vector, candidate forward distance from the reference, candidate lateral distance from the reference lane, and candidate road arm.
 

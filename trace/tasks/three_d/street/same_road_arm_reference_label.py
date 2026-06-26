@@ -635,10 +635,10 @@ class ThreeDStreetSameRoadArmReferenceLabelTask:
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
             key="candidate_count",
-            default_min=6,
-            default_max=6,
-            lower=5,
-            upper=6,
+            default_min=4,
+            default_max=4,
+            lower=4,
+            upper=4,
         )
         context_object_count, context_object_count_probabilities = _shared_resolve_count(
             params,

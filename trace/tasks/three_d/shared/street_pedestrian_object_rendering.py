@@ -60,7 +60,7 @@ def _draw_pedestrian_object(
     else:
         up_unit = (up[0] / height_px, up[1] / height_px)
     side_unit = (-up_unit[1], up_unit[0])
-    person_h = max(52.0, min(92.0, float(height_px) * 1.08))
+    person_h = max(38.0, min(70.0, float(height_px) * 0.96))
     base_center = (float(base[0]), float(base[1]))
 
     def p(lateral: float, upward: float) -> Tuple[float, float]:

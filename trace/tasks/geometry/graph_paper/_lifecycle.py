@@ -686,7 +686,15 @@ def _build_ellipse_area_value(
     """Build the exact ellipse area objective."""
 
     task_params = dict(context["task_params"])
-    rng, ctx = _new_context(context, plan.salt)
+    render_context = {
+        **dict(context),
+        "task_params": {
+            **task_params,
+            "_axis_enabled": False,
+            "_axis_scale_labels_enabled": False,
+        },
+    }
+    rng, ctx = _new_context(render_context, plan.salt)
     if "radius_x" in task_params and "radius_y" in task_params:
         radius_x = int(task_params["radius_x"])
         radius_y = int(task_params["radius_y"])

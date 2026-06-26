@@ -292,8 +292,13 @@ def test_geometry_graph_paper_ellipse_area_does_not_draw_axis_guides(monkeypatch
         calls.append((args, kwargs))
 
     monkeypatch.setattr(_lifecycle, "draw_measurement_guide", record_guide)
-    GeometryGraphPaperEllipseAreaValueTask().generate(23153, params={}, max_attempts=40)
+    out = GeometryGraphPaperEllipseAreaValueTask().generate(
+        23153, params={}, max_attempts=40
+    )
     assert calls == []
+    style_spec = out.trace_payload["render_spec"]["background_style"]["style_spec"]
+    assert style_spec["axis_enabled"] is False
+    assert style_spec["axis_scale_labels_enabled"] is False
 
 
 def test_geometry_graph_paper_length_extremum_includes_oblique_lattice_segments() -> None:

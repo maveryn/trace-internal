@@ -84,6 +84,10 @@ def make_context(
     graph_max = int_default(params, defaults, "graph_cells_max", 20)
     style_seed = int(instance_seed) + (int(theme_index) * 1009)
     rng = spawn_rng(style_seed, "geometry.graph_paper.shared_context")
+    axis_enabled = bool(params.get("_axis_enabled", True))
+    axis_scale_labels_enabled = bool(
+        params.get("_axis_scale_labels_enabled", axis_enabled)
+    )
     shared_context = resolve_graph_scene_context(
         rng,
         instance_seed=int(style_seed),
@@ -98,8 +102,8 @@ def make_context(
         graph_style_overrides={
             "origin_fraction_x": 0.5,
             "origin_fraction_y": 0.5,
-            "axis_enabled": True,
-            "axis_scale_labels_enabled": True,
+            "axis_enabled": axis_enabled,
+            "axis_scale_labels_enabled": axis_scale_labels_enabled,
             "origin_label_enabled": False,
         },
     )

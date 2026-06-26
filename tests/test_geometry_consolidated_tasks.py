@@ -283,6 +283,19 @@ def test_geometry_graph_paper_circle_and_ellipse_axis_witnesses_are_lattice(task
             _assert_lattice_point(point)
 
 
+def test_geometry_graph_paper_ellipse_area_does_not_draw_axis_guides(monkeypatch) -> None:
+    from trace.tasks.geometry.graph_paper import _lifecycle
+
+    calls: list[object] = []
+
+    def record_guide(*args, **kwargs) -> None:
+        calls.append((args, kwargs))
+
+    monkeypatch.setattr(_lifecycle, "draw_measurement_guide", record_guide)
+    GeometryGraphPaperEllipseAreaValueTask().generate(23153, params={}, max_attempts=40)
+    assert calls == []
+
+
 def test_geometry_graph_paper_length_extremum_includes_oblique_lattice_segments() -> None:
     out = GeometryGraphPaperLengthExtremumLabelTask().generate(
         23161,

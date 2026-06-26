@@ -726,8 +726,6 @@ def _build_ellipse_area_value(
         color=ctx.accent_color,
         filled=False,
     )
-    draw_measurement_guide(ctx, major_axis[0], major_axis[1])
-    draw_measurement_guide(ctx, minor_axis[0], minor_axis[1])
     annotation_value, projected = scalar_bbox_artifacts(ellipse.bbox_px)
     prompt_plan = _make_prompt(
         context["prompt_defaults"],

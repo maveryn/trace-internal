@@ -12,6 +12,7 @@
 - `count_quadrilateral_class(query_id={square_count|non_square_rectangle_count|non_square_rhombus_count|slanted_parallelogram_count}, target_class={square|non_square_rectangle|non_square_rhombus|slanted_parallelogram}, output_role=count); scene=graph_paper; scope=quadrilateral_set`
 - Matching uses standard quadrilateral predicates from the rendered vertices. Squares are counted regardless of rotation; `non_square_rectangle_count` and `non_square_rhombus_count` explicitly exclude squares; `slanted_parallelogram_count` counts non-rectangular parallelograms, including non-square rhombuses.
 - Quadrilaterals use class-preserving integer graph-paper vertices with variation in scale, grid-preserving orientation, aspect ratio, and slant; repeated instances of the same class are not required to be congruent.
+- Count objects are placed using their actual graph-unit bounds so independent quadrilaterals do not overlap.
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.

@@ -113,6 +113,19 @@ class GraphPaperTaskPlan:
         return str(fallback)
 
 
+@dataclass(frozen=True)
+class _CountCandidate:
+    """One count-task visual candidate before it mutates the canvas."""
+
+    kind: str
+    class_name: str
+    graph_points: tuple[Point, ...]
+    radius_x: float = 0.0
+    radius_y: float = 0.0
+    metric_value: float = 0.0
+    extra: Mapping[str, Any] = field(default_factory=dict)
+
+
 def graph_paper_prompt_plan(
     *,
     prompt_defaults: Mapping[str, Any],
@@ -1568,6 +1581,162 @@ def _graph_bboxes_overlap(
     )
 
 
+def _count_candidate_graph_bbox(
+    candidate: _CountCandidate, *, pad_units: float = 0.35
+) -> tuple[float, float, float, float]:
+    """Return a padded graph-unit bbox for a not-yet-drawn count object."""
+
+    if candidate.kind in {"circle", "ellipse"}:
+        center = candidate.graph_points[0]
+        return (
+            float(center[0]) - float(candidate.radius_x) - float(pad_units),
+            float(center[1]) - float(candidate.radius_y) - float(pad_units),
+            float(center[0]) + float(candidate.radius_x) + float(pad_units),
+            float(center[1]) + float(candidate.radius_y) + float(pad_units),
+        )
+    return _graph_bbox_units(candidate.graph_points, pad_units=float(pad_units))
+
+
+def _graph_bbox_in_bounds(
+    ctx: GraphPaperContext, bbox: tuple[float, float, float, float]
+) -> bool:
+    """Return whether a padded graph-unit bbox stays inside the visible grid."""
+
+    limit = float(ctx.graph_half_range)
+    return (
+        float(bbox[0]) >= -limit
+        and float(bbox[1]) >= -limit
+        and float(bbox[2]) <= limit
+        and float(bbox[3]) <= limit
+    )
+
+
+def _draw_count_candidate(
+    ctx: GraphPaperContext, candidate: _CountCandidate, *, object_index: int
+) -> GraphObject:
+    """Draw one accepted count-task candidate exactly once."""
+
+    color = object_color(ctx, int(object_index))
+    if candidate.kind == "angle":
+        obj = draw_angle(ctx, "", candidate.graph_points, color=color)
+    elif candidate.kind == "polygon":
+        obj = draw_polygon(
+            ctx,
+            "",
+            candidate.graph_points,
+            class_name=candidate.class_name,
+            color=color,
+            filled=False,
+        )
+    elif candidate.kind in {"circle", "ellipse"}:
+        obj = draw_ellipse_or_circle(
+            ctx,
+            "",
+            candidate.graph_points[0],
+            float(candidate.radius_x),
+            float(candidate.radius_y),
+            class_name=candidate.kind,
+            color=color,
+            filled=False,
+        )
+    else:
+        raise ValueError(f"unsupported count candidate kind: {candidate.kind}")
+    return replace(
+        obj,
+        class_name=str(candidate.class_name),
+        metric_value=float(candidate.metric_value),
+        extra={**dict(obj.extra), **dict(candidate.extra)},
+    )
+
+
+def _place_count_candidates(
+    ctx: GraphPaperContext,
+    *,
+    class_sequence: Sequence[str],
+    rng: Any,
+    build_candidate: Callable[[str, Point], _CountCandidate],
+    pad_units: float,
+    footprint_units: float,
+) -> tuple[GraphObject, ...]:
+    """Place count objects using actual graph bboxes instead of slot centers."""
+
+    classes = tuple(str(value) for value in class_sequence)
+    object_count = len(classes)
+    center_pool = slot_centers(
+        ctx,
+        max(72, int(object_count) * 18),
+        rng=rng,
+        footprint_units=float(footprint_units),
+    )
+    candidate_lists: list[
+        list[tuple[_CountCandidate, tuple[float, float, float, float]]]
+    ] = []
+    for cls_name in classes:
+        center_candidates = list(center_pool)
+        rng.shuffle(center_candidates)
+        candidates: list[tuple[_CountCandidate, tuple[float, float, float, float]]] = []
+        for center in center_candidates:
+            candidate = build_candidate(str(cls_name), center)
+            raw_bbox = _count_candidate_graph_bbox(candidate, pad_units=0.0)
+            if not _graph_bbox_in_bounds(ctx, raw_bbox):
+                continue
+            padded_bbox = _count_candidate_graph_bbox(
+                candidate, pad_units=float(pad_units)
+            )
+            candidates.append((candidate, padded_bbox))
+        if not candidates:
+            raise ValueError("could not build in-bounds count object candidates")
+        candidate_lists.append(candidates)
+
+    placements: list[tuple[_CountCandidate, tuple[float, float, float, float]] | None] = [
+        None
+    ] * object_count
+
+    def search(placed: set[int], accepted_boxes: list[tuple[float, float, float, float]]) -> bool:
+        if len(placed) == object_count:
+            return True
+
+        best_index = -1
+        best_options: list[
+            tuple[_CountCandidate, tuple[float, float, float, float]]
+        ] | None = None
+        for index in range(object_count):
+            if index in placed:
+                continue
+            options = [
+                (candidate, bbox)
+                for candidate, bbox in candidate_lists[index]
+                if not any(
+                    _graph_bboxes_overlap(bbox, accepted)
+                    for accepted in accepted_boxes
+                )
+            ]
+            if not options:
+                return False
+            if best_options is None or len(options) < len(best_options):
+                best_index = index
+                best_options = options
+
+        assert best_options is not None
+        for candidate, bbox in best_options:
+            placements[best_index] = (candidate, bbox)
+            if search(placed | {best_index}, [*accepted_boxes, bbox]):
+                return True
+            placements[best_index] = None
+        return False
+
+    if not search(set(), []):
+        raise ValueError("could not place non-overlapping count objects")
+
+    objects: list[GraphObject] = []
+    for index, placement in enumerate(placements):
+        if placement is None:
+            raise ValueError("missing count object placement")
+        candidate, _bbox = placement
+        objects.append(_draw_count_candidate(ctx, candidate, object_index=index))
+    return tuple(objects)
+
+
 def _lattice_convex_polygon_points(
     center: Point, side_count: int, rng: Any | None
 ) -> tuple[Point, ...]:
@@ -1575,19 +1744,19 @@ def _lattice_convex_polygon_points(
 
     templates: dict[int, tuple[tuple[Point, ...], ...]] = {
         5: (
-            ((0, 0), (3, 0), (4, 2), (2, 4), (0, 3)),
+            ((0, 0), (2, 0), (3, 1), (2, 3), (0, 2)),
             ((0, 1), (2, 0), (4, 1), (3, 3), (1, 4)),
-            ((0, 0), (4, 0), (5, 1), (3, 3), (1, 2)),
+            ((0, 0), (3, 0), (4, 1), (3, 3), (1, 2)),
         ),
         6: (
-            ((0, 1), (2, 0), (4, 1), (5, 3), (3, 5), (1, 4)),
-            ((0, 0), (3, 0), (5, 2), (4, 4), (2, 5), (0, 3)),
-            ((0, 2), (1, 0), (4, 0), (5, 2), (4, 4), (1, 5)),
+            ((0, 1), (1, 0), (3, 0), (4, 1), (3, 3), (1, 3)),
+            ((0, 0), (2, 0), (4, 1), (3, 3), (2, 4), (0, 3)),
+            ((0, 1), (1, 0), (3, 0), (4, 2), (3, 4), (1, 3)),
         ),
         7: (
-            ((0, 1), (2, 0), (4, 0), (5, 2), (4, 4), (2, 5), (0, 3)),
-            ((0, 2), (1, 0), (3, 0), (5, 1), (5, 3), (3, 5), (1, 4)),
-            ((0, 1), (2, 0), (4, 1), (5, 3), (4, 5), (2, 5), (0, 3)),
+            ((0, 1), (1, 0), (3, 0), (4, 1), (4, 3), (2, 4), (0, 3)),
+            ((0, 2), (1, 0), (3, 0), (4, 1), (4, 3), (2, 4), (1, 4)),
+            ((0, 1), (1, 0), (3, 1), (4, 2), (3, 4), (1, 4), (0, 3)),
         ),
     }
     sides = max(5, min(7, int(side_count)))
@@ -1609,13 +1778,13 @@ def _lattice_concave_polygon_points(
         ),
         6: (
             ((0, 0), (4, 0), (4, 3), (2, 2), (1, 4), (0, 3)),
-            ((0, 0), (3, 0), (5, 2), (3, 2), (3, 4), (0, 4)),
+            ((0, 0), (3, 0), (4, 2), (2, 2), (3, 4), (0, 4)),
             ((0, 1), (2, 0), (4, 1), (3, 3), (4, 5), (0, 4)),
         ),
         7: (
-            ((0, 1), (2, 0), (5, 1), (4, 3), (5, 5), (2, 4), (0, 5)),
-            ((0, 0), (3, 0), (5, 2), (3, 2), (4, 4), (2, 5), (0, 3)),
-            ((0, 1), (2, 0), (4, 0), (5, 2), (3, 2), (4, 5), (0, 4)),
+            ((0, 1), (1, 0), (4, 1), (3, 2), (4, 4), (2, 3), (0, 4)),
+            ((0, 0), (3, 0), (4, 2), (2, 2), (3, 4), (1, 4), (0, 3)),
+            ((0, 1), (1, 0), (3, 0), (4, 2), (2, 2), (3, 4), (0, 4)),
         ),
     }
     sides = max(5, min(7, int(side_count)))
@@ -1867,27 +2036,23 @@ def _build_angle_type_count(
         defaults=context["rendering_defaults"],
         theme_index=rng.randrange(0, 3),
     )
-    objects = []
-    for index, (cls_name, center) in enumerate(
-        zip(
-            class_sequence,
-            slot_centers(ctx, object_count, rng=rng, footprint_units=1.9),
-            strict=True,
+    def build_angle_candidate(cls_name: str, center: Point) -> _CountCandidate:
+        value = float(ANGLE_VALUE_BY_CLASS[str(cls_name)])
+        return _CountCandidate(
+            kind="angle",
+            class_name=str(cls_name),
+            graph_points=angle_points(center, value, radius=2.15),
+            metric_value=value,
         )
-    ):
-        obj = draw_angle(
-            ctx,
-            "",
-            angle_points(center, ANGLE_VALUE_BY_CLASS[cls_name], radius=2.15),
-            color=object_color(ctx, index),
-        )
-        objects.append(
-            replace(
-                obj,
-                class_name=str(cls_name),
-                metric_value=float(ANGLE_VALUE_BY_CLASS[cls_name]),
-            )
-        )
+
+    objects = _place_count_candidates(
+        ctx,
+        class_sequence=class_sequence,
+        rng=rng,
+        build_candidate=build_angle_candidate,
+        pad_units=0.25,
+        footprint_units=1.4,
+    )
     return _count_components(
         context,
         ctx=ctx,
@@ -1929,23 +2094,21 @@ def _build_triangle_type_count(
         defaults=context["rendering_defaults"],
         theme_index=rng.randrange(0, 3),
     )
-    objects = []
-    for index, (cls_name, center) in enumerate(
-        zip(
-            class_sequence,
-            slot_centers(ctx, object_count, rng=rng, footprint_units=2.9),
-            strict=True,
-        )
-    ):
-        obj = draw_polygon(
-            ctx,
-            "",
-            _triangle_points(center, cls_name, rng),
+    def build_triangle_candidate(cls_name: str, center: Point) -> _CountCandidate:
+        return _CountCandidate(
+            kind="polygon",
             class_name=str(cls_name),
-            color=object_color(ctx, index),
-            filled=False,
+            graph_points=_triangle_points(center, cls_name, rng),
         )
-        objects.append(replace(obj, class_name=str(cls_name)))
+
+    objects = _place_count_candidates(
+        ctx,
+        class_sequence=class_sequence,
+        rng=rng,
+        build_candidate=build_triangle_candidate,
+        pad_units=0.35,
+        footprint_units=1.3,
+    )
     return _count_components(
         context,
         ctx=ctx,
@@ -1985,23 +2148,21 @@ def _build_quadrilateral_type_count(
         defaults=context["rendering_defaults"],
         theme_index=rng.randrange(0, 3),
     )
-    objects = []
-    for index, (cls_name, center) in enumerate(
-        zip(
-            class_sequence,
-            slot_centers(ctx, object_count, rng=rng, footprint_units=3.0),
-            strict=True,
-        )
-    ):
-        obj = draw_polygon(
-            ctx,
-            "",
-            _quadrilateral_points(center, cls_name, rng),
+    def build_quadrilateral_candidate(cls_name: str, center: Point) -> _CountCandidate:
+        return _CountCandidate(
+            kind="polygon",
             class_name=str(cls_name),
-            color=object_color(ctx, index),
-            filled=False,
+            graph_points=_quadrilateral_points(center, cls_name, rng),
         )
-        objects.append(replace(obj, class_name=str(cls_name)))
+
+    objects = _place_count_candidates(
+        ctx,
+        class_sequence=class_sequence,
+        rng=rng,
+        build_candidate=build_quadrilateral_candidate,
+        pad_units=0.35,
+        footprint_units=1.3,
+    )
     return _count_components(
         context,
         ctx=ctx,
@@ -2041,15 +2202,14 @@ def _build_shape_type_count(
         defaults=context["rendering_defaults"],
         theme_index=rng.randrange(0, 3),
     )
-    objects = []
-    for index, (cls_name, center) in enumerate(
-        zip(
-            class_sequence,
-            slot_centers(ctx, object_count, rng=rng, footprint_units=3.0),
-            strict=True,
-        )
-    ):
-        color = object_color(ctx, index)
+
+    def build_shape_candidate(cls_name: str, center: Point) -> _CountCandidate:
+        """Build one mixed-shape count candidate before bbox placement.
+
+        The invariant is that the returned class name stays at the prompt-facing
+        shape family level while subtype/radius details remain trace metadata.
+        """
+
         if cls_name == "triangle":
             triangle_class = _random_choice(
                 rng,
@@ -2059,16 +2219,13 @@ def _build_shape_type_count(
                     "non_equilateral_isosceles",
                 ),
             )
-            obj = draw_polygon(
-                ctx,
-                "",
-                _triangle_points(center, str(triangle_class), rng),
+            return _CountCandidate(
+                kind="polygon",
                 class_name="triangle",
-                color=color,
-                filled=False,
+                graph_points=_triangle_points(center, str(triangle_class), rng),
+                extra={"shape_variant": str(triangle_class)},
             )
-            obj = replace(obj, extra={"shape_variant": str(triangle_class)})
-        elif cls_name == "quadrilateral":
+        if cls_name == "quadrilateral":
             quadrilateral_class = _random_choice(
                 rng,
                 (
@@ -2078,62 +2235,54 @@ def _build_shape_type_count(
                     "slanted_parallelogram",
                 ),
             )
-            obj = draw_polygon(
-                ctx,
-                "",
-                _quadrilateral_points(center, str(quadrilateral_class), rng),
+            return _CountCandidate(
+                kind="polygon",
                 class_name="quadrilateral",
-                color=color,
-                filled=False,
+                graph_points=_quadrilateral_points(center, str(quadrilateral_class), rng),
+                extra={"shape_variant": str(quadrilateral_class)},
             )
-            obj = replace(obj, extra={"shape_variant": str(quadrilateral_class)})
-        elif cls_name == "pentagon":
-            obj = draw_polygon(
-                ctx,
-                "",
-                _lattice_convex_polygon_points(center, 5, rng),
+        if cls_name == "pentagon":
+            return _CountCandidate(
+                kind="polygon",
                 class_name="pentagon",
-                color=color,
-                filled=False,
+                graph_points=_lattice_convex_polygon_points(center, 5, rng),
+                extra={"side_count": 5},
             )
-            obj = replace(obj, extra={"side_count": 5})
-        elif cls_name == "hexagon":
-            obj = draw_polygon(
-                ctx,
-                "",
-                _lattice_convex_polygon_points(center, 6, rng),
+        if cls_name == "hexagon":
+            return _CountCandidate(
+                kind="polygon",
                 class_name="hexagon",
-                color=color,
-                filled=False,
+                graph_points=_lattice_convex_polygon_points(center, 6, rng),
+                extra={"side_count": 6},
             )
-            obj = replace(obj, extra={"side_count": 6})
-        elif cls_name == "circle":
+        if cls_name == "circle":
             radius = int(_random_choice(rng, (1, 2)))
             ellipse_center = _integer_center_near_slot(ctx, center, radius, radius)
-            obj = draw_ellipse_or_circle(
-                ctx,
-                "",
-                ellipse_center,
-                float(radius),
-                float(radius),
+            return _CountCandidate(
+                kind="circle",
                 class_name="circle",
-                color=color,
-                filled=False,
+                graph_points=(ellipse_center,),
+                radius_x=float(radius),
+                radius_y=float(radius),
             )
-        else:
-            radius_x, radius_y = _random_choice(rng, ((2, 1), (3, 1), (1, 2), (1, 3)))
-            ellipse_center = _integer_center_near_slot(ctx, center, radius_x, radius_y)
-            obj = draw_ellipse_or_circle(
-                ctx,
-                "",
-                ellipse_center,
-                float(radius_x),
-                float(radius_y),
-                class_name="ellipse",
-                color=color,
-                filled=False,
-            )
-        objects.append(replace(obj, class_name=str(cls_name)))
+        radius_x, radius_y = _random_choice(rng, ((2, 1), (3, 1), (1, 2), (1, 3)))
+        ellipse_center = _integer_center_near_slot(ctx, center, radius_x, radius_y)
+        return _CountCandidate(
+            kind="ellipse",
+            class_name="ellipse",
+            graph_points=(ellipse_center,),
+            radius_x=float(radius_x),
+            radius_y=float(radius_y),
+        )
+
+    objects = _place_count_candidates(
+        ctx,
+        class_sequence=class_sequence,
+        rng=rng,
+        build_candidate=build_shape_candidate,
+        pad_units=0.35,
+        footprint_units=1.3,
+    )
     return _count_components(
         context,
         ctx=ctx,
@@ -2169,33 +2318,28 @@ def _build_polygon_convexity_count(
         defaults=context["rendering_defaults"],
         theme_index=rng.randrange(0, 3),
     )
-    objects = []
-    for index, (cls_name, center) in enumerate(
-        zip(
-            class_sequence,
-            slot_centers(ctx, object_count, rng=rng, footprint_units=3.1),
-            strict=True,
-        )
-    ):
+    def build_convexity_candidate(cls_name: str, center: Point) -> _CountCandidate:
         side_count = int(rng.randint(5, 7))
         points = (
             _lattice_convex_polygon_points(center, side_count, rng)
             if cls_name == "convex"
             else _lattice_concave_polygon_points(center, side_count, rng)
         )
-        obj = draw_polygon(
-            ctx,
-            "",
-            points,
+        return _CountCandidate(
+            kind="polygon",
             class_name=str(cls_name),
-            color=object_color(ctx, index),
-            filled=False,
+            graph_points=points,
+            extra={"side_count": int(side_count)},
         )
-        objects.append(
-            replace(
-                obj, class_name=str(cls_name), extra={"side_count": int(side_count)}
-            )
-        )
+
+    objects = _place_count_candidates(
+        ctx,
+        class_sequence=class_sequence,
+        rng=rng,
+        build_candidate=build_convexity_candidate,
+        pad_units=0.35,
+        footprint_units=1.3,
+    )
     return _count_components(
         context,
         ctx=ctx,

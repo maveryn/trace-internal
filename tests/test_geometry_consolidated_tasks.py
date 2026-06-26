@@ -368,6 +368,16 @@ def _assert_all_graph_points_are_lattice(output) -> None:
 
 
 def _graph_bbox_from_entity(entity: dict, *, pad_units: float = 0.45) -> tuple[float, float, float, float]:
+    if entity["kind"] in {"circle", "ellipse"}:
+        center = entity["graph_points"][0]
+        radius_x = float(entity["extra"]["radius_x"])
+        radius_y = float(entity["extra"]["radius_y"])
+        return (
+            float(center[0]) - radius_x - float(pad_units),
+            float(center[1]) - radius_y - float(pad_units),
+            float(center[0]) + radius_x + float(pad_units),
+            float(center[1]) + radius_y + float(pad_units),
+        )
     points = entity["graph_points"]
     xs = [float(point[0]) for point in points]
     ys = [float(point[1]) for point in points]
@@ -377,6 +387,35 @@ def _graph_bbox_from_entity(entity: dict, *, pad_units: float = 0.45) -> tuple[f
         max(xs) + float(pad_units),
         max(ys) + float(pad_units),
     )
+
+
+@pytest.mark.parametrize(
+    ("task_cls", "query_ids"),
+    (
+        (GeometryGraphPaperAngleTypeCountTask, GeometryGraphPaperAngleTypeCountTask.supported_query_ids),
+        (GeometryGraphPaperTriangleTypeCountTask, GeometryGraphPaperTriangleTypeCountTask.supported_query_ids),
+        (GeometryGraphPaperQuadrilateralTypeCountTask, GeometryGraphPaperQuadrilateralTypeCountTask.supported_query_ids),
+        (GeometryGraphPaperShapeTypeCountTask, GeometryGraphPaperShapeTypeCountTask.supported_query_ids),
+        (GeometryGraphPaperPolygonConvexityCountTask, GeometryGraphPaperPolygonConvexityCountTask.supported_query_ids),
+    ),
+)
+def test_geometry_graph_paper_count_objects_do_not_overlap(
+    task_cls,
+    query_ids: tuple[str, ...],
+) -> None:
+    for query_id in query_ids:
+        out = task_cls().generate(
+            23110,
+            params={"query_id": query_id, "object_count": 6},
+            max_attempts=40,
+        )
+        boxes = [
+            _graph_bbox_from_entity(entity, pad_units=0.35)
+            for entity in out.trace_payload["scene_ir"]["entities"]
+        ]
+        for index, first in enumerate(boxes):
+            for second in boxes[index + 1 :]:
+                assert not graph_paper_lifecycle._graph_bboxes_overlap(first, second)
 
 
 @pytest.mark.parametrize(

@@ -10,6 +10,7 @@
 
 ## Program Contract
 - `count_angle_class(query_id={acute_angle_count|right_angle_count|obtuse_angle_count}, target_class={acute|right|obtuse}, output_role=count); scene=graph_paper; scope=angle_set`
+- Count objects are placed using their actual graph-unit bounds so independent angle drawings do not overlap.
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.

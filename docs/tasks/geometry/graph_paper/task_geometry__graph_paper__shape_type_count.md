@@ -13,6 +13,7 @@
 - The `ellipse_count` prompt-facing target is `non-circular ellipses`; circles are counted only for `circle_count`.
 - Shape families use class-preserving graph-paper variation: polygon vertices sit on graph intersections, circles and ellipses use integer centers/radii so their diameter or major/minor-axis witnesses align to graph points, and pentagons/hexagons are not always regular.
 - Mixed-shape triangle variants avoid exact equilateral triangles so every polygonal shape in this task can keep lattice vertices.
+- Count objects are placed using their actual graph-unit bounds so independent shapes do not overlap.
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.

@@ -13,6 +13,7 @@
 - Matching uses standard triangle predicates from the rendered vertices. In particular, `scalene_triangle_count` includes any right triangle whose three side lengths are unequal, while `non_equilateral_isosceles_triangle_count` excludes equilateral triangles.
 - Non-equilateral classes use integer graph-paper vertices. Exact equilateral triangles keep a graph-paper-aligned base but are the square-lattice exception, since a nondegenerate exact equilateral triangle cannot place all vertices on square grid intersections.
 - Triangles use class-preserving variation in scale, orientation, and side ratios; repeated instances of the same class are not required to be congruent.
+- Count objects are placed using their actual graph-unit bounds so independent triangles do not overlap.
 
 ## Prompt Bundle
 - Prompt text is loaded from `geometry_graph_paper_v1`.

@@ -60,11 +60,21 @@ from ..shared.object_scene import (
 
 TASK_ID = "task_three_d__object_scene__height_extremum_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("highest_above_floor", "lowest_above_floor")
-SUPPORT_PLACEMENTS: Tuple[Tuple[str, str | None, Tuple[float, float]], ...] = tuple(
-    placement for placement in SPATIAL_HEIGHT_SUPPORT_PLACEMENTS if str(placement[0]) != "table_top"
+SUPPORT_PLACEMENTS: Tuple[Tuple[str, str | None, Tuple[float, float]], ...] = SPATIAL_HEIGHT_SUPPORT_PLACEMENTS
+FLOOR_PLACEMENTS: Tuple[Tuple[str, str | None, Tuple[float, float]], ...] = tuple(
+    placement for placement in SUPPORT_PLACEMENTS if placement[1] is None
+)
+ELEVATED_SUPPORT_PLACEMENTS: Tuple[Tuple[str, str | None, Tuple[float, float]], ...] = tuple(
+    placement for placement in SUPPORT_PLACEMENTS if placement[1] is not None
 )
 HEIGHT_OPTION_COUNT = 4
+HEIGHT_SUPPORT_COUNT = HEIGHT_OPTION_COUNT - 1
 HEIGHT_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_HEIGHT_SAFE_CANDIDATE_SHAPE_TYPES
+PLATFORM_DIMENSIONS_BY_PLACEMENT: Dict[str, Tuple[float, float, float]] = {
+    "low_platform": (1.34, 0.92, 0.46),
+    "mid_platform": (1.34, 0.92, 0.76),
+    "high_platform": (1.34, 0.92, 1.52),
+}
 
 
 
@@ -96,14 +106,19 @@ def _make_sampled_object(
     xy: Tuple[float, float],
     label: str | None = None,
     base_z: float = 0.0,
+    dimensions_xyz: Tuple[float, float, float] | None = None,
 ) -> Dict[str, Any]:
-    dimensions_xyz, dimension_scale = _sample_shape_dimensions(str(shape_type), object_role=str(object_role), rng=rng)
+    if dimensions_xyz is None:
+        sampled_dimensions_xyz, dimension_scale = _sample_shape_dimensions(str(shape_type), object_role=str(object_role), rng=rng)
+    else:
+        sampled_dimensions_xyz = tuple(float(value) for value in dimensions_xyz)
+        dimension_scale = 1.0
     spec = _make_object_spec(
         object_id=str(object_id),
         shape_type=str(shape_type),
         object_role=str(object_role),
         xy=xy,
-        dimensions_xyz=dimensions_xyz,
+        dimensions_xyz=sampled_dimensions_xyz,
         dimension_scale=float(dimension_scale),
         label=label,
     )
@@ -119,10 +134,6 @@ def _support_base_height(support_spec: Mapping[str, Any] | None) -> float:
     support_height = float(support_spec["dimensions_xyz"][2])
     if shape_type == "open_box":
         return round(float(support_height * 0.20 + 0.02), 4)
-    if shape_type == "chair":
-        return round(float(support_height * 0.56), 4)
-    if shape_type == "shelf":
-        return round(float(support_height * 0.96), 4)
     return round(float(support_height), 4)
 
 
@@ -132,6 +143,10 @@ def _support_visibility_offset(support_spec: Mapping[str, Any] | None) -> float:
     shape_type = str(support_spec["shape_type"])
     if shape_type == "open_box":
         return 0.06
+    if shape_type == "table":
+        return 0.20
+    if shape_type == "platform":
+        return 0.08
     return 0.0
 
 
@@ -184,8 +199,10 @@ def _build_height_scene_dataset(
     """Build a height-extremum scene where rendered object heights yield exactly one highest or lowest labeled candidate."""
     if int(point_count) != HEIGHT_OPTION_COUNT:
         raise ValueError(f"{TASK_ID} expects {HEIGHT_OPTION_COUNT} option-panel candidates")
-    if int(context_object_count) != len(SUPPORT_PLACEMENTS) - 1:
-        raise ValueError(f"{TASK_ID} expects {len(SUPPORT_PLACEMENTS) - 1} support props")
+    if len(FLOOR_PLACEMENTS) != 1:
+        raise ValueError(f"{TASK_ID} expects exactly one floor placement")
+    if int(context_object_count) != HEIGHT_SUPPORT_COUNT:
+        raise ValueError(f"{TASK_ID} expects {HEIGHT_SUPPORT_COUNT} support props")
 
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     label_selection_index = int(answer_label_index) if answer_label_index is not None else int(instance_seed)
@@ -196,9 +213,14 @@ def _build_height_scene_dataset(
     )
     for _attempt in range(360):
         camera = _sample_camera(rng, yaw_band_degrees=selected_camera_yaw_band)
+        support_placements = list(ELEVATED_SUPPORT_PLACEMENTS)
+        rng.shuffle(support_placements)
+        selected_placements = [FLOOR_PLACEMENTS[0], *support_placements[: int(context_object_count)]]
+        rng.shuffle(selected_placements)
+
         support_specs_by_name: Dict[str, Dict[str, Any]] = {}
         context_specs: List[Dict[str, Any]] = []
-        for placement_name, support_shape, xy in SUPPORT_PLACEMENTS:
+        for placement_name, support_shape, xy in selected_placements:
             if support_shape is None:
                 continue
             support_spec = _make_sampled_object(
@@ -207,13 +229,14 @@ def _build_height_scene_dataset(
                 shape_type=str(support_shape),
                 object_role="context",
                 xy=tuple(float(value) for value in xy),
+                dimensions_xyz=PLATFORM_DIMENSIONS_BY_PLACEMENT.get(str(placement_name)),
             )
+            if str(support_shape) == "platform":
+                support_spec["object_name"] = "platform"
+                support_spec["prompt_name"] = "platform"
             support_specs_by_name[str(placement_name)] = support_spec
             context_specs.append(support_spec)
 
-        selected_placements = list(SUPPORT_PLACEMENTS)
-        rng.shuffle(selected_placements)
-        selected_placements = selected_placements[:HEIGHT_OPTION_COUNT]
         placement_records: List[Dict[str, Any]] = []
         for placement_name, _support_shape, xy in selected_placements:
             support_spec = support_specs_by_name.get(str(placement_name))
@@ -482,10 +505,10 @@ class ThreeDSpatialHeightExtremumLabelTask:
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
             prefix="context_object_count",
-            minimum_default=len(SUPPORT_PLACEMENTS) - 1,
-            maximum_default=len(SUPPORT_PLACEMENTS) - 1,
-            lower=len(SUPPORT_PLACEMENTS) - 1,
-            upper=len(SUPPORT_PLACEMENTS) - 1,
+            minimum_default=HEIGHT_SUPPORT_COUNT,
+            maximum_default=HEIGHT_SUPPORT_COUNT,
+            lower=HEIGHT_SUPPORT_COUNT,
+            upper=HEIGHT_SUPPORT_COUNT,
         )
         answer_label_index = resolve_selection_index(
             params=params,

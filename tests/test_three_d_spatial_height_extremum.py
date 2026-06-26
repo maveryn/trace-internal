@@ -41,9 +41,10 @@ def test_height_extremum_answer_and_annotation(query_id: str) -> None:
     assert len(context_specs) == 3
     assert all(spec["is_answer_candidate"] for spec in point_specs)
     assert all(not spec["is_answer_candidate"] for spec in context_specs)
-    assert not any(str(spec.get("support_name")) == "table" for spec in point_specs)
+    assert {str(spec["shape_type"]) for spec in context_specs}.issubset({"open_box", "platform", "table"})
+    assert not any(str(spec.get("support_shape_type")) in {"chair", "shelf"} for spec in point_specs)
     assert len({str(spec["shape_type"]) for spec in point_specs}) == len(point_specs)
-    assert not any(str(spec.get("shape_type")) in {"bottle", "candle", "drum", "flask", "goblet", "hat", "lantern"} for spec in point_specs)
+    assert not any(str(spec.get("shape_type")) in {"bottle", "candle", "drum", "flask", "goblet", "hat", "lantern", "wedge"} for spec in point_specs)
     assert not any("option_color_name" in spec for spec in point_specs)
     answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_label)
     expected_bbox = output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]

@@ -21,8 +21,8 @@ The verifier computes the answer from finalized scene metadata and projection re
 Annotation is a scalar `bbox` around the selected visible object.
 The selected object is the only visual witness; option text is not annotation.
 The rendered task presents four option-panel candidates.
-Candidate supports are limited to visually reliable floor/open-box/chair/shelf placements; tabletop placement is excluded because it can make objects appear under the table from some camera views.
-Candidate object types are sampled without replacement from a narrow height-safe pool. The pool excludes objects with ambiguous support contact, weak semantic color rendering, or confusing height silhouettes. `cup` and `trophy` are allowed; `bottle`, `candle`, `drum`, `flask`, `goblet`, `hat`, and `lantern` are excluded.
+Candidate supports use a floor spot plus three sampled simple supports from open box, table top, low platform, mid platform, and high platform. Chair and shelf supports are excluded because their projected furniture geometry can obscure whether an object is sitting on top.
+Candidate object types are sampled without replacement from a narrow height-safe pool. The pool excludes objects with ambiguous support contact, weak semantic color rendering, or confusing height silhouettes. `cup` and `trophy` are allowed; `bottle`, `candle`, `drum`, `flask`, `goblet`, `hat`, `lantern`, and `wedge/ramp` are excluded.
 Option descriptors use distinct object names only, not prompt-color names.
 
 ## Prompt And Trace

@@ -13,7 +13,7 @@
 `select(label(candidate_objects, extremum(world_height_above_floor, requested_extremum))); scene=object_scene; scope=height_extremum_label`
 
 ## Contract
-The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
+The image uses the `object_scene` renderer: a perspective 3D floor or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
 
 The verifier computes the answer from finalized scene metadata and projection records, not from pixels. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
 
@@ -21,7 +21,7 @@ The verifier computes the answer from finalized scene metadata and projection re
 Annotation is a scalar `bbox` around the selected visible object.
 The selected object is the only visual witness; option text is not annotation.
 The rendered task presents four option-panel candidates.
-Candidate supports use a floor spot plus three sampled simple supports from open box, table top, low platform, mid platform, and high platform. Chair and shelf supports are excluded because their projected furniture geometry can obscure whether an object is sitting on top.
+Candidate supports use one floor spot plus low, mid, and high plain platforms. Container or furniture supports such as open boxes, tables, chairs, and shelves are excluded because their projected geometry can obscure whether an object is sitting on top.
 Candidate object types are sampled without replacement from a narrow height-safe pool. The pool excludes objects with ambiguous support contact, weak semantic color rendering, or confusing height silhouettes. `cup` and `trophy` are allowed; `bottle`, `candle`, `drum`, `flask`, `goblet`, `hat`, `lantern`, and `wedge/ramp` are excluded.
 Option descriptors use distinct object names only, not prompt-color names.
 

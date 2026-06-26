@@ -130,10 +130,7 @@ def _make_sampled_object(
 def _support_base_height(support_spec: Mapping[str, Any] | None) -> float:
     if support_spec is None:
         return 0.0
-    shape_type = str(support_spec["shape_type"])
     support_height = float(support_spec["dimensions_xyz"][2])
-    if shape_type == "open_box":
-        return round(float(support_height * 0.20 + 0.02), 4)
     return round(float(support_height), 4)
 
 
@@ -141,10 +138,6 @@ def _support_visibility_offset(support_spec: Mapping[str, Any] | None) -> float:
     if support_spec is None:
         return 0.0
     shape_type = str(support_spec["shape_type"])
-    if shape_type == "open_box":
-        return 0.06
-    if shape_type == "table":
-        return 0.20
     if shape_type == "platform":
         return 0.08
     return 0.0
@@ -281,12 +274,7 @@ def _build_height_scene_dataset(
         for index, placement in enumerate(placement_records):
             label = str(answer_label) if str(placement["placement_id"]) == str(answer_placement["placement_id"]) else str(remaining_labels.pop())
             shape_type = str(shape_pool[int(index)])
-            if placement.get("support_shape_type") == "open_box":
-                jitter = 0.04
-            elif placement.get("support_object_id"):
-                jitter = 0.02
-            else:
-                jitter = 0.10
+            jitter = 0.02 if placement.get("support_object_id") else 0.10
             base_xy = tuple(float(value) for value in placement["candidate_xy"])
             spec = _make_sampled_object(
                 rng=rng,

@@ -163,10 +163,10 @@ rendering:
           text_rgb: [30, 34, 42]
           text_stroke_rgb: [255, 255, 255]
         charcoal_concrete:
-          floor_rgb: [31, 36, 44]
-          grid_rgb: [78, 89, 104]
+          floor_rgb: [43, 50, 60]
+          grid_rgb: [92, 105, 121]
           edge_rgb: [185, 199, 216]
-          surface_accent_rgb: [45, 52, 63]
+          surface_accent_rgb: [57, 65, 77]
           text_rgb: [232, 238, 247]
           text_stroke_rgb: [16, 20, 28]
         deep_warehouse:
@@ -393,7 +393,7 @@ visual:
         color: [230, 234, 233]
       charcoal_concrete:
         kind: solid
-        color: [31, 36, 44]
+        color: [43, 50, 60]
       deep_warehouse:
         kind: solid
         color: [34, 39, 43]

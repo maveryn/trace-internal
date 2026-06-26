@@ -223,10 +223,10 @@ DEFAULT_THREE_D_SURFACE_TONES: Mapping[str, Mapping[str, RGB]] = {
         "text_stroke_rgb": LIGHT_SURFACE_TEXT_STROKE_RGB,
     },
     "charcoal_concrete": {
-        "floor_rgb": (31, 36, 44),
-        "grid_rgb": (78, 89, 104),
+        "floor_rgb": (43, 50, 60),
+        "grid_rgb": (92, 105, 121),
         "edge_rgb": (185, 199, 216),
-        "surface_accent_rgb": (45, 52, 63),
+        "surface_accent_rgb": (57, 65, 77),
         "text_rgb": (232, 238, 247),
         "text_stroke_rgb": (16, 20, 28),
     },

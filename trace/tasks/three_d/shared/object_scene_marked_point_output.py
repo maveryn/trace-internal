@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, Mapping, Sequence
 
 from PIL import Image
 
+from .canvas import render_params_canvas_metadata
 from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
@@ -187,6 +188,7 @@ def build_marked_point_object_scene_output(
             "scene_canvas_width": int(render_params.canvas_width),
             "scene_canvas_height": int(render_params.canvas_height),
             "scene_canvas_policy": str(render_params.canvas_policy),
+            **render_params_canvas_metadata(render_params),
             "final_canvas_width": int(image.width),
             "final_canvas_height": int(image.height),
             "final_canvas_pixels": int(image.width) * int(image.height),

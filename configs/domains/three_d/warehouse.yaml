@@ -62,34 +62,10 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 25
       line_width_px: 2
-      floor_rgb:
-      - 221
-      - 226
-      - 220
-      grid_rgb:
-      - 174
-      - 184
-      - 179
-      aisle_rgb:
-      - 207
-      - 215
-      - 211
-      shelf_zone_rgb:
-      - 190
-      - 196
-      - 194
       path_rgb:
       - 236
       - 195
       - 72
-      text_rgb:
-      - 24
-      - 28
-      - 36
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
     task_three_d__warehouse__nearest_candidate_to_reference_label:
       canvas_width: 1180
       canvas_height: 920
@@ -102,34 +78,10 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 25
       line_width_px: 2
-      floor_rgb:
-      - 221
-      - 226
-      - 220
-      grid_rgb:
-      - 174
-      - 184
-      - 179
-      aisle_rgb:
-      - 207
-      - 215
-      - 211
-      shelf_zone_rgb:
-      - 190
-      - 196
-      - 194
       path_rgb:
       - 236
       - 195
       - 72
-      text_rgb:
-      - 24
-      - 28
-      - 36
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
     task_three_d__warehouse__scoped_attribute_count:
       canvas_width: 1180
       canvas_height: 920
@@ -142,34 +94,10 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 25
       line_width_px: 2
-      floor_rgb:
-      - 221
-      - 226
-      - 220
-      grid_rgb:
-      - 174
-      - 184
-      - 179
-      aisle_rgb:
-      - 207
-      - 215
-      - 211
-      shelf_zone_rgb:
-      - 190
-      - 196
-      - 194
       path_rgb:
       - 236
       - 195
       - 72
-      text_rgb:
-      - 24
-      - 28
-      - 36
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
 prompt:
   shared:
     bundle_id: three_d_warehouse_v1

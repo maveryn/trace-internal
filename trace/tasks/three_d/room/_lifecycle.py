@@ -39,6 +39,7 @@ from trace.tasks.three_d.room.shared.spatial_primitives import (
     build_room_wall_side_relation_dataset,
 )
 from trace.tasks.three_d.room.shared.state import SCENE_ID
+from trace.tasks.three_d.shared.canvas import render_params_canvas_metadata
 from trace.tasks.three_d.shared.object_scene import (
     ObjectSceneRenderParams,
     POINT_LABELS,
@@ -737,6 +738,7 @@ def _run_once(
             "scene_canvas_width": int(render_params.canvas_width),
             "scene_canvas_height": int(render_params.canvas_height),
             "scene_canvas_policy": str(render_params.canvas_policy),
+            **render_params_canvas_metadata(render_params),
             "final_canvas_width": int(image.width),
             "final_canvas_height": int(image.height),
             "final_canvas_pixels": int(image.width) * int(image.height),

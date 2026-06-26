@@ -84,26 +84,6 @@ rendering:
     marker_radius_px: 22
     label_font_size_px: 24
     line_width_px: 2
-    floor_rgb:
-      - 232
-      - 239
-      - 242
-    grid_rgb:
-      - 184
-      - 197
-      - 207
-    edge_rgb:
-      - 93
-      - 108
-      - 124
-    text_rgb:
-      - 30
-      - 34
-      - 42
-    text_stroke_rgb:
-      - 255
-      - 255
-      - 255
     full_bleed_floor: true
     full_bleed_floor_extent_multiplier: 3.4
 prompt:

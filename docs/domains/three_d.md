@@ -76,15 +76,20 @@ Use the 3D object review surfaces for object-fidelity audits. Style, lighting,
 camera, and object-palette variation must not encode answer value, query id,
 correct option, relation truth, or construction order unless explicitly queried.
 
-Neutral floor/canvas tone variation is domain-shared. Use
+Neutral floor/canvas tone variation is domain-shared. All active three_d scene
+configs inherit the approved 25-tone pool from `configs/domains/three_d/base.yaml`:
+20 light matte/studio/industrial tones and 5 dark graphite/warehouse tones. Use
 `trace.tasks.three_d.shared.visual_styles.resolve_three_d_surface_tone` through
 the scene render-parameter resolver instead of hardcoding scene-local floor,
-grid, edge, text, or canvas colors. The approved pool is intentionally subtle:
-20 light matte/studio/industrial tones and 5 dark graphite/warehouse tones.
-Each tone owns readable `text_rgb` and `text_stroke_rgb` values so dark
-treatments do not inherit light-scene label defaults. Conveyor-like belt scenes
-should use the shared named conveyor belt styles from the same module; belt
-style is render metadata, not a task/query axis.
+grid, edge, text, or canvas colors. Scene-local configs should not pin
+`floor_rgb`, `grid_rgb`, `edge_rgb`, `text_rgb`, or `text_stroke_rgb`; street
+sidewalk/curb and warehouse aisle/shelf-zone surfaces should also inherit from
+the selected tone. Semantic non-surface colors such as road asphalt, route path
+highlighting, and conveyor belt style may remain scene-specific. Each tone owns
+readable `text_rgb` and `text_stroke_rgb` values so dark treatments do not
+inherit light-scene label defaults. Conveyor-like belt scenes should use the
+shared named conveyor belt styles from the same module; belt style is render
+metadata, not a task/query axis.
 
 Object-cluster instances may apply a bounded per-object `orientation_deg`
 rendering jitter for visual variety. This value must be recorded in trace

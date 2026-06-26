@@ -6,6 +6,7 @@ import math
 from collections import Counter
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from .canvas import render_params_canvas_metadata
 from ....core.seed import spawn_rng
 from ....core.scene_config import (
     get_domain_defaults,
@@ -764,6 +765,7 @@ class _ThreeDSpatialViewRelationCountBase:
                 "scene_canvas_width": int(render_params.canvas_width),
                 "scene_canvas_height": int(render_params.canvas_height),
                 "scene_canvas_policy": str(render_params.canvas_policy),
+                **render_params_canvas_metadata(render_params),
                 "final_canvas_width": int(image.width),
                 "final_canvas_height": int(image.height),
                 "final_canvas_pixels": int(image.width) * int(image.height),

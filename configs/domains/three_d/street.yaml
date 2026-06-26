@@ -75,10 +75,6 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 25
       line_width_px: 2
-      sidewalk_rgb:
-      - 214
-      - 222
-      - 218
       asphalt_rgb:
       - 86
       - 93
@@ -91,18 +87,6 @@ rendering:
       - 240
       - 243
       - 238
-      curb_rgb:
-      - 157
-      - 168
-      - 171
-      text_rgb:
-      - 24
-      - 28
-      - 36
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
     task_three_d__street__same_road_arm_reference_label:
       canvas_width: 1180
       canvas_height: 920
@@ -115,10 +99,6 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 25
       line_width_px: 2
-      sidewalk_rgb:
-      - 214
-      - 222
-      - 218
       asphalt_rgb:
       - 86
       - 93
@@ -131,18 +111,6 @@ rendering:
       - 240
       - 243
       - 238
-      curb_rgb:
-      - 157
-      - 168
-      - 171
-      text_rgb:
-      - 24
-      - 28
-      - 36
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
     task_three_d__street__lane_ahead_object_label:
       canvas_width: 1180
       canvas_height: 920
@@ -155,10 +123,6 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 25
       line_width_px: 2
-      sidewalk_rgb:
-      - 214
-      - 222
-      - 218
       asphalt_rgb:
       - 86
       - 93
@@ -171,18 +135,6 @@ rendering:
       - 240
       - 243
       - 238
-      curb_rgb:
-      - 157
-      - 168
-      - 171
-      text_rgb:
-      - 24
-      - 28
-      - 36
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
 prompt:
   shared:
     bundle_id: three_d_street_v1

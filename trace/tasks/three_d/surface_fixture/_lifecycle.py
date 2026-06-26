@@ -15,6 +15,7 @@ from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
+from trace.tasks.three_d.shared.canvas import render_params_canvas_metadata
 from trace.tasks.three_d.shared.object_scene import _resolve_render_params
 
 from .shared.annotations import bbox_set_annotation_for_elements
@@ -168,6 +169,7 @@ def _build_surface_trace_payload(
             "scene_canvas_width": int(render_params.canvas_width),
             "scene_canvas_height": int(render_params.canvas_height),
             "scene_canvas_policy": str(render_params.canvas_policy),
+            **render_params_canvas_metadata(render_params),
             "final_canvas_width": int(image.width),
             "final_canvas_height": int(image.height),
             "final_canvas_pixels": int(image.width) * int(image.height),

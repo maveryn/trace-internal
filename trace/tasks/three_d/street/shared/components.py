@@ -409,9 +409,9 @@ def _draw_street_shell(
     cx, cy = float(intersection_center_xy[0]), float(intersection_center_xy[1])
     sidewalk_fill = render_params.sidewalk_rgb
     if str(scene_variant) == "neighborhood_intersection":
-        sidewalk_fill = (206, 224, 206)
+        sidewalk_fill = _tint(sidewalk_fill, 0.04)
     elif str(scene_variant) == "transit_intersection":
-        sidewalk_fill = (218, 220, 224)
+        sidewalk_fill = _tint(sidewalk_fill, 0.025)
     floor_polygon_xy, floor_polygon_mode = _visible_floor_polygon_xy(
         camera=camera,
         frame=frame,

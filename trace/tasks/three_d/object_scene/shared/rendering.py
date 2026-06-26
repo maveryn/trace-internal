@@ -15,7 +15,7 @@ from ...shared.camera_projection import (
     polygon_axis_line_segment,
     project_xy,
 )
-from ...shared.object_scene_rendering import _draw_line
+from ...shared.object_scene_rendering import _draw_line, _shade, _tint
 
 
 def draw_object_scene_room(
@@ -35,13 +35,13 @@ def draw_object_scene_room(
         project_xy((-extent, extent, 0.0), camera, frame),
     ]
     if str(scene_variant) == "tabletop_room":
-        floor_fill = (226, 218, 199)
-        border_rgb = (128, 108, 86)
-        grid_rgb = (190, 176, 151)
+        floor_fill = _tint(render_params.floor_rgb, 0.035)
+        border_rgb = _shade(render_params.edge_rgb, 0.95)
+        grid_rgb = _tint(render_params.grid_rgb, 0.025)
     elif str(scene_variant) == "studio_platform":
-        floor_fill = (231, 235, 244)
-        border_rgb = (88, 100, 118)
-        grid_rgb = (181, 192, 211)
+        floor_fill = _tint(render_params.floor_rgb, 0.06)
+        border_rgb = render_params.edge_rgb
+        grid_rgb = _tint(render_params.grid_rgb, 0.04)
     else:
         floor_fill = render_params.floor_rgb
         border_rgb = render_params.edge_rgb

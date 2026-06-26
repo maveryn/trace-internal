@@ -203,26 +203,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__marked_point_depth_extremum_label:
@@ -238,26 +218,6 @@ rendering:
       marker_radius_px: 24
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__marked_point_vertical_relation_label:
@@ -273,26 +233,6 @@ rendering:
       marker_radius_px: 24
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__counterfactual_count:
@@ -308,26 +248,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__object_relation_label:
@@ -343,26 +263,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
     task_three_d__object_scene__reference_nearest_label:
       canvas_width: 1180
       canvas_height: 900
@@ -376,26 +276,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
     task_three_d__object_scene__between_references_label:
       canvas_width: 1180
       canvas_height: 900
@@ -409,26 +289,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
     task_three_d__object_scene__occlusion_order_label:
       canvas_width: 1180
       canvas_height: 900
@@ -442,26 +302,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
     task_three_d__object_scene__height_extremum_label:
       canvas_width: 1180
       canvas_height: 900
@@ -475,26 +315,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
     task_three_d__object_scene__landmark_correspondence_label:
       canvas_width: 1480
       canvas_height: 900
@@ -508,26 +328,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__multiview_object_match_label:
@@ -543,26 +343,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__relation_attribute_count:
@@ -578,26 +358,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__single_attribute_membership_count:
@@ -613,26 +373,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__multi_attribute_and_count:
@@ -648,26 +388,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__multi_attribute_or_count:
@@ -683,26 +403,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__multi_attribute_xor_count:
@@ -718,26 +418,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__multi_attribute_exclusion_count:
@@ -753,26 +433,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__image_plane_lateral_relation_count:
@@ -788,26 +448,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__camera_depth_relation_count:
@@ -823,26 +463,6 @@ rendering:
       marker_radius_px: 22
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 239
-      - 242
-      grid_rgb:
-      - 184
-      - 197
-      - 207
-      edge_rgb:
-      - 93
-      - 108
-      - 124
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
 prompt:

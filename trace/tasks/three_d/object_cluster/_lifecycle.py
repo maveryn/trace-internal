@@ -20,6 +20,7 @@ from trace.tasks.shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
+from trace.tasks.three_d.shared.canvas import render_params_canvas_metadata
 from trace.tasks.three_d.shared.object_scene import (
     render_object_scene_3d,
     resolve_object_scene_render_params,
@@ -300,6 +301,7 @@ def _run_once(
             "scene_canvas_width": int(render_params.canvas_width),
             "scene_canvas_height": int(render_params.canvas_height),
             "scene_canvas_policy": str(render_params.canvas_policy),
+            **render_params_canvas_metadata(render_params),
             "final_canvas_width": int(image.width),
             "final_canvas_height": int(image.height),
             "final_canvas_pixels": int(image.width) * int(image.height),

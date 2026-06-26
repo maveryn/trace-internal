@@ -59,26 +59,6 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 238
-      - 240
-      grid_rgb:
-      - 183
-      - 195
-      - 205
-      edge_rgb:
-      - 88
-      - 103
-      - 119
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
     task_three_d__room__wall_object_camera_distance_label:
       canvas_width: 1180
       canvas_height: 900
@@ -92,26 +72,6 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 238
-      - 240
-      grid_rgb:
-      - 183
-      - 195
-      - 205
-      edge_rgb:
-      - 88
-      - 103
-      - 119
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
     task_three_d__room__wall_object_same_wall_reference_label:
       canvas_width: 1180
       canvas_height: 900
@@ -125,26 +85,6 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 238
-      - 240
-      grid_rgb:
-      - 183
-      - 195
-      - 205
-      edge_rgb:
-      - 88
-      - 103
-      - 119
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
     task_three_d__room__wall_object_side_relation_label:
       canvas_width: 1180
       canvas_height: 900
@@ -158,26 +98,6 @@ rendering:
       marker_radius_px: 20
       label_font_size_px: 24
       line_width_px: 2
-      floor_rgb:
-      - 232
-      - 238
-      - 240
-      grid_rgb:
-      - 183
-      - 195
-      - 205
-      edge_rgb:
-      - 88
-      - 103
-      - 119
-      text_rgb:
-      - 30
-      - 34
-      - 42
-      text_stroke_rgb:
-      - 255
-      - 255
-      - 255
 prompt:
   shared:
     bundle_id: three_d_room_v1

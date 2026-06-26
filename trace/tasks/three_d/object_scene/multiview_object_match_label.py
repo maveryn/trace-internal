@@ -27,6 +27,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
+from ..shared.canvas import render_params_canvas_metadata
 from ..shared.color_variation import resolve_three_d_object_fill_rgb
 from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
@@ -607,6 +608,7 @@ class ThreeDSpatialMultiviewObjectMatchLabelTask:
                 "scene_canvas_width": int(render_params.canvas_width),
                 "scene_canvas_height": int(render_params.canvas_height),
                 "scene_canvas_policy": str(render_params.canvas_policy),
+                **render_params_canvas_metadata(render_params),
                 "final_canvas_width": int(image.width),
                 "final_canvas_height": int(image.height),
                 "final_canvas_pixels": int(image.width) * int(image.height),

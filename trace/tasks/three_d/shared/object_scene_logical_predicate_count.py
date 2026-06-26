@@ -55,7 +55,6 @@ from .object_scene import (
 SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID = "task_three_d__object_scene__single_attribute_membership_count"
 MULTI_ATTRIBUTE_AND_COUNT_TASK_ID = "task_three_d__object_scene__multi_attribute_and_count"
 MULTI_ATTRIBUTE_OR_COUNT_TASK_ID = "task_three_d__object_scene__multi_attribute_or_count"
-MULTI_ATTRIBUTE_XOR_COUNT_TASK_ID = "task_three_d__object_scene__multi_attribute_xor_count"
 MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID = "task_three_d__object_scene__multi_attribute_exclusion_count"
 TASK_ID = SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID
 SOURCE_ID = "three_d_object_scene_logical_predicate_count_source"
@@ -66,7 +65,6 @@ SINGLE_ATTRIBUTE_QUERY_IDS: Tuple[str, ...] = (
 )
 MULTI_ATTRIBUTE_AND_QUERY_IDS: Tuple[str, ...] = ("object_type_and_color_count",)
 MULTI_ATTRIBUTE_OR_QUERY_IDS: Tuple[str, ...] = ("object_type_or_color_count",)
-MULTI_ATTRIBUTE_XOR_QUERY_IDS: Tuple[str, ...] = ("exactly_one_object_type_or_color_count",)
 MULTI_ATTRIBUTE_EXCLUSION_QUERY_IDS: Tuple[str, ...] = (
     "object_type_and_not_color_count",
     "color_and_not_object_type_count",
@@ -75,7 +73,6 @@ SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
     *SINGLE_ATTRIBUTE_QUERY_IDS,
     "object_type_and_color_count",
     "object_type_or_color_count",
-    "exactly_one_object_type_or_color_count",
     "object_type_and_not_color_count",
     "color_and_not_object_type_count",
 )
@@ -180,8 +177,6 @@ def _target_spec_matches_key(target_spec: Mapping[str, Any], key: Tuple[str, str
         return str(shape_type) == str(target_shape_type) and str(color_name) == str(target_color_name)
     if query_id == "object_type_or_color_count":
         return str(shape_type) == str(target_shape_type) or str(color_name) == str(target_color_name)
-    if query_id == "exactly_one_object_type_or_color_count":
-        return (str(shape_type) == str(target_shape_type)) ^ (str(color_name) == str(target_color_name))
     if query_id == "object_type_and_not_color_count":
         return str(shape_type) == str(target_shape_type) and str(color_name) != str(target_color_name)
     if query_id == "color_and_not_object_type_count":
@@ -209,8 +204,6 @@ def _target_property_phrase(target_spec: Mapping[str, Any], *, count: int | None
         return f"{target_color_name} {object_noun}"
     if query_id == "object_type_or_color_count":
         return f"{target_object_plural} or {target_color_name} {noun}"
-    if query_id == "exactly_one_object_type_or_color_count":
-        return f"{noun} that are either {target_object_plural} or {target_color_name}, but not both"
     if query_id == "object_type_and_not_color_count":
         return f"{target_object_plural} that are not {target_color_name}"
     if query_id == "color_and_not_object_type_count":
@@ -525,7 +518,6 @@ def _predicate_logic_load(query_id: str) -> float:
         "color_union_count": 0.42,
         "object_type_and_color_count": 0.46,
         "object_type_or_color_count": 0.70,
-        "exactly_one_object_type_or_color_count": 0.88,
         "object_type_and_not_color_count": 0.72,
         "color_and_not_object_type_count": 0.72,
     }.get(str(query_id), 0.55)
@@ -993,8 +985,6 @@ __all__ = [
     "MULTI_ATTRIBUTE_EXCLUSION_QUERY_IDS",
     "MULTI_ATTRIBUTE_OR_COUNT_TASK_ID",
     "MULTI_ATTRIBUTE_OR_QUERY_IDS",
-    "MULTI_ATTRIBUTE_XOR_COUNT_TASK_ID",
-    "MULTI_ATTRIBUTE_XOR_QUERY_IDS",
     "SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID",
     "SINGLE_ATTRIBUTE_QUERY_IDS",
     "_ThreeDSpatialLogicalPredicateCountBase",

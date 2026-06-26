@@ -22,6 +22,7 @@ from .relations import (
     build_total_sequence,
     build_type_and_color_sequence,
     build_type_membership_sequence,
+    build_xor_sequence,
     color_support,
     resolve_color_choice,
     resolve_composition_mode,
@@ -419,7 +420,7 @@ def build_count_request(
         scene_kind = "three_d_object_cluster_instance_count"
         extra_trace = {"cluster_composition_mode": str(composition_mode), "distractor_count": int(count_record["distractor_count"]), "cluster_object_pool_size": len(NAMED_CLUSTER_SHAPE_TYPES)}
         count_probabilities.update({**dict(count_record), "composition_mode_probabilities": dict(composition_probabilities), "target_shape_probabilities": dict(shape_probabilities), "cluster_object_pool_size": len(NAMED_CLUSTER_SHAPE_TYPES)})
-    elif str(mode) in {"type_color", "color_membership", "type_or_color", "type_without_color", "color_without_type"}:
+    elif str(mode) in {"type_color", "color_membership", "type_or_color", "type_xor_color", "type_without_color", "color_without_type"}:
         object_count, object_probabilities = resolve_uniform_count(params=params, explicit_key="object_count", minimum=int(gen_defaults.get("object_count_min", 16)), maximum=int(gen_defaults.get("object_count_max", 30)), instance_seed=int(instance_seed), namespace=f"{namespace}.object_count")
         target_min = int(gen_defaults.get("target_count_min", 2))
         target_max = min(int(gen_defaults.get("target_count_max", 12)), max(1, int(object_count) - 4))
@@ -435,6 +436,8 @@ def build_count_request(
                 sequence, target = build_type_and_color_sequence(shape_type=str(target_shape), color_name=str(target_color), target_count=int(target_count), object_count=int(object_count), rng=rng)
             elif str(mode) == "type_or_color":
                 sequence, target = build_or_sequence(shape_type=str(target_shape), color_name=str(target_color), target_count=int(target_count), object_count=int(object_count), rng=rng)
+            elif str(mode) == "type_xor_color":
+                sequence, target = build_xor_sequence(shape_type=str(target_shape), color_name=str(target_color), target_count=int(target_count), object_count=int(object_count), rng=rng)
             else:
                 sequence, target = build_exclusion_sequence(mode=str(mode), shape_type=str(target_shape), color_name=str(target_color), target_count=int(target_count), object_count=int(object_count), rng=rng)
         answer_value = int(target_count)

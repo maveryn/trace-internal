@@ -19,6 +19,7 @@
       "object_cluster_color_count_query": ["", "", "", "", ""],
       "object_cluster_counterfactual_count_query": ["", "", "", "", ""],
       "object_cluster_multi_attribute_or_count_query": ["", "", "", "", ""],
+      "object_cluster_multi_attribute_xor_count_query": ["", "", "", "", ""],
       "object_cluster_multi_attribute_exclusion_count_query": ["", "", "", "", ""],
       "object_cluster_count_arithmetic_query": ["", "", "", "", ""]
     },
@@ -64,6 +65,13 @@
         "What is the number of objects matching either condition: {target_object_plural} or {target_color_name} objects?",
         "How many objects are {target_object_plural} or {target_color_name} objects? Count overlaps once.",
         "How many clustered objects satisfy at least one condition: it is a {target_object_name}, or it is {target_color_name}?"
+      ],
+      "type_xor_color_count": [
+        "How many objects are exactly one of these: {target_object_plural} or {target_color_name} objects?",
+        "Count every clustered object that is a {target_object_name} or is {target_color_name}, but not both. How many are there?",
+        "What is the number of objects matching exactly one condition: {target_object_plural} or {target_color_name} objects?",
+        "How many objects are {target_object_plural} or {target_color_name} objects, excluding objects that are both?",
+        "How many clustered objects satisfy exactly one condition: it is a {target_object_name}, or it is {target_color_name}?"
       ],
       "type_and_not_color_count": [
         "How many {target_object_plural} in the cluster are not {target_color_name}?",
@@ -168,6 +176,7 @@
     "query:color_count": ["target_color_name"],
     "query:attribute_count_after_edit": ["edit_instruction", "target_property_phrase"],
     "query:type_or_color_count": ["target_object_plural", "target_object_name", "target_color_name"],
+    "query:type_xor_color_count": ["target_object_plural", "target_object_name", "target_color_name"],
     "query:type_and_not_color_count": ["target_object_plural", "target_color_name"],
     "query:color_and_not_type_count": ["target_color_name", "target_object_plural", "target_object_name"],
     "query:two_type_total_count": ["left_operand_phrase", "right_operand_phrase"],

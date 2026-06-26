@@ -24,6 +24,7 @@ from trace.tasks.three_d.object_cluster.multi_attribute_exclusion_count import (
     TASK_ID as MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
 )
 from trace.tasks.three_d.object_cluster.multi_attribute_or_count import TASK_ID as MULTI_ATTRIBUTE_OR_COUNT_TASK_ID
+from trace.tasks.three_d.object_cluster.multi_attribute_xor_count import TASK_ID as MULTI_ATTRIBUTE_XOR_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.shared.defaults import (
     COLOR_READOUT_CLUSTER_SHAPE_TYPES,
     COLOR_SAFE_CLUSTER_SHAPE_TYPES,
@@ -781,6 +782,50 @@ def test_object_cluster_multi_attribute_or_count_counts_overlap_once() -> None:
     assert any(str(spec["shape_type"]) == "cube" and str(spec["color_name"]) == "red" for spec in object_specs)
 
 
+def test_object_cluster_multi_attribute_xor_count_excludes_overlap() -> None:
+    task = create_task(MULTI_ATTRIBUTE_XOR_COUNT_TASK_ID)
+    output = task.generate(
+        20260626,
+        params={
+            "query_id": "single",
+            "scene_variant": "tabletop_pile",
+            "object_count": 20,
+            "target_count": 6,
+            "target_shape_type": "cube",
+            "target_color_name": "red",
+            "post_image_noise_apply_prob": 0.0,
+        },
+        max_attempts=300,
+    )
+
+    trace = output.trace_payload["execution_trace"]
+    render_map = output.trace_payload["render_map"]
+    object_specs = list(trace["object_specs"])
+    target_object_ids = [str(object_id) for object_id in trace["target_object_ids"]]
+    expected_ids = [
+        str(spec["object_id"])
+        for spec in sorted(object_specs, key=lambda item: str(item["object_id"]))
+        if (str(spec["shape_type"]) == "cube") ^ (str(spec["color_name"]) == "red")
+    ]
+
+    assert output.scene_id == "object_cluster"
+    assert output.query_id == "single"
+    assert trace["internal_query_id"] == "type_xor_color_count"
+    assert output.answer_gt.value == len(expected_ids) == 6
+    assert output.annotation_gt.type == "bbox_set"
+    assert target_object_ids == expected_ids
+    assert output.annotation_gt.value == [render_map["object_bboxes_px"][object_id] for object_id in target_object_ids]
+    assert any(str(spec["count_role"]) == "excluded_overlap" for spec in object_specs)
+    assert any(str(spec["shape_type"]) == "cube" and str(spec["color_name"]) == "red" for spec in object_specs)
+    assert all(
+        bool(spec["matches_query"]) == ((str(spec["shape_type"]) == "cube") ^ (str(spec["color_name"]) == "red"))
+        for spec in object_specs
+    )
+    assert semantic_color_label("red") in output.prompt
+    assert "not both" in output.prompt.lower() or "excluding objects that are both" in output.prompt.lower() or "exactly one" in output.prompt.lower()
+    assert_three_d_canvas_contract(output)
+
+
 def test_object_cluster_multi_attribute_exclusion_count_answer_and_annotation() -> None:
     task = create_task(MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID)
     output = task.generate(
@@ -855,6 +900,7 @@ def test_object_cluster_first_wave_tasks_registered_in_three_d_taxonomy() -> Non
         COLOR_MEMBERSHIP_COUNT_TASK_ID,
         COUNTERFACTUAL_COUNT_TASK_ID,
         MULTI_ATTRIBUTE_OR_COUNT_TASK_ID,
+        MULTI_ATTRIBUTE_XOR_COUNT_TASK_ID,
         MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
         COUNT_ARITHMETIC_TASK_ID,
     ):

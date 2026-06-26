@@ -13,7 +13,6 @@ from trace.tasks.three_d.shared.object_scene_logical_predicate_count import (
     MULTI_ATTRIBUTE_AND_COUNT_TASK_ID,
     MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
     MULTI_ATTRIBUTE_OR_COUNT_TASK_ID,
-    MULTI_ATTRIBUTE_XOR_COUNT_TASK_ID,
     PROMPT_COLOR_RGB,
     SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID,
 )
@@ -25,7 +24,6 @@ TASK_ID_BY_QUERY_ID = {
     "color_union_count": SINGLE_ATTRIBUTE_MEMBERSHIP_COUNT_TASK_ID,
     "object_type_and_color_count": MULTI_ATTRIBUTE_AND_COUNT_TASK_ID,
     "object_type_or_color_count": MULTI_ATTRIBUTE_OR_COUNT_TASK_ID,
-    "exactly_one_object_type_or_color_count": MULTI_ATTRIBUTE_XOR_COUNT_TASK_ID,
     "object_type_and_not_color_count": MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
     "color_and_not_object_type_count": MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
 }
@@ -59,8 +57,6 @@ def _spec_matches_target(spec: dict, target_spec: dict) -> bool:
         return shape_type == str(target_shape_type) and color_name == str(target_color_name)
     if query_id == "object_type_or_color_count":
         return shape_type == str(target_shape_type) or color_name == str(target_color_name)
-    if query_id == "exactly_one_object_type_or_color_count":
-        return (shape_type == str(target_shape_type)) ^ (color_name == str(target_color_name))
     if query_id == "object_type_and_not_color_count":
         return shape_type == str(target_shape_type) and color_name != str(target_color_name)
     if query_id == "color_and_not_object_type_count":
@@ -76,7 +72,6 @@ def _spec_matches_target(spec: dict, target_spec: dict) -> bool:
         ("color_union_count", {"target_color_names": ["red", "blue"]}),
         ("object_type_and_color_count", {"target_shape_type": "cube", "target_color_name": "red"}),
         ("object_type_or_color_count", {"target_shape_type": "cube", "target_color_name": "red"}),
-        ("exactly_one_object_type_or_color_count", {"target_shape_type": "cube", "target_color_name": "red"}),
         ("object_type_and_not_color_count", {"target_shape_type": "cube", "target_color_name": "red"}),
         ("color_and_not_object_type_count", {"target_shape_type": "cube", "target_color_name": "red"}),
     ],

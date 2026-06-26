@@ -183,13 +183,6 @@
         "Looking across the scene objects, how many are {target_object_plural} or {target_color_name} objects? Count overlaps once.",
         "How many objects satisfy at least one of these conditions: it is a {target_object_name}, or it is {target_color_name}?"
       ],
-      "exactly_one_object_type_or_color_count": [
-        "How many objects are either {target_object_plural} or {target_color_name} objects, but not both?",
-        "Count the objects satisfying exactly one condition: being a {target_object_name}, or being {target_color_name}. How many are there?",
-        "What is the number of objects that are {target_object_plural} or {target_color_name} objects, excluding objects that are both?",
-        "Looking across the scene objects, how many match exactly one of these: {target_object_plural}, {target_color_name} objects?",
-        "How many objects satisfy one but not both conditions: it is a {target_object_name}; it is {target_color_name}?"
-      ],
       "object_type_and_not_color_count": [
         "How many {target_object_plural} are not {target_color_name}?",
         "Count the {target_object_plural} that are any color except {target_color_name}. How many are there?",
@@ -530,11 +523,6 @@
       "target_object_plural"
     ],
     "query:object_type_or_color_count": [
-      "target_object_plural",
-      "target_color_name",
-      "target_object_name"
-    ],
-    "query:exactly_one_object_type_or_color_count": [
       "target_object_plural",
       "target_color_name",
       "target_object_name"

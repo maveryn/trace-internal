@@ -569,6 +569,46 @@ def build_or_sequence(
     )
 
 
+def build_xor_sequence(
+    *,
+    shape_type: str,
+    color_name: str,
+    target_count: int,
+    object_count: int,
+    rng,
+) -> tuple[list[ClusterSequenceItem], PredicateTarget]:
+    """Build an exclusive OR set: target type or target color, but not both."""
+
+    if int(target_count) < 2:
+        raise ValueError("exclusive OR count needs at least two targets")
+    wrong_shapes = list(compatible_distractor_pool(str(shape_type), support=color_readout_shape_support()))
+    wrong_colors = list(readout_color_support(anchors=(str(color_name),)))
+    sequence: list[ClusterSequenceItem] = []
+    while len(sequence) < int(target_count):
+        if len(sequence) % 2 == 0:
+            sequence.append(ClusterSequenceItem(str(shape_type), str(rng.choice(wrong_colors)), True, "target_type_only"))
+        else:
+            sequence.append(ClusterSequenceItem(str(rng.choice(wrong_shapes)), str(color_name), True, "target_color_only"))
+    if len(sequence) < int(object_count):
+        sequence.append(ClusterSequenceItem(str(shape_type), str(color_name), False, "excluded_overlap"))
+    while len(sequence) < int(object_count):
+        sequence.append(ClusterSequenceItem(str(rng.choice(wrong_shapes)), str(rng.choice(wrong_colors)), False, "distractor"))
+    rng.shuffle(sequence)
+    name = object_name_for_shape(str(shape_type))
+    plural = object_plural(str(name))
+    return sequence, PredicateTarget(
+        mode="by_exactly_one_type_or_color",
+        target_shape_type=str(shape_type),
+        target_color_name=str(color_name),
+        target_object_name=str(name),
+        target_object_plural=str(plural),
+        target_property_phrase=f"exactly one of {plural} or {color_name} objects",
+        extras={
+            "target_property_prompt_phrase": f"exactly one of {plural} or {semantic_color_label(str(color_name))} objects"
+        },
+    )
+
+
 def build_exclusion_sequence(
     *,
     mode: str,
@@ -760,6 +800,7 @@ __all__ = [
     "build_color_membership_sequence",
     "build_exclusion_sequence",
     "build_or_sequence",
+    "build_xor_sequence",
     "build_total_sequence",
     "build_type_and_color_sequence",
     "build_type_membership_sequence",

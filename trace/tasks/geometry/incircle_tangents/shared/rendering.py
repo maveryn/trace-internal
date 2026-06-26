@@ -282,6 +282,7 @@ def _render_incircle_scene(ctx: RenderContext, spec: IncircleDiagramSpec) -> Ren
     return RenderedIncircleScene(
         image=ctx.image,
         label_bboxes=dict(label_bboxes),
+        annotation_points={key: tuple(value) for key, value in point_layout.items()},
         scene_entities=scene_entities,
         render_map=render_map,
         annotation_roles=tuple(spec.annotation_roles),

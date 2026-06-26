@@ -91,6 +91,7 @@ class RenderedIncircleScene:
 
     image: Image.Image
     label_bboxes: Dict[str, BBox]
+    annotation_points: Dict[str, Point]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
     annotation_roles: Tuple[str, ...]

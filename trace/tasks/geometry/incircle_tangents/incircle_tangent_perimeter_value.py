@@ -16,7 +16,7 @@ from .shared.state import IncircleDiagramSpec
 TASK_ID = "task_geometry__incircle_tangents__incircle_tangent_perimeter_value"
 SUPPORTED_QUERY_IDS: tuple[str, ...] = ("single",)
 INTERNAL_QUERY_ID = "triangle_perimeter_from_tangent_segments"
-ANNOTATION_ROLES: tuple[str, ...] = ("AD", "BE", "CF")
+ANNOTATION_ROLES: tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 
 _CASES_BY_ANSWER = group_cases_by_answer(
     cases=all_tangent_triangle_cases(),

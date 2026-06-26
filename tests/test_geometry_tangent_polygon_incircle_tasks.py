@@ -35,11 +35,11 @@ def test_tangent_polygon_incircle_tasks_emit_public_contract(task_cls) -> None:
     assert out.query_id == "single"
     if task_cls is GeometryIncircleTangentPerimeterValueTask:
         assert out.answer_gt.type == "integer"
-        assert set(out.annotation_gt.value) == {"AD", "BE", "CF"}
+        assert set(out.annotation_gt.value) == {"A", "B", "C", "D", "E", "F"}
     else:
         assert out.answer_gt.type == "number"
-        assert set(out.annotation_gt.value) == {"AD", "BE", "CF"}
-    assert out.annotation_gt.type == "bbox_map"
+        assert set(out.annotation_gt.value) == {"A", "B", "C", "D", "E", "F", "O"}
+    assert out.annotation_gt.type == "point_map"
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
@@ -48,7 +48,8 @@ def test_tangent_polygon_incircle_tasks_emit_public_contract(task_cls) -> None:
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
     assert trace["execution_trace"]["internal_query_id"] == INTERNAL_QUERY_BY_TASK[task_cls]
-    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["type"] == "point_map"
+    assert trace["projected_annotation"]["point_map"] == out.annotation_gt.value
     assert trace["execution_trace"]["semiperimeter"] > 0
     assert trace["execution_trace"]["area"] > 0
     if task_cls is GeometryIncircleTangentPerimeterValueTask:
@@ -105,11 +106,9 @@ def test_tangent_polygon_incircle_annotation_stays_inside_canvas(task_cls) -> No
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.annotation_gt.value.values():
-            assert 0.0 <= x0 < x1 <= float(width)
-            assert 0.0 <= y0 < y1 <= float(height)
-            assert (x1 - x0) > 8.0
-            assert (y1 - y0) > 8.0
+        for x, y in out.annotation_gt.value.values():
+            assert 0.0 <= x <= float(width)
+            assert 0.0 <= y <= float(height)
 
 
 def test_tangent_polygon_incircle_tasks_reject_unknown_query_id() -> None:

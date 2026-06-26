@@ -2,18 +2,18 @@
 
 from __future__ import annotations
 
-from trace.tasks.geometry.shared.annotation_values import PixelAnnotationArtifacts, keyed_bbox_annotation_artifacts
+from trace.tasks.geometry.shared.annotation_values import PixelAnnotationArtifacts, keyed_point_annotation_artifacts
 
 from .state import RenderedIncircleScene
 
 
-def incircle_label_bbox_annotation(rendered: RenderedIncircleScene) -> PixelAnnotationArtifacts:
-    """Build keyed bbox annotation for task-selected visible labels."""
+def incircle_point_annotation(rendered: RenderedIncircleScene) -> PixelAnnotationArtifacts:
+    """Build keyed point annotation for task-selected construction points."""
 
-    return keyed_bbox_annotation_artifacts(
-        rendered.label_bboxes,
+    return keyed_point_annotation_artifacts(
+        rendered.annotation_points,
         roles=rendered.annotation_roles,
     )
 
 
-__all__ = ["incircle_label_bbox_annotation"]
+__all__ = ["incircle_point_annotation"]

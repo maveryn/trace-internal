@@ -12,7 +12,7 @@ from trace.tasks.geometry.shared.annotation_values import PixelAnnotationArtifac
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import PromptTraceArtifacts
 
-from .annotations import incircle_label_bbox_annotation
+from .annotations import incircle_point_annotation
 from .defaults import POST_IMAGE_NOISE_DEFAULTS
 from .prompts import incircle_prompt_artifacts
 from .rendering import render_incircle_scene_with_retries
@@ -66,7 +66,7 @@ def prepare_incircle_task_parts(
         prompt_query_key=str(prompt_key),
         instance_seed=int(instance_seed),
     )
-    annotation_artifacts = incircle_label_bbox_annotation(rendered)
+    annotation_artifacts = incircle_point_annotation(rendered)
     return IncircleTaskParts(
         prompt=str(prompt_artifacts.prompt),
         prompt_variants=dict(prompt_artifacts.prompt_variants),

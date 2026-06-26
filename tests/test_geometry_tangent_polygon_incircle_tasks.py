@@ -35,10 +35,10 @@ def test_tangent_polygon_incircle_tasks_emit_public_contract(task_cls) -> None:
     assert out.query_id == "single"
     if task_cls is GeometryIncircleTangentPerimeterValueTask:
         assert out.answer_gt.type == "integer"
-        assert set(out.annotation_gt.value) == {"AD_AF", "BD_BE", "CE_CF"}
+        assert set(out.annotation_gt.value) == {"AD", "BE", "CF"}
     else:
         assert out.answer_gt.type == "number"
-        assert set(out.annotation_gt.value) == {"AD_AF", "BD_BE", "CE_CF"}
+        assert set(out.annotation_gt.value) == {"AD", "BE", "CF"}
     assert out.annotation_gt.type == "bbox_map"
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]

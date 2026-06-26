@@ -82,15 +82,15 @@
       "object_description": "triangle ABC with an incircle tangent to all three sides and labeled equal tangent segments"
     },
     "task:incircle_tangent_perimeter_value_query": {
-      "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible label-box keys: \"AD_AF\", \"BD_BE\", \"CE_CF\"; each value must be that label's pixel box [x0,y0,x1,y1]",
+      "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible label-box keys: \"AD\", \"BE\", \"CF\"; each value must be that label's pixel box [x0,y0,x1,y1]",
       "answer_hint": "set \"answer\" to the perimeter as an integer",
-      "json_example": "{\"annotation\":{\"AD_AF\":[104,421,203,447],\"BD_BE\":[540,421,639,447],\"CE_CF\":[311,55,410,81]},\"answer\":42}",
+      "json_example": "{\"annotation\":{\"AD\":[104,421,170,447],\"BE\":[540,421,606,447],\"CF\":[311,55,377,81]},\"answer\":42}",
       "json_example_answer_only": "{\"answer\":42}"
     },
     "task:incircle_radius_from_area_value_query": {
-      "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible label-box keys: \"AD_AF\", \"BD_BE\", \"CE_CF\"; each value must be that label's pixel box [x0,y0,x1,y1]",
+      "annotation_hint": "set \"annotation\" to a JSON object with exactly these visible label-box keys: \"AD\", \"BE\", \"CF\"; each value must be that label's pixel box [x0,y0,x1,y1]",
       "answer_hint": "set \"answer\" to the incircle radius rounded to one decimal place",
-      "json_example": "{\"annotation\":{\"AD_AF\":[104,421,203,447],\"BD_BE\":[540,421,639,447],\"CE_CF\":[311,55,410,81]},\"answer\":4.2}",
+      "json_example": "{\"annotation\":{\"AD\":[104,421,170,447],\"BE\":[540,421,606,447],\"CF\":[311,55,377,81]},\"answer\":4.2}",
       "json_example_answer_only": "{\"answer\":4.2}"
     },
     "output:answer_only": {

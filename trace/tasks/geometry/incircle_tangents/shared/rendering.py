@@ -218,9 +218,9 @@ def _render_incircle_scene(ctx: RenderContext, spec: IncircleDiagramSpec) -> Ren
     _draw_tick(ctx, c, f, count=3, color=ctx.accent_color)
 
     label_bboxes: Dict[str, tuple[float, float, float, float]] = {
-        "AD_AF": draw_label(ctx, f"AD=AF={fmt_measure(spec.tangent_a)}", (a[0] - 4.0, a[1] + 54.0), small=True),
-        "BD_BE": draw_label(ctx, f"BD=BE={fmt_measure(spec.tangent_b)}", (b[0] + 8.0, b[1] + 54.0), small=True),
-        "CE_CF": draw_label(ctx, f"CE=CF={fmt_measure(spec.tangent_c)}", (c[0], c[1] - 52.0), small=True),
+        "AD": draw_label(ctx, f"AD={fmt_measure(spec.tangent_a)}", (a[0] - 4.0, a[1] + 54.0), small=True),
+        "BE": draw_label(ctx, f"BE={fmt_measure(spec.tangent_b)}", (b[0] + 8.0, b[1] + 54.0), small=True),
+        "CF": draw_label(ctx, f"CF={fmt_measure(spec.tangent_c)}", (c[0], c[1] - 52.0), small=True),
     }
     if spec.show_area_label:
         label_bboxes["area"] = draw_label(ctx, f"Area={fmt_measure(spec.displayed_area)}", (596.0, 96.0), small=True)

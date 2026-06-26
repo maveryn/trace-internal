@@ -86,11 +86,21 @@ def regular_polygon(
 def concave_polygon(
     center: Point, sides: int, radius: float, rng: Random
 ) -> tuple[Point, ...]:
-    """Return a simple concave polygon for convexity counting."""
+    """Return a visually clear inward-notch polygon for convexity counting."""
 
-    pts = list(regular_polygon(center, int(sides), float(radius), phase=0.3))
-    notch_index = int(rng.randrange(0, len(pts)))
+    del sides
     cx, cy = float(center[0]), float(center[1])
-    x, y = pts[notch_index]
-    pts[notch_index] = ((x + cx) / 2.0, (y + cy) / 2.0)
-    return tuple(pts)
+    scale = float(radius)
+    points = [
+        (-1.0, -0.85),
+        (1.0, -0.85),
+        (-0.2, 0.0),
+        (1.0, 0.85),
+        (-1.0, 0.85),
+    ]
+    if int(rng.randrange(0, 2)) == 1:
+        points = [(-x, y) for x, y in points]
+    quarter_turns = int(rng.randrange(0, 4))
+    for _ in range(quarter_turns):
+        points = [(-y, x) for x, y in points]
+    return tuple((cx + (scale * x), cy + (scale * y)) for x, y in points)

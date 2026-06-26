@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from random import Random
 
 import pytest
 
@@ -23,6 +24,7 @@ from trace.tasks.geometry.graph_paper.polygon_area_value import GeometryGraphPap
 from trace.tasks.geometry.graph_paper.polygon_convexity_count import GeometryGraphPaperPolygonConvexityCountTask
 from trace.tasks.geometry.graph_paper.polygon_perimeter_value import GeometryGraphPaperPolygonPerimeterValueTask
 from trace.tasks.geometry.graph_paper.quadrilateral_type_count import GeometryGraphPaperQuadrilateralTypeCountTask
+from trace.tasks.geometry.graph_paper.shared.construction import concave_polygon
 from trace.tasks.geometry.graph_paper.shared.state import LABEL_POOL
 from trace.tasks.geometry.graph_paper.shape_type_count import GeometryGraphPaperShapeTypeCountTask
 from trace.tasks.geometry.graph_paper.triangle_type_count import GeometryGraphPaperTriangleTypeCountTask
@@ -214,6 +216,27 @@ def _assert_lattice_point(point: object) -> None:
     x, y = point
     assert float(x).is_integer()
     assert float(y).is_integer()
+
+
+def _has_concave_turn(points: object) -> bool:
+    pts = [(float(x), float(y)) for x, y in points]
+    signs: set[int] = set()
+    for index, point in enumerate(pts):
+        next_point = pts[(index + 1) % len(pts)]
+        after_next = pts[(index + 2) % len(pts)]
+        cross = (
+            (next_point[0] - point[0]) * (after_next[1] - next_point[1])
+            - (next_point[1] - point[1]) * (after_next[0] - next_point[0])
+        )
+        if abs(cross) > 1e-6:
+            signs.add(1 if cross > 0 else -1)
+    return len(signs) > 1
+
+
+def test_geometry_graph_paper_concave_polygon_has_clear_inward_notch() -> None:
+    for seed in range(20):
+        points = concave_polygon((0.0, 0.0), 5, 0.95, Random(seed))
+        assert _has_concave_turn(points)
 
 
 def _assert_all_graph_points_are_lattice(output) -> None:

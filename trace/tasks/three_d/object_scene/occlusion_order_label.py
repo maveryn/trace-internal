@@ -18,7 +18,6 @@ from ...shared.config_defaults import (
 from ...shared.deterministic_sampling import resolve_selection_index
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
-from ..shared.object_resources import SPATIAL_OCCLUSION_REFERENCE_SHAPE_TYPES
 from ..shared.object_scene import (
     NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
     POINT_LABELS,
@@ -28,6 +27,7 @@ from ..shared.object_scene import (
     _bbox_intersection_area,
     _build_projection_frame,
     _camera_yaw_band_for_instance,
+    _make_object_spec,
     _min_pairwise,
     _object_reference_points,
     _object_screen_bbox,
@@ -43,9 +43,37 @@ from .shared.relations import set_xy as _set_xy
 
 
 TASK_ID = "task_three_d__object_scene__occlusion_order_label"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("in_front_of_reference",)
-REFERENCE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_OCCLUSION_REFERENCE_SHAPE_TYPES
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("occludes_reference",)
+REFERENCE_SHAPE_TYPES: Tuple[str, ...] = ("platform",)
+REFERENCE_DIMENSIONS_BY_SHAPE: Dict[str, Tuple[float, float, float]] = {
+    "platform": (1.86, 1.12, 1.18),
+}
 SMALL_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMEABLE_SMALL_OBJECT_SHAPE_TYPES)
+
+
+def _make_occlusion_reference_spec(*, rng, shape_type: str, xy: Tuple[float, float]) -> Dict[str, Any]:
+    """Create a solid reference prop with a broad face for visible occlusion."""
+    base_dimensions = REFERENCE_DIMENSIONS_BY_SHAPE[str(shape_type)]
+    scale = float(rng.uniform(0.94, 1.10))
+    spec = _make_object_spec(
+        object_id=f"reference_{shape_type}",
+        shape_type=str(shape_type),
+        object_role="context",
+        xy=xy,
+        dimensions_xyz=tuple(round(float(value) * scale, 4) for value in base_dimensions),
+        dimension_scale=round(float(scale), 4),
+    )
+    spec.update(
+        {
+            "object_name": "platform",
+            "prompt_name": "platform",
+            "nameable_for_prompt": True,
+            "occlusion_reference_role": "solid_platform",
+        }
+    )
+    return spec
+
+
 def _bbox_area(bbox: Sequence[float]) -> float:
     return max(0.0, float(bbox[2]) - float(bbox[0])) * max(0.0, float(bbox[3]) - float(bbox[1]))
 def _unit_towards_camera(reference_spec: Mapping[str, Any], camera) -> Tuple[float, float]:
@@ -110,7 +138,7 @@ def _build_occlusion_scene_dataset(
     answer_label_index: int | None = None,
     camera_yaw_band: Tuple[float, float] | None = None,
 ) -> Dict[str, Any]:
-    """Build an occlusion scene where projected overlap yields a unique frontmost or backmost labeled candidate."""
+    """Build an occlusion scene where projected overlap yields one unique visible blocker."""
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     label_selection_index = int(answer_label_index) if answer_label_index is not None else int(instance_seed)
     selected_camera_yaw_band = (
@@ -126,11 +154,9 @@ def _build_occlusion_scene_dataset(
         rng.shuffle(remaining_labels)
 
         reference_shape = str(rng.choice(REFERENCE_SHAPE_TYPES))
-        reference_spec = _make_sampled_object(
+        reference_spec = _make_occlusion_reference_spec(
             rng=rng,
-            object_id=f"reference_{reference_shape}",
             shape_type=reference_shape,
-            object_role="context",
             xy=(float(rng.uniform(-0.16, 0.16)), float(rng.uniform(-0.12, 0.18))),
         )
         if not bool(reference_spec.get("nameable_for_prompt", False)):
@@ -202,7 +228,7 @@ def _build_occlusion_scene_dataset(
         answer_depth_margin = float(reference_spec["camera_distance"]) - float(
             next(spec for spec in finalized_candidates if str(spec["point_label"]) == str(answer_label))["camera_distance"]
         )
-        if answer_overlap < 700.0 or answer_overlap_fraction < 0.10 or answer_depth_margin < 0.22:
+        if answer_overlap < 900.0 or answer_overlap_fraction < 0.12 or answer_depth_margin < 0.22:
             continue
 
         overlap_area_by_label: Dict[str, float] = {}
@@ -214,10 +240,10 @@ def _build_occlusion_scene_dataset(
             depth_margin = float(reference_spec["camera_distance"]) - float(spec["camera_distance"])
             overlap_area_by_label[label] = round(float(overlap_area), 4)
             depth_margin_by_label[label] = round(float(depth_margin), 4)
-            occlusion_status_by_label[label] = bool(overlap_area >= 500.0 and depth_margin >= 0.18)
+            occlusion_status_by_label[label] = bool(overlap_area >= 650.0 and depth_margin >= 0.18)
 
-        front_labels = [str(label) for label, is_front in sorted(occlusion_status_by_label.items()) if bool(is_front)]
-        if front_labels != [str(answer_label)]:
+        occluding_labels = [str(label) for label, is_occluding in sorted(occlusion_status_by_label.items()) if bool(is_occluding)]
+        if occluding_labels != [str(answer_label)]:
             continue
         if any(
             str(label) != str(answer_label) and float(overlap_area) > 300.0
@@ -266,6 +292,7 @@ def _build_occlusion_scene_dataset(
             "reference_object_id": str(reference_spec["object_id"]),
             "reference_object_name": _prompt_name(reference_spec),
             "reference_shape_type": str(reference_spec["shape_type"]),
+            "reference_occlusion_role": str(reference_spec.get("occlusion_reference_role", "")),
             "candidate_reference_overlap_area_by_label": dict(sorted(overlap_area_by_label.items())),
             "candidate_depth_margin_to_reference_by_label": dict(sorted(depth_margin_by_label.items())),
             "occlusion_status_by_label": dict(sorted(occlusion_status_by_label.items())),
@@ -288,19 +315,20 @@ def _build_occlusion_scene_dataset(
                 "normalized_center_v": round(float(frame.normalized_center_v), 6),
             },
             "solver_trace": {
-                "sort_key": "projected_overlap_and_camera_distance",
+                "sort_key": "projected_occlusion_with_depth_order",
                 "candidate_only": True,
                 "reference_excluded_from_options": True,
                 "reference_object_id": str(reference_spec["object_id"]),
                 "reference_object_name": _prompt_name(reference_spec),
                 "reference_shape_type": str(reference_spec["shape_type"]),
+                "reference_occlusion_role": str(reference_spec.get("occlusion_reference_role", "")),
                 "candidate_reference_overlap_area_by_label": dict(sorted(overlap_area_by_label.items())),
                 "candidate_depth_margin_to_reference_by_label": dict(sorted(depth_margin_by_label.items())),
                 "occlusion_status_by_label": dict(sorted(occlusion_status_by_label.items())),
-                "front_of_reference_labels": list(front_labels),
-                "unique_front_answer": True,
-                "front_depth_margin": round(float(answer_depth_margin), 4),
-                "front_overlap_area": round(float(answer_overlap), 4),
+                "occluding_reference_labels": list(occluding_labels),
+                "unique_occlusion_answer": True,
+                "occluding_depth_margin": round(float(answer_depth_margin), 4),
+                "occluding_overlap_area": round(float(answer_overlap), 4),
             },
         }
     raise ValueError("could not construct a valid 3D occlusion-order scene")
@@ -323,7 +351,7 @@ _NOISE_DEFAULTS = _VISUAL_DEFAULTS.get("noise", {}) if isinstance(_VISUAL_DEFAUL
 
 @register_task
 class ThreeDSpatialOcclusionOrderLabelTask:
-    """Choose the lettered 3D object visually in front of a named reference object."""
+    """Choose the lettered 3D object that visibly occludes a named reference object."""
 
     task_id = TASK_ID
     supported_query_ids = SUPPORTED_QUERY_IDS
@@ -464,6 +492,7 @@ class ThreeDSpatialOcclusionOrderLabelTask:
                 "reference_object_id": str(dataset["reference_object_id"]),
                 "reference_object_name": str(dataset["reference_object_name"]),
                 "reference_shape_type": str(dataset["reference_shape_type"]),
+                "reference_occlusion_role": str(dataset["reference_occlusion_role"]),
                 "occlusion_status_by_label": dict(dataset["occlusion_status_by_label"]),
                 "candidate_reference_overlap_area_by_label": dict(dataset["candidate_reference_overlap_area_by_label"]),
                 "candidate_depth_margin_to_reference_by_label": dict(dataset["candidate_depth_margin_to_reference_by_label"]),

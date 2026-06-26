@@ -10,7 +10,7 @@
 - Annotation schema: `bbox`
 
 ## Program Contract
-`select(label(candidate_objects, in_front_of(reference_object))); scene=object_scene; scope=occlusion_order_label`
+`select(label(candidate_objects, visibly_occludes(reference_object))); scene=object_scene; scope=occlusion_order_label`
 
 ## Contract
 The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
@@ -20,6 +20,8 @@ The verifier computes the answer from finalized scene metadata and projection re
 ## Annotation Contract
 Annotation is a scalar `bbox` around the selected visible object.
 The selected object is the only visual witness; option text is not annotation.
+
+The reference object is a solid platform-like prop so the requested evidence is visible occlusion, not an inferred camera-depth comparison. Candidate acceptance still uses finalized projection/depth metadata to guarantee that exactly one candidate visibly blocks part of the reference.
 
 ## Prompt And Trace
 The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.

@@ -42,7 +42,8 @@ def test_occlusion_order_answer_and_annotation() -> None:
     assert reference_id not in {str(spec["object_id"]) for spec in point_specs}
     assert reference_spec["nameable_for_prompt"]
     assert str(reference_spec["prompt_name"]) == str(trace["reference_object_name"])
-    assert str(reference_spec["shape_type"]) != "open_box"
+    assert str(reference_spec["shape_type"]) == "platform"
+    assert str(reference_spec["occlusion_reference_role"]) == "solid_platform"
     answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_labels[0])
     expected_bbox = output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
     assert output.annotation_gt.type == "bbox"
@@ -58,15 +59,15 @@ def test_occlusion_order_answer_and_annotation() -> None:
 
     overlap_by_label = dict(trace["candidate_reference_overlap_area_by_label"])
     depth_margin_by_label = dict(trace["candidate_depth_margin_to_reference_by_label"])
-    assert float(overlap_by_label[expected_labels[0]]) >= 500.0
+    assert float(overlap_by_label[expected_labels[0]]) >= 650.0
     assert float(depth_margin_by_label[expected_labels[0]]) >= 0.18
     assert all(
         float(overlap) <= 300.0
         for label, overlap in overlap_by_label.items()
         if str(label) != str(expected_labels[0])
     )
-    assert trace["solver_trace"]["front_of_reference_labels"] == expected_labels
-    assert trace["solver_trace"]["unique_front_answer"] is True
+    assert trace["solver_trace"]["occluding_reference_labels"] == expected_labels
+    assert trace["solver_trace"]["unique_occlusion_answer"] is True
 
 
 def test_occlusion_order_task_registered_in_three_d_taxonomy() -> None:

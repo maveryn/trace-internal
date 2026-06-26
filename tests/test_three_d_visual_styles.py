@@ -16,6 +16,22 @@ def _render_defaults(scene_id: str) -> dict:
     return dict(render_defaults)
 
 
+def test_three_d_surface_tone_pool_has_expected_light_dark_split() -> None:
+    dark_tones = {
+        "charcoal_concrete",
+        "deep_warehouse",
+        "midnight_steel",
+        "dark_sage_floor",
+        "graphite_plaster",
+    }
+
+    assert len(DEFAULT_THREE_D_SURFACE_TONES) == 25
+    assert dark_tones.issubset(set(DEFAULT_THREE_D_SURFACE_TONES))
+    assert len(set(DEFAULT_THREE_D_SURFACE_TONES) - dark_tones) == 20
+    for tone_id, tone in DEFAULT_THREE_D_SURFACE_TONES.items():
+        assert {"floor_rgb", "grid_rgb", "edge_rgb", "surface_accent_rgb", "text_rgb", "text_stroke_rgb"}.issubset(tone), tone_id
+
+
 def test_shared_three_d_surface_tones_cover_current_scene_renderers() -> None:
     resolvers = {
         "object_cluster": resolve_object_scene_render_params,
@@ -57,6 +73,38 @@ def test_surface_tone_override_stays_deterministic() -> None:
     assert render_params.background_tone_id == "pale_sand"
     assert render_params.floor_rgb == DEFAULT_THREE_D_SURFACE_TONES["pale_sand"]["floor_rgb"]
     assert render_params.grid_rgb == DEFAULT_THREE_D_SURFACE_TONES["pale_sand"]["grid_rgb"]
+
+
+def test_dark_surface_tone_override_uses_style_text_colors() -> None:
+    render_defaults = _render_defaults("conveyor")
+    render_params = resolve_object_scene_render_params(
+        {"background_tone_id": "charcoal_concrete"},
+        render_defaults=render_defaults,
+        instance_seed=17,
+        namespace="test.dark_override",
+    )
+    expected = DEFAULT_THREE_D_SURFACE_TONES["charcoal_concrete"]
+
+    assert render_params.background_tone_id == "charcoal_concrete"
+    assert render_params.floor_rgb == expected["floor_rgb"]
+    assert render_params.text_rgb == expected["text_rgb"]
+    assert render_params.text_stroke_rgb == expected["text_stroke_rgb"]
+
+
+def test_custom_floor_override_keeps_custom_text_defaults() -> None:
+    render_defaults = _render_defaults("conveyor")
+    render_params = resolve_object_scene_render_params(
+        {"floor_rgb": (12, 13, 14), "grid_rgb": (40, 41, 42)},
+        render_defaults=render_defaults,
+        instance_seed=19,
+        namespace="test.custom_floor",
+    )
+
+    assert render_params.background_tone_id == "custom"
+    assert render_params.floor_rgb == (12, 13, 14)
+    assert render_params.grid_rgb == (40, 41, 42)
+    assert render_params.text_rgb == (30, 34, 42)
+    assert render_params.text_stroke_rgb == (255, 255, 255)
 
 
 def test_conveyor_belt_styles_are_only_enabled_for_belt_scenes() -> None:

@@ -54,26 +54,6 @@ rendering:
     marker_radius_px: 22
     label_font_size_px: 24
     line_width_px: 2
-    floor_rgb:
-      - 242
-      - 246
-      - 248
-    grid_rgb:
-      - 184
-      - 197
-      - 207
-    edge_rgb:
-      - 88
-      - 104
-      - 120
-    text_rgb:
-      - 30
-      - 34
-      - 42
-    text_stroke_rgb:
-      - 255
-      - 255
-      - 255
     full_bleed_floor: true
     full_bleed_floor_extent_multiplier: 3.2
     enable_conveyor_belt_styles: true

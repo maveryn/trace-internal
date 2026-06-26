@@ -79,9 +79,12 @@ correct option, relation truth, or construction order unless explicitly queried.
 Neutral floor/canvas tone variation is domain-shared. Use
 `trace.tasks.three_d.shared.visual_styles.resolve_three_d_surface_tone` through
 the scene render-parameter resolver instead of hardcoding scene-local floor,
-grid, edge, or canvas colors. Conveyor-like belt scenes should use the shared
-named conveyor belt styles from the same module; belt style is render metadata,
-not a task/query axis.
+grid, edge, text, or canvas colors. The approved pool is intentionally subtle:
+20 light matte/studio/industrial tones and 5 dark graphite/warehouse tones.
+Each tone owns readable `text_rgb` and `text_stroke_rgb` values so dark
+treatments do not inherit light-scene label defaults. Conveyor-like belt scenes
+should use the shared named conveyor belt styles from the same module; belt
+style is render metadata, not a task/query axis.
 
 Object-cluster instances may apply a bounded per-object `orientation_deg`
 rendering jitter for visual variety. This value must be recorded in trace

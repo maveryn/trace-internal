@@ -15,7 +15,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Annotation must be a keyed point map with `angle_vertex`, `baseline_ray_point`, `target_ray_point`, and `protractor_reading_tick`.
+Prompt-facing annotation uses pixel-space witnesses only. Annotation must be a keyed point map with `angle_vertex` and `protractor_reading_tick`.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

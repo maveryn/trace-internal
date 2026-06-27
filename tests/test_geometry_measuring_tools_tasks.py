@@ -3,7 +3,7 @@ from __future__ import annotations
 from trace.tasks.registry import create_task
 
 LENGTH_KEYS = {"measure_start", "measure_end", "ruler_start_tick", "ruler_end_tick"}
-ANGLE_KEYS = {"angle_vertex", "baseline_ray_point", "target_ray_point", "protractor_reading_tick"}
+ANGLE_KEYS = {"angle_vertex", "protractor_reading_tick"}
 
 TASK_EXPECTATIONS = {
     "task_geometry__measuring_tools__shape_length_value_polygon_side_ruler_reading": {

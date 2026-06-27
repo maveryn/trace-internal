@@ -16,7 +16,7 @@ SUPPORTED_QUERY_IDS: tuple[str, ...] = ("single",)
 MEASUREMENT_KIND = "triangle_vertex_protractor_reading"
 PROMPT_TASK_KEY = "shape_angle_value_triangle_vertex_protractor_reading"
 OBJECT_DESCRIPTION = "a triangle with a protractor placed at the marked vertex angle"
-ANNOTATION_KEYS = ("angle_vertex", "baseline_ray_point", "target_ray_point", "protractor_reading_tick")
+ANNOTATION_KEYS = ("angle_vertex", "protractor_reading_tick")
 
 
 def _build_plan(instance_seed: int, params: Mapping[str, Any], gen_defaults: Mapping[str, Any]) -> AngleMeasurementPlan:

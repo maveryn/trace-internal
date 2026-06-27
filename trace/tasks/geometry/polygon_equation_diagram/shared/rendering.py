@@ -251,14 +251,33 @@ def render_polygon_equation_case(
     for side_label, text in sorted(case.side_labels.items()):
         side = _side_indices(labels, str(side_label))
         side_label_bboxes[str(side_label)] = _draw_side_label(ctx, points, side, str(text))
-    for side_label in case.equal_sides:
+    side_mark_counts = {
+        str(side_label): int(count)
+        for side_label, count in (
+            case.side_mark_counts.items()
+            if case.side_mark_counts
+            else {str(side_label): 1 for side_label in case.equal_sides}.items()
+        )
+    }
+    for side_label, mark_count in sorted(side_mark_counts.items()):
         side = _side_indices(labels, str(side_label))
-        marker_bboxes[f"equal_side_{side_label}"] = _draw_side_tick(ctx, points, side, count=1)
+        marker_bboxes[f"equal_side_{side_label}"] = _draw_side_tick(ctx, points, side, count=int(mark_count))
 
     angle_label_bboxes: dict[str, BBox] = {}
+    angle_mark_counts = {
+        str(vertex_label): int(count)
+        for vertex_label, count in (
+            case.angle_mark_counts.items()
+            if case.angle_mark_counts
+            else {
+                str(vertex_label): 2 if str(vertex_label) in set(case.equal_angles) else 1
+                for vertex_label in case.angle_labels
+            }.items()
+        )
+    }
     for vertex_label, text in sorted(case.angle_labels.items()):
         vertex_index = labels.index(str(vertex_label))
-        marker_count = 2 if str(vertex_label) in set(case.equal_angles) else 1
+        marker_count = int(angle_mark_counts.get(str(vertex_label), 1))
         arc_bbox, label_bbox = _draw_angle_marker(
             ctx,
             points,

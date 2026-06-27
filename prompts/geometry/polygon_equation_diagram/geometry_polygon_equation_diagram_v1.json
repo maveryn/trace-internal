@@ -1,6 +1,7 @@
 {
   "bundle_id": "geometry_polygon_equation_diagram_v1",
   "schema_version": "v1",
+  "allow_empty_task_templates": true,
   "templates": {
     "scene": {
       "polygon_equation_diagram_scene": [
@@ -12,48 +13,12 @@
       ]
     },
     "task": {
-      "equal_side_variable_value": [
-        "Use the marked equal sides and side expressions.",
-        "Use the equal-side markings and visible side expressions.",
-        "Use the marked side equality.",
-        "Use the algebraic side labels and equal-side marks.",
-        "Use the side expressions linked by the equal-side marks."
-      ],
-      "equal_side_length_value": [
-        "Use the marked equal sides and side expressions.",
-        "Use the equal-side markings and visible side expressions.",
-        "Use the marked side equality.",
-        "Use the algebraic side labels and equal-side marks.",
-        "Use the side expressions linked by the equal-side marks."
-      ],
-      "equal_angle_variable_value": [
-        "Use the marked equal angles and angle expressions.",
-        "Use the equal-angle markings and visible angle expressions.",
-        "Use the marked angle equality.",
-        "Use the algebraic angle labels and equal-angle marks.",
-        "Use the angle expressions linked by the equal-angle marks."
-      ],
-      "equal_angle_measure_value": [
-        "Use the marked equal angles and angle expressions.",
-        "Use the equal-angle markings and visible angle expressions.",
-        "Use the marked angle equality.",
-        "Use the algebraic angle labels and equal-angle marks.",
-        "Use the angle expressions linked by the equal-angle marks."
-      ],
-      "interior_angle_sum_variable_value": [
-        "Use the polygon interior-angle sum and visible angle labels.",
-        "Use the interior-angle sum for the polygon.",
-        "Use the visible interior-angle expressions.",
-        "Use the polygon angle-sum relation.",
-        "Use the labeled interior angles."
-      ],
-      "interior_angle_sum_angle_value": [
-        "Use the polygon interior-angle sum and visible angle labels.",
-        "Use the interior-angle sum for the polygon.",
-        "Use the visible interior-angle expressions.",
-        "Use the polygon angle-sum relation.",
-        "Use the labeled interior angles."
-      ]
+      "equal_side_variable_value": ["", "", "", "", ""],
+      "equal_side_length_value": ["", "", "", "", ""],
+      "equal_angle_variable_value": ["", "", "", "", ""],
+      "equal_angle_measure_value": ["", "", "", "", ""],
+      "interior_angle_sum_variable_value": ["", "", "", "", ""],
+      "interior_angle_sum_angle_value": ["", "", "", "", ""]
     },
     "query": {
       "equal_side_variable_value": [

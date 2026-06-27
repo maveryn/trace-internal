@@ -25,6 +25,8 @@ class PolygonEquationCase:
     output_role: str
     side_labels: Mapping[str, str] = field(default_factory=dict)
     angle_labels: Mapping[str, str] = field(default_factory=dict)
+    side_mark_counts: Mapping[str, int] = field(default_factory=dict)
+    angle_mark_counts: Mapping[str, int] = field(default_factory=dict)
     equal_sides: tuple[str, ...] = ()
     equal_angles: tuple[str, ...] = ()
     target_side: str = ""
@@ -46,6 +48,8 @@ class PolygonEquationCase:
             "output_role": str(self.output_role),
             "side_labels": dict(self.side_labels),
             "angle_labels": dict(self.angle_labels),
+            "side_mark_counts": {str(key): int(value) for key, value in self.side_mark_counts.items()},
+            "angle_mark_counts": {str(key): int(value) for key, value in self.angle_mark_counts.items()},
             "equal_sides": list(self.equal_sides),
             "equal_angles": list(self.equal_angles),
             "target_side": str(self.target_side),

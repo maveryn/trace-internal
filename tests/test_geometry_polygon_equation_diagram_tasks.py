@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 
 import pytest
 
@@ -18,6 +19,20 @@ TASK_IDS = (
     "task_geometry__polygon_equation_diagram__interior_angle_sum_variable_value",
     "task_geometry__polygon_equation_diagram__interior_angle_sum_angle_value",
 )
+
+
+def _eval_linear_label(label: str, *, variable_name: str, variable_value: int) -> int:
+    text = str(label).strip().removesuffix("°")
+    if text.startswith("(") and text.endswith(")"):
+        text = text[1:-1]
+    pattern = rf"(?P<sign>-?)(?P<coeff>\d*){re.escape(str(variable_name))}(?P<offset>[+-]\d+)?"
+    match = re.fullmatch(pattern, text)
+    assert match is not None, text
+    coefficient = int(match.group("coeff") or "1")
+    if match.group("sign") == "-":
+        coefficient *= -1
+    offset = int(match.group("offset") or "0")
+    return int(coefficient * int(variable_value) + offset)
 
 
 @pytest.mark.parametrize("task_id", TASK_IDS)
@@ -55,6 +70,40 @@ def test_polygon_equation_diagram_generates_each_side_count(task_id: str, side_c
 
     if "interior_angle_sum" in task_id:
         assert sum(execution["numeric_angle_values"]) == (side_count - 2) * 180
+    if "equal_side" in task_id:
+        for side_label in execution["equal_sides"]:
+            assert execution["side_mark_counts"][side_label] == 2
+        if task_id.endswith("equal_side_length_value"):
+            assert execution["side_distractors"]
+            for distractor in execution["side_distractors"]:
+                assert execution["side_mark_counts"][distractor["side"]] in {1, 3}
+                assert execution["side_mark_counts"][distractor["side"]] != 2
+                if distractor["variable_name"] == execution["variable_name"]:
+                    assert _eval_linear_label(
+                        distractor["label"],
+                        variable_name=execution["variable_name"],
+                        variable_value=execution["variable_value"],
+                    ) == distractor["numeric_value_under_x"]
+                    assert distractor["numeric_value_under_x"] != execution["equal_side_length"]
+        else:
+            assert not execution["side_distractors"]
+    if "equal_angle" in task_id:
+        for vertex_label in execution["equal_angles"]:
+            assert execution["angle_mark_counts"][vertex_label] == 2
+        if task_id.endswith("equal_angle_measure_value"):
+            assert execution["angle_distractors"]
+            for distractor in execution["angle_distractors"]:
+                assert execution["angle_mark_counts"][distractor["vertex"]] in {1, 3}
+                assert execution["angle_mark_counts"][distractor["vertex"]] != 2
+                if distractor["variable_name"] == execution["variable_name"]:
+                    assert _eval_linear_label(
+                        distractor["label"],
+                        variable_name=execution["variable_name"],
+                        variable_value=execution["variable_value"],
+                    ) == distractor["numeric_value_under_x"]
+                    assert distractor["numeric_value_under_x"] != execution["equal_angle_measure"]
+        else:
+            assert not execution["angle_distractors"]
     label_blob = json.dumps(
         {
             "side_labels": execution.get("side_labels", {}),

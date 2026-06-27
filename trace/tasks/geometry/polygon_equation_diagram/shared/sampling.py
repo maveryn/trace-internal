@@ -36,6 +36,39 @@ def _equation_pair_for_value(*, rng: Any, value: int, variable_value: int) -> tu
     raise ValueError("failed to sample distinct linear expressions")
 
 
+def _expression_for_value(*, rng: Any, value: int, variable_name: str, variable_value: int) -> tuple[int, int]:
+    """Return one linear expression that evaluates to `value` for the hidden variable value."""
+
+    coefficient = int(rng.choice((1, 2, 3, 4)))
+    return coefficient, int(value) - (coefficient * int(variable_value))
+
+
+def _unconstrained_expression(*, rng: Any) -> tuple[int, int]:
+    """Return a plausible linear expression for a distractor variable."""
+
+    coefficient = int(rng.choice((1, 2, 3, 4)))
+    offset = int(rng.randint(-28, 96))
+    if offset == 0:
+        offset = int(rng.choice((-12, 12, 18)))
+    return coefficient, offset
+
+
+def _choose_distractor_count(*, rng: Any, available_count: int) -> int:
+    if int(available_count) <= 0:
+        return 0
+    if int(available_count) == 1:
+        return 1
+    return int(rng.choice((1, 2)))
+
+
+def _sample_distractor_value(*, rng: Any, lower: int, upper: int, forbidden: set[int]) -> int:
+    for _ in range(300):
+        value = int(rng.randint(int(lower), int(upper)))
+        if value not in forbidden:
+            return value
+    raise ValueError("failed to sample distractor value")
+
+
 def _sample_values_for_sum(*, rng: Any, count: int, total: int, min_value: int, max_value: int) -> tuple[int, ...]:
     """Sample integer angle values whose sum is exactly total."""
 
@@ -74,6 +107,7 @@ def sample_equal_side_relation(
     instance_seed: int,
     params: Mapping[str, Any],
     namespace: str,
+    include_distractors: bool = False,
 ) -> dict[str, Any]:
     """Sample a marked equal-side algebraic relation without binding an objective answer."""
 
@@ -95,6 +129,54 @@ def sample_equal_side_relation(
         first_side: format_linear_expression(first_expr[0], variable_name, first_expr[1]),
         second_side: format_linear_expression(second_expr[0], variable_name, second_expr[1]),
     }
+    side_mark_counts = {
+        str(first_side): 2,
+        str(second_side): 2,
+    }
+    side_distractors: list[dict[str, Any]] = []
+    if bool(include_distractors):
+        available_sides = [
+            side_name(labels, index)
+            for index in range(side_count)
+            if side_name(labels, index) not in {first_side, second_side}
+        ]
+        rng.shuffle(available_sides)
+        mark_counts = [1, 3]
+        rng.shuffle(mark_counts)
+        for side_label in available_sides[: _choose_distractor_count(rng=rng, available_count=len(available_sides))]:
+            mark_count = int(mark_counts.pop(0))
+            distractor_variable = str(rng.choice(("x", "y", "z")))
+            if distractor_variable == variable_name:
+                numeric_value = _sample_distractor_value(
+                    rng=rng,
+                    lower=8,
+                    upper=112,
+                    forbidden={int(side_value)},
+                )
+                expression = _expression_for_value(
+                    rng=rng,
+                    value=int(numeric_value),
+                    variable_name=distractor_variable,
+                    variable_value=int(variable_value),
+                )
+            else:
+                numeric_value = None
+                expression = _unconstrained_expression(rng=rng)
+            side_labels[str(side_label)] = format_linear_expression(
+                expression[0],
+                distractor_variable,
+                expression[1],
+            )
+            side_mark_counts[str(side_label)] = int(mark_count)
+            side_distractors.append(
+                {
+                    "side": str(side_label),
+                    "mark_count": int(mark_count),
+                    "variable_name": str(distractor_variable),
+                    "label": str(side_labels[str(side_label)]),
+                    "numeric_value_under_x": numeric_value,
+                }
+            )
     return {
         "side_count": int(side_count),
         "variable_name": str(variable_name),
@@ -102,12 +184,16 @@ def sample_equal_side_relation(
         "side_value": int(side_value),
         "target_side": str(first_side),
         "side_labels": dict(side_labels),
+        "side_mark_counts": dict(side_mark_counts),
         "equal_sides": (str(first_side), str(second_side)),
+        "side_distractors": list(side_distractors),
         "witness": {
             "polygon_kind": polygon_kind(side_count),
             "variable_value": int(variable_value),
             "equal_side_length": int(side_value),
             "equation": f"{side_labels[first_side]} = {side_labels[second_side]}",
+            "side_mark_counts": dict(side_mark_counts),
+            "side_distractors": list(side_distractors),
         },
     }
 
@@ -117,6 +203,7 @@ def sample_equal_angle_relation(
     instance_seed: int,
     params: Mapping[str, Any],
     namespace: str,
+    include_distractors: bool = False,
 ) -> dict[str, Any]:
     """Sample a marked equal-angle algebraic relation without binding an objective answer."""
 
@@ -142,6 +229,50 @@ def sample_equal_angle_relation(
         first_angle: format_angle_expression(first_expr[0], variable_name, first_expr[1]),
         second_angle: format_angle_expression(second_expr[0], variable_name, second_expr[1]),
     }
+    angle_mark_counts = {
+        str(first_angle): 2,
+        str(second_angle): 2,
+    }
+    angle_distractors: list[dict[str, Any]] = []
+    if bool(include_distractors):
+        available_angles = [str(label) for label in labels if str(label) not in {str(first_angle), str(second_angle)}]
+        rng.shuffle(available_angles)
+        mark_counts = [1, 3]
+        rng.shuffle(mark_counts)
+        for vertex_label in available_angles[: _choose_distractor_count(rng=rng, available_count=len(available_angles))]:
+            mark_count = int(mark_counts.pop(0))
+            distractor_variable = str(rng.choice(("x", "y", "z")))
+            if distractor_variable == variable_name:
+                numeric_value = _sample_distractor_value(
+                    rng=rng,
+                    lower=30,
+                    upper=150,
+                    forbidden={int(angle_value)},
+                )
+                expression = _expression_for_value(
+                    rng=rng,
+                    value=int(numeric_value),
+                    variable_name=distractor_variable,
+                    variable_value=int(variable_value),
+                )
+            else:
+                numeric_value = None
+                expression = _unconstrained_expression(rng=rng)
+            angle_labels[str(vertex_label)] = format_angle_expression(
+                expression[0],
+                distractor_variable,
+                expression[1],
+            )
+            angle_mark_counts[str(vertex_label)] = int(mark_count)
+            angle_distractors.append(
+                {
+                    "vertex": str(vertex_label),
+                    "mark_count": int(mark_count),
+                    "variable_name": str(distractor_variable),
+                    "label": str(angle_labels[str(vertex_label)]),
+                    "numeric_value_under_x": numeric_value,
+                }
+            )
     return {
         "side_count": int(side_count),
         "variable_name": str(variable_name),
@@ -149,12 +280,16 @@ def sample_equal_angle_relation(
         "angle_value": int(angle_value),
         "target_angle": str(first_angle),
         "angle_labels": dict(angle_labels),
+        "angle_mark_counts": dict(angle_mark_counts),
         "equal_angles": (str(first_angle), str(second_angle)),
+        "angle_distractors": list(angle_distractors),
         "witness": {
             "polygon_kind": polygon_kind(side_count),
             "variable_value": int(variable_value),
             "equal_angle_measure": int(angle_value),
             "equation": f"{angle_labels[first_angle]} = {angle_labels[second_angle]}",
+            "angle_mark_counts": dict(angle_mark_counts),
+            "angle_distractors": list(angle_distractors),
         },
     }
 

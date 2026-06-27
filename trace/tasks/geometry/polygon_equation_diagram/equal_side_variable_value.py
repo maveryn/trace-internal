@@ -30,6 +30,7 @@ def _build_case(*, instance_seed: int, params: Mapping[str, Any], generation_def
         relation="equal_side_marked_equation",
         output_role="variable_value",
         side_labels=dict(relation["side_labels"]),
+        side_mark_counts=dict(relation["side_mark_counts"]),
         equal_sides=tuple(str(side) for side in relation["equal_sides"]),
         target_side=str(relation["target_side"]),
         witness=dict(relation["witness"]),

@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence, TypeVar
 
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
+
 
 _CaseT = TypeVar("_CaseT")
 
@@ -12,7 +15,8 @@ def select_indexed_case(
     *,
     cases: Sequence[_CaseT],
     params: Mapping[str, Any],
-    selection_index: int,
+    instance_seed: int,
+    namespace: str,
 ) -> tuple[_CaseT, int]:
     """Select one pre-built scene case using explicit params or a resolved index."""
 
@@ -20,9 +24,12 @@ def select_indexed_case(
         raise ValueError("angle-relations case support must not be empty")
     explicit_case = params.get("case_index")
     if explicit_case is not None:
-        case_index = int(explicit_case) % len(cases)
+        case_index = int(explicit_case)
+        if case_index < 0 or case_index >= len(cases):
+            raise ValueError("case_index is outside angle-relations case support")
     else:
-        case_index = int(selection_index) % len(cases)
+        rng = spawn_rng(int(instance_seed), str(namespace))
+        case_index = int(uniform_choice(rng, tuple(range(len(cases)))))
     return cases[case_index], int(case_index)
 
 
@@ -38,9 +45,12 @@ def algebraic_case_parameters_for_answer(answer_value: int, *, variant_index: in
     given_angle = int(given_min + ((answer * 7 + int(variant_index) * 11) % span))
 
     coefficient_order = (1, 2, 3, 4, 5, 6)
-    start = (answer + int(variant_index)) % len(coefficient_order)
-    for offset in range(len(coefficient_order)):
-        target_coeff = int(coefficient_order[(start + offset) % len(coefficient_order)])
+    start = answer + int(variant_index)
+    while start >= len(coefficient_order):
+        start -= len(coefficient_order)
+    rotated_coefficients = coefficient_order[start:] + coefficient_order[:start]
+    for offset, coefficient in enumerate(rotated_coefficients):
+        target_coeff = int(coefficient)
         max_x = min(24, (answer - 5) // target_coeff)
         if max_x < 10:
             continue

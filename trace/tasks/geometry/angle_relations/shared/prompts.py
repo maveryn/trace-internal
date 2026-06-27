@@ -25,6 +25,7 @@ def build_angle_relation_prompt_artifacts(
     *,
     prompt_query_key: str,
     instance_seed: int,
+    prompt_task_key: str | None = None,
 ) -> tuple[Dict[str, Any], Any]:
     """Build prompt artifacts for one angle-relations public task."""
 
@@ -38,7 +39,7 @@ def build_angle_relation_prompt_artifacts(
         scene_id=SCENE_ID,
         bundle_id=str(prompt_defaults["bundle_id"]),
         scene_key=str(prompt_defaults["scene_key"]),
-        task_key=str(prompt_defaults["task_key"]),
+        task_key=str(prompt_task_key or prompt_defaults["task_key"]),
         query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         dynamic_slots={},

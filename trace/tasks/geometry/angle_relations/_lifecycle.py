@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence, TypeVar
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.geometry.angle_relations.shared.annotations import angle_vertex_annotation_artifacts
 from trace.tasks.geometry.angle_relations.shared.output import angle_relation_trace_payload
 from trace.tasks.geometry.angle_relations.shared.prompts import build_angle_relation_prompt_artifacts
@@ -38,15 +37,11 @@ def select_angle_relation_case(
 ) -> tuple[_CaseT, int]:
     """Resolve an index for an already task-selected case support."""
 
-    selection_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
     return select_indexed_case(
         cases=cases,
         params=params,
-        selection_index=int(selection_index),
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
     )
 
 
@@ -55,6 +50,7 @@ def render_angle_relation_runtime(
     case: AngleRelationCase,
     case_index: int,
     prompt_query_key: str,
+    prompt_task_key: str | None = None,
     instance_seed: int,
     params: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
@@ -72,6 +68,7 @@ def render_angle_relation_runtime(
     annotation_artifacts = angle_vertex_annotation_artifacts(rendered_context.rendered_scene)
     _prompt_defaults, prompt_artifacts = build_angle_relation_prompt_artifacts(
         prompt_query_key=str(prompt_query_key),
+        prompt_task_key=prompt_task_key,
         instance_seed=int(instance_seed),
     )
     return AngleRelationRuntime(

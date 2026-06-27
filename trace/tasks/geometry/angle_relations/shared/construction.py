@@ -6,6 +6,7 @@ import math
 
 from .spatial_primitives import (
     RenderContext,
+    _add,
     _angle_annotation_point,
     _bbox_from_points,
     _draw_angle_label,
@@ -13,6 +14,7 @@ from .spatial_primitives import (
     _draw_polygon,
     _draw_polyline,
     _offset_points,
+    _sub,
     _triangle_from_base_angles,
 )
 from .relations import (
@@ -36,6 +38,10 @@ from .state import (
     AngleRelationCase,
     RenderedAngleRelationScene,
 )
+
+POINT_P = "P"
+POINT_Q = "Q"
+POINT_R = "R"
 
 
 def _draw_parallel_arrow_marks(ctx: RenderContext, segments: tuple[tuple[tuple[float, float], tuple[float, float]], ...]) -> tuple[float, float, float, float]:
@@ -125,27 +131,37 @@ def make_triangle_exterior_case(given_a: int, answer_b: int) -> AngleRelationCas
     return AngleRelationCase(answer=int(answer_b), build=build)
 
 
-def make_parallel_supplement_case(given: int) -> AngleRelationCase:
+def make_parallel_supplement_case(given: int, *, parallel_line_count: int = 2) -> AngleRelationCase:
     """Construct a reusable parallel-line supplement scene case."""
 
     answer = supplement_angle_value(given)
+    line_count = int(parallel_line_count)
+    if line_count not in (2, 3):
+        raise ValueError("parallel supplement line count must be 2 or 3")
 
     def build(ctx: RenderContext) -> RenderedAngleRelationScene:
         """Render parallel-line geometry without choosing task identity."""
 
         top_l, top_r = (135.0, 170.0), (585.0, 170.0)
         bot_l, bot_r = (105.0, 385.0), (615.0, 385.0)
+        mid_l, mid_r = (120.0, 278.0), (600.0, 278.0)
         x_top = 300.0
         vertical_gap = float(bot_l[1] - top_l[1])
         target_theta = math.radians(float(answer))
         x_bot = x_top + (vertical_gap / max(0.25, math.tan(target_theta)))
         p = (x_top, top_l[1])
         q = (x_bot, bot_l[1])
-        top_l, top_r, bot_l, bot_r, p, q = _offset_points(ctx, (top_l, top_r, bot_l, bot_r, p, q))
+        top_l, top_r, mid_l, mid_r, bot_l, bot_r, p, q = _offset_points(
+            ctx,
+            (top_l, top_r, mid_l, mid_r, bot_l, bot_r, p, q),
+        )
         _draw_polyline(ctx, [top_l, top_r])
+        if line_count == 3:
+            _draw_polyline(ctx, [mid_l, mid_r])
         _draw_polyline(ctx, [bot_l, bot_r])
         _draw_polyline(ctx, [p, q])
-        mark_bbox = _draw_parallel_arrow_marks(ctx, ((top_l, top_r), (bot_l, bot_r)))
+        mark_segments = ((top_l, top_r), (mid_l, mid_r), (bot_l, bot_r)) if line_count == 3 else ((top_l, top_r), (bot_l, bot_r))
+        mark_bbox = _draw_parallel_arrow_marks(ctx, mark_segments)
         labels = _draw_point_labels(ctx, {"A": top_l, "B": top_r, "C": bot_l, "D": bot_r, "E": p, "F": q})
         given_arc, given_bbox = _draw_angle_label(ctx, format_degrees(given), p, top_l, q, radius=64.0)
         target_arc, target_bbox = _draw_angle_label(ctx, "?", q, bot_l, p, radius=64.0)
@@ -159,7 +175,15 @@ def make_parallel_supplement_case(given: int) -> AngleRelationCase:
             annotation_bboxes=(target_arc, given_arc),
             annotation_roles=(ANGLE_CFE, ANGLE_AEF),
             scene_entities=(
-                {"type": "parallel_lines", "segments": {"AB": (top_l, top_r), "CD": (bot_l, bot_r)}},
+                {
+                    "type": "parallel_lines",
+                    "line_count": int(line_count),
+                    "segments": {
+                        "AB": (top_l, top_r),
+                        **({"middle_unlabeled": (mid_l, mid_r)} if line_count == 3 else {}),
+                        "CD": (bot_l, bot_r),
+                    },
+                },
                 {"type": "transversal", "segment": (p, q), "points": {"E": p, "F": q}},
             ),
             render_map={
@@ -171,9 +195,170 @@ def make_parallel_supplement_case(given: int) -> AngleRelationCase:
             witness={
                 "given_angle_AEF": int(given),
                 "parallel_lines": ["AB", "CD"],
+                "parallel_line_count": int(line_count),
                 "answer_angle_CFE": int(answer),
             },
             reasoning_steps=2,
+            annotation_keyed_points=annotation_points,
+        )
+
+    return AngleRelationCase(answer=int(answer), build=build)
+
+
+def make_parallel_algebraic_case(
+    *,
+    relation_id: str,
+    support_angle: int,
+    x_value: int,
+    target_coeff: int,
+    target_const: int,
+) -> AngleRelationCase:
+    """Construct one algebraic angle case on three parallel lines."""
+
+    relation = str(relation_id)
+    if relation not in {"corresponding_equal", "same_side_supplementary"}:
+        raise ValueError(f"unsupported parallel algebraic relation: {relation}")
+    target_angle = linear_expression_value(target_coeff, target_const, x_value)
+    expected_support = target_angle if relation == "corresponding_equal" else 180 - int(target_angle)
+    if int(expected_support) != int(support_angle):
+        raise ValueError("support_angle is inconsistent with the requested parallel relation")
+
+    def build(ctx: RenderContext) -> RenderedAngleRelationScene:
+        """Render the algebraic parallel-line case without task identity."""
+
+        top_l, top_r = (120.0, 135.0), (600.0, 135.0)
+        mid_l, mid_r = (105.0, 280.0), (615.0, 280.0)
+        bot_l, bot_r = (120.0, 425.0), (600.0, 425.0)
+        p_x = 300.0
+        vertical_gap = float(bot_l[1] - top_l[1])
+        slope_angle = int(support_angle if relation == "corresponding_equal" else target_angle)
+        r_x = p_x + (vertical_gap / max(0.25, math.tan(math.radians(float(slope_angle)))))
+        p = (p_x, top_l[1])
+        r = (r_x, bot_l[1])
+        mid_t = (mid_l[1] - top_l[1]) / (bot_l[1] - top_l[1])
+        q = (p[0] + ((r[0] - p[0]) * mid_t), mid_l[1])
+        top_l, top_r, mid_l, mid_r, bot_l, bot_r, p, q, r = _offset_points(
+            ctx,
+            (top_l, top_r, mid_l, mid_r, bot_l, bot_r, p, q, r),
+        )
+        for segment in ((top_l, top_r), (mid_l, mid_r), (bot_l, bot_r)):
+            _draw_polyline(ctx, [segment[0], segment[1]])
+        _draw_polyline(ctx, [p, r])
+        mark_bbox = _draw_parallel_arrow_marks(ctx, ((top_l, top_r), (mid_l, mid_r), (bot_l, bot_r)))
+        labels = _draw_point_labels(ctx, {"P": p, "Q": q, "R": r})
+        target_expr = format_angle_expression(target_coeff, target_const)
+        given_arc, given_bbox = _draw_angle_label(ctx, format_degrees(support_angle), p, top_r, r, radius=62.0)
+        target_arm = _add(r, (1.0, 0.0), 80.0) if relation == "corresponding_equal" else _add(r, (-1.0, 0.0), 80.0)
+        target_arc, target_bbox = _draw_angle_label(ctx, target_expr, r, target_arm, p, radius=66.0)
+        annotation_points = {POINT_P: p, POINT_Q: q, POINT_R: r}
+        return RenderedAngleRelationScene(
+            image=ctx.image,
+            answer=int(target_angle),
+            annotation_bboxes=(target_arc, given_arc),
+            annotation_roles=(POINT_P, POINT_Q, POINT_R),
+            scene_entities=(
+                {
+                    "type": "parallel_lines",
+                    "line_count": 3,
+                    "segments": {"top": (top_l, top_r), "middle": (mid_l, mid_r), "bottom": (bot_l, bot_r)},
+                },
+                {"type": "transversal", "segment": (p, r), "points": {"P": p, "Q": q, "R": r}},
+            ),
+            render_map={
+                "point_label_bboxes": labels,
+                "angle_arc_bboxes": {"target_angle": target_arc, "support_angle": given_arc},
+                "angle_label_bboxes": {"target_angle": target_bbox, "support_angle": given_bbox},
+                "parallel_marks_bbox": mark_bbox,
+                "intersections": {"P": p, "Q": q, "R": r},
+            },
+            witness={
+                "parallel_line_count": 3,
+                "transversal_count": 1,
+                "relation_id": relation,
+                "support_angle": int(support_angle),
+                "target_angle_measure": int(target_angle),
+                "x": int(x_value),
+                "target_expression": format_linear_expression(target_coeff, target_const),
+                "equation": (
+                    "target_angle = support_angle"
+                    if relation == "corresponding_equal"
+                    else "target_angle = 180 - support_angle"
+                ),
+            },
+            reasoning_steps=3,
+            annotation_keyed_points=annotation_points,
+        )
+
+    return AngleRelationCase(answer=int(target_angle), build=build)
+
+
+def make_parallel_transversal_triangle_case(left_angle: int, right_angle: int) -> AngleRelationCase:
+    """Construct a two-transversal angle-sum case between parallel lines."""
+
+    answer = 180 - int(left_angle) - int(right_angle)
+    if answer <= 0:
+        raise ValueError("parallel transversal triangle angle must be positive")
+
+    def build(ctx: RenderContext) -> RenderedAngleRelationScene:
+        """Render two transversals forming a target angle between parallel lines."""
+
+        top_y = 142.0
+        target_y = 294.0
+        bottom_y = 430.0
+        target_x = ctx.width / 2.0
+        left_dx = (target_y - top_y) / math.tan(math.radians(float(left_angle)))
+        right_dx = (target_y - top_y) / math.tan(math.radians(float(right_angle)))
+        p = (float(target_x - left_dx), float(top_y))
+        r = (float(target_x + right_dx), float(top_y))
+        q = (float(target_x), float(target_y))
+        bottom_scale = (bottom_y - target_y) / (target_y - top_y)
+        bottom_right = _add(q, _sub(q, p), bottom_scale)
+        bottom_left = _add(q, _sub(q, r), bottom_scale)
+        top_l, top_r = (88.0, top_y), (ctx.width - 88.0, top_y)
+        bot_l, bot_r = (88.0, bottom_y), (ctx.width - 88.0, bottom_y)
+        top_l, top_r, bot_l, bot_r, p, q, r, bottom_left, bottom_right = _offset_points(
+            ctx,
+            (top_l, top_r, bot_l, bot_r, p, q, r, bottom_left, bottom_right),
+        )
+        _draw_polyline(ctx, [top_l, top_r])
+        _draw_polyline(ctx, [bot_l, bot_r])
+        _draw_polyline(ctx, [p, bottom_right])
+        _draw_polyline(ctx, [r, bottom_left])
+        mark_bbox = _draw_parallel_arrow_marks(ctx, ((top_l, top_r), (bot_l, bot_r)))
+        labels = _draw_point_labels(ctx, {"P": p, "Q": q, "R": r})
+        left_arc, left_bbox = _draw_angle_label(ctx, format_degrees(left_angle), p, top_r, q, radius=60.0)
+        right_arc, right_bbox = _draw_angle_label(ctx, format_degrees(right_angle), r, q, top_l, radius=60.0)
+        target_arc, target_bbox = _draw_angle_label(ctx, "?", q, p, r, radius=68.0)
+        annotation_points = {POINT_P: p, POINT_Q: q, POINT_R: r}
+        return RenderedAngleRelationScene(
+            image=ctx.image,
+            answer=int(answer),
+            annotation_bboxes=(target_arc, left_arc, right_arc),
+            annotation_roles=(POINT_P, POINT_Q, POINT_R),
+            scene_entities=(
+                {"type": "parallel_lines", "line_count": 2, "segments": {"top": (top_l, top_r), "bottom": (bot_l, bot_r)}},
+                {
+                    "type": "transversal_pair",
+                    "segments": {"left": (p, bottom_right), "right": (r, bottom_left)},
+                    "points": {"P": p, "Q": q, "R": r},
+                },
+            ),
+            render_map={
+                "point_label_bboxes": labels,
+                "angle_arc_bboxes": {"target_angle": target_arc, "left_support_angle": left_arc, "right_support_angle": right_arc},
+                "angle_label_bboxes": {"target_angle": target_bbox, "left_support_angle": left_bbox, "right_support_angle": right_bbox},
+                "parallel_marks_bbox": mark_bbox,
+                "intersections": {"P": p, "Q": q, "R": r},
+            },
+            witness={
+                "parallel_line_count": 2,
+                "transversal_count": 2,
+                "relation_id": "parallel_transversal_triangle_angle_sum",
+                "support_angles": [int(left_angle), int(right_angle)],
+                "answer_angle_PQR": int(answer),
+                "equation": "target_angle = 180 - left_support_angle - right_support_angle",
+            },
+            reasoning_steps=3,
             annotation_keyed_points=annotation_points,
         )
 
@@ -314,6 +499,8 @@ def make_algebraic_double_extension_case(
 __all__ = [
     "make_algebraic_double_extension_case",
     "make_algebraic_single_extension_case",
+    "make_parallel_algebraic_case",
     "make_parallel_supplement_case",
+    "make_parallel_transversal_triangle_case",
     "make_triangle_exterior_case",
 ]

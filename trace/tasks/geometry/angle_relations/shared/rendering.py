@@ -7,10 +7,10 @@ from typing import Any, Dict, Mapping
 
 from PIL import Image, ImageDraw
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from trace.tasks.shared.text_rendering import load_font
 
@@ -79,13 +79,8 @@ def make_angle_relation_render_context(
         params=params,
     )
     font_record = get_font_family_record(str(font_family))
-    color_idx = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace="geometry.angle_relations.accent",
-        )
-    ) % len(fill_choices)
+    color_rng = spawn_rng(int(instance_seed), "geometry.angle_relations.accent")
+    color_idx = int(uniform_choice(color_rng, tuple(range(len(fill_choices)))))
     layout_offset = (
         float(rng.randint(-32, 32)),
         float(rng.randint(-20, 22)),

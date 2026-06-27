@@ -18,12 +18,14 @@ from .shared.state import DOMAIN, SCENE_ID, AngleRelationCase
 
 
 TASK_ID = "task_geometry__angle_relations__parallel_supplement_angle"
-PARALLEL_SUPPLEMENT_QUERY_ID = "parallel_supplement_angle"
-SUPPORTED_QUERY_IDS = (PARALLEL_SUPPLEMENT_QUERY_ID,)
+PUBLIC_QUERY_ID = "single"
+PARALLEL_SUPPLEMENT_PROMPT_QUERY_KEY = "parallel_supplement_angle"
+SUPPORTED_QUERY_IDS = (PUBLIC_QUERY_ID,)
 PARALLEL_SUPPLEMENT_ANSWER_SUPPORT = tuple(range(38, 83)) + tuple(range(98, 143))
 PARALLEL_SUPPLEMENT_CASES = tuple(
-    make_parallel_supplement_case(180 - answer_value)
+    make_parallel_supplement_case(180 - answer_value, parallel_line_count=line_count)
     for answer_value in PARALLEL_SUPPLEMENT_ANSWER_SUPPORT
+    for line_count in (2, 3)
 )
 _RENDER_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
     DOMAIN,
@@ -54,7 +56,7 @@ def _select_parallel_supplement(
         instance_seed=int(instance_seed),
         params=params,
         supported_query_ids=SUPPORTED_QUERY_IDS,
-        default_query_id=PARALLEL_SUPPLEMENT_QUERY_ID,
+        default_query_id=PUBLIC_QUERY_ID,
         task_id=TASK_ID,
     )
     case, case_index = select_angle_relation_case(
@@ -91,7 +93,7 @@ class GeometryAngleRelationsParallelSupplementAngleTask:
         runtime = render_angle_relation_runtime(
             case=selection.case,
             case_index=int(selection.case_index),
-            prompt_query_key=str(selection.branch_name),
+            prompt_query_key=PARALLEL_SUPPLEMENT_PROMPT_QUERY_KEY,
             instance_seed=int(instance_seed),
             params=selection.params,
             render_defaults=_RENDER_DEFAULTS,
@@ -108,6 +110,12 @@ class GeometryAngleRelationsParallelSupplementAngleTask:
                     str(value): 1.0 / float(len(PARALLEL_SUPPLEMENT_ANSWER_SUPPORT))
                     for value in PARALLEL_SUPPLEMENT_ANSWER_SUPPORT
                 },
+            },
+            execution_fields_extra={
+                "internal_query_id": PARALLEL_SUPPLEMENT_PROMPT_QUERY_KEY,
+            },
+            witness_fields_extra={
+                "internal_query_id": PARALLEL_SUPPLEMENT_PROMPT_QUERY_KEY,
             },
         )
         return TaskOutput(

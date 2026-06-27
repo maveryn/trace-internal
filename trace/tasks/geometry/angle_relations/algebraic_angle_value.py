@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Tuple
 
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 
@@ -22,6 +23,7 @@ TASK_ID = "task_geometry__angle_relations__algebraic_angle_value"
 TARGET_ANGLE_VALUE_QUERY_ID = "target_angle_value"
 VARIABLE_X_VALUE_QUERY_ID = "variable_x_value"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (TARGET_ANGLE_VALUE_QUERY_ID, VARIABLE_X_VALUE_QUERY_ID)
+TASK_PROMPT_KEY = "algebraic_angle_value"
 
 SINGLE_EXTENSION_CASE = "single_extension"
 DOUBLE_EXTENSION_CASE = "double_extension"
@@ -58,12 +60,8 @@ def _select_extension_case(*, params: Mapping[str, Any], instance_seed: int) -> 
         if extension_case not in EXTENSION_CASE_SUPPORT:
             raise ValueError(f"unsupported extension_case for {TASK_ID}: {extension_case}")
         return extension_case, EXTENSION_CASE_SUPPORT.index(extension_case)
-    selection_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.extension_case",
-    )
-    extension_case_index = int(selection_index) % len(EXTENSION_CASE_SUPPORT)
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.extension_case")
+    extension_case_index = int(uniform_choice(rng, tuple(range(len(EXTENSION_CASE_SUPPORT)))))
     return EXTENSION_CASE_SUPPORT[extension_case_index], int(extension_case_index)
 
 
@@ -100,20 +98,17 @@ class GeometryAngleRelationsAlgebraicAngleValueTask:
             params=task_params,
             instance_seed=int(instance_seed),
         )
-        selection_index = resolve_selection_index(
-            params=task_params,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.case.{extension_case}",
-        )
         case, case_index = select_indexed_case(
             cases=_cases_for_extension_case(str(extension_case)),
             params=task_params,
-            selection_index=int(selection_index),
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.case.{extension_case}",
         )
         runtime = render_angle_relation_runtime(
             case=case,
             case_index=int(case_index),
             prompt_query_key=str(selected_query),
+            prompt_task_key=TASK_PROMPT_KEY,
             instance_seed=int(instance_seed),
             params=task_params,
             render_defaults=_RENDER_DEFAULTS,

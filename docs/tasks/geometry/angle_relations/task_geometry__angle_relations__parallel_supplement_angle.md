@@ -18,6 +18,8 @@
 ## Annotation
 Prompt-facing annotation uses pixel-space witnesses only. The annotation is a keyed point map over exactly `CFE` and `AEF`.
 
+The construction samples either two or three visible parallel lines as trace metadata; this is visual/construction variation, not a public query branch.
+
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.
 

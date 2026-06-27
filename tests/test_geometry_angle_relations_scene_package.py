@@ -12,7 +12,9 @@ from trace.tasks import create_task
 
 ACTIVE_TASK_IDS = {
     "task_geometry__angle_relations__algebraic_angle_value",
+    "task_geometry__angle_relations__parallel_algebraic_angle_value",
     "task_geometry__angle_relations__parallel_supplement_angle",
+    "task_geometry__angle_relations__parallel_transversal_triangle_angle_value",
     "task_geometry__angle_relations__triangle_exterior_angle",
 }
 RETIRED_TASK_IDS = {
@@ -41,7 +43,9 @@ def test_angle_relations_scene_has_no_wrapper_only_modules() -> None:
     }
     assert public_files == {
         "algebraic_angle_value.py",
+        "parallel_algebraic_angle_value.py",
         "parallel_supplement_angle.py",
+        "parallel_transversal_triangle_angle_value.py",
         "triangle_exterior_angle.py",
     }
     assert not (scene_dir / "shared" / "task_base.py").exists()
@@ -52,7 +56,9 @@ def test_angle_relations_scene_has_no_wrapper_only_modules() -> None:
     ("task_id", "query_ids"),
     (
         ("task_geometry__angle_relations__algebraic_angle_value", ("target_angle_value", "variable_x_value")),
+        ("task_geometry__angle_relations__parallel_algebraic_angle_value", ("target_angle_value", "variable_x_value")),
         ("task_geometry__angle_relations__parallel_supplement_angle", ("single",)),
+        ("task_geometry__angle_relations__parallel_transversal_triangle_angle_value", ("single",)),
         ("task_geometry__angle_relations__triangle_exterior_angle", ("single",)),
     ),
 )
@@ -76,6 +82,23 @@ def test_angle_relations_tasks_generate_keyed_angle_points(task_id: str, query_i
                 assert output.answer_gt.value == output.trace_payload["execution_trace"]["target_angle_value"]
             else:
                 assert output.answer_gt.value == output.trace_payload["execution_trace"]["variable_x_value"]
+        elif task_id == "task_geometry__angle_relations__parallel_algebraic_angle_value":
+            assert set(output.annotation_gt.value) == {"P", "Q", "R"}
+            assert output.trace_payload["scene_ir"]["relations"]["relation_id"] in {
+                "corresponding_equal",
+                "same_side_supplementary",
+            }
+            assert "variable_x_value" in output.trace_payload["execution_trace"]
+            assert "target_angle_value" in output.trace_payload["execution_trace"]
+            if query_id == "target_angle_value":
+                assert output.answer_gt.value == output.trace_payload["execution_trace"]["target_angle_value"]
+            else:
+                assert output.answer_gt.value == output.trace_payload["execution_trace"]["variable_x_value"]
+        elif task_id == "task_geometry__angle_relations__parallel_transversal_triangle_angle_value":
+            assert set(output.annotation_gt.value) == {"P", "Q", "R"}
+            assert output.trace_payload["execution_trace"]["internal_query_id"] == "parallel_transversal_triangle_angle_value"
+            support_angles = output.trace_payload["execution_trace"]["support_angles"]
+            assert output.answer_gt.value == 180 - int(support_angles[0]) - int(support_angles[1])
         width, height = output.image.size
         for point in output.annotation_gt.value.values():
             assert len(point) == 2
@@ -98,3 +121,12 @@ def test_parallel_supplement_uses_aef_given_angle_and_cfe_target() -> None:
     assert "given_angle_BEF" not in output.trace_payload["execution_trace"]
     assert "What is the measure of angle \"CFE\"?" in output.prompt
     assert "Lines \"AB\" and \"CD\" are parallel" not in output.prompt
+
+
+def test_parallel_supplement_samples_two_or_three_parallel_lines() -> None:
+    task = create_task("task_geometry__angle_relations__parallel_supplement_angle")
+    two_line = task.generate(20260612, params={"query_id": "single", "case_index": 0}, max_attempts=20)
+    three_line = task.generate(20260612, params={"query_id": "single", "case_index": 1}, max_attempts=20)
+
+    assert two_line.trace_payload["execution_trace"]["parallel_line_count"] == 2
+    assert three_line.trace_payload["execution_trace"]["parallel_line_count"] == 3

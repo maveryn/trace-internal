@@ -62,6 +62,23 @@ def _angle_local_label_center(
     return _add(_add(vertex, primary, float(primary_scale)), secondary, float(secondary_scale))
 
 
+def _line_local_label_offset(
+    start: tuple[float, float],
+    end: tuple[float, float],
+    *,
+    along_scale: float,
+    normal_scale: float,
+) -> tuple[float, float]:
+    """Return a label offset using a rendered line's local axes."""
+
+    direction = _unit(_sub(end, start))
+    normal = (-direction[1], direction[0])
+    return (
+        (direction[0] * float(along_scale)) + (normal[0] * float(normal_scale)),
+        (direction[1] * float(along_scale)) + (normal[1] * float(normal_scale)),
+    )
+
+
 def _draw_parallel_arrow_marks(ctx: RenderContext, segments: tuple[tuple[tuple[float, float], tuple[float, float]], ...]) -> tuple[float, float, float, float]:
     """Draw arrow-style parallel markers on each parallel segment."""
 
@@ -276,7 +293,11 @@ def make_parallel_algebraic_case(
                 "Q": q,
                 "R": r,
             },
-            offsets={"P": (0.0, -26.0), "Q": (-24.0, 0.0), "R": (0.0, 24.0)},
+            offsets={
+                "P": (0.0, -26.0),
+                "Q": _line_local_label_offset(mid_l, mid_r, along_scale=-24.0, normal_scale=24.0),
+                "R": (0.0, 24.0),
+            },
         )
         first_expr = format_angle_expression(first_coeff, first_const)
         second_expr = format_angle_expression(second_coeff, second_const)

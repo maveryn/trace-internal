@@ -288,10 +288,6 @@ def render_polygon_equation_case(
         marker_bboxes[f"angle_arc_{vertex_label}"] = arc_bbox
         angle_label_bboxes[str(vertex_label)] = label_bbox
 
-    center_label_bbox = None
-    if str(case.center_label).strip():
-        center_label_bbox = _draw_text_centered(ctx, str(case.center_label), _center(points), small=False)
-
     keyed_points = {str(label): point for label, point in zip(labels, points)}
     return RenderedPolygonEquationScene(
         image=ctx.image,
@@ -302,7 +298,6 @@ def render_polygon_equation_case(
         side_label_bboxes=dict(side_label_bboxes),
         angle_label_bboxes=dict(angle_label_bboxes),
         marker_bboxes=dict(marker_bboxes),
-        center_label_bbox=center_label_bbox,
         vertices=tuple(points),
     )
 

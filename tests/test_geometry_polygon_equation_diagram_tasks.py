@@ -19,7 +19,6 @@ TASK_IDS = (
     "task_geometry__polygon_equation_diagram__interior_angle_sum_variable_value",
     "task_geometry__polygon_equation_diagram__interior_angle_sum_angle_value",
     "task_geometry__polygon_equation_diagram__side_expression_perimeter_value",
-    "task_geometry__polygon_equation_diagram__perimeter_constraint_variable_value",
 )
 
 
@@ -93,19 +92,6 @@ def test_polygon_equation_diagram_generates_each_side_count(task_id: str, side_c
         for side_label in execution["equal_sides"]:
             assert execution["side_mark_counts"][side_label] == 2
         assert execution["side_distractors"]
-    if task_id.endswith("perimeter_constraint_variable_value"):
-        assert execution["answer"] == execution["variable_value"]
-        assert execution["center_label"] == f"P={execution['perimeter_value']}"
-        assert execution["perimeter_value"] == sum(execution["perimeter_side_values"].values())
-        assert len(execution["side_labels"]) == side_count
-        assert not execution["equal_sides"]
-        assert not execution["side_mark_counts"]
-        for side_label, side_value in execution["perimeter_side_values"].items():
-            assert _eval_side_label(
-                execution["side_labels"][side_label],
-                variable_name=execution["variable_name"],
-                variable_value=execution["variable_value"],
-            ) == side_value
     if "equal_side" in task_id:
         for side_label in execution["equal_sides"]:
             assert execution["side_mark_counts"][side_label] == 2

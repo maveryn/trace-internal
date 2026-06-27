@@ -19,8 +19,7 @@
       "equal_angle_measure_value": ["", "", "", "", ""],
       "interior_angle_sum_variable_value": ["", "", "", "", ""],
       "interior_angle_sum_angle_value": ["", "", "", "", ""],
-      "side_expression_perimeter_value": ["", "", "", "", ""],
-      "perimeter_constraint_variable_value": ["", "", "", "", ""]
+      "side_expression_perimeter_value": ["", "", "", "", ""]
     },
     "query": {
       "equal_side_variable_value": [
@@ -71,13 +70,6 @@
         "What is the perimeter?",
         "Determine the polygon perimeter.",
         "Solve for the perimeter."
-      ],
-      "perimeter_constraint_variable_value": [
-        "Find {variable_name}.",
-        "Find the value of {variable_name}.",
-        "What is {variable_name}?",
-        "Determine {variable_name}.",
-        "Solve for {variable_name}."
       ]
     },
     "output": {
@@ -105,7 +97,6 @@
     "query:equal_angle_measure_value": ["target_name"],
     "query:interior_angle_sum_variable_value": ["variable_name"],
     "query:interior_angle_sum_angle_value": ["target_name"],
-    "query:perimeter_constraint_variable_value": ["variable_name"],
     "output:answer_only": ["json_output_contract_answer_only", "answer_hint", "json_example_answer_only"],
     "output:answer_and_annotation": ["json_output_contract", "annotation_hint", "answer_hint", "json_example"]
   },
@@ -133,9 +124,6 @@
     },
     "task:side_expression_perimeter_value": {
       "answer_hint": "set \"answer\" to the polygon perimeter as an integer"
-    },
-    "task:perimeter_constraint_variable_value": {
-      "answer_hint": "set \"answer\" to the value of the variable as an integer"
     },
     "output:answer_only": {
       "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."

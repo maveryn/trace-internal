@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.games.shared.piece_board_rules import (
     BLACK,
@@ -906,12 +907,7 @@ def resolve_checkmate_answer_label(rng, *, params: Mapping[str, Any], labels: Se
         if label not in labels_tuple:
             raise ValueError(f"answer_option_label={label!r} is not available for labels {labels_tuple}")
         return label, string_probability_map(labels_tuple, label)
-    sample_cursor = params.get("_sample_cursor")
-    balanced = bool(params.get("balanced_checkmate_answer_label_sampling", True))
-    if balanced and sample_cursor is not None:
-        label = labels_tuple[abs(int(sample_cursor)) % len(labels_tuple)]
-    else:
-        label = str(rng.choice(labels_tuple))
+    label = str(uniform_choice(rng, labels_tuple))
     return label, string_probability_map(labels_tuple, label)
 
 

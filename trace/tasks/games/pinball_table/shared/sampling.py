@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from itertools import cycle
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import shuffled_support, uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.games.shared.sampling import resolve_games_named_axis
 from trace.tasks.shared.config_defaults import group_default
@@ -171,16 +173,9 @@ def resolve_pinball_target_label(
             target_object_label=value,
             target_object_label_probabilities={str(label): (1.0 if str(label) == value else 0.0) for label in support},
         )
-    balanced = bool(params.get("balanced_target_object_label_sampling", group_default(gen_defaults, "balanced_target_object_label_sampling", True)))
-    if balanced and params.get("_sample_cursor") is not None:
-        value = str(support[abs(int(params["_sample_cursor"])) % len(support)])
-        return PinballTargetLabelAxis(
-            target_object_label=value,
-            target_object_label_probabilities=probabilities,
-        )
     rng = spawn_rng(int(instance_seed), str(namespace))
     return PinballTargetLabelAxis(
-        target_object_label=str(rng.choice(support)),
+        target_object_label=str(uniform_choice(rng, support)),
         target_object_label_probabilities=probabilities,
     )
 
@@ -562,13 +557,12 @@ def sample_scoreable_object_count_playfield(
         labels = list(OBJECT_LABELS[: int(axes.object_count)])
         rng.shuffle(labels)
         scoreable_indices = set(rng.sample(range(int(axes.object_count)), int(scoreable_count)))
-        kind_pool = list(SUPPORTED_PINBALL_OBJECT_KINDS)
-        rng.shuffle(kind_pool)
+        kind_cycle = cycle(shuffled_support(rng, SUPPORTED_PINBALL_OBJECT_KINDS))
         objects: list[PinballObject] = []
         score_values: list[int] = []
         annotation_ids: list[str] = []
         for index, label in enumerate(labels):
-            kind = str(kind_pool[int((index + rng.randrange(len(kind_pool))) % len(kind_pool))])
+            kind = str(next(kind_cycle))
             center = _safe_mixed_object_position(
                 rng=rng,
                 kind=kind,

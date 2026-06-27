@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.support_sampling import resolve_integer_choice
 
@@ -211,11 +212,8 @@ def answer_option_label(*, instance_seed: int, params: Mapping[str, Any], option
         if label not in labels:
             raise ValueError(f"unsupported answer_option_label for {option_count} options: {label}")
         return str(label)
-    cursor = params.get("_sample_cursor")
-    if cursor is not None:
-        return str(labels[abs(int(cursor)) % len(labels)])
     rng = spawn_rng(int(instance_seed), "games.solitaire.answer_option_label")
-    return str(labels[int(rng.randrange(len(labels)))])
+    return str(uniform_choice(rng, labels))
 
 
 def sample_card_option_count(*, namespace: str, instance_seed: int, params: Mapping[str, Any]) -> Tuple[int, Dict[str, float]]:

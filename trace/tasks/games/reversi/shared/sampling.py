@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from trace.core.sampling import shuffled_support
 from trace.tasks.games.shared.sampling import resolve_games_named_axis
 from trace.tasks.games.shared.style import SUPPORTED_REVERSI_STYLE_VARIANTS
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
@@ -265,27 +266,27 @@ def sample_frontier_disc_scene(
     """Search for a reachable board with an exact frontier-disc count."""
 
     windows = _frontier_ply_windows(board_size=int(board_size), target_answer=int(target_answer))
-    for attempt_index in range(420):
-        min_plies, max_plies = windows[int(attempt_index) % len(windows)]
-        board = simulate_random_state(
-            rng=rng,
-            board_size=int(board_size),
-            min_plies=int(min_plies),
-            max_plies=int(max_plies),
-        )
-        annotation_coords = frontier_disc_coords(board, int(query_player))
-        if int(len(annotation_coords)) != int(target_answer):
-            continue
-        return SampledReversiScene(
-            board=board,
-            current_player=int(query_player),
-            legal_moves=legal_moves_with_flips(board, int(query_player)),
-            annotation_coords=tuple(annotation_coords),
-            annotation_entity_ids=tuple(coord_to_cell_id(coord) for coord in annotation_coords),
-            marked_move=None,
-            marked_move_flips=tuple(),
-            construction_mode="simulated_frontier_disc_count",
-        )
+    for _attempt_batch in range(210):
+        for min_plies, max_plies in shuffled_support(rng, windows):
+            board = simulate_random_state(
+                rng=rng,
+                board_size=int(board_size),
+                min_plies=int(min_plies),
+                max_plies=int(max_plies),
+            )
+            annotation_coords = frontier_disc_coords(board, int(query_player))
+            if int(len(annotation_coords)) != int(target_answer):
+                continue
+            return SampledReversiScene(
+                board=board,
+                current_player=int(query_player),
+                legal_moves=legal_moves_with_flips(board, int(query_player)),
+                annotation_coords=tuple(annotation_coords),
+                annotation_entity_ids=tuple(coord_to_cell_id(coord) for coord in annotation_coords),
+                marked_move=None,
+                marked_move_flips=tuple(),
+                construction_mode="simulated_frontier_disc_count",
+            )
     raise ValueError("failed to find a reachable board with the requested frontier-disc count")
 
 

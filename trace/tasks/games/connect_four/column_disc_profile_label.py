@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
@@ -62,16 +63,9 @@ def _resolve_target_profile_counts(
             str(value): 1.0 / float(len(total_support)) for value in total_support
         }
 
-    cursor = task_params.get("_sample_cursor")
-    if cursor is None:
-        rng = spawn_rng(int(instance_seed), f"{TASK_ID}.target_profile")
-        total_index = int(rng.randrange(len(total_support)))
-        total = int(total_support[int(total_index)])
-        red_count = int(rng.randint(1, int(total) - 1))
-    else:
-        cursor_value = abs(int(cursor))
-        total = int(total_support[int(cursor_value) % len(total_support)])
-        red_count = int(1 + ((int(cursor_value) // max(1, len(total_support))) % (int(total) - 1)))
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.target_profile")
+    total = int(uniform_choice(rng, total_support))
+    red_count = int(uniform_choice(rng, tuple(range(1, int(total)))))
     yellow_count = int(total - red_count)
     return int(red_count), int(yellow_count), tuple(int(value) for value in total_support), {
         str(value): 1.0 / float(len(total_support)) for value in total_support

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, List, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.games.shared.sampling import resolve_games_named_axis
 from trace.tasks.shared.config_defaults import group_default
@@ -117,11 +118,8 @@ def answer_option_label(instance_seed: int, *, params: Mapping[str, Any], option
         if value not in labels:
             raise ValueError(f"answer_option_label={value!r} is not available for {option_count} options")
         return str(value)
-    cursor = params.get("_sample_cursor")
-    if cursor is not None:
-        return str(labels[abs(int(cursor)) % len(labels)])
     rng = spawn_rng(int(instance_seed), "games.marble_chain.answer_label")
-    return str(labels[int(rng.randrange(len(labels)))])
+    return str(uniform_choice(rng, labels))
 
 
 def pick_slots_with_spacing(

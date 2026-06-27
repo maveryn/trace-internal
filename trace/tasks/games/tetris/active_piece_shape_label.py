@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
@@ -31,11 +32,8 @@ def _target_piece(instance_seed: int, task_params: Mapping[str, Any]) -> tuple[s
         if piece not in labels:
             raise ValueError(f"unsupported Tetris target_piece: {raw}")
         return str(piece), {str(label): 1.0 / float(len(labels)) for label in labels}
-    cursor = task_params.get("_sample_cursor")
-    if cursor is not None:
-        return str(labels[abs(int(cursor)) % len(labels)]), {str(label): 1.0 / float(len(labels)) for label in labels}
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.target_piece")
-    return str(labels[int(rng.randrange(len(labels)))]), {str(label): 1.0 / float(len(labels)) for label in labels}
+    return str(uniform_choice(rng, labels)), {str(label): 1.0 / float(len(labels)) for label in labels}
 
 
 def _prepare_active_piece_shape_objective(

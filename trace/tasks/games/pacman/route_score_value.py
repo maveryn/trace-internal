@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+from itertools import cycle
 from typing import Any, Dict, Mapping
 
+from trace.core.sampling import shuffled_support
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
@@ -160,12 +162,13 @@ def _construct_route_score_attempt(
     bonus_coords = tuple(on_route_bonus_coords) + tuple(off_route_bonus_coords)
     bonus_values = tuple(int(rng.choice(tuple(bonus_value_support))) for _ in labels)
     route_coord_set = {tuple(coord) for coord in route}
+    item_kind_cycle = cycle(shuffled_support(rng, PACMAN_ITEM_KINDS))
     items = tuple(
         PacmanItem(
             label=str(label),
             item_id=item_entity_id(str(label)),
             coord=tuple(coord),
-            kind=str(PACMAN_ITEM_KINDS[index % len(PACMAN_ITEM_KINDS)]),
+            kind=str(next(item_kind_cycle)),
             is_answer=tuple(coord) in route_coord_set,
             score_value=int(bonus_values[index]),
         )

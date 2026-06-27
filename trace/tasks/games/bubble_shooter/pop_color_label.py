@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
@@ -83,12 +84,8 @@ def _resolve_label_choice(
         return value, {str(item): (1.0 if str(item) == value else 0.0) for item in support}, support
 
     probabilities = {str(item): 1.0 / float(len(support)) for item in support}
-    sampling_index = params.get("_sample_cursor")
-    balanced = bool(params.get(str(balanced_flag_key), group_default(_GEN_DEFAULTS, str(balanced_flag_key), True)))
-    if balanced and sampling_index is not None:
-        return str(support[abs(int(sampling_index)) % len(support)]), probabilities, support
     rng = spawn_rng(int(instance_seed), str(namespace))
-    return str(rng.choice(tuple(support))), probabilities, support
+    return str(uniform_choice(rng, support)), probabilities, support
 
 
 def _prepare_pop_color_label_objective(

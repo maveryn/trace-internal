@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from itertools import cycle
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import shuffled_support, uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.games.shared.sampling import resolve_games_named_axis
 from trace.tasks.shared.config_defaults import group_default
@@ -208,13 +210,8 @@ def resolve_platformer_label_axis(
         probabilities = {str(item): (1.0 if str(item) == value else 0.0) for item in support}
         return PlatformerLabelAxis(value, tuple(support), probabilities)
     probabilities = {str(item): 1.0 / float(len(support)) for item in support}
-    sampling_index = params.get("_sample_cursor")
-    balanced = bool(params.get(str(balanced_flag_key), group_default(gen_defaults, str(balanced_flag_key), True)))
-    if balanced and sampling_index is not None:
-        value = str(support[abs(int(sampling_index)) % len(support)])
-    else:
-        rng = spawn_rng(int(instance_seed), str(namespace))
-        value = str(rng.choice(tuple(support)))
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    value = str(uniform_choice(rng, support))
     return PlatformerLabelAxis(value, tuple(support), probabilities)
 
 
@@ -409,7 +406,7 @@ def _make_hazard(
     return PlatformerHazard(
         hazard_id=hazard_entity_id(index),
         label=str(label),
-        kind=str(HAZARD_KINDS[int((index + rng.randrange(len(HAZARD_KINDS))) % len(HAZARD_KINDS))]),
+        kind=str(uniform_choice(rng, HAZARD_KINDS)),
         x_norm=float(center[0]),
         y_norm=float(center[1]),
         width_norm=float(rng.uniform(0.060, 0.076)),
@@ -733,11 +730,12 @@ def sample_scored_collectible_path_scene(
         target_collectibles: list[PlatformerCollectible] = []
         answer = 0
         next_index = 0
+        bonus_kind_cycle = cycle(shuffled_support(rng, BONUS_COLLECTIBLE_KINDS))
         for target_kind, t in zip(target_kinds, t_values):
             point = tuple(float(value) for value in path[max(1, min(len(path) - 2, int(round(float(t) * (len(path) - 1)))))])
             if str(target_kind) == "bonus":
                 score_value = int(rng.choice(bonus_values))
-                kind = str(BONUS_COLLECTIBLE_KINDS[int(next_index) % len(BONUS_COLLECTIBLE_KINDS)])
+                kind = str(next(bonus_kind_cycle))
                 radius_norm = 0.028
                 answer += int(score_value)
             else:
@@ -783,7 +781,7 @@ def sample_scored_collectible_path_scene(
                     radius_norm=0.028,
                     on_path=False,
                     color_index=int(next_index),
-                    kind=str(BONUS_COLLECTIBLE_KINDS[(int(next_index) + int(offset)) % len(BONUS_COLLECTIBLE_KINDS)]),
+                    kind=str(next(bonus_kind_cycle)),
                     score_value=int(rng.choice(bonus_values)),
                 )
             )

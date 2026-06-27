@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence, Tuple
 
+from trace.core.seed import spawn_rng
 from trace.tasks.games.shared.sampling import resolve_games_named_axis
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 
@@ -178,8 +179,9 @@ def resolve_ludo_scene_axes(
         supported=PLAYER_COLORS,
     )
     if str(target_color) == str(query_color):
-        index = (PLAYER_COLORS.index(str(query_color)) + 1) % len(PLAYER_COLORS)
-        target_color = PLAYER_COLORS[index]
+        rng = spawn_rng(int(instance_seed), f"{str(namespace)}.fallback_target_color")
+        alternatives = tuple(str(color) for color in PLAYER_COLORS if str(color) != str(query_color))
+        target_color = str(rng.choice(alternatives))
     return LudoSceneAxes(
         style_variant=str(style_variant),
         query_color=str(query_color),

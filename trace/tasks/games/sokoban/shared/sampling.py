@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from itertools import cycle
 from string import ascii_uppercase
 from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
+from trace.core.sampling import shuffled_support
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.color_format import format_named_color_with_hex
 from trace.tasks.shared.named_colors import sample_named_color_palette
@@ -319,10 +321,8 @@ def sample_box_goal_status_dataset(
             for box_label in labels
             if (box_label in on_goal_labels) == (str(status_mode) == BOX_GOAL_STATUS_MODE_ON)
         ]
-        colors = {
-            box_label: list(BOX_GOAL_PAIR_COLORS[(index - 1) % len(BOX_GOAL_PAIR_COLORS)])
-            for index, box_label in enumerate(labels, start=1)
-        }
+        color_cycle = cycle(shuffled_support(rng, BOX_GOAL_PAIR_COLORS))
+        colors = {box_label: list(next(color_cycle)) for box_label in labels}
         target_colors = {
             target_labels[box_label]: list(colors[box_label])
             for box_label in labels
@@ -396,10 +396,8 @@ def sample_closest_box_goal_dataset(
         if sum(1 for value in distances.values() if int(value) == int(min_distance)) != 1:
             continue
         answer_label = min(distances, key=lambda label: (int(distances[label]), str(label)))
-        colors = {
-            label: list(BOX_GOAL_PAIR_COLORS[index % len(BOX_GOAL_PAIR_COLORS)])
-            for index, label in enumerate(labels)
-        }
+        color_cycle = cycle(shuffled_support(rng, BOX_GOAL_PAIR_COLORS))
+        colors = {label: list(next(color_cycle)) for label in labels}
         target_colors = {matching_targets[label]: list(colors[label]) for label in labels}
         option_specs = [
             {

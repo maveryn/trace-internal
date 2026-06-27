@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import cycle
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import shuffled_support, uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.support_sampling import resolve_integer_choice
@@ -126,12 +128,8 @@ def resolve_minigolf_label_choice(
             raise ValueError(f"{explicit_key}={value!r} is not in {support_key}")
         return value, {str(item): (1.0 if str(item) == value else 0.0) for item in support}
     probabilities = {str(item): 1.0 / float(len(support)) for item in support}
-    sampling_index = params.get("_sample_cursor")
-    balanced = bool(params.get(str(balanced_flag_key), group_default(gen_defaults, str(balanced_flag_key), True)))
-    if balanced and sampling_index is not None:
-        return str(support[abs(int(sampling_index)) % len(support)]), probabilities
     rng = spawn_rng(int(instance_seed), str(namespace))
-    return str(rng.choice(tuple(support))), probabilities
+    return str(uniform_choice(rng, support)), probabilities
 
 
 def resolve_minigolf_integer_choice(
@@ -242,7 +240,10 @@ def sample_shot_options_scene(
             continue
 
         obstacles: list[MinigolfObstacle] = []
+        obstacle_kind_cycle = cycle(shuffled_support(rng, OBSTACLE_KINDS))
         for index in range(int(axes.obstacle_count)):
+            if int(index) >= len(OBSTACLE_LABELS):
+                raise ValueError("Mini-golf obstacle_count exceeds available visible labels")
             maybe = _safe_obstacle_position(
                 rng=rng,
                 existing=obstacles,
@@ -254,8 +255,8 @@ def sample_shot_options_scene(
             obstacles.append(
                 MinigolfObstacle(
                     obstacle_id=obstacle_entity_id(index),
-                    label=str(OBSTACLE_LABELS[index % len(OBSTACLE_LABELS)]),
-                    kind=str(OBSTACLE_KINDS[int((index + rng.randrange(len(OBSTACLE_KINDS))) % len(OBSTACLE_KINDS))]),
+                    label=str(OBSTACLE_LABELS[int(index)]),
+                    kind=str(next(obstacle_kind_cycle)),
                     x_norm=float(maybe[0]),
                     y_norm=float(maybe[1]),
                     radius_norm=float(OBSTACLE_RADIUS_NORM * rng.uniform(0.88, 1.08)),
@@ -423,6 +424,7 @@ def _obstacles_with_target_label(
     if any(distance(target_center, avoid_point) < MIN_OBSTACLE_POINT_CLEARANCE_NORM for avoid_point in avoid_points):
         return None
     obstacles: list[MinigolfObstacle] = []
+    obstacle_kind_cycle = cycle(shuffled_support(rng, OBSTACLE_KINDS))
     for index, label in enumerate(labels):
         if int(index) == int(target_index):
             center = (float(target_center[0]), float(target_center[1]))
@@ -445,7 +447,7 @@ def _obstacles_with_target_label(
             MinigolfObstacle(
                 obstacle_id=obstacle_entity_id(index),
                 label=str(label),
-                kind=str(OBSTACLE_KINDS[int((index + rng.randrange(len(OBSTACLE_KINDS))) % len(OBSTACLE_KINDS))]),
+                kind=str(next(obstacle_kind_cycle)),
                 x_norm=float(center[0]),
                 y_norm=float(center[1]),
                 radius_norm=float(OBSTACLE_RADIUS_NORM * rng.uniform(0.88, 1.10)),

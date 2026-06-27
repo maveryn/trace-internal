@@ -121,9 +121,12 @@ def _entity_dy(rng) -> float:
 
 
 def _make_enemy(*, enemy_index: int, lane: int, y_slot: int, rng, score_value: int | None = None) -> SpaceEnemy:
+    label_index = int(enemy_index)
+    if label_index < 0 or label_index >= len(ENEMY_LABELS):
+        raise ValueError("space-shooter enemy_index exceeds available visible labels")
     return SpaceEnemy(
         enemy_id=f"enemy_{int(enemy_index)}",
-        label=str(ENEMY_LABELS[int(enemy_index) % len(ENEMY_LABELS)]),
+        label=str(ENEMY_LABELS[label_index]),
         lane=int(lane),
         y_slot=int(y_slot),
         dx_frac=0.0,

@@ -423,7 +423,9 @@ def sample_last_cell_candidate_options(
         raise ValueError("failed to sample enough invalid Battleship last-cell candidates")
 
     rng.shuffle(invalid_pool)
-    selected_label_index = int(answer_label_index) % len(labels)
+    selected_label_index = int(answer_label_index)
+    if selected_label_index < 0 or selected_label_index >= len(labels):
+        raise ValueError("answer_label_index must be inside the visible Battleship option labels")
     distractor_coords = list(invalid_pool[: len(labels) - 1])
     option_coords: list[Coord] = []
     distractor_index = 0

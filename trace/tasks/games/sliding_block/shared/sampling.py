@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
+from itertools import cycle
 from string import ascii_uppercase
 from typing import Any, Mapping, Sequence
 
+from trace.core.sampling import shuffled_support, uniform_choice, weighted_support_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.games.shared.sampling import get_games_int_param as _get_int
 from trace.tasks.games.shared.sampling import get_games_int_range as _get_range
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from .defaults import GEN_DEFAULTS
 from .rules import apply_move, block_ids_by_orientation, legal_moves, movable_block_ids, state_signature
@@ -43,25 +44,15 @@ def _resolve_axis(
             raise ValueError(f"unsupported sliding-block {explicit_key}: {selected}")
         return selected, _axis_probabilities(supported, selected)
 
-    if bool(params.get(str(balance_flag_key), group_default(defaults, str(balance_flag_key), False))):
-        index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-        selected = supported[int(index) % len(supported)]
-        return str(selected), {value: 1.0 / float(len(supported)) for value in supported}
-
     weights_raw = params.get(str(weights_key), group_default(defaults, str(weights_key), {}))
     weights = {str(value): float(weights_raw.get(str(value), 0.0)) for value in supported} if isinstance(weights_raw, Mapping) else {}
-    total = sum(float(weights.get(value, 0.0)) for value in supported)
-    if total <= 0.0:
-        return supported[0], {value: 1.0 / float(len(supported)) for value in supported}
-
     rng = spawn_rng(int(instance_seed), str(namespace))
-    threshold = float(rng.random()) * total
-    running = 0.0
-    for value in supported:
-        running += float(weights.get(value, 0.0))
-        if threshold <= running:
-            return str(value), {key: float(weights.get(key, 0.0)) / total for key in supported}
-    return supported[-1], {key: float(weights.get(key, 0.0)) / total for key in supported}
+    selected, probabilities = weighted_support_choice(
+        rng,
+        supported,
+        weights=weights if weights else None,
+    )
+    return str(selected), dict(probabilities)
 
 
 def resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> tuple[str, dict[str, float]]:
@@ -116,8 +107,8 @@ def select_target_from_support(
     values = tuple(support)
     if not values:
         raise ValueError("sliding-block answer support must not be empty")
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return values[int(index) % len(values)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    return uniform_choice(rng, values)
 
 
 def move_result_option_labels(params: Mapping[str, Any], *, instance_seed: int) -> tuple[tuple[str, ...], dict[str, float]]:
@@ -133,12 +124,8 @@ def move_result_option_labels(params: Mapping[str, Any], *, instance_seed: int) 
         if count not in set(support):
             raise ValueError(f"unsupported sliding-block option_count: {count}")
         return tuple(ascii_uppercase[:count]), {str(value): (1.0 if int(value) == count else 0.0) for value in support}
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace="games.sliding_block.final_board.option_count",
-    )
-    count = int(support[int(index) % len(support)])
+    rng = spawn_rng(int(instance_seed), "games.sliding_block.final_board.option_count")
+    count = int(uniform_choice(rng, support))
     return tuple(ascii_uppercase[:count]), {str(value): 1.0 / float(len(support)) for value in support}
 
 
@@ -339,6 +326,7 @@ def build_exit_path_board(
     blocks: list[BlockSpec] = [target_block]
     occupied = set(target_block.cells)
     blocker_ids: list[str] = []
+    fill_cycle = cycle(shuffled_support(rng, BLOCK_FILLS))
     for index, cell in enumerate(selected_path_cells):
         block_id = f"blocker_{index}"
         block = perpendicular_block_for_path_cell(
@@ -349,7 +337,7 @@ def build_exit_path_board(
             rng=rng,
             block_id=block_id,
             role="path_blocker",
-            fill_rgb=BLOCK_FILLS[index % len(BLOCK_FILLS)],
+            fill_rgb=next(fill_cycle),
         )
         if any(block_cell in occupied for block_cell in block.cells):
             raise ValueError("path blocker overlaps an existing block")
@@ -371,7 +359,7 @@ def build_exit_path_board(
             cols=int(cols),
             rng=rng,
             role="distractor",
-            fill_rgb=BLOCK_FILLS[idx % len(BLOCK_FILLS)],
+            fill_rgb=next(fill_cycle),
         )
         if any(block_cell in occupied for block_cell in block.cells):
             continue
@@ -422,6 +410,7 @@ def build_neutral_board(
 
     blocks: list[BlockSpec] = []
     occupied: set[tuple[int, int]] = set()
+    fill_cycle = cycle(shuffled_support(rng, BLOCK_FILLS))
     attempts = 0
     while len(blocks) < int(desired_count) and attempts < 1200:
         attempts += 1
@@ -432,7 +421,7 @@ def build_neutral_board(
             cols=int(cols),
             rng=rng,
             role="distractor",
-            fill_rgb=BLOCK_FILLS[idx % len(BLOCK_FILLS)],
+            fill_rgb=next(fill_cycle),
         )
         if any(cell in occupied for cell in block.cells):
             continue
@@ -646,12 +635,7 @@ def build_board_for_move_result(
     move_max = _get_int(params, GEN_DEFAULTS, "move_result_move_count_max", 2)
     if int(move_min) > int(move_max):
         raise ValueError("move_result_move_count_min must be <= move_result_move_count_max")
-    move_count_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace="games.sliding_block.final_board.move_count",
-    )
-    move_count = int(move_min) + (int(move_count_index) % (int(move_max) - int(move_min) + 1))
+    move_count = int(uniform_choice(rng, tuple(range(int(move_min), int(move_max) + 1))))
     max_distance = _get_int(params, GEN_DEFAULTS, "move_result_slide_distance_max", 3)
     sequence, states = sample_move_sequence(
         blocks=blocks,

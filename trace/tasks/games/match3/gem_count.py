@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from trace.core.sampling import uniform_choice
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
@@ -111,7 +112,7 @@ def _prepare_gem_count_objective(
             scoped_support = [int(value) for value in answer_support if 1 <= int(value) <= len(scoped_coords)]
             if not scoped_support:
                 raise ValueError("gem-count support has no feasible value for selected scope")
-            target_answer = int(scoped_support[(int(target_answer) - 1) % len(scoped_support)])
+            target_answer = int(uniform_choice(rng, tuple(scoped_support)))
 
         chosen_coords = list(scoped_coords)
         rng.shuffle(chosen_coords)

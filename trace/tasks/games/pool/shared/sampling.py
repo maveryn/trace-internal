@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import shuffled_support
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from trace.tasks.games.shared.sampling import resolve_games_named_axis
@@ -287,13 +288,13 @@ def sample_marked_shot_pool_scene(
     _add_ball(balls, number=target_number, center=target_center, is_marked=True)
 
     used_numbers = {0, target_number}
-    blocker_ts = [0.34, 0.54, 0.72, 0.86]
+    blocker_ts = list(shuffled_support(rng, (0.34, 0.54, 0.72, 0.86)))
     for index in range(int(target_answer)):
         segment_start, segment_end = (cue_center, target_center) if index % 2 == 0 else (target_center, pocket.center)
         center = _point_on_segment(
             segment_start,
             segment_end,
-            t=blocker_ts[index % len(blocker_ts)],
+            t=blocker_ts[int(index)],
             offset=float(rng.uniform(-0.010, 0.010)),
         )
         if not _position_available(center, balls, min_distance=float(min_distance) * 0.70):

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.games.shared.layout import (
     attach_games_unit_size_jitter,
@@ -14,7 +15,6 @@ from trace.tasks.games.shared.layout import (
 from trace.tasks.games.shared.sampling import resolve_games_integer_axis, resolve_games_named_axis
 from trace.tasks.games.shared.style import SUPPORTED_DOTS_AND_BOXES_STYLE_VARIANTS
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.font_assets import sample_font_family
 from trace.tasks.shared.support_sampling import resolve_integer_support
 
@@ -199,16 +199,8 @@ def resolve_dots_and_boxes_board_shape_axis(
     shapes = tuple((int(row), int(col)) for row in row_support for col in col_support)
     if not shapes:
         raise ValueError("box_rows_support and box_cols_support must define at least one board shape")
-    balanced_enabled = bool(params.get("balanced_board_shape_sampling", group_default(gen_defaults, "balanced_board_shape_sampling", True)))
-    if bool(balanced_enabled):
-        selection_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{DOTS_AND_BOXES_NAMESPACE}.board_shape",
-        )
-    else:
-        selection_index = int(spawn_rng(int(instance_seed), f"{DOTS_AND_BOXES_NAMESPACE}.board_shape").randrange(len(shapes)))
-    box_rows, box_cols = shapes[int(selection_index) % len(shapes)]
+    rng = spawn_rng(int(instance_seed), f"{DOTS_AND_BOXES_NAMESPACE}.board_shape")
+    box_rows, box_cols = uniform_choice(rng, shapes)
     probability = 1.0 / float(len(shapes))
     return DotsAndBoxesBoardShapeAxis(
         box_rows=int(box_rows),

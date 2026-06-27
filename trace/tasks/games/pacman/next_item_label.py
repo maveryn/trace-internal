@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+from itertools import cycle
 from typing import Any, Dict, Mapping
 
+from trace.core.sampling import shuffled_support
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
@@ -118,7 +120,8 @@ def _construct_next_item_label_attempt(*, rng: Any, axes: Any, target_label: str
     open_cells = expand_open_cells(rng=rng, rows=rows, cols=cols, route_coords=route, min_open_cells=min_open)
     labels = tuple(PACMAN_ITEM_LABELS[: int(item_count)])
     label_to_coord: Dict[str, Any] = {str(target_label): tuple(route[2])}
-    label_to_kind: Dict[str, str] = {str(target_label): str(rng.choice(PACMAN_ITEM_KINDS))}
+    item_kind_cycle = cycle(shuffled_support(rng, PACMAN_ITEM_KINDS))
+    label_to_kind: Dict[str, str] = {str(target_label): str(next(item_kind_cycle))}
 
     later_route_cells = list(route[4:])
     off_route_cells = list(available_open_cells(open_cells, excluded=route))
@@ -148,7 +151,7 @@ def _construct_next_item_label_attempt(*, rng: Any, axes: Any, target_label: str
             raise ValueError("duplicate Pac-Man item coordinate")
         used.add(coord)
         label_to_coord[label] = coord
-        label_to_kind[label] = str(PACMAN_ITEM_KINDS[(PACMAN_ITEM_LABELS.index(label) + int(rng.randrange(len(PACMAN_ITEM_KINDS)))) % len(PACMAN_ITEM_KINDS)])
+        label_to_kind[label] = str(next(item_kind_cycle))
 
     available_for_pellets = list(available_open_cells(open_cells, excluded=tuple(route) + tuple(used)))
     rng.shuffle(available_for_pellets)

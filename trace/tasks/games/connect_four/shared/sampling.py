@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.games.shared.style import SUPPORTED_CONNECT_FOUR_STYLE_VARIANTS
 from trace.tasks.shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
@@ -636,8 +637,7 @@ def _target_column_for_label_task(*, rng, params: Mapping[str, Any], columns: in
         if not 0 <= int(column) < int(columns):
             raise ValueError(f"target_column_index={int(column)} is outside a {int(columns)}-column board")
         return int(column), str(column_labels[int(column)]), tuple(column_labels)
-    sampling_index = params.get("_sample_cursor")
-    column = abs(int(sampling_index)) % int(columns) if sampling_index is not None else int(rng.randrange(int(columns)))
+    column = int(uniform_choice(rng, tuple(range(int(columns)))))
     return int(column), str(column_labels[int(column)]), tuple(column_labels)
 
 

@@ -6,6 +6,7 @@ from functools import lru_cache
 from itertools import product
 from typing import Any, Mapping, Sequence
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default
 
@@ -57,17 +58,16 @@ def _sample_axis(
         if value not in choices:
             raise ValueError(f"unsupported slot-machine {key}: {explicit}")
         return value
-    cursor = params.get("_sample_cursor")
-    if cursor is not None and bool(group_default(defaults, f"balanced_{key}_sampling", True)):
-        return choices[abs(int(cursor)) % len(choices)]
     weights = params.get(f"{key}_weights", group_default(defaults, f"{key}_weights", {}))
     rng = spawn_rng(int(instance_seed), str(namespace))
     parsed = [max(0.0, float(dict(weights or {}).get(str(value), 1.0))) for value in choices]
-    total = sum(parsed) or float(len(choices))
+    if not sum(parsed):
+        return str(uniform_choice(rng, choices))
+    total = sum(parsed)
     threshold = rng.random() * total
     cursor_value = 0.0
     for value, weight in zip(choices, parsed):
-        cursor_value += float(weight if sum(parsed) else 1.0)
+        cursor_value += float(weight)
         if threshold <= cursor_value:
             return str(value)
     return str(choices[-1])

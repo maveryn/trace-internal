@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import cycle
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import shuffled_support, uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.games.shared.layout import (
     attach_games_unit_size_jitter,
@@ -491,8 +493,9 @@ def _make_pop_board(
     support_blocked = set(protected)
     support = _support_path_to_top(rng=rng, rows=rows, cols=cols, start=component[0], blocked=support_blocked)
     support_colors = _colors_except((str(color_key),))
-    for index, coord in enumerate(support):
-        values[coord] = str(support_colors[index % len(support_colors)])
+    support_color_cycle = cycle(shuffled_support(rng, support_colors))
+    for coord in support:
+        values[coord] = str(next(support_color_cycle))
     protected.update(support)
     _add_top_clutter(
         rng=rng,
@@ -573,11 +576,12 @@ def _make_drop_board(
     protected.update(support)
     values: Dict[Coord, str] = {coord: str(color_key) for coord in pop_component}
     non_shot_colors = _colors_except((str(color_key),))
-    tail_color = str(non_shot_colors[1 % len(non_shot_colors)])
+    tail_color = str(uniform_choice(rng, non_shot_colors))
     for coord in tail:
         values[coord] = tail_color
-    for index, coord in enumerate(support):
-        values[coord] = str(non_shot_colors[index % len(non_shot_colors)])
+    support_color_cycle = cycle(shuffled_support(rng, non_shot_colors))
+    for coord in support:
+        values[coord] = str(next(support_color_cycle))
     _add_top_clutter(
         rng=rng,
         rows=rows,

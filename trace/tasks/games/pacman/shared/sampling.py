@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from itertools import cycle
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import shuffled_support, uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.games.shared.sampling import resolve_games_named_axis
 from trace.tasks.shared.config_defaults import group_default
@@ -285,13 +287,8 @@ def resolve_pacman_label_target(
             target_label_probabilities={str(item): (1.0 if str(item) == value else 0.0) for item in support},
         )
     probabilities = {str(item): 1.0 / float(len(support)) for item in support}
-    sampling_index = params.get("_sample_cursor")
-    balanced = bool(params.get(str(balanced_flag_key), group_default(gen_defaults, str(balanced_flag_key), True)))
-    if balanced and sampling_index is not None:
-        label = str(support[abs(int(sampling_index)) % len(support)])
-    else:
-        rng = spawn_rng(int(instance_seed), str(namespace))
-        label = str(rng.choice(tuple(support)))
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    label = str(uniform_choice(rng, support))
     return PacmanLabelTargetAxis(
         target_label=label,
         target_label_support=tuple(str(item) for item in support),
@@ -386,8 +383,9 @@ def sample_decorative_ghosts(
         return tuple()
     count = min(len(candidates), int(rng.randint(int(min_count), int(max_count) + 1)))
     ghosts: list[PacmanGhost] = []
+    color_cycle = cycle(shuffled_support(rng, PACMAN_GHOST_COLOR_KEYS))
     for offset, coord in enumerate(candidates[:count]):
-        color_key = str(PACMAN_GHOST_COLOR_KEYS[(int(start_index) + int(offset)) % len(PACMAN_GHOST_COLOR_KEYS)])
+        color_key = str(next(color_cycle))
         ghosts.append(
             PacmanGhost(
                 ghost_id=ghost_entity_id(int(start_index) + int(offset)),

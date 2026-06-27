@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
@@ -138,12 +139,9 @@ def _resolve_label_choice(
             raise ValueError(f"{explicit_key}={value!r} is not in {support_key}")
         return value, {str(item): (1.0 if str(item) == value else 0.0) for item in support}
     probabilities = {str(item): 1.0 / float(len(support)) for item in support}
-    sampling_index = params.get("_sample_cursor")
-    balanced = bool(params.get(str(balanced_flag_key), group_default(gen_defaults, str(balanced_flag_key), True)))
-    if balanced and sampling_index is not None:
-        return str(support[abs(int(sampling_index)) % len(support)]), probabilities
+    del balanced_flag_key
     rng = spawn_rng(int(instance_seed), str(namespace))
-    return str(rng.choice(tuple(support))), probabilities
+    return str(uniform_choice(rng, tuple(support))), probabilities
 
 
 def resolve_2048_axes(
@@ -344,8 +342,8 @@ def score_decomposition(score: int) -> Tuple[int, ...]:
 def _non_merging_line(rng, *, force_slide: bool = False, max_value: int = 64) -> Tuple[int, ...]:
     values = [2, 4, 8, 16, 32, 64, 128]
     values = [value for value in values if int(value) <= int(max_value)]
-    start_offset = int(rng.randrange(len(values)))
-    filled = [int(values[(start_offset + index) % len(values)]) for index in range(int(rng.randint(2, 5)))]
+    fill_count = min(len(values), SIZE, int(rng.randint(2, SIZE)))
+    filled = [int(value) for value in rng.sample(values, int(fill_count))]
     if bool(force_slide):
         line = [EMPTY] + list(filled[:3])
         while len(line) < SIZE:

@@ -41,15 +41,11 @@ def _prepare_drop_result_objective(
         balanced_flag_key="balanced_target_clear_count_sampling",
     )
     labels = OPTION_LABELS[:RESULT_OPTION_COUNT]
-    if task_params.get("_sample_cursor") is not None:
-        answer_label = str(labels[abs(int(task_params["_sample_cursor"])) % int(RESULT_OPTION_COUNT)])
-        answer_label_probabilities = {str(label): 1.0 / float(RESULT_OPTION_COUNT) for label in labels}
-    else:
-        answer_label, answer_label_probabilities = sample_label(
-            int(instance_seed),
-            namespace=f"{TASK_ID}.answer_label.{RESULT_OPTION_COUNT}",
-            labels=labels,
-        )
+    answer_label, answer_label_probabilities = sample_label(
+        int(instance_seed),
+        namespace=f"{TASK_ID}.answer_label.{RESULT_OPTION_COUNT}",
+        labels=labels,
+    )
 
     def construct_attempt(rng, resolved_axes):
         return build_drop_result_sample(

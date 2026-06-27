@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.games.shared.layout import (
     attach_games_unit_size_jitter,
@@ -106,17 +107,9 @@ def resolve_hex_string_choice(
         )
 
     probabilities = {str(item): 1.0 / float(len(support)) for item in support}
-    sampling_index = params.get("_sample_cursor")
-    balanced = bool(params.get(str(balanced_flag_key), group_default(gen_defaults, str(balanced_flag_key), True)))
-    if balanced and sampling_index is not None:
-        return HexStringAxis(
-            value=str(support[abs(int(sampling_index)) % len(support)]),
-            support=support,
-            probabilities=probabilities,
-        )
     rng = spawn_rng(int(instance_seed), str(namespace))
     return HexStringAxis(
-        value=str(rng.choice(tuple(support))),
+        value=str(uniform_choice(rng, support)),
         support=support,
         probabilities=probabilities,
     )

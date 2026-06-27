@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 from typing import Any, Mapping, Sequence
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
@@ -723,7 +724,13 @@ def sample_best_tower_position_scene(
     radius_ceiling = max(float(radius_floor), float(range_max))
     target_radius = float(radius_floor) + (float(target_count - 1) * 8.0) + rng.uniform(0.0, 4.0)
     shared_radius = float(min(float(radius_ceiling), max(float(radius_floor), float(target_radius))))
-    target_label_index = int(params.get("answer_option_index", 0)) % len(OPTION_LABELS)
+    raw_answer_option_index = params.get("answer_option_index")
+    if raw_answer_option_index is None:
+        target_label_index = int(uniform_choice(rng, tuple(range(len(OPTION_LABELS)))))
+    else:
+        target_label_index = int(raw_answer_option_index)
+        if target_label_index < 0 or target_label_index >= len(OPTION_LABELS):
+            raise ValueError("answer_option_index must be inside Tower Defense option labels")
     best_label = str(OPTION_LABELS[int(target_label_index)])
     towers, coverage_counts = _sample_best_position_candidate_layout(
         rng=rng,
@@ -785,7 +792,13 @@ def sample_nearest_exit_enemy_label_scene(
     labels = tuple(str(label) for label in ENEMY_OPTION_LABELS[:option_count])
     if option_count != 6 or len(labels) != 6:
         raise ValueError("nearest-exit enemy task requires six options")
-    answer_option_index = int(params.get("answer_option_index", 0)) % len(labels)
+    raw_answer_option_index = params.get("answer_option_index")
+    if raw_answer_option_index is None:
+        answer_option_index = int(uniform_choice(rng, tuple(range(len(labels)))))
+    else:
+        answer_option_index = int(raw_answer_option_index)
+        if answer_option_index < 0 or answer_option_index >= len(labels):
+            raise ValueError("answer_option_index must be inside Tower Defense enemy labels")
     answer_label = str(labels[int(answer_option_index)])
 
     candidate_indices = list(range(1, max(1, len(path_points) - 1)))

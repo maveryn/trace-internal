@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.games.shared.sampling import resolve_games_named_axis
 from trace.tasks.shared.config_defaults import group_default
@@ -211,11 +212,8 @@ def answer_option_index(instance_seed: int, *, params: Mapping[str, Any], option
         if 0 <= value < int(option_count):
             return int(value)
         raise ValueError("answer_option_index outside option_count")
-    cursor = params.get("_sample_cursor")
-    if cursor is not None:
-        return abs(int(cursor)) % int(option_count)
     rng = spawn_rng(int(instance_seed), f"{str(namespace)}.answer_option_index")
-    return int(rng.randrange(int(option_count)))
+    return int(uniform_choice(rng, tuple(range(int(option_count)))))
 
 
 def select_random_outcomes(outcomes: Sequence[MoveOutcome], rng: Any, *, count: int) -> Tuple[MoveOutcome, ...]:

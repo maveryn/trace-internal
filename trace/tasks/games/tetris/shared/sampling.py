@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.support_sampling import resolve_integer_choice
@@ -40,8 +41,7 @@ def sample_label(instance_seed: int, *, namespace: str, labels: Sequence[str] = 
     if not values:
         raise ValueError("labels must not be empty")
     rng = spawn_rng(int(instance_seed), str(namespace))
-    offset = int(rng.randrange(len(values)))
-    label = values[(int(instance_seed) + int(offset)) % len(values)]
+    label = str(uniform_choice(rng, values))
     probability = 1.0 / float(len(values))
     return str(label), {str(value): float(probability) for value in values}
 

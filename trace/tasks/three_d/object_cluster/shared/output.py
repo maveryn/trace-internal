@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
@@ -12,6 +13,8 @@ from .defaults import (
     COLOR_READOUT_CLUSTER_SHAPE_TYPES,
     NAMED_CLUSTER_SHAPE_TYPES,
     PROMPT_COLOR_RGB,
+    object_name_for_shape,
+    object_plural,
 )
 from .objects import build_dataset_from_sequence
 from .relations import (
@@ -40,7 +43,6 @@ from .state import ClusterRequest
 
 
 COUNTERFACTUAL_PREDICATE_KINDS: Tuple[str, ...] = ("color", "object", "color_object")
-COUNTERFACTUAL_OPERATIONS: Tuple[str, ...] = ("add", "remove")
 
 
 def _resolve_counterfactual_axis(
@@ -111,6 +113,310 @@ def _target_phrase_for_edit(target_spec: Mapping[str, Any]) -> str:
     return str(target_spec.get("target_property_prompt_phrase") or target_spec.get("target_property_phrase") or "counted objects")
 
 
+def _counterfactual_shape_support() -> Tuple[str, ...]:
+    """Return all shape types available for counterfactual edit predicates."""
+
+    return tuple(dict.fromkeys([*COLOR_READOUT_CLUSTER_SHAPE_TYPES, *NAMED_CLUSTER_SHAPE_TYPES]))
+
+
+def _property_key(shape_type: str, color_name: str) -> Tuple[str, str]:
+    """Return the exact shape/color key used by count metadata."""
+
+    return (str(shape_type), str(color_name))
+
+
+def _predicate_matches_key(predicate: Mapping[str, Any], key: Tuple[str, str]) -> bool:
+    """Return whether one exact shape/color key satisfies a broad predicate."""
+
+    shape_type, color_name = _property_key(str(key[0]), str(key[1]))
+    predicate_shape = predicate.get("shape_type")
+    predicate_color = predicate.get("color_name")
+    if predicate_shape is not None and str(predicate_shape) != str(shape_type):
+        return False
+    if predicate_color is not None and str(predicate_color) != str(color_name):
+        return False
+    return True
+
+
+def _predicate_relation_to_target(edit_predicate: Mapping[str, Any], target_predicate: Mapping[str, Any]) -> str:
+    """Classify whether an edit predicate affects, misses, or ambiguously overlaps the target."""
+
+    edit_shape = edit_predicate.get("shape_type")
+    edit_color = edit_predicate.get("color_name")
+    target_shape = target_predicate.get("shape_type")
+    target_color = target_predicate.get("color_name")
+
+    if edit_shape is not None and target_shape is not None and str(edit_shape) != str(target_shape):
+        return "disjoint"
+    if edit_color is not None and target_color is not None and str(edit_color) != str(target_color):
+        return "disjoint"
+
+    target_attrs = {"shape_type": target_shape, "color_name": target_color}
+    edit_attrs = {"shape_type": edit_shape, "color_name": edit_color}
+    is_subset = True
+    for attr_name, target_value in target_attrs.items():
+        if target_value is None:
+            continue
+        edit_value = edit_attrs[attr_name]
+        if edit_value is None or str(edit_value) != str(target_value):
+            is_subset = False
+            break
+    return "subset" if bool(is_subset) else "ambiguous"
+
+
+def _counterfactual_predicate(
+    *,
+    predicate_kind: str,
+    shape_type: str | None = None,
+    color_name: str | None = None,
+) -> Dict[str, Any]:
+    """Build one edit predicate with explicit shape/color requirements."""
+
+    kind = str(predicate_kind)
+    if kind not in set(COUNTERFACTUAL_PREDICATE_KINDS):
+        raise ValueError(f"unsupported counterfactual predicate kind: {predicate_kind}")
+    if kind in {"object", "color_object"} and not shape_type:
+        raise ValueError(f"predicate kind {kind} requires shape_type")
+    if kind in {"color", "color_object"} and not color_name:
+        raise ValueError(f"predicate kind {kind} requires color_name")
+    return {
+        "predicate_kind": str(kind),
+        "shape_type": str(shape_type) if shape_type is not None else None,
+        "color_name": str(color_name) if color_name is not None else None,
+    }
+
+
+def _predicate_phrase(predicate: Mapping[str, Any], *, count: int | None = None, prompt_facing: bool = False) -> str:
+    """Return a singular/plural phrase for a counterfactual edit predicate."""
+
+    kind = str(predicate["predicate_kind"])
+    amount = int(count) if count is not None else 2
+    shape_type = predicate.get("shape_type")
+    color_name = predicate.get("color_name")
+    if color_name is not None and bool(prompt_facing):
+        color_phrase = semantic_color_label(str(color_name))
+    else:
+        color_phrase = str(color_name) if color_name is not None else ""
+    if kind == "color":
+        noun = "object" if int(amount) == 1 else "objects"
+        return f"{color_phrase} {noun}".strip()
+    if kind == "object":
+        name = object_name_for_shape(str(shape_type))
+        return str(name if int(amount) == 1 else object_plural(str(name)))
+    if kind == "color_object":
+        name = object_name_for_shape(str(shape_type))
+        noun = str(name if int(amount) == 1 else object_plural(str(name)))
+        return f"{color_phrase} {noun}".strip()
+    raise ValueError(f"unsupported predicate kind: {kind}")
+
+
+def _quantity_phrase(amount: int, predicate: Mapping[str, Any], *, prompt_facing: bool = False) -> str:
+    """Return one prompt/edit quantity phrase."""
+
+    return f"{int(amount)} {_predicate_phrase(predicate, count=int(amount), prompt_facing=bool(prompt_facing))}"
+
+
+def _all_exact_property_keys() -> Tuple[Tuple[str, str], ...]:
+    """Return exact shape/color keys for counterfactual count bookkeeping."""
+
+    return tuple(
+        _property_key(str(shape), str(color))
+        for shape in _counterfactual_shape_support()
+        for color in color_support()
+    )
+
+
+def _candidate_edit_predicates(target_predicate: Mapping[str, Any], *, relation: str) -> Tuple[Dict[str, Any], ...]:
+    """Return edit predicates with a requested relation to the target predicate."""
+
+    candidates: list[Dict[str, Any]] = []
+    for color_name in color_support():
+        candidates.append(_counterfactual_predicate(predicate_kind="color", color_name=str(color_name)))
+    for shape_type in _counterfactual_shape_support():
+        candidates.append(_counterfactual_predicate(predicate_kind="object", shape_type=str(shape_type)))
+    for shape_type in _counterfactual_shape_support():
+        for color_name in color_support():
+            candidates.append(
+                _counterfactual_predicate(
+                    predicate_kind="color_object",
+                    shape_type=str(shape_type),
+                    color_name=str(color_name),
+                )
+            )
+    return tuple(
+        dict(predicate)
+        for predicate in candidates
+        if _predicate_relation_to_target(predicate, target_predicate) == str(relation)
+    )
+
+
+def _predicate_count(current_counts: Counter[Tuple[str, str]], predicate: Mapping[str, Any]) -> int:
+    """Count exact shape/color records matching one broad predicate."""
+
+    return int(sum(int(count) for key, count in current_counts.items() if _predicate_matches_key(predicate, key)))
+
+
+def _remove_visible_from_counts(
+    *,
+    rng,
+    current_counts: Counter[Tuple[str, str]],
+    visible_remaining_counts: Counter[Tuple[str, str]],
+    predicate: Mapping[str, Any],
+    amount: int,
+) -> Dict[str, int]:
+    """Remove only exact properties still represented by visible starting objects."""
+
+    remaining = int(amount)
+    exact_keys = [
+        key
+        for key in _all_exact_property_keys()
+        if _predicate_matches_key(predicate, key)
+        and int(visible_remaining_counts[key]) > 0
+        and int(current_counts[key]) > 0
+    ]
+    rng.shuffle(exact_keys)
+    removed: Dict[str, int] = {}
+    for key in exact_keys:
+        if remaining <= 0:
+            break
+        take = min(int(visible_remaining_counts[key]), int(current_counts[key]), int(remaining))
+        visible_remaining_counts[key] -= int(take)
+        current_counts[key] -= int(take)
+        removed[f"{key[1]}_{key[0]}"] = int(take)
+        remaining -= int(take)
+    if remaining != 0:
+        raise ValueError("counterfactual step would remove more visible starting objects than available")
+    return dict(removed)
+
+
+def _add_to_counts(
+    *,
+    rng,
+    current_counts: Counter[Tuple[str, str]],
+    predicate: Mapping[str, Any],
+    amount: int,
+) -> Dict[str, int]:
+    """Add exact shape/color records satisfying one broad predicate."""
+
+    exact_keys = [key for key in _all_exact_property_keys() if _predicate_matches_key(predicate, key)]
+    if not exact_keys:
+        raise ValueError("counterfactual add predicate has no exact support")
+    rng.shuffle(exact_keys)
+    added: Dict[str, int] = {}
+    for index in range(int(amount)):
+        key = exact_keys[int(index) % len(exact_keys)]
+        current_counts[key] += 1
+        added[f"{key[1]}_{key[0]}"] = int(added.get(f"{key[1]}_{key[0]}", 0)) + 1
+    return dict(added)
+
+
+def _sample_edit_step(
+    *,
+    rng,
+    current_counts: Counter[Tuple[str, str]],
+    visible_remaining_counts: Counter[Tuple[str, str]],
+    target_predicate: Mapping[str, Any],
+    relation: str,
+    edit_amount_max: int,
+) -> Dict[str, Any]:
+    """Sample one deterministic count edit with either target-subset or disjoint semantics."""
+
+    candidate_predicates = list(_candidate_edit_predicates(target_predicate, relation=str(relation)))
+    rng.shuffle(candidate_predicates)
+    operations = ("remove", "add") if bool(rng.random() < 0.45) else ("add", "remove")
+    for operation in operations:
+        for predicate in candidate_predicates:
+            available = (
+                _predicate_count(visible_remaining_counts, predicate)
+                if str(operation) == "remove"
+                else _predicate_count(current_counts, predicate)
+            )
+            if str(operation) == "remove" and int(available) <= 0:
+                continue
+            max_amount = min(int(edit_amount_max), int(available)) if str(operation) == "remove" else int(edit_amount_max)
+            if int(max_amount) <= 0:
+                continue
+            amount = int(rng.randint(1, int(max_amount)))
+            relation_to_target = _predicate_relation_to_target(predicate, target_predicate)
+            if relation_to_target == "ambiguous":
+                continue
+            if str(operation) == "remove":
+                exact_deltas = _remove_visible_from_counts(
+                    rng=rng,
+                    current_counts=current_counts,
+                    visible_remaining_counts=visible_remaining_counts,
+                    predicate=predicate,
+                    amount=int(amount),
+                )
+                signed_amount = -int(amount)
+            else:
+                exact_deltas = _add_to_counts(
+                    rng=rng,
+                    current_counts=current_counts,
+                    predicate=predicate,
+                    amount=int(amount),
+                )
+                signed_amount = int(amount)
+            target_delta = int(signed_amount) if relation_to_target == "subset" else 0
+            prompt_phrase = _predicate_phrase(predicate, count=int(amount), prompt_facing=True)
+            plain_phrase = _predicate_phrase(predicate, count=int(amount), prompt_facing=False)
+            verb = "Add" if str(operation) == "add" else "Remove"
+            return {
+                "operation": str(operation),
+                "amount": int(amount),
+                "predicate": dict(predicate),
+                "predicate_kind": str(predicate["predicate_kind"]),
+                "target_shape_type": predicate.get("shape_type"),
+                "target_color_name": predicate.get("color_name"),
+                "target_property_phrase": str(plain_phrase),
+                "target_property_prompt_phrase": str(prompt_phrase),
+                "predicate_relation_to_target": str(relation_to_target),
+                "affects_target_property": bool(relation_to_target == "subset"),
+                "target_delta": int(target_delta),
+                "exact_property_deltas": dict(exact_deltas),
+                "step_text": f"{verb} {_quantity_phrase(int(amount), predicate, prompt_facing=True)}.",
+            }
+    raise ValueError(f"could not sample {relation} counterfactual edit step")
+
+
+def _build_counterfactual_steps(
+    *,
+    rng,
+    initial_counts: Counter[Tuple[str, str]],
+    target_predicate: Mapping[str, Any],
+    edit_step_count: int,
+    edit_amount_max: int,
+) -> Tuple[list[Dict[str, Any]], str, int]:
+    """Build numbered multi-step edits and return final target count."""
+
+    current_counts: Counter[Tuple[str, str]] = Counter(initial_counts)
+    visible_remaining_counts: Counter[Tuple[str, str]] = Counter(initial_counts)
+    initial_target_count = _predicate_count(current_counts, target_predicate)
+    target_step_indices = {0}
+    if int(edit_step_count) >= 3:
+        target_step_indices.add(2)
+    steps: list[Dict[str, Any]] = []
+    for step_index in range(int(edit_step_count)):
+        relation = "subset" if int(step_index) in target_step_indices else "disjoint"
+        step = _sample_edit_step(
+            rng=rng,
+            current_counts=current_counts,
+            visible_remaining_counts=visible_remaining_counts,
+            target_predicate=target_predicate,
+            relation=str(relation),
+            edit_amount_max=int(edit_amount_max),
+        )
+        step.update({"step_index": int(step_index) + 1})
+        steps.append(dict(step))
+    final_target_count = _predicate_count(current_counts, target_predicate)
+    if int(final_target_count) <= 0:
+        raise ValueError("counterfactual final target count must remain positive")
+    if int(final_target_count) == int(initial_target_count):
+        raise ValueError("counterfactual target count did not change")
+    edit_steps_text = "\n".join(f"{step['step_index']}. {step['step_text']}" for step in steps)
+    return list(steps), str(edit_steps_text), int(final_target_count)
+
+
 def _build_counterfactual_initial_sequence(
     *,
     predicate_kind: str,
@@ -152,18 +458,6 @@ def _build_counterfactual_initial_sequence(
     )
 
 
-def _counterfactual_edit_instruction(
-    *,
-    operation: str,
-    amount: int,
-    target_phrase: str,
-) -> str:
-    """Render one exact add/remove edit in direct prompt language."""
-
-    verb = "Add" if str(operation) == "add" else "Remove"
-    return f"{verb} {int(amount)} {target_phrase}."
-
-
 def build_counterfactual_count_request(
     *,
     external_query: str,
@@ -175,12 +469,12 @@ def build_counterfactual_count_request(
     gen_defaults: Mapping[str, Any],
     render_params: ObjectSceneRenderParams,
 ) -> ClusterRequest:
-    """Assemble a dense-cluster count-after-single-edit request.
+    """Assemble a dense-cluster count-after-edits request.
 
     The invariant is that annotation witnesses are the visible starting target
-    objects, while the answer is the final count after one exact add/remove
-    edit. Predicate kind, edit operation, and edit amount are generation axes,
-    not public query ids.
+    objects, while the answer is the final count after deterministic add/remove
+    edits. Predicate kind and edit program details are generation axes, not
+    public query ids.
     """
 
     scene_variant, scene_probabilities = resolve_scene_variant(
@@ -236,28 +530,17 @@ def build_counterfactual_count_request(
     )
     object_count = int(target_count) + int(distractor_count)
 
-    operation, operation_probabilities = _resolve_counterfactual_axis(
+    edit_step_min = configured_int(params, gen_defaults, "edit_step_count_min", 2)
+    edit_step_max = configured_int(params, gen_defaults, "edit_step_count_max", 3)
+    edit_step_count, edit_step_count_probabilities = resolve_uniform_count(
         params=params,
-        key="edit_operation",
-        support=COUNTERFACTUAL_OPERATIONS,
+        explicit_key="edit_step_count",
+        minimum=max(2, int(edit_step_min)),
+        maximum=max(max(2, int(edit_step_min)), int(edit_step_max)),
         instance_seed=int(instance_seed),
-        namespace=f"{namespace}.edit_operation",
+        namespace=f"{namespace}.edit_step_count",
     )
-    edit_max = configured_int(params, gen_defaults, "edit_amount_max", 3)
-    amount_max = min(int(edit_max), int(target_count) - 1) if str(operation) == "remove" else int(edit_max)
-    if amount_max < 1:
-        raise ValueError("counterfactual edit amount has no positive support")
-    edit_amount, edit_amount_probabilities = resolve_uniform_count(
-        params=params,
-        explicit_key="edit_amount",
-        minimum=1,
-        maximum=int(amount_max),
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.edit_amount",
-    )
-    final_count = int(target_count) + int(edit_amount) if str(operation) == "add" else int(target_count) - int(edit_amount)
-    if int(final_count) == int(target_count):
-        raise ValueError("counterfactual edit must change the answer")
+    edit_amount_max = max(1, configured_int(params, gen_defaults, "edit_amount_max", 2))
 
     rng = spawn_rng(int(instance_seed), f"{namespace}.sequence")
     sequence, target = _build_counterfactual_initial_sequence(
@@ -270,42 +553,43 @@ def build_counterfactual_count_request(
     )
     target_spec = target_mapping(target)
     target_spec["base_predicate_mode"] = str(target_spec.get("mode", ""))
-    target_spec["mode"] = "count_after_edit"
+    target_spec["mode"] = "count_after_edits"
     target_phrase = _target_phrase_for_edit(target_spec)
-    edit_instruction = _counterfactual_edit_instruction(
-        operation=str(operation),
-        amount=int(edit_amount),
-        target_phrase=str(target_phrase),
+    target_predicate = _counterfactual_predicate(
+        predicate_kind=str(predicate_kind),
+        shape_type=shape_type,
+        color_name=color_name,
     )
-    counterfactual_step = {
-        "operation": str(operation),
-        "amount": int(edit_amount),
-        "predicate_kind": str(predicate_kind),
-        "target_shape_type": str(shape_type) if shape_type is not None else None,
-        "target_color_name": str(color_name) if color_name is not None else None,
-        "target_property_phrase": str(target_spec.get("target_property_phrase", "")),
-        "target_property_prompt_phrase": str(target_phrase),
-        "step_text": str(edit_instruction),
-        "target_delta": int(edit_amount) if str(operation) == "add" else -int(edit_amount),
-    }
+    initial_counts: Counter[Tuple[str, str]] = Counter(
+        _property_key(str(item.shape_type), str(item.color_name))
+        for item in sequence
+    )
+    counterfactual_steps, edit_steps_text, final_count = _build_counterfactual_steps(
+        rng=rng,
+        initial_counts=initial_counts,
+        target_predicate=target_predicate,
+        edit_step_count=int(edit_step_count),
+        edit_amount_max=int(edit_amount_max),
+    )
 
     extra_trace = {
-        "counterfactual_step_count": 1,
-        "counterfactual_steps": [dict(counterfactual_step)],
-        "edit_instruction": str(edit_instruction),
-        "edit_operation": str(operation),
-        "edit_amount": int(edit_amount),
+        "counterfactual_step_count": int(edit_step_count),
+        "counterfactual_steps": [dict(step) for step in counterfactual_steps],
+        "edit_steps_text": str(edit_steps_text),
+        "edit_amount_max": int(edit_amount_max),
         "initial_target_count": int(target_count),
         "final_target_count": int(final_count),
+        "target_delta_total": int(final_count) - int(target_count),
         "distractor_count": int(distractor_count),
         "counterfactual_predicate_kind": str(predicate_kind),
-        "counterfactual_target_exact_edit": True,
+        "counterfactual_target_exact_edit": False,
+        "counterfactual_target_multistep": True,
         "counterfactual_target_phrase": str(target_spec.get("target_property_phrase", "")),
         "counterfactual_target_prompt_phrase": str(target_phrase),
     }
     dataset = build_dataset_from_sequence(
         source_namespace=str(namespace),
-        scene_kind="three_d_object_cluster_count_after_edit",
+        scene_kind="three_d_object_cluster_count_after_edits",
         prompt_query_key=str(prompt_key),
         scene_variant=str(scene_variant),
         render_params=render_params,
@@ -327,8 +611,8 @@ def build_counterfactual_count_request(
             "object_count_probabilities": {str(object_count): 1.0},
             "target_count_probabilities": dict(target_probabilities),
             "distractor_count_probabilities": dict(distractor_probabilities),
-            "edit_amount_probabilities": dict(edit_amount_probabilities),
-            "edit_operation_probabilities": dict(operation_probabilities),
+            "edit_step_count_probabilities": dict(edit_step_count_probabilities),
+            "edit_amount_max": int(edit_amount_max),
             "predicate_kind_probabilities": dict(predicate_probabilities),
             "target_shape_probabilities": dict(shape_probabilities),
             "target_color_probabilities": dict(color_probabilities),
@@ -336,10 +620,9 @@ def build_counterfactual_count_request(
             "color_readout_cluster_object_pool_size": len(COLOR_READOUT_CLUSTER_SHAPE_TYPES),
         },
         prompt_slots={
-            "edit_instruction": str(edit_instruction),
+            "edit_steps_text": str(edit_steps_text),
             "initial_target_count": str(int(target_count)),
-            "edit_amount": str(int(edit_amount)),
-            "edit_operation": str(operation),
+            "edit_step_count": str(int(edit_step_count)),
             "final_target_count": str(int(final_count)),
             "target_property_phrase": str(
                 target_spec.get("target_property_prompt_phrase") or target_spec.get("target_property_phrase") or ""

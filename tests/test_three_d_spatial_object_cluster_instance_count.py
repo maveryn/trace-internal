@@ -696,8 +696,8 @@ def test_object_cluster_counterfactual_count_answer_and_starting_annotation() ->
             "target_color_name": "blue",
             "target_count": 4,
             "distractor_count": 8,
-            "edit_operation": "add",
-            "edit_amount": 2,
+            "edit_step_count": 3,
+            "edit_amount_max": 2,
             "post_image_noise_apply_prob": 0.0,
         },
         max_attempts=300,
@@ -712,26 +712,21 @@ def test_object_cluster_counterfactual_count_answer_and_starting_annotation() ->
 
     assert output.scene_id == "object_cluster"
     assert output.query_id == "single"
-    assert trace["internal_query_id"] == "attribute_count_after_edit"
+    assert trace["internal_query_id"] == "attribute_count_after_edits"
     assert output.answer_gt.type == "integer"
-    assert output.answer_gt.value == 6
     assert trace["target_count"] == 4
     assert solver_trace["initial_target_count"] == 4
-    assert solver_trace["final_target_count"] == 6
-    assert solver_trace["counterfactual_steps"] == [
-        {
-            "operation": "add",
-            "amount": 2,
-            "predicate_kind": "color_object",
-            "target_shape_type": "button",
-            "target_color_name": "blue",
-            "target_property_phrase": "blue buttons",
-            "target_property_prompt_phrase": blue_button_phrase,
-            "step_text": f"Add 2 {blue_button_phrase}.",
-            "target_delta": 2,
-        }
-    ]
-    assert trace["target_spec"]["mode"] == "count_after_edit"
+    assert solver_trace["counterfactual_step_count"] == 3
+    steps = list(solver_trace["counterfactual_steps"])
+    assert len(steps) == 3
+    assert any(bool(step["affects_target_property"]) for step in steps)
+    assert any(not bool(step["affects_target_property"]) for step in steps)
+    assert {str(step["predicate_relation_to_target"]) for step in steps} <= {"subset", "disjoint"}
+    expected_final_count = int(solver_trace["initial_target_count"]) + sum(int(step["target_delta"]) for step in steps)
+    assert expected_final_count == int(solver_trace["final_target_count"])
+    assert output.answer_gt.value == expected_final_count
+    assert solver_trace["target_delta_total"] == expected_final_count - int(solver_trace["initial_target_count"])
+    assert trace["target_spec"]["mode"] == "count_after_edits"
     assert trace["target_spec"]["base_predicate_mode"] == "by_type_and_color"
     assert trace["target_spec"]["target_property_prompt_phrase"] == blue_button_phrase
     assert output.annotation_gt.type == "bbox_set"
@@ -743,7 +738,8 @@ def test_object_cluster_counterfactual_count_answer_and_starting_annotation() ->
         for spec in object_specs
         if str(spec["object_id"]) in set(target_object_ids)
     )
-    assert f"Add 2 {blue_button_phrase}" in output.prompt
+    for step in steps:
+        assert f"{int(step['step_index'])}. {step['step_text']}" in output.prompt
     assert blue_button_phrase in output.prompt
     assert_three_d_canvas_contract(output)
 

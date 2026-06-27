@@ -52,12 +52,12 @@
         "How many clustered objects are {target_color_name}?",
         "How many small objects are {target_color_name}?"
       ],
-      "attribute_count_after_edit": [
-        "Start with the objects shown. {edit_instruction} How many {target_property_phrase} are there afterward?",
-        "Use the visible cluster as the starting set. {edit_instruction} What is the final count of {target_property_phrase}?",
-        "Begin with the objects in the image. {edit_instruction} After this change, how many {target_property_phrase} are there?",
-        "Apply this one change to the visible cluster: {edit_instruction} How many {target_property_phrase} are there afterward?",
-        "From the starting cluster, {edit_instruction} What is the count of {target_property_phrase} after the change?"
+      "attribute_count_after_edits": [
+        "Start with the objects shown. Apply these edits:\n{edit_steps_text}\nHow many {target_property_phrase} are there afterward?",
+        "Use the visible cluster as the starting set. Apply these edits:\n{edit_steps_text}\nWhat is the final count of {target_property_phrase}?",
+        "Begin with the objects in the image. Apply these edits:\n{edit_steps_text}\nAfter the edits, how many {target_property_phrase} are there?",
+        "Apply these edits to the visible cluster:\n{edit_steps_text}\nHow many {target_property_phrase} are there afterward?",
+        "From the starting cluster, apply these edits:\n{edit_steps_text}\nWhat is the count of {target_property_phrase} after the edits?"
       ],
       "type_or_color_count": [
         "How many objects are {target_object_plural} or {target_color_name} objects? Count each object once.",
@@ -146,7 +146,7 @@
       "json_example": "{\"annotation\":{\"left_operand\":[[120,450,174,494],[390,320,450,370]],\"right_operand\":[[704,520,756,580]]},\"answer\":1}"
     },
     "task:object_cluster_counterfactual_count_query": {
-      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each starting visible object matching the queried property before the edit",
+      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around each starting visible object matching the queried property before the edits",
       "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370],[704,520,756,580]],\"answer\":5}"
     }
   },
@@ -159,9 +159,8 @@
     "target_color_names": {"type": "string"},
     "target_property_phrase": {"type": "string"},
     "target_property_singular": {"type": "string"},
-    "edit_instruction": {"type": "string"},
-    "edit_amount": {"type": "string"},
-    "edit_operation": {"type": "string"},
+    "edit_steps_text": {"type": "string"},
+    "edit_step_count": {"type": "string"},
     "initial_target_count": {"type": "string"},
     "final_target_count": {"type": "string"},
     "left_operand_phrase": {"type": "string"},
@@ -174,7 +173,7 @@
     "query:type_count": ["target_object_plural"],
     "query:type_and_color_count": ["target_property_phrase"],
     "query:color_count": ["target_color_name"],
-    "query:attribute_count_after_edit": ["edit_instruction", "target_property_phrase"],
+    "query:attribute_count_after_edits": ["edit_steps_text", "target_property_phrase"],
     "query:type_or_color_count": ["target_object_plural", "target_object_name", "target_color_name"],
     "query:type_xor_color_count": ["target_object_plural", "target_object_name", "target_color_name"],
     "query:type_and_not_color_count": ["target_object_plural", "target_color_name"],

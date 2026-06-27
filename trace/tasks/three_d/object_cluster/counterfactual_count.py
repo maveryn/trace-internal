@@ -1,4 +1,4 @@
-"""Count clustered objects after one textual add/remove edit."""
+"""Count clustered objects after textual add/remove edits."""
 
 from __future__ import annotations
 
@@ -14,13 +14,13 @@ from ..shared.object_scene import ObjectSceneRenderParams
 
 TASK_ID = "task_three_d__object_cluster__counterfactual_count"
 QUERY_ID = "single"
-PROMPT_QUERY_KEY = "attribute_count_after_edit"
+PROMPT_QUERY_KEY = "attribute_count_after_edits"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 
 
 @register_task
 class ThreeDObjectClusterCounterfactualCountTask:
-    """Count clustered objects after one hypothetical edit to the visible set."""
+    """Count clustered objects after hypothetical edits to the visible set."""
 
     task_id = TASK_ID
     domain = "three_d"
@@ -44,7 +44,7 @@ class ThreeDObjectClusterCounterfactualCountTask:
         _prompt_defaults: Mapping[str, Any],
         render_params: ObjectSceneRenderParams,
     ) -> ClusterRequest:
-        """Bind the public no-branch count-after-edit contract."""
+        """Bind the public no-branch count-after-edits contract."""
 
         if str(params.get("query_id", QUERY_ID)) != QUERY_ID:
             raise ValueError("unsupported query_id")

@@ -53,7 +53,9 @@ generation:
       target_count_max: 8
       distractor_count_min: 5
       distractor_count_max: 10
-      edit_amount_max: 3
+      edit_step_count_min: 2
+      edit_step_count_max: 3
+      edit_amount_max: 2
     task_three_d__object_cluster__multi_attribute_or_count:
       object_count_min: 16
       object_count_max: 20

@@ -18,6 +18,7 @@ from .spatial_primitives import (
     _offset_points,
     _sub,
     _triangle_from_base_angles,
+    _unit,
 )
 from .relations import (
     exterior_angle_value,
@@ -44,6 +45,21 @@ from .state import (
 POINT_P = "P"
 POINT_Q = "Q"
 POINT_R = "R"
+
+
+def _angle_local_label_center(
+    vertex: tuple[float, float],
+    primary_arm: tuple[float, float],
+    secondary_arm: tuple[float, float],
+    *,
+    primary_scale: float,
+    secondary_scale: float,
+) -> tuple[float, float]:
+    """Place a label in an angle using local ray directions."""
+
+    primary = _unit(_sub(primary_arm, vertex))
+    secondary = _unit(_sub(secondary_arm, vertex))
+    return _add(_add(vertex, primary, float(primary_scale)), secondary, float(secondary_scale))
 
 
 def _draw_parallel_arrow_marks(ctx: RenderContext, segments: tuple[tuple[tuple[float, float], tuple[float, float]], ...]) -> tuple[float, float, float, float]:
@@ -229,9 +245,9 @@ def make_parallel_algebraic_case(
     def build(ctx: RenderContext) -> RenderedAngleRelationScene:
         """Render the algebraic parallel-line case without task identity."""
 
-        top_l, top_r = (80.0, 150.0), (640.0, 150.0)
-        mid_l, mid_r = (80.0, 285.0), (640.0, 285.0)
-        bot_l, bot_r = (80.0, 420.0), (640.0, 420.0)
+        top_l, top_r = (80.0, 116.0), (640.0, 116.0)
+        mid_l, mid_r = (80.0, 286.0), (640.0, 286.0)
+        bot_l, bot_r = (80.0, 456.0), (640.0, 456.0)
         p_x = 190.0
         vertical_gap = float(bot_l[1] - top_l[1])
         r_x = p_x + (vertical_gap / max(0.25, math.tan(math.radians(float(first_angle)))))
@@ -266,10 +282,17 @@ def make_parallel_algebraic_case(
         second_expr = format_angle_expression(second_coeff, second_const)
         first_arc = _draw_angle_arc(ctx, p, top_r, q, radius=46.0)
         second_arc = _draw_angle_arc(ctx, q, mid_r, p, radius=58.0)
-        target_arc = _draw_angle_arc(ctx, r, bot_r, q, radius=62.0)
-        first_bbox = _draw_text(ctx, first_expr, (float(p[0]) + 112.0, float(p[1]) + 58.0))
-        second_bbox = _draw_text(ctx, second_expr, (float(q[0]) + 170.0, float(q[1]) - 78.0))
-        target_bbox = _draw_text(ctx, "?", (float(r[0]) + 78.0, float(r[1]) - 78.0))
+        first_bbox = _draw_text(
+            ctx,
+            first_expr,
+            _angle_local_label_center(p, top_r, q, primary_scale=92.0, secondary_scale=34.0),
+        )
+        second_bbox = _draw_text(
+            ctx,
+            second_expr,
+            _angle_local_label_center(q, mid_r, p, primary_scale=88.0, secondary_scale=74.0),
+        )
+        target_arc, target_bbox = _draw_angle_label(ctx, "?", r, bot_r, q, radius=86.0)
         annotation_points = {"BPQ": p, "DQP": q, "FRQ": r}
         return RenderedAngleRelationScene(
             image=ctx.image,

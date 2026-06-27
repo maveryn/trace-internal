@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+import re
+
 import pytest
 
 import trace.tasks  # noqa: F401
+from trace.tasks.geometry.marked_polygon_equation.shared.construction import (
+    isosceles_angle_from_expression,
+    isosceles_base_angle_variable,
+)
 from trace.tasks.registry import create_task
 
 
@@ -101,6 +107,33 @@ RETIRED_PARALLEL_QUERY_IDS = (
     "triangle_side_splitter_segment_length",
     "parallel_transversal_segment_length",
 )
+
+
+def _eval_marked_angle_label(label: str, variable_name: str, variable_value: int) -> int:
+    text = label.strip()
+    if text.endswith("°"):
+        text = text[:-1]
+    if text.startswith("(") and text.endswith(")"):
+        text = text[1:-1]
+    if variable_name not in text:
+        return int(text)
+
+    match = re.fullmatch(r"([+-]?\d*)%s([+-]\d+)?" % re.escape(variable_name), text)
+    assert match is not None, text
+    coefficient_text, offset_text = match.groups()
+    if coefficient_text in ("", "+"):
+        coefficient = 1
+    elif coefficient_text == "-":
+        coefficient = -1
+    else:
+        coefficient = int(coefficient_text)
+    offset = int(offset_text or 0)
+    return coefficient * int(variable_value) + offset
+
+
+def _degree_value(label: str) -> int:
+    assert label.endswith("°")
+    return int(label[:-1])
 
 
 def _generate(task_id: str, query_id: str, seed: int = 20260607, **extra_params):
@@ -203,6 +236,26 @@ def test_marked_polygon_equation_construction_families_are_trace_metadata() -> N
             assert trace["query_spec"]["params"]["construction_family"] == family
             assert trace["query_spec"]["params"]["query_id"] == "single"
             assert "distractor_labels" in trace["execution_trace"]
+
+
+def test_marked_polygon_isosceles_angle_labels_are_geometrically_consistent() -> None:
+    for index in range(29):
+        case = isosceles_base_angle_variable(index)
+        base_a = _eval_marked_angle_label(case.labels["angle_a"], "x", case.answer)
+        base_b = _eval_marked_angle_label(case.labels["angle_b"], "x", case.answer)
+        apex = _degree_value(case.distractor_labels["angle_A"])
+        assert base_a == base_b
+        assert apex == 180 - (2 * base_a)
+        assert 0 < apex < 180
+
+    for index in range(18):
+        case = isosceles_angle_from_expression(index)
+        base_a = case.answer
+        base_b = _eval_marked_angle_label(case.labels["angle_a"], "x", 4 + (index % 12))
+        apex = _degree_value(case.distractor_labels["angle_A"])
+        assert base_a == base_b
+        assert apex == 180 - (2 * base_a)
+        assert 0 < apex < 180
 
 
 def test_similar_figure_equation_construction_families_are_trace_metadata() -> None:

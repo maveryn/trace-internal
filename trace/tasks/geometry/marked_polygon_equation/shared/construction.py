@@ -57,8 +57,8 @@ def _quadrilateral_angle_distractors(index: int) -> dict[str, str]:
     }
 
 
-def _triangle_apex_angle_distractor(index: int) -> dict[str, str]:
-    return {"angle_A": _degree_label(42 + (index * 7) % 70)}
+def _triangle_apex_angle_distractor(base_angle: int) -> dict[str, str]:
+    return {"angle_A": _degree_label(180 - (2 * int(base_angle)))}
 
 
 def isosceles_equal_side_variable(variant_index: int) -> MarkedEquationCase:
@@ -175,9 +175,10 @@ def marked_equal_angles_variable(variant_index: int) -> MarkedEquationCase:
 
 def isosceles_base_angle_variable(variant_index: int) -> MarkedEquationCase:
     index = _variant(variant_index)
-    answer = 5 + index
+    answer = 4 + index
+    base_angle = 42 + ((index * 5) % 31)
     coefficient = 2 + (index % 3)
-    offset = 15 + ((index * 5) % 19)
+    offset = base_angle - coefficient * answer
     return MarkedEquationCase(
         construction_family="isosceles_triangle_base_angle_variable",
         draw_kind="isosceles_base_angles",
@@ -193,7 +194,7 @@ def isosceles_base_angle_variable(variant_index: int) -> MarkedEquationCase:
         },
         distractor_labels={
             "side_bc": str(10 + (index * 5) % 28),
-            **_triangle_apex_angle_distractor(index),
+            **_triangle_apex_angle_distractor(base_angle),
         },
     )
 
@@ -331,7 +332,7 @@ def marked_equal_angle_from_expression(variant_index: int) -> MarkedEquationCase
 
 def isosceles_angle_from_expression(variant_index: int) -> MarkedEquationCase:
     index = _variant(variant_index, modulo=18)
-    answer = 40 + 4 * index
+    answer = 42 + 2 * index
     x_value = 4 + (index % 12)
     coefficient = 2 + (index % 3)
     offset = answer - coefficient * x_value
@@ -350,7 +351,7 @@ def isosceles_angle_from_expression(variant_index: int) -> MarkedEquationCase:
         },
         distractor_labels={
             "side_bc": str(11 + (index * 3) % 29),
-            **_triangle_apex_angle_distractor(index),
+            **_triangle_apex_angle_distractor(answer),
         },
     )
 

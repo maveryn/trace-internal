@@ -18,6 +18,7 @@ from .state import (
     FLOOR_PROP_SHAPES,
     ROOM_FRONT_Y,
     ROOM_HEIGHT,
+    SIDE_WALL_OBJECT_HPOS_MAX,
     SUPPORTED_SCENE_VARIANTS,
     WALL_BACK_Y,
     WALL_X,
@@ -42,20 +43,20 @@ ROOM_CAMERA_DISTANCE_YAW_BANDS: Dict[str, Tuple[float, float]] = {
     "studio_room": (-4.0, 4.0),
 }
 CANDIDATE_WALL_SLOTS: Tuple[Tuple[str, float, float], ...] = (
-    ("left", -0.82, 1.22),
-    ("left", 1.16, 2.04),
+    ("left", -1.92, 1.22),
+    ("left", -0.34, 2.04),
     ("back", -2.08, 1.28),
     ("back", 1.18, 2.12),
-    ("right", -0.82, 1.26),
-    ("right", 1.16, 2.06),
+    ("right", -1.92, 1.26),
+    ("right", -0.34, 2.06),
 )
 CONTEXT_WALL_SLOTS: Tuple[Tuple[str, float, float], ...] = (
-    ("left", -0.46, 1.82),
-    ("left", 1.48, 2.22),
+    ("left", -1.56, 1.82),
+    ("left", 0.26, 2.22),
     ("back", -0.42, 1.55),
     ("back", 2.36, 1.34),
-    ("right", -0.46, 1.82),
-    ("right", 2.04, 1.42),
+    ("right", -1.46, 1.82),
+    ("right", 0.34, 1.42),
 )
 LETTERED_WALL_OBJECT_SIZE_SCALE = 1.35
 LETTERED_WALL_OBJECT_MIN_VISIBLE_PX = 34.0
@@ -246,6 +247,11 @@ def build_room_wall_camera_distance_dataset(
         finalized_candidates = _finalize_specs(candidate_wall_specs, camera=camera, frame=frame)
         finalized_context_wall = _finalize_specs(context_wall_specs, camera=camera, frame=frame)
         finalized_floor = _finalize_specs(floor_specs, camera=camera, frame=frame)
+        if any(
+            str(spec.get("wall")) in {"left", "right"} and float(spec["world_xyz"][1]) > float(SIDE_WALL_OBJECT_HPOS_MAX)
+            for spec in [*finalized_candidates, *finalized_context_wall]
+        ):
+            continue
         if not _candidate_wall_visibility_ok(finalized_candidates, camera=camera, frame=frame):
             continue
         if not _candidate_screen_separation_ok(finalized_candidates, camera=camera, frame=frame):

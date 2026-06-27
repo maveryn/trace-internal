@@ -16,7 +16,14 @@ from trace.tasks.three_d.room.wall_object_same_wall_reference_label import (
     SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
+from trace.tasks.three_d.room.shared.state import SIDE_WALL_OBJECT_HPOS_MAX
 from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
+
+
+def _assert_side_wall_objects_are_not_deep(trace) -> None:
+    for spec in trace["wall_object_specs"]:
+        if str(spec["wall"]) in {"left", "right"}:
+            assert float(spec["world_xyz"][1]) <= float(SIDE_WALL_OBJECT_HPOS_MAX)
 
 
 @pytest.mark.parametrize("reference_wall", ["back", "left", "right"])
@@ -79,6 +86,7 @@ def test_room_wall_object_same_wall_reference_answer_annotation_and_unique_refer
     assert all(bool(spec["is_answer_candidate"]) for spec in candidates)
     assert sorted(str(spec["point_label"]) for spec in candidates) == list("ABCDEF")
     assert {str(spec["wall"]) for spec in candidates} == {"back", "left", "right"}
+    _assert_side_wall_objects_are_not_deep(trace)
     assert sum(1 for spec in candidates if str(spec["wall"]) == reference_wall) == 1
     assert trace["candidate_walls_by_label"][answer_label] == reference_wall
     for bbox in trace["candidate_visible_bboxes_by_label"].values():

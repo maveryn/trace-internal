@@ -101,8 +101,8 @@ def _draw_room_shell(draw: ImageDraw.ImageDraw, *, camera, frame, render_params:
 
     bboxes = [floor_bbox, *wall_bboxes]
 
-    window = _wall_spec(object_id="room_window", object_type="window", wall="right", hpos=1.18, z=1.95, width=0.82, height=0.70, counts_for_query=False)
-    door = _wall_spec(object_id="room_door", object_type="door", wall="left", hpos=1.78, z=0.92, width=0.82, height=1.84, counts_for_query=False)
+    window = _wall_spec(object_id="room_window", object_type="window", wall="right", hpos=0.58, z=1.95, width=0.82, height=0.70, counts_for_query=False)
+    door = _wall_spec(object_id="room_door", object_type="door", wall="left", hpos=0.72, z=0.92, width=0.82, height=1.84, counts_for_query=False)
     bboxes.append(_draw_wall_flat_object(draw, window, camera=camera, frame=frame, fill=(174, 210, 224), trim=(76, 103, 118)))
     bboxes.append(_draw_wall_flat_object(draw, door, camera=camera, frame=frame, fill=(150, 116, 84), trim=(74, 60, 48)))
 

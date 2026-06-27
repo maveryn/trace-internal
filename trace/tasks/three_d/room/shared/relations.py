@@ -37,13 +37,13 @@ from .state import (
 REFERENCE_WALL_OBJECT_TYPES: Tuple[str, ...] = ROOM_SAME_WALL_REFERENCE_WALL_OBJECT_TYPES
 REFERENCE_WALL_SLOTS: Dict[str, Tuple[Tuple[float, float], ...]] = {
     "back": ((-2.18, 1.82), (0.0, 1.76), (2.18, 1.82)),
-    "left": ((-0.42, 1.74), (1.42, 1.88)),
-    "right": ((-0.42, 1.74), (1.42, 1.88)),
+    "left": ((-1.42, 1.74), (0.18, 1.88)),
+    "right": ((-1.42, 1.74), (0.18, 1.88)),
 }
 WALL_CANDIDATE_SLOTS_BY_WALL: Dict[str, Tuple[Tuple[float, float], ...]] = {
     "back": ((-2.20, 1.24), (-0.78, 2.12), (0.68, 1.28), (1.92, 2.06)),
-    "left": ((-0.94, 1.22), (-0.18, 2.04), (0.72, 1.30), (1.48, 2.04)),
-    "right": ((-0.94, 1.22), (-0.18, 2.04), (0.72, 1.30), (1.48, 2.04)),
+    "left": ((-2.20, 1.22), (-1.42, 2.04), (-0.42, 1.30), (0.42, 2.04)),
+    "right": ((-2.20, 1.22), (-1.42, 2.04), (-0.42, 1.30), (0.42, 2.04)),
 }
 REFERENCE_WALL_OBJECT_SIZE_SCALE = 1.25
 

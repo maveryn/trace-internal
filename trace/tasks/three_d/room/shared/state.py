@@ -57,6 +57,7 @@ ROOM_RENDER_SIDE_WALL_MAX_EXTENSION = 2.15
 ROOM_CAMERA_PITCH_DEGREES: Tuple[float, float] = (9.0, 18.0)
 ROOM_CAMERA_DISTANCE_RANGE: Tuple[float, float] = (6.8, 8.2)
 ROOM_CAMERA_TARGET_Z = 1.05
+SIDE_WALL_OBJECT_HPOS_MAX = 1.15
 FRONT_FLOOR_PROP_SLOTS: Tuple[Tuple[float, float], ...] = (
     (-2.36, -2.56),
     (-0.86, -2.66),
@@ -233,6 +234,7 @@ def _wall_spec(
         "base_xyz": [round(float(center[0]), 4), round(float(center[1]), 4), round(max(0.0, float(center[2]) - float(height) * 0.5), 4)],
         "dimensions_xyz": [round(float(width), 4), 0.06, round(float(height), 4)],
         "wall": str(wall),
+        "wall_hpos": round(float(hpos), 4),
         "wall_width": round(float(width), 4),
         "wall_height": round(float(height), 4),
         "is_wall_mounted": True,

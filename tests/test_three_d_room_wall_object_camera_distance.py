@@ -12,7 +12,14 @@ from trace.tasks.three_d.room.wall_object_camera_distance_label import (
     SUPPORTED_QUERY_IDS,
     TASK_ID,
 )
+from trace.tasks.three_d.room.shared.state import SIDE_WALL_OBJECT_HPOS_MAX
 from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
+
+
+def _assert_side_wall_objects_are_not_deep(trace) -> None:
+    for spec in trace["wall_object_specs"]:
+        if str(spec["wall"]) in {"left", "right"}:
+            assert float(spec["world_xyz"][1]) <= float(SIDE_WALL_OBJECT_HPOS_MAX)
 
 
 def test_room_wall_object_camera_distance_answer_and_annotation() -> None:
@@ -64,6 +71,7 @@ def test_room_wall_object_camera_distance_answer_and_annotation() -> None:
     assert {str(spec["wall"]) for spec in candidates} == {"back", "left", "right"}
     assert all(bool(spec["is_wall_mounted"]) for spec in candidates)
     assert all(bool(spec["is_answer_candidate"]) for spec in candidates)
+    _assert_side_wall_objects_are_not_deep(trace)
     assert abs(float(trace["camera"]["yaw_degrees"])) <= 8.0
     for bbox in trace["candidate_visible_bboxes_by_label"].values():
         width = float(bbox[2]) - float(bbox[0])

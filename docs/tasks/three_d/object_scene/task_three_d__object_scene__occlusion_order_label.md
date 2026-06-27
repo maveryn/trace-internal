@@ -29,6 +29,10 @@ the platform and no other candidate does. Candidate acceptance uses finalized
 projection/depth metadata to guarantee that exactly one candidate visibly blocks
 part of the reference.
 
+Candidate objects use a task-local occlusion-safe pool with enough projected
+height or thickness to read as blockers. Thin or floor-flat objects from the
+broader object-scene named pool are excluded from this task.
+
 ## Prompt And Trace
 The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.
 

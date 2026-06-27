@@ -6,7 +6,7 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.object_scene.occlusion_order_label import TASK_ID
+from trace.tasks.three_d.object_scene.occlusion_order_label import OCCLUSION_CANDIDATE_SHAPE_TYPES, TASK_ID
 from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
@@ -70,6 +70,33 @@ def test_occlusion_order_answer_and_annotation() -> None:
     )
     assert trace["solver_trace"]["occluding_reference_labels"] == expected_labels
     assert trace["solver_trace"]["unique_occlusion_answer"] is True
+
+
+def test_occlusion_order_uses_occlusion_safe_candidate_pool() -> None:
+    assert "open_book" in OCCLUSION_CANDIDATE_SHAPE_TYPES
+    assert "half_cylinder" in OCCLUSION_CANDIDATE_SHAPE_TYPES
+    assert "carrot" not in OCCLUSION_CANDIDATE_SHAPE_TYPES
+    assert "crown" not in OCCLUSION_CANDIDATE_SHAPE_TYPES
+    assert "clock" not in OCCLUSION_CANDIDATE_SHAPE_TYPES
+    assert "ruler" not in OCCLUSION_CANDIDATE_SHAPE_TYPES
+
+    task = create_task(TASK_ID)
+    for index in range(8):
+        output = task.generate(
+            20260627 + index,
+            params={
+                "scene_variant": "floor_grid_room",
+                "point_count": 6,
+                "context_object_count": 1,
+                "post_image_noise_apply_prob": 0.0,
+            },
+            max_attempts=240,
+        )
+        trace = output.trace_payload["execution_trace"]
+        assert {
+            str(spec["shape_type"])
+            for spec in trace["point_specs"]
+        }.issubset(set(OCCLUSION_CANDIDATE_SHAPE_TYPES))
 
 
 def test_occlusion_order_task_registered_in_three_d_taxonomy() -> None:

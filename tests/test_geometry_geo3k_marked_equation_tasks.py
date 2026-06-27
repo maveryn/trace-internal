@@ -6,8 +6,14 @@ import pytest
 
 import trace.tasks  # noqa: F401
 from trace.tasks.geometry.marked_polygon_equation.shared.construction import (
+    equilateral_equal_side_variable,
+    equilateral_side_from_expression,
     isosceles_angle_from_expression,
     isosceles_base_angle_variable,
+    isosceles_equal_side_variable,
+    isosceles_side_from_expression,
+    marked_equal_angle_from_expression,
+    marked_equal_angles_variable,
 )
 from trace.tasks.registry import create_task
 
@@ -247,6 +253,53 @@ def test_marked_polygon_isosceles_angle_labels_are_geometrically_consistent() ->
         assert base_a == base_b
         assert apex == 180 - (2 * base_a)
         assert 0 < apex < 180
+
+
+def test_marked_polygon_triangle_angle_distractors_respect_special_shapes() -> None:
+    for builder in (isosceles_equal_side_variable, isosceles_side_from_expression):
+        for index in range(29):
+            case = builder(index)
+            apex = _degree_value(case.distractor_labels["angle_A"])
+            base_b = _degree_value(case.distractor_labels["angle_B"])
+            base_c = _degree_value(case.distractor_labels["angle_C"])
+            assert base_b == base_c
+            assert apex + base_b + base_c == 180
+            assert 0 < apex < 180
+
+    for builder in (equilateral_equal_side_variable, equilateral_side_from_expression):
+        for index in range(29):
+            case = builder(index)
+            assert {
+                key: _degree_value(value)
+                for key, value in case.distractor_labels.items()
+                if key.startswith("angle_")
+            } == {"angle_A": 60, "angle_B": 60, "angle_C": 60}
+
+
+def test_marked_polygon_equal_angle_quadrilateral_distractors_are_consistent() -> None:
+    for index in range(29):
+        case = marked_equal_angles_variable(index)
+        angle_a = _eval_marked_angle_label(case.labels["angle_a"], "x", case.answer)
+        angle_c = _eval_marked_angle_label(case.labels["angle_b"], "x", case.answer)
+        angle_b = _degree_value(case.distractor_labels["angle_B"])
+        angle_d = _degree_value(case.distractor_labels["angle_D"])
+        assert angle_a == angle_c
+        assert angle_a + angle_b + angle_c + angle_d == 360
+        assert 0 < angle_b < 180
+        assert 0 < angle_d < 180
+
+    for index in range(18):
+        case = marked_equal_angle_from_expression(index)
+        x_value = 5 + (index % 11)
+        angle_a = _eval_marked_angle_label(case.labels["angle_a"], "x", x_value)
+        angle_c = _eval_marked_angle_label(case.labels["angle_b"], "x", x_value)
+        angle_b = _degree_value(case.distractor_labels["angle_B"])
+        angle_d = _degree_value(case.distractor_labels["angle_D"])
+        assert angle_a == case.answer
+        assert angle_a == angle_c
+        assert angle_a + angle_b + angle_c + angle_d == 360
+        assert 0 < angle_b < 180
+        assert 0 < angle_d < 180
 
     for index in range(18):
         case = isosceles_angle_from_expression(index)

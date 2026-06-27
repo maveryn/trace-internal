@@ -43,11 +43,18 @@ def _side_distractors(index: int, *, variable_name: str = "y") -> dict[str, str]
     }
 
 
-def _triangle_angle_distractors(index: int) -> dict[str, str]:
+def _isosceles_triangle_angle_distractors(index: int) -> dict[str, str]:
+    apex_angle = 48 + 2 * ((int(index) * 7) % 31)
+    base_angle = (180 - apex_angle) // 2
     return {
-        "angle_A": _degree_label(35 + (index * 7) % 72),
-        "angle_C": _angle_label(1 + (index % 2), "y", 18 + (index * 5) % 24),
+        "angle_A": _degree_label(apex_angle),
+        "angle_B": _degree_label(base_angle),
+        "angle_C": _degree_label(base_angle),
     }
+
+
+def _equilateral_triangle_angle_distractors() -> dict[str, str]:
+    return {"angle_A": _degree_label(60), "angle_B": _degree_label(60), "angle_C": _degree_label(60)}
 
 
 def _quadrilateral_angle_distractors(index: int) -> dict[str, str]:
@@ -55,6 +62,19 @@ def _quadrilateral_angle_distractors(index: int) -> dict[str, str]:
         "angle_B": _degree_label(58 + (index * 5) % 74),
         "angle_D": _angle_label(1 + (index % 3), "y", 24 + (index * 7) % 31),
     }
+
+
+def _equal_angle_quadrilateral_distractors(equal_angle: int, index: int) -> dict[str, str]:
+    remaining = 360 - 2 * int(equal_angle)
+    min_angle = 20
+    max_angle = 160
+    lower = max(min_angle, remaining - max_angle)
+    upper = min(max_angle, remaining - min_angle)
+    if lower > upper:
+        raise ValueError(f"equal angle {equal_angle} leaves too little room for a quadrilateral")
+    angle_b = lower + ((int(index) * 7) % (upper - lower + 1))
+    angle_d = remaining - angle_b
+    return {"angle_B": _degree_label(angle_b), "angle_D": _degree_label(angle_d)}
 
 
 def _triangle_apex_angle_distractor(base_angle: int) -> dict[str, str]:
@@ -79,7 +99,7 @@ def isosceles_equal_side_variable(variant_index: int) -> MarkedEquationCase:
             "left_side": _linear_label(coefficient, "x", offset),
             "right_side": str(coefficient * answer + offset),
         },
-        distractor_labels=_triangle_angle_distractors(index),
+        distractor_labels=_isosceles_triangle_angle_distractors(index),
     )
 
 
@@ -103,7 +123,7 @@ def equilateral_equal_side_variable(variant_index: int) -> MarkedEquationCase:
             "right_side": str(side_value),
             "base_side": str(side_value),
         },
-        distractor_labels=_triangle_angle_distractors(index),
+        distractor_labels=_equilateral_triangle_angle_distractors(),
     )
 
 
@@ -156,6 +176,7 @@ def marked_equal_angles_variable(variant_index: int) -> MarkedEquationCase:
     answer = 6 + index
     coefficient = 2 + (index % 3)
     offset = 18 + ((index * 4) % 17)
+    equal_angle = coefficient * answer + offset
     return MarkedEquationCase(
         construction_family="marked_equal_angles_variable",
         draw_kind="polygon_equal_angles",
@@ -169,7 +190,7 @@ def marked_equal_angles_variable(variant_index: int) -> MarkedEquationCase:
             "angle_a": _angle_label(coefficient, "x", offset),
             "angle_b": _angle_label(coefficient - 1, "x", offset + answer),
         },
-        distractor_labels={**_side_distractors(index), **_quadrilateral_angle_distractors(index)},
+        distractor_labels={**_side_distractors(index), **_equal_angle_quadrilateral_distractors(equal_angle, index)},
     )
 
 
@@ -236,7 +257,7 @@ def isosceles_side_from_expression(variant_index: int) -> MarkedEquationCase:
             "left_side": _linear_label(coefficient, "x", offset),
             "right_side": str(answer),
         },
-        distractor_labels=_triangle_angle_distractors(index),
+        distractor_labels=_isosceles_triangle_angle_distractors(index),
     )
 
 
@@ -259,7 +280,7 @@ def equilateral_side_from_expression(variant_index: int) -> MarkedEquationCase:
             "right_side": str(answer),
             "base_side": str(answer),
         },
-        distractor_labels=_triangle_angle_distractors(index),
+        distractor_labels=_equilateral_triangle_angle_distractors(),
     )
 
 
@@ -326,7 +347,7 @@ def marked_equal_angle_from_expression(variant_index: int) -> MarkedEquationCase
             "angle_a": _angle_label(coefficient, "x", offset),
             "angle_b": _angle_label(1, "x", answer - x_value),
         },
-        distractor_labels={**_side_distractors(index), **_quadrilateral_angle_distractors(index)},
+        distractor_labels={**_side_distractors(index), **_equal_angle_quadrilateral_distractors(answer, index)},
     )
 
 

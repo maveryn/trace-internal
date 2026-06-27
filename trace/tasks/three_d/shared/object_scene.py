@@ -538,22 +538,6 @@ def render_object_scene_3d(
     def draw_order_key(item: Mapping[str, Any]) -> float:
         return float(item["camera_distance"]) + float(item.get("render_order_bias", 0.0))
 
-    for spec in sorted(all_specs, key=lambda item: float(item["camera_distance"]), reverse=True):
-        base = _project_screen(spec["base_xyz"], camera, frame)
-        width, depth, _height = (float(value) for value in spec["dimensions_xyz"])
-        shadow_radius = max(22.0, float(render_params.marker_radius_px) * 1.75 * (7.0 / max(2.2, float(spec["camera_distance"]))) ** 0.28)
-        shadow_radius *= max(0.78, min(1.75, float(width + depth) * 0.55))
-        draw.ellipse(
-            (
-                base[0] - shadow_radius,
-                base[1] - shadow_radius * 0.36,
-                base[0] + shadow_radius,
-                base[1] + shadow_radius * 0.36,
-            ),
-            fill=(158, 166, 172),
-            outline=None,
-        )
-
     point_bboxes: Dict[str, List[float]] = {}
     point_centers: Dict[str, List[float]] = {}
     object_bboxes: Dict[str, List[float]] = {}

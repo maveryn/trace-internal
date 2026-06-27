@@ -66,7 +66,7 @@ def _make_occlusion_reference_spec(*, rng, shape_type: str, xy: Tuple[float, flo
     spec.update(
         {
             "object_name": "platform",
-            "prompt_name": "platform",
+            "prompt_name": "rectangular platform",
             "nameable_for_prompt": True,
             "occlusion_reference_role": "solid_platform",
         }
@@ -82,6 +82,53 @@ def _unit_towards_camera(reference_spec: Mapping[str, Any], camera) -> Tuple[flo
     dy = float(camera.camera_position[1]) - float(ref_y)
     length = max(1e-6, math.hypot(dx, dy))
     return (float(dx / length), float(dy / length))
+
+
+def _axis_extent(spec: Mapping[str, Any], axis_xy: Tuple[float, float]) -> float:
+    """Return the half footprint extent of an axis-aligned object along a floor axis."""
+    width, depth, _height = (float(value) for value in spec["dimensions_xyz"])
+    axis_x, axis_y = (float(value) for value in axis_xy)
+    return 0.5 * (abs(axis_x) * float(width) + abs(axis_y) * float(depth))
+
+
+def _front_gap_to_reference(
+    candidate_spec: Mapping[str, Any],
+    reference_spec: Mapping[str, Any],
+    *,
+    axis_xy: Tuple[float, float],
+) -> float:
+    """Measure candidate clearance beyond the camera-facing reference face."""
+    cand_x, cand_y, _cand_z = (float(value) for value in candidate_spec["world_xyz"])
+    ref_x, ref_y, _ref_z = (float(value) for value in reference_spec["world_xyz"])
+    axis_x, axis_y = (float(value) for value in axis_xy)
+    center_delta = (float(cand_x) - float(ref_x)) * float(axis_x) + (float(cand_y) - float(ref_y)) * float(axis_y)
+    required_separation = _axis_extent(reference_spec, axis_xy) + _axis_extent(candidate_spec, axis_xy)
+    return float(center_delta - required_separation)
+
+
+def _occluding_answer_xy(
+    answer_spec: Mapping[str, Any],
+    reference_spec: Mapping[str, Any],
+    *,
+    camera,
+    rng,
+) -> Tuple[float, float]:
+    """Place the answer just in front of the camera-facing platform face."""
+    unit_x, unit_y = _unit_towards_camera(reference_spec, camera)
+    side_x, side_y = -unit_y, unit_x
+    ref_x, ref_y, _ref_z = (float(value) for value in reference_spec["world_xyz"])
+    forward_offset = (
+        _axis_extent(reference_spec, (unit_x, unit_y))
+        + _axis_extent(answer_spec, (unit_x, unit_y))
+        + float(rng.uniform(0.06, 0.14))
+    )
+    lateral_offset = float(rng.uniform(-0.15, 0.15))
+    return (
+        float(ref_x + unit_x * forward_offset + side_x * lateral_offset),
+        float(ref_y + unit_y * forward_offset + side_y * lateral_offset),
+    )
+
+
 def _sample_distractor_specs(
     *,
     rng,
@@ -175,17 +222,13 @@ def _build_occlusion_scene_dataset(
         )
 
         unit_x, unit_y = _unit_towards_camera(reference_spec, camera)
-        side_x, side_y = -unit_y, unit_x
-        ref_x, ref_y, _ref_z = (float(value) for value in reference_spec["world_xyz"])
-        forward_offset = float(reference_spec["footprint_radius"]) * rng.uniform(0.38, 0.58) + float(answer_spec["footprint_radius"]) * rng.uniform(0.04, 0.22)
-        lateral_offset = float(rng.uniform(-0.16, 0.16))
-        answer_xy = (
-            float(ref_x + unit_x * forward_offset + side_x * lateral_offset),
-            float(ref_y + unit_y * forward_offset + side_y * lateral_offset),
-        )
+        answer_xy = _occluding_answer_xy(answer_spec, reference_spec, camera=camera, rng=rng)
         if max(abs(answer_xy[0]), abs(answer_xy[1])) > float(render_params.room_extent) - 0.35:
             continue
         answer_spec = _set_xy(answer_spec, answer_xy)
+        answer_front_gap = _front_gap_to_reference(answer_spec, reference_spec, axis_xy=(unit_x, unit_y))
+        if float(answer_front_gap) < 0.045:
+            continue
 
         placed = [dict(reference_spec), dict(answer_spec)]
         distractor_shapes = [str(shape) for shape in shape_pool[1:]] + [str(shape) for shape in shape_pool[:1]]
@@ -293,6 +336,7 @@ def _build_occlusion_scene_dataset(
             "reference_object_name": _prompt_name(reference_spec),
             "reference_shape_type": str(reference_spec["shape_type"]),
             "reference_occlusion_role": str(reference_spec.get("occlusion_reference_role", "")),
+            "answer_front_gap_to_reference": round(float(answer_front_gap), 4),
             "candidate_reference_overlap_area_by_label": dict(sorted(overlap_area_by_label.items())),
             "candidate_depth_margin_to_reference_by_label": dict(sorted(depth_margin_by_label.items())),
             "occlusion_status_by_label": dict(sorted(occlusion_status_by_label.items())),
@@ -322,6 +366,7 @@ def _build_occlusion_scene_dataset(
                 "reference_object_name": _prompt_name(reference_spec),
                 "reference_shape_type": str(reference_spec["shape_type"]),
                 "reference_occlusion_role": str(reference_spec.get("occlusion_reference_role", "")),
+                "answer_front_gap_to_reference": round(float(answer_front_gap), 4),
                 "candidate_reference_overlap_area_by_label": dict(sorted(overlap_area_by_label.items())),
                 "candidate_depth_margin_to_reference_by_label": dict(sorted(depth_margin_by_label.items())),
                 "occlusion_status_by_label": dict(sorted(occlusion_status_by_label.items())),

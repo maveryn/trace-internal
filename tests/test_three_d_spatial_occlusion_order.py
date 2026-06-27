@@ -42,6 +42,7 @@ def test_occlusion_order_answer_and_annotation() -> None:
     assert reference_id not in {str(spec["object_id"]) for spec in point_specs}
     assert reference_spec["nameable_for_prompt"]
     assert str(reference_spec["prompt_name"]) == str(trace["reference_object_name"])
+    assert str(trace["reference_object_name"]) == "rectangular platform"
     assert str(reference_spec["shape_type"]) == "platform"
     assert str(reference_spec["occlusion_reference_role"]) == "solid_platform"
     answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_labels[0])
@@ -61,6 +62,7 @@ def test_occlusion_order_answer_and_annotation() -> None:
     depth_margin_by_label = dict(trace["candidate_depth_margin_to_reference_by_label"])
     assert float(overlap_by_label[expected_labels[0]]) >= 650.0
     assert float(depth_margin_by_label[expected_labels[0]]) >= 0.18
+    assert float(trace["solver_trace"]["answer_front_gap_to_reference"]) >= 0.045
     assert all(
         float(overlap) <= 300.0
         for label, overlap in overlap_by_label.items()

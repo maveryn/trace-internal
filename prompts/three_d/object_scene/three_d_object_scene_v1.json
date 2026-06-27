@@ -163,11 +163,11 @@
         "Which option describes the object along the gap between the {reference_a_name} and the {reference_b_name}?"
       ],
       "occludes_reference": [
-        "Which option describes the object blocking part of the {reference_name}?",
-        "Which option describes the object covering part of the {reference_name}?",
-        "Which option describes the object that visibly overlaps the {reference_name}?",
-        "Looking at the {reference_name}, which option describes the object that blocks it?",
-        "Which option describes the object partly covering the {reference_name}?"
+        "Which object occludes the {reference_name}?",
+        "Which object is occluding the {reference_name}?",
+        "Which object blocks part of the {reference_name}?",
+        "Which object covers part of the {reference_name}?",
+        "Which object partly covers the {reference_name}?"
       ],
       "highest_above_floor": [
         "Among the listed options, which object is sitting highest above the floor?",
@@ -305,7 +305,7 @@
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:occlusion_order_query": {
-      "object_description": "a perspective 3D platform scene with overlapping objects and one reference object",
+      "object_description": "a perspective 3D scene with a rectangular platform and several small objects",
       "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the selected object in the scene",
       "answer_hint": "set \"answer\" to the selected option letter",
       "json_example": "{\"annotation\":[318,260,366,308],\"answer\":\"C\"}",

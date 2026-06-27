@@ -21,7 +21,13 @@ The verifier computes the answer from finalized scene metadata and projection re
 Annotation is a scalar `bbox` around the selected visible object.
 The selected object is the only visual witness; option text is not annotation.
 
-The reference object is a solid platform-like prop so the requested evidence is visible occlusion, not an inferred camera-depth comparison. Candidate acceptance still uses finalized projection/depth metadata to guarantee that exactly one candidate visibly blocks part of the reference.
+The reference object is a solid rectangular platform so the requested evidence
+is visible occlusion, not an inferred camera-depth comparison. The answer object
+is placed just in front of the camera-facing platform face with a small
+world-space gap, then accepted only if its projected bbox visibly covers part of
+the platform and no other candidate does. Candidate acceptance uses finalized
+projection/depth metadata to guarantee that exactly one candidate visibly blocks
+part of the reference.
 
 ## Prompt And Trace
 The trace records selected prompt keys, camera/projection data, object or marker records, rendered pixel witnesses, answer-support metadata, and the solver fields needed to recompute the answer and annotation from the same finalized scene.

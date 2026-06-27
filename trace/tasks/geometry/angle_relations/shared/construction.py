@@ -328,7 +328,11 @@ def make_parallel_transversal_triangle_case(left_angle: int, right_angle: int) -
         _draw_polyline(ctx, [p, t])
         _draw_polyline(ctx, [r, s])
         mark_bbox = _draw_parallel_arrow_marks(ctx, ((top_l, top_r), (bot_l, bot_r)))
-        labels = _draw_point_labels(ctx, {"P": p, "Q": q, "R": r, "S": s, "T": t})
+        labels = _draw_point_labels(
+            ctx,
+            {"P": p, "Q": q, "R": r, "S": s, "T": t},
+            offsets={"P": (0.0, -30.0), "R": (0.0, -30.0)},
+        )
         left_extension = _add(s, (-1.0, 0.0), 84.0)
         right_extension = _add(t, (1.0, 0.0), 84.0)
         left_arc, left_bbox = _draw_angle_label(

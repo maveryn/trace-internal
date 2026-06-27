@@ -138,18 +138,26 @@ def _draw_text(
     return _pad_bbox(bbox, 2.0, width=ctx.width, height=ctx.height)
 
 
-def _draw_point_labels(ctx: RenderContext, points: Mapping[str, Point]) -> Dict[str, BBox]:
+def _draw_point_labels(
+    ctx: RenderContext,
+    points: Mapping[str, Point],
+    *,
+    offsets: Mapping[str, Point] | None = None,
+) -> Dict[str, BBox]:
     bboxes: Dict[str, BBox] = {}
     for label, point in points.items():
         x, y = float(point[0]), float(point[1])
-        if y > ctx.height * 0.68:
-            offset = (0.0, 22.0)
-        elif y < ctx.height * 0.25:
-            offset = (0.0, -22.0)
-        elif x < ctx.width * 0.28:
-            offset = (-22.0, 0.0)
+        if offsets is not None and str(label) in offsets:
+            offset = offsets[str(label)]
         else:
-            offset = (22.0, 0.0)
+            if y > ctx.height * 0.68:
+                offset = (0.0, 22.0)
+            elif y < ctx.height * 0.25:
+                offset = (0.0, -22.0)
+            elif x < ctx.width * 0.28:
+                offset = (-22.0, 0.0)
+            else:
+                offset = (22.0, 0.0)
         bboxes[str(label)] = _draw_text(
             ctx,
             str(label),

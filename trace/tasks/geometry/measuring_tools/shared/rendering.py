@@ -410,10 +410,6 @@ def render_angle_measurement_scene(
         shape_points = (center, baseline_end, top, target_end)
     else:
         shape_points = (center, baseline_end, target_end)
-    ctx.draw.polygon(shape_points, fill=ctx.panel_fill, outline=ctx.line_color)
-    ctx.draw.line(list(shape_points) + [shape_points[0]], fill=ctx.line_color, width=max(2, ctx.line_width))
-    ctx.draw.line([center, baseline_end], fill=ctx.accent_color, width=ctx.line_width + 3)
-    ctx.draw.line([center, target_end], fill=ctx.accent_color, width=ctx.line_width + 3)
 
     protractor_box = (
         cx - outer_radius,
@@ -443,6 +439,13 @@ def render_angle_measurement_scene(
     for degree in range(0, 181, 30):
         label_center = protractor_point(center, outer_radius - 48.0, degree)
         draw_text(ctx, str(degree), label_center, font=ctx.tiny_font, stroke_width=1)
+
+    # Keep the measuring tool behind the measured shape; otherwise the filled
+    # protractor body hides the triangle/quadrilateral in review samples.
+    ctx.draw.line(list(shape_points) + [shape_points[0]], fill=ctx.line_color, width=max(2, ctx.line_width))
+    ctx.draw.line([center, baseline_end], fill=ctx.accent_color, width=ctx.line_width + 3)
+    ctx.draw.line([center, target_end], fill=ctx.accent_color, width=ctx.line_width + 3)
+
     dot_r = 6.0
     ctx.draw.ellipse((cx - dot_r, cy - dot_r, cx + dot_r, cy + dot_r), fill=ctx.accent_color)
     arc_box = (cx - 78.0, cy - 78.0, cx + 78.0, cy + 78.0)

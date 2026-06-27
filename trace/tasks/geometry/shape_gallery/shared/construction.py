@@ -56,8 +56,8 @@ COMPATIBILITY: Dict[str, Sequence[str]] = {
     "quadrilateral": TRANSFORM_RULES,
 }
 
-POST_IMAGE_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id="transformation")
-POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id="transformation")
+POST_IMAGE_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id=SCENE_ID)
+POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id=SCENE_ID)
 
 _TRANSFORM_RECIPE_IDENTITY = "identity"
 _TRANSFORM_RECIPE_REFLECT_VERTICAL = "reflect_vertical"
@@ -965,6 +965,7 @@ def compose_transformation_scene(
         context = resolve_graph_scene_context(
             scene_rng,
             instance_seed=int(instance_seed),
+            scene_id=SCENE_ID,
             params=runtime_params,
             render_defaults=_RENDER_DEFAULTS,
             background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,

@@ -11,6 +11,7 @@ from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...shared.geometry_primitives import Point
 from .diagram_style import (
+    GEOMETRY_STYLE_PROFILE_COORDINATE_GRID,
     GeometryDiagramStyle,
     geometry_graph_style_from_diagram_style,
     make_geometry_diagram_background,
@@ -46,6 +47,7 @@ class GraphSceneContext:
     diagram_style_meta: Dict[str, Any]
     scene_scale: int
     render_params: Dict[str, Any]
+    style_scene_id: str
 
 
 _GRAPH_STYLE_CONTROL_KEYS: Tuple[str, ...] = (
@@ -67,6 +69,7 @@ def resolve_graph_scene_context(
     rng,
     *,
     instance_seed: int | None = None,
+    scene_id: str = "graph_paper_panel",
     params: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
     background_defaults: Mapping[str, Any],
@@ -106,9 +109,9 @@ def resolve_graph_scene_context(
     diagram_style, diagram_style_meta = resolve_geometry_diagram_style(
         instance_seed=int(instance_seed or 0),
         params=params,
-        scene_id="graph_paper_panel",
-        require_grid=False,
-        allow_dark=False,
+        scene_id=str(scene_id),
+        require_grid=True,
+        style_profile=GEOMETRY_STYLE_PROFILE_COORDINATE_GRID,
     )
     graph_panel_layout = resolve_graph_panel_layout(
         canvas_width=int(canvas_size),
@@ -169,6 +172,7 @@ def resolve_graph_scene_context(
         diagram_style_meta=dict(diagram_style_meta),
         scene_scale=int(scene_scale),
         render_params=dict(render_params),
+        style_scene_id=str(scene_id),
     )
 
 
@@ -188,7 +192,7 @@ def make_graph_scene_canvas(
         canvas_height=int(context.canvas_size),
         style=context.diagram_style,
         instance_seed=int(instance_seed),
-        namespace="geometry.shared.graph_paper_panel.technical_diagram_background",
+        namespace=f"geometry.{context.style_scene_id}.technical_diagram_background",
     )
     image = (
         outer_image.resize((int(render_canvas_size), int(render_canvas_size)), resample=Image.Resampling.BICUBIC)
@@ -244,14 +248,21 @@ def make_graph_scene_canvas(
         "graph_origin_px": [int(layout.graph_origin_px[0]), int(layout.graph_origin_px[1])],
         "graph_spacing_px": int(layout.graph_spacing),
         "technical_diagram_style_pack": str(context.diagram_style.style_pack),
+        "geometry_style_profile": context.diagram_style_meta.get("geometry_style_profile"),
+        "technical_profile": context.diagram_style_meta.get("technical_profile"),
+        "available_theme_ids": list(context.diagram_style_meta.get("available_theme_ids", [])),
     }
     background_meta = {
         "enabled": True,
         "selected_style": "graph_paper_panel",
         "available_styles": ["graph_paper_panel"],
+        "geometry_style_profile": context.diagram_style_meta.get("geometry_style_profile"),
+        "technical_profile": context.diagram_style_meta.get("technical_profile"),
+        "available_theme_ids": list(context.diagram_style_meta.get("available_theme_ids", [])),
         "style_spec": composite_style_spec,
         "outer_background_style": dict(outer_background_meta),
         "panel_background_style": dict(panel_background_meta),
+        "technical_diagram_style_resolution": dict(context.diagram_style_meta),
     }
     if bool(require_graph_paper) and str(background_meta.get("selected_style", "")) not in {"graph_paper", "graph_paper_panel"}:
         raise RuntimeError("geometry measurement tasks must render on graph_paper backgrounds")

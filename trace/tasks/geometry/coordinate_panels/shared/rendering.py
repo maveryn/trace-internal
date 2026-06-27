@@ -7,16 +7,20 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from PIL import ImageDraw
 
 from trace.core.seed import spawn_rng
-from trace.core.visual.background import make_background_canvas
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.geometry.shared.coordinate_panel_grid import (
     CoordinatePanelConfig,
-    CoordinatePanelStyle,
     coordinate_panel_layout,
     draw_coordinate_panel_grid,
     graph_point_to_panel_pixel,
     panel_bbox_for_index,
     plot_bbox_for_panel,
+)
+from trace.tasks.geometry.shared.diagram_style import (
+    GEOMETRY_STYLE_PROFILE_COORDINATE_GRID,
+    geometry_coordinate_panel_style_from_diagram_style,
+    geometry_diagram_style_metadata,
+    prepare_geometry_diagram_style_and_background,
 )
 from trace.tasks.geometry.shared.option_count import panel_grid_shape_for_option_count
 
@@ -24,54 +28,8 @@ from .defaults import resolve_int_param
 from .construction import classify_point_set, is_ambiguous_for_prompt, sample_panel_points, shape_distractor_kinds
 from .state import Color, PanelDefaults, PanelScene, PanelSpec, PixelPoint
 
-PANEL_BACKGROUND_DEFAULTS: Dict[str, Any] = {
-    "enabled": True,
-    "styles": {
-        "solid_offwhite": {"kind": "solid", "color": [252, 252, 252]},
-        "solid_cool": {"kind": "solid", "color": [246, 248, 252]},
-        "solid_warm": {"kind": "solid", "color": [252, 249, 245]},
-        "solid_mist": {"kind": "solid", "color": [248, 252, 249]},
-    },
-    "weights": {
-        "solid_offwhite": 0.35,
-        "solid_cool": 0.25,
-        "solid_warm": 0.20,
-        "solid_mist": 0.20,
-    },
-}
-PANEL_STYLES: Tuple[CoordinatePanelStyle, ...] = (
-    CoordinatePanelStyle(),
-    CoordinatePanelStyle(
-        panel_fill=(255, 255, 255),
-        panel_outline=(190, 205, 218),
-        plot_fill=(249, 252, 255),
-        plot_outline=(176, 192, 208),
-        grid_color=(218, 228, 238),
-        axis_color=(94, 115, 135),
-        tick_color=(82, 98, 116),
-        text_color=(28, 45, 62),
-    ),
-    CoordinatePanelStyle(
-        panel_fill=(255, 255, 252),
-        panel_outline=(207, 197, 178),
-        plot_fill=(253, 251, 245),
-        plot_outline=(194, 183, 162),
-        grid_color=(232, 224, 207),
-        axis_color=(125, 107, 82),
-        tick_color=(104, 91, 72),
-        text_color=(55, 45, 34),
-    ),
-    CoordinatePanelStyle(
-        panel_fill=(253, 255, 252),
-        panel_outline=(186, 209, 198),
-        plot_fill=(248, 253, 249),
-        plot_outline=(174, 198, 187),
-        grid_color=(218, 232, 224),
-        axis_color=(87, 124, 108),
-        tick_color=(74, 102, 91),
-        text_color=(35, 58, 49),
-    ),
-)
+SCENE_ID = "coordinate_panels"
+
 MARKER_STYLES: Tuple[str, ...] = ("filled_circle", "ring", "cross", "diamond", "square")
 MARKER_COLOR_PALETTES: Tuple[Tuple[Color, Color], ...] = (
     ((32, 92, 166), (206, 92, 38)),
@@ -140,12 +98,6 @@ def _resolve_marker_colors(rng) -> Tuple[Color, Color, Dict[str, Any]]:
     }
 
 
-def _panel_style(rng) -> Tuple[CoordinatePanelStyle, Dict[str, Any]]:
-    index = int(rng.randrange(len(PANEL_STYLES)))
-    style = PANEL_STYLES[int(index)]
-    return style, {"style_index": int(index), "style": style.to_trace_dict()}
-
-
 def render_panel_scene(
     *,
     instance_seed: int,
@@ -179,16 +131,22 @@ def render_panel_scene(
     )
     canvas_width = resolve_int_param(params, rendering_defaults, "panel_canvas_width", DEFAULTS.panel_canvas_width)
     canvas_height = resolve_int_param(params, rendering_defaults, "panel_canvas_height", DEFAULTS.panel_canvas_height)
-    image, background_meta = make_background_canvas(
+    image, background_meta, diagram_style, diagram_style_meta = prepare_geometry_diagram_style_and_background(
         canvas_width=int(canvas_width),
         canvas_height=int(canvas_height),
+        scene_id=SCENE_ID,
         instance_seed=int(instance_seed),
         params=params,
-        default_config=PANEL_BACKGROUND_DEFAULTS,
-        fallback_color=(248, 250, 252),
+        style_profile=GEOMETRY_STYLE_PROFILE_COORDINATE_GRID,
+        namespace_suffix="coordinate_panels_background",
     )
     draw = ImageDraw.Draw(image)
-    style, panel_style_meta = _panel_style(rng)
+    style = geometry_coordinate_panel_style_from_diagram_style(diagram_style)
+    panel_style_meta = {
+        "style": style.to_trace_dict(),
+        "technical_diagram_style": geometry_diagram_style_metadata(diagram_style),
+        "technical_diagram_style_resolution": dict(diagram_style_meta),
+    }
     marker_style = _sample_marker_style(rng, params=params, defaults=rendering_defaults, key="panel_marker_style")
     _, marker_color, color_meta = _resolve_marker_colors(rng)
     marker_radius = resolve_int_param(params, rendering_defaults, "panel_marker_radius_px", DEFAULTS.panel_marker_radius_px)

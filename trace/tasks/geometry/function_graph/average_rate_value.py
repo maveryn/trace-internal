@@ -479,6 +479,7 @@ class GeometryGraphingAverageRateValueTask:
         scene_context = resolve_graph_scene_context(
             rng,
             instance_seed=int(instance_seed),
+            scene_id=SCENE_ID,
             params=params,
             render_defaults=_RENDER_DEFAULTS,
             background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,

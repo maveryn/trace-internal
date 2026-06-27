@@ -36,6 +36,7 @@ def graph_context_and_canvas(
     context = resolve_graph_scene_context(
         rng,
         instance_seed=int(instance_seed),
+        scene_id="function_graph",
         params=params,
         render_defaults=RENDER_DEFAULTS,
         background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,

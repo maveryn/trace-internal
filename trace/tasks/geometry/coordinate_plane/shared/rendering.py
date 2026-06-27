@@ -117,6 +117,7 @@ def _render_relation_scene(
         context = resolve_graph_scene_context(
             scene_rng,
             instance_seed=int(instance_seed),
+            scene_id="coordinate_plane",
             params=params,
             render_defaults=_RENDER_DEFAULTS,
             background_defaults=POST_IMAGE_BACKGROUND_DEFAULTS,

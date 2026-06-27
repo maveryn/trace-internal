@@ -74,8 +74,8 @@ ALL_EXACT_SHAPE_KINDS: Tuple[str, ...] = (
 DEFAULT_COMPLETION_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 
 _SCENE_DEFAULTS = get_scene_defaults("geometry", "coordinate_plane")
-_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id="coordinate")
-_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id="coordinate")
+_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id=SCENE_ID)
+_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id=SCENE_ID)
 
 @dataclass(frozen=True)
 class _TaskDefaults:
@@ -445,6 +445,7 @@ def _render_completion_scene(
     context = resolve_graph_scene_context(
         rng,
         instance_seed=int(instance_seed),
+        scene_id=SCENE_ID,
         params=params,
         render_defaults=rendering_defaults,
         background_defaults=_BACKGROUND_DEFAULTS,

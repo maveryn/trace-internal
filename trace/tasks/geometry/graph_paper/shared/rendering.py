@@ -108,6 +108,7 @@ def make_context(
     shared_context = resolve_graph_scene_context(
         rng,
         instance_seed=int(style_seed),
+        scene_id=SCENE_ID,
         params=params,
         render_defaults=defaults,
         background_defaults=_BACKGROUND_DEFAULTS,

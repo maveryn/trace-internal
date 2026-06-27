@@ -8,7 +8,10 @@ from typing import Any, Mapping, Sequence
 from PIL import ImageDraw
 
 from trace.core.seed import spawn_rng
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.geometry.shared.diagram_style import (
+    geometry_diagram_style_metadata,
+    prepare_geometry_diagram_style_and_background,
+)
 from trace.tasks.geometry.shared.measurement_rendering import (
     bbox_from_points,
     bbox_to_list,
@@ -25,7 +28,7 @@ from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.text_rendering import load_font
 
-from .defaults import BACKGROUND_DEFAULTS
+from .state import SCENE_ID
 from .measurements import case_trace_values
 from .state import (
     BBox,
@@ -129,13 +132,13 @@ def create_render_context(
     rng = spawn_rng(int(instance_seed), f"{namespace}.render")
     width = int(params.get("canvas_width", group_default(render_defaults, "canvas_width", 780)))
     height = int(params.get("canvas_height", group_default(render_defaults, "canvas_height", 560)))
-    image, background_meta = make_background_canvas(
+    image, background_meta, diagram_style, diagram_style_meta = prepare_geometry_diagram_style_and_background(
         canvas_width=int(width),
         canvas_height=int(height),
+        scene_id=SCENE_ID,
         instance_seed=int(instance_seed),
         params=params,
-        default_config=BACKGROUND_DEFAULTS,
-        fallback_color=(255, 255, 252),
+        namespace_suffix="trapezoid_extension_background",
     )
     shape_style = sample_geometry_shape_style(
         rng,
@@ -184,6 +187,8 @@ def create_render_context(
     )
     return ctx, {
         "background_style": dict(background_meta),
+        "technical_diagram_style": geometry_diagram_style_metadata(diagram_style),
+        "technical_diagram_style_resolution": dict(diagram_style_meta),
         "shape_style": shape_style.to_trace_dict(),
         "line_width": int(ctx.line_width),
         "label_font_size": int(font_size),

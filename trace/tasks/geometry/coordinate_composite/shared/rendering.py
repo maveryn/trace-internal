@@ -101,6 +101,7 @@ def render_coordinate_composite_scene(
     context = resolve_graph_scene_context(
         rng,
         instance_seed=int(instance_seed),
+        scene_id="coordinate_composite",
         params=params,
         render_defaults=render_defaults,
         background_defaults=background_defaults,

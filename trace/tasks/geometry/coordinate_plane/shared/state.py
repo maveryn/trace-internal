@@ -10,8 +10,8 @@ from trace.tasks.shared.config_defaults import split_scene_generation_rendering_
 from trace.tasks.geometry.shared.background_defaults import load_geometry_background_defaults
 from trace.tasks.geometry.shared.noise_defaults import load_geometry_noise_defaults
 
-POST_IMAGE_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id="coordinate")
-POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id="coordinate")
+POST_IMAGE_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id="coordinate_plane")
+POST_IMAGE_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id="coordinate_plane")
 
 
 GraphPoint = Tuple[int, int]

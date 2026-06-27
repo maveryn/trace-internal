@@ -8,7 +8,10 @@ from typing import Any, Dict, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from trace.core.seed import spawn_rng
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.geometry.shared.diagram_style import (
+    geometry_diagram_style_metadata,
+    prepare_geometry_diagram_style_and_background,
+)
 from trace.tasks.geometry.shared.measurement_rendering import bbox_to_list, draw_label
 from trace.tasks.geometry.shared.shape_style import (
     extract_background_anchor_colors,
@@ -20,15 +23,7 @@ from trace.tasks.shared.text_rendering import load_font
 
 from .state import BBox, Color, CuboidDimensions, RenderedCuboidViewsScene
 
-BACKGROUND_DEFAULTS: Dict[str, Any] = {
-    "enabled": True,
-    "styles": {
-        "paper_white": {"kind": "solid", "color": [255, 255, 252]},
-        "cool_paper": {"kind": "solid", "color": [248, 252, 255]},
-        "warm_paper": {"kind": "solid", "color": [255, 251, 246]},
-    },
-    "weights": {"paper_white": 1.0, "cool_paper": 1.0, "warm_paper": 1.0},
-}
+SCENE_ID = "cuboid_views"
 
 NOISE_DEFAULTS: Dict[str, Any] = {
     "apply_prob": 0.40,
@@ -108,13 +103,13 @@ def _make_render_context(
     rng = spawn_rng(int(instance_seed), "cuboid_views.render")
     width = int(params.get("canvas_width", group_default(render_defaults, "canvas_width", 820)))
     height = int(params.get("canvas_height", group_default(render_defaults, "canvas_height", 580)))
-    image, background_meta = make_background_canvas(
+    image, background_meta, diagram_style, diagram_style_meta = prepare_geometry_diagram_style_and_background(
         canvas_width=int(width),
         canvas_height=int(height),
+        scene_id=SCENE_ID,
         instance_seed=int(instance_seed),
         params=params,
-        default_config=BACKGROUND_DEFAULTS,
-        fallback_color=(255, 255, 252),
+        namespace_suffix="cuboid_views_background",
     )
     shape_style = sample_geometry_shape_style(
         rng,
@@ -151,6 +146,8 @@ def _make_render_context(
     )
     render_meta = {
         "background_style": dict(background_meta),
+        "technical_diagram_style": geometry_diagram_style_metadata(diagram_style),
+        "technical_diagram_style_resolution": dict(diagram_style_meta),
         "shape_style": shape_style.to_trace_dict(),
         "line_width": int(ctx.line_width),
         "label_font_size": int(font_size),

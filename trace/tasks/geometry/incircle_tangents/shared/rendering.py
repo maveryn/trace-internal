@@ -8,7 +8,10 @@ from typing import Any, Dict, Mapping
 from PIL import ImageDraw
 
 from trace.core.seed import spawn_rng
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.geometry.shared.diagram_style import (
+    geometry_diagram_style_metadata,
+    prepare_geometry_diagram_style_and_background,
+)
 from trace.tasks.geometry.shared.measurement_rendering import (
     bbox_from_points,
     bbox_to_list,
@@ -25,7 +28,7 @@ from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.text_rendering import load_font
 
-from .defaults import BACKGROUND_DEFAULTS
+from .defaults import SCENE_ID
 from .measurements import triangle_layout
 from .state import Color, IncircleDiagramSpec, Point, RenderContext, RenderedIncircleScene
 
@@ -102,13 +105,13 @@ def _make_render_context(
     rng = spawn_rng(int(instance_seed), f"{random_namespace}.render")
     width = int(params.get("canvas_width", group_default(render_defaults, "canvas_width", 760)))
     height = int(params.get("canvas_height", group_default(render_defaults, "canvas_height", 560)))
-    image, background_meta = make_background_canvas(
+    image, background_meta, diagram_style, diagram_style_meta = prepare_geometry_diagram_style_and_background(
         canvas_width=width,
         canvas_height=height,
+        scene_id=SCENE_ID,
         instance_seed=int(instance_seed),
         params=params,
-        default_config=BACKGROUND_DEFAULTS,
-        fallback_color=(255, 255, 252),
+        namespace_suffix="incircle_tangents_background",
     )
     shape_style = sample_geometry_shape_style(
         rng,
@@ -162,6 +165,8 @@ def _make_render_context(
     )
     render_meta = {
         "background_style": dict(background_meta),
+        "technical_diagram_style": geometry_diagram_style_metadata(diagram_style),
+        "technical_diagram_style_resolution": dict(diagram_style_meta),
         "shape_style": shape_style.to_trace_dict(),
         "line_width": int(ctx.line_width),
         "label_font_size": int(font_size),

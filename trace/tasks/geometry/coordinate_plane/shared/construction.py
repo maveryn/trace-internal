@@ -9,7 +9,6 @@ from PIL import Image, ImageDraw
 
 from trace.core.seed import spawn_rng
 from trace.core.scene_config import get_scene_defaults
-from trace.core.visual.background import make_background_canvas
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
@@ -18,12 +17,17 @@ from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.geometry.shared.background_defaults import load_geometry_background_defaults
 from trace.tasks.geometry.shared.coordinate_panel_grid import (
     CoordinatePanelConfig,
-    CoordinatePanelStyle,
     coordinate_panel_layout,
     draw_coordinate_panel_grid,
     graph_point_to_panel_pixel,
     panel_bbox_for_index,
     plot_bbox_for_panel,
+)
+from trace.tasks.geometry.shared.diagram_style import (
+    GEOMETRY_STYLE_PROFILE_COORDINATE_GRID,
+    geometry_coordinate_panel_style_from_diagram_style,
+    geometry_diagram_style_metadata,
+    prepare_geometry_diagram_style_and_background,
 )
 
 SCENE_ID = "coordinate_plane"
@@ -64,25 +68,8 @@ PANEL_REGION_FAMILIES: Tuple[str, ...] = (
 DEFAULT_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 
 _SCENE_DEFAULTS = get_scene_defaults("geometry", "coordinate_plane")
-_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id="coordinate")
-_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id="coordinate")
-_PANEL_BACKGROUND_DEFAULTS: Dict[str, Any] = {
-    "enabled": True,
-    "styles": {
-        "solid_offwhite": {"kind": "solid", "color": [252, 252, 252]},
-        "solid_cool": {"kind": "solid", "color": [246, 248, 252]},
-        "solid_warm": {"kind": "solid", "color": [252, 249, 245]},
-        "solid_mist": {"kind": "solid", "color": [248, 252, 249]},
-    },
-    "weights": {
-        "solid_offwhite": 0.35,
-        "solid_cool": 0.25,
-        "solid_warm": 0.20,
-        "solid_mist": 0.20,
-    },
-}
-
-
+_BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id=SCENE_ID)
+_NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id=SCENE_ID)
 @dataclass(frozen=True)
 class _TaskDefaults:
     canvas_size_min: int = 680
@@ -175,29 +162,6 @@ _DEFAULTS = _TaskDefaults()
 _REGION_FILL: Color = (82, 142, 218)
 _REGION_OUTLINE: Color = (32, 83, 138)
 _BOUNDARY_DASH_FILL: Color = (42, 84, 124)
-_PANEL_STYLES: Tuple[CoordinatePanelStyle, ...] = (
-    CoordinatePanelStyle(),
-    CoordinatePanelStyle(
-        panel_fill=(255, 255, 255),
-        panel_outline=(190, 205, 218),
-        plot_fill=(249, 252, 255),
-        plot_outline=(176, 192, 208),
-        grid_color=(218, 228, 238),
-        axis_color=(94, 115, 135),
-        tick_color=(82, 98, 116),
-        text_color=(28, 45, 62),
-    ),
-    CoordinatePanelStyle(
-        panel_fill=(255, 255, 252),
-        panel_outline=(207, 197, 178),
-        plot_fill=(253, 251, 245),
-        plot_outline=(194, 183, 162),
-        grid_color=(232, 224, 207),
-        axis_color=(125, 107, 82),
-        tick_color=(104, 91, 72),
-        text_color=(55, 45, 34),
-    ),
-)
 
 
 def _squared_term(variable: str, center: int) -> str:
@@ -582,6 +546,7 @@ def _render_point_scene(
     context = resolve_graph_scene_context(
         rng,
         instance_seed=int(instance_seed),
+        scene_id=SCENE_ID,
         params=params,
         render_defaults=rendering_defaults,
         background_defaults=_BACKGROUND_DEFAULTS,
@@ -722,13 +687,6 @@ def _render_point_scene(
         },
         option_count_probabilities=dict(option_count_probabilities),
     )
-
-
-def _panel_style(rng) -> Tuple[CoordinatePanelStyle, Dict[str, Any]]:
-    index = int(rng.randrange(len(_PANEL_STYLES)))
-    style = _PANEL_STYLES[int(index)]
-    return style, {"style_index": int(index), "style": style.to_trace_dict()}
-
 
 def _circle_region(cx: int, cy: int, radius: int) -> _RegionSpec:
     return _RegionSpec(
@@ -1052,13 +1010,14 @@ def _render_panel_scene(
         canvas_width = _resolve_int_param(params, rendering_defaults, "locus_panel_canvas_width", _DEFAULTS.panel_canvas_width)
         canvas_height = _resolve_int_param(params, rendering_defaults, "locus_panel_canvas_height", _DEFAULTS.panel_canvas_height)
     top_reserved = _resolve_int_param(params, rendering_defaults, "locus_panel_top_reserved_px", _DEFAULTS.panel_top_reserved_px)
-    image, background_meta = make_background_canvas(
+    image, background_meta, diagram_style, diagram_style_meta = prepare_geometry_diagram_style_and_background(
         canvas_width=int(canvas_width),
         canvas_height=int(canvas_height),
+        scene_id=SCENE_ID,
         instance_seed=int(instance_seed),
         params=params,
-        default_config=_PANEL_BACKGROUND_DEFAULTS,
-        fallback_color=(248, 250, 252),
+        style_profile=GEOMETRY_STYLE_PROFILE_COORDINATE_GRID,
+        namespace_suffix="coordinate_plane_locus_panel_background",
     )
     draw = ImageDraw.Draw(image)
     condition_label_bbox = _draw_condition_box(
@@ -1068,7 +1027,12 @@ def _render_panel_scene(
         params=params,
         rendering_defaults=rendering_defaults,
     )
-    style, panel_style_meta = _panel_style(rng)
+    style = geometry_coordinate_panel_style_from_diagram_style(diagram_style)
+    panel_style_meta = {
+        "style": style.to_trace_dict(),
+        "technical_diagram_style": geometry_diagram_style_metadata(diagram_style),
+        "technical_diagram_style_resolution": dict(diagram_style_meta),
+    }
     layout = coordinate_panel_layout(
         int(canvas_width),
         max(320, int(canvas_height) - int(top_reserved)),

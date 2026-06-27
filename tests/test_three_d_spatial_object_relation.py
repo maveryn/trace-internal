@@ -11,6 +11,7 @@ from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.object_scene.object_relation_label import (
     NAMED_SMALL_OBJECT_SHAPE_TYPES,
     RELATION_CANDIDATE_SHAPE_TYPES,
+    RELATION_CONTEXT_SHAPE_TYPES,
     RELATION_CANDIDATE_DIMENSION_SCALE,
     SUPPORTED_QUERY_IDS,
 )
@@ -22,6 +23,10 @@ TASK_ID = "task_three_d__object_scene__object_relation_label"
 
 def test_object_relation_candidate_pool_is_query_invariant() -> None:
     assert tuple(RELATION_CANDIDATE_SHAPE_TYPES) == tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
+
+
+def test_object_relation_context_pool_excludes_piano() -> None:
+    assert "piano" not in set(RELATION_CONTEXT_SHAPE_TYPES)
 
 
 @pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)
@@ -55,6 +60,7 @@ def test_object_relation_answer_and_annotation(query_id: str) -> None:
     assert len(context_specs) == 2
     assert all(spec["is_answer_candidate"] for spec in point_specs)
     assert not any(spec["is_answer_candidate"] for spec in context_specs)
+    assert not any(str(spec["shape_type"]) == "piano" for spec in context_specs)
     assert {str(spec["shape_type"]) for spec in point_specs} <= set(NAMED_SMALL_OBJECT_SHAPE_TYPES)
     assert not any(str(spec["shape_type"]) == "drum" for spec in point_specs)
     assert all(float(spec["dimension_scale"]) <= float(RELATION_CANDIDATE_DIMENSION_SCALE) * 1.17 for spec in point_specs)
@@ -77,6 +83,8 @@ def test_object_relation_answer_and_annotation(query_id: str) -> None:
     if query_id == "on_top_of_prop":
         assert float(answer_spec["base_xyz"][2]) > float(reference_spec["base_xyz"][2]) + 0.85 * float(reference_spec["dimensions_xyz"][2])
     elif query_id == "under_prop":
+        assert str(answer_spec.get("visibility_role")) == "under_answer_foreground"
+        assert float(answer_spec.get("render_order_bias", 0.0)) < 0.0
         assert abs(float(answer_spec["world_xyz"][0]) - float(reference_spec["world_xyz"][0])) < float(reference_spec["dimensions_xyz"][0]) * 0.4
         assert abs(float(answer_spec["world_xyz"][1]) - float(reference_spec["world_xyz"][1])) < float(reference_spec["dimensions_xyz"][1]) * 0.4
     else:

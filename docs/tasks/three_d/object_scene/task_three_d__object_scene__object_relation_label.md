@@ -24,6 +24,10 @@ MCQ candidates. Candidate objects are rendered with a relation-task scale
 multiplier so they read as small props relative to the larger reference prop.
 The same candidate object pool is used for every relation query id; query ids
 change only the requested spatial relation and compatible reference prop.
+Piano is excluded from this task's extra context props. For `under` relations,
+the selected object is placed on the camera-facing side of the reference
+footprint and rendered foreground-visible so the answer object is not hidden by
+table legs, arch posts, or prop sides.
 
 ## Annotation Contract
 Annotation is a scalar `bbox` around the selected visible object.

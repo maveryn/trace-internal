@@ -68,6 +68,7 @@ ON_TOP_PROP_TYPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_ON_TOP_PROP_TYPES
 UNDER_PROP_TYPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_UNDER_PROP_TYPES
 INSIDE_PROP_TYPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_INSIDE_PROP_TYPES
 RELATION_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
+RELATION_CONTEXT_SHAPE_TYPES: Tuple[str, ...] = tuple(shape for shape in LARGE_CONTEXT_SHAPE_TYPES if str(shape) != "piano")
 RELATION_CANDIDATE_DIMENSION_SCALE = 0.74
 
 
@@ -136,6 +137,25 @@ def _answer_base_z(query_id: str, reference_spec: Mapping[str, Any]) -> float:
     return 0.0
 
 
+def _answer_xy(query_id: str, reference_spec: Mapping[str, Any], *, camera, rng) -> Tuple[float, float]:
+    ref_x, ref_y, _ref_z = (float(value) for value in reference_spec["world_xyz"])
+    if str(query_id) != "under_prop":
+        return (float(ref_x + rng.uniform(-0.08, 0.08)), float(ref_y + rng.uniform(-0.08, 0.08)))
+
+    width, depth, _height = (float(value) for value in reference_spec["dimensions_xyz"])
+    to_camera_x = float(camera.camera_position[0]) - float(ref_x)
+    to_camera_y = float(camera.camera_position[1]) - float(ref_y)
+    length = max(1e-6, math.hypot(to_camera_x, to_camera_y))
+    unit_x = float(to_camera_x) / float(length)
+    unit_y = float(to_camera_y) / float(length)
+    x_scale = 0.12 if str(reference_spec["shape_type"]) == "arch" else 0.24
+    y_scale = 0.24
+    return (
+        float(ref_x + unit_x * width * x_scale + rng.uniform(-0.025, 0.025)),
+        float(ref_y + unit_y * depth * y_scale + rng.uniform(-0.025, 0.025)),
+    )
+
+
 def _relation_truth(query_id: str, candidate_spec: Mapping[str, Any], reference_spec: Mapping[str, Any]) -> bool:
     cx, cy, _cz = (float(value) for value in candidate_spec["world_xyz"])
     rx, ry, _rz = (float(value) for value in reference_spec["world_xyz"])
@@ -193,10 +213,7 @@ def _build_relation_scene_dataset(
         answer_shape_pool = list(RELATION_CANDIDATE_SHAPE_TYPES)
         answer_shape = str(rng.choice(answer_shape_pool))
         answer_base_z = _answer_base_z(str(query_id), reference_spec)
-        answer_xy = (
-            float(reference_spec["world_xyz"][0] + rng.uniform(-0.08, 0.08)),
-            float(reference_spec["world_xyz"][1] + rng.uniform(-0.08, 0.08)),
-        )
+        answer_xy = _answer_xy(str(query_id), reference_spec, camera=camera, rng=rng)
         answer_spec = _make_sampled_object(
             rng=rng,
             object_id=f"object_{answer_label}",
@@ -213,6 +230,13 @@ def _build_relation_scene_dataset(
                     "contained_by_object_id": str(reference_spec["object_id"]),
                     "render_order_bias": -12.0,
                     "visibility_role": "contained_answer_foreground",
+                }
+            )
+        elif str(query_id) == "under_prop":
+            answer_spec.update(
+                {
+                    "render_order_bias": -8.0,
+                    "visibility_role": "under_answer_foreground",
                 }
             )
 
@@ -236,7 +260,7 @@ def _build_relation_scene_dataset(
             candidate_specs.append(spec)
 
         context_specs = [reference_spec]
-        extra_context_shapes = [str(shape) for shape in LARGE_CONTEXT_SHAPE_TYPES if str(shape) != reference_shape]
+        extra_context_shapes = [str(shape) for shape in RELATION_CONTEXT_SHAPE_TYPES if str(shape) != reference_shape]
         rng.shuffle(extra_context_shapes)
         extra_slots = [(-2.25, 1.18), (2.18, 1.25), (-2.18, -0.88), (2.18, -0.88)]
         rng.shuffle(extra_slots)

@@ -291,6 +291,8 @@ def _sample_countable_specs(
             )
         elif str(query_id) == "on_top_of_reference_count":
             spec.update({"render_order_bias": -6.0, "visibility_role": "on_top_count_foreground"})
+        elif str(query_id) == "under_reference_count":
+            spec.update({"render_order_bias": -6.0, "visibility_role": "under_count_foreground"})
         if not _can_place(spec, placed, clearance=0.03):
             raise ValueError("could not place relation target objects")
         placed.append(spec)

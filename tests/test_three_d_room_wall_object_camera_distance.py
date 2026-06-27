@@ -8,6 +8,7 @@ from trace.tasks import create_task
 from trace.tasks.registry import is_default_dataset_task
 from trace.tasks.three_d.room.wall_object_camera_distance_label import (
     CAMERA_DISTANCE_MIN_MARGIN,
+    CAMERA_DISTANCE_MIN_ROOM_DEPTH_MARGIN,
     LETTERED_WALL_OBJECT_MIN_VISIBLE_PX,
     SCENE_ID,
     SUPPORTED_QUERY_IDS,
@@ -61,6 +62,7 @@ def test_room_wall_object_camera_distance_answer_and_annotation() -> None:
     assert trace["answer_object_id"] == str(nearest["object_id"])
     assert trace["target_object_ids"] == [str(nearest["object_id"])]
     assert trace["camera_distance_order_near_to_far"][0] == str(nearest["point_label"])
+    assert trace["room_depth_order_front_to_back"][0] == str(nearest["point_label"])
     nearest_entity = next(entity for entity in entities if str(entity["entity_id"]) == str(nearest["object_id"]))
     nearest_record = nearest_entity["attrs"]["object_record"]
     assert nearest_record["object_id"] == str(nearest["object_id"])
@@ -83,6 +85,7 @@ def test_room_wall_object_camera_distance_answer_and_annotation() -> None:
         assert width >= LETTERED_WALL_OBJECT_MIN_VISIBLE_PX
         assert height >= LETTERED_WALL_OBJECT_MIN_VISIBLE_PX
     assert float(trace["camera_distance_margin"]) >= CAMERA_DISTANCE_MIN_MARGIN
+    assert float(trace["room_depth_margin"]) >= CAMERA_DISTANCE_MIN_ROOM_DEPTH_MARGIN
     assert any(entity["entity_id"] == "room_shell" for entity in entities)
 
 

@@ -43,12 +43,12 @@ ROOM_CAMERA_DISTANCE_YAW_BANDS: Dict[str, Tuple[float, float]] = {
     "studio_room": (-4.0, 4.0),
 }
 CANDIDATE_WALL_SLOTS: Tuple[Tuple[str, float, float], ...] = (
-    ("left", -1.92, 1.22),
-    ("left", -0.34, 2.04),
+    ("left", -2.05, 1.22),
+    ("left", -0.38, 2.04),
     ("back", -2.08, 1.28),
     ("back", 1.18, 2.12),
-    ("right", -1.92, 1.26),
-    ("right", -0.34, 2.06),
+    ("right", -1.05, 1.26),
+    ("right", 0.38, 2.06),
 )
 CONTEXT_WALL_SLOTS: Tuple[Tuple[str, float, float], ...] = (
     ("left", -1.56, 1.82),
@@ -61,12 +61,27 @@ CONTEXT_WALL_SLOTS: Tuple[Tuple[str, float, float], ...] = (
 LETTERED_WALL_OBJECT_SIZE_SCALE = 1.35
 LETTERED_WALL_OBJECT_MIN_VISIBLE_PX = 34.0
 CAMERA_DISTANCE_MIN_MARGIN = 0.45
+CAMERA_DISTANCE_MIN_ROOM_DEPTH_MARGIN = 0.65
 
 
-def _candidate_slots(candidate_count: int) -> List[Tuple[str, float, float]]:
+def _candidate_slots(*, candidate_count: int, instance_seed: int, namespace: str) -> List[Tuple[str, float, float]]:
     if int(candidate_count) > len(CANDIDATE_WALL_SLOTS):
         raise ValueError("room wall camera-distance task supports at most six candidates")
-    return list(CANDIDATE_WALL_SLOTS[: int(candidate_count)])
+    slots = list(CANDIDATE_WALL_SLOTS[: int(candidate_count)])
+    front_side_index = abs(
+        int(resolve_selection_index(params={}, instance_seed=int(instance_seed), namespace=f"{namespace}.front_side_wall"))
+    ) % 2
+    if int(front_side_index) == 0:
+        return slots
+    mirrored: List[Tuple[str, float, float]] = []
+    for wall, hpos, z in slots:
+        if str(wall) == "left":
+            mirrored.append(("right", float(hpos), float(z)))
+        elif str(wall) == "right":
+            mirrored.append(("left", float(hpos), float(z)))
+        else:
+            mirrored.append((str(wall), float(hpos), float(z)))
+    return mirrored
 
 
 def _sample_candidate_types(rng, candidate_count: int) -> List[str]:
@@ -170,6 +185,10 @@ def _build_floor_context(*, rng, floor_context_count: int) -> List[Dict[str, Any
     return list(floor_specs)
 
 
+def _room_depth_to_camera(spec: Mapping[str, Any]) -> float:
+    return float(spec["world_xyz"][1])
+
+
 def build_room_wall_camera_distance_dataset(
     *,
     scene_variant: str,
@@ -190,7 +209,7 @@ def build_room_wall_camera_distance_dataset(
             yaw_band_degrees=tuple(float(value) for value in ROOM_CAMERA_DISTANCE_YAW_BANDS[str(scene_variant)]),
         )
         candidate_types = _sample_candidate_types(rng, int(candidate_count))
-        slots = _candidate_slots(int(candidate_count))
+        slots = _candidate_slots(candidate_count=int(candidate_count), instance_seed=int(instance_seed), namespace=str(namespace))
         rng.shuffle(slots)
         candidate_wall_specs: List[Dict[str, Any]] = []
         for index, (wall, hpos, z) in enumerate(slots):
@@ -262,6 +281,12 @@ def build_room_wall_camera_distance_dataset(
         distances = [float(spec["camera_distance"]) for spec in sorted_by_distance]
         if len(distances) >= 2 and abs(float(distances[1]) - float(distances[0])) < CAMERA_DISTANCE_MIN_MARGIN:
             continue
+        sorted_by_room_depth = sorted(finalized_candidates, key=lambda spec: (_room_depth_to_camera(spec), str(spec["object_id"])))
+        room_depths = [_room_depth_to_camera(spec) for spec in sorted_by_room_depth]
+        if str(sorted_by_distance[0]["object_id"]) != str(sorted_by_room_depth[0]["object_id"]):
+            continue
+        if len(room_depths) >= 2 and float(room_depths[1]) - float(room_depths[0]) < CAMERA_DISTANCE_MIN_ROOM_DEPTH_MARGIN:
+            continue
         answer_object_id = str(sorted_by_distance[0]["object_id"])
         answer_label_index = abs(int(resolve_selection_index(params={}, instance_seed=int(instance_seed), namespace=f"{namespace}.answer_label"))) % int(candidate_count)
         answer_label = str(POINT_LABELS[int(answer_label_index)])
@@ -294,6 +319,8 @@ def build_room_wall_camera_distance_dataset(
         candidate_projected_bboxes = {str(spec["point_label"]): [round(float(value), 3) for value in _room_object_bbox(spec, camera, frame)] for spec in relabeled_candidates}
         candidate_visible_bboxes = {str(spec["point_label"]): [round(float(value), 3) for value in _wall_object_visible_bbox(spec, camera, frame)] for spec in relabeled_candidates}
         camera_distance_margin = float(relabeled_by_distance[1]["camera_distance"]) - float(answer_spec["camera_distance"])
+        relabeled_by_room_depth = sorted(relabeled_candidates, key=lambda spec: (_room_depth_to_camera(spec), str(spec["point_label"])))
+        room_depth_margin = _room_depth_to_camera(relabeled_by_room_depth[1]) - _room_depth_to_camera(answer_spec)
         return {
             "scene_variant": str(scene_variant),
             "candidate_count": int(candidate_count),
@@ -316,7 +343,9 @@ def build_room_wall_camera_distance_dataset(
             "candidate_projected_bboxes_by_label": dict(sorted(candidate_projected_bboxes.items())),
             "candidate_visible_bboxes_by_label": dict(sorted(candidate_visible_bboxes.items())),
             "camera_distance_order_near_to_far": [str(spec["point_label"]) for spec in relabeled_by_distance],
+            "room_depth_order_front_to_back": [str(spec["point_label"]) for spec in relabeled_by_room_depth],
             "camera_distance_margin": round(float(camera_distance_margin), 4),
+            "room_depth_margin": round(float(room_depth_margin), 4),
             "object_type_counts": dict(sorted(object_type_counts.items())),
             "wall_object_type_counts": dict(sorted(wall_object_type_counts.items())),
             "floor_object_type_counts": dict(sorted(floor_object_type_counts.items())),
@@ -343,10 +372,12 @@ def build_room_wall_camera_distance_dataset(
                 "candidate_camera_distances_by_label": dict(sorted(candidate_camera_distances.items())),
                 "candidate_walls_by_label": dict(sorted(candidate_walls.items())),
                 "camera_distance_order_near_to_far": [str(spec["point_label"]) for spec in relabeled_by_distance],
+                "room_depth_order_front_to_back": [str(spec["point_label"]) for spec in relabeled_by_room_depth],
                 "answer_label": str(answer_label),
                 "answer_object_id": str(answer_spec["object_id"]),
                 "answer_wall": str(answer_spec["wall"]),
                 "camera_distance_margin": round(float(camera_distance_margin), 4),
+                "room_depth_margin": round(float(room_depth_margin), 4),
                 "unique_answer": True,
             },
         }
@@ -356,6 +387,7 @@ def build_room_wall_camera_distance_dataset(
 __all__ = [
     "CANDIDATE_WALL_OBJECT_TYPES",
     "CAMERA_DISTANCE_MIN_MARGIN",
+    "CAMERA_DISTANCE_MIN_ROOM_DEPTH_MARGIN",
     "CONTEXT_WALL_OBJECT_TYPES",
     "CONTEXT_WALL_SLOTS",
     "LETTERED_WALL_OBJECT_MIN_VISIBLE_PX",

@@ -7,12 +7,14 @@ import math
 from .spatial_primitives import (
     RenderContext,
     _add,
+    _draw_angle_arc,
     _angle_annotation_point,
     _bbox_from_points,
     _draw_angle_label,
     _draw_point_labels,
     _draw_polygon,
     _draw_polyline,
+    _draw_text,
     _offset_points,
     _sub,
     _triangle_from_base_angles,
@@ -207,32 +209,32 @@ def make_parallel_supplement_case(given: int, *, parallel_line_count: int = 2) -
 
 def make_parallel_algebraic_case(
     *,
-    relation_id: str,
-    support_angle: int,
     x_value: int,
-    target_coeff: int,
-    target_const: int,
+    first_coeff: int,
+    first_const: int,
+    second_coeff: int,
+    second_const: int,
 ) -> AngleRelationCase:
-    """Construct one algebraic angle case on three parallel lines."""
+    """Construct one algebraic same-side angle case on three parallel lines."""
 
-    relation = str(relation_id)
-    if relation not in {"corresponding_equal", "same_side_supplementary"}:
-        raise ValueError(f"unsupported parallel algebraic relation: {relation}")
-    target_angle = linear_expression_value(target_coeff, target_const, x_value)
-    expected_support = target_angle if relation == "corresponding_equal" else 180 - int(target_angle)
-    if int(expected_support) != int(support_angle):
-        raise ValueError("support_angle is inconsistent with the requested parallel relation")
+    first_angle = linear_expression_value(first_coeff, first_const, x_value)
+    second_angle = linear_expression_value(second_coeff, second_const, x_value)
+    if int(first_angle) + int(second_angle) != 180:
+        raise ValueError("parallel algebraic expressions must be supplementary")
+    if not 35 <= int(first_angle) <= 80:
+        raise ValueError("first expression angle must be the acute angle")
+    if not 100 <= int(second_angle) <= 145:
+        raise ValueError("second expression angle must be the obtuse target angle")
 
     def build(ctx: RenderContext) -> RenderedAngleRelationScene:
         """Render the algebraic parallel-line case without task identity."""
 
-        top_l, top_r = (120.0, 135.0), (600.0, 135.0)
-        mid_l, mid_r = (105.0, 280.0), (615.0, 280.0)
-        bot_l, bot_r = (120.0, 425.0), (600.0, 425.0)
-        p_x = 300.0
+        top_l, top_r = (80.0, 150.0), (640.0, 150.0)
+        mid_l, mid_r = (80.0, 285.0), (640.0, 285.0)
+        bot_l, bot_r = (80.0, 420.0), (640.0, 420.0)
+        p_x = 190.0
         vertical_gap = float(bot_l[1] - top_l[1])
-        slope_angle = int(support_angle if relation == "corresponding_equal" else target_angle)
-        r_x = p_x + (vertical_gap / max(0.25, math.tan(math.radians(float(slope_angle)))))
+        r_x = p_x + (vertical_gap / max(0.25, math.tan(math.radians(float(first_angle)))))
         p = (p_x, top_l[1])
         r = (r_x, bot_l[1])
         mid_t = (mid_l[1] - top_l[1]) / (bot_l[1] - top_l[1])
@@ -245,51 +247,72 @@ def make_parallel_algebraic_case(
             _draw_polyline(ctx, [segment[0], segment[1]])
         _draw_polyline(ctx, [p, r])
         mark_bbox = _draw_parallel_arrow_marks(ctx, ((top_l, top_r), (mid_l, mid_r), (bot_l, bot_r)))
-        labels = _draw_point_labels(ctx, {"P": p, "Q": q, "R": r})
-        target_expr = format_angle_expression(target_coeff, target_const)
-        given_arc, given_bbox = _draw_angle_label(ctx, format_degrees(support_angle), p, top_r, r, radius=62.0)
-        target_arm = _add(r, (1.0, 0.0), 80.0) if relation == "corresponding_equal" else _add(r, (-1.0, 0.0), 80.0)
-        target_arc, target_bbox = _draw_angle_label(ctx, target_expr, r, target_arm, p, radius=66.0)
-        annotation_points = {POINT_P: p, POINT_Q: q, POINT_R: r}
+        labels = _draw_point_labels(
+            ctx,
+            {
+                "A": top_l,
+                "B": top_r,
+                "C": mid_l,
+                "D": mid_r,
+                "E": bot_l,
+                "F": bot_r,
+                "P": p,
+                "Q": q,
+                "R": r,
+            },
+            offsets={"P": (0.0, -26.0), "Q": (-24.0, 0.0), "R": (0.0, 24.0)},
+        )
+        first_expr = format_angle_expression(first_coeff, first_const)
+        second_expr = format_angle_expression(second_coeff, second_const)
+        first_arc = _draw_angle_arc(ctx, p, top_r, q, radius=46.0)
+        second_arc = _draw_angle_arc(ctx, q, mid_r, p, radius=58.0)
+        target_arc = _draw_angle_arc(ctx, r, bot_r, q, radius=62.0)
+        first_bbox = _draw_text(ctx, first_expr, (float(p[0]) + 112.0, float(p[1]) + 58.0))
+        second_bbox = _draw_text(ctx, second_expr, (float(q[0]) + 170.0, float(q[1]) - 78.0))
+        target_bbox = _draw_text(ctx, "?", (float(r[0]) + 78.0, float(r[1]) - 78.0))
+        annotation_points = {"BPQ": p, "DQP": q, "FRQ": r}
         return RenderedAngleRelationScene(
             image=ctx.image,
-            answer=int(target_angle),
-            annotation_bboxes=(target_arc, given_arc),
-            annotation_roles=(POINT_P, POINT_Q, POINT_R),
+            answer=int(second_angle),
+            annotation_bboxes=(first_arc, second_arc, target_arc),
+            annotation_roles=("BPQ", "DQP", "FRQ"),
             scene_entities=(
                 {
                     "type": "parallel_lines",
                     "line_count": 3,
                     "segments": {"top": (top_l, top_r), "middle": (mid_l, mid_r), "bottom": (bot_l, bot_r)},
                 },
-                {"type": "transversal", "segment": (p, r), "points": {"P": p, "Q": q, "R": r}},
+                {
+                    "type": "transversal",
+                    "segment": (p, r),
+                    "points": {"P": p, "Q": q, "R": r},
+                },
             ),
             render_map={
                 "point_label_bboxes": labels,
-                "angle_arc_bboxes": {"target_angle": target_arc, "support_angle": given_arc},
-                "angle_label_bboxes": {"target_angle": target_bbox, "support_angle": given_bbox},
+                "angle_arc_bboxes": {"BPQ": first_arc, "DQP": second_arc, "FRQ": target_arc},
+                "angle_label_bboxes": {"BPQ": first_bbox, "DQP": second_bbox, "FRQ": target_bbox},
                 "parallel_marks_bbox": mark_bbox,
                 "intersections": {"P": p, "Q": q, "R": r},
             },
             witness={
                 "parallel_line_count": 3,
                 "transversal_count": 1,
-                "relation_id": relation,
-                "support_angle": int(support_angle),
-                "target_angle_measure": int(target_angle),
+                "relation_id": "same_side_supplementary_expression_pair",
+                "expression_angle_names": ["BPQ", "DQP"],
+                "expression_angle_values": [int(first_angle), int(second_angle)],
+                "target_angle_name": "FRQ",
+                "target_angle_measure": int(second_angle),
                 "x": int(x_value),
-                "target_expression": format_linear_expression(target_coeff, target_const),
-                "equation": (
-                    "target_angle = support_angle"
-                    if relation == "corresponding_equal"
-                    else "target_angle = 180 - support_angle"
-                ),
+                "first_expression": format_linear_expression(first_coeff, first_const),
+                "second_expression": format_linear_expression(second_coeff, second_const),
+                "equation": "BPQ + DQP = 180; FRQ = DQP",
             },
             reasoning_steps=3,
             annotation_keyed_points=annotation_points,
         )
 
-    return AngleRelationCase(answer=int(target_angle), build=build)
+    return AngleRelationCase(answer=int(second_angle), build=build)
 
 
 def make_parallel_transversal_triangle_case(left_angle: int, right_angle: int) -> AngleRelationCase:

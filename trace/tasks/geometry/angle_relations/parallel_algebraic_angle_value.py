@@ -32,37 +32,46 @@ _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = (
 
 
 def _parallel_algebraic_case_support() -> tuple[AngleRelationCase, ...]:
-    """Build deterministic support cases for parallel-line algebra."""
+    """Build deterministic support cases for two-expression parallel-line algebra."""
 
     cases: list[AngleRelationCase] = []
-    seen: set[tuple[str, int, int, int, int]] = set()
-    for relation_id in ("corresponding_equal", "same_side_supplementary"):
-        for x_value in range(6, 29):
-            for target_coeff in (2, 3, 4, 5):
-                for target_const in range(-18, 25):
-                    target_angle = (int(target_coeff) * int(x_value)) + int(target_const)
-                    if not 35 <= target_angle <= 135:
-                        continue
-                    support_angle = target_angle if relation_id == "corresponding_equal" else 180 - target_angle
-                    if not 35 <= support_angle <= 135:
-                        continue
-                    key = (relation_id, int(support_angle), int(x_value), int(target_coeff), int(target_const))
-                    if key in seen:
-                        continue
-                    seen.add(key)
-                    cases.append(
-                        make_parallel_algebraic_case(
-                            relation_id=relation_id,
-                            support_angle=int(support_angle),
-                            x_value=int(x_value),
-                            target_coeff=int(target_coeff),
-                            target_const=int(target_const),
-                        )
+    seen: set[tuple[int, int, int, int, int, int]] = set()
+    coefficient_pairs = ((1, 2), (1, 3), (2, 3), (2, 5), (3, 4), (4, 5))
+    for x_value in range(5, 31):
+        for first_angle in range(45, 79):
+            second_angle = 180 - int(first_angle)
+            for first_coeff, second_coeff in coefficient_pairs:
+                first_const = int(first_angle) - (int(first_coeff) * int(x_value))
+                second_const = int(second_angle) - (int(second_coeff) * int(x_value))
+                if not -80 <= first_const <= 120:
+                    continue
+                if not -80 <= second_const <= 120:
+                    continue
+                key = (
+                    int(x_value),
+                    int(first_coeff),
+                    int(first_const),
+                    int(second_coeff),
+                    int(second_const),
+                    int(second_angle),
+                )
+                if key in seen:
+                    continue
+                seen.add(key)
+                cases.append(
+                    make_parallel_algebraic_case(
+                        x_value=int(x_value),
+                        first_coeff=int(first_coeff),
+                        first_const=int(first_const),
+                        second_coeff=int(second_coeff),
+                        second_const=int(second_const),
                     )
+                )
     return tuple(cases)
 
 
 PARALLEL_ALGEBRAIC_CASES = _parallel_algebraic_case_support()
+PARALLEL_ALGEBRAIC_X_SUPPORT = tuple(range(5, 31))
 
 
 def _answer_probability_map(values: tuple[int, ...]) -> dict[str, float]:
@@ -82,8 +91,7 @@ def _answer_for_query(*, selected_query: str, witness: Mapping[str, Any]) -> tup
         values = tuple(int(case.answer) for case in PARALLEL_ALGEBRAIC_CASES)
         return int(witness["target_angle_measure"]), "target_angle_value", _answer_probability_map(values)
     if str(selected_query) == VARIABLE_X_VALUE_QUERY_ID:
-        x_support = tuple(range(6, 29))
-        return int(witness["x"]), "variable_x_value", _answer_probability_map(x_support)
+        return int(witness["x"]), "variable_x_value", _answer_probability_map(PARALLEL_ALGEBRAIC_X_SUPPORT)
     raise ValueError(f"unsupported query_id for {TASK_ID}: {selected_query}")
 
 
@@ -137,20 +145,34 @@ class GeometryAngleRelationsParallelAlgebraicAngleValueTask:
                 "target_angle_value": int(witness["target_angle_measure"]),
                 "variable_x_value": int(witness["x"]),
                 "answer_role": str(answer_role),
+                "target_angle_name": str(witness["target_angle_name"]),
+                "expression_angle_names": list(witness["expression_angle_names"]),
             },
             scene_relation_fields={
                 "answer_role": str(answer_role),
                 "relation_id": str(witness["relation_id"]),
+                "target_angle_name": str(witness["target_angle_name"]),
+                "expression_angle_names": list(witness["expression_angle_names"]),
             },
             execution_fields_extra={
                 "answer_role": str(answer_role),
                 "target_angle_value": int(witness["target_angle_measure"]),
                 "variable_x_value": int(witness["x"]),
+                "target_angle_name": str(witness["target_angle_name"]),
+                "expression_angle_names": list(witness["expression_angle_names"]),
+                "expression_angle_values": list(witness["expression_angle_values"]),
+                "first_expression": str(witness["first_expression"]),
+                "second_expression": str(witness["second_expression"]),
             },
             witness_fields_extra={
                 "answer_role": str(answer_role),
                 "target_angle_value": int(witness["target_angle_measure"]),
                 "variable_x_value": int(witness["x"]),
+                "target_angle_name": str(witness["target_angle_name"]),
+                "expression_angle_names": list(witness["expression_angle_names"]),
+                "expression_angle_values": list(witness["expression_angle_values"]),
+                "first_expression": str(witness["first_expression"]),
+                "second_expression": str(witness["second_expression"]),
             },
         )
         return TaskOutput(

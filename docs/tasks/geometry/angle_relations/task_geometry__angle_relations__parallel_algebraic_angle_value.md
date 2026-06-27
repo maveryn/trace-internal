@@ -8,7 +8,7 @@
 6. Annotation schema: `point_map`
 
 ## Program Contract
-- `derive_geometry_metric(visible_parallel_line_angle_expressions, derivation_rule=parallel_transversal_algebra, output_role=target_angle_measure|variable_x); scene=angle_relations; scope=parallel_algebraic_angle_value`
+- `derive_geometry_metric(visible_parallel_line_angle_expressions, derivation_rule=same_side_supplementary_parallel_transversal_algebra, output_role=target_angle_measure|variable_x); scene=angle_relations; scope=parallel_algebraic_angle_value`
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `angle_relations`.
@@ -16,7 +16,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. The annotation is a keyed point map over exactly the labeled transversal points `P`, `Q`, and `R`.
+Prompt-facing annotation uses pixel-space witnesses only. The annotation is a keyed point map over exactly the visible angle names `BPQ`, `DQP`, and `FRQ`; each value is the angle vertex point. The displayed expressions on `BPQ` and `DQP` determine `x` by the same-side supplementary relation, and `FRQ` is the target angle marked with `?`.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

@@ -214,19 +214,6 @@ def _draw_conveyor_belts(
     return image, list(conveyor_bbox), belt_bboxes, entities
 
 
-def _draw_object_shadow(draw: ImageDraw.ImageDraw, bbox: Sequence[float], *, fill: Tuple[int, int, int]) -> None:
-    x0, y0, x1, y1 = (float(value) for value in bbox)
-    width = max(6.0, x1 - x0)
-    height = max(5.0, y1 - y0)
-    shadow = [
-        x0 + width * 0.12,
-        y1 - height * 0.18,
-        x1 - width * 0.12,
-        y1 + height * 0.08,
-    ]
-    draw.ellipse(tuple(shadow), fill=fill)
-
-
 def _draw_anchor_markers(
     image: Image.Image,
     *,
@@ -308,7 +295,6 @@ def render_conveyor(
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
     floor_rgb = tuple(int(value) for value in getattr(render_params, "floor_rgb", FALLBACK_FLOOR_RGB))
-    shadow_rgb = tuple(int(value) for value in (getattr(render_params, "conveyor_belt_shadow_rgb", None) or (92, 102, 112)))
     draw.rectangle((0, 0, int(image.width), int(image.height)), fill=floor_rgb)
     camera = _camera_from_dataset(dataset)
     frame = _frame_from_dataset(dataset)
@@ -330,14 +316,6 @@ def render_conveyor(
     object_centers: Dict[str, List[float]] = {}
     target_bboxes: Dict[str, List[float]] = {}
     target_centers: Dict[str, List[float]] = {}
-    for spec in ordered_specs:
-        estimated_bbox = [
-            float(spec["screen_xy"][0]) - 20.0,
-            float(spec["screen_xy"][1]) - 12.0,
-            float(spec["screen_xy"][0]) + 20.0,
-            float(spec["screen_xy"][1]) + 14.0,
-        ]
-        _draw_object_shadow(draw, estimated_bbox, fill=shadow_rgb)
     for spec in ordered_specs:
         fill = tuple(int(channel) for channel in spec["fill_rgb"])
         rendered = render_three_d_object(

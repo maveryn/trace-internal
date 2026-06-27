@@ -123,19 +123,7 @@ def _draw_shadow(
     camera,
     frame,
 ) -> None:
-    base = _project_screen(spec["base_xyz"], camera, frame)
-    width, depth, _height = (float(value) for value in spec["dimensions_xyz"])
-    radius = max(12.0, 18.0 * (7.0 / max(2.2, float(spec["camera_distance"]))) ** 0.35)
-    radius *= max(0.72, min(2.2, float(width + depth) * 0.65))
-    draw.ellipse(
-        (
-            base[0] - radius,
-            base[1] - radius * 0.30,
-            base[0] + radius,
-            base[1] + radius * 0.30,
-        ),
-        fill=(136, 145, 148),
-    )
+    return None
 
 
 def _screen_points_bbox(points: Sequence[Sequence[float]], *, pad_px: float = 0.0) -> List[float]:

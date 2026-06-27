@@ -670,11 +670,7 @@ def _fill_for_object(spec: Mapping[str, Any], *, scene_variant: str) -> Tuple[in
 
 
 def _draw_ground_shadow(draw: ImageDraw.ImageDraw, spec: Mapping[str, Any], *, camera: _CameraSpec, frame: _ProjectionFrame) -> None:
-    base = _project_screen(spec["base_xyz"], camera, frame)
-    width, depth, _height = (float(value) for value in spec["dimensions_xyz"])
-    radius = max(10.0, 19.0 * (7.0 / max(2.4, float(spec["camera_distance"]))) ** 0.26)
-    radius *= max(0.70, min(1.52, (width + depth) * 0.50))
-    draw.ellipse((base[0] - radius, base[1] - radius * 0.32, base[0] + radius, base[1] + radius * 0.32), fill=(120, 128, 132), outline=None)
+    return None
 
 
 __all__ = [

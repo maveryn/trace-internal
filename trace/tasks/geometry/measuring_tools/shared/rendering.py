@@ -398,7 +398,7 @@ def render_angle_measurement_scene(
     center = (cx, cy)
     outer_radius = min(float(ctx.width) * 0.34, float(ctx.height) * 0.43)
     inner_radius = outer_radius - 76.0
-    ray_radius = outer_radius - 22.0
+    ray_radius = outer_radius + 28.0
     baseline_end = protractor_point(center, ray_radius, 0)
     target_end = protractor_point(center, ray_radius, float(plan.target_angle_degrees))
 

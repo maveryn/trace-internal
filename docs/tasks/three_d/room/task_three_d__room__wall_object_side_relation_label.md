@@ -9,9 +9,9 @@
 - Annotation schema: `bbox`
 
 ## Contract
-The image shows a synthetic perspective 3D indoor room with a floor, back/side walls, furniture, unlettered room context, one unlettered TV mounted on a wall, unlettered wall-mounted candidate objects on that same wall, and a below-scene text option panel. The prompt asks which option describes the wall-mounted object to the left or right of the TV along the wall plane.
+The image shows a synthetic perspective 3D indoor room with a floor, back/side walls, furniture, floor context objects, one TV mounted on a wall, wall-mounted candidate objects on that same wall, and a below-scene text option panel. The prompt asks which option describes the wall-mounted object to the left or right of the TV along the wall plane.
 
-Each instance renders `5` unlettered answer candidates on the TV's wall. Exactly one candidate satisfies the sampled side relation: greater wall-plane left coordinate for `left_of_reference_on_wall`, or smaller wall-plane left coordinate for `right_of_reference_on_wall`. Candidate object types exclude TVs so the named reference remains unique.
+Each instance renders exactly `6` wall-mounted answer candidates on the TV's wall. These six candidates correspond to the MCQ options. Exactly one candidate satisfies the sampled side relation: greater wall-plane left coordinate for `left_of_reference_on_wall`, or smaller wall-plane left coordinate for `right_of_reference_on_wall`. Candidate object types exclude TVs so the named reference remains unique.
 
 The TV reference may appear on the back, left, or right wall. The verifier uses the finalized wall coordinate system rather than raw image x-position, so side-wall examples can require reasoning about the room wall plane instead of screen-left.
 

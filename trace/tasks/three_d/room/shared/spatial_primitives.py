@@ -37,35 +37,35 @@ REFERENCE_OBJECT_TYPE = ROOM_SIDE_RELATION_REFERENCE_OBJECT_TYPE
 REFERENCE_WALL_SLOTS: Dict[str, Tuple[Tuple[float, float], ...]] = {
     "back": ((-0.95, 1.78),),
     "left": ((-0.95, 1.78),),
-    "right": ((0.00, 1.78),),
+    "right": ((-0.55, 1.78),),
 }
 ANSWER_SLOTS_BY_SIDE_AND_WALL: Dict[str, Dict[str, Tuple[Tuple[float, float], ...]]] = {
     "left": {
         "back": ((-2.22, 1.24), (-2.02, 2.18)),
         "left": ((-2.30, 1.24), (-1.78, 2.18)),
-        "right": ((0.42, 1.24), (0.95, 2.18)),
+        "right": ((0.12, 1.24), (0.95, 2.18)),
     },
     "right": {
         "back": ((0.42, 1.24), (1.16, 2.18)),
         "left": ((-0.32, 1.24), (0.44, 2.18)),
-        "right": ((-1.20, 1.08), (-1.92, 2.42)),
+        "right": ((-1.42, 1.08), (-2.24, 2.42)),
     },
 }
 DISTRACTOR_SLOTS_BY_SIDE_AND_WALL: Dict[str, Dict[str, Tuple[Tuple[float, float], ...]]] = {
     "left": {
-        "back": ((-0.28, 1.20), (0.42, 2.14), (1.14, 1.30), (1.88, 2.02)),
-        "left": ((-0.48, 1.20), (-0.10, 2.14), (0.28, 1.32), (0.66, 2.02)),
-        "right": ((-2.46, 1.20), (-1.82, 2.12), (-1.20, 1.32), (-0.58, 2.02)),
+        "back": ((-0.28, 1.20), (0.42, 2.14), (1.14, 1.30), (1.88, 2.02), (2.54, 1.66)),
+        "left": ((-0.48, 1.20), (-0.10, 2.14), (0.28, 1.32), (0.66, 2.02), (1.02, 1.66)),
+        "right": ((-2.80, 1.74), (-2.30, 1.20), (-1.80, 2.12), (-1.28, 1.32), (-0.78, 2.02)),
     },
     "right": {
-        "back": ((-2.85, 1.20), (-2.30, 2.12), (-1.75, 1.32), (-1.30, 2.02)),
-        "left": ((-2.70, 1.20), (-2.20, 2.12), (-1.70, 1.32), (-1.28, 2.02)),
-        "right": ((0.14, 0.92), (0.46, 1.38), (0.78, 2.08), (1.10, 2.62)),
+        "back": ((-3.05, 1.66), (-2.85, 1.20), (-2.30, 2.12), (-1.75, 1.32), (-1.30, 2.02)),
+        "left": ((-2.70, 1.20), (-2.20, 2.12), (-1.70, 1.32), (-1.28, 2.02), (-0.96, 1.66)),
+        "right": ((-0.50, 2.62), (-0.10, 2.20), (0.32, 1.78), (0.72, 1.34), (1.10, 0.94)),
     },
 }
 REFERENCE_WALL_OBJECT_SIZE_SCALE = 1.28
-SIDE_RELATION_LETTERED_WALL_OBJECT_SIZE_SCALE = 1.55
-SIDE_RELATION_SCREEN_MIN_CENTER_DISTANCE_PX = 34.0
+SIDE_RELATION_LETTERED_WALL_OBJECT_SIZE_SCALE = 1.35
+SIDE_RELATION_SCREEN_MIN_CENTER_DISTANCE_PX = 30.0
 SIDE_RELATION_SCREEN_MAX_INTERSECTION_AREA_PX = 6500.0
 
 

@@ -9,15 +9,15 @@
 - Annotation schema: `bbox`
 
 ## Contract
-The image shows a synthetic perspective 3D indoor room with a floor, back/side walls, furniture, unlettered room context, unlettered wall-mounted candidate objects, and a below-scene text option panel. The prompt asks which option describes the wall-mounted object closest to the camera.
+The image shows a synthetic perspective 3D indoor room with a floor, back/side walls, furniture, floor context objects, wall-mounted candidate objects, and a below-scene text option panel. The prompt asks which option describes the wall-mounted object closest to the camera.
 
-Each instance renders `6` unlettered answer candidates spread across the left, back, and right walls. Candidate object types come from TVs, clocks, picture frames, mirrors, wall fans, air conditioners, and hanging coats. Unlettered wall objects and floor/furniture props provide room context but are excluded from the answer options.
+Each instance renders exactly `6` wall-mounted answer candidates spread across the left, back, and right walls. These are the only task-owned wall objects, and each corresponds to one MCQ option. Candidate object types come from TVs, clocks, picture frames, mirrors, wall fans, air conditioners, and hanging coats. Floor/furniture props provide room context but are excluded from the answer options.
 
 The task uses a narrower front-oblique camera band and keeps side-wall candidates away from the open front edge of the room, so wall-mounted objects remain visibly hanging on the wall rather than collapsing into edge-on slivers. Generation rejects side-wall candidates whose projected wall face is too skinny.
 
 The renderer uses a lower interior camera, extends the open/front floor toward the camera, keeps side-wall continuation capped to avoid cutaway wall panels, and includes foreground floor context so the scene reads from inside the room. Candidate placement, wall assignments, camera distances, and verifier geometry still use the semantic room coordinates recorded in trace metadata.
 
-The answer is computed from finalized metadata using the minimum `camera_distance` among candidate wall-mounted objects. Generation enforces a unique nearest candidate and records the full near-to-far option-label order, per-label camera distances, candidate walls, and nearest margin.
+The answer is computed from finalized metadata using the minimum `camera_distance` among candidate wall-mounted objects. Generation enforces a unique nearest candidate with a minimum nearest-vs-runner-up distance margin and records the full near-to-far option-label order, per-label camera distances, candidate walls, and nearest margin.
 
 ## Program Contract
 `select(label(candidate_wall_objects, argmin(camera_distance))); scene=room; scope=wall_object_camera_distance_label`

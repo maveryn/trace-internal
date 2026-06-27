@@ -60,6 +60,7 @@ CONTEXT_WALL_SLOTS: Tuple[Tuple[str, float, float], ...] = (
 )
 LETTERED_WALL_OBJECT_SIZE_SCALE = 1.35
 LETTERED_WALL_OBJECT_MIN_VISIBLE_PX = 34.0
+CAMERA_DISTANCE_MIN_MARGIN = 0.45
 
 
 def _candidate_slots(candidate_count: int) -> List[Tuple[str, float, float]]:
@@ -259,7 +260,7 @@ def build_room_wall_camera_distance_dataset(
 
         sorted_by_distance = sorted(finalized_candidates, key=lambda spec: (float(spec["camera_distance"]), str(spec["object_id"])))
         distances = [float(spec["camera_distance"]) for spec in sorted_by_distance]
-        if len(distances) >= 2 and abs(float(distances[1]) - float(distances[0])) < 0.22:
+        if len(distances) >= 2 and abs(float(distances[1]) - float(distances[0])) < CAMERA_DISTANCE_MIN_MARGIN:
             continue
         answer_object_id = str(sorted_by_distance[0]["object_id"])
         answer_label_index = abs(int(resolve_selection_index(params={}, instance_seed=int(instance_seed), namespace=f"{namespace}.answer_label"))) % int(candidate_count)
@@ -354,6 +355,7 @@ def build_room_wall_camera_distance_dataset(
 
 __all__ = [
     "CANDIDATE_WALL_OBJECT_TYPES",
+    "CAMERA_DISTANCE_MIN_MARGIN",
     "CONTEXT_WALL_OBJECT_TYPES",
     "CONTEXT_WALL_SLOTS",
     "LETTERED_WALL_OBJECT_MIN_VISIBLE_PX",

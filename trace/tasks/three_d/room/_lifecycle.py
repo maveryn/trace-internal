@@ -185,10 +185,10 @@ def resolve_room_option_counts(
         gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
         key="context_wall_count",
-        default_min=4,
-        default_max=4,
-        lower=2,
-        upper=6,
+        default_min=0,
+        default_max=0,
+        lower=0,
+        upper=0,
     )
     floor_context_count, floor_context_count_probabilities = resolve_count_for_namespace(
         params,
@@ -445,10 +445,10 @@ def generate_room_side_relation_task(
             gen_defaults,
             instance_seed=int(objective_seed),
             namespace=str(task_identifier),
-            candidate_min=5,
-            candidate_max=5,
-            candidate_lower=4,
-            candidate_upper=5,
+            candidate_min=6,
+            candidate_max=6,
+            candidate_lower=6,
+            candidate_upper=6,
         )
         reference_wall_support = ("back", "right") if side_relation == "right" else ("back", "left", "right")
         reference_wall, reference_wall_probabilities = resolve_room_choice(

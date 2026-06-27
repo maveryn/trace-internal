@@ -9,11 +9,11 @@
 - Annotation schema: `bbox`
 
 ## Contract
-The image shows a synthetic perspective 3D indoor room with a floor, back/side walls, furniture, unlettered room context, one unlettered named wall reference object, unlettered wall-mounted candidate objects, and a below-scene text option panel. The prompt asks which option describes the wall-mounted object on the same wall as the named reference object.
+The image shows a synthetic perspective 3D indoor room with a floor, back/side walls, furniture, floor context objects, one named wall reference object, wall-mounted candidate objects, and a below-scene text option panel. The prompt asks which option describes the wall-mounted object on the same wall as the named reference object.
 
-Each instance renders `6` unlettered answer candidates across the left, back, and right walls. Exactly one candidate is on the reference object's wall. Candidate object types exclude the sampled reference object type, and generation requires the reference prompt name to appear exactly once in finalized scene metadata.
+Each instance renders exactly `6` wall-mounted answer candidates across the left, back, and right walls. These six candidates correspond to the MCQ options. Exactly one candidate is on the reference object's wall. Candidate object types exclude the sampled reference object type, and generation requires the reference prompt name to appear exactly once in finalized scene metadata.
 
-The reference object is sampled from recognizable wall-mounted categories such as TV, clock, mirror, fan, air conditioner, and coat. Extra wall and floor objects provide room context but are excluded from answer options.
+The reference object is sampled from recognizable wall-mounted categories such as TV, clock, mirror, fan, air conditioner, and coat. Floor objects provide room context but are excluded from answer options.
 
 The renderer uses a lower interior camera, extends the open/front floor toward the camera, keeps side-wall continuation capped to avoid cutaway wall panels, and includes foreground floor context so the scene reads from inside the room. Reference/candidate placement, wall assignments, same-wall flags, and verifier geometry still use the semantic room coordinates recorded in trace metadata.
 

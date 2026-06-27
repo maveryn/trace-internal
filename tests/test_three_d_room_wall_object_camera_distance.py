@@ -7,6 +7,7 @@ from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import is_default_dataset_task
 from trace.tasks.three_d.room.wall_object_camera_distance_label import (
+    CAMERA_DISTANCE_MIN_MARGIN,
     LETTERED_WALL_OBJECT_MIN_VISIBLE_PX,
     SCENE_ID,
     SUPPORTED_QUERY_IDS,
@@ -30,7 +31,7 @@ def test_room_wall_object_camera_distance_answer_and_annotation() -> None:
             "query_id": "single",
             "scene_variant": "studio_room",
             "candidate_count": 6,
-            "context_wall_count": 4,
+            "context_wall_count": 0,
             "floor_context_count": 6,
             "post_image_noise_apply_prob": 0.0,
         },
@@ -67,6 +68,9 @@ def test_room_wall_object_camera_distance_answer_and_annotation() -> None:
     assert nearest_record["visual_attributes"]["renderer_id"] == "room_wall_object"
     assert nearest_record["visual_attributes"]["renderer_style"] == "projected_3d"
     assert len(candidates) == 6
+    assert int(trace["context_wall_count"]) == 0
+    assert int(trace["wall_object_count"]) == 6
+    assert int(trace["floor_object_count"]) == 6
     assert sorted(str(spec["point_label"]) for spec in candidates) == list("ABCDEF")
     assert {str(spec["wall"]) for spec in candidates} == {"back", "left", "right"}
     assert all(bool(spec["is_wall_mounted"]) for spec in candidates)
@@ -78,7 +82,7 @@ def test_room_wall_object_camera_distance_answer_and_annotation() -> None:
         height = float(bbox[3]) - float(bbox[1])
         assert width >= LETTERED_WALL_OBJECT_MIN_VISIBLE_PX
         assert height >= LETTERED_WALL_OBJECT_MIN_VISIBLE_PX
-    assert float(trace["camera_distance_margin"]) > 0.0
+    assert float(trace["camera_distance_margin"]) >= CAMERA_DISTANCE_MIN_MARGIN
     assert any(entity["entity_id"] == "room_shell" for entity in entities)
 
 

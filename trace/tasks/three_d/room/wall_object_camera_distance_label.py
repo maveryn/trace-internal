@@ -6,7 +6,7 @@ from typing import Any, Dict
 
 from trace.tasks.registry import register_task
 from trace.tasks.three_d.room._lifecycle import generate_room_camera_distance_task
-from trace.tasks.three_d.room.shared.metrics import LETTERED_WALL_OBJECT_MIN_VISIBLE_PX
+from trace.tasks.three_d.room.shared.metrics import CAMERA_DISTANCE_MIN_MARGIN, LETTERED_WALL_OBJECT_MIN_VISIBLE_PX
 from trace.tasks.three_d.room.shared.state import SCENE_ID
 
 
@@ -35,6 +35,7 @@ class ThreeDRoomWallObjectCameraDistanceLabelTask:
 
 
 __all__ = [
+    "CAMERA_DISTANCE_MIN_MARGIN",
     "LETTERED_WALL_OBJECT_MIN_VISIBLE_PX",
     "SCENE_ID",
     "SUPPORTED_QUERY_IDS",

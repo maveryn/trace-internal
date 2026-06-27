@@ -37,7 +37,7 @@ def test_room_wall_object_same_wall_reference_answer_annotation_and_unique_refer
             "query_id": "single",
             "scene_variant": "studio_room",
             "candidate_count": 6,
-            "context_wall_count": 4,
+            "context_wall_count": 0,
             "floor_context_count": 6,
             "reference_wall": reference_wall,
             "reference_object_type": "mirror",
@@ -84,6 +84,9 @@ def test_room_wall_object_same_wall_reference_answer_annotation_and_unique_refer
     assert str(answer_spec["wall"]) == reference_wall
     assert all(bool(spec["is_wall_mounted"]) for spec in candidates)
     assert all(bool(spec["is_answer_candidate"]) for spec in candidates)
+    assert int(trace["context_wall_count"]) == 0
+    assert int(trace["wall_object_count"]) == 7
+    assert int(trace["floor_object_count"]) == 6
     assert sorted(str(spec["point_label"]) for spec in candidates) == list("ABCDEF")
     assert {str(spec["wall"]) for spec in candidates} == {"back", "left", "right"}
     _assert_side_wall_objects_are_not_deep(trace)

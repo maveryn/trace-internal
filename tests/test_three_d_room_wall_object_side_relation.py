@@ -48,13 +48,13 @@ def test_room_wall_object_side_relation_answer_annotation_and_unique_reference(
         params={
             "query_id": query_id,
             "scene_variant": "studio_room",
-            "candidate_count": 5,
-            "context_wall_count": 4,
+            "candidate_count": 6,
+            "context_wall_count": 0,
             "floor_context_count": 6,
             "reference_wall": reference_wall,
             "post_image_noise_apply_prob": 0.0,
         },
-        max_attempts=220,
+        max_attempts=260,
     )
 
     trace = output.trace_payload["execution_trace"]
@@ -110,9 +110,12 @@ def test_room_wall_object_side_relation_answer_annotation_and_unique_reference(
     assert str(answer_spec["wall"]) == reference_wall
     assert all(bool(spec["is_wall_mounted"]) for spec in candidates)
     assert all(bool(spec["is_answer_candidate"]) for spec in candidates)
-    assert sorted(str(spec["point_label"]) for spec in candidates) == list("ABCDE")
+    assert int(trace["context_wall_count"]) == 0
+    assert int(trace["wall_object_count"]) == 7
+    assert int(trace["floor_object_count"]) == 6
+    assert sorted(str(spec["point_label"]) for spec in candidates) == list("ABCDEF")
     assert {str(spec["wall"]) for spec in candidates} == {reference_wall}
-    assert len(candidates) == 5
+    assert len(candidates) == 6
     _assert_side_wall_objects_are_not_deep(trace)
     assert trace["candidate_walls_by_label"][answer_label] == reference_wall
     if query_id == "left_of_reference_on_wall":

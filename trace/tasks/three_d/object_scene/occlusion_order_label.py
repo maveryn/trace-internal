@@ -48,7 +48,6 @@ REFERENCE_DIMENSIONS_BY_SHAPE: Dict[str, Tuple[float, float, float]] = {
     "platform": (1.86, 1.12, 1.18),
 }
 OCCLUSION_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = (
-    "apple",
     "bell",
     "open_book",
     "bottle",
@@ -62,13 +61,10 @@ OCCLUSION_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = (
     "dice",
     "glove",
     "half_cylinder",
-    "hat",
-    "helmet",
     "lantern",
     "mushroom",
     "pyramid",
     "shield",
-    "star_prism",
     "trophy",
     "umbrella",
 )

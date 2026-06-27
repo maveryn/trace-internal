@@ -75,8 +75,12 @@ def test_occlusion_order_answer_and_annotation() -> None:
 def test_occlusion_order_uses_occlusion_safe_candidate_pool() -> None:
     assert "open_book" in OCCLUSION_CANDIDATE_SHAPE_TYPES
     assert "half_cylinder" in OCCLUSION_CANDIDATE_SHAPE_TYPES
+    assert "apple" not in OCCLUSION_CANDIDATE_SHAPE_TYPES
     assert "carrot" not in OCCLUSION_CANDIDATE_SHAPE_TYPES
     assert "crown" not in OCCLUSION_CANDIDATE_SHAPE_TYPES
+    assert "hat" not in OCCLUSION_CANDIDATE_SHAPE_TYPES
+    assert "helmet" not in OCCLUSION_CANDIDATE_SHAPE_TYPES
+    assert "star_prism" not in OCCLUSION_CANDIDATE_SHAPE_TYPES
     assert "clock" not in OCCLUSION_CANDIDATE_SHAPE_TYPES
     assert "ruler" not in OCCLUSION_CANDIDATE_SHAPE_TYPES
 

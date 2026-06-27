@@ -1029,7 +1029,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     # Synthetic 3D scenes.
     "task_three_d__object_scene__between_references_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
     "task_three_d__object_scene__camera_distance_extremum_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
-    "task_three_d__object_scene__counterfactual_count": _entry("three_d", "object_scene", "three_d", "object_scene"),
     "task_three_d__object_scene__height_extremum_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
     "task_three_d__object_scene__marked_point_depth_extremum_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
     "task_three_d__object_scene__marked_point_vertical_relation_label": _entry("three_d", "object_scene", "three_d", "object_scene"),

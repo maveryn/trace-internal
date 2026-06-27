@@ -23,13 +23,6 @@
       "",
       ""
     ],
-    "counterfactual_attribute_count_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
     "object_relation_query": [
       "",
       "",
@@ -163,13 +156,6 @@
       "Which letter marks the point directly over the {reference_name}?",
       "Which point marker is aligned above the {reference_name} along the vertical direction?",
       "Find the point directly above the {reference_name}. Which letter is it?"
-    ],
-    "attribute_count_after_edits": [
-      "Start with the objects shown. Apply these edits:\n{edit_steps_text}\nAfter the edits, how many {target_property_phrase} are there?",
-      "Using the starting scene, make these changes:\n{edit_steps_text}\nHow many {target_property_phrase} are there afterward?",
-      "Apply every listed edit to the objects shown:\n{edit_steps_text}\nWhat is the final count of {target_property_phrase}?",
-      "Begin with the visible objects, then update the scene with these steps:\n{edit_steps_text}\nHow many {target_property_phrase} remain afterward?",
-      "After these add/remove edits are applied:\n{edit_steps_text}\nHow many {target_property_phrase} are in the scene?"
     ],
     "on_top_of_prop": [
       "Which option describes the small 3D object on top of the {reference_name}?",

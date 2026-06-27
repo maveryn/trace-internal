@@ -34,13 +34,6 @@
         "",
         ""
       ],
-      "counterfactual_attribute_count_query": [
-        "",
-        "",
-        "",
-        "",
-        ""
-      ],
       "object_relation_query": [
         "",
         "",
@@ -133,13 +126,6 @@
         "Which letter marks the point directly over the {reference_name}?",
         "Which point marker is aligned above the {reference_name} along the vertical direction?",
         "Find the point directly above the {reference_name}. Which letter is it?"
-      ],
-      "attribute_count_after_edits": [
-        "Start with the objects shown. Apply these edits:\n{edit_steps_text}\nAfter the edits, how many {target_property_phrase} are there?",
-        "Using the starting scene, make these changes:\n{edit_steps_text}\nHow many {target_property_phrase} are there afterward?",
-        "Apply every listed edit to the objects shown:\n{edit_steps_text}\nWhat is the final count of {target_property_phrase}?",
-        "Begin with the visible objects, then update the scene with these steps:\n{edit_steps_text}\nHow many {target_property_phrase} remain afterward?",
-        "After these add/remove edits are applied:\n{edit_steps_text}\nHow many {target_property_phrase} are in the scene?"
       ],
       "on_top_of_prop": [
         "Which option describes the small 3D object on top of the {reference_name}?",
@@ -297,13 +283,6 @@
       "json_example": "{\"annotation\":{\"selected_point\":[318,260]},\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
-    "task:counterfactual_attribute_count_query": {
-      "object_description": "a gridded floor with many colored objects",
-      "annotation_hint": "set \"annotation\" to an array containing one bounding box [x0, y0, x1, y1] around each visible starting object matching the final counted description",
-      "answer_hint": "set \"answer\" to the final count",
-      "json_example": "{\"annotation\":[[118,442,176,503],[391,316,448,374]],\"answer\":4}",
-      "json_example_answer_only": "{\"answer\":4}"
-    },
     "task:object_relation_query": {
       "object_description": "a perspective 3D platform scene with small objects and larger props",
       "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the selected small object in the scene",
@@ -365,12 +344,6 @@
     "reference_name": {
       "type": "string"
     },
-    "edit_steps_text": {
-      "type": "string"
-    },
-    "target_property_phrase": {
-      "type": "string"
-    },
     "target_color_name": {
       "type": "string"
     },
@@ -413,10 +386,6 @@
     ],
     "query:directly_above_reference": [
       "reference_name"
-    ],
-    "query:attribute_count_after_edits": [
-      "edit_steps_text",
-      "target_property_phrase"
     ],
     "query:on_top_of_prop": [
       "reference_name"

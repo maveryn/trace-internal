@@ -25,6 +25,31 @@ def _angle_label(coefficient: int, variable_name: str, offset: int) -> str:
     return f"({_linear_label(int(coefficient), str(variable_name), int(offset))}){DEGREE_SYMBOL}"
 
 
+def _degree_label(value: int) -> str:
+    return f"{int(value)}{DEGREE_SYMBOL}"
+
+
+def _side_distractors(index: int, *, variable_name: str = "y") -> dict[str, str]:
+    return {
+        "side_bc": str(9 + (index * 3) % 23),
+        "side_cd": _linear_label(1 + (index % 2), variable_name, 4 + (index * 5) % 17),
+    }
+
+
+def _triangle_angle_distractors(index: int) -> dict[str, str]:
+    return {
+        "angle_A": _degree_label(35 + (index * 7) % 72),
+        "angle_C": _angle_label(1 + (index % 2), "y", 18 + (index * 5) % 24),
+    }
+
+
+def _quadrilateral_angle_distractors(index: int) -> dict[str, str]:
+    return {
+        "angle_B": _degree_label(58 + (index * 5) % 74),
+        "angle_D": _angle_label(1 + (index % 3), "y", 24 + (index * 7) % 31),
+    }
+
+
 def isosceles_equal_side_variable(variant_index: int) -> MarkedEquationCase:
     index = _variant(variant_index)
     answer = 4 + index
@@ -43,6 +68,7 @@ def isosceles_equal_side_variable(variant_index: int) -> MarkedEquationCase:
             "left_side": _linear_label(coefficient, "x", offset),
             "right_side": str(coefficient * answer + offset),
         },
+        distractor_labels=_triangle_angle_distractors(index),
     )
 
 
@@ -66,6 +92,7 @@ def equilateral_equal_side_variable(variant_index: int) -> MarkedEquationCase:
             "right_side": str(side_value),
             "base_side": str(side_value),
         },
+        distractor_labels=_triangle_angle_distractors(index),
     )
 
 
@@ -87,6 +114,7 @@ def marked_polygon_equal_side_variable(variant_index: int) -> MarkedEquationCase
             "left_side": _linear_label(coefficient, "x", offset),
             "right_side": _linear_label(coefficient - 1, "x", offset + answer),
         },
+        distractor_labels=_quadrilateral_angle_distractors(index),
     )
 
 
@@ -108,6 +136,7 @@ def isosceles_altitude_base_split_variable(variant_index: int) -> MarkedEquation
             "left_base": _linear_label(coefficient, "x", offset),
             "right_base": str(coefficient * answer + offset),
         },
+        distractor_labels={"angle_A": _degree_label(44 + (index * 7) % 62)},
     )
 
 
@@ -129,6 +158,7 @@ def marked_equal_angles_variable(variant_index: int) -> MarkedEquationCase:
             "angle_a": _angle_label(coefficient, "x", offset),
             "angle_b": _angle_label(coefficient - 1, "x", offset + answer),
         },
+        distractor_labels=_side_distractors(index),
     )
 
 
@@ -150,6 +180,7 @@ def isosceles_base_angle_variable(variant_index: int) -> MarkedEquationCase:
             "angle_a": _angle_label(coefficient, "x", offset),
             "angle_b": _angle_label(coefficient - 1, "x", offset + answer),
         },
+        distractor_labels={"side_bc": str(10 + (index * 5) % 28)},
     )
 
 
@@ -168,6 +199,7 @@ def equilateral_median_right_angle_variable(variant_index: int) -> MarkedEquatio
         relation="equilateral_median_perpendicular_expression",
         formula_schema="right_angle_expression_variable",
         labels={"right_angle_expression": _angle_label(coefficient, "y", offset)},
+        distractor_labels={"side_ab": str(12 + (index * 4) % 24), "angle_A": _degree_label(60)},
     )
 
 
@@ -189,6 +221,7 @@ def isosceles_side_from_expression(variant_index: int) -> MarkedEquationCase:
             "left_side": _linear_label(coefficient, "x", offset),
             "right_side": str(answer),
         },
+        distractor_labels=_triangle_angle_distractors(index),
     )
 
 
@@ -211,6 +244,7 @@ def equilateral_side_from_expression(variant_index: int) -> MarkedEquationCase:
             "right_side": str(answer),
             "base_side": str(answer),
         },
+        distractor_labels=_triangle_angle_distractors(index),
     )
 
 
@@ -232,6 +266,7 @@ def marked_polygon_side_from_expression(variant_index: int) -> MarkedEquationCas
             "left_side": _linear_label(coefficient, "x", offset),
             "right_side": str(answer),
         },
+        distractor_labels=_quadrilateral_angle_distractors(index),
     )
 
 
@@ -253,6 +288,7 @@ def equilateral_median_side_length_from_expression(variant_index: int) -> Marked
             "right_side": _linear_label(4, "x", 1 - x_value),
             "base_side": "?",
         },
+        distractor_labels={"angle_A": _degree_label(60), "angle_B": _degree_label(60)},
     )
 
 
@@ -275,6 +311,7 @@ def marked_equal_angle_from_expression(variant_index: int) -> MarkedEquationCase
             "angle_a": _angle_label(coefficient, "x", offset),
             "angle_b": _angle_label(1, "x", answer - x_value),
         },
+        distractor_labels=_side_distractors(index),
     )
 
 
@@ -297,6 +334,119 @@ def isosceles_angle_from_expression(variant_index: int) -> MarkedEquationCase:
             "angle_a": _angle_label(coefficient, "x", offset),
             "angle_b": _angle_label(1, "x", answer - x_value),
         },
+        distractor_labels={"side_bc": str(11 + (index * 3) % 29)},
+    )
+
+
+def triangle_angle_sum_variable(variant_index: int) -> MarkedEquationCase:
+    index = _variant(variant_index, modulo=97)
+    answer = 3 + (index % 71)
+    coefficient = 2 + (index % 3)
+    angle_b = 40 + (index * 7) % 31
+    angle_c = 36 + (index * 11) % 30
+    angle_a = 180 - angle_b - angle_c
+    offset = angle_a - coefficient * answer
+    return MarkedEquationCase(
+        construction_family="triangle_angle_sum_variable",
+        draw_kind="angle_sum_triangle",
+        answer=answer,
+        target_name="x",
+        variable_name="x",
+        shape_kind="triangle",
+        relation="triangle_interior_angle_sum_variable",
+        formula_schema="polygon_angle_sum_variable",
+        labels={
+            "angle_A": _angle_label(coefficient, "x", offset),
+            "angle_B": _degree_label(angle_b),
+            "angle_C": _degree_label(angle_c),
+        },
+        distractor_labels={"side_bc": _linear_label(1 + (index % 2), "y", 6 + (index * 5) % 18)},
+    )
+
+
+def quadrilateral_angle_sum_variable(variant_index: int) -> MarkedEquationCase:
+    index = _variant(variant_index, modulo=97)
+    answer = 3 + (index % 71)
+    coefficient = 2 + (index % 4)
+    angle_b = 66 + (index * 5) % 42
+    angle_c = 58 + (index * 7) % 39
+    angle_d = 52 + (index * 11) % 37
+    angle_a = 360 - angle_b - angle_c - angle_d
+    offset = angle_a - coefficient * answer
+    return MarkedEquationCase(
+        construction_family="quadrilateral_angle_sum_variable",
+        draw_kind="angle_sum_quadrilateral",
+        answer=answer,
+        target_name="x",
+        variable_name="x",
+        shape_kind="quadrilateral",
+        relation="quadrilateral_interior_angle_sum_variable",
+        formula_schema="polygon_angle_sum_variable",
+        labels={
+            "angle_A": _angle_label(coefficient, "x", offset),
+            "angle_B": _degree_label(angle_b),
+            "angle_C": _degree_label(angle_c),
+            "angle_D": _degree_label(angle_d),
+        },
+        distractor_labels={"side_bc": str(12 + (index * 3) % 26), "side_cd": _linear_label(1, "y", 5 + index % 15)},
+    )
+
+
+def triangle_angle_sum_angle_measure(variant_index: int) -> MarkedEquationCase:
+    index = _variant(variant_index, modulo=97)
+    x_value = 4 + (index % 53)
+    answer = 35 + (index * 5) % 55
+    angle_a = 44 + (index * 7) % 42
+    angle_c = 180 - answer - angle_a
+    if angle_c < 30:
+        angle_a = 180 - answer - 35
+        angle_c = 35
+    coefficient = 2 + (index % 3)
+    return MarkedEquationCase(
+        construction_family="triangle_angle_sum_angle_measure",
+        draw_kind="angle_sum_triangle",
+        answer=answer,
+        target_name="angle B",
+        variable_name="x",
+        shape_kind="triangle",
+        relation="triangle_interior_angle_sum_target_angle",
+        formula_schema="polygon_angle_sum_angle_measure",
+        labels={
+            "angle_A": _angle_label(coefficient, "x", angle_a - coefficient * x_value),
+            "angle_B": _angle_label(1, "x", answer - x_value),
+            "angle_C": _degree_label(angle_c),
+        },
+        distractor_labels={"side_ac": str(9 + (index * 4) % 24)},
+    )
+
+
+def quadrilateral_angle_sum_angle_measure(variant_index: int) -> MarkedEquationCase:
+    index = _variant(variant_index, modulo=97)
+    x_value = 4 + (index % 53)
+    answer = 50 + (index * 5) % 67
+    angle_a = 68 + (index * 7) % 39
+    angle_c = 58 + (index * 3) % 37
+    angle_d = 360 - answer - angle_a - angle_c
+    if angle_d < 45:
+        angle_c = 45
+        angle_d = 360 - answer - angle_a - angle_c
+    coefficient = 2 + (index % 3)
+    return MarkedEquationCase(
+        construction_family="quadrilateral_angle_sum_angle_measure",
+        draw_kind="angle_sum_quadrilateral",
+        answer=answer,
+        target_name="angle B",
+        variable_name="x",
+        shape_kind="quadrilateral",
+        relation="quadrilateral_interior_angle_sum_target_angle",
+        formula_schema="polygon_angle_sum_angle_measure",
+        labels={
+            "angle_A": _degree_label(angle_a),
+            "angle_B": _angle_label(1, "x", answer - x_value),
+            "angle_C": _degree_label(angle_c),
+            "angle_D": _angle_label(coefficient, "x", angle_d - coefficient * x_value),
+        },
+        distractor_labels={"side_ab": _linear_label(1, "y", 8 + (index * 3) % 17), "side_cd": str(14 + index % 25)},
     )
 
 
@@ -315,4 +465,8 @@ __all__ = [
     "marked_equal_angles_variable",
     "marked_polygon_equal_side_variable",
     "marked_polygon_side_from_expression",
+    "quadrilateral_angle_sum_angle_measure",
+    "quadrilateral_angle_sum_variable",
+    "triangle_angle_sum_angle_measure",
+    "triangle_angle_sum_variable",
 ]

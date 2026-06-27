@@ -33,6 +33,13 @@ def _line_bbox(points: Sequence[Point], ctx: RenderContext, pad: float = 5.0) ->
     return bbox_from_points(points, width=ctx.width, height=ctx.height, pad=pad)
 
 
+def _polygon_center(points: Sequence[Point]) -> Point:
+    return (
+        sum(float(point[0]) for point in points) / float(len(points)),
+        sum(float(point[1]) for point in points) / float(len(points)),
+    )
+
+
 def _draw_text_centered(ctx: RenderContext, text: str, center: Point, *, small: bool = True) -> BBox:
     font = ctx.small_font if bool(small) else ctx.font
     draw_text_traced(
@@ -65,6 +72,18 @@ def _draw_side_label(ctx: RenderContext, points: Sequence[Point], side: Side, te
     a = points[int(side[0])]
     b = points[int(side[1])]
     return _draw_text_centered(ctx, str(text), add_scaled(mid(a, b), _offset_from_segment(a, b, offset)), small=True)
+
+
+def _draw_side_label_outside(ctx: RenderContext, points: Sequence[Point], side: Side, text: str) -> BBox:
+    a = points[int(side[0])]
+    b = points[int(side[1])]
+    center = _polygon_center(points)
+    side_mid = mid(a, b)
+    normal = _offset_from_segment(a, b, 1.0)
+    to_center = sub(center, side_mid)
+    if normal[0] * to_center[0] + normal[1] * to_center[1] > 0:
+        normal = (-normal[0], -normal[1])
+    return _draw_text_centered(ctx, str(text), add_scaled(side_mid, normal, 35.0), small=True)
 
 
 def _draw_tick(ctx: RenderContext, a: Point, b: Point, *, count: int = 1) -> BBox:
@@ -125,6 +144,33 @@ def _draw_right_angle_marker(ctx: RenderContext, vertex: Point, ray_a: Point, ra
     return _line_bbox((p1, p2, p3), ctx, pad=4.0)
 
 
+def _draw_polygon_angle_readout(
+    ctx: RenderContext,
+    points: Sequence[Point],
+    *,
+    vertex_index: int,
+    text: str,
+    count: int = 1,
+) -> BBox:
+    previous_point = points[(int(vertex_index) - 1) % len(points)]
+    vertex = points[int(vertex_index)]
+    next_point = points[(int(vertex_index) + 1) % len(points)]
+    arc_bbox = _draw_angle_arc(ctx, vertex, previous_point, next_point, count=int(count))
+    label_center = add_scaled(vertex, unit(sub(_polygon_center(points), vertex)), 58.0)
+    label_bbox = _draw_text_centered(ctx, str(text), label_center, small=True)
+    return bbox_from_points(
+        (
+            (arc_bbox[0], arc_bbox[1]),
+            (arc_bbox[2], arc_bbox[3]),
+            (label_bbox[0], label_bbox[1]),
+            (label_bbox[2], label_bbox[3]),
+        ),
+        width=ctx.width,
+        height=ctx.height,
+        pad=1.0,
+    )
+
+
 def _draw_polygon(ctx: RenderContext, points: Sequence[Point]) -> BBox:
     polygon = [(float(x), float(y)) for x, y in points]
     ctx.draw.polygon(polygon, fill=ctx.fill_color)
@@ -138,6 +184,32 @@ def _draw_vertex_labels(ctx: RenderContext, points: Sequence[Point], labels: Seq
     for label, point in zip(labels, points):
         bboxes[str(label)] = _draw_point_label(ctx, str(label), point, sub(point, center), offset=24.0)
     return bboxes
+
+
+def _draw_extra_readouts(ctx: RenderContext, points: Sequence[Point], labels: Mapping[str, str]) -> dict[str, BBox]:
+    """Draw non-solving side/angle readouts attached to visible polygon parts."""
+
+    side_roles = {
+        "side_ab": (0, 1),
+        "side_ac": (0, 2),
+        "side_bc": (1, 2),
+        "side_cd": (2, 3),
+        "side_da": (3, 0),
+    }
+    angle_roles = {"angle_A": 0, "angle_B": 1, "angle_C": 2, "angle_D": 3}
+    readouts: dict[str, BBox] = {}
+    for role, text in labels.items():
+        if role in side_roles and max(side_roles[role]) < len(points):
+            readouts[f"distractor_{role}"] = _draw_side_label_outside(ctx, points, side_roles[role], str(text))
+        elif role in angle_roles and angle_roles[role] < len(points):
+            readouts[f"distractor_{role}"] = _draw_polygon_angle_readout(
+                ctx,
+                points,
+                vertex_index=int(angle_roles[role]),
+                text=str(text),
+                count=1,
+            )
+    return readouts
 
 
 def _make_render_context(
@@ -258,6 +330,7 @@ def _render_split_triangle(case: MarkedEquationCase, ctx: RenderContext, rng: An
         readouts["left_side_label"] = _draw_side_label(ctx, (apex, left_base), (0, 1), labels["left_side"], offset=-32.0)
         readouts["right_side_label"] = _draw_side_label(ctx, (apex, right_base), (0, 1), labels["right_side"], offset=32.0)
         readouts["base_side_label"] = _draw_side_label(ctx, (left_base, right_base), (0, 1), labels["base_side"], offset=31.0)
+    readouts.update(_draw_extra_readouts(ctx, points, case.distractor_labels))
     return vertices, point_labels, readouts, construction
 
 
@@ -288,6 +361,7 @@ def _render_basic_triangle(case: MarkedEquationCase, ctx: RenderContext, rng: An
         construction["right_base_angle_mark"] = _draw_angle_arc(ctx, points[2], points[0], points[1], count=1)
         readouts["left_angle_label"] = _draw_text_centered(ctx, labels["angle_a"], add_scaled(points[1], (65.0, -32.0)), small=True)
         readouts["right_angle_label"] = _draw_text_centered(ctx, labels["angle_b"], add_scaled(points[2], (-68.0, -32.0)), small=True)
+    readouts.update(_draw_extra_readouts(ctx, points, case.distractor_labels))
     return vertices, point_labels, readouts, construction
 
 
@@ -312,6 +386,38 @@ def _render_quad(case: MarkedEquationCase, ctx: RenderContext, rng: Any) -> tupl
         construction["second_equal_angle_mark"] = _draw_angle_arc(ctx, points[2], points[1], points[3], count=2)
         readouts["first_angle_label"] = _draw_text_centered(ctx, labels["angle_a"], add_scaled(points[0], (58.0, 42.0)), small=True)
         readouts["second_angle_label"] = _draw_text_centered(ctx, labels["angle_b"], add_scaled(points[2], (-64.0, -38.0)), small=True)
+    readouts.update(_draw_extra_readouts(ctx, points, case.distractor_labels))
+    return vertices, point_labels, readouts, construction
+
+
+def _render_angle_sum_polygon(
+    case: MarkedEquationCase,
+    ctx: RenderContext,
+    rng: Any,
+) -> tuple[dict[str, Point], dict[str, BBox], dict[str, BBox], dict[str, BBox]]:
+    """Draw a polygon whose shown angle labels are constrained by its angle sum."""
+
+    if case.draw_kind == "angle_sum_triangle":
+        points = tuple(ctx.scene_transform.points(_triangle_points(ctx, rng)))
+        vertex_labels = ("A", "B", "C")
+    else:
+        points = tuple(ctx.scene_transform.points(_quad_points(ctx, rng)))
+        vertex_labels = ("A", "B", "C", "D")
+    vertices = {label: point for label, point in zip(vertex_labels, points)}
+    construction = {"polygon": _draw_polygon(ctx, points)}
+    point_labels = {key: bbox_to_list(value) for key, value in _draw_vertex_labels(ctx, points, vertex_labels).items()}
+    readouts: dict[str, BBox] = {}
+    for index, label in enumerate(vertex_labels):
+        angle_key = f"angle_{label}"
+        if angle_key in case.labels:
+            readouts[f"{angle_key}_label"] = _draw_polygon_angle_readout(
+                ctx,
+                points,
+                vertex_index=int(index),
+                text=str(case.labels[angle_key]),
+                count=1,
+            )
+    readouts.update(_draw_extra_readouts(ctx, points, case.distractor_labels))
     return vertices, point_labels, readouts, construction
 
 
@@ -323,6 +429,8 @@ def _render_marked_equation(case: MarkedEquationCase, ctx: RenderContext, *, ins
         vertices, point_labels, readouts, construction = _render_split_triangle(case, ctx, rng)
     elif case.draw_kind in {"triangle_equal_sides", "equilateral_sides", "isosceles_base_angles"}:
         vertices, point_labels, readouts, construction = _render_basic_triangle(case, ctx, rng)
+    elif case.draw_kind in {"angle_sum_triangle", "angle_sum_quadrilateral"}:
+        vertices, point_labels, readouts, construction = _render_angle_sum_polygon(case, ctx, rng)
     else:
         vertices, point_labels, readouts, construction = _render_quad(case, ctx, rng)
 

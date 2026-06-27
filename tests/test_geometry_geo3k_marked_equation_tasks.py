@@ -25,6 +25,12 @@ TASK_QUERIES = {
     "task_geometry__marked_polygon_equation__angle_value": (
         "single",
     ),
+    "task_geometry__marked_polygon_equation__polygon_angle_sum_variable_value": (
+        "single",
+    ),
+    "task_geometry__marked_polygon_equation__polygon_angle_sum_angle_value": (
+        "single",
+    ),
     "task_geometry__parallel_segment_proportion__variable_value": (
         "single",
     ),
@@ -54,6 +60,14 @@ MARKED_CONSTRUCTION_FAMILIES = {
     "task_geometry__marked_polygon_equation__angle_value": (
         "marked_equal_angle_from_expression",
         "isosceles_triangle_angle_from_expression",
+    ),
+    "task_geometry__marked_polygon_equation__polygon_angle_sum_variable_value": (
+        "triangle_angle_sum_variable",
+        "quadrilateral_angle_sum_variable",
+    ),
+    "task_geometry__marked_polygon_equation__polygon_angle_sum_angle_value": (
+        "triangle_angle_sum_angle_measure",
+        "quadrilateral_angle_sum_angle_measure",
     ),
 }
 
@@ -188,6 +202,7 @@ def test_marked_polygon_equation_construction_families_are_trace_metadata() -> N
             assert trace["execution_trace"]["construction_family"] == family
             assert trace["query_spec"]["params"]["construction_family"] == family
             assert trace["query_spec"]["params"]["query_id"] == "single"
+            assert "distractor_labels" in trace["execution_trace"]
 
 
 def test_similar_figure_equation_construction_families_are_trace_metadata() -> None:

@@ -23,7 +23,7 @@ The public task has no semantic query branch. The sampled construction family is
 ## Annotation
 Prompt-facing annotation uses a `point_map` keyed by the visible construction labels in the rendered diagram, usually `A`, `B`, `C`, and `D` for quadrilateral cases or `A`, `B`, and `C` for triangle cases. Each value is that labeled point's pixel coordinate.
 
-Expression labels, angle arcs, equal-side tick marks, and target angle labels remain visible scene marks plus private verifier metadata.
+Expression labels, angle arcs, equal-side tick marks, target angle labels, and distractor readouts remain visible scene marks plus private verifier metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

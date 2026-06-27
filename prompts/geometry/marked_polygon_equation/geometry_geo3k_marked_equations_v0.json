@@ -40,6 +40,20 @@
         "",
         "",
         ""
+      ],
+      "polygon_angle_sum_variable_value_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "polygon_angle_sum_angle_value_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
       ]
     },
     "query": {
@@ -65,6 +79,20 @@
         "Solve for {target_name}."
       ],
       "angle_value_query": [
+        "Find {target_name}.",
+        "Find the measure of {target_name}.",
+        "What is {target_name}?",
+        "Determine {target_name}.",
+        "Solve for {target_name}."
+      ],
+      "polygon_angle_sum_variable_value_query": [
+        "Find {variable_name}.",
+        "Find the value of {variable_name}.",
+        "What is {variable_name}?",
+        "Determine {variable_name}.",
+        "Solve for {variable_name}."
+      ],
+      "polygon_angle_sum_angle_value_query": [
         "Find {target_name}.",
         "Find the measure of {target_name}.",
         "What is {target_name}?",
@@ -105,6 +133,12 @@
     "query:angle_value_query": [
       "target_name"
     ],
+    "query:polygon_angle_sum_variable_value_query": [
+      "variable_name"
+    ],
+    "query:polygon_angle_sum_angle_value_query": [
+      "target_name"
+    ],
     "output:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -131,6 +165,12 @@
       "answer_hint": "set \"answer\" to the requested side length as a number"
     },
     "task:angle_value_query": {
+      "answer_hint": "set \"answer\" to the requested angle measure in degrees as a number"
+    },
+    "task:polygon_angle_sum_variable_value_query": {
+      "answer_hint": "set \"answer\" to the value of the variable as a number"
+    },
+    "task:polygon_angle_sum_angle_value_query": {
       "answer_hint": "set \"answer\" to the requested angle measure in degrees as a number"
     },
     "output:answer_only": {

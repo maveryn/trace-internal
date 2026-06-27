@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, Mapping, Tuple
 
 from PIL import Image, ImageDraw
@@ -26,6 +26,7 @@ class MarkedEquationCase:
     relation: str
     formula_schema: str
     labels: Mapping[str, str]
+    distractor_labels: Mapping[str, str] = field(default_factory=dict)
 
     def trace_fields(self) -> Dict[str, Any]:
         """Return JSON-ready semantic fields shared by verifier trace sections."""
@@ -39,6 +40,7 @@ class MarkedEquationCase:
             "target_name": str(self.target_name),
             "variable_name": str(self.variable_name),
             "labels": dict(self.labels),
+            "distractor_labels": dict(self.distractor_labels),
             "answer_value": self.answer,
         }
 

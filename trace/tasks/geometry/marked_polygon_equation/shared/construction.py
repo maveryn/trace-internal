@@ -50,6 +50,10 @@ def _quadrilateral_angle_distractors(index: int) -> dict[str, str]:
     }
 
 
+def _triangle_apex_angle_distractor(index: int) -> dict[str, str]:
+    return {"angle_A": _degree_label(42 + (index * 7) % 70)}
+
+
 def isosceles_equal_side_variable(variant_index: int) -> MarkedEquationCase:
     index = _variant(variant_index)
     answer = 4 + index
@@ -158,7 +162,7 @@ def marked_equal_angles_variable(variant_index: int) -> MarkedEquationCase:
             "angle_a": _angle_label(coefficient, "x", offset),
             "angle_b": _angle_label(coefficient - 1, "x", offset + answer),
         },
-        distractor_labels=_side_distractors(index),
+        distractor_labels={**_side_distractors(index), **_quadrilateral_angle_distractors(index)},
     )
 
 
@@ -180,7 +184,10 @@ def isosceles_base_angle_variable(variant_index: int) -> MarkedEquationCase:
             "angle_a": _angle_label(coefficient, "x", offset),
             "angle_b": _angle_label(coefficient - 1, "x", offset + answer),
         },
-        distractor_labels={"side_bc": str(10 + (index * 5) % 28)},
+        distractor_labels={
+            "side_bc": str(10 + (index * 5) % 28),
+            **_triangle_apex_angle_distractor(index),
+        },
     )
 
 
@@ -311,7 +318,7 @@ def marked_equal_angle_from_expression(variant_index: int) -> MarkedEquationCase
             "angle_a": _angle_label(coefficient, "x", offset),
             "angle_b": _angle_label(1, "x", answer - x_value),
         },
-        distractor_labels=_side_distractors(index),
+        distractor_labels={**_side_distractors(index), **_quadrilateral_angle_distractors(index)},
     )
 
 
@@ -334,7 +341,10 @@ def isosceles_angle_from_expression(variant_index: int) -> MarkedEquationCase:
             "angle_a": _angle_label(coefficient, "x", offset),
             "angle_b": _angle_label(1, "x", answer - x_value),
         },
-        distractor_labels={"side_bc": str(11 + (index * 3) % 29)},
+        distractor_labels={
+            "side_bc": str(11 + (index * 3) % 29),
+            **_triangle_apex_angle_distractor(index),
+        },
     )
 
 

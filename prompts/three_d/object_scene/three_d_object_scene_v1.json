@@ -76,13 +76,6 @@
         "",
         ""
       ],
-      "spatial_relation_count_query": [
-        "",
-        "",
-        "",
-        "",
-        ""
-      ],
       "view_relation_count_query": [
         "",
         "",
@@ -331,13 +324,6 @@
       "answer_hint": "set \"answer\" to the selected object letter from the right view",
       "json_example": "{\"annotation\":[842,228,902,296],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
-    },
-    "task:spatial_relation_count_query": {
-      "object_description": "a perspective 3D platform scene with a reference prop and many small objects",
-      "annotation_hint": "set \"annotation\" to an array containing one bounding box [x0, y0, x1, y1] around each counted small object; use an empty array if there are none",
-      "answer_hint": "set \"answer\" to the number of counted small objects",
-      "json_example": "{\"annotation\":[[118,442,176,503],[391,316,448,374]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
     },
     "task:view_relation_count_query": {
       "object_description": "a perspective 3D platform scene with many small objects and one red-boxed reference object",

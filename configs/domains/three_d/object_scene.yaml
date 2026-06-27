@@ -92,16 +92,6 @@ generation:
       context_object_count_min: 2
       context_object_count_max: 2
       balanced_scene_variant_sampling: true
-    task_three_d__object_scene__relation_attribute_count:
-      scene_variant_weights:
-        floor_grid_room: 1.0
-        tabletop_room: 1.0
-        studio_platform: 1.0
-      object_count_min: 10
-      object_count_max: 12
-      target_count_min: 0
-      target_count_max: 4
-      balanced_scene_variant_sampling: true
     task_three_d__object_scene__image_plane_lateral_relation_count:
       scene_variant_weights:
         floor_grid_room: 1.0
@@ -254,21 +244,6 @@ rendering:
       line_width_px: 2
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
-    task_three_d__object_scene__relation_attribute_count:
-      canvas_width: 1180
-      canvas_height: 900
-      scene_margin_left_px: 48
-      scene_margin_right_px: 48
-      scene_margin_top_px: 38
-      scene_margin_bottom_px: 44
-      room_extent: 3.2
-      room_height: 3.0
-      grid_step: 0.8
-      marker_radius_px: 22
-      label_font_size_px: 24
-      line_width_px: 2
-      full_bleed_floor: true
-      full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__image_plane_lateral_relation_count:
       canvas_width: 1180
       canvas_height: 900
@@ -330,9 +305,6 @@ prompt:
     task_three_d__object_scene__multiview_object_match_label:
       scene_key: object_scene
       task_key: multiview_object_match_query
-    task_three_d__object_scene__relation_attribute_count:
-      scene_key: object_scene
-      task_key: spatial_relation_count_query
     task_three_d__object_scene__image_plane_lateral_relation_count:
       scene_key: object_scene
       task_key: view_relation_count_query

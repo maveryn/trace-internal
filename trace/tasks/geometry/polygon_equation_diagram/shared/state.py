@@ -27,6 +27,7 @@ class PolygonEquationCase:
     angle_labels: Mapping[str, str] = field(default_factory=dict)
     side_mark_counts: Mapping[str, int] = field(default_factory=dict)
     angle_mark_counts: Mapping[str, int] = field(default_factory=dict)
+    center_label: str = ""
     equal_sides: tuple[str, ...] = ()
     equal_angles: tuple[str, ...] = ()
     target_side: str = ""
@@ -50,6 +51,7 @@ class PolygonEquationCase:
             "angle_labels": dict(self.angle_labels),
             "side_mark_counts": {str(key): int(value) for key, value in self.side_mark_counts.items()},
             "angle_mark_counts": {str(key): int(value) for key, value in self.angle_mark_counts.items()},
+            "center_label": str(self.center_label),
             "equal_sides": list(self.equal_sides),
             "equal_angles": list(self.equal_angles),
             "target_side": str(self.target_side),
@@ -94,6 +96,7 @@ class RenderedPolygonEquationScene:
     side_label_bboxes: dict[str, BBox]
     angle_label_bboxes: dict[str, BBox]
     marker_bboxes: dict[str, BBox]
+    center_label_bbox: BBox | None
     vertices: tuple[Point, ...]
 
 

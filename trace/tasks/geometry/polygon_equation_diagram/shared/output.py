@@ -23,6 +23,7 @@ def render_map(rendered: RenderedPolygonEquationScene) -> dict[str, Any]:
         "side_label_bboxes": geometry_json_ready(rendered.side_label_bboxes, round_floats=False),
         "angle_label_bboxes": geometry_json_ready(rendered.angle_label_bboxes, round_floats=False),
         "marker_bboxes": geometry_json_ready(rendered.marker_bboxes, round_floats=False),
+        "center_label_bbox": geometry_json_ready(rendered.center_label_bbox, round_floats=False),
     }
 
 

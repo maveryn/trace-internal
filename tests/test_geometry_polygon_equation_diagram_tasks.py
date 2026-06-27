@@ -18,6 +18,8 @@ TASK_IDS = (
     "task_geometry__polygon_equation_diagram__equal_angle_measure_value",
     "task_geometry__polygon_equation_diagram__interior_angle_sum_variable_value",
     "task_geometry__polygon_equation_diagram__interior_angle_sum_angle_value",
+    "task_geometry__polygon_equation_diagram__side_expression_perimeter_value",
+    "task_geometry__polygon_equation_diagram__perimeter_constraint_variable_value",
 )
 
 
@@ -33,6 +35,13 @@ def _eval_linear_label(label: str, *, variable_name: str, variable_value: int) -
         coefficient *= -1
     offset = int(match.group("offset") or "0")
     return int(coefficient * int(variable_value) + offset)
+
+
+def _eval_side_label(label: str, *, variable_name: str, variable_value: int) -> int:
+    text = str(label).strip()
+    if re.fullmatch(r"-?\d+", text):
+        return int(text)
+    return _eval_linear_label(text, variable_name=variable_name, variable_value=variable_value)
 
 
 @pytest.mark.parametrize("task_id", TASK_IDS)
@@ -70,6 +79,33 @@ def test_polygon_equation_diagram_generates_each_side_count(task_id: str, side_c
 
     if "interior_angle_sum" in task_id:
         assert sum(execution["numeric_angle_values"]) == (side_count - 2) * 180
+    if task_id.endswith("side_expression_perimeter_value"):
+        assert execution["answer"] == execution["perimeter_value"]
+        assert execution["perimeter_value"] == sum(execution["perimeter_side_values"].values())
+        assert len(execution["side_labels"]) == side_count
+        assert set(execution["side_labels"]) == set(execution["perimeter_side_values"])
+        for side_label, side_value in execution["perimeter_side_values"].items():
+            assert _eval_side_label(
+                execution["side_labels"][side_label],
+                variable_name=execution["variable_name"],
+                variable_value=execution["variable_value"],
+            ) == side_value
+        for side_label in execution["equal_sides"]:
+            assert execution["side_mark_counts"][side_label] == 2
+        assert execution["side_distractors"]
+    if task_id.endswith("perimeter_constraint_variable_value"):
+        assert execution["answer"] == execution["variable_value"]
+        assert execution["center_label"] == f"P={execution['perimeter_value']}"
+        assert execution["perimeter_value"] == sum(execution["perimeter_side_values"].values())
+        assert len(execution["side_labels"]) == side_count
+        assert not execution["equal_sides"]
+        assert not execution["side_mark_counts"]
+        for side_label, side_value in execution["perimeter_side_values"].items():
+            assert _eval_side_label(
+                execution["side_labels"][side_label],
+                variable_name=execution["variable_name"],
+                variable_value=execution["variable_value"],
+            ) == side_value
     if "equal_side" in task_id:
         for side_label in execution["equal_sides"]:
             assert execution["side_mark_counts"][side_label] == 2

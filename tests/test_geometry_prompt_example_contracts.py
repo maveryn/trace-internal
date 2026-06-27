@@ -24,6 +24,8 @@ _AFFECTED_KEYED_POINT_TASKS = (
     "task_geometry__polygon_equation_diagram__equal_side_variable_value",
     "task_geometry__polygon_equation_diagram__interior_angle_sum_angle_value",
     "task_geometry__polygon_equation_diagram__interior_angle_sum_variable_value",
+    "task_geometry__polygon_equation_diagram__perimeter_constraint_variable_value",
+    "task_geometry__polygon_equation_diagram__side_expression_perimeter_value",
     "task_geometry__regular_polygon_decomposition__central_angle_value",
     "task_geometry__regular_polygon_decomposition__perimeter_value",
     "task_geometry__regular_polygon_decomposition__piece_area_value",

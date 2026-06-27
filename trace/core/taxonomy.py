@@ -623,6 +623,8 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__polygon_equation_diagram__equal_side_variable_value": _entry("geometry", "polygon_equation_diagram", "geometry", "measurement"),
     "task_geometry__polygon_equation_diagram__interior_angle_sum_angle_value": _entry("geometry", "polygon_equation_diagram", "geometry", "measurement"),
     "task_geometry__polygon_equation_diagram__interior_angle_sum_variable_value": _entry("geometry", "polygon_equation_diagram", "geometry", "measurement"),
+    "task_geometry__polygon_equation_diagram__perimeter_constraint_variable_value": _entry("geometry", "polygon_equation_diagram", "geometry", "measurement"),
+    "task_geometry__polygon_equation_diagram__side_expression_perimeter_value": _entry("geometry", "polygon_equation_diagram", "geometry", "measurement"),
     "task_geometry__pythagorean_dissection__pythagorean_square_area_value": _entry("geometry", "pythagorean_dissection", "geometry", "measurement"),
     "task_geometry__pythagorean_tree__missing_square_area_value": _entry("geometry", "pythagorean_tree", "geometry", "measurement"),
     "task_geometry__rectangular_solid__cube_edge_from_frame_length_value": _entry("geometry", "rectangular_solid", "geometry", "measurement"),

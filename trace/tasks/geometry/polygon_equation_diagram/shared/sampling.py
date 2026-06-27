@@ -69,6 +69,33 @@ def _sample_distractor_value(*, rng: Any, lower: int, upper: int, forbidden: set
     raise ValueError("failed to sample distractor value")
 
 
+def _format_side_measure(value: int) -> str:
+    return str(int(value))
+
+
+def _side_names(labels: tuple[str, ...]) -> tuple[str, ...]:
+    return tuple(side_name(labels, index) for index in range(len(labels)))
+
+
+def _sample_side_expression_label(
+    *,
+    rng: Any,
+    side_value: int,
+    variable_name: str,
+    variable_value: int,
+    force_expression: bool = False,
+) -> str:
+    if bool(force_expression) or bool(rng.randrange(2)):
+        expression = _expression_for_value(
+            rng=rng,
+            value=int(side_value),
+            variable_name=str(variable_name),
+            variable_value=int(variable_value),
+        )
+        return format_linear_expression(expression[0], variable_name, expression[1])
+    return _format_side_measure(int(side_value))
+
+
 def _sample_values_for_sum(*, rng: Any, count: int, total: int, min_value: int, max_value: int) -> tuple[int, ...]:
     """Sample integer angle values whose sum is exactly total."""
 
@@ -352,8 +379,141 @@ def sample_interior_angle_sum_relation(
     }
 
 
+def sample_equal_side_perimeter_relation(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    namespace: str,
+) -> dict[str, Any]:
+    """Sample side labels where equal-side algebra gives x before summing perimeter."""
+
+    relation = sample_equal_side_relation(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace=namespace,
+        include_distractors=False,
+    )
+    side_count = int(relation["side_count"])
+    labels = tuple(chr(ord("A") + index) for index in range(side_count))
+    rng = spawn_rng(int(instance_seed), f"{namespace}.perimeter")
+    variable_name = str(relation["variable_name"])
+    variable_value = int(relation["variable_value"])
+    equal_sides = {str(side_label) for side_label in relation["equal_sides"]}
+    side_values: dict[str, int] = {str(side_label): int(relation["side_value"]) for side_label in equal_sides}
+    side_labels = dict(relation["side_labels"])
+    side_mark_counts = dict(relation["side_mark_counts"])
+    available_sides = [side_label for side_label in _side_names(labels) if str(side_label) not in equal_sides]
+    rng.shuffle(available_sides)
+    marked_distractor_sides = set(available_sides[: _choose_distractor_count(rng=rng, available_count=len(available_sides))])
+    mark_counts = [1, 3]
+    rng.shuffle(mark_counts)
+    side_distractors: list[dict[str, Any]] = []
+    for side_label in _side_names(labels):
+        if str(side_label) in side_values:
+            continue
+        side_value = int(rng.randint(12, 86))
+        side_values[str(side_label)] = int(side_value)
+        force_expression = str(side_label) in marked_distractor_sides
+        side_labels[str(side_label)] = _sample_side_expression_label(
+            rng=rng,
+            side_value=int(side_value),
+            variable_name=variable_name,
+            variable_value=int(variable_value),
+            force_expression=bool(force_expression),
+        )
+        if str(side_label) in marked_distractor_sides:
+            mark_count = int(mark_counts.pop(0))
+            side_mark_counts[str(side_label)] = int(mark_count)
+            side_distractors.append(
+                {
+                    "side": str(side_label),
+                    "mark_count": int(mark_count),
+                    "variable_name": str(variable_name),
+                    "label": str(side_labels[str(side_label)]),
+                    "numeric_value_under_x": int(side_value),
+                }
+            )
+    perimeter_value = int(sum(side_values.values()))
+    witness = {
+        **dict(relation["witness"]),
+        "side_mark_counts": dict(side_mark_counts),
+        "side_distractors": list(side_distractors),
+        "perimeter_side_values": dict(side_values),
+        "perimeter_value": int(perimeter_value),
+        "perimeter_equation": " + ".join(str(side_labels[side_label]) for side_label in _side_names(labels)),
+    }
+    return {
+        **dict(relation),
+        "side_labels": dict(side_labels),
+        "side_mark_counts": dict(side_mark_counts),
+        "side_distractors": list(side_distractors),
+        "side_values": dict(side_values),
+        "perimeter_value": int(perimeter_value),
+        "witness": dict(witness),
+    }
+
+
+def sample_perimeter_constraint_relation(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    namespace: str,
+) -> dict[str, Any]:
+    """Sample side expressions and a visible total perimeter constraint for solving x."""
+
+    side_count = _side_count(int(instance_seed), params, f"{namespace}.side_count")
+    labels = tuple(chr(ord("A") + index) for index in range(side_count))
+    side_labels_ordered = _side_names(labels)
+    rng = spawn_rng(int(instance_seed), namespace)
+    variable_name = str(params.get("variable_name", "x"))
+    variable_value = int(rng.randint(3, 31))
+    expression_count = min(side_count, int(rng.choice((2, 3, 4))))
+    expression_sides = set(rng.sample(list(side_labels_ordered), int(expression_count)))
+    side_values: dict[str, int] = {}
+    side_labels: dict[str, str] = {}
+    expression_values: dict[str, int] = {}
+    for side_label in side_labels_ordered:
+        side_value = int(rng.randint(12, 86))
+        side_values[str(side_label)] = int(side_value)
+        if str(side_label) in expression_sides:
+            side_labels[str(side_label)] = _sample_side_expression_label(
+                rng=rng,
+                side_value=int(side_value),
+                variable_name=variable_name,
+                variable_value=int(variable_value),
+                force_expression=True,
+            )
+            expression_values[str(side_label)] = int(side_value)
+        else:
+            side_labels[str(side_label)] = _format_side_measure(int(side_value))
+    perimeter_value = int(sum(side_values.values()))
+    center_label = f"P={int(perimeter_value)}"
+    return {
+        "side_count": int(side_count),
+        "variable_name": str(variable_name),
+        "variable_value": int(variable_value),
+        "target_side": "",
+        "side_labels": dict(side_labels),
+        "side_mark_counts": {},
+        "equal_sides": (),
+        "side_values": dict(side_values),
+        "perimeter_value": int(perimeter_value),
+        "center_label": str(center_label),
+        "witness": {
+            "polygon_kind": polygon_kind(side_count),
+            "variable_value": int(variable_value),
+            "perimeter_side_values": dict(side_values),
+            "expression_values": dict(expression_values),
+            "perimeter_value": int(perimeter_value),
+            "perimeter_constraint": str(center_label),
+        },
+    }
+
+
 __all__ = [
     "sample_equal_angle_relation",
+    "sample_equal_side_perimeter_relation",
     "sample_equal_side_relation",
     "sample_interior_angle_sum_relation",
+    "sample_perimeter_constraint_relation",
 ]

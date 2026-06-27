@@ -35,3 +35,7 @@ prompt:
       task_key: interior_angle_sum_variable_value
     task_geometry__polygon_equation_diagram__interior_angle_sum_angle_value:
       task_key: interior_angle_sum_angle_value
+    task_geometry__polygon_equation_diagram__side_expression_perimeter_value:
+      task_key: side_expression_perimeter_value
+    task_geometry__polygon_equation_diagram__perimeter_constraint_variable_value:
+      task_key: perimeter_constraint_variable_value

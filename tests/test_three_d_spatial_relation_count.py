@@ -53,7 +53,7 @@ def test_spatial_relation_count_answer_and_annotation() -> None:
 def test_spatial_relation_count_query_variants_generate() -> None:
     task = create_task(TASK_ID)
     params_by_query = {
-        "under_reference_count": {"reference_shape_type": "arch"},
+        "under_reference_count": {"reference_shape_type": "table"},
         "inside_reference_count": {"reference_shape_type": "open_box"},
     }
     for offset, (query_id, extra_params) in enumerate(params_by_query.items()):
@@ -79,7 +79,7 @@ def test_spatial_relation_count_supports_zero_and_four_targets() -> None:
     task = create_task(TASK_ID)
     params_by_query = {
         "on_top_of_reference_count": {"reference_shape_type": "table"},
-        "under_reference_count": {"reference_shape_type": "arch"},
+        "under_reference_count": {"reference_shape_type": "table"},
         "inside_reference_count": {"reference_shape_type": "open_box"},
     }
     cases = [(0, "empty"), (4, "full")]

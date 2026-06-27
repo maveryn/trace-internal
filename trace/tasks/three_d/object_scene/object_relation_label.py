@@ -60,6 +60,7 @@ from ..shared.object_scene import (
     _sample_shape_dimensions,
     render_object_scene_3d,
 )
+from .shared.relations import max_support_part_overlap_fraction, under_support_xy
 
 
 TASK_ID = "task_three_d__object_scene__object_relation_label"
@@ -142,19 +143,7 @@ def _answer_xy(query_id: str, reference_spec: Mapping[str, Any], *, camera, rng)
     ref_x, ref_y, _ref_z = (float(value) for value in reference_spec["world_xyz"])
     if str(query_id) != "under_prop":
         return (float(ref_x + rng.uniform(-0.08, 0.08)), float(ref_y + rng.uniform(-0.08, 0.08)))
-
-    width, depth, _height = (float(value) for value in reference_spec["dimensions_xyz"])
-    to_camera_x = float(camera.camera_position[0]) - float(ref_x)
-    to_camera_y = float(camera.camera_position[1]) - float(ref_y)
-    length = max(1e-6, math.hypot(to_camera_x, to_camera_y))
-    unit_x = float(to_camera_x) / float(length)
-    unit_y = float(to_camera_y) / float(length)
-    x_scale = 0.12
-    y_scale = 0.20
-    return (
-        float(ref_x + unit_x * width * x_scale + rng.uniform(-0.025, 0.025)),
-        float(ref_y + unit_y * depth * y_scale + rng.uniform(-0.025, 0.025)),
-    )
+    return under_support_xy(reference_spec, camera=camera, rng=rng)
 
 
 def _relation_truth(query_id: str, candidate_spec: Mapping[str, Any], reference_spec: Mapping[str, Any]) -> bool:
@@ -241,8 +230,7 @@ def _build_relation_scene_dataset(
         elif str(query_id) == "under_prop":
             answer_spec.update(
                 {
-                    "render_order_bias": -8.0,
-                    "visibility_role": "under_answer_foreground",
+                    "visibility_role": "under_answer_opening",
                 }
             )
 
@@ -322,6 +310,9 @@ def _build_relation_scene_dataset(
             if {str(a_id), str(b_id)} != intended_relation_pair
         ):
             continue
+        if str(query_id) == "under_prop":
+            if max_support_part_overlap_fraction(answer_spec, reference_spec, camera=camera, frame=frame, pad_px=4.0) > 0.16:
+                continue
 
         finalized_specs: List[Dict[str, Any]] = []
         for index, spec in enumerate(candidate_specs):

@@ -544,7 +544,7 @@ SPATIAL_REFERENCE_NEAREST_REFERENCE_SHAPE_TYPES: Tuple[str, ...] = (
     "chair",
 )
 SPATIAL_OBJECT_RELATION_ON_TOP_PROP_TYPES: Tuple[str, ...] = ("table", "shelf")
-SPATIAL_OBJECT_RELATION_UNDER_PROP_TYPES: Tuple[str, ...] = ("arch",)
+SPATIAL_OBJECT_RELATION_UNDER_PROP_TYPES: Tuple[str, ...] = ("arch", "table")
 SPATIAL_OBJECT_RELATION_INSIDE_PROP_TYPES: Tuple[str, ...] = ("open_box",)
 SPATIAL_OCCLUSION_REFERENCE_SHAPE_TYPES: Tuple[str, ...] = (
     "arch",

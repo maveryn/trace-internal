@@ -25,10 +25,10 @@ multiplier so they read as small props relative to the larger reference prop.
 The same candidate object pool is used for every relation query id; query ids
 change only the requested spatial relation and compatible reference prop.
 Piano is excluded from this task's extra context props. For `under` relations,
-the selected object is scaled smaller, kept near the interior of the reference
-footprint, and rendered foreground-visible so it is not hidden by arch posts.
-Under-reference prompts use `arch`; table remains available for on-top prompts
-only, where the visual relation is unambiguous.
+the selected object is scaled smaller, placed in the open interior of a table or
+arch support, and accepted only when its projected bbox does not collide heavily
+with visible legs, posts, or the lintel/tabletop. Under objects use normal
+depth ordering rather than a foreground overpaint bias.
 
 ## Annotation Contract
 Annotation is a scalar `bbox` around the selected visible object.

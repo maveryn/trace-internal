@@ -84,9 +84,9 @@ def test_object_relation_answer_and_annotation(query_id: str) -> None:
     if query_id == "on_top_of_prop":
         assert float(answer_spec["base_xyz"][2]) > float(reference_spec["base_xyz"][2]) + 0.85 * float(reference_spec["dimensions_xyz"][2])
     elif query_id == "under_prop":
-        assert str(reference_spec["shape_type"]) == "arch"
-        assert str(answer_spec.get("visibility_role")) == "under_answer_foreground"
-        assert float(answer_spec.get("render_order_bias", 0.0)) < 0.0
+        assert str(reference_spec["shape_type"]) in {"arch", "table"}
+        assert str(answer_spec.get("visibility_role")) == "under_answer_opening"
+        assert "render_order_bias" not in answer_spec
         assert float(answer_spec["dimension_scale"]) <= float(UNDER_RELATION_CANDIDATE_DIMENSION_SCALE) * 1.17
         assert abs(float(answer_spec["world_xyz"][0]) - float(reference_spec["world_xyz"][0])) < float(reference_spec["dimensions_xyz"][0]) * 0.4
         assert abs(float(answer_spec["world_xyz"][1]) - float(reference_spec["world_xyz"][1])) < float(reference_spec["dimensions_xyz"][1]) * 0.4

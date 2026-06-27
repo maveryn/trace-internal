@@ -20,9 +20,9 @@ The verifier computes the answer from finalized scene metadata and projection re
 Countable objects are sampled from the same curated object_scene-compatible
 named-object pool for every relation query id. Query ids change only the
 requested spatial relation and compatible reference prop; they do not swap in a
-separate answer-object universe. Under-reference prompts use `arch`; table
-remains available for on-top prompts only, where the visual relation is
-unambiguous.
+separate answer-object universe. Under-reference targets are placed in the open
+interior of a table or arch support and accepted only when their projected
+bboxes do not collide heavily with visible support parts.
 
 ## Annotation Contract
 Annotation is an unordered `bbox_set` containing one box around each counted object. The set may be empty when the answer is zero.

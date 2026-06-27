@@ -58,6 +58,7 @@ from ..shared.object_scene import (
     _sample_shape_dimensions,
     render_object_scene_3d,
 )
+from .shared.relations import max_support_part_overlap_fraction, under_support_xy
 
 
 TASK_ID = "task_three_d__object_scene__relation_attribute_count"
@@ -71,6 +72,7 @@ UNDER_REFERENCE_SHAPES: Tuple[str, ...] = tuple(SPATIAL_OBJECT_RELATION_UNDER_PR
 INSIDE_REFERENCE_SHAPES: Tuple[str, ...] = tuple(SPATIAL_OBJECT_RELATION_INSIDE_PROP_TYPES)
 COUNTABLE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
 RELATION_SMALL_DIMENSION_SCALE = 0.62
+UNDER_RELATION_COUNT_DIMENSION_SCALE = 0.66
 MIN_PROJECTED_OBJECT_AREA_PX = 420.0
 MAX_PAIRWISE_OVERLAP_PX = 3900.0
 
@@ -114,6 +116,17 @@ def _set_object_base_z(spec: Mapping[str, Any], base_z: float) -> Dict[str, Any]
 def _scale_dimensions(dimensions_xyz: Sequence[float], scale: float) -> Tuple[float, float, float]:
     width, depth, height = (float(value) * float(scale) for value in dimensions_xyz)
     return (round(float(width), 4), round(float(depth), 4), round(float(height), 4))
+
+
+def _scale_object_spec(spec: Mapping[str, Any], scale: float) -> Dict[str, Any]:
+    updated = dict(spec)
+    width, depth, height = _scale_dimensions(updated["dimensions_xyz"], float(scale))
+    base_x, base_y, base_z = (float(value) for value in updated["base_xyz"])
+    updated["dimensions_xyz"] = [float(width), float(depth), float(height)]
+    updated["dimension_scale"] = round(float(updated["dimension_scale"]) * float(scale), 4)
+    updated["footprint_radius"] = round(0.5 * math.sqrt(float(width) * float(width) + float(depth) * float(depth)), 4)
+    updated["world_xyz"] = [round(float(base_x), 4), round(float(base_y), 4), round(float(base_z) + float(height) * 0.5, 4)]
+    return updated
 
 
 def _make_sampled_object(
@@ -167,7 +180,7 @@ def _reference_shape_support(query_id: str, *, target_count: int) -> Tuple[str, 
     if str(query_id) == "on_top_of_reference_count":
         return ("table",) if int(target_count) >= 3 else ON_TOP_REFERENCE_SHAPES
     if str(query_id) == "under_reference_count":
-        return UNDER_REFERENCE_SHAPES
+        return ("table",) if int(target_count) >= 3 else UNDER_REFERENCE_SHAPES
     return INSIDE_REFERENCE_SHAPES
 
 
@@ -194,12 +207,23 @@ def _relation_truth(query_id: str, candidate_spec: Mapping[str, Any], reference_
     return bool(dx <= r_width * 0.33 and dy <= r_depth * 0.34 and c_base < r_base + r_height * 0.35)
 
 
-def _target_offsets(query_id: str, reference_spec: Mapping[str, Any], *, target_count: int) -> List[Tuple[float, float]]:
+def _target_positions(
+    query_id: str,
+    reference_spec: Mapping[str, Any],
+    *,
+    target_count: int,
+    camera,
+    rng,
+) -> List[Tuple[float, float]]:
+    ref_x, ref_y, _ref_z = (float(value) for value in reference_spec["world_xyz"])
+    if str(query_id) == "under_reference_count":
+        return [
+            under_support_xy(reference_spec, camera=camera, rng=rng, index=index, total=int(target_count))
+            for index in range(int(target_count))
+        ]
     width, depth, _height = (float(value) for value in reference_spec["dimensions_xyz"])
     if str(query_id) == "inside_reference_count":
         scale_x, scale_y = 0.30, 0.28
-    elif str(query_id) == "under_reference_count":
-        scale_x, scale_y = 0.32, 0.28
     else:
         scale_x, scale_y = 0.34, 0.30
     base_offsets = [
@@ -209,7 +233,10 @@ def _target_offsets(query_id: str, reference_spec: Mapping[str, Any], *, target_
         (0.0, -1.15),
     ]
     return [
-        (round(float(dx) * float(width) * float(scale_x), 4), round(float(dy) * float(depth) * float(scale_y), 4))
+        (
+            round(float(ref_x) + float(dx) * float(width) * float(scale_x), 4),
+            round(float(ref_y) + float(dy) * float(depth) * float(scale_y), 4),
+        )
         for dx, dy in base_offsets[: int(target_count)]
     ]
 
@@ -260,27 +287,31 @@ def _sample_countable_specs(
     reference_spec: Mapping[str, Any],
     target_count: int,
     object_count: int,
+    camera,
 ) -> List[Dict[str, Any]]:
     """Sample candidate and distractor specs so the scoped relation count has the requested unique answer range."""
     target_base_z = _target_base_z(str(query_id), reference_spec)
-    ref_x, ref_y, _ref_z = (float(value) for value in reference_spec["world_xyz"])
     target_shape_pool = list(COUNTABLE_SHAPE_TYPES)
     distractor_shape_pool = list(COUNTABLE_SHAPE_TYPES)
     rng.shuffle(target_shape_pool)
     rng.shuffle(distractor_shape_pool)
     placed: List[Dict[str, Any]] = []
     object_specs: List[Dict[str, Any]] = []
-    for index, offset in enumerate(_target_offsets(str(query_id), reference_spec, target_count=int(target_count))):
+    for index, xy in enumerate(
+        _target_positions(str(query_id), reference_spec, target_count=int(target_count), camera=camera, rng=rng)
+    ):
         shape_type = str(target_shape_pool[index % len(target_shape_pool)])
         spec = _make_sampled_object(
             rng=rng,
             object_id=f"count_object_{int(index):02d}",
             shape_type=str(shape_type),
             object_role="candidate",
-            xy=(float(ref_x + offset[0] + rng.uniform(-0.035, 0.035)), float(ref_y + offset[1] + rng.uniform(-0.035, 0.035))),
+            xy=(float(xy[0] + rng.uniform(-0.018, 0.018)), float(xy[1] + rng.uniform(-0.018, 0.018))),
             base_z=float(target_base_z),
             matches_query=True,
         )
+        if str(query_id) == "under_reference_count":
+            spec = _scale_object_spec(spec, UNDER_RELATION_COUNT_DIMENSION_SCALE)
         if str(query_id) == "inside_reference_count":
             spec.update(
                 {
@@ -292,8 +323,8 @@ def _sample_countable_specs(
         elif str(query_id) == "on_top_of_reference_count":
             spec.update({"render_order_bias": -6.0, "visibility_role": "on_top_count_foreground"})
         elif str(query_id) == "under_reference_count":
-            spec.update({"render_order_bias": -6.0, "visibility_role": "under_count_foreground"})
-        if not _can_place(spec, placed, clearance=0.03):
+            spec.update({"visibility_role": "under_count_opening"})
+        if str(query_id) != "under_reference_count" and not _can_place(spec, placed, clearance=0.03):
             raise ValueError("could not place relation target objects")
         placed.append(spec)
         object_specs.append(spec)
@@ -347,6 +378,7 @@ def _finalize_specs(
 
 def _view_is_valid(
     *,
+    query_id: str,
     object_specs: Sequence[Mapping[str, Any]],
     reference_spec: Mapping[str, Any],
     target_object_ids: Sequence[str],
@@ -371,6 +403,12 @@ def _view_is_valid(
             continue
         if _bbox_intersection_area(bbox, reference_bbox) > 0.18 * _bbox_area(bbox):
             return False
+    if str(query_id) == "under_reference_count":
+        for spec in object_specs:
+            if str(spec["object_id"]) not in targets:
+                continue
+            if max_support_part_overlap_fraction(spec, reference_spec, camera=camera, frame=frame, pad_px=4.0) > 0.16:
+                return False
     for index, (id_a, bbox_a) in enumerate(object_bboxes.items()):
         for id_b, bbox_b in list(object_bboxes.items())[index + 1 :]:
             overlap = _bbox_intersection_area(bbox_a, bbox_b)
@@ -410,6 +448,7 @@ def _build_relation_count_scene_dataset(
             reference_spec=reference_spec,
             target_count=int(target_count),
             object_count=int(object_count),
+            camera=camera,
         )
         target_specs = [spec for spec in object_specs if bool(spec.get("matches_query", False))]
         target_object_ids = [str(spec["object_id"]) for spec in sorted(target_specs, key=lambda item: str(item["object_id"]))]
@@ -428,6 +467,7 @@ def _build_relation_count_scene_dataset(
         ]
         frame = _build_projection_frame(camera=camera, render_params=render_params, point_worlds=reference_points)
         if not _view_is_valid(
+            query_id=str(query_id),
             object_specs=object_specs,
             reference_spec=reference_spec,
             target_object_ids=target_object_ids,

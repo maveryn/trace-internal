@@ -3,7 +3,6 @@ from pathlib import Path
 
 
 ROOM_TASK_OR_COMMON_FILES = (
-    Path("trace/tasks/three_d/room/multi_attribute_and_count.py"),
     Path("trace/tasks/three_d/room/wall_object_camera_distance_label.py"),
     Path("trace/tasks/three_d/room/wall_object_same_wall_reference_label.py"),
     Path("trace/tasks/three_d/room/wall_object_side_relation_label.py"),
@@ -12,7 +11,6 @@ ROOM_TASK_OR_COMMON_FILES = (
     Path("trace/tasks/three_d/room/shared/relations.py"),
     Path("trace/tasks/three_d/room/shared/spatial_primitives.py"),
     Path("trace/tasks/three_d/room/shared/state.py"),
-    Path("trace/tasks/three_d/room/shared/sampling.py"),
 )
 
 ROOM_RENDERER_FILES = (
@@ -64,7 +62,6 @@ def test_room_legacy_root_helpers_are_removed() -> None:
     assert not Path("trace/tasks/three_d/room/wall_mounted_common.py").exists()
     assert not Path("trace/tasks/three_d/room/wall_mounted_dataset.py").exists()
     assert not Path("trace/tasks/three_d/room/wall_mounted_rendering.py").exists()
-    assert not Path("trace/tasks/three_d/room/wall_mounted_object_count.py").exists()
     assert not Path("trace/tasks/three_d/room/wall_object_camera_distance.py").exists()
     assert not Path("trace/tasks/three_d/room/wall_object_same_wall_reference.py").exists()
     assert not Path("trace/tasks/three_d/room/wall_object_side_relation.py").exists()

@@ -1060,7 +1060,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_three_d__object_scene__reference_nearest_label": _entry("three_d", "object_scene", "three_d", "object_scene"),
     "task_three_d__object_scene__image_plane_lateral_relation_count": _entry("three_d", "object_scene", "three_d", "object_scene"),
     "task_three_d__object_scene__camera_depth_relation_count": _entry("three_d", "object_scene", "three_d", "object_scene"),
-    "task_three_d__room__multi_attribute_and_count": _entry("three_d", "room", "three_d", "room"),
     "task_three_d__room__wall_object_camera_distance_label": _entry("three_d", "room", "three_d", "room"),
     "task_three_d__room__wall_object_side_relation_label": _entry("three_d", "room", "three_d", "room"),
     "task_three_d__room__wall_object_same_wall_reference_label": _entry("three_d", "room", "three_d", "room"),

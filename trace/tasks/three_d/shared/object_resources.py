@@ -643,16 +643,16 @@ SPATIAL_HEIGHT_SAFE_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = (
 )
 
 
-ROOM_QUERY_OBJECT_TYPE_BY_VARIANT: Dict[str, str] = {
-    "tv_wall_mounted_count": "tv",
-    "clock_wall_mounted_count": "clock",
-    "picture_frame_wall_mounted_count": "picture_frame",
-    "mirror_wall_mounted_count": "mirror",
-    "wall_shelf_wall_mounted_count": "wall_shelf",
-    "wall_fan_wall_mounted_count": "wall_fan",
-    "air_conditioner_wall_mounted_count": "air_conditioner",
-    "hanging_coat_wall_mounted_count": "hanging_coat",
-}
+ROOM_QUERY_TARGET_TYPES: Tuple[str, ...] = (
+    "tv",
+    "clock",
+    "picture_frame",
+    "mirror",
+    "wall_shelf",
+    "wall_fan",
+    "air_conditioner",
+    "hanging_coat",
+)
 ROOM_OBJECT_PROMPT_NAMES: Dict[str, Tuple[str, str]] = {
     "tv": ("TV", "TVs"),
     "clock": ("clock", "clocks"),
@@ -667,7 +667,6 @@ ROOM_OBJECT_PROMPT_NAMES: Dict[str, Tuple[str, str]] = {
     "speaker": ("speaker", "speakers"),
     "wall_cabinet": ("wall cabinet", "wall cabinets"),
 }
-ROOM_QUERY_TARGET_TYPES: Tuple[str, ...] = tuple(ROOM_QUERY_OBJECT_TYPE_BY_VARIANT.values())
 ROOM_EXTRA_WALL_TYPES: Tuple[str, ...] = ("poster", "wall_lamp", "speaker", "wall_cabinet")
 ROOM_FLOOR_DISTRACTOR_TYPES: Tuple[str, ...] = (
     "tv",

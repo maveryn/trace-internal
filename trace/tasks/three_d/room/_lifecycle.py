@@ -29,11 +29,6 @@ from trace.tasks.three_d.room.shared.relations import (
     REFERENCE_WALL_OBJECT_TYPES,
     build_room_wall_same_wall_reference_dataset,
 )
-from trace.tasks.three_d.room.shared.sampling import (
-    _build_room_dataset,
-    _resolve_target_count,
-    _resolve_target_object_type,
-)
 from trace.tasks.three_d.room.shared.spatial_primitives import (
     REFERENCE_OBJECT_TYPE,
     build_room_wall_side_relation_dataset,
@@ -246,84 +241,6 @@ def room_option_query_params(
         "object_count": int(dataset["object_count"]),
         "answer_label_probabilities": room_option_answer_label_probabilities(int(counts.candidate_count)),
     }
-
-
-def generate_room_count_task(
-    instance_seed: int,
-    *,
-    params: Dict[str, Any],
-    max_attempts: int,
-    task_identifier: str,
-    single_branch: str,
-) -> TaskOutput:
-    """Generate the room wall-mounted count objective for a public wrapper."""
-
-    def prepare_objective(
-        objective_seed: int,
-        objective_params: Mapping[str, Any],
-        gen_defaults: Mapping[str, Any],
-        _prompt_defaults: Mapping[str, Any],
-        render_params: ObjectSceneRenderParams,
-    ) -> RoomObjectivePlan:
-        require_single_query(objective_params, expected=str(single_branch), task_identifier=str(task_identifier))
-        scene_variant, scene_probabilities = resolve_room_scene_variant(
-            objective_params,
-            gen_defaults,
-            instance_seed=int(objective_seed),
-            namespace=str(task_identifier),
-        )
-        target_count, target_count_probabilities = _resolve_target_count(
-            objective_params,
-            namespace=str(task_identifier),
-            gen_defaults=gen_defaults,
-            instance_seed=int(objective_seed),
-        )
-        target_object_type, target_object_type_probabilities = _resolve_target_object_type(
-            objective_params,
-            namespace=str(task_identifier),
-            instance_seed=int(objective_seed),
-        )
-        dataset = _build_room_dataset(
-            target_object_type=str(target_object_type),
-            scene_variant=str(scene_variant),
-            target_count=int(target_count),
-            render_params=render_params,
-            namespace=str(task_identifier),
-            instance_seed=int(objective_seed),
-        )
-        answer_value = int(dataset["target_count"])
-        return RoomObjectivePlan(
-            dataset=dict(dataset),
-            public_query_id=str(single_branch),
-            query_probabilities={str(single_branch): 1.0},
-            prompt_query_key="wall_mounted_object_count",
-            prompt_dynamic_slots={"target_plural": str(dataset["target_object_plural"])},
-            answer_gt=TypedValue(type="integer", value=int(answer_value)),
-            annotation_schema="bbox_set",
-            query_params={
-                "scene_variant": str(scene_variant),
-                "scene_variant_probabilities": dict(scene_probabilities),
-                "target_object_type": str(dataset["target_object_type"]),
-                "target_object_type_probabilities": dict(target_object_type_probabilities),
-                "target_object_name": str(dataset["target_object_name"]),
-                "target_object_plural": str(dataset["target_object_plural"]),
-                "target_count": int(answer_value),
-                "target_count_probabilities": dict(target_count_probabilities),
-                "object_count": int(dataset["object_count"]),
-                "wall_object_count": int(dataset["wall_object_count"]),
-                "floor_object_count": int(dataset["floor_object_count"]),
-                "same_type_surface_distractor_count": int(dataset["same_type_surface_distractor_count"]),
-                "support_surface_count": int(dataset["support_surface_count"]),
-            },
-        )
-
-    return run_room_lifecycle(
-        int(instance_seed),
-        params=params,
-        max_attempts=int(max_attempts),
-        task_identifier=str(task_identifier),
-        prepare_objective=prepare_objective,
-    )
 
 
 def generate_room_camera_distance_task(
@@ -807,7 +724,6 @@ __all__ = [
     "resolve_room_scene_variant",
     "room_option_query_params",
     "generate_room_camera_distance_task",
-    "generate_room_count_task",
     "generate_room_same_wall_task",
     "generate_room_side_relation_task",
     "run_room_lifecycle",

@@ -13,19 +13,11 @@
       ]
     },
     "task": {
-      "wall_mounted_object_count_query": ["", "", "", "", ""],
       "wall_object_camera_distance_query": ["", "", "", "", ""],
       "wall_object_same_wall_reference_query": ["", "", "", "", ""],
       "wall_object_side_relation_query": ["", "", "", "", ""]
     },
     "query": {
-      "wall_mounted_object_count": [
-        "How many {target_plural} are mounted on the walls?",
-        "How many {target_plural} are attached to the room walls?",
-        "Count only the {target_plural} mounted on a wall.",
-        "How many wall-mounted {target_plural} are visible?",
-        "What is the number of {target_plural} on the walls?"
-      ],
       "closest_to_camera": [
         "Which option describes the wall-mounted object closest to the camera?",
         "Which option describes the wall object nearest to the camera?",
@@ -79,12 +71,6 @@
       "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the selected wall-mounted object in the scene",
       "json_example": "{\"annotation\":[142,118,238,178],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
-    },
-    "task:wall_mounted_object_count_query": {
-      "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array of [x0, y0, x1, y1] pixel boxes around only the counted wall-mounted target objects; use an empty array if there are none",
-      "json_example": "{\"annotation\":[[142,118,238,178],[318,126,410,184]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
     }
   },
   "dynamic_slots": {
@@ -95,7 +81,6 @@
     "scene:room": ["object_description"],
     "output:answer_only": ["answer_hint", "json_example_answer_only"],
     "output:answer_and_annotation": ["annotation_hint", "answer_hint", "json_example"],
-    "query:wall_mounted_object_count": ["target_plural"],
     "query:same_wall_reference": ["reference_name"],
     "query:left_of_reference_on_wall": ["reference_name"],
     "query:right_of_reference_on_wall": ["reference_name"]

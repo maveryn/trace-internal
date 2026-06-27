@@ -2,13 +2,6 @@
   "bundle_id": "three_d_room_v0",
   "schema_version": "v0",
   "task_templates": {
-    "wall_mounted_object_count_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
     "wall_object_camera_distance_query": [
       "",
       "",
@@ -100,62 +93,6 @@
       "Using the wall plane, which option describes the object right of the {reference_name}?",
       "Which option describes the object sitting right of the {reference_name} along the wall?",
       "On the wall with the {reference_name}, which option describes the object to its right?"
-    ],
-    "tv_wall_mounted_count": [
-      "How many TVs are hanging on the walls?",
-      "How many TVs are mounted on the room walls?",
-      "Count the TVs that are attached to a wall.",
-      "How many wall-mounted TVs are visible?",
-      "What is the number of TVs hanging on the walls?"
-    ],
-    "clock_wall_mounted_count": [
-      "How many clocks are hanging on the walls?",
-      "How many clocks are mounted on the room walls?",
-      "Count the clocks that are attached to a wall.",
-      "How many wall-mounted clocks are visible?",
-      "What is the number of clocks hanging on the walls?"
-    ],
-    "picture_frame_wall_mounted_count": [
-      "How many picture frames are hanging on the walls?",
-      "How many picture frames are mounted on the room walls?",
-      "Count the picture frames that are attached to a wall.",
-      "How many wall-mounted picture frames are visible?",
-      "What is the number of picture frames hanging on the walls?"
-    ],
-    "mirror_wall_mounted_count": [
-      "How many mirrors are hanging on the walls?",
-      "How many mirrors are mounted on the room walls?",
-      "Count the mirrors that are attached to a wall.",
-      "How many wall-mounted mirrors are visible?",
-      "What is the number of mirrors hanging on the walls?"
-    ],
-    "wall_shelf_wall_mounted_count": [
-      "How many wall shelves are mounted on the walls?",
-      "How many shelves are attached to the room walls?",
-      "Count the shelves that are mounted on a wall.",
-      "How many wall-mounted shelves are visible?",
-      "What is the number of shelves attached to the walls?"
-    ],
-    "wall_fan_wall_mounted_count": [
-      "How many wall-mounted fans are visible?",
-      "How many fans are mounted on the room walls?",
-      "Count the fans that are attached to a wall.",
-      "How many wall fans are on the walls?",
-      "What is the number of fans mounted on the walls?"
-    ],
-    "air_conditioner_wall_mounted_count": [
-      "How many air conditioners are mounted on the walls?",
-      "How many wall-mounted air conditioners are visible?",
-      "Count the air conditioners that are attached to a wall.",
-      "How many AC units are on the room walls?",
-      "What is the number of air conditioners mounted on the walls?"
-    ],
-    "hanging_coat_wall_mounted_count": [
-      "How many coats are hanging on the walls?",
-      "How many coats are hanging from wall hooks?",
-      "Count the coats that are attached to a wall hook.",
-      "How many wall-hanging coats are visible?",
-      "What is the number of coats hanging on the walls?"
     ]
   },
   "allow_empty_task_templates": true

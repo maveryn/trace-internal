@@ -13,7 +13,6 @@ from ...shared.object_resources import (
     ROOM_FLOOR_PROP_SPECS,
     ROOM_FRONT_FLOOR_PROP_SHAPES,
     ROOM_OBJECT_PROMPT_NAMES,
-    ROOM_QUERY_TARGET_TYPES,
     ROOM_SURFACE_DISTRACTOR_SPECS,
     ROOM_SURFACE_DISTRACTOR_TYPES,
     ROOM_SURFACE_PROP_SHAPES_BY_SCENE,
@@ -41,7 +40,6 @@ from ...shared.room_wall_rendering_geometry import (
 SCENE_ID = "room"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("living_room", "office_room", "studio_room")
 OBJECT_PROMPT_NAMES: Dict[str, Tuple[str, str]] = dict(ROOM_OBJECT_PROMPT_NAMES)
-QUERY_TARGET_TYPES: Tuple[str, ...] = ROOM_QUERY_TARGET_TYPES
 EXTRA_WALL_TYPES: Tuple[str, ...] = ROOM_EXTRA_WALL_TYPES
 FLOOR_DISTRACTOR_TYPES: Tuple[str, ...] = ROOM_FLOOR_DISTRACTOR_TYPES
 SURFACE_DISTRACTOR_TYPES: Tuple[str, ...] = ROOM_SURFACE_DISTRACTOR_TYPES
@@ -373,10 +371,8 @@ def _finalize_specs(
     return list(finalized_specs)
 
 
-def _slot_is_compatible(slot: Tuple[str, float, float], *, object_type: str, target_object: bool = False) -> bool:
+def _slot_is_compatible(slot: Tuple[str, float, float], *, object_type: str) -> bool:
     wall, _hpos, z = slot
-    if bool(target_object) and str(object_type) in set(QUERY_TARGET_TYPES) and str(wall) != "back":
-        return False
     if str(object_type) == "wall_shelf" and str(wall) != "back":
         return False
     if str(object_type) in {"tv", "mirror"} and float(z) < 1.15:

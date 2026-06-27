@@ -137,8 +137,8 @@
       "json_example": "{\"annotation\":{\"P\":[190,140],\"Q\":[250,280],\"R\":[310,420]},\"answer\":42}"
     },
     "task:parallel_transversal_triangle_angle_value": {
-      "annotation_hint": "set \"annotation\" to a JSON object with exactly the keys \"P\", \"Q\", and \"R\"; each value is the pixel point [x,y] at that labeled point",
-      "json_example": "{\"annotation\":{\"P\":[190,140],\"Q\":[250,280],\"R\":[310,140]},\"answer\":55}"
+      "annotation_hint": "set \"annotation\" to a JSON object with exactly the keys \"P\", \"Q\", \"R\", \"S\", and \"T\"; each value is the pixel point [x,y] at that labeled point",
+      "json_example": "{\"annotation\":{\"P\":[190,140],\"Q\":[250,280],\"R\":[310,140],\"S\":[160,420],\"T\":[340,420]},\"answer\":55}"
     }
   },
   "dynamic_slots": {},

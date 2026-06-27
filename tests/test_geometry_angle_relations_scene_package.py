@@ -95,10 +95,12 @@ def test_angle_relations_tasks_generate_keyed_angle_points(task_id: str, query_i
             else:
                 assert output.answer_gt.value == output.trace_payload["execution_trace"]["variable_x_value"]
         elif task_id == "task_geometry__angle_relations__parallel_transversal_triangle_angle_value":
-            assert set(output.annotation_gt.value) == {"P", "Q", "R"}
+            assert set(output.annotation_gt.value) == {"P", "Q", "R", "S", "T"}
             assert output.trace_payload["execution_trace"]["internal_query_id"] == "parallel_transversal_triangle_angle_value"
-            support_angles = output.trace_payload["execution_trace"]["support_angles"]
-            assert output.answer_gt.value == 180 - int(support_angles[0]) - int(support_angles[1])
+            exterior_angles = output.trace_payload["execution_trace"]["displayed_exterior_angles"]
+            derived_base_angles = output.trace_payload["execution_trace"]["derived_lower_triangle_base_angles"]
+            assert derived_base_angles == [180 - int(exterior_angles[0]), 180 - int(exterior_angles[1])]
+            assert output.answer_gt.value == int(exterior_angles[0]) + int(exterior_angles[1]) - 180
         width, height = output.image.size
         for point in output.annotation_gt.value.values():
             assert len(point) == 2

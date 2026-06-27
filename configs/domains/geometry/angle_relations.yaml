@@ -11,9 +11,11 @@ generation:
         - corresponding_equal
         - same_side_supplementary
     task_geometry__angle_relations__parallel_transversal_triangle_angle_value:
-      support_angle_min: 40
-      support_angle_max: 75
-      support_angle_step: 5
+      lower_triangle_base_angle_min: 35
+      lower_triangle_base_angle_max: 75
+      lower_triangle_base_angle_step: 5
+      displayed_exterior_angle_min: 105
+      displayed_exterior_angle_max: 145
       target_angle_min: 45
       target_angle_max: 110
 rendering:

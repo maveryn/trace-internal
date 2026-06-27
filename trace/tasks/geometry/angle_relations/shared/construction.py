@@ -293,72 +293,103 @@ def make_parallel_algebraic_case(
 
 
 def make_parallel_transversal_triangle_case(left_angle: int, right_angle: int) -> AngleRelationCase:
-    """Construct a two-transversal angle-sum case between parallel lines."""
+    """Construct an opposite-triangle angle case between parallel lines."""
 
     answer = 180 - int(left_angle) - int(right_angle)
     if answer <= 0:
         raise ValueError("parallel transversal triangle angle must be positive")
+    left_exterior_angle = 180 - int(left_angle)
+    right_exterior_angle = 180 - int(right_angle)
 
     def build(ctx: RenderContext) -> RenderedAngleRelationScene:
-        """Render two transversals forming a target angle between parallel lines."""
+        """Render support angles on the triangle opposite the target angle."""
 
         top_y = 142.0
-        target_y = 294.0
+        target_y = 286.0
         bottom_y = 430.0
         target_x = ctx.width / 2.0
-        left_dx = (target_y - top_y) / math.tan(math.radians(float(left_angle)))
-        right_dx = (target_y - top_y) / math.tan(math.radians(float(right_angle)))
-        p = (float(target_x - left_dx), float(top_y))
-        r = (float(target_x + right_dx), float(top_y))
         q = (float(target_x), float(target_y))
-        bottom_scale = (bottom_y - target_y) / (target_y - top_y)
-        bottom_right = _add(q, _sub(q, p), bottom_scale)
-        bottom_left = _add(q, _sub(q, r), bottom_scale)
+        lower_height = float(bottom_y - target_y)
+        top_scale = float(target_y - top_y) / max(1.0, lower_height)
+        left_dx = lower_height / math.tan(math.radians(float(left_angle)))
+        right_dx = lower_height / math.tan(math.radians(float(right_angle)))
+        s = (float(target_x - left_dx), float(bottom_y))
+        t = (float(target_x + right_dx), float(bottom_y))
+        p = _add(q, _sub(q, t), top_scale)
+        r = _add(q, _sub(q, s), top_scale)
         top_l, top_r = (88.0, top_y), (ctx.width - 88.0, top_y)
         bot_l, bot_r = (88.0, bottom_y), (ctx.width - 88.0, bottom_y)
-        top_l, top_r, bot_l, bot_r, p, q, r, bottom_left, bottom_right = _offset_points(
+        top_l, top_r, bot_l, bot_r, p, q, r, s, t = _offset_points(
             ctx,
-            (top_l, top_r, bot_l, bot_r, p, q, r, bottom_left, bottom_right),
+            (top_l, top_r, bot_l, bot_r, p, q, r, s, t),
         )
         _draw_polyline(ctx, [top_l, top_r])
         _draw_polyline(ctx, [bot_l, bot_r])
-        _draw_polyline(ctx, [p, bottom_right])
-        _draw_polyline(ctx, [r, bottom_left])
+        _draw_polyline(ctx, [p, t])
+        _draw_polyline(ctx, [r, s])
         mark_bbox = _draw_parallel_arrow_marks(ctx, ((top_l, top_r), (bot_l, bot_r)))
-        labels = _draw_point_labels(ctx, {"P": p, "Q": q, "R": r})
-        left_arc, left_bbox = _draw_angle_label(ctx, format_degrees(left_angle), p, top_r, q, radius=60.0)
-        right_arc, right_bbox = _draw_angle_label(ctx, format_degrees(right_angle), r, q, top_l, radius=60.0)
+        labels = _draw_point_labels(ctx, {"P": p, "Q": q, "R": r, "S": s, "T": t})
+        left_extension = _add(s, (-1.0, 0.0), 84.0)
+        right_extension = _add(t, (1.0, 0.0), 84.0)
+        left_arc, left_bbox = _draw_angle_label(
+            ctx,
+            format_degrees(left_exterior_angle),
+            s,
+            left_extension,
+            q,
+            radius=64.0,
+        )
+        right_arc, right_bbox = _draw_angle_label(
+            ctx,
+            format_degrees(right_exterior_angle),
+            t,
+            q,
+            right_extension,
+            radius=64.0,
+        )
         target_arc, target_bbox = _draw_angle_label(ctx, "?", q, p, r, radius=68.0)
-        annotation_points = {POINT_P: p, POINT_Q: q, POINT_R: r}
+        annotation_points = {POINT_P: p, POINT_Q: q, POINT_R: r, "S": s, "T": t}
         return RenderedAngleRelationScene(
             image=ctx.image,
             answer=int(answer),
             annotation_bboxes=(target_arc, left_arc, right_arc),
-            annotation_roles=(POINT_P, POINT_Q, POINT_R),
+            annotation_roles=(POINT_P, POINT_Q, POINT_R, "S", "T"),
             scene_entities=(
                 {"type": "parallel_lines", "line_count": 2, "segments": {"top": (top_l, top_r), "bottom": (bot_l, bot_r)}},
                 {
                     "type": "transversal_pair",
-                    "segments": {"left": (p, bottom_right), "right": (r, bottom_left)},
-                    "points": {"P": p, "Q": q, "R": r},
+                    "segments": {"left": (p, t), "right": (r, s)},
+                    "points": {"P": p, "Q": q, "R": r, "S": s, "T": t},
                 },
             ),
             render_map={
                 "point_label_bboxes": labels,
-                "angle_arc_bboxes": {"target_angle": target_arc, "left_support_angle": left_arc, "right_support_angle": right_arc},
-                "angle_label_bboxes": {"target_angle": target_bbox, "left_support_angle": left_bbox, "right_support_angle": right_bbox},
+                "angle_arc_bboxes": {
+                    "target_angle": target_arc,
+                    "left_exterior_support_angle": left_arc,
+                    "right_exterior_support_angle": right_arc,
+                },
+                "angle_label_bboxes": {
+                    "target_angle": target_bbox,
+                    "left_exterior_support_angle": left_bbox,
+                    "right_exterior_support_angle": right_bbox,
+                },
                 "parallel_marks_bbox": mark_bbox,
-                "intersections": {"P": p, "Q": q, "R": r},
+                "intersections": {"P": p, "Q": q, "R": r, "S": s, "T": t},
             },
             witness={
                 "parallel_line_count": 2,
                 "transversal_count": 2,
-                "relation_id": "parallel_transversal_triangle_angle_sum",
-                "support_angles": [int(left_angle), int(right_angle)],
+                "relation_id": "parallel_transversal_opposite_triangle_supplement_angle_sum",
+                "displayed_exterior_angles": [int(left_exterior_angle), int(right_exterior_angle)],
+                "derived_lower_triangle_base_angles": [int(left_angle), int(right_angle)],
                 "answer_angle_PQR": int(answer),
-                "equation": "target_angle = 180 - left_support_angle - right_support_angle",
+                "equation": (
+                    "target_angle = vertical_opposite_angle = "
+                    "180 - (180 - left_exterior_angle) - (180 - right_exterior_angle)"
+                ),
             },
-            reasoning_steps=3,
+            reasoning_steps=4,
             annotation_keyed_points=annotation_points,
         )
 

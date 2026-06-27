@@ -10,7 +10,7 @@
 - Annotation schema: `bbox`
 
 ## Program Contract
-`select(label(candidate_objects, extremum(surface_gap_to_reference))); scene=object_scene; scope=reference_nearest_label`
+`select(label(candidate_objects, extremum(projected_screen_center_distance_to_reference))); scene=object_scene; scope=reference_nearest_label`
 
 ## Contract
 The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
@@ -21,7 +21,14 @@ Each scene contains exactly one large named reference prop and six small named
 candidate objects. Candidate objects are placed in front of or beside the
 reference from the camera view, with render-time rejection if a candidate is
 hidden behind the reference prop. Query ids choose closest vs farthest by
-surface gap to the reference.
+projected screen-space center distance to the reference.
+
+The trace also records 3D surface-gap ordering as diagnostic metadata, but the
+answer is intentionally based on projected visual distance because this is what
+the rendered question asks the model to judge. The selected answer must have a
+clear screen-space margin. The task excludes `heart`, `sword`, and
+`remote_control` candidates because their silhouettes made the visual relation
+ambiguous in review.
 
 ## Annotation Contract
 Annotation is a scalar `bbox` around the selected visible object.

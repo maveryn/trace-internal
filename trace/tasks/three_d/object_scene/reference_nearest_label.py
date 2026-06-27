@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Mapping, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Tuple
 
 from ....core.seed import spawn_rng
 from ....core.scene_config import (
@@ -48,6 +48,7 @@ REFERENCE_SHAPE_TYPES: Tuple[str, ...] = tuple(
     str(shape) for shape in NAMEABLE_CONTEXT_SHAPE_TYPES if str(shape) not in {"arch", "open_box"}
 )
 SMALL_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
+EXCLUDED_REFERENCE_NEAREST_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = ("heart", "remote_control", "sword")
 
 
 def _surface_gap(a: Mapping[str, Any], b: Mapping[str, Any]) -> float:
@@ -57,8 +58,17 @@ def _surface_gap(a: Mapping[str, Any], b: Mapping[str, Any]) -> float:
     return max(0.0, float(center_distance_xy) - float(a["footprint_radius"]) - float(b["footprint_radius"]))
 
 
+def _screen_center_distance(a: Mapping[str, Any], b: Mapping[str, Any]) -> float:
+    """Return projected center distance between two finalized object specs."""
+
+    ax, ay = (float(value) for value in a["screen_xy"][:2])
+    bx, by = (float(value) for value in b["screen_xy"][:2])
+    return math.hypot(float(ax - bx), float(ay - by))
+
+
 def _sample_candidate_shapes(*, rng, reference_name: str, candidate_count: int) -> List[str]:
-    small_pool = [str(shape) for shape in SMALL_CANDIDATE_SHAPE_TYPES]
+    excluded = set(EXCLUDED_REFERENCE_NEAREST_CANDIDATE_SHAPE_TYPES)
+    small_pool = [str(shape) for shape in SMALL_CANDIDATE_SHAPE_TYPES if str(shape) not in excluded]
     rng.shuffle(small_pool)
     selected: List[str] = []
     selected_names = {str(reference_name)}
@@ -131,7 +141,11 @@ def _build_reference_nearest_scene_dataset(
 
         label_shape_pairs = list(zip(labels, candidate_shapes, strict=True))
         rng.shuffle(label_shape_pairs)
-        base_gaps = [0.20, 0.46, 0.72, 0.98, 1.24, 1.50]
+        base_gaps = (
+            [0.20, 0.46, 0.72, 0.98, 1.24, 1.50]
+            if str(query_id) == "closest_to_reference"
+            else [0.14, 0.32, 0.50, 0.68, 0.86, 1.14]
+        )
         gap_values = [float(value + rng.uniform(-0.035, 0.035)) for value in base_gaps]
         extremal_gap = min(gap_values) if str(query_id) == "closest_to_reference" else max(gap_values)
         remaining_gaps = [gap for gap in gap_values if float(gap) != float(extremal_gap)]
@@ -143,8 +157,19 @@ def _build_reference_nearest_scene_dataset(
             else:
                 gap_by_label[str(label)] = float(remaining_gaps.pop())
 
-        angle_offsets = [-1.18, -0.74, -0.30, 0.30, 0.74, 1.18]
-        rng.shuffle(angle_offsets)
+        if str(query_id) == "closest_to_reference":
+            answer_angle_offset = float(rng.uniform(-0.12, 0.12))
+            distractor_angle_offsets = [-1.12, -0.74, -0.38, 0.38, 0.74, 1.12]
+        else:
+            answer_angle_offset = float(rng.uniform(-0.12, 0.12))
+            distractor_angle_offsets = [-1.12, -0.74, -0.38, 0.38, 0.74, 1.12]
+        rng.shuffle(distractor_angle_offsets)
+        angle_by_label: Dict[str, float] = {}
+        for label, _shape in label_shape_pairs:
+            if str(label) == str(answer_label):
+                angle_by_label[str(label)] = float(answer_angle_offset)
+            else:
+                angle_by_label[str(label)] = float(distractor_angle_offsets.pop())
         candidate_specs: List[Dict[str, Any]] = []
         for index, (label, shape) in enumerate(label_shape_pairs):
             dimensions, scale = _sample_shape_dimensions(shape, object_role="candidate", rng=rng)
@@ -160,7 +185,7 @@ def _build_reference_nearest_scene_dataset(
             radius = float(probe["footprint_radius"])
             gap = float(gap_by_label[str(label)])
             center_distance = float(ref_radius + radius + gap)
-            angle_offset = float(angle_offsets[index] + rng.uniform(-0.08, 0.08))
+            angle_offset = float(angle_by_label[str(label)] + rng.uniform(-0.04, 0.04))
             forward = math.cos(angle_offset)
             lateral = math.sin(angle_offset)
             placed_spec: Dict[str, Any] | None = None
@@ -256,25 +281,43 @@ def _build_reference_nearest_scene_dataset(
             str(spec["point_label"]): round(float(_surface_gap(reference_spec, spec)), 4)
             for spec in finalized_candidates
         }
+        screen_gaps_by_label = {
+            str(spec["point_label"]): round(
+                float(_screen_center_distance(reference_spec, spec)),
+                4,
+            )
+            for spec in finalized_candidates
+        }
         sorted_by_gap = sorted(finalized_candidates, key=lambda spec: (float(gaps_by_label[str(spec["point_label"])]), str(spec["point_label"])))
-        target_spec = sorted_by_gap[0] if str(query_id) == "closest_to_reference" else sorted_by_gap[-1]
-        if str(target_spec["point_label"]) != str(answer_label):
-            continue
-        if _min_pairwise([float(value) for value in gaps_by_label.values()]) < 0.16:
+        sorted_by_screen_gap = sorted(
+            finalized_candidates,
+            key=lambda spec: (float(screen_gaps_by_label[str(spec["point_label"])]), str(spec["point_label"])),
+        )
+        screen_target_spec = sorted_by_screen_gap[0] if str(query_id) == "closest_to_reference" else sorted_by_screen_gap[-1]
+        answer_label = str(screen_target_spec["point_label"])
+        if _min_pairwise([float(value) for value in screen_gaps_by_label.values()]) < 10.0:
             continue
         if str(query_id) == "closest_to_reference" and len(sorted_by_gap) > 1:
-            margin = float(gaps_by_label[str(sorted_by_gap[1]["point_label"])]) - float(gaps_by_label[str(sorted_by_gap[0]["point_label"])])
-            if margin < 0.24:
+            surface_margin = float(gaps_by_label[str(sorted_by_gap[1]["point_label"])]) - float(gaps_by_label[str(sorted_by_gap[0]["point_label"])])
+            screen_margin = float(screen_gaps_by_label[str(sorted_by_screen_gap[1]["point_label"])]) - float(
+                screen_gaps_by_label[str(sorted_by_screen_gap[0]["point_label"])]
+            )
+            if screen_margin < 16.0:
                 continue
         elif str(query_id) == "farthest_from_reference" and len(sorted_by_gap) > 1:
-            margin = float(gaps_by_label[str(sorted_by_gap[-1]["point_label"])]) - float(gaps_by_label[str(sorted_by_gap[-2]["point_label"])])
-            if margin < 0.24:
+            surface_margin = float(gaps_by_label[str(sorted_by_gap[-1]["point_label"])]) - float(gaps_by_label[str(sorted_by_gap[-2]["point_label"])])
+            screen_margin = float(screen_gaps_by_label[str(sorted_by_screen_gap[-1]["point_label"])]) - float(
+                screen_gaps_by_label[str(sorted_by_screen_gap[-2]["point_label"])]
+            )
+            if screen_margin < 16.0:
                 continue
         else:
-            margin = 999.0
+            surface_margin = 999.0
+            screen_margin = 999.0
 
         sorted_candidates = sorted(finalized_candidates, key=lambda spec: str(spec["point_label"]))
         distance_order = [str(spec["point_label"]) for spec in sorted_by_gap]
+        screen_distance_order = [str(spec["point_label"]) for spec in sorted_by_screen_gap]
         return {
             "query_id": str(query_id),
             "scene_variant": str(scene_variant),
@@ -292,6 +335,7 @@ def _build_reference_nearest_scene_dataset(
             "reference_object_name": _prompt_name(reference_spec),
             "reference_shape_type": str(reference_spec["shape_type"]),
             "candidate_reference_gaps_by_label": dict(sorted(gaps_by_label.items())),
+            "candidate_reference_screen_gaps_by_label": dict(sorted(screen_gaps_by_label.items())),
             "camera": {
                 "camera_position": [round(float(value), 4) for value in camera.camera_position],
                 "target": [round(float(value), 4) for value in camera.target],
@@ -311,17 +355,25 @@ def _build_reference_nearest_scene_dataset(
                 "normalized_center_v": round(float(frame.normalized_center_v), 6),
             },
             "solver_trace": {
-                "sort_key": "surface_gap_to_reference",
+                "sort_key": "projected_screen_center_distance_to_reference",
                 "candidate_only": True,
                 "reference_excluded_from_options": True,
                 "reference_object_id": str(reference_spec["object_id"]),
                 "reference_object_name": _prompt_name(reference_spec),
                 "reference_shape_type": str(reference_spec["shape_type"]),
                 "candidate_reference_gaps_by_label": dict(sorted(gaps_by_label.items())),
+                "candidate_reference_screen_gaps_by_label": dict(sorted(screen_gaps_by_label.items())),
                 "reference_distance_order": list(distance_order),
-                "reference_nearest_order": list(distance_order),
+                "reference_screen_distance_order": list(screen_distance_order),
+                "reference_nearest_order": list(screen_distance_order),
+                "screen_distance_agrees_with_surface_gap": (
+                    str(distance_order[0 if str(query_id) == "closest_to_reference" else -1])
+                    == str(screen_distance_order[0 if str(query_id) == "closest_to_reference" else -1])
+                ),
                 "unique_reference_nearest_answer": True,
-                "reference_nearest_margin": round(float(margin), 4),
+                "reference_nearest_margin": round(float(screen_margin), 4),
+                "reference_nearest_surface_margin": round(float(surface_margin), 4),
+                "reference_nearest_screen_margin_px": round(float(screen_margin), 4),
             },
         }
     raise ValueError("could not construct a valid 3D reference-nearest scene")
@@ -428,6 +480,7 @@ class ThreeDSpatialReferenceNearestLabelTask:
             "reference_object_name": str(dataset["reference_object_name"]),
             "reference_shape_type": str(dataset["reference_shape_type"]),
             "candidate_reference_gaps_by_label": dict(dataset["candidate_reference_gaps_by_label"]),
+            "candidate_reference_screen_gaps_by_label": dict(dataset["candidate_reference_screen_gaps_by_label"]),
             "answer_point_id": str(dataset["answer_point_id"]),
         }
         return _build_option_label_object_scene_output(
@@ -463,6 +516,7 @@ class ThreeDSpatialReferenceNearestLabelTask:
                 "reference_object_name": str(dataset["reference_object_name"]),
                 "reference_shape_type": str(dataset["reference_shape_type"]),
                 "candidate_reference_gaps_by_label": dict(dataset["candidate_reference_gaps_by_label"]),
+                "candidate_reference_screen_gaps_by_label": dict(dataset["candidate_reference_screen_gaps_by_label"]),
             },
         )
 

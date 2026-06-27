@@ -9,6 +9,7 @@ from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.object_scene.reference_nearest_label import (
+    EXCLUDED_REFERENCE_NEAREST_CANDIDATE_SHAPE_TYPES,
     REFERENCE_SHAPE_TYPES,
     SMALL_CANDIDATE_SHAPE_TYPES,
     TASK_ID,
@@ -33,8 +34,8 @@ def test_reference_nearest_answer_and_annotation(query_id: str) -> None:
     trace = output.trace_payload["execution_trace"]
     point_specs = list(trace["point_specs"])
     context_specs = list(trace["context_object_specs"])
-    gaps_by_label = dict(trace["candidate_reference_gaps_by_label"])
-    sorted_labels = sorted(gaps_by_label, key=lambda label: (float(gaps_by_label[label]), str(label)))
+    screen_gaps_by_label = dict(trace["candidate_reference_screen_gaps_by_label"])
+    sorted_labels = sorted(screen_gaps_by_label, key=lambda label: (float(screen_gaps_by_label[label]), str(label)))
     expected_label = str(sorted_labels[0] if str(query_id) == "closest_to_reference" else sorted_labels[-1])
     reference_id = str(trace["reference_object_id"])
     assert output.scene_id == "object_scene"
@@ -52,6 +53,7 @@ def test_reference_nearest_answer_and_annotation(query_id: str) -> None:
     assert str(context_specs[0]["prompt_name"]) not in {str(spec["prompt_name"]) for spec in point_specs}
     assert str(context_specs[0]["shape_type"]) in set(REFERENCE_SHAPE_TYPES)
     assert all(str(spec["shape_type"]) in set(SMALL_CANDIDATE_SHAPE_TYPES) for spec in point_specs)
+    assert not {str(spec["shape_type"]) for spec in point_specs} & set(EXCLUDED_REFERENCE_NEAREST_CANDIDATE_SHAPE_TYPES)
     assert trace["large_candidate_count"] == 0
     answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_label)
     expected_bbox = output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
@@ -65,10 +67,12 @@ def test_reference_nearest_answer_and_annotation(query_id: str) -> None:
         answer_object_id=str(answer_spec["object_id"]),
         expected_image_size=(1180, 1068),
     )
-    order = list(trace["solver_trace"]["reference_distance_order"])
-    assert (order[0] if str(query_id) == "closest_to_reference" else order[-1]) == expected_label
+    screen_order = list(trace["solver_trace"]["reference_screen_distance_order"])
+    assert (screen_order[0] if str(query_id) == "closest_to_reference" else screen_order[-1]) == expected_label
     assert trace["solver_trace"]["reference_excluded_from_options"] is True
-    assert float(trace["solver_trace"]["reference_nearest_margin"]) >= 0.24
+    assert trace["solver_trace"]["sort_key"] == "projected_screen_center_distance_to_reference"
+    assert float(trace["solver_trace"]["reference_nearest_margin"]) >= 16.0
+    assert float(trace["solver_trace"]["reference_nearest_screen_margin_px"]) >= 16.0
     for spec in point_specs:
         assert float(spec["camera_distance"]) <= float(context_specs[0]["camera_distance"]) + 0.04
 

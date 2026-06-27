@@ -56,7 +56,7 @@ def test_angle_relations_scene_has_no_wrapper_only_modules() -> None:
     ("task_id", "query_ids"),
     (
         ("task_geometry__angle_relations__algebraic_angle_value", ("target_angle_value", "variable_x_value")),
-        ("task_geometry__angle_relations__parallel_algebraic_angle_value", ("target_angle_value", "variable_x_value")),
+        ("task_geometry__angle_relations__parallel_algebraic_angle_value", ("single",)),
         ("task_geometry__angle_relations__parallel_supplement_angle", ("single",)),
         ("task_geometry__angle_relations__parallel_transversal_triangle_angle_value", ("single",)),
         ("task_geometry__angle_relations__triangle_exterior_angle", ("single",)),
@@ -95,12 +95,9 @@ def test_angle_relations_tasks_generate_keyed_angle_points(task_id: str, query_i
             expression_values = output.trace_payload["execution_trace"]["expression_angle_values"]
             assert sum(int(value) for value in expression_values) == 180
             assert output.trace_payload["execution_trace"]["target_angle_value"] == int(expression_values[1])
-            if query_id == "target_angle_value":
-                assert output.answer_gt.value == output.trace_payload["execution_trace"]["target_angle_value"]
-                assert 'angle "FRQ"' in output.prompt
-                assert "marked with the expression" not in output.prompt
-            else:
-                assert output.answer_gt.value == output.trace_payload["execution_trace"]["variable_x_value"]
+            assert output.answer_gt.value == output.trace_payload["execution_trace"]["target_angle_value"]
+            assert 'angle "FRQ"' in output.prompt
+            assert "marked with the expression" not in output.prompt
         elif task_id == "task_geometry__angle_relations__parallel_transversal_triangle_angle_value":
             assert set(output.annotation_gt.value) == {"P", "Q", "R", "S", "T"}
             assert output.trace_payload["execution_trace"]["internal_query_id"] == "parallel_transversal_triangle_angle_value"

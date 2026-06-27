@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Tuple
+from typing import Any, Dict, Tuple
 
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
@@ -17,14 +17,10 @@ from .shared.state import DOMAIN, SCENE_ID, AngleRelationCase
 
 
 TASK_ID = "task_geometry__angle_relations__parallel_algebraic_angle_value"
-TARGET_ANGLE_VALUE_QUERY_ID = "target_angle_value"
-VARIABLE_X_VALUE_QUERY_ID = "variable_x_value"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (TARGET_ANGLE_VALUE_QUERY_ID, VARIABLE_X_VALUE_QUERY_ID)
+PUBLIC_QUERY_ID = "single"
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (PUBLIC_QUERY_ID,)
 TASK_PROMPT_KEY = "parallel_algebraic_angle_value"
-PROMPT_QUERY_KEYS = {
-    TARGET_ANGLE_VALUE_QUERY_ID: "parallel_target_angle_value",
-    VARIABLE_X_VALUE_QUERY_ID: "parallel_variable_x_value",
-}
+PROMPT_QUERY_KEY = "parallel_target_angle_value"
 
 _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = (
     load_scene_generation_rendering_prompt_defaults(DOMAIN, SCENE_ID, task_id=TASK_ID)
@@ -71,7 +67,6 @@ def _parallel_algebraic_case_support() -> tuple[AngleRelationCase, ...]:
 
 
 PARALLEL_ALGEBRAIC_CASES = _parallel_algebraic_case_support()
-PARALLEL_ALGEBRAIC_X_SUPPORT = tuple(range(5, 31))
 
 
 def _answer_probability_map(values: tuple[int, ...]) -> dict[str, float]:
@@ -84,15 +79,11 @@ def _answer_probability_map(values: tuple[int, ...]) -> dict[str, float]:
     return {str(value): weight for value in support}
 
 
-def _answer_for_query(*, selected_query: str, witness: Mapping[str, Any]) -> tuple[int, str, dict[str, float]]:
-    """Bind the requested output from the rendered parallel algebra trace."""
+def _target_angle_answer_support() -> dict[str, float]:
+    """Return uniform answer support for the target angle output."""
 
-    if str(selected_query) == TARGET_ANGLE_VALUE_QUERY_ID:
-        values = tuple(int(case.answer) for case in PARALLEL_ALGEBRAIC_CASES)
-        return int(witness["target_angle_measure"]), "target_angle_value", _answer_probability_map(values)
-    if str(selected_query) == VARIABLE_X_VALUE_QUERY_ID:
-        return int(witness["x"]), "variable_x_value", _answer_probability_map(PARALLEL_ALGEBRAIC_X_SUPPORT)
-    raise ValueError(f"unsupported query_id for {TASK_ID}: {selected_query}")
+    values = tuple(int(case.answer) for case in PARALLEL_ALGEBRAIC_CASES)
+    return _answer_probability_map(values)
 
 
 @register_task
@@ -111,7 +102,7 @@ class GeometryAngleRelationsParallelAlgebraicAngleValueTask:
             instance_seed=int(instance_seed),
             params=params,
             supported_query_ids=SUPPORTED_QUERY_IDS,
-            default_query_id=TARGET_ANGLE_VALUE_QUERY_ID,
+            default_query_id=PUBLIC_QUERY_ID,
             task_id=TASK_ID,
         )
         case, case_index = select_angle_relation_case(
@@ -123,7 +114,7 @@ class GeometryAngleRelationsParallelAlgebraicAngleValueTask:
         runtime = render_angle_relation_runtime(
             case=case,
             case_index=int(case_index),
-            prompt_query_key=str(PROMPT_QUERY_KEYS[str(selected_query)]),
+            prompt_query_key=PROMPT_QUERY_KEY,
             prompt_task_key=TASK_PROMPT_KEY,
             instance_seed=int(instance_seed),
             params=task_params,
@@ -131,31 +122,28 @@ class GeometryAngleRelationsParallelAlgebraicAngleValueTask:
             max_attempts=int(max_attempts),
         )
         witness = runtime.rendered_context.rendered_scene.witness
-        answer_value, answer_role, answer_probabilities = _answer_for_query(
-            selected_query=str(selected_query),
-            witness=witness,
-        )
+        answer_value = int(witness["target_angle_measure"])
         trace_payload = build_integer_angle_relation_trace(
             runtime=runtime,
             branch_name=str(selected_query),
             branch_probabilities=query_probabilities,
             answer_value=int(answer_value),
             query_params={
-                "answer_support_probabilities": dict(answer_probabilities),
+                "answer_support_probabilities": _target_angle_answer_support(),
                 "target_angle_value": int(witness["target_angle_measure"]),
                 "variable_x_value": int(witness["x"]),
-                "answer_role": str(answer_role),
+                "answer_role": "target_angle_value",
                 "target_angle_name": str(witness["target_angle_name"]),
                 "expression_angle_names": list(witness["expression_angle_names"]),
             },
             scene_relation_fields={
-                "answer_role": str(answer_role),
+                "answer_role": "target_angle_value",
                 "relation_id": str(witness["relation_id"]),
                 "target_angle_name": str(witness["target_angle_name"]),
                 "expression_angle_names": list(witness["expression_angle_names"]),
             },
             execution_fields_extra={
-                "answer_role": str(answer_role),
+                "answer_role": "target_angle_value",
                 "target_angle_value": int(witness["target_angle_measure"]),
                 "variable_x_value": int(witness["x"]),
                 "target_angle_name": str(witness["target_angle_name"]),
@@ -165,7 +153,7 @@ class GeometryAngleRelationsParallelAlgebraicAngleValueTask:
                 "second_expression": str(witness["second_expression"]),
             },
             witness_fields_extra={
-                "answer_role": str(answer_role),
+                "answer_role": "target_angle_value",
                 "target_angle_value": int(witness["target_angle_measure"]),
                 "variable_x_value": int(witness["x"]),
                 "target_angle_name": str(witness["target_angle_name"]),

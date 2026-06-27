@@ -3,12 +3,12 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `angle_relations`
-4. Query ids: `target_angle_value`, `variable_x_value`
+4. Query ids: `single`
 5. Answer schema: `integer_value`
 6. Annotation schema: `point_map`
 
 ## Program Contract
-- `derive_geometry_metric(visible_parallel_line_angle_expressions, derivation_rule=same_side_supplementary_parallel_transversal_algebra, output_role=target_angle_measure|variable_x); scene=angle_relations; scope=parallel_algebraic_angle_value`
+- `derive_geometry_metric(visible_parallel_line_angle_expressions, derivation_rule=same_side_supplementary_parallel_transversal_algebra, output_role=target_angle_measure); scene=angle_relations; scope=parallel_algebraic_angle_value`
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `angle_relations`.

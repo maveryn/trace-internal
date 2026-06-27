@@ -62,6 +62,11 @@ generation:
       balanced_intersection_layout_sampling: true
       balanced_travel_mode_sampling: true
 rendering:
+  shared:
+    canvas_preset_weights:
+      landscape: 1.0
+      portrait: 0.0
+      square: 1.0
   task_overrides:
     task_three_d__street__intersection_nearest_label:
       canvas_width: 1180

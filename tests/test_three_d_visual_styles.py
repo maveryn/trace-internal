@@ -20,6 +20,32 @@ def _render_defaults(scene_id: str) -> dict:
     return dict(render_defaults)
 
 
+def test_large_object_three_d_scenes_do_not_sample_portrait_canvas() -> None:
+    resolvers = {
+        "object_scene": resolve_object_scene_render_params,
+        "room": resolve_object_scene_render_params,
+        "street": resolve_street_render_params,
+        "warehouse": resolve_warehouse_render_params,
+    }
+
+    for scene_id, resolver in resolvers.items():
+        render_defaults = _render_defaults(scene_id)
+        assert float(render_defaults["canvas_preset_weights"]["portrait"]) == 0.0
+        presets = {
+            str(
+                resolver(
+                    {},
+                    render_defaults=render_defaults,
+                    instance_seed=2026062700 + seed,
+                    namespace=f"test.no_portrait.{scene_id}",
+                ).canvas_preset
+            )
+            for seed in range(48)
+        }
+        assert presets <= {"landscape", "square"}, scene_id
+        assert presets == {"landscape", "square"}, scene_id
+
+
 def test_three_d_surface_tone_pool_has_expected_light_dark_split() -> None:
     dark_tones = {
         "charcoal_concrete",

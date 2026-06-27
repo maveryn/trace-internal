@@ -45,6 +45,11 @@ generation:
       floor_context_count_max: 6
       balanced_scene_variant_sampling: true
 rendering:
+  shared:
+    canvas_preset_weights:
+      landscape: 1.0
+      portrait: 0.0
+      square: 1.0
   task_overrides:
     task_three_d__room__multi_attribute_and_count:
       canvas_width: 1180

@@ -15,10 +15,17 @@ def _variant(variant_index: int, *, modulo: int = 29) -> int:
 
 
 def _linear_label(coefficient: int, variable_name: str, offset: int) -> str:
+    coefficient_value = int(coefficient)
+    if coefficient_value == 1:
+        variable_term = str(variable_name)
+    elif coefficient_value == -1:
+        variable_term = f"-{variable_name}"
+    else:
+        variable_term = f"{coefficient_value}{variable_name}"
     if int(offset) == 0:
-        return f"{int(coefficient)}{variable_name}"
+        return variable_term
     sign = "+" if int(offset) > 0 else "-"
-    return f"{int(coefficient)}{variable_name}{sign}{abs(int(offset))}"
+    return f"{variable_term}{sign}{abs(int(offset))}"
 
 
 def _angle_label(coefficient: int, variable_name: str, offset: int) -> str:

@@ -4,7 +4,7 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Supported `query_id`: `single`
+- Supported `query_id`: `on_top_of_reference_count`, `under_reference_count`, `inside_reference_count`
 - Answer type: `integer`
 - Annotation type: `bbox_set`
 - Annotation schema: `bbox_set`
@@ -20,7 +20,9 @@ The verifier computes the answer from finalized scene metadata and projection re
 Countable objects are sampled from the same curated object_scene-compatible
 named-object pool for every relation query id. Query ids change only the
 requested spatial relation and compatible reference prop; they do not swap in a
-separate answer-object universe.
+separate answer-object universe. Under-reference prompts use `arch`; table
+remains available for on-top prompts only, where the visual relation is
+unambiguous.
 
 ## Annotation Contract
 Annotation is an unordered `bbox_set` containing one box around each counted object. The set may be empty when the answer is zero.

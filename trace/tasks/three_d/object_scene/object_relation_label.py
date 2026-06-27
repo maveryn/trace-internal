@@ -70,6 +70,7 @@ INSIDE_PROP_TYPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_INSIDE_PROP_TYPES
 RELATION_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
 RELATION_CONTEXT_SHAPE_TYPES: Tuple[str, ...] = tuple(shape for shape in LARGE_CONTEXT_SHAPE_TYPES if str(shape) != "piano")
 RELATION_CANDIDATE_DIMENSION_SCALE = 0.74
+UNDER_RELATION_CANDIDATE_DIMENSION_SCALE = 0.58
 
 
 
@@ -148,8 +149,8 @@ def _answer_xy(query_id: str, reference_spec: Mapping[str, Any], *, camera, rng)
     length = max(1e-6, math.hypot(to_camera_x, to_camera_y))
     unit_x = float(to_camera_x) / float(length)
     unit_y = float(to_camera_y) / float(length)
-    x_scale = 0.12 if str(reference_spec["shape_type"]) == "arch" else 0.24
-    y_scale = 0.24
+    x_scale = 0.12
+    y_scale = 0.20
     return (
         float(ref_x + unit_x * width * x_scale + rng.uniform(-0.025, 0.025)),
         float(ref_y + unit_y * depth * y_scale + rng.uniform(-0.025, 0.025)),
@@ -214,6 +215,11 @@ def _build_relation_scene_dataset(
         answer_shape = str(rng.choice(answer_shape_pool))
         answer_base_z = _answer_base_z(str(query_id), reference_spec)
         answer_xy = _answer_xy(str(query_id), reference_spec, camera=camera, rng=rng)
+        answer_dimension_multiplier = (
+            UNDER_RELATION_CANDIDATE_DIMENSION_SCALE
+            if str(query_id) == "under_prop"
+            else RELATION_CANDIDATE_DIMENSION_SCALE
+        )
         answer_spec = _make_sampled_object(
             rng=rng,
             object_id=f"object_{answer_label}",
@@ -222,7 +228,7 @@ def _build_relation_scene_dataset(
             xy=answer_xy,
             label=answer_label,
             base_z=float(answer_base_z),
-            dimension_multiplier=RELATION_CANDIDATE_DIMENSION_SCALE,
+            dimension_multiplier=float(answer_dimension_multiplier),
         )
         if str(query_id) == "inside_prop":
             answer_spec.update(

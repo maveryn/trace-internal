@@ -167,7 +167,7 @@ def _reference_shape_support(query_id: str, *, target_count: int) -> Tuple[str, 
     if str(query_id) == "on_top_of_reference_count":
         return ("table",) if int(target_count) >= 3 else ON_TOP_REFERENCE_SHAPES
     if str(query_id) == "under_reference_count":
-        return ("table",) if int(target_count) >= 3 else UNDER_REFERENCE_SHAPES
+        return UNDER_REFERENCE_SHAPES
     return INSIDE_REFERENCE_SHAPES
 
 

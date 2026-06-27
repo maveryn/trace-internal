@@ -4,7 +4,7 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Supported `query_id`: `single`
+- Supported `query_id`: `on_top_of_prop`, `under_prop`, `inside_prop`
 - Answer type: `option_letter`
 - Annotation type: `bbox`
 - Annotation schema: `bbox`
@@ -25,9 +25,10 @@ multiplier so they read as small props relative to the larger reference prop.
 The same candidate object pool is used for every relation query id; query ids
 change only the requested spatial relation and compatible reference prop.
 Piano is excluded from this task's extra context props. For `under` relations,
-the selected object is placed on the camera-facing side of the reference
-footprint and rendered foreground-visible so the answer object is not hidden by
-table legs, arch posts, or prop sides.
+the selected object is scaled smaller, kept near the interior of the reference
+footprint, and rendered foreground-visible so it is not hidden by arch posts.
+Under-reference prompts use `arch`; table remains available for on-top prompts
+only, where the visual relation is unambiguous.
 
 ## Annotation Contract
 Annotation is a scalar `bbox` around the selected visible object.

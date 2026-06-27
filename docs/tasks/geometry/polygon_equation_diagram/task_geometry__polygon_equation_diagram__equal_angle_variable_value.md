@@ -25,8 +25,9 @@ The public task has no semantic query branch. The sampled polygon side count is 
 ## Annotation
 Prompt-facing annotation uses a `point_map` keyed by the visible polygon vertex labels, such as `A`, `B`, `C`, and any additional visible vertices. Each value is that labeled vertex's pixel coordinate after final layout and rotation.
 
-The target equal-angle pair uses matching two-arc angle marks. Angle expressions and angle-arc marks
-remain visible scene marks plus private verifier metadata.
+The target equal-angle pair uses matching two-arc angle marks. The diagram may also include non-target
+angle-expression distractors with one-arc or three-arc marks; those distractors are trace metadata, not
+semantic query branches.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

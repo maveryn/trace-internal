@@ -20,7 +20,7 @@ from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_v
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.object_resources import SPATIAL_BETWEEN_REFERENCE_SHAPE_TYPES
 from ..shared.object_scene import (
-    NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
+    NAMED_SMALL_OBJECT_SHAPE_TYPES,
     POINT_LABELS,
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
@@ -45,7 +45,7 @@ from .shared.relations import set_xy as _set_xy
 TASK_ID = "task_three_d__object_scene__between_references_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("between_references",)
 REFERENCE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_BETWEEN_REFERENCE_SHAPE_TYPES
-SMALL_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMEABLE_SMALL_OBJECT_SHAPE_TYPES)
+SMALL_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
 def _surface_gap(a: Mapping[str, Any], b: Mapping[str, Any]) -> float:
     ax, ay, _az = (float(value) for value in a["world_xyz"])
     bx, by, _bz = (float(value) for value in b["world_xyz"])

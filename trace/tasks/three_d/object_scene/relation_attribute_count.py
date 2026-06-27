@@ -42,7 +42,7 @@ from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_v
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.object_scene import (
     CONTEXT_OBJECT_COLORS,
-    NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
+    NAMED_SMALL_OBJECT_SHAPE_TYPES,
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
     _RenderParams,
@@ -80,7 +80,7 @@ UNDER_COUNTABLE_SHAPES: Tuple[str, ...] = (
     "pyramid",
     "wedge",
 )
-DISTRACTOR_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMEABLE_SMALL_OBJECT_SHAPE_TYPES)
+DISTRACTOR_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
 RELATION_SMALL_DIMENSION_SCALE = 0.62
 MIN_PROJECTED_OBJECT_AREA_PX = 420.0
 MAX_PAIRWISE_OVERLAP_PX = 3900.0

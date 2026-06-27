@@ -88,7 +88,7 @@ Domain-shared modules that should generally remain domain-shared:
 |---|---|
 | `camera_projection.py` | Camera, projection, floor-plane, and vector math. |
 | `color_variation.py` | Non-semantic object fill variation. |
-| `object_resources.py` | Canonical 3D object resource registry and scene-role profiles. |
+| `object_resources.py` | Canonical 3D object resource registry, scene-role profiles, and curated prompt-facing named-object pools. Broad renderable pools are not named-question pools. |
 | `object_schema.py` | Normalized `ThreeDObjectRecord` payload. |
 | `scene_schema.py` | Renderer-neutral placement/style specs. |
 | `canvas.py` | Canonical three_d source-canvas presets, deterministic preset resolution, bbox/point/entity coordinate transforms, and final pixel-cap downscale helpers. |

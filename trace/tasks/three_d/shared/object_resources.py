@@ -198,6 +198,72 @@ OBJECT_CLUSTER_EXTRA_SHAPE_TYPES: Tuple[str, ...] = (
     "bag",
 )
 OBJECT_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = OBJECT_SCENE_SMALL_SHAPE_TYPES + OBJECT_CLUSTER_EXTRA_SHAPE_TYPES
+THREE_D_NAMED_OBJECT_SHAPE_TYPES: Tuple[str, ...] = tuple(
+    shape
+    for shape in (
+        "arrow",
+        "apple",
+        "anchor",
+        "sphere",
+        "basket",
+        "bell",
+        "open_book",
+        "bottle",
+        "bowl",
+        "button",
+        "cactus",
+        "calculator",
+        "candle",
+        "card",
+        "carrot",
+        "mini_chair",
+        "chess_piece",
+        "clock",
+        "compass",
+        "cone",
+        "crown",
+        "cube",
+        "cup",
+        "cylinder",
+        "diamond",
+        "dice",
+        "mail_envelope",
+        "fish",
+        "flower",
+        "glove",
+        "half_cylinder",
+        "hat",
+        "heart",
+        "helmet",
+        "horseshoe",
+        "jar",
+        "key",
+        "kite",
+        "lantern",
+        "leaf",
+        "mushroom",
+        "pencil",
+        "plate",
+        "plug",
+        "puzzle_piece",
+        "pyramid",
+        "wedge",
+        "remote_control",
+        "torus",
+        "ruler",
+        "screw",
+        "shield",
+        "star_prism",
+        "stick",
+        "stool",
+        "sword",
+        "mini_table",
+        "tray",
+        "trophy",
+        "umbrella",
+    )
+    if shape in set(OBJECT_CLUSTER_SHAPE_TYPES)
+)
 OBJECT_SCENE_CONTEXT_SHAPE_TYPES: Tuple[str, ...] = (
     "arch",
     "table",
@@ -216,6 +282,9 @@ OBJECT_SCENE_CONTEXT_SHAPE_TYPES: Tuple[str, ...] = (
     "chair",
 )
 OBJECT_SCENE_SHAPE_TYPES: Tuple[str, ...] = OBJECT_SCENE_SMALL_SHAPE_TYPES + OBJECT_SCENE_CONTEXT_SHAPE_TYPES
+OBJECT_SCENE_NAMED_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(
+    shape for shape in THREE_D_NAMED_OBJECT_SHAPE_TYPES if shape in set(OBJECT_SCENE_SMALL_SHAPE_TYPES)
+)
 OBJECT_SCENE_NAME_BY_SHAPE_TYPE: Dict[str, str] = {
     "sphere": "ball",
     "cube": "cube",

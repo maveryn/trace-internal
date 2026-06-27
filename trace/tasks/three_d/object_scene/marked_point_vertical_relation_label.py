@@ -20,7 +20,7 @@ from ..shared.object_scene_marked_point_output import build_marked_point_object_
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.object_scene import (
-    NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
+    NAMED_SMALL_OBJECT_SHAPE_TYPES,
     POINT_LABELS,
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
@@ -42,7 +42,7 @@ from .shared.labels import bbox_union as _bbox_union
 
 TASK_ID = "task_three_d__object_scene__marked_point_vertical_relation_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("directly_above_reference",)
-REFERENCE_SHAPE_TYPES: Tuple[str, ...] = (
+_REQUESTED_REFERENCE_SHAPE_TYPES: Tuple[str, ...] = (
     "sphere",
     "cube",
     "cylinder",
@@ -66,6 +66,9 @@ REFERENCE_SHAPE_TYPES: Tuple[str, ...] = (
     "flask",
     "clock",
     "apple",
+)
+REFERENCE_SHAPE_TYPES: Tuple[str, ...] = tuple(
+    shape for shape in _REQUESTED_REFERENCE_SHAPE_TYPES if shape in set(NAMED_SMALL_OBJECT_SHAPE_TYPES)
 )
 MIN_DISTRACTOR_REFERENCE_XY_OFFSET = 0.48
 MIN_MARKER_SCREEN_SEPARATION_PX = 78.0
@@ -580,7 +583,7 @@ class ThreeDSpatialMarkedPointVerticalRelationLabelTask:
                 "object_count_probabilities": dict(object_count_probabilities),
                 "reference_shape_type": str(dataset["reference_shape_type"]),
                 "reference_shape_support": list(REFERENCE_SHAPE_TYPES),
-                "scene_object_shape_support": list(NAMEABLE_SMALL_OBJECT_SHAPE_TYPES),
+                "scene_object_shape_support": list(NAMED_SMALL_OBJECT_SHAPE_TYPES),
             },
             relation_fields={
                 "object_count": int(object_count),

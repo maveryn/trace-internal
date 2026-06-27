@@ -72,6 +72,13 @@ objects should not be sampled as semantic wrong-type distractors for that
 target. Scene-specific object pools may be narrower for layout reasons, but
 confusion filtering should remain shared.
 
+Use `THREE_D_NAMED_OBJECT_SHAPE_TYPES` from
+`trace/tasks/three_d/shared/object_resources.py` as the canonical curated named
+object pool for prompt-facing named-object count/readout tasks. Scene-specific
+compatibility pools, such as `OBJECT_SCENE_NAMED_CANDIDATE_SHAPE_TYPES`, should
+only be derived intersections with renderer/layout support. Broad renderable
+small-object pools are not named-question pools.
+
 Use the 3D object review surfaces for object-fidelity audits. Style, lighting,
 camera, and object-palette variation must not encode answer value, query id,
 correct option, relation truth, or construction order unless explicitly queried.

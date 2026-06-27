@@ -64,6 +64,7 @@ from .object_resources import (
     OBJECT_SCENE_CONTEXT_DIMENSIONS,
     OBJECT_SCENE_CONTEXT_SHAPE_TYPES,
     OBJECT_SCENE_NAME_BY_SHAPE_TYPE,
+    OBJECT_SCENE_NAMED_CANDIDATE_SHAPE_TYPES,
     OBJECT_SCENE_SHAPE_TYPES,
     OBJECT_SCENE_SMALL_DIMENSIONS,
     OBJECT_SCENE_SMALL_SHAPE_TYPES,
@@ -75,10 +76,10 @@ SCENE_ID = "object_scene"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("floor_grid_room", "tabletop_room", "studio_platform")
 POINT_LABELS: Tuple[str, ...] = tuple("ABCDEFGH")
 SMALL_OBJECT_SHAPE_TYPES: Tuple[str, ...] = OBJECT_SCENE_SMALL_SHAPE_TYPES
+NAMED_SMALL_OBJECT_SHAPE_TYPES: Tuple[str, ...] = OBJECT_SCENE_NAMED_CANDIDATE_SHAPE_TYPES
 LARGE_CONTEXT_SHAPE_TYPES: Tuple[str, ...] = OBJECT_SCENE_CONTEXT_SHAPE_TYPES
 SHAPE_TYPES: Tuple[str, ...] = OBJECT_SCENE_SHAPE_TYPES
 OBJECT_NAME_BY_SHAPE_TYPE: Dict[str, str] = dict(OBJECT_SCENE_NAME_BY_SHAPE_TYPE)
-NAMEABLE_SMALL_OBJECT_SHAPE_TYPES: Tuple[str, ...] = OBJECT_SCENE_SMALL_SHAPE_TYPES
 NAMEABLE_CONTEXT_SHAPE_TYPES: Tuple[str, ...] = OBJECT_SCENE_CONTEXT_SHAPE_TYPES
 POINT_COLORS: Tuple[Tuple[int, int, int], ...] = (
     (224, 71, 61),
@@ -125,7 +126,7 @@ def _object_name(shape_type: str) -> str:
 def _nameable_for_prompt(shape_type: str, *, object_role: str) -> bool:
     if str(object_role) == "context":
         return str(shape_type) in set(NAMEABLE_CONTEXT_SHAPE_TYPES)
-    return str(shape_type) in set(NAMEABLE_SMALL_OBJECT_SHAPE_TYPES)
+    return str(shape_type) in set(NAMED_SMALL_OBJECT_SHAPE_TYPES)
 
 
 @dataclass(frozen=True)
@@ -404,7 +405,7 @@ def _sample_scene_object_specs(
     candidate_count: int,
     context_object_count: int,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    candidate_shape_types = list(SMALL_OBJECT_SHAPE_TYPES)
+    candidate_shape_types = list(NAMED_SMALL_OBJECT_SHAPE_TYPES)
     context_shape_types = list(LARGE_CONTEXT_SHAPE_TYPES)
     rng.shuffle(candidate_shape_types)
     rng.shuffle(context_shape_types)
@@ -785,7 +786,7 @@ __all__ = [
     "CONTEXT_OBJECT_COLORS",
     "LARGE_CONTEXT_SHAPE_TYPES",
     "NAMEABLE_CONTEXT_SHAPE_TYPES",
-    "NAMEABLE_SMALL_OBJECT_SHAPE_TYPES",
+    "NAMED_SMALL_OBJECT_SHAPE_TYPES",
     "OBJECT_NAME_BY_SHAPE_TYPE",
     "ObjectSceneRenderParams",
     "POINT_COLORS",

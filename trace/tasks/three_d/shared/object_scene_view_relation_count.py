@@ -34,7 +34,7 @@ from .task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from .task_support import resolve_count as _shared_resolve_count
 from .object_scene import (
     CONTEXT_OBJECT_COLORS,
-    NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
+    NAMED_SMALL_OBJECT_SHAPE_TYPES,
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
     _RenderParams,
@@ -66,7 +66,7 @@ CAMERA_DEPTH_QUERY_IDS: Tuple[str, ...] = (
     "farther_from_camera_than_reference_count",
 )
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = SCREEN_SIDE_QUERY_IDS + CAMERA_DEPTH_QUERY_IDS
-COUNTABLE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMEABLE_SMALL_OBJECT_SHAPE_TYPES)
+COUNTABLE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
 VIEW_SCENE_SLOTS: Tuple[Tuple[float, float], ...] = tuple(
     (x, y)
     for y in (-2.42, -1.34, -0.26, 0.82, 1.90)

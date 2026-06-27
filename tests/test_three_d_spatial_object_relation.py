@@ -8,7 +8,11 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.object_scene.object_relation_label import SUPPORTED_QUERY_IDS
+from trace.tasks.three_d.object_scene.object_relation_label import (
+    NAMED_SMALL_OBJECT_SHAPE_TYPES,
+    RELATION_CANDIDATE_DIMENSION_SCALE,
+    SUPPORTED_QUERY_IDS,
+)
 from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
@@ -46,6 +50,9 @@ def test_object_relation_answer_and_annotation(query_id: str) -> None:
     assert len(context_specs) == 2
     assert all(spec["is_answer_candidate"] for spec in point_specs)
     assert not any(spec["is_answer_candidate"] for spec in context_specs)
+    assert {str(spec["shape_type"]) for spec in point_specs} <= set(NAMED_SMALL_OBJECT_SHAPE_TYPES)
+    assert not any(str(spec["shape_type"]) == "drum" for spec in point_specs)
+    assert all(float(spec["dimension_scale"]) <= float(RELATION_CANDIDATE_DIMENSION_SCALE) * 1.17 for spec in point_specs)
     assert reference_spec["nameable_for_prompt"]
     answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_labels[0])
     expected_bbox = output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]

@@ -21,7 +21,7 @@ from ..shared.object_resources import SPATIAL_REFERENCE_NEAREST_REFERENCE_SHAPE_
 from ..shared.object_scene import (
     LARGE_CONTEXT_SHAPE_TYPES,
     NAMEABLE_CONTEXT_SHAPE_TYPES,
-    NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
+    NAMED_SMALL_OBJECT_SHAPE_TYPES,
     POINT_LABELS,
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
@@ -47,7 +47,7 @@ from .shared.relations import prompt_name as _prompt_name
 TASK_ID = "task_three_d__object_scene__reference_nearest_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("closest_to_reference",)
 REFERENCE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_REFERENCE_NEAREST_REFERENCE_SHAPE_TYPES
-SMALL_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMEABLE_SMALL_OBJECT_SHAPE_TYPES)
+SMALL_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
 LARGE_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMEABLE_CONTEXT_SHAPE_TYPES)
 def _surface_gap(a: Mapping[str, Any], b: Mapping[str, Any]) -> float:
     ax, ay, _az = (float(value) for value in a["world_xyz"])

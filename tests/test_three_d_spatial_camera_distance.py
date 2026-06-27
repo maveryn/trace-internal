@@ -13,7 +13,7 @@ from trace.tasks.three_d.object_scene.camera_distance_extremum_label import (
     LARGE_CONTEXT_SHAPE_TYPES,
     MAX_ANSWER_CONTEXT_OVERLAP_FRACTION,
     NAMEABLE_CONTEXT_SHAPE_TYPES,
-    NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
+    NAMED_SMALL_OBJECT_SHAPE_TYPES,
     OBJECT_NAME_BY_SHAPE_TYPE,
     SMALL_OBJECT_SHAPE_TYPES,
     UNRELIABLE_CAMERA_DISTANCE_ANSWER_SHAPES,
@@ -66,7 +66,7 @@ def test_camera_distance_extremum_answer_and_annotation(query_id: str) -> None:
     assert {spec["object_name"] for spec in object_specs}.isdisjoint({"L-block", "T-block", "cross-block", "l-block", "t-block"})
     assert {
         spec["shape_type"] for spec in point_specs if bool(spec["nameable_for_prompt"])
-    } <= set(NAMEABLE_SMALL_OBJECT_SHAPE_TYPES)
+    } <= set(NAMED_SMALL_OBJECT_SHAPE_TYPES)
     assert {
         spec["shape_type"] for spec in context_specs if bool(spec["nameable_for_prompt"])
     } <= set(NAMEABLE_CONTEXT_SHAPE_TYPES)

@@ -17,6 +17,12 @@ The image uses the `object_scene` renderer: a perspective 3D floor, table, or pl
 
 The verifier computes the answer from finalized scene metadata and projection records, not from pixels. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
 
+Candidate option objects are sampled from the curated object_scene-compatible
+named-object pool derived from the domain-wide `THREE_D_NAMED_OBJECT_SHAPE_TYPES`
+support. This excludes broad render-only small objects such as `drum` from named
+MCQ candidates. Candidate objects are rendered with a relation-task scale
+multiplier so they read as small props relative to the larger reference prop.
+
 ## Annotation Contract
 Annotation is a scalar `bbox` around the selected visible object.
 The selected object is the only visual witness; option text is not annotation.

@@ -19,7 +19,7 @@ from ...shared.deterministic_sampling import resolve_selection_index
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.object_scene import (
-    NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
+    NAMED_SMALL_OBJECT_SHAPE_TYPES,
     POINT_LABELS,
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
@@ -48,7 +48,7 @@ REFERENCE_SHAPE_TYPES: Tuple[str, ...] = ("platform",)
 REFERENCE_DIMENSIONS_BY_SHAPE: Dict[str, Tuple[float, float, float]] = {
     "platform": (1.86, 1.12, 1.18),
 }
-SMALL_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMEABLE_SMALL_OBJECT_SHAPE_TYPES)
+SMALL_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
 
 
 def _make_occlusion_reference_spec(*, rng, shape_type: str, xy: Tuple[float, float]) -> Dict[str, Any]:

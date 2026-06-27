@@ -43,7 +43,7 @@ from ..shared.object_resources import (
 from ..shared.option_panel import apply_independent_prompt_colors_to_dataset, build_text_option_choices
 from ..shared.object_scene import (
     LARGE_CONTEXT_SHAPE_TYPES,
-    NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
+    NAMED_SMALL_OBJECT_SHAPE_TYPES,
     POINT_LABELS,
     SCENE_ID,
     SUPPORTED_SCENE_VARIANTS,
@@ -69,6 +69,7 @@ ON_TOP_PROP_TYPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_ON_TOP_PROP_TYPES
 UNDER_PROP_TYPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_UNDER_PROP_TYPES
 INSIDE_PROP_TYPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_INSIDE_PROP_TYPES
 ELEVATED_COMPATIBLE_SHAPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_ELEVATED_COMPATIBLE_SHAPES
+RELATION_CANDIDATE_DIMENSION_SCALE = 0.74
 
 
 
@@ -100,8 +101,12 @@ def _make_sampled_object(
     xy: Tuple[float, float],
     label: str | None = None,
     base_z: float = 0.0,
+    dimension_multiplier: float = 1.0,
 ) -> Dict[str, Any]:
     dimensions_xyz, dimension_scale = _sample_shape_dimensions(str(shape_type), object_role=str(object_role), rng=rng)
+    if float(dimension_multiplier) != 1.0:
+        dimensions_xyz = tuple(round(float(value) * float(dimension_multiplier), 4) for value in dimensions_xyz)
+        dimension_scale = round(float(dimension_scale) * float(dimension_multiplier), 4)
     spec = _make_object_spec(
         object_id=str(object_id),
         shape_type=str(shape_type),
@@ -187,7 +192,7 @@ def _build_relation_scene_dataset(
             xy=(0.0, 0.18),
         )
         answer_shape_pool = list(
-            ELEVATED_COMPATIBLE_SHAPES if str(query_id) in {"on_top_of_prop", "inside_prop"} else NAMEABLE_SMALL_OBJECT_SHAPE_TYPES
+            ELEVATED_COMPATIBLE_SHAPES if str(query_id) in {"on_top_of_prop", "inside_prop"} else NAMED_SMALL_OBJECT_SHAPE_TYPES
         )
         answer_shape = str(rng.choice(answer_shape_pool))
         answer_base_z = _answer_base_z(str(query_id), reference_spec)
@@ -203,6 +208,7 @@ def _build_relation_scene_dataset(
             xy=answer_xy,
             label=answer_label,
             base_z=float(answer_base_z),
+            dimension_multiplier=RELATION_CANDIDATE_DIMENSION_SCALE,
         )
         if str(query_id) == "inside_prop":
             answer_spec.update(
@@ -213,7 +219,7 @@ def _build_relation_scene_dataset(
                 }
             )
 
-        shape_pool = [str(shape) for shape in NAMEABLE_SMALL_OBJECT_SHAPE_TYPES if str(shape) != answer_shape]
+        shape_pool = [str(shape) for shape in NAMED_SMALL_OBJECT_SHAPE_TYPES if str(shape) != answer_shape]
         rng.shuffle(shape_pool)
         distractor_slots = list(_candidate_slots(str(query_id)))
         rng.shuffle(distractor_slots)
@@ -228,6 +234,7 @@ def _build_relation_scene_dataset(
                 object_role="candidate",
                 xy=(float(slot_x + rng.uniform(-0.10, 0.10)), float(slot_y + rng.uniform(-0.10, 0.10))),
                 label=str(label),
+                dimension_multiplier=RELATION_CANDIDATE_DIMENSION_SCALE,
             )
             candidate_specs.append(spec)
 

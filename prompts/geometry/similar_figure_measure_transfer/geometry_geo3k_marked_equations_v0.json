@@ -56,9 +56,6 @@
     "scene:geo3k_similar_figure_scene": [
       "object_description"
     ],
-    "scene:marked_polygon_equation_scene": [
-      "object_description"
-    ],
     "scene:parallel_segment_proportion_scene": [
       "object_description"
     ],
@@ -162,13 +159,6 @@
   },
   "scene_templates": {
     "geo3k_similar_figure_scene": [
-      "The diagram shows {object_description}.",
-      "The figure shows {object_description}.",
-      "The image shows {object_description}.",
-      "This diagram shows {object_description}.",
-      "This figure shows {object_description}."
-    ],
-    "marked_polygon_equation_scene": [
       "The diagram shows {object_description}.",
       "The figure shows {object_description}.",
       "The image shows {object_description}.",

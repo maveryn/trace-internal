@@ -3,22 +3,28 @@
 from __future__ import annotations
 
 import trace.tasks  # noqa: F401 - registers tasks.
+import pytest
+
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.object_scene.camera_distance_extremum_label import LARGE_CONTEXT_SHAPE_TYPES
-from trace.tasks.three_d.object_scene.reference_nearest_label import TASK_ID
+from trace.tasks.three_d.object_scene.reference_nearest_label import (
+    REFERENCE_SHAPE_TYPES,
+    SMALL_CANDIDATE_SHAPE_TYPES,
+    TASK_ID,
+)
 from tests.three_d_option_panel_helpers import assert_option_panel_matches_candidates
 
 
-def test_reference_nearest_answer_and_annotation() -> None:
+@pytest.mark.parametrize("query_id", ["closest_to_reference", "farthest_from_reference"])
+def test_reference_nearest_answer_and_annotation(query_id: str) -> None:
     task = create_task(TASK_ID)
     output = task.generate(
         20260521,
         params={
             "scene_variant": "floor_grid_room",
+            "query_id": str(query_id),
             "point_count": 6,
-            "large_candidate_count": 2,
             "post_image_noise_apply_prob": 0.0,
         },
         max_attempts=200,
@@ -29,10 +35,10 @@ def test_reference_nearest_answer_and_annotation() -> None:
     context_specs = list(trace["context_object_specs"])
     gaps_by_label = dict(trace["candidate_reference_gaps_by_label"])
     sorted_labels = sorted(gaps_by_label, key=lambda label: (float(gaps_by_label[label]), str(label)))
-    expected_label = str(sorted_labels[0])
+    expected_label = str(sorted_labels[0] if str(query_id) == "closest_to_reference" else sorted_labels[-1])
     reference_id = str(trace["reference_object_id"])
     assert output.scene_id == "object_scene"
-    assert output.query_id == "single"
+    assert output.query_id == str(query_id)
     assert output.answer_gt.type == "option_letter"
     assert output.answer_gt.value == expected_label
     assert len(point_specs) == 6
@@ -44,7 +50,9 @@ def test_reference_nearest_answer_and_annotation() -> None:
     assert context_specs[0]["nameable_for_prompt"]
     assert str(context_specs[0]["prompt_name"]) == str(trace["reference_object_name"])
     assert str(context_specs[0]["prompt_name"]) not in {str(spec["prompt_name"]) for spec in point_specs}
-    assert sum(1 for spec in point_specs if str(spec["shape_type"]) in set(LARGE_CONTEXT_SHAPE_TYPES)) == 2
+    assert str(context_specs[0]["shape_type"]) in set(REFERENCE_SHAPE_TYPES)
+    assert all(str(spec["shape_type"]) in set(SMALL_CANDIDATE_SHAPE_TYPES) for spec in point_specs)
+    assert trace["large_candidate_count"] == 0
     answer_spec = next(spec for spec in point_specs if str(spec["point_label"]) == expected_label)
     expected_bbox = output.trace_payload["render_map"]["object_bboxes_px"][str(answer_spec["object_id"])]
     assert output.annotation_gt.type == "bbox"
@@ -57,9 +65,12 @@ def test_reference_nearest_answer_and_annotation() -> None:
         answer_object_id=str(answer_spec["object_id"]),
         expected_image_size=(1180, 1068),
     )
-    assert trace["solver_trace"]["reference_nearest_order"][0] == expected_label
+    order = list(trace["solver_trace"]["reference_distance_order"])
+    assert (order[0] if str(query_id) == "closest_to_reference" else order[-1]) == expected_label
     assert trace["solver_trace"]["reference_excluded_from_options"] is True
     assert float(trace["solver_trace"]["reference_nearest_margin"]) >= 0.24
+    for spec in point_specs:
+        assert float(spec["camera_distance"]) <= float(context_specs[0]["camera_distance"]) + 0.04
 
 
 def test_reference_nearest_task_registered_in_three_d_taxonomy() -> None:

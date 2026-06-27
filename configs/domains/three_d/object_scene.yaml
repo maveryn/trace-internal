@@ -45,10 +45,12 @@ generation:
         floor_grid_room: 1.0
         tabletop_room: 1.0
         studio_platform: 1.0
+      query_id_weights:
+        closest_to_reference: 1.0
+        farthest_from_reference: 1.0
       point_count_min: 6
       point_count_max: 6
-      large_candidate_count_min: 2
-      large_candidate_count_max: 2
+      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
     task_three_d__object_scene__between_references_label:
       scene_variant_weights:

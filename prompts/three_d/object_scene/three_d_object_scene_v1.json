@@ -155,6 +155,13 @@
         "Looking at the {reference_name}, choose the option for the nearest object.",
         "Which option describes the object closest to the {reference_name}?"
       ],
+      "farthest_from_reference": [
+        "Which option describes the object farthest from the {reference_name}?",
+        "Use the {reference_name} as the reference. Which option describes the farthest object?",
+        "Among the candidate objects, which option is farthest from the {reference_name}?",
+        "Looking at the {reference_name}, choose the option for the farthest object.",
+        "Which option describes the object farthest from the {reference_name}?"
+      ],
       "between_references": [
         "Which option describes the object between the {reference_a_name} and the {reference_b_name}?",
         "Looking at the two named reference objects, which option describes the object between the {reference_a_name} and the {reference_b_name}?",
@@ -291,10 +298,10 @@
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:reference_nearest_query": {
-      "object_description": "a perspective 3D platform scene with several objects and one reference object",
-      "annotation_hint": "set \"annotation\" to an array containing one bounding box [x0, y0, x1, y1] around the selected object in the scene",
+      "object_description": "a large reference object and six smaller candidate objects",
+      "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the selected object in the scene",
       "answer_hint": "set \"answer\" to the selected option letter",
-      "json_example": "{\"annotation\":[[318,260,366,308]],\"answer\":\"C\"}",
+      "json_example": "{\"annotation\":[318,260,366,308],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:between_references_query": {
@@ -397,6 +404,9 @@
       "reference_name"
     ],
     "query:closest_to_reference": [
+      "reference_name"
+    ],
+    "query:farthest_from_reference": [
       "reference_name"
     ],
     "query:between_references": [

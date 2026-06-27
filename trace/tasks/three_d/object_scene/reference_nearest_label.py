@@ -17,9 +17,7 @@ from ...shared.config_defaults import (
 )
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
-from ..shared.object_resources import SPATIAL_REFERENCE_NEAREST_REFERENCE_SHAPE_TYPES
 from ..shared.object_scene import (
-    LARGE_CONTEXT_SHAPE_TYPES,
     NAMEABLE_CONTEXT_SHAPE_TYPES,
     NAMED_SMALL_OBJECT_SHAPE_TYPES,
     POINT_LABELS,
@@ -45,36 +43,33 @@ from .shared.relations import prompt_name as _prompt_name
 
 
 TASK_ID = "task_three_d__object_scene__reference_nearest_label"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("closest_to_reference",)
-REFERENCE_SHAPE_TYPES: Tuple[str, ...] = SPATIAL_REFERENCE_NEAREST_REFERENCE_SHAPE_TYPES
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("closest_to_reference", "farthest_from_reference")
+REFERENCE_SHAPE_TYPES: Tuple[str, ...] = tuple(
+    str(shape) for shape in NAMEABLE_CONTEXT_SHAPE_TYPES if str(shape) not in {"arch", "open_box"}
+)
 SMALL_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
-LARGE_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMEABLE_CONTEXT_SHAPE_TYPES)
+
+
 def _surface_gap(a: Mapping[str, Any], b: Mapping[str, Any]) -> float:
     ax, ay, _az = (float(value) for value in a["world_xyz"])
     bx, by, _bz = (float(value) for value in b["world_xyz"])
     center_distance_xy = math.hypot(float(ax - bx), float(ay - by))
     return max(0.0, float(center_distance_xy) - float(a["footprint_radius"]) - float(b["footprint_radius"]))
-def _candidate_role(shape_type: str) -> str:
-    return "context" if str(shape_type) in set(LARGE_CONTEXT_SHAPE_TYPES) else "candidate"
 
 
-def _sample_candidate_shapes(*, rng, reference_name: str, candidate_count: int, large_candidate_count: int) -> List[str]:
+def _sample_candidate_shapes(*, rng, reference_name: str, candidate_count: int) -> List[str]:
     small_pool = [str(shape) for shape in SMALL_CANDIDATE_SHAPE_TYPES]
-    large_pool = [str(shape) for shape in LARGE_CANDIDATE_SHAPE_TYPES]
     rng.shuffle(small_pool)
-    rng.shuffle(large_pool)
     selected: List[str] = []
     selected_names = {str(reference_name)}
-    for shape in large_pool:
-        probe = _make_sampled_object(rng=rng, object_id=f"probe_{shape}", shape_type=shape, object_role="context", xy=(0.0, 0.0))
-        if _prompt_name(probe) not in selected_names:
-            selected.append(shape)
-            selected_names.add(_prompt_name(probe))
-        if len([item for item in selected if item in set(LARGE_CONTEXT_SHAPE_TYPES)]) >= int(large_candidate_count):
-            break
-    for shape in small_pool + large_pool:
-        role = _candidate_role(str(shape))
-        probe = _make_sampled_object(rng=rng, object_id=f"probe_{shape}", shape_type=shape, object_role=role, xy=(0.0, 0.0))
+    for shape in small_pool:
+        probe = _make_sampled_object(
+            rng=rng,
+            object_id=f"probe_{shape}",
+            shape_type=shape,
+            object_role="candidate",
+            xy=(0.0, 0.0),
+        )
         if _prompt_name(probe) in selected_names:
             continue
         selected.append(str(shape))
@@ -84,17 +79,18 @@ def _sample_candidate_shapes(*, rng, reference_name: str, candidate_count: int, 
     if len(selected) < int(candidate_count):
         raise ValueError("could not sample enough unique candidate object names")
     return list(selected[: int(candidate_count)])
+
+
 def _build_reference_nearest_scene_dataset(
     *,
     query_id: str,
     scene_variant: str,
     point_count: int,
-    large_candidate_count: int,
     render_params: _RenderParams,
     instance_seed: int,
     camera_yaw_band: Tuple[float, float] | None = None,
 ) -> Dict[str, Any]:
-    """Build a nearest-to-reference scene with one labeled candidate closest to the reference object in world space."""
+    """Build a reference-distance scene with one large prop and six small named candidates."""
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     selected_camera_yaw_band = (
         tuple(float(value) for value in camera_yaw_band)
@@ -104,104 +100,97 @@ def _build_reference_nearest_scene_dataset(
     for _attempt in range(420):
         camera = _sample_camera(rng, yaw_band_degrees=selected_camera_yaw_band)
         reference_shape = str(rng.choice(REFERENCE_SHAPE_TYPES))
-        reference_role = _candidate_role(reference_shape)
         reference_spec = _make_sampled_object(
             rng=rng,
             object_id=f"reference_{reference_shape}",
             shape_type=reference_shape,
-            object_role=reference_role,
-            xy=(float(rng.uniform(-0.22, 0.22)), float(rng.uniform(-0.16, 0.24))),
+            object_role="context",
+            xy=(float(rng.uniform(-0.12, 0.12)), float(rng.uniform(-0.10, 0.16))),
         )
         if not bool(reference_spec.get("nameable_for_prompt", False)):
             continue
 
         labels = [str(label) for label in POINT_LABELS[: int(point_count)]]
         answer_label = labels[abs(int(instance_seed)) % int(point_count)]
-        remaining_labels = [str(label) for label in labels if str(label) != str(answer_label)]
-        rng.shuffle(remaining_labels)
 
         candidate_shapes = _sample_candidate_shapes(
             rng=rng,
             reference_name=_prompt_name(reference_spec),
             candidate_count=int(point_count),
-            large_candidate_count=int(large_candidate_count),
         )
-        answer_shape = str(candidate_shapes[0])
-        distractor_shapes = list(candidate_shapes[1:])
-        rng.shuffle(distractor_shapes)
-
         placed: List[Dict[str, Any]] = [dict(reference_spec)]
         ref_x, ref_y, _ref_z = (float(value) for value in reference_spec["world_xyz"])
         ref_radius = float(reference_spec["footprint_radius"])
-        answer_role = _candidate_role(answer_shape)
-        answer_dimensions, answer_scale = _sample_shape_dimensions(answer_shape, object_role=answer_role, rng=rng)
-        answer_probe = _make_object_spec(
-            object_id=f"object_{answer_label}",
-            shape_type=answer_shape,
-            object_role=answer_role,
-            xy=(0.0, 0.0),
-            dimensions_xyz=answer_dimensions,
-            dimension_scale=float(answer_scale),
-            label=answer_label,
-        )
-        answer_radius = float(answer_probe["footprint_radius"])
-        angle = float(rng.choice([0.0, 0.72, 1.45, 2.25, 3.05, 3.85, 4.65, 5.45]) + rng.uniform(-0.18, 0.18))
-        answer_gap = float(rng.uniform(0.16, 0.38))
-        answer_distance = ref_radius + answer_radius + answer_gap
-        answer_xy = (float(ref_x + math.cos(angle) * answer_distance), float(ref_y + math.sin(angle) * answer_distance))
-        answer_spec = _make_object_spec(
-            object_id=f"object_{answer_label}",
-            shape_type=answer_shape,
-            object_role=answer_role,
-            xy=answer_xy,
-            dimensions_xyz=answer_dimensions,
-            dimension_scale=float(answer_scale),
-            label=answer_label,
-        )
-        if not _can_place(answer_spec, placed, clearance=0.10):
-            continue
-        placed.append(answer_spec)
 
-        candidate_specs = [answer_spec]
-        ring_slots = [
-            (-2.48, -2.12),
-            (-1.10, -2.56),
-            (1.22, -2.48),
-            (2.52, -1.42),
-            (2.38, 1.42),
-            (0.98, 2.52),
-            (-1.28, 2.46),
-            (-2.48, 1.18),
-        ]
-        rng.shuffle(ring_slots)
-        for index, label in enumerate(remaining_labels):
-            shape = str(distractor_shapes[index % len(distractor_shapes)])
-            role = _candidate_role(shape)
-            dimensions, scale = _sample_shape_dimensions(shape, object_role=role, rng=rng)
+        unit_x = float(camera.camera_position[0] - ref_x)
+        unit_y = float(camera.camera_position[1] - ref_y)
+        unit_len = max(1e-6, math.hypot(unit_x, unit_y))
+        unit_x /= unit_len
+        unit_y /= unit_len
+        side_x, side_y = -unit_y, unit_x
+
+        label_shape_pairs = list(zip(labels, candidate_shapes, strict=True))
+        rng.shuffle(label_shape_pairs)
+        base_gaps = [0.20, 0.46, 0.72, 0.98, 1.24, 1.50]
+        gap_values = [float(value + rng.uniform(-0.035, 0.035)) for value in base_gaps]
+        extremal_gap = min(gap_values) if str(query_id) == "closest_to_reference" else max(gap_values)
+        remaining_gaps = [gap for gap in gap_values if float(gap) != float(extremal_gap)]
+        rng.shuffle(remaining_gaps)
+        gap_by_label: Dict[str, float] = {}
+        for label, _shape in label_shape_pairs:
+            if str(label) == str(answer_label):
+                gap_by_label[str(label)] = float(extremal_gap)
+            else:
+                gap_by_label[str(label)] = float(remaining_gaps.pop())
+
+        angle_offsets = [-1.18, -0.74, -0.30, 0.30, 0.74, 1.18]
+        rng.shuffle(angle_offsets)
+        candidate_specs: List[Dict[str, Any]] = []
+        for index, (label, shape) in enumerate(label_shape_pairs):
+            dimensions, scale = _sample_shape_dimensions(shape, object_role="candidate", rng=rng)
+            probe = _make_object_spec(
+                object_id=f"object_{label}",
+                shape_type=str(shape),
+                object_role="candidate",
+                xy=(0.0, 0.0),
+                dimensions_xyz=dimensions,
+                dimension_scale=float(scale),
+                label=str(label),
+            )
+            radius = float(probe["footprint_radius"])
+            gap = float(gap_by_label[str(label)])
+            center_distance = float(ref_radius + radius + gap)
+            angle_offset = float(angle_offsets[index] + rng.uniform(-0.08, 0.08))
+            forward = math.cos(angle_offset)
+            lateral = math.sin(angle_offset)
             placed_spec: Dict[str, Any] | None = None
-            for slot_x, slot_y in ring_slots[index:] + ring_slots[:index]:
-                for _jitter_attempt in range(6):
-                    xy = (
-                        float(slot_x + rng.uniform(-0.12, 0.12)),
-                        float(slot_y + rng.uniform(-0.12, 0.12)),
-                    )
-                    spec = _make_object_spec(
-                        object_id=f"object_{label}",
-                        shape_type=shape,
-                        object_role=role,
-                        xy=xy,
-                        dimensions_xyz=dimensions,
-                        dimension_scale=float(scale),
-                        label=str(label),
-                    )
-                    if _surface_gap(reference_spec, spec) <= answer_gap + 0.34:
-                        continue
-                    if not _can_place(spec, placed, clearance=0.12):
-                        continue
-                    placed_spec = spec
-                    break
-                if placed_spec is not None:
-                    break
+            for _jitter_attempt in range(10):
+                jittered_distance = center_distance + float(rng.uniform(-0.025, 0.025))
+                jittered_lateral = lateral + float(rng.uniform(-0.025, 0.025))
+                xy = (
+                    float(ref_x + unit_x * forward * jittered_distance + side_x * jittered_lateral * jittered_distance),
+                    float(ref_y + unit_y * forward * jittered_distance + side_y * jittered_lateral * jittered_distance),
+                )
+                if max(abs(xy[0]), abs(xy[1])) > float(render_params.room_extent) - 0.28:
+                    continue
+                spec = _make_object_spec(
+                    object_id=f"object_{label}",
+                    shape_type=str(shape),
+                    object_role="candidate",
+                    xy=xy,
+                    dimensions_xyz=dimensions,
+                    dimension_scale=float(scale),
+                    label=str(label),
+                )
+                to_ref_x = float(spec["world_xyz"][0]) - float(ref_x)
+                to_ref_y = float(spec["world_xyz"][1]) - float(ref_y)
+                camera_axis = to_ref_x * unit_x + to_ref_y * unit_y
+                if camera_axis < float(ref_radius * 0.10):
+                    continue
+                if not _can_place(spec, placed, clearance=0.12):
+                    continue
+                placed_spec = spec
+                break
             if placed_spec is None:
                 break
             candidate_specs.append(placed_spec)
@@ -226,7 +215,7 @@ def _build_reference_nearest_scene_dataset(
             (str(spec["object_id"]), _object_screen_bbox(spec, camera, frame, pad_px=16.0))
             for spec in all_finalized
         ]
-        intended_reference_answer_pair = {str(reference_spec["object_id"]), f"object_{answer_label}"}
+        reference_bbox = _object_screen_bbox(reference_spec, camera, frame, pad_px=8.0)
         if any(
             math.hypot(a[0] - b[0], a[1] - b[1]) < 34.0
             for index, a in enumerate(candidate_screen_centers)
@@ -241,10 +230,26 @@ def _build_reference_nearest_scene_dataset(
             continue
         if any(
             _bbox_intersection_area(a, b) > 42000.0
-            for index, (a_id, a) in enumerate(all_screen_bboxes)
-            for b_id, b in all_screen_bboxes[index + 1 :]
-            if {str(a_id), str(b_id)} != intended_reference_answer_pair
+            for index, (_a_id, a) in enumerate(all_screen_bboxes)
+            for _b_id, b in all_screen_bboxes[index + 1 :]
         ):
+            continue
+        hidden_by_reference = False
+        for spec in finalized_candidates:
+            candidate_bbox = _object_screen_bbox(spec, camera, frame, pad_px=8.0)
+            overlap = _bbox_intersection_area(candidate_bbox, reference_bbox)
+            candidate_area = max(
+                1.0,
+                (float(candidate_bbox[2]) - float(candidate_bbox[0]))
+                * (float(candidate_bbox[3]) - float(candidate_bbox[1])),
+            )
+            if overlap > 0.24 * candidate_area:
+                hidden_by_reference = True
+                break
+            if float(spec["camera_distance"]) > float(reference_spec["camera_distance"]) + 0.04:
+                hidden_by_reference = True
+                break
+        if hidden_by_reference:
             continue
 
         gaps_by_label = {
@@ -252,12 +257,17 @@ def _build_reference_nearest_scene_dataset(
             for spec in finalized_candidates
         }
         sorted_by_gap = sorted(finalized_candidates, key=lambda spec: (float(gaps_by_label[str(spec["point_label"])]), str(spec["point_label"])))
-        if str(sorted_by_gap[0]["point_label"]) != str(answer_label):
+        target_spec = sorted_by_gap[0] if str(query_id) == "closest_to_reference" else sorted_by_gap[-1]
+        if str(target_spec["point_label"]) != str(answer_label):
             continue
         if _min_pairwise([float(value) for value in gaps_by_label.values()]) < 0.16:
             continue
-        if len(sorted_by_gap) > 1:
+        if str(query_id) == "closest_to_reference" and len(sorted_by_gap) > 1:
             margin = float(gaps_by_label[str(sorted_by_gap[1]["point_label"])]) - float(gaps_by_label[str(sorted_by_gap[0]["point_label"])])
+            if margin < 0.24:
+                continue
+        elif str(query_id) == "farthest_from_reference" and len(sorted_by_gap) > 1:
+            margin = float(gaps_by_label[str(sorted_by_gap[-1]["point_label"])]) - float(gaps_by_label[str(sorted_by_gap[-2]["point_label"])])
             if margin < 0.24:
                 continue
         else:
@@ -270,7 +280,7 @@ def _build_reference_nearest_scene_dataset(
             "scene_variant": str(scene_variant),
             "point_count": int(point_count),
             "candidate_count": int(point_count),
-            "large_candidate_count": int(sum(1 for spec in finalized_candidates if str(spec["shape_type"]) in set(LARGE_CONTEXT_SHAPE_TYPES))),
+            "large_candidate_count": 0,
             "context_object_count": 1,
             "object_count": int(point_count) + 1,
             "point_specs": list(sorted_candidates),
@@ -308,6 +318,7 @@ def _build_reference_nearest_scene_dataset(
                 "reference_object_name": _prompt_name(reference_spec),
                 "reference_shape_type": str(reference_spec["shape_type"]),
                 "candidate_reference_gaps_by_label": dict(sorted(gaps_by_label.items())),
+                "reference_distance_order": list(distance_order),
                 "reference_nearest_order": list(distance_order),
                 "unique_reference_nearest_answer": True,
                 "reference_nearest_margin": round(float(margin), 4),
@@ -396,17 +407,6 @@ class ThreeDSpatialReferenceNearestLabelTask:
             lower=4,
             upper=8,
         )
-        large_candidate_count, large_candidate_count_probabilities = _shared_resolve_count(
-            params,
-            task_id=TASK_ID,
-            gen_defaults=_GEN_DEFAULTS,
-            instance_seed=int(instance_seed),
-            prefix="large_candidate_count",
-            minimum_default=2,
-            maximum_default=2,
-            lower=0,
-            upper=min(3, int(point_count)),
-        )
         render_params = _resolve_render_params(
             params,
             render_defaults=_RENDER_DEFAULTS,
@@ -417,7 +417,6 @@ class ThreeDSpatialReferenceNearestLabelTask:
             query_id=str(query_id),
             scene_variant=str(scene_variant),
             point_count=int(point_count),
-            large_candidate_count=int(large_candidate_count),
             render_params=render_params,
             instance_seed=int(instance_seed),
             camera_yaw_band=camera_yaw_band,
@@ -454,8 +453,6 @@ class ThreeDSpatialReferenceNearestLabelTask:
             },
             relation_fields=relation_fields,
             query_params_extra={
-                "large_candidate_count": int(dataset["large_candidate_count"]),
-                "large_candidate_count_probabilities": dict(large_candidate_count_probabilities),
                 "reference_object_id": str(dataset["reference_object_id"]),
                 "reference_object_name": str(dataset["reference_object_name"]),
             },

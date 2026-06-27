@@ -4,18 +4,24 @@
 - Domain: `three_d`
 - Scene id: `object_scene`
 - Package: `trace/tasks/three_d/object_scene/`
-- Supported `query_id`: `single`
+- Supported `query_id`: `closest_to_reference`, `farthest_from_reference`
 - Answer type: `option_letter`
 - Annotation type: `bbox`
 - Annotation schema: `bbox`
 
 ## Program Contract
-`select(label(candidate_objects, min(surface_gap_to_reference))); scene=object_scene; scope=reference_nearest_label`
+`select(label(candidate_objects, extremum(surface_gap_to_reference))); scene=object_scene; scope=reference_nearest_label`
 
 ## Contract
 The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.
 
 The verifier computes the answer from finalized scene metadata and projection records, not from pixels. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
+
+Each scene contains exactly one large named reference prop and six small named
+candidate objects. Candidate objects are placed in front of or beside the
+reference from the camera view, with render-time rejection if a candidate is
+hidden behind the reference prop. Query ids choose closest vs farthest by
+surface gap to the reference.
 
 ## Annotation Contract
 Annotation is a scalar `bbox` around the selected visible object.

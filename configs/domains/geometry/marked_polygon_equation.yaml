@@ -27,8 +27,8 @@ prompt:
       task_key: angle_variable_value_query
     task_geometry__marked_polygon_equation__side_length_value:
       task_key: side_length_value_query
-    task_geometry__marked_polygon_equation__angle_value:
-      task_key: angle_value_query
+    task_geometry__marked_polygon_equation__equal_angle_measure_value:
+      task_key: equal_angle_measure_value_query
     task_geometry__marked_polygon_equation__polygon_angle_sum_variable_value:
       task_key: polygon_angle_sum_variable_value_query
     task_geometry__marked_polygon_equation__polygon_angle_sum_angle_value:

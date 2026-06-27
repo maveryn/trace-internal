@@ -12,7 +12,7 @@ from trace.core.task_review_sampling import collect_query_id_samples
 
 
 _AFFECTED_KEYED_POINT_TASKS = (
-    "task_geometry__marked_polygon_equation__angle_value",
+    "task_geometry__marked_polygon_equation__equal_angle_measure_value",
     "task_geometry__marked_polygon_equation__angle_variable_value",
     "task_geometry__marked_polygon_equation__polygon_angle_sum_angle_value",
     "task_geometry__marked_polygon_equation__polygon_angle_sum_variable_value",

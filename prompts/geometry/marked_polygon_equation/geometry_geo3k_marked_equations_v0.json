@@ -34,13 +34,6 @@
         "",
         ""
       ],
-      "angle_value_query": [
-        "",
-        "",
-        "",
-        "",
-        ""
-      ],
       "polygon_angle_sum_variable_value_query": [
         "",
         "",
@@ -49,6 +42,13 @@
         ""
       ],
       "polygon_angle_sum_angle_value_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "equal_angle_measure_value_query": [
         "",
         "",
         "",
@@ -78,13 +78,6 @@
         "Determine {target_name}.",
         "Solve for {target_name}."
       ],
-      "angle_value_query": [
-        "Find {target_name}.",
-        "Find the measure of {target_name}.",
-        "What is {target_name}?",
-        "Determine {target_name}.",
-        "Solve for {target_name}."
-      ],
       "polygon_angle_sum_variable_value_query": [
         "Find {variable_name}.",
         "Find the value of {variable_name}.",
@@ -93,11 +86,18 @@
         "Solve for {variable_name}."
       ],
       "polygon_angle_sum_angle_value_query": [
-        "Find {target_name}.",
-        "Find the measure of {target_name}.",
-        "What is {target_name}?",
-        "Determine {target_name}.",
-        "Solve for {target_name}."
+        "Use the polygon angle sum to find {target_name}.",
+        "Use the interior-angle sum to find the measure of {target_name}.",
+        "From the polygon angle-sum relation, what is {target_name}?",
+        "Determine {target_name} from the polygon interior-angle sum.",
+        "Solve for the measure of {target_name} using the polygon angle sum."
+      ],
+      "equal_angle_measure_value_query": [
+        "Use the marked equal angles to find {target_name}.",
+        "Use the equal-angle markings to find the measure of {target_name}.",
+        "From the equal-angle markings, what is {target_name}?",
+        "Determine {target_name} from the marked equal-angle relation.",
+        "Solve for the measure of {target_name} using the equal-angle markings."
       ]
     },
     "output": {
@@ -130,9 +130,6 @@
     "query:side_length_value_query": [
       "target_name"
     ],
-    "query:angle_value_query": [
-      "target_name"
-    ],
     "query:polygon_angle_sum_variable_value_query": [
       "variable_name"
     ],
@@ -149,11 +146,14 @@
       "annotation_hint",
       "answer_hint",
       "json_example"
+    ],
+    "query:equal_angle_measure_value_query": [
+      "target_name"
     ]
   },
   "static_slots_by_key": {
     "scene:marked_polygon_equation_scene": {
-      "object_description": "a labeled polygon or special triangle with marked equal parts and algebraic labels"
+      "object_description": "a labeled polygon or special triangle with algebraic labels and geometric markings"
     },
     "task:side_variable_value_query": {
       "answer_hint": "set \"answer\" to the value of the variable as a number"
@@ -163,9 +163,6 @@
     },
     "task:side_length_value_query": {
       "answer_hint": "set \"answer\" to the requested side length as a number"
-    },
-    "task:angle_value_query": {
-      "answer_hint": "set \"answer\" to the requested angle measure in degrees as a number"
     },
     "task:polygon_angle_sum_variable_value_query": {
       "answer_hint": "set \"answer\" to the value of the variable as a number"
@@ -178,6 +175,9 @@
     },
     "output:answer_and_annotation": {
       "json_output_contract": "Return a JSON object with exactly two keys: \"answer\" and \"annotation\"."
+    },
+    "task:equal_angle_measure_value_query": {
+      "answer_hint": "set \"answer\" to the requested angle measure in degrees as a number"
     }
   },
   "dynamic_slots": {

@@ -34,7 +34,7 @@ TASK_QUERIES = {
     "task_geometry__marked_polygon_equation__side_length_value": (
         "single",
     ),
-    "task_geometry__marked_polygon_equation__angle_value": (
+    "task_geometry__marked_polygon_equation__equal_angle_measure_value": (
         "single",
     ),
     "task_geometry__marked_polygon_equation__polygon_angle_sum_variable_value": (
@@ -69,7 +69,7 @@ MARKED_CONSTRUCTION_FAMILIES = {
         "marked_polygon_side_from_expression",
         "equilateral_median_side_length_from_expression",
     ),
-    "task_geometry__marked_polygon_equation__angle_value": (
+    "task_geometry__marked_polygon_equation__equal_angle_measure_value": (
         "marked_equal_angle_from_expression",
         "isosceles_triangle_angle_from_expression",
     ),
@@ -112,6 +112,10 @@ RETIRED_PARALLEL_QUERY_IDS = (
     "parallel_transversal_segment_variable",
     "triangle_side_splitter_segment_length",
     "parallel_transversal_segment_length",
+)
+
+RETIRED_MARKED_POLYGON_TASK_IDS = (
+    "task_geometry__marked_polygon_equation__angle_value",
 )
 
 
@@ -349,3 +353,9 @@ def test_parallel_segment_proportion_rejects_retired_query_ids(retired_query_id:
     task = create_task("task_geometry__parallel_segment_proportion__variable_value")
     with pytest.raises(ValueError, match="unsupported query_id"):
         task.generate(20260619, params={"query_id": retired_query_id}, max_attempts=1)
+
+
+@pytest.mark.parametrize("retired_task_id", RETIRED_MARKED_POLYGON_TASK_IDS)
+def test_marked_polygon_equation_retired_task_ids_are_removed(retired_task_id: str) -> None:
+    with pytest.raises(KeyError):
+        create_task(retired_task_id)

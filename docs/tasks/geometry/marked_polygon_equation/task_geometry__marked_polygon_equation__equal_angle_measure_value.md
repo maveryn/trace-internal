@@ -1,4 +1,4 @@
-# `task_geometry__marked_polygon_equation__angle_value`
+# `task_geometry__marked_polygon_equation__equal_angle_measure_value`
 
 ## Contract
 1. Domain: `geometry`
@@ -8,7 +8,7 @@
 5. Annotation schema: `point_map`
 
 ## Program Contract
-- `solve_formula(visible_equal_angle_marked_polygon_equation, unknown_role=target_angle_measure, formula_schema=equal_angle_expression_measure); scene=marked_polygon_equation; scope=angle_value`
+- `solve_formula(visible_equal_angle_marked_polygon_equation, unknown_role=target_angle_measure, formula_schema=equal_angle_expression_measure); scene=marked_polygon_equation; scope=equal_angle_measure_value`
 
 ## Internal Construction Families
 The public task has no semantic query branch. The sampled construction family is recorded as trace metadata:
@@ -30,4 +30,4 @@ Generation is deterministic for a fixed seed, params, config, and prompt bundle 
 
 ## Source
 - Config: `configs/domains/geometry/marked_polygon_equation.yaml`
-- Task module: `trace/tasks/geometry/marked_polygon_equation/angle_value.py`
+- Task module: `trace/tasks/geometry/marked_polygon_equation/equal_angle_measure_value.py`

@@ -1,4 +1,4 @@
-"""Compute an angle measure from marked polygon equations."""
+"""Compute an angle measure from marked equal-angle equations."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from ._lifecycle import run_marked_equation_task
 from .shared.construction import Builder, isosceles_angle_from_expression, marked_equal_angle_from_expression
 from .shared.sampling import select_case_variant, select_construction_family
 
-TASK_ID = "task_geometry__marked_polygon_equation__angle_value"
+TASK_ID = "task_geometry__marked_polygon_equation__equal_angle_measure_value"
 SUPPORTED_QUERY_IDS: tuple[str, ...] = ("single",)
 CONSTRUCTION_OPTIONS: tuple[tuple[str, Builder], ...] = (
     ("marked_equal_angle_from_expression", marked_equal_angle_from_expression),
@@ -36,7 +36,7 @@ def _build_case(instance_seed: int, params: Mapping[str, Any]):
 
 
 @register_task
-class GeometryMarkedPolygonEquationAngleValueTask:
+class GeometryMarkedPolygonEquationEqualAngleMeasureValueTask:
     """Task-owned equal-angle measure objective for marked polygon equations."""
 
     task_id = TASK_ID
@@ -56,4 +56,4 @@ class GeometryMarkedPolygonEquationAngleValueTask:
         )
 
 
-__all__ = ["GeometryMarkedPolygonEquationAngleValueTask"]
+__all__ = ["GeometryMarkedPolygonEquationEqualAngleMeasureValueTask"]

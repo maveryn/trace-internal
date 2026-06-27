@@ -10,6 +10,7 @@ from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.three_d.object_scene.object_relation_label import (
     NAMED_SMALL_OBJECT_SHAPE_TYPES,
+    RELATION_CANDIDATE_SHAPE_TYPES,
     RELATION_CANDIDATE_DIMENSION_SCALE,
     SUPPORTED_QUERY_IDS,
 )
@@ -17,6 +18,10 @@ from tests.three_d_option_panel_helpers import assert_option_panel_matches_candi
 
 
 TASK_ID = "task_three_d__object_scene__object_relation_label"
+
+
+def test_object_relation_candidate_pool_is_query_invariant() -> None:
+    assert tuple(RELATION_CANDIDATE_SHAPE_TYPES) == tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
 
 
 @pytest.mark.parametrize("query_id", SUPPORTED_QUERY_IDS)

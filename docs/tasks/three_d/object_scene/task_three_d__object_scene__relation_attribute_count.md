@@ -17,6 +17,11 @@ The image uses the `object_scene` renderer: a perspective 3D floor, table, or pl
 
 The verifier computes the answer from finalized scene metadata and projection records, not from pixels. The prompt bundle is `three_d_object_scene_v1` under `prompts/three_d/object_scene/`.
 
+Countable objects are sampled from the same curated object_scene-compatible
+named-object pool for every relation query id. Query ids change only the
+requested spatial relation and compatible reference prop; they do not swap in a
+separate answer-object universe.
+
 ## Annotation Contract
 Annotation is an unordered `bbox_set` containing one box around each counted object. The set may be empty when the answer is zero.
 All witnesses have the same counted-object role, so ordering is not meaningful.

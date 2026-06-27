@@ -35,7 +35,6 @@ from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.object_resources import (
-    SPATIAL_OBJECT_RELATION_ELEVATED_COMPATIBLE_SHAPES,
     SPATIAL_OBJECT_RELATION_INSIDE_PROP_TYPES,
     SPATIAL_OBJECT_RELATION_ON_TOP_PROP_TYPES,
     SPATIAL_OBJECT_RELATION_UNDER_PROP_TYPES,
@@ -68,7 +67,7 @@ SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("on_top_of_prop", "under_prop", "inside_
 ON_TOP_PROP_TYPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_ON_TOP_PROP_TYPES
 UNDER_PROP_TYPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_UNDER_PROP_TYPES
 INSIDE_PROP_TYPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_INSIDE_PROP_TYPES
-ELEVATED_COMPATIBLE_SHAPES: Tuple[str, ...] = SPATIAL_OBJECT_RELATION_ELEVATED_COMPATIBLE_SHAPES
+RELATION_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
 RELATION_CANDIDATE_DIMENSION_SCALE = 0.74
 
 
@@ -191,9 +190,7 @@ def _build_relation_scene_dataset(
             object_role="context",
             xy=(0.0, 0.18),
         )
-        answer_shape_pool = list(
-            ELEVATED_COMPATIBLE_SHAPES if str(query_id) in {"on_top_of_prop", "inside_prop"} else NAMED_SMALL_OBJECT_SHAPE_TYPES
-        )
+        answer_shape_pool = list(RELATION_CANDIDATE_SHAPE_TYPES)
         answer_shape = str(rng.choice(answer_shape_pool))
         answer_base_z = _answer_base_z(str(query_id), reference_spec)
         answer_xy = (
@@ -219,7 +216,7 @@ def _build_relation_scene_dataset(
                 }
             )
 
-        shape_pool = [str(shape) for shape in NAMED_SMALL_OBJECT_SHAPE_TYPES if str(shape) != answer_shape]
+        shape_pool = [str(shape) for shape in RELATION_CANDIDATE_SHAPE_TYPES if str(shape) != answer_shape]
         rng.shuffle(shape_pool)
         distractor_slots = list(_candidate_slots(str(query_id)))
         rng.shuffle(distractor_slots)

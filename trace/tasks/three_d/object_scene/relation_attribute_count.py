@@ -32,7 +32,6 @@ from ...shared.prompt_variants import (
 from ..shared.canvas import render_params_canvas_metadata
 from ..shared.color_variation import resolve_three_d_object_fill_rgb
 from ..shared.object_resources import (
-    SPATIAL_OBJECT_RELATION_ELEVATED_COMPATIBLE_SHAPES,
     SPATIAL_OBJECT_RELATION_INSIDE_PROP_TYPES,
     SPATIAL_OBJECT_RELATION_ON_TOP_PROP_TYPES,
     SPATIAL_OBJECT_RELATION_UNDER_PROP_TYPES,
@@ -70,17 +69,7 @@ SUPPORTED_QUERY_IDS: Tuple[str, ...] = (
 ON_TOP_REFERENCE_SHAPES: Tuple[str, ...] = tuple(SPATIAL_OBJECT_RELATION_ON_TOP_PROP_TYPES)
 UNDER_REFERENCE_SHAPES: Tuple[str, ...] = tuple(SPATIAL_OBJECT_RELATION_UNDER_PROP_TYPES)
 INSIDE_REFERENCE_SHAPES: Tuple[str, ...] = tuple(SPATIAL_OBJECT_RELATION_INSIDE_PROP_TYPES)
-ELEVATED_COUNTABLE_SHAPES: Tuple[str, ...] = tuple(SPATIAL_OBJECT_RELATION_ELEVATED_COMPATIBLE_SHAPES)
-UNDER_COUNTABLE_SHAPES: Tuple[str, ...] = (
-    "sphere",
-    "cube",
-    "cylinder",
-    "cone",
-    "torus",
-    "pyramid",
-    "wedge",
-)
-DISTRACTOR_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
+COUNTABLE_SHAPE_TYPES: Tuple[str, ...] = tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
 RELATION_SMALL_DIMENSION_SCALE = 0.62
 MIN_PROJECTED_OBJECT_AREA_PX = 420.0
 MAX_PAIRWISE_OVERLAP_PX = 3900.0
@@ -182,14 +171,6 @@ def _reference_shape_support(query_id: str, *, target_count: int) -> Tuple[str, 
     return INSIDE_REFERENCE_SHAPES
 
 
-def _countable_shape_pool(query_id: str, *, matches_query: bool) -> Tuple[str, ...]:
-    if not bool(matches_query):
-        return DISTRACTOR_SHAPE_TYPES
-    if str(query_id) in {"on_top_of_reference_count", "inside_reference_count"}:
-        return ELEVATED_COUNTABLE_SHAPES
-    return UNDER_COUNTABLE_SHAPES
-
-
 def _target_base_z(query_id: str, reference_spec: Mapping[str, Any]) -> float:
     if str(query_id) == "on_top_of_reference_count":
         return round(float(reference_spec["base_xyz"][2]) + float(reference_spec["dimensions_xyz"][2]) + 0.03, 4)
@@ -283,8 +264,8 @@ def _sample_countable_specs(
     """Sample candidate and distractor specs so the scoped relation count has the requested unique answer range."""
     target_base_z = _target_base_z(str(query_id), reference_spec)
     ref_x, ref_y, _ref_z = (float(value) for value in reference_spec["world_xyz"])
-    target_shape_pool = list(_countable_shape_pool(str(query_id), matches_query=True))
-    distractor_shape_pool = list(_countable_shape_pool(str(query_id), matches_query=False))
+    target_shape_pool = list(COUNTABLE_SHAPE_TYPES)
+    distractor_shape_pool = list(COUNTABLE_SHAPE_TYPES)
     rng.shuffle(target_shape_pool)
     rng.shuffle(distractor_shape_pool)
     placed: List[Dict[str, Any]] = []

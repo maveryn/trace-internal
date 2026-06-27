@@ -22,6 +22,8 @@ named-object pool derived from the domain-wide `THREE_D_NAMED_OBJECT_SHAPE_TYPES
 support. This excludes broad render-only small objects such as `drum` from named
 MCQ candidates. Candidate objects are rendered with a relation-task scale
 multiplier so they read as small props relative to the larger reference prop.
+The same candidate object pool is used for every relation query id; query ids
+change only the requested spatial relation and compatible reference prop.
 
 ## Annotation Contract
 Annotation is a scalar `bbox` around the selected visible object.

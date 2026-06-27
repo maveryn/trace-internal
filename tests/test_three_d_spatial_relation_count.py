@@ -6,8 +6,13 @@ import trace.tasks  # noqa: F401 - registers tasks.
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-from trace.tasks.three_d.object_scene.relation_attribute_count import TASK_ID
+from trace.tasks.three_d.object_scene.object_relation_label import NAMED_SMALL_OBJECT_SHAPE_TYPES
+from trace.tasks.three_d.object_scene.relation_attribute_count import COUNTABLE_SHAPE_TYPES, TASK_ID
 from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
+
+
+def test_spatial_relation_count_candidate_pool_is_query_invariant() -> None:
+    assert tuple(COUNTABLE_SHAPE_TYPES) == tuple(NAMED_SMALL_OBJECT_SHAPE_TYPES)
 
 
 def test_spatial_relation_count_answer_and_annotation() -> None:

@@ -269,10 +269,10 @@ def render_regular_polygon_scene(
     readout_bboxes.update(_draw_readout_panel(ctx, _readout_lines(problem)))
 
     start_vertex = vertices[problem.start_index]
-    end_vertex = vertices[end_index]
+    label_end_vertex = side_end if problem.show_apothem else vertices[end_index]
     readout_bboxes["label_O"] = _draw_text_centered(ctx, "O", add_scaled(center, (0.0, -22.0)), small=True, role="label")
     readout_bboxes["label_A"] = _draw_text_centered(ctx, "A", add_scaled(start_vertex, unit(sub(start_vertex, center)), 25.0), small=True, role="label")
-    readout_bboxes["label_B"] = _draw_text_centered(ctx, "B", add_scaled(end_vertex, unit(sub(end_vertex, center)), 25.0), small=True, role="label")
+    readout_bboxes["label_B"] = _draw_text_centered(ctx, "B", add_scaled(label_end_vertex, unit(sub(label_end_vertex, center)), 25.0), small=True, role="label")
     if problem.show_region_label:
         readout_bboxes["label_W"] = _draw_text_centered(ctx, "W", target_midpoint, small=True, role="label")
     if problem.show_midpoint_label:
@@ -281,7 +281,7 @@ def render_regular_polygon_scene(
     annotation_points = {
         "O": center,
         "A": start_vertex,
-        "B": end_vertex,
+        "B": label_end_vertex,
         "M": side_mid,
         "W": target_midpoint,
     }

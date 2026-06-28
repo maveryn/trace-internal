@@ -71,13 +71,6 @@
         "Based on the regular-polygon decomposition, find the degree measure of angle {target_name}.",
         "What is the measure of the marked central angle {target_name}?"
       ],
-      "perimeter_from_side_length": [
-        "Use the labeled side length of the regular polygon. What is the total perimeter of \"{target_name}\"?",
-        "The side length of the regular polygon is labeled. What is the total perimeter of \"{target_name}\"?",
-        "Find the total perimeter of \"{target_name}\" from the visible side-length label.",
-        "Based on the regular-polygon side label, what is the total perimeter of \"{target_name}\"?",
-        "What is the total perimeter of \"{target_name}\"?"
-      ],
       "perimeter_from_total_area_and_apothem": [
         "Use the labeled total area and apothem of the regular polygon. What is the total perimeter of \"{target_name}\"?",
         "The total area and apothem are labeled. What is the total perimeter of \"{target_name}\"?",
@@ -138,9 +131,6 @@
       "target_name"
     ],
     "query:marked_wedges_central_angle": [
-      "target_name"
-    ],
-    "query:perimeter_from_side_length": [
       "target_name"
     ],
     "query:perimeter_from_total_area_and_apothem": [

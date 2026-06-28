@@ -172,37 +172,19 @@ def angle_for_marked_pieces(instance_seed: int, params: Mapping[str, Any], *, se
     )
 
 
-def perimeter_from_side(instance_seed: int, params: Mapping[str, Any], *, seed_namespace: str) -> RegularPolygonProblem:
-    rng = _rng(instance_seed, seed_namespace)
-    n_sides = _n_sides(rng, params)
-    side_length, apothem, wedge_area, total_area, perimeter = _clean_side_apothem_case(rng, int(n_sides))
-    return _base_problem(
-        rng=rng,
-        params={**dict(params), "n_sides": n_sides},
-        instance_seed=int(instance_seed),
-        wedge_count=1,
-        answer=float(perimeter),
-        answer_type="integer",
-        target_name="the regular polygon perimeter",
-        relation="regular_polygon_perimeter_from_side_length",
-        total_area=float(total_area),
-        wedge_area=float(wedge_area),
-        side_length=float(side_length),
-        apothem=float(apothem),
-        perimeter=float(perimeter),
-        show_known_side_length=True,
-    )
-
-
 def perimeter_from_area_apothem(instance_seed: int, params: Mapping[str, Any], *, seed_namespace: str) -> RegularPolygonProblem:
     rng = _rng(instance_seed, seed_namespace)
     n_sides = _n_sides(rng, params)
+    max_marked = max(1, min(4, int(n_sides) // 2))
+    wedge_count = int(params.get("wedge_count", rng.randrange(1, max_marked + 1)))
+    if int(wedge_count) < 1 or int(wedge_count) > int(max_marked):
+        raise ValueError(f"wedge_count must be between 1 and {max_marked} for n_sides={n_sides}")
     side_length, apothem, wedge_area, total_area, perimeter = _clean_side_apothem_case(rng, int(n_sides))
     return _base_problem(
         rng=rng,
         params={**dict(params), "n_sides": n_sides},
         instance_seed=int(instance_seed),
-        wedge_count=1,
+        wedge_count=int(wedge_count),
         answer=float(perimeter),
         answer_type="integer",
         target_name="the regular polygon perimeter",
@@ -298,7 +280,6 @@ __all__ = [
     "area_from_side_and_apothem",
     "angle_for_marked_pieces",
     "perimeter_from_area_apothem",
-    "perimeter_from_side",
     "side_from_area_apothem",
     "side_from_perimeter",
     "side_from_piece_area_apothem",

@@ -2,36 +2,36 @@
 
 from __future__ import annotations
 
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.types import TypedValue
 from trace.tasks.registry import register_task
 
 from ._lifecycle import RegularPolygonObjectivePlan, run_regular_polygon_public_entry
 from .shared.defaults import DOMAIN
-from .shared.sampling import perimeter_from_area_apothem, perimeter_from_side
+from .shared.sampling import perimeter_from_area_apothem
 
 TASK_ID = "task_geometry__regular_polygon_decomposition__perimeter_value"
-QUERY_ID_SIDE = "perimeter_from_side_length"
 QUERY_ID_AREA_APOTHEM = "perimeter_from_total_area_and_apothem"
-SUPPORTED_QUERY_IDS = (QUERY_ID_SIDE, QUERY_ID_AREA_APOTHEM)
-DEFAULT_QUERY_ID = QUERY_ID_SIDE
+SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
+DEFAULT_QUERY_ID = SINGLE_QUERY_ID
 PROMPT_TASK_KEY = "perimeter_value_query"
+ANNOTATION_ROLES = ("O", "A", "B", "M")
 
 
 def _prepare_perimeter(instance_seed, task_params, selected_branch, branch_probabilities):
-    if selected_branch == QUERY_ID_SIDE:
-        problem = perimeter_from_side(int(instance_seed), task_params, seed_namespace=f"{TASK_ID}.{selected_branch}")
-        annotation_roles = ("O", "A", "B")
-    elif selected_branch == QUERY_ID_AREA_APOTHEM:
-        problem = perimeter_from_area_apothem(int(instance_seed), task_params, seed_namespace=f"{TASK_ID}.{selected_branch}")
-        annotation_roles = ("O", "A", "B", "M")
-    else:
+    if selected_branch != SINGLE_QUERY_ID:
         raise ValueError(f"unsupported query branch for {TASK_ID}: {selected_branch}")
+    problem = perimeter_from_area_apothem(
+        int(instance_seed),
+        task_params,
+        seed_namespace=f"{TASK_ID}.{QUERY_ID_AREA_APOTHEM}",
+    )
     return RegularPolygonObjectivePlan(
         prompt_task_key=PROMPT_TASK_KEY,
-        prompt_branch_key=str(selected_branch),
+        prompt_branch_key=QUERY_ID_AREA_APOTHEM,
         problem=problem,
         answer_gt=TypedValue(type="integer", value=int(round(float(problem.answer)))),
-        annotation_roles=tuple(annotation_roles),
+        annotation_roles=ANNOTATION_ROLES,
         query_params={
             "query_id_probabilities": dict(branch_probabilities),
             "case_index": int(problem.case_index),

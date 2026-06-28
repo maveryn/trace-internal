@@ -17,8 +17,7 @@ TASK_QUERIES = {
         SINGLE_QUERY_ID,
     ),
     "task_geometry__regular_polygon_decomposition__perimeter_value": (
-        "perimeter_from_side_length",
-        "perimeter_from_total_area_and_apothem",
+        SINGLE_QUERY_ID,
     ),
     "task_geometry__regular_polygon_decomposition__side_length_value": (
         "side_length_from_perimeter",
@@ -55,6 +54,8 @@ def test_regular_polygon_decomposition_queries_emit_keyed_point_annotation() -> 
             assert output.annotation_gt.value
             if task_id.endswith("__piece_area_value"):
                 assert set(output.annotation_gt.value) == {"O", "A", "B"}
+            if task_id.endswith("__perimeter_value"):
+                assert set(output.annotation_gt.value) == {"O", "A", "B", "M"}
             width, height = output.image.size
             for point in output.annotation_gt.value.values():
                 assert isinstance(point, list)
@@ -89,9 +90,8 @@ def test_regular_polygon_decomposition_measurements_match_trace_values() -> None
             elif task_id.endswith("__central_angle_value"):
                 assert 1 <= wedge_count <= min(4, n_sides // 2)
                 assert output.answer_gt.value == int(wedge_count * int(trace["central_angle_degrees"]))
-            elif query_id == "perimeter_from_side_length":
-                assert output.answer_gt.value == int(n_sides * float(trace["side_length"]))
-            elif query_id == "perimeter_from_total_area_and_apothem":
+            elif task_id.endswith("__perimeter_value"):
+                assert 1 <= wedge_count <= min(4, n_sides // 2)
                 assert output.answer_gt.value == int(round((2.0 * float(trace["total_area"])) / float(trace["apothem"])))
             elif query_id == "side_length_from_perimeter":
                 assert output.answer_gt.value == int(round(float(trace["perimeter"]) / float(n_sides)))

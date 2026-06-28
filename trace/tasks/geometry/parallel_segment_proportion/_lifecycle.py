@@ -10,7 +10,7 @@ from PIL import Image
 
 from trace.core.visual.noise import apply_post_image_noise
 
-from .shared.annotations import segment_set_annotation_artifacts
+from .shared.annotations import point_set_annotation_artifacts
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS
 from .shared.rendering import make_render_context, render_parallel_proportion_scene
 from .shared.state import ParallelProportionPlan, RenderedParallelProportionScene
@@ -61,6 +61,8 @@ def prepare_parallel_scene_artifacts(
             render_meta = dict(render_meta_attempt)
             render_meta["single_object_scene_rotation"] = ctx.scene_transform.metadata()
             break
+        except ValueError:
+            raise
         except Exception as exc:
             last_error = exc
     if rendered is None or render_meta is None or plan is None or construction_probabilities is None:
@@ -79,7 +81,7 @@ def prepare_parallel_scene_artifacts(
         render_meta=dict(render_meta),
         image=image,
         noise_meta=dict(noise_meta),
-        annotation_artifacts=segment_set_annotation_artifacts(rendered.annotation_segments),
+        annotation_artifacts=point_set_annotation_artifacts(rendered.annotation_points),
     )
 
 

@@ -23,7 +23,6 @@ TASK_QUERIES = {
 
 PARALLEL_CONSTRUCTION_FAMILIES = (
     "triangle_side_splitter",
-    "parallel_transversals",
 )
 
 PARALLEL_TASK_IDS = frozenset(
@@ -71,24 +70,23 @@ def test_geo3k_marked_equation_queries_emit_keyed_point_annotation() -> None:
             assert isinstance(output.answer_gt.value, (int, float))
 
             if task_id in PARALLEL_TASK_IDS:
-                assert output.annotation_gt.type == "segment_set"
+                assert output.annotation_gt.type == "point_set"
                 assert isinstance(output.annotation_gt.value, list)
-                assert len(output.annotation_gt.value) == 4
+                assert len(output.annotation_gt.value) == 5
                 width, height = output.image.size
-                for segment in output.annotation_gt.value:
-                    assert isinstance(segment, list)
-                    assert len(segment) == 2
-                    for point in segment:
-                        assert isinstance(point, list)
-                        assert len(point) == 2
-                        assert 0.0 <= float(point[0]) <= float(width)
-                        assert 0.0 <= float(point[1]) <= float(height)
+                for point in output.annotation_gt.value:
+                    assert isinstance(point, list)
+                    assert len(point) == 2
+                    assert 0.0 <= float(point[0]) <= float(width)
+                    assert 0.0 <= float(point[1]) <= float(height)
                 trace = output.trace_payload
                 assert trace["execution_trace"]["query_id"] == query_id
                 assert trace["execution_trace"]["answer"] == output.answer_gt.value
-                assert trace["projected_annotation"]["type"] == "segment_set"
-                assert trace["projected_annotation"]["segment_set"] == output.annotation_gt.value
-                assert trace["projected_annotation"]["pixel_segment_set"] == output.annotation_gt.value
+                assert trace["execution_trace"]["construction_family"] == "triangle_side_splitter"
+                assert trace["query_spec"]["params"]["construction_family"] == "triangle_side_splitter"
+                assert trace["projected_annotation"]["type"] == "point_set"
+                assert trace["projected_annotation"]["point_set"] == output.annotation_gt.value
+                assert trace["projected_annotation"]["pixel_point_set"] == output.annotation_gt.value
                 assert "task_variant" not in trace["query_spec"]["params"]
                 assert "query_variant" not in trace["query_spec"]["params"]
                 continue
@@ -120,7 +118,6 @@ def test_geo3k_marked_equation_queries_use_expected_scene_ids() -> None:
     assert _generate(
         "task_geometry__parallel_segment_proportion__variable_value",
         "single",
-        construction_family="parallel_transversals",
     ).scene_id == "parallel_segment_proportion"
 
 
@@ -159,11 +156,22 @@ def test_parallel_segment_proportion_construction_families_are_trace_metadata() 
                 construction_family=family,
             )
             assert output.query_id == "single"
-            assert output.annotation_gt.type == "segment_set"
+            assert output.annotation_gt.type == "point_set"
+            assert len(output.annotation_gt.value) == 5
             trace = output.trace_payload
             assert trace["execution_trace"]["construction_family"] == family
             assert trace["query_spec"]["params"]["construction_family"] == family
             assert trace["query_spec"]["params"]["query_id"] == "single"
+
+
+def test_parallel_segment_proportion_rejects_retired_transversal_family() -> None:
+    task = create_task("task_geometry__parallel_segment_proportion__variable_value")
+    with pytest.raises(ValueError, match="unsupported construction_family"):
+        task.generate(
+            20260620,
+            params={"query_id": "single", "construction_family": "parallel_transversals"},
+            max_attempts=1,
+        )
 
 
 @pytest.mark.parametrize("retired_query_id", RETIRED_PARALLEL_QUERY_IDS)

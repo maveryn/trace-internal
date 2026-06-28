@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import integer_range_choice, uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.shared.fixed_query import probability_map
 
 from .defaults import CONSTRUCTION_FAMILIES
@@ -40,12 +41,8 @@ def select_construction_family(
             )
         return family, {key: (1.0 if key == family else 0.0) for key in CONSTRUCTION_FAMILIES}
 
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    family = CONSTRUCTION_FAMILIES[int(index) % len(CONSTRUCTION_FAMILIES)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    family = str(uniform_choice(rng, CONSTRUCTION_FAMILIES))
     return str(family), probability_map(CONSTRUCTION_FAMILIES)
 
 
@@ -66,12 +63,8 @@ def select_answer(
         if answer not in answer_support:
             raise ValueError(f"answer_value={answer!r} is outside supported range")
         return int(answer)
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    return int(answer_support[int(index) % len(answer_support)])
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    return int(uniform_choice(rng, answer_support))
 
 
 def select_variant_index(
@@ -84,13 +77,13 @@ def select_variant_index(
     """Select one construction-detail variant index."""
 
     if "case_index" in params:
-        return _int_param(params, "case_index", 0) % int(modulus)
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    return int(index) % int(modulus)
+        value = _int_param(params, "case_index", 0)
+        if value < 0 or value >= int(modulus):
+            raise ValueError(f"case_index must be in [0, {int(modulus) - 1}]")
+        return int(value)
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    selected, _probabilities = integer_range_choice(rng, 0, int(modulus) - 1)
+    return int(selected)
 
 
 def build_variable_plan(
@@ -105,24 +98,14 @@ def build_variable_plan(
     ratio = 2 + (int(variant_index) % 2)
     left_top = 4 + (int(variant_index) % 8)
     answer_int = int(answer)
-    if construction_family == "triangle_side_splitter":
-        labels = {
-            "left_top": str(left_top),
-            "left_bottom": f"x+{offset}",
-            "right_top": str(ratio * left_top),
-            "right_bottom": str(ratio * (answer_int + offset)),
-        }
-        relation = "triangle_side_splitter_proportion_expression"
-    elif construction_family == "parallel_transversals":
-        labels = {
-            "left_top": str(left_top),
-            "left_bottom": str(ratio * left_top),
-            "right_top": f"x+{offset}",
-            "right_bottom": str(ratio * (answer_int + offset)),
-        }
-        relation = "parallel_transversal_segment_proportion_expression"
-    else:
+    if construction_family != "triangle_side_splitter":
         raise ValueError(f"unsupported construction_family={construction_family!r}")
+    labels = {
+        "left_top": str(left_top),
+        "left_bottom": f"x+{offset}",
+        "right_top": str(ratio * left_top),
+        "right_bottom": str(ratio * (answer_int + offset)),
+    }
 
     return ParallelProportionPlan(
         construction_family=str(construction_family),
@@ -130,7 +113,7 @@ def build_variable_plan(
         target_name="x",
         variable_name="x",
         labels=labels,
-        relation=relation,
+        relation="triangle_side_splitter_proportion_expression",
         formula_family="parallel_segment_ratio_variable",
         answer_support=VARIABLE_ANSWER_SUPPORT,
         params={
@@ -157,26 +140,15 @@ def build_segment_length_plan(
     ratio = 2 + (int(variant_index) % 2)
     left_top = 4 + (int(variant_index) % 8)
     answer_int = int(answer)
-    if construction_family == "triangle_side_splitter":
-        target_name = "AE"
-        labels = {
-            "left_top": str(left_top),
-            "left_bottom": str(ratio * left_top),
-            "right_top": f"x+{offset}",
-            "right_bottom": str(ratio * answer_int),
-        }
-        relation = "triangle_side_splitter_segment_length_expression"
-    elif construction_family == "parallel_transversals":
-        target_name = "UV"
-        labels = {
-            "left_top": str(left_top),
-            "left_bottom": str(ratio * left_top),
-            "right_top": f"x+{offset}",
-            "right_bottom": str(ratio * answer_int),
-        }
-        relation = "parallel_transversal_segment_length_expression"
-    else:
+    if construction_family != "triangle_side_splitter":
         raise ValueError(f"unsupported construction_family={construction_family!r}")
+    target_name = "AE"
+    labels = {
+        "left_top": str(left_top),
+        "left_bottom": str(ratio * left_top),
+        "right_top": f"x+{offset}",
+        "right_bottom": str(ratio * answer_int),
+    }
 
     return ParallelProportionPlan(
         construction_family=str(construction_family),
@@ -184,7 +156,7 @@ def build_segment_length_plan(
         target_name=str(target_name),
         variable_name="x",
         labels=labels,
-        relation=relation,
+        relation="triangle_side_splitter_segment_length_expression",
         formula_family="parallel_segment_ratio_target_length",
         answer_support=SEGMENT_LENGTH_ANSWER_SUPPORT,
         params={

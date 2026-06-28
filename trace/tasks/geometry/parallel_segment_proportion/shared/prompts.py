@@ -34,19 +34,19 @@ def parallel_segment_prompt_artifacts(
         context="prompt defaults for parallel_segment_proportion",
     )
     example_annotation = [
-        [[170, 145], [220, 235]],
-        [[220, 235], [265, 335]],
-        [[430, 145], [485, 235]],
-        [[485, 235], [535, 335]],
+        [410, 120],
+        [175, 430],
+        [645, 430],
+        [285, 265],
+        [535, 265],
     ]
     json_example, json_example_answer_only = dump_prompt_json_examples(
         annotation=example_annotation,
         answer=int(answer) if abs(float(answer) - round(float(answer))) <= 1e-9 else float(answer),
     )
     annotation_hint = (
-        "set \"annotation\" to a JSON array of exactly four pixel line segments; "
-        "each segment must be [[x, y], [x, y]] using pixel endpoint points "
-        "and should mark one of the four proportional segment witnesses"
+        "set \"annotation\" to a JSON array of exactly five pixel points [x, y]; "
+        "the points should mark the visible construction points A, B, C, D, and E"
     )
     prompt_selection = render_scene_prompt_variants(
         domain=DOMAIN,

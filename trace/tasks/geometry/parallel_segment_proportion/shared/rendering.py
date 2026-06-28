@@ -212,10 +212,30 @@ def _render_triangle_side_splitter(
     left_bottom = (left_split, left_base)
     right_top = (apex, right_split)
     right_bottom = (right_split, right_base)
-    readouts["left_top_label"] = _draw_text_centered(ctx, labels["left_top"], add_scaled(mid(*left_top), (-30.0, -7.0)), small=True)
-    readouts["left_bottom_label"] = _draw_text_centered(ctx, labels["left_bottom"], add_scaled(mid(*left_bottom), (-36.0, 8.0)), small=True)
-    readouts["right_top_label"] = _draw_text_centered(ctx, labels["right_top"], add_scaled(mid(*right_top), (31.0, -7.0)), small=True)
-    readouts["right_bottom_label"] = _draw_text_centered(ctx, labels["right_bottom"], add_scaled(mid(*right_bottom), (40.0, 8.0)), small=True)
+    readouts["left_top_label"] = _draw_text_centered(
+        ctx,
+        labels["left_top"],
+        add_scaled(mid(*left_top), (-30.0, -7.0)),
+        small=True,
+    )
+    readouts["left_bottom_label"] = _draw_text_centered(
+        ctx,
+        labels["left_bottom"],
+        add_scaled(mid(*left_bottom), (-36.0, 8.0)),
+        small=True,
+    )
+    readouts["right_top_label"] = _draw_text_centered(
+        ctx,
+        labels["right_top"],
+        add_scaled(mid(*right_top), (31.0, -7.0)),
+        small=True,
+    )
+    readouts["right_bottom_label"] = _draw_text_centered(
+        ctx,
+        labels["right_bottom"],
+        add_scaled(mid(*right_bottom), (40.0, 8.0)),
+        small=True,
+    )
 
     segments: tuple[Segment, ...] = (left_top, left_bottom, right_top, right_bottom)
     vertex_payload = {
@@ -225,108 +245,21 @@ def _render_triangle_side_splitter(
         "D": left_split,
         "E": right_split,
     }
+    annotation_points = (apex, left_base, right_base, left_split, right_split)
     render_map = {
         "vertices": {label: point_to_list(point) for label, point in vertex_payload.items()},
-        "annotation_segments": [_segment_to_list(segment) for segment in segments],
+        "annotation_points": [point_to_list(point) for point in annotation_points],
+        "proportional_segments": [_segment_to_list(segment) for segment in segments],
         "point_label_bboxes": dict(point_label_bboxes),
         "readout_bboxes": geometry_json_ready(readouts),
         "construction_bboxes": geometry_json_ready(construction),
     }
     return RenderedParallelProportionScene(
         image=ctx.image,
-        annotation_segments=segments,
+        annotation_points=annotation_points,
         scene_entities=(
             {
                 "type": "triangle_side_splitter",
-                "vertices": {label: point_to_list(point) for label, point in vertex_payload.items()},
-            },
-        ),
-        render_map=render_map,
-        witness={
-            "construction_family": plan.construction_family,
-            "segment_roles": ["left_top", "left_bottom", "right_top", "right_bottom"],
-        },
-    )
-
-
-def _render_parallel_transversals(
-    ctx: RenderContext,
-    plan: ParallelProportionPlan,
-    *,
-    instance_seed: int,
-) -> RenderedParallelProportionScene:
-    """Draw three parallel lines cut by two transversals and expose four segment witnesses."""
-
-    rng = spawn_rng(int(instance_seed), f"{SCENE_ID}.parallel_transversals.layout")
-    labels = dict(plan.labels)
-    x0 = ctx.width * 0.25 + rng.uniform(-8.0, 8.0)
-    x1 = ctx.width * 0.75 + rng.uniform(-8.0, 8.0)
-    ys = (
-        ctx.height * 0.25 + rng.uniform(-6.0, 6.0),
-        ctx.height * 0.50 + rng.uniform(-6.0, 6.0),
-        ctx.height * 0.75 + rng.uniform(-6.0, 6.0),
-    )
-    left_raw = ((x0 - 62.0, ys[0]), (x0, ys[1]), (x0 + 62.0, ys[2]))
-    right_raw = ((x1 - 45.0, ys[0]), (x1, ys[1]), (x1 + 45.0, ys[2]))
-    parallel_raw = tuple(((ctx.width * 0.14, y), (ctx.width * 0.86, y)) for y in ys)
-    ctx.scene_transform.resolve((*left_raw, *right_raw, *(point for segment in parallel_raw for point in segment)))
-    left = ctx.scene_transform.points(left_raw)
-    right = ctx.scene_transform.points(right_raw)
-    parallel_lines = tuple(tuple(ctx.scene_transform.points(segment)) for segment in parallel_raw)
-
-    construction: dict[str, BBox] = {}
-    readouts: dict[str, BBox] = {}
-    point_label_bboxes: dict[str, list[float]] = {}
-    for row, (p0, p1) in enumerate(parallel_lines):
-        ctx.draw.line((p0, p1), fill=ctx.muted_color, width=max(2, ctx.line_width - 1))
-        construction[f"parallel_line_{row}"] = _line_bbox((p0, p1), ctx, pad=ctx.line_width + 2)
-        construction[f"parallel_mark_{row}"] = _draw_parallel_mark(ctx, p0, p1, count=1)
-    ctx.draw.line(left, fill=ctx.line_color, width=ctx.line_width)
-    ctx.draw.line(right, fill=ctx.secondary_color, width=ctx.line_width)
-    construction["left_transversal"] = _line_bbox(left, ctx, pad=ctx.line_width + 3)
-    construction["right_transversal"] = _line_bbox(right, ctx, pad=ctx.line_width + 3)
-
-    for label, point, direction in (
-        ("A", left[0], (-1.0, -1.0)),
-        ("B", left[1], (-1.0, 0.0)),
-        ("C", left[2], (-1.0, 1.0)),
-        ("U", right[0], (1.0, -1.0)),
-        ("V", right[1], (1.0, 0.0)),
-        ("W", right[2], (1.0, 1.0)),
-    ):
-        point_label_bboxes[label] = bbox_to_list(_draw_point_label(ctx, label, point, direction))
-
-    left_top = (left[0], left[1])
-    left_bottom = (left[1], left[2])
-    right_top = (right[0], right[1])
-    right_bottom = (right[1], right[2])
-    readouts["left_top_label"] = _draw_text_centered(ctx, labels["left_top"], add_scaled(mid(*left_top), (-42.0, -2.0)), small=True)
-    readouts["left_bottom_label"] = _draw_text_centered(ctx, labels["left_bottom"], add_scaled(mid(*left_bottom), (-45.0, 3.0)), small=True)
-    readouts["right_top_label"] = _draw_text_centered(ctx, labels["right_top"], add_scaled(mid(*right_top), (44.0, -2.0)), small=True)
-    readouts["right_bottom_label"] = _draw_text_centered(ctx, labels["right_bottom"], add_scaled(mid(*right_bottom), (45.0, 3.0)), small=True)
-
-    segments: tuple[Segment, ...] = (left_top, left_bottom, right_top, right_bottom)
-    vertex_payload = {
-        "A": left[0],
-        "B": left[1],
-        "C": left[2],
-        "U": right[0],
-        "V": right[1],
-        "W": right[2],
-    }
-    render_map = {
-        "vertices": {label: point_to_list(point) for label, point in vertex_payload.items()},
-        "annotation_segments": [_segment_to_list(segment) for segment in segments],
-        "point_label_bboxes": dict(point_label_bboxes),
-        "readout_bboxes": geometry_json_ready(readouts),
-        "construction_bboxes": geometry_json_ready(construction),
-    }
-    return RenderedParallelProportionScene(
-        image=ctx.image,
-        annotation_segments=segments,
-        scene_entities=(
-            {
-                "type": "parallel_transversals",
                 "vertices": {label: point_to_list(point) for label, point in vertex_payload.items()},
             },
         ),
@@ -348,8 +281,6 @@ def render_parallel_proportion_scene(
 
     if plan.construction_family == "triangle_side_splitter":
         return _render_triangle_side_splitter(ctx, plan, instance_seed=int(instance_seed))
-    if plan.construction_family == "parallel_transversals":
-        return _render_parallel_transversals(ctx, plan, instance_seed=int(instance_seed))
     raise ValueError(f"unsupported construction_family={plan.construction_family!r}")
 
 

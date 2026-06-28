@@ -11,9 +11,8 @@ SCENE_KIND = "geometry_parallel_segment_proportion"
 SCENE_VARIANT = "parallel_segment_proportion"
 PROMPT_BUNDLE_ID = "geometry_parallel_segment_proportion_v1"
 
-CONSTRUCTION_FAMILIES: tuple[str, str] = (
+CONSTRUCTION_FAMILIES: tuple[str, ...] = (
     "triangle_side_splitter",
-    "parallel_transversals",
 )
 
 SCENE_DEFAULTS = get_scene_defaults(DOMAIN, SCENE_ID)

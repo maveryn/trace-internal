@@ -5,7 +5,10 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence
 
 from trace.tasks.shared.config_defaults import required_group_defaults
-from trace.tasks.shared.prompt_json_example import build_keyed_point_prompt_json_examples
+from trace.tasks.shared.prompt_json_example import (
+    build_keyed_point_prompt_json_examples,
+    dump_prompt_json_examples,
+)
 from trace.tasks.shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     PromptTraceArtifacts,
@@ -21,6 +24,7 @@ def measuring_tool_prompt_artifacts(
     prompt_defaults: Mapping[str, Any],
     prompt_task_key: str,
     object_description: str,
+    annotation_type: str,
     annotation_keys: Sequence[str],
     answer: int,
     instance_seed: int,
@@ -32,15 +36,28 @@ def measuring_tool_prompt_artifacts(
         ("bundle_id", "scene_key"),
         context="prompt defaults for measuring_tools",
     )
-    json_example, json_example_answer_only = build_keyed_point_prompt_json_examples(
-        annotation_keys=tuple(str(key) for key in annotation_keys),
-        answer=int(answer),
-    )
-    annotation_key_list = ", ".join(f'"{key}"' for key in annotation_keys)
-    annotation_hint = (
-        "set \"annotation\" to a JSON object with exactly these pixel point keys: "
-        f"{annotation_key_list}; each value must be the corresponding visible point [x,y]"
-    )
+    if str(annotation_type) == "segment":
+        json_example, json_example_answer_only = dump_prompt_json_examples(
+            annotation=[[140, 160], [260, 160]],
+            answer=int(answer),
+        )
+        annotation_hint = (
+            "set \"annotation\" to the marked measured segment as two pixel "
+            "points [[x0,y0],[x1,y1]]"
+        )
+    elif str(annotation_type) == "point_map":
+        json_example, json_example_answer_only = build_keyed_point_prompt_json_examples(
+            annotation_keys=tuple(str(key) for key in annotation_keys),
+            answer=int(answer),
+        )
+        annotation_key_list = ", ".join(f'"{key}"' for key in annotation_keys)
+        annotation_hint = (
+            "set \"annotation\" to a JSON object with exactly these pixel "
+            f"point keys: {annotation_key_list}; each value must be the "
+            "corresponding visible point [x,y]"
+        )
+    else:
+        raise ValueError(f"unsupported measuring-tools annotation type: {annotation_type}")
     prompt_selection = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,

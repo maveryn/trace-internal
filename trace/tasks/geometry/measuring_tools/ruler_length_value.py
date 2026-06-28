@@ -16,7 +16,8 @@ SUPPORTED_QUERY_IDS: tuple[str, ...] = ("single",)
 MEASUREMENT_KIND = "ruler_length_reading"
 PROMPT_TASK_KEY = "ruler_length_value"
 OBJECT_DESCRIPTION = "a geometric figure with a ruler placed alongside the marked length"
-ANNOTATION_KEYS = ("measure_start", "measure_end", "ruler_start_tick", "ruler_end_tick")
+ANNOTATION_TYPE = "segment"
+ANNOTATION_KEYS = ("measure_start", "measure_end")
 SHAPE_OPTIONS = ("circle", "triangle", "parallelogram", "trapezoid")
 
 
@@ -68,6 +69,7 @@ class GeometryMeasuringToolsRulerLengthValueTask:
     render_measurement = staticmethod(render_length_measurement)
     prompt_task_key = PROMPT_TASK_KEY
     object_description = OBJECT_DESCRIPTION
+    annotation_type = ANNOTATION_TYPE
     annotation_keys = ANNOTATION_KEYS
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):

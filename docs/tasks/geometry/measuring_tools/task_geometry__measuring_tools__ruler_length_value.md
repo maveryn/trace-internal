@@ -5,7 +5,7 @@
 2. Scene id: `measuring_tools`
 5. Supported `query_id`s: `single`
 6. Answer schema: `integer`
-7. Annotation schema: `point_map`
+7. Annotation schema: `segment`
 
 ## Program Contract
 - Program schema: `read_visible_measurement_tool(tool=ruler, target=marked_length, unit=centimeters, output_role=length_measure); scene=measuring_tools; scope=ruler_length_value`
@@ -16,8 +16,7 @@
 
 ## Annotation
 Prompt-facing annotation uses pixel-space witnesses only. Annotation must be a
-keyed point map with `measure_start`, `measure_end`, `ruler_start_tick`, and
-`ruler_end_tick`.
+scalar segment `[[x0,y0],[x1,y1]]` marking the measured visual length.
 
 ## Internal Sampling
 The carrier shape is internal construction metadata, not public query

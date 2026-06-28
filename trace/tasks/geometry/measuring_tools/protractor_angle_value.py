@@ -16,6 +16,7 @@ SUPPORTED_QUERY_IDS: tuple[str, ...] = ("single",)
 MEASUREMENT_KIND = "protractor_angle_reading"
 PROMPT_TASK_KEY = "protractor_angle_value"
 OBJECT_DESCRIPTION = "a geometric figure with a protractor placed at the marked angle"
+ANNOTATION_TYPE = "point_map"
 ANNOTATION_KEYS = ("angle_vertex", "protractor_reading_tick")
 SHAPE_OPTIONS = ("triangle", "quadrilateral")
 
@@ -67,6 +68,7 @@ class GeometryMeasuringToolsProtractorAngleValueTask:
     render_measurement = staticmethod(render_angle_measurement)
     prompt_task_key = PROMPT_TASK_KEY
     object_description = OBJECT_DESCRIPTION
+    annotation_type = ANNOTATION_TYPE
     annotation_keys = ANNOTATION_KEYS
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):

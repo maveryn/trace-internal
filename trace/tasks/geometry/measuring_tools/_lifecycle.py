@@ -13,7 +13,10 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import PromptTraceArtifacts, build_prompt_query_spec
 
-from .shared.annotations import measuring_tool_point_annotation
+from .shared.annotations import (
+    measuring_tool_point_annotation,
+    measuring_tool_segment_annotation,
+)
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS, SCENE_DEFAULTS
 from .shared.defaults import SCENE_ID, SCENE_KIND, SCENE_VARIANT
 from .shared.prompts import measuring_tool_prompt_artifacts
@@ -38,7 +41,12 @@ def measuring_tools_trace_payload(
 ) -> dict[str, Any]:
     """Build trace sections after a public task has bound answer and annotation."""
 
-    annotation_roles = [str(role) for role in annotation_artifacts.value.keys()]
+    if isinstance(annotation_artifacts.value, Mapping):
+        annotation_roles = [str(role) for role in annotation_artifacts.value.keys()]
+    elif str(annotation_artifacts.annotation_type) == "segment":
+        annotation_roles = ["measured_segment"]
+    else:
+        annotation_roles = [str(annotation_artifacts.annotation_type)]
     query_params = {
         "scene_id": SCENE_ID,
         "query_id": str(selected_query),
@@ -108,9 +116,13 @@ def run_measuring_tool_task(
     task_id: str,
     supported_queries: tuple[str, ...],
     build_plan: Callable[[int, Mapping[str, Any], Mapping[str, Any]], Any],
-    render_measurement: Callable[[RenderContext, Any, int, Mapping[str, Any], Mapping[str, Any]], RenderedToolScene],
+    render_measurement: Callable[
+        [RenderContext, Any, int, Mapping[str, Any], Mapping[str, Any]],
+        RenderedToolScene,
+    ],
     prompt_task_key: str,
     object_description: str,
+    annotation_type: str,
     annotation_keys: tuple[str, ...],
     instance_seed: int,
     params: Mapping[str, Any],
@@ -126,7 +138,11 @@ def run_measuring_tool_task(
         task_id=str(task_id),
         namespace=f"{task_id}.query",
     )
-    gen_defaults, render_defaults, prompt_defaults = split_scene_generation_rendering_prompt_defaults(
+    (
+        gen_defaults,
+        render_defaults,
+        prompt_defaults,
+    ) = split_scene_generation_rendering_prompt_defaults(
         SCENE_DEFAULTS,
         task_id=str(task_id),
     )
@@ -161,11 +177,26 @@ def run_measuring_tool_task(
         params=task_params,
         default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
-    annotation_artifacts = measuring_tool_point_annotation(rendered.annotation_points, roles=annotation_keys)
+    if str(annotation_type) == "segment":
+        if len(annotation_keys) != 2:
+            raise ValueError("segment annotation requires exactly two annotation keys")
+        annotation_artifacts = measuring_tool_segment_annotation(
+            rendered.annotation_points,
+            start_role=str(annotation_keys[0]),
+            end_role=str(annotation_keys[1]),
+        )
+    elif str(annotation_type) == "point_map":
+        annotation_artifacts = measuring_tool_point_annotation(
+            rendered.annotation_points,
+            roles=annotation_keys,
+        )
+    else:
+        raise ValueError(f"unsupported measuring-tools annotation type: {annotation_type}")
     _prompt_defaults, prompt_artifacts = measuring_tool_prompt_artifacts(
         prompt_defaults=prompt_defaults,
         prompt_task_key=str(prompt_task_key),
         object_description=str(object_description),
+        annotation_type=str(annotation_type),
         annotation_keys=tuple(str(key) for key in annotation_keys),
         answer=int(rendered.answer),
         instance_seed=int(instance_seed),
@@ -187,7 +218,10 @@ def run_measuring_tool_task(
     return TaskOutput(
         prompt=str(prompt_artifacts.prompt),
         answer_gt=TypedValue(type="integer", value=int(rendered.answer)),
-        annotation_gt=TypedValue(type=annotation_artifacts.annotation_type, value=annotation_artifacts.value),
+        annotation_gt=TypedValue(
+            type=annotation_artifacts.annotation_type,
+            value=annotation_artifacts.value,
+        ),
         image=image,
         image_id="img0",
         trace_payload=trace_payload,
@@ -198,7 +232,13 @@ def run_measuring_tool_task(
     )
 
 
-def run_measuring_public_entry(task: Any, instance_seed: int, *, params: Mapping[str, Any], max_attempts: int) -> TaskOutput:
+def run_measuring_public_entry(
+    task: Any,
+    instance_seed: int,
+    *,
+    params: Mapping[str, Any],
+    max_attempts: int,
+) -> TaskOutput:
     """Run the common lifecycle from task-owned class attributes and hooks."""
 
     return run_measuring_tool_task(
@@ -208,6 +248,7 @@ def run_measuring_public_entry(task: Any, instance_seed: int, *, params: Mapping
         render_measurement=task.render_measurement,
         prompt_task_key=str(task.prompt_task_key),
         object_description=str(task.object_description),
+        annotation_type=str(task.annotation_type),
         annotation_keys=tuple(str(key) for key in task.annotation_keys),
         instance_seed=int(instance_seed),
         params=params,

@@ -118,3 +118,4 @@ def test_street_intersection_nearest_registered() -> None:
         "construction_barrier",
         "road_barrel",
     }.issubset(set(STREET_OBJECT_TYPES))
+    assert "pedestrian" not in set(STREET_OBJECT_TYPES)

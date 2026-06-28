@@ -818,7 +818,6 @@ STREET_OBJECT_TYPES: Tuple[str, ...] = (
     "pickup_truck",
     "scooter",
     "motorcycle",
-    "pedestrian",
     "bicycle",
     "traffic_cone",
     "fire_hydrant",

@@ -59,7 +59,7 @@ class RenderedParallelProportionScene:
     """Rendered image plus verifier-facing scene fragments."""
 
     image: Image.Image
-    annotation_points: Tuple[Point, ...]
+    annotation_points: Dict[str, Point]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]
     witness: Dict[str, Any]

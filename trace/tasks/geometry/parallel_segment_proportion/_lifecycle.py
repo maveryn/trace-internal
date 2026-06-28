@@ -10,7 +10,7 @@ from PIL import Image
 
 from trace.core.visual.noise import apply_post_image_noise
 
-from .shared.annotations import point_set_annotation_artifacts
+from .shared.annotations import point_map_annotation_artifacts
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS
 from .shared.rendering import make_render_context, render_parallel_proportion_scene
 from .shared.state import ParallelProportionPlan, RenderedParallelProportionScene
@@ -81,7 +81,7 @@ def prepare_parallel_scene_artifacts(
         render_meta=dict(render_meta),
         image=image,
         noise_meta=dict(noise_meta),
-        annotation_artifacts=point_set_annotation_artifacts(rendered.annotation_points),
+        annotation_artifacts=point_map_annotation_artifacts(rendered.annotation_points),
     )
 
 

@@ -6,7 +6,7 @@
 3. Task id: `task_geometry__parallel_segment_proportion__segment_length_value`
 4. Query id: `single`
 5. Answer schema: `number`
-6. Annotation schema: `point_set`
+6. Annotation schema: `point_map`
 
 ## Program Contract
 - `solve_formula(visible_parallel_segment_proportion_triangle_points, unknown_role=target_segment_length, formula_schema=parallel_segment_ratio, output=number); scene=parallel_segment_proportion; scope=segment_length_value`
@@ -16,8 +16,8 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses a `point_set` containing exactly five pixel points.
-The five points are the visible construction points `A`, `B`, `C`, `D`, and `E`.
+Prompt-facing annotation uses a `point_map` containing exactly the keys `A`, `B`, `C`, `D`, and `E`.
+Each value is the pixel point for that visible construction point.
 
 The construction family is internal replay metadata, not a public query id:
 

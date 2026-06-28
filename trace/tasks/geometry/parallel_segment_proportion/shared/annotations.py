@@ -2,31 +2,20 @@
 
 from __future__ import annotations
 
-from typing import Sequence
+from typing import Mapping
 
-from trace.tasks.geometry.shared.annotation_values import PixelAnnotationArtifacts
+from trace.tasks.geometry.shared.annotation_values import PixelAnnotationArtifacts, keyed_point_annotation_artifacts
 
 from .state import Point
 
 
-def _round_point(point: Sequence[float]) -> list[float]:
-    return [round(float(point[0]), 3), round(float(point[1]), 3)]
+POINT_ROLES: tuple[str, ...] = ("A", "B", "C", "D", "E")
 
 
-def point_set_annotation_artifacts(points: Sequence[Point]) -> PixelAnnotationArtifacts:
-    """Build an unordered point-set annotation for visible construction witnesses."""
+def point_map_annotation_artifacts(points: Mapping[str, Point]) -> PixelAnnotationArtifacts:
+    """Build a keyed point-map annotation for visible construction witnesses."""
 
-    value = [_round_point(point) for point in points]
-    projected = {
-        "type": "point_set",
-        "point_set": list(value),
-        "pixel_point_set": list(value),
-    }
-    return PixelAnnotationArtifacts(
-        annotation_type="point_set",
-        value=list(value),
-        projected_annotation=projected,
-    )
+    return keyed_point_annotation_artifacts(points, roles=POINT_ROLES)
 
 
-__all__ = ["point_set_annotation_artifacts"]
+__all__ = ["POINT_ROLES", "point_map_annotation_artifacts"]

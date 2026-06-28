@@ -70,11 +70,11 @@ def test_geo3k_marked_equation_queries_emit_keyed_point_annotation() -> None:
             assert isinstance(output.answer_gt.value, (int, float))
 
             if task_id in PARALLEL_TASK_IDS:
-                assert output.annotation_gt.type == "point_set"
-                assert isinstance(output.annotation_gt.value, list)
-                assert len(output.annotation_gt.value) == 5
+                assert output.annotation_gt.type == "point_map"
+                assert isinstance(output.annotation_gt.value, dict)
+                assert set(output.annotation_gt.value) == {"A", "B", "C", "D", "E"}
                 width, height = output.image.size
-                for point in output.annotation_gt.value:
+                for point in output.annotation_gt.value.values():
                     assert isinstance(point, list)
                     assert len(point) == 2
                     assert 0.0 <= float(point[0]) <= float(width)
@@ -84,9 +84,9 @@ def test_geo3k_marked_equation_queries_emit_keyed_point_annotation() -> None:
                 assert trace["execution_trace"]["answer"] == output.answer_gt.value
                 assert trace["execution_trace"]["construction_family"] == "triangle_side_splitter"
                 assert trace["query_spec"]["params"]["construction_family"] == "triangle_side_splitter"
-                assert trace["projected_annotation"]["type"] == "point_set"
-                assert trace["projected_annotation"]["point_set"] == output.annotation_gt.value
-                assert trace["projected_annotation"]["pixel_point_set"] == output.annotation_gt.value
+                assert trace["projected_annotation"]["type"] == "point_map"
+                assert trace["projected_annotation"]["point_map"] == output.annotation_gt.value
+                assert trace["projected_annotation"]["pixel_point_map"] == output.annotation_gt.value
                 assert "task_variant" not in trace["query_spec"]["params"]
                 assert "query_variant" not in trace["query_spec"]["params"]
                 continue
@@ -156,8 +156,8 @@ def test_parallel_segment_proportion_construction_families_are_trace_metadata() 
                 construction_family=family,
             )
             assert output.query_id == "single"
-            assert output.annotation_gt.type == "point_set"
-            assert len(output.annotation_gt.value) == 5
+            assert output.annotation_gt.type == "point_map"
+            assert set(output.annotation_gt.value) == {"A", "B", "C", "D", "E"}
             trace = output.trace_payload
             assert trace["execution_trace"]["construction_family"] == family
             assert trace["query_spec"]["params"]["construction_family"] == family

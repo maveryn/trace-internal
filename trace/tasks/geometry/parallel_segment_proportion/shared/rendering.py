@@ -245,10 +245,10 @@ def _render_triangle_side_splitter(
         "D": left_split,
         "E": right_split,
     }
-    annotation_points = (apex, left_base, right_base, left_split, right_split)
+    annotation_points = dict(vertex_payload)
     render_map = {
         "vertices": {label: point_to_list(point) for label, point in vertex_payload.items()},
-        "annotation_points": [point_to_list(point) for point in annotation_points],
+        "annotation_points": {label: point_to_list(point) for label, point in annotation_points.items()},
         "proportional_segments": [_segment_to_list(segment) for segment in segments],
         "point_label_bboxes": dict(point_label_bboxes),
         "readout_bboxes": geometry_json_ready(readouts),

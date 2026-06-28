@@ -48,13 +48,6 @@
                 "",
                 ""
             ],
-            "point_height_order_query": [
-                "",
-                "",
-                "",
-                "",
-                ""
-            ],
             "object_relation_query": [
                 "",
                 "",
@@ -154,13 +147,6 @@
                 "Which option gives the marked-point order from nearest to farthest?",
                 "Using the depth cues, choose the option that orders the marked points from nearest to farthest.",
                 "Which option lists the marked points in increasing distance from the camera?"
-            ],
-            "height_order": [
-                "Which option orders the marked points from lowest to highest above the floor?",
-                "Choose the option listing the marked points from lowest to highest.",
-                "Which option gives the marked-point order from least height to greatest height?",
-                "Using the height guide lines, choose the option that orders the marked points from lowest to highest.",
-                "Which option lists the marked points in increasing height above the floor?"
             ],
             "on_top_of_prop": [
                 "Which option describes the small 3D object on top of the {reference_name}?",
@@ -334,13 +320,6 @@
         },
         "task:point_camera_distance_order_query": {
             "object_description": "a perspective 3D platform scene with three marked floor points and an option panel",
-            "annotation_hint": "set \"annotation\" to an object mapping P, Q, and R to their marked-point centers [x, y]",
-            "answer_hint": "set \"answer\" to the selected option letter",
-            "json_example": "{\"annotation\":{\"P\":[318,260],\"Q\":[486,370],\"R\":[650,310]},\"answer\":\"C\"}",
-            "json_example_answer_only": "{\"answer\":\"C\"}"
-        },
-        "task:point_height_order_query": {
-            "object_description": "a perspective 3D platform scene with three marked height points and an option panel",
             "annotation_hint": "set \"annotation\" to an object mapping P, Q, and R to their marked-point centers [x, y]",
             "answer_hint": "set \"answer\" to the selected option letter",
             "json_example": "{\"annotation\":{\"P\":[318,260],\"Q\":[486,370],\"R\":[650,310]},\"answer\":\"C\"}",

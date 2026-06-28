@@ -11,11 +11,6 @@ from trace.tasks.three_d.object_scene.point_camera_distance_order_label import (
     MIN_SCREEN_DEPTH_STEP_PX,
     TASK_ID as CAMERA_DISTANCE_ORDER_TASK_ID,
 )
-from trace.tasks.three_d.object_scene.point_height_order_label import (
-    MIN_HEIGHT_MARGIN,
-    MIN_STEM_LENGTH_PX,
-    TASK_ID as HEIGHT_ORDER_TASK_ID,
-)
 from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
 
 
@@ -86,34 +81,3 @@ def test_point_camera_distance_order_answer_and_annotation() -> None:
     assert float(trace["solver_trace"]["unique_camera_distance_margin"]) >= MIN_CAMERA_DISTANCE_MARGIN
     assert float(trace["solver_trace"]["unique_screen_depth_margin_px"]) >= MIN_SCREEN_DEPTH_STEP_PX
     assert "nearest" in output.prompt.lower() or "closest" in output.prompt.lower()
-
-
-def test_point_height_order_answer_and_annotation() -> None:
-    task = create_task(HEIGHT_ORDER_TASK_ID)
-    output = task.generate(
-        20260628,
-        params={
-            "scene_variant": "floor_grid_room",
-            "point_count": 3,
-            "context_object_count": 4,
-            "post_image_noise_apply_prob": 0.0,
-        },
-        max_attempts=320,
-    )
-
-    _assert_order_task_common(output, HEIGHT_ORDER_TASK_ID)
-    trace = output.trace_payload["execution_trace"]
-    render_map = output.trace_payload["render_map"]
-    marked_points = list(trace["marked_points"])
-    expected_order = [
-        str(point["point_label"])
-        for point in sorted(marked_points, key=lambda point: (float(point["height_from_floor"]), str(point["point_label"])))
-    ]
-
-    assert trace["answer_order"] == expected_order
-    assert trace["solver_trace"]["height_order_low_to_high"] == expected_order
-    assert float(trace["solver_trace"]["unique_height_margin"]) >= MIN_HEIGHT_MARGIN
-    assert set(render_map["height_stem_bboxes_px"]) == {"P", "Q", "R"}
-    for point in marked_points:
-        assert float(point["stem_length_px"]) >= MIN_STEM_LENGTH_PX
-    assert "lowest" in output.prompt.lower() or "height" in output.prompt.lower()

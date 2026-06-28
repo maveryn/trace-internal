@@ -6,10 +6,6 @@ import math
 from itertools import permutations
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
 
-from PIL import Image, ImageDraw
-
-from ...shared.object_scene import _RenderParams
-
 
 ORDER_POINT_LABELS: Tuple[str, ...] = ("P", "Q", "R")
 ORDER_OPTION_LABELS: Tuple[str, ...] = tuple("ABCDEF")
@@ -117,57 +113,6 @@ def bbox_union(*bboxes: Sequence[float]) -> List[float]:
     ]
 
 
-def draw_height_stems(
-    image: Image.Image,
-    *,
-    marked_points: Sequence[Mapping[str, Any]],
-    render_params: _RenderParams,
-) -> Tuple[Image.Image, Dict[str, List[float]], List[Dict[str, Any]]]:
-    """Draw floor-to-point guide stems for height-order markers without changing witnesses."""
-
-    output = image.convert("RGB")
-    draw = ImageDraw.Draw(output)
-    stem_rgb = tuple(int(channel) for channel in render_params.edge_rgb)
-    stem_bboxes: Dict[str, List[float]] = {}
-    entities: List[Dict[str, Any]] = []
-    for point in marked_points:
-        label = str(point["point_label"])
-        floor_xy = point.get("floor_screen_xy")
-        screen_xy = point.get("screen_xy")
-        if floor_xy is None or screen_xy is None:
-            continue
-        x0, y0 = (float(floor_xy[0]), float(floor_xy[1]))
-        x1, y1 = (float(screen_xy[0]), float(screen_xy[1]))
-        draw.line((x0, y0, x1, y1), fill=stem_rgb, width=max(2, int(render_params.line_width_px) + 1))
-        floor_radius = max(3.0, float(render_params.marker_radius_px) * 0.16)
-        draw.ellipse(
-            (x0 - floor_radius, y0 - floor_radius, x0 + floor_radius, y0 + floor_radius),
-            fill=stem_rgb,
-            outline=(255, 255, 255),
-            width=1,
-        )
-        bbox = [
-            round(float(min(x0, x1) - floor_radius - 2.0), 3),
-            round(float(min(y0, y1) - floor_radius - 2.0), 3),
-            round(float(max(x0, x1) + floor_radius + 2.0), 3),
-            round(float(max(y0, y1) + floor_radius + 2.0), 3),
-        ]
-        stem_bboxes[label] = list(bbox)
-        entities.append(
-            {
-                "entity_id": f"height_stem_{label}",
-                "entity_type": "three_d_height_stem",
-                "bbox_px": list(bbox),
-                "attrs": {
-                    "point_label": str(label),
-                    "floor_screen_xy": [round(float(x0), 3), round(float(y0), 3)],
-                    "point_screen_xy": [round(float(x1), 3), round(float(y1), 3)],
-                },
-            }
-        )
-    return output, stem_bboxes, entities
-
-
 def min_pairwise(values: Sequence[float]) -> float:
     if len(values) < 2:
         return float("inf")
@@ -188,7 +133,6 @@ __all__ = [
     "ORDER_POINT_LABELS",
     "bbox_union",
     "demote_context_spec",
-    "draw_height_stems",
     "finalize_object_specs",
     "label_order_descriptor",
     "min_pairwise",

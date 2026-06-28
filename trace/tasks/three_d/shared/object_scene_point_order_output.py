@@ -6,7 +6,7 @@ import math
 from itertools import permutations
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
 
-from PIL import Image, ImageDraw
+from PIL import Image
 
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
@@ -145,57 +145,6 @@ def _bbox_union(*bboxes: Sequence[float]) -> List[float]:
     ]
 
 
-def _draw_height_stems(
-    image: Image.Image,
-    *,
-    marked_points: Sequence[Mapping[str, Any]],
-    render_params: _RenderParams,
-) -> Tuple[Image.Image, Dict[str, List[float]], List[Dict[str, Any]]]:
-    """Draw floor-to-point guide stems for height-order markers without changing witnesses."""
-
-    output = image.convert("RGB")
-    draw = ImageDraw.Draw(output)
-    stem_rgb = tuple(int(channel) for channel in render_params.edge_rgb)
-    stem_bboxes: Dict[str, List[float]] = {}
-    entities: List[Dict[str, Any]] = []
-    for point in marked_points:
-        label = str(point["point_label"])
-        floor_xy = point.get("floor_screen_xy")
-        screen_xy = point.get("screen_xy")
-        if floor_xy is None or screen_xy is None:
-            continue
-        x0, y0 = (float(floor_xy[0]), float(floor_xy[1]))
-        x1, y1 = (float(screen_xy[0]), float(screen_xy[1]))
-        draw.line((x0, y0, x1, y1), fill=stem_rgb, width=max(2, int(render_params.line_width_px) + 1))
-        floor_radius = max(3.0, float(render_params.marker_radius_px) * 0.16)
-        draw.ellipse(
-            (x0 - floor_radius, y0 - floor_radius, x0 + floor_radius, y0 + floor_radius),
-            fill=stem_rgb,
-            outline=(255, 255, 255),
-            width=1,
-        )
-        bbox = [
-            round(float(min(x0, x1) - floor_radius - 2.0), 3),
-            round(float(min(y0, y1) - floor_radius - 2.0), 3),
-            round(float(max(x0, x1) + floor_radius + 2.0), 3),
-            round(float(max(y0, y1) + floor_radius + 2.0), 3),
-        ]
-        stem_bboxes[label] = list(bbox)
-        entities.append(
-            {
-                "entity_id": f"height_stem_{label}",
-                "entity_type": "three_d_height_stem",
-                "bbox_px": list(bbox),
-                "attrs": {
-                    "point_label": str(label),
-                    "floor_screen_xy": [round(float(x0), 3), round(float(y0), 3)],
-                    "point_screen_xy": [round(float(x1), 3), round(float(y1), 3)],
-                },
-            }
-        )
-    return output, stem_bboxes, entities
-
-
 def build_point_order_object_scene_output(
     *,
     objective_name: str,
@@ -216,7 +165,6 @@ def build_point_order_object_scene_output(
     scene_kind: str,
     order_axis: str,
     draw_marked_points_fn: Callable[..., tuple[Image.Image, Dict[str, Any], list[Dict[str, Any]]]],
-    draw_height_stems: bool = False,
     count_params: Mapping[str, Any] | None = None,
     execution_extra: Mapping[str, Any] | None = None,
 ) -> TaskOutput:
@@ -236,17 +184,8 @@ def build_point_order_object_scene_output(
         draw_candidate_labels=False,
         compute_single_annotation=False,
     )
-    stem_bboxes: Dict[str, List[float]] = {}
-    stem_entities: List[Dict[str, Any]] = []
-    scene_image = rendered_scene.image
-    if bool(draw_height_stems):
-        scene_image, stem_bboxes, stem_entities = _draw_height_stems(
-            scene_image,
-            marked_points=dataset["marked_points"],
-            render_params=render_params,
-        )
     marked_image, marker_render_map, marker_entities = draw_marked_points_fn(
-        scene_image,
+        rendered_scene.image,
         marked_points=dataset["marked_points"],
         render_params=render_params,
     )
@@ -274,7 +213,6 @@ def build_point_order_object_scene_output(
                 scale_x=scale_x,
                 scale_y=scale_y,
             )
-        stem_bboxes = bbox_dict_transform(stem_bboxes, scale_x=scale_x, scale_y=scale_y)
         option_metadata = dict(option_metadata)
         option_metadata["option_panel_bbox_px"] = bbox_transform(
             option_metadata["option_panel_bbox_px"],
@@ -289,7 +227,6 @@ def build_point_order_object_scene_output(
         option_metadata["option_panel_height_px"] = int(round(float(option_metadata["option_panel_height_px"]) * scale_y))
         rendered_scene_entities = entities_transform(rendered_scene.entities, scale_x=scale_x, scale_y=scale_y)
         marker_entities = entities_transform(marker_entities, scale_x=scale_x, scale_y=scale_y)
-        stem_entities = entities_transform(stem_entities, scale_x=scale_x, scale_y=scale_y)
         option_entities = entities_transform(option_entities, scale_x=scale_x, scale_y=scale_y)
         scene_bbox = bbox_transform(rendered_scene.scene_bbox_px, scale_x=scale_x, scale_y=scale_y)
         room_bbox = bbox_transform(rendered_scene.room_bbox_px, scale_x=scale_x, scale_y=scale_y)
@@ -339,8 +276,8 @@ def build_point_order_object_scene_output(
     answer_label = str(dataset["answer_label"])
     answer_gt = TypedValue(type="option_letter", value=str(answer_label))
     all_marker_bboxes = [bbox for bbox in marker_render_map["marked_point_bboxes_px"].values()]
-    scene_bbox = _bbox_union(scene_bbox, *all_marker_bboxes, *stem_bboxes.values())
-    scene_entities = [*rendered_scene_entities, *stem_entities, *marker_entities, *option_entities]
+    scene_bbox = _bbox_union(scene_bbox, *all_marker_bboxes)
+    scene_entities = [*rendered_scene_entities, *marker_entities, *option_entities]
     count_params = dict(count_params or {})
     execution_extra = dict(execution_extra or {})
 
@@ -365,7 +302,6 @@ def build_point_order_object_scene_output(
         "context_object_bboxes_px": {str(key): list(value) for key, value in context_object_bboxes.items()},
         "context_object_centers_px": {str(key): list(value) for key, value in context_object_centers.items()},
         **dict(marker_render_map),
-        "height_stem_bboxes_px": dict(stem_bboxes),
         "option_panel_bbox_px": list(option_metadata["option_panel_bbox_px"]),
         "option_choice_bboxes_px": {
             str(key): list(value) for key, value in option_metadata["option_choice_bboxes_px"].items()
@@ -482,7 +418,6 @@ def generate_point_order_once(
     background_defaults: Mapping[str, Any],
     noise_defaults: Mapping[str, Any],
     draw_marked_points_fn: Callable[..., tuple[Image.Image, Dict[str, Any], list[Dict[str, Any]]]],
-    draw_height_stems: bool = False,
 ) -> TaskOutput:
     """Resolve shared order-task axes and render one point-order instance."""
 
@@ -564,7 +499,6 @@ def generate_point_order_once(
         scene_kind=str(scene_kind),
         order_axis=str(order_axis),
         draw_marked_points_fn=draw_marked_points_fn,
-        draw_height_stems=bool(draw_height_stems),
         count_params={
             "context_object_count": int(context_object_count),
             "context_object_count_probabilities": dict(context_object_count_probabilities),

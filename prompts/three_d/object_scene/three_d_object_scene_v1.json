@@ -41,6 +41,20 @@
                 "",
                 ""
             ],
+            "line_side_query": [
+                "",
+                "",
+                "",
+                "",
+                ""
+            ],
+            "reference_triangle_inside_query": [
+                "",
+                "",
+                "",
+                "",
+                ""
+            ],
             "point_camera_distance_order_query": [
                 "",
                 "",
@@ -140,6 +154,27 @@
                 "Which letter marks the point on the line through the {reference_a_name} and the {reference_b_name}?",
                 "Find the marked point that lines up with the {reference_a_name} and the {reference_b_name}.",
                 "Which marked point is collinear with the {reference_a_name} and the {reference_b_name}?"
+            ],
+            "left_of_directed_line": [
+                "Which marked point is on the left side of the line from the {reference_a_name} to the {reference_b_name}?",
+                "From the {reference_a_name} toward the {reference_b_name}, which marked point is on the left side?",
+                "Choose the marked point left of the directed line from the {reference_a_name} to the {reference_b_name}.",
+                "Which point marker falls to the left of the line from the {reference_a_name} to the {reference_b_name}?",
+                "Looking from the {reference_a_name} to the {reference_b_name}, which marked point is left of the line?"
+            ],
+            "right_of_directed_line": [
+                "Which marked point is on the right side of the line from the {reference_a_name} to the {reference_b_name}?",
+                "From the {reference_a_name} toward the {reference_b_name}, which marked point is on the right side?",
+                "Choose the marked point right of the directed line from the {reference_a_name} to the {reference_b_name}.",
+                "Which point marker falls to the right of the line from the {reference_a_name} to the {reference_b_name}?",
+                "Looking from the {reference_a_name} to the {reference_b_name}, which marked point is right of the line?"
+            ],
+            "reference_triangle_inside": [
+                "Which marked point is inside the triangle formed by the {reference_a_name}, the {reference_b_name}, and the {reference_c_name}?",
+                "Choose the marked point inside the triangle made by the {reference_a_name}, the {reference_b_name}, and the {reference_c_name}.",
+                "Which letter marks the point inside the triangle formed by the {reference_a_name}, the {reference_b_name}, and the {reference_c_name}?",
+                "Find the marked point inside the triangle with corners at the {reference_a_name}, the {reference_b_name}, and the {reference_c_name}.",
+                "Which point marker lies inside the triangle formed by the {reference_a_name}, the {reference_b_name}, and the {reference_c_name}?"
             ],
             "camera_distance_order": [
                 "Which option orders the marked points from nearest to farthest from the camera?",
@@ -318,6 +353,20 @@
             "json_example": "{\"annotation\":[318,260],\"answer\":\"C\"}",
             "json_example_answer_only": "{\"answer\":\"C\"}"
         },
+        "task:line_side_query": {
+            "object_description": "a perspective 3D platform scene with named objects and lettered point markers",
+            "annotation_hint": "set \"annotation\" to the point [x, y] at the center of the selected point marker",
+            "answer_hint": "set \"answer\" to the selected marked-point letter",
+            "json_example": "{\"annotation\":[318,260],\"answer\":\"C\"}",
+            "json_example_answer_only": "{\"answer\":\"C\"}"
+        },
+        "task:reference_triangle_inside_query": {
+            "object_description": "a perspective 3D platform scene with named objects and lettered point markers",
+            "annotation_hint": "set \"annotation\" to the point [x, y] at the center of the selected point marker",
+            "answer_hint": "set \"answer\" to the selected marked-point letter",
+            "json_example": "{\"annotation\":[318,260],\"answer\":\"C\"}",
+            "json_example_answer_only": "{\"answer\":\"C\"}"
+        },
         "task:point_camera_distance_order_query": {
             "object_description": "a perspective 3D platform scene with three marked floor points and an option panel",
             "annotation_hint": "set \"annotation\" to an object mapping P, Q, and R to their marked-point centers [x, y]",
@@ -400,6 +449,9 @@
     "reference_b_name": {
       "type": "string"
     },
+    "reference_c_name": {
+      "type": "string"
+    },
     "target_shape_type": {
       "type": "string"
     }
@@ -440,6 +492,19 @@
     "query:between_references": [
       "reference_a_name",
       "reference_b_name"
+    ],
+    "query:left_of_directed_line": [
+      "reference_a_name",
+      "reference_b_name"
+    ],
+    "query:right_of_directed_line": [
+      "reference_a_name",
+      "reference_b_name"
+    ],
+    "query:reference_triangle_inside": [
+      "reference_a_name",
+      "reference_b_name",
+      "reference_c_name"
     ],
     "query:occludes_reference": [
       "reference_name"

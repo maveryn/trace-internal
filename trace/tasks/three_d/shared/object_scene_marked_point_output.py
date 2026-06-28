@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, Mapping, Sequence
+from typing import Any, Callable, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image
 
@@ -19,7 +19,17 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
-from .object_scene import POINT_LABELS, SCENE_ID, _RenderParams, render_object_scene_3d
+from .object_scene import (
+    POINT_LABELS,
+    SCENE_ID,
+    SUPPORTED_SCENE_VARIANTS,
+    _RenderParams,
+    _camera_yaw_band_for_instance,
+    _resolve_render_params,
+    render_object_scene_3d,
+)
+from .task_support import resolve_axis_variant as _resolve_axis_variant
+from .task_support import resolve_count as _resolve_count
 
 
 def build_marked_point_object_scene_output(
@@ -227,4 +237,203 @@ def build_marked_point_object_scene_output(
     )
 
 
-__all__ = ["build_marked_point_object_scene_output"]
+def build_marked_point_object_scene_task_output(
+    *,
+    public_name: str,
+    public_domain: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    branch_options: Sequence[str],
+    generation_defaults: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    prompt_defaults_config: Mapping[str, Any],
+    background_defaults: Mapping[str, Any],
+    noise_defaults: Mapping[str, Any],
+    exact_point_count: int,
+    dataset_builder: Callable[..., Mapping[str, Any]],
+    dynamic_slots_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    scene_kind: str,
+    relation_fields_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    execution_extra_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    witness_symbolic_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    draw_marked_points_fn: Callable[..., tuple[Image.Image, Dict[str, Any], list[Dict[str, Any]]]],
+    bbox_union_fn: Callable[..., list[float]],
+    camera_yaw_band: Tuple[float, float] | None = None,
+    object_count_default: int = 6,
+    object_count_lower: int = 5,
+    object_count_upper: int = 7,
+    context_object_count_default: int = 1,
+    context_object_count_lower: int = 1,
+    context_object_count_upper: int = 2,
+) -> TaskOutput:
+    """Resolve shared marked-point generation axes and assemble one task output."""
+
+    branch_key, branch_probabilities = _resolve_axis_variant(
+        params,
+        task_id=str(public_name),
+        gen_defaults=generation_defaults,
+        instance_seed=int(instance_seed),
+        supported_variants=tuple(str(value) for value in branch_options),
+        explicit_key="query_id",
+        weights_key="query_id_weights",
+        balance_flag_key="balanced_query_id_sampling",
+        axis_namespace="query_id",
+    )
+    scene_variant, scene_probabilities = _resolve_axis_variant(
+        params,
+        task_id=str(public_name),
+        gen_defaults=generation_defaults,
+        instance_seed=int(instance_seed),
+        supported_variants=SUPPORTED_SCENE_VARIANTS,
+        explicit_key="scene_variant",
+        weights_key="scene_variant_weights",
+        balance_flag_key="balanced_scene_variant_sampling",
+        axis_namespace="scene_variant",
+    )
+    point_count, point_count_probabilities = _resolve_count(
+        params,
+        task_id=str(public_name),
+        gen_defaults=generation_defaults,
+        instance_seed=int(instance_seed),
+        key="point_count",
+        default_min=int(exact_point_count),
+        default_max=int(exact_point_count),
+        lower=int(exact_point_count),
+        upper=int(exact_point_count),
+    )
+    object_count, object_count_probabilities = _resolve_count(
+        params,
+        task_id=str(public_name),
+        gen_defaults=generation_defaults,
+        instance_seed=int(instance_seed),
+        key="object_count",
+        default_min=int(object_count_default),
+        default_max=int(object_count_default),
+        lower=int(object_count_lower),
+        upper=int(object_count_upper),
+    )
+    context_object_count, context_object_count_probabilities = _resolve_count(
+        params,
+        task_id=str(public_name),
+        gen_defaults=generation_defaults,
+        instance_seed=int(instance_seed),
+        key="context_object_count",
+        default_min=int(context_object_count_default),
+        default_max=int(context_object_count_default),
+        lower=int(context_object_count_lower),
+        upper=int(context_object_count_upper),
+    )
+    render_params = _resolve_render_params(
+        params,
+        render_defaults=render_defaults,
+        instance_seed=int(instance_seed),
+        namespace=f"{public_name}.canvas",
+    )
+    dataset = dataset_builder(
+        branch_key=str(branch_key),
+        scene_variant=str(scene_variant),
+        point_count=int(point_count),
+        object_count=int(object_count),
+        context_object_count=int(context_object_count),
+        render_params=render_params,
+        instance_seed=int(instance_seed),
+        camera_yaw_band=camera_yaw_band,
+    )
+    return build_marked_point_object_scene_output(
+        objective_name=str(public_name),
+        task_domain=str(public_domain),
+        instance_seed=int(instance_seed),
+        params=params,
+        dataset=dataset,
+        branch_key=str(branch_key),
+        scene_variant=str(scene_variant),
+        point_count=int(point_count),
+        render_params=render_params,
+        prompt_defaults_config=prompt_defaults_config,
+        background_defaults=background_defaults,
+        noise_defaults=noise_defaults,
+        query_probabilities=branch_probabilities,
+        scene_probabilities=scene_probabilities,
+        point_count_probabilities=point_count_probabilities,
+        dynamic_slots=dynamic_slots_fn(dataset),
+        scene_kind=str(scene_kind),
+        count_params={
+            "object_count": int(object_count),
+            "object_count_probabilities": dict(object_count_probabilities),
+            "context_object_count": int(context_object_count),
+            "context_object_count_probabilities": dict(context_object_count_probabilities),
+        },
+        relation_fields=relation_fields_fn(dataset),
+        execution_extra=execution_extra_fn(dataset),
+        witness_symbolic=witness_symbolic_fn(dataset),
+        draw_marked_points_fn=draw_marked_points_fn,
+        bbox_union_fn=bbox_union_fn,
+    )
+
+
+def generate_marked_point_object_scene_task_with_retries(
+    *,
+    public_name: str,
+    public_domain: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    max_attempts: int,
+    branch_options: Sequence[str],
+    generation_defaults: Mapping[str, Any],
+    render_defaults: Mapping[str, Any],
+    prompt_defaults_config: Mapping[str, Any],
+    background_defaults: Mapping[str, Any],
+    noise_defaults: Mapping[str, Any],
+    exact_point_count: int,
+    dataset_builder: Callable[..., Mapping[str, Any]],
+    dynamic_slots_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    scene_kind: str,
+    relation_fields_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    execution_extra_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    witness_symbolic_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    draw_marked_points_fn: Callable[..., tuple[Image.Image, Dict[str, Any], list[Dict[str, Any]]]],
+    bbox_union_fn: Callable[..., list[float]],
+) -> TaskOutput:
+    """Retry marked-point scene sampling with a stable camera yaw band for the public instance seed."""
+
+    last_error: Exception | None = None
+    camera_yaw_band = _camera_yaw_band_for_instance(int(instance_seed))
+    for attempt_index in range(max(1, int(max_attempts))):
+        attempt_seed = (
+            int(instance_seed)
+            if attempt_index == 0
+            else int(spawn_rng(int(instance_seed), f"{public_name}.attempt_seed.{attempt_index}").randrange(1, 2**62))
+        )
+        try:
+            return build_marked_point_object_scene_task_output(
+                public_name=str(public_name),
+                public_domain=str(public_domain),
+                instance_seed=int(attempt_seed),
+                params=params,
+                branch_options=branch_options,
+                generation_defaults=generation_defaults,
+                render_defaults=render_defaults,
+                prompt_defaults_config=prompt_defaults_config,
+                background_defaults=background_defaults,
+                noise_defaults=noise_defaults,
+                exact_point_count=int(exact_point_count),
+                dataset_builder=dataset_builder,
+                dynamic_slots_fn=dynamic_slots_fn,
+                scene_kind=str(scene_kind),
+                relation_fields_fn=relation_fields_fn,
+                execution_extra_fn=execution_extra_fn,
+                witness_symbolic_fn=witness_symbolic_fn,
+                draw_marked_points_fn=draw_marked_points_fn,
+                bbox_union_fn=bbox_union_fn,
+                camera_yaw_band=camera_yaw_band,
+            )
+        except Exception as exc:  # pragma: no cover - unlucky sampling fallback.
+            last_error = exc
+    raise RuntimeError(f"{public_name} failed to generate a valid scene after {max_attempts} attempts: {last_error}")
+
+
+__all__ = [
+    "build_marked_point_object_scene_output",
+    "build_marked_point_object_scene_task_output",
+    "generate_marked_point_object_scene_task_with_retries",
+]

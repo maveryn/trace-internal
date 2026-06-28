@@ -33,11 +33,12 @@ def _assert_order_task_common(output, task_id: str) -> None:
     assert output.query_id == "single"
     assert_three_d_canvas_contract(output)
     assert output.answer_gt.type == "option_letter"
-    assert output.annotation_gt.type == "point_set"
-    assert output.annotation_gt.value == render_map["annotation_point_set_px"]
-    assert output.trace_payload["projected_annotation"]["type"] == "point_set"
-    assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
-    assert output.trace_payload["projected_annotation"]["pixel_point_set"] == output.annotation_gt.value
+    assert output.annotation_gt.type == "point_map"
+    assert set(output.annotation_gt.value) == {"P", "Q", "R"}
+    assert output.annotation_gt.value == render_map["annotation_point_map_px"]
+    assert output.trace_payload["projected_annotation"]["type"] == "point_map"
+    assert output.trace_payload["projected_annotation"]["point_map"] == output.annotation_gt.value
+    assert output.trace_payload["projected_annotation"]["pixel_point_map"] == output.annotation_gt.value
     assert set(trace["point_labels"]) == {"P", "Q", "R"}
     assert {str(point["point_label"]) for point in trace["marked_points"]} == {"P", "Q", "R"}
     assert output.trace_payload["query_spec"]["params"]["answer_support"] == ["A", "B", "C", "D", "E", "F"]

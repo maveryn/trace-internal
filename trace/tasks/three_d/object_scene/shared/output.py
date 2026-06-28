@@ -95,13 +95,16 @@ def relabel_order_points(records: Sequence[Mapping[str, Any]], *, rng) -> List[D
     return sorted(relabeled, key=lambda item: str(item["point_label"]))
 
 
-def point_set_by_label(
+def point_map_by_label(
     *,
     marker_render_map: Mapping[str, Any],
     labels: Sequence[str] = ORDER_POINT_LABELS,
-) -> List[List[float]]:
+) -> Dict[str, List[float]]:
     centers = marker_render_map["marked_point_centers_px"]
-    return [[round(float(value), 3) for value in centers[str(label)]] for label in labels]
+    return {
+        str(label): [round(float(value), 3) for value in centers[str(label)]]
+        for label in labels
+    }
 
 
 def bbox_union(*bboxes: Sequence[float]) -> List[float]:
@@ -190,7 +193,7 @@ __all__ = [
     "label_order_descriptor",
     "min_pairwise",
     "order_option_choices",
-    "point_set_by_label",
+    "point_map_by_label",
     "relabel_order_points",
     "screen_separation_ok",
 ]

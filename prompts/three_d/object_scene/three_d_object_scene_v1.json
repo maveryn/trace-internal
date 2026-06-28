@@ -334,16 +334,16 @@
         },
         "task:point_camera_distance_order_query": {
             "object_description": "a perspective 3D platform scene with three marked floor points and an option panel",
-            "annotation_hint": "set \"annotation\" to an array containing the three marked-point centers [x, y]",
+            "annotation_hint": "set \"annotation\" to an object mapping P, Q, and R to their marked-point centers [x, y]",
             "answer_hint": "set \"answer\" to the selected option letter",
-            "json_example": "{\"annotation\":[[318,260],[486,370],[650,310]],\"answer\":\"C\"}",
+            "json_example": "{\"annotation\":{\"P\":[318,260],\"Q\":[486,370],\"R\":[650,310]},\"answer\":\"C\"}",
             "json_example_answer_only": "{\"answer\":\"C\"}"
         },
         "task:point_height_order_query": {
             "object_description": "a perspective 3D platform scene with three marked height points and an option panel",
-            "annotation_hint": "set \"annotation\" to an array containing the three marked-point centers [x, y]",
+            "annotation_hint": "set \"annotation\" to an object mapping P, Q, and R to their marked-point centers [x, y]",
             "answer_hint": "set \"answer\" to the selected option letter",
-            "json_example": "{\"annotation\":[[318,260],[486,370],[650,310]],\"answer\":\"C\"}",
+            "json_example": "{\"annotation\":{\"P\":[318,260],\"Q\":[486,370],\"R\":[650,310]},\"answer\":\"C\"}",
             "json_example_answer_only": "{\"answer\":\"C\"}"
         },
         "task:object_relation_query": {

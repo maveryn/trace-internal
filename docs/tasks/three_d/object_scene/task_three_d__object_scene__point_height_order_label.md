@@ -6,8 +6,8 @@
 - Package: `trace/tasks/three_d/object_scene/`
 - Supported `query_id`: `single`
 - Answer type: `option_letter`
-- Annotation type: `point_set`
-- Annotation schema: `point_set`
+- Annotation type: `point_map`
+- Annotation schema: `point_map`
 
 ## Program Contract
 `select(option_label(permutation(marked_points), order_by(height_from_floor, low_to_high))); scene=object_scene; scope=point_height_order_label`
@@ -18,7 +18,7 @@ The image uses the `object_scene` renderer: a perspective 3D floor, table, or pl
 The verifier computes the true order from finalized 3D world-height metadata, not from pixels. Generation enforces visible point separation, readable guide stems, and a unique height order. Render style, camera, canvas preset, context objects, labels, colors, and prompt wording variants are generation metadata, not public task axes.
 
 ## Annotation Contract
-Annotation is a `point_set` with multiple annotation witnesses: the centers of every marked point in the order task.
+Annotation is a `point_map` keyed by the visible point labels `P`, `Q`, and `R`; each value is the center of that marked point.
 The guide stems and option panel are not annotation witnesses; the stems are visual support for height reading and the option panel maps the computed order to an answer label.
 
 ## Prompt And Trace

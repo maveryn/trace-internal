@@ -123,13 +123,16 @@ def relabel_order_points(
     return sorted(relabeled, key=lambda item: str(item["point_label"]))
 
 
-def point_set_by_label(
+def point_map_by_label(
     *,
     marker_render_map: Mapping[str, Any],
     labels: Sequence[str] = ORDER_POINT_LABELS,
-) -> List[List[float]]:
+) -> Dict[str, List[float]]:
     centers = marker_render_map["marked_point_centers_px"]
-    return [[round(float(value), 3) for value in centers[str(label)]] for label in labels]
+    return {
+        str(label): [round(float(value), 3) for value in centers[str(label)]]
+        for label in labels
+    }
 
 
 def _bbox_union(*bboxes: Sequence[float]) -> List[float]:
@@ -331,8 +334,8 @@ def build_point_order_object_scene_output(
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-    annotation_points = point_set_by_label(marker_render_map=marker_render_map)
-    annotation_gt = TypedValue(type="point_set", value=list(annotation_points))
+    annotation_points = point_map_by_label(marker_render_map=marker_render_map)
+    annotation_gt = TypedValue(type="point_map", value=dict(annotation_points))
     answer_label = str(dataset["answer_label"])
     answer_gt = TypedValue(type="option_letter", value=str(answer_label))
     all_marker_bboxes = [bbox for bbox in marker_render_map["marked_point_bboxes_px"].values()]
@@ -369,7 +372,7 @@ def build_point_order_object_scene_output(
         },
         "option_choices": [dict(choice) for choice in option_metadata["option_choices"]],
         "option_panel_height_px": int(option_metadata["option_panel_height_px"]),
-        "annotation_point_set_px": list(annotation_points),
+        "annotation_point_map_px": dict(annotation_points),
     }
 
     execution_trace: Dict[str, Any] = {
@@ -440,9 +443,9 @@ def build_point_order_object_scene_output(
             "answer_order": list(dataset["answer_order"]),
         },
         "projected_annotation": {
-            "type": "point_set",
-            "point_set": list(annotation_points),
-            "pixel_point_set": list(annotation_points),
+            "type": "point_map",
+            "point_map": dict(annotation_points),
+            "pixel_point_map": dict(annotation_points),
         },
         "background": dict(background_meta),
         "post_image_noise": dict(post_noise_meta),
@@ -601,7 +604,7 @@ __all__ = [
     "label_order_descriptor",
     "min_pairwise",
     "order_option_choices",
-    "point_set_by_label",
+    "point_map_by_label",
     "relabel_order_points",
     "screen_separation_ok",
 ]

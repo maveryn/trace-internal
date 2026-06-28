@@ -57,11 +57,10 @@ def test_pythagorean_tree_hypotenuse_square_area_formula() -> None:
     assert execution["target_role"] == "hypotenuse_square"
     assert out.trace_payload["render_spec"]["prompt"]["prompt_bundle_id"] == "geometry_pythagorean_tree_v1"
 
-    assert out.annotation_gt.type == "bbox_map"
-    annotation = out.annotation_gt.value
-    assert set(annotation) == {"unknown_hypotenuse_square", "known_leg_square_1", "known_leg_square_2"}
-    _assert_no_duplicate_public_bboxes(annotation)
-    _assert_bbox_map_inside_image(annotation, out.image.size)
+    assert out.annotation_gt.type == "bbox"
+    _assert_bbox_inside_image(out.annotation_gt.value, out.image.size)
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert execution["annotation_roles"] == ["target_area_label"]
     assert "task_variant" not in json.dumps(trace)
 
 
@@ -88,10 +87,10 @@ def test_pythagorean_tree_leg_square_area_formula(target_role: str, expected: in
     }
     assert out.trace_payload["render_spec"]["prompt"]["prompt_bundle_id"] == "geometry_pythagorean_tree_v1"
 
-    annotation = out.annotation_gt.value
-    assert set(annotation) == {"unknown_leg_square", "known_leg_square", "known_hypotenuse_square"}
-    _assert_no_duplicate_public_bboxes(annotation)
-    _assert_bbox_map_inside_image(annotation, out.image.size)
+    assert out.annotation_gt.type == "bbox"
+    _assert_bbox_inside_image(out.annotation_gt.value, out.image.size)
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert execution["annotation_roles"] == ["target_area_label"]
     assert "task_variant" not in json.dumps(trace)
 
 
@@ -113,20 +112,14 @@ def test_pythagorean_tree_explicit_queries_generate(query_id: str) -> None:
     assert out.query_id == query_id
     assert out.scene_id == "pythagorean_tree"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "bbox_map"
-    _assert_bbox_map_inside_image(out.annotation_gt.value, out.image.size)
+    assert out.annotation_gt.type == "bbox"
+    _assert_bbox_inside_image(out.annotation_gt.value, out.image.size)
 
 
-def _assert_bbox_map_inside_image(annotation: dict[str, list[float]], image_size: tuple[int, int]) -> None:
+def _assert_bbox_inside_image(bbox: list[float], image_size: tuple[int, int]) -> None:
     width, height = image_size
-    for bbox in annotation.values():
-        assert isinstance(bbox, list)
-        assert len(bbox) == 4
-        x0, y0, x1, y1 = [float(value) for value in bbox]
-        assert 0.0 <= x0 < x1 <= float(width)
-        assert 0.0 <= y0 < y1 <= float(height)
-
-
-def _assert_no_duplicate_public_bboxes(annotation: dict[str, list[float]]) -> None:
-    boxed = [tuple(round(float(value), 3) for value in bbox) for bbox in annotation.values()]
-    assert len(boxed) == len(set(boxed))
+    assert isinstance(bbox, list)
+    assert len(bbox) == 4
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    assert 0.0 <= x0 < x1 <= float(width)
+    assert 0.0 <= y0 < y1 <= float(height)

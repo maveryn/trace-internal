@@ -22,7 +22,7 @@ def pythagorean_tree_prompt_artifacts(
     prompt_task_key: str,
     prompt_query_key: str,
     annotation_hint: str,
-    json_example_annotation: Mapping[str, Any],
+    json_example_annotation: Any,
     answer: int,
     instance_seed: int,
 ) -> tuple[dict[str, Any], PromptTraceArtifacts]:
@@ -34,7 +34,7 @@ def pythagorean_tree_prompt_artifacts(
         context="prompt defaults for pythagorean_tree",
     )
     json_example, json_example_answer_only = dump_prompt_json_examples(
-        annotation=dict(json_example_annotation),
+        annotation=json_example_annotation,
         answer=int(answer),
         ensure_ascii=False,
     )

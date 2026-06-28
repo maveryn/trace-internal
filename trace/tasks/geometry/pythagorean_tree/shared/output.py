@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Mapping
-
-from trace.tasks.geometry.shared.annotation_values import PixelAnnotationArtifacts
+from typing import Any, Mapping, Sequence
 
 from .defaults import SCENE_KIND, SCENE_VARIANT
 from .state import PythagoreanTreePlan, RenderedPythagoreanTreeScene
@@ -27,7 +25,8 @@ def build_pythagorean_tree_trace_sections(
     *,
     plan: PythagoreanTreePlan,
     rendered: RenderedPythagoreanTreeScene,
-    annotation_artifacts: PixelAnnotationArtifacts,
+    annotation_artifacts: Any,
+    annotation_roles: Sequence[str],
     triple_probabilities: Mapping[str, float],
     target_role_probabilities: Mapping[str, float],
     render_meta: Mapping[str, Any],
@@ -36,7 +35,7 @@ def build_pythagorean_tree_trace_sections(
 ) -> PythagoreanTreeTraceSections:
     """Format scene/verifier fragments without public task identity."""
 
-    annotation_roles = [str(role) for role in annotation_artifacts.value.keys()]
+    selected_annotation_roles = [str(role) for role in annotation_roles]
     triple = plan.triple
     query_params_base = {
         "scene_variant": SCENE_VARIANT,
@@ -49,7 +48,7 @@ def build_pythagorean_tree_trace_sections(
         "scene_variant": SCENE_VARIANT,
         "target_role": str(plan.target_role),
         "answer_value": int(plan.answer),
-        "annotation_roles": list(annotation_roles),
+        "annotation_roles": list(selected_annotation_roles),
         "formula_family": "pythagorean_attached_square_area",
     }
     render_spec_base = {
@@ -63,7 +62,7 @@ def build_pythagorean_tree_trace_sections(
         "target_role": str(plan.target_role),
         "answer_type": "integer",
         "answer_value": int(plan.answer),
-        "annotation_roles": list(annotation_roles),
+        "annotation_roles": list(selected_annotation_roles),
         "annotation_type": str(annotation_artifacts.annotation_type),
         "leg_a": int(triple.leg_a),
         "leg_b": int(triple.leg_b),
@@ -76,7 +75,7 @@ def build_pythagorean_tree_trace_sections(
         "target_role": str(plan.target_role),
         "answer_value": int(plan.answer),
         "source_witness_type": str(annotation_artifacts.annotation_type),
-        "original_annotation_value": dict(annotation_artifacts.value),
+        "original_annotation_value": annotation_artifacts.value,
         **dict(plan.witness),
     }
     return PythagoreanTreeTraceSections(

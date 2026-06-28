@@ -11,6 +11,7 @@ from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.fixed_query import select_task_query_id
+from trace.tasks.shared.annotation_artifacts import bbox_annotation_artifacts
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
@@ -20,7 +21,6 @@ from .shared.prompts import pythagorean_tree_prompt_artifacts
 from .shared.rendering import make_render_context, render_pythagorean_tree_scene
 from .shared.sampling import LEG_TARGET_ROLES, TREE_TRIPLES, select_leg_target_role, select_tree_triple
 from .shared.state import PythagoreanTreePlan, PythagoreanTreeTriple, RenderedPythagoreanTreeScene
-from ..shared.annotation_values import keyed_bbox_annotation_artifacts
 
 TASK_ID = "task_geometry__pythagorean_tree__missing_square_area_value"
 SUPPORTED_QUERY_IDS: tuple[str, ...] = ("hypotenuse_square_area", "leg_square_area")
@@ -192,62 +192,31 @@ def _render_missing_square_area(
     return rendered, render_meta
 
 
-def _annotation_bboxes_for_request(
+def _target_area_label_bbox(
     *,
     request: _MissingSquareAreaRequest,
     rendered: RenderedPythagoreanTreeScene,
-) -> dict[str, tuple[float, float, float, float]]:
-    """Bind public annotation keys to the square bboxes for the selected query."""
+) -> tuple[float, float, float, float]:
+    """Return the scalar bbox around the visible missing-area label."""
 
-    square_bboxes = rendered.square_bboxes
-    if str(request.selected_query) == "hypotenuse_square_area":
-        return {
-            "unknown_hypotenuse_square": square_bboxes["hypotenuse_square"],
-            "known_leg_square_1": square_bboxes["leg_square_1"],
-            "known_leg_square_2": square_bboxes["leg_square_2"],
-        }
-    if str(request.selected_query) == "leg_square_area":
-        known_leg_role = "leg_square_2" if str(request.plan.target_role) == "leg_square_1" else "leg_square_1"
-        return {
-            "unknown_leg_square": square_bboxes[str(request.plan.target_role)],
-            "known_leg_square": square_bboxes[known_leg_role],
-            "known_hypotenuse_square": square_bboxes["hypotenuse_square"],
-        }
-    raise ValueError(f"unsupported query_id for annotation binding: {request.selected_query}")
+    label_key = f"{request.plan.target_role}_label"
+    if label_key not in rendered.label_bboxes:
+        raise ValueError(f"missing target area label bbox: {label_key}")
+    return rendered.label_bboxes[str(label_key)]
 
 
 def _prompt_annotation_hint_and_example(
     *,
     query_id: str,
-    answer: int,
-) -> tuple[str, dict[str, list[int]]]:
-    """Return query-specific annotation guidance owned by the public task."""
+) -> tuple[str, list[int]]:
+    """Return public annotation guidance for the scalar target label box."""
 
-    if str(query_id) == "hypotenuse_square_area":
-        hint = (
-            "set \"annotation\" to a JSON object with exactly these keys: "
-            "\"unknown_hypotenuse_square\", \"known_leg_square_1\", and \"known_leg_square_2\"; "
-            "each value must be the pixel bounding box [x0,y0,x1,y1] around that square region"
-        )
-        example = {
-            "unknown_hypotenuse_square": [380, 120, 520, 260],
-            "known_leg_square_1": [160, 180, 270, 290],
-            "known_leg_square_2": [270, 320, 410, 460],
-        }
-    elif str(query_id) == "leg_square_area":
-        hint = (
-            "set \"annotation\" to a JSON object with exactly these keys: "
-            "\"unknown_leg_square\", \"known_leg_square\", and \"known_hypotenuse_square\"; "
-            "each value must be the pixel bounding box [x0,y0,x1,y1] around that square region"
-        )
-        example = {
-            "unknown_leg_square": [160, 180, 270, 290],
-            "known_leg_square": [270, 320, 410, 460],
-            "known_hypotenuse_square": [380, 120, 520, 260],
-        }
-    else:
+    if str(query_id) not in SUPPORTED_QUERY_IDS:
         raise ValueError(f"unsupported prompt query_id: {query_id}")
-    return str(hint), dict(example)
+    return (
+        'set "annotation" to the pixel bounding box [x0,y0,x1,y1] around the visible Area=? label',
+        [240, 180, 320, 215],
+    )
 
 
 @register_task
@@ -282,14 +251,11 @@ class GeometryPythagoreanTreeMissingSquareAreaValueTask:
             params=request.params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
-        annotation_bboxes = _annotation_bboxes_for_request(request=request, rendered=rendered)
-        annotation_artifacts = keyed_bbox_annotation_artifacts(
-            annotation_bboxes,
-            roles=tuple(annotation_bboxes.keys()),
+        annotation_artifacts = bbox_annotation_artifacts(
+            _target_area_label_bbox(request=request, rendered=rendered)
         )
         annotation_hint, annotation_example = _prompt_annotation_hint_and_example(
             query_id=request.selected_query,
-            answer=int(request.plan.answer),
         )
         _prompt_defaults, prompt_artifacts = pythagorean_tree_prompt_artifacts(
             prompt_defaults=prompt_defaults,
@@ -304,6 +270,7 @@ class GeometryPythagoreanTreeMissingSquareAreaValueTask:
             plan=request.plan,
             rendered=rendered,
             annotation_artifacts=annotation_artifacts,
+            annotation_roles=("target_area_label",),
             triple_probabilities=request.triple_probabilities,
             target_role_probabilities=request.target_role_probabilities,
             render_meta=render_meta,

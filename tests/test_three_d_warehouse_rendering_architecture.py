@@ -4,13 +4,11 @@ from pathlib import Path
 WAREHOUSE_TASK_OR_COMMON_FILES = (
     Path("trace/tasks/three_d/warehouse/robot_forward_path_label.py"),
     Path("trace/tasks/three_d/warehouse/nearest_candidate_to_reference_label.py"),
-    Path("trace/tasks/three_d/warehouse/scoped_attribute_count.py"),
     Path("trace/tasks/three_d/warehouse/shared/state.py"),
 )
 
 WAREHOUSE_RENDERER_FILES = (
     Path("trace/tasks/three_d/warehouse/shared/rendering.py"),
-    Path("trace/tasks/three_d/warehouse/shared/annotations.py"),
     Path("trace/tasks/three_d/warehouse/shared/components.py"),
 )
 
@@ -44,9 +42,7 @@ def test_warehouse_renderer_modules_are_explicit_scene_boundaries() -> None:
         assert path.exists()
 
     robot_renderer = WAREHOUSE_RENDERER_FILES[0].read_text()
-    shelf_renderer = WAREHOUSE_RENDERER_FILES[1].read_text()
-    support_renderer = WAREHOUSE_RENDERER_FILES[2].read_text()
+    support_renderer = WAREHOUSE_RENDERER_FILES[1].read_text()
     assert "render_warehouse_robot_scene_3d" in robot_renderer
     assert "render_warehouse_robot_nearest_scene_3d" in robot_renderer
-    assert "render_warehouse_shelf_level_count_scene_3d" in shelf_renderer
     assert "_draw_shelf_rack_object" in support_renderer

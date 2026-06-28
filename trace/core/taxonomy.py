@@ -1066,7 +1066,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_three_d__street__same_road_arm_reference_label": _entry("three_d", "street", "three_d", "street"),
     "task_three_d__warehouse__robot_forward_path_label": _entry("three_d", "warehouse", "three_d", "warehouse"),
     "task_three_d__warehouse__nearest_candidate_to_reference_label": _entry("three_d", "warehouse", "three_d", "warehouse"),
-    "task_three_d__warehouse__scoped_attribute_count": _entry("three_d", "warehouse", "three_d", "warehouse"),
     # Symbolic and puzzle scenes split from the former combined puzzle/notation surface.
     "task_symbolic__abacus_match_panel__target_value_match_label": _entry("symbolic", "abacus_match_panel", "symbolic", "abacus"),
     "task_symbolic__abacus_readout__displayed_value_readout": _entry("symbolic", "abacus_readout", "symbolic", "abacus"),

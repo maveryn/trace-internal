@@ -15,35 +15,16 @@
       "",
       "",
       ""
-    ],
-    "warehouse_shelf_level_object_count_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
     ]
   },
   "required_slots_by_key": {
     "scene:warehouse": [
       "object_description"
     ],
-    "query:closest_robot_to_reference": [
+    "query:closest_object_to_reference": [
       "reference_object_name"
     ],
     "query:closest_object_to_robot": [],
-    "query:top_shelf_item_count": [
-      "shelf_level_name",
-      "rack_color_label"
-    ],
-    "query:middle_shelf_item_count": [
-      "shelf_level_name",
-      "rack_color_label"
-    ],
-    "query:bottom_shelf_item_count": [
-      "shelf_level_name",
-      "rack_color_label"
-    ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -89,12 +70,12 @@
       "Which option describes the first warehouse object the red-boxed robot would encounter by moving straight forward?",
       "Following the red-boxed robot's forward direction, which option describes the object reached first?"
     ],
-    "closest_robot_to_reference": [
-      "Which option describes the robot closest to the {reference_object_name}?",
-      "Choose the option for the robot nearest to the {reference_object_name}.",
-      "Which option describes the robot closest to the {reference_object_name}?",
-      "Among the candidate robots, which option is nearest to the {reference_object_name}?",
-      "Which option describes the robot with the smallest distance to the {reference_object_name}?"
+    "closest_object_to_reference": [
+      "Which option describes the warehouse object closest to the {reference_object_name}?",
+      "Choose the option for the object nearest to the {reference_object_name}.",
+      "Which option describes the warehouse object closest to the {reference_object_name}?",
+      "Among the candidate warehouse objects, which option is nearest to the {reference_object_name}?",
+      "Which option describes the object with the smallest distance to the {reference_object_name}?"
     ],
     "closest_object_to_robot": [
       "Which option describes the warehouse object closest to the robot?",
@@ -102,27 +83,6 @@
       "Which option describes the warehouse object closest to the robot?",
       "Among the candidate warehouse objects, which option is nearest to the robot?",
       "Which option describes the object with the smallest distance to the robot?"
-    ],
-    "top_shelf_item_count": [
-      "How many items are on the {shelf_level_name} shelf of the {rack_color_label} rack?",
-      "Count the items on the {shelf_level_name} shelf of the {rack_color_label} rack.",
-      "What is the number of items on the {shelf_level_name} shelf of the {rack_color_label} rack?",
-      "For the {rack_color_label} rack, how many items are on its {shelf_level_name} shelf?",
-      "How many visible items sit on the {shelf_level_name} shelf of the {rack_color_label} rack?"
-    ],
-    "middle_shelf_item_count": [
-      "How many items are on the {shelf_level_name} shelf of the {rack_color_label} rack?",
-      "Count the items on the {shelf_level_name} shelf of the {rack_color_label} rack.",
-      "What is the number of items on the {shelf_level_name} shelf of the {rack_color_label} rack?",
-      "For the {rack_color_label} rack, how many items are on its {shelf_level_name} shelf?",
-      "How many visible items sit on the {shelf_level_name} shelf of the {rack_color_label} rack?"
-    ],
-    "bottom_shelf_item_count": [
-      "How many items are on the {shelf_level_name} shelf of the {rack_color_label} rack?",
-      "Count the items on the {shelf_level_name} shelf of the {rack_color_label} rack.",
-      "What is the number of items on the {shelf_level_name} shelf of the {rack_color_label} rack?",
-      "For the {rack_color_label} rack, how many items are on its {shelf_level_name} shelf?",
-      "How many visible items sit on the {shelf_level_name} shelf of the {rack_color_label} rack?"
     ]
   },
   "allow_empty_task_templates": true

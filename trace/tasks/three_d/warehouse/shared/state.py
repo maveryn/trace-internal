@@ -12,7 +12,7 @@ from ...shared.object_resources import (
     WAREHOUSE_OBJECT_BASE_DIMENSIONS,
     WAREHOUSE_OBJECT_COLORS,
     WAREHOUSE_OBJECT_NAMES,
-    WAREHOUSE_OBJECT_TYPES,
+    WAREHOUSE_SMALL_OBJECT_CANDIDATE_TYPES,
     WAREHOUSE_RADIAL_OBJECT_TYPES,
     WAREHOUSE_ROBOT_ACCENT_COLORS,
     WAREHOUSE_ROBOT_BASE_COLORS,
@@ -350,16 +350,16 @@ def _sample_reference_and_objects(
     rng.shuffle(distractor_slots)
     candidate_local_slots = [*required_slots, *distractor_slots[: max(0, int(candidate_count) - len(required_slots))]]
     rng.shuffle(candidate_local_slots)
-    object_types = list(WAREHOUSE_OBJECT_TYPES)
+    object_types = list(WAREHOUSE_SMALL_OBJECT_CANDIDATE_TYPES)
     path_object_types = [
         "crate_stack",
-        "pallet_load",
         "barrel",
         "box_stack",
         "tire_stack",
         "storage_bin",
         "rolling_bin",
         "wrapped_bundle",
+        "traffic_cone",
     ]
     rng.shuffle(object_types)
     rng.shuffle(path_object_types)

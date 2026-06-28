@@ -41,7 +41,7 @@ def test_warehouse_robot_forward_path_answer_annotation_and_geometry(
             "query_id": "single",
             "scene_variant": scene_variant,
             "robot_heading": robot_heading,
-            "candidate_count": 5,
+            "candidate_count": 4,
             "context_object_count": 11,
             "post_image_noise_apply_prob": 0.0,
         },
@@ -95,8 +95,8 @@ def test_warehouse_robot_forward_path_answer_annotation_and_geometry(
     assert str(trace["robot_heading"]) == str(robot_heading)
     assert str(trace["robot_design"]) == str(reference["robot_design"])
     assert len(trace["travel_direction_vector_xy"]) == 2
-    assert sorted(str(spec["point_label"]) for spec in candidates) == list("ABCDE")
-    assert len(candidates) == 5
+    assert sorted(str(spec["point_label"]) for spec in candidates) == list("ABCD")
+    assert len(candidates) == 4
     assert len(trace["context_object_specs"]) == 11
     assert len(trace["reference_object_specs"]) == 1
     shelf_specs = [spec for spec in trace["context_object_specs"] if str(spec["object_type"]) == "shelf_rack"]

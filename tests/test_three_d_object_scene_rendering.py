@@ -102,11 +102,6 @@ def test_scene_render_loops_delegate_reusable_objects_to_shared_renderer() -> No
             "render_warehouse_robot_nearest_scene_3d",
             {"_draw_warehouse_object", "_draw_reference_object"},
         ),
-        (
-            "trace/tasks/three_d/warehouse/shared/annotations.py",
-            "render_warehouse_shelf_level_count_scene_3d",
-            {"_draw_warehouse_object"},
-        ),
     )
     for path, function_name, forbidden_calls in checks:
         call_names = _called_names_in_function(path, function_name)

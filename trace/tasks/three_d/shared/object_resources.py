@@ -1046,6 +1046,20 @@ WAREHOUSE_OBJECT_TYPES: Tuple[str, ...] = (
     "fire_extinguisher",
     "stacked_pipes",
 )
+WAREHOUSE_SMALL_OBJECT_CANDIDATE_TYPES: Tuple[str, ...] = (
+    "crate_stack",
+    "barrel",
+    "traffic_cone",
+    "floor_sign",
+    "box_stack",
+    "tire_stack",
+    "storage_bin",
+    "rolling_bin",
+    "trash_can",
+    "warning_bollard",
+    "wrapped_bundle",
+    "fire_extinguisher",
+)
 WAREHOUSE_CONTEXT_OBJECT_TYPES: Tuple[str, ...] = (
     "shelf_rack",
     "charging_dock",
@@ -1157,8 +1171,8 @@ WAREHOUSE_NEAREST_REFERENCE_OBJECT_RGB: Tuple[int, int, int] = (214, 50, 50)
 WAREHOUSE_NEAREST_REFERENCE_OBJECT_DIMENSIONS: Tuple[float, float, float] = (0.52, 0.52, 0.52)
 WAREHOUSE_NEAREST_OBJECT_CANDIDATE_TYPES: Tuple[str, ...] = tuple(
     object_type
-    for object_type in WAREHOUSE_OBJECT_TYPES
-    if object_type not in {"floor_sign", "ladder", "warning_bollard", "fire_extinguisher"}
+    for object_type in WAREHOUSE_SMALL_OBJECT_CANDIDATE_TYPES
+    if object_type not in {"floor_sign", "warning_bollard", "fire_extinguisher"}
 )
 WAREHOUSE_ROBOT_HEADINGS: Tuple[str, ...] = ("east", "north", "west", "south")
 WAREHOUSE_ROBOT_DESIGNS: Tuple[str, ...] = ("low_cart", "sensor_tower", "stacker_bot")

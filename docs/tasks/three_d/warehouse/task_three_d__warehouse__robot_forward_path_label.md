@@ -15,7 +15,7 @@
 
 Render one perspective warehouse aisle with shelf racks, warehouse equipment, one red-boxed robot, a red travel-direction arrow, candidate warehouse objects, and a text option panel below the scene. The robot body may vary across low-cart, sensor-tower, and stacker-like designs while remaining the red-boxed reference.
 
-The prompt asks which option describes the object the robot reaches first if it continues straight along the red arrow. The generator places five candidate objects, with at least two candidates in the finalized forward path corridor. The answer is the candidate with the smallest positive forward distance from the robot within the corridor. Distractors may be behind the robot, beside the path, in adjacent aisle context, or farther along the path.
+The prompt asks which option describes the object the robot reaches first if it continues straight along the red arrow. The generator places four small candidate objects, with at least two candidates in the finalized forward path corridor. The answer is the candidate with the smallest positive forward distance from the robot within the corridor. Distractors may be behind the robot, beside the path, in adjacent aisle context, or farther along the path.
 
 Annotation is the scalar bounding box `[x0, y0, x1, y1]` of the selected warehouse object in the scene. The red robot box, red arrow, highlighted path corridor, shelf racks, context objects, option panel, and option text are not annotation.
 

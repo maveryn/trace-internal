@@ -62,12 +62,12 @@ from .shared.rendering import render_warehouse_robot_nearest_scene_3d
 
 
 TASK_ID = "task_three_d__warehouse__nearest_candidate_to_reference_label"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("closest_robot_to_reference", "closest_object_to_robot")
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("closest_object_to_reference", "closest_object_to_robot")
 SUPPORTED_AISLE_HEADINGS: Tuple[str, ...] = tuple(SUPPORTED_ROBOT_HEADINGS)
 REFERENCE_OBJECT_TYPE = WAREHOUSE_NEAREST_REFERENCE_OBJECT_TYPE
 REFERENCE_OBJECT_NAME = WAREHOUSE_NEAREST_REFERENCE_OBJECT_NAME
 REFERENCE_OBJECT_RGB: Tuple[int, int, int] = WAREHOUSE_NEAREST_REFERENCE_OBJECT_RGB
-MIN_NEAREST_ROBOT_MARGIN = 0.42
+MIN_NEAREST_REFERENCE_OBJECT_MARGIN = 0.42
 MIN_NEAREST_OBJECT_MARGIN = 0.42
 MIN_REFERENCE_VISIBLE_PX = 26.0
 OBJECT_CANDIDATE_TYPES: Tuple[str, ...] = WAREHOUSE_NEAREST_OBJECT_CANDIDATE_TYPES
@@ -113,14 +113,6 @@ def _can_place(candidate: Mapping[str, Any], placed: Sequence[Mapping[str, Any]]
         if math.hypot(float(cx - ix), float(cy - iy)) < min_distance:
             return False
     return True
-
-
-def _heading_towards(source_xy: Sequence[float], target_xy: Sequence[float]) -> str:
-    dx = float(target_xy[0]) - float(source_xy[0])
-    dy = float(target_xy[1]) - float(source_xy[1])
-    if abs(dx) >= abs(dy):
-        return "east" if dx >= 0.0 else "west"
-    return "north" if dy >= 0.0 else "south"
 
 
 def _make_reference_object(*, xy: Tuple[float, float], scale: float) -> Dict[str, Any]:
@@ -191,23 +183,6 @@ def _make_robot_candidate(
     return spec
 
 
-def _assign_unique_robot_option_colors(
-    robot_specs: Sequence[Mapping[str, Any]],
-    *,
-    rng,
-) -> List[Dict[str, Any]]:
-    colors = [tuple(int(channel) for channel in color) for color in ROBOT_BASE_COLORS]
-    rng.shuffle(colors)
-    if len(robot_specs) > len(colors):
-        raise ValueError("not enough unique robot colors for option descriptors")
-    updated_specs: List[Dict[str, Any]] = []
-    for spec, color in zip(robot_specs, colors):
-        updated = dict(spec)
-        updated["robot_base_rgb"] = [int(channel) for channel in color]
-        updated_specs.append(updated)
-    return list(updated_specs)
-
-
 def _make_object_candidate(
     *,
     rng,
@@ -231,59 +206,6 @@ def _make_object_candidate(
     )
 
 
-def _attach_robot_nearest_answers(
-    robot_specs: Sequence[Mapping[str, Any]],
-    reference_spec: Mapping[str, Any],
-    *,
-    params: Mapping[str, Any],
-    instance_seed: int,
-    candidate_count: int,
-) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-    """Relabel robots so exactly one nearest option is correct."""
-    ordered = sorted(robot_specs, key=lambda spec: (_surface_gap(spec, reference_spec), str(spec["object_id"])))
-    first = dict(ordered[0])
-    second = dict(ordered[1])
-    margin = float(_surface_gap(second, reference_spec) - _surface_gap(first, reference_spec))
-    if margin < MIN_NEAREST_ROBOT_MARGIN:
-        raise ValueError("nearest robot margin too small")
-    answer_label_index = abs(
-        int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}.answer_label"))
-    ) % int(candidate_count)
-    answer_label = str(POINT_LABELS[int(answer_label_index)])
-    remaining_labels = [str(label) for label in POINT_LABELS[: int(candidate_count)] if str(label) != str(answer_label)]
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.answer_label_assignment")
-    rng.shuffle(remaining_labels)
-    relabeled: List[Dict[str, Any]] = []
-    for spec in robot_specs:
-        updated = dict(spec)
-        is_answer = str(updated["object_id"]) == str(first["object_id"])
-        label = answer_label if is_answer else remaining_labels.pop()
-        distance = _surface_gap(updated, reference_spec)
-        updated.update(
-            {
-                "object_id": f"warehouse_robot_{label}",
-                "point_id": f"warehouse_robot_{label}",
-                "point_label": str(label),
-                "object_label": str(label),
-                "is_answer_candidate": True,
-                "is_nearest_robot_to_reference": bool(is_answer),
-                "distance_to_reference_object": round(float(distance), 4),
-            }
-        )
-        relabeled.append(updated)
-    answer_spec = next(spec for spec in relabeled if bool(spec["is_nearest_robot_to_reference"]))
-    distance_order = [
-        str(spec["point_label"])
-        for spec in sorted(relabeled, key=lambda item: (float(item["distance_to_reference_object"]), str(item["point_label"])))
-    ]
-    return list(sorted(relabeled, key=lambda spec: str(spec["point_label"]))), {
-        "answer_label": str(answer_label),
-        "answer_spec": dict(answer_spec),
-        "nearest_margin": round(float(margin), 4),
-        "distance_order": list(distance_order),
-    }
-
-
 def _attach_object_nearest_answers(
     candidate_specs: Sequence[Mapping[str, Any]],
     reference_spec: Mapping[str, Any],
@@ -291,6 +213,8 @@ def _attach_object_nearest_answers(
     params: Mapping[str, Any],
     instance_seed: int,
     candidate_count: int,
+    nearest_flag_key: str,
+    distance_key: str,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     """Relabel objects so exactly one nearest option is correct."""
     ordered = sorted(candidate_specs, key=lambda spec: (_surface_gap(spec, reference_spec), str(spec["object_id"])))
@@ -319,15 +243,15 @@ def _attach_object_nearest_answers(
                 "point_label": str(label),
                 "object_label": str(label),
                 "is_answer_candidate": True,
-                "is_nearest_object_to_reference_robot": bool(is_answer),
-                "distance_to_reference_robot": round(float(distance), 4),
+                str(nearest_flag_key): bool(is_answer),
+                str(distance_key): round(float(distance), 4),
             }
         )
         relabeled.append(updated)
-    answer_spec = next(spec for spec in relabeled if bool(spec["is_nearest_object_to_reference_robot"]))
+    answer_spec = next(spec for spec in relabeled if bool(spec[str(nearest_flag_key)]))
     distance_order = [
         str(spec["point_label"])
-        for spec in sorted(relabeled, key=lambda item: (float(item["distance_to_reference_robot"]), str(item["point_label"])))
+        for spec in sorted(relabeled, key=lambda item: (float(item[str(distance_key)]), str(item["point_label"])))
     ]
     return list(sorted(relabeled, key=lambda spec: str(spec["point_label"]))), {
         "answer_label": str(answer_label),
@@ -337,7 +261,7 @@ def _attach_object_nearest_answers(
     }
 
 
-def _sample_reference_and_robot_candidates(
+def _sample_reference_and_object_candidates(
     *,
     rng,
     candidate_count: int,
@@ -347,11 +271,12 @@ def _sample_reference_and_robot_candidates(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, Any], Dict[str, Any]]:
-    """Place reference object and robot candidates for nearest queries."""
+    """Place a red reference object and small object candidates for nearest queries."""
     forward_xy = _heading_vector(str(aisle_heading))
+    orientation_axis = _heading_axis(str(aisle_heading))
     _unused_reference, _unused_candidates, context_specs, scene_geometry = _sample_reference_and_objects(
         rng=rng,
-        candidate_count=max(5, int(candidate_count)),
+        candidate_count=max(4, int(candidate_count)),
         context_object_count=int(context_object_count),
         robot_heading=str(aisle_heading),
         render_params=render_params,
@@ -364,23 +289,38 @@ def _sample_reference_and_robot_candidates(
         forward_xy=forward_xy,
     )
     reference_spec = _make_reference_object(xy=reference_xy, scale=float(rng.uniform(0.92, 1.10)))
-    # Robot placement is constrained against the semantic reference and other
-    # robots here; render-time visibility checks reject severe context occlusion.
     placed: List[Dict[str, Any]] = [dict(reference_spec)]
     ref_x, ref_y, _ref_z = (float(value) for value in reference_spec["world_xyz"])
 
+    object_types = [str(object_type) for object_type in OBJECT_CANDIDATE_TYPES]
+    rng.shuffle(object_types)
+
+    answer_type = object_types.pop()
+    answer_probe = _make_object_candidate(
+        rng=rng,
+        object_id="object_answer_probe",
+        object_type=str(answer_type),
+        xy=(0.0, 0.0),
+        orientation_axis=str(orientation_axis),
+        label=None,
+    )
     angle = float(rng.choice([0.25, 1.10, 2.05, 2.95, 3.85, 4.80, 5.65]) + rng.uniform(-0.16, 0.16))
-    answer_probe = _make_robot_candidate(rng=rng, object_id="robot_answer_probe", xy=(0.0, 0.0), heading="east", label=None)
     answer_radius = float(answer_probe["footprint_radius"])
     answer_distance = float(reference_spec["footprint_radius"]) + float(answer_radius) + float(rng.uniform(0.18, 0.30))
     answer_xy = (float(ref_x + math.cos(angle) * answer_distance), float(ref_y + math.sin(angle) * answer_distance))
-    answer_heading = _heading_towards(answer_xy, reference_xy)
-    answer_spec = _make_robot_candidate(rng=rng, object_id="robot_answer_slot", xy=answer_xy, heading=str(answer_heading), label="?")
+    answer_spec = _make_object_candidate(
+        rng=rng,
+        object_id="object_answer_slot",
+        object_type=str(answer_type),
+        xy=answer_xy,
+        orientation_axis=str(orientation_axis),
+        label="?",
+    )
     if not _can_place(answer_spec, placed, clearance=0.12):
-        raise ValueError("could not place nearest robot")
+        raise ValueError("could not place nearest warehouse object")
     placed.append(answer_spec)
 
-    robot_specs: List[Dict[str, Any]] = [answer_spec]
+    candidate_specs: List[Dict[str, Any]] = [answer_spec]
     ring_specs = [
         (1.78, -2.18),
         (2.18, -1.18),
@@ -396,16 +336,21 @@ def _sample_reference_and_robot_candidates(
     rng.shuffle(ring_specs)
     for index in range(int(candidate_count) - 1):
         placed_spec: Dict[str, Any] | None = None
+        object_type = str(object_types.pop() if object_types else rng.choice(OBJECT_CANDIDATE_TYPES))
         for radial_distance, base_angle in ring_specs[index:] + ring_specs[:index]:
             for _jitter_attempt in range(8):
                 theta = float(base_angle + rng.uniform(-0.20, 0.20))
                 distance = float(radial_distance + rng.uniform(0.00, 0.42))
                 xy = (float(ref_x + math.cos(theta) * distance), float(ref_y + math.sin(theta) * distance))
-                heading = _heading_towards(xy, reference_xy)
-                if rng.random() < 0.20:
-                    heading = str(rng.choice(SUPPORTED_ROBOT_HEADINGS))
-                spec = _make_robot_candidate(rng=rng, object_id=f"robot_distractor_slot_{index}", xy=xy, heading=str(heading), label="?")
-                if _surface_gap(spec, reference_spec) <= _surface_gap(answer_spec, reference_spec) + MIN_NEAREST_ROBOT_MARGIN:
+                spec = _make_object_candidate(
+                    rng=rng,
+                    object_id=f"object_distractor_slot_{index}",
+                    object_type=str(object_type),
+                    xy=xy,
+                    orientation_axis=str(orientation_axis),
+                    label="?",
+                )
+                if _surface_gap(spec, reference_spec) <= _surface_gap(answer_spec, reference_spec) + MIN_NEAREST_REFERENCE_OBJECT_MARGIN:
                     continue
                 if not _can_place(spec, placed, clearance=0.14):
                     continue
@@ -414,19 +359,20 @@ def _sample_reference_and_robot_candidates(
             if placed_spec is not None:
                 break
         if placed_spec is None:
-            raise ValueError("could not place robot distractor")
+            raise ValueError("could not place warehouse object distractor")
         placed.append(placed_spec)
-        robot_specs.append(placed_spec)
+        candidate_specs.append(placed_spec)
 
-    robot_specs = _assign_unique_robot_option_colors(robot_specs, rng=rng)
-    robot_specs, answer_meta = _attach_robot_nearest_answers(
-        robot_specs,
+    candidate_specs, answer_meta = _attach_object_nearest_answers(
+        candidate_specs,
         reference_spec,
         params=params,
         instance_seed=int(instance_seed),
         candidate_count=int(candidate_count),
+        nearest_flag_key="is_nearest_object_to_reference_object",
+        distance_key="distance_to_reference_object",
     )
-    return [reference_spec], robot_specs, context_specs, scene_geometry, answer_meta
+    return [reference_spec], candidate_specs, context_specs, scene_geometry, answer_meta
 
 
 def _sample_robot_and_object_candidates(
@@ -444,7 +390,7 @@ def _sample_robot_and_object_candidates(
     orientation_axis = _heading_axis(str(aisle_heading))
     _unused_reference_specs, _unused_candidates, context_specs, scene_geometry = _sample_reference_and_objects(
         rng=rng,
-        candidate_count=max(5, int(candidate_count)),
+        candidate_count=max(4, int(candidate_count)),
         context_object_count=int(context_object_count),
         robot_heading=str(aisle_heading),
         render_params=render_params,
@@ -545,6 +491,8 @@ def _sample_robot_and_object_candidates(
         params=params,
         instance_seed=int(instance_seed),
         candidate_count=int(candidate_count),
+        nearest_flag_key="is_nearest_object_to_reference_robot",
+        distance_key="distance_to_reference_robot",
     )
     robot_spec["nearest_object_labels"] = [str(answer_meta["answer_label"])]
     return [robot_spec], candidate_specs, context_specs, scene_geometry, answer_meta
@@ -636,8 +584,8 @@ def _build_dataset(
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
     for _attempt in range(520):
         camera = _sample_camera(rng, yaw_band_degrees=tuple(float(value) for value in camera_yaw_band))
-        if str(query_id) == "closest_robot_to_reference":
-            reference_specs, candidate_specs, context_specs, scene_geometry, answer_meta = _sample_reference_and_robot_candidates(
+        if str(query_id) == "closest_object_to_reference":
+            reference_specs, candidate_specs, context_specs, scene_geometry, answer_meta = _sample_reference_and_object_candidates(
                 rng=rng,
                 candidate_count=int(candidate_count),
                 context_object_count=int(context_object_count),
@@ -677,19 +625,19 @@ def _build_dataset(
             continue
         answer_label = str(answer_meta["answer_label"])
         answer_spec = next(spec for spec in finalized_candidates if str(spec["point_label"]) == answer_label)
-        if str(query_id) == "closest_robot_to_reference":
-            if not bool(answer_spec.get("is_nearest_robot_to_reference", False)):
+        if str(query_id) == "closest_object_to_reference":
+            if not bool(answer_spec.get("is_nearest_object_to_reference_object", False)):
                 continue
             distance_by_label = {str(spec["point_label"]): round(float(spec["distance_to_reference_object"]), 4) for spec in finalized_candidates}
-            nearest_by_label = {str(spec["point_label"]): bool(spec.get("is_nearest_robot_to_reference", False)) for spec in finalized_candidates}
-            predicate = f"option-panel robot with the smallest ground-plane surface gap to the {REFERENCE_OBJECT_NAME}"
+            nearest_by_label = {str(spec["point_label"]): bool(spec.get("is_nearest_object_to_reference_object", False)) for spec in finalized_candidates}
+            predicate = f"option-panel warehouse object with the smallest ground-plane surface gap to the {REFERENCE_OBJECT_NAME}"
             reference_object_name = REFERENCE_OBJECT_NAME
-            nearest_robot_by_label = dict(sorted(nearest_by_label.items()))
-            nearest_object_by_label: Dict[str, bool] = {}
-            answer_robot_id = str(answer_spec["object_id"])
+            nearest_robot_by_label: Dict[str, bool] = {}
+            nearest_object_by_label = dict(sorted(nearest_by_label.items()))
+            answer_robot_id = ""
             answer_object_id = str(answer_spec["object_id"])
-            nearest_robot_candidate_labels = [str(answer_label)]
-            nearest_object_candidate_labels: List[str] = []
+            nearest_robot_candidate_labels: List[str] = []
+            nearest_object_candidate_labels = [str(answer_label)]
         else:
             if not bool(answer_spec.get("is_nearest_object_to_reference_robot", False)):
                 continue
@@ -721,8 +669,8 @@ def _build_dataset(
             "reference_object_specs": list(finalized_reference),
             "reference_robot_specs": list(finalized_reference) if str(query_id) == "closest_object_to_robot" else [],
             "candidate_specs": sorted(finalized_candidates, key=lambda spec: str(spec["point_label"])),
-            "candidate_robot_specs": sorted(finalized_candidates, key=lambda spec: str(spec["point_label"])) if str(query_id) == "closest_robot_to_reference" else [],
-            "candidate_object_specs": sorted(finalized_candidates, key=lambda spec: str(spec["point_label"])) if str(query_id) == "closest_object_to_robot" else [],
+            "candidate_robot_specs": [],
+            "candidate_object_specs": sorted(finalized_candidates, key=lambda spec: str(spec["point_label"])),
             "context_object_specs": sorted(finalized_context, key=lambda spec: str(spec["object_id"])),
             "object_specs": sorted([*finalized_reference, *finalized_candidates, *finalized_context], key=lambda spec: str(spec["object_id"])),
             "target_object_ids": [str(answer_spec["object_id"])],
@@ -737,12 +685,12 @@ def _build_dataset(
             "nearest_robot_by_label": dict(nearest_robot_by_label),
             "nearest_object_by_label": dict(nearest_object_by_label),
             "distance_to_reference_by_label": dict(sorted(distance_by_label.items())),
-            "distance_to_reference_object_by_label": dict(sorted(distance_by_label.items())) if str(query_id) == "closest_robot_to_reference" else {},
+            "distance_to_reference_object_by_label": dict(sorted(distance_by_label.items())) if str(query_id) == "closest_object_to_reference" else {},
             "distance_to_reference_robot_by_label": dict(sorted(distance_by_label.items())) if str(query_id) == "closest_object_to_robot" else {},
             "distance_order_near_to_far": [str(label) for label in answer_meta["distance_order"]],
             "nearest_margin": float(answer_meta["nearest_margin"]),
-            "nearest_robot_margin": float(answer_meta["nearest_margin"]) if str(query_id) == "closest_robot_to_reference" else 0.0,
-            "nearest_object_margin": float(answer_meta["nearest_margin"]) if str(query_id) == "closest_object_to_robot" else 0.0,
+            "nearest_reference_object_margin": float(answer_meta["nearest_margin"]) if str(query_id) == "closest_object_to_reference" else 0.0,
+            "nearest_object_margin": float(answer_meta["nearest_margin"]),
             "candidate_projected_bboxes_by_label": dict(sorted(candidate_projected_bboxes.items())),
             "candidate_object_types_by_label": dict(sorted(candidate_object_types.items())),
             "object_type_counts": dict(sorted(object_type_counts.items())),
@@ -776,7 +724,7 @@ def _build_dataset(
                 "nearest_robot_by_label": dict(nearest_robot_by_label),
                 "nearest_object_by_label": dict(nearest_object_by_label),
                 "distance_to_reference_by_label": dict(sorted(distance_by_label.items())),
-                "distance_to_reference_object_by_label": dict(sorted(distance_by_label.items())) if str(query_id) == "closest_robot_to_reference" else {},
+                "distance_to_reference_object_by_label": dict(sorted(distance_by_label.items())) if str(query_id) == "closest_object_to_reference" else {},
                 "distance_to_reference_robot_by_label": dict(sorted(distance_by_label.items())) if str(query_id) == "closest_object_to_robot" else {},
                 "distance_order_near_to_far": [str(label) for label in answer_meta["distance_order"]],
                 "answer_label": str(answer_label),
@@ -848,10 +796,10 @@ def _build_retry_locked_params(instance_seed: int, params: Mapping[str, Any]) ->
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
         key="candidate_count",
-        default_min=5,
-        default_max=5,
+        default_min=4,
+        default_max=4,
         lower=4,
-        upper=6,
+        upper=4,
         allow_locked=True,
     )
     context_object_count, _context_probabilities = _shared_resolve_count(
@@ -944,10 +892,10 @@ class ThreeDWarehouseNearestCandidateToReferenceLabelTask:
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
             key="candidate_count",
-            default_min=5,
-            default_max=5,
+            default_min=4,
+            default_max=4,
             lower=4,
-            upper=6,
+            upper=4,
             allow_locked=True,
         )
         context_object_count, context_count_probabilities = _shared_resolve_count(
@@ -1044,7 +992,7 @@ class ThreeDWarehouseNearestCandidateToReferenceLabelTask:
                 "distance_to_reference_robot_by_label": dict(dataset["distance_to_reference_robot_by_label"]),
                 "distance_order_near_to_far": list(dataset["distance_order_near_to_far"]),
                 "nearest_margin": float(dataset["nearest_margin"]),
-                "nearest_robot_margin": float(dataset["nearest_robot_margin"]),
+                "nearest_reference_object_margin": float(dataset["nearest_reference_object_margin"]),
                 "nearest_object_margin": float(dataset["nearest_object_margin"]),
                 "candidate_projected_bboxes_by_label": dict(dataset["candidate_projected_bboxes_by_label"]),
                 "candidate_object_types_by_label": dict(dataset["candidate_object_types_by_label"]),
@@ -1054,7 +1002,7 @@ class ThreeDWarehouseNearestCandidateToReferenceLabelTask:
 
 __all__ = [
     "MIN_NEAREST_OBJECT_MARGIN",
-    "MIN_NEAREST_ROBOT_MARGIN",
+    "MIN_NEAREST_REFERENCE_OBJECT_MARGIN",
     "SUPPORTED_QUERY_IDS",
     "TASK_ID",
     "ThreeDWarehouseNearestCandidateToReferenceLabelTask",

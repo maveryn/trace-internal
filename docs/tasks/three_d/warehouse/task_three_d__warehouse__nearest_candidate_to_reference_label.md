@@ -4,7 +4,7 @@
 - Domain: `three_d`
 - Scene id: `warehouse`
 - Public task id: `task_three_d__warehouse__nearest_candidate_to_reference_label`
-- Supported `query_id`: `closest_robot_to_reference`, `closest_object_to_robot`
+- Supported `query_id`: `closest_object_to_reference`, `closest_object_to_robot`
 - Answer schema: `option_letter`
 - Annotation schema: `bbox`
 
@@ -13,11 +13,11 @@
 - Scene: `warehouse`
 - Scope: `nearest_candidate_to_reference_label`
 
-Render one perspective warehouse aisle with shelf racks, warehouse equipment, one reference item, five candidate items, and a text option panel below the scene.
+Render one perspective warehouse aisle with shelf racks, warehouse equipment, one reference item, four small candidate warehouse objects, and a text option panel below the scene.
 
-For `closest_robot_to_reference`, the reference is a red sphere and the candidates are five robots. The answer is the option label for the robot with the smallest finalized ground-plane surface gap to the red sphere.
+For `closest_object_to_reference`, the reference is a red sphere and the candidates are four small warehouse objects. The answer is the option label for the object with the smallest finalized ground-plane surface gap to the red sphere.
 
-For `closest_object_to_robot`, the reference is one robot and the candidates are five warehouse objects. The answer is the option label for the object with the smallest finalized ground-plane surface gap to the robot.
+For `closest_object_to_robot`, the reference is one robot and the candidates are four small warehouse objects. The answer is the option label for the object with the smallest finalized ground-plane surface gap to the robot.
 
 Both query ids use the same program contract: identify the nearest candidate to the visible reference by metadata-grounded floor-plane distance. The generator enforces a unique nearest margin. Annotation is the scalar bounding box `[x0, y0, x1, y1]` of the selected candidate in the scene. The reference object, shelf racks, context objects, option panel, and option text are not annotation.
 

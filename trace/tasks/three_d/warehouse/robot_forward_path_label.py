@@ -410,10 +410,10 @@ def _build_retry_locked_params(instance_seed: int, params: Mapping[str, Any]) ->
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
         key="candidate_count",
-        default_min=5,
-        default_max=5,
-        lower=5,
-        upper=6,
+        default_min=4,
+        default_max=4,
+        lower=4,
+        upper=4,
         allow_locked=True,
     )
     context_object_count, _context_probabilities = _shared_resolve_count(
@@ -505,10 +505,10 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
             gen_defaults=_GEN_DEFAULTS,
             instance_seed=int(instance_seed),
             key="candidate_count",
-            default_min=5,
-            default_max=5,
-            lower=5,
-            upper=6,
+            default_min=4,
+            default_max=4,
+            lower=4,
+            upper=4,
             allow_locked=True,
         )
         context_object_count, context_count_probabilities = _shared_resolve_count(

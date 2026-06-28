@@ -8,16 +8,7 @@
 7. Annotation schema: `point_map`
 
 ## Program Contract
-```text
-read_visible_measurement_tool(
-  tool=ruler,
-  target=marked_length,
-  unit=centimeters,
-  output_role=length_measure
-);
-scene=measuring_tools;
-scope=ruler_length_value
-```
+- Program schema: `read_visible_measurement_tool(tool=ruler, target=marked_length, unit=centimeters, output_role=length_measure); scene=measuring_tools; scope=ruler_length_value`
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `measuring_tools`.

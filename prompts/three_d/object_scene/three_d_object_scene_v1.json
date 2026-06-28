@@ -34,17 +34,31 @@
         "",
         ""
       ],
-      "point_on_object_line_query": [
-        "",
-        "",
-        "",
-        "",
-        ""
-      ],
-      "object_relation_query": [
-        "",
-        "",
-        "",
+            "point_on_object_line_query": [
+                "",
+                "",
+                "",
+                "",
+                ""
+            ],
+            "point_camera_distance_order_query": [
+                "",
+                "",
+                "",
+                "",
+                ""
+            ],
+            "point_height_order_query": [
+                "",
+                "",
+                "",
+                "",
+                ""
+            ],
+            "object_relation_query": [
+                "",
+                "",
+                "",
         "",
         ""
       ],
@@ -127,17 +141,31 @@
         "Which point marker is aligned above the {reference_name} along the vertical direction?",
         "Find the point directly above the {reference_name}. Which letter is it?"
       ],
-      "point_on_object_line": [
-        "Which marked point lies on the line connecting the {reference_a_name} and the {reference_b_name}?",
-        "Choose the marked point aligned with the {reference_a_name} and the {reference_b_name}.",
-        "Which letter marks the point on the line through the {reference_a_name} and the {reference_b_name}?",
-        "Find the marked point that lines up with the {reference_a_name} and the {reference_b_name}.",
-        "Which marked point is collinear with the {reference_a_name} and the {reference_b_name}?"
-      ],
-      "on_top_of_prop": [
-        "Which option describes the small 3D object on top of the {reference_name}?",
-        "Choose the option for the object sitting on the {reference_name}.",
-        "Which option describes the small object placed on top of the {reference_name}?",
+            "point_on_object_line": [
+                "Which marked point lies on the line connecting the {reference_a_name} and the {reference_b_name}?",
+                "Choose the marked point aligned with the {reference_a_name} and the {reference_b_name}.",
+                "Which letter marks the point on the line through the {reference_a_name} and the {reference_b_name}?",
+                "Find the marked point that lines up with the {reference_a_name} and the {reference_b_name}.",
+                "Which marked point is collinear with the {reference_a_name} and the {reference_b_name}?"
+            ],
+            "camera_distance_order": [
+                "Which option orders the marked points from nearest to farthest from the camera?",
+                "Choose the option listing the marked points from closest to farthest from the camera.",
+                "Which option gives the marked-point order from nearest to farthest?",
+                "Using the depth cues, choose the option that orders the marked points from nearest to farthest.",
+                "Which option lists the marked points in increasing distance from the camera?"
+            ],
+            "height_order": [
+                "Which option orders the marked points from lowest to highest above the floor?",
+                "Choose the option listing the marked points from lowest to highest.",
+                "Which option gives the marked-point order from least height to greatest height?",
+                "Using the height guide lines, choose the option that orders the marked points from lowest to highest.",
+                "Which option lists the marked points in increasing height above the floor?"
+            ],
+            "on_top_of_prop": [
+                "Which option describes the small 3D object on top of the {reference_name}?",
+                "Choose the option for the object sitting on the {reference_name}.",
+                "Which option describes the small object placed on top of the {reference_name}?",
         "Find the small object resting on the {reference_name} and choose its option.",
         "Which option describes the small object directly on the {reference_name}?"
       ],
@@ -297,17 +325,31 @@
       "json_example": "{\"annotation\":[318,260],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
-    "task:point_on_object_line_query": {
-      "object_description": "a perspective 3D platform scene with named objects and lettered point markers",
-      "annotation_hint": "set \"annotation\" to the point [x, y] at the center of the selected point marker",
-      "answer_hint": "set \"answer\" to the selected marked-point letter",
-      "json_example": "{\"annotation\":[318,260],\"answer\":\"C\"}",
-      "json_example_answer_only": "{\"answer\":\"C\"}"
-    },
-    "task:object_relation_query": {
-      "object_description": "a perspective 3D platform scene with small objects and larger props",
-      "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the selected small object in the scene",
-      "answer_hint": "set \"answer\" to the selected option letter",
+        "task:point_on_object_line_query": {
+            "object_description": "a perspective 3D platform scene with named objects and lettered point markers",
+            "annotation_hint": "set \"annotation\" to the point [x, y] at the center of the selected point marker",
+            "answer_hint": "set \"answer\" to the selected marked-point letter",
+            "json_example": "{\"annotation\":[318,260],\"answer\":\"C\"}",
+            "json_example_answer_only": "{\"answer\":\"C\"}"
+        },
+        "task:point_camera_distance_order_query": {
+            "object_description": "a perspective 3D platform scene with three marked floor points and an option panel",
+            "annotation_hint": "set \"annotation\" to an array containing the three marked-point centers [x, y]",
+            "answer_hint": "set \"answer\" to the selected option letter",
+            "json_example": "{\"annotation\":[[318,260],[486,370],[650,310]],\"answer\":\"C\"}",
+            "json_example_answer_only": "{\"answer\":\"C\"}"
+        },
+        "task:point_height_order_query": {
+            "object_description": "a perspective 3D platform scene with three marked height points and an option panel",
+            "annotation_hint": "set \"annotation\" to an array containing the three marked-point centers [x, y]",
+            "answer_hint": "set \"answer\" to the selected option letter",
+            "json_example": "{\"annotation\":[[318,260],[486,370],[650,310]],\"answer\":\"C\"}",
+            "json_example_answer_only": "{\"answer\":\"C\"}"
+        },
+        "task:object_relation_query": {
+            "object_description": "a perspective 3D platform scene with small objects and larger props",
+            "annotation_hint": "set \"annotation\" to the bounding box [x0, y0, x1, y1] around the selected small object in the scene",
+            "answer_hint": "set \"answer\" to the selected option letter",
       "json_example": "{\"annotation\":[318,260,366,308],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },

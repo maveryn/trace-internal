@@ -11,6 +11,16 @@ from ....shared.text_rendering import load_font
 from ...shared.object_scene import POINT_COLORS, POINT_LABELS, _RenderParams
 
 
+def _marker_color_for_label(label: str) -> Tuple[int, int, int]:
+    """Return a deterministic marker color for standard or task-local point labels."""
+
+    if str(label) in POINT_LABELS:
+        color_index = POINT_LABELS.index(str(label))
+    else:
+        color_index = sum(ord(char) for char in str(label)) % len(POINT_COLORS)
+    return tuple(int(channel) for channel in POINT_COLORS[int(color_index) % len(POINT_COLORS)])
+
+
 def _text_bbox_at_xy(
     *,
     draw: ImageDraw.ImageDraw,
@@ -54,7 +64,7 @@ def draw_marked_points(
     for point in sorted(marked_points, key=lambda item: float(item["camera_distance"]), reverse=True):
         label = str(point["point_label"])
         x, y = (float(point["screen_xy"][0]), float(point["screen_xy"][1]))
-        color = tuple(int(channel) for channel in POINT_COLORS[POINT_LABELS.index(label) % len(POINT_COLORS)])
+        color = _marker_color_for_label(label)
         glyph_bbox = [
             round(float(x - marker_radius), 3),
             round(float(y - marker_radius), 3),

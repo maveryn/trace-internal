@@ -63,6 +63,11 @@ DISTRACTOR_SLOTS_BY_SIDE_AND_WALL: Dict[str, Dict[str, Tuple[Tuple[float, float]
         "right": ((-0.50, 2.62), (-0.10, 2.20), (0.32, 1.78), (0.72, 1.34), (1.10, 0.94)),
     },
 }
+OTHER_WALL_CANDIDATE_SLOTS_BY_WALL: Dict[str, Tuple[Tuple[float, float], ...]] = {
+    "back": ((-2.20, 1.24), (-0.78, 2.12), (0.68, 1.28), (1.92, 2.06), (2.54, 1.66), (-2.85, 1.20)),
+    "left": ((-2.20, 1.22), (-1.42, 2.04), (-0.42, 1.30), (0.42, 2.04), (-2.70, 1.20), (-0.96, 1.66)),
+    "right": ((-2.20, 1.22), (-1.42, 2.04), (-0.42, 1.30), (0.42, 2.04), (-2.30, 1.20), (0.72, 1.34)),
+}
 REFERENCE_WALL_OBJECT_SIZE_SCALE = 1.28
 SIDE_RELATION_LETTERED_WALL_OBJECT_SIZE_SCALE = 1.35
 SIDE_RELATION_SCREEN_MIN_CENTER_DISTANCE_PX = 30.0
@@ -79,13 +84,24 @@ def _reference_slot(*, instance_seed: int, reference_wall: str, namespace: str) 
 def _candidate_slots(*, rng, candidate_count: int, reference_wall: str, side_relation: str) -> List[Tuple[str, float, float, bool]]:
     answer_slots = list(ANSWER_SLOTS_BY_SIDE_AND_WALL[str(side_relation)][str(reference_wall)])
     distractor_slots = list(DISTRACTOR_SLOTS_BY_SIDE_AND_WALL[str(side_relation)][str(reference_wall)])
+    other_wall_slots = [
+        (str(wall), float(hpos), float(z))
+        for wall, slots in OTHER_WALL_CANDIDATE_SLOTS_BY_WALL.items()
+        if str(wall) != str(reference_wall)
+        for hpos, z in slots
+    ]
     rng.shuffle(answer_slots)
     rng.shuffle(distractor_slots)
-    if int(candidate_count) - 1 > len(distractor_slots):
-        raise ValueError("could not sample enough same-wall distractors")
+    rng.shuffle(other_wall_slots)
     answer_hpos, answer_z = answer_slots[0]
     slots: List[Tuple[str, float, float, bool]] = [(str(reference_wall), float(answer_hpos), float(answer_z), True)]
-    slots.extend((str(reference_wall), float(hpos), float(z), False) for hpos, z in distractor_slots[: max(0, int(candidate_count) - 1)])
+    if int(candidate_count) >= 2:
+        opposite_hpos, opposite_z = distractor_slots[0]
+        slots.append((str(reference_wall), float(opposite_hpos), float(opposite_z), False))
+    remaining_count = max(0, int(candidate_count) - len(slots))
+    if remaining_count > len(other_wall_slots):
+        raise ValueError("could not sample enough other-wall side-relation distractors")
+    slots.extend((str(wall), float(hpos), float(z), False) for wall, hpos, z in other_wall_slots[:remaining_count])
     if len(slots) < int(candidate_count):
         raise ValueError("could not sample enough wall-side candidates")
     rng.shuffle(slots)

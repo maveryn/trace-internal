@@ -114,19 +114,31 @@ def test_room_wall_object_side_relation_answer_annotation_and_unique_reference(
     assert int(trace["wall_object_count"]) == 7
     assert int(trace["floor_object_count"]) == 6
     assert sorted(str(spec["point_label"]) for spec in candidates) == list("ABCDEF")
-    assert {str(spec["wall"]) for spec in candidates} == {reference_wall}
     assert len(candidates) == 6
     _assert_side_wall_objects_are_not_deep(trace)
     assert trace["candidate_walls_by_label"][answer_label] == reference_wall
+    same_wall_candidate_labels = [
+        str(label)
+        for label, wall in trace["candidate_walls_by_label"].items()
+        if str(wall) == reference_wall
+    ]
+    other_wall_candidate_labels = [
+        str(label)
+        for label, wall in trace["candidate_walls_by_label"].items()
+        if str(wall) != reference_wall
+    ]
+    assert len(same_wall_candidate_labels) == 2
+    assert len(other_wall_candidate_labels) == 4
+    assert len({str(spec["wall"]) for spec in candidates}) >= 2
     if query_id == "left_of_reference_on_wall":
         assert candidate_left_coords[answer_label] > reference_left_coord
         for label, coord in candidate_left_coords.items():
-            if label != answer_label:
+            if label != answer_label and label in same_wall_candidate_labels:
                 assert coord <= reference_left_coord
     else:
         assert candidate_left_coords[answer_label] < reference_left_coord
         for label, coord in candidate_left_coords.items():
-            if label != answer_label:
+            if label != answer_label and label in same_wall_candidate_labels:
                 assert coord >= reference_left_coord
     for bbox in trace["candidate_visible_bboxes_by_label"].values():
         width = float(bbox[2]) - float(bbox[0])

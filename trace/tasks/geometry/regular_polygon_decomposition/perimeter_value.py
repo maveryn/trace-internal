@@ -15,7 +15,7 @@ QUERY_ID_AREA_APOTHEM = "perimeter_from_total_area_and_apothem"
 SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
 DEFAULT_QUERY_ID = SINGLE_QUERY_ID
 PROMPT_TASK_KEY = "perimeter_value_query"
-ANNOTATION_ROLES = ("O", "A", "B", "M")
+ANNOTATION_ROLES = ("O", "M")
 
 
 def _prepare_perimeter(instance_seed, task_params, selected_branch, branch_probabilities):

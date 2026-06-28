@@ -7,7 +7,7 @@
 4. Supported `query_id` values: `single`
 5. Answer schema: `integer`
 6. Annotation schema: `point_map`
-7. Scalar annotation checked: `true` (not scalar-eligible; the task binds polygon center, side endpoints, and apothem-foot roles)
+7. Scalar annotation checked: `true` (not scalar-eligible; the task binds polygon center and apothem-foot roles)
 
 ## Program Contract
 - `solve_formula(regular_polygon_equal_wedge_decomposition, target=regular_polygon_perimeter, formula_schema=two_area_divided_by_apothem); scene=regular_polygon_decomposition; scope=perimeter_value`
@@ -22,7 +22,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space point map keys `O`, `A`, `B`, and `M`. These mark the polygon center, the side endpoints used by the apothem, and the apothem foot. Measurement labels and readout panels remain visible diagram content and private verifier metadata. This task does not shade a wedge region; the decomposition lines remain visible only to support the area-apothem perimeter relation.
+Prompt-facing annotation uses pixel-space point map keys `O` and `M`. These mark the polygon center and the apothem foot. Measurement labels and readout panels remain visible diagram content and private verifier metadata. This task does not shade a wedge region or label side endpoints; the decomposition lines remain visible only to support the area-apothem perimeter relation.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

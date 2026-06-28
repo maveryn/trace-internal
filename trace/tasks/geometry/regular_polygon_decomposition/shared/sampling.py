@@ -193,6 +193,7 @@ def perimeter_from_area_apothem(instance_seed: int, params: Mapping[str, Any], *
         show_apothem=True,
         show_total_area_readout=True,
         show_shaded_region=False,
+        show_side_endpoint_labels=False,
         show_midpoint_label=True,
     )
 

@@ -185,9 +185,28 @@ def _draw_dimension_label(ctx: RenderContext, start: Point, end: Point, label: s
 
 def _draw_apothem(ctx: RenderContext, center: Point, side_start: Point, side_end: Point, label: str) -> BBox:
     side_mid = mid(side_start, side_end)
-    ctx.draw.line((center, side_mid), fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
-    bbox_line = bbox_from_points((center, side_mid), width=ctx.width, height=ctx.height, pad=ctx.line_width + 2)
-    label_center = add_scaled(mid(center, side_mid), unit(sub(side_mid, center)), 14.0)
+    direction = unit(sub(side_mid, center))
+    label_center = add_scaled(mid(center, side_mid), direction, 14.0)
+    stroke_width = max(0, int(ctx.label_stroke_width))
+    label_raw_bbox = ctx.draw.textbbox(label_center, str(label), anchor="mm", font=ctx.small_font, stroke_width=stroke_width)
+    label_bbox = pad_bbox(label_raw_bbox, 4.0, width=ctx.width, height=ctx.height)
+    total_length = math.hypot(float(side_mid[0]) - float(center[0]), float(side_mid[1]) - float(center[1]))
+    label_distance = (
+        (float(label_center[0]) - float(center[0])) * float(direction[0])
+        + (float(label_center[1]) - float(center[1])) * float(direction[1])
+    )
+    gap_radius = max(float(label_bbox[2]) - float(label_bbox[0]), float(label_bbox[3]) - float(label_bbox[1])) * 0.55
+    gap_start = max(0.0, float(label_distance) - float(gap_radius) - 5.0)
+    gap_end = min(float(total_length), float(label_distance) + float(gap_radius) + 5.0)
+    line_segments: list[tuple[Point, Point]] = []
+    if gap_start > 4.0:
+        line_segments.append((center, add_scaled(center, direction, gap_start)))
+    if gap_end < total_length - 4.0:
+        line_segments.append((add_scaled(center, direction, gap_end), side_mid))
+    for segment_start, segment_end in line_segments:
+        ctx.draw.line((segment_start, segment_end), fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
+    line_points = [point for segment in line_segments for point in segment] or [center, side_mid]
+    bbox_line = bbox_from_points(line_points, width=ctx.width, height=ctx.height, pad=ctx.line_width + 2)
     label_bbox = _draw_text_centered(ctx, label, label_center, small=True)
     return bbox_from_points(
         ((bbox_line[0], bbox_line[1]), (bbox_line[2], bbox_line[3]), (label_bbox[0], label_bbox[1]), (label_bbox[2], label_bbox[3])),
@@ -272,8 +291,9 @@ def render_regular_polygon_scene(
     start_vertex = vertices[problem.start_index]
     label_end_vertex = side_end if problem.show_apothem else vertices[end_index]
     readout_bboxes["label_O"] = _draw_text_centered(ctx, "O", add_scaled(center, (0.0, -22.0)), small=True, role="label")
-    readout_bboxes["label_A"] = _draw_text_centered(ctx, "A", add_scaled(start_vertex, unit(sub(start_vertex, center)), 25.0), small=True, role="label")
-    readout_bboxes["label_B"] = _draw_text_centered(ctx, "B", add_scaled(label_end_vertex, unit(sub(label_end_vertex, center)), 25.0), small=True, role="label")
+    if problem.show_side_endpoint_labels:
+        readout_bboxes["label_A"] = _draw_text_centered(ctx, "A", add_scaled(start_vertex, unit(sub(start_vertex, center)), 25.0), small=True, role="label")
+        readout_bboxes["label_B"] = _draw_text_centered(ctx, "B", add_scaled(label_end_vertex, unit(sub(label_end_vertex, center)), 25.0), small=True, role="label")
     if problem.show_region_label:
         readout_bboxes["label_W"] = _draw_text_centered(ctx, "W", target_midpoint, small=True, role="label")
     if problem.show_midpoint_label:

@@ -55,7 +55,7 @@ def test_regular_polygon_decomposition_queries_emit_keyed_point_annotation() -> 
             if task_id.endswith("__piece_area_value"):
                 assert set(output.annotation_gt.value) == {"O", "A", "B"}
             if task_id.endswith("__perimeter_value"):
-                assert set(output.annotation_gt.value) == {"O", "A", "B", "M"}
+                assert set(output.annotation_gt.value) == {"O", "M"}
             width, height = output.image.size
             for point in output.annotation_gt.value.values():
                 assert isinstance(point, list)

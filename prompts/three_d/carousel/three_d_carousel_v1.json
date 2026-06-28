@@ -50,20 +50,6 @@
         "On the {belt_label} conveyor belt, how many objects are there?",
         "What is the total number of objects on the {belt_label} belt?"
       ],
-      "color_count_sum": [
-        "What is the sum of the number of {target_color_label} objects on the {first_belt_label} belt and the number of {target_color_label} objects on the {second_belt_label} belt?",
-        "Add the count of {target_color_label} objects on the {first_belt_label} belt to the count of {target_color_label} objects on the {second_belt_label} belt. What is the sum?",
-        "Count the {target_color_label} objects on the {first_belt_label} belt and on the {second_belt_label} belt, then add the two counts. What is the result?",
-        "How many {target_color_label} objects are there in total on the {first_belt_label} and {second_belt_label} belts?",
-        "Find the total count of {target_color_label} objects across the {first_belt_label} belt and the {second_belt_label} belt."
-      ],
-      "color_count_difference": [
-        "What is the difference between the number of {target_color_label} objects on the {first_belt_label} belt and the number on the {second_belt_label} belt?",
-        "Count the {target_color_label} objects on the {first_belt_label} belt and on the {second_belt_label} belt. What is the absolute difference?",
-        "Subtract the smaller {target_color_label} object count from the larger one for the {first_belt_label} and {second_belt_label} belts. What is the difference?",
-        "What is the absolute difference between the {target_color_label} object counts on the {first_belt_label} and {second_belt_label} belts?",
-        "Find the absolute difference in {target_color_label} object counts between the {first_belt_label} belt and the {second_belt_label} belt."
-      ],
       "object_count_sum": [
         "What is the sum of the number of {target_object_plural} on the {first_belt_label} belt and the number of {target_object_plural} on the {second_belt_label} belt?",
         "Add the count of {target_object_plural} on the {first_belt_label} belt to the count of {target_object_plural} on the {second_belt_label} belt. What is the sum?",
@@ -156,18 +142,6 @@
       "json_example": "{\"annotation\":[[120,450,174,494],[390,320,450,370]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
-    "query:color_count_sum": {
-      "answer_hint": "set \"answer\" to the computed count as an integer",
-      "annotation_hint": "set \"annotation\" to an object with keys \"inner_objects\" and \"outer_objects\"; each value is an array of [x0, y0, x1, y1] boxes around the counted colored objects for that belt",
-      "json_example": "{\"annotation\":{\"inner_objects\":[[120,450,174,494]],\"outer_objects\":[[390,320,450,370]]},\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
-    },
-    "query:color_count_difference": {
-      "answer_hint": "set \"answer\" to the computed count as an integer",
-      "annotation_hint": "set \"annotation\" to an object with keys \"inner_objects\" and \"outer_objects\"; each value is an array of [x0, y0, x1, y1] boxes around the counted colored objects for that belt",
-      "json_example": "{\"annotation\":{\"inner_objects\":[[120,450,174,494]],\"outer_objects\":[[390,320,450,370]]},\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
-    },
     "query:object_count_sum": {
       "answer_hint": "set \"answer\" to the computed count as an integer",
       "annotation_hint": "set \"annotation\" to an object with keys \"inner_objects\" and \"outer_objects\"; each value is an array of [x0, y0, x1, y1] boxes around the counted objects of the requested type for that belt",
@@ -235,8 +209,6 @@
     "query:color_belt_count": ["belt_label", "target_color_label"],
     "query:color_type_belt_count": ["belt_label", "target_color_label", "target_object_plural"],
     "query:belt_total_count": ["belt_label"],
-    "query:color_count_sum": ["target_color_label", "first_belt_label", "second_belt_label", "first_annotation_key", "second_annotation_key", "answer_hint", "annotation_hint", "json_example", "json_example_answer_only"],
-    "query:color_count_difference": ["target_color_label", "first_belt_label", "second_belt_label", "first_annotation_key", "second_annotation_key", "answer_hint", "annotation_hint", "json_example", "json_example_answer_only"],
     "query:object_count_sum": ["target_object_plural", "first_belt_label", "second_belt_label", "first_annotation_key", "second_annotation_key", "answer_hint", "annotation_hint", "json_example", "json_example_answer_only"],
     "query:object_count_difference": ["target_object_plural", "first_belt_label", "second_belt_label", "first_annotation_key", "second_annotation_key", "answer_hint", "annotation_hint", "json_example", "json_example_answer_only"],
     "query:color_ordered_pair_count": ["belt_label", "first_target_color_label", "second_target_color_label", "answer_hint", "annotation_hint", "json_example", "json_example_answer_only"],

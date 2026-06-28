@@ -12,12 +12,11 @@ from trace.tasks.three_d.conveyor.belt_total_object_count import (
 from trace.tasks.three_d.conveyor.between_object_type_anchors_count import TASK_ID as BETWEEN_OBJECT_TYPE_ANCHORS_TASK_ID
 from trace.tasks.three_d.conveyor.color_ordered_adjacent_pair_count import TASK_ID as COLOR_ORDERED_PAIR_TASK_ID
 from trace.tasks.three_d.conveyor.color_transfer_total_count import TASK_ID as COLOR_TRANSFER_TASK_ID
-from trace.tasks.three_d.conveyor.lane_color_count_arithmetic_value import (
+from trace.tasks.three_d.conveyor.lane_object_type_count_arithmetic_value import (
     DIFFERENCE_QUERY_ID as ARITH_DIFFERENCE_QUERY_ID,
-    TASK_ID as COLOR_ARITH_TASK_ID,
+    TASK_ID as OBJECT_TYPE_ARITH_TASK_ID,
     TOTAL_QUERY_ID as ARITH_TOTAL_QUERY_ID,
 )
-from trace.tasks.three_d.conveyor.lane_object_type_count_arithmetic_value import TASK_ID as OBJECT_TYPE_ARITH_TASK_ID
 from trace.tasks.three_d.conveyor.object_type_ordered_adjacent_pair_count import TASK_ID as OBJECT_TYPE_ORDERED_PAIR_TASK_ID
 from trace.tasks.three_d.conveyor.object_type_transfer_total_count import TASK_ID as OBJECT_TYPE_TRANSFER_TASK_ID
 from trace.tasks.three_d.conveyor.scoped_belt_color_count import TASK_ID as SCOPED_COLOR_TASK_ID
@@ -37,8 +36,6 @@ COLOR_TYPE_BELT_COUNT_INTERNAL_QUERY_ID = "color_type_belt_count"
 BELT_TOTAL_INTERNAL_QUERY_ID = "belt_total_count"
 OBJECT_COUNT_SUM_INTERNAL_QUERY_ID = "object_count_sum"
 OBJECT_COUNT_DIFFERENCE_INTERNAL_QUERY_ID = "object_count_difference"
-COLOR_COUNT_SUM_INTERNAL_QUERY_ID = "color_count_sum"
-COLOR_COUNT_DIFFERENCE_INTERNAL_QUERY_ID = "color_count_difference"
 OBJECT_ORDERED_PAIR_INTERNAL_QUERY_ID = "object_ordered_pair_count"
 COLOR_ORDERED_PAIR_INTERNAL_QUERY_ID = "color_ordered_pair_count"
 OBJECT_TRANSFER_INTERNAL_QUERY_ID = "object_transfer_total_count"
@@ -374,8 +371,6 @@ def test_conveyor_replay_uses_single_public_query_id() -> None:
 
 def test_conveyor_lane_count_arithmetic_query_ids() -> None:
     cases = (
-        (COLOR_ARITH_TASK_ID, ARITH_TOTAL_QUERY_ID, COLOR_COUNT_SUM_INTERNAL_QUERY_ID, {"canvas_preset": "landscape"}, 2026062705),
-        (COLOR_ARITH_TASK_ID, ARITH_DIFFERENCE_QUERY_ID, COLOR_COUNT_DIFFERENCE_INTERNAL_QUERY_ID, {"canvas_preset": "portrait"}, 2026062706),
         (OBJECT_TYPE_ARITH_TASK_ID, ARITH_TOTAL_QUERY_ID, OBJECT_COUNT_SUM_INTERNAL_QUERY_ID, {"canvas_preset": "landscape"}, 2026062707),
         (OBJECT_TYPE_ARITH_TASK_ID, ARITH_DIFFERENCE_QUERY_ID, OBJECT_COUNT_DIFFERENCE_INTERNAL_QUERY_ID, {"canvas_preset": "portrait"}, 2026062708),
     )
@@ -416,12 +411,8 @@ def test_conveyor_lane_count_arithmetic_query_ids() -> None:
             assert output.annotation_gt.value[str(key)] == expected
             assert len(expected) == operands[str(key)]
         assert max(int(value) for value in trace["lane_counts"].values()) <= 8
-        if task_id == COLOR_ARITH_TASK_ID:
-            assert trace["predicate_kind"] == "color_count_arithmetic"
-            assert trace["target_color_label"]
-        else:
-            assert trace["predicate_kind"] == "object_type_count_arithmetic"
-            assert trace["target_object_plural"]
+        assert trace["predicate_kind"] == "object_type_count_arithmetic"
+        assert trace["target_object_plural"]
 
 
 def test_conveyor_adjacent_pair_count_query_ids() -> None:

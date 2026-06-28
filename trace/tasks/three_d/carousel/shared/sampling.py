@@ -48,7 +48,6 @@ PREDICATE_COLOR = "color"
 PREDICATE_COLOR_TYPE = "color_type"
 PREDICATE_BELT_TOTAL = "belt_total"
 PREDICATE_OBJECT_TYPE_ARITHMETIC = "object_type_count_arithmetic"
-PREDICATE_COLOR_ARITHMETIC = "color_count_arithmetic"
 PREDICATE_ORDERED_OBJECT_PAIR = "ordered_object_pair"
 PREDICATE_ORDERED_COLOR_PAIR = "ordered_color_pair"
 PREDICATE_OBJECT_TYPE_TRANSFER = "object_type_transfer"
@@ -1278,18 +1277,6 @@ def build_belt_count_arithmetic_dataset(
         target_color_name = ""
         target_color_probabilities: Dict[str, float] = {}
         wrong_colors = list(color_names)
-    elif str(predicate_kind) == PREDICATE_COLOR_ARITHMETIC:
-        target_shape, target_shape_probabilities = _resolve_target_shape(
-            params=params,
-            rng=rng,
-            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
-        )
-        distractor_shapes = [str(target_shape)]
-        target_color_name, target_color_probabilities = _resolve_target_color(params=params, rng=rng)
-        color_names = _sample_readout_palette(rng, target_color=str(target_color_name), size=4)
-        wrong_colors = [str(color) for color in color_names if str(color) != str(target_color_name)]
-        if not wrong_colors:
-            raise ValueError("carousel arithmetic color task needs non-target colors")
     else:
         raise ValueError(f"unsupported carousel arithmetic predicate: {predicate_kind}")
 
@@ -1310,7 +1297,7 @@ def build_belt_count_arithmetic_dataset(
                     rng=rng,
                     object_id=str(object_id),
                     shape_type=str(target_shape),
-                    color_name=str(target_color_name) if str(predicate_kind) == PREDICATE_COLOR_ARITHMETIC else str(color_names[len(object_specs) % len(color_names)]),
+                    color_name=str(color_names[len(object_specs) % len(color_names)]),
                     slot=slot,
                     belt_key=str(belt_key),
                     matches_query=True,
@@ -1325,12 +1312,8 @@ def build_belt_count_arithmetic_dataset(
                 belt_key=str(belt_key),
                 min_angle_gap_degrees=float(min_angle_gap_degrees),
             )
-            if str(predicate_kind) == PREDICATE_OBJECT_TYPE_ARITHMETIC:
-                shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
-                color_name = str(color_names[(index + len(object_specs)) % len(color_names)])
-            else:
-                shape_type = str(distractor_shapes[0])
-                color_name = str(wrong_colors[(index + len(object_specs)) % len(wrong_colors)])
+            shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
+            color_name = str(color_names[(index + len(object_specs)) % len(color_names)])
             object_specs.append(
                 _make_object_spec(
                     rng=rng,
@@ -2156,7 +2139,6 @@ __all__ = [
     "ARITHMETIC_SUM",
     "PREDICATE_BELT_TOTAL",
     "PREDICATE_COLOR",
-    "PREDICATE_COLOR_ARITHMETIC",
     "PREDICATE_COLOR_TYPE",
     "PREDICATE_COLOR_TRANSFER",
     "PREDICATE_BETWEEN_OBJECT_ANCHORS",

@@ -28,7 +28,6 @@ from .shared.sampling import (
     PREDICATE_BELT_TOTAL,
     PREDICATE_BETWEEN_OBJECT_ANCHORS,
     PREDICATE_COLOR,
-    PREDICATE_COLOR_ARITHMETIC,
     PREDICATE_COLOR_TYPE,
     PREDICATE_COLOR_TRANSFER,
     PREDICATE_ORDERED_COLOR_PAIR,
@@ -1015,7 +1014,7 @@ def run_conveyor_count_arithmetic_lifecycle(
     )
     prompt_query_key = str(prompt_query_key_by_branch[str(selected_branch)])
     predicate_kind = str(predicate_kind_by_branch[str(selected_branch)])
-    if predicate_kind not in {PREDICATE_OBJECT_TYPE_ARITHMETIC, PREDICATE_COLOR_ARITHMETIC}:
+    if predicate_kind != PREDICATE_OBJECT_TYPE_ARITHMETIC:
         raise ValueError(f"unsupported straight conveyor arithmetic predicate: {predicate_kind}")
     operation = str(operation_by_branch[str(selected_branch)])
     min_bbox_side_px = float(clean_params.get("min_rendered_bbox_side_px", gen_defaults.get("min_rendered_bbox_side_px", 24.0)))

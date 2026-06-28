@@ -57,7 +57,6 @@ PREDICATE_OBJECT_TYPE = "object_type"
 PREDICATE_COLOR = "color"
 PREDICATE_COLOR_TYPE = "color_type"
 PREDICATE_OBJECT_TYPE_ARITHMETIC = "object_type_count_arithmetic"
-PREDICATE_COLOR_ARITHMETIC = "color_count_arithmetic"
 PREDICATE_ORDERED_OBJECT_PAIR = "ordered_object_pair"
 PREDICATE_ORDERED_COLOR_PAIR = "ordered_color_pair"
 PREDICATE_OBJECT_TYPE_TRANSFER = "object_type_transfer"
@@ -1180,18 +1179,6 @@ def build_lane_count_arithmetic_dataset(
         target_color_name = ""
         target_color_probabilities: Dict[str, float] = {}
         wrong_colors = list(color_names)
-    elif str(predicate_kind) == PREDICATE_COLOR_ARITHMETIC:
-        target_shape, target_shape_probabilities = _resolve_shape(
-            params=params,
-            rng=rng,
-            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
-        )
-        distractor_shapes = [str(target_shape)]
-        target_color_name, target_color_probabilities = _resolve_target_color(params=params, rng=rng)
-        color_names = _sample_readout_palette(rng, target_color=str(target_color_name), size=4)
-        wrong_colors = [str(color) for color in color_names if str(color) != str(target_color_name)]
-        if not wrong_colors:
-            raise ValueError("conveyor arithmetic color task needs non-target colors")
     else:
         raise ValueError(f"unsupported straight conveyor arithmetic predicate: {predicate_kind}")
     if not color_names:
@@ -1208,18 +1195,11 @@ def build_lane_count_arithmetic_dataset(
         for index, slot in enumerate(slots):
             in_selected_scope = str(lane_key) in set(str(value) for value in selected_lanes)
             matches_query = bool(in_selected_scope and int(index) < int(target_count))
-            if str(predicate_kind) == PREDICATE_OBJECT_TYPE_ARITHMETIC:
-                if bool(matches_query) or (not in_selected_scope and rng.random() < 0.35):
-                    shape_type = str(target_shape)
-                else:
-                    shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
-                color_name = str(wrong_colors[(index + len(object_specs)) % len(wrong_colors)])
+            if bool(matches_query) or (not in_selected_scope and rng.random() < 0.35):
+                shape_type = str(target_shape)
             else:
-                shape_type = str(distractor_shapes[0])
-                if bool(matches_query) or (not in_selected_scope and rng.random() < 0.35):
-                    color_name = str(target_color_name)
-                else:
-                    color_name = str(wrong_colors[(index + len(object_specs)) % len(wrong_colors)])
+                shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
+            color_name = str(wrong_colors[(index + len(object_specs)) % len(wrong_colors)])
             object_id = f"obj_{len(object_specs):03d}"
             if bool(matches_query):
                 target_object_ids_by_lane[str(lane_key)].append(str(object_id))
@@ -2070,7 +2050,6 @@ __all__ = [
     "LAYOUT_VERTICAL",
     "PREDICATE_BELT_TOTAL",
     "PREDICATE_COLOR",
-    "PREDICATE_COLOR_ARITHMETIC",
     "PREDICATE_COLOR_TYPE",
     "PREDICATE_COLOR_TRANSFER",
     "PREDICATE_BETWEEN_OBJECT_ANCHORS",

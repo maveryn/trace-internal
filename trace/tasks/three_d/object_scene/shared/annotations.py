@@ -11,21 +11,26 @@ from ....shared.text_rendering import load_font
 from ...shared.object_scene import POINT_COLORS, POINT_LABELS, _RenderParams
 
 
-def _text_bbox_at_center(
+def _text_bbox_at_xy(
     *,
     draw: ImageDraw.ImageDraw,
     text: str,
-    center: Sequence[float],
+    xy: Sequence[float],
     font,
     stroke_width: int,
-) -> Tuple[Tuple[float, float], List[float]]:
-    raw_bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=int(stroke_width))
-    width = float(raw_bbox[2] - raw_bbox[0])
-    height = float(raw_bbox[3] - raw_bbox[1])
-    x = float(center[0]) - width * 0.5 - float(raw_bbox[0])
-    y = float(center[1]) - height * 0.5 - float(raw_bbox[1])
-    bbox = draw.textbbox((x, y), str(text), font=font, stroke_width=int(stroke_width))
-    return (round(float(x), 3), round(float(y), 3)), [round(float(value), 3) for value in bbox]
+) -> List[float]:
+    bbox = draw.textbbox((float(xy[0]), float(xy[1])), str(text), font=font, stroke_width=int(stroke_width))
+    return [round(float(value), 3) for value in bbox]
+
+
+def _bbox_union(*bboxes: Sequence[float]) -> List[float]:
+    clean = [list(bbox) for bbox in bboxes if bbox]
+    return [
+        round(float(min(bbox[0] for bbox in clean)), 3),
+        round(float(min(bbox[1] for bbox in clean)), 3),
+        round(float(max(bbox[2] for bbox in clean)), 3),
+        round(float(max(bbox[3] for bbox in clean)), 3),
+    ]
 
 
 def draw_marked_points(
@@ -34,11 +39,12 @@ def draw_marked_points(
     marked_points: Sequence[Mapping[str, Any]],
     render_params: _RenderParams,
 ) -> Tuple[Image.Image, Dict[str, Any], List[Dict[str, Any]]]:
-    """Draw marked-point labels and return their visual records; marker glyph bboxes are the annotation witnesses."""
+    """Draw marked point glyphs and labels; marker centers are scalar point witnesses."""
     output = image.convert("RGB")
     draw = ImageDraw.Draw(output)
-    marker_radius = max(12.0, float(render_params.marker_radius_px) * 0.66)
-    label_font = load_font(max(int(render_params.label_font_size_px) + 8, int(round(marker_radius * 2.0))), bold=True)
+    marker_radius = max(9.0, float(render_params.marker_radius_px) * 0.56)
+    center_radius = max(3.4, marker_radius * 0.26)
+    label_font = load_font(max(int(render_params.label_font_size_px) + 2, int(round(marker_radius * 1.45))), bold=True)
     marker_centers: Dict[str, List[float]] = {}
     marker_glyph_bboxes: Dict[str, List[float]] = {}
     marker_label_bboxes: Dict[str, List[float]] = {}
@@ -49,12 +55,35 @@ def draw_marked_points(
         label = str(point["point_label"])
         x, y = (float(point["screen_xy"][0]), float(point["screen_xy"][1]))
         color = tuple(int(channel) for channel in POINT_COLORS[POINT_LABELS.index(label) % len(POINT_COLORS)])
-        text_xy, glyph_bbox = _text_bbox_at_center(
+        glyph_bbox = [
+            round(float(x - marker_radius), 3),
+            round(float(y - marker_radius), 3),
+            round(float(x + marker_radius), 3),
+            round(float(y + marker_radius), 3),
+        ]
+        draw.ellipse(tuple(glyph_bbox), fill=(255, 255, 255), outline=(22, 28, 36), width=4)
+        inner_bbox = [
+            float(x - center_radius),
+            float(y - center_radius),
+            float(x + center_radius),
+            float(y + center_radius),
+        ]
+        draw.ellipse(tuple(inner_bbox), fill=color, outline=(22, 28, 36), width=1)
+        raw_label_bbox = draw.textbbox((0.0, 0.0), label, font=label_font, stroke_width=3)
+        label_width = float(raw_label_bbox[2] - raw_label_bbox[0])
+        label_height = float(raw_label_bbox[3] - raw_label_bbox[1])
+        label_x = x + marker_radius + 5.0
+        if label_x + label_width + 6.0 > float(render_params.canvas_width):
+            label_x = x - marker_radius - label_width - 7.0
+        label_y = y - label_height * 0.56
+        label_y = max(4.0, min(float(render_params.canvas_height) - label_height - 5.0, label_y))
+        text_xy = (round(float(label_x), 3), round(float(label_y), 3))
+        label_bbox = _text_bbox_at_xy(
             draw=draw,
             text=label,
-            center=(x, y),
+            xy=text_xy,
             font=label_font,
-            stroke_width=5,
+            stroke_width=3,
         )
         draw_text_traced(
             draw,
@@ -78,15 +107,16 @@ def draw_marked_points(
             role="marked_point_label",
             required=True,
         )
+        combined_bbox = _bbox_union(glyph_bbox, label_bbox)
         marker_centers[label] = [round(float(x), 3), round(float(y), 3)]
         marker_glyph_bboxes[label] = list(glyph_bbox)
-        marker_label_bboxes[label] = list(glyph_bbox)
-        marker_bboxes[label] = list(glyph_bbox)
+        marker_label_bboxes[label] = list(label_bbox)
+        marker_bboxes[label] = list(combined_bbox)
         entities.append(
             {
                 "entity_id": str(point["point_id"]),
                 "entity_type": "three_d_marked_point",
-                "bbox_px": list(glyph_bbox),
+                "bbox_px": list(combined_bbox),
                 "attrs": {
                     "point_label": str(label),
                     "marker_id": str(point["marker_id"]),
@@ -98,7 +128,7 @@ def draw_marked_points(
                     "camera_xyz": list(point["camera_xyz"]),
                     "camera_distance": float(point["camera_distance"]),
                     "marker_color_rgb": [int(channel) for channel in color],
-                    "marker_style": "letter_only",
+                    "marker_style": "ring_dot_with_offset_label",
                 },
             }
         )

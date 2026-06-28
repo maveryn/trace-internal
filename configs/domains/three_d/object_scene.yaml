@@ -30,6 +30,18 @@ generation:
       object_count_min: 8
       object_count_max: 8
       balanced_scene_variant_sampling: true
+    task_three_d__object_scene__point_on_object_line_label:
+      scene_variant_weights:
+        floor_grid_room: 1.0
+        tabletop_room: 1.0
+        studio_platform: 1.0
+      point_count_min: 6
+      point_count_max: 6
+      object_count_min: 6
+      object_count_max: 6
+      context_object_count_min: 1
+      context_object_count_max: 1
+      balanced_scene_variant_sampling: true
     task_three_d__object_scene__object_relation_label:
       scene_variant_weights:
         floor_grid_room: 1.0
@@ -45,12 +57,8 @@ generation:
         floor_grid_room: 1.0
         tabletop_room: 1.0
         studio_platform: 1.0
-      query_id_weights:
-        closest_to_reference: 1.0
-        farthest_from_reference: 1.0
       point_count_min: 6
       point_count_max: 6
-      balanced_query_id_sampling: true
       balanced_scene_variant_sampling: true
     task_three_d__object_scene__between_references_label:
       scene_variant_weights:
@@ -150,6 +158,21 @@ rendering:
       full_bleed_floor: true
       full_bleed_floor_extent_multiplier: 3.4
     task_three_d__object_scene__marked_point_vertical_relation_label:
+      canvas_width: 1180
+      canvas_height: 900
+      scene_margin_left_px: 54
+      scene_margin_right_px: 54
+      scene_margin_top_px: 42
+      scene_margin_bottom_px: 48
+      room_extent: 3.2
+      room_height: 3.0
+      grid_step: 0.8
+      marker_radius_px: 24
+      label_font_size_px: 24
+      line_width_px: 2
+      full_bleed_floor: true
+      full_bleed_floor_extent_multiplier: 3.4
+    task_three_d__object_scene__point_on_object_line_label:
       canvas_width: 1180
       canvas_height: 900
       scene_margin_left_px: 54
@@ -287,6 +310,9 @@ prompt:
     task_three_d__object_scene__marked_point_vertical_relation_label:
       scene_key: object_scene
       task_key: marked_point_vertical_relation_query
+    task_three_d__object_scene__point_on_object_line_label:
+      scene_key: object_scene
+      task_key: point_on_object_line_query
     task_three_d__object_scene__object_relation_label:
       scene_key: object_scene
       task_key: object_relation_query

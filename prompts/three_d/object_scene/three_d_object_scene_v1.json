@@ -34,6 +34,13 @@
         "",
         ""
       ],
+      "point_on_object_line_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
       "object_relation_query": [
         "",
         "",
@@ -119,6 +126,13 @@
         "Which letter marks the point directly over the {reference_name}?",
         "Which point marker is aligned above the {reference_name} along the vertical direction?",
         "Find the point directly above the {reference_name}. Which letter is it?"
+      ],
+      "point_on_object_line": [
+        "Which marked point lies on the line connecting the {reference_a_name} and the {reference_b_name}?",
+        "Choose the marked point aligned with the {reference_a_name} and the {reference_b_name}.",
+        "Which letter marks the point on the line through the {reference_a_name} and the {reference_b_name}?",
+        "Find the marked point that lines up with the {reference_a_name} and the {reference_b_name}.",
+        "Which marked point is collinear with the {reference_a_name} and the {reference_b_name}?"
       ],
       "on_top_of_prop": [
         "Which option describes the small 3D object on top of the {reference_name}?",
@@ -271,16 +285,23 @@
     },
     "task:marked_point_depth_extremum_query": {
       "object_description": "a perspective 3D platform scene with objects and lettered floor point markers",
-      "annotation_hint": "set \"annotation\" to an object with key \"selected_point\"; the value is the point [x, y] at the center of the selected marker letter",
+      "annotation_hint": "set \"annotation\" to the point [x, y] at the center of the selected point marker",
       "answer_hint": "set \"answer\" to the selected marked-point letter",
-      "json_example": "{\"annotation\":{\"selected_point\":[318,260]},\"answer\":\"C\"}",
+      "json_example": "{\"annotation\":[318,260],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:marked_point_vertical_relation_query": {
       "object_description": "a perspective 3D platform scene with small objects and lettered point markers",
-      "annotation_hint": "set \"annotation\" to an object with key \"selected_point\"; the value is the point [x, y] at the center of the selected marker letter",
+      "annotation_hint": "set \"annotation\" to the point [x, y] at the center of the selected point marker",
       "answer_hint": "set \"answer\" to the selected marked-point letter",
-      "json_example": "{\"annotation\":{\"selected_point\":[318,260]},\"answer\":\"C\"}",
+      "json_example": "{\"annotation\":[318,260],\"answer\":\"C\"}",
+      "json_example_answer_only": "{\"answer\":\"C\"}"
+    },
+    "task:point_on_object_line_query": {
+      "object_description": "a perspective 3D platform scene with named objects and lettered point markers",
+      "annotation_hint": "set \"annotation\" to the point [x, y] at the center of the selected point marker",
+      "answer_hint": "set \"answer\" to the selected marked-point letter",
+      "json_example": "{\"annotation\":[318,260],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:object_relation_query": {

@@ -46,7 +46,14 @@ def test_marked_point_vertical_relation_answer_and_annotation() -> None:
     assert output.annotation_gt.type == "point"
     assert output.annotation_gt.value == render_map["selected_point_px"]
     assert output.annotation_gt.value == render_map["marked_point_centers_px"][answer_label]
-    assert render_map["marked_point_label_bboxes_px"][answer_label] == render_map["marked_point_glyph_bboxes_px"][answer_label]
+    assert render_map["marked_point_label_bboxes_px"][answer_label] != render_map["marked_point_glyph_bboxes_px"][answer_label]
+    for label in {"A", "B", "C", "D", "E", "F"}:
+        glyph_bbox = render_map["marked_point_glyph_bboxes_px"][label]
+        label_bbox = render_map["marked_point_label_bboxes_px"][label]
+        center = render_map["marked_point_centers_px"][label]
+        assert glyph_bbox[0] <= center[0] <= glyph_bbox[2]
+        assert glyph_bbox[1] <= center[1] <= glyph_bbox[3]
+        assert label_bbox != glyph_bbox
     assert output.trace_payload["projected_annotation"]["type"] == "point"
     assert output.trace_payload["projected_annotation"]["point"] == output.annotation_gt.value
     assert output.trace_payload["projected_annotation"]["pixel_point"] == output.annotation_gt.value

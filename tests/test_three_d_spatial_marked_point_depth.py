@@ -57,8 +57,15 @@ def test_marked_point_depth_answer_and_annotation(query_id: str) -> None:
     assert float(trace["solver_trace"]["answer_screen_depth_margin_px"]) >= 32.0
     assert output.trace_payload["scene_ir"]["relations"]["answer_point_id"] == str(expected["point_id"])
     assert output.trace_payload["witness_symbolic"]["ids_by_role"]["selected_point"] == str(expected["point_id"])
-    assert render_map["marked_point_label_bboxes_px"][expected_label] == render_map["marked_point_glyph_bboxes_px"][expected_label]
+    assert render_map["marked_point_label_bboxes_px"][expected_label] != render_map["marked_point_glyph_bboxes_px"][expected_label]
     assert render_map["marked_point_circle_bboxes_px"][expected_label] == render_map["marked_point_glyph_bboxes_px"][expected_label]
+    for label in {"A", "B", "C", "D", "E", "F"}:
+        glyph_bbox = render_map["marked_point_glyph_bboxes_px"][label]
+        label_bbox = render_map["marked_point_label_bboxes_px"][label]
+        center = render_map["marked_point_centers_px"][label]
+        assert glyph_bbox[0] <= center[0] <= glyph_bbox[2]
+        assert glyph_bbox[1] <= center[1] <= glyph_bbox[3]
+        assert label_bbox != glyph_bbox
     assert "marked" in output.prompt.lower()
 
 

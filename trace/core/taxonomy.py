@@ -613,6 +613,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__incircle_tangents__incircle_tangent_perimeter_value": _entry("geometry", "incircle_tangents", "geometry", "measurement"),
     "task_geometry__measuring_tools__protractor_angle_value": _entry("geometry", "measuring_tools", "geometry", "measurement"),
     "task_geometry__measuring_tools__ruler_length_value": _entry("geometry", "measuring_tools", "geometry", "measurement"),
+    "task_geometry__paper_fold__folded_segment_length_value": _entry("geometry", "paper_fold", "geometry", "measurement"),
     "task_geometry__paper_fold__paper_fold_angle_value": _entry("geometry", "paper_fold", "geometry", "measurement"),
     "task_geometry__polygon_equation_diagram__equal_angle_measure_value": _entry("geometry", "polygon_equation_diagram", "geometry", "measurement"),
     "task_geometry__polygon_equation_diagram__equal_angle_variable_value": _entry("geometry", "polygon_equation_diagram", "geometry", "measurement"),

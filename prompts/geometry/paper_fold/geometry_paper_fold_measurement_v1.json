@@ -18,6 +18,13 @@
         "What is x, in degrees?",
         "Determine the measure of the marked angle x.",
         "Use the shown angle relationship to find x in degrees."
+      ],
+      "folded_segment_length_value": [
+        "Find the length of segment {target_segment}.",
+        "What is the length of segment {target_segment}?",
+        "Determine the length of {target_segment}.",
+        "Find the length of {target_segment}.",
+        "What is the value of the marked segment {target_segment}?"
       ]
     },
     "query": {},
@@ -42,6 +49,9 @@
     "scene:paper_fold_measurement_scene": [
       "object_description"
     ],
+    "task:folded_segment_length_value": [
+      "target_segment"
+    ],
     "output:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -57,6 +67,9 @@
   "static_slots_by_key": {
     "task:paper_fold_angle_value": {
       "answer_hint": "set \"answer\" to the angle measure in degrees rounded to one decimal place"
+    },
+    "task:folded_segment_length_value": {
+      "answer_hint": "set \"answer\" to the requested segment length as an integer"
     },
     "output:answer_only": {
       "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."
@@ -76,6 +89,9 @@
       "type": "string"
     },
     "object_description": {
+      "type": "string"
+    },
+    "target_segment": {
       "type": "string"
     }
   }

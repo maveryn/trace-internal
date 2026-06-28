@@ -7,6 +7,7 @@ import pytest
 from trace.tasks.registry import create_task
 
 TASK_ID = "task_geometry__paper_fold__paper_fold_angle_value"
+SEGMENT_TASK_ID = "task_geometry__paper_fold__folded_segment_length_value"
 ANNOTATION_KEYS = {"target_angle_cue", "given_angle_label"}
 
 
@@ -85,3 +86,79 @@ def test_paper_fold_samples_broad_answer_support() -> None:
     assert support_sizes == {190}
     assert len(set(answers)) >= 60
     assert max(Counter(answers).values()) <= 4
+
+
+def test_paper_folded_segment_length_uses_integer_answer_and_scalar_segment() -> None:
+    out = create_task(SEGMENT_TASK_ID).generate(
+        instance_seed=2026062801,
+        params={},
+        max_attempts=50,
+    )
+
+    assert out.scene_id == "paper_fold"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "integer"
+    assert isinstance(out.answer_gt.value, int)
+
+    assert out.annotation_gt.type == "segment"
+    assert len(out.annotation_gt.value) == 2
+    for point in out.annotation_gt.value:
+        assert len(point) == 2
+
+    projected = out.trace_payload["projected_annotation"]
+    assert projected["type"] == "segment"
+    assert projected["segment"] == out.annotation_gt.value
+    assert projected["pixel_segment"] == out.annotation_gt.value
+
+    query_spec = out.trace_payload["query_spec"]
+    assert query_spec["query_id"] == "single"
+    assert query_spec["params"]["formula_family"] == "pythagorean_leg_then_fold_correspondence"
+    assert query_spec["prompt_variant"]["prompt_schema_version"] == "v1"
+    assert query_spec["template_id"] == "geometry_paper_fold_measurement_v1"
+
+
+def test_paper_folded_segment_explicit_triple_overrides_bind_same_trace() -> None:
+    fp = create_task(SEGMENT_TASK_ID).generate(
+        instance_seed=2026062802,
+        params={"leg_ae": 6, "leg_af": 8, "target_segment": "FP"},
+        max_attempts=50,
+    )
+    ep = create_task(SEGMENT_TASK_ID).generate(
+        instance_seed=2026062802,
+        params={"leg_ae": 6, "leg_af": 8, "target_segment": "EP"},
+        max_attempts=50,
+    )
+
+    fp_witness = fp.trace_payload["witness_symbolic"]
+    assert fp.answer_gt.value == 8
+    assert fp_witness["leg_ae"] == 6
+    assert fp_witness["leg_af"] == 8
+    assert fp_witness["crease_ef"] == 10
+    assert fp_witness["known_leg_segment"] == "AE"
+    assert fp_witness["target_segment"] == "FP"
+    assert fp_witness["pythagorean_unknown_original_segment"] == "AF"
+    assert fp.trace_payload["execution_trace"]["reasoning_steps"] == 2
+
+    ep_witness = ep.trace_payload["witness_symbolic"]
+    assert ep.answer_gt.value == 6
+    assert ep_witness["known_leg_segment"] == "AF"
+    assert ep_witness["target_segment"] == "EP"
+    assert ep_witness["pythagorean_unknown_original_segment"] == "AE"
+
+
+def test_paper_folded_segment_samples_large_answer_support() -> None:
+    task = create_task(SEGMENT_TASK_ID)
+    answers = []
+    support_sizes = set()
+    target_segments = Counter()
+    for seed in range(100):
+        out = task.generate(instance_seed=seed, params={}, max_attempts=50)
+        answers.append(out.answer_gt.value)
+        params = out.trace_payload["query_spec"]["params"]
+        support_sizes.add(len(params["answer_support"]))
+        target_segments[str(params["target_segment"])] += 1
+
+    assert min(support_sizes) >= 200
+    assert len(set(answers)) >= 65
+    assert max(Counter(answers).values()) <= 4
+    assert set(target_segments) == {"EP", "FP"}

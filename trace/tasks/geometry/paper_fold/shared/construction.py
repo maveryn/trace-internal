@@ -7,17 +7,26 @@ import math
 from typing import Tuple
 
 from trace.tasks.geometry.shared.measurement_rendering import round1
+from trace.tasks.geometry.shared.pythagorean import (
+    IntegerRightTriangle,
+    integer_right_triangles,
+    validate_integer_right_triangle,
+)
 
-from .state import FoldGeometry
+from .state import FoldGeometry, FoldSegmentCase, FoldSegmentGeometry
 
 FoldCase = Tuple[int, int]
 FoldAnswerCases = Tuple[float, Tuple[FoldCase, ...]]
+FoldSegmentAnswerCases = Tuple[int, Tuple[FoldSegmentCase, ...]]
 
 _MIN_HEIGHT_UNITS = 10
 _MAX_HEIGHT_UNITS = 34
 _MIN_FOLDED_OFFSET_UNITS = 4
 _MIN_ANSWER_DEGREES = 50.0
 _MAX_ANSWER_DEGREES = 78.0
+_MAX_SEGMENT_LEG_UNITS = 400
+_MAX_SEGMENT_HYPOTENUSE_UNITS = 580
+_MAX_SEGMENT_LEG_RATIO = 3.0
 
 
 def fold_geometry(height_units: float, folded_offset_units: float) -> FoldGeometry:
@@ -70,4 +79,95 @@ def fold_answer_support() -> tuple[float, ...]:
     return tuple(float(answer) for answer, _cases in fold_answer_cases())
 
 
-__all__ = ["FoldAnswerCases", "FoldCase", "fold_answer_cases", "fold_answer_support", "fold_geometry"]
+def fold_segment_geometry(leg_ae: int, leg_af: int) -> FoldSegmentGeometry:
+    """Return fold geometry where crease EF folds original point A onto P."""
+
+    leg_ae = int(leg_ae)
+    leg_af = int(leg_af)
+    hypotenuse = int(math.isqrt(leg_ae * leg_ae + leg_af * leg_af))
+    validate_integer_right_triangle(
+        IntegerRightTriangle(
+            leg_a=int(leg_ae),
+            leg_b=int(leg_af),
+            hypotenuse=int(hypotenuse),
+        )
+    )
+    hypotenuse_sq = float(hypotenuse * hypotenuse)
+    folded_x = (2.0 * float(leg_af) * float(leg_ae * leg_ae)) / hypotenuse_sq
+    folded_y = (2.0 * float(leg_ae) * float(leg_af * leg_af)) / hypotenuse_sq
+    width_units = max(float(leg_af) + 6.0, float(folded_x) + 6.0, 18.0)
+    height_units = max(float(leg_ae) + 6.0, float(folded_y) + 6.0, 14.0)
+    return FoldSegmentGeometry(
+        leg_ae=int(leg_ae),
+        leg_af=int(leg_af),
+        crease_ef=int(hypotenuse),
+        width_units=float(width_units),
+        height_units=float(height_units),
+        folded_point_units=(float(folded_x), float(folded_y)),
+    )
+
+
+def _segment_cases_from_triangle(triangle: IntegerRightTriangle) -> tuple[FoldSegmentCase, ...]:
+    leg_ae = int(triangle.leg_a)
+    leg_af = int(triangle.leg_b)
+    crease_ef = int(triangle.hypotenuse)
+    leg_ratio = float(max(leg_ae, leg_af)) / float(min(leg_ae, leg_af))
+    if leg_ratio > _MAX_SEGMENT_LEG_RATIO:
+        return tuple()
+    return (
+        FoldSegmentCase(
+            leg_ae=int(leg_ae),
+            leg_af=int(leg_af),
+            crease_ef=int(crease_ef),
+            target_segment="EP",
+            known_leg_segment="AF",
+            target_answer=int(leg_ae),
+        ),
+        FoldSegmentCase(
+            leg_ae=int(leg_ae),
+            leg_af=int(leg_af),
+            crease_ef=int(crease_ef),
+            target_segment="FP",
+            known_leg_segment="AE",
+            target_answer=int(leg_af),
+        ),
+    )
+
+
+@lru_cache(maxsize=1)
+def fold_segment_answer_cases() -> tuple[FoldSegmentAnswerCases, ...]:
+    """Return folded-segment cases grouped by integer answer value."""
+
+    grouped: dict[int, list[FoldSegmentCase]] = {}
+    for triangle in integer_right_triangles(
+        min_leg=5,
+        max_leg=_MAX_SEGMENT_LEG_UNITS,
+        max_hypotenuse=_MAX_SEGMENT_HYPOTENUSE_UNITS,
+        include_swapped=True,
+    ):
+        for case in _segment_cases_from_triangle(triangle):
+            grouped.setdefault(int(case.target_answer), []).append(case)
+    return tuple(
+        (int(answer), tuple(cases))
+        for answer, cases in sorted(grouped.items(), key=lambda item: int(item[0]))
+        if cases
+    )
+
+
+def fold_segment_answer_support() -> tuple[int, ...]:
+    """Return the integer answer support for folded-segment samples."""
+
+    return tuple(int(answer) for answer, _cases in fold_segment_answer_cases())
+
+
+__all__ = [
+    "FoldAnswerCases",
+    "FoldCase",
+    "FoldSegmentAnswerCases",
+    "fold_answer_cases",
+    "fold_answer_support",
+    "fold_geometry",
+    "fold_segment_answer_cases",
+    "fold_segment_answer_support",
+    "fold_segment_geometry",
+]

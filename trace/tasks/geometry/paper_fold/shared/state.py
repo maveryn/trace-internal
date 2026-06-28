@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw
 from trace.tasks.geometry.shared.scene_transform import LazySceneTransform
 
 Point = Tuple[float, float]
+Segment = Tuple[Point, Point]
 BBox = Tuple[float, float, float, float]
 Color = Tuple[int, int, int]
 
@@ -33,6 +34,41 @@ class FoldAnglePlan:
 
     answer: float
     geometry: FoldGeometry
+    params: Dict[str, Any]
+    support_probabilities: Dict[str, float]
+
+
+@dataclass(frozen=True)
+class FoldSegmentGeometry:
+    """Analytic folded-corner side-length geometry before pixel projection."""
+
+    leg_ae: int
+    leg_af: int
+    crease_ef: int
+    width_units: float
+    height_units: float
+    folded_point_units: Point
+
+
+@dataclass(frozen=True)
+class FoldSegmentCase:
+    """One fold side-length case derived from an integer right triangle."""
+
+    leg_ae: int
+    leg_af: int
+    crease_ef: int
+    target_segment: str
+    known_leg_segment: str
+    target_answer: int
+
+
+@dataclass(frozen=True)
+class FoldSegmentPlan:
+    """Task-bound folded-segment length plan for one sample."""
+
+    answer: int
+    geometry: FoldSegmentGeometry
+    case: FoldSegmentCase
     params: Dict[str, Any]
     support_probabilities: Dict[str, float]
 
@@ -72,6 +108,7 @@ class RenderedPaperFoldScene:
     render_map: Dict[str, Any]
     witness: Dict[str, Any]
     reasoning_steps: int
+    annotation_segment: Segment | None = None
 
 
 __all__ = [
@@ -79,7 +116,11 @@ __all__ = [
     "Color",
     "FoldAnglePlan",
     "FoldGeometry",
+    "FoldSegmentCase",
+    "FoldSegmentGeometry",
+    "FoldSegmentPlan",
     "Point",
     "RenderContext",
     "RenderedPaperFoldScene",
+    "Segment",
 ]

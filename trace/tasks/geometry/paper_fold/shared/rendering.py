@@ -1,4 +1,4 @@
-"""Rendering primitives for folded-paper angle diagrams."""
+"""Rendering primitives for folded-paper diagrams."""
 
 from __future__ import annotations
 
@@ -31,7 +31,15 @@ from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
 
 from .defaults import SCENE_ID
-from .state import BBox, Color, FoldAnglePlan, Point, RenderContext, RenderedPaperFoldScene
+from .state import (
+    BBox,
+    Color,
+    FoldAnglePlan,
+    FoldSegmentPlan,
+    Point,
+    RenderContext,
+    RenderedPaperFoldScene,
+)
 
 DEGREE_SYMBOL = chr(176)
 
@@ -224,6 +232,46 @@ def _union_bbox(boxes: tuple[BBox, ...], *, width: int, height: int) -> BBox:
     return pad_bbox((x0, y0, x1, y1), 3.0, width=width, height=height)
 
 
+def _draw_segment_label(
+    ctx: RenderContext,
+    label: str,
+    start: Point,
+    end: Point,
+    *,
+    offset: float,
+    small: bool = True,
+) -> BBox:
+    """Draw a label offset normally from a visible segment."""
+
+    dx = float(end[0]) - float(start[0])
+    dy = float(end[1]) - float(start[1])
+    length = max(1e-6, math.hypot(dx, dy))
+    normal = (-dy / length, dx / length)
+    center = (
+        (float(start[0]) + float(end[0])) / 2.0 + normal[0] * float(offset),
+        (float(start[1]) + float(end[1])) / 2.0 + normal[1] * float(offset),
+    )
+    return draw_label(ctx, str(label), center, small=bool(small))
+
+
+def _draw_right_angle_marker(ctx: RenderContext, vertex: Point, arm_a: Point, arm_b: Point) -> None:
+    """Draw a small right-angle marker between two visible arms."""
+
+    def unit_toward(point: Point) -> Point:
+        dx = float(point[0]) - float(vertex[0])
+        dy = float(point[1]) - float(vertex[1])
+        length = max(1e-6, math.hypot(dx, dy))
+        return (dx / length, dy / length)
+
+    u = unit_toward(arm_a)
+    v = unit_toward(arm_b)
+    size = 18.0
+    p1 = (float(vertex[0]) + u[0] * size, float(vertex[1]) + u[1] * size)
+    p2 = (p1[0] + v[0] * size, p1[1] + v[1] * size)
+    p3 = (float(vertex[0]) + v[0] * size, float(vertex[1]) + v[1] * size)
+    ctx.draw.line([p1, p2, p3], fill=ctx.crease_color, width=max(2, ctx.line_width - 1))
+
+
 def render_paper_fold_scene(ctx: RenderContext, plan: FoldAnglePlan) -> RenderedPaperFoldScene:
     """Render the folded-corner angle diagram after final scene transform."""
 
@@ -399,4 +447,175 @@ def render_paper_fold_scene(ctx: RenderContext, plan: FoldAnglePlan) -> Rendered
     )
 
 
-__all__ = ["make_render_context", "render_paper_fold_scene"]
+def render_paper_fold_segment_scene(ctx: RenderContext, plan: FoldSegmentPlan) -> RenderedPaperFoldScene:
+    """Render a folded-corner side-length diagram after final scene transform."""
+
+    geometry = plan.geometry
+    margin_x = 94.0
+    margin_y = 72.0
+    scale = min(
+        (float(ctx.width) - 2.0 * margin_x) / geometry.width_units,
+        (float(ctx.height) - 170.0) / geometry.height_units,
+    )
+    paper_w = geometry.width_units * scale
+    x0 = (float(ctx.width) - paper_w) / 2.0
+    y0 = margin_y
+
+    def pt(x_units: float, y_units: float) -> Point:
+        return (x0 + float(x_units) * scale, y0 + float(y_units) * scale)
+
+    a = pt(0.0, 0.0)
+    b = pt(geometry.width_units, 0.0)
+    c = pt(geometry.width_units, geometry.height_units)
+    d = pt(0.0, geometry.height_units)
+    e = pt(0.0, float(geometry.leg_ae))
+    f = pt(float(geometry.leg_af), 0.0)
+    p = pt(float(geometry.folded_point_units[0]), float(geometry.folded_point_units[1]))
+    ctx.scene_transform.resolve((a, b, c, d, e, f, p))
+    a, b, c, d, e, f, p = ctx.scene_transform.points((a, b, c, d, e, f, p))
+
+    paper_bbox = bbox_from_points((a, b, c, d), width=ctx.width, height=ctx.height, pad=0.0)
+    ctx.draw.polygon((a, b, c, d), fill=ctx.paper_fill_color)
+    ctx.draw.line((a, b, c, d, a), fill=ctx.line_color, width=ctx.line_width)
+
+    overlay = Image.new("RGBA", ctx.image.size, (0, 0, 0, 0))
+    overlay_draw = ImageDraw.Draw(overlay)
+    folded_fill = (*ctx.folded_fill_color[:3], 88)
+    overlay_draw.polygon([e, f, p], fill=folded_fill)
+    ctx.image.paste(Image.alpha_composite(ctx.image.convert("RGBA"), overlay).convert("RGB"))
+    ctx.draw = ImageDraw.Draw(ctx.image)
+
+    _draw_dashed_line(ctx.draw, a, e, fill=ctx.dashed_color, width=max(2, ctx.line_width - 1))
+    _draw_dashed_line(ctx.draw, a, f, fill=ctx.dashed_color, width=max(2, ctx.line_width - 1))
+    ctx.draw.line([e, p, f], fill=ctx.line_color, width=ctx.line_width)
+    ctx.draw.line([e, f], fill=ctx.crease_color, width=ctx.line_width + 1)
+    _draw_right_angle_marker(ctx, a, e, f)
+
+    target_points = (e, p) if plan.case.target_segment == "EP" else (f, p)
+    ctx.draw.line(target_points, fill=ctx.crease_color, width=ctx.line_width + 2)
+
+    for point in (a, b, c, d, e, f, p):
+        radius = 4.0
+        ctx.draw.ellipse(
+            (point[0] - radius, point[1] - radius, point[0] + radius, point[1] + radius),
+            fill=ctx.label_color,
+            outline=ctx.label_stroke_color,
+            width=1,
+        )
+
+    _draw_point_label(ctx, "A", a, (-14.0, -16.0))
+    _draw_point_label(ctx, "B", b, (14.0, -16.0))
+    _draw_point_label(ctx, "C", c, (14.0, 16.0))
+    _draw_point_label(ctx, "D", d, (-15.0, 17.0))
+    _draw_point_label(ctx, "E", e, (-18.0, -2.0))
+    _draw_point_label(ctx, "F", f, (0.0, -18.0))
+    _draw_point_label(ctx, "P", p, (0.0, 20.0))
+
+    if plan.case.known_leg_segment == "AE":
+        known_leg_bbox = _draw_segment_label(
+            ctx,
+            f"AE={geometry.leg_ae}",
+            a,
+            e,
+            offset=-28.0,
+        )
+    else:
+        known_leg_bbox = _draw_segment_label(
+            ctx,
+            f"AF={geometry.leg_af}",
+            a,
+            f,
+            offset=-28.0,
+        )
+    crease_label_bbox = _draw_segment_label(
+        ctx,
+        f"EF={geometry.crease_ef}",
+        e,
+        f,
+        offset=26.0,
+    )
+    target_label_bbox = _draw_segment_label(
+        ctx,
+        f"{plan.case.target_segment}=?",
+        target_points[0],
+        target_points[1],
+        offset=-30.0,
+    )
+
+    folded_bbox = bbox_from_points((e, f, p), width=ctx.width, height=ctx.height, pad=8.0)
+    original_fold_bbox = bbox_from_points((a, e, f), width=ctx.width, height=ctx.height, pad=8.0)
+    crease_bbox = bbox_from_points((e, f), width=ctx.width, height=ctx.height, pad=8.0)
+    target_bbox = bbox_from_points(target_points, width=ctx.width, height=ctx.height, pad=8.0)
+    point_map = {
+        "A": bbox_to_list(pad_bbox((a[0], a[1], a[0], a[1]), 3.0, width=ctx.width, height=ctx.height)),
+        "E": bbox_to_list(pad_bbox((e[0], e[1], e[0], e[1]), 3.0, width=ctx.width, height=ctx.height)),
+        "F": bbox_to_list(pad_bbox((f[0], f[1], f[0], f[1]), 3.0, width=ctx.width, height=ctx.height)),
+        "P": bbox_to_list(pad_bbox((p[0], p[1], p[0], p[1]), 3.0, width=ctx.width, height=ctx.height)),
+    }
+    scene_entities = (
+        {
+            "entity_id": "paper_rectangle",
+            "entity_type": "paper_rectangle",
+            "bbox": bbox_to_list(paper_bbox),
+            "height_units": float(geometry.height_units),
+            "width_units": float(geometry.width_units),
+        },
+        {
+            "entity_id": "original_corner",
+            "entity_type": "dashed_original_fold_region",
+            "bbox": bbox_to_list(original_fold_bbox),
+        },
+        {
+            "entity_id": "folded_corner",
+            "entity_type": "folded_flap",
+            "bbox": bbox_to_list(folded_bbox),
+        },
+        {
+            "entity_id": "fold_crease",
+            "entity_type": "fold_crease",
+            "bbox": bbox_to_list(crease_bbox),
+        },
+        {
+            "entity_id": "target_folded_segment",
+            "entity_type": "target_segment",
+            "bbox": bbox_to_list(target_bbox),
+            "segment_name": str(plan.case.target_segment),
+        },
+    )
+    return RenderedPaperFoldScene(
+        image=ctx.image,
+        answer=float(plan.answer),
+        annotation_bboxes={},
+        annotation_segment=(target_points[0], target_points[1]),
+        scene_entities=scene_entities,
+        render_map={
+            "target_segment": [
+                [float(target_points[0][0]), float(target_points[0][1])],
+                [float(target_points[1][0]), float(target_points[1][1])],
+            ],
+            "target_bbox": bbox_to_list(target_bbox),
+            "known_leg_label_bbox": bbox_to_list(known_leg_bbox),
+            "crease_label_bbox": bbox_to_list(crease_label_bbox),
+            "target_label_bbox": bbox_to_list(target_label_bbox),
+            "paper_bbox": bbox_to_list(paper_bbox),
+            "folded_flap_bbox": bbox_to_list(folded_bbox),
+            "original_corner_bbox": bbox_to_list(original_fold_bbox),
+            "crease_bbox": bbox_to_list(crease_bbox),
+            "point_bboxes": point_map,
+            "coord_space": "pixel",
+        },
+        witness={
+            "formula_family": str(plan.params["formula_family"]),
+            "leg_ae": int(geometry.leg_ae),
+            "leg_af": int(geometry.leg_af),
+            "crease_ef": int(geometry.crease_ef),
+            "known_leg_segment": str(plan.case.known_leg_segment),
+            "target_segment": str(plan.case.target_segment),
+            "target_role": "folded_segment_length",
+            "pythagorean_unknown_original_segment": str(plan.params["pythagorean_unknown_original_segment"]),
+        },
+        reasoning_steps=int(plan.params["reasoning_steps"]),
+    )
+
+
+__all__ = ["make_render_context", "render_paper_fold_scene", "render_paper_fold_segment_scene"]

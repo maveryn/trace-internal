@@ -63,4 +63,48 @@ def paper_fold_prompt_artifacts(
     return dict(defaults), build_prompt_trace_artifacts(prompt_selection)
 
 
-__all__ = ["paper_fold_prompt_artifacts"]
+def paper_fold_segment_prompt_artifacts(
+    *,
+    prompt_defaults: Mapping[str, Any],
+    prompt_task_key: str,
+    object_description: str,
+    target_segment: str,
+    answer: int,
+    instance_seed: int,
+) -> tuple[dict[str, Any], PromptTraceArtifacts]:
+    """Render v1 paper-fold prompts for scalar segment annotation tasks."""
+
+    defaults = required_group_defaults(
+        prompt_defaults,
+        ("bundle_id", "scene_key"),
+        context="prompt defaults for paper_fold",
+    )
+    example_annotation = [[240, 260], [360, 315]]
+    json_example, json_example_answer_only = dump_prompt_json_examples(
+        annotation=example_annotation,
+        answer=int(answer),
+    )
+    annotation_hint = (
+        f"set \"annotation\" to the requested visual segment {target_segment} "
+        "as [[x0,y0],[x1,y1]]"
+    )
+    prompt_selection = render_scene_prompt_variants(
+        domain=DOMAIN,
+        scene_id=SCENE_ID,
+        bundle_id=str(defaults["bundle_id"]),
+        scene_key=str(defaults["scene_key"]),
+        task_key=str(prompt_task_key),
+        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
+        dynamic_slots={
+            "annotation_hint": str(annotation_hint),
+            "json_example": str(json_example),
+            "json_example_answer_only": str(json_example_answer_only),
+            "object_description": str(object_description),
+            "target_segment": str(target_segment),
+        },
+        instance_seed=int(instance_seed),
+    )
+    return dict(defaults), build_prompt_trace_artifacts(prompt_selection)
+
+
+__all__ = ["paper_fold_prompt_artifacts", "paper_fold_segment_prompt_artifacts"]

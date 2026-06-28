@@ -5,6 +5,7 @@ from collections import Counter
 import pytest
 
 from trace.tasks.registry import create_task
+from trace.tasks.geometry.paper_fold.shared.construction import fold_segment_geometry
 
 TASK_ID = "task_geometry__paper_fold__paper_fold_angle_value"
 SEGMENT_TASK_ID = "task_geometry__paper_fold__folded_segment_length_value"
@@ -146,6 +147,13 @@ def test_paper_folded_segment_explicit_triple_overrides_bind_same_trace() -> Non
     assert ep_witness["pythagorean_unknown_original_segment"] == "AE"
 
 
+def test_paper_folded_segment_reflected_point_lands_on_bottom_edge() -> None:
+    geometry = fold_segment_geometry(6, 8)
+
+    assert geometry.folded_point_units[1] == geometry.height_units
+    assert geometry.folded_point_units[1] > geometry.leg_ae
+
+
 def test_paper_folded_segment_samples_large_answer_support() -> None:
     task = create_task(SEGMENT_TASK_ID)
     answers = []
@@ -158,7 +166,7 @@ def test_paper_folded_segment_samples_large_answer_support() -> None:
         support_sizes.add(len(params["answer_support"]))
         target_segments[str(params["target_segment"])] += 1
 
-    assert min(support_sizes) >= 200
+    assert min(support_sizes) >= 100
     assert len(set(answers)) >= 65
     assert max(Counter(answers).values()) <= 4
     assert set(target_segments) == {"EP", "FP"}

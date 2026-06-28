@@ -26,6 +26,7 @@ _MIN_ANSWER_DEGREES = 50.0
 _MAX_ANSWER_DEGREES = 78.0
 _MAX_SEGMENT_LEG_UNITS = 400
 _MAX_SEGMENT_HYPOTENUSE_UNITS = 580
+_MIN_SEGMENT_LEG_RATIO = 1.35
 _MAX_SEGMENT_LEG_RATIO = 3.0
 
 
@@ -80,7 +81,7 @@ def fold_answer_support() -> tuple[float, ...]:
 
 
 def fold_segment_geometry(leg_ae: int, leg_af: int) -> FoldSegmentGeometry:
-    """Return fold geometry where crease EF folds original point A onto P."""
+    """Return fold geometry where crease EF folds original point A onto edge point P."""
 
     leg_ae = int(leg_ae)
     leg_af = int(leg_af)
@@ -95,8 +96,10 @@ def fold_segment_geometry(leg_ae: int, leg_af: int) -> FoldSegmentGeometry:
     hypotenuse_sq = float(hypotenuse * hypotenuse)
     folded_x = (2.0 * float(leg_af) * float(leg_ae * leg_ae)) / hypotenuse_sq
     folded_y = (2.0 * float(leg_ae) * float(leg_af * leg_af)) / hypotenuse_sq
+    if folded_y <= float(leg_ae):
+        raise ValueError("folded point P must land below E on the paper edge")
     width_units = max(float(leg_af) + 6.0, float(folded_x) + 6.0, 18.0)
-    height_units = max(float(leg_ae) + 6.0, float(folded_y) + 6.0, 14.0)
+    height_units = float(folded_y)
     return FoldSegmentGeometry(
         leg_ae=int(leg_ae),
         leg_af=int(leg_af),
@@ -111,8 +114,10 @@ def _segment_cases_from_triangle(triangle: IntegerRightTriangle) -> tuple[FoldSe
     leg_ae = int(triangle.leg_a)
     leg_af = int(triangle.leg_b)
     crease_ef = int(triangle.hypotenuse)
+    if leg_af <= leg_ae:
+        return tuple()
     leg_ratio = float(max(leg_ae, leg_af)) / float(min(leg_ae, leg_af))
-    if leg_ratio > _MAX_SEGMENT_LEG_RATIO:
+    if leg_ratio < _MIN_SEGMENT_LEG_RATIO or leg_ratio > _MAX_SEGMENT_LEG_RATIO:
         return tuple()
     return (
         FoldSegmentCase(

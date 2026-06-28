@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 import trace.tasks  # noqa: F401
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.registry import create_task
 
 
@@ -13,8 +14,7 @@ TASK_QUERIES = {
         "wedge_area_from_side_and_apothem",
     ),
     "task_geometry__regular_polygon_decomposition__central_angle_value": (
-        "single_wedge_central_angle",
-        "marked_wedges_central_angle",
+        SINGLE_QUERY_ID,
     ),
     "task_geometry__regular_polygon_decomposition__perimeter_value": (
         "perimeter_from_side_length",
@@ -84,7 +84,8 @@ def test_regular_polygon_decomposition_measurements_match_trace_values() -> None
                 assert math.isclose(float(output.answer_gt.value), float(trace["wedge_area"]) * float(wedge_count))
             elif query_id == "wedge_area_from_side_and_apothem":
                 assert output.answer_gt.value == round(float(trace["side_length"]) * float(trace["apothem"]) / 2.0 + 1e-9, 1)
-            elif query_id in {"single_wedge_central_angle", "marked_wedges_central_angle"}:
+            elif task_id.endswith("__central_angle_value"):
+                assert 1 <= wedge_count <= min(4, n_sides // 2)
                 assert output.answer_gt.value == int(wedge_count * int(trace["central_angle_degrees"]))
             elif query_id == "perimeter_from_side_length":
                 assert output.answer_gt.value == int(n_sides * float(trace["side_length"]))

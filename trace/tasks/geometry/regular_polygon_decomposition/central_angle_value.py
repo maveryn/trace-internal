@@ -2,32 +2,31 @@
 
 from __future__ import annotations
 
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.types import TypedValue
 from trace.tasks.registry import register_task
 
 from ._lifecycle import RegularPolygonObjectivePlan, run_regular_polygon_public_entry
 from .shared.defaults import DOMAIN
-from .shared.sampling import angle_for_adjacent_pieces, angle_for_one_piece
+from .shared.sampling import angle_for_marked_pieces
 
 TASK_ID = "task_geometry__regular_polygon_decomposition__central_angle_value"
-QUERY_ID_SINGLE_WEDGE = "single_wedge_central_angle"
 QUERY_ID_MARKED_WEDGES = "marked_wedges_central_angle"
-SUPPORTED_QUERY_IDS = (QUERY_ID_SINGLE_WEDGE, QUERY_ID_MARKED_WEDGES)
-DEFAULT_QUERY_ID = QUERY_ID_SINGLE_WEDGE
+SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
+DEFAULT_QUERY_ID = SINGLE_QUERY_ID
 PROMPT_TASK_KEY = "central_angle_value_query"
 ANNOTATION_ROLES = ("O", "A", "B")
 
 
 def _prepare_central_angle(instance_seed, task_params, selected_branch, branch_probabilities):
-    if selected_branch == QUERY_ID_SINGLE_WEDGE:
-        problem = angle_for_one_piece(int(instance_seed), task_params, seed_namespace=f"{TASK_ID}.{selected_branch}")
-    elif selected_branch == QUERY_ID_MARKED_WEDGES:
-        problem = angle_for_adjacent_pieces(int(instance_seed), task_params, seed_namespace=f"{TASK_ID}.{selected_branch}")
-    else:
-        raise ValueError(f"unsupported query branch for {TASK_ID}: {selected_branch}")
+    problem = angle_for_marked_pieces(
+        int(instance_seed),
+        task_params,
+        seed_namespace=f"{TASK_ID}.{QUERY_ID_MARKED_WEDGES}",
+    )
     return RegularPolygonObjectivePlan(
         prompt_task_key=PROMPT_TASK_KEY,
-        prompt_branch_key=str(selected_branch),
+        prompt_branch_key=QUERY_ID_MARKED_WEDGES,
         problem=problem,
         answer_gt=TypedValue(type="integer", value=int(round(float(problem.answer)))),
         annotation_roles=ANNOTATION_ROLES,

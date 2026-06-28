@@ -64,19 +64,12 @@
         "Based on the side length and apothem, what is the area of \"{target_name}\"?",
         "Use the marked regular-polygon wedge. What is the area of \"{target_name}\"?"
       ],
-      "single_wedge_central_angle": [
-        "The regular polygon is cut into equal center wedges. What is the measure of \"{target_name}\"?",
-        "Use the equal central angles of the regular polygon. What is the measure of \"{target_name}\"?",
-        "One center wedge angle is marked. What is the measure of \"{target_name}\"?",
-        "Based on the regular-polygon decomposition, what is the measure of \"{target_name}\"?",
-        "Find the measure of \"{target_name}\" in degrees."
-      ],
       "marked_wedges_central_angle": [
-        "The regular polygon is cut into equal center wedges. What is the measure of \"{target_name}\"?",
-        "Use the equal central angles of the regular polygon. What is the measure of \"{target_name}\"?",
-        "The marked angle spans the shaded adjacent wedges. What is the measure of \"{target_name}\"?",
-        "Based on the regular-polygon decomposition, what is the measure of \"{target_name}\"?",
-        "Find the measure of \"{target_name}\" in degrees."
+        "The shaded center wedges form angle {target_name}. What is the measure of angle {target_name} in degrees?",
+        "Use the equal center wedges of the regular polygon. What is the measure of angle {target_name} in degrees?",
+        "The marked central angle is labeled {target_name}. What is its measure in degrees?",
+        "Based on the regular-polygon decomposition, find the degree measure of angle {target_name}.",
+        "What is the measure of the marked central angle {target_name}?"
       ],
       "perimeter_from_side_length": [
         "Use the labeled side length of the regular polygon. What is the total perimeter of \"{target_name}\"?",
@@ -142,9 +135,6 @@
       "target_name"
     ],
     "query:wedge_area_from_side_and_apothem": [
-      "target_name"
-    ],
-    "query:single_wedge_central_angle": [
       "target_name"
     ],
     "query:marked_wedges_central_angle": [

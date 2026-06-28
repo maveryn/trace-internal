@@ -154,29 +154,14 @@ def area_from_side_and_apothem(instance_seed: int, params: Mapping[str, Any], *,
     )
 
 
-def angle_for_one_piece(instance_seed: int, params: Mapping[str, Any], *, seed_namespace: str) -> RegularPolygonProblem:
+def angle_for_marked_pieces(instance_seed: int, params: Mapping[str, Any], *, seed_namespace: str) -> RegularPolygonProblem:
     rng = _rng(instance_seed, seed_namespace)
     n_sides = _n_sides(rng, params)
     central_angle = int(round(360.0 / float(n_sides)))
-    return _base_problem(
-        rng=rng,
-        params={**dict(params), "n_sides": n_sides},
-        instance_seed=int(instance_seed),
-        wedge_count=1,
-        answer=float(central_angle),
-        answer_type="integer",
-        target_name="the marked center angle",
-        relation="single_regular_polygon_center_wedge_angle",
-        show_angle_unknown=True,
-    )
-
-
-def angle_for_adjacent_pieces(instance_seed: int, params: Mapping[str, Any], *, seed_namespace: str) -> RegularPolygonProblem:
-    rng = _rng(instance_seed, seed_namespace)
-    n_sides = _n_sides(rng, params)
-    central_angle = int(round(360.0 / float(n_sides)))
-    max_marked = max(2, min(4, int(n_sides) // 2))
-    wedge_count = int(rng.randrange(2, max_marked + 1))
+    max_marked = max(1, min(4, int(n_sides) // 2))
+    wedge_count = int(params.get("wedge_count", rng.randrange(1, max_marked + 1)))
+    if int(wedge_count) < 1 or int(wedge_count) > int(max_marked):
+        raise ValueError(f"wedge_count must be between 1 and {max_marked} for n_sides={n_sides}")
     return _base_problem(
         rng=rng,
         params={**dict(params), "n_sides": n_sides},
@@ -184,7 +169,7 @@ def angle_for_adjacent_pieces(instance_seed: int, params: Mapping[str, Any], *, 
         wedge_count=int(wedge_count),
         answer=float(wedge_count * central_angle),
         answer_type="integer",
-        target_name="the marked center angle",
+        target_name="AOB",
         relation="contiguous_regular_polygon_center_wedge_angle_sum",
         show_angle_unknown=True,
     )
@@ -314,8 +299,7 @@ __all__ = [
     "area_from_adjacent_equal_pieces",
     "area_from_one_equal_piece",
     "area_from_side_and_apothem",
-    "angle_for_adjacent_pieces",
-    "angle_for_one_piece",
+    "angle_for_marked_pieces",
     "perimeter_from_area_apothem",
     "perimeter_from_side",
     "side_from_area_apothem",

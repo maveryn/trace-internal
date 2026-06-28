@@ -4,18 +4,17 @@
 1. Domain: `geometry`
 2. Scene id: `regular_polygon_decomposition`
 3. Task id: `task_geometry__regular_polygon_decomposition__central_angle_value`
-4. Supported `query_id` values: `single_wedge_central_angle`, `marked_wedges_central_angle`
+4. Supported `query_id` values: `single`
 5. Answer schema: `integer`
 6. Annotation schema: `point_map`
 7. Scalar annotation checked: `true` (not scalar-eligible; the task binds center and two angle-ray endpoint roles)
 
 ## Program Contract
-- `solve_formula(regular_polygon_equal_wedge_decomposition, target=central_angle_or_adjacent_angle_span, formula_schema=360_degrees_divided_by_side_count); scene=regular_polygon_decomposition; scope=central_angle_value`
+- `solve_formula(regular_polygon_equal_wedge_decomposition, target=marked_central_angle, formula_schema=marked_wedge_count_times_360_degrees_divided_by_side_count); scene=regular_polygon_decomposition; scope=central_angle_value`
 
 ## Query Semantics
-- `single_wedge_central_angle` asks for one center wedge angle of a regular polygon.
-- `marked_wedges_central_angle` asks for the angle spanned by adjacent marked wedges.
-- The number of polygon sides, selected wedge start, style, font, layout jitter, and rotation are internal replay metadata.
+- `single` asks for the measure of the marked central angle `AOB`.
+- The number of polygon sides, selected wedge start, marked wedge count, style, font, layout jitter, and rotation are internal replay metadata.
 
 ## Prompt Bundle
 - Prompt text is loaded from `prompts/geometry/regular_polygon_decomposition/geometry_regular_polygon_decomposition_v1.json`.

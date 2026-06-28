@@ -7,7 +7,7 @@
 4. Supported `query_id` values: `single_wedge_area_from_total`, `shaded_wedges_area_from_total`, `wedge_area_from_side_and_apothem`
 5. Answer schema: `number`
 6. Annotation schema: `point_map`
-7. Scalar annotation checked: `true` (not scalar-eligible; the task binds center, wedge boundary vertices, and target wedge-region point roles)
+7. Scalar annotation checked: `true` (not scalar-eligible; the task binds center and target wedge boundary vertex roles)
 
 ## Program Contract
 - `solve_formula(regular_polygon_equal_wedge_decomposition, target=wedge_or_adjacent_wedge_group_area, formula_schema=area_from_total_area_or_side_apothem); scene=regular_polygon_decomposition; scope=piece_area_value`
@@ -23,7 +23,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space point map keys `O`, `A`, `B`, and `W`, marking the polygon center, target wedge boundary vertices, and target region point. Measurement labels and readout panels remain visible diagram content and private verifier metadata.
+Prompt-facing annotation uses pixel-space point map keys `O`, `A`, and `B`, marking the polygon center and the two visible rays that bound the requested shaded wedge or wedge group. Measurement labels and readout panels remain visible diagram content and private verifier metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

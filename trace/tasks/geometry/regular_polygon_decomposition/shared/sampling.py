@@ -107,7 +107,6 @@ def area_from_one_equal_piece(instance_seed: int, params: Mapping[str, Any], *, 
         total_area=float(n_sides) * float(wedge_area),
         wedge_area=float(wedge_area),
         show_total_area_readout=True,
-        show_region_label=True,
     )
 
 
@@ -128,7 +127,6 @@ def area_from_adjacent_equal_pieces(instance_seed: int, params: Mapping[str, Any
         total_area=float(n_sides) * float(wedge_area),
         wedge_area=float(wedge_area),
         show_total_area_readout=True,
-        show_region_label=True,
     )
 
 
@@ -150,7 +148,6 @@ def area_from_side_and_apothem(instance_seed: int, params: Mapping[str, Any], *,
         apothem=float(apothem),
         show_known_side_length=True,
         show_apothem=True,
-        show_region_label=True,
     )
 
 

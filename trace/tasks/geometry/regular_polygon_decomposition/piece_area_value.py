@@ -16,7 +16,7 @@ QUERY_ID_SIDE_APOTHEM = "wedge_area_from_side_and_apothem"
 SUPPORTED_QUERY_IDS = (QUERY_ID_SINGLE_WEDGE, QUERY_ID_SHADED_WEDGES, QUERY_ID_SIDE_APOTHEM)
 DEFAULT_QUERY_ID = QUERY_ID_SINGLE_WEDGE
 PROMPT_TASK_KEY = "piece_area_value_query"
-ANNOTATION_ROLES = ("O", "A", "B", "W")
+ANNOTATION_ROLES = ("O", "A", "B")
 
 
 def _prepare_piece_area(instance_seed, task_params, selected_branch, branch_probabilities):

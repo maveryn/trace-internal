@@ -48,7 +48,6 @@ _REQUESTED_REFERENCE_SHAPE_TYPES: Tuple[str, ...] = (
     "cylinder",
     "cone",
     "pyramid",
-    "wedge",
     "torus",
     "half_cylinder",
     "cup",

@@ -147,7 +147,6 @@ OBJECT_SCENE_SMALL_SHAPE_TYPES: Tuple[str, ...] = (
     "plug",
     "torus",
     "pyramid",
-    "wedge",
     "star_prism",
     "half_cylinder",
 )
@@ -247,7 +246,6 @@ THREE_D_NAMED_OBJECT_SHAPE_TYPES: Tuple[str, ...] = tuple(
         "plug",
         "puzzle_piece",
         "pyramid",
-        "wedge",
         "remote_control",
         "torus",
         "ruler",
@@ -526,7 +524,6 @@ SPATIAL_REFERENCE_NEAREST_REFERENCE_SHAPE_TYPES: Tuple[str, ...] = (
     "cone",
     "torus",
     "pyramid",
-    "wedge",
     "arch",
     "table",
     "shelf",

@@ -63,7 +63,6 @@ MULTIVIEW_CANDIDATE_SHAPE_TYPES: Tuple[str, ...] = (
     "cylinder",
     "cone",
     "pyramid",
-    "wedge",
     "half_cylinder",
 )
 MULTIVIEW_CANDIDATE_COLORS: Tuple[Tuple[int, int, int], ...] = (
@@ -144,7 +143,7 @@ def _with_base_z(spec: Mapping[str, Any], *, base_z: float) -> Dict[str, Any]:
 def _candidate_dimensions_for_shape(shape_type: str) -> Tuple[float, float, float]:
     if str(shape_type) in {"cone", "pyramid"}:
         return (0.50, 0.50, 0.56)
-    if str(shape_type) in {"wedge", "half_cylinder"}:
+    if str(shape_type) == "half_cylinder":
         return (0.58, 0.42, 0.38)
     return (0.50, 0.50, 0.46)
 

@@ -75,7 +75,6 @@ COLOR_READOUT_CLUSTER_SHAPE_TYPES: Tuple[str, ...] = tuple(
         "cone",
         "torus",
         "pyramid",
-        "wedge",
         "star_prism",
         "diamond",
         "heart",

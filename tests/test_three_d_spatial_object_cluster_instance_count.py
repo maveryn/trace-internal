@@ -134,7 +134,6 @@ EXPECTED_OBJECT_CLUSTER_NAMED_SHAPES = {
     "tray",
     "trophy",
     "umbrella",
-    "wedge",
 }
 PROMOTED_COLOR_READOUT_SHAPES = {
     "bell",
@@ -592,7 +591,7 @@ def test_object_cluster_multi_attribute_and_count_registered_in_three_d_taxonomy
     assert taxonomy.scene_id == "object_cluster"
     assert not taxonomy.source_scene_id
     assert len(COLOR_SAFE_CLUSTER_SHAPE_TYPES) == len(NAMED_CLUSTER_SHAPE_TYPES)
-    assert len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) == 40
+    assert len(COLOR_READOUT_CLUSTER_SHAPE_TYPES) == 39
     assert {
         "sphere",
         "cube",

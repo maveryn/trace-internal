@@ -1,4 +1,4 @@
-"""Count all objects on one straight conveyor lane."""
+"""Count objects of one color on one straight conveyor belt."""
 
 from __future__ import annotations
 
@@ -9,23 +9,19 @@ from trace.core.query_ids import SINGLE_QUERY_ID
 from ...base import TaskOutput
 from ...registry import register_task
 from ._lifecycle import run_conveyor_lifecycle
-from .shared.sampling import PREDICATE_BELT_TOTAL
+from .shared.sampling import PREDICATE_COLOR
 
 
-TASK_ID = "task_three_d__conveyor__belt_total_object_count"
+TASK_ID = "task_three_d__conveyor__scoped_belt_color_count"
 QUERY_ID = SINGLE_QUERY_ID
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
-PROMPT_QUERY_KEY_BY_BRANCH = {
-    QUERY_ID: "belt_total_count",
-}
-PREDICATE_KIND_BY_BRANCH = {
-    QUERY_ID: PREDICATE_BELT_TOTAL,
-}
+PROMPT_QUERY_KEY_BY_BRANCH = {QUERY_ID: "color_belt_count"}
+PREDICATE_KIND_BY_BRANCH = {QUERY_ID: PREDICATE_COLOR}
 
 
 @register_task
-class ThreeDConveyorBeltTotalObjectCountTask:
-    """Count all visible objects on one selected straight conveyor lane."""
+class ThreeDConveyorScopedBeltColorCountTask:
+    """Count objects of one semantic color on one straight conveyor belt."""
 
     task_id = TASK_ID
     domain = "three_d"
@@ -47,4 +43,4 @@ class ThreeDConveyorBeltTotalObjectCountTask:
         return output
 
 
-__all__ = ["QUERY_ID", "SUPPORTED_QUERY_IDS", "TASK_ID", "ThreeDConveyorBeltTotalObjectCountTask"]
+__all__ = ["QUERY_ID", "SUPPORTED_QUERY_IDS", "TASK_ID", "ThreeDConveyorScopedBeltColorCountTask"]

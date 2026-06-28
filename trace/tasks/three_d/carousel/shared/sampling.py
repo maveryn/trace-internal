@@ -53,7 +53,6 @@ PREDICATE_ORDERED_OBJECT_PAIR = "ordered_object_pair"
 PREDICATE_ORDERED_COLOR_PAIR = "ordered_color_pair"
 PREDICATE_OBJECT_TYPE_TRANSFER = "object_type_transfer"
 PREDICATE_COLOR_TRANSFER = "color_transfer"
-PREDICATE_BETWEEN_COLOR_ANCHORS = "between_color_anchors"
 PREDICATE_BETWEEN_OBJECT_ANCHORS = "between_object_anchors"
 ARITHMETIC_SUM = "sum"
 ARITHMETIC_DIFFERENCE = "difference"
@@ -383,17 +382,19 @@ def _resolve_arithmetic_operand_counts(
     else:
         raise ValueError(f"unsupported carousel count arithmetic operation: {operation}")
 
-    answer_value, answer_probabilities = resolve_count_for_namespace(
-        params,
-        namespace=f"{namespace}.{operation}.answer_value",
-        gen_defaults=gen_defaults,
-        instance_seed=int(instance_seed),
-        key="answer_value",
-        default_min=int(default_min),
-        default_max=int(default_max),
-        lower=int(lower),
-        upper=int(upper),
-    )
+    answer_min = max(int(lower), min(int(upper), int(params.get("answer_value_min", group_default(gen_defaults, "answer_value_min", int(default_min))))))
+    answer_max = max(answer_min, min(int(upper), int(params.get("answer_value_max", group_default(gen_defaults, "answer_value_max", int(default_max))))))
+    answer_support = tuple(range(int(answer_min), int(answer_max) + 1))
+    explicit_answer = params.get("answer_value")
+    if explicit_answer is not None:
+        answer_value = int(explicit_answer)
+        if int(answer_value) not in set(answer_support):
+            raise ValueError(f"unsupported carousel arithmetic answer_value: {answer_value}")
+        answer_probabilities = {str(answer_value): 1.0}
+    else:
+        balanced_seed = int(params.get("_balanced_answer_seed", int(instance_seed)))
+        answer_value = int(answer_support[abs(int(balanced_seed)) % len(answer_support)])
+        answer_probabilities = {str(value): 1.0 / float(len(answer_support)) for value in answer_support}
     explicit_first = params.get("first_scope_count")
     explicit_second = params.get("second_scope_count")
     if explicit_first is not None or explicit_second is not None:
@@ -1938,32 +1939,7 @@ def build_between_marked_items_count_dataset(
     }
     dimension_scale = float(params.get("object_dimension_scale", group_default(gen_defaults, "object_dimension_scale", 0.60)))
 
-    if str(predicate_kind) == PREDICATE_BETWEEN_COLOR_ANCHORS:
-        target_shape, target_shape_probabilities = _resolve_target_shape(
-            params=params,
-            rng=rng,
-            support=CONVEYOR_COLOR_READOUT_SHAPE_TYPES,
-        )
-        first_color, first_color_probabilities = _resolve_target_color(params=params, rng=rng)
-        palette = list(_sample_readout_palette(rng, target_color=str(first_color), size=6))
-        second_explicit = params.get("second_target_color_name")
-        if second_explicit is not None:
-            second_color = str(second_explicit)
-            if second_color == str(first_color) or second_color not in set(palette):
-                raise ValueError(f"unsupported second_target_color_name: {second_color}")
-        else:
-            candidates = [str(color) for color in palette if str(color) != str(first_color)]
-            second_color = str(candidates[int(rng.randrange(len(candidates)))])
-        filler_symbols = [str(color) for color in palette if str(color) not in {str(first_color), str(second_color)}]
-        target_color_name = str(first_color)
-        second_target_color_name = str(second_color)
-        target_color_probabilities = dict(first_color_probabilities)
-        target_shape_pair = ("", "")
-        target_object_name_pair = ("", "")
-        target_object_plural_pair = ("", "")
-        color_palette = list(palette)
-        shape_palette = [str(target_shape)]
-    elif str(predicate_kind) == PREDICATE_BETWEEN_OBJECT_ANCHORS:
+    if str(predicate_kind) == PREDICATE_BETWEEN_OBJECT_ANCHORS:
         first_shape, target_shape_probabilities = _resolve_target_shape(
             params=params,
             rng=rng,
@@ -2000,9 +1976,9 @@ def build_between_marked_items_count_dataset(
     target_sequence: list[str] = []
     for index in range(int(target_total)):
         if int(index) == int(start_index):
-            target_sequence.append(str(target_color_name if predicate_kind == PREDICATE_BETWEEN_COLOR_ANCHORS else target_shape_pair[0]))
+            target_sequence.append(str(target_shape_pair[0]))
         elif int(index) == int(end_index):
-            target_sequence.append(str(second_target_color_name if predicate_kind == PREDICATE_BETWEEN_COLOR_ANCHORS else target_shape_pair[1]))
+            target_sequence.append(str(target_shape_pair[1]))
         else:
             target_sequence.append(str(filler_symbols[(index + rng.randrange(len(filler_symbols))) % len(filler_symbols)]))
 
@@ -2029,8 +2005,6 @@ def build_between_marked_items_count_dataset(
         )
         if str(belt_key) == str(target_belt_key):
             sequence = tuple(target_sequence)
-        elif str(predicate_kind) == PREDICATE_BETWEEN_COLOR_ANCHORS:
-            sequence = tuple(str(color_palette[int(rng.randrange(len(color_palette)))]) for _ in slots)
         else:
             sequence = tuple(str(shape_palette[int(rng.randrange(len(shape_palette)))]) for _ in slots)
 
@@ -2038,12 +2012,8 @@ def build_between_marked_items_count_dataset(
         for index, slot in enumerate(slots):
             object_id = f"obj_{len(object_specs):03d}"
             belt_object_ids.append(str(object_id))
-            if str(predicate_kind) == PREDICATE_BETWEEN_COLOR_ANCHORS:
-                shape_type = str(target_shape)
-                color_name = str(sequence[index])
-            else:
-                shape_type = str(sequence[index])
-                color_name = str(color_palette[(index + len(object_specs)) % len(color_palette)])
+            shape_type = str(sequence[index])
+            color_name = str(color_palette[(index + len(object_specs)) % len(color_palette)])
 
             is_start_anchor = str(belt_key) == str(target_belt_key) and int(index) == int(start_index)
             is_end_anchor = str(belt_key) == str(target_belt_key) and int(index) == int(end_index)
@@ -2189,7 +2159,6 @@ __all__ = [
     "PREDICATE_COLOR_ARITHMETIC",
     "PREDICATE_COLOR_TYPE",
     "PREDICATE_COLOR_TRANSFER",
-    "PREDICATE_BETWEEN_COLOR_ANCHORS",
     "PREDICATE_BETWEEN_OBJECT_ANCHORS",
     "PREDICATE_ORDERED_COLOR_PAIR",
     "PREDICATE_ORDERED_OBJECT_PAIR",

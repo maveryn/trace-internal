@@ -25,7 +25,6 @@ from .shared.annotations import (
 from .shared.prompts import build_prompt_artifacts, dynamic_slots_for_conveyor
 from .shared.rendering import RenderedConveyor, render_conveyor
 from .shared.sampling import (
-    PREDICATE_BETWEEN_COLOR_ANCHORS,
     PREDICATE_BETWEEN_OBJECT_ANCHORS,
     PREDICATE_COLOR_TRANSFER,
     PREDICATE_ORDERED_COLOR_PAIR,
@@ -177,8 +176,11 @@ def _build_trace_payload(
                 "marked_anchor_object_centers_px": dict(marked_anchor_centers),
             }
         )
+    query_params = query_spec.get("params", {}) if isinstance(query_spec, Mapping) else {}
+    internal_query_id = str(query_params.get("internal_query_id", selected_branch)) if isinstance(query_params, Mapping) else str(selected_branch)
     execution_trace = {
         "query_id": str(selected_branch),
+        "internal_query_id": str(internal_query_id),
         "scene_id": SCENE_ID,
         "scene_variant": str(axes.scene_variant),
         "layout_family": str(dataset.get("layout_family", "")),
@@ -376,9 +378,13 @@ def _trace_params(
     axes: ResolvedConveyorAxes,
     dataset: Mapping[str, Any],
     branch_probabilities: Mapping[str, float],
+    internal_query_id: str,
 ) -> Dict[str, Any]:
+    """Record resolved sampling axes for replay without routing public task behavior."""
+
     params = {
         "predicate_kind": str(dataset["predicate_kind"]),
+        "internal_query_id": str(internal_query_id),
         "query_id_probabilities": dict(branch_probabilities),
         "scene_variant": str(axes.scene_variant),
         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
@@ -528,6 +534,7 @@ def run_conveyor_transfer_count_lifecycle(
                     axes=axes,
                     dataset=plan.dataset,
                     branch_probabilities=branch_probabilities,
+                    internal_query_id=str(prompt_query_key),
                 ),
             )
             trace_payload = _build_trace_payload(
@@ -662,6 +669,7 @@ def run_conveyor_ordered_pair_count_lifecycle(
                     axes=axes,
                     dataset=plan.dataset,
                     branch_probabilities=branch_probabilities,
+                    internal_query_id=str(prompt_query_key),
                 ),
             )
             trace_payload = _build_trace_payload(
@@ -734,7 +742,7 @@ def run_conveyor_between_marked_items_count_lifecycle(
     )
     prompt_query_key = str(prompt_query_key_by_branch[str(selected_branch)])
     predicate_kind = str(predicate_kind_by_branch[str(selected_branch)])
-    if predicate_kind not in {PREDICATE_BETWEEN_COLOR_ANCHORS, PREDICATE_BETWEEN_OBJECT_ANCHORS}:
+    if predicate_kind != PREDICATE_BETWEEN_OBJECT_ANCHORS:
         raise ValueError(f"unsupported carousel between-anchor predicate: {predicate_kind}")
     min_bbox_side_px = float(clean_params.get("min_rendered_bbox_side_px", gen_defaults.get("min_rendered_bbox_side_px", 24.0)))
     last_error: Exception | None = None
@@ -791,6 +799,7 @@ def run_conveyor_between_marked_items_count_lifecycle(
                     axes=axes,
                     dataset=plan.dataset,
                     branch_probabilities=branch_probabilities,
+                    internal_query_id=str(prompt_query_key),
                 ),
             )
             trace_payload = _build_trace_payload(
@@ -918,6 +927,7 @@ def run_conveyor_lifecycle(
                     axes=axes,
                     dataset=plan.dataset,
                     branch_probabilities=branch_probabilities,
+                    internal_query_id=str(prompt_query_key),
                 ),
             )
             trace_payload = _build_trace_payload(
@@ -1005,7 +1015,7 @@ def run_conveyor_count_arithmetic_lifecycle(
             )
             dataset = build_belt_count_arithmetic_dataset(
                 instance_seed=int(attempt_seed),
-                params=clean_params,
+                params={**dict(clean_params), "_balanced_answer_seed": int(instance_seed)},
                 gen_defaults=gen_defaults,
                 render_params=render_params,
                 axes=axes,
@@ -1053,6 +1063,7 @@ def run_conveyor_count_arithmetic_lifecycle(
                     axes=axes,
                     dataset=plan.dataset,
                     branch_probabilities=branch_probabilities,
+                    internal_query_id=str(prompt_query_key),
                 ),
             )
             trace_payload = _build_trace_payload(

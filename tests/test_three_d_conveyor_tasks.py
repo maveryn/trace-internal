@@ -9,40 +9,41 @@ from trace.tasks.three_d.conveyor.belt_total_object_count import (
     QUERY_ID as TOTAL_QUERY_ID,
     TASK_ID as TOTAL_TASK_ID,
 )
-from trace.tasks.three_d.conveyor.between_marked_items_count import (
-    BETWEEN_COLOR_ANCHORS_QUERY_ID,
-    BETWEEN_OBJECT_ANCHORS_QUERY_ID,
-    TASK_ID as BETWEEN_MARKED_TASK_ID,
+from trace.tasks.three_d.conveyor.between_object_type_anchors_count import TASK_ID as BETWEEN_OBJECT_TYPE_ANCHORS_TASK_ID
+from trace.tasks.three_d.conveyor.color_ordered_adjacent_pair_count import TASK_ID as COLOR_ORDERED_PAIR_TASK_ID
+from trace.tasks.three_d.conveyor.color_transfer_total_count import TASK_ID as COLOR_TRANSFER_TASK_ID
+from trace.tasks.three_d.conveyor.lane_color_count_arithmetic_value import (
+    DIFFERENCE_QUERY_ID as ARITH_DIFFERENCE_QUERY_ID,
+    TASK_ID as COLOR_ARITH_TASK_ID,
+    TOTAL_QUERY_ID as ARITH_TOTAL_QUERY_ID,
 )
-from trace.tasks.three_d.conveyor.adjacent_pair_count import (
-    COLOR_ORDERED_PAIR_QUERY_ID,
-    OBJECT_ORDERED_PAIR_QUERY_ID,
-    TASK_ID as ADJACENT_PAIR_TASK_ID,
-)
-from trace.tasks.three_d.conveyor.lane_count_arithmetic_value import (
-    COLOR_DIFFERENCE_QUERY_ID as ARITH_COLOR_DIFFERENCE_QUERY_ID,
-    COLOR_SUM_QUERY_ID as ARITH_COLOR_SUM_QUERY_ID,
-    OBJECT_DIFFERENCE_QUERY_ID as ARITH_OBJECT_DIFFERENCE_QUERY_ID,
-    OBJECT_SUM_QUERY_ID as ARITH_OBJECT_SUM_QUERY_ID,
-    TASK_ID as ARITH_TASK_ID,
-)
-from trace.tasks.three_d.conveyor.scoped_belt_object_count import (
-    COLOR_QUERY_ID,
-    OBJECT_TYPE_QUERY_ID,
-    TASK_ID as SCOPED_TASK_ID,
-)
+from trace.tasks.three_d.conveyor.lane_object_type_count_arithmetic_value import TASK_ID as OBJECT_TYPE_ARITH_TASK_ID
+from trace.tasks.three_d.conveyor.object_type_ordered_adjacent_pair_count import TASK_ID as OBJECT_TYPE_ORDERED_PAIR_TASK_ID
+from trace.tasks.three_d.conveyor.object_type_transfer_total_count import TASK_ID as OBJECT_TYPE_TRANSFER_TASK_ID
+from trace.tasks.three_d.conveyor.scoped_belt_color_count import TASK_ID as SCOPED_COLOR_TASK_ID
+from trace.tasks.three_d.conveyor.scoped_belt_object_type_count import TASK_ID as SCOPED_OBJECT_TYPE_TASK_ID
 from trace.tasks.three_d.conveyor.scoped_color_type_count import (
     TASK_ID as COLOR_TYPE_TASK_ID,
-)
-from trace.tasks.three_d.conveyor.scope_count_after_transfer_value import (
-    COLOR_TRANSFER_QUERY_ID,
-    OBJECT_TRANSFER_QUERY_ID,
-    TASK_ID as TRANSFER_TASK_ID,
 )
 from trace.tasks.three_d.conveyor.shared.state import CONVEYOR_OBJECT_SHAPE_TYPES
 from trace.tasks.three_d.shared.object_confusions import confusable_shape_names
 from trace.tasks.three_d.shared.semantic_colors import confusable_color_names
 from tests.three_d_canvas_helpers import assert_three_d_canvas_contract
+
+
+OBJECT_TYPE_BELT_COUNT_INTERNAL_QUERY_ID = "object_type_belt_count"
+COLOR_BELT_COUNT_INTERNAL_QUERY_ID = "color_belt_count"
+COLOR_TYPE_BELT_COUNT_INTERNAL_QUERY_ID = "color_type_belt_count"
+BELT_TOTAL_INTERNAL_QUERY_ID = "belt_total_count"
+OBJECT_COUNT_SUM_INTERNAL_QUERY_ID = "object_count_sum"
+OBJECT_COUNT_DIFFERENCE_INTERNAL_QUERY_ID = "object_count_difference"
+COLOR_COUNT_SUM_INTERNAL_QUERY_ID = "color_count_sum"
+COLOR_COUNT_DIFFERENCE_INTERNAL_QUERY_ID = "color_count_difference"
+OBJECT_ORDERED_PAIR_INTERNAL_QUERY_ID = "object_ordered_pair_count"
+COLOR_ORDERED_PAIR_INTERNAL_QUERY_ID = "color_ordered_pair_count"
+OBJECT_TRANSFER_INTERNAL_QUERY_ID = "object_transfer_total_count"
+COLOR_TRANSFER_INTERNAL_QUERY_ID = "color_transfer_total_count"
+BETWEEN_OBJECT_ANCHORS_INTERNAL_QUERY_ID = "between_object_anchors_count"
 
 
 def _rounded_segment_for_pair(render_map: dict, pair: list[str]) -> list[list[float]]:
@@ -65,21 +66,21 @@ def _assert_count_output(output) -> None:
     target_ids = [str(object_id) for object_id in trace["target_object_ids"]]
     predicate_kind = str(trace["predicate_kind"])
     expected_query_id_by_predicate = {
-        "belt_total": SINGLE_QUERY_ID,
-        "object_type": OBJECT_TYPE_QUERY_ID,
-        "color": COLOR_QUERY_ID,
+        "belt_total": TOTAL_QUERY_ID,
+        "object_type": SINGLE_QUERY_ID,
+        "color": SINGLE_QUERY_ID,
         "color_type": SINGLE_QUERY_ID,
     }
     expected_internal_query_id_by_predicate = {
-        "belt_total": TOTAL_QUERY_ID,
-        "object_type": OBJECT_TYPE_QUERY_ID,
-        "color": COLOR_QUERY_ID,
-        "color_type": SINGLE_QUERY_ID,
+        "belt_total": BELT_TOTAL_INTERNAL_QUERY_ID,
+        "object_type": OBJECT_TYPE_BELT_COUNT_INTERNAL_QUERY_ID,
+        "color": COLOR_BELT_COUNT_INTERNAL_QUERY_ID,
+        "color_type": COLOR_TYPE_BELT_COUNT_INTERNAL_QUERY_ID,
     }
 
     assert output.scene_id == "conveyor"
     assert output.query_id == expected_query_id_by_predicate[predicate_kind]
-    assert output.trace_payload["query_spec"]["internal_query_id"] == expected_internal_query_id_by_predicate[predicate_kind]
+    assert output.trace_payload["query_spec"]["params"]["internal_query_id"] == expected_internal_query_id_by_predicate[predicate_kind]
     assert output.answer_gt.type == "integer"
     assert output.annotation_gt.type == "bbox_set"
     assert int(output.answer_gt.value) == len(target_ids)
@@ -164,35 +165,35 @@ def test_conveyor_belt_total_count_uses_lane_positions() -> None:
 
 
 def test_conveyor_scoped_belt_count_query_ids() -> None:
-    task = create_task(SCOPED_TASK_ID)
     cases = (
-        (OBJECT_TYPE_QUERY_ID, 2026062581),
-        (COLOR_QUERY_ID, 2026062582),
+        (SCOPED_OBJECT_TYPE_TASK_ID, OBJECT_TYPE_BELT_COUNT_INTERNAL_QUERY_ID, 2026062581),
+        (SCOPED_COLOR_TASK_ID, COLOR_BELT_COUNT_INTERNAL_QUERY_ID, 2026062582),
     )
-    for query_id, seed in cases:
+    for task_id, internal_query_id, seed in cases:
+        task = create_task(task_id)
         output = task.generate(
             seed,
-            params={"query_id": query_id, "post_image_noise_apply_prob": 0.0},
+            params={"post_image_noise_apply_prob": 0.0},
             max_attempts=120,
         )
         _assert_count_output(output)
-        assert output.query_id == query_id
+        assert output.query_id == SINGLE_QUERY_ID
+        assert output.trace_payload["execution_trace"]["internal_query_id"] == internal_query_id
         assert 0 <= int(output.answer_gt.value) <= 5
 
 
 def test_conveyor_scoped_belt_count_supports_zero_and_five() -> None:
-    task = create_task(SCOPED_TASK_ID)
     cases = (
-        (OBJECT_TYPE_QUERY_ID, "landscape", "top", 0, 2026062583),
-        (OBJECT_TYPE_QUERY_ID, "portrait", "left", 5, 2026062585),
-        (COLOR_QUERY_ID, "landscape", "middle", 0, 2026062585),
-        (COLOR_QUERY_ID, "portrait", "right", 5, 2026062586),
+        (SCOPED_OBJECT_TYPE_TASK_ID, "landscape", "top", 0, 2026062583),
+        (SCOPED_OBJECT_TYPE_TASK_ID, "portrait", "left", 5, 2026062585),
+        (SCOPED_COLOR_TASK_ID, "landscape", "middle", 0, 2026062585),
+        (SCOPED_COLOR_TASK_ID, "portrait", "right", 5, 2026062586),
     )
-    for query_id, canvas_preset, lane_key, target_count, seed in cases:
+    for task_id, canvas_preset, lane_key, target_count, seed in cases:
+        task = create_task(task_id)
         output = task.generate(
             seed,
             params={
-                "query_id": query_id,
                 "canvas_preset": canvas_preset,
                 "target_lane_key": lane_key,
                 "target_count": target_count,
@@ -201,7 +202,7 @@ def test_conveyor_scoped_belt_count_supports_zero_and_five() -> None:
             max_attempts=120,
         )
         _assert_count_output(output)
-        assert output.query_id == query_id
+        assert output.query_id == SINGLE_QUERY_ID
         assert int(output.answer_gt.value) == int(target_count)
         if int(target_count) == 0:
             assert output.annotation_gt.value == []
@@ -230,7 +231,7 @@ def test_conveyor_scoped_color_type_count_uses_conjunction_distractors() -> None
         assert trace["predicate_kind"] == "color_type"
         assert int(output.answer_gt.value) == int(params["target_count"])
         assert len(target_ids) == int(params["target_count"])
-        assert output.trace_payload["query_spec"]["internal_query_id"] == SINGLE_QUERY_ID
+        assert output.trace_payload["query_spec"]["params"]["internal_query_id"] == COLOR_TYPE_BELT_COUNT_INTERNAL_QUERY_ID
         for spec in trace["object_specs"]:
             is_target = str(spec["object_id"]) in set(target_ids)
             if is_target:
@@ -286,7 +287,7 @@ def test_conveyor_color_type_distractors_avoid_visually_confusable_shapes() -> N
 
 def test_conveyor_color_readout_excludes_target_confusable_colors() -> None:
     cases = (
-        (SCOPED_TASK_ID, {"query_id": COLOR_QUERY_ID, "target_color_name": "red"}, 2026062613),
+        (SCOPED_COLOR_TASK_ID, {"target_color_name": "red"}, 2026062613),
         (COLOR_TYPE_TASK_ID, {"target_color_name": "red"}, 2026062614),
     )
     for task_id, params, seed in cases:
@@ -368,18 +369,18 @@ def test_conveyor_replay_uses_single_public_query_id() -> None:
     )
     replay_row = task_review_distribution.random_collector(output, 2026062507)
     assert replay_row["generation_params"]["query_id"] == SINGLE_QUERY_ID
-    assert replay_row["generation_params"]["internal_query_id"] == TOTAL_QUERY_ID
+    assert replay_row["generation_params"]["internal_query_id"] == BELT_TOTAL_INTERNAL_QUERY_ID
 
 
 def test_conveyor_lane_count_arithmetic_query_ids() -> None:
-    task = create_task(ARITH_TASK_ID)
     cases = (
-        (ARITH_COLOR_SUM_QUERY_ID, {"canvas_preset": "landscape"}, 2026062705),
-        (ARITH_COLOR_DIFFERENCE_QUERY_ID, {"canvas_preset": "portrait"}, 2026062706),
-        (ARITH_OBJECT_SUM_QUERY_ID, {"canvas_preset": "landscape"}, 2026062707),
-        (ARITH_OBJECT_DIFFERENCE_QUERY_ID, {"canvas_preset": "portrait"}, 2026062708),
+        (COLOR_ARITH_TASK_ID, ARITH_TOTAL_QUERY_ID, COLOR_COUNT_SUM_INTERNAL_QUERY_ID, {"canvas_preset": "landscape"}, 2026062705),
+        (COLOR_ARITH_TASK_ID, ARITH_DIFFERENCE_QUERY_ID, COLOR_COUNT_DIFFERENCE_INTERNAL_QUERY_ID, {"canvas_preset": "portrait"}, 2026062706),
+        (OBJECT_TYPE_ARITH_TASK_ID, ARITH_TOTAL_QUERY_ID, OBJECT_COUNT_SUM_INTERNAL_QUERY_ID, {"canvas_preset": "landscape"}, 2026062707),
+        (OBJECT_TYPE_ARITH_TASK_ID, ARITH_DIFFERENCE_QUERY_ID, OBJECT_COUNT_DIFFERENCE_INTERNAL_QUERY_ID, {"canvas_preset": "portrait"}, 2026062708),
     )
-    for query_id, params, seed in cases:
+    for task_id, query_id, internal_query_id, params, seed in cases:
+        task = create_task(task_id)
         output = task.generate(
             seed,
             params={**params, "query_id": query_id, "post_image_noise_apply_prob": 0.0},
@@ -392,6 +393,7 @@ def test_conveyor_lane_count_arithmetic_query_ids() -> None:
 
         assert output.scene_id == "conveyor"
         assert output.query_id == query_id
+        assert trace["internal_query_id"] == internal_query_id
         assert output.answer_gt.type == "integer"
         assert output.annotation_gt.type == "bbox_set_map"
         assert set(output.annotation_gt.value) == expected_keys
@@ -414,7 +416,7 @@ def test_conveyor_lane_count_arithmetic_query_ids() -> None:
             assert output.annotation_gt.value[str(key)] == expected
             assert len(expected) == operands[str(key)]
         assert max(int(value) for value in trace["lane_counts"].values()) <= 8
-        if "color_count" in query_id:
+        if task_id == COLOR_ARITH_TASK_ID:
             assert trace["predicate_kind"] == "color_count_arithmetic"
             assert trace["target_color_label"]
         else:
@@ -423,15 +425,15 @@ def test_conveyor_lane_count_arithmetic_query_ids() -> None:
 
 
 def test_conveyor_adjacent_pair_count_query_ids() -> None:
-    task = create_task(ADJACENT_PAIR_TASK_ID)
     cases = (
-        (COLOR_ORDERED_PAIR_QUERY_ID, {"canvas_preset": "landscape"}, 2026062801),
-        (OBJECT_ORDERED_PAIR_QUERY_ID, {"canvas_preset": "portrait"}, 2026062802),
+        (COLOR_ORDERED_PAIR_TASK_ID, COLOR_ORDERED_PAIR_INTERNAL_QUERY_ID, {"canvas_preset": "landscape"}, 2026062801),
+        (OBJECT_TYPE_ORDERED_PAIR_TASK_ID, OBJECT_ORDERED_PAIR_INTERNAL_QUERY_ID, {"canvas_preset": "portrait"}, 2026062802),
     )
-    for query_id, params, seed in cases:
+    for task_id, internal_query_id, params, seed in cases:
+        task = create_task(task_id)
         output = task.generate(
             seed,
-            params={**params, "query_id": query_id, "post_image_noise_apply_prob": 0.0},
+            params={**params, "post_image_noise_apply_prob": 0.0},
             max_attempts=220,
         )
         trace = output.trace_payload["execution_trace"]
@@ -442,7 +444,8 @@ def test_conveyor_adjacent_pair_count_query_ids() -> None:
         lane_sequence = [str(object_id) for object_id in trace["object_sequences_by_lane"][target_lane]]
 
         assert output.scene_id == "conveyor"
-        assert output.query_id == query_id
+        assert output.query_id == SINGLE_QUERY_ID
+        assert trace["internal_query_id"] == internal_query_id
         assert output.answer_gt.type == "integer"
         assert output.annotation_gt.type == "segment_set"
         assert 0 <= int(output.answer_gt.value) <= 4
@@ -460,7 +463,7 @@ def test_conveyor_adjacent_pair_count_query_ids() -> None:
             assert lane_sequence[first_index + 1] == str(second_id)
             assert str(object_by_id[first_id]["lane_key"]) == target_lane
             assert str(object_by_id[second_id]["lane_key"]) == target_lane
-            if query_id == COLOR_ORDERED_PAIR_QUERY_ID:
+            if task_id == COLOR_ORDERED_PAIR_TASK_ID:
                 assert trace["predicate_kind"] == "ordered_color_pair"
                 assert str(object_by_id[first_id]["color_name"]) == str(trace["target_color_name"])
                 assert str(object_by_id[second_id]["color_name"]) == str(trace["second_target_color_name"])
@@ -476,16 +479,15 @@ def test_conveyor_adjacent_pair_count_query_ids() -> None:
 
 
 def test_conveyor_adjacent_pair_count_supports_zero_and_four() -> None:
-    task = create_task(ADJACENT_PAIR_TASK_ID)
     cases = (
-        (COLOR_ORDERED_PAIR_QUERY_ID, 0, 2026062811),
-        (OBJECT_ORDERED_PAIR_QUERY_ID, 4, 2026062812),
+        (COLOR_ORDERED_PAIR_TASK_ID, 0, 2026062811),
+        (OBJECT_TYPE_ORDERED_PAIR_TASK_ID, 4, 2026062812),
     )
-    for query_id, target_count, seed in cases:
+    for task_id, target_count, seed in cases:
+        task = create_task(task_id)
         output = task.generate(
             seed,
             params={
-                "query_id": query_id,
                 "target_count": target_count,
                 "post_image_noise_apply_prob": 0.0,
             },
@@ -500,15 +502,14 @@ def test_conveyor_adjacent_pair_count_supports_zero_and_four() -> None:
 
 
 def test_conveyor_between_marked_items_count_query_ids() -> None:
-    task = create_task(BETWEEN_MARKED_TASK_ID)
     cases = (
-        (BETWEEN_COLOR_ANCHORS_QUERY_ID, {"canvas_preset": "landscape"}, 2026062831),
-        (BETWEEN_OBJECT_ANCHORS_QUERY_ID, {"canvas_preset": "portrait"}, 2026062832),
+        (BETWEEN_OBJECT_TYPE_ANCHORS_TASK_ID, BETWEEN_OBJECT_ANCHORS_INTERNAL_QUERY_ID, {"canvas_preset": "portrait"}, 2026062832),
     )
-    for query_id, params, seed in cases:
+    for task_id, internal_query_id, params, seed in cases:
+        task = create_task(task_id)
         output = task.generate(
             seed,
-            params={**params, "query_id": query_id, "post_image_noise_apply_prob": 0.0},
+            params={**params, "post_image_noise_apply_prob": 0.0},
             max_attempts=220,
         )
         trace = output.trace_payload["execution_trace"]
@@ -521,7 +522,8 @@ def test_conveyor_between_marked_items_count_query_ids() -> None:
         expected_between_ids = lane_sequence[start_index + 1 : end_index]
 
         assert output.scene_id == "conveyor"
-        assert output.query_id == query_id
+        assert output.query_id == SINGLE_QUERY_ID
+        assert trace["internal_query_id"] == internal_query_id
         assert output.answer_gt.type == "integer"
         assert output.annotation_gt.type == "bbox_set"
         assert 1 <= int(output.answer_gt.value) <= 5
@@ -543,28 +545,22 @@ def test_conveyor_between_marked_items_count_query_ids() -> None:
         assert "{target_" not in output.prompt
         assert "unlettered" not in output.prompt.lower()
         assert_three_d_canvas_contract(output)
-        if query_id == BETWEEN_COLOR_ANCHORS_QUERY_ID:
-            assert trace["predicate_kind"] == "between_color_anchors"
-            assert trace["target_color_label"]
-            assert trace["second_target_color_label"]
-        else:
-            assert trace["predicate_kind"] == "between_object_anchors"
-            assert trace["target_object_name_pair"][0]
-            assert trace["target_object_name_pair"][1]
+        assert trace["predicate_kind"] == "between_object_anchors"
+        assert trace["target_object_name_pair"][0]
+        assert trace["target_object_name_pair"][1]
         assert max(int(value) for value in trace["lane_counts"].values()) <= 8
 
 
 def test_conveyor_between_marked_items_count_supports_one_and_five() -> None:
-    task = create_task(BETWEEN_MARKED_TASK_ID)
     cases = (
-        (BETWEEN_COLOR_ANCHORS_QUERY_ID, 1, 2026062833),
-        (BETWEEN_OBJECT_ANCHORS_QUERY_ID, 5, 2026062834),
+        (BETWEEN_OBJECT_TYPE_ANCHORS_TASK_ID, 1, 2026062833),
+        (BETWEEN_OBJECT_TYPE_ANCHORS_TASK_ID, 5, 2026062834),
     )
-    for query_id, target_count, seed in cases:
+    for task_id, target_count, seed in cases:
+        task = create_task(task_id)
         output = task.generate(
             seed,
             params={
-                "query_id": query_id,
                 "target_count": target_count,
                 "post_image_noise_apply_prob": 0.0,
             },
@@ -580,15 +576,15 @@ def test_conveyor_between_marked_items_count_supports_one_and_five() -> None:
 
 
 def test_conveyor_scope_count_after_transfer_query_ids() -> None:
-    task = create_task(TRANSFER_TASK_ID)
     cases = (
-        (COLOR_TRANSFER_QUERY_ID, {"canvas_preset": "landscape"}, 2026062821),
-        (OBJECT_TRANSFER_QUERY_ID, {"canvas_preset": "portrait"}, 2026062822),
+        (COLOR_TRANSFER_TASK_ID, COLOR_TRANSFER_INTERNAL_QUERY_ID, {"canvas_preset": "landscape"}, 2026062821),
+        (OBJECT_TYPE_TRANSFER_TASK_ID, OBJECT_TRANSFER_INTERNAL_QUERY_ID, {"canvas_preset": "portrait"}, 2026062822),
     )
-    for query_id, params, seed in cases:
+    for task_id, internal_query_id, params, seed in cases:
+        task = create_task(task_id)
         output = task.generate(
             seed,
-            params={**params, "query_id": query_id, "post_image_noise_apply_prob": 0.0},
+            params={**params, "post_image_noise_apply_prob": 0.0},
             max_attempts=220,
         )
         trace = output.trace_payload["execution_trace"]
@@ -601,7 +597,8 @@ def test_conveyor_scope_count_after_transfer_query_ids() -> None:
         object_by_id = {str(spec["object_id"]): spec for spec in trace["object_specs"]}
 
         assert output.scene_id == "conveyor"
-        assert output.query_id == query_id
+        assert output.query_id == SINGLE_QUERY_ID
+        assert trace["internal_query_id"] == internal_query_id
         assert output.answer_gt.type == "integer"
         assert output.annotation_gt.type == "bbox_set_map"
         assert set(output.annotation_gt.value) == {"source_moved_objects", "destination_existing_objects"}
@@ -623,7 +620,7 @@ def test_conveyor_scope_count_after_transfer_query_ids() -> None:
         for object_id in target_ids_by_key["source_moved_objects"]:
             spec = object_by_id[str(object_id)]
             assert str(spec["lane_key"]) == str(trace["source_lane_key"])
-            if query_id == COLOR_TRANSFER_QUERY_ID:
+            if task_id == COLOR_TRANSFER_TASK_ID:
                 assert trace["predicate_kind"] == "color_transfer"
                 assert str(spec["color_name"]) == str(trace["target_color_name"])
             else:
@@ -636,16 +633,15 @@ def test_conveyor_scope_count_after_transfer_query_ids() -> None:
 
 
 def test_conveyor_scope_count_after_transfer_supports_answer_extremes() -> None:
-    task = create_task(TRANSFER_TASK_ID)
     cases = (
-        (COLOR_TRANSFER_QUERY_ID, 2, 1, 1, 2026062823),
-        (OBJECT_TRANSFER_QUERY_ID, 12, 4, 8, 2026062824),
+        (COLOR_TRANSFER_TASK_ID, 2, 1, 1, 2026062823),
+        (OBJECT_TYPE_TRANSFER_TASK_ID, 12, 4, 8, 2026062824),
     )
-    for query_id, answer_value, moved_count, destination_existing_count, seed in cases:
+    for task_id, answer_value, moved_count, destination_existing_count, seed in cases:
+        task = create_task(task_id)
         output = task.generate(
             seed,
             params={
-                "query_id": query_id,
                 "answer_value": answer_value,
                 "moved_count": moved_count,
                 "destination_existing_count": destination_existing_count,

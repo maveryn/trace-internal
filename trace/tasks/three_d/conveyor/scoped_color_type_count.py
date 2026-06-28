@@ -26,7 +26,7 @@ class ThreeDConveyorScopedColorTypeCountTask:
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
-        return run_conveyor_lifecycle(
+        output = run_conveyor_lifecycle(
             public_name=TASK_ID,
             domain_name=self.domain,
             prompt_query_key_by_branch={QUERY_ID: PROMPT_QUERY_KEY},
@@ -37,6 +37,7 @@ class ThreeDConveyorScopedColorTypeCountTask:
             params=dict(params),
             max_attempts=int(max_attempts),
         )
+        return output
 
 
 __all__ = ["SUPPORTED_QUERY_IDS", "TASK_ID", "ThreeDConveyorScopedColorTypeCountTask"]

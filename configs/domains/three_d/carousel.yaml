@@ -14,7 +14,12 @@ generation:
     object_dimension_scale: 0.64
     min_rendered_bbox_side_px: 24.0
   task_overrides:
-    task_three_d__carousel__scoped_belt_object_count:
+    task_three_d__carousel__scoped_belt_object_type_count:
+      object_count_min: 9
+      object_count_max: 18
+      target_count_min: 0
+      target_count_max: 5
+    task_three_d__carousel__scoped_belt_color_count:
       object_count_min: 9
       object_count_max: 18
       target_count_min: 0
@@ -27,7 +32,7 @@ generation:
     task_three_d__carousel__belt_total_object_count:
       target_count_min: 1
       target_count_max: 10
-    task_three_d__carousel__belt_count_arithmetic_value:
+    task_three_d__carousel__belt_object_type_count_arithmetic_value:
       target_count_min: 0
       target_count_max: 6
       sum_answer_min: 1
@@ -35,15 +40,31 @@ generation:
       difference_answer_min: 1
       difference_answer_max: 5
       object_dimension_scale: 0.64
-    task_three_d__carousel__adjacent_pair_count:
+    task_three_d__carousel__belt_color_count_arithmetic_value:
+      target_count_min: 0
+      target_count_max: 6
+      sum_answer_min: 1
+      sum_answer_max: 12
+      difference_answer_min: 1
+      difference_answer_max: 5
+      object_dimension_scale: 0.64
+    task_three_d__carousel__object_type_ordered_adjacent_pair_count:
       target_count_min: 0
       target_count_max: 4
       object_dimension_scale: 0.60
-    task_three_d__carousel__scope_count_after_transfer_value:
+    task_three_d__carousel__color_ordered_adjacent_pair_count:
+      target_count_min: 0
+      target_count_max: 4
+      object_dimension_scale: 0.60
+    task_three_d__carousel__object_type_transfer_total_count:
       answer_value_min: 2
       answer_value_max: 12
       object_dimension_scale: 0.64
-    task_three_d__carousel__between_marked_items_count:
+    task_three_d__carousel__color_transfer_total_count:
+      answer_value_min: 2
+      answer_value_max: 12
+      object_dimension_scale: 0.64
+    task_three_d__carousel__between_object_type_anchors_count:
       target_count_min: 1
       target_count_max: 5
       object_dimension_scale: 0.60
@@ -70,7 +91,10 @@ prompt:
     scene_key: carousel
     task_key: carousel_count_query
   task_overrides:
-    task_three_d__carousel__scoped_belt_object_count:
+    task_three_d__carousel__scoped_belt_object_type_count:
+      scene_key: carousel
+      task_key: carousel_count_query
+    task_three_d__carousel__scoped_belt_color_count:
       scene_key: carousel
       task_key: carousel_count_query
     task_three_d__carousel__scoped_color_type_count:
@@ -79,15 +103,24 @@ prompt:
     task_three_d__carousel__belt_total_object_count:
       scene_key: carousel
       task_key: carousel_count_query
-    task_three_d__carousel__belt_count_arithmetic_value:
+    task_three_d__carousel__belt_object_type_count_arithmetic_value:
       scene_key: carousel
       task_key: carousel_count_query
-    task_three_d__carousel__adjacent_pair_count:
+    task_three_d__carousel__belt_color_count_arithmetic_value:
       scene_key: carousel
       task_key: carousel_count_query
-    task_three_d__carousel__scope_count_after_transfer_value:
+    task_three_d__carousel__object_type_ordered_adjacent_pair_count:
       scene_key: carousel
       task_key: carousel_count_query
-    task_three_d__carousel__between_marked_items_count:
+    task_three_d__carousel__color_ordered_adjacent_pair_count:
+      scene_key: carousel
+      task_key: carousel_count_query
+    task_three_d__carousel__object_type_transfer_total_count:
+      scene_key: carousel
+      task_key: carousel_count_query
+    task_three_d__carousel__color_transfer_total_count:
+      scene_key: carousel
+      task_key: carousel_count_query
+    task_three_d__carousel__between_object_type_anchors_count:
       scene_key: carousel
       task_key: carousel_count_query

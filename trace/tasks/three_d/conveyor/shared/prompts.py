@@ -55,8 +55,6 @@ def dynamic_slots_for_conveyor(dataset: Mapping[str, Any]) -> dict[str, Any]:
         "destination_lane_label": str(dataset.get("destination_lane_label", dataset.get("destination_belt_label", ""))),
         "start_anchor_label": str(start_anchor.get("anchor_label", "A")),
         "end_anchor_label": str(end_anchor.get("anchor_label", "B")),
-        "start_anchor_color_label": str(start_anchor.get("color_label", "")),
-        "end_anchor_color_label": str(end_anchor.get("color_label", "")),
         "start_anchor_object_name": str(start_anchor.get("object_name", "")),
         "end_anchor_object_name": str(end_anchor.get("object_name", "")),
     }

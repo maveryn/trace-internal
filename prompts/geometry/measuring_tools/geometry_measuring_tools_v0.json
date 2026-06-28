@@ -12,33 +12,19 @@
       ]
     },
     "task": {
-      "shape_length_value_polygon_side_ruler_reading": [
-        "Use the ruler to measure the marked polygon side. What is its length in centimeters?",
-        "What is the measured length of the marked polygon side in centimeters?",
-        "Read the ruler scale for the marked polygon side. What is the length in centimeters?",
-        "Find the length in centimeters of the marked polygon side.",
-        "How many centimeters long is the marked polygon side?"
+      "ruler_length_value": [
+        "Use the ruler to measure the marked length. What is its length in centimeters?",
+        "What is the measured length of the marked segment in centimeters?",
+        "Read the ruler scale for the marked length. What is the length in centimeters?",
+        "Find the length in centimeters of the marked length.",
+        "How many centimeters long is the marked length?"
       ],
-      "shape_length_value_circle_radius_ruler_reading": [
-        "Use the ruler to measure the marked circle radius. What is its length in centimeters?",
-        "What is the measured length of the marked circle radius in centimeters?",
-        "Read the ruler scale for the marked circle radius. What is the length in centimeters?",
-        "Find the length in centimeters of the marked circle radius.",
-        "How many centimeters long is the marked circle radius?"
-      ],
-      "shape_angle_value_triangle_vertex_protractor_reading": [
-        "Use the protractor to measure the marked triangle vertex angle. What is its measure in degrees?",
-        "What is the measure of the marked triangle vertex angle shown with the protractor?",
-        "Read the protractor scale at the marked triangle vertex angle. What is the angle measure in degrees?",
-        "Find the marked triangle vertex angle measure in degrees from the protractor.",
-        "What angle measure does the protractor show for the marked triangle vertex angle?"
-      ],
-      "shape_angle_value_quadrilateral_vertex_protractor_reading": [
-        "Use the protractor to measure the marked quadrilateral vertex angle. What is its measure in degrees?",
-        "What is the measure of the marked quadrilateral vertex angle shown with the protractor?",
-        "Read the protractor scale at the marked quadrilateral vertex angle. What is the angle measure in degrees?",
-        "Find the marked quadrilateral vertex angle measure in degrees from the protractor.",
-        "What angle measure does the protractor show for the marked quadrilateral vertex angle?"
+      "protractor_angle_value": [
+        "Use the protractor to measure the marked angle. What is its measure in degrees?",
+        "What is the measure of the marked angle shown with the protractor?",
+        "Read the protractor scale at the marked angle. What is the angle measure in degrees?",
+        "Find the marked angle measure in degrees from the protractor.",
+        "What angle measure does the protractor show for the marked angle?"
       ]
     },
     "query": {},
@@ -76,17 +62,11 @@
     ]
   },
   "static_slots_by_key": {
-    "task:shape_length_value_polygon_side_ruler_reading": {
-      "answer_hint": "set \"answer\" to the measured side length in centimeters as an integer"
+    "task:ruler_length_value": {
+      "answer_hint": "set \"answer\" to the measured length in centimeters as an integer"
     },
-    "task:shape_length_value_circle_radius_ruler_reading": {
-      "answer_hint": "set \"answer\" to the measured radius length in centimeters as an integer"
-    },
-    "task:shape_angle_value_triangle_vertex_protractor_reading": {
-      "answer_hint": "set \"answer\" to the measured triangle angle in degrees as an integer"
-    },
-    "task:shape_angle_value_quadrilateral_vertex_protractor_reading": {
-      "answer_hint": "set \"answer\" to the measured quadrilateral angle in degrees as an integer"
+    "task:protractor_angle_value": {
+      "answer_hint": "set \"answer\" to the measured angle in degrees as an integer"
     },
     "output:answer_only": {
       "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."

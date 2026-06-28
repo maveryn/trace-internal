@@ -6,25 +6,15 @@ LENGTH_KEYS = {"measure_start", "measure_end", "ruler_start_tick", "ruler_end_ti
 ANGLE_KEYS = {"angle_vertex", "protractor_reading_tick"}
 
 TASK_EXPECTATIONS = {
-    "task_geometry__measuring_tools__shape_length_value_polygon_side_ruler_reading": {
+    "task_geometry__measuring_tools__ruler_length_value": {
         "keys": LENGTH_KEYS,
         "tool_kind": "ruler",
-        "measurement_kind": "polygon_side_ruler_reading",
+        "measurement_kind": "ruler_length_reading",
     },
-    "task_geometry__measuring_tools__shape_length_value_circle_radius_ruler_reading": {
-        "keys": LENGTH_KEYS,
-        "tool_kind": "ruler",
-        "measurement_kind": "circle_radius_ruler_reading",
-    },
-    "task_geometry__measuring_tools__shape_angle_value_triangle_vertex_protractor_reading": {
+    "task_geometry__measuring_tools__protractor_angle_value": {
         "keys": ANGLE_KEYS,
         "tool_kind": "protractor",
-        "measurement_kind": "triangle_vertex_protractor_reading",
-    },
-    "task_geometry__measuring_tools__shape_angle_value_quadrilateral_vertex_protractor_reading": {
-        "keys": ANGLE_KEYS,
-        "tool_kind": "protractor",
-        "measurement_kind": "quadrilateral_vertex_protractor_reading",
+        "measurement_kind": "protractor_angle_reading",
     },
 }
 
@@ -57,7 +47,7 @@ def test_measuring_tools_tasks_use_single_query_integer_answers_and_point_maps()
 
 
 def test_measuring_tools_tasks_validate_query_id_params() -> None:
-    task = create_task("task_geometry__measuring_tools__shape_length_value_polygon_side_ruler_reading")
+    task = create_task("task_geometry__measuring_tools__ruler_length_value")
     assert task.generate(instance_seed=17, params={"query_id": "single"}, max_attempts=50).query_id == "single"
     assert task.generate(instance_seed=17, params={"query_variant": "single"}, max_attempts=50).query_id == "single"
 
@@ -67,3 +57,19 @@ def test_measuring_tools_tasks_validate_query_id_params() -> None:
         assert "query_id" in str(exc)
     else:  # pragma: no cover - assertion path
         raise AssertionError("unsupported query_id should fail")
+
+
+def test_measuring_tools_merged_tasks_accept_internal_shape_kind_replay() -> None:
+    cases = {
+        "task_geometry__measuring_tools__ruler_length_value": ("circle", "triangle", "parallelogram", "trapezoid"),
+        "task_geometry__measuring_tools__protractor_angle_value": ("triangle", "quadrilateral"),
+    }
+    for task_id, shape_kinds in cases.items():
+        task = create_task(task_id)
+        for shape_kind in shape_kinds:
+            out = task.generate(
+                instance_seed=2026062700,
+                params={"shape_kind": shape_kind},
+                max_attempts=50,
+            )
+            assert out.trace_payload["render_map"]["shape_kind"] == shape_kind

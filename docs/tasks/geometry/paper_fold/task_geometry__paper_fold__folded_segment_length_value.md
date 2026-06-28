@@ -14,6 +14,9 @@
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `paper_fold`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
+- The task prompt states that triangle `AEF` is folded along crease `EF` so
+  `A` lands on `P`; this makes the side correspondence `AE = PE` and `AF = PF`
+  visually grounded instead of implicit.
 
 ## Annotation
 Prompt-facing annotation is the requested folded segment only: `[[x0,y0],[x1,y1]]`. For example, if the prompt asks for `FP`, the segment endpoints are the visible points `F` and `P`.

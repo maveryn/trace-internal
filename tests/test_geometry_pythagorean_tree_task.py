@@ -59,8 +59,9 @@ def test_pythagorean_tree_hypotenuse_square_area_formula() -> None:
 
     assert out.annotation_gt.type == "bbox"
     _assert_bbox_inside_image(out.annotation_gt.value, out.image.size)
+    _assert_annotation_matches_target_square(out)
     assert trace["projected_annotation"]["type"] == "bbox"
-    assert execution["annotation_roles"] == ["target_area_label"]
+    assert execution["annotation_roles"] == ["target_square"]
     assert "task_variant" not in json.dumps(trace)
 
 
@@ -89,8 +90,9 @@ def test_pythagorean_tree_leg_square_area_formula(target_role: str, expected: in
 
     assert out.annotation_gt.type == "bbox"
     _assert_bbox_inside_image(out.annotation_gt.value, out.image.size)
+    _assert_annotation_matches_target_square(out)
     assert trace["projected_annotation"]["type"] == "bbox"
-    assert execution["annotation_roles"] == ["target_area_label"]
+    assert execution["annotation_roles"] == ["target_square"]
     assert "task_variant" not in json.dumps(trace)
 
 
@@ -114,6 +116,7 @@ def test_pythagorean_tree_explicit_queries_generate(query_id: str) -> None:
     assert out.answer_gt.type == "integer"
     assert out.annotation_gt.type == "bbox"
     _assert_bbox_inside_image(out.annotation_gt.value, out.image.size)
+    _assert_annotation_matches_target_square(out)
 
 
 def _assert_bbox_inside_image(bbox: list[float], image_size: tuple[int, int]) -> None:
@@ -123,3 +126,12 @@ def _assert_bbox_inside_image(bbox: list[float], image_size: tuple[int, int]) ->
     x0, y0, x1, y1 = [float(value) for value in bbox]
     assert 0.0 <= x0 < x1 <= float(width)
     assert 0.0 <= y0 < y1 <= float(height)
+
+
+def _assert_annotation_matches_target_square(out) -> None:
+    target_role = out.trace_payload["execution_trace"]["target_role"]
+    expected = out.trace_payload["render_map"]["square_bboxes"][target_role]
+    actual = out.annotation_gt.value
+    assert [round(float(value), 3) for value in actual] == [
+        round(float(value), 3) for value in expected
+    ]

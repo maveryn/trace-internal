@@ -192,30 +192,30 @@ def _render_missing_square_area(
     return rendered, render_meta
 
 
-def _target_area_label_bbox(
+def _target_square_bbox(
     *,
     request: _MissingSquareAreaRequest,
     rendered: RenderedPythagoreanTreeScene,
 ) -> tuple[float, float, float, float]:
-    """Return the scalar bbox around the visible missing-area label."""
+    """Return the scalar bbox around the target square marked Area=?."""
 
-    label_key = f"{request.plan.target_role}_label"
-    if label_key not in rendered.label_bboxes:
-        raise ValueError(f"missing target area label bbox: {label_key}")
-    return rendered.label_bboxes[str(label_key)]
+    target_role = str(request.plan.target_role)
+    if target_role not in rendered.square_bboxes:
+        raise ValueError(f"missing target square bbox: {target_role}")
+    return rendered.square_bboxes[str(target_role)]
 
 
 def _prompt_annotation_hint_and_example(
     *,
     query_id: str,
 ) -> tuple[str, list[int]]:
-    """Return public annotation guidance for the scalar target label box."""
+    """Return public annotation guidance for the scalar target-square box."""
 
     if str(query_id) not in SUPPORTED_QUERY_IDS:
         raise ValueError(f"unsupported prompt query_id: {query_id}")
     return (
-        'set "annotation" to the pixel bounding box [x0,y0,x1,y1] around the visible Area=? label',
-        [240, 180, 320, 215],
+        'set "annotation" to the pixel bounding box [x0,y0,x1,y1] around the square marked Area=?',
+        [220, 150, 380, 310],
     )
 
 
@@ -252,7 +252,7 @@ class GeometryPythagoreanTreeMissingSquareAreaValueTask:
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
         annotation_artifacts = bbox_annotation_artifacts(
-            _target_area_label_bbox(request=request, rendered=rendered)
+            _target_square_bbox(request=request, rendered=rendered)
         )
         annotation_hint, annotation_example = _prompt_annotation_hint_and_example(
             query_id=request.selected_query,
@@ -270,7 +270,7 @@ class GeometryPythagoreanTreeMissingSquareAreaValueTask:
             plan=request.plan,
             rendered=rendered,
             annotation_artifacts=annotation_artifacts,
-            annotation_roles=("target_area_label",),
+            annotation_roles=("target_square",),
             triple_probabilities=request.triple_probabilities,
             target_role_probabilities=request.target_role_probabilities,
             render_meta=render_meta,

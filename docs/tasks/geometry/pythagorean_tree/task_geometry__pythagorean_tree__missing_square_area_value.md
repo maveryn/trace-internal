@@ -7,7 +7,7 @@
 4. Query ids: `hypotenuse_square_area`, `leg_square_area`
 5. Answer schema: `integer_value`
 6. Annotation schema: `bbox`
-7. Scalar annotation checked: `true` (exactly one target `Area=?` label witness)
+7. Scalar annotation checked: `true` (exactly one target square witness)
 
 ## Program Contract
 - `solve_formula(attached_square_areas_on_right_triangle, unknown_role=square_area, formula_schema=pythagorean_square_area_sum); scene=pythagorean_tree; scope=missing_square_area_value`
@@ -22,7 +22,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation is the scalar pixel-space bounding box around the visible `Area=?` label. The private trace keeps the concrete geometric target role, such as `leg_square_1`, `leg_square_2`, or `hypotenuse_square`, for verifier/debug metadata.
+Prompt-facing annotation is the scalar pixel-space bounding box around the square marked `Area=?`. The private trace keeps the concrete geometric target role, such as `leg_square_1`, `leg_square_2`, or `hypotenuse_square`, for verifier/debug metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

@@ -7,9 +7,7 @@ from typing import Any, Dict, Mapping
 from .sampling import (
     CUBE_EDGE_VALUES,
     OPEN_BOX_CASES,
-    OPEN_BOX_DIMENSION_ROLES,
     CUBOID_DIMENSION_CASES,
-    open_box_case_key,
     open_box_values_for_case,
     probability_map_for_support,
     select_cube_edge,
@@ -55,9 +53,7 @@ def cube_edge_answer_support(*, selected: int) -> Dict[str, float]:
 def open_box_answer_support(*, selected: int, target_role: str) -> Dict[str, float]:
     """Return answer support for one open-box target role."""
 
-    if str(target_role) == "open_box_volume":
-        support = tuple(sorted({open_box_values_for_case(case)[5] for case in OPEN_BOX_CASES}))
-    elif str(target_role) == "base_length":
+    if str(target_role) == "base_length":
         support = tuple(sorted({open_box_values_for_case(case)[3] for case in OPEN_BOX_CASES}))
     elif str(target_role) == "base_width":
         support = tuple(sorted({open_box_values_for_case(case)[4] for case in OPEN_BOX_CASES}))
@@ -247,58 +243,17 @@ def resolve_open_box_dimension(
     )
 
 
-def resolve_open_box_volume(
-    *,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    sampling_label: str,
-) -> OpenBoxNetProblem:
-    """Resolve the resulting volume of one open-box net."""
-
-    if "target_dimension_role" in params:
-        raise ValueError("target_dimension_role is only supported for open_box_dimension_from_corner_cut")
-    case, case_probabilities = select_open_box_case(
-        instance_seed=int(instance_seed),
-        params=params,
-        sampling_label=str(sampling_label),
-    )
-    sheet_length, sheet_width, cut_size, base_length, base_width, volume = open_box_values_for_case(case)
-    explicit_volume = params.get("open_box_volume_units")
-    if explicit_volume is not None and int(explicit_volume) != int(volume):
-        raise ValueError("open_box_volume_units must equal base_length * base_width * cut_size")
-    return OpenBoxNetProblem(
-        target_role="open_box_volume",
-        sheet_length=int(sheet_length),
-        sheet_width=int(sheet_width),
-        cut_size=int(cut_size),
-        base_length=int(base_length),
-        base_width=int(base_width),
-        open_box_volume=int(volume),
-        answer=int(volume),
-        formula_family="open_box_net_corner_cut",
-        formula=OPEN_BOX_NET_FORMULA,
-        case_probabilities=dict(case_probabilities),
-        answer_support_probabilities=open_box_answer_support(
-            selected=int(volume),
-            target_role="open_box_volume",
-        ),
-    )
-
-
 __all__ = [
     "CUBE_FRAME_EDGE_FORMULA",
     "CUBOID_SURFACE_AREA_FORMULA",
     "CUBOID_VOLUME_MISSING_DIMENSION_FORMULA",
-    "OPEN_BOX_DIMENSION_ROLES",
     "OPEN_BOX_NET_FORMULA",
     "cube_edge_answer_support",
     "cuboid_dimension_answer_support",
     "cuboid_surface_area_answer_support",
     "open_box_answer_support",
-    "open_box_case_key",
     "resolve_cube_frame_edge",
     "resolve_cuboid_missing_dimension",
     "resolve_cuboid_surface_area",
     "resolve_open_box_dimension",
-    "resolve_open_box_volume",
 ]

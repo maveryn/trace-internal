@@ -6,8 +6,8 @@
 3. Task id: `task_geometry__rectangular_solid__cuboid_surface_area_value`
 4. Supported `query_id` values: `single`
 5. Answer schema: `integer_value`
-6. Annotation schema: `point_map`
-7. Scalar annotation checked: `true` (not scalar-eligible; the task always needs six role-bound dimension-guide endpoints)
+6. Annotation schema: `bbox`
+7. Scalar annotation checked: `true` (exactly one cuboid witness)
 
 ## Program Contract
 - `solve_formula(cuboid_dimension_measurements, unknown_role=surface_area, formula_schema=cuboid_total_surface_area); scene=rectangular_solid; scope=cuboid_surface_area_value`
@@ -21,7 +21,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space keyed points for the visible dimension-guide endpoints: `length_segment_start`, `length_segment_end`, `width_segment_start`, `width_segment_end`, `height_segment_start`, and `height_segment_end`. Numeric labels and the surface-area readout marker remain visible diagram content and private verifier metadata.
+Prompt-facing annotation is the scalar pixel-space bounding box around the cuboid. Numeric labels and the surface-area readout marker remain visible diagram content and private verifier metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

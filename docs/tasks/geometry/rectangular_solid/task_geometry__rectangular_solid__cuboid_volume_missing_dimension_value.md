@@ -6,8 +6,8 @@
 3. Task id: `task_geometry__rectangular_solid__cuboid_volume_missing_dimension_value`
 4. Supported `query_id` values: `missing_length_from_volume`, `missing_width_from_volume`, `missing_height_from_volume`
 5. Answer schema: `integer_value`
-6. Annotation schema: `point_map`
-7. Scalar annotation checked: `true` (not scalar-eligible; the task always needs six role-bound dimension-guide endpoints)
+6. Annotation schema: `segment`
+7. Scalar annotation checked: `true` (exactly one target dimension-guide segment witness)
 
 ## Program Contract
 - `solve_formula(cuboid_volume_measurements, unknown_role=length|width|height, formula_schema=cuboid_volume_missing_dimension); scene=rectangular_solid; scope=cuboid_volume_missing_dimension_value`
@@ -23,7 +23,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space keyed points for the visible dimension-guide endpoints: `length_segment_start`, `length_segment_end`, `width_segment_start`, `width_segment_end`, `height_segment_start`, and `height_segment_end`. Numeric labels, the volume readout, and the `?` marker remain visible diagram content and private verifier metadata.
+Prompt-facing annotation is the scalar pixel-space segment for the target dimension guide marked with `?`. Numeric labels, the volume readout, and the `?` marker remain visible diagram content and private verifier metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

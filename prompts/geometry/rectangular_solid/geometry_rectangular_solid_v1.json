@@ -70,13 +70,6 @@
         "The surface-area readout is marked with ?. What is its value?",
         "Determine the cuboid surface area from L, W, and H."
       ],
-      "cube_edge_from_total_frame": [
-        "The total frame length of the cube is shown. What is the cube edge length?",
-        "Using the cube's total wire-frame length, find the edge length.",
-        "What integer value should replace ? on the marked edge?",
-        "The full cube frame has the shown length. What is the edge length?",
-        "Determine the cube edge length from the total frame length."
-      ],
       "cube_edge_from_partial_frame": [
         "The highlighted part of the cube frame has the shown length. What is the cube edge length?",
         "Using only the highlighted frame length, find the edge length.",
@@ -90,13 +83,6 @@
         "The net folds into an open-top box. What integer value should replace ? on the base panel?",
         "Using the sheet dimensions and cut size, find the marked resulting base dimension.",
         "What is the marked base dimension of the open-top box formed from this net?"
-      ],
-      "open_box_volume_from_net": [
-        "The square corner cutouts are removed and the sides fold up to form an open-top box. What is the box volume?",
-        "After the equal corner squares are cut away and the flaps fold up, find the open-top box volume.",
-        "The net folds into an open-top box. What integer value should replace the volume readout?",
-        "Using the sheet dimensions and cut size, compute the resulting open-box volume.",
-        "What is the volume of the open-top box formed from this net?"
       ]
     },
     "output": {
@@ -137,25 +123,22 @@
       "object_description": "a labeled rectangular solid, cube frame, or open-box net with integer measurements and one missing value marker"
     },
     "task:cuboid_volume_missing_dimension_value": {
-      "annotation_hint": "set \"annotation\" to a JSON object with pixel points for length_segment_start, length_segment_end, width_segment_start, width_segment_end, height_segment_start, and height_segment_end",
+      "annotation_hint": "set \"annotation\" to the target dimension guide segment as [[x0,y0],[x1,y1]]",
       "answer_hint": "set \"answer\" to the requested missing dimension as an integer"
     },
     "task:cuboid_surface_area_value": {
-      "annotation_hint": "set \"annotation\" to a JSON object with pixel points for length_segment_start, length_segment_end, width_segment_start, width_segment_end, height_segment_start, and height_segment_end",
+      "annotation_hint": "set \"annotation\" to the pixel bounding box [x0,y0,x1,y1] around the cuboid",
       "answer_hint": "set \"answer\" to the total surface area as an integer"
     },
     "task:cube_edge_from_frame_length_value": {
-      "annotation_hint": "set \"annotation\" to a JSON object with pixel boxes for frame_bbox, given_length_region_bbox, and target_edge_bbox",
+      "annotation_hint": "set \"annotation\" to the pixel bounding box [x0,y0,x1,y1] around the highlighted cube-frame path",
       "answer_hint": "set \"answer\" to the cube edge length as an integer"
     },
     "task:open_box_net_dimension_value": {
-      "annotation_hint": "set \"annotation\" to a JSON object with pixel boxes for sheet_bbox, cutout_bbox, base_panel_bbox, and target_region_bbox"
+      "annotation_hint": "set \"annotation\" to the pixel bounding box [x0,y0,x1,y1] around the marked base-dimension region"
     },
     "query:open_box_dimension_from_corner_cut": {
       "answer_hint": "set \"answer\" to the requested resulting base dimension as an integer"
-    },
-    "query:open_box_volume_from_net": {
-      "answer_hint": "set \"answer\" to the resulting open-top box volume as an integer"
     },
     "output:answer_only": {
       "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."

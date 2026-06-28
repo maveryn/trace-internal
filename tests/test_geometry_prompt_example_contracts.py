@@ -149,7 +149,6 @@ def test_rectangular_solid_open_box_prompt_uses_query_specific_answer_hint() -> 
         str(query_id): str(samples[0]["prompt"])
         for query_id, samples in collected["samples_by_query_id"].items()
     }
-    assert "dimension or volume" not in prompts["open_box_dimension_from_corner_cut"]
-    assert "dimension or volume" not in prompts["open_box_volume_from_net"]
-    assert "base dimension" in prompts["open_box_dimension_from_corner_cut"]
-    assert "volume" in prompts["open_box_volume_from_net"]
+    assert "dimension or volume" not in prompts["single"]
+    assert "base dimension" in prompts["single"]
+    assert set(prompts) == {"single"}

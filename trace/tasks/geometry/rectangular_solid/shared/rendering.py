@@ -6,6 +6,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.diagram_style import (
     prepare_geometry_diagram_style_and_background,
@@ -26,7 +27,6 @@ from trace.tasks.geometry.shared.vector2d import (
     unit as _unit,
 )
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
 
@@ -43,23 +43,13 @@ from .state import (
 )
 
 CUBOID_DIMENSION_ANNOTATION_KEYS: Tuple[str, ...] = (
-    "length_segment_start",
-    "length_segment_end",
-    "width_segment_start",
-    "width_segment_end",
-    "height_segment_start",
-    "height_segment_end",
+    "target_dimension",
 )
 FRAME_ANNOTATION_KEYS: Tuple[str, ...] = (
-    "frame_bbox",
-    "given_length_region_bbox",
-    "target_edge_bbox",
+    "highlighted_frame_region",
 )
 NET_ANNOTATION_KEYS: Tuple[str, ...] = (
-    "sheet_bbox",
-    "cutout_bbox",
-    "base_panel_bbox",
-    "target_region_bbox",
+    "target_region",
 )
 
 
@@ -88,12 +78,8 @@ def create_render_context(
         ((255, 242, 232), (247, 222, 208), (255, 249, 243)),
         ((245, 241, 255), (227, 220, 246), (252, 249, 255)),
     )
-    palette_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{SCENE_ID}.face_palette",
-    )
-    face_front, face_side, face_top = face_palettes[int(palette_index) % len(face_palettes)]
+    palette_rng = spawn_rng(int(instance_seed), f"{SCENE_ID}.face_palette")
+    face_front, face_side, face_top = uniform_choice(palette_rng, face_palettes)
     font_size = int(params.get("label_font_size", group_default(rendering_defaults, "label_font_size", 22)))
     small_font_size = int(params.get("small_label_font_size", group_default(rendering_defaults, "small_label_font_size", 18)))
     line_width = int(params.get("line_width", group_default(rendering_defaults, "line_width", 3)))
@@ -392,7 +378,7 @@ def render_open_box_net_scene(
     }
     return RenderedRectangularSolidScene(
         image=ctx.image,
-        annotation_type="bbox_map",
+        annotation_type="bbox",
         annotation_keyed_points={},
         annotation_keyed_bboxes=dict(annotation_bboxes),
         annotation_roles=NET_ANNOTATION_KEYS,
@@ -503,13 +489,10 @@ def render_cube_frame_scene(
             "right_depth_top",
         ),
     )
-    path_index = resolve_selection_index(
-        params={},
-        instance_seed=int(instance_seed),
-        namespace=f"{problem.formula_family}.partial_frame_path",
-    )
+    path_rng = spawn_rng(int(instance_seed), f"{problem.formula_family}.partial_frame_path")
     if problem.frame_mode == "partial":
-        highlighted_edges = tuple(partial_paths[int(path_index) % len(partial_paths)][: int(problem.visible_frame_edge_count)])
+        highlighted_path = uniform_choice(path_rng, partial_paths)
+        highlighted_edges = tuple(highlighted_path[: int(problem.visible_frame_edge_count)])
     else:
         highlighted_edges = tuple(edge_defs.keys())
 
@@ -524,7 +507,7 @@ def render_cube_frame_scene(
     for edge_name in draw_order:
         start_key, end_key = edge_defs[edge_name]
         edge_color = ctx.muted_color if edge_name not in highlighted_edges else ctx.accent_color
-        edge_width = max(2, ctx.line_width - 1) if edge_name not in highlighted_edges else max(5, ctx.line_width + 2)
+        edge_width = max(3, ctx.line_width) if edge_name not in highlighted_edges else max(7, ctx.line_width + 4)
         ctx.draw.line([points[start_key], points[end_key]], fill=edge_color, width=edge_width)
     for point in points.values():
         radius = 4.0
@@ -591,7 +574,7 @@ def render_cube_frame_scene(
     }
     return RenderedRectangularSolidScene(
         image=ctx.image,
-        annotation_type="bbox_map",
+        annotation_type="bbox",
         annotation_keyed_points={},
         annotation_keyed_bboxes=dict(annotation_bboxes),
         annotation_roles=FRAME_ANNOTATION_KEYS,
@@ -740,12 +723,13 @@ def render_cuboid_measure_scene(
             "side": bbox_to_list(bbox_from_points(side_face, width=ctx.width, height=ctx.height, pad=4.0)),
             "top": bbox_to_list(bbox_from_points(top_face, width=ctx.width, height=ctx.height, pad=4.0)),
         },
+        "cuboid_bbox": bbox_to_list(entity_bbox),
         "label_bboxes": {key: bbox_to_list(value) for key, value in label_bboxes.items()},
         "scale_px_per_unit": round(float(scale), 3),
     }
     return RenderedRectangularSolidScene(
         image=ctx.image,
-        annotation_type="point_map",
+        annotation_type="segment",
         annotation_keyed_points={key: tuple(value) for key, value in annotation.items()},
         annotation_keyed_bboxes={},
         annotation_roles=CUBOID_DIMENSION_ANNOTATION_KEYS,

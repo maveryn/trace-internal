@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.shared.fixed_query import (
     geometry_selected_probability_map as _probability_map,
 )
@@ -105,12 +106,8 @@ def select_cuboid_case(
         validate_dimensions(case)
         return case, {cuboid_case_key(case): 1.0}
 
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{sampling_label}.cuboid_case",
-    )
-    case = CUBOID_DIMENSION_CASES[int(index) % len(CUBOID_DIMENSION_CASES)]
+    rng = spawn_rng(int(instance_seed), f"{sampling_label}.cuboid_case")
+    case = uniform_choice(rng, CUBOID_DIMENSION_CASES)
     probability = 1.0 / float(len(CUBOID_DIMENSION_CASES))
     return case, {cuboid_case_key(candidate): probability for candidate in CUBOID_DIMENSION_CASES}
 
@@ -128,12 +125,8 @@ def select_cube_edge(
         edge = int(explicit_edge)
         validate_cube_edge(edge)
         return edge, {str(edge): 1.0}
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{sampling_label}.cube_edge",
-    )
-    edge = int(CUBE_EDGE_VALUES[int(index) % len(CUBE_EDGE_VALUES)])
+    rng = spawn_rng(int(instance_seed), f"{sampling_label}.cube_edge")
+    edge = int(uniform_choice(rng, CUBE_EDGE_VALUES))
     probability = 1.0 / float(len(CUBE_EDGE_VALUES))
     return edge, {str(candidate): probability for candidate in CUBE_EDGE_VALUES}
 
@@ -152,12 +145,8 @@ def select_partial_frame_edge_count(
         if count not in PARTIAL_FRAME_EDGE_COUNTS:
             raise ValueError("highlighted_edge_count must be one of 4, 5, 6, 7, or 8")
         return count, {str(count): 1.0}
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{sampling_label}.partial_frame_edge_count",
-    )
-    count = int(PARTIAL_FRAME_EDGE_COUNTS[int(index) % len(PARTIAL_FRAME_EDGE_COUNTS)])
+    rng = spawn_rng(int(instance_seed), f"{sampling_label}.partial_frame_edge_count")
+    count = int(uniform_choice(rng, PARTIAL_FRAME_EDGE_COUNTS))
     probability = 1.0 / float(len(PARTIAL_FRAME_EDGE_COUNTS))
     return count, {str(candidate): probability for candidate in PARTIAL_FRAME_EDGE_COUNTS}
 
@@ -184,12 +173,8 @@ def select_open_box_case(
             case = (int(params["sheet_length_units"]), int(params["sheet_width_units"]), int(params["cut_size_units"]))
         validate_open_box_case(case)
         return case, {open_box_case_key(case): 1.0}
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{sampling_label}.open_box_case",
-    )
-    case = OPEN_BOX_CASES[int(index) % len(OPEN_BOX_CASES)]
+    rng = spawn_rng(int(instance_seed), f"{sampling_label}.open_box_case")
+    case = uniform_choice(rng, OPEN_BOX_CASES)
     probability = 1.0 / float(len(OPEN_BOX_CASES))
     return case, {open_box_case_key(candidate): probability for candidate in OPEN_BOX_CASES}
 
@@ -208,12 +193,8 @@ def select_open_box_dimension_role(
         if role not in OPEN_BOX_DIMENSION_ROLES:
             raise ValueError("target_dimension_role must be base_length or base_width")
         return role, probability_map_for_support(OPEN_BOX_DIMENSION_ROLES, selected=role)
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{sampling_label}.target_dimension_role",
-    )
-    role = OPEN_BOX_DIMENSION_ROLES[int(index) % len(OPEN_BOX_DIMENSION_ROLES)]
+    rng = spawn_rng(int(instance_seed), f"{sampling_label}.target_dimension_role")
+    role = str(uniform_choice(rng, OPEN_BOX_DIMENSION_ROLES))
     return str(role), _probability_map(OPEN_BOX_DIMENSION_ROLES)
 
 

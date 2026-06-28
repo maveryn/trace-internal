@@ -6,12 +6,13 @@ from typing import Mapping
 
 from trace.core.types import TypedValue
 from trace.tasks.registry import register_task
+from trace.tasks.shared.annotation_artifacts import bbox_annotation_artifacts
 
 from ._lifecycle import RectangularSolidObjectivePlan, run_rectangular_solid_public_entry
-from .shared.annotations import point_map_annotation
 from .shared.construction import resolve_cuboid_surface_area
 from .shared.defaults import DOMAIN
 from .shared.rendering import render_cuboid_measure_scene
+from .shared.state import RenderedRectangularSolidScene
 
 
 TASK_ID = "task_geometry__rectangular_solid__cuboid_surface_area_value"
@@ -19,6 +20,13 @@ QUERY_ID_SURFACE_AREA = "single"
 SUPPORTED_QUERY_IDS: tuple[str, ...] = (QUERY_ID_SURFACE_AREA,)
 DEFAULT_QUERY_ID = QUERY_ID_SURFACE_AREA
 PROMPT_TASK_KEY = "cuboid_surface_area_value"
+
+
+def _cuboid_bbox_annotation(rendered: RenderedRectangularSolidScene):
+    """Return one bbox witness for the cuboid whose surface area is requested."""
+
+    artifacts = bbox_annotation_artifacts(rendered.render_map["cuboid_bbox"])
+    return artifacts.annotation_gt, dict(artifacts.projected_annotation)
 
 
 def _prepare_surface_area_objective(
@@ -47,7 +55,7 @@ def _prepare_surface_area_objective(
         prompt_branch_key=str(selected_branch),
         problem=problem,
         render_scene=render_cuboid_measure_scene,
-        bind_annotation=point_map_annotation,
+        bind_annotation=_cuboid_bbox_annotation,
         answer_gt=TypedValue(type="integer", value=int(problem.answer)),
         query_params={
             "query_id_probabilities": dict(branch_probabilities),

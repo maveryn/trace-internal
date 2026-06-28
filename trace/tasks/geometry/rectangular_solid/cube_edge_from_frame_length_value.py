@@ -1,4 +1,4 @@
-"""Compute cube edge length from total or highlighted frame length."""
+"""Compute cube edge length from a highlighted partial frame length."""
 
 from __future__ import annotations
 
@@ -6,40 +6,41 @@ from typing import Mapping
 
 from trace.core.types import TypedValue
 from trace.tasks.registry import register_task
+from trace.tasks.shared.annotation_artifacts import bbox_annotation_artifacts
 
 from ._lifecycle import RectangularSolidObjectivePlan, run_rectangular_solid_public_entry
-from .shared.annotations import bbox_map_annotation
 from .shared.construction import resolve_cube_frame_edge
 from .shared.defaults import DOMAIN
 from .shared.rendering import render_cube_frame_scene
+from .shared.state import RenderedRectangularSolidScene
 
 
 TASK_ID = "task_geometry__rectangular_solid__cube_edge_from_frame_length_value"
-QUERY_ID_CUBE_EDGE_TOTAL_FRAME = "cube_edge_from_total_frame"
 QUERY_ID_CUBE_EDGE_PARTIAL_FRAME = "cube_edge_from_partial_frame"
-SUPPORTED_QUERY_IDS: tuple[str, ...] = (
-    QUERY_ID_CUBE_EDGE_TOTAL_FRAME,
-    QUERY_ID_CUBE_EDGE_PARTIAL_FRAME,
-)
-DEFAULT_QUERY_ID = QUERY_ID_CUBE_EDGE_TOTAL_FRAME
+SUPPORTED_QUERY_IDS: tuple[str, ...] = (QUERY_ID_CUBE_EDGE_PARTIAL_FRAME,)
+DEFAULT_QUERY_ID = QUERY_ID_CUBE_EDGE_PARTIAL_FRAME
 PROMPT_TASK_KEY = "cube_edge_from_frame_length_value"
-FRAME_MODE_BY_QUERY_ID = {
-    QUERY_ID_CUBE_EDGE_TOTAL_FRAME: "total",
-    QUERY_ID_CUBE_EDGE_PARTIAL_FRAME: "partial",
-}
+
+
+def _highlighted_frame_bbox_annotation(rendered: RenderedRectangularSolidScene):
+    """Return one bbox witness for the highlighted partial frame path."""
+
+    artifacts = bbox_annotation_artifacts(rendered.annotation_keyed_bboxes["given_length_region_bbox"])
+    return artifacts.annotation_gt, dict(artifacts.projected_annotation)
+
+
 def _prepare_frame_edge_objective(
     instance_seed,
     task_params: Mapping[str, object],
     selected_branch,
     branch_probabilities,
 ):
-    """Bind total-frame or highlighted-frame edge-length solving."""
+    """Bind highlighted-frame edge-length solving."""
 
-    frame_mode = FRAME_MODE_BY_QUERY_ID[str(selected_branch)]
     problem = resolve_cube_frame_edge(
         instance_seed=int(instance_seed),
         params=task_params,
-        frame_mode=str(frame_mode),
+        frame_mode="partial",
         sampling_label=f"{TASK_ID}.{selected_branch}",
     )
     trace_values = {
@@ -54,7 +55,7 @@ def _prepare_frame_edge_objective(
         prompt_branch_key=str(selected_branch),
         problem=problem,
         render_scene=render_cube_frame_scene,
-        bind_annotation=bbox_map_annotation,
+        bind_annotation=_highlighted_frame_bbox_annotation,
         answer_gt=TypedValue(type="integer", value=int(problem.answer)),
         query_params={
             "query_id_probabilities": dict(branch_probabilities),
@@ -69,7 +70,7 @@ def _prepare_frame_edge_objective(
 
 @register_task
 class GeometryRectangularSolidCubeEdgeFromFrameLengthValueTask:
-    """Compute cube edge length from a visible wire-frame length."""
+    """Compute cube edge length from a highlighted wire-frame length."""
 
     task_id = TASK_ID
     domain = DOMAIN

@@ -6,11 +6,10 @@ import json
 
 import pytest
 
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.taxonomy import lookup_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
 from trace.tasks.geometry.rectangular_solid.cube_edge_from_frame_length_value import (
-    QUERY_ID_CUBE_EDGE_PARTIAL_FRAME,
-    QUERY_ID_CUBE_EDGE_TOTAL_FRAME,
     TASK_ID as TASK_ID_FRAME_EDGE,
     GeometryRectangularSolidCubeEdgeFromFrameLengthValueTask,
 )
@@ -28,17 +27,10 @@ from trace.tasks.geometry.rectangular_solid.cuboid_volume_missing_dimension_valu
     GeometryRectangularSolidCuboidVolumeMissingDimensionValueTask,
 )
 from trace.tasks.geometry.rectangular_solid.open_box_net_dimension_value import (
-    QUERY_ID_OPEN_BOX_DIMENSION,
-    QUERY_ID_OPEN_BOX_VOLUME,
     TASK_ID as TASK_ID_OPEN_BOX_NET,
     GeometryRectangularSolidOpenBoxNetDimensionValueTask,
 )
 from trace.tasks.geometry.rectangular_solid.shared.defaults import SCENE_ID
-from trace.tasks.geometry.rectangular_solid.shared.rendering import (
-    CUBOID_DIMENSION_ANNOTATION_KEYS as ANNOTATION_KEYS,
-    FRAME_ANNOTATION_KEYS,
-    NET_ANNOTATION_KEYS,
-)
 
 
 def _generate(seed: int, *, task_id: str = TASK_ID, **params):
@@ -92,14 +84,15 @@ def test_rectangular_solid_missing_dimension_formula_and_annotation(
     assert execution["length"] * execution["width"] * execution["height"] == execution["volume"] == 60
     assert execution["formula_family"] == "cuboid_volume_missing_dimension"
 
-    assert out.annotation_gt.type == "point_map"
+    assert out.annotation_gt.type == "segment"
     annotation = out.annotation_gt.value
-    assert tuple(annotation.keys()) == ANNOTATION_KEYS
-    assert trace["projected_annotation"]["point_map"] == annotation
-    assert trace["projected_annotation"]["pixel_point_map"] == annotation
+    assert annotation == trace["render_map"]["dimension_segments"][expected_role]
+    assert trace["projected_annotation"]["segment"] == annotation
+    assert trace["projected_annotation"]["pixel_segment"] == annotation
+    assert execution["annotation_roles"] == ["target_dimension"]
     assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v1"
     assert "task_variant" not in json.dumps(trace)
-    _assert_point_map_inside_image(annotation, out.image.size)
+    _assert_segment_inside_image(annotation, out.image.size)
 
 
 def test_rectangular_solid_surface_area_formula_and_annotation() -> None:
@@ -123,66 +116,49 @@ def test_rectangular_solid_surface_area_formula_and_annotation() -> None:
     assert execution["formula_family"] == "cuboid_surface_area"
     assert execution["target_role"] == "surface_area"
 
-    assert out.annotation_gt.type == "point_map"
+    assert out.annotation_gt.type == "bbox"
     annotation = out.annotation_gt.value
-    assert tuple(annotation.keys()) == ANNOTATION_KEYS
-    assert trace["projected_annotation"]["point_map"] == annotation
+    assert annotation == trace["render_map"]["cuboid_bbox"]
+    assert trace["projected_annotation"]["bbox"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox"] == annotation
+    assert execution["annotation_roles"] == ["target_dimension"]
     assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v1"
     assert "task_variant" not in json.dumps(trace)
-    _assert_point_map_inside_image(annotation, out.image.size)
+    _assert_bbox_inside_image(annotation, out.image.size)
 
 
-@pytest.mark.parametrize(
-    ("query_id", "params", "expected_frame_length", "expected_edge_count"),
-    [
-        (
-            QUERY_ID_CUBE_EDGE_TOTAL_FRAME,
-            {"edge_units": 8, "total_frame_length_units": 96},
-            96,
-            12,
-        ),
-        (
-            QUERY_ID_CUBE_EDGE_PARTIAL_FRAME,
-            {"edge_units": 8, "highlighted_edge_count": 5, "highlighted_frame_length_units": 40},
-            40,
-            5,
-        ),
-    ],
-)
-def test_rectangular_solid_cube_edge_from_frame_formula_and_annotation(
-    query_id: str,
-    params: dict[str, int],
-    expected_frame_length: int,
-    expected_edge_count: int,
-) -> None:
+def test_rectangular_solid_cube_edge_from_frame_formula_and_annotation() -> None:
     out = _generate(
         20260627,
         task_id=TASK_ID_FRAME_EDGE,
-        query_id=query_id,
-        **params,
+        query_id=SINGLE_QUERY_ID,
+        edge_units=8,
+        highlighted_edge_count=5,
+        highlighted_frame_length_units=40,
     )
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == query_id
+    assert out.query_id == SINGLE_QUERY_ID
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 8 == execution["answer"]
     assert execution["cube_edge"] == 8
-    assert execution["visible_frame_edge_count"] == expected_edge_count
-    assert execution["frame_length"] == expected_frame_length
+    assert execution["visible_frame_edge_count"] == 5
+    assert execution["frame_length"] == 40
     assert execution["frame_length"] == execution["cube_edge"] * execution["visible_frame_edge_count"]
     assert execution["formula_family"] == "cube_edge_from_frame_length"
     assert execution["target_role"] == "cube_edge"
 
-    assert out.annotation_gt.type == "bbox_map"
+    assert out.annotation_gt.type == "bbox"
     annotation = out.annotation_gt.value
-    assert tuple(annotation.keys()) == FRAME_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["bbox_map"] == annotation
-    assert trace["projected_annotation"]["pixel_bbox_map"] == annotation
+    assert annotation == trace["render_map"]["annotation_bboxes"]["given_length_region_bbox"]
+    assert trace["projected_annotation"]["bbox"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox"] == annotation
+    assert execution["annotation_roles"] == ["highlighted_frame_region"]
     assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v1"
     assert "task_variant" not in json.dumps(trace)
-    _assert_bbox_map_inside_image(annotation, out.image.size)
+    _assert_bbox_inside_image(annotation, out.image.size)
 
 
 @pytest.mark.parametrize(
@@ -196,7 +172,7 @@ def test_rectangular_solid_open_box_dimension_formula_and_annotation(target_role
     out = _generate(
         20260628,
         task_id=TASK_ID_OPEN_BOX_NET,
-        query_id=QUERY_ID_OPEN_BOX_DIMENSION,
+        query_id=SINGLE_QUERY_ID,
         sheet_length_units=14,
         sheet_width_units=10,
         cut_size_units=3,
@@ -206,7 +182,7 @@ def test_rectangular_solid_open_box_dimension_formula_and_annotation(target_role
     execution = trace["execution_trace"]
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == QUERY_ID_OPEN_BOX_DIMENSION
+    assert out.query_id == SINGLE_QUERY_ID
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == expected_answer == execution["answer"]
     assert execution["sheet_length"] == 14
@@ -218,46 +194,15 @@ def test_rectangular_solid_open_box_dimension_formula_and_annotation(target_role
     assert execution["target_role"] == target_role
     assert execution["formula_family"] == "open_box_net_corner_cut"
 
-    assert out.annotation_gt.type == "bbox_map"
+    assert out.annotation_gt.type == "bbox"
     annotation = out.annotation_gt.value
-    assert tuple(annotation.keys()) == NET_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["bbox_map"] == annotation
-    assert trace["projected_annotation"]["pixel_bbox_map"] == annotation
+    assert annotation == trace["render_map"]["annotation_bboxes"]["target_region_bbox"]
+    assert trace["projected_annotation"]["bbox"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox"] == annotation
+    assert execution["annotation_roles"] == ["target_region"]
     assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v1"
     assert "task_variant" not in json.dumps(trace)
-    _assert_bbox_map_inside_image(annotation, out.image.size, keys=NET_ANNOTATION_KEYS)
-
-
-def test_rectangular_solid_open_box_volume_formula_and_annotation() -> None:
-    out = _generate(
-        20260629,
-        task_id=TASK_ID_OPEN_BOX_NET,
-        query_id=QUERY_ID_OPEN_BOX_VOLUME,
-        sheet_length_units=14,
-        sheet_width_units=10,
-        cut_size_units=3,
-        open_box_volume_units=96,
-    )
-    trace = out.trace_payload
-    execution = trace["execution_trace"]
-
-    assert out.scene_id == SCENE_ID
-    assert out.query_id == QUERY_ID_OPEN_BOX_VOLUME
-    assert out.answer_gt.type == "integer"
-    assert out.answer_gt.value == 96 == execution["answer"]
-    assert execution["base_length"] == execution["sheet_length"] - 2 * execution["cut_size"]
-    assert execution["base_width"] == execution["sheet_width"] - 2 * execution["cut_size"]
-    assert execution["open_box_volume"] == execution["base_length"] * execution["base_width"] * execution["cut_size"]
-    assert execution["target_role"] == "open_box_volume"
-    assert execution["formula_family"] == "open_box_net_corner_cut"
-
-    assert out.annotation_gt.type == "bbox_map"
-    annotation = out.annotation_gt.value
-    assert tuple(annotation.keys()) == NET_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["bbox_map"] == annotation
-    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v1"
-    assert "task_variant" not in json.dumps(trace)
-    _assert_bbox_map_inside_image(annotation, out.image.size, keys=NET_ANNOTATION_KEYS)
+    _assert_bbox_inside_image(annotation, out.image.size)
 
 
 def test_rectangular_solid_missing_dimension_generation_is_deterministic() -> None:
@@ -300,7 +245,7 @@ def test_rectangular_solid_surface_area_generation_is_deterministic() -> None:
 
 def test_rectangular_solid_cube_edge_from_frame_generation_is_deterministic() -> None:
     params = {
-        "query_id": QUERY_ID_CUBE_EDGE_PARTIAL_FRAME,
+        "query_id": SINGLE_QUERY_ID,
         "edge_units": 9,
         "highlighted_edge_count": 6,
         "highlighted_frame_length_units": 54,
@@ -318,7 +263,7 @@ def test_rectangular_solid_cube_edge_from_frame_generation_is_deterministic() ->
 
 def test_rectangular_solid_open_box_generation_is_deterministic() -> None:
     params = {
-        "query_id": QUERY_ID_OPEN_BOX_DIMENSION,
+        "query_id": SINGLE_QUERY_ID,
         "sheet_length_units": 15,
         "sheet_width_units": 11,
         "cut_size_units": 3,
@@ -355,14 +300,14 @@ def test_rectangular_solid_missing_dimension_rejects_invalid_params() -> None:
     with pytest.raises(ValueError):
         create_task(TASK_ID_FRAME_EDGE).generate(
             1,
-            params={"query_id": QUERY_ID_CUBE_EDGE_TOTAL_FRAME, "edge_units": 8, "total_frame_length_units": 95},
+            params={"query_id": "cube_edge_from_total_frame", "edge_units": 8, "total_frame_length_units": 95},
             max_attempts=1,
         )
     with pytest.raises(ValueError):
         create_task(TASK_ID_FRAME_EDGE).generate(
             1,
             params={
-                "query_id": QUERY_ID_CUBE_EDGE_PARTIAL_FRAME,
+                "query_id": SINGLE_QUERY_ID,
                 "edge_units": 8,
                 "highlighted_edge_count": 5,
                 "highlighted_frame_length_units": 41,
@@ -372,14 +317,14 @@ def test_rectangular_solid_missing_dimension_rejects_invalid_params() -> None:
     with pytest.raises(ValueError):
         create_task(TASK_ID_FRAME_EDGE).generate(
             1,
-            params={"query_id": QUERY_ID_CUBE_EDGE_PARTIAL_FRAME, "edge_units": 8, "highlighted_edge_count": 9},
+            params={"query_id": SINGLE_QUERY_ID, "edge_units": 8, "highlighted_edge_count": 9},
             max_attempts=1,
         )
     with pytest.raises(ValueError):
         create_task(TASK_ID_OPEN_BOX_NET).generate(
             1,
             params={
-                "query_id": QUERY_ID_OPEN_BOX_DIMENSION,
+                "query_id": SINGLE_QUERY_ID,
                 "sheet_length_units": 6,
                 "sheet_width_units": 8,
                 "cut_size_units": 3,
@@ -391,7 +336,7 @@ def test_rectangular_solid_missing_dimension_rejects_invalid_params() -> None:
         create_task(TASK_ID_OPEN_BOX_NET).generate(
             1,
             params={
-                "query_id": QUERY_ID_OPEN_BOX_VOLUME,
+                "query_id": "open_box_volume_from_net",
                 "sheet_length_units": 14,
                 "sheet_width_units": 10,
                 "cut_size_units": 3,
@@ -403,7 +348,7 @@ def test_rectangular_solid_missing_dimension_rejects_invalid_params() -> None:
         create_task(TASK_ID_OPEN_BOX_NET).generate(
             1,
             params={
-                "query_id": QUERY_ID_OPEN_BOX_DIMENSION,
+                "query_id": SINGLE_QUERY_ID,
                 "sheet_length_units": 14,
                 "sheet_width_units": 10,
                 "cut_size_units": 3,
@@ -415,7 +360,7 @@ def test_rectangular_solid_missing_dimension_rejects_invalid_params() -> None:
         create_task(TASK_ID_OPEN_BOX_NET).generate(
             1,
             params={
-                "query_id": QUERY_ID_OPEN_BOX_VOLUME,
+                "query_id": "open_box_volume_from_net",
                 "sheet_length_units": 14,
                 "sheet_width_units": 10,
                 "cut_size_units": 3,
@@ -425,10 +370,11 @@ def test_rectangular_solid_missing_dimension_rejects_invalid_params() -> None:
         )
 
 
-def _assert_point_map_inside_image(annotation: dict[str, list[float]], image_size: tuple[int, int]) -> None:
+def _assert_segment_inside_image(annotation: list[list[float]], image_size: tuple[int, int]) -> None:
     width, height = image_size
-    for key in ANNOTATION_KEYS:
-        point = annotation[key]
+    assert isinstance(annotation, list)
+    assert len(annotation) == 2
+    for point in annotation:
         assert isinstance(point, list)
         assert len(point) == 2
         x, y = [float(value) for value in point]
@@ -436,17 +382,10 @@ def _assert_point_map_inside_image(annotation: dict[str, list[float]], image_siz
         assert 0.0 <= y <= float(height)
 
 
-def _assert_bbox_map_inside_image(
-    annotation: dict[str, list[float]],
-    image_size: tuple[int, int],
-    *,
-    keys: tuple[str, ...] = FRAME_ANNOTATION_KEYS,
-) -> None:
+def _assert_bbox_inside_image(annotation: list[float], image_size: tuple[int, int]) -> None:
     width, height = image_size
-    for key in keys:
-        bbox = annotation[key]
-        assert isinstance(bbox, list)
-        assert len(bbox) == 4
-        x1, y1, x2, y2 = [float(value) for value in bbox]
-        assert 0.0 <= x1 < x2 <= float(width)
-        assert 0.0 <= y1 < y2 <= float(height)
+    assert isinstance(annotation, list)
+    assert len(annotation) == 4
+    x1, y1, x2, y2 = [float(value) for value in annotation]
+    assert 0.0 <= x1 < x2 <= float(width)
+    assert 0.0 <= y1 < y2 <= float(height)

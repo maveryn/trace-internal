@@ -5,7 +5,8 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Any, Mapping
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 
 from .state import PythagoreanDissectionPlan, PythagoreanLegCase
 
@@ -78,12 +79,8 @@ def select_square_area_answer(
         if answer not in set(SQUARE_AREA_ANSWER_SUPPORT):
             raise ValueError(f"answer_value={answer!r} is outside supported square-area values")
         return int(answer)
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    return int(SQUARE_AREA_ANSWER_SUPPORT[int(index) % len(SQUARE_AREA_ANSWER_SUPPORT)])
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    return int(uniform_choice(rng, SQUARE_AREA_ANSWER_SUPPORT))
 
 
 def build_square_area_plan(
@@ -106,12 +103,8 @@ def build_square_area_plan(
         case = explicit_case
     else:
         candidates = tuple(cases_by_answer[answer_int])
-        index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}.{answer_int}",
-        )
-        case = candidates[int(index) % len(candidates)]
+        rng = spawn_rng(int(instance_seed), f"{namespace}.{answer_int}")
+        case = uniform_choice(rng, candidates)
     case_index = SQUARE_AREA_CASES.index(case)
     leg_a = int(case.leg_a)
     leg_b = int(case.leg_b)
@@ -131,7 +124,7 @@ def build_square_area_plan(
         "central_square_side": round(float(case.central_square_side), 3),
         "case_index": int(case_index),
         "formula_family": "central_square_area_from_triangle_legs",
-        "dissection_relation": "central square area = leg_a^2 + leg_b^2",
+        "dissection_relation": "square EFGH area = leg_a^2 + leg_b^2",
     }
     return PythagoreanDissectionPlan(
         answer=int(answer_int),

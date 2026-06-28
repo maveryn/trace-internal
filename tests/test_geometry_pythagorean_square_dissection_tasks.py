@@ -26,20 +26,19 @@ def test_pythagorean_square_dissection_tasks_emit_public_contract(task_cls) -> N
     assert out.scene_id == SCENE_ID
     assert out.query_id
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "bbox_map"
-    assert set(out.annotation_gt.value) == {
-        "central_square",
-        "leg_a_label",
-        "leg_b_label",
-    }
+    assert out.annotation_gt.type == "point_map"
+    assert set(out.annotation_gt.value) == {"E", "F", "G", "H"}
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
+    assert "square EFGH" in out.prompt
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
     assert trace["query_spec"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["type"] == "point_map"
+    assert trace["projected_annotation"]["point_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_map"] == out.annotation_gt.value
 
     vertical_leg = trace["execution_trace"]["leg_a"]
     horizontal_leg = trace["execution_trace"]["leg_b"]
@@ -99,11 +98,10 @@ def test_pythagorean_square_dissection_annotation_stays_inside_canvas(task_cls) 
             max_attempts=20,
         )
         width, height = out.image.size
-        for x0, y0, x1, y1 in out.annotation_gt.value.values():
-            assert 0.0 <= x0 < x1 <= float(width)
-            assert 0.0 <= y0 < y1 <= float(height)
-            assert (x1 - x0) > 8.0
-            assert (y1 - y0) > 8.0
+        for point in out.annotation_gt.value.values():
+            assert len(point) == 2
+            assert 0.0 <= float(point[0]) <= float(width)
+            assert 0.0 <= float(point[1]) <= float(height)
 
 
 def test_pythagorean_square_dissection_tasks_reject_unknown_query_id() -> None:
@@ -124,8 +122,8 @@ def test_pythagorean_square_dissection_target_orientation_varies() -> None:
         )
         trace = out.trace_payload
         orientations.add(trace["render_spec"]["orientation"])
-        x0, y0, x1, y1 = trace["render_map"]["label_bboxes"]["leg_a_label"]
-        annotation_centers.add((round((x0 + x1) / 20.0), round((y0 + y1) / 20.0)))
+        e_x, e_y = trace["render_map"]["annotation_points"]["E"]
+        annotation_centers.add((round(e_x / 20.0), round(e_y / 20.0)))
 
     assert len(orientations) == 4
     assert len(annotation_centers) >= 3

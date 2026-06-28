@@ -24,7 +24,7 @@ def pythagorean_dissection_prompt_artifacts(
     answer: int,
     instance_seed: int,
 ) -> tuple[dict[str, Any], PromptTraceArtifacts]:
-    """Render v1 prompt variants for the central-square area objective."""
+    """Render v1 prompt variants for the square EFGH area objective."""
 
     defaults = required_group_defaults(
         prompt_defaults,
@@ -39,12 +39,13 @@ def pythagorean_dissection_prompt_artifacts(
     key_list = ", ".join(f'"{key}"' for key in annotation_keys)
     annotation_hint = (
         f"set \"annotation\" to a JSON object with exactly these keys: {key_list}; "
-        "each value must be a pixel bounding box [x0,y0,x1,y1] around that visual witness"
+        "each value must be the pixel point [x,y] for that labeled vertex"
     )
     example_annotation = {
-        "central_square": [310, 180, 470, 340],
-        "leg_a_label": [220, 118, 286, 146],
-        "leg_b_label": [390, 118, 476, 146],
+        "E": [320, 170],
+        "F": [475, 235],
+        "G": [410, 390],
+        "H": [255, 325],
     }
     json_example, json_example_answer_only = dump_prompt_json_examples(
         annotation=example_annotation,
@@ -60,7 +61,7 @@ def pythagorean_dissection_prompt_artifacts(
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         dynamic_slots={
             "annotation_hint": str(annotation_hint),
-            "answer_hint": "set \"answer\" to the area of the central square as an integer",
+            "answer_hint": "set \"answer\" to the area of square EFGH as an integer",
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
         },

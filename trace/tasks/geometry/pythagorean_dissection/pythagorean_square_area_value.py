@@ -1,4 +1,4 @@
-"""Compute the central square area in a Pythagorean dissection."""
+"""Compute square EFGH's area in a Pythagorean dissection."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ from .shared.sampling import (
     select_square_area_answer,
 )
 from .shared.state import PythagoreanDissectionPlan, RenderedPythagoreanDissectionScene
-from ..shared.annotation_values import keyed_bbox_annotation_artifacts
+from ..shared.annotation_values import keyed_point_annotation_artifacts
 
 TASK_ID = "task_geometry__pythagorean_dissection__pythagorean_square_area_value"
 SUPPORTED_QUERY_IDS: tuple[str, ...] = ("single",)
@@ -112,7 +112,7 @@ def _render_square_area(
 
 @register_task
 class GeometryPythagoreanSquareAreaValueTask:
-    """Compute the central square area from the two visible triangle legs."""
+    """Compute square EFGH's area from the two visible triangle legs."""
 
     task_id = TASK_ID
     domain = DOMAIN
@@ -142,8 +142,8 @@ class GeometryPythagoreanSquareAreaValueTask:
             params=request.params,
             default_config=POST_IMAGE_NOISE_DEFAULTS,
         )
-        annotation_artifacts = keyed_bbox_annotation_artifacts(
-            rendered.annotation_keyed_bboxes,
+        annotation_artifacts = keyed_point_annotation_artifacts(
+            rendered.annotation_keyed_points,
             roles=rendered.annotation_roles,
         )
         _prompt_defaults, prompt_artifacts = pythagorean_dissection_prompt_artifacts(

@@ -13,11 +13,11 @@
     },
     "task": {
       "pythagorean_square_area_value": [
-        "Find the area of the central square.",
-        "What is the area of the central square?",
-        "Determine the area of the central square.",
-        "Use the two visible triangle leg labels to find the central square area.",
-        "Find the missing area marked in the central square."
+        "Find the area of square EFGH.",
+        "What is the area of square EFGH?",
+        "Determine the area of square EFGH.",
+        "Use the two visible triangle leg labels to find the area of square EFGH.",
+        "Find the missing area marked in square EFGH."
       ]
     },
     "query": {},
@@ -56,7 +56,7 @@
   },
   "static_slots_by_key": {
     "scene:pythagorean_dissection_scene": {
-      "object_description": "an outer square dissected into four congruent right triangles around a central tilted square"
+      "object_description": "an outer square ABCD dissected into four congruent right triangles around square EFGH"
     },
     "output:answer_only": {
       "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."

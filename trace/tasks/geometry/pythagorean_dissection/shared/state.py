@@ -79,7 +79,7 @@ class RenderedPythagoreanDissectionScene:
 
     image: Image.Image
     annotation_roles: Tuple[str, ...]
-    annotation_keyed_bboxes: Mapping[str, BBox]
+    annotation_keyed_points: Mapping[str, Point]
     label_bboxes: Dict[str, BBox]
     scene_entities: Tuple[Dict[str, Any], ...]
     render_map: Dict[str, Any]

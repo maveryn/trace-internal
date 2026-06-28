@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any, Mapping, Sequence
 
 from PIL import ImageDraw
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.diagram_style import (
     geometry_diagram_style_metadata,
@@ -20,7 +22,6 @@ from trace.tasks.geometry.shared.measurement_rendering import (
 )
 from trace.tasks.geometry.shared.scene_transform import LazySceneTransform
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from trace.tasks.shared.text_rendering import load_font
 
@@ -50,12 +51,8 @@ def _select_orientation(*, params: Mapping[str, Any], instance_seed: int) -> tup
             if item[0] == orientation:
                 return item
         raise ValueError(f"unsupported pythagorean dissection orientation: {orientation}")
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"geometry.{SCENE_ID}.orientation",
-    )
-    return ORIENTATIONS[int(index) % len(ORIENTATIONS)]
+    orientation_rng = spawn_rng(int(instance_seed), f"geometry.{SCENE_ID}.orientation")
+    return uniform_choice(orientation_rng, ORIENTATIONS)
 
 
 def make_render_context(
@@ -68,15 +65,17 @@ def make_render_context(
 
     width = int(params.get("canvas_width", group_default(rendering_defaults, "canvas_width", 760)))
     height = int(params.get("canvas_height", group_default(rendering_defaults, "canvas_height", 560)))
-    background, background_meta, diagram_style, diagram_style_resolution = prepare_geometry_diagram_style_and_background(
-        instance_seed=int(instance_seed),
-        params=params,
-        scene_id=SCENE_ID,
-        canvas_width=int(width),
-        canvas_height=int(height),
-        require_grid=False,
-        allow_dark=True,
-        style_profile="analytical_diagram",
+    background, background_meta, diagram_style, diagram_style_resolution = (
+        prepare_geometry_diagram_style_and_background(
+            instance_seed=int(instance_seed),
+            params=params,
+            scene_id=SCENE_ID,
+            canvas_width=int(width),
+            canvas_height=int(height),
+            require_grid=False,
+            allow_dark=True,
+            style_profile="analytical_diagram",
+        )
     )
     shape_style = geometry_shape_style_from_diagram_style(diagram_style)
     palettes: tuple[tuple[Color, Color, Color], ...] = (
@@ -96,12 +95,8 @@ def make_render_context(
             tuple(int(v) for v in diagram_style.panel_alt_fill_rgb),
         ),
     )
-    palette_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"geometry.{SCENE_ID}.fill_palette",
-    )
-    leg_fill, other_leg_fill, central_fill = palettes[int(palette_index) % len(palettes)]
+    palette_rng = spawn_rng(int(instance_seed), f"geometry.{SCENE_ID}.fill_palette")
+    leg_fill, other_leg_fill, central_fill = uniform_choice(palette_rng, palettes)
     orientation_key, orientation_sign_x, orientation_sign_y = _select_orientation(
         params=params,
         instance_seed=int(instance_seed),
@@ -119,7 +114,12 @@ def make_render_context(
     )
     font_record = get_font_family_record(str(font_family))
     font_size = int(params.get("label_font_size", group_default(rendering_defaults, "label_font_size", 22)))
-    small_font_size = int(params.get("small_label_font_size", group_default(rendering_defaults, "small_label_font_size", 18)))
+    small_font_size = int(
+        params.get(
+            "small_label_font_size",
+            group_default(rendering_defaults, "small_label_font_size", 18),
+        )
+    )
     line_width = int(params.get("line_width", group_default(rendering_defaults, "line_width", 3)))
     label_stroke_width = int(
         params.get(
@@ -184,6 +184,34 @@ def make_render_context(
 
 def _draw_label(ctx: RenderContext, text: str, center: Point) -> BBox:
     return draw_readout_centered(ctx, str(text), center, small=True, backed=False)
+
+
+def _offset_from_center(point: Point, center: Point, distance: float) -> Point:
+    dx = float(point[0]) - float(center[0])
+    dy = float(point[1]) - float(center[1])
+    length = max(1.0, math.hypot(dx, dy))
+    return (
+        float(point[0]) + (dx / length) * float(distance),
+        float(point[1]) + (dy / length) * float(distance),
+    )
+
+
+def _draw_vertex_labels(
+    ctx: RenderContext,
+    *,
+    prefix: str,
+    vertices: Mapping[str, Point],
+    center: Point,
+    offset: float,
+) -> dict[str, BBox]:
+    return {
+        f"{prefix}_{label}": _draw_label(
+            ctx,
+            label,
+            _offset_from_center(point, center, float(offset)),
+        )
+        for label, point in vertices.items()
+    }
 
 
 def render_pythagorean_dissection_scene(
@@ -282,16 +310,33 @@ def render_pythagorean_dissection_scene(
     leg_label_center = ctx.scene_transform.point(leg_label_center_raw)
     other_leg_label_center = ctx.scene_transform.point(other_leg_label_center_raw)
 
-    for triangle, fill in zip(corner_triangles, (ctx.leg_fill_color, ctx.other_leg_fill_color, ctx.leg_fill_color, ctx.other_leg_fill_color)):
+    triangle_fills = (
+        ctx.leg_fill_color,
+        ctx.other_leg_fill_color,
+        ctx.leg_fill_color,
+        ctx.other_leg_fill_color,
+    )
+    for triangle, fill in zip(corner_triangles, triangle_fills):
         ctx.draw.polygon(triangle, fill=fill)
     ctx.draw.polygon(central_square, fill=ctx.central_fill_color)
     ctx.draw.line(list(outer_square) + [outer_square[0]], fill=ctx.line_color, width=ctx.line_width, joint="curve")
     for triangle in corner_triangles:
-        ctx.draw.line(list(triangle) + [triangle[0]], fill=ctx.line_color, width=max(2, ctx.line_width - 1), joint="curve")
+        ctx.draw.line(
+            list(triangle) + [triangle[0]],
+            fill=ctx.line_color,
+            width=max(2, ctx.line_width - 1),
+            joint="curve",
+        )
     ctx.draw.line(list(central_square) + [central_square[0]], fill=ctx.line_color, width=ctx.line_width, joint="curve")
 
     for mark in angle_marks:
-        draw_right_angle_marker(ctx, mark[0], arm_a=(mark[1][0] - mark[0][0], mark[1][1] - mark[0][1]), arm_b=(mark[2][0] - mark[0][0], mark[2][1] - mark[0][1]), side_px=10.0)
+        draw_right_angle_marker(
+            ctx,
+            mark[0],
+            arm_a=(mark[1][0] - mark[0][0], mark[1][1] - mark[0][1]),
+            arm_b=(mark[2][0] - mark[0][0], mark[2][1] - mark[0][1]),
+            side_px=10.0,
+        )
 
     label_bboxes: dict[str, BBox] = {
         "outer_square_side": _draw_label(ctx, f"outer side={outer_side_units}", outer_label_center),
@@ -299,20 +344,46 @@ def render_pythagorean_dissection_scene(
         "leg_b_label": _draw_label(ctx, f"other leg={plan.leg_b}", other_leg_label_center),
         "central_square_target": _draw_label(ctx, "Area=?", _polygon_center(central_square)),
     }
-    central_square_bbox = bbox_from_points(central_square, width=ctx.width, height=ctx.height, pad=ctx.line_width + 2)
-    annotation_roles = ("central_square", "leg_a_label", "leg_b_label")
-    annotation_keyed_bboxes = {
-        "central_square": central_square_bbox,
-        "leg_a_label": label_bboxes["leg_a_label"],
-        "leg_b_label": label_bboxes["leg_b_label"],
+    outer_vertices = {
+        "A": outer_top_left,
+        "B": outer_top_right,
+        "C": outer_bottom_right,
+        "D": outer_bottom_left,
     }
+    central_vertices = {
+        "E": center_top,
+        "F": center_right,
+        "G": center_bottom,
+        "H": center_left,
+    }
+    label_bboxes.update(
+        _draw_vertex_labels(
+            ctx,
+            prefix="outer_vertex",
+            vertices=outer_vertices,
+            center=_polygon_center(outer_square),
+            offset=20.0,
+        )
+    )
+    label_bboxes.update(
+        _draw_vertex_labels(
+            ctx,
+            prefix="central_vertex",
+            vertices=central_vertices,
+            center=_polygon_center(central_square),
+            offset=18.0,
+        )
+    )
+    central_square_bbox = bbox_from_points(central_square, width=ctx.width, height=ctx.height, pad=ctx.line_width + 2)
+    annotation_roles = ("E", "F", "G", "H")
+    annotation_keyed_points = {label: central_vertices[label] for label in annotation_roles}
     square_entities = (
         {
             "entity_id": "outer_square",
             "entity_type": "square",
             "side_units": int(outer_side_units),
             "area_units": int(outer_side_units * outer_side_units),
-            "vertices": [[round(x, 3), round(y, 3)] for x, y in outer_square],
+            "vertices": {label: [round(x, 3), round(y, 3)] for label, (x, y) in outer_vertices.items()},
             "bbox": bbox_to_list(bbox_from_points(outer_square, width=ctx.width, height=ctx.height)),
         },
         {
@@ -339,7 +410,7 @@ def render_pythagorean_dissection_scene(
             "entity_type": "square",
             "side_units": round(float(plan.central_square_side), 3),
             "area_units": int(plan.answer),
-            "vertices": [[round(x, 3), round(y, 3)] for x, y in central_square],
+            "vertices": {label: [round(x, 3), round(y, 3)] for label, (x, y) in central_vertices.items()},
             "bbox": bbox_to_list(central_square_bbox),
         },
     )
@@ -351,21 +422,27 @@ def render_pythagorean_dissection_scene(
     return RenderedPythagoreanDissectionScene(
         image=ctx.image,
         annotation_roles=tuple(annotation_roles),
-        annotation_keyed_bboxes=dict(annotation_keyed_bboxes),
+        annotation_keyed_points=dict(annotation_keyed_points),
         label_bboxes=dict(label_bboxes),
         scene_entities=square_entities,
         render_map={
             "coord_space": "pixel",
             "square_vertices": {
-                "outer_square": [[round(x, 3), round(y, 3)] for x, y in outer_square],
-                "central_square": [[round(x, 3), round(y, 3)] for x, y in central_square],
+                "outer_square": {label: [round(x, 3), round(y, 3)] for label, (x, y) in outer_vertices.items()},
+                "central_square": {
+                    label: [round(x, 3), round(y, 3)]
+                    for label, (x, y) in central_vertices.items()
+                },
             },
             "corner_triangle_vertices": [
                 [[round(x, 3), round(y, 3)] for x, y in triangle]
                 for triangle in corner_triangles
             ],
             "label_bboxes": {key: bbox_to_list(value) for key, value in label_bboxes.items()},
-            "annotation_bboxes": {key: bbox_to_list(value) for key, value in annotation_keyed_bboxes.items()},
+            "annotation_points": {
+                key: [round(float(point[0]), 3), round(float(point[1]), 3)]
+                for key, point in annotation_keyed_points.items()
+            },
             "orientation": str(ctx.orientation_key),
         },
         witness=witness,

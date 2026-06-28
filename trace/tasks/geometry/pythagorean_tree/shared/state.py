@@ -43,8 +43,7 @@ class PythagoreanTreePlan:
     triple: PythagoreanTreeTriple
     target_role: str
     answer: int
-    square_labels: dict[str, str]
-    side_labels: dict[str, str]
+    known_area_labels: dict[str, str]
     witness: dict[str, Any]
 
 

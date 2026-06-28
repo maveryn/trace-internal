@@ -13,20 +13,27 @@
     },
     "task": {
       "missing_square_area_value": [
-        "Use the side lengths on the right triangle.",
+        "Use the attached-square relationship for the right triangle.",
         "Use the right triangle and its attached squares.",
-        "Use the visible triangle side labels.",
+        "Use the visible square-area labels.",
         "Use the attached squares on the sides of the right triangle.",
-        "Use the Pythagorean relationship for the triangle sides."
+        "Use the Pythagorean relationship between the attached square areas."
       ]
     },
     "query": {
-      "single": [
-        "What is the area of the square marked Area=?",
-        "Find the area of the marked square.",
-        "Determine the missing area marked inside one attached square.",
-        "What area belongs in the square marked Area=?",
-        "Find the missing area shown in the marked square."
+      "hypotenuse_square_area": [
+        "What is the missing area of the square on the hypotenuse?",
+        "What area belongs in the square on the hypotenuse?",
+        "Find the missing hypotenuse-square area.",
+        "Determine the area of the square on the hypotenuse marked as missing.",
+        "What is the area of the missing square on the hypotenuse?"
+      ],
+      "leg_square_area": [
+        "What is the missing area of the marked leg square?",
+        "What area belongs in the marked leg square?",
+        "Find the missing leg-square area.",
+        "Determine the area of the leg square marked as missing.",
+        "What is the area of the missing square on the leg?"
       ]
     },
     "output": {
@@ -64,7 +71,7 @@
   },
   "static_slots_by_key": {
     "scene:pythagorean_tree_scene": {
-      "object_description": "a right triangle ABC with a square attached to each side, two side-length labels, and one square marked with a missing area"
+      "object_description": "a right triangle with a square attached to each side, two square area labels, and one square marked with a missing area"
     },
     "output:answer_only": {
       "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."

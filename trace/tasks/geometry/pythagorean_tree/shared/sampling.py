@@ -9,13 +9,12 @@ from trace.tasks.geometry.shared.pythagorean import (
     integer_right_triangles,
     validate_integer_right_triangle,
 )
-from trace.core.sampling import uniform_choice
-from trace.core.seed import spawn_rng
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.fixed_query import geometry_selected_probability_map
 
 from .state import PythagoreanTreeTriple
 
-TARGET_SQUARE_ROLES: tuple[str, ...] = ("leg_square_1", "leg_square_2", "hypotenuse_square")
+LEG_TARGET_ROLES: tuple[str, ...] = ("leg_square_1", "leg_square_2")
 
 
 def _default_tree_triples() -> tuple[PythagoreanTreeTriple, ...]:
@@ -81,40 +80,48 @@ def select_tree_triple(
     if explicit is not None:
         triple = coerce_explicit_triple(explicit)
         return triple, {triple_key(triple): 1.0}
-    rng = spawn_rng(int(instance_seed), str(namespace))
-    triple = uniform_choice(rng, TREE_TRIPLES)
+    index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
+    triple = TREE_TRIPLES[int(index) % len(TREE_TRIPLES)]
     return triple, {triple_key(item): 1.0 / float(len(TREE_TRIPLES)) for item in TREE_TRIPLES}
 
 
-def select_target_square_role(
+def select_leg_target_role(
     *,
     params: Mapping[str, Any],
     instance_seed: int,
     namespace: str,
 ) -> tuple[str, dict[str, float]]:
-    """Select which attached square is the unknown area target."""
+    """Select which leg square is the unknown when the public query asks for a leg square."""
 
     explicit = params.get("target_role")
     if explicit is not None:
         role = str(explicit)
-        if role not in TARGET_SQUARE_ROLES:
+        if role not in LEG_TARGET_ROLES:
             raise ValueError(f"unsupported pythagorean tree target_role: {role}")
         return role, geometry_selected_probability_map(
-            TARGET_SQUARE_ROLES,
+            LEG_TARGET_ROLES,
             role,
             key_fn=str,
             is_selected=lambda value, selected: str(value) == str(selected),
         )
-    rng = spawn_rng(int(instance_seed), str(namespace))
-    role = str(uniform_choice(rng, TARGET_SQUARE_ROLES))
-    return role, {item: 1.0 / float(len(TARGET_SQUARE_ROLES)) for item in TARGET_SQUARE_ROLES}
+    index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
+    role = str(LEG_TARGET_ROLES[int(index) % len(LEG_TARGET_ROLES)])
+    return role, {item: 1.0 / float(len(LEG_TARGET_ROLES)) for item in LEG_TARGET_ROLES}
 
 
 __all__ = [
-    "TARGET_SQUARE_ROLES",
+    "LEG_TARGET_ROLES",
     "TREE_TRIPLES",
     "coerce_explicit_triple",
-    "select_target_square_role",
+    "select_leg_target_role",
     "select_tree_triple",
     "triple_key",
 ]

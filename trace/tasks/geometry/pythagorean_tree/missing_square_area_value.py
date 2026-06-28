@@ -18,12 +18,12 @@ from .shared.defaults import DOMAIN, POST_IMAGE_NOISE_DEFAULTS, SCENE_DEFAULTS, 
 from .shared.output import build_pythagorean_tree_trace_sections
 from .shared.prompts import pythagorean_tree_prompt_artifacts
 from .shared.rendering import make_render_context, render_pythagorean_tree_scene
-from .shared.sampling import TARGET_SQUARE_ROLES, TREE_TRIPLES, select_target_square_role, select_tree_triple
+from .shared.sampling import LEG_TARGET_ROLES, TREE_TRIPLES, select_leg_target_role, select_tree_triple
 from .shared.state import PythagoreanTreePlan, PythagoreanTreeTriple, RenderedPythagoreanTreeScene
 from ..shared.annotation_values import keyed_bbox_annotation_artifacts
 
 TASK_ID = "task_geometry__pythagorean_tree__missing_square_area_value"
-SUPPORTED_QUERY_IDS: tuple[str, ...] = ("single",)
+SUPPORTED_QUERY_IDS: tuple[str, ...] = ("hypotenuse_square_area", "leg_square_area")
 PROMPT_TASK_KEY = "missing_square_area_value"
 _TRIPLES: tuple[tuple[int, int, int], ...] = tuple(
     (int(triple.leg_a), int(triple.leg_b), int(triple.hypotenuse)) for triple in TREE_TRIPLES
@@ -42,56 +42,72 @@ class _MissingSquareAreaRequest:
     target_role_probabilities: dict[str, float]
 
 
-def _marked_square_plan(*, triple: PythagoreanTreeTriple, target_role: str) -> PythagoreanTreePlan:
-    """Bind the internally sampled target square to side labels and answer."""
+def _hypotenuse_square_plan(triple: PythagoreanTreeTriple) -> PythagoreanTreePlan:
+    """Bind a hypotenuse-square query to the visible labels and answer."""
 
-    side_labels_by_role = {
-        "leg_square_1": ("AC", f"AC={int(triple.leg_a)}"),
-        "leg_square_2": ("AB", f"AB={int(triple.leg_b)}"),
-        "hypotenuse_square": ("BC", f"BC={int(triple.hypotenuse)}"),
-    }
-    role_to_area = {
-        "leg_square_1": int(triple.leg_square_1_area),
-        "leg_square_2": int(triple.leg_square_2_area),
-        "hypotenuse_square": int(triple.hypotenuse_square_area),
-    }
-    role_to_equation = {
-        "leg_square_1": "leg_square_1_area = hypotenuse_square_area - leg_square_2_area",
-        "leg_square_2": "leg_square_2_area = hypotenuse_square_area - leg_square_1_area",
-        "hypotenuse_square": "hypotenuse_square_area = leg_square_1_area + leg_square_2_area",
-    }
-    target = str(target_role)
-    if target not in TARGET_SQUARE_ROLES:
-        raise ValueError(f"unsupported pythagorean tree target_role: {target}")
-    visible_side_labels = {
-        side_name: label
-        for role, (side_name, label) in side_labels_by_role.items()
-        if str(role) != target
-    }
     witness = {
         "formula_family": "pythagorean_attached_square_area",
-        "target_role": str(target),
+        "target_role": "hypotenuse_square",
         "leg_a": int(triple.leg_a),
         "leg_b": int(triple.leg_b),
         "hypotenuse": int(triple.hypotenuse),
         "leg_square_1_area": int(triple.leg_square_1_area),
         "leg_square_2_area": int(triple.leg_square_2_area),
         "hypotenuse_square_area": int(triple.hypotenuse_square_area),
-        "side_lengths": {
-            "AB": int(triple.leg_b),
-            "AC": int(triple.leg_a),
-            "BC": int(triple.hypotenuse),
-        },
-        "visible_side_labels": dict(visible_side_labels),
-        "equation": str(role_to_equation[target]),
-        "answer_value": int(role_to_area[target]),
+        "equation": "hypotenuse_square_area = leg_square_1_area + leg_square_2_area",
+        "answer_value": int(triple.hypotenuse_square_area),
     }
     return PythagoreanTreePlan(
         triple=triple,
-        target_role=str(target),
-        answer=int(role_to_area[target]),
-        square_labels={str(target): "Area=?"},
-        side_labels=dict(visible_side_labels),
+        target_role="hypotenuse_square",
+        answer=int(triple.hypotenuse_square_area),
+        known_area_labels={
+            "leg_square_1": f"Area={int(triple.leg_square_1_area)}",
+            "leg_square_2": f"Area={int(triple.leg_square_2_area)}",
+            "hypotenuse_square": "Area=?",
+        },
+        witness=dict(witness),
+    )
+
+
+def _leg_square_plan(*, triple: PythagoreanTreeTriple, target_role: str) -> PythagoreanTreePlan:
+    """Bind a leg-square query to the visible labels and answer."""
+
+    if str(target_role) == "leg_square_1":
+        answer = int(triple.leg_square_1_area)
+        equation = "leg_square_1_area = hypotenuse_square_area - leg_square_2_area"
+        labels = {
+            "leg_square_1": "Area=?",
+            "leg_square_2": f"Area={int(triple.leg_square_2_area)}",
+            "hypotenuse_square": f"Area={int(triple.hypotenuse_square_area)}",
+        }
+    elif str(target_role) == "leg_square_2":
+        answer = int(triple.leg_square_2_area)
+        equation = "leg_square_2_area = hypotenuse_square_area - leg_square_1_area"
+        labels = {
+            "leg_square_1": f"Area={int(triple.leg_square_1_area)}",
+            "leg_square_2": "Area=?",
+            "hypotenuse_square": f"Area={int(triple.hypotenuse_square_area)}",
+        }
+    else:
+        raise ValueError(f"unsupported pythagorean tree target_role: {target_role}")
+    witness = {
+        "formula_family": "pythagorean_attached_square_area",
+        "target_role": str(target_role),
+        "leg_a": int(triple.leg_a),
+        "leg_b": int(triple.leg_b),
+        "hypotenuse": int(triple.hypotenuse),
+        "leg_square_1_area": int(triple.leg_square_1_area),
+        "leg_square_2_area": int(triple.leg_square_2_area),
+        "hypotenuse_square_area": int(triple.hypotenuse_square_area),
+        "equation": str(equation),
+        "answer_value": int(answer),
+    }
+    return PythagoreanTreePlan(
+        triple=triple,
+        target_role=str(target_role),
+        answer=int(answer),
+        known_area_labels=dict(labels),
         witness=dict(witness),
     )
 
@@ -101,13 +117,13 @@ def _resolve_missing_square_area_request(
     instance_seed: int,
     params: Mapping[str, Any],
 ) -> _MissingSquareAreaRequest:
-    """Resolve the public no-branch query, then bind one right-triangle case."""
+    """Resolve the public query branch, then bind one right-triangle case."""
 
     selected_query, query_probabilities, task_params = select_task_query_id(
         instance_seed=int(instance_seed),
         params=dict(params),
         supported_query_ids=SUPPORTED_QUERY_IDS,
-        default_query_id="single",
+        default_query_id="hypotenuse_square_area",
         task_id=TASK_ID,
         namespace=f"{TASK_ID}.query",
     )
@@ -116,14 +132,18 @@ def _resolve_missing_square_area_request(
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}.triple",
     )
-    if str(selected_query) != "single":
+    if str(selected_query) == "hypotenuse_square_area":
+        plan = _hypotenuse_square_plan(triple)
+        target_role_probabilities = {"hypotenuse_square": 1.0}
+    elif str(selected_query) == "leg_square_area":
+        target_role, target_role_probabilities = select_leg_target_role(
+            params=task_params,
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.leg_target_role",
+        )
+        plan = _leg_square_plan(triple=triple, target_role=str(target_role))
+    else:
         raise ValueError(f"unsupported query_id for {TASK_ID}: {selected_query}")
-    target_role, target_role_probabilities = select_target_square_role(
-        params=task_params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.target_role",
-    )
-    plan = _marked_square_plan(triple=triple, target_role=str(target_role))
     return _MissingSquareAreaRequest(
         selected_query=str(selected_query),
         query_probabilities=dict(query_probabilities),
@@ -177,34 +197,56 @@ def _annotation_bboxes_for_request(
     request: _MissingSquareAreaRequest,
     rendered: RenderedPythagoreanTreeScene,
 ) -> dict[str, tuple[float, float, float, float]]:
-    """Bind public annotation keys to the marked square and visible side labels."""
+    """Bind public annotation keys to the square bboxes for the selected query."""
 
-    side_keys = tuple(str(key) for key in request.plan.side_labels.keys())
-    if len(side_keys) != 2:
-        raise ValueError("pythagorean tree annotation requires exactly two visible side labels")
-    return {
-        "target_square": rendered.square_bboxes[str(request.plan.target_role)],
-        "known_side_1_label": rendered.label_bboxes[f"{side_keys[0]}_label"],
-        "known_side_2_label": rendered.label_bboxes[f"{side_keys[1]}_label"],
-    }
+    square_bboxes = rendered.square_bboxes
+    if str(request.selected_query) == "hypotenuse_square_area":
+        return {
+            "unknown_hypotenuse_square": square_bboxes["hypotenuse_square"],
+            "known_leg_square_1": square_bboxes["leg_square_1"],
+            "known_leg_square_2": square_bboxes["leg_square_2"],
+        }
+    if str(request.selected_query) == "leg_square_area":
+        known_leg_role = "leg_square_2" if str(request.plan.target_role) == "leg_square_1" else "leg_square_1"
+        return {
+            "unknown_leg_square": square_bboxes[str(request.plan.target_role)],
+            "known_leg_square": square_bboxes[known_leg_role],
+            "known_hypotenuse_square": square_bboxes["hypotenuse_square"],
+        }
+    raise ValueError(f"unsupported query_id for annotation binding: {request.selected_query}")
 
 
 def _prompt_annotation_hint_and_example(
     *,
+    query_id: str,
     answer: int,
 ) -> tuple[str, dict[str, list[int]]]:
-    """Return annotation guidance owned by the public task."""
+    """Return query-specific annotation guidance owned by the public task."""
 
-    hint = (
-        "set \"annotation\" to a JSON object with exactly these keys: "
-        "\"target_square\", \"known_side_1_label\", and \"known_side_2_label\"; "
-        "each value must be the pixel bounding box [x0,y0,x1,y1] around that visual witness"
-    )
-    example = {
-        "target_square": [380, 120, 520, 260],
-        "known_side_1_label": [190, 250, 252, 280],
-        "known_side_2_label": [320, 330, 382, 360],
-    }
+    if str(query_id) == "hypotenuse_square_area":
+        hint = (
+            "set \"annotation\" to a JSON object with exactly these keys: "
+            "\"unknown_hypotenuse_square\", \"known_leg_square_1\", and \"known_leg_square_2\"; "
+            "each value must be the pixel bounding box [x0,y0,x1,y1] around that square region"
+        )
+        example = {
+            "unknown_hypotenuse_square": [380, 120, 520, 260],
+            "known_leg_square_1": [160, 180, 270, 290],
+            "known_leg_square_2": [270, 320, 410, 460],
+        }
+    elif str(query_id) == "leg_square_area":
+        hint = (
+            "set \"annotation\" to a JSON object with exactly these keys: "
+            "\"unknown_leg_square\", \"known_leg_square\", and \"known_hypotenuse_square\"; "
+            "each value must be the pixel bounding box [x0,y0,x1,y1] around that square region"
+        )
+        example = {
+            "unknown_leg_square": [160, 180, 270, 290],
+            "known_leg_square": [270, 320, 410, 460],
+            "known_hypotenuse_square": [380, 120, 520, 260],
+        }
+    else:
+        raise ValueError(f"unsupported prompt query_id: {query_id}")
     return str(hint), dict(example)
 
 
@@ -246,6 +288,7 @@ class GeometryPythagoreanTreeMissingSquareAreaValueTask:
             roles=tuple(annotation_bboxes.keys()),
         )
         annotation_hint, annotation_example = _prompt_annotation_hint_and_example(
+            query_id=request.selected_query,
             answer=int(request.plan.answer),
         )
         _prompt_defaults, prompt_artifacts = pythagorean_tree_prompt_artifacts(
@@ -309,7 +352,7 @@ class GeometryPythagoreanTreeMissingSquareAreaValueTask:
                 "scene_id": SCENE_ID,
                 "query_id": request.selected_query,
                 "query_id_probabilities": dict(request.query_probabilities),
-                "objective": "marked_square_area_value",
+                "objective": "missing_square_area_value",
                 "answer": int(request.plan.answer),
                 "leg_square_1_area": int(request.plan.triple.leg_square_1_area),
                 "leg_square_2_area": int(request.plan.triple.leg_square_2_area),
@@ -343,9 +386,9 @@ class GeometryPythagoreanTreeMissingSquareAreaValueTask:
 
 __all__ = [
     "GeometryPythagoreanTreeMissingSquareAreaValueTask",
+    "LEG_TARGET_ROLES",
     "SCENE_ID",
     "SUPPORTED_QUERY_IDS",
-    "TARGET_SQUARE_ROLES",
     "TASK_ID",
     "_TRIPLES",
 ]

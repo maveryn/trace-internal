@@ -237,8 +237,9 @@ def render_regular_polygon_scene(
     readout_bboxes: dict[str, BBox] = {}
     polygon_points = tuple(vertices)
     ctx.draw.polygon(polygon_points, fill=ctx.fill_color)
-    for wedge_index in selected_indices:
-        ctx.draw.polygon((center, vertices[wedge_index], vertices[(wedge_index + 1) % problem.n_sides]), fill=ctx.shaded_fill_color)
+    if problem.show_shaded_region:
+        for wedge_index in selected_indices:
+            ctx.draw.polygon((center, vertices[wedge_index], vertices[(wedge_index + 1) % problem.n_sides]), fill=ctx.shaded_fill_color)
     ctx.draw.line((*polygon_points, polygon_points[0]), fill=ctx.line_color, width=ctx.line_width, joint="curve")
     for vertex in vertices:
         ctx.draw.line((center, vertex), fill=ctx.secondary_color, width=max(1, ctx.line_width - 1))

@@ -15,14 +15,14 @@
 ## Query Semantics
 - `single` asks for regular-polygon perimeter from visible total-area and apothem labels.
 - The semantic prompt branch uses `perimeter_from_total_area_and_apothem`; the public query id remains `single`.
-- The number of polygon sides, selected side, marked wedge count, style, font, layout jitter, and rotation are internal replay metadata.
+- The number of polygon sides, selected side, style, font, layout jitter, and rotation are internal replay metadata.
 
 ## Prompt Bundle
 - Prompt text is loaded from `prompts/geometry/regular_polygon_decomposition/geometry_regular_polygon_decomposition_v1.json`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space point map keys `O`, `A`, `B`, and `M`. These mark the polygon center, the side endpoints used by the apothem, and the apothem foot. Measurement labels and readout panels remain visible diagram content and private verifier metadata.
+Prompt-facing annotation uses pixel-space point map keys `O`, `A`, `B`, and `M`. These mark the polygon center, the side endpoints used by the apothem, and the apothem foot. Measurement labels and readout panels remain visible diagram content and private verifier metadata. This task does not shade a wedge region; the decomposition lines remain visible only to support the area-apothem perimeter relation.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

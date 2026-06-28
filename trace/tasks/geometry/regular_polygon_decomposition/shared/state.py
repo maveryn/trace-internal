@@ -62,6 +62,7 @@ class RegularPolygonProblem:
     show_total_area_readout: bool = False
     show_perimeter_readout: bool = False
     show_wedge_area_readout: bool = False
+    show_shaded_region: bool = True
     show_region_label: bool = False
     show_midpoint_label: bool = False
 

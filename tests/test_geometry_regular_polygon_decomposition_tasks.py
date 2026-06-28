@@ -91,7 +91,7 @@ def test_regular_polygon_decomposition_measurements_match_trace_values() -> None
                 assert 1 <= wedge_count <= min(4, n_sides // 2)
                 assert output.answer_gt.value == int(wedge_count * int(trace["central_angle_degrees"]))
             elif task_id.endswith("__perimeter_value"):
-                assert 1 <= wedge_count <= min(4, n_sides // 2)
+                assert wedge_count == 1
                 assert output.answer_gt.value == int(round((2.0 * float(trace["total_area"])) / float(trace["apothem"])))
             elif query_id == "side_length_from_perimeter":
                 assert output.answer_gt.value == int(round(float(trace["perimeter"]) / float(n_sides)))

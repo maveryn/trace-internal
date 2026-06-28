@@ -194,15 +194,15 @@ def test_rectangular_solid_open_box_dimension_formula_and_annotation(target_role
     assert execution["target_role"] == target_role
     assert execution["formula_family"] == "open_box_net_corner_cut"
 
-    assert out.annotation_gt.type == "bbox"
+    assert out.annotation_gt.type == "segment"
     annotation = out.annotation_gt.value
-    assert annotation == trace["render_map"]["annotation_bboxes"]["target_region_bbox"]
-    assert trace["projected_annotation"]["bbox"] == annotation
-    assert trace["projected_annotation"]["pixel_bbox"] == annotation
-    assert execution["annotation_roles"] == ["target_region"]
+    assert annotation == trace["render_map"]["target_dimension_segment"]
+    assert trace["projected_annotation"]["segment"] == annotation
+    assert trace["projected_annotation"]["pixel_segment"] == annotation
+    assert execution["annotation_roles"] == ["target_dimension"]
     assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "geometry_rectangular_solid_v1"
     assert "task_variant" not in json.dumps(trace)
-    _assert_bbox_inside_image(annotation, out.image.size)
+    _assert_segment_inside_image(annotation, out.image.size)
 
 
 def test_rectangular_solid_missing_dimension_generation_is_deterministic() -> None:

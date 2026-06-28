@@ -49,7 +49,7 @@ FRAME_ANNOTATION_KEYS: Tuple[str, ...] = (
     "highlighted_frame_region",
 )
 NET_ANNOTATION_KEYS: Tuple[str, ...] = (
-    "target_region",
+    "target_dimension",
 )
 
 
@@ -323,26 +323,33 @@ def render_open_box_net_scene(
         small=True,
     )
     if problem.target_role == "base_length":
+        target_segment = (
+            (float(base_bbox[0]), float(base_bbox[3])),
+            (float(base_bbox[2]), float(base_bbox[3])),
+        )
         target_bbox = _segment_bbox(
-            (base_bbox[0], base_bbox[3]),
-            (base_bbox[2], base_bbox[3]),
+            target_segment[0],
+            target_segment[1],
             width=ctx.width,
             height=ctx.height,
             pad=12.0,
         )
         label_bboxes["target"] = _draw_text_centered(ctx, "?", ((base_bbox[0] + base_bbox[2]) / 2.0, base_bbox[3] - 18.0), small=True)
     elif problem.target_role == "base_width":
+        target_segment = (
+            (float(base_bbox[2]), float(base_bbox[1])),
+            (float(base_bbox[2]), float(base_bbox[3])),
+        )
         target_bbox = _segment_bbox(
-            (base_bbox[2], base_bbox[1]),
-            (base_bbox[2], base_bbox[3]),
+            target_segment[0],
+            target_segment[1],
             width=ctx.width,
             height=ctx.height,
             pad=12.0,
         )
         label_bboxes["target"] = _draw_text_centered(ctx, "?", (base_bbox[2] - 18.0, (base_bbox[1] + base_bbox[3]) / 2.0), small=True)
     else:
-        target_bbox = pad_bbox(base_bbox, 4.0, width=ctx.width, height=ctx.height)
-        label_bboxes["volume"] = _draw_value_box(ctx, "Volume ?", (ctx.width / 2.0, 52.0 + float(rng.uniform(-5.0, 7.0))))
+        raise ValueError("open-box net target_role must be base_length or base_width")
 
     annotation_bboxes = {
         "sheet_bbox": sheet_bbox,
@@ -372,13 +379,14 @@ def render_open_box_net_scene(
         "cutout_bboxes": {key: bbox_to_list(value) for key, value in cutout_bboxes.items()},
         "flap_bboxes": {key: bbox_to_list(value) for key, value in flap_bboxes.items()},
         "base_panel_bbox": bbox_to_list(base_bbox),
+        "target_dimension_segment": [_point_to_list(target_segment[0]), _point_to_list(target_segment[1])],
         "annotation_bboxes": {key: bbox_to_list(value) for key, value in annotation_bboxes.items()},
         "label_bboxes": {key: bbox_to_list(value) for key, value in label_bboxes.items()},
         "scale_px_per_unit": round(float(scale), 3),
     }
     return RenderedRectangularSolidScene(
         image=ctx.image,
-        annotation_type="bbox",
+        annotation_type="segment",
         annotation_keyed_points={},
         annotation_keyed_bboxes=dict(annotation_bboxes),
         annotation_roles=NET_ANNOTATION_KEYS,

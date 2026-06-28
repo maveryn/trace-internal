@@ -135,7 +135,7 @@
       "answer_hint": "set \"answer\" to the cube edge length as an integer"
     },
     "task:open_box_net_dimension_value": {
-      "annotation_hint": "set \"annotation\" to the pixel bounding box [x0,y0,x1,y1] around the marked base-dimension region"
+      "annotation_hint": "set \"annotation\" to the marked base-dimension segment as [[x0,y0],[x1,y1]]"
     },
     "query:open_box_dimension_from_corner_cut": {
       "answer_hint": "set \"answer\" to the requested resulting base dimension as an integer"

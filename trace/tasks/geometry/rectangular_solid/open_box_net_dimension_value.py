@@ -6,7 +6,7 @@ from typing import Mapping
 
 from trace.core.types import TypedValue
 from trace.tasks.registry import register_task
-from trace.tasks.shared.annotation_artifacts import bbox_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import segment_annotation_artifacts
 
 from ._lifecycle import RectangularSolidObjectivePlan, run_rectangular_solid_public_entry
 from .shared.construction import resolve_open_box_dimension
@@ -22,10 +22,10 @@ DEFAULT_QUERY_ID = QUERY_ID_OPEN_BOX_DIMENSION
 PROMPT_TASK_KEY = "open_box_net_dimension_value"
 
 
-def _target_region_bbox_annotation(rendered: RenderedRectangularSolidScene):
-    """Return one bbox witness for the marked base dimension region."""
+def _target_dimension_segment_annotation(rendered: RenderedRectangularSolidScene):
+    """Return one segment witness for the marked base dimension."""
 
-    artifacts = bbox_annotation_artifacts(rendered.annotation_keyed_bboxes["target_region_bbox"])
+    artifacts = segment_annotation_artifacts(rendered.render_map["target_dimension_segment"])
     return artifacts.annotation_gt, dict(artifacts.projected_annotation)
 
 
@@ -63,7 +63,7 @@ def _prepare_open_box_objective(
         prompt_branch_key=QUERY_ID_OPEN_BOX_DIMENSION,
         problem=net_problem,
         render_scene=render_open_box_net_scene,
-        bind_annotation=_target_region_bbox_annotation,
+        bind_annotation=_target_dimension_segment_annotation,
         answer_gt=TypedValue(type="integer", value=int(net_problem.answer)),
         query_params={
             "query_id_probabilities": dict(branch_probabilities),

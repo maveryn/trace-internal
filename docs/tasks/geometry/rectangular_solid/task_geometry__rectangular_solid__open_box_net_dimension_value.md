@@ -6,8 +6,8 @@
 3. Task id: `task_geometry__rectangular_solid__open_box_net_dimension_value`
 4. Supported `query_id` values: `single`
 5. Answer schema: `integer_value`
-6. Annotation schema: `bbox`
-7. Scalar annotation checked: `true` (exactly one target base-dimension region witness)
+6. Annotation schema: `segment`
+7. Scalar annotation checked: `true` (exactly one target base-dimension segment witness)
 
 ## Program Contract
 - `solve_formula(corner_cut_open_box_net, unknown_role=base_dimension, formula_schema=open_box_corner_cut_dimensions); scene=rectangular_solid; scope=open_box_net_dimension_value`
@@ -21,7 +21,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation is the scalar pixel-space bounding box around the marked resulting base-dimension region. Sheet labels, cut labels, hatching, and the `?` marker remain visible diagram content and private verifier metadata.
+Prompt-facing annotation is the scalar pixel-space segment marking the requested resulting base dimension. Sheet labels, cut labels, hatching, and the `?` marker remain visible diagram content and private verifier metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

@@ -7,6 +7,7 @@ from typing import Any, Dict, Mapping
 
 from PIL import Image, ImageDraw
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.diagram_style import (
     geometry_diagram_style_metadata,
@@ -26,7 +27,6 @@ from trace.tasks.geometry.shared.shape_style import (
     sample_geometry_shape_style,
 )
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
 
@@ -72,12 +72,11 @@ def make_render_context(
         ((250, 247, 255), (126, 155, 226), (74, 86, 162), (121, 126, 140)),
         ((247, 253, 247), (96, 178, 132), (39, 124, 74), (120, 132, 122)),
     )
-    color_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace="geometry.paper_fold.paper_palette",
-    ) % len(palette)
-    paper_fill, folded_fill, crease_color, dashed_color = palette[int(color_index)]
+    palette_rng = spawn_rng(int(instance_seed), "geometry.paper_fold.paper_palette")
+    paper_fill, folded_fill, crease_color, dashed_color = uniform_choice(
+        palette_rng,
+        palette,
+    )
     font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 22)))
     small_font_size = int(
         params.get("small_label_font_size", group_default(render_defaults, "small_label_font_size", 18))
@@ -215,6 +214,16 @@ def _draw_angle_arc(
     return draw_label(ctx, label, label_center, small=True)
 
 
+def _union_bbox(boxes: tuple[BBox, ...], *, width: int, height: int) -> BBox:
+    """Return one padded bbox around multiple already-projected visual cues."""
+
+    x0 = min(float(box[0]) for box in boxes)
+    y0 = min(float(box[1]) for box in boxes)
+    x1 = max(float(box[2]) for box in boxes)
+    y1 = max(float(box[3]) for box in boxes)
+    return pad_bbox((x0, y0, x1, y1), 3.0, width=width, height=height)
+
+
 def render_paper_fold_scene(ctx: RenderContext, plan: FoldAnglePlan) -> RenderedPaperFoldScene:
     """Render the folded-corner angle diagram after final scene transform."""
 
@@ -282,20 +291,30 @@ def render_paper_fold_scene(ctx: RenderContext, plan: FoldAnglePlan) -> Rendered
 
     rotation_degrees = float(ctx.scene_transform.transform.angle_degrees)
     radius_scale = float(ctx.scene_transform.transform.scale)
-    theta_original = -90.0 + rotation_degrees
     theta_crease = -math.degrees(math.atan(offset / height)) + rotation_degrees
     theta_folded = -90.0 + 2.0 * (90.0 - math.degrees(math.atan(offset / height))) + rotation_degrees
+    theta_paper_edge = 90.0 + rotation_degrees
     known_angle_bbox = _draw_angle_arc(
         ctx,
         e,
-        start_degrees=theta_original,
-        end_degrees=theta_folded,
+        start_degrees=theta_folded,
+        end_degrees=theta_paper_edge,
         radius=78.0 * radius_scale,
-        label=_fmt_angle(float(plan.params["known_angle_degrees"])),
+        label=_fmt_angle(float(plan.params["given_angle_degrees"])),
         color=ctx.crease_color,
         label_radius=106.0 * radius_scale,
     )
-    target_bbox = _draw_angle_arc(
+    target_upper_bbox = _draw_angle_arc(
+        ctx,
+        e,
+        start_degrees=theta_crease,
+        end_degrees=-90.0 + rotation_degrees,
+        radius=50.0 * radius_scale,
+        label="x",
+        color=ctx.crease_color,
+        label_radius=70.0 * radius_scale,
+    )
+    target_lower_bbox = _draw_angle_arc(
         ctx,
         e,
         start_degrees=theta_crease,
@@ -304,6 +323,11 @@ def render_paper_fold_scene(ctx: RenderContext, plan: FoldAnglePlan) -> Rendered
         label="x",
         color=ctx.crease_color,
         label_radius=62.0 * radius_scale,
+    )
+    target_bbox = _union_bbox(
+        (target_upper_bbox, target_lower_bbox),
+        width=ctx.width,
+        height=ctx.height,
     )
 
     folded_bbox = bbox_from_points((e, f, p), width=ctx.width, height=ctx.height, pad=8.0)
@@ -367,6 +391,8 @@ def render_paper_fold_scene(ctx: RenderContext, plan: FoldAnglePlan) -> Rendered
             "lower_segment_units": float(round1(geometry.lower_segment_units)),
             "half_angle_degrees": float(round1(geometry.half_angle_degrees)),
             "total_angle_degrees": float(round1(geometry.total_angle_degrees)),
+            "given_angle_degrees": float(round1(plan.params["given_angle_degrees"])),
+            "known_angle_degrees": float(round1(plan.params["known_angle_degrees"])),
             "target_role": "half_angle_x",
         },
         reasoning_steps=int(plan.params["reasoning_steps"]),

@@ -65,6 +65,11 @@ def test_paper_fold_explicit_geometry_overrides_still_bind_same_trace() -> None:
     assert witness["height_units"] == 16.0
     assert witness["folded_offset_units"] == 10.0
     assert witness["answer_value"] == out.answer_gt.value
+    assert witness["formula_family"] == "fold_bisector_with_straight_angle"
+    assert out.trace_payload["execution_trace"]["reasoning_steps"] == 2
+    assert witness["given_angle_degrees"] == 64.0
+    assert witness["total_angle_degrees"] == 116.0
+    assert round((180.0 - witness["given_angle_degrees"]) / 2.0, 1) == out.answer_gt.value
 
 
 def test_paper_fold_samples_broad_answer_support() -> None:

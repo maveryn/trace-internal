@@ -9,7 +9,7 @@
 6. Annotation schema: `bbox_map`
 
 ## Program Contract
-- `solve_formula(visible_paper_fold_angle_labels, unknown_role=half_angle_x, formula_schema=fold_crease_bisects_reflected_angle, output=angle_degrees_1dp); scene=paper_fold; scope=paper_fold_angle_value`
+- `solve_formula(visible_paper_fold_angle_labels, unknown_role=half_angle_x, formula_schema=fold_bisector_with_straight_angle, output=angle_degrees_1dp); scene=paper_fold; scope=paper_fold_angle_value`
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `paper_fold`.
@@ -18,13 +18,13 @@
 ## Annotation
 Prompt-facing annotation uses pixel-space witnesses only. The task returns a `bbox_map` with keys:
 
-- `target_angle_cue`: the visible box around the marked angle cue `x`.
-- `given_angle_label`: the visible box around the given total angle label.
+- `target_angle_cue`: the visible box around the equal marked angle cues `x`.
+- `given_angle_label`: the visible box around the given angle label adjacent to the folded edge.
 
 Graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
 
 ## Sampling
-The generator samples a rounded angle answer uniformly from a broad finite support, then selects a valid folded-corner construction for that answer. This avoids over-representing common height/offset ratios that collapse to the same rounded angle.
+The generator samples a rounded angle answer uniformly from a broad finite support, then selects a valid folded-corner construction for that answer. The visible numeric angle is the straight-line supplement to the two equal fold angles, so the target is `(180 - shown_angle) / 2`. This avoids over-representing common height/offset ratios that collapse to the same rounded angle.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

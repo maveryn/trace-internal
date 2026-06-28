@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.fixed_query import (
     probability_map,
     resolve_task_query_id_param,
@@ -37,8 +38,7 @@ TASK_ID = "task_geometry__paper_fold__paper_fold_angle_value"
 SUPPORTED_QUERY_IDS: tuple[str, ...] = ("single",)
 PROMPT_TASK_KEY = "paper_fold_angle_value"
 OBJECT_DESCRIPTION = (
-    "a folded paper corner where the crease bisects the marked angle, with dashed original edges, "
-    "a folded edge, and angle labels"
+    "a folded paper corner with dashed original edges, a crease, a folded edge, and angle labels"
 )
 ANNOTATION_KEYS = ("target_angle_cue", "given_angle_label")
 
@@ -55,18 +55,13 @@ def _resolve_plan(
     answer_cases = fold_answer_cases()
     if not answer_cases:
         raise ValueError("paper fold answer support must not be empty")
-    answer_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.single.answer_support",
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.single.answer_support")
+    selected_support_answer, selected_cases = uniform_choice(rng, answer_cases)
+    rng = spawn_rng(
+        int(instance_seed),
+        f"{TASK_ID}.single.answer_case.{selected_support_answer:.1f}",
     )
-    selected_support_answer, selected_cases = answer_cases[int(answer_index) % len(answer_cases)]
-    case_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.single.answer_case.{selected_support_answer:.1f}",
-    )
-    default_height, default_offset = selected_cases[int(case_index) % len(selected_cases)]
+    default_height, default_offset = uniform_choice(rng, tuple(selected_cases))
     height_units = float(params.get("height_units", default_height))
     folded_offset_units = float(params.get("folded_offset_units", default_offset))
     if not (2.0 < folded_offset_units < height_units):
@@ -76,7 +71,8 @@ def _resolve_plan(
     answer = round1(geometry.half_angle_degrees)
     support_values = sorted({float(value) for value in fold_answer_support()})
     support_probabilities = probability_map(tuple(f"{float(value):.1f}" for value in support_values))
-    known_angle = round1(2.0 * answer)
+    total_angle = round1(2.0 * answer)
+    given_angle = round1(180.0 - total_angle)
     return FoldAnglePlan(
         answer=float(answer),
         geometry=geometry,
@@ -86,15 +82,16 @@ def _resolve_plan(
             "upper_segment_units": float(round1(geometry.upper_segment_units)),
             "lower_segment_units": float(round1(geometry.lower_segment_units)),
             "half_angle_degrees": float(round1(geometry.half_angle_degrees)),
-            "total_angle_degrees": float(round1(geometry.total_angle_degrees)),
-            "known_angle_degrees": float(known_angle),
+            "total_angle_degrees": float(total_angle),
+            "given_angle_degrees": float(given_angle),
+            "known_angle_degrees": float(given_angle),
             "target_role": "half_angle_x",
             "answer_value": float(answer),
             "answer_support": [f"{float(value):.1f}" for value in support_values],
             "answer_support_size": int(len(support_values)),
             "selected_support_answer": float(selected_support_answer),
-            "formula_family": "fold_crease_bisects_reflected_angle",
-            "reasoning_steps": 1,
+            "formula_family": "fold_bisector_with_straight_angle",
+            "reasoning_steps": 2,
         },
         support_probabilities=dict(support_probabilities),
     )

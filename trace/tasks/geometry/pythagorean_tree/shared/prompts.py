@@ -48,7 +48,7 @@ def pythagorean_tree_prompt_artifacts(
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         dynamic_slots={
             "annotation_hint": str(annotation_hint),
-            "answer_hint": "set \"answer\" to the missing square area as an integer",
+            "answer_hint": "set \"answer\" to the area of the square marked Area=? as an integer",
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
         },

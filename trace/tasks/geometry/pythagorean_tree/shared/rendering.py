@@ -7,13 +7,13 @@ from typing import Any, Mapping, Sequence
 
 from PIL import ImageDraw
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.diagram_style import prepare_geometry_diagram_style_and_background
 from trace.tasks.geometry.shared.measurement_rendering import bbox_from_points, bbox_to_list, pad_bbox
 from trace.tasks.geometry.shared.scene_transform import LazySceneTransform
-from trace.tasks.geometry.shared.vector2d import add, mul, sub, unit
+from trace.tasks.geometry.shared.vector2d import add, dot, mid, mul, sub, unit
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
@@ -63,12 +63,8 @@ def make_render_context(
             tuple(int(value) for value in diagram_style.muted_fill_rgb),
         ),
     )
-    palette_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"geometry.{SCENE_ID}.fill_palette",
-    )
-    triangle_fill, leg_fill, other_leg_fill, hyp_fill = fills[int(palette_index) % len(fills)]
+    palette_rng = spawn_rng(int(instance_seed), f"geometry.{SCENE_ID}.fill_palette")
+    triangle_fill, leg_fill, other_leg_fill, hyp_fill = uniform_choice(palette_rng, fills)
     font_family = str(
         params.get(
             "readout_font_family",
@@ -186,6 +182,20 @@ def _draw_right_angle_marker(ctx: RenderContext, *, vertex: Point, arm_a: Point,
     return bbox_from_points((p1, p2, p3), width=ctx.width, height=ctx.height, pad=ctx.line_width + 2)
 
 
+def _offset_from_center(point: Point, center: Point, distance: float) -> Point:
+    direction = unit(sub(point, center))
+    return add(point, mul(direction, float(distance)))
+
+
+def _side_label_center(*, start: Point, end: Point, opposite_vertex: Point, distance: float) -> Point:
+    center = mid(start, end)
+    segment = sub(end, start)
+    normal = unit((-float(segment[1]), float(segment[0])))
+    if dot(sub(opposite_vertex, center), normal) > 0.0:
+        normal = (-normal[0], -normal[1])
+    return add(center, mul(normal, float(distance)))
+
+
 def render_pythagorean_tree_scene(
     ctx: RenderContext,
     plan: PythagoreanTreePlan,
@@ -254,11 +264,31 @@ def render_pythagorean_tree_scene(
     right_angle_bbox = _draw_right_angle_marker(ctx, vertex=a_px, arm_a=b_px, arm_b=c_px)
 
     label_bboxes: dict[str, BBox] = {}
-    for role, text in plan.known_area_labels.items():
+    for role, text in plan.square_labels.items():
         label_bboxes[f"{role}_label"] = _draw_text_centered(
             ctx,
             str(text),
             polygon_center(square_polygons[str(role)]),
+            small=True,
+        )
+    vertex_center = polygon_center((a_px, b_px, c_px))
+    vertex_label_points = {
+        "A": _offset_from_center(a_px, vertex_center, 18.0),
+        "B": _offset_from_center(b_px, vertex_center, 18.0),
+        "C": _offset_from_center(c_px, vertex_center, 18.0),
+    }
+    for label, point in vertex_label_points.items():
+        label_bboxes[f"vertex_{label}"] = _draw_text_centered(ctx, label, point, small=True)
+    side_label_centers = {
+        "AB": _side_label_center(start=a_px, end=b_px, opposite_vertex=c_px, distance=24.0),
+        "AC": _side_label_center(start=a_px, end=c_px, opposite_vertex=b_px, distance=24.0),
+        "BC": _side_label_center(start=b_px, end=c_px, opposite_vertex=a_px, distance=24.0),
+    }
+    for side_name, text in plan.side_labels.items():
+        label_bboxes[f"{side_name}_label"] = _draw_text_centered(
+            ctx,
+            str(text),
+            side_label_centers[str(side_name)],
             small=True,
         )
     _assert_bboxes_inside(label_bboxes.values(), width=ctx.width, height=ctx.height)
@@ -266,9 +296,9 @@ def render_pythagorean_tree_scene(
     render_map = {
         "coord_space": "pixel",
         "triangle_vertices": {
-            "right_angle_vertex": [round(a_px[0], 3), round(a_px[1], 3)],
-            "leg_square_2_endpoint": [round(b_px[0], 3), round(b_px[1], 3)],
-            "leg_square_1_endpoint": [round(c_px[0], 3), round(c_px[1], 3)],
+            "A": [round(a_px[0], 3), round(a_px[1], 3)],
+            "B": [round(b_px[0], 3), round(b_px[1], 3)],
+            "C": [round(c_px[0], 3), round(c_px[1], 3)],
         },
         "square_vertices": {
             key: [[round(x, 3), round(y, 3)] for x, y in polygon]
@@ -276,6 +306,9 @@ def render_pythagorean_tree_scene(
         },
         "square_bboxes": {key: bbox_to_list(value) for key, value in square_bboxes.items()},
         "label_bboxes": {key: bbox_to_list(value) for key, value in label_bboxes.items()},
+        "side_labels": dict(plan.side_labels),
+        "square_labels": dict(plan.square_labels),
+        "target_role": str(plan.target_role),
         "marker_bboxes": {"right_angle": bbox_to_list(right_angle_bbox)},
         "rotation_degrees": round(math.degrees(angle), 3),
         "scale_px_per_unit": round(float(scale), 3),
@@ -297,9 +330,9 @@ def render_pythagorean_tree_scene(
         square_polygons={key: tuple(value) for key, value in square_polygons.items()},
         square_bboxes={key: tuple(value) for key, value in square_bboxes.items()},
         triangle_vertices={
-            "right_angle_vertex": a_px,
-            "leg_square_2_endpoint": b_px,
-            "leg_square_1_endpoint": c_px,
+            "A": a_px,
+            "B": b_px,
+            "C": c_px,
         },
         label_bboxes=dict(label_bboxes),
         marker_bboxes={"right_angle": right_angle_bbox},

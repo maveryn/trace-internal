@@ -29,7 +29,7 @@ def test_pythagorean_tree_supports_expected_public_queries() -> None:
     task = GeometryPythagoreanTreeMissingSquareAreaValueTask()
 
     assert tuple(task.supported_query_ids) == SUPPORTED_QUERY_IDS
-    assert SUPPORTED_QUERY_IDS == ("hypotenuse_square_area", "leg_square_area")
+    assert SUPPORTED_QUERY_IDS == ("single",)
 
 
 def test_pythagorean_tree_default_pool_has_distinct_square_area_support() -> None:
@@ -44,59 +44,45 @@ def test_pythagorean_tree_default_pool_has_distinct_square_area_support() -> Non
         assert int(leg_a) ** 2 + int(leg_b) ** 2 == int(hypotenuse) ** 2
 
 
-def test_pythagorean_tree_hypotenuse_square_area_formula() -> None:
-    out = _generate(20260604, query_id="hypotenuse_square_area", triple=(3, 4, 5))
+@pytest.mark.parametrize(
+    ("target_role", "expected", "visible_sides"),
+    [
+        ("leg_square_1", 9, {"AB": "AB=4", "BC": "BC=5"}),
+        ("leg_square_2", 16, {"AC": "AC=3", "BC": "BC=5"}),
+        ("hypotenuse_square", 25, {"AB": "AB=4", "AC": "AC=3"}),
+    ],
+)
+def test_pythagorean_tree_marked_square_area_formula(
+    target_role: str,
+    expected: int,
+    visible_sides: dict[str, str],
+) -> None:
+    out = _generate(20260604, query_id="single", target_role=target_role, triple=(3, 4, 5))
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
     assert out.scene_id == "pythagorean_tree"
-    assert out.query_id == "hypotenuse_square_area"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
-    assert out.answer_gt.value == 25 == execution["answer"]
+    assert out.answer_gt.value == expected == execution["answer"]
     assert execution["leg_square_1_area"] + execution["leg_square_2_area"] == execution["hypotenuse_square_area"]
-    assert execution["target_role"] == "hypotenuse_square"
+    assert execution["target_role"] == target_role
+    assert execution["visible_side_labels"] == visible_sides
     assert out.trace_payload["render_spec"]["prompt"]["prompt_bundle_id"] == "geometry_pythagorean_tree_v1"
+    assert "Area=?" in out.prompt
 
     assert out.annotation_gt.type == "bbox_map"
     annotation = out.annotation_gt.value
-    assert set(annotation) == {"unknown_hypotenuse_square", "known_leg_square_1", "known_leg_square_2"}
+    assert set(annotation) == {"target_square", "known_side_1_label", "known_side_2_label"}
     _assert_no_duplicate_public_bboxes(annotation)
     _assert_bbox_map_inside_image(annotation, out.image.size)
-    assert "task_variant" not in json.dumps(trace)
-
-
-@pytest.mark.parametrize(
-    ("target_role", "expected"),
-    [
-        ("leg_square_1", 9),
-        ("leg_square_2", 16),
-    ],
-)
-def test_pythagorean_tree_leg_square_area_formula(target_role: str, expected: int) -> None:
-    out = _generate(20260605, query_id="leg_square_area", target_role=target_role, triple=(3, 4, 5))
-    trace = out.trace_payload
-    execution = trace["execution_trace"]
-
-    assert out.scene_id == "pythagorean_tree"
-    assert out.query_id == "leg_square_area"
-    assert out.answer_gt.type == "integer"
-    assert out.answer_gt.value == expected == execution["answer"]
-    assert execution["target_role"] == target_role
-    assert execution["hypotenuse_square_area"] - expected in {
-        execution["leg_square_1_area"],
-        execution["leg_square_2_area"],
-    }
-    assert out.trace_payload["render_spec"]["prompt"]["prompt_bundle_id"] == "geometry_pythagorean_tree_v1"
-
-    annotation = out.annotation_gt.value
-    assert set(annotation) == {"unknown_leg_square", "known_leg_square", "known_hypotenuse_square"}
-    _assert_no_duplicate_public_bboxes(annotation)
-    _assert_bbox_map_inside_image(annotation, out.image.size)
+    assert trace["render_map"]["side_labels"] == visible_sides
+    assert trace["render_map"]["square_labels"] == {target_role: "Area=?"}
     assert "task_variant" not in json.dumps(trace)
 
 
 def test_pythagorean_tree_generation_is_deterministic() -> None:
-    params = {"query_id": "leg_square_area", "target_role": "leg_square_2", "triple": (5, 12, 13)}
+    params = {"query_id": "single", "target_role": "leg_square_2", "triple": (5, 12, 13)}
     first = _generate(314159, **params)
     second = _generate(314159, **params)
 

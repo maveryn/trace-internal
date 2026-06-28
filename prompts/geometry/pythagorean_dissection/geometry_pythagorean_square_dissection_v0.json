@@ -63,7 +63,7 @@
   },
   "allow_empty_task_templates": true,
   "code_prompt_defaults": {
-    "object_description": "an outer square ABCD dissected into four congruent right triangles around square EFGH, with one side split into two labeled triangle legs",
+    "object_description": "an outer square ABCD dissected into four congruent right triangles around square EFGH, with one side split into two labeled segments",
     "annotation_hint": "set \"annotation\" to a JSON object with keys \"E\", \"F\", \"G\", and \"H\"; each value must be the pixel point [x,y] for that labeled vertex",
     "answer_hint_number": "set \"answer\" to the area of square EFGH as an integer",
     "json_example": "{\"annotation\":{\"E\":[320,170],\"F\":[475,235],\"G\":[410,390],\"H\":[255,325]},\"answer\":169}",

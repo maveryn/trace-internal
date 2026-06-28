@@ -39,10 +39,15 @@ def test_pythagorean_square_dissection_tasks_emit_public_contract(task_cls) -> N
     assert trace["projected_annotation"]["type"] == "point_map"
     assert trace["projected_annotation"]["point_map"] == out.annotation_gt.value
     assert trace["projected_annotation"]["pixel_point_map"] == out.annotation_gt.value
+    displayed_labels = trace["render_map"]["displayed_segment_labels"]
 
     vertical_leg = trace["execution_trace"]["leg_a"]
     horizontal_leg = trace["execution_trace"]["leg_b"]
     outer_side = trace["execution_trace"]["outer_square_side"]
+    assert displayed_labels["outer"].endswith(f"={outer_side}")
+    assert displayed_labels["leg_a"].endswith(f"={vertical_leg}")
+    assert displayed_labels["leg_b"].endswith(f"={horizontal_leg}")
+    assert not any("leg=" in label for label in displayed_labels.values())
     corner_area = trace["execution_trace"]["corner_triangle_area_each"]
     central_area = outer_side**2 - (4.0 * corner_area)
     assert out.query_id == "single"

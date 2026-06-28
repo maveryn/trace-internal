@@ -214,6 +214,19 @@ def _draw_vertex_labels(
     }
 
 
+def _display_segment_labels(ctx: RenderContext, plan: PythagoreanDissectionPlan) -> dict[str, str]:
+    leg_a = int(plan.leg_a)
+    leg_b = int(plan.leg_b)
+    outer_side = int(plan.outer_square_side)
+    if ctx.orientation_key == "up_right":
+        return {"outer": f"AB={outer_side}", "leg_a": f"AE={leg_a}", "leg_b": f"EB={leg_b}"}
+    if ctx.orientation_key == "up_left":
+        return {"outer": f"BC={outer_side}", "leg_a": f"BF={leg_a}", "leg_b": f"FC={leg_b}"}
+    if ctx.orientation_key == "down_right":
+        return {"outer": f"CD={outer_side}", "leg_a": f"CG={leg_a}", "leg_b": f"GD={leg_b}"}
+    return {"outer": f"DA={outer_side}", "leg_a": f"DH={leg_a}", "leg_b": f"HA={leg_b}"}
+
+
 def render_pythagorean_dissection_scene(
     ctx: RenderContext,
     plan: PythagoreanDissectionPlan,
@@ -338,10 +351,11 @@ def render_pythagorean_dissection_scene(
             side_px=10.0,
         )
 
+    segment_labels = _display_segment_labels(ctx, plan)
     label_bboxes: dict[str, BBox] = {
-        "outer_square_side": _draw_label(ctx, f"outer side={outer_side_units}", outer_label_center),
-        "leg_a_label": _draw_label(ctx, f"leg={plan.leg_a}", leg_label_center),
-        "leg_b_label": _draw_label(ctx, f"other leg={plan.leg_b}", other_leg_label_center),
+        "outer_square_side": _draw_label(ctx, segment_labels["outer"], outer_label_center),
+        "leg_a_label": _draw_label(ctx, segment_labels["leg_a"], leg_label_center),
+        "leg_b_label": _draw_label(ctx, segment_labels["leg_b"], other_leg_label_center),
         "central_square_target": _draw_label(ctx, "Area=?", _polygon_center(central_square)),
     }
     outer_vertices = {
@@ -418,6 +432,7 @@ def render_pythagorean_dissection_scene(
         **dict(plan.witness),
         "orientation": str(ctx.orientation_key),
         "annotation_roles": list(annotation_roles),
+        "displayed_segment_labels": dict(segment_labels),
     }
     return RenderedPythagoreanDissectionScene(
         image=ctx.image,
@@ -444,6 +459,7 @@ def render_pythagorean_dissection_scene(
                 for key, point in annotation_keyed_points.items()
             },
             "orientation": str(ctx.orientation_key),
+            "displayed_segment_labels": dict(segment_labels),
         },
         witness=witness,
     )

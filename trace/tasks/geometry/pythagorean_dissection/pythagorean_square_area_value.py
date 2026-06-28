@@ -112,7 +112,7 @@ def _render_square_area(
 
 @register_task
 class GeometryPythagoreanSquareAreaValueTask:
-    """Compute square EFGH's area from the two visible triangle legs."""
+    """Compute square EFGH's area from the two visible segment labels."""
 
     task_id = TASK_ID
     domain = DOMAIN

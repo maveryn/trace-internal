@@ -18,7 +18,7 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 from trace.tasks.shared.variant_sampling import resolve_variant
 
-from .shared.annotations import bbox_artifacts, bbox_map_artifacts
+from .shared.annotations import bbox_map_artifacts
 from .shared.output import (
     build_matchstick_trace_payload,
     build_render_map,
@@ -31,14 +31,13 @@ from .shared.rendering import (
     resolve_render_params,
     sample_matchstick_font,
 )
-from .shared.rules import edge_trace, number_text, number_transition_allowed
+from .shared.rules import number_text, number_transition_allowed
 from .shared.state import (
     NumberDataset,
     RenderParams,
     RenderedScene,
     SCENE_ID,
     SCENE_VARIANTS,
-    ShapeDataset,
 )
 
 
@@ -177,46 +176,6 @@ def bind_number_transform_output(
             "option_specs": option_specs,
         },
         witness_symbolic={"type": "bbox_map", "value": dict(annotation.value)},
-    )
-
-
-def bind_endpoint_extremum_output(
-    *,
-    dataset: ShapeDataset,
-    context: MatchstickRenderContext,
-    query_id: str,
-    query_probabilities: Mapping[str, float],
-    scene_variant_probabilities: Mapping[str, float],
-) -> BoundMatchstickOutput:
-    """Bind the selected arrangement panel and loose-endpoint metrics."""
-
-    selected_item_id = f"option_{dataset.answer_label}"
-    annotation = bbox_artifacts(context.rendered_scene.item_bbox_map, selected_item_id)
-    option_specs = [
-        {
-            "option_label": str(option.label),
-            "edges": edge_trace(option.value),
-            "loose_endpoint_count": int(option.metric_value or 0),
-            "is_correct": bool(option.is_correct),
-        }
-        for option in dataset.option_specs
-    ]
-    return build_bound_output(
-        dataset=dataset,
-        query_id=str(query_id),
-        query_probabilities=query_probabilities,
-        scene_variant_probabilities=scene_variant_probabilities,
-        prompt_query_key=str(query_id),
-        answer_gt=TypedValue(type="option_letter", value=str(dataset.answer_label)),
-        annotation_artifacts=annotation,
-        annotation_source="item_bboxes_px",
-        scene_extra={"grid_size": int(dataset.grid_size)},
-        execution_extra={
-            "grid_size": int(dataset.grid_size),
-            "supporting_item_ids": [selected_item_id],
-            "option_specs": option_specs,
-        },
-        witness_symbolic={"type": "bbox", "value": list(annotation.value)},
     )
 
 
@@ -477,7 +436,6 @@ def finalize_matchstick_output(
 
 __all__ = [
     "apply_matchstick_post_noise",
-    "bind_endpoint_extremum_output",
     "bind_number_transform_output",
     "BoundMatchstickOutput",
     "build_bound_output",

@@ -31,19 +31,19 @@ generation:
 
 rendering:
   shared:
-    canvas_width: 960
-    canvas_height: 760
-    cell_size_px: 56
+    canvas_width: 760
+    canvas_height: 620
+    cell_size_px: 50
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
-    left_clue_width_px: 70
-    top_clue_height_px: 70
+    left_clue_width_px: 60
+    top_clue_height_px: 60
     grid_line_width_px: 2
     heavy_line_width_px: 4
-    panel_padding_px: 26
+    panel_padding_px: 22
     panel_corner_radius_px: 18
-    clue_font_size_px: 28
-    candidate_font_size_px: 30
+    clue_font_size_px: 24
+    candidate_font_size_px: 26
     text_color_rgb:
       - 28
       - 32

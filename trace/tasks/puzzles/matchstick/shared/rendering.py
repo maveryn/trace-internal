@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Sequence, Tuple
+from typing import Any, Dict, Mapping, Tuple
 
 from PIL import Image, ImageDraw
 
@@ -16,8 +16,8 @@ from trace.tasks.shared.font_assets import (
 )
 from trace.tasks.shared.text_rendering import load_font
 
-from .rules import edge_signature, edge_trace, number_segments, number_text
-from .state import BBox, Color, Edge, NumberDataset, RenderParams, RenderedScene, ShapeDataset
+from .rules import number_segments, number_text
+from .state import BBox, Color, NumberDataset, RenderParams, RenderedScene
 
 
 def _to_int(value: Any, fallback: int) -> int:
@@ -410,40 +410,6 @@ def _draw_number(
         )
 
 
-def _draw_edge_arrangement(
-    draw: ImageDraw.ImageDraw,
-    *,
-    edges: Sequence[Edge],
-    bbox: tuple[int, int, int, int],
-    grid_size: int,
-    render_params: RenderParams,
-    style: Mapping[str, Any],
-    small: bool,
-) -> None:
-    left = bbox[0] + int((bbox[2] - bbox[0]) * 0.20)
-    right = bbox[2] - int((bbox[2] - bbox[0]) * 0.16)
-    top = bbox[1] + int((bbox[3] - bbox[1]) * (0.24 if small else 0.22))
-    bottom = bbox[3] - int((bbox[3] - bbox[1]) * 0.14)
-    scale = min(
-        (right - left) / max(1, int(grid_size)),
-        (bottom - top) / max(1, int(grid_size)),
-    )
-    offset_x = (left + right - (int(grid_size) * scale)) / 2.0
-    offset_y = (top + bottom - (int(grid_size) * scale)) / 2.0
-    width = max(5, int(render_params.stick_width_px * (0.72 if small else 0.95)))
-    for edge_index, (a, b) in enumerate(edge_signature(edges)):
-        start = (offset_x + int(a[0]) * scale, offset_y + int(a[1]) * scale)
-        end = (offset_x + int(b[0]) * scale, offset_y + int(b[1]) * scale)
-        _draw_stick(
-            draw,
-            start=start,
-            end=end,
-            width=width,
-            style=style,
-            stick_id=f"edge:{edge_index}:{a}:{b}",
-        )
-
-
 def option_bboxes(
     render_params: RenderParams,
     option_count: int,
@@ -606,72 +572,11 @@ def render_number_scene(
     )
 
 
-def render_shape_scene(
-    *,
-    background: Image.Image,
-    dataset: ShapeDataset,
-    render_params: RenderParams,
-) -> RenderedScene:
-    """Render six lattice-stick arrangements for endpoint comparison."""
-
-    image = background.convert("RGB")
-    draw = ImageDraw.Draw(image)
-    style = style_for_variant(str(dataset.scene_variant))
-    item_bbox_map: Dict[str, BBox] = {}
-    entities: list[Dict[str, Any]] = []
-    bboxes = option_bboxes(render_params, int(dataset.option_count), include_source=False)
-    for index, option in enumerate(dataset.option_specs):
-        bbox = bboxes[int(index)]
-        option_id = f"option_{option.label}"
-        _draw_panel(draw, bbox, render_params=render_params, style=style)
-        _draw_label_chip(
-            draw,
-            bbox=bbox,
-            label=str(option.label),
-            render_params=render_params,
-            style=style,
-        )
-        _draw_edge_arrangement(
-            draw,
-            edges=option.value,
-            bbox=bbox,
-            grid_size=int(dataset.grid_size),
-            render_params=render_params,
-            style=style,
-            small=True,
-        )
-        item_bbox_map[str(option_id)] = tuple(float(value) for value in bbox)
-        entities.append(
-            {
-                "id": str(option_id),
-                "type": "matchstick_endpoint_option",
-                "label": str(option.label),
-                "bbox_px": [int(value) for value in bbox],
-                "edges": edge_trace(option.value),
-                "loose_endpoint_count": int(option.metric_value or 0),
-                "is_correct": bool(option.is_correct),
-            }
-        )
-    scene_bbox = (
-        float(render_params.margin_px),
-        float(render_params.margin_px),
-        float(render_params.canvas_width - render_params.margin_px),
-        float(render_params.canvas_height - render_params.margin_px),
-    )
-    return RenderedScene(
-        image=image,
-        scene_bbox_px=scene_bbox,
-        item_bbox_map=item_bbox_map,
-        entities=tuple(entities),
-    )
-
-
 __all__ = [
     "font_trace_record",
     "make_scene_background",
     "matchstick_style_trace",
     "render_number_scene",
-    "render_shape_scene",
     "resolve_render_params",
     "sample_matchstick_font",
 ]

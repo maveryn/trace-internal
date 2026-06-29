@@ -6,25 +6,20 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
 from trace.core.sampling import integer_range_choice
-from trace.tasks.shared.config_defaults import group_default, resolve_required_int_bounds
 from trace.tasks.shared.mcq import option_label_for_index
 
 from .defaults import complement_generation_param_map
 from .rules import (
     D4_TRANSFORMS,
-    PUZZLE_POLYOMINO_PIECE_LIBRARY,
-    canonical_rotation_signature,
     canonicalize_polyomino_cells,
     d4_signature,
     is_connected_cells,
-    missing_region_is_interior,
     neighbors,
     polyomino_bbox_dims,
     polyomino_cell_count,
     shape_bbox_dims,
     translate_polyomino_cells,
     unique_d4_transforms,
-    unique_rotations,
 )
 from .state import DEFAULTS, Cell, Cells
 
@@ -48,170 +43,6 @@ def _json_cell_list(cells: Iterable[Cell]) -> List[List[int]]:
     """Return cells as a JSON-ready sorted list."""
 
     return [[int(x), int(y)] for x, y in sorted((int(x), int(y)) for x, y in cells)]
-
-
-def build_marked_region_dataset(
-    *,
-    params: Mapping[str, Any],
-    generation_defaults: Mapping[str, Any],
-    instance_seed: int,
-    option_count: int,
-    answer_label: str,
-    namespace_base: str,
-) -> Dict[str, Any]:
-    """Build one target silhouette with an interior missing region and options."""
-
-    rng = spawn_rng(int(instance_seed), f"{str(namespace_base)}.marked_region")
-    correct_option_index = _option_index_for_label(
-        option_count=int(option_count),
-        answer_label=str(answer_label),
-    )
-    target_cell_count_min, target_cell_count_max = resolve_required_int_bounds(
-        params,
-        generation_defaults,
-        min_key="marked_target_cell_count_min",
-        max_key="marked_target_cell_count_max",
-        fallback_min=DEFAULTS.marked_target_cell_count_min,
-        fallback_max=DEFAULTS.marked_target_cell_count_max,
-        context="polyomino_missing marked target-cell-count bounds",
-    )
-    target_bbox_max_dim = int(
-        params.get(
-            "marked_target_bbox_max_dim",
-            group_default(
-                generation_defaults,
-                "marked_target_bbox_max_dim",
-                DEFAULTS.marked_target_bbox_max_dim,
-            ),
-        )
-    )
-
-    library = [canonicalize_polyomino_cells(shape) for shape in PUZZLE_POLYOMINO_PIECE_LIBRARY]
-    for _attempt in range(1000):
-        correct_shape = canonicalize_polyomino_cells(rng.choice(library))
-        missing_rotation = rng.choice(list(unique_rotations(correct_shape)))
-        missing_width, missing_height = polyomino_bbox_dims(missing_rotation)
-        min_width = int(missing_width + 2)
-        min_height = int(missing_height + 2)
-        if min_width > int(target_bbox_max_dim) or min_height > int(target_bbox_max_dim):
-            continue
-
-        target_width = int(rng.randrange(min_width, int(target_bbox_max_dim) + 1))
-        target_height = int(rng.randrange(min_height, int(target_bbox_max_dim) + 1))
-        missing_dx = int(rng.randrange(1, int(target_width - missing_width)))
-        missing_dy = int(rng.randrange(1, int(target_height - missing_height)))
-        missing_cells = set(translate_polyomino_cells(missing_rotation, missing_dx, missing_dy))
-        target_cells = {
-            (int(x), int(y))
-            for y in range(int(target_height))
-            for x in range(int(target_width))
-        }
-
-        edge_candidates = _removable_edge_candidates(
-            target_cells=target_cells,
-            missing_cells=missing_cells,
-            target_width=target_width,
-            target_height=target_height,
-        )
-        rng.shuffle(edge_candidates)
-        max_remove = max(0, min(5, len(edge_candidates) // 3))
-        remove_target = int(rng.randrange(1, max_remove + 1)) if max_remove > 0 else 0
-        removed = 0
-        for candidate in edge_candidates:
-            if int(removed) >= int(remove_target):
-                break
-            next_target = set(target_cells)
-            next_target.remove(candidate)
-            visible_cells = set(next_target) - set(missing_cells)
-            if not missing_region_is_interior(
-                target_cells=next_target,
-                missing_cells=set(missing_cells),
-            ):
-                continue
-            if not is_connected_cells(visible_cells):
-                continue
-            target_cells = next_target
-            removed += 1
-
-        visible_cells = set(target_cells) - set(missing_cells)
-        if not missing_region_is_interior(
-            target_cells=set(target_cells),
-            missing_cells=set(missing_cells),
-        ):
-            continue
-        if not is_connected_cells(visible_cells):
-            continue
-        if not int(target_cell_count_min) <= len(target_cells) <= int(target_cell_count_max):
-            continue
-
-        option_shapes: List[Cells] = []
-        seen_signatures = {canonical_rotation_signature(correct_shape)}
-        distractor_attempts = 0
-        while len(option_shapes) < int(option_count - 1) and distractor_attempts < 800:
-            distractor_attempts += 1
-            candidate = canonicalize_polyomino_cells(rng.choice(library))
-            signature = canonical_rotation_signature(candidate)
-            if signature in seen_signatures:
-                continue
-            seen_signatures.add(signature)
-            option_shapes.append(candidate)
-        if len(option_shapes) != int(option_count - 1):
-            continue
-
-        option_shapes.insert(int(correct_option_index), correct_shape)
-        target_cells_tuple = canonicalize_polyomino_cells(target_cells)
-        missing_cells_tuple = tuple(sorted((int(x), int(y)) for x, y in missing_cells))
-        visible_cells_tuple = tuple(sorted((int(x), int(y)) for x, y in visible_cells))
-        return {
-            "target_cells": _json_cell_list(target_cells_tuple),
-            "visible_target_cells": _json_cell_list(visible_cells_tuple),
-            "missing_cells": _json_cell_list(missing_cells_tuple),
-            "marked_cells": _json_cell_list(missing_cells_tuple),
-            "target_bbox_dims": list(polyomino_bbox_dims(target_cells_tuple)),
-            "target_cell_count": int(polyomino_cell_count(target_cells_tuple)),
-            "target_cell_count_range": [int(target_cell_count_min), int(target_cell_count_max)],
-            "option_specs": _option_specs(
-                option_shapes,
-                correct_option_index=int(correct_option_index),
-            ),
-            "option_count": int(option_count),
-            "option_count_range": [int(option_count), int(option_count)],
-            "answer_option_label": str(answer_label),
-            "correct_option_index": int(correct_option_index),
-            "correct_option_panel_id": f"option_panel_{int(correct_option_index + 1)}",
-            "solver_trace": {
-                "correct_piece_cells": _json_cell_list(correct_shape),
-                "missing_cells": _json_cell_list(missing_cells_tuple),
-                "missing_region_interior": True,
-                "rotation_allowed": True,
-                "reflection_allowed": False,
-            },
-        }
-    raise RuntimeError("failed to build marked-region polyomino puzzle")
-
-
-def _removable_edge_candidates(
-    *,
-    target_cells: set[Cell],
-    missing_cells: set[Cell],
-    target_width: int,
-    target_height: int,
-) -> List[Cell]:
-    """Return target edge cells that can be removed without touching the gap."""
-
-    return [
-        cell
-        for cell in target_cells
-        if cell not in missing_cells
-        and (
-            int(cell[0]) in {0, int(target_width - 1)}
-            or int(cell[1]) in {0, int(target_height - 1)}
-        )
-        and all(
-            (int(cell[0] + dx), int(cell[1] + dy)) not in missing_cells
-            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
-        )
-    ]
 
 
 def build_rectangle_complement_dataset(
@@ -515,6 +346,5 @@ def _sample_connected_shape(
 
 
 __all__ = [
-    "build_marked_region_dataset",
     "build_rectangle_complement_dataset",
 ]

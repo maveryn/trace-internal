@@ -19,8 +19,6 @@ OPTION_LABELS: Tuple[str, ...] = tuple("ABCDEF")
 
 Color = Tuple[int, int, int]
 BBox = Tuple[float, float, float, float]
-Point = Tuple[int, int]
-Edge = Tuple[Point, Point]
 
 
 @dataclass(frozen=True)
@@ -68,17 +66,6 @@ class NumberDataset:
 
 
 @dataclass(frozen=True)
-class ShapeDataset:
-    """Concrete loose-endpoint extremum instance before rendering."""
-
-    scene_variant: str
-    answer_label: str
-    option_count: int
-    option_specs: Tuple[OptionSpec, ...]
-    grid_size: int
-
-
-@dataclass(frozen=True)
 class RenderedScene:
     """Rendered matchstick image plus item projections."""
 
@@ -92,14 +79,11 @@ __all__ = [
     "BBox",
     "Color",
     "DOMAIN",
-    "Edge",
     "NumberDataset",
     "OPTION_LABELS",
     "OptionSpec",
-    "Point",
     "RenderParams",
     "RenderedScene",
     "SCENE_ID",
     "SCENE_VARIANTS",
-    "ShapeDataset",
 ]

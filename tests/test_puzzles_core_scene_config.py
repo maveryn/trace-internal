@@ -106,7 +106,7 @@ def test_puzzles_logic_grid_scene_defaults_loaded() -> None:
     assert int(generation_defaults["board_size_max"]) == 7
     assert int(generation_defaults["option_count"]) == 6
     assert int(rendering_defaults["canvas_width"]) == 1120
-    assert int(rendering_defaults["canvas_height"]) == 840
+    assert int(rendering_defaults["canvas_height"]) == 850
     assert int(rendering_defaults["cell_size_px"]) == 74
     assert int(rendering_defaults["option_panel_width_px"]) > 0
 
@@ -434,9 +434,9 @@ def test_puzzles_voxel_cube_task_defaults_loaded() -> None:
     assert "query_id_weights" not in generation_defaults
     assert int(generation_defaults["answer_min"]) == 4
     assert int(generation_defaults["answer_max"]) == 14
-    assert int(rendering_defaults["canvas_width"]) == 860
-    assert int(rendering_defaults["canvas_height"]) == 620
-    assert int(rendering_defaults["cube_size_px"]) == 62
+    assert int(rendering_defaults["canvas_width"]) == 760
+    assert int(rendering_defaults["canvas_height"]) == 520
+    assert int(rendering_defaults["cube_size_px"]) == 52
 
 
 def test_puzzles_cyclic_order_scene_defaults_loaded() -> None:

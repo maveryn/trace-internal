@@ -27,11 +27,6 @@ Cell = Tuple[int, int]
 class PolyominoMissingDefaults:
     """Stable code fallbacks for polyomino missing-piece sampling."""
 
-    marked_option_count_min: int = 4
-    marked_option_count_max: int = 6
-    marked_target_cell_count_min: int = 18
-    marked_target_cell_count_max: int = 36
-    marked_target_bbox_max_dim: int = 7
     complement_option_count_min: int = 4
     complement_option_count_max: int = 6
     complement_target_width_min: int = 4

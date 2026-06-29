@@ -1,11 +1,8 @@
-"""Matchstick-number and loose-endpoint rules."""
+"""Matchstick-number transition rules."""
 
 from __future__ import annotations
 
-from collections import Counter
-from typing import Dict, Iterable, List, Tuple
-
-from .state import Edge, Point
+from typing import Dict, List, Tuple
 
 
 DIGIT_SEGMENTS: Dict[int, frozenset[str]] = {
@@ -105,61 +102,10 @@ def number_segments(value: int) -> list[tuple[str, tuple[float, float], tuple[fl
     return segments
 
 
-def edge_key(a: Point, b: Point) -> Edge:
-    """Return a stable undirected edge key."""
-
-    left = (int(a[0]), int(a[1]))
-    right = (int(b[0]), int(b[1]))
-    return (left, right) if left <= right else (right, left)
-
-
-def all_square_grid_edges(grid_size: int) -> Tuple[Edge, ...]:
-    """Enumerate every unit edge in a square lattice."""
-
-    edges: list[Edge] = []
-    for row in range(int(grid_size) + 1):
-        for col in range(int(grid_size)):
-            edges.append(edge_key((col, row), (col + 1, row)))
-    for row in range(int(grid_size)):
-        for col in range(int(grid_size) + 1):
-            edges.append(edge_key((col, row), (col, row + 1)))
-    return tuple(edges)
-
-
-def edge_signature(edges: Iterable[Edge]) -> Tuple[Edge, ...]:
-    """Normalize a set of matchstick lattice edges."""
-
-    return tuple(sorted({edge_key(a, b) for a, b in edges}))
-
-
-def loose_endpoint_count(edges: Iterable[Edge]) -> int:
-    """Count grid points touched by exactly one matchstick."""
-
-    degree: Counter[Point] = Counter()
-    for a, b in edge_signature(edges):
-        degree[(int(a[0]), int(a[1]))] += 1
-        degree[(int(b[0]), int(b[1]))] += 1
-    return int(sum(1 for value in degree.values() if int(value) == 1))
-
-
-def edge_trace(edges: Iterable[Edge]) -> list[list[list[int]]]:
-    """Serialize matchstick lattice edges for trace metadata."""
-
-    return [
-        [[int(a[0]), int(a[1])], [int(b[0]), int(b[1])]]
-        for a, b in edge_signature(edges)
-    ]
-
-
 __all__ = [
     "DIGIT_SEGMENTS",
     "SEGMENT_POINTS",
-    "all_square_grid_edges",
     "changed_digit_index",
-    "edge_key",
-    "edge_signature",
-    "edge_trace",
-    "loose_endpoint_count",
     "number_segment_keys",
     "number_segments",
     "number_text",

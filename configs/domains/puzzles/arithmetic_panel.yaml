@@ -38,6 +38,12 @@ rendering:
     symbol_font_size_px: 27
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
+  task_overrides:
+    task_puzzles__arithmetic_panel__consecutive_window_sum_value:
+      canvas_height: 360
+    task_puzzles__arithmetic_panel__vertical_arithmetic_hidden_digit_value:
+      canvas_width: 560
+      canvas_height: 380
 prompt:
   shared:
     bundle_id: puzzles_arithmetic_panel_v1

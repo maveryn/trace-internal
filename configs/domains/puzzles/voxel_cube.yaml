@@ -19,12 +19,12 @@ generation:
 
 rendering:
   shared:
-    canvas_width: 860
-    canvas_height: 620
-    cube_size_px: 62
-    projection_cell_size_px: 48
-    panel_gap_px: 24
-    label_font_size_px: 22
+    canvas_width: 760
+    canvas_height: 520
+    cube_size_px: 52
+    projection_cell_size_px: 40
+    panel_gap_px: 18
+    label_font_size_px: 19
 
 prompt:
   shared:

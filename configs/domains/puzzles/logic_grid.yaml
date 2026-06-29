@@ -16,7 +16,7 @@ generation:
 rendering:
   shared:
     canvas_width: 1120
-    canvas_height: 840
+    canvas_height: 850
     scene_margin_left_px: 64
     scene_margin_right_px: 64
     scene_margin_top_px: 44

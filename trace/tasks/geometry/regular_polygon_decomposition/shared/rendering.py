@@ -91,9 +91,17 @@ def create_render_context(
     )
 
 
-def _draw_text_centered(ctx: RenderContext, text: str, center: Point, *, small: bool = True, role: str = "readout") -> BBox:
+def _draw_text_centered(
+    ctx: RenderContext,
+    text: str,
+    center: Point,
+    *,
+    small: bool = True,
+    role: str = "readout",
+    stroke_width_override: int | None = None,
+) -> BBox:
     font = ctx.small_font if bool(small) else ctx.font
-    stroke_width = max(0, int(ctx.label_stroke_width))
+    stroke_width = max(0, int(ctx.label_stroke_width if stroke_width_override is None else stroke_width_override))
     draw_text_traced(
         ctx.draw,
         (float(center[0]), float(center[1])),
@@ -180,7 +188,7 @@ def _draw_dimension_label(ctx: RenderContext, start: Point, end: Point, label: s
     candidate = add_scaled(midpoint, normal, distance)
     if math.hypot(candidate[0] - center_reference[0], candidate[1] - center_reference[1]) < math.hypot(midpoint[0] - center_reference[0], midpoint[1] - center_reference[1]):
         normal = (-normal[0], -normal[1])
-    return _draw_text_centered(ctx, label, add_scaled(midpoint, normal, distance), small=True)
+    return _draw_text_centered(ctx, label, add_scaled(midpoint, normal, distance), small=False, stroke_width_override=0)
 
 
 def _draw_midpoint_label(ctx: RenderContext, side_start: Point, side_end: Point, center_reference: Point) -> BBox:
@@ -196,8 +204,8 @@ def _draw_apothem(ctx: RenderContext, center: Point, side_start: Point, side_end
     side_mid = mid(side_start, side_end)
     direction = unit(sub(side_mid, center))
     label_center = add_scaled(mid(center, side_mid), direction, 14.0)
-    stroke_width = max(0, int(ctx.label_stroke_width))
-    label_raw_bbox = ctx.draw.textbbox(label_center, str(label), anchor="mm", font=ctx.small_font, stroke_width=stroke_width)
+    stroke_width = 0
+    label_raw_bbox = ctx.draw.textbbox(label_center, str(label), anchor="mm", font=ctx.font, stroke_width=stroke_width)
     label_bbox = pad_bbox(label_raw_bbox, 4.0, width=ctx.width, height=ctx.height)
     total_length = math.hypot(float(side_mid[0]) - float(center[0]), float(side_mid[1]) - float(center[1]))
     label_distance = (
@@ -216,7 +224,7 @@ def _draw_apothem(ctx: RenderContext, center: Point, side_start: Point, side_end
         ctx.draw.line((segment_start, segment_end), fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
     line_points = [point for segment in line_segments for point in segment] or [center, side_mid]
     bbox_line = bbox_from_points(line_points, width=ctx.width, height=ctx.height, pad=ctx.line_width + 2)
-    label_bbox = _draw_text_centered(ctx, label, label_center, small=True)
+    label_bbox = _draw_text_centered(ctx, label, label_center, small=False, stroke_width_override=0)
     return bbox_from_points(
         ((bbox_line[0], bbox_line[1]), (bbox_line[2], bbox_line[3]), (label_bbox[0], label_bbox[1]), (label_bbox[2], label_bbox[3])),
         width=ctx.width,
@@ -289,7 +297,7 @@ def render_regular_polygon_scene(
     if problem.show_angle_unknown:
         construction_bboxes["marked_angle_arc"] = _draw_arc_polyline(ctx, center, radius * 0.27, start_degrees, angle_span)
         readout_bboxes["unknown_angle_label"] = _draw_text_centered(ctx, "?", _point_on_ray(center, radius * 0.34, start_degrees + (angle_span / 2.0)), small=False)
-    side_label_distance = 58.0 if problem.show_midpoint_label else 32.0
+    side_label_distance = 66.0 if problem.show_midpoint_label else 36.0
     if problem.show_known_side_length and problem.side_length is not None:
         readout_bboxes["side_length_label"] = _draw_dimension_label(
             ctx,

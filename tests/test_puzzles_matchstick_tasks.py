@@ -2,18 +2,28 @@
 
 from __future__ import annotations
 
-from trace.tasks.puzzles.logic.matchstick_arrangement import (
-    ENDPOINT_QUERY_IDS,
-    NUMBER_QUERY_IDS,
-    SCENE_VARIANTS,
-    PuzzlesLogicMatchstickLooseEndpointExtremumLabelTask,
-    PuzzlesLogicMatchstickNumberTransformLabelTask,
+import json
+import re
+
+from trace.tasks.puzzles.matchstick.matchstick_loose_endpoint_extremum_label import (
+    PuzzlesMatchstickLooseEndpointExtremumLabelTask,
+    SUPPORTED_QUERY_IDS as ENDPOINT_QUERY_IDS,
 )
-from tests.helpers import extract_prompt_json_example
+from trace.tasks.puzzles.matchstick.matchstick_number_transform_label import (
+    PuzzlesMatchstickNumberTransformLabelTask,
+    SUPPORTED_QUERY_IDS as NUMBER_QUERY_IDS,
+)
+from trace.tasks.puzzles.matchstick.shared.state import SCENE_VARIANTS
+
+
+def _extract_answer_and_annotation_example(prompt: str) -> dict[str, object]:
+    match = re.search(r'(\{"annotation".*\})\.?$', str(prompt))
+    assert match is not None
+    return json.loads(match.group(1).rstrip("."))
 
 
 def test_matchstick_number_transform_uses_keyed_source_and_option_annotation() -> None:
-    task = PuzzlesLogicMatchstickNumberTransformLabelTask()
+    task = PuzzlesMatchstickNumberTransformLabelTask()
 
     for index, (query_id, scene_variant) in enumerate(zip(NUMBER_QUERY_IDS * 3, SCENE_VARIANTS)):
         out = task.generate(
@@ -31,11 +41,11 @@ def test_matchstick_number_transform_uses_keyed_source_and_option_annotation() -
         }
 
         assert out.answer_gt.type == "option_letter"
-        assert out.annotation_gt.type == "keyed_bbox_map"
+        assert out.annotation_gt.type == "bbox_map"
         assert set(annotation) == {"source_number", "selected_option"}
-        assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-        assert trace["projected_annotation"]["keyed_bbox_map"] == annotation
-        assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == annotation
+        assert trace["projected_annotation"]["type"] == "bbox_map"
+        assert trace["projected_annotation"]["bbox_map"] == annotation
+        assert trace["projected_annotation"]["pixel_bbox_map"] == annotation
         assert execution["annotation_role_item_ids"] == {
             "source_number": "source_panel",
             "selected_option": f"option_{out.answer_gt.value}",
@@ -56,7 +66,7 @@ def test_matchstick_number_transform_uses_keyed_source_and_option_annotation() -
 
 
 def test_matchstick_endpoint_extremum_keeps_single_selected_option_annotation() -> None:
-    task = PuzzlesLogicMatchstickLooseEndpointExtremumLabelTask()
+    task = PuzzlesMatchstickLooseEndpointExtremumLabelTask()
 
     for index, query_id in enumerate(ENDPOINT_QUERY_IDS):
         out = task.generate(
@@ -68,16 +78,16 @@ def test_matchstick_endpoint_extremum_keeps_single_selected_option_annotation() 
         execution = trace["execution_trace"]
         render = trace["render_spec"]
         render_map = trace["render_map"]
-        annotation = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
+        annotation = [float(value) for value in out.annotation_gt.value]
 
         assert out.answer_gt.type == "option_letter"
-        assert out.annotation_gt.type == "bbox_set"
-        assert len(annotation) == 1
-        assert trace["projected_annotation"]["type"] == "bbox_set"
-        assert trace["projected_annotation"]["bbox_set"] == annotation
-        assert trace["projected_annotation"]["pixel_bbox_set"] == annotation
+        assert out.annotation_gt.type == "bbox"
+        assert len(annotation) == 4
+        assert trace["projected_annotation"]["type"] == "bbox"
+        assert trace["projected_annotation"]["bbox"] == annotation
+        assert trace["projected_annotation"]["pixel_bbox"] == annotation
         assert execution["supporting_item_ids"] == [f"option_{out.answer_gt.value}"]
-        assert annotation[0] == [
+        assert annotation == [
             float(value) for value in render_map["item_bboxes_px"][f"option_{out.answer_gt.value}"]
         ]
         assert render_map["annotation_source"] == "item_bboxes_px"
@@ -86,12 +96,14 @@ def test_matchstick_endpoint_extremum_keeps_single_selected_option_annotation() 
 
 
 def test_matchstick_number_transform_prompt_example_uses_keyed_annotation() -> None:
-    out = PuzzlesLogicMatchstickNumberTransformLabelTask().generate(
+    out = PuzzlesMatchstickNumberTransformLabelTask().generate(
         31200,
         params={"query_id": "add_one_stick"},
         max_attempts=10,
     )
 
-    answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
+    answer_and_annotation = _extract_answer_and_annotation_example(
+        out.prompt_variants["answer_and_annotation"]
+    )
     assert set(answer_and_annotation["annotation"]) == {"source_number", "selected_option"}
     assert answer_and_annotation["answer"] == "B"

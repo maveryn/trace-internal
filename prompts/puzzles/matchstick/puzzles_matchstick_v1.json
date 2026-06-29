@@ -1,0 +1,94 @@
+{
+  "bundle_id": "puzzles_matchstick_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "matchstick": [
+        "The image shows {object_description}.",
+        "The puzzle diagram shows {object_description}.",
+        "This puzzle diagram shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The visual shows {object_description}."
+      ]
+    },
+    "task": {
+      "matchstick_number_transform_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "matchstick_loose_endpoint_extremum_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "add_one_stick": [
+        "Which labeled number can be made from the Source number by adding exactly one stick?",
+        "Add one stick to the Source number. Which option shows a reachable number?",
+        "Select the candidate number that can be formed by adding exactly one stick to the Source.",
+        "Use one added stick to change the Source number. Which labeled option is possible?",
+        "Choose the option reachable from the Source number after adding exactly one stick."
+      ],
+      "remove_one_stick": [
+        "Which labeled number can be made from the Source number by removing exactly one stick?",
+        "Remove one stick from the Source number. Which option shows a reachable number?",
+        "Select the candidate number that can be formed by removing exactly one stick from the Source.",
+        "Use one removed stick to change the Source number. Which labeled option is possible?",
+        "Choose the option reachable from the Source number after removing exactly one stick."
+      ],
+      "most_loose_endpoints": [
+        "Which labeled arrangement has the largest number of loose endpoints?",
+        "Count loose endpoints in each arrangement. Which option has the most?",
+        "Select the arrangement with more loose endpoints than every other option.",
+        "Which labeled option contains the greatest loose-endpoint count?",
+        "Compare all arrangements and choose the one with the most loose endpoints."
+      ],
+      "fewest_loose_endpoints": [
+        "Which labeled arrangement has the smallest number of loose endpoints?",
+        "Count loose endpoints in each arrangement. Which option has the fewest?",
+        "Select the arrangement with fewer loose endpoints than every other option.",
+        "Which labeled option contains the lowest loose-endpoint count?",
+        "Compare all arrangements and choose the one with the fewest loose endpoints."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Set answer to the single option label as a capital letter.\nReturn JSON like {json_example_answer_only}.",
+        "Set answer to the single option label as a capital letter.\nUse the answer-only JSON shape shown here: {json_example_answer_only}.",
+        "Set answer to the single option label as a capital letter.\nWrite only a JSON object like {json_example_answer_only}.",
+        "Set answer to the single option label as a capital letter.\nReturn the option label in JSON: {json_example_answer_only}.",
+        "Set answer to the single option label as a capital letter.\nUse this JSON shape for the final response: {json_example_answer_only}."
+      ],
+      "answer_and_annotation": [
+        "Set answer to the single option label as a capital letter.\n{annotation_hint}\nReturn JSON like {json_example}.",
+        "Set answer to the single option label as a capital letter.\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here: {json_example}.",
+        "Set answer to the single option label as a capital letter.\n{annotation_hint}\nWrite only a JSON object like {json_example}.",
+        "Set answer to the single option label as a capital letter.\n{annotation_hint}\nReturn both fields in JSON: {json_example}.",
+        "Set answer to the single option label as a capital letter.\n{annotation_hint}\nUse this JSON shape for the final response: {json_example}."
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "task:matchstick_number_transform_query": {
+      "object_description": "a Source matchstick number and six labeled candidate numbers",
+      "annotation_hint": "Set annotation to a bbox_map in image pixels with keys source_number and selected_option. Each key maps to one bounding box [x0, y0, x1, y1].",
+      "json_example": "{\"annotation\":{\"source_number\":[58,58,1142,288],\"selected_option\":[440,332,760,550]},\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
+    },
+    "task:matchstick_loose_endpoint_extremum_query": {
+      "object_description": "six labeled matchstick arrangements",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0, y0, x1, y1] around the selected option panel.",
+      "json_example": "{\"annotation\":[786,606,1106,824],\"answer\":\"F\"}",
+      "json_example_answer_only": "{\"answer\":\"F\"}"
+    }
+  },
+  "dynamic_slots": {},
+  "required_slots_by_key": {}
+}

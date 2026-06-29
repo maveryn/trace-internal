@@ -2848,10 +2848,10 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "puzzles", "logic_grid", "puzzles", "logic_grid"
     ),
     "task_puzzles__matchstick__matchstick_loose_endpoint_extremum_label": _entry(
-        "puzzles", "matchstick", "puzzles", "logic"
+        "puzzles", "matchstick", "puzzles", "matchstick"
     ),
     "task_puzzles__matchstick__matchstick_number_transform_label": _entry(
-        "puzzles", "matchstick", "puzzles", "logic"
+        "puzzles", "matchstick", "puzzles", "matchstick"
     ),
     "task_puzzles__maze__exit_reachability_label": _entry(
         "puzzles", "maze", "puzzles", "maze"

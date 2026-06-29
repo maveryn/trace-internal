@@ -1461,6 +1461,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
                 "cube_net",
                 "cyclic_order",
                 "logic_grid",
+                "matchstick",
                 "maze",
                 "nonogram",
                 "overlay",

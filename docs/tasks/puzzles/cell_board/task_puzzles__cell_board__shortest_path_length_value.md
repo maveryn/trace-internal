@@ -1,21 +1,28 @@
 # `task_puzzles__cell_board__shortest_path_length_value`
 
-## Contract
-1. Domain: `puzzles`
-2. Scene id: `cell_board`
-3. Source implementation domain/group: `puzzles/cell_board`
-4. Task id: `task_puzzles__cell_board__shortest_path_length_value`
-5. Objective contract: shortest path length value.
-6. Supported sampled `query_id`: `shortest_path`
-7. `answer_gt.type`: `integer`
-8. `annotation_gt.type`: `point_sequence`
-9. Annotation policy: minimal visual witnesses for the visible objects, cells, panels, or role-keyed components needed to solve the task.
+## Program Contract
+`shortest_path_length(cell_board, start=green_S_cell, goal=red_G_cell, passable=non_wall_cells, adjacency=orthogonal_4_neighbor); scene=cell_board; scope=shortest_path_length_value`
 
-## Implementation
-1. Registered class: `trace.tasks.puzzles.cell_board.merged_tasks.TileShortestPathLengthPublicTask`
-2. Prompt lookup domain/group: `puzzles/cell_board`
-3. Prompt bundle: `see trace prompt metadata`
+## 2) Scene + task contract
+1. Entities/relations: A rectangular board with dark wall cells, light passable cells, a green start cell marked `S`, a red goal cell marked `G`, and disconnected passable distractors.
+2. Supported `query_id` values: `single`
+3. `answer_gt.type`: `integer`
+4. Annotation schema: `segment_set`
+5. Alternate annotation forms: none
+6. Annotation witness policy: one image-pixel segment for each adjacent step along a shortest path from `S` to `G`; segment count equals the answer.
+7. Overlap/touch policy: walls block movement and diagonal touching is not a step.
 
-## Notes
-2. Generation must remain deterministic from explicit seeds, params, prompt bundle, renderer config, and code versions.
-3. Answers and annotation must come from the same metadata execution trace.
+## 3) Prompt contract
+1. `prompt_bundle_id`: `puzzles_cell_board_v1`
+2. `scene_key`: `cell_board`
+3. `task_key`: `cell_board_topology_query`
+4. Prompt query key: `shortest_path_length_value`
+5. Required slots: output-mode slots from the prompt bundle.
+6. JSON example validity rule: segment-set cardinality equals the integer answer.
+7. Output modes: `answer_only`, `answer_and_annotation`
+
+## 4) Determinism + constraints
+1. Seed namespaces used: task-local shortest-path namespaces plus shared cell-board layout/style/font/noise namespaces.
+2. Unique-answer policy: construction creates a verified detour corridor whose shortest S-to-G path is 4..8 steps and longer than direct Manhattan distance.
+3. Reject/resample conditions: path construction, distractor placement, or path-length mismatch raises and retries.
+4. No-auto-relaxation guarantee: semantic constraints are not relaxed.

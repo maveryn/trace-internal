@@ -1,21 +1,28 @@
 # `task_puzzles__counterfactual_board__board_dimension_count`
 
-## Contract
-1. Domain: `puzzles`
-2. Scene id: `counterfactual_board`
-3. Source implementation domain/group: `puzzles/counterfactual`
-4. Task id: `task_puzzles__counterfactual_board__board_dimension_count`
-5. Objective contract: board dimension count.
-6. Supported sampled `query_id`: `column_count`
-7. `answer_gt.type`: `integer`
-8. `annotation_gt.type`: `bbox_set`
-9. Annotation policy: minimal visual witnesses for the visible objects, cells, panels, or role-keyed components needed to solve the task.
+## Program Contract
+`count(board_grid.visible_units, unit=row|column, style=chess_checkers|sudoku); scene=counterfactual_board; scope=board_dimension_count`
 
-## Implementation
-1. Registered class: `trace.tasks.puzzles.counterfactual.board_grid_count.PuzzlesCounterfactualBoardDimensionCountTask`
-2. Prompt lookup domain/group: `puzzles/counterfactual`
-3. Prompt bundle: `see trace prompt metadata`
+## 2) Scene + task contract
+1. Entities/relations: A visible board grid rendered in a chess/checkers or Sudoku-like style.
+2. Supported `query_id` values: `row_count`, `column_count`
+3. `answer_gt.type`: `integer`
+4. Annotation schema: `bbox_set`
+5. Alternate annotation forms: none
+6. Annotation witness policy: image-pixel row or column bboxes for all counted visible board units; bbox-set cardinality equals answer.
+7. Overlap/touch policy: counted row/column boxes cover the full visible board span for that unit.
 
-## Notes
-2. Generation must remain deterministic from explicit seeds, params, prompt bundle, renderer config, and code versions.
-3. Answers and annotation must come from the same metadata execution trace.
+## 3) Prompt contract
+1. `prompt_bundle_id`: `puzzles_counterfactual_board_v1`
+2. `scene_key`: `counterfactual_board`
+3. `task_key`: `board_grid_count_query`
+4. Prompt query keys: `row_count`, `column_count`
+5. Required slots: output-mode slots from the prompt bundle only.
+6. JSON example validity rule: bbox-set cardinality equals the integer answer.
+7. Output modes: `answer_only`, `answer_and_annotation`
+
+## 4) Determinism + constraints
+1. Seed namespaces used: task-local query/style/dimension namespaces plus shared counterfactual-board layout/style/noise namespaces.
+2. Unique-answer policy: the sampled visible row or column count directly determines the answer.
+3. Reject/resample conditions: invalid explicit style, dimensions, or query values raise and retry/propagate.
+4. No-auto-relaxation guarantee: semantic constraints are not relaxed.

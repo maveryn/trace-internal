@@ -1,63 +1,56 @@
 # `task_puzzles__cyclic_order__cyclic_order_equivalent_label`
 
-## 1) Identity
+## Contract
+
 1. Domain: `puzzles`
-2. Scene: `topology`
+2. Scene package: `trace/tasks/puzzles/cyclic_order/`
 3. Scene id: `cyclic_order`
-4. Task id: `task_puzzles__cyclic_order__cyclic_order_equivalent_label`
-5. Objective: identify the unique option loop with the same cyclic token order as a reference loop when rotation and smooth deformation are allowed but reflection is not.
+4. Public task id: `task_puzzles__cyclic_order__cyclic_order_equivalent_label`
+5. Supported `query_id` values: `single`
+6. Prompt query key: `single`
+7. Answer schema: `option_letter`
+8. Annotation schema: `bbox`
+9. Program schema: `select_option(cyclic_order.equivalent_loop, rule=rotation_allowed_reflection_disallowed, options=6); scene=cyclic_order; scope=cyclic_order_equivalent_label`
 
-## 2) Scene + task contract
-1. Branch metadata: `query_id`
-2. `query_id`: `cyclic_order_equivalent_label`
-3. Supported `token_render_style` values:
-   - `colored_beads`
-   - `shape_tokens`
-   - `colored_shape_tokens`
-   - `outline_shape_tokens`
-   - `symbol_badges`
-4. Supported `scene_variant` values:
-   - `necklace_board`
-   - `charm_card_grid`
-   - `route_loop_diagram`
-   - `token_ring_outline`
-5. Supported `loop_path_style` values:
-   - `ellipse`
-   - `rounded_rect`
-   - `polygon_loop`
-   - `wavy_loop`
-   - `beaded_string`
-6. `answer_gt.type`: `option_letter`
-7. `annotation_gt.type`: `bbox_set`
-8. Generation guarantees:
-   - option count is fixed at `6`,
-   - exactly one option is valid,
-   - token count defaults to `4..5`,
-   - color-bearing token render styles use distinct colors with minimum Lab separation `DeltaE*ab >= 50`,
-   - the valid option preserves the reference cyclic order up to rotation,
-   - every invalid option breaks the cyclic order by construction.
+## Program Contract
 
-## 3) Prompt contract
-1. Bundle: `puzzles_topology_v0`
-2. `scene_key`: `topology_cyclic_order_puzzle`
-3. `task_key`: `cyclic_order_match_query`
-4. `query_key`: `cyclic_order_equivalent_label`
-5. Required slots:
-   - scene: `object_description`
-   - query-id: `token_render_style_instruction`
-   - answer-only mode: `json_output_contract_answer_only`, `answer_hint`, `json_example_answer_only`
-   - answer+annotation mode: `json_output_contract`, `annotation_hint`, `answer_hint`, `json_example`
-6. Prompt-facing answer is the unique valid option letter. Prompt-facing annotation is the matching option-image bounding box.
+- `select_option(cyclic_order.equivalent_loop, rule=rotation_allowed_reflection_disallowed, options=6); scene=cyclic_order; scope=cyclic_order_equivalent_label`
 
-## 4) Annotation + trace contract
-1. Prompt-facing annotation is a `bbox_set` containing exactly one option-image bbox.
-2. `projected_annotation` includes `bbox_set`.
-3. `render_map.option_choice_bboxes_px` stores option-image bboxes keyed by `option_choice_id`.
-4. `execution_trace` records `query_id=cyclic_order_equivalent_label`, internal replay query fields, token/render axes, option specs, answer option id/label, valid option id, and solver trace.
-5. Prompt-facing annotation is projected from the recorded valid option id, not inferred from pixels.
+## Query Contract
 
-## 5) Determinism + constraints
-1. Deterministic sampling/rendering from `instance_seed`.
-2. Answers and annotation come from the same generated reference/option set.
-3. No semantic auto-relaxation.
-4. Review overlays rely on recorded option-image projections.
+- Supported public `query_id`: `single`
+- Query variation is not semantic for this task. Token rendering style, loop path style, scene variant, answer label position, bead count, and palette/theme choices are generation or render axes recorded in trace metadata.
+
+## Generation Contract
+
+- The renderer shows one reference loop and exactly six labeled option loops.
+- Exactly one option is equivalent to the reference up to cyclic rotation.
+- Every distractor breaks cyclic order by construction.
+- Token count is sampled from `4..5`.
+- Color-bearing token styles maintain minimum Lab color distance `>= 50`.
+- Supported token render styles are `colored_beads`, `shape_tokens`, `colored_shape_tokens`, `outline_shape_tokens`, and `symbol_badges`.
+- Supported loop path styles are `ellipse`, `rounded_rect`, `polygon_loop`, `wavy_loop`, and `beaded_string`.
+- Supported scene variants are `necklace_board`, `charm_card_grid`, `route_loop_diagram`, and `token_ring_outline`.
+
+## Prompt Contract
+
+- Bundle: `puzzles_cyclic_order_v1`
+- `scene_key`: `cyclic_order`
+- `task_key`: `cyclic_order_equivalent_label_query`
+- `query_key`: `single`
+- Prompt-facing answer is the unique valid option label.
+- Prompt-facing annotation is one image-pixel bounding box around the matching option-loop image.
+
+## Annotation + Trace Contract
+
+- `answer_gt.type`: `option_letter`
+- `annotation_gt.type`: `bbox`
+- `projected_annotation` includes `bbox` and `pixel_bbox`.
+- `render_map.option_choice_bboxes_px` stores option image bboxes keyed by `option_choice_id`.
+- `execution_trace` records the public query, token/render axes, option specs, answer option id/label, valid option id, and solver trace.
+- Answer and annotation are both projected from the same valid option id.
+
+## Determinism
+
+- Deterministic sampling/rendering from `instance_seed`, scene config, prompt bundle, and code version.
+- No semantic auto-relaxation is used to force acceptance.

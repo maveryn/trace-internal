@@ -1,0 +1,153 @@
+{
+  "bundle_id": "puzzles_raven_matrix_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "code_prompt_defaults": {
+    "object_description_raven_strip": "a 3 by 3 Raven-style matrix puzzle with six labeled image options below it",
+    "object_description_raven_card": "a card-style 3 by 3 Raven-style matrix puzzle with six labeled image options below it",
+    "object_description_raven_outline": "an outline-style 3 by 3 Raven-style matrix puzzle with six labeled image options below it"
+  },
+  "templates": {
+    "scene": {
+      "raven_matrix": [
+        "The image shows {object_description}.",
+        "The puzzle diagram shows {object_description}.",
+        "This figure shows {object_description}.",
+        "The visual shows {object_description}.",
+        "The scene shows {object_description}."
+      ]
+    },
+    "task": {
+      "raven_count_progression_label_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "raven_spatial_transform_label_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "raven_set_operation_label_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "raven_analogical_transform_label_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "raven_position_progression_label_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "raven_count_progression_label": [
+        "Use the count pattern across the matrix to choose the option that completes the missing lower-right cell.",
+        "Which labeled option completes the matrix when the visible rule is about object counts?",
+        "Select the option whose number of objects fits the count progression in the matrix.",
+        "Choose the panel that belongs in the missing cell by following the count pattern.",
+        "Identify the option that completes the 3 by 3 matrix under the count rule."
+      ],
+      "raven_spatial_transform_label": [
+        "Use the rotations and reflections across the matrix to choose the option that completes the missing lower-right cell.",
+        "Which labeled option completes the matrix when the visible rule transforms the filled-cell pattern?",
+        "Select the option whose mini-grid pattern fits the spatial transform rule.",
+        "Choose the panel that belongs in the missing cell by following the spatial transformations.",
+        "Identify the option that completes the 3 by 3 matrix under the rotation/reflection rule."
+      ],
+      "raven_set_operation_label": [
+        "In each row, the third panel is formed from a set operation on the first two panels. Choose the option for the missing lower-right cell.",
+        "Which labeled option completes the matrix when the row rule combines the first two filled-cell patterns?",
+        "Select the option whose filled cells match the row-wise set operation.",
+        "Choose the panel that belongs in the missing cell by applying the same set operation used in the other rows.",
+        "Identify the option that completes the 3 by 3 matrix under the row set-operation rule."
+      ],
+      "raven_analogical_transform_label": [
+        "Use the changing shape, color, or size attributes across the matrix to choose the option that completes the missing lower-right cell.",
+        "Which labeled option completes the matrix when the visible rule changes object attributes?",
+        "Select the option whose object attributes fit the analogical pattern.",
+        "Choose the panel that belongs in the missing cell by following the attribute transformations.",
+        "Identify the option that completes the 3 by 3 matrix under the attribute rule."
+      ],
+      "raven_position_progression_label": [
+        "Use the marker-position progression across the matrix to choose the option that completes the missing lower-right cell.",
+        "Which labeled option completes the matrix when the visible rule moves a marker through the mini-grid?",
+        "Select the option whose marker position fits the matrix progression.",
+        "Choose the panel that belongs in the missing cell by following the position pattern.",
+        "Identify the option that completes the 3 by 3 matrix under the marker-position rule."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Set answer to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nUse the answer-only JSON shape shown here.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nReturn the answer in JSON.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nUse this JSON shape for the final response.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nReturn both fields in JSON.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse this JSON shape for the final response.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "task:raven_count_progression_label_query": {
+      "answer_instruction": "the selected option letter as a string",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the correct option panel.",
+      "json_example": "{\"annotation\":[504,650,648,822],\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
+    },
+    "task:raven_spatial_transform_label_query": {
+      "answer_instruction": "the selected option letter as a string",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the correct option panel.",
+      "json_example": "{\"annotation\":[668,650,812,822],\"answer\":\"D\"}",
+      "json_example_answer_only": "{\"answer\":\"D\"}"
+    },
+    "task:raven_set_operation_label_query": {
+      "answer_instruction": "the selected option letter as a string",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the correct option panel.",
+      "json_example": "{\"annotation\":[832,650,976,822],\"answer\":\"E\"}",
+      "json_example_answer_only": "{\"answer\":\"E\"}"
+    },
+    "task:raven_analogical_transform_label_query": {
+      "answer_instruction": "the selected option letter as a string",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the correct option panel.",
+      "json_example": "{\"annotation\":[996,650,1140,822],\"answer\":\"F\"}",
+      "json_example_answer_only": "{\"answer\":\"F\"}"
+    },
+    "task:raven_position_progression_label_query": {
+      "answer_instruction": "the selected option letter as a string",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the correct option panel.",
+      "json_example": "{\"annotation\":[12,650,156,822],\"answer\":\"A\"}",
+      "json_example_answer_only": "{\"answer\":\"A\"}"
+    }
+  },
+  "dynamic_slots": {
+    "object_description": {
+      "type": "string"
+    }
+  },
+  "required_slots_by_key": {
+    "scene:raven_matrix": [
+      "object_description"
+    ]
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "bundle_id": "puzzles_word_search_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "code_prompt_defaults": {
+    "object_description": "a row-and-column labeled word-search grid"
+  },
+  "templates": {
+    "scene": {
+      "word_search": [
+        "The image shows {object_description}.",
+        "The figure shows {object_description}.",
+        "This puzzle shows {object_description}.",
+        "The visual shows {object_description}.",
+        "The word-search puzzle shows {object_description}."
+      ]
+    },
+    "task": {
+      "search_location_label_query": ["", "", "", "", ""],
+      "search_letter_count_value_query": ["", "", "", "", ""],
+      "search_present_word_count_query": ["", "", "", "", ""]
+    },
+    "query": {
+      "search_location_label": [
+        "Find the word {target_word}. Which option gives its start row, start column, and direction code?",
+        "Which option correctly describes where {target_word} starts and the direction code it follows?",
+        "Use the grid labels and the code legend to locate {target_word}. Which option lists the correct start row, start column, and direction code?",
+        "Find {target_word} in the grid, then choose the option with its start row, start column, and direction code.",
+        "Which labeled option matches the placement of {target_word} in the word-search grid?"
+      ],
+      "search_letter_count_value": [
+        "How many times does the letter {target_letter} appear in the grid?",
+        "Count every visible {target_letter} in the grid. What is the total?",
+        "What is the number of grid cells containing the letter {target_letter}?",
+        "Scan the whole grid and count the cells labeled {target_letter}.",
+        "How many grid entries are the letter {target_letter}?"
+      ],
+      "search_present_word_count": [
+        "How many of the {word_bank_size} word-bank words appear in the grid?",
+        "Count the word-bank words that can be found in the grid. What is the total?",
+        "Among the {word_bank_size} listed words, how many are present in the word-search grid?",
+        "Search for each word-bank entry in the grid. How many listed words appear?",
+        "What is the count of listed words that are actually placed in the grid?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Set answer to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nReturn the answer in JSON.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nUse this JSON shape for the final response.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nUse the answer-only JSON shape shown here.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nReturn both fields in JSON.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse this JSON shape for the final response.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "query:search_location_label": {
+      "answer_instruction": "the selected option letter",
+      "annotation_hint": "Set annotation to a JSON array of ordered image-pixel bounding boxes [x0,y0,x1,y1], one for each grid cell in the found word from first letter to last letter.",
+      "json_example": "{\"annotation\":[[194,222,252,280],[252,222,310,280],[310,222,368,280]],\"answer\":\"C\"}",
+      "json_example_answer_only": "{\"answer\":\"C\"}"
+    },
+    "query:search_letter_count_value": {
+      "answer_instruction": "the number of matching letter cells as an integer",
+      "annotation_hint": "Set annotation to a JSON array of image-pixel bounding boxes [x0,y0,x1,y1], one for each grid cell containing the target letter.",
+      "json_example": "{\"annotation\":[[194,222,252,280],[426,338,484,396]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    },
+    "query:search_present_word_count": {
+      "answer_instruction": "the number of word-bank words present in the grid as an integer",
+      "annotation_hint": "Set annotation to a JSON array of image-pixel line segments [[x1,y1],[x2,y2]], one for each present word from its first-letter cell center to its last-letter cell center.",
+      "json_example": "{\"annotation\":[[[223,251],[339,251]],[[455,367],[455,483]]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    }
+  },
+  "dynamic_slots": {
+    "object_description": {"type": "string"},
+    "target_word": {"type": "string"},
+    "target_letter": {"type": "string"},
+    "word_bank_size": {"type": "integer"}
+  },
+  "required_slots_by_key": {
+    "scene:word_search": ["object_description"]
+  }
+}

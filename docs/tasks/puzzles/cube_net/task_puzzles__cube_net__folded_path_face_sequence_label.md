@@ -1,22 +1,25 @@
 # `task_puzzles__cube_net__folded_path_face_sequence_label`
 
-## Contract
+## Summary
 1. Domain: `puzzles`
 2. Scene id: `cube_net`
-3. Source implementation domain/group: `puzzles/spatial`
-4. Task id: `task_puzzles__cube_net__folded_path_face_sequence_label`
-5. Objective contract: folded path face sequence label.
-6. Supported sampled `query_id`: `folded_path_face_sequence_label`
-7. `answer_gt.type`: `option_letter`
-8. `annotation_gt.type`: `keyed_bbox_map`
-9. Annotation policy: minimal visual witnesses for the visible objects, cells, panels, or role-keyed components needed to solve the task.
+3. Task id: `task_puzzles__cube_net__folded_path_face_sequence_label`
+4. Objective contract: choose the full face-label sequence visited by folded-edge moves.
+
+## Program Contract
+`select_option(folded_cube_path.face_sequence, path=edge_move_sequence); scene=cube_net; scope=folded_path_face_sequence_label`
+
+## Query Contract
+1. `query_id=single`: fixed sequence-selection program.
+2. Move count, face labels, scene variant, and option order are generation/render axes, not query ids.
+
+## Answer And Annotation
+1. Answer type: `option_letter`
+2. Annotation schema: `bbox_map`
+3. Annotation keys: `start_face`, `move_instructions`, `selected_option`
+4. Annotation boxes mark the start face, instruction panel, and selected sequence option card.
 
 ## Implementation
-1. Registered class: `trace.tasks.puzzles.spatial.cube_surface_net.PuzzlesSpatialCubeFoldedPathFaceSequenceLabelTask`
-2. Prompt lookup domain/group: `puzzles/spatial`
-3. Prompt bundle: `see trace prompt metadata`
-4. Example sampled scene variant: `paper_model`
-
-## Notes
-2. Generation must remain deterministic from explicit seeds, params, prompt bundle, renderer config, and code versions.
-3. Answers and annotation must come from the same metadata execution trace.
+1. Registered class: `trace.tasks.puzzles.cube_net.folded_path_face_sequence_label.PuzzlesCubeFoldedPathFaceSequenceLabelTask`
+2. Prompt bundle: `prompts/puzzles/cube_net/puzzles_cube_net_v1.json`
+3. Scene config: `configs/domains/puzzles/cube_net.yaml`

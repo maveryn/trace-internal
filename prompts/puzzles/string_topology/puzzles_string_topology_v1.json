@@ -1,0 +1,87 @@
+{
+  "bundle_id": "puzzles_string_topology_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "code_prompt_defaults": {
+    "object_description_string_strip": "several separate ropes, rings, and knotted loops on an open canvas",
+    "object_description_string_card": "a card-style diagram of separate ropes, rings, and knotted loops on an open canvas",
+    "object_description_string_outline": "an outline-style diagram of separate ropes, rings, and knotted loops on an open canvas"
+  },
+  "templates": {
+    "scene": {
+      "string_topology": [
+        "The image shows {object_description}.",
+        "The puzzle diagram shows {object_description}.",
+        "This puzzle diagram shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The visual shows {object_description}."
+      ]
+    },
+    "task": {
+      "string_topology_count_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "open_rope_count": [
+        "How many open-ended ropes are shown?",
+        "Count only the separate ropes with two visible endpoints.",
+        "How many string pieces are open rather than closed loops?",
+        "Count the open rope components in the diagram.",
+        "How many separate open strings are visible?"
+      ],
+      "closed_loop_count": [
+        "How many separate string pieces form closed loops, including plain rings and knotted closed loops?",
+        "Count only the components that are closed loops, including rings and knotted loops.",
+        "How many closed string components are visible, counting knotted closed loops as closed?",
+        "Count the separate pieces whose ends join to form a loop or ring, including knotted closed loops.",
+        "How many rope components are closed rather than open-ended, including any knotted closed loops?"
+      ],
+      "knotted_component_count": [
+        "How many separate string pieces contain a knot?",
+        "Count only the components with a visible self-crossing knot.",
+        "How many rope components are knotted?",
+        "Count the separate strings that contain a knot, whether or not they are also closed loops.",
+        "How many components show a knot?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Set answer to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nUse the answer-only JSON shape shown here.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nReturn the answer in JSON.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nUse this JSON shape for the final response.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nReturn both fields in JSON.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse this JSON shape for the final response.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "task:string_topology_count_query": {
+      "answer_instruction": "the exact number of requested string components as an integer",
+      "annotation_hint": "Set annotation to an array of image-pixel bounding boxes [x0,y0,x1,y1], one box for each counted string component.",
+      "json_example": "{\"annotation\":[[92,132,266,228],[512,176,686,272],[786,430,960,526]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    }
+  },
+  "dynamic_slots": {
+    "object_description": {
+      "type": "string"
+    }
+  },
+  "required_slots_by_key": {
+    "scene:string_topology": [
+      "object_description"
+    ]
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "bundle_id": "puzzles_rubiks_net_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "code_prompt_defaults": {
+    "object_description_sticker_color_label": "a Rubik-style cube net with face labels, a (column,row) coordinate reference, and six labeled color-swatch options; a prime mark in a move sequence means counterclockwise",
+    "object_description_face_color_count_label": "a Rubik-style cube net with face labels, a (column,row) coordinate reference, a target color swatch, and six labeled number options; a prime mark in a move sequence means counterclockwise",
+    "object_description_move_result_label": "a Rubik-style starting cube net with face labels, a (column,row) coordinate reference, and six labeled candidate result nets; a prime mark in a move sequence means counterclockwise"
+  },
+  "templates": {
+    "scene": {
+      "rubiks_net": [
+        "The image shows {object_description}.",
+        "The puzzle diagram shows {object_description}.",
+        "This figure shows {object_description}.",
+        "The visual shows {object_description}.",
+        "The scene shows {object_description}."
+      ]
+    },
+    "task": {
+      "static_sticker_color_label_query": ["", "", "", "", ""],
+      "post_move_sticker_color_label_query": ["", "", "", "", ""],
+      "static_face_color_count_label_query": ["", "", "", "", ""],
+      "post_move_face_color_count_label_query": ["", "", "", "", ""],
+      "rubiks_move_result_label_query": ["", "", "", "", ""]
+    },
+    "query": {
+      "static_sticker_color_label": [
+        "Choose the option matching the current color at {target_position_description}.",
+        "Which color-swatch option is the sticker at {target_position_description}?",
+        "Select the labeled swatch for the visible sticker at {target_position_description}.",
+        "Identify the color option for the sticker at {target_position_description}.",
+        "Use the net to choose the color shown at {target_position_description}."
+      ],
+      "post_move_sticker_color_label": [
+        "After applying moves {move_sequence_text}, choose the option matching the color at {target_position_description}.",
+        "Apply moves {move_sequence_text}. Which swatch matches the sticker at {target_position_description}?",
+        "After the move sequence {move_sequence_text}, select the color option for {target_position_description}.",
+        "Use moves {move_sequence_text}, then identify the sticker color at {target_position_description}.",
+        "Choose the swatch for {target_position_description} after applying {move_sequence_text}."
+      ],
+      "static_face_color_count_label": [
+        "On the {target_face_name} face, choose the option for how many stickers match the target swatch.",
+        "Count the target-swatch color on the {target_face_name} face and select the labeled number option.",
+        "Which number option gives the count of target-color stickers on the {target_face_name} face?",
+        "Use the current net to count target-color stickers on the {target_face_name} face.",
+        "Choose the number option for the target color count on the {target_face_name} face."
+      ],
+      "post_move_face_color_count_label": [
+        "After applying moves {move_sequence_text}, count target-color stickers on the {target_face_name} face and choose the number option.",
+        "Apply {move_sequence_text}, then select the option for the target-color count on the {target_face_name} face.",
+        "Use moves {move_sequence_text}; which number option counts target-color stickers on the {target_face_name} face?",
+        "After the sequence {move_sequence_text}, choose the target-color count for the {target_face_name} face.",
+        "Count the target swatch on the {target_face_name} face after applying {move_sequence_text}."
+      ],
+      "direct_sequence_result_label": [
+        "Apply moves {move_sequence_text} to the starting net and choose the matching result net.",
+        "Which candidate net shows the state after applying {move_sequence_text}?",
+        "Select the result option produced by the move sequence {move_sequence_text}.",
+        "Use the start net, apply {move_sequence_text}, and choose the resulting candidate.",
+        "Choose the candidate net that matches the cube after moves {move_sequence_text}."
+      ],
+      "inverse_sequence_result_label": [
+        "Choose the candidate net after undoing the move sequence {base_sequence_text}.",
+        "Which option shows the state after applying the inverse of {base_sequence_text}?",
+        "Select the candidate net produced by reversing and inverting {base_sequence_text}.",
+        "Use the start net and choose the result of undoing {base_sequence_text}.",
+        "Choose the candidate net that matches the inverse sequence for {base_sequence_text}."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Set answer to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nUse the answer-only JSON shape shown here.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nReturn the answer in JSON.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nUse this JSON shape for the final response.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nReturn both fields in JSON.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse this JSON shape for the final response.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "task:static_sticker_color_label_query": {
+      "answer_instruction": "the selected option letter as a string",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected option panel.",
+      "json_example": "{\"annotation\":[836,126,972,280],\"answer\":\"D\"}",
+      "json_example_answer_only": "{\"answer\":\"D\"}"
+    },
+    "task:post_move_sticker_color_label_query": {
+      "answer_instruction": "the selected option letter as a string",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected option panel.",
+      "json_example": "{\"annotation\":[990,126,1126,280],\"answer\":\"E\"}",
+      "json_example_answer_only": "{\"answer\":\"E\"}"
+    },
+    "task:static_face_color_count_label_query": {
+      "answer_instruction": "the selected option letter as a string",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected option panel.",
+      "json_example": "{\"annotation\":[1144,320,1280,474],\"answer\":\"C\"}",
+      "json_example_answer_only": "{\"answer\":\"C\"}"
+    },
+    "task:post_move_face_color_count_label_query": {
+      "answer_instruction": "the selected option letter as a string",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected option panel.",
+      "json_example": "{\"annotation\":[836,492,972,646],\"answer\":\"A\"}",
+      "json_example_answer_only": "{\"answer\":\"A\"}"
+    },
+    "task:rubiks_move_result_label_query": {
+      "answer_instruction": "the selected option letter as a string",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected candidate-net option panel.",
+      "json_example": "{\"annotation\":[292,536,490,724],\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
+    }
+  },
+  "dynamic_slots": {
+    "object_description": {"type": "string"},
+    "target_position_description": {"type": "string"},
+    "target_face_name": {"type": "string"},
+    "move_sequence_text": {"type": "string"},
+    "base_sequence_text": {"type": "string"}
+  },
+  "required_slots_by_key": {
+    "scene:rubiks_net": ["object_description"]
+  }
+}

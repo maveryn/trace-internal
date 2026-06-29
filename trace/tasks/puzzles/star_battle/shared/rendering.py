@@ -19,7 +19,6 @@ from trace.tasks.puzzles.shared.unit_size_jitter import (
     scale_puzzle_px,
 )
 from trace.tasks.shared.color_distance import coerce_rgb
-from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
 
 from .rules import candidate_key, cell_key, region_key
@@ -137,7 +136,6 @@ def resolve_render_params(
             min_px=14,
         ),
         clue_font_size_px=scale_puzzle_px(rendering_defaults.get("clue_font_size_px", 24), unit_scale, min_px=12),
-        title_font_size_px=scale_puzzle_px(rendering_defaults.get("title_font_size_px", 20), unit_scale, min_px=11),
         text_color_rgb=coerce_rgb(rendering_defaults.get("text_color_rgb"), (28, 32, 38)),
         text_stroke_rgb=coerce_rgb(rendering_defaults.get("text_stroke_rgb"), (255, 255, 255)),
         style_overrides={},
@@ -249,7 +247,6 @@ def render_star_battle_scene(
     )
     clue_font = load_font(int(render_params.clue_font_size_px), bold=True)
     candidate_font = load_font(int(render_params.candidate_font_size_px), bold=True)
-    title_font = load_font(int(render_params.title_font_size_px), bold=True)
     cell_bbox_map: Dict[str, BBox] = {}
     row_bbox_map: Dict[str, BBox] = {}
     col_bbox_map: Dict[str, BBox] = {}
@@ -263,15 +260,6 @@ def render_star_battle_scene(
         }
     ]
 
-    draw_text_traced(
-        draw,
-        (panel_x0 + 18, panel_y0 + 14),
-        "Star Battle",
-        fill=render_params.text_color_rgb,
-        font=title_font,
-        role="readout",
-        required=False,
-    )
     for row in range(size):
         bbox = (grid_x0 - clue, grid_y0 + row * cell_size, grid_x0, grid_y0 + (row + 1) * cell_size)
         row_bbox_map[f"row_{row}"] = round_bbox(bbox)

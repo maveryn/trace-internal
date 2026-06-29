@@ -1,1 +1,0 @@
-"""Counterfactual-style puzzle tasks."""

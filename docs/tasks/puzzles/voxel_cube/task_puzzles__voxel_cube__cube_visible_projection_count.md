@@ -1,33 +1,35 @@
 # `task_puzzles__voxel_cube__cube_visible_projection_count`
 
-## 1) Identity
+## Public Taxonomy
 1. Domain: `puzzles`
-2. Scene: `spatial`
-3. Task id: `task_puzzles__voxel_cube__cube_visible_projection_count`
-4. Objective: count filled cells in an orthographic projection of a cube stack.
+2. Scene id: `voxel_cube`
+3. Source scene package: `voxel_cube`
+4. Task id: `task_puzzles__voxel_cube__cube_visible_projection_count`
 
-## 2) Scene + Task Contract
-1. Branch metadata: `query_id`
-2. `query_id`: `visible_cube_count`
-3. Supported query parameter: `view_direction=top|front|right`
-4. Supported `scene_variant`: `cube_stack`
-5. `answer_gt.type`: `integer`
-6. `annotation_gt.type`: `bbox_set`
-7. Scene contract:
-   - the scene shows an isometric cube stack on the left and one blank orthographic query grid on the right,
-   - `Front view` means looking at the left vertical face of the drawn stack,
-   - `Right view` means looking at the right vertical face of the drawn stack,
-   - the answer is the number of query-grid cells filled by the requested view.
+## Query Contract
+1. Supported `query_id`: `single`
+2. Prompt asks for how many cells are filled in a selected top/front/right orthographic projection.
+3. Internal variation: selected `view_direction` is trace metadata and a prompt slot.
 
-## 3) Prompt Contract
-1. Bundle: `puzzles_spatial_v0`
-2. `scene_key`: `spatial_cube_structure_puzzle`
-3. `task_key`: `cube_structure_count_query`
-4. Internal prompt variant key: `visible_cube_count`
-5. Prompt-facing answers are exact integer counts.
+## Program Contract
+`count(filled_cells(orthographic_projection(stack, view_direction))); scene=voxel_cube; scope=cube_visible_projection_count`
 
-## 4) Annotation + Trace Contract
-1. Annotation contains one bbox for each query-grid cell that should be filled.
-2. `execution_trace.internal_query_id` records the selected view query.
-3. Stack footprint/heights, visible counts for `top|front|right`, projection-cell coordinates, and query-panel geometry are recorded.
-4. Prompt-facing annotation is projected from projection cells, not inferred from pixels.
+1. Program code: `voxel_cube.orthographic_projection_count`
+2. Scene: `voxel_cube`
+3. Scope: `cube_visible_projection_count`
+4. Candidate set: cells in the rendered target projection grid.
+5. Answer binding: integer count of projection cells filled by at least one cube.
+6. Annotation binding: a `bbox_set` for all target projection cells that should be filled.
+
+## Answer And Annotation
+1. `answer_gt.type = integer`
+2. `annotation_gt.type = bbox_set`
+3. Annotation schema: unordered `bbox_set`
+4. Annotation target: all filled cells in the target projection grid.
+5. `scalar_annotation_checked = true`.
+
+## Prompt Contract
+1. Bundle: `puzzles_voxel_cube_v1`
+2. Scene key: `voxel_cube`
+3. Task key: `cube_visible_projection_count_query`
+4. Query key: `visible_projection_count`

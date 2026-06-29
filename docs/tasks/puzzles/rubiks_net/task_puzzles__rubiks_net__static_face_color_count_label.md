@@ -1,22 +1,35 @@
 # `task_puzzles__rubiks_net__static_face_color_count_label`
 
-## Contract
+## Public Taxonomy
 1. Domain: `puzzles`
 2. Scene id: `rubiks_net`
-3. Source implementation domain/group: `puzzles/spatial`
+3. Source scene package: `rubiks_net`
 4. Task id: `task_puzzles__rubiks_net__static_face_color_count_label`
-5. Objective contract: static face color count label.
-6. Supported sampled `query_id`: `static_face_color_count_label`
-7. `answer_gt.type`: `option_letter`
-8. `annotation_gt.type`: `bbox_set`
-9. Annotation policy: minimal visual witnesses for the visible objects, cells, panels, or role-keyed components needed to solve the task.
 
-## Implementation
-1. Registered class: `trace.tasks.puzzles.spatial.rubiks_cube.PuzzlesSpatialRubiksStaticFaceColorCountLabelTask`
-2. Prompt lookup domain/group: `puzzles/spatial`
-3. Prompt bundle: `see trace prompt metadata`
-4. Example sampled scene variant: `classic_net`
+## Query Contract
+1. Supported `query_id`: `single`
+2. Internal question format: `static_face_color_count_label`
+3. Prompt asks for the number-option label matching the count of target-color stickers on one face.
+4. Internal variation: target face, target swatch, scramble, option order, scene treatment, and style are generation/render metadata.
 
-## Notes
-2. Generation must remain deterministic from explicit seeds, params, prompt bundle, renderer config, and code versions.
-3. Answers and annotation must come from the same metadata execution trace.
+## Program Contract
+`select_label(number_option, rule=count_target_color_on_visible_face); scene=rubiks_net; scope=static_face_color_count_label`
+
+## Answer And Annotation
+1. `answer_gt.type = option_letter`
+2. `answer_gt.value` is the capital-letter label on the correct number option panel.
+3. `annotation_gt.type = bbox`
+4. Annotation schema: scalar `bbox`
+5. Annotation target: one bbox around the selected option panel.
+6. `scalar_annotation_checked = true`.
+
+## Trace Contract
+1. `execution_trace.rubiks_rule_code = static_face_color_count`.
+2. `execution_trace.counted_sticker_ids` records the counted stickers.
+3. `render_map.option_panel_bboxes_px` contains the selected option panel bbox projected into `annotation_gt`.
+
+## Prompt Contract
+1. Bundle: `puzzles_rubiks_net_v1`
+2. Scene key: `rubiks_net`
+3. Task key: `static_face_color_count_label_query`
+4. Query key: `static_face_color_count_label`

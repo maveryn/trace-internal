@@ -1,19 +1,28 @@
 # `task_puzzles__cell_board__symmetry_violation_count`
 
-## Identity
-1. Domain: `puzzles`
-2. Scene: `cell_board`
-3. Scene id: `cell_board`
-4. Public query id: `default`
-5. Query id: `symmetry_violation_count`
+## Program Contract
+`count_mirror_mismatches(cell_board, axis=vertical|horizontal, counted_side=left|top); scene=cell_board; scope=symmetry_violation_count`
 
-## Contract
-1. Objective: count cells that violate the board's mirror-symmetry rule.
-2. `answer_gt.type`: `integer`
-3. `annotation_gt.type`: `point_set`
-4. Annotation contains tile-center pixel points for violating cells.
+## 2) Scene + task contract
+1. Entities/relations: A rectangular colored cell board with a sampled vertical or horizontal mirror check.
+2. Supported `query_id` values: `single`
+3. `answer_gt.type`: `integer`
+4. Annotation schema: `segment_set`
+5. Alternate annotation forms: none
+6. Annotation witness policy: one image-pixel segment from each counted-side violating cell center to its mirror-cell center.
+7. Overlap/touch policy: only the side named in the prompt determines answer cardinality; mirror cells appear only as segment endpoints.
 
-## Notes
-1. Symmetry axes and paired cells are recorded in private trace metadata.
-2. Internal trace metadata keeps `internal_query_id=symmetry_violation_count`.
-3. Render metadata records the sampled shared panel style, coordinate-label font, and scene-local `cell_board.tile_style`.
+## 3) Prompt contract
+1. `prompt_bundle_id`: `puzzles_cell_board_v1`
+2. `scene_key`: `cell_board`
+3. `task_key`: `cell_board_symmetry_query`
+4. Prompt query key: `symmetry_violation_count`; mirror axis and counted side are trace metadata and prompt slots, not public query ids.
+5. Required slots: `mirror_axis`, `counted_side`, plus output-mode slots from the prompt bundle.
+6. JSON example validity rule: segment-set cardinality equals the integer answer.
+7. Output modes: `answer_only`, `answer_and_annotation`
+
+## 4) Determinism + constraints
+1. Seed namespaces used: task-local symmetry namespaces plus shared cell-board layout/style/font/noise namespaces.
+2. Unique-answer policy: construction fixes and verifies the counted-side mismatch total on a 3x3 to 5x5 board.
+3. Reject/resample conditions: insufficient mirror pairs or mismatch-count drift raises and retries.
+4. No-auto-relaxation guarantee: semantic constraints are not relaxed.

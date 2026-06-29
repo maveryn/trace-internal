@@ -9,38 +9,12 @@ generation:
         chalk_sticks: 1.0
         neon_rods: 1.0
         metal_rods: 1.0
-    task_puzzles__matchstick__matchstick_loose_endpoint_extremum_label:
-      option_count_min: 6
-      option_count_max: 6
-      grid_size: 3
-      shape_edge_count_min: 8
-      shape_edge_count_max: 15
-      scene_variant_weights:
-        wooden_matches: 1.0
-        colored_rods: 1.0
-        chalk_sticks: 1.0
-        neon_rods: 1.0
-        metal_rods: 1.0
 visual:
   noise:
     apply_prob: 0.15
 rendering:
   task_overrides:
     task_puzzles__matchstick__matchstick_number_transform_label:
-      canvas_width: 1200
-      canvas_height: 900
-      margin_px: 58
-      source_panel_height_px: 230
-      option_panel_width_px: 320
-      option_panel_height_px: 218
-      option_gap_px: 28
-      panel_corner_radius_px: 20
-      panel_border_width_px: 3
-      stick_width_px: 13
-      option_label_font_size_px: 26
-      caption_font_size_px: 21
-      source_caption_font_size_px: 24
-    task_puzzles__matchstick__matchstick_loose_endpoint_extremum_label:
       canvas_width: 1200
       canvas_height: 900
       margin_px: 58

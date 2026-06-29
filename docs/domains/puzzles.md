@@ -33,7 +33,7 @@ stable.
 ## Annotation Policy
 Annotation should stay local to the unknown slot, selected option image,
 counted cells, path cells, rule witnesses, changed cells, or decisive clue
-regions. Use sequence annotation for ordered paths and keyed annotation when
+regions. Use sequence annotation for ordered paths and map annotation when
 source/target or before/after roles matter.
 
 For option-image puzzles, selected option bboxes are valid when the option is

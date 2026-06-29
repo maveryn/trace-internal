@@ -1,0 +1,54 @@
+generation:
+  shared:
+    option_count_min: 4
+    option_count_max: 4
+    grid_size_min: 4
+    grid_size_max: 5
+    sheet_mark_count_min: 2
+    sheet_mark_count_max: 5
+    overlap_count_min: 1
+    overlap_count_max: 2
+    scene_variant_options:
+    - overlay_strip
+    - overlay_card
+    - overlay_outline
+    scene_variant_weights:
+      overlay_strip: 1.0
+      overlay_card: 1.0
+      overlay_outline: 1.0
+rendering:
+  shared:
+    canvas_width: 980
+    canvas_height: 680
+    scene_margin_left_px: 46
+    scene_margin_right_px: 46
+    scene_margin_top_px: 42
+    scene_margin_bottom_px: 42
+    reference_panel_height_px: 238
+    reference_panel_padding_px: 20
+    source_paper_size_px: 136
+    source_gap_px: 92
+    reference_to_options_gap_px: 24
+    option_paper_size_px: 136
+    option_gap_px: 22
+    option_row_gap_px: 16
+    option_label_gap_px: 12
+    paper_corner_radius_px: 18
+    panel_corner_radius_px: 28
+    border_width_px: 3
+    option_label_font_size_px: 28
+    combine_symbol_font_size_px: 46
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+    mark_shape_options:
+    - circle
+    - square
+    - diamond
+    - rounded_square
+prompt:
+  shared:
+    bundle_id: puzzles_overlay_v1
+    scene_key: overlay
+visual:
+  noise:
+    apply_prob: 0.0

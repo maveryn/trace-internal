@@ -1,0 +1,63 @@
+{
+  "bundle_id": "puzzles_code_grid_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "code_prompt_defaults": {
+    "object_description": "a row-letter and column-number labeled code grid"
+  },
+  "templates": {
+    "scene": {
+      "code_grid": [
+        "The image shows {object_description}.",
+        "The figure shows {object_description}.",
+        "This puzzle shows {object_description}.",
+        "The visual shows {object_description}.",
+        "The diagram shows {object_description}."
+      ]
+    },
+    "task": {
+      "decoded_word_label_query": ["", "", "", "", ""]
+    },
+    "query": {
+      "decoded_word_label": [
+        "Decode the coordinate sequence {coordinate_sequence}. What uppercase word does it spell?",
+        "Use the row letters and column numbers to read {coordinate_sequence}. What word is decoded?",
+        "Read each coordinate in order from {coordinate_sequence} and report the uppercase word.",
+        "What word is spelled by the code string {coordinate_sequence}?",
+        "Follow the coordinates {coordinate_sequence}. What uppercase word do the cells give?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Set answer to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nReturn the answer in JSON.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nUse this JSON shape for the final response.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nUse the answer-only JSON shape shown here.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nReturn both fields in JSON.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse this JSON shape for the final response.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "query:decoded_word_label": {
+      "answer_instruction": "the decoded uppercase word",
+      "annotation_hint": "Set annotation to a JSON array of ordered image-pixel bounding boxes [x0,y0,x1,y1], one for each decoded grid cell in coordinate order.",
+      "json_example": "{\"annotation\":[[154,172,218,236],[282,236,346,300],[346,364,410,428],[218,236,282,300]],\"answer\":\"MATH\"}",
+      "json_example_answer_only": "{\"answer\":\"MATH\"}"
+    }
+  },
+  "dynamic_slots": {
+    "object_description": {"type": "string"},
+    "coordinate_sequence": {"type": "string"},
+    "coordinate_format": {"type": "string"}
+  },
+  "required_slots_by_key": {
+    "scene:code_grid": ["object_description"]
+  }
+}

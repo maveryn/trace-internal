@@ -2847,9 +2847,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_puzzles__logic_grid__grid_uniqueness_completion_label": _entry(
         "puzzles", "logic_grid", "puzzles", "logic_grid"
     ),
-    "task_puzzles__matchstick__matchstick_loose_endpoint_extremum_label": _entry(
-        "puzzles", "matchstick", "puzzles", "matchstick"
-    ),
     "task_puzzles__matchstick__matchstick_number_transform_label": _entry(
         "puzzles", "matchstick", "puzzles", "matchstick"
     ),
@@ -2918,9 +2915,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     ),
     "task_puzzles__pipe_flow__pipe_flow_repair_tile_label": _entry(
         "puzzles", "pipe_flow", "puzzles", "pipe_flow"
-    ),
-    "task_puzzles__polyomino_missing__marked_region_piece_label": _entry(
-        "puzzles", "polyomino_missing", "puzzles", "polyomino_missing"
     ),
     "task_puzzles__polyomino_missing__rectangle_complement_piece": _entry(
         "puzzles", "polyomino_missing", "puzzles", "polyomino_missing"

@@ -1,0 +1,141 @@
+{
+  "bundle_id": "puzzles_cube_net_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "cube_net": [
+        "The image shows {object_description}.",
+        "The puzzle diagram shows {object_description}.",
+        "This puzzle diagram shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The visual shows {object_description}."
+      ]
+    },
+    "task": {
+      "face_relation_label_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "rolling_result_label_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "folded_path_endpoint_label_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "folded_path_face_sequence_label_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "opposite_face_label": [
+        "Which option shows the face opposite the marked face when the net is folded into a cube?",
+        "When folded into a cube, which option is opposite the marked face?",
+        "Choose the option for the face opposite the marked reference face.",
+        "Which labeled option corresponds to the cube face opposite the marked face?",
+        "Identify the option whose face is opposite the marked face after folding."
+      ],
+      "marked_edge_neighbor_face_label": [
+        "Which option shows the face that touches the marked edge when the net is folded into a cube?",
+        "When folded into a cube, which option is adjacent across the marked edge?",
+        "Choose the option for the face connected through the marked edge after folding.",
+        "Which labeled option touches the marked edge of the reference face on the folded cube?",
+        "Identify the option whose face shares the marked edge after the net is folded."
+      ],
+      "final_top_face_label": [
+        "After rolling the cube along the arrow path, which option is on the top face?",
+        "Roll the cube along the shown path. Which option gives the final top face?",
+        "Which labeled option is on top after the cube follows the path?",
+        "After the shown cube rolls, choose the final top-face option.",
+        "Use the roll path to identify the option on the final top face."
+      ],
+      "final_front_face_label": [
+        "After rolling the cube along the arrow path, which option is on the final front face?",
+        "Roll the cube along the shown path. Which option gives the final front face?",
+        "Which labeled option is on the front after the cube follows the path?",
+        "After the shown cube rolls, choose the final front-face option.",
+        "Use the roll path to identify the option on the final front face."
+      ],
+      "final_right_face_label": [
+        "After rolling the cube along the arrow path, which option is on the final right face?",
+        "Roll the cube along the shown path. Which option gives the final right face?",
+        "Which labeled option is on the right after the cube follows the path?",
+        "After the shown cube rolls, choose the final right-face option.",
+        "Use the roll path to identify the option on the final right face."
+      ],
+      "folded_path_endpoint_prompt": [
+        "Starting from START, follow the folded-edge moves as if the net is folded into a cube. Which option is the endpoint face?",
+        "Follow the numbered folded-edge moves from START on the folded cube. Which option gives the final face?",
+        "Use the folded-edge moves from START. Which option names the face reached at the end?",
+        "Trace the moves across folded cube edges from START. Which option is the ending face?",
+        "Starting at START, follow the edge moves on the folded cube. Which option is the endpoint?"
+      ],
+      "folded_path_sequence_prompt": [
+        "Starting from START, follow the folded-edge moves as if the net is folded into a cube. Which option gives the visited face-label sequence?",
+        "Follow the numbered folded-edge moves from START on the folded cube. Which option lists the visited face labels in order?",
+        "Use the folded-edge moves from START. Which option is the full face-label sequence?",
+        "Trace the moves across folded cube edges from START. Which option gives the visited labels in order?",
+        "Starting at START, follow the edge moves on the folded cube. Which option is the visited face sequence?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Set answer to the single option label as a capital letter.\nReturn JSON like {json_example_answer_only}.",
+        "Set answer to the single option label as a capital letter.\nUse the answer-only JSON shape shown here: {json_example_answer_only}.",
+        "Set answer to the single option label as a capital letter.\nWrite only a JSON object like {json_example_answer_only}.",
+        "Set answer to the single option label as a capital letter.\nReturn the option label in JSON: {json_example_answer_only}.",
+        "Set answer to the single option label as a capital letter.\nUse this JSON shape for the final response: {json_example_answer_only}."
+      ],
+      "answer_and_annotation": [
+        "Set answer to the single option label as a capital letter.\n{annotation_hint}\nReturn JSON like {json_example}.",
+        "Set answer to the single option label as a capital letter.\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here: {json_example}.",
+        "Set answer to the single option label as a capital letter.\n{annotation_hint}\nWrite only a JSON object like {json_example}.",
+        "Set answer to the single option label as a capital letter.\n{annotation_hint}\nReturn both fields in JSON: {json_example}.",
+        "Set answer to the single option label as a capital letter.\n{annotation_hint}\nUse this JSON shape for the final response: {json_example}."
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "task:face_relation_label_query": {
+      "object_description": "a labeled cube net with one marked reference face and labeled face options",
+      "annotation_hint": "Set annotation to a bbox_map in image pixels with keys marked_face and selected_option. Each key maps to one bounding box [x0,y0,x1,y1].",
+      "json_example": "{\"annotation\":{\"marked_face\":[320,220,406,306],\"selected_option\":[812,220,966,326]},\"answer\":\"D\"}",
+      "json_example_answer_only": "{\"answer\":\"D\"}"
+    },
+    "task:rolling_result_label_query": {
+      "object_description": "a labeled start cube, an arrow path showing cube rolls, and labeled face options",
+      "annotation_hint": "Set annotation to a bbox_map in image pixels with keys start_cube, roll_path, and selected_option. Each key maps to one bounding box [x0,y0,x1,y1].",
+      "json_example": "{\"annotation\":{\"start_cube\":[54,54,384,438],\"roll_path\":[420,54,1046,438],\"selected_option\":[428,610,650,716]},\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
+    },
+    "task:folded_path_endpoint_label_query": {
+      "object_description": "a labeled cube net with a marked start face, numbered folded-edge move instructions, and labeled endpoint options",
+      "annotation_hint": "Set annotation to a bbox_map in image pixels with keys start_face, move_instructions, and selected_option. Each key maps to one bounding box [x0,y0,x1,y1].",
+      "json_example": "{\"annotation\":{\"start_face\":[210,216,296,302],\"move_instructions\":[558,54,1046,482],\"selected_option\":[428,610,650,716]},\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
+    },
+    "task:folded_path_face_sequence_label_query": {
+      "object_description": "a labeled cube net with a marked start face, numbered folded-edge move instructions, and labeled face-sequence options",
+      "annotation_hint": "Set annotation to a bbox_map in image pixels with keys start_face, move_instructions, and selected_option. Each key maps to one bounding box [x0,y0,x1,y1].",
+      "json_example": "{\"annotation\":{\"start_face\":[210,216,296,302],\"move_instructions\":[558,54,1046,482],\"selected_option\":[428,610,650,716]},\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
+    }
+  },
+  "dynamic_slots": {},
+  "required_slots_by_key": {}
+}

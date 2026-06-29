@@ -19,13 +19,6 @@
         "",
         "",
         ""
-      ],
-      "matchstick_loose_endpoint_extremum_query": [
-        "",
-        "",
-        "",
-        "",
-        ""
       ]
     },
     "query": {
@@ -42,20 +35,6 @@
         "Select the candidate number that can be formed by removing exactly one stick from the Source.",
         "Use one removed stick to change the Source number. Which labeled option is possible?",
         "Choose the option reachable from the Source number after removing exactly one stick."
-      ],
-      "most_loose_endpoints": [
-        "Which labeled arrangement has the largest number of loose endpoints?",
-        "Count loose endpoints in each arrangement. Which option has the most?",
-        "Select the arrangement with more loose endpoints than every other option.",
-        "Which labeled option contains the greatest loose-endpoint count?",
-        "Compare all arrangements and choose the one with the most loose endpoints."
-      ],
-      "fewest_loose_endpoints": [
-        "Which labeled arrangement has the smallest number of loose endpoints?",
-        "Count loose endpoints in each arrangement. Which option has the fewest?",
-        "Select the arrangement with fewer loose endpoints than every other option.",
-        "Which labeled option contains the lowest loose-endpoint count?",
-        "Compare all arrangements and choose the one with the fewest loose endpoints."
       ]
     },
     "output": {
@@ -81,12 +60,6 @@
       "annotation_hint": "Set annotation to a bbox_map in image pixels with keys source_number and selected_option. Each key maps to one bounding box [x0, y0, x1, y1].",
       "json_example": "{\"annotation\":{\"source_number\":[58,58,1142,288],\"selected_option\":[440,332,760,550]},\"answer\":\"B\"}",
       "json_example_answer_only": "{\"answer\":\"B\"}"
-    },
-    "task:matchstick_loose_endpoint_extremum_query": {
-      "object_description": "six labeled matchstick arrangements",
-      "annotation_hint": "Set annotation to one image-pixel bounding box [x0, y0, x1, y1] around the selected option panel.",
-      "json_example": "{\"annotation\":[786,606,1106,824],\"answer\":\"F\"}",
-      "json_example_answer_only": "{\"answer\":\"F\"}"
     }
   },
   "dynamic_slots": {},

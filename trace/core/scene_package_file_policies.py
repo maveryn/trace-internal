@@ -265,6 +265,106 @@ THREE_D_SCENE_PACKAGE_FILE_POLICY = ScenePackageFilePolicy(
 )
 
 
+PAGES_SCENE_PACKAGE_FILE_POLICY = ScenePackageFilePolicy(
+    domain="pages",
+    allowed_private_scene_files=frozenset(
+        {
+            "_lifecycle.py",
+        }
+    ),
+    role_shared_files=frozenset(
+        {
+            "state.py",
+            "defaults.py",
+            "sampling.py",
+            "layout.py",
+            "rendering.py",
+            "annotations.py",
+            "prompts.py",
+            "output.py",
+            "styles.py",
+            "assets.py",
+            "labels.py",
+            "fields.py",
+            "sections.py",
+            "controls.py",
+            "tables.py",
+            "forms.py",
+            "cards.py",
+            "calendar_math.py",
+            "routes.py",
+            "nodes.py",
+            "edges.py",
+            "relations.py",
+            "metrics.py",
+            "option_rendering.py",
+        }
+    ),
+)
+
+
+PHYSICS_SCENE_PACKAGE_FILE_POLICY = ScenePackageFilePolicy(
+    domain="physics",
+    allowed_private_scene_files=frozenset(
+        {
+            "_lifecycle.py",
+        }
+    ),
+    role_shared_files=frozenset(
+        {
+            "state.py",
+            "defaults.py",
+            "sampling.py",
+            "formulas.py",
+            "mechanics.py",
+            "circuitry.py",
+            "ray_model.py",
+            "layout.py",
+            "rendering.py",
+            "projection.py",
+            "annotations.py",
+            "prompts.py",
+            "output.py",
+            "styles.py",
+            "components.py",
+            "option_rendering.py",
+        }
+    ),
+)
+
+
+PUZZLES_SCENE_PACKAGE_FILE_POLICY = ScenePackageFilePolicy(
+    domain="puzzles",
+    allowed_private_scene_files=frozenset(
+        {
+            "_lifecycle.py",
+        }
+    ),
+    role_shared_files=frozenset(
+        {
+            "state.py",
+            "defaults.py",
+            "sampling.py",
+            "layout.py",
+            "styles.py",
+            "rendering.py",
+            "annotations.py",
+            "prompts.py",
+            "output.py",
+            "rules.py",
+            "constraints.py",
+            "solver.py",
+            "transforms.py",
+            "topology.py",
+            "metrics.py",
+            "symbols.py",
+            "option_rendering.py",
+            "spatial_primitives.py",
+        }
+    ),
+)
+
+
 SCENE_PACKAGE_FILE_POLICIES: dict[str, ScenePackageFilePolicy] = {
     CHARTS_SCENE_PACKAGE_FILE_POLICY.domain: CHARTS_SCENE_PACKAGE_FILE_POLICY,
     GAMES_SCENE_PACKAGE_FILE_POLICY.domain: GAMES_SCENE_PACKAGE_FILE_POLICY,
@@ -272,6 +372,9 @@ SCENE_PACKAGE_FILE_POLICIES: dict[str, ScenePackageFilePolicy] = {
     GRAPH_SCENE_PACKAGE_FILE_POLICY.domain: GRAPH_SCENE_PACKAGE_FILE_POLICY,
     ICONS_SCENE_PACKAGE_FILE_POLICY.domain: ICONS_SCENE_PACKAGE_FILE_POLICY,
     ILLUSTRATIONS_SCENE_PACKAGE_FILE_POLICY.domain: ILLUSTRATIONS_SCENE_PACKAGE_FILE_POLICY,
+    PAGES_SCENE_PACKAGE_FILE_POLICY.domain: PAGES_SCENE_PACKAGE_FILE_POLICY,
+    PHYSICS_SCENE_PACKAGE_FILE_POLICY.domain: PHYSICS_SCENE_PACKAGE_FILE_POLICY,
+    PUZZLES_SCENE_PACKAGE_FILE_POLICY.domain: PUZZLES_SCENE_PACKAGE_FILE_POLICY,
     SYMBOLIC_SCENE_PACKAGE_FILE_POLICY.domain: SYMBOLIC_SCENE_PACKAGE_FILE_POLICY,
     THREE_D_SCENE_PACKAGE_FILE_POLICY.domain: THREE_D_SCENE_PACKAGE_FILE_POLICY,
 }
@@ -290,6 +393,9 @@ __all__ = [
     "GRAPH_SCENE_PACKAGE_FILE_POLICY",
     "ICONS_SCENE_PACKAGE_FILE_POLICY",
     "ILLUSTRATIONS_SCENE_PACKAGE_FILE_POLICY",
+    "PAGES_SCENE_PACKAGE_FILE_POLICY",
+    "PHYSICS_SCENE_PACKAGE_FILE_POLICY",
+    "PUZZLES_SCENE_PACKAGE_FILE_POLICY",
     "SCENE_PACKAGE_FILE_POLICIES",
     "ScenePackageFilePolicy",
     "SYMBOLIC_SCENE_PACKAGE_FILE_POLICY",

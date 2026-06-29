@@ -1,0 +1,92 @@
+{
+  "bundle_id": "puzzles_voxel_ladder_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "code_prompt_defaults": {
+    "object_description": "an isometric voxel maze with START, GOAL, colored checkpoint cubes, and black ladders"
+  },
+  "templates": {
+    "scene": {
+      "voxel_ladder": [
+        "The image shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The scene shows {object_description}.",
+        "This visual shows {object_description}.",
+        "The picture shows {object_description}."
+      ]
+    },
+    "task": {
+      "checkpoint_sequence_label_query": ["", "", "", "", ""],
+      "reachable_checkpoint_count_query": ["", "", "", "", ""],
+      "unreachable_checkpoint_label_query": ["", "", "", "", ""]
+    },
+    "query": {
+      "checkpoint_sequence_label": [
+        "Walk from START to GOAL along adjacent cube tops, using black ladders to change height. Which option letter shows the checkpoint color sequence on that shortest route?",
+        "Follow adjacent cube tops and black ladders from START to GOAL. Which option gives the checkpoint color order on the shortest route?",
+        "Use the cube tops and ladders to trace the shortest START-to-GOAL route. What option letter shows the checkpoint color order?",
+        "Which displayed option lists the checkpoint colors encountered on the shortest valid route from START to GOAL?",
+        "Starting at START, follow the shortest valid route to GOAL. Which option letter matches the checkpoint color sequence?"
+      ],
+      "reachable_checkpoint_count": [
+        "How many colored checkpoint cubes are reachable from START by walking on adjacent cube tops and using black ladders?",
+        "Starting at START, count the colored checkpoint cubes connected by valid cube-top moves and black ladders.",
+        "How many checkpoint cubes can be reached from START without leaving the cube platforms?",
+        "Count all colored checkpoint cubes reachable from START through adjacent cube tops and ladders.",
+        "Using adjacent cube tops and black ladders only, how many colored checkpoints can START reach?"
+      ],
+      "unreachable_checkpoint_label": [
+        "Exactly one colored checkpoint cube cannot be reached from START by walking on adjacent cube tops and using black ladders. What is its color name?",
+        "Which colored checkpoint cube is unreachable from START through the cube tops and ladders?",
+        "Find the only checkpoint cube that is not connected to START by valid cube-top and ladder moves. What is its color name?",
+        "What color is the single unreachable checkpoint cube?",
+        "Starting from START, which checkpoint color cannot be reached through the connected cube tops and black ladders?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Set answer to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nUse this JSON shape for the final response.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nReturn the answer in JSON.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to {answer_instruction}.\nUse the answer-only JSON shape shown here.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse this JSON shape for the final response.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nReturn both fields in JSON.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example}",
+        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "query:checkpoint_sequence_label": {
+      "answer_instruction": "the selected option letter",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected route-sequence option panel.",
+      "json_example": "{\"annotation\":[760,160,1030,202],\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
+    },
+    "query:reachable_checkpoint_count": {
+      "answer_instruction": "the number of reachable checkpoint cubes as an integer",
+      "annotation_hint": "Set annotation to a JSON array of image-pixel bounding boxes [x0,y0,x1,y1], one around each reachable checkpoint cube.",
+      "json_example": "{\"annotation\":[[318,404,390,474],[472,276,544,346],[664,128,736,198]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:unreachable_checkpoint_label": {
+      "answer_instruction": "the color name of the unreachable checkpoint cube",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the unreachable checkpoint cube.",
+      "json_example": "{\"annotation\":[758,318,830,388],\"answer\":\"purple\"}",
+      "json_example_answer_only": "{\"answer\":\"purple\"}"
+    }
+  },
+  "dynamic_slots": {
+    "object_description": {"type": "string"},
+    "answer_schema": {"type": "string"},
+    "option_count": {"type": "integer"},
+    "scene_variant": {"type": "string"}
+  },
+  "required_slots_by_key": {
+    "scene:voxel_ladder": ["object_description"]
+  }
+}

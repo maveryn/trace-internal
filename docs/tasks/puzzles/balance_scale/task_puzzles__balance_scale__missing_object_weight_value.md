@@ -1,25 +1,37 @@
 # `task_puzzles__balance_scale__missing_object_weight_value`
 
-## Contract
-1. Domain: `puzzles`
-2. Scene id: `balance_scale`
-3. Source implementation domain/group: `puzzles/logic`
-4. Task id: `task_puzzles__balance_scale__missing_object_weight_value`
-5. Objective contract: missing object weight value.
-6. Supported sampled `query_id`: `missing_object_weight_value`
-7. `answer_gt.type`: `integer`
-8. `annotation_gt.type`: `keyed_bbox_map`
-9. Annotation policy: minimal role-bound witnesses for the query object and the missing-value box.
+## Program Contract
+`solve_value(direct_and_compound_balance_equations, target=query_object_weight, unknowns=A|B|C, panels=3); scene=balance_scale; scope=missing_object_weight_value`
 
-## Implementation
-1. Registered class: `trace.tasks.puzzles.logic.balance_scale.PuzzlesLogicMissingObjectWeightValueTask`
-2. Prompt lookup domain/group: `puzzles/logic`
-3. Prompt bundle: `puzzles_logic_v0`
-4. Scene variants: `balance_sheet`, `balance_card`, `balance_outline`
-5. Target cue modes: `query_row_only`, `query_row_and_highlight`
+## 2) Scene + task contract
+1. Entities/relations: Three balanced pan-scale panels with three labeled unknown object tokens, numbered weights, at least one direct single-object value panel, at least one compound/context panel, and a query row showing one object equal to a question-mark value.
+2. Supported `query_id` values: `single`
+3. `answer_gt.type`: `integer`
+4. Annotation schema: `bbox`
+5. Alternate annotation forms: none
+6. Annotation witness policy: the scalar bbox marks the question-mark value box in the query row.
+7. Overlap/touch policy: annotation must be the rendered question-mark value box, not the surrounding query row, object token, panel, or scale bbox.
 
-## Notes
-1. Every visible scale panel is balanced by construction.
-2. The target answer is sampled from `1..20`.
-3. The generator verifies that the target object value is uniquely determined over the configured answer support before rendering.
-4. Supporting scale equations remain in trace metadata; prompt-facing annotation stays on `query_object` and `missing_value_box`.
+## 3) Prompt contract
+1. `prompt_bundle_id`: `puzzles_balance_scale_v1`
+2. `scene_key`: `balance_scale`
+3. `task_key`: `balance_scale_query`
+4. Optional query-id prompt mapping: `missing_object_weight_value` is stored as `prompt_query_key`; the public `query_id` is `single`.
+5. Required slots:
+   - answer-only mode: `answer_hint`, `json_example_answer_only`
+   - answer+annotation mode: `annotation_hint`, `answer_hint`, `json_example`
+6. JSON example validity rule: the example must use one bbox and an integer answer valid for the task schema.
+7. Variant counts: 5 scene templates, 5 query templates, and 5 output templates per output mode.
+8. Output modes: `answer_only`, `answer_and_annotation`
+
+## 4) Determinism + constraints
+1. Seed namespaces used: task-local label/object/equation namespaces plus shared balance scene/style/font/unit-size namespaces.
+2. Unique-answer policy: the three equations must imply exactly one target object value over the configured support.
+3. Reject/resample conditions: any panel count other than three, missing direct target-value panel, unbalanced generated panels, target ambiguity, missing annotation bbox, or unsupported answer values raise and retry within `max_attempts`.
+4. No-auto-relaxation guarantee: semantic constraints are not relaxed; generation retries rather than accepting ambiguous equations.
+
+## 5) Tests
+1. Determinism test: `tests/test_puzzles_balance_scale_tasks.py::test_balance_scale_task_is_deterministic`
+2. Answer/annotation consistency test: `tests/test_puzzles_balance_scale_tasks.py::test_balance_scale_task_emits_public_contract`
+3. Prompt metadata/placeholder test: covered by scene-package review gates and prompt-system tests.
+4. Constraint-specific tests: `tests/test_puzzles_balance_scale_tasks.py::test_balance_scale_equations_are_balanced_and_unique`

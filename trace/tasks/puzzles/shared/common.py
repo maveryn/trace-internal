@@ -117,7 +117,7 @@ def projected_puzzle_keyed_bbox_annotation(
     bbox_map: Mapping[str, Sequence[float]],
     role_item_ids: Mapping[str, str],
 ) -> Dict[str, Any]:
-    """Project role-bound puzzle item ids into prompt-facing `keyed_bbox_map` annotation."""
+    """Project role-bound puzzle item ids into prompt-facing `bbox_map` annotation."""
 
     keyed_bboxes: Dict[str, list[float]] = {}
     for role, item_id in role_item_ids.items():
@@ -126,8 +126,8 @@ def projected_puzzle_keyed_bbox_annotation(
             raise RuntimeError(f"missing bbox annotation for role {role!r}: item id {key!r}")
         keyed_bboxes[str(role)] = list(bbox_map[key])
     return {
-        "keyed_bbox_map": {str(role): list(bbox) for role, bbox in keyed_bboxes.items()},
-        "pixel_keyed_bbox_map": {str(role): list(bbox) for role, bbox in keyed_bboxes.items()},
+        "bbox_map": {str(role): list(bbox) for role, bbox in keyed_bboxes.items()},
+        "pixel_bbox_map": {str(role): list(bbox) for role, bbox in keyed_bboxes.items()},
     }
 
 
@@ -135,7 +135,7 @@ def projected_puzzle_keyed_bbox_set_annotation(
     bbox_map: Mapping[str, Sequence[float]],
     role_item_ids: Mapping[str, Sequence[str]],
 ) -> Dict[str, Any]:
-    """Project role-bound puzzle item id sets into `keyed_bbox_set_map` annotation."""
+    """Project role-bound puzzle item id sets into `bbox_set_map` annotation."""
 
     keyed_bbox_sets: Dict[str, list[list[float]]] = {}
     for role, item_ids in role_item_ids.items():
@@ -147,12 +147,12 @@ def projected_puzzle_keyed_bbox_set_annotation(
             role_bboxes.append(list(bbox_map[key]))
         keyed_bbox_sets[str(role)] = role_bboxes
     return {
-        "type": "keyed_bbox_set_map",
-        "keyed_bbox_set_map": {
+        "type": "bbox_set_map",
+        "bbox_set_map": {
             str(role): [list(bbox) for bbox in bboxes]
             for role, bboxes in keyed_bbox_sets.items()
         },
-        "pixel_keyed_bbox_set_map": {
+        "pixel_bbox_set_map": {
             str(role): [list(bbox) for bbox in bboxes]
             for role, bboxes in keyed_bbox_sets.items()
         },

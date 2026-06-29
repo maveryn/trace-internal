@@ -1,0 +1,60 @@
+generation:
+  task_overrides:
+    task_puzzles__tangram__missing_piece_label:
+      option_count_min: 4
+      option_count_max: 6
+      scene_variant_weights:
+        tangram_square: 1.0
+        tangram_diamond: 1.0
+        tangram_tilted: 1.0
+    task_puzzles__tangram__contact_count:
+      contact_count_min: 2
+      contact_count_max: 7
+      scene_variant_weights:
+        tangram_square: 1.0
+        tangram_diamond: 1.0
+        tangram_tilted: 1.0
+
+rendering:
+  shared:
+    canvas_width: 1040
+    canvas_height: 860
+    scene_margin_left_px: 46
+    scene_margin_right_px: 46
+    scene_margin_top_px: 36
+    scene_margin_bottom_px: 42
+    assembly_panel_width_px: 560
+    assembly_panel_height_px: 410
+    assembly_panel_padding_px: 40
+    assembly_to_options_gap_px: 20
+    option_panel_width_px: 142
+    option_panel_height_px: 146
+    option_gap_px: 18
+    option_row_gap_px: 12
+    option_shape_box_size_px: 88
+    option_label_gap_px: 6
+    panel_corner_radius_px: 18
+    content_corner_radius_px: 12
+    border_width_px: 3
+    seam_width_px: 3
+    highlight_width_px: 8
+    option_label_font_size_px: 24
+    panel_fill_rgb: [248, 249, 252]
+    assembly_panel_fill_rgb: [252, 252, 255]
+    option_panel_fill_rgb: [251, 251, 255]
+    option_shape_fill_rgb: [238, 243, 249]
+    missing_fill_rgb: [18, 20, 24]
+    marked_outline_rgb: [18, 20, 24]
+    border_color_rgb: [86, 94, 108]
+    seam_color_rgb: [42, 49, 59]
+    text_color_rgb: [30, 34, 40]
+    text_stroke_rgb: [255, 255, 255]
+
+prompt:
+  shared:
+    bundle_id: puzzles_tangram_v1
+    scene_key: tangram
+
+visual:
+  noise:
+    apply_prob: 0.0

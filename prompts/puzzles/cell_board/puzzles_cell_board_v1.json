@@ -1,0 +1,164 @@
+{
+  "bundle_id": "puzzles_cell_board_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "cell_board": [
+        "The image shows a rectangular board made of colored cells.",
+        "The image shows a colored grid board.",
+        "The image shows a cell board with one colored tile in each grid position.",
+        "The image shows a rectangular tile grid.",
+        "The image shows a board of colored square or rectangular cells."
+      ]
+    },
+    "task": {
+      "cell_board_count_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "cell_board_topology_query": [
+        "Use side-adjacent cells for movement or connectedness; diagonal touching does not connect cells.",
+        "For any path, reachability, or component question, use only up, down, left, and right steps.",
+        "Treat cells sharing an edge as neighbors; cells meeting only at a corner are not neighbors.",
+        "Use the board cells exactly as drawn; only edge-sharing cells are adjacent.",
+        "When checking connected regions or movement, count orthogonal cell steps only."
+      ],
+      "cell_board_symmetry_query": [
+        "Use the stated mirror axis and count only the requested side.",
+        "Compare each counted-side cell with its mirror cell across the stated axis.",
+        "Only cells on the named side contribute to the mismatch count.",
+        "Mirror matches require the two paired cells to have the same color.",
+        "Use the visible colored cells to check the stated mirror symmetry."
+      ]
+    },
+    "query": {
+      "row_color_cell_count": [
+        "How many {query_color} cells are in row {query_row}?",
+        "Count the {query_color} cells in row {query_row}.",
+        "What is the number of {query_color} cells in row {query_row}?",
+        "In row {query_row}, how many cells are {query_color}?",
+        "Find how many {query_color} cells appear in row {query_row}."
+      ],
+      "column_color_cell_count": [
+        "How many {query_color} cells are in column {query_col}?",
+        "Count the {query_color} cells in column {query_col}.",
+        "What is the number of {query_color} cells in column {query_col}?",
+        "In column {query_col}, how many cells are {query_color}?",
+        "Find how many {query_color} cells appear in column {query_col}."
+      ],
+      "edge_color_cell_count": [
+        "How many {query_color} cells are on the outside edge of the board?",
+        "Count the {query_color} cells on the border of the board.",
+        "What is the number of {query_color} cells on the board edge?",
+        "How many border cells are {query_color}?",
+        "Find how many {query_color} cells lie on the outer edge."
+      ],
+      "largest_component_size": [
+        "Among the connected {query_color} groups, how many cells are in the largest group?",
+        "Find the size of the largest side-connected {query_color} component.",
+        "What is the largest number of cells in any connected {query_color} group?",
+        "How many cells does the biggest connected {query_color} region contain?",
+        "Count the cells in the largest connected group of {query_color} cells."
+      ],
+      "reachable_region_size": [
+        "Dark cells are walls and light cells are passable. Starting from the green S cell, how many passable cells are reachable by side-adjacent moves, including S?",
+        "From the green S cell, count every reachable light passable cell, including S; dark wall cells block movement.",
+        "How many light passable cells can be reached from the green S cell using only up/down/left/right moves, including S?",
+        "Using side-adjacent moves from S, count the reachable passable cells; dark cells are walls and S is included.",
+        "Count the light-cell reachable region from the green S cell, including the start cell; do not cross dark walls."
+      ],
+      "shortest_path_length_value": [
+        "Dark cells are walls and light cells are passable. What is the shortest path length from the green S cell to the red G cell?",
+        "Find the fewest side-adjacent steps from S to G through light passable cells; dark cells are walls.",
+        "How many orthogonal steps are in the shortest path from S to G without crossing dark wall cells?",
+        "What is the minimum number of cell moves needed to go from S to G through passable light cells?",
+        "Count the shortest side-step path length between S and G; dark cells cannot be used."
+      ],
+      "symmetry_violation_count": [
+        "Using the {mirror_axis} mirror axis, how many cells on the {counted_side} side do not match their mirror cell?",
+        "Check {mirror_axis} symmetry. Count the mismatching cells on the {counted_side} side only.",
+        "How many {counted_side}-side cells violate {mirror_axis} mirror symmetry?",
+        "For the {mirror_axis} mirror check, count cells on the {counted_side} side whose mirror has a different color.",
+        "Count the {counted_side}-side cells that break {mirror_axis} symmetry."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{answer_hint}\nReturn JSON like {json_example_answer_only}.",
+        "{answer_hint}\nUse the answer-only JSON shape shown here: {json_example_answer_only}.",
+        "{answer_hint}\nWrite only a JSON object like {json_example_answer_only}.",
+        "{answer_hint}\nReturn the integer answer in JSON: {json_example_answer_only}.",
+        "{answer_hint}\nUse this JSON shape for the final response: {json_example_answer_only}."
+      ],
+      "answer_and_annotation": [
+        "{answer_hint}\n{annotation_hint}\nReturn JSON like {json_example}.",
+        "{answer_hint}\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here: {json_example}.",
+        "{answer_hint}\n{annotation_hint}\nWrite only a JSON object like {json_example}.",
+        "{answer_hint}\n{annotation_hint}\nReturn both fields in JSON: {json_example}.",
+        "{answer_hint}\n{annotation_hint}\nUse this JSON shape for the final response: {json_example}."
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "query:row_color_cell_count": {
+      "answer_hint": "Set answer to the requested row color count as an integer.",
+      "annotation_hint": "Set annotation to a bbox_set: one image-pixel cell box [x0,y0,x1,y1] for each counted cell in the row; use [] if no cells match.",
+      "json_example": "{\"annotation\":[[100,100,136,136],[148,100,184,136]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    },
+    "query:column_color_cell_count": {
+      "answer_hint": "Set answer to the requested column color count as an integer.",
+      "annotation_hint": "Set annotation to a bbox_set: one image-pixel cell box [x0,y0,x1,y1] for each counted cell in the column; use [] if no cells match.",
+      "json_example": "{\"annotation\":[[100,100,136,136],[100,148,136,184]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    },
+    "query:edge_color_cell_count": {
+      "answer_hint": "Set answer to the requested border-cell color count as an integer.",
+      "annotation_hint": "Set annotation to a bbox_set: one image-pixel cell box [x0,y0,x1,y1] for each counted border cell; use [] if no cells match.",
+      "json_example": "{\"annotation\":[[100,100,136,136],[196,100,232,136]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    },
+    "query:largest_component_size": {
+      "answer_hint": "Set answer to the number of cells in the largest target-color component.",
+      "annotation_hint": "Set annotation to a bbox_set containing the image-pixel cell boxes in that largest connected component.",
+      "json_example": "{\"annotation\":[[100,100,136,136],[148,100,184,136],[148,148,184,184]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:reachable_region_size": {
+      "answer_hint": "Set answer to the number of light passable cells reachable from S by side-adjacent moves, including S.",
+      "annotation_hint": "Set annotation to a bbox_set containing the image-pixel cell boxes for all reachable passable cells, including S.",
+      "json_example": "{\"annotation\":[[100,100,136,136],[148,100,184,136],[148,148,184,184]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:shortest_path_length_value": {
+      "answer_hint": "Set answer to the shortest path length in orthogonal cell steps.",
+      "annotation_hint": "Set annotation to a segment_set: one image-pixel segment [[x1,y1],[x2,y2]] for each adjacent step along a shortest S-to-G path.",
+      "json_example": "{\"annotation\":[[[100,100],[136,100]],[[136,100],[136,136]],[[136,136],[172,136]],[[172,136],[172,172]]],\"answer\":4}",
+      "json_example_answer_only": "{\"answer\":4}"
+    },
+    "query:symmetry_violation_count": {
+      "answer_hint": "Set answer to the number of counted-side cells that fail the mirror check.",
+      "annotation_hint": "Set annotation to a segment_set: one image-pixel segment [[x1,y1],[x2,y2]] from each counted-side violating cell center to its mirror-cell center.",
+      "json_example": "{\"annotation\":[[[118,118],[214,118]],[[118,166],[214,166]]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    }
+  },
+  "dynamic_slots": {
+    "query_color": {"type": "string"},
+    "query_row": {"type": "integer"},
+    "query_col": {"type": "integer"},
+    "mirror_axis": {"type": "string"},
+    "counted_side": {"type": "string"}
+  },
+  "required_slots_by_key": {
+    "query:row_color_cell_count": ["query_color", "query_row"],
+    "query:column_color_cell_count": ["query_color", "query_col"],
+    "query:edge_color_cell_count": ["query_color"],
+    "query:largest_component_size": ["query_color"],
+    "query:symmetry_violation_count": ["mirror_axis", "counted_side"]
+  }
+}

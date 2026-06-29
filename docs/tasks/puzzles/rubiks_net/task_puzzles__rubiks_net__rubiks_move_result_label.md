@@ -1,17 +1,36 @@
 # `task_puzzles__rubiks_net__rubiks_move_result_label`
 
-## Summary
+## Public Taxonomy
 1. Domain: `puzzles`
-2. Scene: `spatial`
-3. Task id: `task_puzzles__rubiks_net__rubiks_move_result_label`
-4. Scene id: `rubiks_net`
-5. Goal: choose the labeled candidate cube net that results from applying a Rubik-style move sequence.
+2. Scene id: `rubiks_net`
+3. Source scene package: `rubiks_net`
+4. Task id: `task_puzzles__rubiks_net__rubiks_move_result_label`
 
-## Contract
-1. Branch metadata: `query_id`
-2. `query_id`: `one_move_result_label|two_move_result_label|inverse_sequence_result_label`
-3. Answer type: `option_letter`
-4. Annotation type: `bbox_set`
-5. Annotation targets: exactly one bbox for the selected candidate net option panel
-6. Scene variants: `classic_net|paper_net|cool_net`
-7. Trace contract: the start state, final state, move sequence, optional base sequence for inverse queries, candidate states, and answer state signature are recorded in metadata.
+## Query Contract
+1. Supported `query_id`: `direct_sequence_result_label`, `inverse_sequence_result_label`
+2. Internal question formats: `direct_sequence_result_label`, `inverse_sequence_result_label`
+3. Direct query asks for the candidate net after applying the shown move sequence.
+4. Inverse query asks for the candidate net after undoing the shown base sequence.
+5. Internal variation: direct sequence length, move tokens, option order, scene treatment, and style are generation/render metadata.
+
+## Program Contract
+`select_label(candidate_net_option, rule=apply_direct_or_inverse_move_sequence_to_cube_net); scene=rubiks_net; scope=rubiks_move_result_label`
+
+## Answer And Annotation
+1. `answer_gt.type = option_letter`
+2. `answer_gt.value` is the capital-letter label on the correct candidate-net panel.
+3. `annotation_gt.type = bbox`
+4. Annotation schema: scalar `bbox`
+5. Annotation target: one bbox around the selected candidate-net option panel.
+6. `scalar_annotation_checked = true`.
+
+## Trace Contract
+1. `execution_trace.rubiks_rule_code = rubiks_sequence_result_match`.
+2. `execution_trace.query_sequence`, `execution_trace.base_sequence`, and `execution_trace.option_specs` record the unique candidate states.
+3. `render_map.option_panel_bboxes_px` contains the selected option panel bbox projected into `annotation_gt`.
+
+## Prompt Contract
+1. Bundle: `puzzles_rubiks_net_v1`
+2. Scene key: `rubiks_net`
+3. Task key: `rubiks_move_result_label_query`
+4. Query keys: `direct_sequence_result_label`, `inverse_sequence_result_label`

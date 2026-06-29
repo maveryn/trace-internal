@@ -1,0 +1,114 @@
+generation:
+  shared:
+    option_count_min: 4
+    option_count_max: 4
+    grid_size: 6
+    cut_count_min: 1
+    cut_count_max: 2
+    fold_count_options:
+    - 1
+    - 2
+    fold_count_weights:
+      '1': 1.0
+      '2': 1.0
+    fold_axis_options:
+    - vertical
+    - horizontal
+    fold_axis_weights:
+      vertical: 1.0
+      horizontal: 1.0
+    scene_variant_options:
+    - fold_strip
+    - fold_card
+    - fold_outline
+    scene_variant_weights:
+      fold_strip: 1.0
+      fold_card: 1.0
+      fold_outline: 1.0
+rendering:
+  shared:
+    canvas_width: 1000
+    canvas_height: 780
+    scene_margin_left_px: 52
+    scene_margin_right_px: 52
+    scene_margin_top_px: 42
+    scene_margin_bottom_px: 42
+    reference_panel_height_px: 220
+    reference_panel_padding_px: 22
+    reference_to_options_gap_px: 26
+    option_gap_px: 30
+    option_row_gap_px: 16
+    option_label_gap_px: 10
+    paper_corner_radius_px: 18
+    panel_corner_radius_px: 28
+    border_width_px: 3
+    border_width_px_min: 2
+    border_width_px_max: 4
+    option_label_font_size_px: 28
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+    cut_hole_shape_options:
+    - circle
+    - square
+    - diamond
+    - rounded_square
+    cut_hole_shape_weights:
+      circle: 1.0
+      square: 1.0
+      diamond: 1.0
+      rounded_square: 1.0
+    panel_fill_rgb:
+    - 248
+    - 249
+    - 252
+    paper_fill_rgb:
+    - 255
+    - 252
+    - 245
+    paper_shadow_rgb:
+    - 236
+    - 230
+    - 215
+    border_color_rgb:
+    - 86
+    - 94
+    - 108
+    text_color_rgb:
+    - 30
+    - 34
+    - 40
+    text_stroke_rgb:
+    - 255
+    - 255
+    - 255
+    fold_line_rgb:
+    - 100
+    - 116
+    - 145
+    grid_line_rgb:
+    - 209
+    - 214
+    - 223
+    arrow_rgb:
+    - 54
+    - 102
+    - 180
+    instruction_fill_rgb:
+    - 238
+    - 243
+    - 250
+    cut_hole_fill_rgb:
+    - 38
+    - 45
+    - 56
+    cut_hole_outline_rgb:
+    - 255
+    - 255
+    - 255
+prompt:
+  shared:
+    bundle_id: puzzles_paper_fold_cut_v1
+    scene_key: paper_fold_cut
+visual:
+  noise:
+    apply_prob: 0.0

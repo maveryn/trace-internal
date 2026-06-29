@@ -1,0 +1,1 @@
+"""Tangram puzzle scene package."""

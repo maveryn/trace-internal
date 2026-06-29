@@ -1,0 +1,99 @@
+{
+  "bundle_id": "puzzles_logic_grid_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "logic_grid": [
+        "The image shows {object_description}.",
+        "The puzzle diagram shows {object_description}.",
+        "This visual shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The scene shows {object_description}."
+      ]
+    },
+    "task": {
+      "grid_uniqueness_completion_label_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "grid_king_non_touch_label_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "axis_uniqueness": [
+        "The missing cell must complete the {uniqueness_axis} so each shape appears exactly once there. Which option belongs in the ? cell?",
+        "Use the {uniqueness_axis} containing the ? cell: every shape should appear once in that {uniqueness_axis}. Which option completes it?",
+        "Look at the {uniqueness_axis} with the ? cell. It should contain one of each shape. Which labeled option fits?",
+        "Choose the option that makes the marked {uniqueness_axis} contain each shape exactly once.",
+        "Which option fills the ? cell so the marked {uniqueness_axis} has no repeated or missing shape?"
+      ],
+      "row_and_column_uniqueness": [
+        "The missing cell must make both its row and its column contain each shape exactly once. Which option belongs in the ? cell?",
+        "Choose the option that completes both the row and column through the ? cell, with one of each shape in each.",
+        "Which labeled option fits the ? cell so neither its row nor its column repeats a shape?",
+        "Use both the row and column containing the ? cell. Which option satisfies the one-of-each-shape rule?",
+        "Which option completes the grid at the ? cell using the row-and-column uniqueness rule?"
+      ],
+      "king_non_touch": [
+        "Identical shapes cannot touch by side or corner. Which option can fill the ? cell?",
+        "A shape may not be adjacent, including diagonally, to the same shape. Which option belongs in the ? cell?",
+        "Choose the option whose shape does not touch an identical neighboring shape around the ? cell.",
+        "Look at all side and corner neighbors of the ? cell. Which option is allowed there?",
+        "Which labeled option can fill the ? cell under the rule that matching shapes cannot touch, even diagonally?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Set answer to the selected option label as a capital letter.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to the selected option label as a capital letter.\nUse the answer-only JSON shape shown here.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to the selected option label as a capital letter.\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to the selected option label as a capital letter.\nReturn the option label in JSON.\nExample JSON:\n{json_example_answer_only}",
+        "Set answer to the selected option label as a capital letter.\nUse this JSON shape for the final response.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Set answer to the selected option label as a capital letter.\n{annotation_hint}\nExample JSON:\n{json_example}",
+        "Set answer to the selected option label as a capital letter.\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here.\nExample JSON:\n{json_example}",
+        "Set answer to the selected option label as a capital letter.\n{annotation_hint}\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example}",
+        "Set answer to the selected option label as a capital letter.\n{annotation_hint}\nReturn both fields in JSON.\nExample JSON:\n{json_example}",
+        "Set answer to the selected option label as a capital letter.\n{annotation_hint}\nUse this JSON shape for the final response.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "task:grid_uniqueness_completion_label_query": {
+      "annotation_hint": "Set annotation to a bbox_map in image pixels with keys source_grid and selected_option. Each key maps to one bounding box [x0,y0,x1,y1].",
+      "json_example": "{\"annotation\":{\"source_grid\":[150,90,580,520],\"selected_option\":[620,690,760,860]},\"answer\":\"C\"}",
+      "json_example_answer_only": "{\"answer\":\"C\"}"
+    },
+    "task:grid_king_non_touch_label_query": {
+      "annotation_hint": "Set annotation to a bbox_map in image pixels with keys source_grid and selected_option. Each key maps to one bounding box [x0,y0,x1,y1].",
+      "json_example": "{\"annotation\":{\"source_grid\":[150,90,580,520],\"selected_option\":[620,690,760,860]},\"answer\":\"C\"}",
+      "json_example_answer_only": "{\"answer\":\"C\"}"
+    }
+  },
+  "dynamic_slots": {
+    "object_description": {
+      "type": "string"
+    },
+    "uniqueness_axis": {
+      "type": "string"
+    }
+  },
+  "required_slots_by_key": {
+    "scene:logic_grid": [
+      "object_description"
+    ],
+    "query:axis_uniqueness": [
+      "uniqueness_axis"
+    ]
+  }
+}

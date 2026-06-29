@@ -617,10 +617,7 @@ def _render_fold_result_scene_base(
     option_paper_height = float(reference_height * (float(result_grid_rows) / float(grid_size)))
     option_block_height = float(option_paper_height + float(render_params.option_label_gap_px) + option_label_height)
     option_count = len(option_specs)
-    if str(fold_axis) == "vertical":
-        option_columns = int(option_count)
-    else:
-        option_columns = min(3, int(option_count))
+    option_columns = 2 if int(option_count) == 4 else min(3, int(option_count))
     option_rows = int(math.ceil(float(option_count) / float(option_columns)))
     options_total_width = float(
         (float(option_columns) * option_paper_width)
@@ -917,7 +914,7 @@ def _render_fold_cut_result_scene_base(
     )
 
     option_count = len(option_specs)
-    option_columns = min(3, int(option_count))
+    option_columns = 2 if int(option_count) == 4 else min(3, int(option_count))
     option_rows = int(math.ceil(float(option_count) / float(option_columns)))
     options_top = float(reference_panel_bbox[3] + int(render_params.reference_to_options_gap_px))
     available_option_height = float(
@@ -931,7 +928,7 @@ def _render_fold_cut_result_scene_base(
     )
     option_paper_size = float(
         min(
-            178.0 * unit_scale * jitter_scale,
+            reference_size,
             available_option_height / float(option_rows),
             available_option_width / float(option_columns),
         )

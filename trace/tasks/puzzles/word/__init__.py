@@ -1,1 +1,0 @@
-"""Word-search puzzle tasks."""

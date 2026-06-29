@@ -3,11 +3,6 @@ generation:
     scene_variant_weights:
       sparse_grid: 1.0
       filled_grid: 1.0
-    query_id_weights:
-      marked_cell_value: 1.0
-      marked_cell_candidate_count: 1.0
-      unit_missing_digits_count: 1.0
-      repeated_digit_count: 1.0
     unit_type_weights:
       row: 1.0
       column: 1.0
@@ -20,38 +15,19 @@ generation:
       slate: 1.0
       warm_paper: 1.0
     balanced_scene_variant_sampling: true
-    balanced_query_id_sampling: true
     balanced_unit_type_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
-    marked_cell_value_support:
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    - 6
-    - 7
-    - 8
-    - 9
-    marked_cell_candidate_count_support:
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    unit_missing_digits_count_support:
-    - 2
-    - 3
-    - 4
-    - 5
-    - 6
-    repeated_digit_count_support:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
+  task_overrides:
+    task_puzzles__sudoku__marked_cell_value:
+      marked_cell_value_support: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    task_puzzles__sudoku__marked_cell_candidate_count:
+      marked_cell_candidate_count_support: [1, 2, 3, 4, 5]
+    task_puzzles__sudoku__unit_missing_digits_count:
+      unit_missing_digits_count_support: [2, 3, 4, 5, 6]
+    task_puzzles__sudoku__repeated_digit_count:
+      repeated_digit_count_support: [0, 1, 2, 3, 4]
+
 rendering:
   shared:
     canvas_width: 900
@@ -66,36 +42,13 @@ rendering:
     cell_padding_px: 5
     digit_font_size_px: 48
     marked_cell_outline_width_px: 7
+
 prompt:
   shared:
-    bundle_id: puzzles_sudoku_v0
+    bundle_id: puzzles_sudoku_v1
     scene_key: visible_sudoku_grid
     task_key: sudoku_grid_query
-    object_description_sparse_grid: a partially filled Sudoku grid
-    object_description_filled_grid: a more filled Sudoku grid
-    sudoku_rule_text: Rows, columns, and 3 by 3 boxes cannot repeat digits 1 through
-      9.
-    marked_cell_rule_text: The red outlined empty cell is the marked cell.
-    highlighted_unit_rule_text: The blue highlighted cells mark the unit to inspect.
-    unit_scope_text_row: the highlighted row
-    unit_scope_text_column: the highlighted column
-    unit_scope_text_box: the highlighted 3 by 3 box
-    annotation_hint_marked_cell_value: set "annotation" to bounding boxes for the
-      marked cell and visible filled cells in its row, column, and 3 by 3 box
-    answer_hint_marked_cell_value: set "answer" to the digit that must go in the marked
-      cell
-    annotation_hint_marked_cell_candidate_count: set "annotation" to bboxes for the
-      marked cell and visible filled cells in its row, column, and 3 by 3 box
-    answer_hint_marked_cell_candidate_count: set "answer" to the count of legal digits
-      for the marked cell
-    annotation_hint_unit_missing_digits_count: set "annotation" to bboxes for visible
-      filled cells in the highlighted unit
-    answer_hint_unit_missing_digits_count: set "answer" to the count of different
-      digits missing from the highlighted unit
-    annotation_hint_repeated_digit_count: set "annotation" to bboxes for highlighted-unit
-      cells whose digit appears more than once
-    answer_hint_repeated_digit_count: set "answer" to the count of different digits
-      that appear more than once in the highlighted unit
+
 visual:
   noise:
     apply_prob: 0.5

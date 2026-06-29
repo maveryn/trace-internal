@@ -51,7 +51,6 @@ rendering:
       clue_size_px: 54
       candidate_font_size_px: 28
       clue_font_size_px: 24
-      title_font_size_px: 20
       text_color_rgb: [28, 32, 38]
       text_stroke_rgb: [255, 255, 255]
     task_puzzles__star_battle__scoped_valid_cell_label: *star_battle_rendering

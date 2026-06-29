@@ -34,7 +34,6 @@ class StarBattleRenderParams:
     clue_size_px: int
     candidate_font_size_px: int
     clue_font_size_px: int
-    title_font_size_px: int
     text_color_rgb: Tuple[int, int, int]
     text_stroke_rgb: Tuple[int, int, int]
     style_overrides: Dict[str, Any]

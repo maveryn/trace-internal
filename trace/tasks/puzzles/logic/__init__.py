@@ -1,2 +1,0 @@
-"""Puzzle logic scene."""
-

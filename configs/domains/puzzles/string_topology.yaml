@@ -1,0 +1,71 @@
+generation:
+  shared:
+    visual_group_count_min: 6
+    visual_group_count_max: 20
+    target_count_min: 3
+    target_count_max: 10
+    distractor_count_min: 3
+    distractor_count_max: 10
+    balanced_sampling: true
+    balanced_scene_variant_sampling: true
+    scene_variant_weights:
+      string_strip: 1.0
+      string_card: 1.0
+      string_outline: 1.0
+
+visual:
+  noise:
+    apply_prob: 0.15
+
+rendering:
+  shared:
+    canvas_width: 1200
+    canvas_height: 900
+    scene_margin_left_px: 56
+    scene_margin_right_px: 56
+    scene_margin_top_px: 52
+    scene_margin_bottom_px: 52
+    group_width_px: 190
+    group_height_px: 128
+    group_width_min_px: 138
+    group_width_max_px: 214
+    group_height_min_px: 92
+    group_height_max_px: 146
+    group_min_gap_px: 18
+    placement_attempts: 500
+    group_gap_px: 32
+    group_row_gap_px: 32
+    panel_corner_radius_px: 16
+    border_width_px: 2
+    border_width_px_min: 1
+    border_width_px_max: 3
+    rope_stroke_width_px: 9
+    rope_stroke_width_px_min: 8
+    rope_stroke_width_px_max: 10
+    endpoint_radius_px: 6
+    component_padding_px: 14
+    panel_fill_rgb: [248, 249, 252]
+    panel_fill_rgb_options:
+      - [248, 249, 252]
+      - [244, 250, 248]
+      - [252, 248, 240]
+    card_fill_rgb: [255, 255, 255]
+    card_fill_rgb_options:
+      - [255, 255, 255]
+      - [248, 252, 251]
+      - [253, 249, 241]
+    border_color_rgb: [83, 91, 105]
+    border_color_rgb_options:
+      - [83, 91, 105]
+      - [77, 105, 105]
+      - [112, 94, 82]
+    rope_shadow_rgb: [236, 239, 244]
+    gap_fill_rgb: [255, 255, 255]
+
+prompt:
+  shared:
+    bundle_id: puzzles_string_topology_v1
+    scene_key: string_topology
+  task_overrides:
+    task_puzzles__string_topology__string_component_count:
+      task_key: string_topology_count_query

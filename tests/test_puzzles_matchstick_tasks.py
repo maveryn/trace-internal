@@ -5,10 +5,6 @@ from __future__ import annotations
 import json
 import re
 
-from trace.tasks.puzzles.matchstick.matchstick_loose_endpoint_extremum_label import (
-    PuzzlesMatchstickLooseEndpointExtremumLabelTask,
-    SUPPORTED_QUERY_IDS as ENDPOINT_QUERY_IDS,
-)
 from trace.tasks.puzzles.matchstick.matchstick_number_transform_label import (
     PuzzlesMatchstickNumberTransformLabelTask,
     SUPPORTED_QUERY_IDS as NUMBER_QUERY_IDS,
@@ -61,36 +57,6 @@ def test_matchstick_number_transform_uses_keyed_source_and_option_annotation() -
             float(value) for value in render_map["item_bboxes_px"][f"option_{out.answer_gt.value}"]
         ]
         assert render_map["annotation_source"] == "keyed_item_bboxes_px"
-        assert render["text_style"]["font"]["source"] == "global_font_pool"
-        assert render["text_style"]["font"]["font_family"]
-
-
-def test_matchstick_endpoint_extremum_keeps_single_selected_option_annotation() -> None:
-    task = PuzzlesMatchstickLooseEndpointExtremumLabelTask()
-
-    for index, query_id in enumerate(ENDPOINT_QUERY_IDS):
-        out = task.generate(
-            31100 + index,
-            params={"query_id": query_id, "scene_variant": SCENE_VARIANTS[index]},
-            max_attempts=10,
-        )
-        trace = out.trace_payload
-        execution = trace["execution_trace"]
-        render = trace["render_spec"]
-        render_map = trace["render_map"]
-        annotation = [float(value) for value in out.annotation_gt.value]
-
-        assert out.answer_gt.type == "option_letter"
-        assert out.annotation_gt.type == "bbox"
-        assert len(annotation) == 4
-        assert trace["projected_annotation"]["type"] == "bbox"
-        assert trace["projected_annotation"]["bbox"] == annotation
-        assert trace["projected_annotation"]["pixel_bbox"] == annotation
-        assert execution["supporting_item_ids"] == [f"option_{out.answer_gt.value}"]
-        assert annotation == [
-            float(value) for value in render_map["item_bboxes_px"][f"option_{out.answer_gt.value}"]
-        ]
-        assert render_map["annotation_source"] == "item_bboxes_px"
         assert render["text_style"]["font"]["source"] == "global_font_pool"
         assert render["text_style"]["font"]["font_family"]
 

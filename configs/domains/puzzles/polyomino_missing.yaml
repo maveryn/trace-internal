@@ -1,0 +1,63 @@
+generation:
+  task_overrides:
+    task_puzzles__polyomino_missing__rectangle_complement_piece:
+      complement_option_count_choices:
+      - 4
+      - 6
+      complement_option_count_min: 4
+      complement_option_count_max: 6
+      complement_target_width_min: 4
+      complement_target_width_max: 6
+      complement_target_height_min: 4
+      complement_target_height_max: 6
+      complement_cutout_cell_count_min: 3
+      complement_cutout_cell_count_max: 7
+      complement_transform_allowed_cutout_cell_count_min: 5
+      complement_shape_bbox_max_dim: 6
+      balanced_scene_variant_sampling: true
+      scene_variant_weights:
+        polyomino_strip: 1.0
+        polyomino_card: 1.0
+        polyomino_outline: 1.0
+visual:
+  noise:
+    apply_prob: 0.0
+rendering:
+  shared:
+    canvas_width: 1000
+    canvas_height: 820
+    scene_margin_left_px: 52
+    scene_margin_right_px: 52
+    scene_margin_top_px: 44
+    scene_margin_bottom_px: 44
+    piece_card_size_px: 144
+    piece_gap_px: 24
+    piece_panel_padding_px: 24
+    piece_to_options_gap_px: 42
+    option_panel_width_px: 176
+    option_panel_height_px: 204
+    option_gap_px: 22
+    option_row_gap_px: 18
+    option_shape_box_size_px: 126
+    option_label_gap_px: 16
+    shape_cell_size_px: 22
+    unit_size_scale_min: 0.5
+    unit_size_scale_max: 1.0
+    shape_cell_gap_px: 4
+    board_cell_size_px: 36
+    board_cell_gap_px: 2
+    target_cell_size_px: 38
+    target_cell_gap_px: 4
+    panel_corner_radius_px: 28
+    cell_corner_radius_px: 8
+    border_width_px: 3
+    border_width_px_min: 2
+    border_width_px_max: 4
+    option_label_font_size_px: 30
+prompt:
+  shared:
+    bundle_id: puzzles_polyomino_missing_v1
+    scene_key: polyomino_missing
+  task_overrides:
+    task_puzzles__polyomino_missing__rectangle_complement_piece:
+      task_key: rectangle_complement_piece_query

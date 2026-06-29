@@ -1,21 +1,28 @@
 # `task_puzzles__cell_board__reachable_region_size`
 
-## Contract
-1. Domain: `puzzles`
-2. Scene id: `cell_board`
-3. Source implementation domain/group: `puzzles/cell_board`
-4. Task id: `task_puzzles__cell_board__reachable_region_size`
-5. Objective contract: reachable region size.
-6. Supported sampled `query_id`: `region_size`
-7. `answer_gt.type`: `integer`
-8. `annotation_gt.type`: `point_set`
-9. Annotation policy: minimal visual witnesses for the visible objects, cells, panels, or role-keyed components needed to solve the task.
+## Program Contract
+`count_reachable_cells(cell_board, start=green_S_cell, passable=non_wall_cells, adjacency=orthogonal_4_neighbor); scene=cell_board; scope=reachable_region_size`
 
-## Implementation
-1. Registered class: `trace.tasks.puzzles.cell_board.merged_tasks.TileReachableRegionSizePublicTask`
-2. Prompt lookup domain/group: `puzzles/cell_board`
-3. Prompt bundle: `see trace prompt metadata`
+## 2) Scene + task contract
+1. Entities/relations: A rectangular board with dark wall cells, light passable cells, disconnected light distractor regions, and a green start cell marked `S`.
+2. Supported `query_id` values: `single`
+3. `answer_gt.type`: `integer`
+4. Annotation schema: `bbox_set`
+5. Alternate annotation forms: none
+6. Annotation witness policy: one image-pixel cell bbox for every reachable light passable cell, including the start cell.
+7. Overlap/touch policy: dark walls block movement; diagonal/corner touching between light cells does not connect regions.
 
-## Notes
-2. Generation must remain deterministic from explicit seeds, params, prompt bundle, renderer config, and code versions.
-3. Answers and annotation must come from the same metadata execution trace.
+## 3) Prompt contract
+1. `prompt_bundle_id`: `puzzles_cell_board_v1`
+2. `scene_key`: `cell_board`
+3. `task_key`: `cell_board_topology_query`
+4. Prompt query key: `reachable_region_size`
+5. Required slots: output-mode slots from the prompt bundle.
+6. JSON example validity rule: bbox-set cardinality equals the integer answer.
+7. Output modes: `answer_only`, `answer_and_annotation`
+
+## 4) Determinism + constraints
+1. Seed namespaces used: task-local region namespaces plus shared cell-board layout/style/font/noise namespaces.
+2. Unique-answer policy: construction creates and verifies an exact reachable region size in answer range `1..8`.
+3. Reject/resample conditions: reachable-region size mismatch or insufficient disconnected passable distractors raises and retries.
+4. No-auto-relaxation guarantee: semantic constraints are not relaxed.

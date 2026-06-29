@@ -1,1 +1,0 @@
-"""Visual-pattern puzzle tasks."""

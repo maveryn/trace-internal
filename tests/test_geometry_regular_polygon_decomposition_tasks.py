@@ -33,6 +33,15 @@ def _generate(task_id: str, query_id: str, seed: int = 20260605):
     return task.generate(seed, params={"query_id": query_id}, max_attempts=3)
 
 
+def _bboxes_overlap(box_a, box_b, *, margin: float = 0.0) -> bool:
+    return not (
+        float(box_a[2]) + float(margin) <= float(box_b[0])
+        or float(box_b[2]) + float(margin) <= float(box_a[0])
+        or float(box_a[3]) + float(margin) <= float(box_b[1])
+        or float(box_b[3]) + float(margin) <= float(box_a[1])
+    )
+
+
 def test_regular_polygon_decomposition_tasks_are_registered() -> None:
     for task_id in TASK_QUERIES:
         assert create_task(task_id).task_id == task_id
@@ -114,3 +123,30 @@ def test_regular_polygon_decomposition_generation_is_deterministic() -> None:
     assert first.answer_gt == second.answer_gt
     assert first.annotation_gt == second.annotation_gt
     assert first.trace_payload["execution_trace"] == second.trace_payload["execution_trace"]
+
+
+def test_regular_polygon_midpoint_label_does_not_overlap_side_length_label() -> None:
+    task_queries = (
+        (
+            "task_geometry__regular_polygon_decomposition__side_length_value",
+            "side_length_from_total_area_and_apothem",
+            "target_side_label",
+        ),
+        (
+            "task_geometry__regular_polygon_decomposition__side_length_value",
+            "side_length_from_wedge_area_and_apothem",
+            "target_side_label",
+        ),
+        (
+            "task_geometry__regular_polygon_decomposition__wedge_area_from_side_apothem_value",
+            SINGLE_QUERY_ID,
+            "side_length_label",
+        ),
+    )
+    for task_id, query_id, side_label_key in task_queries:
+        for seed in range(20260605, 20260625):
+            output = _generate(task_id, query_id, seed=seed)
+            readout_bboxes = output.trace_payload["render_map"]["readout_bboxes"]
+            assert "label_M" in readout_bboxes
+            assert side_label_key in readout_bboxes
+            assert not _bboxes_overlap(readout_bboxes["label_M"], readout_bboxes[side_label_key], margin=2.0)

@@ -183,6 +183,15 @@ def _draw_dimension_label(ctx: RenderContext, start: Point, end: Point, label: s
     return _draw_text_centered(ctx, label, add_scaled(midpoint, normal, distance), small=True)
 
 
+def _draw_midpoint_label(ctx: RenderContext, side_start: Point, side_end: Point, center_reference: Point) -> BBox:
+    side_mid = mid(side_start, side_end)
+    tangent = unit(sub(side_end, side_start))
+    outward = unit(sub(side_mid, center_reference))
+    # Keep M close to the side midpoint, but away from the side-length label that sits on the outward normal.
+    label_center = add_scaled(add_scaled(side_mid, tangent, 24.0), outward, 9.0)
+    return _draw_text_centered(ctx, "M", label_center, small=True, role="label")
+
+
 def _draw_apothem(ctx: RenderContext, center: Point, side_start: Point, side_end: Point, label: str) -> BBox:
     side_mid = mid(side_start, side_end)
     direction = unit(sub(side_mid, center))
@@ -280,10 +289,25 @@ def render_regular_polygon_scene(
     if problem.show_angle_unknown:
         construction_bboxes["marked_angle_arc"] = _draw_arc_polyline(ctx, center, radius * 0.27, start_degrees, angle_span)
         readout_bboxes["unknown_angle_label"] = _draw_text_centered(ctx, "?", _point_on_ray(center, radius * 0.34, start_degrees + (angle_span / 2.0)), small=False)
+    side_label_distance = 58.0 if problem.show_midpoint_label else 32.0
     if problem.show_known_side_length and problem.side_length is not None:
-        readout_bboxes["side_length_label"] = _draw_dimension_label(ctx, side_start, side_end, f"s = {fmt_measure(float(problem.side_length))}", center_reference=center, distance=32.0)
+        readout_bboxes["side_length_label"] = _draw_dimension_label(
+            ctx,
+            side_start,
+            side_end,
+            f"s = {fmt_measure(float(problem.side_length))}",
+            center_reference=center,
+            distance=side_label_distance,
+        )
     if problem.show_unknown_side_length:
-        readout_bboxes["target_side_label"] = _draw_dimension_label(ctx, side_start, side_end, "s = ?", center_reference=center, distance=32.0)
+        readout_bboxes["target_side_label"] = _draw_dimension_label(
+            ctx,
+            side_start,
+            side_end,
+            "s = ?",
+            center_reference=center,
+            distance=side_label_distance,
+        )
     if problem.show_apothem and problem.apothem is not None:
         construction_bboxes["apothem"] = _draw_apothem(ctx, center, side_start, side_end, f"a = {fmt_measure(float(problem.apothem))}")
     readout_bboxes.update(_draw_readout_panel(ctx, _readout_lines(problem)))
@@ -297,7 +321,7 @@ def render_regular_polygon_scene(
     if problem.show_region_label:
         readout_bboxes["label_W"] = _draw_text_centered(ctx, "W", target_midpoint, small=True, role="label")
     if problem.show_midpoint_label:
-        readout_bboxes["label_M"] = _draw_text_centered(ctx, "M", add_scaled(side_mid, unit(sub(side_mid, center)), 19.0), small=True, role="label")
+        readout_bboxes["label_M"] = _draw_midpoint_label(ctx, side_start, side_end, center)
 
     annotation_points = {
         "O": center,

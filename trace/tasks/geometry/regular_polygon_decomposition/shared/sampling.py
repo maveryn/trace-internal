@@ -91,29 +91,13 @@ def _base_problem(
     )
 
 
-def area_from_one_equal_piece(instance_seed: int, params: Mapping[str, Any], *, seed_namespace: str) -> RegularPolygonProblem:
+def area_from_marked_equal_pieces(instance_seed: int, params: Mapping[str, Any], *, seed_namespace: str) -> RegularPolygonProblem:
     rng = _rng(instance_seed, seed_namespace)
     n_sides = _n_sides(rng, params)
-    wedge_area = float(WEDGE_AREA_SUPPORT[int(rng.randrange(len(WEDGE_AREA_SUPPORT)))])
-    return _base_problem(
-        rng=rng,
-        params={**dict(params), "n_sides": n_sides},
-        instance_seed=int(instance_seed),
-        wedge_count=1,
-        answer=float(wedge_area),
-        answer_type="number",
-        target_name="the shaded wedge",
-        relation="equal_wedge_area_from_total_regular_polygon_area",
-        total_area=float(n_sides) * float(wedge_area),
-        wedge_area=float(wedge_area),
-        show_total_area_readout=True,
-    )
-
-
-def area_from_adjacent_equal_pieces(instance_seed: int, params: Mapping[str, Any], *, seed_namespace: str) -> RegularPolygonProblem:
-    rng = _rng(instance_seed, seed_namespace)
-    n_sides = _n_sides(rng, params)
-    wedge_count = int(rng.randrange(2, min(4, int(n_sides) - 1) + 1))
+    max_marked = max(1, min(4, int(n_sides) // 2))
+    wedge_count = int(params.get("wedge_count", rng.randrange(1, max_marked + 1)))
+    if int(wedge_count) < 1 or int(wedge_count) > int(max_marked):
+        raise ValueError(f"wedge_count must be between 1 and {max_marked} for n_sides={n_sides}")
     wedge_area = float(WEDGE_AREA_SUPPORT[int(rng.randrange(len(WEDGE_AREA_SUPPORT)))])
     return _base_problem(
         rng=rng,
@@ -122,7 +106,7 @@ def area_from_adjacent_equal_pieces(instance_seed: int, params: Mapping[str, Any
         wedge_count=int(wedge_count),
         answer=float(wedge_count) * float(wedge_area),
         answer_type="number",
-        target_name="the shaded region",
+        target_name="the shaded wedge" if int(wedge_count) == 1 else "the shaded region",
         relation="contiguous_wedge_group_area_from_total_regular_polygon_area",
         total_area=float(n_sides) * float(wedge_area),
         wedge_area=float(wedge_area),
@@ -148,6 +132,7 @@ def area_from_side_and_apothem(instance_seed: int, params: Mapping[str, Any], *,
         apothem=float(apothem),
         show_known_side_length=True,
         show_apothem=True,
+        show_midpoint_label=True,
     )
 
 
@@ -273,8 +258,7 @@ def side_from_piece_area_apothem(instance_seed: int, params: Mapping[str, Any], 
 
 
 __all__ = [
-    "area_from_adjacent_equal_pieces",
-    "area_from_one_equal_piece",
+    "area_from_marked_equal_pieces",
     "area_from_side_and_apothem",
     "angle_for_marked_pieces",
     "perimeter_from_area_apothem",

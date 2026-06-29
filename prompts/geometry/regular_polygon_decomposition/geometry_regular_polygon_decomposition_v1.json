@@ -13,7 +13,14 @@
       ]
     },
     "task": {
-      "piece_area_value_query": [
+      "marked_piece_area_value_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "wedge_area_from_side_apothem_value_query": [
         "",
         "",
         "",
@@ -43,17 +50,10 @@
       ]
     },
     "query": {
-      "single_wedge_area_from_total": [
+      "marked_wedges_area_from_total": [
         "The regular polygon is cut into equal center wedges. What is the area of \"{target_name}\"?",
         "Use the equal wedge decomposition of the regular polygon. What is the area of \"{target_name}\"?",
-        "The total area is labeled and one wedge is shaded. What is the area of \"{target_name}\"?",
-        "Based on the equal center wedges, what is the area of \"{target_name}\"?",
-        "Find the area of \"{target_name}\" from the visible regular-polygon decomposition."
-      ],
-      "shaded_wedges_area_from_total": [
-        "The regular polygon is cut into equal center wedges. What is the area of \"{target_name}\"?",
-        "Use the equal wedge decomposition of the regular polygon. What is the area of \"{target_name}\"?",
-        "The total area is labeled and several adjacent wedges are shaded. What is the area of \"{target_name}\"?",
+        "The total area is labeled and one or more adjacent wedges are shaded. What is the area of \"{target_name}\"?",
         "Based on the equal center wedges, what is the area of \"{target_name}\"?",
         "Find the area of \"{target_name}\" from the visible regular-polygon decomposition."
       ],
@@ -121,10 +121,7 @@
     "scene:regular_polygon_decomposition_scene": [
       "object_description"
     ],
-    "query:single_wedge_area_from_total": [
-      "target_name"
-    ],
-    "query:shaded_wedges_area_from_total": [
+    "query:marked_wedges_area_from_total": [
       "target_name"
     ],
     "query:wedge_area_from_side_and_apothem": [
@@ -159,14 +156,17 @@
   },
   "static_slots_by_key": {
     "scene:regular_polygon_decomposition_scene": {
-      "object_description": "a regular polygon partitioned into equal center wedges with marked measurements and shaded or marked wedge regions"
+      "object_description": "a regular polygon partitioned into equal center wedges with visible labels and measurements"
     },
     "global": {
       "annotation_hint": "set \"annotation\" to a JSON object whose keys are the visible point labels shown in the example; each value must be the pixel point [x,y] at that labeled point",
       "json_output_contract": "Return a JSON object with exactly two keys: \"annotation\" and \"answer\".",
       "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."
     },
-    "task:piece_area_value_query": {
+    "task:marked_piece_area_value_query": {
+      "answer_hint": "set \"answer\" to the requested area as a number"
+    },
+    "task:wedge_area_from_side_apothem_value_query": {
       "answer_hint": "set \"answer\" to the requested area as a number"
     },
     "task:central_angle_value_query": {

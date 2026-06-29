@@ -8,10 +8,11 @@ from trace.tasks.registry import create_task
 
 
 TASK_QUERIES = {
-    "task_geometry__regular_polygon_decomposition__piece_area_value": (
-        "single_wedge_area_from_total",
-        "shaded_wedges_area_from_total",
-        "wedge_area_from_side_and_apothem",
+    "task_geometry__regular_polygon_decomposition__marked_piece_area_value": (
+        SINGLE_QUERY_ID,
+    ),
+    "task_geometry__regular_polygon_decomposition__wedge_area_from_side_apothem_value": (
+        SINGLE_QUERY_ID,
     ),
     "task_geometry__regular_polygon_decomposition__central_angle_value": (
         SINGLE_QUERY_ID,
@@ -52,8 +53,10 @@ def test_regular_polygon_decomposition_queries_emit_keyed_point_annotation() -> 
             assert output.annotation_gt.type == "point_map"
             assert isinstance(output.annotation_gt.value, dict)
             assert output.annotation_gt.value
-            if task_id.endswith("__piece_area_value"):
+            if task_id.endswith("__marked_piece_area_value"):
                 assert set(output.annotation_gt.value) == {"O", "A", "B"}
+            if task_id.endswith("__wedge_area_from_side_apothem_value"):
+                assert set(output.annotation_gt.value) == {"O", "A", "B", "M"}
             if task_id.endswith("__perimeter_value"):
                 assert set(output.annotation_gt.value) == {"O", "M"}
             width, height = output.image.size
@@ -81,11 +84,11 @@ def test_regular_polygon_decomposition_measurements_match_trace_values() -> None
             wedge_count = int(trace["wedge_count"])
             assert n_sides >= 5
             assert int(trace["central_angle_degrees"]) == int(round(360.0 / float(n_sides)))
-            if query_id == "single_wedge_area_from_total":
-                assert math.isclose(float(output.answer_gt.value), float(trace["total_area"]) / float(n_sides))
-            elif query_id == "shaded_wedges_area_from_total":
+            if task_id.endswith("__marked_piece_area_value"):
+                assert 1 <= wedge_count <= min(4, n_sides // 2)
                 assert math.isclose(float(output.answer_gt.value), float(trace["wedge_area"]) * float(wedge_count))
-            elif query_id == "wedge_area_from_side_and_apothem":
+            elif task_id.endswith("__wedge_area_from_side_apothem_value"):
+                assert wedge_count == 1
                 assert output.answer_gt.value == round(float(trace["side_length"]) * float(trace["apothem"]) / 2.0 + 1e-9, 1)
             elif task_id.endswith("__central_angle_value"):
                 assert 1 <= wedge_count <= min(4, n_sides // 2)
@@ -104,8 +107,8 @@ def test_regular_polygon_decomposition_measurements_match_trace_values() -> None
 
 
 def test_regular_polygon_decomposition_generation_is_deterministic() -> None:
-    task_id = "task_geometry__regular_polygon_decomposition__piece_area_value"
-    query_id = "wedge_area_from_side_and_apothem"
+    task_id = "task_geometry__regular_polygon_decomposition__wedge_area_from_side_apothem_value"
+    query_id = SINGLE_QUERY_ID
     first = _generate(task_id, query_id, seed=817)
     second = _generate(task_id, query_id, seed=817)
     assert first.answer_gt == second.answer_gt

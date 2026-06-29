@@ -24,8 +24,10 @@ _AFFECTED_KEYED_POINT_TASKS = (
     "task_geometry__regular_polygon_decomposition__perimeter_value",
     "task_geometry__regular_polygon_decomposition__side_length_value",
     "task_geometry__regular_polygon_decomposition__wedge_area_from_side_apothem_value",
-    "task_geometry__right_triangle_altitude_theorem__altitude_to_hypotenuse_value",
-    "task_geometry__right_triangle_altitude_theorem__leg_projection_length_value",
+    "task_geometry__triangle_relations__altitude_to_hypotenuse_value",
+    "task_geometry__triangle_relations__leg_projection_length_value",
+    "task_geometry__triangle_relations__parallel_segment_expression_length_value",
+    "task_geometry__triangle_relations__parallel_segment_variable_value",
     "task_geometry__similar_figure_measure_transfer__area_scale_side_length_value",
     "task_geometry__similar_figure_measure_transfer__corresponding_side_value",
     "task_geometry__similar_figure_measure_transfer__scale_factor_value",
@@ -39,10 +41,7 @@ _AFFECTED_KEYED_POINT_TASKS = (
     "task_geometry__triangle_congruence_correspondence__corresponding_side_value",
 )
 
-_AFFECTED_SEGMENT_SET_TASKS = (
-    "task_geometry__parallel_segment_proportion__segment_length_value",
-    "task_geometry__parallel_segment_proportion__variable_value",
-)
+_AFFECTED_SEGMENT_SET_TASKS = ()
 
 
 def _prompt_record(output: Any, _instance_seed: int) -> dict[str, Any]:

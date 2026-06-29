@@ -5,11 +5,11 @@ from trace.tasks.registry import create_task
 
 
 TASK_QUERIES = {
-    "task_geometry__right_triangle_altitude_theorem__altitude_to_hypotenuse_value": (
+    "task_geometry__triangle_relations__altitude_to_hypotenuse_value": (
         "altitude_from_split_hypotenuse",
         "missing_projection_from_altitude",
     ),
-    "task_geometry__right_triangle_altitude_theorem__leg_projection_length_value": (
+    "task_geometry__triangle_relations__leg_projection_length_value": (
         "leg_from_hypotenuse_projection",
         "projection_from_leg_and_hypotenuse",
     ),
@@ -21,16 +21,16 @@ def _generate(task_id: str, query_id: str, seed: int = 20260605):
     return task.generate(seed, params={"query_id": query_id}, max_attempts=3)
 
 
-def test_right_triangle_altitude_theorem_tasks_are_registered() -> None:
+def test_triangle_relations_altitude_tasks_are_registered() -> None:
     for task_id in TASK_QUERIES:
         assert create_task(task_id).task_id == task_id
 
 
-def test_right_triangle_altitude_theorem_queries_emit_keyed_point_annotation() -> None:
+def test_triangle_relations_altitude_queries_emit_keyed_point_annotation() -> None:
     for task_id, query_ids in TASK_QUERIES.items():
         for index, query_id in enumerate(query_ids):
             output = _generate(task_id, query_id, seed=20260605 + index)
-            assert output.scene_id == "right_triangle_altitude_theorem"
+            assert output.scene_id == "triangle_relations"
             assert output.query_id == query_id
             assert output.answer_gt.type == "integer"
             assert isinstance(output.answer_gt.value, int)
@@ -53,7 +53,7 @@ def test_right_triangle_altitude_theorem_queries_emit_keyed_point_annotation() -
             assert "query_variant" not in trace["query_spec"]["params"]
 
 
-def test_right_triangle_altitude_theorem_measurements_match_trace_values() -> None:
+def test_triangle_relations_altitude_measurements_match_trace_values() -> None:
     for task_id, query_ids in TASK_QUERIES.items():
         for query_id in query_ids:
             output = _generate(task_id, query_id, seed=20260617)
@@ -83,8 +83,8 @@ def test_right_triangle_altitude_theorem_measurements_match_trace_values() -> No
                 raise AssertionError(f"unexpected target_role={target_role}")
 
 
-def test_right_triangle_altitude_theorem_generation_is_deterministic() -> None:
-    task_id = "task_geometry__right_triangle_altitude_theorem__leg_projection_length_value"
+def test_triangle_relations_altitude_generation_is_deterministic() -> None:
+    task_id = "task_geometry__triangle_relations__leg_projection_length_value"
     query_id = "projection_from_leg_and_hypotenuse"
     first = _generate(task_id, query_id, seed=817)
     second = _generate(task_id, query_id, seed=817)

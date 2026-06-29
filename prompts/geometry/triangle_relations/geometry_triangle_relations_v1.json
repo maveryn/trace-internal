@@ -41,6 +41,13 @@
         "What is the angle of elevation θ?",
         "Find the displayed angle θ."
       ],
+      "altitude_to_hypotenuse_value_query": [
+        "What is the length of {target_name}?",
+        "Find {target_name}.",
+        "Determine the length of {target_name}.",
+        "What is the requested altitude-theorem length {target_name}?",
+        "Find the segment length {target_name}."
+      ],
       "centroid_median_segment_value_centroid_vertex_segment_length_query": [
         "What is the length of AG?",
         "Find AG.",
@@ -68,6 +75,20 @@
         "Determine the length of DE.",
         "What is the missing parallel segment length DE?",
         "Find the segment length DE."
+      ],
+      "parallel_segment_expression_length_value_query": [
+        "What is the length of {target_name}?",
+        "Find {target_name}.",
+        "Determine the length of {target_name}.",
+        "Solve the side-splitter relation and find {target_name}.",
+        "Find the requested segment length {target_name}."
+      ],
+      "parallel_segment_variable_value_query": [
+        "What is the value of {target_name}?",
+        "Find {target_name}.",
+        "Determine {target_name}.",
+        "Solve the side-splitter relation for {target_name}.",
+        "Use the visible proportional segments to find {target_name}."
       ],
       "pythagorean_length_value_chained_rectangle_diagonal_length_query": [
         "What is the length of DB?",
@@ -103,6 +124,13 @@
         "Determine the measure of θ.",
         "What is the displayed angle θ?",
         "Find θ."
+      ],
+      "leg_projection_length_value_query": [
+        "What is the length of {target_name}?",
+        "Find {target_name}.",
+        "Determine the length of {target_name}.",
+        "What is the requested projection-theorem length {target_name}?",
+        "Find the segment length {target_name}."
       ],
       "right_triangle_missing_side_value_ground_from_angle_and_height_query": [
         "What is the ground length?",
@@ -145,6 +173,20 @@
         "Determine the length of EC.",
         "What is the missing side length EC?",
         "Find the segment length EC."
+      ],
+      "split_triangle_angle_value_query": [
+        "What is the measure of {target_name}?",
+        "Find the measure of {target_name}.",
+        "Determine the angle measure for {target_name}.",
+        "Use the split-triangle labels to find {target_name}.",
+        "Find the marked angle measure."
+      ],
+      "split_triangle_trig_side_length_value_query": [
+        "What is the length of {target_name}?",
+        "Find {target_name}.",
+        "Determine the length of {target_name}.",
+        "Use the split right-triangle labels to find {target_name}.",
+        "Find the marked side length {target_name}."
       ]
     },
     "query": {
@@ -154,6 +196,34 @@
         "Use the given labels and marks in the figure.",
         "Use the visible geometric measurements.",
         "Use the labels shown in the figure."
+      ],
+      "altitude_from_split_hypotenuse": [
+        "Use the altitude drawn to the hypotenuse and the two hypotenuse segments.",
+        "Use the two labeled hypotenuse segments and the altitude construction.",
+        "Use the right-triangle altitude relationship from the split hypotenuse.",
+        "Use the visible split-hypotenuse labels.",
+        "Use the altitude-to-hypotenuse theorem."
+      ],
+      "missing_projection_from_altitude": [
+        "Use the altitude and the known hypotenuse segment.",
+        "Use the visible altitude and the other hypotenuse projection.",
+        "Use the right-triangle altitude relationship to find the missing projection.",
+        "Use the labeled altitude and split hypotenuse.",
+        "Use the altitude-to-hypotenuse theorem."
+      ],
+      "leg_from_hypotenuse_projection": [
+        "Use the full hypotenuse and the adjacent hypotenuse projection.",
+        "Use the labeled hypotenuse and projection next to the target leg.",
+        "Use the right-triangle leg-projection relationship.",
+        "Use the visible leg-projection theorem labels.",
+        "Use the projection relationship in the right triangle."
+      ],
+      "projection_from_leg_and_hypotenuse": [
+        "Use the target leg and the full hypotenuse.",
+        "Use the labeled leg and hypotenuse to find the adjacent projection.",
+        "Use the right-triangle projection relationship.",
+        "Use the visible leg and hypotenuse labels.",
+        "Use the projection theorem in the right triangle."
       ]
     },
     "output": {
@@ -188,6 +258,9 @@
     "task:angle_bisector_variable_value_query": {
       "answer_hint": "set \"answer\" to x as an integer"
     },
+    "task:altitude_to_hypotenuse_value_query": {
+      "answer_hint": "set \"answer\" to the requested length as an integer"
+    },
     "task:centroid_median_segment_value_centroid_vertex_segment_length_query": {
       "answer_hint": "set \"answer\" to the requested segment length as an integer"
     },
@@ -199,6 +272,12 @@
     },
     "task:parallel_section_cross_length_query": {
       "answer_hint": "set \"answer\" to the requested segment length as an integer"
+    },
+    "task:parallel_segment_expression_length_value_query": {
+      "answer_hint": "set \"answer\" to the requested segment length as a number"
+    },
+    "task:parallel_segment_variable_value_query": {
+      "answer_hint": "set \"answer\" to the value of x as a number"
     },
     "task:pythagorean_length_value_chained_rectangle_diagonal_length_query": {
       "answer_hint": "set \"answer\" to the requested segment length as an integer"
@@ -214,6 +293,9 @@
     },
     "task:right_triangle_inverse_trig_angle_angle_from_opposite_hypotenuse_query": {
       "answer_hint": "set \"answer\" to the angle measure as a number rounded to one decimal place"
+    },
+    "task:leg_projection_length_value_query": {
+      "answer_hint": "set \"answer\" to the requested length as an integer"
     },
     "task:right_triangle_missing_side_value_ground_from_angle_and_height_query": {
       "answer_hint": "set \"answer\" to the requested length as a number rounded to one decimal place"
@@ -232,6 +314,12 @@
     },
     "task:similar_triangles_side_length_query": {
       "answer_hint": "set \"answer\" to the requested segment length as an integer"
+    },
+    "task:split_triangle_angle_value_query": {
+      "answer_hint": "set \"answer\" to the target angle measure in degrees as an integer"
+    },
+    "task:split_triangle_trig_side_length_value_query": {
+      "answer_hint": "set \"answer\" to the target side length as a number rounded to one decimal place"
     }
   },
   "dynamic_slots": {
@@ -242,6 +330,9 @@
       "type": "string"
     },
     "json_example_answer_only": {
+      "type": "string"
+    },
+    "target_name": {
       "type": "string"
     }
   },

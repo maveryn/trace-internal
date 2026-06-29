@@ -13,10 +13,10 @@ TASK_QUERIES = {
     "task_geometry__similar_figure_measure_transfer__side_length_from_expression_value": (
         "single",
     ),
-    "task_geometry__parallel_segment_proportion__variable_value": (
+    "task_geometry__triangle_relations__parallel_segment_variable_value": (
         "single",
     ),
-    "task_geometry__parallel_segment_proportion__segment_length_value": (
+    "task_geometry__triangle_relations__parallel_segment_expression_length_value": (
         "single",
     ),
 }
@@ -27,8 +27,8 @@ PARALLEL_CONSTRUCTION_FAMILIES = (
 
 PARALLEL_TASK_IDS = frozenset(
     {
-        "task_geometry__parallel_segment_proportion__variable_value",
-        "task_geometry__parallel_segment_proportion__segment_length_value",
+        "task_geometry__triangle_relations__parallel_segment_variable_value",
+        "task_geometry__triangle_relations__parallel_segment_expression_length_value",
     }
 )
 
@@ -116,13 +116,13 @@ def test_geo3k_marked_equation_queries_use_expected_scene_ids() -> None:
         "single",
     ).scene_id == "similar_figure_measure_transfer"
     assert _generate(
-        "task_geometry__parallel_segment_proportion__variable_value",
+        "task_geometry__triangle_relations__parallel_segment_variable_value",
         "single",
-    ).scene_id == "parallel_segment_proportion"
+    ).scene_id == "triangle_relations"
 
 
 def test_geo3k_marked_equation_generation_is_deterministic() -> None:
-    task_id = "task_geometry__parallel_segment_proportion__segment_length_value"
+    task_id = "task_geometry__triangle_relations__parallel_segment_expression_length_value"
     first = _generate(task_id, "single", seed=817, construction_family="triangle_side_splitter")
     second = _generate(task_id, "single", seed=817, construction_family="triangle_side_splitter")
     assert first.answer_gt == second.answer_gt
@@ -146,7 +146,7 @@ def test_similar_figure_equation_construction_families_are_trace_metadata() -> N
             assert trace["query_spec"]["params"]["query_id"] == "single"
 
 
-def test_parallel_segment_proportion_construction_families_are_trace_metadata() -> None:
+def test_triangle_relations_side_splitter_construction_families_are_trace_metadata() -> None:
     for task_id in sorted(PARALLEL_TASK_IDS):
         for index, family in enumerate(PARALLEL_CONSTRUCTION_FAMILIES):
             output = _generate(
@@ -164,8 +164,8 @@ def test_parallel_segment_proportion_construction_families_are_trace_metadata() 
             assert trace["query_spec"]["params"]["query_id"] == "single"
 
 
-def test_parallel_segment_proportion_rejects_retired_transversal_family() -> None:
-    task = create_task("task_geometry__parallel_segment_proportion__variable_value")
+def test_triangle_relations_side_splitter_rejects_retired_transversal_family() -> None:
+    task = create_task("task_geometry__triangle_relations__parallel_segment_variable_value")
     with pytest.raises(ValueError, match="unsupported construction_family"):
         task.generate(
             20260620,
@@ -175,7 +175,7 @@ def test_parallel_segment_proportion_rejects_retired_transversal_family() -> Non
 
 
 @pytest.mark.parametrize("retired_query_id", RETIRED_PARALLEL_QUERY_IDS)
-def test_parallel_segment_proportion_rejects_retired_query_ids(retired_query_id: str) -> None:
-    task = create_task("task_geometry__parallel_segment_proportion__variable_value")
+def test_triangle_relations_side_splitter_rejects_retired_query_ids(retired_query_id: str) -> None:
+    task = create_task("task_geometry__triangle_relations__parallel_segment_variable_value")
     with pytest.raises(ValueError, match="unsupported query_id"):
         task.generate(20260619, params={"query_id": retired_query_id}, max_attempts=1)

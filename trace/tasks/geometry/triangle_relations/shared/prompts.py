@@ -14,13 +14,17 @@ from trace.tasks.shared.prompt_variants import (
 from .state import DOMAIN, PROMPT_BUNDLE_ID, SCENE_ID, SCENE_PROMPT_KEY
 
 
-def _examples(annotation_mode: str, answer: Any) -> tuple[str, str]:
+def _examples(annotation_mode: str, answer: Any, annotation_roles: tuple[str, ...]) -> tuple[str, str]:
     if annotation_mode == "segment":
         annotation: Any = [[120, 260], [280, 260]]
     elif annotation_mode == "point":
         annotation = [180, 320]
     else:
-        annotation = {"A": [160, 160], "B": [110, 360], "C": [330, 360], "D": [220, 360]}
+        roles = tuple(annotation_roles) or ("A", "B", "C", "D")
+        annotation = {
+            str(role): [160 + 28 * index, 160 + 20 * (index % 3)]
+            for index, role in enumerate(roles)
+        }
     return dump_prompt_json_examples(annotation=annotation, answer=answer, ensure_ascii=False)
 
 
@@ -41,11 +45,12 @@ def build_triangle_relations_prompt_artifacts(
     annotation_mode: str,
     annotation_roles: tuple[str, ...],
     answer_value: Any,
+    target_name: str,
     instance_seed: int,
 ):
     """Render v1 prompt variants for one triangle-relations objective."""
 
-    json_example, json_example_answer_only = _examples(str(annotation_mode), answer_value)
+    json_example, json_example_answer_only = _examples(str(annotation_mode), answer_value, tuple(annotation_roles))
     prompt_selection = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,
@@ -58,6 +63,7 @@ def build_triangle_relations_prompt_artifacts(
             "annotation_instruction": _annotation_instruction(str(annotation_mode), tuple(annotation_roles)),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
+            "target_name": str(target_name),
         },
         instance_seed=int(instance_seed),
     )

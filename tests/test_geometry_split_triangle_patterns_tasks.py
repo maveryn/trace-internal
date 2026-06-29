@@ -4,26 +4,18 @@ from trace.tasks.registry import create_task
 
 
 TASK_QUERIES = {
-    "task_geometry__split_triangle_angle_chase__target_angle_value": (
-        "single_cevian_triangle_angle_sum",
-        "shared_vertex_split_angle_sum",
-        "two_step_adjacent_triangle_angle_sum",
-    ),
+    "task_geometry__triangle_relations__split_triangle_angle_value": ("single",),
     "task_geometry__triangle_relations__angle_bisector_variable_value": (
         "single",
     ),
-    "task_geometry__split_triangle_trig_chain__side_length_value": (
-        "shared_altitude_two_angles_side",
-        "shared_altitude_side_then_hypotenuse",
-        "isosceles_altitude_trig_side",
-    ),
+    "task_geometry__triangle_relations__split_triangle_trig_side_length_value": ("single",),
 }
 
 
 EXPECTED_SCENES = {
-    "task_geometry__split_triangle_angle_chase__target_angle_value": "split_triangle_angle_chase",
+    "task_geometry__triangle_relations__split_triangle_angle_value": "triangle_relations",
     "task_geometry__triangle_relations__angle_bisector_variable_value": "triangle_relations",
-    "task_geometry__split_triangle_trig_chain__side_length_value": "split_triangle_trig_chain",
+    "task_geometry__triangle_relations__split_triangle_trig_side_length_value": "triangle_relations",
 }
 
 
@@ -72,7 +64,7 @@ def test_split_triangle_pattern_answers_match_trace_values() -> None:
             values = trace.get("values", trace)
             assert output.answer_gt.value == trace["answer"]
             assert output.answer_gt.value == values.get("answer", trace["answer"])
-            if task_id.endswith("__target_angle_value"):
+            if task_id.endswith("__split_triangle_angle_value"):
                 assert output.answer_gt.type == "integer"
                 assert 0 < int(output.answer_gt.value) < 180
             elif task_id.endswith("__angle_bisector_variable_value"):
@@ -84,8 +76,8 @@ def test_split_triangle_pattern_answers_match_trace_values() -> None:
 
 
 def test_split_triangle_pattern_generation_is_deterministic() -> None:
-    task_id = "task_geometry__split_triangle_angle_chase__target_angle_value"
-    query_id = "two_step_adjacent_triangle_angle_sum"
+    task_id = "task_geometry__triangle_relations__split_triangle_angle_value"
+    query_id = "single"
     first = _generate(task_id, query_id, seed=817)
     second = _generate(task_id, query_id, seed=817)
     assert first.answer_gt == second.answer_gt

@@ -5,8 +5,9 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Callable, Mapping, Sequence, TypeVar
 
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.measurement_rendering import fmt_measure
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 T = TypeVar("T")
 
@@ -47,21 +48,13 @@ def choose_case_by_answer(
             raise ValueError(f"unsupported triangle-relations answer: {selected_key}")
         answer_probabilities = {key: (1.0 if key == selected_key else 0.0) for key in answer_keys}
     else:
-        answer_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}.answer",
-        )
-        selected_key = answer_keys[int(answer_index) % len(answer_keys)]
+        rng = spawn_rng(int(instance_seed), f"{namespace}.answer")
+        selected_key = str(uniform_choice(rng, answer_keys))
         answer_probabilities = uniform_probability_map(answer_keys)
 
     variants = tuple(by_answer[selected_key])
-    variant_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.case",
-    )
-    return variants[int(variant_index) % len(variants)], dict(answer_probabilities)
+    rng = spawn_rng(int(instance_seed), f"{namespace}.case.{selected_key}")
+    return uniform_choice(rng, variants), dict(answer_probabilities)
 
 
 __all__ = ["choose_case_by_answer", "uniform_probability_map"]

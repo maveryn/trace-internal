@@ -225,6 +225,7 @@ def run_triangle_relations_public_entry(
         annotation_mode=str(problem.annotation_mode),
         annotation_roles=tuple(attempt.rendered.annotation_roles),
         answer_value=answer_value,
+        target_name=str(problem.prompt_target),
         instance_seed=int(instance_seed),
     )
     return TaskOutput(

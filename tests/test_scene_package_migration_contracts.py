@@ -1471,6 +1471,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
                 "polyomino_missing",
                 "raven_matrix",
                 "rubiks_net",
+                "star_battle",
                 "string_topology",
                 "sudoku",
                 "tangram",

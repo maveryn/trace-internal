@@ -2967,14 +2967,14 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_symbolic__spinner__spinner_pair_event_value": _entry(
         "symbolic", "spinner", "symbolic", "spinner"
     ),
-    "task_puzzles__star_battle__scoped_valid_cell_label": _entry(
-        "puzzles", "star_battle", "puzzles", "logic"
+    "task_puzzles__star_battle__remaining_valid_cell_count": _entry(
+        "puzzles", "star_battle", "puzzles", "star_battle"
     ),
-    "task_puzzles__star_battle__star_battle_remaining_count": _entry(
-        "puzzles", "star_battle", "puzzles", "logic"
+    "task_puzzles__star_battle__scoped_valid_cell_label": _entry(
+        "puzzles", "star_battle", "puzzles", "star_battle"
     ),
     "task_puzzles__star_battle__valid_cell_anywhere_label": _entry(
-        "puzzles", "star_battle", "puzzles", "logic"
+        "puzzles", "star_battle", "puzzles", "star_battle"
     ),
     "task_puzzles__sudoku__marked_cell_candidate_count": _entry(
         "puzzles", "sudoku", "puzzles", "sudoku"

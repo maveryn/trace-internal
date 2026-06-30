@@ -643,14 +643,15 @@ def _right_triangle_case(
     a = (140.0, 430.0)
     c = (140.0 + adjacent * scale, 430.0)
     b = (c[0], 430.0 - opposite * scale)
-    side_segments = {"adjacent": ("A", "C"), "opposite": ("C", "B"), "hypotenuse": ("A", "B")}
-    side_names = {"adjacent": "ground", "opposite": "height", "hypotenuse": "slope"}
+    side_segments = {"adjacent": ("A", "C"), "opposite": ("B", "C"), "hypotenuse": ("A", "B")}
     labels: list[SegmentLabel] = []
     for side in visible_sides:
+        segment_name = "".join(side_segments[side])
         value = {"adjacent": adjacent, "opposite": opposite, "hypotenuse": hypotenuse}[side]
-        labels.append(SegmentLabel(side_segments[side], f"{side_names[side]}={fmt_measure(value)}", 32.0, side))
+        labels.append(SegmentLabel(side_segments[side], fmt_measure(value), 32.0, segment_name))
     if target_side is not None:
-        labels.append(SegmentLabel(side_segments[target_side], f"{side_names[target_side]}=?", -34.0, target_side))
+        segment_name = "".join(side_segments[target_side])
+        labels.append(SegmentLabel(side_segments[target_side], f"{segment_name}=?", -34.0, segment_name))
     angle_text = "?" if target_side is None else f"θ={fmt_measure(theta)}°"
     answer_type = "number"
     rounding = "nearest_tenth"

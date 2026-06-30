@@ -26,7 +26,7 @@ class SegmentLabel:
     text: str
     offset: float = 28.0
     role: str = ""
-    placement: str = "segment"
+    placement: str = "auto"
 
 
 @dataclass(frozen=True)

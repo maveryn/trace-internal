@@ -229,6 +229,82 @@ def _draw_segment_label(
     return draw_readout_centered(ctx, str(label.text), center, small=True, backed=False)
 
 
+def _side_readout_text(label: SegmentLabel) -> str:
+    role = str(label.role or "".join(label.segment))
+    text = str(label.text)
+    if "=" in text:
+        return text
+    return f"{role}={text}"
+
+
+def _readout_list_bboxes(ctx: RenderContext, texts: Sequence[str], origin: Point) -> tuple[tuple[BBox, Point], ...]:
+    x0, y0 = float(origin[0]), float(origin[1])
+    line_gap = 8.0
+    rows: list[tuple[BBox, Point]] = []
+    cursor_y = y0
+    for text in texts:
+        text_bbox = ctx.draw.textbbox(
+            (0.0, 0.0),
+            str(text),
+            anchor="lt",
+            font=ctx.small_font,
+            stroke_width=max(0, int(ctx.label_stroke_width)),
+        )
+        width = float(text_bbox[2] - text_bbox[0]) + 8.0
+        height = float(text_bbox[3] - text_bbox[1]) + 8.0
+        bbox = (x0, cursor_y, x0 + width, cursor_y + height)
+        rows.append((bbox, (x0 + width / 2.0, cursor_y + height / 2.0)))
+        cursor_y += height + line_gap
+    return tuple(rows)
+
+
+def _choose_readout_list_origin(
+    ctx: RenderContext,
+    texts: Sequence[str],
+    *,
+    avoid_bboxes: Sequence[Sequence[float]],
+) -> Point:
+    text_rows = _readout_list_bboxes(ctx, texts, (0.0, 0.0))
+    width = max((bbox[2] - bbox[0] for bbox, _center in text_rows), default=0.0)
+    height = max((bbox[3] for bbox, _center in text_rows), default=0.0)
+    margin = 28.0
+    candidates = (
+        (margin, margin),
+        (float(ctx.width) - width - margin, margin),
+        (margin, float(ctx.height) - height - margin),
+        (float(ctx.width) - width - margin, float(ctx.height) - height - margin),
+        (margin, float(ctx.height) * 0.5 - height * 0.5),
+        (float(ctx.width) - width - margin, float(ctx.height) * 0.5 - height * 0.5),
+    )
+
+    def candidate_penalty(origin: Point) -> float:
+        penalty = 0.0
+        for bbox, center in _readout_list_bboxes(ctx, texts, origin):
+            penalty += _placement_penalty(ctx, bbox, avoid_bboxes=avoid_bboxes, anchor=center, center=center)
+        return penalty
+
+    return min(candidates, key=candidate_penalty)
+
+
+def _draw_side_readout_labels(
+    ctx: RenderContext,
+    labels: Sequence[SegmentLabel],
+    *,
+    avoid_bboxes: Sequence[Sequence[float]] = (),
+) -> dict[str, BBox]:
+    if not labels:
+        return {}
+    texts = tuple(_side_readout_text(label) for label in labels)
+    origin = _choose_readout_list_origin(ctx, texts, avoid_bboxes=avoid_bboxes)
+    rows = _readout_list_bboxes(ctx, texts, origin)
+    bboxes: dict[str, BBox] = {}
+    for label, text, (_expected_bbox, center) in zip(labels, texts, rows, strict=True):
+        bboxes[label.role or "".join(label.segment)] = _coerce_bbox(
+            draw_readout_centered(ctx, text, center, small=True, backed=False)
+        )
+    return bboxes
+
+
 def _angle_points(vertex: Point, arm_a: Point, arm_b: Point, radius: float) -> tuple[Point, ...]:
     start = math.atan2(float(arm_a[1]) - float(vertex[1]), float(arm_a[0]) - float(vertex[0]))
     end = math.atan2(float(arm_b[1]) - float(vertex[1]), float(arm_b[0]) - float(vertex[0]))
@@ -409,7 +485,9 @@ def render_triangle_relations_scene(
     label_bboxes: dict[str, list[float]] = {}
     label_bbox_values: list[BBox] = []
     label_avoid_bboxes: list[BBox] = []
-    for label in case.segment_labels:
+    side_readout_labels = tuple(label for label in case.segment_labels if str(label.placement) == "side_readout")
+    segment_labels = tuple(label for label in case.segment_labels if str(label.placement) != "side_readout")
+    for label in segment_labels:
         owned_segment = frozenset(str(value) for value in label.segment)
         avoid_bboxes = (
             tuple(vertex_guards.values())
@@ -420,6 +498,15 @@ def render_triangle_relations_scene(
         bbox = _draw_segment_label(ctx, points, label, avoid_bboxes=avoid_bboxes)
         label_bboxes[label.role or "".join(label.segment)] = bbox_to_list(bbox)
         raw_bbox = _coerce_bbox(bbox)
+        label_bbox_values.append(raw_bbox)
+        label_avoid_bboxes.append(_expand_bbox(raw_bbox, 14.0))
+    side_label_bboxes = _draw_side_readout_labels(
+        ctx,
+        side_readout_labels,
+        avoid_bboxes=tuple(vertex_guards.values()) + tuple(edge_bbox_by_segment.values()) + construction_bboxes + tuple(label_avoid_bboxes),
+    )
+    for key, raw_bbox in side_label_bboxes.items():
+        label_bboxes[key] = bbox_to_list(raw_bbox)
         label_bbox_values.append(raw_bbox)
         label_avoid_bboxes.append(_expand_bbox(raw_bbox, 14.0))
     point_label_bboxes = _draw_point_labels(

@@ -520,9 +520,9 @@ def angle_bisector_split_cases() -> tuple[TriangleRelationsCase, ...]:
                         bd=bd,
                         dc=dc,
                         labels=(
-                            SegmentLabel(("A", "B"), str(ab), -32.0, "AB"),
-                            SegmentLabel(("A", "C"), str(ac), 32.0, "AC"),
-                            SegmentLabel(("B", "D"), str(bd), 28.0, "BD"),
+                            SegmentLabel(("A", "B"), str(ab), -32.0, "AB", placement="side_readout"),
+                            SegmentLabel(("A", "C"), str(ac), 32.0, "AC", placement="side_readout"),
+                            SegmentLabel(("B", "D"), str(bd), 28.0, "BD", placement="side_readout"),
                             SegmentLabel(("D", "C"), "DC=?", 28.0, "DC"),
                         ),
                         target=("D", "C"),

@@ -132,6 +132,11 @@ def _bbox_overlap_area(a: Sequence[float], b: Sequence[float]) -> float:
     return overlap_w * overlap_h
 
 
+def _expand_bbox(bbox: Sequence[float], pad: float) -> BBox:
+    x0, y0, x1, y1 = _coerce_bbox(bbox)
+    return (x0 - float(pad), y0 - float(pad), x1 + float(pad), y1 + float(pad))
+
+
 def _readout_bbox(ctx: RenderContext, text: str, center: Point, *, small: bool = True) -> BBox:
     font = ctx.small_font if bool(small) else ctx.font
     bbox = ctx.draw.textbbox(
@@ -154,17 +159,21 @@ def _placement_penalty(
     center: Point,
 ) -> float:
     x0, y0, x1, y1 = _coerce_bbox(bbox)
-    margin = 8.0
+    margin = 16.0
     edge_penalty = 0.0
     if x0 < margin:
-        edge_penalty += (margin - x0) * 120.0
+        edge_penalty += 1_000_000.0 + (margin - x0) * 120.0
     if y0 < margin:
-        edge_penalty += (margin - y0) * 120.0
+        edge_penalty += 1_000_000.0 + (margin - y0) * 120.0
     if x1 > float(ctx.width) - margin:
-        edge_penalty += (x1 - (float(ctx.width) - margin)) * 120.0
+        edge_penalty += 1_000_000.0 + (x1 - (float(ctx.width) - margin)) * 120.0
     if y1 > float(ctx.height) - margin:
-        edge_penalty += (y1 - (float(ctx.height) - margin)) * 120.0
-    overlap_penalty = sum(_bbox_overlap_area(bbox, avoid_bbox) for avoid_bbox in avoid_bboxes) * 4.0
+        edge_penalty += 1_000_000.0 + (y1 - (float(ctx.height) - margin)) * 120.0
+    overlap_penalty = 0.0
+    for avoid_bbox in avoid_bboxes:
+        overlap_area = _bbox_overlap_area(bbox, avoid_bbox)
+        if overlap_area > 0.0:
+            overlap_penalty += 1_000_000.0 + overlap_area * 100.0
     distance_penalty = math.hypot(float(center[0]) - float(anchor[0]), float(center[1]) - float(anchor[1])) * 0.08
     return edge_penalty + overlap_penalty + distance_penalty
 
@@ -184,10 +193,15 @@ def _choose_segment_label_center(
     base_offset = max(30.0, abs(float(offset)))
     preferred_sign = 1.0 if float(offset) >= 0.0 else -1.0
     segment_length = math.hypot(float(b[0]) - float(a[0]), float(b[1]) - float(a[1]))
+    is_target_label = "?" in str(text)
+    offset_scales = (1.0, 1.4, 1.9, 2.5, 3.2)
+    shift_scales = (0.0, -0.18, 0.18, -0.34, 0.34, -0.52, 0.52)
+    if is_target_label:
+        shift_scales = (0.0, -0.18, 0.18, -0.34, 0.34, -0.52, 0.52, -0.68, 0.68)
     candidates: list[Point] = []
     for sign in (preferred_sign, -preferred_sign):
-        for offset_scale in (1.0, 1.35, 1.75, 2.15):
-            for shift_scale in (0.0, -0.14, 0.14, -0.24, 0.24):
+        for offset_scale in offset_scales:
+            for shift_scale in shift_scales:
                 center = add_scaled(add_scaled(midpoint, normal, sign * base_offset * offset_scale), tangent, segment_length * shift_scale)
                 candidates.append(center)
     return min(
@@ -284,6 +298,8 @@ def _choose_point_label_center(
     *,
     avoid_bboxes: Sequence[Sequence[float]],
 ) -> Point:
+    """Choose a readable point-label position without changing projected geometry."""
+
     x, y = float(point[0]), float(point[1])
     outward_x = -1.0 if x < float(ctx.width) / 2.0 else 1.0
     outward_y = -1.0 if y < float(ctx.height) / 2.0 else 1.0
@@ -300,6 +316,18 @@ def _choose_point_label_center(
         (38.0, 0.0),
         (0.0, 38.0),
         (-38.0, 0.0),
+        (0.0, -52.0),
+        (52.0, 0.0),
+        (0.0, 52.0),
+        (-52.0, 0.0),
+        (38.0 * outward_x, 38.0 * outward_y),
+        (38.0 * outward_x, -38.0 * outward_y),
+        (-38.0 * outward_x, 38.0 * outward_y),
+        (-38.0 * outward_x, -38.0 * outward_y),
+        (0.0, -66.0),
+        (66.0, 0.0),
+        (0.0, 66.0),
+        (-66.0, 0.0),
     )
     candidates = [(x + dx, y + dy) for dx, dy in offsets]
     return min(
@@ -321,12 +349,12 @@ def _draw_point_labels(
     avoid_bboxes: Sequence[Sequence[float]] = (),
 ) -> dict[str, list[float]]:
     bboxes: dict[str, list[float]] = {}
-    placed_bboxes: list[BBox] = []
+    placed_avoid_bboxes: list[BBox] = []
     for label, point in points.items():
-        center = _choose_point_label_center(ctx, str(label), point, avoid_bboxes=tuple(avoid_bboxes) + tuple(placed_bboxes))
+        center = _choose_point_label_center(ctx, str(label), point, avoid_bboxes=tuple(avoid_bboxes) + tuple(placed_avoid_bboxes))
         bbox = draw_readout_centered(ctx, str(label), center, small=True, backed=False, required=False)
         bboxes[str(label)] = bbox_to_list(bbox)
-        placed_bboxes.append(_coerce_bbox(bbox))
+        placed_avoid_bboxes.append(_expand_bbox(bbox, 10.0))
     return bboxes
 
 
@@ -380,21 +408,24 @@ def render_triangle_relations_scene(
     construction_bboxes = tuple(angle_bbox_values + right_angle_bbox_values + tick_bbox_values)
     label_bboxes: dict[str, list[float]] = {}
     label_bbox_values: list[BBox] = []
+    label_avoid_bboxes: list[BBox] = []
     for label in case.segment_labels:
         owned_segment = frozenset(str(value) for value in label.segment)
         avoid_bboxes = (
             tuple(vertex_guards.values())
             + tuple(bbox for segment, bbox in edge_bbox_by_segment.items() if segment != owned_segment)
             + construction_bboxes
-            + tuple(label_bbox_values)
+            + tuple(label_avoid_bboxes)
         )
         bbox = _draw_segment_label(ctx, points, label, avoid_bboxes=avoid_bboxes)
         label_bboxes[label.role or "".join(label.segment)] = bbox_to_list(bbox)
-        label_bbox_values.append(_coerce_bbox(bbox))
+        raw_bbox = _coerce_bbox(bbox)
+        label_bbox_values.append(raw_bbox)
+        label_avoid_bboxes.append(_expand_bbox(raw_bbox, 14.0))
     point_label_bboxes = _draw_point_labels(
         ctx,
         points,
-        avoid_bboxes=tuple(edge_bbox_by_segment.values()) + construction_bboxes + tuple(label_bbox_values),
+        avoid_bboxes=construction_bboxes + tuple(label_avoid_bboxes),
     )
     annotation_segment = None
     annotation_point = None

@@ -28,6 +28,8 @@ def _trim_answer_variants(
 
     by_answer: dict[str, list[TriangleRelationsCase]] = {}
     for case in cases:
+        if not _case_has_readable_labeled_geometry(case):
+            continue
         bucket = by_answer.setdefault(_answer_key(case.answer), [])
         if len(bucket) < int(max_variants_per_answer):
             bucket.append(case)
@@ -52,6 +54,57 @@ def _trim_answer_variants(
 
 def _is_valid_triangle(a: float, b: float, c: float) -> bool:
     return (a + b > c) and (a + c > b) and (b + c > a)
+
+
+def _segment_length(vertices: Mapping[str, tuple[float, float]], segment: tuple[str, str]) -> float:
+    start = vertices[str(segment[0])]
+    end = vertices[str(segment[1])]
+    return math.hypot(float(start[0]) - float(end[0]), float(start[1]) - float(end[1]))
+
+
+def _case_has_readable_labeled_geometry(case: TriangleRelationsCase) -> bool:
+    """Reject constructions where faithful proportions make labeled support unreadable."""
+
+    if any(_segment_length(case.vertices, label.segment) < 52.0 for label in case.segment_labels):
+        return False
+    if str(case.formula_family).startswith("angle_bisector") and _angle_bisector_split_fraction(case) < 0.2:
+        return False
+    return True
+
+
+def _angle_bisector_split_fraction(case: TriangleRelationsCase) -> float:
+    values = dict(case.trace_values)
+    bd = values.get("BD")
+    dc = values.get("DC", values.get("derived_DC"))
+    if dc is None and "DC_expression" in values:
+        dc = _expression_value(values["DC_expression"], values.get("x"))
+    if bd is None or dc is None:
+        return 1.0
+    base = float(bd) + float(dc)
+    if base <= 0.0:
+        return 0.0
+    return min(float(bd), float(dc)) / base
+
+
+def _expression_value(expression: object, x_value: object) -> int | None:
+    text = str(expression).strip()
+    try:
+        x_int = int(x_value)
+    except (TypeError, ValueError):
+        return None
+    if text == "x":
+        return x_int
+    if text.startswith("x+"):
+        try:
+            return x_int + int(text[2:])
+        except ValueError:
+            return None
+    if text.startswith("x-"):
+        try:
+            return x_int - int(text[2:])
+        except ValueError:
+            return None
+    return None
 
 
 @cache
@@ -1265,7 +1318,8 @@ def parallel_segment_variable_cases() -> tuple[TriangleRelationsCase, ...]:
         for variant_index in range(8):
             offset = 1 + (variant_index % 5)
             ratio = 2 + (variant_index % 2)
-            left_top = 4 + (variant_index % 8)
+            split_fraction = (0.25, 0.33, 0.4, 0.5)[variant_index % 4]
+            left_top = max(4, round((answer + offset) * split_fraction / (1.0 - split_fraction)))
             split_ratio = left_top / float(left_top + answer + offset)
             cases.append(
                 _case(

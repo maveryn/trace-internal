@@ -16,10 +16,11 @@ from trace.tasks.geometry.shared.measurement_rendering import (
     bbox_from_points,
     bbox_to_list,
     draw_readout_centered,
+    pad_bbox,
 )
 from trace.tasks.geometry.shared.metadata_serialization import geometry_json_ready
 from trace.tasks.geometry.shared.scene_transform import LazySceneTransform
-from trace.tasks.geometry.shared.vector2d import add_scaled, mid, mul, perp, point_to_list, sub, unit
+from trace.tasks.geometry.shared.vector2d import add_scaled, mid, perp, point_to_list, sub, unit
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from trace.tasks.shared.text_rendering import load_font
@@ -36,6 +37,8 @@ from .state import (
     TickGroup,
     TriangleRelationsProblem,
 )
+
+BBox = tuple[float, float, float, float]
 
 
 def create_render_context(
@@ -116,15 +119,100 @@ def _draw_polygon(ctx: RenderContext, points: Sequence[Point], *, fill: tuple[in
     return _draw_line(ctx, tuple(points) + (tuple(points)[0],))
 
 
-def _label_offset_center(a: Point, b: Point, offset: float) -> Point:
-    direction = unit(sub(b, a))
-    return add_scaled(mid(a, b), perp(direction), float(offset))
+def _coerce_bbox(bbox: Sequence[float]) -> BBox:
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    return (min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1))
 
 
-def _draw_segment_label(ctx: RenderContext, points: Mapping[str, Point], label: SegmentLabel) -> tuple[float, float, float, float]:
+def _bbox_overlap_area(a: Sequence[float], b: Sequence[float]) -> float:
+    ax0, ay0, ax1, ay1 = _coerce_bbox(a)
+    bx0, by0, bx1, by1 = _coerce_bbox(b)
+    overlap_w = max(0.0, min(ax1, bx1) - max(ax0, bx0))
+    overlap_h = max(0.0, min(ay1, by1) - max(ay0, by0))
+    return overlap_w * overlap_h
+
+
+def _readout_bbox(ctx: RenderContext, text: str, center: Point, *, small: bool = True) -> BBox:
+    font = ctx.small_font if bool(small) else ctx.font
+    bbox = ctx.draw.textbbox(
+        (float(center[0]), float(center[1])),
+        str(text),
+        anchor="mm",
+        font=font,
+        stroke_width=max(0, int(ctx.label_stroke_width)),
+    )
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    return (x0 - 4.0, y0 - 4.0, x1 + 4.0, y1 + 4.0)
+
+
+def _placement_penalty(
+    ctx: RenderContext,
+    bbox: Sequence[float],
+    *,
+    avoid_bboxes: Sequence[Sequence[float]],
+    anchor: Point,
+    center: Point,
+) -> float:
+    x0, y0, x1, y1 = _coerce_bbox(bbox)
+    margin = 8.0
+    edge_penalty = 0.0
+    if x0 < margin:
+        edge_penalty += (margin - x0) * 120.0
+    if y0 < margin:
+        edge_penalty += (margin - y0) * 120.0
+    if x1 > float(ctx.width) - margin:
+        edge_penalty += (x1 - (float(ctx.width) - margin)) * 120.0
+    if y1 > float(ctx.height) - margin:
+        edge_penalty += (y1 - (float(ctx.height) - margin)) * 120.0
+    overlap_penalty = sum(_bbox_overlap_area(bbox, avoid_bbox) for avoid_bbox in avoid_bboxes) * 4.0
+    distance_penalty = math.hypot(float(center[0]) - float(anchor[0]), float(center[1]) - float(anchor[1])) * 0.08
+    return edge_penalty + overlap_penalty + distance_penalty
+
+
+def _choose_segment_label_center(
+    ctx: RenderContext,
+    a: Point,
+    b: Point,
+    text: str,
+    offset: float,
+    *,
+    avoid_bboxes: Sequence[Sequence[float]],
+) -> Point:
+    tangent = unit(sub(b, a))
+    normal = perp(tangent)
+    midpoint = mid(a, b)
+    base_offset = max(30.0, abs(float(offset)))
+    preferred_sign = 1.0 if float(offset) >= 0.0 else -1.0
+    segment_length = math.hypot(float(b[0]) - float(a[0]), float(b[1]) - float(a[1]))
+    candidates: list[Point] = []
+    for sign in (preferred_sign, -preferred_sign):
+        for offset_scale in (1.0, 1.35, 1.75, 2.15):
+            for shift_scale in (0.0, -0.14, 0.14, -0.24, 0.24):
+                center = add_scaled(add_scaled(midpoint, normal, sign * base_offset * offset_scale), tangent, segment_length * shift_scale)
+                candidates.append(center)
+    return min(
+        candidates,
+        key=lambda center: _placement_penalty(
+            ctx,
+            _readout_bbox(ctx, text, center, small=True),
+            avoid_bboxes=avoid_bboxes,
+            anchor=midpoint,
+            center=center,
+        ),
+    )
+
+
+def _draw_segment_label(
+    ctx: RenderContext,
+    points: Mapping[str, Point],
+    label: SegmentLabel,
+    *,
+    avoid_bboxes: Sequence[Sequence[float]] = (),
+) -> BBox:
     a = points[str(label.segment[0])]
     b = points[str(label.segment[1])]
-    return draw_readout_centered(ctx, str(label.text), _label_offset_center(a, b, label.offset), small=True, backed=False)
+    center = _choose_segment_label_center(ctx, a, b, str(label.text), float(label.offset), avoid_bboxes=avoid_bboxes)
+    return draw_readout_centered(ctx, str(label.text), center, small=True, backed=False)
 
 
 def _angle_points(vertex: Point, arm_a: Point, arm_b: Point, radius: float) -> tuple[Point, ...]:
@@ -189,21 +277,64 @@ def _draw_tick_group(ctx: RenderContext, points: Mapping[str, Point], group: Tic
     return bbox_from_points(tuple(tick_points), width=ctx.width, height=ctx.height, pad=5.0) if tick_points else (0.0, 0.0, 0.0, 0.0)
 
 
-def _draw_point_labels(ctx: RenderContext, points: Mapping[str, Point]) -> dict[str, list[float]]:
+def _choose_point_label_center(
+    ctx: RenderContext,
+    label: str,
+    point: Point,
+    *,
+    avoid_bboxes: Sequence[Sequence[float]],
+) -> Point:
+    x, y = float(point[0]), float(point[1])
+    outward_x = -1.0 if x < float(ctx.width) / 2.0 else 1.0
+    outward_y = -1.0 if y < float(ctx.height) / 2.0 else 1.0
+    offsets = (
+        (0.0, -28.0),
+        (28.0, 0.0),
+        (0.0, 28.0),
+        (-28.0, 0.0),
+        (24.0 * outward_x, 24.0 * outward_y),
+        (24.0 * outward_x, -24.0 * outward_y),
+        (-24.0 * outward_x, 24.0 * outward_y),
+        (-24.0 * outward_x, -24.0 * outward_y),
+        (0.0, -38.0),
+        (38.0, 0.0),
+        (0.0, 38.0),
+        (-38.0, 0.0),
+    )
+    candidates = [(x + dx, y + dy) for dx, dy in offsets]
+    return min(
+        candidates,
+        key=lambda center: _placement_penalty(
+            ctx,
+            _readout_bbox(ctx, label, center, small=True),
+            avoid_bboxes=avoid_bboxes,
+            anchor=point,
+            center=center,
+        ),
+    )
+
+
+def _draw_point_labels(
+    ctx: RenderContext,
+    points: Mapping[str, Point],
+    *,
+    avoid_bboxes: Sequence[Sequence[float]] = (),
+) -> dict[str, list[float]]:
     bboxes: dict[str, list[float]] = {}
+    placed_bboxes: list[BBox] = []
     for label, point in points.items():
-        x, y = float(point[0]), float(point[1])
-        if y > ctx.height * 0.68:
-            offset = (0.0, 22.0)
-        elif y < ctx.height * 0.24:
-            offset = (0.0, -22.0)
-        elif x < ctx.width * 0.35:
-            offset = (-22.0, 0.0)
-        else:
-            offset = (22.0, 0.0)
-        bbox = draw_readout_centered(ctx, str(label), (x + offset[0], y + offset[1]), small=True, backed=False, required=False)
+        center = _choose_point_label_center(ctx, str(label), point, avoid_bboxes=tuple(avoid_bboxes) + tuple(placed_bboxes))
+        bbox = draw_readout_centered(ctx, str(label), center, small=True, backed=False, required=False)
         bboxes[str(label)] = bbox_to_list(bbox)
+        placed_bboxes.append(_coerce_bbox(bbox))
     return bboxes
+
+
+def _vertex_guard_bboxes(ctx: RenderContext, points: Mapping[str, Point], *, radius: float = 18.0) -> dict[str, BBox]:
+    return {
+        key: pad_bbox((float(point[0]), float(point[1]), float(point[0]), float(point[1])), float(radius), width=int(ctx.width), height=int(ctx.height))
+        for key, point in points.items()
+    }
 
 
 def render_triangle_relations_scene(
@@ -221,21 +352,50 @@ def render_triangle_relations_scene(
         polygon_bboxes["filled_" + "_".join(polygon)] = bbox_to_list(_draw_polygon(ctx, [points[label] for label in polygon], fill=ctx.fill_color))
     for polygon in case.polygons:
         polygon_bboxes["_".join(polygon)] = bbox_to_list(_draw_polygon(ctx, [points[label] for label in polygon]))
-    edge_bboxes = {
-        f"{a}{b}": bbox_to_list(_draw_line(ctx, (points[a], points[b]), color=ctx.line_color))
-        for a, b in case.edges
-    }
-    label_bboxes = {label.role or "".join(label.segment): bbox_to_list(_draw_segment_label(ctx, points, label)) for label in case.segment_labels}
-    angle_bboxes = {
-        angle.role or f"{angle.arm_a}{angle.vertex}{angle.arm_b}": bbox_to_list(_draw_angle(ctx, points, angle))
-        for angle in case.angle_labels
-    }
-    right_angle_bboxes = {mark.vertex: bbox_to_list(_draw_right_angle(ctx, points, mark)) for mark in case.right_angles}
-    tick_bboxes = {
-        f"{group.kind}_{idx}": bbox_to_list(_draw_tick_group(ctx, points, group))
-        for idx, group in enumerate(case.tick_groups)
-    }
-    point_label_bboxes = _draw_point_labels(ctx, points)
+    edge_bboxes: dict[str, list[float]] = {}
+    edge_bbox_by_segment: dict[frozenset[str], BBox] = {}
+    for a, b in case.edges:
+        bbox = _draw_line(ctx, (points[a], points[b]), color=ctx.line_color)
+        edge_bboxes[f"{a}{b}"] = bbox_to_list(bbox)
+        edge_bbox_by_segment[frozenset((a, b))] = _coerce_bbox(bbox)
+    angle_bboxes: dict[str, list[float]] = {}
+    angle_bbox_values: list[BBox] = []
+    for angle in case.angle_labels:
+        bbox = _draw_angle(ctx, points, angle)
+        angle_bboxes[angle.role or f"{angle.arm_a}{angle.vertex}{angle.arm_b}"] = bbox_to_list(bbox)
+        angle_bbox_values.append(_coerce_bbox(bbox))
+    right_angle_bboxes: dict[str, list[float]] = {}
+    right_angle_bbox_values: list[BBox] = []
+    for mark in case.right_angles:
+        bbox = _draw_right_angle(ctx, points, mark)
+        right_angle_bboxes[mark.vertex] = bbox_to_list(bbox)
+        right_angle_bbox_values.append(_coerce_bbox(bbox))
+    tick_bboxes: dict[str, list[float]] = {}
+    tick_bbox_values: list[BBox] = []
+    for idx, group in enumerate(case.tick_groups):
+        bbox = _draw_tick_group(ctx, points, group)
+        tick_bboxes[f"{group.kind}_{idx}"] = bbox_to_list(bbox)
+        tick_bbox_values.append(_coerce_bbox(bbox))
+    vertex_guards = _vertex_guard_bboxes(ctx, points)
+    construction_bboxes = tuple(angle_bbox_values + right_angle_bbox_values + tick_bbox_values)
+    label_bboxes: dict[str, list[float]] = {}
+    label_bbox_values: list[BBox] = []
+    for label in case.segment_labels:
+        owned_segment = frozenset(str(value) for value in label.segment)
+        avoid_bboxes = (
+            tuple(vertex_guards.values())
+            + tuple(bbox for segment, bbox in edge_bbox_by_segment.items() if segment != owned_segment)
+            + construction_bboxes
+            + tuple(label_bbox_values)
+        )
+        bbox = _draw_segment_label(ctx, points, label, avoid_bboxes=avoid_bboxes)
+        label_bboxes[label.role or "".join(label.segment)] = bbox_to_list(bbox)
+        label_bbox_values.append(_coerce_bbox(bbox))
+    point_label_bboxes = _draw_point_labels(
+        ctx,
+        points,
+        avoid_bboxes=tuple(edge_bbox_by_segment.values()) + construction_bboxes + tuple(label_bbox_values),
+    )
     annotation_segment = None
     annotation_point = None
     annotation_points: dict[str, Point] = {}

@@ -376,18 +376,32 @@ def _angle_points(vertex: Point, arm_a: Point, arm_b: Point, radius: float) -> t
     )
 
 
+def _angle_marker_radius(ctx: RenderContext, vertex: Point, arm_a: Point, arm_b: Point, angle: AngleLabel) -> float:
+    """Keep angle arcs legible without letting them spill outside tight triangles."""
+
+    requested = float(angle.radius)
+    arm_a_length = math.hypot(float(arm_a[0]) - float(vertex[0]), float(arm_a[1]) - float(vertex[1]))
+    arm_b_length = math.hypot(float(arm_b[0]) - float(vertex[0]), float(arm_b[1]) - float(vertex[1]))
+    short_arm = max(1.0, min(arm_a_length, arm_b_length))
+    has_text = bool(str(angle.text))
+    max_radius = min(42.0 if has_text else 30.0, short_arm * (0.28 if has_text else 0.22))
+    min_radius = 16.0 if has_text else 12.0
+    return max(min_radius, min(requested, max_radius))
+
+
 def _draw_angle(ctx: RenderContext, points: Mapping[str, Point], angle: AngleLabel) -> tuple[float, float, float, float]:
     vertex = points[str(angle.vertex)]
     arm_a = points[str(angle.arm_a)]
     arm_b = points[str(angle.arm_b)]
-    arc = _angle_points(vertex, arm_a, arm_b, max(24.0, float(angle.radius)))
+    radius = _angle_marker_radius(ctx, vertex, arm_a, arm_b, angle)
+    arc = _angle_points(vertex, arm_a, arm_b, radius)
     arc_bbox = _draw_line(ctx, arc, color=ctx.accent_color, width=max(2, ctx.line_width - 1))
     if not str(angle.text):
         return arc_bbox
     direction = unit(add_scaled(unit(sub(arm_a, vertex)), unit(sub(arm_b, vertex)), 1.0))
     if math.hypot(direction[0], direction[1]) <= 1e-6:
         direction = perp(unit(sub(arm_a, vertex)))
-    text_bbox = draw_readout_centered(ctx, str(angle.text), add_scaled(vertex, direction, float(angle.radius) + 24.0), small=True, backed=False)
+    text_bbox = draw_readout_centered(ctx, str(angle.text), add_scaled(vertex, direction, radius + 24.0), small=True, backed=False)
     return bbox_from_points(((arc_bbox[0], arc_bbox[1]), (arc_bbox[2], arc_bbox[3]), (text_bbox[0], text_bbox[1]), (text_bbox[2], text_bbox[3])), width=ctx.width, height=ctx.height, pad=2.0)
 
 

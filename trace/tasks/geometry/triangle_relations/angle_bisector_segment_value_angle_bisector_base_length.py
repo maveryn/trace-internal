@@ -53,7 +53,8 @@ class GeometryAngleBisectorBaseLengthTask:
     prepare_objective = staticmethod(_prepare_bisector_base)
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int):
-        return run_triangle_relations_public_entry(self, int(instance_seed), params=params, max_attempts=int(max_attempts))
+        task_params = {**dict(params), "label_stroke_width": 0}
+        return run_triangle_relations_public_entry(self, int(instance_seed), params=task_params, max_attempts=int(max_attempts))
 
 
 __all__ = ["GeometryAngleBisectorBaseLengthTask", "SCENE_ID", "SUPPORTED_QUERY_IDS", "TASK_ID"]

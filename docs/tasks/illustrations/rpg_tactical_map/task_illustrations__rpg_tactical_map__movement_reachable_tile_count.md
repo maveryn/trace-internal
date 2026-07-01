@@ -10,7 +10,15 @@
 Counts all terrain tiles, excluding the blue unit's starting tile, that the blue unit can reach within a visible movement-point budget on a top-down tactical RPG map.
 
 ## Program Contract
-`count(tile where reachable_by_movement_budget(unit, tile, budget, terrain_costs) and tile != start_tile); scene=rpg_tactical_map; scope=movement_reachable_tile_count`
+
+Program: `count(tile where reachable_by_movement_budget(unit, tile, budget, terrain_costs) and tile != start_tile); scene=rpg_tactical_map; scope=movement_reachable_tile_count`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `movement_reachable_tile_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `tile`, `where`, `reachable_by_movement_budget`, `unit`, `budget`, `terrain_costs`, `start_tile`, `rpg_tactical_map`, `movement_reachable_tile_count`.
+Operation: evaluate `count` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

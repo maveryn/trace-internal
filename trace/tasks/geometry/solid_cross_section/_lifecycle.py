@@ -11,7 +11,7 @@ from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import bbox_map_annotation
+from .shared.annotations import annotation_roles_metadata, cross_section_bbox_annotation
 from .shared.defaults import DOMAIN, POST_IMAGE_NOISE_DEFAULTS, SCENE_ID, SCENE_KIND, load_solid_cross_section_defaults
 from .shared.prompts import solid_cross_section_prompt_artifacts
 from .shared.rendering import create_render_context
@@ -25,9 +25,9 @@ class SolidCrossSectionObjectivePlan:
     """Task-owned objective binding prepared by one public task file."""
 
     prompt_key: str
+    object_description: str
     problem: SolidCrossSectionProblem
     render_scene: RenderBuilder
-    annotation_keys: tuple[str, ...]
     answer_value: float
     query_params: Mapping[str, Any]
     trace_values: Mapping[str, Any]
@@ -40,7 +40,7 @@ class SolidCrossSectionTaskParts:
     prompt: str
     prompt_variants: dict[str, str]
     image: Image.Image
-    annotation_value: dict[str, list[float]]
+    annotation_value: list[float]
     trace_payload: dict[str, Any]
     task_versions: dict[str, str]
     scene_id: str
@@ -79,7 +79,7 @@ def _trace_payload(
         "answer_type": "number",
         "answer_value": float(plan.answer_value),
         "answer_rounding": "one_decimal",
-        "annotation_roles": list(plan.annotation_keys),
+        "annotation_roles": annotation_roles_metadata(projected_annotation),
         **dict(plan.trace_values),
     }
     return {
@@ -113,8 +113,8 @@ def _trace_payload(
             "scene_id": SCENE_ID,
             "query_id": str(selected_query),
             "answer_value": float(plan.answer_value),
-            "source_witness_type": "bbox_map",
-            "original_annotation_value": dict(projected_annotation.get("bbox_map", {})),
+            "source_witness_type": str(projected_annotation.get("type", "bbox")),
+            "original_annotation_value": list(projected_annotation.get("bbox", [])),
             **dict(plan.trace_values),
         },
         "projected_annotation": dict(projected_annotation),
@@ -160,11 +160,11 @@ def prepare_solid_cross_section_task_parts(
         params=params,
         default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
-    annotation_gt, projected_annotation = bbox_map_annotation(rendered, plan.annotation_keys)
+    annotation_gt, projected_annotation = cross_section_bbox_annotation(rendered)
     _prompt_defaults, prompt_artifacts = solid_cross_section_prompt_artifacts(
         prompt_defaults=prompt_defaults,
         prompt_key=str(plan.prompt_key),
-        annotation_keys=tuple(plan.annotation_keys),
+        object_description=str(plan.object_description),
         answer=float(plan.answer_value),
         instance_seed=int(instance_seed),
     )
@@ -189,7 +189,7 @@ def prepare_solid_cross_section_task_parts(
         prompt=str(prompt_artifacts.prompt),
         prompt_variants=dict(prompt_artifacts.prompt_variants),
         image=image,
-        annotation_value=dict(annotation_gt.value),
+        annotation_value=list(annotation_gt.value),
         trace_payload=trace_payload,
         task_versions=default_task_versions(),
         scene_id=SCENE_ID,

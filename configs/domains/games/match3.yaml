@@ -49,6 +49,19 @@ generation:
       - 5
       option_count_support:
       - 4
+    task_games__match3__swap_clear_count:
+      row_count_support:
+      - 5
+      col_count_support:
+      - 5
+      gem_type_count_support:
+      - 5
+      swap_clear_count_answer_support:
+      - 0
+      - 3
+      - 4
+      - 5
+      - 6
     task_games__match3__gem_count:
       row_count_support:
       - 5

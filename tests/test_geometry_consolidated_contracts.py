@@ -62,8 +62,8 @@ def test_geometry_split_graph_paper_tasks_reject_legacy_query_ids(task_cls, para
         ("task_geometry__circle_theorem__secant_secant_length_value", "circle_theorem"),
         ("task_geometry__coordinate_plane__segment_relation_count", "coordinate_plane"),
         ("task_geometry__function_graph__extremum_count_turning_point_count", "function_graph"),
-        ("task_geometry__shape_gallery__congruent_count", "shape_gallery"),
-        ("task_geometry__shape_gallery__reflection_match", "shape_gallery"),
+        ("task_geometry__shape_reference__congruent_match", "shape_reference"),
+        ("task_geometry__shape_reference__reflection_match", "shape_reference"),
     ),
 )
 def test_geometry_consolidated_build_smoke(task_id: str, scene_id: str, tmp_path: Path) -> None:

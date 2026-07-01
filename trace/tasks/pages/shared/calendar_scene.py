@@ -50,6 +50,7 @@ class RenderedCalendarScene:
 
     year: int
     month: int
+    first_weekday_index: int
     row_count: int
     title_text: str
     title_bbox_px: Tuple[float, float, float, float] | None
@@ -77,6 +78,7 @@ class RenderedCalendarEventGridScene:
 
     year: int
     month: int
+    first_weekday_index: int
     row_count: int
     title_text: str
     title_bbox_px: Tuple[float, float, float, float] | None
@@ -153,6 +155,21 @@ def _rounded(draw: ImageDraw.ImageDraw, bbox: Sequence[float], *, radius: int, f
     draw.rounded_rectangle([float(value) for value in bbox], radius=int(radius), fill=fill, outline=outline, width=int(width))
 
 
+def _validate_first_weekday_index(first_weekday_index: int) -> int:
+    """Validate the semantic weekday used as the first rendered calendar column."""
+
+    value = int(first_weekday_index)
+    if not 0 <= value <= 6:
+        raise ValueError("first_weekday_index must be in 0..6")
+    return int(value)
+
+
+def _semantic_weekday_index(*, display_weekday_index: int, first_weekday_index: int) -> int:
+    """Return Python-style weekday index for one rendered display column."""
+
+    return int((int(first_weekday_index) + int(display_weekday_index)) % 7)
+
+
 def render_month_calendar_scene(
     image: Image.Image,
     *,
@@ -162,12 +179,14 @@ def render_month_calendar_scene(
     scene_variant: str,
     render_params: CalendarRenderParams,
     visual_theme: TimeArtifactCalendarTheme,
+    first_weekday_index: int = 0,
     panel_bbox_px: Sequence[float] | None = None,
     title_text: str | None = None,
 ) -> RenderedCalendarScene:
     """Render one month-view calendar and return projected valid-date geometry."""
 
-    calendar_rows = calendar.Calendar(firstweekday=0).monthdayscalendar(int(year), int(month))
+    resolved_first_weekday_index = _validate_first_weekday_index(int(first_weekday_index))
+    calendar_rows = calendar.Calendar(firstweekday=int(resolved_first_weekday_index)).monthdayscalendar(int(year), int(month))
     row_count = len(calendar_rows)
     if int(row_count) not in {4, 5, 6}:
         raise ValueError("monthdayscalendar returned an unsupported row count")
@@ -243,8 +262,12 @@ def render_month_calendar_scene(
     date_cell_bboxes_by_day: Dict[int, Tuple[float, float, float, float]] = {}
     marked_date_set = {int(day) for day in marked_dates}
 
-    for weekday_index in range(7):
-        header_x1 = float(grid_left + (weekday_index * (cell_width + cell_gap)))
+    for display_weekday_index in range(7):
+        semantic_weekday_index = _semantic_weekday_index(
+            display_weekday_index=int(display_weekday_index),
+            first_weekday_index=int(resolved_first_weekday_index),
+        )
+        header_x1 = float(grid_left + (display_weekday_index * (cell_width + cell_gap)))
         header_x2 = float(header_x1 + cell_width)
         header_bbox = (
             float(header_x1),
@@ -268,7 +291,7 @@ def render_month_calendar_scene(
         )
         draw_text_centered(
             draw,
-            text=weekday_abbreviation(int(weekday_index)),
+            text=weekday_abbreviation(int(semantic_weekday_index)),
             center=(0.5 * float(header_bbox[0] + header_bbox[2]), 0.5 * float(header_bbox[1] + header_bbox[3])),
             font=weekday_font,
             fill=tuple(int(channel) for channel in visual_theme.weekday_text_rgb),
@@ -278,8 +301,12 @@ def render_month_calendar_scene(
     for row_index, week in enumerate(calendar_rows):
         row_y1 = float(available_grid_top + (row_index * (cell_height + cell_gap)))
         row_y2 = float(row_y1 + cell_height)
-        for weekday_index, day_value in enumerate(week):
-            cell_x1 = float(grid_left + (weekday_index * (cell_width + cell_gap)))
+        for display_weekday_index, day_value in enumerate(week):
+            semantic_weekday_index = _semantic_weekday_index(
+                display_weekday_index=int(display_weekday_index),
+                first_weekday_index=int(resolved_first_weekday_index),
+            )
+            cell_x1 = float(grid_left + (display_weekday_index * (cell_width + cell_gap)))
             cell_x2 = float(cell_x1 + cell_width)
             cell_bbox = (float(cell_x1), float(row_y1), float(cell_x2), float(row_y2))
             cell_outline = (
@@ -347,7 +374,8 @@ def render_month_calendar_scene(
                     "bbox_px": [round(float(value), 3) for value in cell_bbox],
                     "attrs": {
                         "date_number": int(day_value),
-                        "weekday_index": int(weekday_index),
+                        "weekday_index": int(semantic_weekday_index),
+                        "display_weekday_index": int(display_weekday_index),
                         "week_row_index": int(row_index),
                         "year": int(year),
                         "month": int(month),
@@ -360,6 +388,7 @@ def render_month_calendar_scene(
     return RenderedCalendarScene(
         year=int(year),
         month=int(month),
+        first_weekday_index=int(resolved_first_weekday_index),
         row_count=int(row_count),
         title_text=str(resolved_title_text),
         title_bbox_px=(tuple(float(value) for value in title_bbox) if title_bbox is not None else None),
@@ -386,12 +415,14 @@ def render_month_calendar_event_grid_scene(
     scene_variant: str,
     render_params: CalendarRenderParams,
     visual_theme: TimeArtifactCalendarTheme,
+    first_weekday_index: int = 0,
     panel_bbox_px: Sequence[float] | None = None,
     title_text: str | None = None,
 ) -> RenderedCalendarEventGridScene:
     """Render one month calendar with event/category chips inside date cells."""
 
-    calendar_rows = calendar.Calendar(firstweekday=0).monthdayscalendar(int(year), int(month))
+    resolved_first_weekday_index = _validate_first_weekday_index(int(first_weekday_index))
+    calendar_rows = calendar.Calendar(firstweekday=int(resolved_first_weekday_index)).monthdayscalendar(int(year), int(month))
     row_count = len(calendar_rows)
     if int(row_count) not in {4, 5, 6}:
         raise ValueError("monthdayscalendar returned an unsupported row count")
@@ -482,8 +513,12 @@ def render_month_calendar_event_grid_scene(
     date_cell_bboxes_by_day: Dict[int, Tuple[float, float, float, float]] = {}
     event_chip_bboxes_by_key: Dict[str, Tuple[float, float, float, float]] = {}
 
-    for weekday_index in range(7):
-        header_x1 = float(grid_left + (weekday_index * (cell_width + cell_gap)))
+    for display_weekday_index in range(7):
+        semantic_weekday_index = _semantic_weekday_index(
+            display_weekday_index=int(display_weekday_index),
+            first_weekday_index=int(resolved_first_weekday_index),
+        )
+        header_x1 = float(grid_left + (display_weekday_index * (cell_width + cell_gap)))
         header_x2 = float(header_x1 + cell_width)
         header_bbox = (
             float(header_x1),
@@ -507,7 +542,7 @@ def render_month_calendar_event_grid_scene(
         )
         draw_text_centered(
             draw,
-            text=weekday_abbreviation(int(weekday_index)),
+            text=weekday_abbreviation(int(semantic_weekday_index)),
             center=(0.5 * float(header_bbox[0] + header_bbox[2]), 0.5 * float(header_bbox[1] + header_bbox[3])),
             font=weekday_font,
             fill=tuple(int(channel) for channel in visual_theme.weekday_text_rgb),
@@ -517,8 +552,12 @@ def render_month_calendar_event_grid_scene(
     for row_index, week in enumerate(calendar_rows):
         row_y1 = float(available_grid_top + (row_index * (cell_height + cell_gap)))
         row_y2 = float(row_y1 + cell_height)
-        for weekday_index, day_value in enumerate(week):
-            cell_x1 = float(grid_left + (weekday_index * (cell_width + cell_gap)))
+        for display_weekday_index, day_value in enumerate(week):
+            semantic_weekday_index = _semantic_weekday_index(
+                display_weekday_index=int(display_weekday_index),
+                first_weekday_index=int(resolved_first_weekday_index),
+            )
+            cell_x1 = float(grid_left + (display_weekday_index * (cell_width + cell_gap)))
             cell_x2 = float(cell_x1 + cell_width)
             cell_bbox = (float(cell_x1), float(row_y1), float(cell_x2), float(row_y2))
             cell_outline = tuple(int(channel) for channel in visual_theme.grid_line_rgb)
@@ -556,7 +595,8 @@ def render_month_calendar_event_grid_scene(
                     "bbox_px": [round(float(value), 3) for value in cell_bbox],
                     "attrs": {
                         "date_number": int(day_value),
-                        "weekday_index": int(weekday_index),
+                        "weekday_index": int(semantic_weekday_index),
+                        "display_weekday_index": int(display_weekday_index),
                         "week_row_index": int(row_index),
                         "year": int(year),
                         "month": int(month),
@@ -634,6 +674,7 @@ def render_month_calendar_event_grid_scene(
     return RenderedCalendarEventGridScene(
         year=int(year),
         month=int(month),
+        first_weekday_index=int(resolved_first_weekday_index),
         row_count=int(row_count),
         title_text=str(resolved_title_text),
         title_bbox_px=(tuple(float(value) for value in title_bbox) if title_bbox is not None else None),

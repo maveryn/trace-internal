@@ -7,10 +7,10 @@ import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from .....core.seed import spawn_rng
-from ....shared.deterministic_sampling import resolve_selection_index
 from ...shared.camera_projection import build_projection_frame
 from ...shared.object_resources import ROOM_SIDE_RELATION_REFERENCE_OBJECT_TYPE
 from ...shared.object_scene import POINT_LABELS, bbox_intersection_area, object_reference_points
+from ...shared.task_support import resolve_support_choice_for_namespace, shuffled_repeated_support
 from .metrics import (
     CANDIDATE_WALL_OBJECT_TYPES,
     CONTEXT_WALL_OBJECT_TYPES,
@@ -76,8 +76,12 @@ SIDE_RELATION_SCREEN_MAX_INTERSECTION_AREA_PX = 6500.0
 
 def _reference_slot(*, instance_seed: int, reference_wall: str, namespace: str) -> Tuple[float, float]:
     slots = tuple(REFERENCE_WALL_SLOTS[str(reference_wall)])
-    selection_index = resolve_selection_index(params={}, instance_seed=int(instance_seed), namespace=f"{namespace}.reference_slot")
-    hpos, z = slots[abs(int(selection_index)) % len(slots)]
+    hpos, z = resolve_support_choice_for_namespace(
+        params={},
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.reference_slot",
+        support_values=slots,
+    )[0]
     return float(hpos), float(z)
 
 
@@ -122,9 +126,9 @@ def _build_context_wall_specs(*, rng, context_wall_count: int, excluded_wall: st
     context_slots = [slot for slot in CONTEXT_WALL_SLOTS if str(slot[0]) != str(excluded_wall)]
     rng.shuffle(context_slots)
     specs: List[Dict[str, Any]] = []
-    for index in range(int(context_wall_count)):
-        wall, hpos, z = context_slots[index % len(context_slots)]
-        object_type = str(context_types[index % len(context_types)])
+    context_slot_order = shuffled_repeated_support(rng, context_slots, int(context_wall_count))
+    context_type_order = shuffled_repeated_support(rng, context_types, int(context_wall_count))
+    for index, ((wall, hpos, z), object_type) in enumerate(zip(context_slot_order, context_type_order)):
         specs.append(
             _wall_spec_for_type(
                 rng=rng,
@@ -276,8 +280,8 @@ def build_room_wall_side_relation_dataset(
         if len(satisfying) != 1:
             continue
         answer_object_id = str(satisfying[0]["object_id"])
-        answer_label_index = abs(int(resolve_selection_index(params={}, instance_seed=int(instance_seed), namespace=f"{namespace}.answer_label"))) % int(candidate_count)
-        answer_label = str(POINT_LABELS[int(answer_label_index)])
+        label_support = tuple(POINT_LABELS[: int(candidate_count)])
+        answer_label = str(spawn_rng(int(instance_seed), f"{namespace}.answer_label").choice(label_support))
         remaining_labels = [str(label) for label in POINT_LABELS[: int(candidate_count)] if str(label) != str(answer_label)]
         rng.shuffle(remaining_labels)
         relabeled_candidates: List[Dict[str, Any]] = []

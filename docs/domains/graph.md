@@ -32,7 +32,7 @@ Node witnesses usually use `point_set` or `bbox_set`. Edge witnesses use
 operation tasks must use sequence annotation. Unordered node/edge counts should
 use unordered sets.
 
-Use keyed annotation when distinct roles such as source, target, bridge,
+Use map annotation when distinct roles such as source, target, bridge,
 reference node, or candidate node must be bound.
 
 ## Prompt And Rendering

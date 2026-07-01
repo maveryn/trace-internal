@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
@@ -17,13 +18,12 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 
 def _build_task_output(materialized: MaterializedDashboardTask) -> TaskOutput:
     return TaskOutput(**dashboard_task_output_fields(materialized))
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.charts.dashboard.shared.metrics import balanced_support_choice, option_count_support, statement_option_candidates, weighted_choice_from_defaults
 from trace.tasks.charts.dashboard.shared.state import SUPPORTED_REQUESTED_TRUTHS
 
 
 QUERY_ID = "statement_option_selection_label"
-TASK_PARAM_DEFAULTS: dict[str, Any] = {"canvas_height": 1120, "panel_count_max": 6, "category_count_max": 8, "context_text_enabled": False, "option_panel_height_px": 244, "option_panel_gap_px": 16, "option_panel_padding_px": 16, "option_panel_font_size_px": 15, "option_panel_letter_font_size_px": 16}
+TASK_PARAM_DEFAULTS: dict[str, Any] = {"canvas_width": 1200, "canvas_height": 1064, "category_count_max": 8, "context_text_enabled": False, "option_panel_height_px": 178, "option_panel_gap_px": 16, "option_panel_padding_px": 16, "option_panel_column_count": 2, "option_panel_column_gap_px": 22, "option_panel_font_size_px": 15, "option_panel_letter_font_size_px": 16}
 
 
 @register_task
@@ -50,8 +50,15 @@ class ChartsDashboardStatementOptionSelectionLabelTask:
                 raise ValueError("answer_letter must be A..F")
         else:
             feasible_letters = OPTION_LETTERS[: max(option_counts)]
-            answer_index = resolve_selection_index(params=effective_params, instance_seed=int(instance_seed), namespace=f"{SCENE_ID}.statement_option.answer_letter")
-            answer_letter = str(feasible_letters[abs(int(answer_index)) % len(feasible_letters)])
+            answer_letter = str(
+                uniform_choice(
+                    spawn_rng(
+                        int(instance_seed),
+                        f"{SCENE_ID}.statement_option.answer_letter",
+                    ),
+                    feasible_letters,
+                )
+            )
         feasible_option_counts = tuple(int(count) for count in option_counts if OPTION_LETTERS.index(str(answer_letter)) < int(count))
         if not feasible_option_counts:
             raise ValueError("answer_letter is infeasible for configured option_count support")
@@ -103,7 +110,7 @@ class ChartsDashboardStatementOptionSelectionLabelTask:
         refs = ((str(selected_record["first_panel_id"]), str(selected_record["first_category_id"])), (str(selected_record["second_panel_id"]), str(selected_record["second_category_id"])))
         dataset = DashboardDataset(scene_variant=SCENE_VARIANT, categories=base_sample.categories, panels=base_sample.panels, query=DashboardQuery(answer=str(answer_letter), answer_type="option_letter", annotation_refs=refs, params=dict(relations)))
         prompt_artifacts = build_prompt_artifacts(prompt_query_key=QUERY_ID, dynamic_slots=build_prompt_slots(dataset=dataset), instance_seed=int(instance_seed))
-        return DashboardTaskPlan(dataset=dataset, prompt_artifacts=prompt_artifacts, relations=relations, answer_gt=TypedValue(type="option_letter", value=str(answer_letter)), annotation_refs=refs, annotation_roles={"first_mark": refs[0], "second_mark": refs[1]})
+        return DashboardTaskPlan(dataset=dataset, prompt_artifacts=prompt_artifacts, relations=relations, answer_gt=TypedValue(type="option_letter", value=str(answer_letter)), annotation_refs=refs)
 
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
         selected_query_id, _probabilities, task_params = select_task_query_id(instance_seed=int(instance_seed), params={**TASK_PARAM_DEFAULTS, **dict(params)}, supported_query_ids=self.supported_query_ids, default_query_id=QUERY_ID, task_id=self.task_id)

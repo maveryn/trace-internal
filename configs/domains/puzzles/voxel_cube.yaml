@@ -6,15 +6,10 @@ generation:
     task_puzzles__voxel_cube__cube_structure_change_count:
       answer_min: 1
       answer_max: 5
-    task_puzzles__voxel_cube__cube_painted_face_count:
-      answer_min: 0
-      answer_max: 32
     task_puzzles__voxel_cube__cube_visible_projection_count:
       answer_min: 2
       answer_max: 9
     task_puzzles__voxel_cube__cube_projection_match_label:
-      option_count: 4
-    task_puzzles__voxel_cube__cube_projection_consistency_label:
       option_count: 4
 
 rendering:
@@ -35,14 +30,10 @@ prompt:
       task_key: cube_count_query
     task_puzzles__voxel_cube__cube_structure_change_count:
       task_key: cube_structure_change_count_query
-    task_puzzles__voxel_cube__cube_painted_face_count:
-      task_key: cube_painted_face_count_query
     task_puzzles__voxel_cube__cube_visible_projection_count:
       task_key: cube_visible_projection_count_query
     task_puzzles__voxel_cube__cube_projection_match_label:
       task_key: cube_projection_match_label_query
-    task_puzzles__voxel_cube__cube_projection_consistency_label:
-      task_key: cube_projection_consistency_label_query
 
 visual:
   noise:

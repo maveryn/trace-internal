@@ -11,7 +11,15 @@
 8. Program schema: `count(simple_adjacent_empty_points(linked_to(x_marked_piece))); scene=radial_hunt_board; scope=marked_piece_destination_count`
 
 ## Program Contract
-`count(simple_adjacent_empty_points(linked_to(x_marked_piece))); scene=radial_hunt_board; scope=marked_piece_destination_count`
+
+Program: `count(simple_adjacent_empty_points(linked_to(x_marked_piece))); scene=radial_hunt_board; scope=marked_piece_destination_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `marked_piece_destination_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `simple_adjacent_empty_points`, `linked_to`, `x_marked_piece`, `radial_hunt_board`, `marked_piece_destination_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The board is a Pretwa-inspired radial graph with three concentric circles and three diameters, producing 19 playable points.

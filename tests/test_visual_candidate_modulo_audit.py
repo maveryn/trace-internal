@@ -113,3 +113,24 @@ return str(LABELS[int(index) % len(LABELS)])
 """
 
     assert _categories(source, "trace/tasks/games/mancala_pit_board/shared/rules.py") == []
+
+
+def test_audit_ignores_geometry_quadrilateral_vertex_topology() -> None:
+    source = """
+nxt = vertices[(int(index) + 1) % len(vertices)]
+b = vertices[(index + 1) % len(vertices)]
+c = vertices[(index + 2) % len(vertices)]
+"""
+
+    assert _categories(
+        source,
+        "trace/tasks/geometry/coordinate_plane/quadrilateral_completion_label.py",
+    ) == []
+
+
+def test_audit_ignores_geometry_polygon_edge_topology() -> None:
+    source = """
+point_b = polygon[(index + 1) % len(polygon)]
+"""
+
+    assert _categories(source, "trace/tasks/geometry/shared/multi_polygon_scene.py") == []

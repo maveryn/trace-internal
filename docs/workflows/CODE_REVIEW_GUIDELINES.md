@@ -44,7 +44,8 @@ contracts.
 10. Answer, annotation, projected annotation, trace witnesses, and prompt slots
     come from the same execution trace.
 11. Public annotation uses active global annotation types and marks minimal
-    visual witnesses. Use keyed annotation when role binding matters.
+    visual answer-verification witnesses for the task family, not full proof
+    traces. Use map annotation when witness role binding matters.
 12. Verifiers consume metadata contracts and projections, not pixels.
 13. Randomness is explicit, deterministic from seed/spec/version inputs, and
     recorded when it affects prompt, layout, rendering, answer, or annotation.

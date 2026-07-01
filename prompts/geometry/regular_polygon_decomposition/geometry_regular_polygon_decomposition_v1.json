@@ -164,10 +164,10 @@
       "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."
     },
     "task:marked_piece_area_value_query": {
-      "answer_hint": "set \"answer\" to the requested area as a number"
+      "answer_hint": "set \"answer\" to the requested area as a number rounded to one decimal place"
     },
     "task:wedge_area_from_side_apothem_value_query": {
-      "answer_hint": "set \"answer\" to the requested area as a number"
+      "answer_hint": "set \"answer\" to the requested area as a number rounded to one decimal place"
     },
     "task:central_angle_value_query": {
       "answer_hint": "set \"answer\" to the requested angle in degrees as an integer"

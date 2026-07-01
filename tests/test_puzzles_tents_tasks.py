@@ -8,14 +8,15 @@ from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.puzzles.tents.missing_tent_cell_label import (
     PuzzlesTentsMissingTentCellLabelTask,
 )
-from trace.tasks.puzzles.tents.shared.state import SCENE_ID
-from trace.tasks.puzzles.tents.valid_candidate_count import (
-    PuzzlesTentsValidCandidateCountTask,
+from trace.tasks.puzzles.tents.violating_tent_label import (
+    PuzzlesTentsViolatingTentLabelTask,
 )
+from trace.tasks.puzzles.tents.shared.rules import neighbors4
+from trace.tasks.puzzles.tents.shared.state import SCENE_ID
 
 TASK_CLASSES = (
     PuzzlesTentsMissingTentCellLabelTask,
-    PuzzlesTentsValidCandidateCountTask,
+    PuzzlesTentsViolatingTentLabelTask,
 )
 
 
@@ -43,7 +44,17 @@ def test_missing_tent_task_has_one_correct_labeled_cell() -> None:
 
     assert out.answer_gt.type == "option_letter"
     assert out.annotation_gt.type == "bbox"
-    assert out.answer_gt.value in {"A", "B", "C", "D", "E", "F"}
+    assert out.answer_gt.value in {"A", "B", "C", "D"}
+    assert trace["option_count"] == 4
+    assert trace["target_answer_support"] == ["A", "B", "C", "D"]
+    assert len(trace["candidate_specs"]) == 4
+    marked_row, marked_col = trace["marked_tree"]
+    for spec in trace["candidate_specs"]:
+        assert (
+            abs(int(spec["row"]) - int(marked_row))
+            + abs(int(spec["col"]) - int(marked_col))
+            == 1
+        )
     correct = [spec for spec in trace["candidate_specs"] if spec["is_correct"]]
     legal = [spec for spec in trace["candidate_specs"] if spec["is_legal"]]
     assert len(correct) == 1
@@ -52,20 +63,41 @@ def test_missing_tent_task_has_one_correct_labeled_cell() -> None:
     assert out.trace_payload["projected_annotation"]["type"] == "bbox"
 
 
-def test_valid_candidate_count_matches_legal_candidate_specs() -> None:
-    task = PuzzlesTentsValidCandidateCountTask()
+def test_violating_tent_task_has_one_invalid_labeled_tent() -> None:
+    task = PuzzlesTentsViolatingTentLabelTask()
     for sampling_index in range(5):
         out = task.generate(72021 + sampling_index, params={}, max_attempts=40)
         trace = out.trace_payload["execution_trace"]
-        legal = [spec for spec in trace["candidate_specs"] if spec["is_legal"]]
+        labeled_tents = trace["labeled_tent_specs"]
+        correct = [spec for spec in labeled_tents if spec["is_correct"]]
 
-        assert out.answer_gt.type == "integer"
-        assert out.annotation_gt.type == "bbox_set"
-        assert int(out.answer_gt.value) == len(legal)
-        assert 0 <= int(out.answer_gt.value) <= 4
-        assert trace["target_answer_support"] == [0, 1, 2, 3, 4]
-        assert len(out.annotation_gt.value) == int(out.answer_gt.value)
-        assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
+        assert out.answer_gt.type == "option_letter"
+        assert out.annotation_gt.type == "bbox"
+        assert out.answer_gt.value in {"A", "B", "C", "D"}
+        assert trace["option_count"] == 4
+        assert trace["target_answer_support"] == ["A", "B", "C", "D"]
+        assert 6 <= int(trace["grid_rows"]) <= 8
+        assert 6 <= int(trace["grid_cols"]) <= 8
+        assert len(labeled_tents) == 4
+        assert len(correct) == 1
+        assert correct[0]["label"] == out.answer_gt.value
+        assert trace["correct_tent_label"] == out.answer_gt.value
+        assert trace["violation_type"] == "no_adjacent_tree"
+        tree_cells = {tuple(cell) for cell in trace["tree_cells"]}
+        rows = int(trace["grid_rows"])
+        cols = int(trace["grid_cols"])
+        for spec in labeled_tents:
+            tent_cell = (int(spec["row"]), int(spec["col"]))
+            has_tree = any(
+                tuple(cell) in tree_cells
+                for cell in neighbors4(tent_cell, rows, cols)
+            )
+            assert has_tree is (not bool(spec["is_correct"]))
+        assert out.trace_payload["projected_annotation"]["type"] == "bbox"
+        assert (
+            f"labeled_tent_{out.answer_gt.value}"
+            in out.trace_payload["render_map"]["item_bboxes_px"]
+        )
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)

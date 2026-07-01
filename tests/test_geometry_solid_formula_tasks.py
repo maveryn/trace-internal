@@ -25,36 +25,6 @@ TASK_CLASSES = (
     GeometrySolidFormulaHousePrismLengthFromVolumeTask,
 )
 
-ANNOTATION_KEYS_BY_TASK = {
-    GeometrySolidFormulaCylinderConeRadiusFromVolumeHeightsTask: {
-        "target_radius_label",
-        "volume_label",
-        "total_height_label",
-        "cone_height_label",
-    },
-    GeometrySolidFormulaCylinderConeHeightFromVolumeRadiusTask: {
-        "target_cylinder_height_label",
-        "volume_label",
-        "radius_label",
-        "cone_height_label",
-    },
-    GeometrySolidFormulaPrismPyramidHeightFromVolumeTask: {
-        "target_prism_height_label",
-        "volume_label",
-        "known_length_label",
-        "known_width_label",
-        "pyramid_height_label",
-    },
-    GeometrySolidFormulaHousePrismLengthFromVolumeTask: {
-        "target_length_label",
-        "volume_label",
-        "triangle_base_label",
-        "wall_height_label",
-        "roof_height_label",
-    },
-}
-
-
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
 def test_solid_formula_tasks_emit_public_contract(task_cls) -> None:
     task = task_cls()
@@ -63,8 +33,9 @@ def test_solid_formula_tasks_emit_public_contract(task_cls) -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id == "single"
     assert out.answer_gt.type == "number"
-    assert out.annotation_gt.type == "bbox_map"
-    assert set(out.annotation_gt.value) == ANNOTATION_KEYS_BY_TASK[task_cls]
+    assert out.annotation_gt.type == "bbox"
+    assert isinstance(out.annotation_gt.value, list)
+    assert len(out.annotation_gt.value) == 4
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
@@ -72,10 +43,18 @@ def test_solid_formula_tasks_emit_public_contract(task_cls) -> None:
     assert trace["query_spec"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["query_id"] == "single"
     assert trace["execution_trace"]["query_id"] == "single"
-    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["type"] == "bbox"
     assert trace["execution_trace"]["answer_rounding"] == "one_decimal"
     assert trace["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
     assert trace["execution_trace"]["answer_support_size"] >= 50
+    assert out.annotation_gt.value == trace["render_map"]["solid"]["bbox"]
+    assert out.annotation_gt.value == trace["projected_annotation"]["bbox"]
+    assert "volume_label" in trace["render_map"]["label_bboxes"]
+    assert trace["witness_symbolic"]["source_witness_type"] == "bbox"
+    assert trace["witness_symbolic"]["original_annotation_value"] == out.annotation_gt.value
+    assert trace["execution_trace"]["annotation_roles"] == ["solid"]
+    assert "dimension-line segments" not in out.prompt_variants["answer_and_annotation"]
+    assert "compound solid shape" in out.prompt_variants["answer_and_annotation"]
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
@@ -149,11 +128,77 @@ def test_solid_formula_annotation_stays_inside_canvas(task_cls) -> None:
     task = task_cls()
     out = task.generate(64041, params={"query_id": "single"}, max_attempts=20)
     width, height = out.image.size
-    for x0, y0, x1, y1 in out.annotation_gt.value.values():
-        assert 0.0 <= x0 < x1 <= float(width)
-        assert 0.0 <= y0 < y1 <= float(height)
-        assert (x1 - x0) > 8.0
-        assert (y1 - y0) > 8.0
+    x0, y0, x1, y1 = out.annotation_gt.value
+    assert 0.0 <= x0 < x1 <= float(width)
+    assert 0.0 <= y0 < y1 <= float(height)
+    assert (x1 - x0) > 80.0
+    assert (y1 - y0) > 80.0
+
+
+def test_solid_formula_measurement_labels_avoid_known_geometry_overlaps() -> None:
+    radius_out = GeometrySolidFormulaCylinderConeRadiusFromVolumeHeightsTask().generate(
+        64051,
+        params={"query_id": "single"},
+        max_attempts=20,
+    )
+    height_out = GeometrySolidFormulaCylinderConeHeightFromVolumeRadiusTask().generate(
+        64052,
+        params={"query_id": "single"},
+        max_attempts=20,
+    )
+    house_out = GeometrySolidFormulaHousePrismLengthFromVolumeTask().generate(
+        64053,
+        params={"query_id": "single"},
+        max_attempts=20,
+    )
+
+    target_radius_bbox = radius_out.trace_payload["render_map"]["label_bboxes"]["target_radius_label"]
+    radius_bbox = height_out.trace_payload["render_map"]["label_bboxes"]["radius_label"]
+    roof_height_bbox = house_out.trace_payload["render_map"]["label_bboxes"]["roof_height_label"]
+
+    assert target_radius_bbox[1] > 260.0
+    assert radius_bbox[1] > 260.0
+    assert roof_height_bbox[0] > 438.0
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_solid_formula_numeric_labels_do_not_use_heavy_stroke(task_cls) -> None:
+    default_out = task_cls().generate(
+        64060,
+        params={"query_id": "single"},
+        max_attempts=20,
+    )
+    out = task_cls().generate(
+        64061,
+        params={"query_id": "single", "label_stroke_width": 8},
+        max_attempts=20,
+    )
+    assert default_out.trace_payload["render_spec"]["style"]["label_stroke_width"] <= 1
+    assert out.trace_payload["render_spec"]["style"]["label_stroke_width"] <= 1
+
+
+def test_solid_formula_dark_treatment_uses_readable_measurement_label_ink() -> None:
+    out = GeometrySolidFormulaHousePrismLengthFromVolumeTask().generate(
+        930965330361450,
+        params={"query_id": "single"},
+        max_attempts=20,
+    )
+    palette = out.trace_payload["render_spec"]["style"]["palette"]
+    assert palette["measurement_label_color_policy"] == "neutral_high_contrast"
+    assert palette["measurement_label_min_surface_contrast"] >= 7.0
+    assert min(palette["measurement_label_color"]) >= 240
+    assert out.trace_payload["render_spec"]["style"]["label_stroke_width"] == 1
+
+    records = out.trace_payload["render_spec"]["drawn_text"]["text_legibility"]["records"]
+    measurement_records = [
+        record
+        for record in records
+        if record.get("text") in {"b=10", "h=4", "t=6", "L=?"}
+    ]
+    assert len(measurement_records) == 4
+    for record in measurement_records:
+        assert record["fill_rgb"] == palette["measurement_label_color"]
+        assert record["stroke_width_px"] == 1
 
 
 def test_solid_formula_tasks_reject_unknown_query_id() -> None:

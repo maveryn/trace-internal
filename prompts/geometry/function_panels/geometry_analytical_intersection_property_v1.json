@@ -46,29 +46,43 @@
     },
     "output": {
       "answer_only": [
-        "answer: {answer_hint}.\nExample: {json_example_answer_only}",
-        "answer: {answer_hint}.\nExample: {json_example_answer_only}",
-        "answer: {answer_hint}.\nExample: {json_example_answer_only}",
-        "answer: {answer_hint}.\nExample: {json_example_answer_only}",
-        "answer: {answer_hint}.\nExample: {json_example_answer_only}"
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
       ],
       "answer_and_annotation": [
-        "annotation: {annotation_hint}.\nanswer: {answer_hint}.\nExample: {json_example}",
-        "annotation: {annotation_hint}.\nanswer: {answer_hint}.\nExample: {json_example}",
-        "annotation: {annotation_hint}.\nanswer: {answer_hint}.\nExample: {json_example}",
-        "annotation: {annotation_hint}.\nanswer: {answer_hint}.\nExample: {json_example}",
-        "annotation: {annotation_hint}.\nanswer: {answer_hint}.\nExample: {json_example}"
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
       ]
     }
   },
   "static_slots_by_key": {
     "global": {
+      "json_output_contract": "Return a JSON object with exactly two keys: \"annotation\" and \"answer\".",
+      "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\".",
       "answer_hint": "the selected panel label as a capital letter shown in the image",
-      "annotation_hint": "selected_panel is the selected panel bbox; intersection_points are the visible intersection point bboxes in that panel",
-      "json_example": "{\"annotation\":{\"selected_panel\":[[40,40,310,320]],\"intersection_points\":[[156,168,170,182]]},\"answer\":\"B\"}",
+      "annotation_hint": "the selected panel bounding box [x0,y0,x1,y1] in pixels",
+      "json_example": "{\"annotation\":[40,40,310,320],\"answer\":\"B\"}",
       "json_example_answer_only": "{\"answer\":\"B\"}"
     }
   },
   "dynamic_slots": {},
-  "required_slots_by_key": {}
+  "required_slots_by_key": {
+    "output:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "output:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  }
 }

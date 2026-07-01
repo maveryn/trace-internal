@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping
 
-from .state import NET_COORDS, SCENE_ID, SurfacePathDataset
-
 
 def json_ready(value: Any) -> Any:
     """Convert tuples and nested mappings into JSON-friendly containers."""
@@ -51,67 +49,4 @@ def build_cube_net_trace_payload(
         },
     }
 
-
-def surface_path_trace_parts(
-    *,
-    dataset: SurfacePathDataset,
-    option_specs: list[dict[str, Any]],
-    scene_variant: str,
-    answer_value: str,
-) -> Dict[str, Any]:
-    """Return common folded-path trace sections after task answer binding."""
-
-    face_entities = [
-        {
-            "entity_id": f"face_{face}",
-            "kind": "cube_net_face",
-            "face_id": str(face),
-            "face_label": str(label),
-        }
-        for face, label in sorted(dataset.face_labels.items())
-    ]
-    relations = {
-        "scene_variant": str(scene_variant),
-        "start_face": str(dataset.start_face),
-        "path_sides": [str(side) for side in dataset.path_sides],
-        "face_sequence": [str(face) for face in dataset.face_sequence],
-        "endpoint_face": str(dataset.endpoint_face),
-        "correct_option_label": str(answer_value),
-    }
-    execution_trace = {
-        "scene_id": SCENE_ID,
-        "scene_variant": str(scene_variant),
-        "face_labels": dict(dataset.face_labels),
-        "net_coords": {
-            str(face): [int(coord[0]), int(coord[1])]
-            for face, coord in NET_COORDS.items()
-        },
-        "start_face": str(dataset.start_face),
-        "path_sides": [str(side) for side in dataset.path_sides],
-        "face_sequence": [str(face) for face in dataset.face_sequence],
-        "face_label_sequence": [
-            str(dataset.face_labels[str(face)])
-            for face in dataset.face_sequence
-        ],
-        "endpoint_face": str(dataset.endpoint_face),
-        "endpoint_face_label": str(dataset.face_labels[str(dataset.endpoint_face)]),
-        "option_specs": list(option_specs),
-        "answer_value": str(answer_value),
-    }
-    return {
-        "entities": face_entities,
-        "relations": relations,
-        "execution_trace": execution_trace,
-        "witness_symbolic": {
-            "type": "folded_surface_net_path",
-            "value": {
-                "path_sides": [str(side) for side in dataset.path_sides],
-                "face_sequence": [str(face) for face in dataset.face_sequence],
-                "endpoint_face": str(dataset.endpoint_face),
-                "correct_option_label": str(answer_value),
-            },
-        },
-    }
-
-
-__all__ = ["build_cube_net_trace_payload", "json_ready", "surface_path_trace_parts"]
+__all__ = ["build_cube_net_trace_payload", "json_ready"]

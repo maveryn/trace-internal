@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Callable, Mapping, Sequence
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 
 from .state import TangentPackingCase
 
@@ -41,12 +42,8 @@ def choose_radius(
         if radius not in set(radius_support):
             raise ValueError(f"unsupported tangent-packing radius: {radius}")
         return TangentPackingCase(radius=int(radius)), {str(radius): 1.0}
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    radius = radius_support[int(index) % len(radius_support)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    radius = int(uniform_choice(rng, radius_support))
     return TangentPackingCase(radius=int(radius)), uniform_probability_map(radius_support)
 
 

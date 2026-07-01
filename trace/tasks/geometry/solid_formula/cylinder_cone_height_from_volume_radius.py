@@ -17,12 +17,6 @@ HEIGHT_QUERY_ID = "single"
 HEIGHT_QUERY_IDS = (HEIGHT_QUERY_ID,)
 HEIGHT_DEFAULT_QUERY_ID = HEIGHT_QUERY_ID
 HEIGHT_PROMPT_KEY = HEIGHT_QUERY_ID
-HEIGHT_ANNOTATION_KEYS = (
-    "target_cylinder_height_label",
-    "volume_label",
-    "radius_label",
-    "cone_height_label",
-)
 HEIGHT_SUPPORT_VALUES = decimal_support(2, 61, step=1)
 HEIGHT_CONSTRUCTION_CHOICES = (
     (3.0, 3.0),
@@ -73,7 +67,6 @@ def _prepare_height_objective(
         prompt_key=HEIGHT_PROMPT_KEY,
         problem=problem,
         render_scene=render_cylinder_cone_height,
-        annotation_keys=HEIGHT_ANNOTATION_KEYS,
         branch_probabilities=branch_probabilities,
         support_probabilities=support_probabilities,
     )
@@ -116,7 +109,7 @@ class GeometrySolidFormulaCylinderConeHeightFromVolumeRadiusTask:
         return task_base.TaskOutput(
             prompt=parts.prompt,
             answer_gt=core_types.TypedValue(type="number", value=float(plan.answer_value)),
-            annotation_gt=core_types.TypedValue(type="bbox_map", value=dict(parts.annotation_value)),
+            annotation_gt=core_types.TypedValue(type="bbox", value=list(parts.annotation_value)),
             image=parts.image,
             image_id="img0",
             trace_payload=parts.trace_payload,

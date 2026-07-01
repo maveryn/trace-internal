@@ -24,6 +24,7 @@ class ChartsThreeDBarSeriesThresholdCountTask:
     domain = DOMAIN
     objective_contract = 'series_threshold_count'
     supported_query_ids = ('series_threshold_count',)
+    default_dataset_enabled = True
 
     def generate(self, instance_seed, *, params, max_attempts):
         selected_query_id, _probabilities, task_params = select_task_query_id(instance_seed=int(instance_seed), params=params, supported_query_ids=self.supported_query_ids, default_query_id='series_threshold_count', task_id=self.task_id)

@@ -63,6 +63,13 @@ def build_render_map(
             str(key): [round(float(v), 3) for v in value]
             for key, value in rendered_scene.item_bbox_map.items()
         },
+        "item_segments_px": {
+            str(key): [
+                [round(float(point[0]), 3), round(float(point[1]), 3)]
+                for point in value
+            ]
+            for key, value in rendered_scene.item_segment_map.items()
+        },
         "annotation_source": str(annotation_source),
     }
 

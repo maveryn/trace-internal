@@ -9,7 +9,8 @@ from typing import Any
 
 from PIL import Image, ImageDraw
 
-from .....core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.dense_text import dense_fit_bold, dense_stroke_width, dense_text_style_meta
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from .....core.visual.noise import apply_post_image_noise
 from ....shared.drawing import draw_rounded_rect
 from ....shared.font_assets import font_asset_version
@@ -18,7 +19,6 @@ from ....shared.text_legibility import draw_text_traced
 from ....shared.text_rendering import draw_text_centered, fit_font_to_box, load_font, temporary_default_font_family
 
 from .defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDER_DEFAULTS,
     render_int,
@@ -59,7 +59,7 @@ def resolve_render_params(params: Mapping[str, object], *, instance_seed: int) -
         namespace="charts.pictogram.layout",
     )
     return PictogramRenderParams(
-        canvas_width=render_int(params, "canvas_width", 1320),
+        canvas_width=render_int(params, "canvas_width", 920),
         canvas_height=render_int(params, "canvas_height", 900),
         outer_margin_px=int(left),
         title_band_height_px=int(title_band),
@@ -197,10 +197,11 @@ def render_chart(
     dataset: PictogramDataset,
     params: Mapping[str, object],
     instance_seed: int,
+    render_params: PictogramRenderParams | None = None,
 ) -> RenderedPictogramScene:
     """Render all category rows and record row/mark projections by category id."""
 
-    render_params = resolve_render_params(params, instance_seed=int(instance_seed))
+    render_params = render_params or resolve_render_params(params, instance_seed=int(instance_seed))
     image = background.copy()
     draw = ImageDraw.Draw(image)
     width = int(render_params.canvas_width)
@@ -208,8 +209,8 @@ def render_chart(
     margin = int(render_params.outer_margin_px)
     right = width - margin
 
-    title_font = load_font(int(render_params.title_font_size_px), bold=True)
-    legend_font = load_font(int(render_params.legend_font_size_px), bold=True)
+    title_font = load_font(int(render_params.title_font_size_px), bold=False)
+    legend_font = load_font(int(render_params.legend_font_size_px), bold=False)
     draw_text_centered(
         draw,
         text=str(dataset.title),
@@ -217,7 +218,7 @@ def render_chart(
         font=title_font,
         fill=render_params.text_rgb,
         stroke_fill=render_params.text_stroke_rgb,
-        stroke_width=1,
+        stroke_width=dense_stroke_width(),
     )
 
     legend_x0 = float(margin)
@@ -284,7 +285,7 @@ def render_chart(
     for row_index, category in enumerate(dataset.categories):
         row_y0 = float(top + (float(row_index) * (row_h + float(render_params.row_gap_px))))
         row_y1 = float(row_y0 + row_h)
-        row_fill = render_params.panel_fill_rgb if row_index % 2 == 0 else (248, 250, 252)
+        row_fill = render_params.panel_fill_rgb if row_index % 2 == 0 else render_params.legend_fill_rgb
         row_box = bbox([plot_x0, row_y0, plot_x1, row_y1])
         draw_rounded_rect(
             draw,
@@ -299,7 +300,7 @@ def render_chart(
             text=str(category.label),
             max_width=float(render_params.label_width_px) - 20.0,
             max_height=float(row_h) - 10.0,
-            bold=True,
+            bold=dense_fit_bold(),
             min_size_px=12,
             max_size_px=int(render_params.label_font_size_px),
             fill_ratio=0.92,
@@ -311,7 +312,7 @@ def render_chart(
             font=label_font,
             fill=render_params.text_rgb,
             stroke_fill=render_params.text_stroke_rgb,
-            stroke_width=1,
+            stroke_width=dense_stroke_width(),
         )
         category_bboxes[category.category_id] = list(row_box)
         marks_for_category: list[BBox] = []
@@ -356,6 +357,7 @@ def render_chart(
         "mark_columns": int(mark_cols),
         "row_height_px": round(float(row_h), 3),
         "layout_jitter": dict(render_params.layout_jitter_meta),
+        "dense_text_style": dense_text_style_meta(role="pictogram_category_labels"),
     }
     return RenderedPictogramScene(
         image=image,
@@ -374,12 +376,16 @@ def render_pictogram_dataset(
     params: Mapping[str, object],
     instance_seed: int,
 ) -> PictogramRenderResult:
-    background, background_meta = make_background_canvas(
-        canvas_width=render_int(params, "canvas_width", 1320),
-        canvas_height=render_int(params, "canvas_height", 900),
+    """Render task-neutral pictogram geometry with shared chart styling metadata."""
+
+    resolved_params = resolve_render_params(params, instance_seed=int(instance_seed))
+    protected_colors = [tuple(int(channel) for channel in category.color_rgb) for category in dataset.categories]
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="pictogram",
+        render_params=resolved_params,
+        protected_colors=protected_colors,
     )
     chart_font_family = sample_chart_font_family(int(instance_seed), params)
     with temporary_default_font_family(str(chart_font_family)):
@@ -388,6 +394,7 @@ def render_pictogram_dataset(
             dataset=dataset,
             params=params,
             instance_seed=int(instance_seed),
+            render_params=render_params,
         )
     image, post_noise_meta = apply_post_image_noise(
         rendered_scene.image,
@@ -397,8 +404,21 @@ def render_pictogram_dataset(
     )
     return PictogramRenderResult(
         image=image,
-        rendered_scene=rendered_scene,
-        background_meta=dict(background_meta),
+        rendered_scene=RenderedPictogramScene(
+            image=image,
+            entities=tuple(rendered_scene.entities),
+            plot_bbox_px=list(rendered_scene.plot_bbox_px),
+            legend_bbox_px=list(rendered_scene.legend_bbox_px),
+            category_bboxes_px=dict(rendered_scene.category_bboxes_px),
+            mark_bboxes_px=dict(rendered_scene.mark_bboxes_px),
+            render_meta={
+                **dict(rendered_scene.render_meta),
+                "background_style": {**dict(background_meta), "information_scene_style": dict(information_style_meta)},
+                "information_scene_style": dict(information_style_meta),
+                "post_image_noise": dict(post_noise_meta),
+            },
+        ),
+        background_meta={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         post_noise_meta=dict(post_noise_meta),
         chart_font_family=str(chart_font_family),
     )

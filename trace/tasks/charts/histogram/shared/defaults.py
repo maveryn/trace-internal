@@ -4,10 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from trace.tasks.charts.shared.distribution_chart_common import (
-    DistributionChartDefaults,
-    LabeledChartDefaults,
-)
+from trace.tasks.charts.shared.distribution.config import DistributionChartDefaults
+from trace.tasks.charts.shared.labeled_chart_defaults import LabeledChartDefaults
 from trace.tasks.charts.shared.visual_defaults import load_chart_scene_noise_defaults
 from trace.tasks.shared.config_defaults import (
     group_default as _group_default,

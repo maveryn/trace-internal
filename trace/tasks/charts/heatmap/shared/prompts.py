@@ -20,7 +20,7 @@ PROMPT_BUNDLE_ID = "charts_heatmap_v1"
 def dynamic_slots(dataset: Mapping[str, Any], *, supports_unanswerable: bool) -> dict[str, Any]:
     question_params = dict(dataset.get("question_params", {}))
     scene_variant = str(dataset["scene_variant"])
-    return {
+    slots = {
         "object_description": {
             "intensity_heatmap": "labeled grid cells where darker colors indicate higher intensity and lighter colors indicate lower intensity",
             "signed_change_heatmap": "labeled grid cells where blue colors indicate decreases, neutral colors indicate no clear change, and orange-red colors indicate increases",
@@ -37,12 +37,14 @@ def dynamic_slots(dataset: Mapping[str, Any], *, supports_unanswerable: bool) ->
         "column_label": str(question_params.get("column_label", "")),
         "row_label": str(question_params.get("row_label", "")),
         "extremum_phrase": str(question_params.get("extremum_phrase", "")),
-        "unanswerable_instruction": (
-            'If the requested label or color condition is not visible, answer exactly "unanswerable".'
-            if bool(supports_unanswerable)
-            else ""
-        ),
     }
+    if bool(supports_unanswerable):
+        slots["unanswerable_instruction"] = (
+            'If the requested label or color condition is not visible, answer exactly "unanswerable".'
+        )
+    else:
+        slots["unanswerable_instruction"] = ""
+    return slots
 
 
 def build_prompt_artifacts(

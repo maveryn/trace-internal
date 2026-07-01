@@ -35,20 +35,6 @@
         "A star can be added to exactly one labeled candidate cell. Which label is it?",
         "Which labeled cell is a valid place for another star?"
       ],
-      "valid_cell_in_marked_region_label": [
-        "In the marked colored region, which labeled cell can still hold a star?",
-        "Choose the labeled candidate cell in the marked region where another star can be placed.",
-        "Which labeled cell inside the marked region is a legal remaining star cell?",
-        "For the marked region, which candidate label is valid?",
-        "Only one labeled candidate in the marked region can hold a star. Which one is it?"
-      ],
-      "valid_cell_for_marked_row_label": [
-        "In the marked row, which labeled cell can still hold a star?",
-        "Choose the labeled candidate cell in the marked row where another star can be placed.",
-        "Which labeled cell inside the marked row is a legal remaining star cell?",
-        "For the marked row, which candidate label is valid?",
-        "Only one labeled candidate in the marked row can hold a star. Which one is it?"
-      ],
       "remaining_valid_cells_in_marked_region_count": [
         "How many cells in the marked colored region can still hold a star?",
         "Count the legal remaining star cells inside the marked region.",
@@ -73,18 +59,18 @@
     },
     "output": {
       "answer_only": [
-        "Set answer to {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-        "Set the answer field to {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-        "Use {answer_hint} for the answer.\nExample JSON:\n{json_example_answer_only}",
-        "Return the answer as {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-        "Write the answer field as {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+        "Answer format: {answer_hint}\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: {answer_hint}\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: {answer_hint}\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: {answer_hint}\nExample JSON:\n{json_example_answer_only}",
+        "Use this answer format: {answer_hint}\nExample JSON:\n{json_example_answer_only}"
       ],
       "answer_and_annotation": [
-        "Set annotation to {annotation_hint}. Set answer to {answer_hint}.\nExample JSON:\n{json_example}",
-        "Use {annotation_hint} for annotation. Set the answer field to {answer_hint}.\nExample JSON:\n{json_example}",
-        "Annotation should be {annotation_hint}; answer should be {answer_hint}.\nExample JSON:\n{json_example}",
-        "Return annotation as {annotation_hint} and answer as {answer_hint}.\nExample JSON:\n{json_example}",
-        "Write annotation using {annotation_hint}. Write answer using {answer_hint}.\nExample JSON:\n{json_example}"
+        "Annotation format: {annotation_hint}\nAnswer format: {answer_hint}\nExample JSON:\n{json_example}",
+        "Required annotation format: {annotation_hint}\nRequired answer format: {answer_hint}\nExample JSON:\n{json_example}",
+        "Format for the \"annotation\" field: {annotation_hint}\nFormat for the \"answer\" field: {answer_hint}\nExample JSON:\n{json_example}",
+        "Use this annotation format: {annotation_hint}\nUse this answer format: {answer_hint}\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}\nFinal answer format: {answer_hint}\nExample JSON:\n{json_example}"
       ]
     }
   },
@@ -97,18 +83,6 @@
     },
     "query:valid_cell_anywhere_label": {
       "answer_hint": "the legal candidate letter",
-      "annotation_hint": "[x0,y0,x1,y1], the image-pixel bbox of the selected candidate cell",
-      "json_example": "{\"annotation\":[402,276,466,340],\"answer\":\"C\"}",
-      "json_example_answer_only": "{\"answer\":\"C\"}"
-    },
-    "query:valid_cell_in_marked_region_label": {
-      "answer_hint": "the legal candidate letter in the marked region",
-      "annotation_hint": "[x0,y0,x1,y1], the image-pixel bbox of the selected candidate cell",
-      "json_example": "{\"annotation\":[402,276,466,340],\"answer\":\"C\"}",
-      "json_example_answer_only": "{\"answer\":\"C\"}"
-    },
-    "query:valid_cell_for_marked_row_label": {
-      "answer_hint": "the legal candidate letter in the marked row",
       "annotation_hint": "[x0,y0,x1,y1], the image-pixel bbox of the selected candidate cell",
       "json_example": "{\"annotation\":[402,276,466,340],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"

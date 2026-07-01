@@ -13,8 +13,8 @@ from trace.tasks.registry import register_task
 
 TASK_ID = "task_charts__table__absolute_difference_between_rows_over_year_interval"
 PROMPT_KEY = "absolute_difference_between_rows_over_year_interval"
-PROGRAM_CODE = "abs(sum(values(row_a, years)) - sum(values(row_b, years))); output=integer_value; annotation=bbox_set(two_row_interval_cells); scene=table; scope=absolute_difference_between_rows_over_year_interval"
-JSON_EXAMPLE = '{"annotation":[[260,180,320,220],[322,180,382,220],[384,180,444,220],[260,236,320,276],[322,236,382,276],[384,236,444,276]],"answer":7}'
+PROGRAM_CODE = "abs(sum(values(row_a, years)) - sum(values(row_b, years))); output=integer_value; annotation=bbox_map(row_interval_span_by_row_label); scene=table; scope=absolute_difference_between_rows_over_year_interval"
+JSON_EXAMPLE = '{"annotation":{"Aster":[260,180,444,220],"Beacon":[260,236,444,276]},"answer":7}'
 ANSWER_ONLY_EXAMPLE = '{"answer":7}'
 
 

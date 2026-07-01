@@ -10,11 +10,11 @@ from PIL import Image
 from ....core.query_ids import SINGLE_QUERY_ID
 from ....core.scene_config import get_scene_defaults
 from ....core.seed import spawn_rng
+from ....core.sampling import support_probability_map, uniform_choice_with_probabilities
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...shared.output_metadata import default_task_versions
 from ..shared.cutouts import (
@@ -102,11 +102,10 @@ def _sample_rotation(*, params: Mapping[str, Any], instance_seed: int) -> Tuple[
         value = int(explicit)
         if value not in set(support):
             raise ValueError(f"rotation_degrees must be one of {support}")
-        return int(value), {str(value): 1.0}
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:rotation_degrees")
-    value = int(support[int(index) % len(support)])
-    probability = 1.0 / float(len(support))
-    return int(value), {str(item): float(probability) for item in support}
+        return int(value), support_probability_map(support, selected=int(value), sort_keys=True)
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:rotation_degrees")
+    value, probabilities = uniform_choice_with_probabilities(rng, support, sort_keys=True)
+    return int(value), dict(probabilities)
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int) -> _SampleSpec:
@@ -175,13 +174,9 @@ def _select_correct_index(
         if value not in set(usable):
             raise ValueError("explicit correct_index is not visually usable for rotation")
         return int(value), {str(value): 1.0}
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}:answer:{attempt_index}",
-    )
-    selected = int(usable[int(index) % len(usable)])
-    return int(selected), dict(uniform_probability_map(usable))
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:answer", int(attempt_index))
+    selected, probabilities = uniform_choice_with_probabilities(rng, usable, sort_keys=True)
+    return int(selected), dict(probabilities)
 
 
 @register_task

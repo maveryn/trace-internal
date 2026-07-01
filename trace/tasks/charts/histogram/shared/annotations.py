@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
-from trace.tasks.charts.shared.distribution_chart_common import projected_mark_annotation
-from trace.tasks.charts.shared.chart_scene import RenderedChartScene
+from trace.tasks.charts.shared.cartesian.annotations import projected_mark_annotation
+from trace.tasks.charts.shared.chart_scene_types import RenderedChartScene
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
     bbox_annotation_artifacts,

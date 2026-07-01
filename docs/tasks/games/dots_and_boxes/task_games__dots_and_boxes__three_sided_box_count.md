@@ -10,7 +10,15 @@
 7. Program schema: `count(filter(boxes, drawn_side_count(box) = 3)); scene=dots_and_boxes; scope=three_sided_box_count`
 
 ## Program Contract
-`count(filter(boxes, drawn_side_count(box) = 3)); scene=dots_and_boxes; scope=three_sided_box_count`
+
+Program: `count(filter(boxes, drawn_side_count(box) = 3)); scene=dots_and_boxes; scope=three_sided_box_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `three_sided_box_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `boxes`, `drawn_side_count`, `box`, `dots_and_boxes`, `three_sided_box_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.

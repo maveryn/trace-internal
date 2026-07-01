@@ -74,30 +74,29 @@ def _condition_support(scene_variant: str) -> Tuple[str, ...]:
     return _INTENSITY_CONDITIONS
 
 def _condition_matches(value: int, *, condition_kind: str, bin_count: int) -> bool:
-    midpoint = int(bin_count) // 2
     if str(condition_kind) == "hot":
-        return int(value) >= max(0, int(bin_count) - 2)
+        return int(value) == max(0, int(bin_count) - 1)
     if str(condition_kind) == "cool":
-        return int(value) <= 1
+        return int(value) == 0
     if str(condition_kind) == "increase":
-        return int(value) > int(midpoint)
+        return int(value) == max(0, int(bin_count) - 1)
     if str(condition_kind) == "decrease":
-        return int(value) < int(midpoint)
+        return int(value) == 0
     raise ValueError(f"unsupported condition_kind: {condition_kind}")
 
 
 def _condition_phrase(condition_kind: str, *, scene_variant: str) -> str:
     if str(scene_variant) == "calendar_heatmap":
         phrases = {
-            "hot": "high-activity (one of the two darkest color levels)",
-            "cool": "low-activity (one of the two lightest color levels)",
+            "hot": "the highest activity level",
+            "cool": "the lowest activity level",
         }
     else:
         phrases = {
-            "hot": "high-intensity (one of the two darkest color levels)",
-            "cool": "low-intensity (one of the two lightest color levels)",
-            "increase": "increase-colored (one of the two strongest increase color levels)",
-            "decrease": "decrease-colored (one of the two strongest decrease color levels)",
+            "hot": "the highest intensity level",
+            "cool": "the lowest intensity level",
+            "increase": "the strongest increase color",
+            "decrease": "the strongest decrease color",
         }
     return str(phrases[str(condition_kind)])
 

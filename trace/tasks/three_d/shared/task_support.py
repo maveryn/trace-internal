@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Sequence, Tuple
+from typing import Any, Dict, Mapping, Sequence, Tuple, TypeVar
 
 from ....core.seed import spawn_rng
+from ....core.sampling import support_probability_map, uniform_choice, uniform_choice_with_probabilities
 from ...shared.config_defaults import group_default
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+
+T = TypeVar("T")
 
 
 def normalize_unit(value: float, lower: float, upper: float) -> float:
@@ -42,6 +44,70 @@ def _support_key_value(*, key: str | None, prefix: str | None) -> str:
     if support_key == "None":
         raise ValueError("resolve_count requires key or prefix")
     return support_key
+
+
+def resolve_support_choice_for_namespace(
+    params: Mapping[str, Any],
+    *,
+    namespace: str,
+    instance_seed: int,
+    support_values: Sequence[T],
+    explicit_key: str | None = None,
+    locked_key: str | None = None,
+    sort_keys: bool = False,
+) -> Tuple[T, Dict[str, float]]:
+    """Resolve one item from an explicit support using seeded RNG sampling."""
+
+    sampling_namespace = _namespace_value(namespace)
+    support = tuple(support_values)
+    if not support:
+        raise ValueError("three_d support choice requires a non-empty support")
+    key_by_text = {str(value): value for value in support}
+    if len(key_by_text) != len(support):
+        raise ValueError("three_d support choice values must have unique string keys")
+
+    explicit = params.get(str(explicit_key)) if explicit_key else None
+    if explicit is not None:
+        selected_key = str(explicit)
+        if selected_key not in key_by_text:
+            raise ValueError(f"unsupported {explicit_key}: {explicit}")
+        return key_by_text[selected_key], support_probability_map(support, selected=key_by_text[selected_key], sort_keys=bool(sort_keys))
+
+    locked = params.get(str(locked_key)) if locked_key else None
+    if locked is not None:
+        selected_key = str(locked)
+        if selected_key not in key_by_text:
+            raise ValueError(f"unsupported locked {locked_key}: {locked}")
+        return key_by_text[selected_key], support_probability_map(support, sort_keys=bool(sort_keys))
+
+    rng = spawn_rng(int(instance_seed), sampling_namespace)
+    selected, probabilities = uniform_choice_with_probabilities(
+        rng,
+        support,
+        sort_keys=bool(sort_keys),
+    )
+    return selected, {str(key): float(value) for key, value in probabilities.items()}
+
+
+def shuffled_repeated_support(rng, values: Sequence[T], count: int) -> Tuple[T, ...]:
+    """Return `count` items by repeating one seeded shuffled support order."""
+
+    target_count = int(count)
+    if target_count < 0:
+        raise ValueError("three_d repeated support count must be non-negative")
+    if target_count == 0:
+        return ()
+    items = list(values)
+    if not items:
+        raise ValueError("three_d repeated support requires a non-empty support")
+    rng.shuffle(items)
+    selected: list[T] = []
+    while len(selected) < target_count:
+        for item in items:
+            selected.append(item)
+            if len(selected) >= target_count:
+                break
+    return tuple(selected)
 
 
 def resolve_axis_variant_for_namespace(
@@ -153,19 +219,15 @@ def resolve_count_for_namespace(
         selected = int(explicit)
         if selected not in set(support):
             raise ValueError(f"unsupported {support_key}: {selected}")
-        return int(selected), dict(uniform_probability_map(support, selected=int(selected)))
+        return int(selected), {str(int(selected)): 1.0}
     if locked is not None:
         selected = int(locked)
         if selected not in set(support):
             raise ValueError(f"unsupported locked {support_key}: {selected}")
-        return int(selected), dict(uniform_probability_map(support))
-    selection_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=sampling_namespace,
-    )
-    selected = int(support[abs(int(selection_index)) % len(support)])
-    return int(selected), dict(uniform_probability_map(support))
+        return int(selected), support_probability_map(support, sort_keys=True)
+    rng = spawn_rng(int(instance_seed), sampling_namespace)
+    selected = int(uniform_choice(rng, support, sort_keys=True))
+    return int(selected), support_probability_map(support, sort_keys=True)
 
 
 def resolve_count(
@@ -211,4 +273,6 @@ __all__ = [
     "resolve_axis_variant_for_namespace",
     "resolve_count",
     "resolve_count_for_namespace",
+    "resolve_support_choice_for_namespace",
+    "shuffled_repeated_support",
 ]

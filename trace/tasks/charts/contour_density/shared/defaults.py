@@ -27,7 +27,6 @@ SUPPORTED_DISTANCE_EXTREMA: Tuple[str, ...] = ("nearest", "farthest")
 SUPPORTED_REFERENCE_KINDS: Tuple[str, ...] = ("point", "vertical_line", "horizontal_line")
 SUPPORTED_DENSITY_THRESHOLD_DIRECTIONS: Tuple[str, ...] = ("at_least", "below")
 SUPPORTED_SPREAD_EXTREMA: Tuple[str, ...] = ("widest", "narrowest")
-OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 
 TASK_GROUP_DEFAULTS = get_scene_defaults(DOMAIN, SCENE_ID)
 CONFIG_CONTEXT_KEY = "".join(("task", "_", "id"))
@@ -50,7 +49,6 @@ __all__ = [
     "SUPPORTED_REFERENCE_KINDS",
     "SUPPORTED_DENSITY_THRESHOLD_DIRECTIONS",
     "SUPPORTED_SPREAD_EXTREMA",
-    "OPTION_LABELS",
     "GENERATION_DEFAULTS",
     "RENDER_DEFAULTS",
     "PROMPT_DEFAULTS",

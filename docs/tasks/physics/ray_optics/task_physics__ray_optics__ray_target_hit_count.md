@@ -3,43 +3,47 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `ray_optics`
-- Implementation scene: `optics`
-- Implementation source: `trace/tasks/physics/optics/ray_trace.py`
+- Implementation source: `trace/tasks/physics/ray_optics/ray_target_hit_count.py`
 
-## Task Contract
-Counts visible target points intersected by the hidden reflected ray path.
+## Program Contract
+
+Program: `count(filter(target_points, intersects(hidden_ray_path, target_point))); scene=ray_optics; scope=ray_target_hit_count`
+
+Candidate set: the visible mirror/ray geometry, ray path segments, target markers, and bounce/hit labels inside the `ray_target_hit_count` objective scope.
+Operands: `hidden_ray_path` (semantic_role, allowed `trace_solved_ray_path`, source `program_schema_concrete`); `target_points` (semantic_role, allowed `visible_target_points`, source `program_schema_concrete`).
+Operation: evaluate `count` over the candidate set using the visible quantities, relations, branch semantics, and formulas encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer_count` schema; The answer value is the count of target points touched by the solved ray path.
+Annotation witnesses: `point_set` witnesses from the finalized render. Annotation is an unordered set of final-image pixel points at the touched target centers. Annotation and answer must come from the same generated execution trace.
+Query ids: `single`.
 
 ## Query Branches
 
+Supported `query_id`s: `single`
+
 | Query id | Program schema |
 | --- | --- |
-| `target_hit_count` | `count(filter(target_points, intersects(hidden_ray_path, target_point))); scene=ray_optics; scope=ray_target_hit_count; query_branch=target_hit_count` |
+| `single` | `count(filter(target_points, intersects(hidden_ray_path, target_point))); scene=ray_optics; scope=ray_target_hit_count` |
 
 ## Program Metadata
 - Program signatures: `physics.ray_path_event_count`
-- Base program contract: `count(filter(target_points, intersects(hidden_ray_path, target_point))); scene=ray_optics; scope=ray_target_hit_count`
-- Parameter axes: `role_selection`
+- Parameter axes: `fixed_query`
 - Arguments:
   - `hidden_ray_path`: semantic_role; allowed `trace_solved_ray_path`; source `program_schema_concrete`
-  - `role`: semantic_role; allowed `target`; source `query_id|parameter_axes`
-  - `target_point`: semantic_role; allowed `target_point`; source `program_schema_concrete`
   - `target_points`: semantic_role; allowed `visible_target_points`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `target_hit_count`
 
 ## Answer Contract
 - Answer schema: `integer_count`
 - Generator `answer_gt.type`: `integer`
-- The answer value is a non-negative integer count of the queried visual events or targets.
+- The answer value is the count of target points touched by the solved ray path.
 
 ## Annotation Contract
 - Annotation schema: `point_set`
-- Generator `annotation_gt.type`: `point_set | unordered`
-- Annotation is an unordered set of final-image pixel points over the queried event/target centers.
-- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
-- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
+- Generator `annotation_gt.type`: `point_set`
+- Annotation is an unordered set of final-image pixel points at the touched target centers.
+- Annotation and answer must come from the same generated execution trace.
 
 ## Prompt And Trace Requirements
-- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
-- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
-- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
+- Prompt text must come from the `physics_ray_optics_v1` scene prompt bundle.
+- The internal prompt branch is recorded as `target_hit_count` in trace metadata.
+- Render randomness, sampled fonts/styles, physical layout, solved ray path, answer, and annotation payloads must be explicit in the instance trace.

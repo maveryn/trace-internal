@@ -231,7 +231,10 @@ def polygon_axis_line_segment(
     intersections: List[Tuple[float, float]] = []
     eps = 1e-8
     for index, point_a in enumerate(polygon_xy):
-        point_b = polygon_xy[(index + 1) % len(polygon_xy)]
+        next_index = index + 1
+        if next_index >= len(polygon_xy):
+            next_index = 0
+        point_b = polygon_xy[next_index]
         x1, y1 = float(point_a[0]), float(point_a[1])
         x2, y2 = float(point_b[0]), float(point_b[1])
         if str(axis) == "x":

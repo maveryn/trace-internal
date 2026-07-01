@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from ....core.query_ids import SINGLE_QUERY_ID
 from ._lifecycle import (
     MultiseriesTaskPlan,
     build_ranked_extremum_label_plan,
@@ -19,15 +18,29 @@ TASK_PARAM_DEFAULTS: dict[str, Any] = {
     "category_total_series_count_min": 3,
     "category_total_series_count_max": 5,
     "category_total_rank_min": 1,
-    "category_total_rank_max": 2,
+    "category_total_rank_max": 1,
     "value_min": 1,
     "value_max": 99,
+}
+LARGEST_CATEGORY_TOTAL_QUERY_ID = "largest_category_total_label"
+SMALLEST_CATEGORY_TOTAL_QUERY_ID = "smallest_category_total_label"
+CATEGORY_TOTAL_QUERY_IDS = (LARGEST_CATEGORY_TOTAL_QUERY_ID, SMALLEST_CATEGORY_TOTAL_QUERY_ID)
+EXTREMUM_DIRECTION_BY_QUERY_ID = {
+    LARGEST_CATEGORY_TOTAL_QUERY_ID: "largest",
+    SMALLEST_CATEGORY_TOTAL_QUERY_ID: "smallest",
 }
 
 
 def _build_plan(instance_seed: int, params: Mapping[str, Any], selected_query_id: str) -> MultiseriesTaskPlan:
     """Bind the category-total rank objective before neutral rendering."""
 
+    extremum_direction = EXTREMUM_DIRECTION_BY_QUERY_ID[str(selected_query_id)]
+    task_params = {
+        **dict(params),
+        "extremum_direction": str(extremum_direction),
+        "category_total_rank_min": 1,
+        "category_total_rank_max": 1,
+    }
     return build_ranked_extremum_label_plan(
         dataset_kind="category_total",
         prompt_query_key="category_total_extremum_label",
@@ -47,7 +60,7 @@ def _build_plan(instance_seed: int, params: Mapping[str, Any], selected_query_id
         annotation_category_source="answer_label",
         include_target_category_slot=False,
         instance_seed=int(instance_seed),
-        params=params,
+        params=task_params,
     )
 
 
@@ -58,10 +71,10 @@ class ChartsMultiseriesCategoryTotalExtremumLabelTask:
     task_id = "task_charts__multiseries__category_total_extremum_label"
     domain = DOMAIN
     objective_contract = "category_total_extremum_label"
-    supported_query_ids = (SINGLE_QUERY_ID,)
+    supported_query_ids = CATEGORY_TOTAL_QUERY_IDS
     default_dataset_enabled = True
 
-    default_query_id = SINGLE_QUERY_ID
+    default_query_id = LARGEST_CATEGORY_TOTAL_QUERY_ID
     task_param_defaults = TASK_PARAM_DEFAULTS
     _build_plan = staticmethod(_build_plan)
 
@@ -69,4 +82,9 @@ class ChartsMultiseriesCategoryTotalExtremumLabelTask:
         return run_configured_multiseries_task(self, int(instance_seed), dict(params), int(max_attempts))
 
 
-__all__ = ["ChartsMultiseriesCategoryTotalExtremumLabelTask"]
+__all__ = [
+    "CATEGORY_TOTAL_QUERY_IDS",
+    "ChartsMultiseriesCategoryTotalExtremumLabelTask",
+    "LARGEST_CATEGORY_TOTAL_QUERY_ID",
+    "SMALLEST_CATEGORY_TOTAL_QUERY_ID",
+]

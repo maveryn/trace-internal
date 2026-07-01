@@ -9,46 +9,44 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.physics.circuits.equivalent_resistance import (
-    PhysicsCircuitsTotalCapacitanceValueTask,
-    PhysicsCircuitsTotalResistanceValueTask,
+from trace.tasks.physics.circuit_equivalent.total_capacitance_value import (
+    PhysicsCircuitEquivalentTotalCapacitanceValueTask,
+)
+from trace.tasks.physics.circuit_equivalent.total_resistance_value import (
+    PhysicsCircuitEquivalentTotalResistanceValueTask,
 )
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "params", "expected_query_id", "expected_prefix", "expected_kind", "expected_answer"),
+    ("task_cls", "params", "expected_prefix", "expected_kind", "expected_answer"),
     (
         (
-            PhysicsCircuitsTotalResistanceValueTask,
+            PhysicsCircuitEquivalentTotalResistanceValueTask,
             {"scene_variant": "series_parallel", "target_answer": 8},
-            "total_resistance",
             "R",
             "resistor",
             8,
         ),
         (
-            PhysicsCircuitsTotalCapacitanceValueTask,
+            PhysicsCircuitEquivalentTotalCapacitanceValueTask,
             {"scene_variant": "series_parallel", "target_answer": 4, "parallel_block_count_options": [2]},
-            "total_capacitance",
             "C",
             "capacitor",
             4,
         ),
         (
-            PhysicsCircuitsTotalCapacitanceValueTask,
+            PhysicsCircuitEquivalentTotalCapacitanceValueTask,
             {"scene_variant": "series_parallel", "target_answer": 6},
-            "total_capacitance",
             "C",
             "capacitor",
             6,
         ),
     ),
 )
-def test_physics_circuits_equivalent_tasks_emit_expected_contract(
+def test_physics_circuit_equivalent_tasks_emit_expected_contract(
     task_cls: type,
     params: dict[str, int | str],
-    expected_query_id: str,
     expected_prefix: str,
     expected_kind: str,
     expected_answer: int,
@@ -58,33 +56,37 @@ def test_physics_circuits_equivalent_tasks_emit_expected_contract(
     execution = trace["execution_trace"]
 
     assert out.scene_id == "circuit_equivalent"
-    assert out.query_id == expected_query_id
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
-    assert out.annotation_gt.type == "keyed_bbox_map"
-    assert out.annotation_gt.value
-    assert all(str(key).startswith(expected_prefix) for key in out.annotation_gt.value)
-    assert all(len(value) == 4 for value in out.annotation_gt.value.values())
+    assert out.annotation_gt.type == "bbox"
+    assert len(out.annotation_gt.value) == 4
+    assert out.annotation_gt.value == trace["render_map"]["annotation_bbox_px"]
+    x0, y0, x1, y1 = [float(value) for value in out.annotation_gt.value]
+    assert 0 <= x0 < x1 <= out.image.size[0]
+    assert 0 <= y0 < y1 <= out.image.size[1]
+    component_bboxes = trace["render_map"]["component_bboxes_px"]
+    assert component_bboxes
+    assert all(str(key).startswith(expected_prefix) for key in component_bboxes)
+    assert all(len(value) == 4 for value in component_bboxes.values())
 
-    assert trace["query_spec"]["query_id"] == expected_query_id
-    assert trace["query_spec"]["params"]["query_id"] == expected_query_id
-    assert trace["query_spec"]["params"]["internal_query_id"] == expected_query_id
-    assert execution["query_id"] == expected_query_id
-    assert execution["internal_query_id"] == expected_query_id
+    assert trace["query_spec"]["query_id"] == "single"
+    assert trace["query_spec"]["params"]["query_id"] == "single"
+    assert execution["query_id"] == "single"
     assert execution["component_kind"] == expected_kind
     assert int(execution["target_answer"]) == int(expected_answer)
     assert int(execution["equivalent_value"]) == int(expected_answer)
     assert trace["render_spec"]["component_kind"] == expected_kind
     assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
     assert trace["render_spec"]["layout_placement"]["mode"] == "whole_equivalent_circuit_diagram_offset"
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
-    assert trace["render_map"]["component_bboxes_px"] == out.annotation_gt.value
-    assert trace["witness_symbolic"]["type"] == "object_map"
-    assert trace["witness_symbolic"]["key_to_entity_id"] == trace["render_map"]["component_entity_ids"]
-    assert len(execution["component_specs"]) == len(out.annotation_gt.value)
-    assert [spec["label"] for spec in execution["component_specs"]] == list(out.annotation_gt.value.keys())
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
+    assert trace["witness_symbolic"]["type"] == "bbox"
+    assert trace["witness_symbolic"]["id"] == "equivalent_circuit_network"
+    assert trace["witness_symbolic"]["component_entity_ids"] == list(trace["render_map"]["component_entity_ids"].values())
+    assert len(execution["component_specs"]) == len(component_bboxes)
+    assert [spec["label"] for spec in execution["component_specs"]] == list(component_bboxes.keys())
 
     assert str(params["scene_variant"]) == "series_parallel"
     assert len(execution["parallel_blocks"]) in {1, 2}
@@ -104,7 +106,7 @@ def test_physics_circuits_equivalent_tasks_are_deterministic() -> None:
         "target_answer": 3,
         "accent_color_name": "cyan",
     }
-    task = PhysicsCircuitsTotalCapacitanceValueTask()
+    task = PhysicsCircuitEquivalentTotalCapacitanceValueTask()
     out_a = task.generate(26021, params=params, max_attempts=40)
     out_b = task.generate(26021, params=params, max_attempts=40)
 
@@ -119,8 +121,8 @@ def test_physics_circuits_equivalent_tasks_are_deterministic() -> None:
 @pytest.mark.parametrize(
     ("task_cls", "params"),
     (
-        (PhysicsCircuitsTotalResistanceValueTask, {"scene_variant": "series_parallel", "target_answer": 1}),
-        (PhysicsCircuitsTotalCapacitanceValueTask, {"scene_variant": "series_parallel", "target_answer": 999}),
+        (PhysicsCircuitEquivalentTotalResistanceValueTask, {"scene_variant": "series_parallel", "target_answer": 1}),
+        (PhysicsCircuitEquivalentTotalCapacitanceValueTask, {"scene_variant": "series_parallel", "target_answer": 999}),
     ),
 )
 def test_physics_circuits_equivalent_tasks_reject_infeasible_target_answer(
@@ -133,7 +135,7 @@ def test_physics_circuits_equivalent_tasks_reject_infeasible_target_answer(
 
 def test_physics_circuits_equivalent_tasks_reject_unknown_scene_variant() -> None:
     with pytest.raises(ValueError):
-        PhysicsCircuitsTotalResistanceValueTask().generate(
+        PhysicsCircuitEquivalentTotalResistanceValueTask().generate(
             26031,
             params={"scene_variant": "bridge_network"},
             max_attempts=20,
@@ -141,7 +143,7 @@ def test_physics_circuits_equivalent_tasks_reject_unknown_scene_variant() -> Non
 
 
 def test_physics_circuits_equivalent_rejects_pure_series_or_parallel_scene_variants() -> None:
-    for task_cls in (PhysicsCircuitsTotalResistanceValueTask, PhysicsCircuitsTotalCapacitanceValueTask):
+    for task_cls in (PhysicsCircuitEquivalentTotalResistanceValueTask, PhysicsCircuitEquivalentTotalCapacitanceValueTask):
         for scene_variant in ("series", "parallel"):
             with pytest.raises(ValueError, match="unsupported scene_variant"):
                 task_cls().generate(
@@ -151,9 +153,9 @@ def test_physics_circuits_equivalent_rejects_pure_series_or_parallel_scene_varia
                 )
 
 
-def test_physics_circuits_equivalent_tasks_reject_source_query_id_param() -> None:
-    with pytest.raises(ValueError, match="must match query_id"):
-        PhysicsCircuitsTotalResistanceValueTask().generate(
+def test_physics_circuits_equivalent_tasks_reject_retired_query_id_param() -> None:
+    with pytest.raises(ValueError, match="unsupported query_id"):
+        PhysicsCircuitEquivalentTotalResistanceValueTask().generate(
             26033,
             params={"query_id": "total_capacitance"},
             max_attempts=20,
@@ -161,11 +163,15 @@ def test_physics_circuits_equivalent_tasks_reject_source_query_id_param() -> Non
 
 
 def test_physics_circuits_equivalent_prompt_bundle_supports_variants() -> None:
-    bundle = json.loads(Path("prompts/physics/circuits/physics_circuits_v0.json").read_text(encoding="utf-8"))
+    bundle = json.loads(
+        Path("prompts/physics/circuit_equivalent/physics_circuit_equivalent_v1.json").read_text(encoding="utf-8")
+    )
 
-    assert len(bundle["query_templates"]["total_resistance"]) == 5
-    assert len(bundle["query_templates"]["total_capacitance"]) == 5
-    assert len(set(bundle["answer_or_annotation_templates"]["answer_and_annotation"])) == 5
+    assert bundle["schema_version"] == "v1"
+    assert len(bundle["templates"]["query"]["single"]) == 5
+    assert len(bundle["templates"]["task"]["total_resistance_value_query"]) == 5
+    assert len(bundle["templates"]["task"]["total_capacitance_value_query"]) == 5
+    assert len(set(bundle["templates"]["output"]["answer_and_annotation"])) == 5
 
 
 def test_physics_circuits_equivalent_tasks_build_smoke(tmp_path: Path) -> None:
@@ -197,13 +203,12 @@ def test_physics_circuits_equivalent_tasks_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "physics" for record in train_records)
-    assert all(record["scene_id"] == "circuits" for record in train_records)
     assert {record["task"] for record in train_records} == {
         "task_physics__circuit_equivalent__total_resistance_value",
         "task_physics__circuit_equivalent__total_capacitance_value",
     }
     assert {record["scene_id"] for record in train_records} == {"circuit_equivalent"}
-    assert {record["query_id"] for record in train_records} == {"total_resistance", "total_capacitance"}
+    assert {record["query_id"] for record in train_records} == {"single"}
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_physics__circuit_equivalent__total_resistance_value"]) == 2

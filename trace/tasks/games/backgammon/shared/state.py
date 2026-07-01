@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Mapping, Tuple
 
 
@@ -66,6 +66,8 @@ class BackgammonSample:
     destination_status: str = ""
     checker_color: str = ""
     stack_state: str = ""
+    pip_count_contributions: Mapping[int, int] = field(default_factory=dict)
+    use_dice_for_moves: bool = True
 
 
 def point_entity_id(point_id: int) -> str:

@@ -16,15 +16,22 @@
 ## Annotation Contract
 1. Answer schema: `integer_value`.
 2. Annotation schema: `bbox_map`.
-3. `final_total_value` marks the printed final-total value.
-4. `target_contribution_value` marks the printed signed contribution value.
-5. `target_step_label` marks the visible step label for the contribution whose sign is reversed.
+3. `final_total_bar` marks the full final-total bar.
+4. `target_contribution_bar` marks the full contribution bar whose sign is reversed.
 
 ## Program Contract
-`final_total - 2 * delta(target_step); target_step=visible_step_label; output=integer_value; annotation=bbox_map(final_total_value,target_contribution_value,target_step_label); scene=waterfall; scope=reverse_step_final_total`
+
+Program: `final_total - 2 * delta(target_step); target_step=visible_step_label; output=integer_value; annotation=bbox_map(final_total_bar,target_contribution_bar); scene=waterfall; scope=reverse_step_final_total`
+
+Candidate set: the visible waterfall bars, contribution steps, and total bars inside the `reverse_step_final_total` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `final_total - 2 * delta` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `bbox_map` witnesses bound by `bbox_map(final_total_bar,target_contribution_bar)`. `final_total_bar` marks the full final-total bar. `target_contribution_bar` marks the full contribution bar whose sign is reversed.
+Query ids: `single`.
 
 ## Query Details
 
 | Query id | Program contract | Answer schema | Annotation schema |
 |---|---|---|---|
-| `single` | `final_total - 2 * delta(target_step); target_step=visible_step_label; output=integer_value; annotation=bbox_map(final_total_value,target_contribution_value,target_step_label); scene=waterfall; scope=reverse_step_final_total` | `integer_value` | `bbox_map` |
+| `single` | `final_total - 2 * delta(target_step); target_step=visible_step_label; output=integer_value; annotation=bbox_map(final_total_bar,target_contribution_bar); scene=waterfall; scope=reverse_step_final_total` | `integer_value` | `bbox_map` |

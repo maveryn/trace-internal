@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from .....core.seed import spawn_rng
+from .....core.sampling import uniform_choice_with_probabilities
 from .....core.query_ids import SINGLE_QUERY_ID
 from ....shared.config_defaults import group_default
-from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ....shared.fixed_query import select_task_query_id
 from ...shared.object_library import STYLE_IDS
 from ...shared.task_support import (
@@ -88,8 +89,9 @@ def support_choice(
         if selected not in set(values):
             raise ValueError(f"{explicit_key} is outside configured support")
         return selected, uniform_string_probability_map(values, selected=selected)
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return str(values[int(index) % len(values)]), uniform_string_probability_map(values)
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    selected, probabilities = uniform_choice_with_probabilities(rng, values, sort_keys=False)
+    return str(selected), dict(probabilities)
 
 
 def render_params(
@@ -209,16 +211,16 @@ def sample_option_answer_index(
             raise ValueError(f"{explicit_label_key} outside option label support")
         value = int(labels.index(label))
         return int(value), {str(value): 1.0}
+    namespace = f"{seed_scope}:{namespace_suffix}"
     if params.get("_sample_cursor") is not None:
-        value = abs(int(params["_sample_cursor"])) % len(labels)
-        return int(value), dict(uniform_probability_map(tuple(range(len(labels)))))
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{seed_scope}:{namespace_suffix}",
+        namespace = f"{namespace}:{int(params['_sample_cursor'])}"
+    rng = spawn_rng(int(instance_seed), namespace)
+    value, probabilities = uniform_choice_with_probabilities(
+        rng,
+        tuple(range(len(labels))),
+        sort_keys=True,
     )
-    value = int(index) % len(labels)
-    return int(value), dict(uniform_probability_map(tuple(range(len(labels)))))
+    return int(value), dict(probabilities)
 
 
 def sample_equipment_items(

@@ -9,11 +9,11 @@ from PIL import Image
 
 from ....core.query_ids import SINGLE_QUERY_ID
 from ....core.seed import spawn_rng
+from ....core.sampling import support_probability_map, uniform_choice_with_probabilities
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults, required_group_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...shared.output_metadata import default_task_versions
 from ..shared.cutouts import (
@@ -118,11 +118,10 @@ def _sample_rotation(*, params: Mapping[str, Any], instance_seed: int) -> Tuple[
         value = int(explicit)
         if value not in set(support):
             raise ValueError(f"rotation_degrees must be one of {support}")
-        return int(value), {str(value): 1.0}
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:rotation_degrees")
-    value = int(support[int(index) % len(support)])
-    probability = 1.0 / float(len(support))
-    return int(value), {str(item): float(probability) for item in support}
+        return int(value), support_probability_map(support, selected=int(value), sort_keys=True)
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:rotation_degrees")
+    value, probabilities = uniform_choice_with_probabilities(rng, support, sort_keys=True)
+    return int(value), dict(probabilities)
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int) -> _SampleSpec:
@@ -236,18 +235,12 @@ def _select_correct_index(
         if value not in set(usable):
             raise ValueError("explicit correct_index is not visually usable for rotation")
         return int(value), {str(value): 1.0}
+    namespace = f"{TASK_ID}:answer:{attempt_index}"
     if params.get("_sample_cursor") is not None:
-        value = abs(int(params["_sample_cursor"])) % len(tile_labels)
-        if value not in set(usable):
-            raise ValueError("sample-cursor selected tile is not visually usable for rotation")
-        return int(value), dict(uniform_probability_map(tuple(range(len(tile_labels)))))
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}:answer:{attempt_index}",
-    )
-    selected = int(usable[int(index) % len(usable)])
-    return int(selected), dict(uniform_probability_map(usable))
+        namespace = f"{namespace}:{int(params['_sample_cursor'])}"
+    rng = spawn_rng(int(instance_seed), namespace)
+    selected, probabilities = uniform_choice_with_probabilities(rng, usable, sort_keys=True)
+    return int(selected), dict(probabilities)
 
 
 @register_task

@@ -7,6 +7,12 @@ from typing import Any, Mapping, Sequence
 from PIL import Image, ImageDraw
 
 from trace.core.seed import spawn_rng
+from trace.tasks.illustrations.shared.isometric_visual_styles import (
+    IsometricIllustrationTone,
+    isometric_terrain_triplet,
+    resolve_isometric_illustration_tone,
+    tint_isometric_semantic_rgb,
+)
 from trace.tasks.illustrations.shared.option_rendering import draw_label_badge
 
 from .state import BBox, IsoHarborEntity, IsoHarborScene, IsoHarborTile
@@ -14,7 +20,6 @@ from .state import BBox, IsoHarborEntity, IsoHarborScene, IsoHarborTile
 
 SCENE_ID = "isometric_harbor"
 RENDERER_ID = "isometric_harbor_v4"
-BACKGROUND_RGB = (207, 220, 190)
 SUPPORTED_CANVAS_PROFILES: Mapping[str, tuple[int, int, int, int, float, float]] = {
     "landscape": (16, 12, 60, 30, 0.5, 0.17),
     "square": (14, 14, 58, 29, 0.5, 0.18),
@@ -34,6 +39,7 @@ BOAT_COLOR_PALETTES: tuple[tuple[tuple[int, int, int], tuple[int, int, int]], ..
     ((65, 126, 97), (238, 187, 86)),
     ((128, 78, 142), (229, 178, 91)),
 )
+MIN_BOAT_BBOX_SIDE_PX = 24.5
 
 
 def _shade(color: tuple[int, int, int], delta: int) -> tuple[int, int, int]:
@@ -53,6 +59,43 @@ def _bbox_for_points(points: Sequence[Sequence[float]]) -> BBox:
     xs = [float(point[0]) for point in points]
     ys = [float(point[1]) for point in points]
     return (min(xs), min(ys), max(xs), max(ys))
+
+
+def _expand_bbox_to_min_side(
+    bbox: Sequence[float],
+    *,
+    width: int,
+    height: int,
+    min_side: float,
+) -> BBox:
+    """Expand a projected object bbox to a minimum side while keeping it on canvas."""
+
+    x0, y0, x1, y1 = _clamp_bbox(bbox, width=int(width), height=int(height))
+    target_w = min(float(width), max(float(x1) - float(x0), float(min_side)))
+    target_h = min(float(height), max(float(y1) - float(y0), float(min_side)))
+    cx = (float(x0) + float(x1)) / 2.0
+    cy = (float(y0) + float(y1)) / 2.0
+
+    new_x0 = cx - target_w / 2.0
+    new_x1 = cx + target_w / 2.0
+    new_y0 = cy - target_h / 2.0
+    new_y1 = cy + target_h / 2.0
+
+    if new_x0 < 0.0:
+        new_x1 -= new_x0
+        new_x0 = 0.0
+    if new_x1 > float(width):
+        overflow = new_x1 - float(width)
+        new_x0 = max(0.0, new_x0 - overflow)
+        new_x1 = float(width)
+    if new_y0 < 0.0:
+        new_y1 -= new_y0
+        new_y0 = 0.0
+    if new_y1 > float(height):
+        overflow = new_y1 - float(height)
+        new_y0 = max(0.0, new_y0 - overflow)
+        new_y1 = float(height)
+    return (new_x0, new_y0, new_x1, new_y1)
 
 
 def _iso_center(
@@ -164,13 +207,12 @@ def _make_tiles(
     return tuple(tiles)
 
 
-def _draw_land_tile(draw: ImageDraw.ImageDraw, tile: IsoHarborTile, *, rng: Any) -> None:
+def _draw_land_tile(draw: ImageDraw.ImageDraw, tile: IsoHarborTile, *, rng: Any, tone: IsometricIllustrationTone) -> None:
     green_shift = int(rng.randrange(-7, 8))
     fill = (126 + green_shift, 176 + green_shift, 103 + green_shift)
     if int(tile.row) > 0:
         fill = (194 + green_shift, 170 + green_shift, 105 + green_shift)
-    dark = _shade(fill, -42)
-    light = _shade(fill, 32)
+    fill, dark, light = isometric_terrain_triplet(fill, tone, shadow_delta=-42, light_delta=32)
     points = [(int(round(x)), int(round(y))) for x, y in tile.polygon_xy]
     draw.polygon(points, fill=fill)
     top, right, bottom, left = tile.polygon_xy
@@ -182,27 +224,30 @@ def _draw_land_tile(draw: ImageDraw.ImageDraw, tile: IsoHarborTile, *, rng: Any)
     if int(tile.row) == 0:
         for dx in (-0.2, 0.08, 0.22):
             px = int(round(cx + dx * (tile.bbox_xyxy[2] - tile.bbox_xyxy[0])))
-            draw.line((px, int(cy + 2), px + 5, int(cy - 5)), fill=(53, 126, 58), width=2)
+            draw.line((px, int(cy + 2), px + 5, int(cy - 5)), fill=tint_isometric_semantic_rgb((53, 126, 58), tone, strength=0.04), width=2)
     else:
-        draw.arc((cx - 11, cy - 2, cx + 12, cy + 7), 190, 350, fill=(143, 118, 74), width=1)
+        draw.arc((cx - 11, cy - 2, cx + 12, cy + 7), 190, 350, fill=tint_isometric_semantic_rgb((143, 118, 74), tone, strength=0.04), width=1)
 
 
-def _draw_water_tile(draw: ImageDraw.ImageDraw, tile: IsoHarborTile, *, rng: Any) -> None:
+def _draw_water_tile(draw: ImageDraw.ImageDraw, tile: IsoHarborTile, *, rng: Any, tone: IsometricIllustrationTone) -> None:
     blue_shift = int(rng.randrange(-8, 9))
-    fill = (42, 135 + blue_shift, 174 + blue_shift)
-    outline = (35, 112, 154)
+    fill = tint_isometric_semantic_rgb((42, 135 + blue_shift, 174 + blue_shift), tone, strength=0.045)
+    outline = tint_isometric_semantic_rgb((35, 112, 154), tone, strength=0.06)
     draw.polygon(tile.polygon_xy, fill=fill, outline=outline)
     cx, cy = tile.center_xy
     wave = float(tile.bbox_xyxy[2] - tile.bbox_xyxy[0]) * 0.16
-    draw.arc((cx - wave, cy - 3, cx + wave, cy + 7), 190, 350, fill=(120, 205, 220), width=1)
+    draw.arc((cx - wave, cy - 3, cx + wave, cy + 7), 190, 350, fill=tint_isometric_semantic_rgb((120, 205, 220), tone, strength=0.04), width=1)
 
 
-def _draw_dock_tile(draw: ImageDraw.ImageDraw, tile: IsoHarborTile) -> None:
-    draw.polygon(tile.polygon_xy, fill=(163, 112, 66), outline=(92, 61, 36))
+def _draw_dock_tile(draw: ImageDraw.ImageDraw, tile: IsoHarborTile, *, tone: IsometricIllustrationTone) -> None:
+    fill = tint_isometric_semantic_rgb((163, 112, 66), tone, strength=0.06)
+    outline = tint_isometric_semantic_rgb((92, 61, 36), tone, strength=0.06)
+    draw.polygon(tile.polygon_xy, fill=fill, outline=outline)
     left, top, right, bottom = tile.bbox_xyxy
     cx, cy = tile.center_xy
-    draw.line([(left + 8, cy), (cx, bottom - 2), (right - 8, cy)], fill=(124, 80, 43), width=1)
-    draw.line([(cx, top + 2), (cx, bottom - 2)], fill=(121, 77, 41), width=1)
+    plank = tint_isometric_semantic_rgb((124, 80, 43), tone, strength=0.06)
+    draw.line([(left + 8, cy), (cx, bottom - 2), (right - 8, cy)], fill=plank, width=1)
+    draw.line([(cx, top + 2), (cx, bottom - 2)], fill=plank, width=1)
 
 
 def _draw_post(draw: ImageDraw.ImageDraw, cx: float, cy: float, scale: float) -> BBox:
@@ -550,13 +595,21 @@ def _add_entity(
     canvas_size: tuple[int, int],
 ) -> None:
     width, height = canvas_size
+    entity_bbox = _clamp_bbox(bbox, width=int(width), height=int(height))
+    if str(object_type) == "boat":
+        entity_bbox = _expand_bbox_to_min_side(
+            entity_bbox,
+            width=int(width),
+            height=int(height),
+            min_side=MIN_BOAT_BBOX_SIDE_PX,
+        )
     entities.append(
         IsoHarborEntity(
             entity_id=str(entity_id),
             public_name=str(public_name),
             object_type=str(object_type),
             tile_ids=tuple(str(value) for value in tile_ids),
-            bbox_xyxy=_clamp_bbox(bbox, width=int(width), height=int(height)),
+            bbox_xyxy=entity_bbox,
             point_xy=(round(float(point[0]), 3), round(float(point[1]), 3)),
             role=str(role),
             metadata=dict(metadata),
@@ -1013,6 +1066,7 @@ def _draw_shoreline_candidate_boats(
     tile_w: float,
     cols: int,
     rows: int,
+    tone: IsometricIllustrationTone,
 ) -> dict[str, Any]:
     """Draw lettered open-water boats ordered by distance from the shoreline."""
 
@@ -1087,9 +1141,9 @@ def _draw_shoreline_candidate_boats(
             str(label),
             label_bbox,
             font_family=label_font_family,
-            fill=(255, 251, 229),
-            outline=(45, 52, 65),
-            text_fill=(16, 24, 34),
+            fill=tone.label_fill_rgb,
+            outline=tone.label_outline_rgb,
+            text_fill=tone.label_text_rgb,
             radius=5,
             width=2,
         )
@@ -1145,6 +1199,8 @@ def render_isometric_harbor_scene(
     shoreline_candidate_labels: Sequence[str] | None = None,
     shoreline_nearest_label: str | None = None,
     shoreline_label_font_family: str | None = None,
+    render_style_params: Mapping[str, Any] | None = None,
+    render_style_defaults: Mapping[str, Any] | None = None,
 ) -> IsoHarborScene:
     """Render a deterministic full-bleed isometric harbor scene."""
 
@@ -1163,16 +1219,22 @@ def render_isometric_harbor_scene(
         land_cells=land_cells,
     )
     tiles_by_cell = {(int(tile.col), int(tile.row)): tile for tile in tiles}
-    image = Image.new("RGB", (int(width), int(height)), BACKGROUND_RGB)
+    tone = resolve_isometric_illustration_tone(
+        params=dict(render_style_params or {}),
+        render_defaults=dict(render_style_defaults or {}),
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_ID}:background_tone",
+    )
+    image = Image.new("RGB", (int(width), int(height)), tone.canvas_rgb)
     draw = ImageDraw.Draw(image)
     for tile in tiles:
         if str(tile.terrain) == "water":
-            _draw_water_tile(draw, tile, rng=rng)
+            _draw_water_tile(draw, tile, rng=rng, tone=tone)
         elif str(tile.terrain) == "land":
-            _draw_land_tile(draw, tile, rng=rng)
+            _draw_land_tile(draw, tile, rng=rng, tone=tone)
     for tile in tiles:
         if str(tile.terrain) == "dock":
-            _draw_dock_tile(draw, tile)
+            _draw_dock_tile(draw, tile, tone=tone)
 
     entities: list[IsoHarborEntity] = []
     shoreline_candidate_trace: dict[str, Any] = {}
@@ -1192,6 +1254,7 @@ def render_isometric_harbor_scene(
             tile_w=tile_w,
             cols=int(cols),
             rows=int(rows),
+            tone=tone,
         )
         side_counts = {side: 0 for side in BOAT_SIDE_VALUES}
         open_water_count = len(labels)
@@ -1263,7 +1326,7 @@ def render_isometric_harbor_scene(
         "renderer_style": "isometric_pixel_harbor",
         "theme_id": "isometric_harbor_shoreline_dock",
         "seed": int(instance_seed),
-        "background_rgb": [int(value) for value in BACKGROUND_RGB],
+        **tone.trace_metadata(),
         "canvas_profile": str(canvas_profile),
         "canvas_profile_probabilities": dict(canvas_profile_probabilities or {}),
         "canvas_size_px": [int(width), int(height)],

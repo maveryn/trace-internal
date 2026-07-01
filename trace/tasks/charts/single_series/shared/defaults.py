@@ -5,10 +5,8 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence
 
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.charts.shared.labeled_chart_common import (
-    LabeledChartDefaults,
-    resolve_chart_axis_variant_for_namespace,
-)
+from trace.tasks.charts.shared.labeled_chart_defaults import LabeledChartDefaults
+from trace.tasks.charts.shared.labeled_chart_variants import resolve_chart_axis_variant_for_namespace
 from trace.tasks.charts.shared.visual_defaults import (
     load_chart_scene_background_defaults,
     load_chart_scene_noise_defaults,

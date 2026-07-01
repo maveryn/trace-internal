@@ -24,7 +24,10 @@ def json_examples_for_integer_answer() -> tuple[str, str]:
     """Return generic integer-answer JSON examples for this scene."""
 
     return (
-        json.dumps({"annotation": [[224, 306], [554, 428]], "answer": 2}, separators=(",", ":")),
+        json.dumps(
+            {"annotation": [[190, 285, 258, 330], [520, 406, 588, 451]], "answer": 2},
+            separators=(",", ":"),
+        ),
         json.dumps({"answer": 2}, separators=(",", ":")),
     )
 

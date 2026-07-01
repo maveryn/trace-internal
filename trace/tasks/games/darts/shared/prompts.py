@@ -24,7 +24,10 @@ def darts_integer_json_examples() -> tuple[str, str]:
     """Return generic JSON examples for integer-answer darts tasks."""
 
     return (
-        json.dumps({"annotation": [[411, 219], [525, 364]], "answer": 2}, separators=(",", ":")),
+        json.dumps(
+            {"annotation": [[397, 205, 425, 233], [511, 350, 539, 378]], "answer": 2},
+            separators=(",", ":"),
+        ),
         json.dumps({"answer": 2}, separators=(",", ":")),
     )
 
@@ -35,6 +38,15 @@ def darts_single_point_json_examples() -> tuple[str, str]:
     return (
         json.dumps({"annotation": [411, 219], "answer": 17}, separators=(",", ":")),
         json.dumps({"answer": 17}, separators=(",", ":")),
+    )
+
+
+def darts_option_letter_json_examples() -> tuple[str, str]:
+    """Return generic JSON examples for option-letter darts tasks."""
+
+    return (
+        json.dumps({"annotation": [411, 219], "answer": "B"}, separators=(",", ":")),
+        json.dumps({"answer": "B"}, separators=(",", ":")),
     )
 
 
@@ -82,6 +94,7 @@ def build_darts_prompt_artifacts(
 __all__ = [
     "build_darts_prompt_artifacts",
     "darts_integer_json_examples",
+    "darts_option_letter_json_examples",
     "darts_output_slots",
     "darts_single_point_json_examples",
 ]

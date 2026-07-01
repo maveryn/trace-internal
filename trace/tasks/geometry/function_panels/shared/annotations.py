@@ -35,18 +35,14 @@ def selected_panel_bbox_annotation(rendered: RenderedPropertyScene, *, label: st
 
 
 def intersection_panel_annotation(rendered: RenderedIntersectionScene, *, label: str) -> PanelAnnotationArtifacts:
-    """Return keyed bbox-set annotation for selected panel plus its intersection witnesses."""
+    """Return scalar bbox annotation for the selected intersection panel."""
 
     panel_bbox = [int(value) for value in rendered.panel_bboxes[str(label)]]
     point_bboxes = [[int(coord) for coord in bbox] for bbox in rendered.intersection_point_bboxes[str(label)]]
-    value = {
-        "selected_panel": [panel_bbox],
-        "intersection_points": point_bboxes,
-    }
     return PanelAnnotationArtifacts(
-        annotation_gt=TypedValue(type="bbox_set_map", value=value),
+        annotation_gt=TypedValue(type="bbox", value=panel_bbox),
         projected_annotation={
-            "bbox_set_map": dict(value),
+            "bbox": list(panel_bbox),
             "panel_bbox_by_label": {str(key): list(item) for key, item in rendered.panel_bboxes.items()},
             "plot_bbox_by_label": {str(key): list(item) for key, item in rendered.plot_bboxes.items()},
             "intersection_point_bboxes_by_label": {
@@ -57,6 +53,7 @@ def intersection_panel_annotation(rendered: RenderedIntersectionScene, *, label:
         witness_symbolic={
             "selected_panel_label": str(label),
             "intersection_point_count": int(len(point_bboxes)),
-            "annotation_kind": "selected_panel_and_intersections",
+            "selected_panel_intersection_point_bboxes": point_bboxes,
+            "annotation_kind": "selected_panel_bbox",
         },
     )

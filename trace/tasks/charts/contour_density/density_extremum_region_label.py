@@ -81,9 +81,9 @@ class ChartsContourDensityDensityExtremumRegionLabelTask:
             prompt_key=str(selected_query_id),
             answer=str(answer_label),
             answer_type="string",
-            annotation_type="keyed_bbox_map",
-            annotation_roles={"answer_region": str(answer_region.region_id)},
-            annotation_region_ids=(),
+            annotation_type="bbox",
+            annotation_roles={},
+            annotation_region_ids=(str(answer_region.region_id),),
             trace={
                 "density_extremum": str(extremum),
                 "density_extremum_phrase": "highest" if str(extremum) == "highest" else "lowest",

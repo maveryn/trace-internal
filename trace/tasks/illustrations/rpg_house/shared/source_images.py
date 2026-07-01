@@ -7,11 +7,11 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image
 
-from trace.core.seed import hash64
+from trace.core.seed import hash64, spawn_rng
+from trace.core.sampling import support_probability_map, uniform_choice_with_probabilities
 from trace.tasks.illustrations.shared.option_rendering import image_detail_score
 from trace.tasks.illustrations.shared.rpg_tile_profiles import resolve_rpg_tile_profile
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 
 from .rendering import (
     DEFAULT_TILE_PX,
@@ -52,13 +52,14 @@ def sample_int_range(
     high = int(params.get(str(high_key), group_default(defaults, str(high_key), int(fallback_high))))
     if low > high:
         raise ValueError(f"{low_key}/{high_key} leaves no feasible integer range")
-    span = int(high) - int(low) + 1
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=hash64(int(instance_seed), str(seed_namespace), int(attempt_index)),
-        namespace=f"{seed_namespace}:{low_key}:{high_key}",
+    rng = spawn_rng(
+        int(instance_seed),
+        str(seed_namespace),
+        int(attempt_index),
+        str(low_key),
+        str(high_key),
     )
-    return int(low) + int(index) % int(span)
+    return int(rng.randint(int(low), int(high)))
 
 
 def sample_support_index(
@@ -79,17 +80,13 @@ def sample_support_index(
         value = int(explicit)
         if value not in set(values):
             raise ValueError(f"{explicit_key} must be one of {values}")
-        return int(value), {str(value): 1.0}
+        return int(value), support_probability_map(values, selected=int(value), sort_keys=True)
+    namespace = str(seed_namespace)
     if params.get("_sample_cursor") is not None:
-        value = values[abs(int(params["_sample_cursor"])) % len(values)]
-    else:
-        index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(seed_namespace),
-        )
-        value = values[int(index) % len(values)]
-    return int(value), dict(uniform_probability_map(values))
+        namespace = f"{namespace}:{int(params['_sample_cursor'])}"
+    rng = spawn_rng(int(instance_seed), namespace)
+    value, probabilities = uniform_choice_with_probabilities(rng, values, sort_keys=True)
+    return int(value), dict(probabilities)
 
 
 def option_count_support(
@@ -167,15 +164,16 @@ def sample_rpg_house_source_scene_spec(
         source_room_count = int(explicit)
         if source_room_count not in set(support):
             raise ValueError(f"source_room_count must be one of {support}")
-        probabilities = {str(source_room_count): 1.0}
+        probabilities = support_probability_map(support, selected=int(source_room_count), sort_keys=True)
     else:
-        index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{seed_namespace}:source_room_count",
+        rng = spawn_rng(int(instance_seed), f"{seed_namespace}:source_room_count")
+        source_room_count, probabilities = uniform_choice_with_probabilities(
+            rng,
+            support,
+            sort_keys=True,
         )
-        source_room_count = int(support[int(index) % len(support)])
-        probabilities = dict(uniform_probability_map(support))
+        source_room_count = int(source_room_count)
+        probabilities = dict(probabilities)
 
     profile = resolve_rpg_tile_profile(
         params=params,

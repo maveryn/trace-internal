@@ -73,6 +73,8 @@ def render_spec(rendered: ScatterReadoutRenderResult) -> dict[str, Any]:
         "font_asset_version": str(font_assets["font_asset_version"]),
         "chart_font_family": str(font_assets["chart_font_family"]),
         "font_assets": dict(font_assets),
+        "background_style": dict(rendered.background_meta),
+        "information_scene_style": dict(rendered.background_meta.get("information_scene_style", {})),
         "post_image_noise": dict(rendered.post_noise_meta),
     }
 
@@ -96,7 +98,8 @@ def base_execution_record(
     dataset: SceneDataset,
     binding: QueryBinding,
     rendered: ScatterReadoutRenderResult,
-    annotation_bbox_map: dict[str, list[float]],
+    annotation_type: str,
+    annotation_value: Any,
 ) -> dict[str, Any]:
     return {
         "scene_variant": str(dataset.scene_variant),
@@ -109,7 +112,8 @@ def base_execution_record(
         "series_count": int(len(dataset.series)),
         "x_count": int(len(dataset.x_labels)),
         "total_point_count": int(len(dataset.series) * len(dataset.x_labels)),
-        "annotation_bbox_map": dict(annotation_bbox_map),
+        "annotation_type": str(annotation_type),
+        "annotation_value": annotation_value,
         "annotation_point_ids": [str(point_id) for point_id in binding.annotation_point_ids],
         "title_text": str(rendered.rendered_scene.title_text),
         **dict(binding.trace),

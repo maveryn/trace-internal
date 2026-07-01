@@ -12,10 +12,18 @@
 9. Program schema: `solve_value(equal_side_sum_diagram, target=question_mark_node); scene=arithmetic_panel; scope=equal_sum_line_constraint_value`
 
 ## Program Contract
-`solve_value(equal_side_sum_diagram, target=question_mark_node); scene=arithmetic_panel; scope=equal_sum_line_constraint_value`
+
+Program: `solve_value(equal_side_sum_diagram, target=question_mark_node); scene=arithmetic_panel; scope=equal_sum_line_constraint_value`
+
+Candidate set: the visible arithmetic panels, numeric entries, operators, totals, and marked target cell/node/brick inside the `equal_sum_line_constraint_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `equal_side_sum_diagram`, `question_mark_node`, `arithmetic_panel`, `equal_sum_line_constraint_value`.
+Operation: evaluate `solve_value` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the scalar bbox is the pixel box around the single visible question-mark target cell, node, or brick. It is not a one-item set.
+Query ids: `single`.
 
 ## 2) Scene + task contract
-1. Entities/relations: A polygon-like side diagram with numbered nodes, one question-mark target node, and a note giving the common side total.
+1. Entities/relations: A polygon-like side diagram with numbered nodes and one question-mark target node.
 2. Supported `query_id` values: `single`
 3. `answer_gt.type`: `integer`
 4. Default `annotation_gt.type`: `bbox`

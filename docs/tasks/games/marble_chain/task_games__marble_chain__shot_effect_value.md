@@ -2,17 +2,25 @@
 
 Public taxonomy: `games -> marble_chain -> task_games__marble_chain__shot_effect_value`.
 
+## Contract
+1. Domain: `games`
+2. Scene id: `marble_chain`
+3. Public task id: `task_games__marble_chain__shot_effect_value`
+4. Supported `query_id` values: `single`
+5. Answer schema: `integer`
+6. Annotation schema: `bbox_set`
+7. Program schema: `count(existing_chain_marbles_removed_by(marked_shot)); scene=marble_chain; scope=shot_effect_value`
+
 ## Program Contract
 
-Program code: `count(existing_chain_marbles_removed_by(marked_shot)); scene=marble_chain; scope=shot_effect_value`.
+Program: `count(existing_chain_marbles_removed_by(marked_shot)); scene=marble_chain; scope=shot_effect_value`
 
-The scene renders a Zuma-like marble chain with a central shooter marble and one marked shot arrow. The marked shot inserts the shooter marble at the indicated chain gap. If the inserted marble creates a same-color contiguous run of at least three marbles, only existing chain marbles in that run are removed. No later cascade is applied. The task asks for the number of existing chain marbles removed by the marked shot.
-
-Answer schema: `integer`.
-
-Annotation schema: `bbox_set` containing boxes around existing chain marbles that pop; empty when no existing chain marble pops.
-
-Supported `query_id`: `single`.
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `shot_effect_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `existing_chain_marbles_removed_by`, `marked_shot`, `marble_chain`, `shot_effect_value`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generator
 

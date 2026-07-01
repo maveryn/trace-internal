@@ -10,15 +10,16 @@ from PIL import Image
 
 from trace.core.seed import hash64
 from trace.core.types import TypedValue
-from trace.tasks.charts.boxplot.shared.annotations import keyed_point_artifacts
+from trace.tasks.charts.boxplot.shared.annotations import keyed_point_artifacts, scalar_bbox_artifacts, scalar_point_artifacts
 from trace.tasks.charts.boxplot.shared.defaults import SCENE_ID
 from trace.tasks.charts.boxplot.shared.rendering import (
     build_trace_scaffold,
+    box_bbox_map_for_labels,
     point_map_for_labels,
     render_paired_boxplot_panels,
     render_single_boxplot_scene,
 )
-from trace.tasks.charts.shared.chart_scene import BoxPlotSpec
+from trace.tasks.charts.shared.chart_scene_types import BoxPlotSpec
 from trace.tasks.shared.prompt_variants import PromptTraceArtifacts, build_prompt_query_spec
 
 
@@ -35,6 +36,7 @@ class SingleBoxplotTaskPlan:
     role_to_label: Mapping[str, str]
     relations: Mapping[str, Any]
     prompt_artifacts: PromptTraceArtifacts
+    annotation_kind: str = "point_map"
 
 
 @dataclass(frozen=True)
@@ -93,12 +95,23 @@ def materialize_single_boxplot_plan(
         instance_seed=int(instance_seed),
     )
     role_to_label = {str(role): str(label) for role, label in plan.role_to_label.items()}
-    label_to_point = point_map_for_labels(artifacts.rendered_scene, tuple(role_to_label.values()))
-    role_to_point = {
-        str(role): label_to_point[str(label)]
-        for role, label in role_to_label.items()
-    }
-    annotation, witness_symbolic = keyed_point_artifacts(role_to_point, role_to_label)
+    if str(plan.annotation_kind) == "bbox":
+        label_to_bbox = box_bbox_map_for_labels(artifacts.rendered_scene, tuple(role_to_label.values()))
+        role_to_bbox = {
+            str(role): label_to_bbox[str(label)]
+            for role, label in role_to_label.items()
+        }
+        annotation, witness_symbolic = scalar_bbox_artifacts(role_to_bbox, role_to_label)
+    else:
+        label_to_point = point_map_for_labels(artifacts.rendered_scene, tuple(role_to_label.values()))
+        role_to_point = {
+            str(role): label_to_point[str(label)]
+            for role, label in role_to_label.items()
+        }
+        if str(plan.annotation_kind) == "point":
+            annotation, witness_symbolic = scalar_point_artifacts(role_to_point, role_to_label)
+        else:
+            annotation, witness_symbolic = keyed_point_artifacts(role_to_point, role_to_label)
     trace_payload = build_trace_scaffold(
         artifacts=artifacts,
         relations=plan.relations,

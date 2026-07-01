@@ -36,10 +36,10 @@ generation:
       - Right cohort
 rendering:
   shared:
-    canvas_width: 1280
+    canvas_width: 1040
     canvas_height: 900
-    plot_margin_left_px: 168
-    plot_margin_right_px: 88
+    plot_margin_left_px: 138
+    plot_margin_right_px: 64
     plot_margin_top_px: 88
     plot_margin_bottom_px: 110
     title_band_height_px: 70
@@ -57,6 +57,7 @@ rendering:
     tick_font_size_px: 15
     legend_font_size_px: 18
     value_font_size_px: 14
+    chart_context_profile: report_paragraph
     axis_max: 100
     tick_step: 20
     layout_jitter_enabled: true

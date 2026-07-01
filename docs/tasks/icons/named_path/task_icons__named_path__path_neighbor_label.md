@@ -6,14 +6,17 @@
 - module: `trace/tasks/icons/named_path/path_neighbor_label.py`
 
 ## Program Contract
-`selection.path_neighbor(scene=named_path, scope=ordered_path_stops, reference_occurrence=first|second|last, direction=before|after, output=option_letter)`
 
-Supported `query_id` values: `after_first_shape_label`, `before_first_shape_label`, `after_last_shape_label`, `before_last_shape_label`, `after_second_shape_label`, `before_second_shape_label`.
+Program: `selection.path_neighbor(scene=named_path, scope=ordered_path_stops, reference_occurrence=first|second|last, direction=before|after, output=option_letter)`
 
-Allowed program arguments:
-- `reference_occurrence`: `first`, `second`, `last`
-- `direction`: `before`, `after`
-- `output`: `option_letter`
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `ordered_path_stops` objective scope.
+Operands: visible scene state and prompt-bound operands named by `named_path`, `ordered_path_stops`, `reference_occurrence`, `first`, `second`, `last`, `direction`, `before`, `after`.
+Operation: evaluate `selection.path_neighbor` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `after_first_shape_label`, `before_first_shape_label`,
+`after_last_shape_label`, `before_last_shape_label`,
+`after_second_shape_label`, `before_second_shape_label`.
 
 ## Contract
 1. The image shows a single continuous open path marked from `START` to `END`.

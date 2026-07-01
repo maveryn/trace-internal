@@ -6,9 +6,12 @@ from typing import Any, Mapping, Sequence
 
 from .....core.scene_config import get_scene_defaults
 from ....shared.config_defaults import group_default, split_scene_generation_rendering_prompt_defaults
-from ....shared.render_variation import resolve_render_rgb
-from ...shared.labeled_chart_common import resolve_chart_axis_variant
-from ...shared.visual_defaults import load_chart_scene_background_defaults, load_chart_scene_noise_defaults
+from ...shared.labeled_chart_variants import resolve_chart_axis_variant
+from ...shared.visual_defaults import (
+    load_chart_scene_background_defaults,
+    load_chart_scene_noise_defaults,
+    resolve_chart_render_rgb,
+)
 from .state import RGB, SCENE_ID, SCENE_NAMESPACE, SUPPORTED_SCENE_VARIANTS
 
 
@@ -28,14 +31,19 @@ SCENE_VARIANT_LOADS = {
 }
 
 
-def resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> tuple[str, dict[str, float]]:
+def resolve_scene_variant(
+    params: Mapping[str, Any],
+    *,
+    instance_seed: int,
+    supported_variants: Sequence[str] | None = None,
+) -> tuple[str, dict[str, float]]:
     """Resolve the scene's visual grammar variant from scene-level defaults."""
 
     return resolve_chart_axis_variant(
         params=params,
         gen_defaults=GEN_DEFAULTS,
         instance_seed=int(instance_seed),
-        supported_variants=SUPPORTED_SCENE_VARIANTS,
+        supported_variants=tuple(supported_variants or SUPPORTED_SCENE_VARIANTS),
         task_id=SCENE_NAMESPACE,
         explicit_key="scene_variant",
         weights_key="scene_variant_weights",
@@ -48,22 +56,8 @@ def resolve_int(params: Mapping[str, Any], key: str, fallback: int) -> int:
     return int(params.get(str(key), group_default(GEN_DEFAULTS, str(key), int(fallback))))
 
 
-def render_style_seed(params: Mapping[str, Any]) -> int:
-    try:
-        return int(params.get("_render_style_seed", params.get("_sample_cursor", 0)) or 0)
-    except Exception:
-        return 0
-
-
 def resolve_rgb(params: Mapping[str, Any], key: str, fallback: Sequence[int]) -> RGB:
-    return resolve_render_rgb(
-        params,
-        RENDER_DEFAULTS,
-        str(key),
-        fallback,
-        instance_seed=render_style_seed(params),
-        namespace=SCENE_NAMESPACE,
-    )
+    return resolve_chart_render_rgb(params, RENDER_DEFAULTS, str(key), fallback, namespace=SCENE_NAMESPACE)
 
 
 def category_palette(params: Mapping[str, Any], category_count: int) -> tuple[RGB, ...]:

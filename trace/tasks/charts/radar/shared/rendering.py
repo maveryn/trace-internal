@@ -7,13 +7,17 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 
-from .....core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.dense_text import dense_fit_bold, dense_stroke_width
+from trace.tasks.charts.shared.information_style import (
+    make_chart_information_background,
+    resolve_chart_information_style,
+)
 from .....core.visual.noise import apply_post_image_noise
+from trace.tasks.charts.shared.panel.grid_layout import layout_panel_grid_list
 from ....shared.render_variation import apply_layout_jitter_to_margins
 from ....shared.text_legibility import draw_text_traced
 from ....shared.text_rendering import fit_font_to_box, load_font, temporary_default_font_family
 from .defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDER_DEFAULTS,
     bbox as round_bbox,
@@ -81,22 +85,47 @@ def _center_text(
      role="readout", required=False,)
     return _text_bbox(draw, (float(x), float(y)), str(text), font, stroke_width=max(0, int(stroke_width)))
 
+def _right_aligned_centered_text(
+    draw: ImageDraw.ImageDraw,
+    *,
+    right_x: float,
+    center_y: float,
+    text: str,
+    font: ImageFont.ImageFont,
+    fill: RGB,
+    stroke_fill: RGB = (255, 255, 255),
+    stroke_width: int = 0,
+) -> List[float]:
+    try:
+        box = draw.textbbox((0, 0), str(text), font=font, stroke_width=max(0, int(stroke_width)))
+        width = float(box[2] - box[0])
+        height = float(box[3] - box[1])
+        x = float(right_x) - float(width) - float(box[0])
+        y = float(center_y) - (0.5 * float(height)) - float(box[1])
+    except Exception:
+        width, height = draw.textsize(str(text), font=font)
+        x = float(right_x) - float(width)
+        y = float(center_y) - (0.5 * float(height))
+    draw_text_traced(
+        draw,
+        (float(x), float(y)),
+        str(text),
+        font=font,
+        fill=fill,
+        stroke_fill=stroke_fill,
+        stroke_width=max(0, int(stroke_width)),
+        role="readout",
+        required=False,
+    )
+    return _text_bbox(draw, (float(x), float(y)), str(text), font, stroke_width=max(0, int(stroke_width)))
+
 def _panel_layout(plot_bbox: BBox, panel_count: int, gap: float) -> List[BBox]:
-    x1, y1, x2, y2 = (float(value) for value in plot_bbox)
-    if int(panel_count) <= 1:
-        return [(x1, y1, x2, y2)]
-    cols = 2 if int(panel_count) <= 4 else (3 if int(panel_count) <= 6 else 4)
-    rows = int(math.ceil(float(panel_count) / float(cols)))
-    width = (x2 - x1 - (float(cols - 1) * float(gap))) / float(cols)
-    height = (y2 - y1 - (float(rows - 1) * float(gap))) / float(rows)
-    boxes: List[BBox] = []
-    for index in range(int(panel_count)):
-        row = int(index) // int(cols)
-        col = int(index) % int(cols)
-        px1 = x1 + (float(col) * (width + float(gap)))
-        py1 = y1 + (float(row) * (height + float(gap)))
-        boxes.append((px1, py1, px1 + width, py1 + height))
-    return boxes
+    return layout_panel_grid_list(
+        plot_bbox,
+        panel_count=int(panel_count),
+        gap_x=float(gap),
+        gap_y=float(gap),
+    )
 
 def _radar_points(
     *,
@@ -145,12 +174,13 @@ def _draw_radar_panel(
     x1, y1, x2, y2 = (float(value) for value in bbox)
     text_rgb = resolve_rgb(params, "text_rgb", (37, 45, 58))
     muted_rgb = resolve_rgb(params, "muted_text_rgb", (88, 99, 116))
+    text_stroke_rgb = resolve_rgb(params, "text_stroke_rgb", (255, 255, 255))
     grid_rgb = resolve_rgb(params, "grid_rgb", (207, 214, 225))
     spoke_rgb = resolve_rgb(params, "spoke_rgb", (186, 196, 210))
     query_spoke_rgb = resolve_rgb(params, "query_spoke_rgb", (70, 91, 118))
     query_metric_label_rgb = resolve_rgb(params, "query_metric_label_rgb", (26, 54, 93))
-    panel_title_font = load_font(resolve_int(params, "panel_title_font_size_px", 20), bold=True)
-    metric_font = load_font(resolve_int(params, "metric_font_size_px", 15 if not bool(single_panel) else 18), bold=True)
+    panel_title_font = load_font(resolve_int(params, "panel_title_font_size_px", 20), bold=False)
+    metric_font = load_font(resolve_int(params, "metric_font_size_px", 15 if not bool(single_panel) else 18), bold=dense_fit_bold())
     tick_font = load_font(resolve_int(params, "tick_font_size_px", 13 if not bool(single_panel) else 15), bold=False)
     point_radius = float(resolve_int(params, "point_radius_px", 6 if not bool(single_panel) else 8))
     title_bbox = [float(x1), float(y1), float(x1), float(y1)]
@@ -170,21 +200,22 @@ def _draw_radar_panel(
     radius = max(54.0 if not bool(single_panel) else 160.0, float(radius))
 
     ring_count = max(2, resolve_int(params, "ring_count", 5))
+    tick_label_gap = float(resolve_int(params, "tick_label_spoke_gap_px", 10 if not bool(single_panel) else 12))
     for ring_index in range(1, int(ring_count) + 1):
         ring_value = int(round((float(max_value) * float(ring_index)) / float(ring_count)))
         ring_radius = float(radius) * (float(ring_value) / float(max(1, int(max_value))))
         points = _ring_points(center=center, radius=ring_radius, metrics=metrics)
         draw.line([*points, points[0]], fill=grid_rgb, width=resolve_int(params, "grid_line_width_px", 1))
-        if ring_index in {int(ring_count), max(1, int(ring_count) // 2)}:
-            _center_text(
-                draw,
-                center=(float(center[0]), float(center[1]) - float(ring_radius) - 10.0),
-                text=str(ring_value),
-                font=tick_font,
-                fill=muted_rgb,
-                stroke_fill=(255, 255, 255),
-                stroke_width=1,
-            )
+        _right_aligned_centered_text(
+            draw,
+            right_x=float(center[0]) - float(tick_label_gap),
+            center_y=float(center[1]) - float(ring_radius),
+            text=str(ring_value),
+            font=tick_font,
+            fill=muted_rgb,
+            stroke_fill=text_stroke_rgb,
+            stroke_width=dense_stroke_width(),
+        )
 
     for index, metric in enumerate(metrics):
         is_highlighted_metric = bool(highlight_metric) and str(metric) == str(highlight_metric)
@@ -214,7 +245,7 @@ def _draw_radar_panel(
                 text=str(metric),
                 max_width=72,
                 max_height=22,
-                bold=True,
+                bold=dense_fit_bold(),
                 min_size_px=10,
                 max_size_px=resolve_int(params, "metric_font_size_px", 15),
                 fill_ratio=0.95,
@@ -225,8 +256,8 @@ def _draw_radar_panel(
             text=str(metric),
             font=label_font,
             fill=query_metric_label_rgb if bool(is_highlighted_metric) else text_rgb,
-            stroke_fill=(255, 255, 255),
-            stroke_width=2 if bool(is_highlighted_metric) else 1,
+            stroke_fill=text_stroke_rgb,
+            stroke_width=dense_stroke_width(),
         )
 
     point_bboxes: Dict[str, List[float]] = {}
@@ -285,7 +316,7 @@ def _draw_legend(
     params: Mapping[str, Any],
     origin: Tuple[float, float],
 ) -> Dict[str, List[float]]:
-    font = load_font(resolve_int(params, "legend_font_size_px", 18), bold=True)
+    font = load_font(resolve_int(params, "legend_font_size_px", 18), bold=False)
     text_rgb = resolve_rgb(params, "text_rgb", (37, 45, 58))
     legend_bboxes: Dict[str, List[float]] = {}
     x = float(origin[0])
@@ -306,12 +337,35 @@ def _render_dataset(dataset: RadarDataset, *, params: Mapping[str, Any], instanc
     params = {**dict(params), "_render_style_seed": int(instance_seed)}
     canvas_width = resolve_int(params, "canvas_width", 1424)
     canvas_height = resolve_int(params, "canvas_height", 888)
-    background, background_meta = make_background_canvas(
-        canvas_width=int(canvas_width),
-        canvas_height=int(canvas_height),
+    protected_colors = [
+        tuple(int(channel) for channel in profile.color_rgb)
+        for panel in dataset.panels
+        for profile in panel.profiles
+    ]
+    information_style, information_style_meta = resolve_chart_information_style(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="radar",
+        protected_colors=protected_colors,
+    )
+    params = {
+        **params,
+        "text_rgb": tuple(int(value) for value in information_style.text_rgb),
+        "muted_text_rgb": tuple(int(value) for value in information_style.muted_text_rgb),
+        "grid_rgb": tuple(int(value) for value in information_style.grid_rgb),
+        "spoke_rgb": tuple(int(value) for value in information_style.guide_rgb),
+        "panel_fill_rgb": tuple(int(value) for value in information_style.panel_fill_rgb),
+        "panel_border_rgb": tuple(int(value) for value in information_style.panel_border_rgb),
+        "text_stroke_rgb": tuple(int(value) for value in information_style.text_stroke_rgb),
+        "query_spoke_rgb": tuple(int(value) for value in information_style.highlight_rgb),
+        "query_metric_label_rgb": tuple(int(value) for value in information_style.highlight_rgb),
+    }
+    background, background_meta = make_chart_information_background(
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
+        style=information_style,
+        instance_seed=int(instance_seed),
+        namespace="charts.radar.information_scene_background",
     )
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
@@ -333,7 +387,7 @@ def _render_dataset(dataset: RadarDataset, *, params: Mapping[str, Any], instanc
     panel_border = resolve_rgb(params, "panel_border_rgb", (190, 199, 212))
     text_rgb = resolve_rgb(params, "text_rgb", (37, 45, 58))
     muted_rgb = resolve_rgb(params, "muted_text_rgb", (88, 99, 116))
-    title_font = load_font(resolve_int(params, "title_font_size_px", 30), bold=True)
+    title_font = load_font(resolve_int(params, "title_font_size_px", 30), bold=False)
     subtitle_font = load_font(resolve_int(params, "subtitle_font_size_px", 18), bold=False)
 
     draw_text_traced(
@@ -433,7 +487,8 @@ def _render_dataset(dataset: RadarDataset, *, params: Mapping[str, Any], instanc
         legend_bboxes=dict(legend_bboxes),
         plot_bbox_px=round_bbox(plot_bbox),
         render_meta={
-            "background_style": dict(background_meta),
+            "background_style": {**dict(background_meta), "information_scene_style": dict(information_style_meta)},
+            "information_scene_style": dict(information_style_meta),
             "post_image_noise": dict(post_noise_meta),
             "layout_jitter": dict(layout_jitter_meta),
             "panel_bboxes_px": dict(panel_bboxes),

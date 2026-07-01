@@ -14,12 +14,20 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Program Contract
-`count(filter(cells, compare(colorbar_value(cell), threshold_value, relation={above,below}))); output=integer_count; annotation=bbox_set(counted_cells); scene=heatmap; scope=colorbar_threshold_cell_count`
+
+Program: `count(filter(cells, compare(colorbar_value(cell), threshold_value, relation={above,below}))); output=integer_count; annotation=bbox_set(counted_cells); scene=heatmap; scope=colorbar_threshold_cell_count`
+
+Candidate set: the visible heatmap cells with row and column labels inside the `colorbar_threshold_cell_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_count` value bound by `integer_count`.
+Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(counted_cells)`. Annotation marks rendered bboxes for exactly the counted cells in row-major order. Colorbar, axes, labels, titles, and distractor text are context unless the task explicitly asks for them as annotation.
+Query ids: `colorbar_above_threshold_cell_count`, `colorbar_below_threshold_cell_count`.
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `bbox_set`.
-3. Annotation marks exactly the counted cells in row-major order.
+3. Annotation marks rendered bboxes for exactly the counted cells in row-major order.
 4. Colorbar, axes, labels, titles, and distractor text are context unless the task explicitly asks for them as annotation.
 
 ## Query Details

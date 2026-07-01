@@ -4,8 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from trace.core.annotation_sanitization import sanitize_trace_payload_for_public_annotation
-from trace.core.prompt_annotation_contract_audit import _normalize_jsonable, _validate_annotation_value
+from trace.core.annotation_sanitization import (
+    sanitize_trace_payload_for_public_annotation,
+)
+from trace.core.prompt_annotation_contract_audit import (
+    _normalize_jsonable,
+    _validate_annotation_value,
+)
 from trace.core.scene_package_migration import is_scene_package_task
 from trace.core.seed import hash64
 from trace.core.taxonomy import (
@@ -16,7 +21,6 @@ from trace.core.taxonomy import (
 )
 from trace.tasks import create_task
 from trace.tasks.registry import list_default_task_ids
-
 
 REQUIRED_TRACE_KEYS = {
     "scene_ir",
@@ -56,8 +60,8 @@ EXACT_ANNOTATION_SOURCE_KEYS = {
 
 SET_ANNOTATION_TYPES = {
     "bbox_set",
-    "keyed_bbox_map",
-    "keyed_point_map",
+    "bbox_map",
+    "point_map",
     "segment_set",
     "point_set",
 }
@@ -74,7 +78,9 @@ def _generate_first_successful_output(task_id: str):
                 params={},
                 max_attempts=120,
             )
-        except Exception as exc:  # pragma: no cover - only used for unlucky generated seeds.
+        except (
+            Exception
+        ) as exc:  # pragma: no cover - only used for unlucky generated seeds.
             last_exc = exc
     pytest.fail(f"failed to generate active task {task_id}: {last_exc}")
 
@@ -128,19 +134,23 @@ def _projected_value_for_type(projected: dict, annotation_type: str):
         value = projected.get("pixel_point_set")
     if value is None and annotation_type == "point_sequence":
         value = projected.get("pixel_point_sequence")
-    if value is None and annotation_type == "keyed_point_map":
-        value = projected.get("pixel_keyed_point_map")
-    if value is None and annotation_type == "keyed_bbox_map":
-        value = projected.get("pixel_keyed_bbox_map")
+    if value is None and annotation_type == "point_map":
+        value = projected.get("pixel_point_map")
+    if value is None and annotation_type == "bbox_map":
+        value = projected.get("pixel_bbox_map")
     return value
 
 
-def _assert_answer_annotation_consistency(output, *, task_id: str, query_id: str) -> None:
+def _assert_answer_annotation_consistency(
+    output, *, task_id: str, query_id: str
+) -> None:
     """Check domain-agnostic answer/annotation invariants for one generated output."""
 
     annotation_type = str(output.annotation_gt.type)
     annotation_value = _normalize_jsonable(output.annotation_gt.value)
-    annotation_len = _annotation_cardinality(annotation_value, annotation_type=annotation_type)
+    annotation_len = _annotation_cardinality(
+        annotation_value, annotation_type=annotation_type
+    )
     image_size = tuple(output.image.size) if output.image is not None else None
 
     annotation_errors = _validate_annotation_value(
@@ -157,11 +167,20 @@ def _assert_answer_annotation_consistency(output, *, task_id: str, query_id: str
     )
     projected = sanitized.get("projected_annotation", {})
     assert isinstance(projected, dict), (task_id, query_id, projected)
-    assert str(projected.get("type", "")) == annotation_type, (task_id, query_id, projected)
+    assert str(projected.get("type", "")) == annotation_type, (
+        task_id,
+        query_id,
+        projected,
+    )
     projected_value = _projected_value_for_type(projected, annotation_type)
     assert projected_value is not None, (task_id, query_id, projected)
     projected_value = _normalize_jsonable(projected_value)
-    assert projected_value == annotation_value, (task_id, query_id, projected_value, annotation_value)
+    assert projected_value == annotation_value, (
+        task_id,
+        query_id,
+        projected_value,
+        annotation_value,
+    )
     projected_errors = _validate_annotation_value(
         annotation_type,
         projected_value,
@@ -182,7 +201,12 @@ def _assert_answer_annotation_consistency(output, *, task_id: str, query_id: str
 
     witness = output.trace_payload.get("witness_symbolic", {})
     if isinstance(witness, dict) and _is_number(witness.get("count")):
-        assert int(witness["count"]) == annotation_len, (task_id, query_id, witness, annotation_len)
+        assert int(witness["count"]) == annotation_len, (
+            task_id,
+            query_id,
+            witness,
+            annotation_len,
+        )
 
     for source_key, source_value in _iter_nested_lists(execution_trace):
         leaf_key = source_key.split(".")[-1]
@@ -195,11 +219,20 @@ def _assert_answer_annotation_consistency(output, *, task_id: str, query_id: str
                 annotation_len,
             )
 
-    count_like_query = "count" in str(query_id).lower() or "number" in str(query_id).lower()
-    if str(output.answer_gt.type) == "integer" and annotation_type in SET_ANNOTATION_TYPES and count_like_query:
+    count_like_query = (
+        "count" in str(query_id).lower() or "number" in str(query_id).lower()
+    )
+    if (
+        str(output.answer_gt.type) == "integer"
+        and annotation_type in SET_ANNOTATION_TYPES
+        and count_like_query
+    ):
         for source_key, source_value in _iter_nested_lists(execution_trace):
             leaf_key = source_key.split(".")[-1]
-            if leaf_key in COUNT_CARDINALITY_SOURCE_KEYS and len(source_value) == annotation_len:
+            if (
+                leaf_key in COUNT_CARDINALITY_SOURCE_KEYS
+                and len(source_value) == annotation_len
+            ):
                 assert int(output.answer_gt.value) == len(source_value), (
                     task_id,
                     query_id,
@@ -215,11 +248,15 @@ def test_active_default_task_public_contract(task_id: str) -> None:
     task = create_task(task_id)
     output = _generate_first_successful_output(task_id)
     taxonomy = resolve_task_taxonomy(task_id)
-    migrated_task = is_scene_package_task(task_id, domain=str(getattr(task, "domain", "")))
+    migrated_task = is_scene_package_task(
+        task_id, domain=str(getattr(task, "domain", ""))
+    )
     registered_scene_id = None if migrated_task else str(getattr(task, "scene_id", ""))
     query_id = str(
         output.query_id
-        or resolve_task_query_id(query_id=output.query_id, trace_payload=output.trace_payload)
+        or resolve_task_query_id(
+            query_id=output.query_id, trace_payload=output.trace_payload
+        )
     )
     trace_payload = inject_taxonomy_metadata(
         output.trace_payload,
@@ -253,9 +290,7 @@ def test_active_default_task_public_contract(task_id: str) -> None:
         "task_id": task_id,
         "domain": str(getattr(task, "domain", "")),
     }
-    if migrated_task:
-        expected_registered["scene_id"] = taxonomy.scene_id
-    else:
+    if not migrated_task:
         expected_registered["scene_id"] = str(registered_scene_id)
     assert trace_taxonomy["registered"] == expected_registered
     assert trace_taxonomy["source"]["implementation_task_id"]
@@ -263,9 +298,6 @@ def test_active_default_task_public_contract(task_id: str) -> None:
     assert trace_taxonomy["source"]["config_domain"] == str(getattr(task, "domain", ""))
     assert trace_taxonomy["source"]["prompt_domain"]
     if migrated_task:
-        assert trace_taxonomy["source"]["implementation_scene_id"] == taxonomy.scene_id
-        assert trace_taxonomy["source"]["config_scene_id"] == taxonomy.scene_id
-        assert trace_taxonomy["source"]["prompt_scene_id"] == taxonomy.scene_id
         assert "implementation_scene_id" not in trace_taxonomy["source"]
         assert "config_scene_id" not in trace_taxonomy["source"]
         assert "prompt_scene_id" not in trace_taxonomy["source"]

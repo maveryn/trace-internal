@@ -10,9 +10,11 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.physics.optics.ray_trace import (
-    PhysicsOpticsRayBounceCountTask,
-    PhysicsOpticsRayTargetHitCountTask,
+from trace.tasks.physics.ray_optics.ray_bounce_count import (
+    PhysicsRayOpticsRayBounceCountTask,
+)
+from trace.tasks.physics.ray_optics.ray_target_hit_count import (
+    PhysicsRayOpticsRayTargetHitCountTask,
 )
 from tests.helpers import read_jsonl
 
@@ -20,10 +22,10 @@ from tests.helpers import read_jsonl
 @pytest.mark.parametrize(
     ("task_cls", "params", "expected_query_id", "expected_answer"),
     (
-        (PhysicsOpticsRayBounceCountTask, {"scene_variant": "quad_mirror", "target_answer": 4}, "bounce_count", 4),
-        (PhysicsOpticsRayBounceCountTask, {"scene_variant": "five_mirror", "target_answer": 5}, "bounce_count", 5),
+        (PhysicsRayOpticsRayBounceCountTask, {"scene_variant": "quad_mirror", "target_answer": 4}, "bounce_count", 4),
+        (PhysicsRayOpticsRayBounceCountTask, {"scene_variant": "five_mirror", "target_answer": 5}, "bounce_count", 5),
         (
-            PhysicsOpticsRayTargetHitCountTask,
+            PhysicsRayOpticsRayTargetHitCountTask,
             {"scene_variant": "single_mirror", "target_answer": 2},
             "target_hit_count",
             2,
@@ -47,15 +49,16 @@ def test_physics_optics_ray_tasks_emit_expected_contract(
 
     assert out.annotation_gt.type == "point_set"
 
-    assert out.query_id == expected_query_id
+    assert out.query_id == "single"
 
-    assert trace["query_spec"]["query_id"] == expected_query_id
+    assert trace["query_spec"]["query_id"] == "single"
 
-    assert trace["query_spec"]["params"]["query_id"] == expected_query_id
+    assert trace["query_spec"]["params"]["query_id"] == "single"
     assert trace["query_spec"]["params"]["internal_query_id"] == expected_query_id
 
-    assert execution["query_id"] == expected_query_id
+    assert execution["query_id"] == "single"
     assert execution["internal_query_id"] == expected_query_id
+    assert execution["ray_event_kind"] == expected_query_id
 
     assert int(execution["target_answer"]) == int(expected_answer)
 
@@ -113,7 +116,7 @@ def test_physics_optics_ray_target_hit_count_is_deterministic() -> None:
         "target_answer": 2,
         "accent_color_name": "purple",
     }
-    task = PhysicsOpticsRayTargetHitCountTask()
+    task = PhysicsRayOpticsRayTargetHitCountTask()
     out_a = task.generate(27021, params=params, max_attempts=60)
     out_b = task.generate(27021, params=params, max_attempts=60)
 
@@ -130,7 +133,7 @@ def test_physics_optics_ray_target_hit_count_is_deterministic() -> None:
 
 def test_physics_optics_ray_tasks_reject_unknown_scene_variant() -> None:
     with pytest.raises(ValueError):
-        PhysicsOpticsRayTargetHitCountTask().generate(
+        PhysicsRayOpticsRayTargetHitCountTask().generate(
             27031,
             params={"scene_variant": "hex_mirror"},
             max_attempts=20,
@@ -141,26 +144,26 @@ def test_physics_optics_ray_tasksseeded_sampler_decouples_scene_and_answer_suppo
     scenes_by_query: dict[str, Counter[str]] = defaultdict(Counter)
     answers_by_scene_query: dict[tuple[str, str], set[int]] = defaultdict(set)
 
-    bounce_task = PhysicsOpticsRayBounceCountTask()
+    bounce_task = PhysicsRayOpticsRayBounceCountTask()
     for index in range(30):
         out = bounce_task.generate(
             27100 + index,
             params={},
             max_attempts=60,
         )
-        query_id = str(out.query_id)
+        query_id = str(out.trace_payload["execution_trace"]["internal_query_id"])
         scene_variant = str(out.trace_payload["query_spec"]["params"]["scene_variant"])
         scenes_by_query[query_id][scene_variant] += 1
         answers_by_scene_query[(scene_variant, query_id)].add(int(out.answer_gt.value))
 
-    target_task = PhysicsOpticsRayTargetHitCountTask()
+    target_task = PhysicsRayOpticsRayTargetHitCountTask()
     for index in range(96):
         out = target_task.generate(
             27200 + index,
             params={},
             max_attempts=60,
         )
-        query_id = str(out.query_id)
+        query_id = str(out.trace_payload["execution_trace"]["internal_query_id"])
         scene_variant = str(out.trace_payload["query_spec"]["params"]["scene_variant"])
         scenes_by_query[query_id][scene_variant] += 1
         answers_by_scene_query[(scene_variant, query_id)].add(int(out.answer_gt.value))
@@ -181,13 +184,13 @@ def test_physics_optics_ray_tasksseeded_sampler_decouples_scene_and_answer_suppo
 
 
 def test_physics_optics_ray_prompt_bundle_supports_variants() -> None:
-    bundle = json.loads(Path("prompts/physics/optics/physics_optics_v0.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/physics/ray_optics/physics_ray_optics_v1.json").read_text(encoding="utf-8"))
 
-    assert len(bundle["query_templates"]["bounce_count"]) == 5
+    assert len(bundle["templates"]["query"]["bounce_count"]) == 5
 
-    assert len(bundle["query_templates"]["target_hit_count"]) == 5
+    assert len(bundle["templates"]["query"]["target_hit_count"]) == 5
 
-    assert len(set(bundle["answer_or_annotation_templates"]["answer_and_annotation"])) == 5
+    assert len(set(bundle["templates"]["output"]["answer_and_annotation"])) == 5
 
 
 def test_physics_optics_ray_tasks_build_smoke(tmp_path: Path) -> None:
@@ -222,14 +225,14 @@ def test_physics_optics_ray_tasks_build_smoke(tmp_path: Path) -> None:
 
     assert all(record["domain"] == "physics" for record in train_records)
 
-    assert all(record["scene_id"] == "optics" for record in train_records)
+    assert all(record["scene_id"] == "ray_optics" for record in train_records)
 
     assert {record["task"] for record in train_records} == {
         "task_physics__ray_optics__ray_bounce_count",
         "task_physics__ray_optics__ray_target_hit_count",
     }
 
-    assert {record["query_id"] for record in train_records} == {"bounce_count", "target_hit_count"}
+    assert {record["query_id"] for record in train_records} == {"single"}
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
 

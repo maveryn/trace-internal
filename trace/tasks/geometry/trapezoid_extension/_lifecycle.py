@@ -157,7 +157,7 @@ def build_trapezoid_extension_trace_payload(
             "scene_id": SCENE_ID,
             "query_id": str(selected_query),
             "type": "trapezoid_extension_formula",
-            "source_witness_type": "bbox_map",
+            "source_witness_type": str(attempt.annotation_artifacts.annotation_type),
             "answer_value": float(answer_value),
             **dict(trace_values),
         },
@@ -214,6 +214,7 @@ def run_trapezoid_extension_public_entry(
         task_prompt_key=str(task.task_prompt_key),
         prompt_branch_key=str(selected_query),
         annotation_roles=attempt.rendered.annotation_roles,
+        annotation_type=str(attempt.annotation_artifacts.annotation_type),
         answer_value=float(answer_value),
         instance_seed=int(instance_seed),
     )

@@ -12,6 +12,11 @@ rendering:
   shared:
     canvas_width: 1180
     canvas_height: 760
+    chart_context_profile: report_paragraph
+    chart_context_mode_weights:
+      clean: 0.3
+      minimal: 0.4
+      paragraph_box: 0.3
     plot_margin_left_px: 82
     plot_margin_right_px: 46
     plot_margin_top_px: 72

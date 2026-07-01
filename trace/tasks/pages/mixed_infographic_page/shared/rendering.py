@@ -14,10 +14,17 @@ from ....shared.text_rendering import fit_font_to_box, load_font
 from ...shared.legible_text import darken_surface_for_light_text, draw_required_page_text
 from ...shared.page_visual_assets import PageVisualAssetSelection, render_page_visual_asset_rgba
 from .layout import _RenderParams, _layout_slots, _resolve_native_layout
-from .model import _InfographicTextBlock, _MixedInfographicSpec, _MixedModule
+from .state import _InfographicTextBlock, _MixedInfographicSpec, _MixedModule
 
 
-_MIXED_INFOGRAPHIC_RENDER_NAMESPACE = "task_pages__mixed_infographic_page__module_field_value_label"
+_MIXED_INFOGRAPHIC_RENDER_NAMESPACE = "pages.mixed_infographic_page"
+_ModuleDrawResult = Tuple[
+    Dict[str, List[float]],
+    Dict[str, List[float]],
+    Dict[str, List[float]],
+    Dict[str, Dict[str, List[float]]],
+    Dict[str, List[float]],
+]
 
 
 @dataclass(frozen=True)
@@ -37,6 +44,7 @@ class _RenderedMixedInfographic:
     module_bboxes_px: Dict[str, List[float]]
     module_title_bboxes_px: Dict[str, List[float]]
     item_label_bboxes_px: Dict[str, Dict[str, List[float]]]
+    item_container_bboxes_px: Dict[str, Dict[str, List[float]]]
     field_label_bboxes_px: Dict[str, Dict[str, List[float]]]
     value_cell_bboxes_px: Dict[str, Dict[str, Dict[str, List[float]]]]
     icon_bboxes_px: Dict[str, Dict[str, List[float]]]
@@ -58,6 +66,8 @@ def _sample_distinct_font_family(
     weights_key: str,
     avoid: Sequence[str],
 ) -> str:
+    """Sample a font family for one role while keeping key page roles visually distinct."""
+
     avoided = {str(value) for value in avoid if str(value)}
     first = ""
     for offset in range(8):
@@ -103,6 +113,8 @@ def _resolve_mixed_font_profile(
     params: Mapping[str, Any],
     instance_seed: int,
 ) -> _MixedFontProfile:
+    """Resolve page-wide font roles; item labels stay consistent within each module."""
+
     readout_family = sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),
@@ -201,6 +213,8 @@ def _draw_fitted_text(
     stroke_width: int = 1,
     font_family: str | None = None,
 ) -> List[float]:
+    """Draw one required text witness fitted to its bbox and return the text bbox."""
+
     x0, y0, x1, y1 = [float(value) for value in box]
     font = fit_font_to_box(
         draw,
@@ -312,6 +326,8 @@ def _draw_page_backdrops(
     instance_seed: int,
     blend_scale: float,
 ) -> List[Dict[str, Any]]:
+    """Draw decorative page backdrops behind modules without creating answer witnesses."""
+
     x0, y0, x1, y1 = [float(value) for value in page_bbox]
     width = x1 - x0
     height = y1 - y0
@@ -407,6 +423,8 @@ def _draw_wrapped_fitted_text(
     stroke_width: int = 1,
     font_family: str | None = None,
 ) -> List[float]:
+    """Draw wrapped context text inside one box while preserving visible text bounds."""
+
     x0, y0, x1, y1 = [float(value) for value in box]
     max_width = max(8.0, x1 - x0)
     max_height = max(8.0, y1 - y0)
@@ -476,6 +494,8 @@ def _draw_native_text_blocks(
     font_profile: _MixedFontProfile,
     instance_seed: int,
 ) -> Tuple[Dict[str, List[float]], List[Dict[str, Any]], Dict[str, List[float]]]:
+    """Render non-answer text/decorative blocks; bboxes remain separate from module witnesses."""
+
     text_block_bboxes: Dict[str, List[float]] = {}
     text_block_meta: List[Dict[str, Any]] = []
     decorative_asset_bboxes: Dict[str, List[float]] = {}
@@ -635,6 +655,8 @@ def _draw_module_shell(
     module_id: str,
     font_profile: _MixedFontProfile,
 ) -> Tuple[List[float], List[float]]:
+    """Draw a module container and title; returned title bbox anchors task annotations."""
+
     x0, y0, x1, y1 = [float(value) for value in bbox]
     fill = _module_surface_rgb(style, accent_rgb, str(module_id))
     border = tuple(int(value) for value in style.panel_border_rgb)
@@ -725,7 +747,9 @@ def _draw_table_like_module(
     render_params: _RenderParams,
     instance_seed: int,
     font_profile: _MixedFontProfile,
-) -> Tuple[Dict[str, List[float]], Dict[str, List[float]], Dict[str, Dict[str, List[float]]], Dict[str, List[float]]]:
+) -> _ModuleDrawResult:
+    """Render grid/table modules; item, field, and value bboxes must align by ids."""
+
     x0, y0, x1, y1 = [float(value) for value in bbox]
     pad = 10.0
     top = y0 + float(header_height) + pad
@@ -739,6 +763,7 @@ def _draw_table_like_module(
     field_w = max(34.0, (right - left - label_col_w) / float(max(1, len(module.fields))))
     guide_rgb = tuple(int(value) for value in style.guide_rgb)
     item_bboxes: Dict[str, List[float]] = {}
+    item_container_bboxes: Dict[str, List[float]] = {}
     field_bboxes: Dict[str, List[float]] = {}
     value_bboxes: Dict[str, Dict[str, List[float]]] = {}
     icon_bboxes: Dict[str, List[float]] = {}
@@ -768,6 +793,8 @@ def _draw_table_like_module(
     for item_index, item in enumerate(module.items):
         row_top = top + field_h + float(item_index) * row_h
         row_bottom = min(bottom, row_top + row_h)
+        row_box = [float(left), float(row_top), float(right), float(row_bottom)]
+        item_container_bboxes[str(item.item_id)] = list(row_box)
         if item_index % 2 == 0:
             draw.rectangle((left, row_top, right, row_bottom), fill=_blend_rgb(style.panel_fill_rgb, style.surface_alt_rgb, 0.28))
         icon_box = (left + 3.0, row_top + 5.0, left + 23.0, row_bottom - 5.0)
@@ -796,7 +823,14 @@ def _draw_table_like_module(
             fx0 = left + label_col_w + float(field_index) * field_w
             fx1 = fx0 + field_w
             value = str(item.values_by_field_id[str(field.field_id)])
-            value_bboxes[str(item.item_id)][str(field.field_id)] = _draw_fitted_text(
+            value_box = [float(fx0), float(row_top), float(fx1), float(row_bottom)]
+            draw.rectangle(
+                tuple(value_box),
+                fill=_blend_rgb(style.panel_fill_rgb, style.surface_alt_rgb, 0.16 if item_index % 2 else 0.24),
+                outline=_blend_rgb(style.guide_rgb, module.accent_rgb, 0.10),
+                width=1,
+            )
+            _draw_fitted_text(
                 draw,
                 box=(fx0 + 4.0, row_top + 4.0, fx1 - 4.0, row_bottom - 4.0),
                 text=value,
@@ -811,8 +845,9 @@ def _draw_table_like_module(
                 stroke_width=1,
                 font_family=str(font_profile.readout_family),
             )
+            value_bboxes[str(item.item_id)][str(field.field_id)] = list(value_box)
         draw.line((left, row_bottom, right, row_bottom), fill=guide_rgb, width=1)
-    return item_bboxes, field_bboxes, value_bboxes, icon_bboxes
+    return item_bboxes, item_container_bboxes, field_bboxes, value_bboxes, icon_bboxes
 
 
 def _draw_card_like_module(
@@ -826,7 +861,9 @@ def _draw_card_like_module(
     render_params: _RenderParams,
     instance_seed: int,
     font_profile: _MixedFontProfile,
-) -> Tuple[Dict[str, List[float]], Dict[str, List[float]], Dict[str, Dict[str, List[float]]], Dict[str, List[float]]]:
+) -> _ModuleDrawResult:
+    """Render compact card modules while preserving per-item and per-field bbox maps."""
+
     x0, y0, x1, y1 = [float(value) for value in bbox]
     pad = 10.0
     top = y0 + float(header_height) + pad
@@ -836,6 +873,7 @@ def _draw_card_like_module(
     chip_h = min(24.0, max(18.0, (bottom - top) * 0.16))
     chip_w = (right - left - max(0, len(module.fields) - 1) * 6.0) / float(max(1, len(module.fields)))
     item_bboxes: Dict[str, List[float]] = {}
+    item_container_bboxes: Dict[str, List[float]] = {}
     field_bboxes: Dict[str, List[float]] = {}
     value_bboxes: Dict[str, Dict[str, List[float]]] = {}
     icon_bboxes: Dict[str, List[float]] = {}
@@ -880,8 +918,10 @@ def _draw_card_like_module(
         if cy0 >= bottom:
             cy0 = max(card_top, bottom - card_h)
         cy1 = min(bottom, cy0 + card_h)
+        card_box = [float(cx0), float(cy0), float(cx1), float(cy1)]
+        item_container_bboxes[str(item.item_id)] = list(card_box)
         draw.rounded_rectangle(
-            (cx0, cy0, cx1, cy1),
+            tuple(card_box),
             radius=7,
             fill=_blend_rgb(style.panel_fill_rgb, style.surface_alt_rgb, 0.45),
             outline=tuple(int(value) for value in style.guide_rgb),
@@ -926,14 +966,23 @@ def _draw_card_like_module(
             vx0 = cx0 + 7.0 + float(field_index) * (value_w + value_gap)
             vx1 = min(cx1 - 7.0, vx0 + value_w)
             value = str(item.values_by_field_id[str(field.field_id)])
-            value_bboxes[str(item.item_id)][str(field.field_id)] = _draw_fitted_text(
+            value_box = [float(vx0), float(value_top), float(vx1), float(value_bottom)]
+            value_fill = _blend_rgb(style.callout_fill_rgb, module.accent_rgb, 0.08 + 0.03 * float(field_index % 2))
+            draw.rounded_rectangle(
+                tuple(value_box),
+                radius=6,
+                fill=value_fill,
+                outline=_blend_rgb(style.guide_rgb, module.accent_rgb, 0.14),
+                width=1,
+            )
+            _draw_fitted_text(
                 draw,
-                box=(vx0, value_top, vx1, value_bottom),
+                box=(vx0 + 3.0, value_top + 2.0, vx1 - 3.0, value_bottom - 2.0),
                 text=value,
                 max_size_px=int(render_params.value_font_size_px),
                 bold=True,
                 fill_rgb=style.text_rgb,
-                surface_rgbs=(style.panel_fill_rgb, style.surface_alt_rgb),
+                surface_rgbs=(value_fill, style.panel_fill_rgb, style.surface_alt_rgb),
                 instance_seed=int(instance_seed),
                 namespace=f"{_MIXED_INFOGRAPHIC_RENDER_NAMESPACE}.{module.module_id}.{item.item_id}.{field.field_id}.value",
                 role="mixed_infographic_value_cell",
@@ -941,7 +990,8 @@ def _draw_card_like_module(
                 stroke_width=1,
                 font_family=str(font_profile.readout_family),
             )
-    return item_bboxes, field_bboxes, value_bboxes, icon_bboxes
+            value_bboxes[str(item.item_id)][str(field.field_id)] = list(value_box)
+    return item_bboxes, item_container_bboxes, field_bboxes, value_bboxes, icon_bboxes
 
 
 def _draw_radial_like_module(
@@ -955,7 +1005,9 @@ def _draw_radial_like_module(
     render_params: _RenderParams,
     instance_seed: int,
     font_profile: _MixedFontProfile,
-) -> Tuple[Dict[str, List[float]], Dict[str, List[float]], Dict[str, Dict[str, List[float]]], Dict[str, List[float]]]:
+) -> _ModuleDrawResult:
+    """Render radial modules; polar layout still records rectangular value witnesses."""
+
     x0, y0, x1, y1 = [float(value) for value in bbox]
     width = x1 - x0
     height = y1 - y0
@@ -967,6 +1019,7 @@ def _draw_radial_like_module(
     field_count = max(1, len(module.fields))
     item_count = max(1, len(module.items))
     item_bboxes: Dict[str, List[float]] = {}
+    item_container_bboxes: Dict[str, List[float]] = {}
     field_bboxes: Dict[str, List[float]] = {}
     value_bboxes: Dict[str, Dict[str, List[float]]] = {}
     icon_bboxes: Dict[str, List[float]] = {}
@@ -1036,6 +1089,8 @@ def _draw_radial_like_module(
         by0 = max(cell_y0, by1 - bubble_h)
         bubble_fill = _blend_rgb(surface_rgb, module.accent_rgb, 0.10 + 0.05 * float(item_index % 3))
         outline = _blend_rgb(style.panel_border_rgb, module.accent_rgb, 0.28)
+        bubble_box = [float(bx0), float(by0), float(bx1), float(by1)]
+        item_container_bboxes[str(item.item_id)] = list(bubble_box)
         if str(module.kind) == "ring_summary":
             draw.rounded_rectangle((bx0, by0, bx1, by1), radius=18, fill=bubble_fill, outline=outline, width=1)
             draw.arc((bx0 + 5.0, by0 + 5.0, bx1 - 5.0, by1 - 5.0), 205, 338, fill=tuple(int(value) for value in module.accent_rgb), width=3)
@@ -1088,7 +1143,8 @@ def _draw_radial_like_module(
                 outline=_blend_rgb(style.guide_rgb, module.accent_rgb, 0.16),
                 width=1,
             )
-            value_bboxes[str(item.item_id)][str(field.field_id)] = _draw_fitted_text(
+            value_box = [float(vx0), float(vy0), float(vx1), float(vy1)]
+            _draw_fitted_text(
                 draw,
                 box=(vx0 + 4.0, vy0 + 2.0, vx1 - 4.0, vy1 - 2.0),
                 text=str(item.values_by_field_id[str(field.field_id)]),
@@ -1103,7 +1159,8 @@ def _draw_radial_like_module(
                 stroke_width=1,
                 font_family=str(font_profile.readout_family),
             )
-    return item_bboxes, field_bboxes, value_bboxes, icon_bboxes
+            value_bboxes[str(item.item_id)][str(field.field_id)] = list(value_box)
+    return item_bboxes, item_container_bboxes, field_bboxes, value_bboxes, icon_bboxes
 
 
 def _draw_row_like_module(
@@ -1117,7 +1174,9 @@ def _draw_row_like_module(
     render_params: _RenderParams,
     instance_seed: int,
     font_profile: _MixedFontProfile,
-) -> Tuple[Dict[str, List[float]], Dict[str, List[float]], Dict[str, Dict[str, List[float]]], Dict[str, List[float]]]:
+) -> _ModuleDrawResult:
+    """Render row-summary modules with id-aligned item, field, value, and icon bboxes."""
+
     x0, y0, x1, y1 = [float(value) for value in bbox]
     pad = 10.0
     top = y0 + float(header_height) + pad
@@ -1125,6 +1184,7 @@ def _draw_row_like_module(
     right = x1 - pad
     bottom = y1 - pad
     item_bboxes: Dict[str, List[float]] = {}
+    item_container_bboxes: Dict[str, List[float]] = {}
     field_bboxes: Dict[str, List[float]] = {}
     value_bboxes: Dict[str, Dict[str, List[float]]] = {}
     icon_bboxes: Dict[str, List[float]] = {}
@@ -1154,6 +1214,16 @@ def _draw_row_like_module(
     for item_index, item in enumerate(module.items):
         yy0 = row_top + float(item_index) * row_h
         yy1 = min(bottom, yy0 + row_h - 2.0)
+        row_box = [float(left), float(yy0), float(right), float(yy1)]
+        item_container_bboxes[str(item.item_id)] = list(row_box)
+        row_fill = _blend_rgb(style.panel_fill_rgb, style.surface_alt_rgb, 0.30 if item_index % 2 else 0.42)
+        draw.rounded_rectangle(
+            tuple(row_box),
+            radius=6,
+            fill=row_fill,
+            outline=_blend_rgb(style.guide_rgb, module.accent_rgb, 0.10),
+            width=1,
+        )
         if str(module.kind) == "ranked_list":
             draw.ellipse((left + 2.0, yy0 + 5.0, left + 25.0, yy0 + 28.0), fill=tuple(int(value) for value in module.accent_rgb))
             icon_bboxes[str(item.item_id)] = _draw_visual_asset(
@@ -1198,14 +1268,23 @@ def _draw_row_like_module(
         for field_index, field in enumerate(module.fields):
             fx0 = left + label_w + float(field_index) * field_w
             fx1 = fx0 + field_w
-            value_bboxes[str(item.item_id)][str(field.field_id)] = _draw_fitted_text(
+            value_box = [float(fx0), float(yy0), float(fx1), float(yy1)]
+            value_fill = _blend_rgb(row_fill, module.accent_rgb, 0.05 + 0.03 * float(field_index % 2))
+            draw.rounded_rectangle(
+                tuple(value_box),
+                radius=5,
+                fill=value_fill,
+                outline=_blend_rgb(style.guide_rgb, module.accent_rgb, 0.12),
+                width=1,
+            )
+            _draw_fitted_text(
                 draw,
                 box=(fx0 + 3.0, yy0 + 3.0, fx1 - 3.0, yy1 - 3.0),
                 text=str(item.values_by_field_id[str(field.field_id)]),
                 max_size_px=int(render_params.value_font_size_px),
                 bold=True,
                 fill_rgb=style.text_rgb,
-                surface_rgbs=(style.panel_fill_rgb, style.surface_alt_rgb),
+                surface_rgbs=(value_fill, style.panel_fill_rgb, style.surface_alt_rgb),
                 instance_seed=int(instance_seed),
                 namespace=f"{_MIXED_INFOGRAPHIC_RENDER_NAMESPACE}.{module.module_id}.{item.item_id}.{field.field_id}.value",
                 role="mixed_infographic_value_cell",
@@ -1213,8 +1292,9 @@ def _draw_row_like_module(
                 stroke_width=1,
                 font_family=str(font_profile.readout_family),
             )
+            value_bboxes[str(item.item_id)][str(field.field_id)] = list(value_box)
         draw.line((left, yy1, right, yy1), fill=tuple(int(value) for value in style.guide_rgb), width=1)
-    return item_bboxes, field_bboxes, value_bboxes, icon_bboxes
+    return item_bboxes, item_container_bboxes, field_bboxes, value_bboxes, icon_bboxes
 
 
 def _render_mixed_infographic(
@@ -1228,6 +1308,8 @@ def _render_mixed_infographic(
     instance_seed: int,
     font_profile: _MixedFontProfile,
 ) -> _RenderedMixedInfographic:
+    """Render the full page and collect every bbox map consumed by task annotations."""
+
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image)
     margin = float(render_params.outer_margin_px)
@@ -1299,6 +1381,7 @@ def _render_mixed_infographic(
     module_bboxes: Dict[str, List[float]] = {}
     module_title_bboxes: Dict[str, List[float]] = {}
     item_label_bboxes: Dict[str, Dict[str, List[float]]] = {}
+    item_container_bboxes: Dict[str, Dict[str, List[float]]] = {}
     field_label_bboxes: Dict[str, Dict[str, List[float]]] = {}
     value_cell_bboxes: Dict[str, Dict[str, Dict[str, List[float]]]] = {}
     icon_bboxes: Dict[str, Dict[str, List[float]]] = {}
@@ -1327,7 +1410,7 @@ def _render_mixed_infographic(
             opacity=0.17 if str(module.section_asset_selection.asset.render_mode) == "color" else 0.22,
         )
         if str(module.kind) in {"radial_bubbles", "ring_summary"}:
-            item_boxes, field_boxes, value_boxes, icon_boxes = _draw_radial_like_module(
+            item_boxes, item_container_boxes, field_boxes, value_boxes, icon_boxes = _draw_radial_like_module(
                 image,
                 draw,
                 module=module,
@@ -1339,7 +1422,7 @@ def _render_mixed_infographic(
                 font_profile=font_profile,
             )
         elif str(module.kind) in {"profile_cards", "callout_stats"}:
-            item_boxes, field_boxes, value_boxes, icon_boxes = _draw_card_like_module(
+            item_boxes, item_container_boxes, field_boxes, value_boxes, icon_boxes = _draw_card_like_module(
                 image,
                 draw,
                 module=module,
@@ -1351,7 +1434,7 @@ def _render_mixed_infographic(
                 font_profile=font_profile,
             )
         elif str(module.kind) in {"icon_metric_list", "ranked_list", "timeline_snippet"}:
-            item_boxes, field_boxes, value_boxes, icon_boxes = _draw_row_like_module(
+            item_boxes, item_container_boxes, field_boxes, value_boxes, icon_boxes = _draw_row_like_module(
                 image,
                 draw,
                 module=module,
@@ -1363,7 +1446,7 @@ def _render_mixed_infographic(
                 font_profile=font_profile,
             )
         else:
-            item_boxes, field_boxes, value_boxes, icon_boxes = _draw_table_like_module(
+            item_boxes, item_container_boxes, field_boxes, value_boxes, icon_boxes = _draw_table_like_module(
                 image,
                 draw,
                 module=module,
@@ -1377,6 +1460,7 @@ def _render_mixed_infographic(
         module_bboxes[str(module.module_id)] = [float(value) for value in module_bbox]
         module_title_bboxes[str(module.module_id)] = [float(value) for value in title_box]
         item_label_bboxes[str(module.module_id)] = dict(item_boxes)
+        item_container_bboxes[str(module.module_id)] = dict(item_container_boxes)
         field_label_bboxes[str(module.module_id)] = dict(field_boxes)
         value_cell_bboxes[str(module.module_id)] = {str(item_id): dict(fields) for item_id, fields in value_boxes.items()}
         icon_bboxes[str(module.module_id)] = dict(icon_boxes)
@@ -1406,6 +1490,10 @@ def _render_mixed_infographic(
                         "visual_asset_id": str(item.visual_asset_selection.asset.asset_id),
                         "visual_asset_source_id": str(item.visual_asset_selection.asset.source_id),
                         "label_bbox_px": [float(value) for value in item_boxes[str(item.item_id)]],
+                        "item_container_bbox_px": [
+                            float(value)
+                            for value in item_container_boxes[str(item.item_id)]
+                        ],
                         "visual_asset_bbox_px": [float(value) for value in icon_boxes[str(item.item_id)]],
                         "values": [
                             {
@@ -1458,6 +1546,7 @@ def _render_mixed_infographic(
         module_bboxes_px=module_bboxes,
         module_title_bboxes_px=module_title_bboxes,
         item_label_bboxes_px=item_label_bboxes,
+        item_container_bboxes_px=item_container_bboxes,
         field_label_bboxes_px=field_label_bboxes,
         value_cell_bboxes_px=value_cell_bboxes,
         icon_bboxes_px=icon_bboxes,

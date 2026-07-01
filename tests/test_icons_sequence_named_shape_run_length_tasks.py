@@ -4,6 +4,7 @@ import json
 from collections import Counter
 from trace.core.seed import hash64
 from trace.tasks.icons.named_strip.shape_run_length import IconsNamedStripShapeRunLengthTask
+from trace.tasks.icons.named_strip.shape_run_count import IconsNamedStripShapeRunCountTask
 QUERY_IDS = ('longest_shape_run_length', 'shortest_shape_run_length')
 
 def _extract_prompt_json_example(prompt: str) -> dict:
@@ -11,18 +12,22 @@ def _extract_prompt_json_example(prompt: str) -> dict:
     assert marker in str(prompt)
     return json.loads(str(prompt).split(marker, 1)[1].strip())
 
-def _target_run_lengths(shape_ids: list[str], target_shape_id: str) -> list[int]:
-    runs: list[int] = []
-    current = 0
-    for shape_id in shape_ids:
+def _target_runs(shape_ids: list[str], target_shape_id: str) -> list[tuple[int, int]]:
+    runs: list[tuple[int, int]] = []
+    start: int | None = None
+    for index, shape_id in enumerate(shape_ids):
         if str(shape_id) == str(target_shape_id):
-            current += 1
-        elif current:
-            runs.append(int(current))
-            current = 0
-    if current:
-        runs.append(int(current))
+            if start is None:
+                start = int(index)
+        elif start is not None:
+            runs.append((int(start), int(index) - 1))
+            start = None
+    if start is not None:
+        runs.append((int(start), len(shape_ids) - 1))
     return runs
+
+def _target_run_lengths(shape_ids: list[str], target_shape_id: str) -> list[int]:
+    return [int(end) - int(start) + 1 for start, end in _target_runs(shape_ids, target_shape_id)]
 
 def test_icons_sequence_named_shape_run_length_longest_contract_matches_scene() -> None:
     task = IconsNamedStripShapeRunLengthTask()
@@ -73,6 +78,38 @@ def test_icons_sequence_named_shape_run_length_shortest_contract_matches_scene()
     assert len(out.annotation_gt.value) == 2
     assert all((shape_ids[int(index)] == 'bell' for index in execution['selected_run_indices']))
 
+def test_icons_sequence_named_shape_run_count_contract_matches_scene() -> None:
+    task = IconsNamedStripShapeRunCountTask()
+    out = task.generate(2026070101, params={'target_shape_id': 'star', 'run_count': 3, 'strip_length': 14}, max_attempts=100)
+    trace = out.trace_payload
+    execution = trace['execution_trace']
+    entities = trace['scene_ir']['entities']
+    icon_entities = [entity for entity in entities if str(entity['entity_kind']) == 'named_icon']
+    assert out.scene_id == 'named_strip'
+    assert out.query_id == 'single'
+    assert out.answer_gt.type == 'integer'
+    assert out.answer_gt.value == 3
+    assert out.annotation_gt.type == 'bbox_set'
+    assert len(out.annotation_gt.value) == 3
+    assert trace['scene_ir']['scene_kind'] == 'icons_named_strip_run_count'
+    assert execution['question_format'] == 'named_shape_run_count'
+    assert int(execution['strip_length']) == 14
+    assert str(execution['target_shape_id']) == 'star'
+    shape_ids = [str(value) for value in execution['shape_ids_by_cell']]
+    runs = _target_runs(shape_ids, 'star')
+    starts = [int(start) for start, _ in runs]
+    assert len(runs) == 3
+    assert [int(value) for value in execution['selected_run_start_indices']] == starts
+    assert all((shape_ids[index] == 'star' for index in starts))
+    selected_boxes = sorted([entity['bbox_xyxy'] for entity in icon_entities if bool(entity['is_selected_run_member'])], key=lambda box: (int(box[1]), int(box[0]), int(box[3]), int(box[2])))
+    start_boxes = sorted([entity['bbox_xyxy'] for entity in icon_entities if int(entity['cell_index']) in set(starts)], key=lambda box: (int(box[1]), int(box[0]), int(box[3]), int(box[2])))
+    assert selected_boxes == start_boxes
+    assert out.annotation_gt.value == start_boxes
+    assert trace['projected_annotation']['type'] == 'bbox_set'
+    assert trace['projected_annotation']['bbox_set'] == start_boxes
+    assert trace['render_map']['selected_run_start_instance_ids'] == execution['selected_run_start_instance_ids']
+    assert trace['query_spec']['prompt_variant']['query_key'] == 'shape_run_count'
+
 def test_icons_sequence_named_shape_run_length_prompt_example_matches_contract() -> None:
     task = IconsNamedStripShapeRunLengthTask()
     out = task.generate(2026052812, params={'query_id': 'longest_shape_run_length', 'target_shape_id': 'guitar', 'target_run_length': 3}, max_attempts=100)
@@ -84,6 +121,19 @@ def test_icons_sequence_named_shape_run_length_prompt_example_matches_contract()
     assert isinstance(answer_and_annotation['annotation'], list)
     assert len(answer_and_annotation['annotation']) == 3
     assert answer_and_annotation['answer'] == 3
+
+def test_icons_sequence_named_shape_run_count_prompt_example_matches_contract() -> None:
+    task = IconsNamedStripShapeRunCountTask()
+    out = task.generate(2026070102, params={'target_shape_id': 'guitar', 'run_count': 3}, max_attempts=100)
+    assert '"guitar"' in out.prompt
+    answer_only = _extract_prompt_json_example(out.prompt_variants['answer_only'])
+    answer_and_annotation = _extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
+    assert answer_only == {'answer': 3}
+    assert list(answer_and_annotation.keys()) == ['annotation', 'answer']
+    assert isinstance(answer_and_annotation['annotation'], list)
+    assert len(answer_and_annotation['annotation']) == 3
+    assert answer_and_annotation['answer'] == 3
+    assert 'first icon in each counted run' in out.prompt_variants['answer_and_annotation']
 
 def test_icons_sequence_named_shape_run_length_sampling_smoke() -> None:
     task = IconsNamedStripShapeRunLengthTask()
@@ -112,4 +162,26 @@ def test_icons_sequence_named_shape_run_length_sampling_smoke() -> None:
         strip_lengths[int(execution['strip_length'])] += 1
     assert set(query_counts) == set(QUERY_IDS)
     assert len(answer_counts) >= 5
+    assert len(strip_lengths) >= 4
+
+def test_icons_sequence_named_shape_run_count_sampling_smoke() -> None:
+    task = IconsNamedStripShapeRunCountTask()
+    answer_counts: Counter[int] = Counter()
+    strip_lengths: Counter[int] = Counter()
+    for index in range(80):
+        out = task.generate(hash64(2026070103, 'icons_named_strip_shape_run_count', index), params={}, max_attempts=100)
+        execution = out.trace_payload['execution_trace']
+        answer = int(out.answer_gt.value)
+        target_shape_id = str(execution['target_shape_id'])
+        shape_ids = [str(value) for value in execution['shape_ids_by_cell']]
+        runs = _target_runs(shape_ids, target_shape_id)
+        starts = [int(start) for start, _ in runs]
+        assert 1 <= answer <= 4
+        assert len(runs) == answer
+        assert [int(value) for value in execution['selected_run_start_indices']] == starts
+        assert len(out.annotation_gt.value) == answer
+        assert 12 <= int(execution['strip_length']) <= 16
+        answer_counts[answer] += 1
+        strip_lengths[int(execution['strip_length'])] += 1
+    assert set(answer_counts) == {1, 2, 3, 4}
     assert len(strip_lengths) >= 4

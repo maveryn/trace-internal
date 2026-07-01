@@ -8,7 +8,15 @@
 5. Supported `query_id` values: `at_least_threshold_count`, `below_threshold_count`
 
 ## Program Contract
-`count(filter(radial_progress_widgets, progress_value(widget) >= threshold | progress_value(widget) < threshold)); scene=radial_progress; scope=progress_threshold_count`
+
+Program: `count(filter(radial_progress_widgets, progress_value(widget) >= threshold | progress_value(widget) < threshold)); scene=radial_progress; scope=progress_threshold_count`
+
+Candidate set: the visible radial progress rings, arcs, and labels inside the `progress_threshold_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_count` value bound by `integer_count`.
+Annotation witnesses: `bbox_set` witnesses bound by `see_annotation_contract`. Annotation marks one widget card bbox for each counted widget. Titles, tick marks, card decorations, and uncounted widgets are context, not annotation.
+Query ids: `at_least_threshold_count`, `below_threshold_count`.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.radial_progress.progress_threshold_count.ChartsRadialProgressThresholdCountTask`

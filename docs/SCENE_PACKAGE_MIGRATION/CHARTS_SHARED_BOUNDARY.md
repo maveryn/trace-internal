@@ -52,6 +52,28 @@ Domain shared code must not know or branch on:
 
 Domain shared code must not construct final public `TaskOutput`.
 
+Chart context sampling is capability-based. Dense scenes use the
+`dense_clean_minimal` profile (`clean: 0.7`, `minimal: 0.3`) and must not emit
+`paragraph_box`. Report-capable scenes use the `report_paragraph` profile
+(`clean: 0.3`, `minimal: 0.4`, `paragraph_box: 0.3`) and must render a real
+paragraph/context box whenever `paragraph_box` is selected. A migrated chart
+scene may own a scene-specific context layer only when it records canonical
+`chart_context:<mode>` metadata, records `context_profile`, and makes `clean`
+genuinely free of decorative titles or non-answer context text. Required visual
+grammar such as axes, legends, panel labels, option labels, and queried
+readouts is not context text and should stay visible.
+
+Chart information-scene treatments must affect chart internals, not only the
+outer wrapper. Scene renderers should use
+`prepare_chart_information_scene()` or the lower-level
+`resolve_chart_information_style()` plus `make_chart_information_background()`
+when they need dictionary-style render params. Protect semantic data colors
+such as series, category, region, marker, flow, or density palettes, then apply
+the treatment to non-semantic chrome: canvas, panels, plot surfaces, axes,
+gridlines, text, legends, cards, borders, and guide/reference lines. Do not call
+`make_chart_background_canvas()` from scene renderers; it remains an adapter
+inside `charts/shared/information_style.py`.
+
 ## Renderer Packages
 
 Renderer packages live under:
@@ -69,13 +91,13 @@ Allowed renderer package names for charts:
 |---|---|---|
 | `cartesian/` | `single_series`, `multiseries`, `combo_mark`, `scatter_points`, `scatter_readout`, `scatter_cluster`, `curve_panels`, `errorbar_series`, `uncertainty_band`, `density_curve`, `dumbbell`, `waterfall`, `candlestick`, `scientific_axis_frame`, `style_legend` | axes, ticks, scales, chart frames, series line/point/bar primitives, axis projections, mark label placement |
 | `distribution/` | `boxplot`, `histogram`, `violin`, `density_curve`, `hexbin_density` | distribution supports, bin/quantile helpers, density/violin/box shape primitives, distribution-specific axis defaults |
-| `map/` | `region_map`, `marker_map` | permissive map assets, region shapes, region label placement, synthetic/real map sampling primitives, choropleth/marker projection helpers |
-| `flow/` | `sankey`, `radial_sankey` | node/link shapes, flow widths, path layout, link label placement, flow projection helpers |
+| `map/` | `region_map` if a future second map scene needs the same primitives | permissive map assets, region shapes, region label placement, synthetic/real map sampling primitives, choropleth/marker projection helpers |
+| `flow/` | `sankey`, `radial_sankey` | neutral flow sampling/config helpers, node/link shapes, flow widths, path layout, link label placement, flow projection helpers |
 | `grid/` | `heatmap`, `matrix`, `table` | grid shapes, row/column label placement, cell bbox/point projection, grid value formatting |
-| `composition/` | `part_whole`, `sunburst`, `treemap`, `small_multiple`, `pictogram` when quantity composition is central | part-whole value allocation, segment/leaf shapes, composition palette helpers, segment projection helpers |
+| `composition/` | `part_whole`, `sunburst`, `treemap`, `composition_panels`, `pictogram` when quantity composition is central | neutral composition value helpers, percentage-to-count math, unique extremum/nearest selection helpers, and small shared palette/lightening helpers |
 | `polar/` | `radar`, `radial_progress`, `sunburst` where polar layout is central | polar angle/radius math, radial axes, annular segment shapes, polar projection helpers |
-| `panel/` | `dashboard`, `curve_panels`, `scatter_facet_grid`, `small_multiple`, `surface_3d` where layout is multi-panel | panel grid layout, panel label placement, panel bbox bookkeeping, panel-safe context placement |
-| `three_d/` | `bar_3d`, `surface_3d` | perspective projection helpers, 3D axis layout, surface/bar depth primitives, 3D annotation projection helpers |
+| `panel/` | `dashboard`, `curve_panels`, `composition_panels`, `surface_3d` where layout is multi-panel | panel grid layout, panel label placement, panel bbox bookkeeping, panel-safe context placement |
+| `three_d/` | `bar_3d`, `surface_3d` | neutral projection basis math, screen-space bbox helpers, and depth/value color math |
 
 These families may be refined later. Do not add a new family during scene work
 unless the scene migration is blocked and the user approves the family boundary.
@@ -180,38 +202,53 @@ Use this as a boundary guide before chart scene migrations.
 These are domain-shared helpers or strong candidates:
 
 - `visual_defaults.py`
+  - owns chart-domain visual default adapters reused across unrelated scenes:
+    background/noise loading, chart font sampling metadata, render-style seed
+    resolution, render int/float/RGB default resolution, RGB coercion, and
+    generic luminance helpers
+  - scene-local `defaults.py` modules may keep small wrappers for stable local
+    APIs, but they should delegate common render-default/color/font mechanics
+    here instead of copying those bodies
 - `information_style.py`
 - `label_assets.py`
-- `render_audit_defaults.py`, though it should eventually be split into a
-  clearer context-text/background helper surface
-- `scene_package_attrs.py` only as a small compatibility helper for scenes
-  already using it; avoid expanding it
+- `distribution/` for neutral distribution-scene config, dataset, and
+  annotation helpers used by boxplot, histogram, density, and violin scenes
+- `panel/grid_layout.py` for neutral multi-panel row plans, centered
+  incomplete rows, and non-semantic panel-box adapters reused across chart
+  scenes
+- `context_text.py` for the chart registry wrapper that adds shared non-answer
+  context text after scene rendering
+- `balanced_sampling.py` for narrow, chart-specific balanced support sampling
+- `labeled_chart_defaults.py`, `labeled_chart_values.py`,
+  `labeled_chart_variants.py`, `labeled_chart_marks.py`,
+  `labeled_chart_composition.py`, `labeled_chart_sampling.py`, and
+  `labeled_chart_statistics.py` for focused labeled-chart defaults,
+  value/count helpers, variant-axis helpers, mark style/spec helpers,
+  composition sampling, low-level sampling, and statistic construction
+- `flow/` for neutral flow-scene sampling/config helpers used by Sankey-style
+  scenes
+- `grid/` for neutral cell bbox lookup, bbox union, and bbox annotation
+  projection helpers used by heatmap, matrix, and table scenes
+- `cartesian/` for neutral cartesian projection, rounded bbox/point formatting,
+  line-style drawing, and marker-shape primitives reused by line, scatter,
+  scientific-axis, interval, and related chart scenes
 
 ### Review And Narrow
 
 These modules contain useful primitives but are too broad for the target shape.
 During migration, either move primitives into renderer-package packages or keep
-only the pieces still needed by migrated scenes:
+only the pieces still needed by migrated scenes. Do not reintroduce a
+`chart_scene.py` compatibility facade; import directly from the renderer-family
+module that owns each symbol.
 
-- `chart_scene.py`
 - `chart_scene_types.py`
 - `chart_scene_primitives.py`
 - `chart_scene_labeled.py`
 - `chart_scene_multiseries.py`
-- `chart_scene_stacked.py`
 - `chart_scene_boxplot.py`
 - `chart_scene_histogram.py`
 - `chart_scene_violin.py`
-- `distribution_chart_common.py`
-- `distribution_chart_config.py`
-- `distribution_boxplot.py`
-- `distribution_histogram.py`
-- `distribution_density.py`
-- `labeled_chart_common.py`
-- `labeled_chart_core.py`
-- `labeled_chart_dataset_core.py`
 - `labeled_chart_count_datasets.py`
-- `labeled_chart_readout_datasets.py`
 - `labeled_chart_summary_datasets.py`
 - `labeled_chart_trend_datasets.py`
 - `labeled_chart_render_params.py`
@@ -225,16 +262,11 @@ Likely final homes:
 
 ### Retire Or Avoid Expanding
 
-These modules represent legacy task/query infrastructure or broad compatibility
-surfaces. Migrated scenes should not add new imports from them:
-
-- `sampling_defaults.py`
-- `param_overrides.py`
-- `unanswerable.py` unless a current migrated task explicitly keeps an
-  unanswerable branch and the helper is rewritten as neutral task-owned support
-
-Do not delete these during an unrelated scene migration. Remove them only in a
-dedicated cleanup after confirming no active migrated scene imports them.
+Do not recreate removed chart compatibility modules during scene work. Use
+`balanced_sampling.py`, `context_text.py`, or neutral helpers under
+`trace/tasks/shared/` as appropriate.
+Use direct modules under `distribution/`; do not add a `distribution/common.py`
+aggregation facade.
 
 ## Renderer-Family Promotion Candidates
 
@@ -244,24 +276,40 @@ separate cleanup pass unless the scene is blocked.
 High-priority candidates:
 
 1. Map family:
-   - consolidate duplicated `choropleth_*` helpers across `region_map` and
-     `marker_map` into `charts/shared/map/`.
+   - keep region, geographic, and marker-layer map primitives in
+     `region_map/shared/` unless a future second public map scene needs them.
 2. Flow family:
-   - compare `sankey/shared/*` and `radial_sankey/shared/*`; promote neutral
-     node/link/flow-width primitives into `charts/shared/flow/`.
+   - `charts/shared/flow/` owns neutral flow sampling/config helpers shared by
+     `sankey` and `radial_sankey`.
+   - keep scene-specific dataclasses, geometry, rendering, prompt binding, and
+     annotation projection inside each scene package.
 3. Cartesian family:
-   - extract axis/tick/scale/label-placement primitives used by
-     `single_series`, `multiseries`, `scatter_*`, `curve_panels`,
-     `errorbar_series`, `uncertainty_band`, and `density_curve`.
+   - `charts/shared/cartesian/` owns neutral geometry/projection helpers,
+     line-style primitives, and common marker-shape drawing.
+   - keep scene grammar such as candle bodies, waterfall bars, density area
+     fills, curve intersections, legend placement, and final annotation binding
+     inside the scene package.
+   - promote axis/tick/frame helpers only when at least two scenes use the same
+     semantics and fixed-seed visual parity can be checked.
 4. Grid family:
-   - extract row/column/cell projection primitives shared by `heatmap`,
-     `matrix`, and `table`.
+   - `charts/shared/grid/` owns neutral cell bbox lookup, bbox union, and bbox
+     annotation projection helpers shared by `heatmap`, `matrix`, and `table`.
+   - keep scene-specific grid rendering, cell-id semantics, palettes, prompt
+     binding, and table/matrix/heatmap state inside each scene package.
+5. Composition family:
+   - `charts/shared/composition/` owns only neutral value and color primitives
+     shared by composition-style scenes.
+   - keep pie/donut geometry, treemap rectangle layout, sunburst ring layout,
+     pictogram glyph layout, scene dataclasses, lifecycle packaging, prompt
+     slots, and final annotation binding inside each scene package.
 5. Panel family:
    - extract panel layout and panel label primitives shared by `dashboard`,
-     `curve_panels`, `scatter_facet_grid`, `small_multiple`, and related scenes.
+     `curve_panels`, `composition_panels`, and related scenes.
 6. 3D family:
-   - compare `bar_3d` and `surface_3d` after both are migrated; only then
-     promote projection/depth helpers that truly match.
+   - `charts/shared/three_d/` owns only neutral projection, screen-space
+     geometry, and color math shared by `bar_3d` and `surface_3d`.
+   - keep bar prism construction, surface mesh drawing, axis label placement,
+     and annotation binding inside each scene package.
 
 ## Migration Workflow For Charts
 

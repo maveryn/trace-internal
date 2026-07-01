@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
@@ -20,7 +21,6 @@ from trace.tasks.charts.dumbbell.shared.sampling import (
 )
 from trace.tasks.charts.dumbbell.shared.state import DumbbellDataset, DumbbellQuery
 from trace.tasks.registry import register_task
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 
 TASK_ID = "task_charts__dumbbell__gap_rank_row_label"
@@ -58,11 +58,16 @@ def _build_dataset(
         instance_seed=int(instance_seed),
         namespace=f"{SCENE_NAMESPACE}.gap_rank.rank_n.{rank_order}",
     )
-    target_row_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{SCENE_NAMESPACE}.gap_rank.answer_row.{rank_order}",
-    ) % int(row_count)
+    target_row_index = int(
+        uniform_choice(
+            spawn_rng(
+                int(instance_seed),
+                f"{SCENE_NAMESPACE}.gap_rank.answer_row.{rank_order}",
+            ),
+            tuple(range(int(row_count))),
+            sort_keys=True,
+        )
+    )
 
     gap_min, gap_max = gap_bounds(params)
     support = [gap for gap in range(int(gap_min), int(gap_max) + 1)]

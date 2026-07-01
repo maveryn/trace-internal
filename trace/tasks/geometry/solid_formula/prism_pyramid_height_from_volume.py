@@ -19,13 +19,6 @@ QUERY_ID = "single"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 DEFAULT_QUERY_ID = QUERY_ID
 PROMPT_KEY = QUERY_ID
-ANNOTATION_KEYS = (
-    "target_prism_height_label",
-    "volume_label",
-    "known_length_label",
-    "known_width_label",
-    "pyramid_height_label",
-)
 ANSWER_SUPPORT = decimal_support(2, 61, step=1)
 CONSTRUCTION_OPTIONS = (
     (5.0, 4.0, 3.0),
@@ -110,7 +103,6 @@ class GeometrySolidFormulaPrismPyramidHeightFromVolumeTask:
             prompt_key=PROMPT_KEY,
             problem=binding.problem,
             render_scene=render_prism_pyramid,
-            annotation_keys=ANNOTATION_KEYS,
             branch_probabilities=probabilities_by_query,
             support_probabilities=binding.support_probabilities,
         )
@@ -124,7 +116,7 @@ class GeometrySolidFormulaPrismPyramidHeightFromVolumeTask:
             max_attempts=int(max_attempts),
         )
         answer = TypedValue(type="number", value=float(plan.answer_value))
-        annotation = TypedValue(type="bbox_map", value=dict(parts.annotation_value))
+        annotation = TypedValue(type="bbox", value=list(parts.annotation_value))
         return TaskOutput(
             parts.prompt,
             answer,

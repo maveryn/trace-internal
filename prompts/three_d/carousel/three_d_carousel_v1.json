@@ -156,13 +156,13 @@
     },
     "query:color_ordered_pair_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one segment [[x0,y0],[x1,y1]] per counted adjacent ordered pair, from the first object center to the second object center",
+      "annotation_hint": "set \"annotation\" to an array containing one pixel-space segment [[x0, y0], [x1, y1]] per counted adjacent ordered pair, where each endpoint is an [x, y] pixel point at an object center; the segment starts at the first object and ends at the second object",
       "json_example": "{\"annotation\":[[[120,450],[174,494]],[[390,320],[450,370]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:object_ordered_pair_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to an array containing one segment [[x0,y0],[x1,y1]] per counted adjacent ordered pair, from the first object center to the second object center",
+      "annotation_hint": "set \"annotation\" to an array containing one pixel-space segment [[x0, y0], [x1, y1]] per counted adjacent ordered pair, where each endpoint is an [x, y] pixel point at an object center; the segment starts at the first object and ends at the second object",
       "json_example": "{\"annotation\":[[[120,450],[174,494]],[[390,320],[450,370]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },

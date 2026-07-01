@@ -6,10 +6,11 @@ from typing import Any, Mapping, Sequence
 
 from PIL import Image, ImageDraw
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.cartesian.frame import plot_bbox_from_margins
+from trace.tasks.charts.shared.cartesian.geometry import round_bbox, round_point
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.charts.candlestick.shared.defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDERING_DEFAULTS,
     SCENE_NAMESPACE,
@@ -24,14 +25,11 @@ from trace.tasks.shared.text_rendering import draw_text_centered, load_font, tem
 
 
 def _bbox(values: Sequence[float]) -> BBox:
-    return [round(float(value), 3) for value in values]
+    return round_bbox(values)
 
 
 def bbox_center(box: Sequence[float]) -> Point:
-    return [
-        round((float(box[0]) + float(box[2])) / 2.0, 3),
-        round((float(box[1]) + float(box[3])) / 2.0, 3),
-    ]
+    return round_point((float(box[0]) + float(box[2])) / 2.0, (float(box[1]) + float(box[3])) / 2.0)
 
 
 def _text_bbox_at(
@@ -143,7 +141,14 @@ def draw_candlesticks(
     right = width - int(render_params.plot_margin_right_px)
     top = int(render_params.plot_margin_top_px)
     bottom = height - int(render_params.plot_margin_bottom_px)
-    plot_bbox = _bbox([left, top, right, bottom])
+    plot_bbox = plot_bbox_from_margins(
+        canvas_width=float(width),
+        canvas_height=float(height),
+        margin_left_px=float(render_params.plot_margin_left_px),
+        margin_right_px=float(render_params.plot_margin_right_px),
+        margin_top_px=float(render_params.plot_margin_top_px),
+        margin_bottom_px=float(render_params.plot_margin_bottom_px),
+    )
     draw.rounded_rectangle(
         [left, top, right, bottom],
         radius=8,
@@ -152,19 +157,9 @@ def draw_candlesticks(
         width=1,
     )
 
-    title_font = load_font(int(render_params.title_font_size_px), bold=True)
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
     label_font = load_font(int(render_params.label_font_size_px), bold=True)
     value_font = load_font(int(render_params.value_font_size_px), bold=True)
-    draw_text_traced(
-        draw,
-        (left, max(12, top - 50)),
-        "OHLC candlestick chart",
-        font=title_font,
-        fill=tuple(render_params.text_color_rgb),
-        role="readout",
-        required=False,
-    )
 
     y_min = int(render_params.y_axis_min)
     y_max = int(render_params.y_axis_max)
@@ -307,12 +302,18 @@ def render_dataset(
     """Render a prepared OHLC dataset without choosing any task target or answer."""
 
     render_params = resolve_render_params(params, instance_seed=int(instance_seed))
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    protected_colors = (
+        render_params.up_fill_rgb,
+        render_params.down_fill_rgb,
+        render_params.wick_rgb,
+        render_params.body_outline_rgb,
+    )
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=dict(params),
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="candlestick",
+        render_params=render_params,
+        protected_colors=protected_colors,
     )
     chart_font_family = sample_chart_font_family(
         instance_seed=int(instance_seed),
@@ -340,7 +341,7 @@ def render_dataset(
     return RenderArtifacts(
         rendered=rendered,
         render_params=render_params,
-        background_style=dict(background_meta),
+        background_style={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         font_assets=chart_font_asset_metadata(str(chart_font_family)),
         post_image_noise=dict(post_noise_meta),
     )

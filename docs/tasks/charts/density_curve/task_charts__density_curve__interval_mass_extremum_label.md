@@ -15,13 +15,24 @@
 
 ## Annotation Contract
 1. Answer schema: `string_label`.
-2. Annotation schema: `keyed_bbox_map`.
-3. Annotation should mark the shaded area under the answer curve inside the marked interval, not the legend label, title, or interval label.
+2. Annotation schema: `point`.
+3. Annotation should mark a point on the answer curve inside the marked interval, not the legend label, title, interval label, or full interval region.
 4. Renderer context such as legends, axes, interval guides, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Program Contract
+
+Program: `arg_extreme(curve_label, integral(density(curve_label), selected_interval), direction={greatest,least}); output=string_label; annotation=point(answer_interval_mass_curve_point); scene=density_curve; scope=interval_mass_extremum_label`
+
+Candidate set: the visible density curves, shaded regions, and axis labels inside the `interval_mass_extremum_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `arg_extreme` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `point` witnesses bound by `point(answer_interval_mass_curve_point)`. Annotation should mark a point on the answer curve inside the marked interval, not the legend label, title, interval label, or full interval region. Renderer context such as legends, axes, interval guides, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `greatest_interval_mass_label`, `least_interval_mass_label`.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `greatest_interval_mass_label` | `selection.density_interval_mass_extremum_label` | `string_label` | `keyed_bbox_map` |
-| `least_interval_mass_label` | `selection.density_interval_mass_extremum_label` | `string_label` | `keyed_bbox_map` |
+| `greatest_interval_mass_label` | `selection.interval_mass_extremum_label` | `string_label` | `point` |
+| `least_interval_mass_label` | `selection.interval_mass_extremum_label` | `string_label` | `point` |

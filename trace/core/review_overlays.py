@@ -234,10 +234,10 @@ def resolve_overlay_annotation(
         "bbox",
         "bbox_sequence",
         "bbox_set",
-        "keyed_bbox_map",
-        "keyed_bbox_set_map",
-        "keyed_point_map",
-        "keyed_point_set_map",
+        "bbox_map",
+        "bbox_set_map",
+        "point_map",
+        "point_set_map",
         "point",
         "segment",
         "segment_set",
@@ -271,8 +271,8 @@ def render_annotation_overlay(source: PILImage.Image, *, annotation_type: str, a
     if annotation_kind in {
         "point_map",
         "pixel_point_map",
-        "keyed_point_map",
-        "pixel_keyed_point_map",
+        "point_map",
+        "pixel_point_map",
         "annotation_centers",
         "pixel_annotation_centers",
     }:
@@ -284,7 +284,7 @@ def render_annotation_overlay(source: PILImage.Image, *, annotation_type: str, a
             draw.text((x + label_offset_x, y - label_offset_y), str(label), fill=(color[0], color[1], color[2], 255))
         return image
 
-    if annotation_kind in {"keyed_point_set_map", "pixel_keyed_point_set_map"}:
+    if annotation_kind in {"point_set_map", "pixel_point_set_map"}:
         point_sets = _extract_keyed_point_sets(annotation_value)
         for idx, (label, points) in enumerate(point_sets.items()):
             color = _ANNOTATION_COLORS[idx % len(_ANNOTATION_COLORS)]
@@ -294,7 +294,7 @@ def render_annotation_overlay(source: PILImage.Image, *, annotation_type: str, a
                     draw.text((x + label_offset_x, y - label_offset_y), str(label), fill=(color[0], color[1], color[2], 255))
         return image
 
-    if annotation_kind in {"keyed_bbox_map", "pixel_keyed_bbox_map"}:
+    if annotation_kind in {"bbox_map", "pixel_bbox_map"}:
         bbox_map = _extract_bbox_map(annotation_value)
         for idx, (label, bbox) in enumerate(bbox_map.items()):
             color = _ANNOTATION_COLORS[idx % len(_ANNOTATION_COLORS)]
@@ -303,7 +303,7 @@ def render_annotation_overlay(source: PILImage.Image, *, annotation_type: str, a
             draw.text((x0 + 4.0, max(0.0, y0 - 16.0)), str(label), fill=(color[0], color[1], color[2], 255))
         return image
 
-    if annotation_kind in {"keyed_bbox_set_map", "pixel_keyed_bbox_set_map"}:
+    if annotation_kind in {"bbox_set_map", "pixel_bbox_set_map"}:
         bbox_sets = _extract_keyed_bbox_sets(annotation_value)
         for idx, (label, bboxes) in enumerate(bbox_sets.items()):
             color = _ANNOTATION_COLORS[idx % len(_ANNOTATION_COLORS)]

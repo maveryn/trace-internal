@@ -2,54 +2,38 @@
 
 from __future__ import annotations
 
-from typing import Mapping, Sequence
+from typing import Mapping
 
 from trace.core.types import TypedValue
 from trace.tasks.geometry.shared.measurement_rendering import bbox_to_list
 
 from .state import RenderedSolidCrossSectionScene
 
-CONE_ANNOTATION_KEYS = (
-    "cross_section",
-    "base_radius_label",
-    "height_label",
-    "slice_distance_label",
-)
-PYRAMID_ANNOTATION_KEYS = (
-    "cross_section",
-    "base_side_label",
-    "height_label",
-    "slice_distance_label",
-)
+CROSS_SECTION_ANNOTATION_ROLE = "cross_section"
 
 
-def bbox_map_annotation(
-    rendered: RenderedSolidCrossSectionScene,
-    keys: Sequence[str],
-) -> tuple[TypedValue, dict[str, object]]:
-    """Build role-bound bbox annotation artifacts for one rendered scene."""
+def cross_section_bbox_annotation(rendered: RenderedSolidCrossSectionScene) -> tuple[TypedValue, dict[str, object]]:
+    """Build scalar bbox annotation artifacts around the marked cross-section."""
 
-    bbox_map = {
-        str(key): bbox_to_list(rendered.annotation_bboxes[str(key)])
-        for key in tuple(str(value) for value in keys)
-    }
+    bbox = bbox_to_list(rendered.annotation_bboxes[CROSS_SECTION_ANNOTATION_ROLE])
     projected_annotation = {
-        "type": "bbox_map",
-        "bbox_map": dict(bbox_map),
-        "pixel_bbox_map": dict(bbox_map),
+        "type": "bbox",
+        "bbox": list(bbox),
+        "pixel_bbox": list(bbox),
     }
-    return TypedValue(type="bbox_map", value=dict(bbox_map)), projected_annotation
+    return TypedValue(type="bbox", value=list(bbox)), projected_annotation
 
 
-def annotation_roles_metadata(annotation_value: Mapping[str, object]) -> list[str]:
-    """Return annotation keys in prompt-facing order."""
+def annotation_roles_metadata(projected_annotation: Mapping[str, object]) -> list[str]:
+    """Return prompt-facing annotation roles for trace metadata."""
 
-    return [str(key) for key in annotation_value.keys()]
+    if projected_annotation.get("type") == "bbox":
+        return [CROSS_SECTION_ANNOTATION_ROLE]
+    return []
 
 
 __all__ = [
     "annotation_roles_metadata",
-    "bbox_map_annotation",
-    "CONE_ANNOTATION_KEYS",
-    "PYRAMID_ANNOTATION_KEYS",
+    "cross_section_bbox_annotation",
+    "CROSS_SECTION_ANNOTATION_ROLE",
 ]

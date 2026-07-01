@@ -10,12 +10,14 @@ from trace.tasks.shared.config_defaults import (
     group_default,
     split_scene_generation_rendering_prompt_defaults,
 )
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
-from trace.tasks.shared.font_assets import sample_font_family
-from trace.tasks.shared.render_variation import resolve_render_rgb
+from trace.core.sampling import support_probability_map, uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.charts.shared.visual_defaults import (
     load_chart_scene_background_defaults,
     load_chart_scene_noise_defaults,
+    render_style_seed,
+    sample_chart_font_family as sample_shared_chart_font_family,
+    resolve_chart_render_rgb,
 )
 from trace.tasks.charts.dumbbell.shared.state import RGB
 
@@ -43,26 +45,10 @@ def render_int(params: Mapping[str, Any], key: str, fallback: int) -> int:
     return int(params.get(str(key), RENDER_DEFAULTS.get(str(key), int(fallback))))
 
 
-def render_style_seed(params: Mapping[str, Any]) -> int:
-    """Return the deterministic seed used for style-only rendering choices."""
-
-    try:
-        return int(params.get("_render_style_seed", params.get("_sample_cursor", 0)) or 0)
-    except Exception:
-        return 0
-
-
 def render_rgb(params: Mapping[str, Any], key: str, fallback: RGB) -> RGB:
     """Resolve one RGB rendering parameter, including configured option lists."""
 
-    return resolve_render_rgb(
-        params,
-        RENDER_DEFAULTS,
-        str(key),
-        fallback,
-        instance_seed=render_style_seed(params),
-        namespace=SCENE_NAMESPACE,
-    )
+    return resolve_chart_render_rgb(params, RENDER_DEFAULTS, str(key), fallback, namespace=SCENE_NAMESPACE)
 
 
 def generation_int(params: Mapping[str, Any], key: str, fallback: int) -> int:
@@ -84,10 +70,12 @@ def balanced_int(
     values = [int(value) for value in range(int(low), int(high) + 1)]
     if not values:
         raise ValueError(f"empty integer support for {namespace}")
-    selected = values[
-        resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)) % len(values)
-    ]
-    return int(selected), uniform_probability_map(tuple(values))
+    selected = uniform_choice(
+        spawn_rng(int(instance_seed), str(namespace)),
+        tuple(values),
+        sort_keys=True,
+    )
+    return int(selected), support_probability_map(tuple(values))
 
 
 def balanced_choice(
@@ -102,23 +90,21 @@ def balanced_choice(
     support = tuple(int(value) for value in values)
     if not support:
         raise ValueError(f"empty integer support for {namespace}")
-    selected = support[
-        resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)) % len(support)
-    ]
-    return int(selected), uniform_probability_map(support)
+    selected = uniform_choice(
+        spawn_rng(int(instance_seed), str(namespace)),
+        support,
+        sort_keys=True,
+    )
+    return int(selected), support_probability_map(support)
 
 
 def sample_chart_font_family(params: Mapping[str, Any], *, instance_seed: int) -> str:
     """Sample the chart font family for all text in one dumbbell chart."""
 
-    return sample_font_family(
-        role="readout",
+    return sample_shared_chart_font_family(
         instance_seed=int(instance_seed),
         namespace=f"{SCENE_NAMESPACE}.chart_font",
         params=params,
-        exclude_tags=("display",),
-        explicit_key="chart_font_family",
-        weights_key="chart_font_family_weights",
     )
 
 

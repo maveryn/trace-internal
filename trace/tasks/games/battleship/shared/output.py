@@ -42,6 +42,21 @@ def candidate_option_trace(sample: BattleshipSample) -> list[dict[str, Any]]:
     ]
 
 
+def shape_option_trace(sample: BattleshipSample) -> list[dict[str, Any]]:
+    """Serialize panel shape options for trace payloads."""
+
+    return [
+        {
+            "label": str(option.label),
+            "shape_id": str(option.shape_id),
+            "display_name": str(option.display_name),
+            "is_answer": bool(option.is_answer),
+            "entity_id": f"shape_option_{str(option.label)}",
+        }
+        for option in sample.shape_options
+    ]
+
+
 def target_ship_cell_ids(sample: BattleshipSample, *, target_ship_id: str) -> list[str]:
     """Return target ship cell ids for one named ship."""
 
@@ -96,6 +111,12 @@ def projected_annotation_payload(
             "point": list(annotation_gt.value),
             "pixel_point": list(annotation_gt.value),
         }
+    if str(annotation_gt.type) == "bbox":
+        return {
+            "type": "bbox",
+            "bbox": list(annotation_gt.value),
+            "pixel_bbox": list(annotation_gt.value),
+        }
     if str(annotation_gt.type) == "bbox_set_map":
         return {
             "type": "bbox_set_map",
@@ -120,6 +141,11 @@ def witness_symbolic_payload(
         return {
             "type": "cell_set",
             "ids": [str(cell_id) for cell_id in annotation_projection.annotation_cell_ids],
+        }
+    if str(annotation_gt.type) == "bbox":
+        return {
+            "type": "object_set",
+            "ids": [str(entity_id) for entity_id in annotation_projection.annotation_entity_ids],
         }
     return {
         "type": "object_map",
@@ -146,6 +172,7 @@ def common_trace_sections(
                 "style_variant": str(axes.style_variant),
                 "board_size": int(sample.board_size),
                 "candidate_options": candidate_option_trace(sample),
+                "shape_options": shape_option_trace(sample),
                 "annotation_entity_ids": [str(entity_id) for entity_id in annotation_projection.annotation_entity_ids],
             },
         },
@@ -170,6 +197,7 @@ def common_trace_sections(
             "annotation_ship_name_to_ship_id": dict(annotation_projection.annotation_key_to_ship_id),
             "annotation_hit_cell_ids_by_ship_name": dict(annotation_projection.annotation_hit_cell_ids_by_key),
             "candidate_options": candidate_option_trace(sample),
+            "shape_options": shape_option_trace(sample),
             "ship_placements": ship_trace(sample),
             "fleet_shapes": fleet_shape_trace(),
             "fleet_sunk_total": int(sample.sunk_ship_count),
@@ -187,6 +215,7 @@ __all__ = [
     "common_trace_sections",
     "fleet_shape_trace",
     "projected_annotation_payload",
+    "shape_option_trace",
     "ship_trace",
     "target_ship_cell_ids",
     "witness_symbolic_payload",

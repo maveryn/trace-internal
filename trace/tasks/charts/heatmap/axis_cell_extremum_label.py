@@ -22,7 +22,7 @@ class ChartsHeatmapAxisCellExtremumLabelTask:
     objective_contract = "axis_cell_extremum_label"
     supported_query_ids = tuple(QUERY_BINDINGS)
     default_dataset_enabled = True
-    supports_unanswerable = True
+    supports_unanswerable = False
 
     def _build_plan(self, instance_seed, *, params, selected_query_id):
         if str(selected_query_id) not in QUERY_BINDINGS:
@@ -39,7 +39,7 @@ class ChartsHeatmapAxisCellExtremumLabelTask:
             extremum_direction=str(extremum_direction),
             params=task_params,
             instance_seed=seed,
-            allow_unanswerable=True,
+            allow_unanswerable=False,
         )
         answer_gt = TypedValue(type=str(dataset["answer_type"]), value=str(dataset["answer_value"]))
         relation_params = axis_cell_relation_params(
@@ -52,8 +52,9 @@ class ChartsHeatmapAxisCellExtremumLabelTask:
             dataset=dataset,
             params=task_params,
             answer_gt=answer_gt,
+            annotation_type="bbox",
             prompt_query_key=self.objective_contract,
-            supports_unanswerable=True,
+            supports_unanswerable=False,
             relation_params=relation_params,
             instance_seed=seed,
         )

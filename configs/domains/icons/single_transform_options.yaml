@@ -13,6 +13,11 @@ generation:
       object_count_min: 6
       object_count_max: 6
       transform_check_size_px: 96
+    task_icons__single_transform_options__inverse_geometric_transform_source_label:
+      pool_manifest: non_symmetry.txt
+      object_count_min: 4
+      object_count_max: 4
+      transform_check_size_px: 96
 rendering:
   shared:
     canvas_width: 1104
@@ -198,8 +203,27 @@ rendering:
       palette_size_min: 1
       palette_size_max: 1
       min_color_distance: 42.0
+    task_icons__single_transform_options__inverse_geometric_transform_source_label:
+      canvas_width: 1104
+      canvas_height: 640
+      reference_panel_width_px: 296
+      scene_icon_size_min_px: 96
+      scene_icon_size_max_px: 112
+      reference_icon_size_px: 112
+      reference_content_padding_px: 18
+      scene_content_side_padding_px: 14
+      scene_content_bottom_padding_px: 14
+      scene_content_top_offset_px: 42
+      operation_cue_font_size_px: 21
+      palette_size_min: 1
+      palette_size_max: 1
+      min_color_distance: 42.0
 prompt:
   shared:
     bundle_id: icons_single_transform_options_v1
     scene_key: single_transform_options_transformation
     task_key: transformation_query
+  task_overrides:
+    task_icons__single_transform_options__inverse_geometric_transform_source_label:
+      scene_key: single_transform_options_inverse_transformation
+      task_key: transformation_query

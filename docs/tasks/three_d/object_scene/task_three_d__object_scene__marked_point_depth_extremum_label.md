@@ -10,7 +10,15 @@
 - Annotation schema: `point`
 
 ## Program Contract
-`select(label(floor_marked_points, extremum(camera_distance, requested_extremum))); scene=object_scene; scope=marked_point_depth_extremum_label`
+
+Program: `select(label(floor_marked_points, extremum(camera_distance, requested_extremum))); scene=object_scene; scope=marked_point_depth_extremum_label`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `marked_point_depth_extremum_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `label`, `floor_marked_points`, `extremum`, `camera_distance`, `requested_extremum`, `object_scene`, `marked_point_depth_extremum_label`.
+Operation: evaluate `select` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Contract
 The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects and lettered point markers placed on the floor plane. Each marked point is rendered as a visible point glyph with a nearby letter label. The public task id defines the stable objective contract; query ids select closest vs farthest marked floor point. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.

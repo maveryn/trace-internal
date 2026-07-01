@@ -11,7 +11,15 @@
 8. Program schema: `label(first_collision(ball_path, pins)); scene=bowling; scope=first_pin_hit_label`
 
 ## Program Contract
-- `label(first_collision(ball_path, pins)); scene=bowling; scope=first_pin_hit_label`
+
+Program: `label(first_collision(ball_path, pins)); scene=bowling; scope=first_pin_hit_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `first_pin_hit_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `first_collision`, `ball_path`, `pins`, `bowling`, `first_pin_hit_label`.
+Operation: evaluate `label` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.

@@ -15,7 +15,15 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Program Contract
-`mean(values(marks excluding removed_labels)); output=integer_value; annotation=point_set(retained_marks); scene=single_series; scope=remaining_mean_after_removal`
+
+Program: `mean(values(marks excluding removed_labels)); output=integer_value; annotation=point_set(retained_marks); scene=single_series; scope=remaining_mean_after_removal`
+
+Candidate set: the visible marks in the ordered single-series chart inside the `remaining_mean_after_removal` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `mean` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `point_set` witnesses bound by `point_set(retained_marks)`. Annotation marks every retained visible mark used in the remaining mean. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
+Query ids: `single`.
 
 ## Annotation Contract
 1. Answer schema: `integer_value`.

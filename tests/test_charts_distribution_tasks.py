@@ -4,7 +4,6 @@ import json
 from trace.tasks.charts.boxplot.iqr_extremum_label import ChartsDistributionBoxplotIqrExtremumLabelTask
 from trace.tasks.charts.boxplot.median_rank_difference_value import ChartsDistributionBoxplotMedianRankDifferenceValueTask
 from trace.tasks.charts.boxplot.paired_median_shift_label import ChartsDistributionBoxplotPairedMedianShiftLabelTask
-from trace.tasks.charts.histogram.bin_count_between_values import ChartsDistributionHistogramBinCountBetweenValuesTask
 from trace.tasks.charts.histogram.cumulative_rank_bin_label import ChartsDistributionHistogramCumulativeRankLabelTask
 from trace.tasks.charts.histogram.interval_mass import ChartsDistributionHistogramIntervalMassTask
 from trace.tasks.charts.violin.modality_label import ChartsDistributionViolinModalityLabelTask
@@ -27,7 +26,6 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
     cases = (
         (ChartsDistributionHistogramIntervalMassTask, 'inside_interval_mass'),
         (ChartsDistributionHistogramIntervalMassTask, 'outside_interval_mass'),
-        (ChartsDistributionHistogramBinCountBetweenValuesTask, 'single'),
         (ChartsDistributionHistogramCumulativeRankLabelTask, 'single'),
     )
     for seed, (task_cls, query_id) in enumerate(cases, start=11010):
@@ -71,7 +69,7 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
         assert int(render['value_axis_min']) == 0
         assert render['guide_line_style'] in {'dashed', 'dotted', 'solid'}
         assert len(render['guide_lines']) == int(execution['bin_count'])
-        if task_cls in {ChartsDistributionHistogramIntervalMassTask, ChartsDistributionHistogramBinCountBetweenValuesTask}:
+        if task_cls is ChartsDistributionHistogramIntervalMassTask:
             query_start = int(execution['query_interval_start_value'])
             query_end = int(execution['query_interval_end_value'])
             assert str(execution['query_interval_label']) == f'{query_start}-{query_end}'
@@ -81,10 +79,6 @@ def test_chart_distribution_histogram_variants_match_contract() -> None:
             assert 5 <= len(annotation_labels) <= int(execution['bin_count'])
             assert annotation_labels == inside_interval_labels
             assert int(out.answer_gt.value) == sum((int(counts_by_label[label]) for label in annotation_labels))
-        elif task_cls is ChartsDistributionHistogramBinCountBetweenValuesTask:
-            assert 2 <= len(annotation_labels) <= 15
-            assert annotation_labels == inside_interval_labels
-            assert int(out.answer_gt.value) == len(annotation_labels)
         elif task_cls is ChartsDistributionHistogramCumulativeRankLabelTask:
             answer_index = int(execution['answer_bin_index'])
             target_rank = int(execution['target_rank'])
@@ -119,7 +113,6 @@ def test_histogram_bins_are_contiguous_numeric_intervals() -> None:
 def test_chart_distribution_histogram_prompt_examples_match_selected_variant() -> None:
     cases = (
         (ChartsDistributionHistogramIntervalMassTask, 'inside_interval_mass', {'annotation': [[210, 320, 246, 520], [252, 280, 288, 520]], 'answer': 17}),
-        (ChartsDistributionHistogramBinCountBetweenValuesTask, 'single', {'annotation': [[210, 320, 246, 520], [252, 280, 288, 520]], 'answer': 2}),
         (ChartsDistributionHistogramCumulativeRankLabelTask, 'single', {'annotation': [336, 240, 372, 520], 'answer': 18}),
     )
     for index, (task_cls, query_id, expected) in enumerate(cases, start=11040):
@@ -130,8 +123,8 @@ def test_chart_distribution_histogram_prompt_examples_match_selected_variant() -
         assert answer_only == {'answer': expected['answer']}
 
 def test_chart_distribution_histogram_task_is_deterministic() -> None:
-    task = ChartsDistributionHistogramBinCountBetweenValuesTask()
-    params = {'query_id': 'single'}
+    task = ChartsDistributionHistogramIntervalMassTask()
+    params = {'query_id': 'inside_interval_mass'}
     out_a = task.generate(11060, params=params, max_attempts=10)
     out_b = task.generate(11060, params=params, max_attempts=10)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -141,15 +134,15 @@ def test_chart_distribution_histogram_task_is_deterministic() -> None:
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
-def test_chart_distribution_histogramseeded_sampler_decouples_variant_and_answer_support() -> None:
-    task = ChartsDistributionHistogramBinCountBetweenValuesTask()
-    bin_count_answers = []
+def test_chart_distribution_histogram_interval_mass_sampler_varies_answers() -> None:
+    task = ChartsDistributionHistogramIntervalMassTask()
+    interval_mass_answers = []
     for sampling_index in range(42):
-        out = task.generate(11070 + sampling_index, params={}, max_attempts=10)
-        assert str(out.query_id) == 'single'
-        bin_count_answers.append(int(out.answer_gt.value))
-    assert set(bin_count_answers).issubset(set(range(2, 16)))
-    assert len(set(bin_count_answers)) >= 8
+        out = task.generate(11070 + sampling_index, params={'query_id': 'inside_interval_mass'}, max_attempts=10)
+        assert str(out.query_id) == 'inside_interval_mass'
+        interval_mass_answers.append(int(out.answer_gt.value))
+    assert min(interval_mass_answers) >= 0
+    assert len(set(interval_mass_answers)) >= 8
 
 def test_chart_distribution_histogram_cumulative_rank_public_task_contract() -> None:
     task = ChartsDistributionHistogramCumulativeRankLabelTask()
@@ -178,10 +171,11 @@ def test_chart_distribution_boxplot_variants_match_contract() -> None:
         assert str(execution['scene_variant']) == 'boxplot'
         assert str(render['scene_variant']) == 'boxplot'
         assert task_cls is ChartsDistributionBoxplotIqrExtremumLabelTask
-        assert out.annotation_gt.type == 'keyed_point_map'
-        assert trace['projected_annotation']['type'] == 'keyed_point_map'
-        assert set(out.annotation_gt.value) == {'answer_boxplot'}
-        assert trace['projected_annotation']['keyed_point_map'] == out.annotation_gt.value
+        assert out.annotation_gt.type == 'bbox'
+        assert len(out.annotation_gt.value) == 4
+        assert trace['projected_annotation']['type'] == 'bbox'
+        assert trace['projected_annotation']['bbox'] == out.annotation_gt.value
+        assert trace['projected_annotation']['pixel_bbox'] == out.annotation_gt.value
         assert out.image.size == (int(render['canvas_width']), int(render['canvas_height']))
         all_box_values = [int(value) for stats in quartiles_by_label.values() for value in (stats['whisker_min'], stats['q1'], stats['median'], stats['q3'], stats['whisker_max'])]
         _assert_value_axis_covers_values(render, all_box_values)
@@ -191,16 +185,18 @@ def test_chart_distribution_boxplot_variants_match_contract() -> None:
             target_label = max(quartiles_by_label, key=lambda label: int(quartiles_by_label[label]['iqr']))
             assert str(out.answer_gt.value) == str(target_label)
             assert int(execution['annotation_value']) == int(quartiles_by_label[target_label]['iqr'])
+            assert out.annotation_gt.value == trace['render_map']['box_bboxes_px'][str(target_label)]
         else:
             assert task_cls is ChartsDistributionBoxplotIqrExtremumLabelTask
             assert str(execution['extremum_direction']) == 'smallest'
             target_label = min(quartiles_by_label, key=lambda label: int(quartiles_by_label[label]['iqr']))
             assert str(out.answer_gt.value) == str(target_label)
             assert int(execution['annotation_value']) == int(quartiles_by_label[target_label]['iqr'])
+            assert out.annotation_gt.value == trace['render_map']['box_bboxes_px'][str(target_label)]
 
 def test_chart_distribution_boxplot_prompt_examples_match_selected_variant() -> None:
     cases = (
-        (ChartsDistributionBoxplotIqrExtremumLabelTask, {'annotation': {'answer_boxplot': [430, 250]}, 'answer': 'Ivory'}),
+        (ChartsDistributionBoxplotIqrExtremumLabelTask, {'annotation': [394, 210, 466, 290], 'answer': 'Ivory'}),
     )
     for index, (task_cls, expected) in enumerate(cases, start=11140):
         out = task_cls().generate(index, params={}, max_attempts=10)
@@ -246,22 +242,22 @@ def test_chart_distribution_boxplot_uses_configured_iqr_winner_gap() -> None:
 def test_chart_distribution_boxplot_public_role_bound_tasks_use_keyed_annotation() -> None:
     iqr = ChartsDistributionBoxplotIqrExtremumLabelTask().generate(11179, params={'query_id': 'largest_iqr_label'}, max_attempts=10)
     assert iqr.answer_gt.type == 'string'
-    assert iqr.annotation_gt.type == 'keyed_point_map'
-    assert set(iqr.annotation_gt.value) == {'answer_boxplot'}
-    assert iqr.trace_payload['projected_annotation']['type'] == 'keyed_point_map'
-    assert iqr.trace_payload['projected_annotation']['keyed_point_map'] == iqr.annotation_gt.value
+    assert iqr.annotation_gt.type == 'bbox'
+    assert len(iqr.annotation_gt.value) == 4
+    assert iqr.trace_payload['projected_annotation']['type'] == 'bbox'
+    assert iqr.trace_payload['projected_annotation']['bbox'] == iqr.annotation_gt.value
     median_rank = ChartsDistributionBoxplotMedianRankDifferenceValueTask().generate(11180, params={'query_id': 'median_top_second_difference_value'}, max_attempts=10)
     assert median_rank.answer_gt.type == 'integer'
-    assert median_rank.annotation_gt.type == 'keyed_point_map'
+    assert median_rank.annotation_gt.type == 'point_map'
     assert set(median_rank.annotation_gt.value) == {'highest_median_boxplot', 'second_highest_median_boxplot'}
-    assert median_rank.trace_payload['projected_annotation']['type'] == 'keyed_point_map'
-    assert median_rank.trace_payload['projected_annotation']['keyed_point_map'] == median_rank.annotation_gt.value
+    assert median_rank.trace_payload['projected_annotation']['type'] == 'point_map'
+    assert median_rank.trace_payload['projected_annotation']['point_map'] == median_rank.annotation_gt.value
     paired_shift = ChartsDistributionBoxplotPairedMedianShiftLabelTask().generate(11181, params={'query_id': 'paired_median_greatest_increase_label'}, max_attempts=10)
     assert paired_shift.answer_gt.type == 'string'
-    assert paired_shift.annotation_gt.type == 'keyed_point_map'
+    assert paired_shift.annotation_gt.type == 'point_map'
     assert set(paired_shift.annotation_gt.value) == {'before_boxplot', 'after_boxplot'}
-    assert paired_shift.trace_payload['projected_annotation']['type'] == 'keyed_point_map'
-    assert paired_shift.trace_payload['projected_annotation']['keyed_point_map'] == paired_shift.annotation_gt.value
+    assert paired_shift.trace_payload['projected_annotation']['type'] == 'point_map'
+    assert paired_shift.trace_payload['projected_annotation']['point_map'] == paired_shift.annotation_gt.value
 
 def test_chart_distribution_violin_variants_match_contract() -> None:
     cases = (

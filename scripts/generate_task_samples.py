@@ -24,6 +24,7 @@ from PIL import ImageOps as PILImageOps
 from trace.core.annotation_sanitization import sanitize_trace_payload_for_public_annotation
 from trace.core.json_io import write_json_file
 from trace.core.review_overlays import render_annotation_overlay, resolve_overlay_annotation
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.scene_package_migration import is_scene_package_task
 from trace.core.seed import hash64
 from trace.core.task_review_paths import task_review_dir
@@ -698,7 +699,7 @@ def _build_query_id_distribution_report(rows: List[Dict[str, Any]]) -> Dict[str,
     """Build query-id and answer-bin distribution reports for one task."""
     rows_by_query_id: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for row in rows:
-        rows_by_query_id[str(row.get("query_id", "default"))].append(row)
+        rows_by_query_id[str(row.get("query_id", SINGLE_QUERY_ID) or SINGLE_QUERY_ID)].append(row)
 
     expected_query_id_probabilities, expected_query_id_source = _resolve_query_id_expected_probabilities(rows_by_query_id)
     query_id_labels = sorted(expected_query_id_probabilities.keys() or rows_by_query_id.keys())
@@ -838,7 +839,7 @@ def _generate_samples_for_task(
             "task": task.task_id,
             "sample_index": int(accepted),
             "instance_seed": int(instance_seed),
-            "query_id": str(getattr(output, "query_id", "default")),
+            "query_id": str(getattr(output, "query_id", SINGLE_QUERY_ID) or SINGLE_QUERY_ID),
             "prompt": prompt_answer_and_annotation,
             "prompt_answer": prompt_answer,
             "prompt_answer_and_annotation": prompt_answer_and_annotation,
@@ -875,7 +876,7 @@ def _generate_samples_for_task(
             "task": task.task_id,
             "sample_index": int(accepted),
             "instance_seed": int(instance_seed),
-            "query_id": str(getattr(output, "query_id", "default")),
+            "query_id": str(getattr(output, "query_id", SINGLE_QUERY_ID) or SINGLE_QUERY_ID),
             "image_path": rel_image_path,
             "data_path": rel_data_path,
             "prompt": prompt_answer_and_annotation,
@@ -900,7 +901,7 @@ def _generate_samples_for_task(
             row["scene_id"] = str(scene_id)
         rows.append(row)
         accepted += 1
-        accepted_by_query_id[str(getattr(output, "query_id", "default"))] += 1
+        accepted_by_query_id[str(getattr(output, "query_id", SINGLE_QUERY_ID) or SINGLE_QUERY_ID)] += 1
 
     seed_index = 0
     while accepted < int(count) and seed_index < int(max_candidates):

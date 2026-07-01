@@ -17,8 +17,10 @@ from ...shared.config_defaults import (
     group_default,
     split_scene_generation_rendering_prompt_defaults,
 )
-from ...shared.deterministic_sampling import resolve_selection_index
-from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
+from ..shared.task_support import (
+    resolve_axis_variant as _shared_resolve_axis_variant,
+    resolve_count as _shared_resolve_count,
+)
 from ..shared.color_variation import resolve_three_d_object_fill_rgb
 from ..shared.camera_projection import (
     CameraSpec as _CameraSpec,
@@ -55,7 +57,7 @@ from ..shared.object_scene import (
     CONTEXT_OBJECT_COLORS,
     LARGE_CONTEXT_SHAPE_TYPES,
     NAMEABLE_CONTEXT_SHAPE_TYPES,
-    NAMEABLE_SMALL_OBJECT_SHAPE_TYPES,
+    NAMED_SMALL_OBJECT_SHAPE_TYPES,
     OBJECT_NAME_BY_SHAPE_TYPE,
     POINT_COLORS,
     POINT_LABELS,
@@ -93,25 +95,17 @@ MAX_CANDIDATE_CONTEXT_OVERLAP_FRACTION = 0.48
 
 
 def _resolve_point_count(params: Mapping[str, Any], *, gen_defaults: Mapping[str, Any], instance_seed: int) -> Tuple[int, Dict[str, float]]:
-    min_count = int(params.get("point_count_min", group_default(gen_defaults, "point_count_min", 5)))
-    max_count = int(params.get("point_count_max", group_default(gen_defaults, "point_count_max", 7)))
-    min_count = max(3, min(8, int(min_count)))
-    max_count = max(min_count, min(8, int(max_count)))
-    support = tuple(range(int(min_count), int(max_count) + 1))
-    explicit = params.get("point_count")
-    if explicit is not None:
-        selected = int(explicit)
-        if selected not in set(support):
-            raise ValueError(f"unsupported point_count: {selected}")
-        return int(selected), {str(value): (1.0 if int(value) == int(selected) else 0.0) for value in support}
-    selection_index = resolve_selection_index(
+    return _shared_resolve_count(
         params=params,
+        task_id=TASK_ID,
+        gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.point_count",
+        key="point_count",
+        default_min=5,
+        default_max=7,
+        lower=3,
+        upper=8,
     )
-    selected = int(support[abs(int(selection_index)) % len(support)])
-    probability = 1.0 / float(len(support))
-    return int(selected), {str(value): float(probability) for value in support}
 
 
 def _resolve_context_object_count(
@@ -120,25 +114,17 @@ def _resolve_context_object_count(
     gen_defaults: Mapping[str, Any],
     instance_seed: int,
 ) -> Tuple[int, Dict[str, float]]:
-    min_count = int(params.get("context_object_count_min", group_default(gen_defaults, "context_object_count_min", 2)))
-    max_count = int(params.get("context_object_count_max", group_default(gen_defaults, "context_object_count_max", 2)))
-    min_count = max(0, min(3, int(min_count)))
-    max_count = max(min_count, min(3, int(max_count)))
-    support = tuple(range(int(min_count), int(max_count) + 1))
-    explicit = params.get("context_object_count")
-    if explicit is not None:
-        selected = int(explicit)
-        if selected not in set(support):
-            raise ValueError(f"unsupported context_object_count: {selected}")
-        return int(selected), {str(value): (1.0 if int(value) == int(selected) else 0.0) for value in support}
-    selection_index = resolve_selection_index(
+    return _shared_resolve_count(
         params=params,
+        task_id=TASK_ID,
+        gen_defaults=gen_defaults,
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.context_object_count",
+        key="context_object_count",
+        default_min=2,
+        default_max=2,
+        lower=0,
+        upper=3,
     )
-    selected = int(support[abs(int(selection_index)) % len(support)])
-    probability = 1.0 / float(len(support))
-    return int(selected), {str(value): float(probability) for value in support}
 
 
 def _bbox_area(bbox: Sequence[float]) -> float:

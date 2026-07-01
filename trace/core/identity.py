@@ -21,13 +21,11 @@ def _build_instance_identity_payload(train_instance: Dict[str, Any]) -> Dict[str
         }
         for image in train_instance.get("images", [])
     ]
-    return {
+    payload = {
         "instance_version": train_instance.get("instance_version"),
         "instance_seed": train_instance.get("instance_seed"),
         "domain": train_instance.get("domain"),
-        "scene_id": train_instance.get("scene_id"),
         "task": train_instance.get("task"),
-        "scene_id": train_instance.get("scene_id"),
         "prompt": train_instance.get("prompt"),
         "prompt_variants": dict(train_instance.get("prompt_variants", {})),
         "images": images,
@@ -36,6 +34,9 @@ def _build_instance_identity_payload(train_instance: Dict[str, Any]) -> Dict[str
         "reward_contract": train_instance.get("reward_contract"),
         "versions": train_instance.get("versions", {}),
     }
+    if "scene_id" in train_instance:
+        payload["scene_id"] = train_instance.get("scene_id")
+    return payload
 
 
 def compute_instance_id(train_instance: Dict[str, Any]) -> str:

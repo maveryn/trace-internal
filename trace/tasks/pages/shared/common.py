@@ -65,16 +65,16 @@ def projected_document_keyed_bbox_annotation(
     bbox_map: Mapping[str, Sequence[float]],
     role_to_item_id: Mapping[str, str],
 ) -> Dict[str, Any]:
-    """Project document item ids into role-bound `keyed_bbox_map` annotation."""
+    """Project document item ids into role-bound `bbox_map` annotation."""
 
     keyed_bboxes = {
         str(role): list(bbox_map[str(item_id)])
         for role, item_id in role_to_item_id.items()
     }
     return {
-        "type": "keyed_bbox_map",
-        "keyed_bbox_map": dict(keyed_bboxes),
-        "pixel_keyed_bbox_map": dict(keyed_bboxes),
+        "type": "bbox_map",
+        "bbox_map": dict(keyed_bboxes),
+        "pixel_bbox_map": dict(keyed_bboxes),
     }
 
 

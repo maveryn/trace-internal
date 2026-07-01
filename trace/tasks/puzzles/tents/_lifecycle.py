@@ -178,6 +178,8 @@ def prepare_tents_visual_case(
         params,
         rendering_defaults,
         instance_seed=int(instance_seed),
+        grid_rows=int(sample.rows),
+        grid_cols=int(sample.cols),
     )
     scene_style, scene_style_meta = resolve_puzzle_scene_style(
         instance_seed=int(instance_seed),
@@ -223,10 +225,13 @@ def prepare_tents_visual_case(
         cols=int(sample.cols),
         row_clues=list(sample.row_clues),
         col_clues=list(sample.col_clues),
-        marked_tree=tuple(sample.marked_tree),
+        marked_tree=(
+            tuple(sample.marked_tree) if sample.marked_tree is not None else None
+        ),
         tree_cells=list(sample.tree_cells),
         visible_tents=list(sample.visible_tents),
         candidate_specs=list(sample.candidate_specs),
+        labeled_tent_specs=list(sample.labeled_tent_specs),
         render_params=render_params,
     )
     image, post_noise_meta = apply_post_image_noise(
@@ -409,6 +414,10 @@ def build_tents_task_output(
                     str(key): list(value)
                     for key, value in rendered_scene.clue_bbox_map.items()
                 },
+                "option_panel_bboxes_px": {
+                    str(key): list(value)
+                    for key, value in rendered_scene.option_panel_bbox_map.items()
+                },
                 "item_bboxes_px": {
                     str(key): list(value)
                     for key, value in rendered_scene.item_bbox_map.items()
@@ -419,7 +428,11 @@ def build_tents_task_output(
         ),
         execution_trace={
             **dict(query_params),
-            "marked_tree": [int(value) for value in sample.marked_tree],
+            "marked_tree": (
+                [int(value) for value in sample.marked_tree]
+                if sample.marked_tree is not None
+                else None
+            ),
             "row_clues": [int(value) for value in sample.row_clues],
             "col_clues": [int(value) for value in sample.col_clues],
             "visible_tents": [
@@ -428,6 +441,9 @@ def build_tents_task_output(
             "tree_cells": [[int(row), int(col)] for row, col in sample.tree_cells],
             "candidate_specs": [
                 json_ready(candidate) for candidate in sample.candidate_specs
+            ],
+            "labeled_tent_specs": [
+                json_ready(tent) for tent in sample.labeled_tent_specs
             ],
             "legal_candidate_cells": [
                 [int(row), int(col)] for row, col in sample.legal_candidate_cells

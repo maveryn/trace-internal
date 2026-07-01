@@ -5,6 +5,8 @@ from __future__ import annotations
 import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 
 from .defaults import DEFAULTS, GEN_DEFAULTS, float_tuple_default, int_tuple_default
@@ -70,12 +72,8 @@ def resolve_numeric_target(
             raise ValueError(f"unsupported target_count: {selected}")
         return selected, uniform_probability_map(ordered_support, selected=selected)
 
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    selected = int(ordered_support[int(index) % len(ordered_support)])
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    selected = int(uniform_choice(rng, ordered_support))
     probability = 1.0 / float(len(ordered_support))
     return selected, {str(value): float(probability) for value in ordered_support}
 
@@ -95,12 +93,8 @@ def resolve_rate_target(
             raise ValueError(f"unsupported target_rate: {selected}")
         return float(selected), {f"{float(value):.1f}": (1.0 if float(value) == selected else 0.0) for value in support}
 
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace="function_graph.rate_target",
-    )
-    selected = float(support[int(index) % len(support)])
+    rng = spawn_rng(int(instance_seed), "function_graph.rate_target")
+    selected = float(uniform_choice(rng, support))
     probability = 1.0 / float(len(support))
     return selected, {f"{float(value):.1f}": float(probability) for value in support}
 
@@ -132,12 +126,8 @@ def resolve_family_for_target(
             raise ValueError(f"scene_variant {selected} does not support target_count={target_count}")
         return selected, {family: (1.0 if family == selected else 0.0) for family in all_families}
 
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    selected = str(allowed[int(index) % len(allowed)])
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    selected = str(uniform_choice(rng, allowed))
     probability = 1.0 / float(len(allowed))
     return selected, {family: (float(probability) if family in set(allowed) else 0.0) for family in all_families}
 

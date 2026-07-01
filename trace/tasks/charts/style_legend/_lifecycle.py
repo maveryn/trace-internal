@@ -15,7 +15,12 @@ from trace.tasks.charts.style_legend.shared.annotations import (
     projected_point_payload,
     projected_point_set_payload,
 )
-from trace.tasks.charts.style_legend.shared.prompts import render_prompt_artifacts
+from trace.tasks.charts.style_legend.shared.prompts import (
+    ANSWER_ONLY_EXAMPLES,
+    JSON_EXAMPLES,
+    POINT_HINT,
+    render_prompt_artifacts,
+)
 from trace.tasks.charts.style_legend.shared.rendering import render_dataset
 from trace.tasks.charts.style_legend.shared.sampling import style_support_trace
 from trace.tasks.charts.style_legend.shared.state import SCENE_ID, StyleLegendDataset
@@ -80,6 +85,41 @@ def package_style_legend_plan(
         annotation_hint=str(annotation_hint),
         json_example=str(json_example),
         json_example_answer_only=str(json_example_answer_only),
+        program_code=str(program_code),
+        reasoning_load=float(reasoning_load),
+        objective_trace=dict(objective_trace),
+    )
+
+
+def package_point_label_plan(
+    *,
+    dataset: StyleLegendDataset,
+    params: Mapping[str, Any],
+    answer_value: str,
+    annotation_marker_id: str,
+    prompt_key: str,
+    prompt_slots: Mapping[str, Any],
+    answer_hint: str,
+    json_example_key: str,
+    program_code: str,
+    reasoning_load: float,
+    objective_trace: Mapping[str, Any],
+) -> StyleLegendObjectivePlan:
+    """Package a scalar string-label objective witnessed by one plotted marker."""
+
+    return package_style_legend_plan(
+        dataset=dataset,
+        params=params,
+        answer_value=str(answer_value),
+        answer_type="string",
+        annotation_type="point",
+        annotation_marker_ids=(str(annotation_marker_id),),
+        prompt_key=str(prompt_key),
+        prompt_slots=dict(prompt_slots),
+        answer_hint=str(answer_hint),
+        annotation_hint=POINT_HINT,
+        json_example=str(JSON_EXAMPLES[str(json_example_key)]),
+        json_example_answer_only=str(ANSWER_ONLY_EXAMPLES[str(json_example_key)]),
         program_code=str(program_code),
         reasoning_load=float(reasoning_load),
         objective_trace=dict(objective_trace),

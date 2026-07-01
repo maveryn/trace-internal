@@ -135,13 +135,13 @@ def test_core_reward_scoring_rejects_bbox_set_shape_for_scalar_bbox() -> None:
     assert score["annotation_parse_ok"] == 0.0
 
 
-def test_core_reward_scoring_scores_keyed_point_map_by_shared_keys() -> None:
+def test_core_reward_scoring_scores_point_map_by_shared_keys() -> None:
     response = json.dumps({"answer": 2, "annotation": {"A": [132, 200], "extra": [0, 0]}})
     score = score_trace_response(
         response=response,
         answer_gt={"type": "integer", "value": 2},
-        annotation_gt={"type": "keyed_point_map", "value": {"A": [100, 200], "B": [320, 420]}},
-        reward_contract=_reward_contract("keyed_point_map_soft_distance_v0", "keyed_point_map"),
+        annotation_gt={"type": "point_map", "value": {"A": [100, 200], "B": [320, 420]}},
+        reward_contract=_reward_contract("point_map_soft_distance_v0", "point_map"),
         point_half_life_px=32.0,
     )
 
@@ -152,7 +152,7 @@ def test_core_reward_scoring_scores_keyed_point_map_by_shared_keys() -> None:
     assert score["annotation_extra_key_count"] == 1.0
 
 
-def test_core_reward_scoring_scores_keyed_bbox_map_by_shared_keys() -> None:
+def test_core_reward_scoring_scores_bbox_map_by_shared_keys() -> None:
     response = json.dumps(
         {
             "answer": 2,
@@ -166,13 +166,13 @@ def test_core_reward_scoring_scores_keyed_bbox_map_by_shared_keys() -> None:
         response=response,
         answer_gt={"type": "integer", "value": 2},
         annotation_gt={
-            "type": "keyed_bbox_map",
+            "type": "bbox_map",
             "value": {
                 "source": [10, 10, 20, 20],
                 "target": [30, 30, 40, 40],
             },
         },
-        reward_contract=_reward_contract("keyed_bbox_map_soft_iou_v0", "keyed_bbox_map"),
+        reward_contract=_reward_contract("bbox_map_soft_iou_v0", "bbox_map"),
     )
 
     assert np.isclose(score["annotation_reward"], 1.0 / 3.0)
@@ -182,7 +182,7 @@ def test_core_reward_scoring_scores_keyed_bbox_map_by_shared_keys() -> None:
     assert score["annotation_extra_key_count"] == 1.0
 
 
-def test_core_reward_scoring_scores_keyed_point_set_map_by_shared_keys_and_unordered_points() -> None:
+def test_core_reward_scoring_scores_point_set_map_by_shared_keys_and_unordered_points() -> None:
     response = json.dumps(
         {
             "answer": 2,
@@ -196,13 +196,13 @@ def test_core_reward_scoring_scores_keyed_point_set_map_by_shared_keys_and_unord
         response=response,
         answer_gt={"type": "integer", "value": 2},
         annotation_gt={
-            "type": "keyed_point_set_map",
+            "type": "point_set_map",
             "value": {
                 "A": [[100, 200], [200, 200]],
                 "B": [[320, 420]],
             },
         },
-        reward_contract=_reward_contract("keyed_point_set_map_soft_distance_v0", "keyed_point_set_map"),
+        reward_contract=_reward_contract("point_set_map_soft_distance_v0", "point_set_map"),
         point_half_life_px=32.0,
     )
 
@@ -214,7 +214,7 @@ def test_core_reward_scoring_scores_keyed_point_set_map_by_shared_keys_and_unord
     assert score["annotation_assigned_count"] == 1.0
 
 
-def test_core_reward_scoring_scores_keyed_bbox_set_map_by_shared_keys_and_unordered_boxes() -> None:
+def test_core_reward_scoring_scores_bbox_set_map_by_shared_keys_and_unordered_boxes() -> None:
     response = json.dumps(
         {
             "answer": 2,
@@ -228,13 +228,13 @@ def test_core_reward_scoring_scores_keyed_bbox_set_map_by_shared_keys_and_unorde
         response=response,
         answer_gt={"type": "integer", "value": 2},
         annotation_gt={
-            "type": "keyed_bbox_set_map",
+            "type": "bbox_set_map",
             "value": {
                 "source": [[30, 30, 40, 40], [10, 10, 20, 20]],
                 "target": [[50, 50, 60, 60]],
             },
         },
-        reward_contract=_reward_contract("keyed_bbox_set_map_soft_iou_v0", "keyed_bbox_set_map"),
+        reward_contract=_reward_contract("bbox_set_map_soft_iou_v0", "bbox_set_map"),
     )
 
     assert np.isclose(score["annotation_reward"], 0.5 / 3.0)

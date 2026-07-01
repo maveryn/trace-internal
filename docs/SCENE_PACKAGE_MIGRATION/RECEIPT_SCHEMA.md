@@ -61,3 +61,18 @@ Confirm:
 - open reviewer issues for the scene are fixed and re-reviewed
 
 If any item is false, do not write the receipt.
+
+## Before Generating Review Artifacts
+
+Receipts are post-acceptance. Artifact generation has an earlier gate:
+
+- `manual_code_audit_status.json` exists and has `passed: true`
+- `taxonomy_review_status.json` exists and has `passed: true`
+- `migration_test_status.json` exists and has `passed: true`
+- taxonomy status lists the requested task ids
+- every listed task has a concrete `## Program Contract` in
+  `docs/tasks/<domain>/<scene_id>/<task_id>.md`
+- the automated scene-package source audit passes
+
+`scripts/run_task_review.py --out-root review/task-reviews` enforces this gate
+for scenes registered as scene-package review candidates.

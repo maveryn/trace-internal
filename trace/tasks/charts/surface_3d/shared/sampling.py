@@ -5,13 +5,13 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from trace.core.sampling import integer_range_choice, uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.charts.shared.label_assets import (
     resolve_chart_entity_labels,
     resolve_chart_panel_labels,
     validate_chart_label_namespaces,
 )
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from .defaults import GEN_DEFAULTS, generation_int
 
@@ -29,18 +29,6 @@ PALETTE: tuple[tuple[int, int, int], ...] = (
 )
 
 
-def choice_index(params: Mapping[str, Any], *, instance_seed: int, namespace: str) -> int:
-    """Resolve a deterministic index for one scene-local sampling decision."""
-
-    return int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(namespace),
-        )
-    )
-
-
 def balanced_int(
     *,
     low: int,
@@ -51,10 +39,12 @@ def balanced_int(
 ) -> int:
     """Sample an integer uniformly across an inclusive support."""
 
+    del params
     if int(low) > int(high):
         raise ValueError(f"invalid integer support for {namespace}")
-    span = int(high) - int(low) + 1
-    return int(low) + (choice_index(params, instance_seed=int(instance_seed), namespace=str(namespace)) % span)
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    selected, _probabilities = integer_range_choice(rng, int(low), int(high))
+    return int(selected)
 
 
 def balanced_choice(
@@ -66,10 +56,12 @@ def balanced_choice(
 ) -> Any:
     """Select one value from a non-empty finite support."""
 
+    del params
     support = list(values)
     if not support:
         raise ValueError(f"empty support for {namespace}")
-    return support[choice_index(params, instance_seed=int(instance_seed), namespace=str(namespace)) % len(support)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    return uniform_choice(rng, tuple(support))
 
 
 def sample_entity_labels(count: int, *, instance_seed: int, namespace: str) -> tuple[str, ...]:
@@ -150,7 +142,6 @@ __all__ = [
     "TIME_POOL",
     "balanced_choice",
     "balanced_int",
-    "choice_index",
     "configured_count",
     "sample_entity_labels",
     "sample_panel_labels",

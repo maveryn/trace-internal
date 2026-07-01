@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from .....core.seed import spawn_rng
 from .....core.visual.background import make_background_canvas
 from ....shared.text_legibility import draw_text_traced
 from ....shared.text_rendering import load_font
@@ -50,8 +51,12 @@ def bbox_is_readable(bbox: Sequence[float], *, width: int, height: int, min_side
 
 
 def camera_yaw_bands_for_instance(instance_seed: int) -> Tuple[Tuple[float, float], Tuple[float, float]]:
-    first_index = abs(int(instance_seed)) % len(CAMERA_YAW_BANDS_DEGREES)
-    second_index = (int(first_index) + 3) % len(CAMERA_YAW_BANDS_DEGREES)
+    rng = spawn_rng(int(instance_seed), "three_d.object_scene.multiview_layout.camera_yaw_pair")
+    band_count = len(CAMERA_YAW_BANDS_DEGREES)
+    first_index = int(rng.randrange(band_count))
+    second_index = int(first_index) + max(1, band_count // 2)
+    if second_index >= band_count:
+        second_index -= band_count
     return (
         tuple(float(value) for value in CAMERA_YAW_BANDS_DEGREES[first_index]),
         tuple(float(value) for value in CAMERA_YAW_BANDS_DEGREES[second_index]),

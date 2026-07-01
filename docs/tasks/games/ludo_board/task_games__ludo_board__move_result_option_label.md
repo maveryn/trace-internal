@@ -4,15 +4,14 @@ Public taxonomy: `games -> ludo_board -> task_games__ludo_board__move_result_opt
 
 ## Program Contract
 
-Program code: `select(destination_label where destination_cell == advance(token_position, shown_roll_sequence)); scene=ludo_board; scope=move_result_option_label`.
+Program: `select(destination_label where destination_cell == advance(token_position, shown_roll_sequence)); scene=ludo_board; scope=move_result_option_label`
 
-The scene renders a Ludo-style cross board with one visible token for each player color, twelve two-cell arrows showing clockwise flow, a visible dice sequence of one or two rolls, and destination letters on board cells. The task asks which destination letter the named token reaches after applying the shown sequence.
-
-Answer schema: `option_letter`.
-
-Annotation schema: `point_map` with `moving_token` and `destination_cell`.
-
-Supported `query_id`: `single`.
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `move_result_option_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `destination_label`, `where`, `destination_cell`, `advance`, `token_position`, `shown_roll_sequence`, `ludo_board`, `move_result_option_label`.
+Operation: evaluate `select` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generator
 

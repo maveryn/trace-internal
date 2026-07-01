@@ -140,7 +140,7 @@
     "json_example": "{\"annotation\":[[180,220],[310,220],[430,300]],\"answer\":3}",
     "json_example_answer_only": "{\"answer\":3}",
     "annotation_hint_shortest_path_length": "set \"annotation\" to an ordered array of [x,y] pixel points at junction centers along the unique shortest open route from {source_label} to {goal_label}, including both endpoints",
-    "annotation_hint_bridge_count": "set \"annotation\" to a list of segments. Each segment is [[x1, y1], [x2, y2]], using the endpoint junction centers of one open pipe whose removal disconnects part of the open network; use [] when the answer is zero",
+    "annotation_hint_bridge_count": "set \"annotation\" to a list of segments. Each segment is [[x0, y0], [x1, y1]], where each endpoint is an [x, y] pixel point at a junction center of one open pipe whose removal disconnects part of the open network; use [] when the answer is zero",
     "annotation_hint_exact_distance_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all junctions whose shortest open-pipe distance from {query_label} is exactly {query_distance} segments",
     "annotation_hint_reachable_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all junctions reachable from {query_label} through open pipes, including {query_label} itself"
   }

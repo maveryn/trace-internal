@@ -15,7 +15,15 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Program Contract
-`count(filter(marks, lower_bound <= value(mark) <= upper_bound)); output=integer_count; annotation=point_set(matching_marks); scene=single_series; scope=interval_value_count`
+
+Program: `count(filter(marks, lower_bound <= value(mark) <= upper_bound)); output=integer_count; annotation=point_set(matching_marks); scene=single_series; scope=interval_value_count`
+
+Candidate set: the visible marks in the ordered single-series chart inside the `interval_value_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_count` value bound by `integer_count`.
+Annotation witnesses: `point_set` witnesses bound by `point_set(matching_marks)`. Annotation marks every visible mark whose value falls inside the inclusive interval. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
+Query ids: `single`.
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.

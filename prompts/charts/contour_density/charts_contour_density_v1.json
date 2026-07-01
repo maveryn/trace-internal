@@ -22,13 +22,6 @@
       ]
     },
     "query": {
-      "nearest_region_option_label": [
-        "Which option region is closest to the reference point labeled \"R\"?",
-        "Using the displayed option letters, choose the region nearest to the reference point labeled \"R\".",
-        "Find the option-labeled density region closest to the reference point labeled \"R\".",
-        "Which labeled option region lies nearest to the point marked \"R\"?",
-        "Compare the option regions by distance to the point marked \"R\". Which option is closest?"
-      ],
       "highest_density_region_label": [
         "Which region has the {density_extremum_phrase} density?",
         "Find the labeled density region with the {density_extremum_phrase} peak intensity.",
@@ -132,58 +125,52 @@
     }
   },
   "static_slots_by_key": {
-    "query:nearest_region_option_label": {
-      "answer_hint": "set \"answer\" to the selected option letter as a capital letter",
-      "annotation_hint": "set \"annotation\" to an object mapping \"reference_point\" to the [x0,y0,x1,y1] box around the point marked \"R\" and \"selected_option_region\" to the [x0,y0,x1,y1] box around the selected option region",
-      "json_example": "{\"annotation\":{\"reference_point\":[345,285,361,301],\"selected_option_region\":[300,240,420,350]},\"answer\":\"C\"}",
-      "json_example_answer_only": "{\"answer\":\"C\"}"
-    },
     "query:highest_density_region_label": {
       "answer_hint": "set \"answer\" to the exact visible region label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_region\" to the [x0,y0,x1,y1] box around the selected density region",
-      "json_example": "{\"annotation\":{\"answer_region\":[510,220,650,355]},\"answer\":\"Delta\"}",
+      "annotation_hint": "set \"annotation\" to one [x0,y0,x1,y1] pixel box around the selected density region",
+      "json_example": "{\"annotation\":[510,220,650,355],\"answer\":\"Delta\"}",
       "json_example_answer_only": "{\"answer\":\"Delta\"}"
     },
     "query:lowest_density_region_label": {
       "answer_hint": "set \"answer\" to the exact visible region label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_region\" to the [x0,y0,x1,y1] box around the selected density region",
-      "json_example": "{\"annotation\":{\"answer_region\":[510,220,650,355]},\"answer\":\"Delta\"}",
+      "annotation_hint": "set \"annotation\" to one [x0,y0,x1,y1] pixel box around the selected density region",
+      "json_example": "{\"annotation\":[510,220,650,355],\"answer\":\"Delta\"}",
       "json_example_answer_only": "{\"answer\":\"Delta\"}"
     },
     "query:point_nearest_region_label": {
       "answer_hint": "set \"answer\" to the exact visible region label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing the [x0,y0,x1,y1] box around the selected density region",
-      "json_example": "{\"annotation\":[[620,330,760,470]],\"answer\":\"Lumen\"}",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] box around the selected density region",
+      "json_example": "{\"annotation\":[620,330,760,470],\"answer\":\"Lumen\"}",
       "json_example_answer_only": "{\"answer\":\"Lumen\"}"
     },
     "query:point_farthest_region_label": {
       "answer_hint": "set \"answer\" to the exact visible region label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing the [x0,y0,x1,y1] box around the selected density region",
-      "json_example": "{\"annotation\":[[620,330,760,470]],\"answer\":\"Lumen\"}",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] box around the selected density region",
+      "json_example": "{\"annotation\":[620,330,760,470],\"answer\":\"Lumen\"}",
       "json_example_answer_only": "{\"answer\":\"Lumen\"}"
     },
     "query:vertical_line_nearest_region_label": {
       "answer_hint": "set \"answer\" to the exact visible region label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing the [x0,y0,x1,y1] box around the selected density region",
-      "json_example": "{\"annotation\":[[620,330,760,470]],\"answer\":\"Lumen\"}",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] box around the selected density region",
+      "json_example": "{\"annotation\":[620,330,760,470],\"answer\":\"Lumen\"}",
       "json_example_answer_only": "{\"answer\":\"Lumen\"}"
     },
     "query:vertical_line_farthest_region_label": {
       "answer_hint": "set \"answer\" to the exact visible region label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing the [x0,y0,x1,y1] box around the selected density region",
-      "json_example": "{\"annotation\":[[620,330,760,470]],\"answer\":\"Lumen\"}",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] box around the selected density region",
+      "json_example": "{\"annotation\":[620,330,760,470],\"answer\":\"Lumen\"}",
       "json_example_answer_only": "{\"answer\":\"Lumen\"}"
     },
     "query:horizontal_line_nearest_region_label": {
       "answer_hint": "set \"answer\" to the exact visible region label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing the [x0,y0,x1,y1] box around the selected density region",
-      "json_example": "{\"annotation\":[[620,330,760,470]],\"answer\":\"Lumen\"}",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] box around the selected density region",
+      "json_example": "{\"annotation\":[620,330,760,470],\"answer\":\"Lumen\"}",
       "json_example_answer_only": "{\"answer\":\"Lumen\"}"
     },
     "query:horizontal_line_farthest_region_label": {
       "answer_hint": "set \"answer\" to the exact visible region label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing the [x0,y0,x1,y1] box around the selected density region",
-      "json_example": "{\"annotation\":[[620,330,760,470]],\"answer\":\"Lumen\"}",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] box around the selected density region",
+      "json_example": "{\"annotation\":[620,330,760,470],\"answer\":\"Lumen\"}",
       "json_example_answer_only": "{\"answer\":\"Lumen\"}"
     },
     "query:density_at_least_threshold_region_count": {
@@ -200,14 +187,14 @@
     },
     "query:widest_spread_region_label": {
       "answer_hint": "set \"answer\" to the exact visible region label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_region\" to the [x0,y0,x1,y1] box around the selected footprint region",
-      "json_example": "{\"annotation\":{\"answer_region\":[510,220,650,355]},\"answer\":\"Delta\"}",
+      "annotation_hint": "set \"annotation\" to one [x0,y0,x1,y1] pixel box around the selected footprint region",
+      "json_example": "{\"annotation\":[510,220,650,355],\"answer\":\"Delta\"}",
       "json_example_answer_only": "{\"answer\":\"Delta\"}"
     },
     "query:narrowest_spread_region_label": {
       "answer_hint": "set \"answer\" to the exact visible region label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_region\" to the [x0,y0,x1,y1] box around the selected footprint region",
-      "json_example": "{\"annotation\":{\"answer_region\":[510,220,650,355]},\"answer\":\"Delta\"}",
+      "annotation_hint": "set \"annotation\" to one [x0,y0,x1,y1] pixel box around the selected footprint region",
+      "json_example": "{\"annotation\":[510,220,650,355],\"answer\":\"Delta\"}",
       "json_example_answer_only": "{\"answer\":\"Delta\"}"
     }
   },
@@ -220,7 +207,6 @@
     "spread_extremum_phrase": {"type": "string"}
   },
   "required_slots_by_key": {
-    "query:nearest_region_option_label": [],
     "query:highest_density_region_label": ["density_extremum_phrase"],
     "query:lowest_density_region_label": ["density_extremum_phrase"],
     "query:point_nearest_region_label": ["distance_extremum_phrase", "reference_kind_phrase"],

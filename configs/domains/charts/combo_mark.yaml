@@ -13,6 +13,7 @@ generation:
       area_line_overlay: 1.0
 rendering:
   shared:
+    chart_context_profile: report_paragraph
     canvas_width: 1080
     canvas_height: 660
     plot_left_px: 86

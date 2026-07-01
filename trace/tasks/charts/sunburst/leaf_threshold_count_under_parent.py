@@ -8,7 +8,7 @@ from trace.tasks.charts.sunburst.shared.state import DOMAIN
 from trace.tasks.registry import register_task
 
 
-PROGRAM_CODE = "count(leaf under parent where compare(value(leaf), threshold, direction)); output=integer_count; annotation=bbox_set(matching_leaf_value_labels); scene=sunburst; scope=leaf_threshold_count_under_parent"
+PROGRAM_CODE = "count(leaf under parent where compare(value(leaf), threshold, direction)); output=integer_count; annotation=point_set(matching_leaf_value_labels); scene=sunburst; scope=leaf_threshold_count_under_parent"
 
 
 def _comparator(selected_query_id):

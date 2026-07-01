@@ -6,9 +6,9 @@
     "scene": {
       "arithmetic_panel": [
         "The image shows {object_description}.",
-        "This arithmetic puzzle shows {object_description}.",
-        "The puzzle diagram shows {object_description}.",
         "The figure shows {object_description}.",
+        "The panel shows {object_description}.",
+        "This display shows {object_description}.",
         "The visual shows {object_description}."
       ]
     },
@@ -23,101 +23,74 @@
     },
     "query": {
       "equal_sum_line_constraint_value": [
-        "Each side uses the same total shown in the note. What number replaces the question mark?",
-        "Use the equal-side-sum rule in the note. What integer belongs in the marked node?",
-        "Every side has the displayed total. Find the missing number in the question-mark node.",
+        "Complete the marked node so the side diagram is consistent.",
+        "What integer belongs in the question-mark node?",
         "Read the numbered side diagram and solve the marked missing value.",
-        "Use the side-total constraint to determine the integer in the marked node."
-      ],
-      "consecutive_window_sum_value": [
-        "Every adjacent window uses the total shown in the note. What number replaces the question mark?",
-        "Use the repeated adjacent-window sum rule to find the marked missing value.",
-        "Read the sequence and the displayed window-total rule. What integer belongs in the question-mark cell?",
-        "Solve the missing cell using the same total for each adjacent window.",
-        "Use the visible numbers and the window-sum note to determine the hidden number."
+        "Find the number that completes the marked node.",
+        "What number replaces the question mark in the side diagram?"
       ],
       "hidden_addition_digit_value": [
-        "What digit replaces the question mark so the addition is correct?",
-        "Use the vertical addition to find the missing digit.",
-        "Fill the marked digit cell so the displayed addition balances.",
-        "Which digit belongs in the question-mark cell of the addition?",
-        "Solve the addition and report the hidden digit."
+        "What digit replaces the question mark in the vertical calculation?",
+        "Complete the marked digit so the displayed calculation is correct.",
+        "Which digit belongs in the question-mark cell?",
+        "Solve the vertical calculation and report the hidden digit.",
+        "Find the digit that completes the marked cell."
       ],
       "hidden_subtraction_digit_value": [
-        "What digit replaces the question mark so the subtraction is correct?",
-        "Use the vertical subtraction to find the missing digit.",
-        "Fill the marked digit cell so the displayed subtraction balances.",
-        "Which digit belongs in the question-mark cell of the subtraction?",
-        "Solve the subtraction and report the hidden digit."
+        "What digit replaces the question mark in the vertical calculation?",
+        "Complete the marked digit so the displayed calculation is correct.",
+        "Which digit belongs in the question-mark cell?",
+        "Solve the vertical calculation and report the hidden digit.",
+        "Find the digit that completes the marked cell."
       ],
       "row_column_total_missing_value": [
-        "Use the outside row and column totals to find the question-mark cell.",
+        "Complete the marked grid cell so the edge clues are satisfied.",
         "What number replaces the question mark in the grid?",
-        "Use the outside numbers to find the missing grid value.",
-        "Solve the marked grid cell from the displayed row and column totals.",
+        "Use the visible grid clues to find the missing value.",
+        "Solve the marked grid cell from the displayed clues.",
         "What integer belongs in the question-mark grid cell?"
       ],
       "operation_table_cell_value": [
-        "Use the row and column headers to find the question-mark table cell.",
+        "Use the visible headers and corner symbol to complete the marked table cell.",
         "What number replaces the question mark in the operation table?",
         "Use the visible headers and filled cells to find the missing value.",
-        "Find the marked table cell from the repeated operation pattern.",
+        "Find the marked table cell from the repeated table pattern.",
         "What integer belongs in the question-mark operation-table cell?"
       ],
       "addition_wall_missing_value": [
-        "Each brick is the sum of the two bricks below it. What number replaces the question mark?",
-        "Use the addition wall rule to find the missing brick value.",
+        "Complete the marked brick so the number wall is consistent.",
+        "Find the missing brick value from the visible number-wall pattern.",
         "Solve the marked brick from the number-wall pattern.",
         "What integer belongs in the question-mark brick of the number wall?",
-        "Find the hidden number in the addition wall."
-      ],
-      "difference_wall_missing_value": [
-        "Each brick is the absolute difference of the two bricks below it. What number replaces the question mark?",
-        "Use the difference wall rule to find the missing brick value.",
-        "Solve the marked brick from the number-wall pattern.",
-        "What integer belongs in the question-mark brick of the number wall?",
-        "Find the hidden number in the difference wall."
-      ],
-      "multiplication_pyramid_value": [
-        "Each brick is the product of the two bricks below it. What number replaces the question mark?",
-        "Use the multiplication pyramid rule to find the missing brick value.",
-        "Solve the marked brick from the pyramid pattern.",
-        "What integer belongs in the question-mark brick of the number pyramid?",
-        "Find the hidden number in the multiplication pyramid."
+        "Find the hidden number in the number wall."
       ]
     },
     "output": {
       "answer_only": [
-        "Answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-        "Answer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-        "Required answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-        "Final answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
-        "Format for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+        "Answer format: {answer_hint}\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: {answer_hint}\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: {answer_hint}\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: {answer_hint}\nExample JSON:\n{json_example_answer_only}",
+        "Use this answer format: {answer_hint}\nExample JSON:\n{json_example_answer_only}"
       ],
       "answer_and_annotation": [
-        "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-        "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
-        "Required annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
-        "Final answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
-        "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}"
+        "Annotation format: {annotation_hint}\nAnswer format: {answer_hint}\nExample JSON:\n{json_example}",
+        "Required annotation format: {annotation_hint}\nRequired answer format: {answer_hint}\nExample JSON:\n{json_example}",
+        "Format for the \"annotation\" field: {annotation_hint}\nFormat for the \"answer\" field: {answer_hint}\nExample JSON:\n{json_example}",
+        "Use this annotation format: {annotation_hint}\nUse this answer format: {answer_hint}\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}\nFinal answer format: {answer_hint}\nExample JSON:\n{json_example}"
       ]
     }
   },
   "static_slots_by_key": {
     "scene:arithmetic_panel": {
-      "object_description": "an arithmetic-constraint diagram with visible numbers, one question-mark target, and a short rule note"
+      "object_description": "a number puzzle diagram with one question-mark entry"
     },
     "query:equal_sum_line_constraint_value": {
       "answer_hint": "set \"answer\" to the integer that replaces the question mark",
       "annotation_hint": "set \"annotation\" to the pixel bounding box [x0, y0, x1, y1] around the marked question-mark node",
       "json_example": "{\"annotation\":[546,470,622,546],\"answer\":8}",
       "json_example_answer_only": "{\"answer\":8}"
-    },
-    "query:consecutive_window_sum_value": {
-      "answer_hint": "set \"answer\" to the integer that replaces the question mark",
-      "annotation_hint": "set \"annotation\" to the pixel bounding box [x0, y0, x1, y1] around the marked question-mark cell",
-      "json_example": "{\"annotation\":[498,408,582,480],\"answer\":6}",
-      "json_example_answer_only": "{\"answer\":6}"
     },
     "query:hidden_addition_digit_value": {
       "answer_hint": "set \"answer\" to the digit that replaces the question mark",
@@ -148,18 +121,6 @@
       "annotation_hint": "set \"annotation\" to the pixel bounding box [x0, y0, x1, y1] around the marked question-mark brick",
       "json_example": "{\"annotation\":[498,416,600,488],\"answer\":9}",
       "json_example_answer_only": "{\"answer\":9}"
-    },
-    "query:difference_wall_missing_value": {
-      "answer_hint": "set \"answer\" to the integer that replaces the question mark",
-      "annotation_hint": "set \"annotation\" to the pixel bounding box [x0, y0, x1, y1] around the marked question-mark brick",
-      "json_example": "{\"annotation\":[498,416,600,488],\"answer\":4}",
-      "json_example_answer_only": "{\"answer\":4}"
-    },
-    "query:multiplication_pyramid_value": {
-      "answer_hint": "set \"answer\" to the integer that replaces the question mark",
-      "annotation_hint": "set \"annotation\" to the pixel bounding box [x0, y0, x1, y1] around the marked question-mark brick",
-      "json_example": "{\"annotation\":[434,416,536,488],\"answer\":12}",
-      "json_example_answer_only": "{\"answer\":12}"
     }
   },
   "dynamic_slots": {},

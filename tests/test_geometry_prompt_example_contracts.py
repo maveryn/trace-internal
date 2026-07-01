@@ -26,19 +26,11 @@ _AFFECTED_KEYED_POINT_TASKS = (
     "task_geometry__regular_polygon_decomposition__wedge_area_from_side_apothem_value",
     "task_geometry__triangle_relations__altitude_to_hypotenuse_value",
     "task_geometry__triangle_relations__leg_projection_length_value",
-    "task_geometry__triangle_relations__parallel_segment_expression_length_value",
-    "task_geometry__triangle_relations__parallel_segment_variable_value",
     "task_geometry__similar_figure_measure_transfer__area_scale_side_length_value",
     "task_geometry__similar_figure_measure_transfer__corresponding_side_value",
-    "task_geometry__similar_figure_measure_transfer__scale_factor_value",
-    "task_geometry__similar_figure_measure_transfer__side_length_from_expression_value",
     "task_geometry__similar_figure_measure_transfer__variable_value",
     "task_geometry__special_quadrilateral__algebraic_angle_value",
-    "task_geometry__special_quadrilateral__diagonal_angle_value",
     "task_geometry__special_quadrilateral__segment_length_value",
-    "task_geometry__triangle_congruence_correspondence__algebraic_side_value",
-    "task_geometry__triangle_congruence_correspondence__corresponding_angle_value",
-    "task_geometry__triangle_congruence_correspondence__corresponding_side_value",
 )
 
 _AFFECTED_SEGMENT_SET_TASKS = ()
@@ -105,16 +97,7 @@ def test_geometry_segment_set_prompt_examples_are_valid(task_id: str) -> None:
     assert not offenders, f"{task_id} has invalid segment-set prompt examples: {sorted(offenders)}"
 
 
-def test_survey_traverse_bearing_prompt_uses_query_specific_annotation_keys() -> None:
-    forward = collect_query_id_samples(
-        task_id="task_geometry__survey_traverse__forward_bearing_from_back_bearing_value",
-        target_count_per_query_id=1,
-        seed=int(hash64(20260609, "geometry.prompt_examples.survey_traverse_forward_bearing", 0)),
-        max_attempts_per_instance=200,
-        max_total_samples_per_task=800,
-        workers=1,
-        collector=_prompt_record,
-    )
+def test_survey_traverse_bearing_prompt_uses_visible_region_annotation_keys() -> None:
     outgoing = collect_query_id_samples(
         task_id="task_geometry__survey_traverse__outgoing_bearing_from_turn_value",
         target_count_per_query_id=1,
@@ -125,12 +108,11 @@ def test_survey_traverse_bearing_prompt_uses_query_specific_annotation_keys() ->
         collector=_prompt_record,
     )
 
-    assert forward["incomplete_query_ids"] == []
     assert outgoing["incomplete_query_ids"] == []
-    forward_prompt = str(forward["samples_by_query_id"]["single"][0]["prompt"])
     outgoing_prompt = str(outgoing["samples_by_query_id"]["single"][0]["prompt"])
-    assert "turn_vertex" not in forward_prompt
-    assert "turn_vertex" in outgoing_prompt
+    assert "turn_diagram" in outgoing_prompt
+    assert "field_note_region" in outgoing_prompt
+    assert "turn_vertex" not in outgoing_prompt
 
 
 def test_rectangular_solid_open_box_prompt_uses_query_specific_answer_hint() -> None:

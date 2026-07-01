@@ -8,11 +8,15 @@
 5. Annotation schema: `point_set`
 
 ## Program Contract
-`count(intersection(coins, shown_path_cells)); scene=lane_runner; scope=path_coin_count`
 
-1. The scene shows a two-lane runner track with row cells, a start marker, a finish band, visible coins, and one shown path.
-2. The shown path advances one row per step and may stay in the same lane or switch diagonally to the other lane.
-3. The task asks how many coins are collected by the shown path.
+Program: `count(intersection(coins, shown_path_cells)); scene=lane_runner; scope=path_coin_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `path_coin_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `intersection`, `coins`, `shown_path_cells`, `lane_runner`, `path_coin_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. `answer_gt.type`: `integer`.

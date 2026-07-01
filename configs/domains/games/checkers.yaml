@@ -31,6 +31,14 @@ generation:
     task_games__checkers__piece_state_count:
       balanced_target_answer_sampling: true
       piece_state_count_support: [0, 1, 2, 3, 4, 5, 6]
+      target_player_weights:
+        red: 1.0
+        black: 1.0
+      piece_state_kind_weights:
+        all: 1.0
+        edge: 1.0
+      balanced_target_player_sampling: true
+      balanced_piece_state_kind_sampling: true
 rendering:
   shared:
     canvas_width: 980

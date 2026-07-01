@@ -1,4 +1,4 @@
-"""Solve one hidden brick in a number wall or multiplication pyramid."""
+"""Solve one hidden brick in an addition number wall."""
 
 from __future__ import annotations
 from dataclasses import dataclass
@@ -15,13 +15,7 @@ from .shared.state import SCENE_ID
 
 TASK_ID = "task_puzzles__arithmetic_panel__number_wall_value"
 ADDITION_WALL_QUERY = "addition_wall_missing_value"
-DIFFERENCE_WALL_QUERY = "difference_wall_missing_value"
-MULTIPLICATION_PYRAMID_QUERY = "multiplication_pyramid_value"
-SUPPORTED_QUERY_IDS = (
-    ADDITION_WALL_QUERY,
-    DIFFERENCE_WALL_QUERY,
-    MULTIPLICATION_PYRAMID_QUERY,
-)
+SUPPORTED_QUERY_IDS = (ADDITION_WALL_QUERY,)
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = (
     load_scene_generation_rendering_prompt_defaults(
         "puzzles", SCENE_ID, task_id=TASK_ID
@@ -51,20 +45,6 @@ _BRANCH_SPECS = {
         support_key="wall_answer",
         fallback_min=2,
         fallback_max=24,
-    ),
-    DIFFERENCE_WALL_QUERY: NumberWallBranchSpec(
-        query_id=DIFFERENCE_WALL_QUERY,
-        wall_kind="difference",
-        support_key="difference_answer",
-        fallback_min=1,
-        fallback_max=9,
-    ),
-    MULTIPLICATION_PYRAMID_QUERY: NumberWallBranchSpec(
-        query_id=MULTIPLICATION_PYRAMID_QUERY,
-        wall_kind="multiplication",
-        support_key="pyramid_answer",
-        fallback_min=1,
-        fallback_max=6,
     ),
 }
 
@@ -102,7 +82,7 @@ def _build_number_wall_objective(
 
 @register_task
 class PuzzlesArithmeticNumberWallValueTask:
-    """Solve one hidden brick in a number wall or multiplication pyramid."""
+    """Solve one hidden brick in an addition number wall."""
 
     task_id = TASK_ID
     domain = "puzzles"

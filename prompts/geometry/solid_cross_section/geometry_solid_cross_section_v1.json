@@ -65,9 +65,6 @@
     ]
   },
   "static_slots_by_key": {
-    "scene:solid_cross_section_scene": {
-      "object_description": "a cone or square pyramid cut by a plane parallel to its base, with the cross-section marked and the needed dimensions labeled"
-    },
     "global": {
       "json_output_contract": "Return a JSON object with exactly two keys: \"annotation\" and \"answer\".",
       "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\".",
@@ -76,6 +73,9 @@
     }
   },
   "dynamic_slots": {
+    "object_description": {
+      "type": "string"
+    },
     "annotation_hint": {
       "type": "string"
     },

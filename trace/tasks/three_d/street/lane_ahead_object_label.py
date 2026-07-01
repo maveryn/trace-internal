@@ -19,10 +19,6 @@ from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...shared.config_defaults import required_group_defaults, split_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import (
-    resolve_selection_index,
-    uniform_probability_map,
-)
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -36,6 +32,7 @@ from ..shared.task_support import (
     normalize_unit as _normalize_unit,
     resolve_axis_variant as _resolve_axis_variant,
     resolve_count as _resolve_count,
+    resolve_support_choice_for_namespace,
 )
 from ..shared.object_scene import (
     POINT_LABELS,
@@ -97,23 +94,19 @@ def _resolve_camera_yaw_band(
         selected_index = int(explicit)
         if selected_index not in set(support):
             raise ValueError(f"unsupported camera_yaw_band_index: {selected_index}")
+        probabilities = {str(value): (1.0 if int(value) == int(selected_index) else 0.0) for value in support}
     elif locked is not None:
         selected_index = int(locked)
         if selected_index not in set(support):
             raise ValueError(f"unsupported locked camera_yaw_band_index: {selected_index}")
+        probabilities = {str(value): float(1.0 / len(support)) for value in support}
     else:
-        selection_index = resolve_selection_index(
+        selected_index, probabilities = resolve_support_choice_for_namespace(
             params=params,
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}.camera_yaw_band_index",
+            support_values=support,
         )
-        selected_index = int(support[abs(int(selection_index)) % len(support)])
-    probabilities = dict(
-        uniform_probability_map(
-            support,
-            selected=int(selected_index) if explicit is not None else None,
-        )
-    )
     return (
         tuple(float(value) for value in STREET_CAMERA_YAW_BANDS_DEGREES[int(selected_index)]),
         {str(key): float(value) for key, value in sorted(probabilities.items(), key=lambda item: int(item[0]))},
@@ -543,17 +536,11 @@ def _build_lane_ahead_dataset(
         answer_object_id = str(satisfying[0][0]["object_id"])
         locked_answer_label_index = params.get("_locked_answer_label_index")
         if locked_answer_label_index is None:
-            answer_label_index = abs(
-                int(
-                    resolve_selection_index(
-                        params=params,
-                        instance_seed=int(instance_seed),
-                        namespace=f"{TASK_ID}.answer_label",
-                    )
-                )
-            ) % int(candidate_count)
+            answer_label_index = int(spawn_rng(int(instance_seed), f"{TASK_ID}.answer_label").randrange(int(candidate_count)))
         else:
-            answer_label_index = abs(int(locked_answer_label_index)) % int(candidate_count)
+            answer_label_index = abs(int(locked_answer_label_index))
+            while answer_label_index >= int(candidate_count):
+                answer_label_index -= int(candidate_count)
         answer_label = str(POINT_LABELS[int(answer_label_index)])
         remaining_labels = [
             str(label)
@@ -812,15 +799,7 @@ def _build_retry_locked_params(instance_seed: int, params: Mapping[str, Any]) ->
         params=params,
         instance_seed=int(instance_seed),
     )
-    answer_label_index = abs(
-        int(
-            resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=f"{TASK_ID}.answer_label",
-            )
-        )
-    ) % int(candidate_count)
+    answer_label_index = int(spawn_rng(int(instance_seed), f"{TASK_ID}.answer_label").randrange(int(candidate_count)))
     locked_params.update(
         {
             "_locked_query_id": str(query_id),

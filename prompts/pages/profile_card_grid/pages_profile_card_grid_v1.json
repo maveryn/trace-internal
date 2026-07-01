@@ -1,0 +1,182 @@
+{
+  "bundle_id": "pages_profile_card_grid_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "profile_card_grid": [
+        "The image shows {object_description}.",
+        "The page shows {object_description}.",
+        "This page shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The visual shows {object_description}."
+      ]
+    },
+    "task": {
+      "profile_attribute_lookup_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "profile_for_field_value": [
+        "Which profile has {field_label} set to \"{field_value}\"?",
+        "Find the profile whose {field_label} field is \"{field_value}\". What is the profile name?",
+        "What profile name is shown on the card where {field_label} is \"{field_value}\"?",
+        "Look for the card with {field_label}: \"{field_value}\". Which profile is it?",
+        "Which visible profile card matches {field_label}: \"{field_value}\"?"
+      ],
+      "value_for_named_profile_field": [
+        "What is the {field_label} value for profile \"{profile_name}\"?",
+        "On profile \"{profile_name}\", what value is shown for {field_label}?",
+        "Read the {field_label} field on the card for \"{profile_name}\".",
+        "Which visible value is listed as {field_label} for \"{profile_name}\"?",
+        "For the profile named \"{profile_name}\", what is the {field_label} field value?"
+      ],
+      "highest_field_profile_label": [
+        "Which profile has the highest {field_label} value?",
+        "Find the card with the largest {field_label} value. What profile name is shown?",
+        "What profile name corresponds to the maximum {field_label} value?",
+        "Among all visible cards, which profile has the greatest {field_label}?",
+        "Which visible profile ranks highest by {field_label}?"
+      ],
+      "lowest_field_profile_label": [
+        "Which profile has the lowest {field_label} value?",
+        "Find the card with the smallest {field_label} value. What profile name is shown?",
+        "What profile name corresponds to the minimum {field_label} value?",
+        "Among all visible cards, which profile has the least {field_label}?",
+        "Which visible profile ranks lowest by {field_label}?"
+      ],
+      "nth_highest_field_profile_label": [
+        "Which profile has the {rank_ordinal} highest {field_label} value?",
+        "Sort the profiles by {field_label} from highest to lowest. Which profile is {rank_ordinal}?",
+        "After ranking by descending {field_label}, what profile name is in {rank_ordinal} place?",
+        "Which visible profile is {rank_ordinal} when ordered by highest {field_label}?",
+        "Find the {rank_ordinal} largest {field_label} value. What profile name is on that card?"
+      ],
+      "nth_lowest_field_profile_label": [
+        "Which profile has the {rank_ordinal} lowest {field_label} value?",
+        "Sort the profiles by {field_label} from lowest to highest. Which profile is {rank_ordinal}?",
+        "After ranking by ascending {field_label}, what profile name is in {rank_ordinal} place?",
+        "Which visible profile is {rank_ordinal} when ordered by lowest {field_label}?",
+        "Find the {rank_ordinal} smallest {field_label} value. What profile name is on that card?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "global": {
+      "json_output_contract": "Return a JSON object with \"annotation\" and \"answer\".",
+      "json_output_contract_answer_only": "Return a JSON object with \"answer\" only."
+    },
+    "scene:profile_card_grid": {
+      "object_description": "a grid of profile cards, each with a visible profile name and labeled fields"
+    },
+    "query:profile_for_field_value": {
+      "answer_hint": "set \"answer\" to the exact visible profile name",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] box around the matching profile card in image pixel coordinates",
+      "json_example": "{\"annotation\":[72,142,324,332],\"answer\":\"Aster\"}",
+      "json_example_answer_only": "{\"answer\":\"Aster\"}"
+    },
+    "query:value_for_named_profile_field": {
+      "answer_hint": "set \"answer\" to the exact visible field value",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] box around the target field value in image pixel coordinates",
+      "json_example": "{\"annotation\":[172,212,246,230],\"answer\":\"North Pier\"}",
+      "json_example_answer_only": "{\"answer\":\"North Pier\"}"
+    },
+    "query:highest_field_profile_label": {
+      "answer_hint": "set \"answer\" to the exact visible profile name",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] box around the selected profile card in image pixel coordinates",
+      "json_example": "{\"annotation\":[72,142,324,332],\"answer\":\"Aster\"}",
+      "json_example_answer_only": "{\"answer\":\"Aster\"}"
+    },
+    "query:lowest_field_profile_label": {
+      "answer_hint": "set \"answer\" to the exact visible profile name",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] box around the selected profile card in image pixel coordinates",
+      "json_example": "{\"annotation\":[72,142,324,332],\"answer\":\"Aster\"}",
+      "json_example_answer_only": "{\"answer\":\"Aster\"}"
+    },
+    "query:nth_highest_field_profile_label": {
+      "answer_hint": "set \"answer\" to the exact visible profile name",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] box around the selected profile card in image pixel coordinates",
+      "json_example": "{\"annotation\":[72,142,324,332],\"answer\":\"Aster\"}",
+      "json_example_answer_only": "{\"answer\":\"Aster\"}"
+    },
+    "query:nth_lowest_field_profile_label": {
+      "answer_hint": "set \"answer\" to the exact visible profile name",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] box around the selected profile card in image pixel coordinates",
+      "json_example": "{\"annotation\":[72,142,324,332],\"answer\":\"Aster\"}",
+      "json_example_answer_only": "{\"answer\":\"Aster\"}"
+    }
+  },
+  "dynamic_slots": {
+    "profile_name": {
+      "type": "string"
+    },
+    "field_label": {
+      "type": "string"
+    },
+    "field_value": {
+      "type": "string"
+    },
+    "rank_ordinal": {
+      "type": "string"
+    }
+  },
+  "required_slots_by_key": {
+    "scene:profile_card_grid": [
+      "object_description"
+    ],
+    "query:profile_for_field_value": [
+      "field_label",
+      "field_value"
+    ],
+    "query:value_for_named_profile_field": [
+      "profile_name",
+      "field_label"
+    ],
+    "query:highest_field_profile_label": [
+      "field_label"
+    ],
+    "query:lowest_field_profile_label": [
+      "field_label"
+    ],
+    "query:nth_highest_field_profile_label": [
+      "field_label",
+      "rank_ordinal"
+    ],
+    "query:nth_lowest_field_profile_label": [
+      "field_label",
+      "rank_ordinal"
+    ],
+    "output:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "output:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  }
+}

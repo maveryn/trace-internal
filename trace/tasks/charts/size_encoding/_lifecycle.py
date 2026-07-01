@@ -47,6 +47,8 @@ class SizeEncodingObjectivePlan:
     question_format: str
     program_code: str
     reasoning_load: float
+    answer_type: str = "string"
+    answer_hint: str = 'set "answer" to the exact visible item, category, or panel label as a string'
 
 
 AnnotationBinder = Callable[[SizeEncodingObjectivePlan, Any], tuple[str, Any, dict[str, Any]]]
@@ -65,6 +67,8 @@ def package_size_encoding_plan(
     question_format: str,
     program_code: str,
     reasoning_load: float,
+    answer_type: str = "string",
+    answer_hint: str = 'set "answer" to the exact visible item, category, or panel label as a string',
 ) -> SizeEncodingObjectivePlan:
     """Bind task-owned semantic fields to the neutral size-encoding lifecycle."""
 
@@ -79,6 +83,8 @@ def package_size_encoding_plan(
         question_format=str(question_format),
         program_code=str(program_code),
         reasoning_load=float(reasoning_load),
+        answer_type=str(answer_type),
+        answer_hint=str(answer_hint),
     )
 
 
@@ -93,9 +99,9 @@ def _prompt_slots(plan: SizeEncodingObjectivePlan) -> dict[str, Any]:
         "json_output_contract": 'Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.',
         "json_output_contract_answer_only": 'Use a valid JSON object with key "answer" for the final answer.',
         "annotation_hint": str(ANNOTATION_HINT_BY_KIND[str(plan.annotation_kind)]),
-        "answer_hint": 'set "answer" to the exact visible item or category label as a string',
+        "answer_hint": str(plan.answer_hint),
         "json_example": str(JSON_EXAMPLE_BY_KIND[str(plan.annotation_kind)]),
-        "json_example_answer_only": '{"answer":"Aero"}',
+        "json_example_answer_only": '{"answer":2}' if str(plan.answer_type) == "integer" else '{"answer":"Aero"}',
     }
 
 
@@ -145,6 +151,7 @@ def run_size_encoding_lifecycle(
             annotation_type, annotation_value, projected_annotation = bind_annotation(plan, rendered)
             if not annotation_value:
                 raise RuntimeError("empty size-encoding annotation")
+            answer_value: Any = int(plan.selection.answer) if str(plan.answer_type) == "integer" else str(plan.selection.answer)
             prompt_artifacts = render_prompt_artifacts(
                 prompt_key=str(plan.prompt_key),
                 dynamic_slot_values=_prompt_slots(plan),
@@ -217,6 +224,7 @@ def run_size_encoding_lifecycle(
                     "scene_variant": str(plan.scene_variant),
                     "extremum_direction": str(plan.selection.direction),
                     "answer_label": str(plan.selection.answer),
+                    "answer_value": answer_value,
                     "answer_value_hidden": int(values_by_label[str(plan.selection.answer)])
                     if str(plan.selection.answer) in values_by_label
                     else None,
@@ -241,7 +249,7 @@ def run_size_encoding_lifecycle(
                 "witness_symbolic": {
                     "type": "object_set",
                     "labels": list(annotation_labels),
-                    "answer": str(plan.selection.answer),
+                    "answer": answer_value,
                 },
                 "projected_annotation": {
                     **dict(projected_annotation),
@@ -251,7 +259,7 @@ def run_size_encoding_lifecycle(
             return TaskOutput(
                 prompt=str(prompt_artifacts.prompt),
                 prompt_variants=dict(prompt_artifacts.prompt_variants),
-                answer_gt=TypedValue(type="string", value=str(plan.selection.answer)),
+                answer_gt=TypedValue(type=str(plan.answer_type), value=answer_value),
                 annotation_gt=TypedValue(type=str(annotation_type), value=annotation_value),
                 image=rendered.image,
                 image_id="img0",

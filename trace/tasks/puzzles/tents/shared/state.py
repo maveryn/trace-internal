@@ -41,6 +41,21 @@ class CandidateCellSpec:
 
 
 @dataclass(frozen=True)
+class LabeledTentSpec:
+    """One labeled visible tent used as an answer option."""
+
+    label: str
+    row: int
+    col: int
+    is_correct: bool
+    violation_type: str = ""
+
+    @property
+    def cell(self) -> Cell:
+        return (int(self.row), int(self.col))
+
+
+@dataclass(frozen=True)
 class TentsSample:
     """Semantic Tents board state sampled before rendering."""
 
@@ -48,8 +63,9 @@ class TentsSample:
     cols: int
     grid_rows_range: Tuple[int, int]
     grid_cols_range: Tuple[int, int]
-    marked_tree: Cell
+    marked_tree: Cell | None
     candidate_specs: Tuple[CandidateCellSpec, ...]
+    labeled_tent_specs: Tuple[LabeledTentSpec, ...]
     visible_tents: Tuple[Cell, ...]
     tree_cells: Tuple[Cell, ...]
     row_clues: Tuple[int, ...]
@@ -91,6 +107,7 @@ class RenderedTentsScene:
     scene_bbox_px: List[float]
     cell_bbox_map: Dict[str, List[float]]
     clue_bbox_map: Dict[str, List[float]]
+    option_panel_bbox_map: Dict[str, List[float]]
     item_bbox_map: Dict[str, List[float]]
 
 
@@ -98,6 +115,7 @@ __all__ = [
     "CandidateCellSpec",
     "Cell",
     "DOMAIN",
+    "LabeledTentSpec",
     "RenderedTentsScene",
     "SCENE_ID",
     "SUPPORTED_PALETTE_VARIANTS",

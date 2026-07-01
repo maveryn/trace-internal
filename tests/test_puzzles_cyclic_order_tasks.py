@@ -9,6 +9,12 @@ from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.puzzles.cyclic_order.cyclic_order_equivalent_label import (
     PuzzlesCyclicOrderEquivalentLabelTask,
 )
+from trace.tasks.puzzles.cyclic_order.insertion_position_label import (
+    PuzzlesCyclicOrderInsertionPositionLabelTask,
+)
+from trace.tasks.puzzles.cyclic_order.swap_repair_label import (
+    PuzzlesCyclicOrderSwapRepairLabelTask,
+)
 from trace.tasks.puzzles.cyclic_order.shared.rules import token_sequences_are_rotation_equivalent
 from trace.tasks.shared.color_distance import color_distance
 from tests.helpers import assert_counter_support_within, extract_prompt_json_example
@@ -75,8 +81,8 @@ def test_puzzles_cyclic_order_equivalent_label_contract_matches_valid_options() 
             assert str(render["scene_variant"]) == str(scene_variant)
             assert str(render["loop_path_style"]) == str(loop_path_style)
             assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
-            assert list(execution["option_count_range"]) == [6, 6]
-            assert int(execution["option_count"]) == 6
+            assert list(execution["option_count_range"]) == [4, 4]
+            assert int(execution["option_count"]) == 4
             assert 4 <= int(execution["bead_count"]) <= 5
             assert 4 <= int(execution["bead_count_range"][0]) <= int(execution["bead_count_range"][1]) <= 5
             assert str(execution["question_format"]) == "equivalent_loop_label"
@@ -138,6 +144,136 @@ def test_puzzles_cyclic_order_prompt_examples_match_selected_variants() -> None:
     assert answer_only == {"answer": "C"}
 
 
+def test_puzzles_cyclic_order_swap_repair_label_contract_is_unique() -> None:
+    task = PuzzlesCyclicOrderSwapRepairLabelTask()
+    out = task.generate(
+        27440,
+        params={
+            "query_id": SINGLE_QUERY_ID,
+            "token_render_style": "colored_shape_tokens",
+            "scene_variant": "necklace_board",
+            "loop_path_style": "ellipse",
+        },
+        max_attempts=10,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    render_map = trace["render_map"]
+    annotation_bbox = [float(value) for value in out.annotation_gt.value]
+
+    assert str(out.query_id) == SINGLE_QUERY_ID
+    assert str(out.scene_id) == "cyclic_order"
+    assert task.supported_query_ids == (SINGLE_QUERY_ID,)
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "bbox"
+    assert str(execution["query_id"]) == SINGLE_QUERY_ID
+    assert str(execution["internal_query_id"]) == "swap_repair"
+    assert str(execution["question_format"]) == "swap_repair_option"
+    assert str(execution["view_family"]) == "loop_swap_repair"
+    assert int(execution["option_count"]) == 4
+    assert 4 <= int(execution["bead_count"]) <= 5
+    assert int(execution["valid_option_count"]) == 1
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+    assert str(out.answer_gt.value) == str(execution["answer_option_label"])
+    assert trace["projected_annotation"]["bbox"] == annotation_bbox
+
+    expected_bbox = [
+        float(value)
+        for value in render_map["option_choice_bboxes_px"][str(execution["answer_option_choice_id"])]
+    ]
+    assert annotation_bbox == expected_bbox
+
+    option_specs = execution["option_specs"]
+    assert [str(option["option_label"]) for option in option_specs] == ["A", "B", "C", "D"]
+    reference_sequence = [str(value) for value in execution["reference_token_sequence"]]
+    valid_labels = []
+    for option in option_specs:
+        repaired_sequence = [str(value) for value in option["repaired_token_sequence"]]
+        is_equivalent = token_sequences_are_rotation_equivalent(
+            reference_sequence,
+            repaired_sequence,
+        )
+        assert bool(is_equivalent) == bool(option["is_valid"])
+        if bool(option["is_valid"]):
+            valid_labels.append(str(option["option_label"]))
+            assert str(option["option_choice_id"]) == str(execution["answer_option_choice_id"])
+
+    assert valid_labels == [str(out.answer_gt.value)]
+    assert valid_labels == [str(value) for value in execution["valid_option_labels"]]
+    assert [str(value) for value in execution["supporting_option_choice_ids"]] == [
+        str(value) for value in execution["valid_option_choice_ids"]
+    ]
+
+
+def test_puzzles_cyclic_order_insertion_position_label_contract_is_unique() -> None:
+    task = PuzzlesCyclicOrderInsertionPositionLabelTask()
+    out = task.generate(
+        27460,
+        params={
+            "query_id": SINGLE_QUERY_ID,
+            "token_render_style": "symbol_badges",
+            "scene_variant": "route_loop_diagram",
+            "loop_path_style": "rounded_rect",
+        },
+        max_attempts=10,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    render_map = trace["render_map"]
+    annotation_bbox = [float(value) for value in out.annotation_gt.value]
+
+    assert str(out.query_id) == SINGLE_QUERY_ID
+    assert str(out.scene_id) == "cyclic_order"
+    assert task.supported_query_ids == (SINGLE_QUERY_ID,)
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "bbox"
+    assert str(execution["query_id"]) == SINGLE_QUERY_ID
+    assert str(execution["internal_query_id"]) == "insertion_position"
+    assert str(execution["question_format"]) == "insertion_position_option"
+    assert str(execution["view_family"]) == "loop_insertion_position"
+    assert int(execution["option_count"]) == 4
+    assert int(execution["bead_count"]) == 5
+    assert int(execution["valid_option_count"]) == 1
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+    assert str(out.answer_gt.value) == str(execution["answer_option_label"])
+    assert trace["projected_annotation"]["bbox"] == annotation_bbox
+
+    expected_bbox = [
+        float(value)
+        for value in render_map["option_choice_bboxes_px"][str(execution["answer_option_choice_id"])]
+    ]
+    assert annotation_bbox == expected_bbox
+
+    option_specs = execution["option_specs"]
+    assert [str(option["option_label"]) for option in option_specs] == ["A", "B", "C", "D"]
+    assert [int(option["gap_number"]) for option in option_specs] == [1, 2, 3, 4]
+    assert [str(option["gap_label"]) for option in option_specs] == ["A", "B", "C", "D"]
+    reference_sequence = [str(value) for value in execution["reference_token_sequence"]]
+    partial_sequence = [str(value) for value in execution["partial_token_sequence"]]
+    missing_token = str(execution["missing_token"])
+    assert len(reference_sequence) == 5
+    assert len(partial_sequence) == 4
+    assert missing_token not in partial_sequence
+
+    valid_labels = []
+    for option in option_specs:
+        inserted_sequence = [str(value) for value in option["inserted_token_sequence"]]
+        is_equivalent = token_sequences_are_rotation_equivalent(
+            reference_sequence,
+            inserted_sequence,
+        )
+        assert bool(is_equivalent) == bool(option["is_valid"])
+        if bool(option["is_valid"]):
+            valid_labels.append(str(option["option_label"]))
+            assert str(option["option_choice_id"]) == str(execution["answer_option_choice_id"])
+
+    assert valid_labels == [str(out.answer_gt.value)]
+    assert valid_labels == [str(value) for value in execution["valid_option_labels"]]
+    assert [str(value) for value in execution["supporting_option_choice_ids"]] == [
+        str(value) for value in execution["valid_option_choice_ids"]
+    ]
+
+
 def test_puzzles_cyclic_order_equivalent_label_task_is_deterministic() -> None:
     task = PuzzlesCyclicOrderEquivalentLabelTask()
     params = {
@@ -171,7 +307,7 @@ def test_puzzles_cyclic_order_sampling_balances_visual_and_answer_axes() -> None
         )
         trace = out.trace_payload["execution_trace"]
         assert str(trace["query_id"]) == SINGLE_QUERY_ID
-        assert int(trace["option_count"]) == 6
+        assert int(trace["option_count"]) == 4
         token_render_styles[str(trace["token_render_style"])] += 1
         scene_variants[str(trace["scene_variant"])] += 1
         loop_path_styles[str(trace["loop_path_style"])] += 1
@@ -197,7 +333,7 @@ def test_puzzles_cyclic_order_sampling_balances_visual_and_answer_axes() -> None
     )
     assert_counter_support_within(
         answer_labels,
-        {"A", "B", "C", "D", "E", "F"},
-        expected_per_key=33,
+        {"A", "B", "C", "D"},
+        expected_per_key=50,
         tolerance=20,
     )

@@ -24,7 +24,7 @@ from trace.tasks.charts.boxplot.shared.sampling import (
     sample_clustered_unique_low,
     sample_labels,
 )
-from trace.tasks.charts.shared.chart_scene import BoxPlotSpec
+from trace.tasks.charts.shared.chart_scene_types import BoxPlotSpec
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
@@ -208,6 +208,7 @@ def _build_iqr_plan(params: dict[str, Any], instance_seed: int, selected_query_i
         role_to_label={"answer_boxplot": str(answer_label)},
         relations=relations,
         prompt_artifacts=prompt_artifacts,
+        annotation_kind="bbox",
     )
 
 

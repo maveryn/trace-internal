@@ -7,6 +7,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from .....core.seed import spawn_rng
+from trace.tasks.charts.shared.dense_text import dense_fit_bold, dense_stroke_width, dense_text_style_meta
 from ....shared.font_assets import sample_font_family
 from ....shared.text_legibility import draw_text_traced
 from ....shared.text_rendering import load_font, resolve_text_stroke_fill
@@ -15,6 +17,7 @@ from ....shared.visual_style.context_layer import (
     resolve_dashboard_context_layout,
     sample_dashboard_title,
 )
+from trace.tasks.charts.shared.panel.grid_layout import layout_panel_grid_int, panel_row_lengths
 from .defaults import render_default, render_rgb, resolve_context_text_params
 from .state import (
     SCENE_NAMESPACE,
@@ -28,6 +31,57 @@ from .state import (
     RenderParams,
     RenderedDashboard,
 )
+
+
+_CHART_CONTEXT_MODE_WEIGHTS = {"clean": 0.3, "minimal": 0.4, "paragraph_box": 0.3}
+
+
+def _normalize_chart_context_mode(value: str) -> str:
+    normalized = str(value).strip().casefold().replace("-", "_").replace(" ", "_")
+    if normalized in {"light", "light_context"}:
+        return "minimal"
+    if normalized in {"large", "large_distractor", "paragraph", "right_sidebar", "left_sidebar", "bottom_band", "sidebar"}:
+        return "paragraph_box"
+    return str(normalized)
+
+
+def _resolve_chart_context_mode(*, context_params: Mapping[str, Any], instance_seed: int, namespace: str) -> tuple[str, dict[str, float]]:
+    supported = ("clean", "minimal", "paragraph_box")
+    explicit = context_params.get("chart_context_mode", context_params.get("context_text_mode"))
+    if explicit is not None:
+        mode = _normalize_chart_context_mode(str(explicit))
+        if mode not in set(supported):
+            raise ValueError(f"unsupported dashboard chart context mode: {explicit!r}")
+        return str(mode), {key: 1.0 if key == mode else 0.0 for key in supported}
+    raw_weights = context_params.get("chart_context_mode_weights", context_params.get("context_text_mode_weights", _CHART_CONTEXT_MODE_WEIGHTS))
+    weights = {key: 0.0 for key in supported}
+    if isinstance(raw_weights, Mapping):
+        for raw_key, raw_value in raw_weights.items():
+            mode = _normalize_chart_context_mode(str(raw_key))
+            if mode not in weights:
+                continue
+            weights[str(mode)] += max(0.0, float(raw_value))
+    if sum(weights.values()) <= 0.0:
+        weights = dict(_CHART_CONTEXT_MODE_WEIGHTS)
+    rng = spawn_rng(int(instance_seed), f"{namespace}.chart_context_mode")
+    cursor = rng.random() * sum(weights.values())
+    running = 0.0
+    selected = str(supported[-1])
+    for mode in supported:
+        running += float(weights[str(mode)])
+        if cursor <= running:
+            selected = str(mode)
+            break
+    total = sum(weights.values())
+    normalized = {mode: float(weights[mode]) / float(total) for mode in supported}
+    return str(selected), dict(normalized)
+
+
+def _dashboard_context_layer_mode(context_layout: Mapping[str, Any]) -> str:
+    mode = str(context_layout.get("chart_context_mode", ""))
+    if mode in {"clean", "minimal", "paragraph_box"}:
+        return f"chart_context:{mode}"
+    return f"{context_layout.get('layout_mode', 'reserved_context')}:{context_layout.get('placement', 'none')}"
 
 
 def _bbox_tuple(box: Sequence[float]) -> BBox:
@@ -130,6 +184,8 @@ def _draw_text(
 
 
 def _panel_layout(render_params: RenderParams, panel_count: int) -> Tuple[BBox, ...]:
+    """Reserve context/option bands, then place dashboard panels with shared centered-row rules."""
+
     margin = int(render_params.dashboard_margin_px)
     offset_x = int(render_params.layout_offset_x_px)
     offset_y = int(render_params.layout_offset_y_px)
@@ -147,26 +203,29 @@ def _panel_layout(render_params: RenderParams, panel_count: int) -> Tuple[BBox, 
     bottom_reserved = int(bottom_band_height + bottom_band_gap) if context_placement == "bottom_band" else 0
     if int(option_panel_height) > 0:
         bottom_reserved += int(option_panel_height) + int(option_panel_gap)
-    cols = 3 if int(panel_count) >= 7 else 2
-    rows = max(1, int(math.ceil(float(panel_count) / float(cols))))
-    usable_width = int(render_params.canvas_width) - (2 * margin) - int(left_reserved) - int(right_reserved) - (gap * (cols - 1))
-    usable_height = int(render_params.canvas_height) - top - margin - int(bottom_reserved) - (gap * (rows - 1))
-    if usable_width < cols * 180:
-        usable_width = int(render_params.canvas_width) - (2 * margin) - (gap * (cols - 1))
+    row_lengths = panel_row_lengths(int(panel_count))
+    cols = max(row_lengths)
+    rows = len(row_lengths)
+    usable_width = int(render_params.canvas_width) - (2 * margin) - int(left_reserved) - int(right_reserved)
+    usable_height = int(render_params.canvas_height) - top - margin - int(bottom_reserved)
+    if usable_width < (cols * 180) + (gap * (cols - 1)):
+        usable_width = int(render_params.canvas_width) - (2 * margin)
         left_reserved = 0
         right_reserved = 0
-    if usable_height < rows * 150:
-        usable_height = int(render_params.canvas_height) - top - margin - (gap * (rows - 1))
-    panel_width = int(usable_width // cols)
-    panel_height = int(usable_height // rows)
-    bboxes: List[BBox] = []
-    for index in range(int(panel_count)):
-        row = int(index) // cols
-        col = int(index) % cols
-        x0 = margin + offset_x + int(left_reserved) + col * (panel_width + gap)
-        y0 = top + row * (panel_height + gap)
-        bboxes.append((x0, y0, x0 + panel_width, y0 + panel_height))
-    return tuple(bboxes)
+    if usable_height < (rows * 150) + (gap * (rows - 1)):
+        usable_height = int(render_params.canvas_height) - top - margin
+    return layout_panel_grid_int(
+        (
+            margin + offset_x + int(left_reserved),
+            top,
+            margin + offset_x + int(left_reserved) + int(usable_width),
+            top + int(usable_height),
+        ),
+        panel_count=int(panel_count),
+        gap_x=float(gap),
+        gap_y=float(gap),
+        row_lengths=row_lengths,
+    )
 
 
 def _option_panel_render_defaults(params: Mapping[str, Any]) -> Dict[str, int]:
@@ -174,6 +233,8 @@ def _option_panel_render_defaults(params: Mapping[str, Any]) -> Dict[str, int]:
         "height_px": int(params.get("option_panel_height_px", render_default("option_panel_height_px", 238))),
         "gap_px": int(params.get("option_panel_gap_px", render_default("option_panel_gap_px", 16))),
         "padding_px": int(params.get("option_panel_padding_px", render_default("option_panel_padding_px", 16))),
+        "column_gap_px": int(params.get("option_panel_column_gap_px", render_default("option_panel_column_gap_px", 22))),
+        "column_count": int(params.get("option_panel_column_count", render_default("option_panel_column_count", 2))),
         "font_size_px": int(params.get("option_panel_font_size_px", render_default("option_panel_font_size_px", 15))),
         "letter_font_size_px": int(params.get("option_panel_letter_font_size_px", render_default("option_panel_letter_font_size_px", 16))),
     }
@@ -199,11 +260,11 @@ def _draw_panel_chrome(
         outline=tuple(render_params.panel_border_rgb),
         width=int(render_params.panel_border_width_px),
     )
-    title_font = load_font(int(render_params.panel_title_font_size_px), bold=True, font_family=render_params.font_family)
+    title_font = load_font(int(render_params.panel_title_font_size_px), bold=False, font_family=render_params.font_family)
     title_bbox = _draw_text(
         draw,
         ((panel_bbox[0] + panel_bbox[2]) / 2.0, panel_bbox[1] + 24),
-        f"{panel.name} panel",
+        str(panel.name),
         font=title_font,
         fill=tuple(render_params.text_color_rgb),
         anchor="mm",
@@ -225,8 +286,8 @@ def _draw_bar_panel(
     pad = int(render_params.panel_padding_px)
     label_size = 10 if len(categories) > 12 else int(render_params.label_font_size_px)
     value_size = 10 if len(categories) > 12 else int(render_params.value_font_size_px)
-    label_font = load_font(int(label_size), bold=True, font_family=render_params.font_family)
-    value_font = load_font(int(value_size), bold=True, font_family=render_params.font_family)
+    label_font = load_font(int(label_size), bold=dense_fit_bold(), font_family=render_params.font_family)
+    value_font = load_font(int(value_size), bold=dense_fit_bold(), font_family=render_params.font_family)
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False, font_family=render_params.font_family)
     plot_bbox = (
         panel_bbox[0] + pad + 28,
@@ -247,13 +308,15 @@ def _draw_bar_panel(
     points: Dict[str, Point] = {}
     entities: List[Dict[str, Any]] = []
     for index, category in enumerate(categories):
+        if str(category.category_id) not in panel.values_by_category_id:
+            continue
         cx = float(plot_bbox[0]) + slot * (float(index) + 0.5)
         value = int(panel.values_by_category_id[str(category.category_id)])
         y = _scale_y(value, plot_bbox)
         bar_box = _bbox_tuple((cx - bar_width / 2.0, y, cx + bar_width / 2.0, plot_bbox[3]))
         draw.rounded_rectangle(bar_box, radius=4, fill=tuple(category.color_rgb), outline=(55, 62, 72), width=1)
-        value_bbox = _draw_text(draw, (cx, y - 10), str(value), font=value_font, fill=tuple(render_params.text_color_rgb), anchor="mb", stroke_width=2)
-        label_bbox = _draw_text(draw, (cx, plot_bbox[3] + 16), str(category.label), font=label_font, fill=tuple(render_params.text_color_rgb), anchor="mt", stroke_width=1)
+        value_bbox = _draw_text(draw, (cx, y - 10), str(value), font=value_font, fill=tuple(render_params.text_color_rgb), anchor="mb", stroke_width=dense_stroke_width())
+        label_bbox = _draw_text(draw, (cx, plot_bbox[3] + 16), str(category.label), font=label_font, fill=tuple(render_params.text_color_rgb), anchor="mt", stroke_width=dense_stroke_width())
         support[str(category.category_id)] = _pad_bbox(_union_bboxes([bar_box, value_bbox, label_bbox]), 4)
         values[str(category.category_id)] = value_bbox
         points[str(category.category_id)] = (int(round(cx)), int(round(y)))
@@ -288,8 +351,8 @@ def _draw_line_panel(
     pad = int(render_params.panel_padding_px)
     label_size = 10 if len(categories) > 12 else int(render_params.label_font_size_px)
     value_size = 10 if len(categories) > 12 else int(render_params.value_font_size_px)
-    label_font = load_font(int(label_size), bold=True, font_family=render_params.font_family)
-    value_font = load_font(int(value_size), bold=True, font_family=render_params.font_family)
+    label_font = load_font(int(label_size), bold=dense_fit_bold(), font_family=render_params.font_family)
+    value_font = load_font(int(value_size), bold=dense_fit_bold(), font_family=render_params.font_family)
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False, font_family=render_params.font_family)
     plot_bbox = (
         panel_bbox[0] + pad + 28,
@@ -311,24 +374,40 @@ def _draw_line_panel(
             float(plot_bbox[0]) + slot * (float(index) + 0.5)
             for index in range(len(categories))
         ]
-    points: List[Tuple[float, float]] = []
+    points_by_category_id: Dict[str, Tuple[float, float]] = {}
     for x, category in zip(x_positions, categories):
-        points.append((float(x), _scale_y(int(panel.values_by_category_id[str(category.category_id)]), plot_bbox)))
-    if len(points) >= 2:
-        draw.line(points, fill=tuple(render_params.connector_color_rgb), width=int(render_params.line_width_px), joint="curve")
+        if str(category.category_id) not in panel.values_by_category_id:
+            continue
+        points_by_category_id[str(category.category_id)] = (
+            float(x),
+            _scale_y(int(panel.values_by_category_id[str(category.category_id)]), plot_bbox),
+        )
+    for left_category, right_category in zip(categories, categories[1:]):
+        left_point = points_by_category_id.get(str(left_category.category_id))
+        right_point = points_by_category_id.get(str(right_category.category_id))
+        if left_point is not None and right_point is not None:
+            draw.line(
+                (left_point, right_point),
+                fill=tuple(render_params.connector_color_rgb),
+                width=int(render_params.line_width_px),
+            )
     support: Dict[str, BBox] = {}
     values: Dict[str, BBox] = {}
     mark_points: Dict[str, Point] = {}
     entities: List[Dict[str, Any]] = []
     radius = int(render_params.point_radius_px)
-    for (x, y), category in zip(points, categories):
+    for category in categories:
+        point = points_by_category_id.get(str(category.category_id))
+        if point is None:
+            continue
+        x, y = point
         value = int(panel.values_by_category_id[str(category.category_id)])
         point_box = _bbox_tuple((x - radius, y - radius, x + radius, y + radius))
         draw.ellipse(point_box, fill=tuple(category.color_rgb), outline=(42, 48, 58), width=2)
         value_anchor_y = y - 10 if y - 10 > plot_bbox[1] + 14 else y + 16
         value_anchor = "mb" if value_anchor_y < y else "mt"
-        value_bbox = _draw_text(draw, (x, value_anchor_y), str(value), font=value_font, fill=tuple(render_params.text_color_rgb), anchor=value_anchor, stroke_width=2)
-        label_bbox = _draw_text(draw, (x, plot_bbox[3] + 16), str(category.label), font=label_font, fill=tuple(render_params.text_color_rgb), anchor="mt", stroke_width=1)
+        value_bbox = _draw_text(draw, (x, value_anchor_y), str(value), font=value_font, fill=tuple(render_params.text_color_rgb), anchor=value_anchor, stroke_width=dense_stroke_width())
+        label_bbox = _draw_text(draw, (x, plot_bbox[3] + 16), str(category.label), font=label_font, fill=tuple(render_params.text_color_rgb), anchor="mt", stroke_width=dense_stroke_width())
         support[str(category.category_id)] = _pad_bbox(_union_bboxes([point_box, value_bbox, label_bbox]), 4)
         values[str(category.category_id)] = value_bbox
         mark_points[str(category.category_id)] = (int(round(x)), int(round(y)))
@@ -362,18 +441,26 @@ def _draw_donut_panel(
 
     label_size = 9 if len(categories) > 12 else int(render_params.label_font_size_px)
     value_size = 9 if len(categories) > 12 else int(render_params.value_font_size_px)
-    label_font = load_font(int(label_size), bold=True, font_family=render_params.font_family)
-    value_font = load_font(int(value_size), bold=True, font_family=render_params.font_family)
+    label_font = load_font(int(label_size), bold=dense_fit_bold(), font_family=render_params.font_family)
+    value_font = load_font(int(value_size), bold=dense_fit_bold(), font_family=render_params.font_family)
     x0, y0, x1, y1 = panel_bbox
     panel_width = int(x1 - x0)
     panel_height = int(y1 - y0)
     donut_center = (x0 + max(86, int(panel_width * 0.29)), y0 + max(142, int(panel_height * 0.58)))
     radius = int(min(86, panel_width * 0.22, panel_height * 0.30))
     donut_box = (donut_center[0] - radius, donut_center[1] - radius, donut_center[0] + radius, donut_center[1] + radius)
-    total = sum(int(panel.values_by_category_id[str(category.category_id)]) for category in categories)
+    visible_categories = [
+        category
+        for category in categories
+        if str(category.category_id) in panel.values_by_category_id
+    ]
+    total = sum(
+        int(panel.values_by_category_id[str(category.category_id)])
+        for category in visible_categories
+    )
     start_angle = -90.0
     segment_points: Dict[str, Point] = {}
-    for category in categories:
+    for category in visible_categories:
         value = int(panel.values_by_category_id[str(category.category_id)])
         sweep = 360.0 * (float(value) / float(max(1, total)))
         draw.pieslice(donut_box, start=start_angle, end=start_angle + sweep, fill=tuple(category.color_rgb), outline=(255, 255, 255), width=2)
@@ -393,8 +480,8 @@ def _draw_donut_panel(
     entities: List[Dict[str, Any]] = []
     legend_x = x0 + max(190, int(panel_width * 0.54))
     legend_y = y0 + 58
-    row_h = max(12, int((y1 - legend_y - 18) / max(1, len(categories))))
-    for index, category in enumerate(categories):
+    row_h = max(12, int((y1 - legend_y - 18) / max(1, len(visible_categories))))
+    for index, category in enumerate(visible_categories):
         cy = legend_y + index * row_h
         swatch_size = min(12, max(7, int(row_h - 3)))
         row_mid = cy + row_h / 2.0
@@ -436,8 +523,8 @@ def _draw_radar_panel(
 
     label_size = 9 if len(categories) > 12 else int(render_params.label_font_size_px)
     value_size = 9 if len(categories) > 12 else int(render_params.value_font_size_px)
-    label_font = load_font(int(label_size), bold=True, font_family=render_params.font_family)
-    value_font = load_font(int(value_size), bold=True, font_family=render_params.font_family)
+    label_font = load_font(int(label_size), bold=dense_fit_bold(), font_family=render_params.font_family)
+    value_font = load_font(int(value_size), bold=dense_fit_bold(), font_family=render_params.font_family)
     x0, y0, x1, y1 = panel_bbox
     panel_width = float(x1 - x0)
     panel_height = float(y1 - y0)
@@ -449,7 +536,7 @@ def _draw_radar_panel(
             angle = -math.pi / 2.0 + (2.0 * math.pi * float(index) / float(len(categories)))
             points.append((center[0] + math.cos(angle) * radius * frac, center[1] + math.sin(angle) * radius * frac))
         draw.polygon(points, outline=tuple(render_params.grid_color_rgb))
-    vertex_points: List[Tuple[float, float]] = []
+    vertex_by_category_id: Dict[str, Tuple[float, float]] = {}
     support: Dict[str, BBox] = {}
     values: Dict[str, BBox] = {}
     mark_points: Dict[str, Point] = {}
@@ -459,26 +546,39 @@ def _draw_radar_panel(
         angle = -math.pi / 2.0 + (2.0 * math.pi * float(index) / float(len(categories)))
         axis_end = (center[0] + math.cos(angle) * radius, center[1] + math.sin(angle) * radius)
         draw.line((center[0], center[1], axis_end[0], axis_end[1]), fill=tuple(render_params.grid_color_rgb), width=1)
+        if str(category.category_id) not in panel.values_by_category_id:
+            continue
         value = int(panel.values_by_category_id[str(category.category_id)])
         r_value = radius * (float(value) / 100.0)
         vx = center[0] + math.cos(angle) * r_value
         vy = center[1] + math.sin(angle) * r_value
-        vertex_points.append((vx, vy))
-    if len(vertex_points) >= 3:
-        draw.line(vertex_points + [vertex_points[0]], fill=tuple(render_params.connector_color_rgb), width=int(render_params.line_width_px))
-    for index, (category, point) in enumerate(zip(categories, vertex_points)):
+        vertex_by_category_id[str(category.category_id)] = (vx, vy)
+    category_ring = tuple(categories)
+    for left_category, right_category in zip(category_ring, category_ring[1:] + category_ring[:1]):
+        left_point = vertex_by_category_id.get(str(left_category.category_id))
+        right_point = vertex_by_category_id.get(str(right_category.category_id))
+        if left_point is not None and right_point is not None:
+            draw.line(
+                (left_point, right_point),
+                fill=tuple(render_params.connector_color_rgb),
+                width=int(render_params.line_width_px),
+            )
+    for index, category in enumerate(categories):
+        point = vertex_by_category_id.get(str(category.category_id))
+        if point is None:
+            continue
         angle = -math.pi / 2.0 + (2.0 * math.pi * float(index) / float(len(categories)))
         value = int(panel.values_by_category_id[str(category.category_id)])
         label_radius = radius + 17
         label_x = center[0] + math.cos(angle) * label_radius
         label_y = center[1] + math.sin(angle) * label_radius
-        label_bbox = _draw_text(draw, (label_x, label_y), str(category.label), font=label_font, fill=tuple(render_params.text_color_rgb), anchor="mm", stroke_width=1)
+        label_bbox = _draw_text(draw, (label_x, label_y), str(category.label), font=label_font, fill=tuple(render_params.text_color_rgb), anchor="mm", stroke_width=dense_stroke_width())
         point_box = _bbox_tuple((point[0] - point_radius, point[1] - point_radius, point[0] + point_radius, point[1] + point_radius))
         draw.ellipse(point_box, fill=tuple(category.color_rgb), outline=(42, 48, 58), width=2)
         value_offset = -20 if int(value) >= 70 else 17
         value_x = point[0] + math.cos(angle) * value_offset
         value_y = point[1] + math.sin(angle) * value_offset
-        value_bbox = _draw_text(draw, (value_x, value_y), str(value), font=value_font, fill=tuple(render_params.text_color_rgb), anchor="mm", stroke_width=2)
+        value_bbox = _draw_text(draw, (value_x, value_y), str(value), font=value_font, fill=tuple(render_params.text_color_rgb), anchor="mm", stroke_width=dense_stroke_width())
         support[str(category.category_id)] = _pad_bbox(_union_bboxes([label_bbox, point_box, value_bbox]), 4)
         values[str(category.category_id)] = value_bbox
         mark_points[str(category.category_id)] = (int(round(point[0])), int(round(point[1])))
@@ -535,6 +635,8 @@ def _draw_statement_option_panel(
     defaults = _option_panel_render_defaults(params)
     height_px = int(defaults["height_px"])
     pad = int(defaults["padding_px"])
+    column_count = max(1, min(2, int(defaults["column_count"])))
+    column_gap = max(0, int(defaults["column_gap_px"]))
     x0 = int(render_params.dashboard_margin_px)
     x1 = int(render_params.canvas_width) - int(render_params.dashboard_margin_px)
     y1 = int(render_params.canvas_height) - int(render_params.dashboard_margin_px)
@@ -544,7 +646,7 @@ def _draw_statement_option_panel(
     border_rgb = render_rgb(params, "option_panel_border_rgb", render_params.panel_border_rgb)
     draw.rounded_rectangle(panel_bbox, radius=10, fill=tuple(fill_rgb), outline=tuple(border_rgb), width=2)
 
-    title_font = load_font(16, bold=True, font_family=render_params.font_family)
+    title_font = load_font(16, bold=False, font_family=render_params.font_family)
     title_bbox = _draw_text(
         draw,
         (x0 + pad, y0 + pad + 2),
@@ -554,9 +656,12 @@ def _draw_statement_option_panel(
         anchor="la",
     )
     content_top = int(max(title_bbox[3] + 8, y0 + pad + 24))
-    row_height = max(24, int((y1 - pad - content_top) / max(1, len(options))))
-    letter_font = load_font(int(defaults["letter_font_size_px"]), bold=True, font_family=render_params.font_family)
-    max_text_width = int(x1 - x0 - (2 * pad) - 46)
+    row_count = int(math.ceil(float(len(options)) / float(column_count)))
+    row_height = max(24, int((y1 - pad - content_top) / max(1, row_count)))
+    letter_font = load_font(int(defaults["letter_font_size_px"]), bold=False, font_family=render_params.font_family)
+    usable_width = max(1, int(x1 - x0 - (2 * pad)))
+    column_width = int((usable_width - (column_gap * (column_count - 1))) / column_count)
+    max_text_width = max(80, int(column_width - 46))
     bboxes: Dict[str, BBox] = {}
     entities: List[Dict[str, Any]] = [
         {
@@ -565,6 +670,8 @@ def _draw_statement_option_panel(
             "bbox_xyxy": list(panel_bbox),
             "attrs": {
                 "option_count": int(len(options)),
+                "column_count": int(column_count),
+                "row_count": int(row_count),
                 "excluded_from_annotation": True,
             },
         }
@@ -573,11 +680,14 @@ def _draw_statement_option_panel(
         option_label = str(option.get("option_label", OPTION_LETTERS[int(index)]))
         option_id = str(option.get("option_id", f"option_{option_label}"))
         statement_text = str(option.get("text", ""))
-        row_y0 = int(content_top + index * row_height)
+        row_index = int(index) // int(column_count)
+        column_index = int(index) % int(column_count)
+        column_x0 = int(x0 + pad + (column_index * (column_width + column_gap)))
+        row_y0 = int(content_top + row_index * row_height)
         row_mid_y = int(row_y0 + row_height / 2)
         letter_bbox = _draw_text(
             draw,
-            (x0 + pad + 14, row_mid_y),
+            (column_x0 + 14, row_mid_y),
             f"{option_label}.",
             font=letter_font,
             fill=tuple(render_params.text_color_rgb),
@@ -592,7 +702,7 @@ def _draw_statement_option_panel(
         )
         text_bbox = _draw_text(
             draw,
-            (x0 + pad + 40, row_mid_y),
+            (column_x0 + 40, row_mid_y),
             statement_text,
             font=statement_font,
             fill=tuple(render_params.text_color_rgb),
@@ -640,7 +750,16 @@ def render_dashboard(
     draw = ImageDraw.Draw(image)
     context_params = resolve_context_text_params(params)
     has_option_panel = bool(dataset.query.params.get("statement_options"))
+    chart_context_mode, chart_context_mode_weights = _resolve_chart_context_mode(
+        context_params=context_params,
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.{dataset.scene_variant}",
+    )
     if bool(has_option_panel):
+        chart_context_mode = "clean"
+        chart_context_mode_weights = {"clean": 1.0, "minimal": 0.0, "paragraph_box": 0.0}
+    context_params["dashboard_title_enabled"] = bool(chart_context_mode in {"minimal", "paragraph_box"})
+    if chart_context_mode != "paragraph_box":
         context_params["context_text_enabled"] = False
     context_layout = resolve_dashboard_context_layout(
         instance_seed=int(instance_seed),
@@ -653,7 +772,13 @@ def render_dashboard(
         left_margin_px=int(render_params.dashboard_margin_px),
         right_margin_px=int(render_params.dashboard_margin_px),
     )
-    context_layout_mode = f"{context_layout.get('layout_mode', 'reserved_context')}:{context_layout.get('placement', 'none')}"
+    context_layout = {
+        **dict(context_layout),
+        "context_profile": str(context_params.get("chart_context_profile", context_params.get("context_text_profile", "report_paragraph"))),
+        "chart_context_mode": str(chart_context_mode),
+        "chart_context_mode_weights": dict(chart_context_mode_weights),
+    }
+    context_layout_mode = _dashboard_context_layer_mode(context_layout)
     option_layout_meta: Dict[str, Any] = {}
     if bool(has_option_panel):
         option_defaults = _option_panel_render_defaults(params)
@@ -709,7 +834,7 @@ def render_dashboard(
             explicit_key="dashboard_title_font_family",
             weights_key="context_text_font_family_weights",
         )
-        title_font = load_font(int(render_params.title_font_size_px), bold=True, font_family=title_font_family)
+        title_font = load_font(int(render_params.title_font_size_px), bold=False, font_family=title_font_family)
         title_min_x = min(panel_bbox[0] for panel_bbox in layout) if layout else int(render_params.dashboard_margin_px)
         title_max_x = max(panel_bbox[2] for panel_bbox in layout) if layout else int(render_params.canvas_width)
         title_text = str(title_record.get("text", ""))

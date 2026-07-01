@@ -29,6 +29,13 @@
         "What is the sum of the printed child values inside parent category \"{parent_label}\"?",
         "For \"{parent_label}\", compute the total from all of its child rectangle values."
       ],
+      "treemap_parent_total_extremum_label": [
+        "Which parent category has the {extremum_word} total value?",
+        "Sum each parent category's child values. Which parent category has the {extremum_word} total?",
+        "Compare the totals of all parent categories. Which one is {extremum_word}?",
+        "Using the printed child values, identify the parent category with the {extremum_word} total.",
+        "Across the parent rectangles, which category has the {extremum_word} combined child value?"
+      ],
       "treemap_repeated_leaf_sum_value": [
         "Across all parent categories, what is the total value for child label \"{leaf_label}\"?",
         "Find every child rectangle labeled \"{leaf_label}\" and add their printed values. What is the total?",
@@ -83,6 +90,9 @@
     "leaf_label": {
       "type": "string"
     },
+    "extremum_word": {
+      "type": "string"
+    },
     "object_description": {
       "type": "string"
     },
@@ -96,6 +106,9 @@
     ],
     "query:treemap_group_total_value": [
       "parent_label"
+    ],
+    "query:treemap_parent_total_extremum_label": [
+      "extremum_word"
     ],
     "query:treemap_repeated_leaf_sum_value": [
       "leaf_label"

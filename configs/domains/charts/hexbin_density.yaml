@@ -12,6 +12,7 @@ generation:
     threshold_count_answer_max: 18
 rendering:
   shared:
+    chart_context_profile: report_paragraph
     canvas_width: 1280
     canvas_height: 820
     plot_margin_left_px: 96
@@ -211,8 +212,8 @@ rendering:
         - 65
         - 96
     chart_context_mode_weights:
-      clean: 0.18
-      minimal: 0.52
+      clean: 0.3
+      minimal: 0.4
       paragraph_box: 0.3
 prompt:
   shared:

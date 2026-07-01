@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable, Mapping, Sequence
+from typing import Any, Callable, Mapping
 
 from PIL import Image
 
@@ -11,7 +11,7 @@ from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import annotation_roles_metadata, bbox_map_annotation
+from .shared.annotations import annotation_roles_metadata, solid_bbox_annotation
 from .shared.defaults import DOMAIN, POST_IMAGE_NOISE_DEFAULTS, SCENE_ID, SCENE_KIND, load_solid_formula_defaults
 from .shared.prompts import solid_formula_prompt_artifacts
 from .shared.rendering import create_render_context
@@ -27,7 +27,6 @@ class SolidFormulaObjectivePlan:
     prompt_key: str
     problem: SolidFormulaProblem
     render_scene: RenderBuilder
-    annotation_keys: tuple[str, ...]
     answer_value: float
     query_params: Mapping[str, Any]
     trace_values: Mapping[str, Any]
@@ -40,7 +39,7 @@ class SolidFormulaTaskParts:
     prompt: str
     prompt_variants: dict[str, str]
     image: Image.Image
-    annotation_value: dict[str, list[float]]
+    annotation_value: list[float]
     trace_payload: dict[str, Any]
     task_versions: dict[str, str]
     scene_id: str
@@ -51,7 +50,6 @@ def build_solid_formula_plan(
     prompt_key: str,
     problem: SolidFormulaProblem,
     render_scene: RenderBuilder,
-    annotation_keys: Sequence[str],
     branch_probabilities: Mapping[str, float],
     support_probabilities: Mapping[str, float],
 ) -> SolidFormulaObjectivePlan:
@@ -61,7 +59,6 @@ def build_solid_formula_plan(
         prompt_key=str(prompt_key),
         problem=problem,
         render_scene=render_scene,
-        annotation_keys=tuple(str(value) for value in annotation_keys),
         answer_value=float(problem.answer),
         query_params={
             "query_id_probabilities": dict(branch_probabilities),
@@ -132,7 +129,7 @@ def _trace_payload(
         "answer_type": "number",
         "answer_value": float(plan.answer_value),
         "answer_rounding": "one_decimal",
-        "annotation_roles": annotation_roles_metadata(projected_annotation.get("bbox_map", {})),
+        "annotation_roles": annotation_roles_metadata(projected_annotation),
         **dict(plan.trace_values),
     }
     return {
@@ -166,8 +163,8 @@ def _trace_payload(
             "scene_id": SCENE_ID,
             "query_id": str(selected_query),
             "answer_value": float(plan.answer_value),
-            "source_witness_type": "bbox_map",
-            "original_annotation_value": dict(projected_annotation.get("bbox_map", {})),
+            "source_witness_type": str(projected_annotation.get("type", "bbox")),
+            "original_annotation_value": list(projected_annotation.get("bbox", [])),
             **dict(plan.trace_values),
         },
         "projected_annotation": dict(projected_annotation),
@@ -213,11 +210,10 @@ def prepare_solid_formula_task_parts(
         params=params,
         default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
-    annotation_gt, projected_annotation = bbox_map_annotation(rendered, plan.annotation_keys)
+    annotation_gt, projected_annotation = solid_bbox_annotation(rendered)
     _prompt_defaults, prompt_artifacts = solid_formula_prompt_artifacts(
         prompt_defaults=prompt_defaults,
         prompt_key=str(plan.prompt_key),
-        annotation_keys=tuple(plan.annotation_keys),
         answer=float(plan.answer_value),
         instance_seed=int(instance_seed),
     )
@@ -237,13 +233,14 @@ def prepare_solid_formula_task_parts(
             "font": dict(ctx.font_meta),
             "palette": dict(ctx.palette_meta),
             "line_width": int(ctx.line_width),
+            "label_stroke_width": int(ctx.label_stroke_width),
         },
     )
     return SolidFormulaTaskParts(
         prompt=str(prompt_artifacts.prompt),
         prompt_variants=dict(prompt_artifacts.prompt_variants),
         image=image,
-        annotation_value=dict(annotation_gt.value),
+        annotation_value=list(annotation_gt.value),
         trace_payload=trace_payload,
         task_versions=default_task_versions(),
         scene_id=SCENE_ID,

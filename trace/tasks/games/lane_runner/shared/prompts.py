@@ -33,7 +33,7 @@ def build_lane_runner_prompt_json_examples(*, answer_type: str) -> Tuple[str, st
 
     if str(answer_type) == "option_letter":
         answer_value: str | int = "C"
-        annotation_value = [[314, 128, 392, 310]]
+        annotation_value = [314, 128, 392, 310]
     else:
         answer_value = 2
         annotation_value = [[176, 412], [176, 240]]

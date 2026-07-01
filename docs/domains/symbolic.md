@@ -33,7 +33,7 @@ stable program.
 ## Annotation Policy
 Annotation should mark the decisive symbolic witnesses: readout hands/columns,
 state cells, notation symbols, event sectors, dice faces, option cards, or rule
-table entries. Use keyed annotation when roles such as initial state, target
+table entries. Use map annotation when roles such as initial state, target
 state, rule row, source symbol, or selected option must be bound.
 
 ## Prompt And Rendering

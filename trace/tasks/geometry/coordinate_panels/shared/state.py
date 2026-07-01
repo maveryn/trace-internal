@@ -9,6 +9,8 @@ from PIL import Image
 
 GraphPoint = Tuple[int, int]
 PixelPoint = Tuple[float, float]
+GraphSegment = Tuple[GraphPoint, GraphPoint]
+PixelSegment = Tuple[PixelPoint, PixelPoint]
 Color = Tuple[int, int, int]
 
 
@@ -35,8 +37,52 @@ class PanelSpec:
 
 
 @dataclass(frozen=True)
+class SegmentPanelSpec:
+    label: str
+    segments_graph: Tuple[GraphSegment, GraphSegment]
+    segments_px: Tuple[PixelSegment, PixelSegment]
+    relation_flags: Dict[str, bool]
+    panel_bbox: List[int]
+    plot_bbox: List[int]
+
+
+@dataclass(frozen=True)
+class TransformPanelSpec:
+    label: str
+    source_points_graph: Tuple[GraphPoint, ...]
+    candidate_points_graph: Tuple[GraphPoint, ...]
+    source_points_px: Tuple[PixelPoint, ...]
+    candidate_points_px: Tuple[PixelPoint, ...]
+    transform_flags: Dict[str, bool]
+    panel_bbox: List[int]
+    plot_bbox: List[int]
+
+
+@dataclass(frozen=True)
 class PanelScene:
     panels_by_label: Dict[str, PanelSpec]
+    marker_meta: Dict[str, Any]
+    panel_style_meta: Dict[str, Any]
+    image: Image.Image
+    background_meta: Dict[str, Any]
+    post_noise_meta: Dict[str, Any]
+    option_count_probabilities: Dict[str, float]
+
+
+@dataclass(frozen=True)
+class SegmentPanelScene:
+    panels_by_label: Dict[str, SegmentPanelSpec]
+    marker_meta: Dict[str, Any]
+    panel_style_meta: Dict[str, Any]
+    image: Image.Image
+    background_meta: Dict[str, Any]
+    post_noise_meta: Dict[str, Any]
+    option_count_probabilities: Dict[str, float]
+
+
+@dataclass(frozen=True)
+class TransformPanelScene:
+    panels_by_label: Dict[str, TransformPanelSpec]
     marker_meta: Dict[str, Any]
     panel_style_meta: Dict[str, Any]
     image: Image.Image
@@ -48,8 +94,14 @@ class PanelScene:
 __all__ = [
     "Color",
     "GraphPoint",
+    "GraphSegment",
     "PanelDefaults",
     "PanelScene",
     "PanelSpec",
     "PixelPoint",
+    "PixelSegment",
+    "SegmentPanelScene",
+    "SegmentPanelSpec",
+    "TransformPanelScene",
+    "TransformPanelSpec",
 ]

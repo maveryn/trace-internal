@@ -5,13 +5,14 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Tuple
 
 from ....core.query_ids import SINGLE_QUERY_ID
+from ....core.sampling import uniform_choice
 from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from .shared.output import build_completion_trace_payload, render_completion_artifacts
 from .shared.prompts import render_sequence_strip_prompt_artifacts
@@ -101,12 +102,10 @@ def _build_plan(
                 feasible.append((int(answer_size), int(step), sequence))
     if not feasible:
         raise ValueError("no feasible size progression for requested parameters")
-    selection_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}:size_progression",
+    answer_size, step, sequence = uniform_choice(
+        spawn_rng(int(instance_seed), f"{TASK_ID}:size_progression"),
+        tuple(feasible),
     )
-    answer_size, step, sequence = feasible[int(selection_index % len(feasible))]
     icon_id = sample_sequence_icon_id(rng, params=params, generation_defaults=generation_defaults, fallback=fallback_defaults.pool_manifest)
     tint_rgb, palette = sample_sequence_tint(rng, render_params=render_params)
     distractors = [value for value in size_support if int(value) != int(answer_size) and abs(int(value) - int(answer_size)) >= 12]

@@ -12,7 +12,7 @@ from trace.tasks.charts.area.shared.defaults import (
     scene_default,
 )
 from trace.tasks.charts.shared.label_assets import resolve_chart_entity_labels
-from trace.tasks.charts.shared.labeled_chart_common import sample_chart_labels
+from trace.tasks.charts.shared.label_assets import sample_chart_labels
 
 
 def sample_point_count(

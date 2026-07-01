@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from trace.core.sampling import integer_range_choice, uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default, resolve_required_int_bounds
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.name_assets import load_short_name_manifest
 from ...shared.label_assets import resolve_chart_category_labels, resolve_chart_text_labels
 from .state import TableDefaults
@@ -117,11 +117,12 @@ def _resolve_base_table_schema(
     else:
         column_headers = [f"col_{index}" for index in range(int(numeric_column_count))]
 
-    query_col_index = int(resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}:query_column",
-    )) % int(numeric_column_count)
+    query_col_index = int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{namespace}:query_column"),
+            tuple(range(int(numeric_column_count))),
+        )
+    )
     query_column = str(column_headers[int(query_col_index)])
     return {
         "rng": rng,
@@ -152,15 +153,17 @@ def _resolve_distinct_secondary_numeric_column(
 
     if int(numeric_column_count) < 2:
         raise ValueError("task requires at least two numeric columns")
+    del params
     second_index = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(namespace),
+        uniform_choice(
+            spawn_rng(int(instance_seed), str(namespace)),
+            tuple(
+                index
+                for index in range(int(numeric_column_count))
+                if int(index) != int(primary_column_index)
+            ),
         )
-    ) % int(numeric_column_count - 1)
-    if int(second_index) >= int(primary_column_index):
-        second_index += 1
+    )
     return int(second_index), str(column_headers[int(second_index)])
 
 
@@ -370,13 +373,10 @@ def _resolve_counting_target_count(
             f"invalid target count support for {namespace}/{operation}: "
             f"{int(target_min)}..{int(target_max)} with row_count={int(row_count)}"
         )
-    support_size = int(target_max) - int(target_min) + 1
-    selection_index = int(resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}:target_count",
-    ))
-    return int(target_min + (selection_index % support_size))
+    del params
+    rng = spawn_rng(int(instance_seed), f"{namespace}:target_count")
+    selected, _probabilities = integer_range_choice(rng, int(target_min), int(target_max))
+    return int(selected)
 
 
 def _decouple_sampling_after_operation(
@@ -404,14 +404,11 @@ def _resolve_balanced_integer_support_value(
 
     if int(support_min) > int(support_max):
         raise ValueError("integer support must be non-empty")
-    support_params = _decouple_sampling_after_operation(params, gen_defaults=gen_defaults)
-    support_size = int(support_max) - int(support_min) + 1
-    support_index = int(resolve_selection_index(
-        params=support_params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}:{support_namespace}",
-    )) % int(support_size)
-    return int(support_min) + int(support_index)
+    del gen_defaults
+    del params
+    rng = spawn_rng(int(instance_seed), f"{namespace}:{support_namespace}")
+    selected, _probabilities = integer_range_choice(rng, int(support_min), int(support_max))
+    return int(selected)
 
 
 def resolve_row_count_bounds(
@@ -584,16 +581,10 @@ def build_ranking_label_dataset_for_variant(
 
     allowed_ranks = [int(rank) for rank in range(2, min(4, int(row_count) - 1) + 1)]
     rank_k = int(
-        allowed_ranks[
-            int(
-                resolve_selection_index(
-                    params=params,
-                    instance_seed=int(instance_seed),
-                    namespace=f"{namespace}:query_rank",
-                )
-            )
-            % len(allowed_ranks)
-        ]
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{namespace}:query_rank"),
+            tuple(int(rank) for rank in allowed_ranks),
+        )
     )
 
     unique_query_values = list(rng.sample(range(int(value_min), int(value_max) + 1), int(row_count)))
@@ -805,12 +796,12 @@ def build_counting_value_dataset_for_variant(
                 allow_spaces=False,
             ).labels
         )
-        target_category_index = int(resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}:target_category",
-        )) % len(category_value_labels)
-        target_category = str(category_value_labels[int(target_category_index)])
+        target_category = str(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{namespace}:target_category"),
+                tuple(str(label) for label in category_value_labels),
+            )
+        )
         non_target_categories = [
             str(value)
             for value in category_value_labels
@@ -966,27 +957,21 @@ def build_statistics_filtered_subset_dataset_for_variant(
     if int(selected_count_min) > int(selected_count_max):
         raise ValueError("selected_row_count_min must be <= selected_row_count_max and row_count - 1")
     selected_count_params = _decouple_sampling_after_operation(params, gen_defaults=gen_defaults)
-    target_count = int(
-        resolve_selection_index(
-            params=selected_count_params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}:selected_row_count",
-        )
-    ) % (int(selected_count_max) - int(selected_count_min) + 1) + int(selected_count_min)
+    del selected_count_params
+    target_count, _probabilities = integer_range_choice(
+        spawn_rng(int(instance_seed), f"{namespace}:selected_row_count"),
+        int(selected_count_min),
+        int(selected_count_max),
+    )
+    target_count = int(target_count)
     supported_filter_variants = ("above_threshold", "below_threshold", "in_interval")
     explicit_filter_variant = params.get("filter_variant")
     if explicit_filter_variant is None:
         filter_variant = str(
-            supported_filter_variants[
-                int(
-                    resolve_selection_index(
-                        params=params,
-                        instance_seed=int(instance_seed),
-                        namespace=f"{namespace}:filter_variant",
-                    )
-                )
-                % len(supported_filter_variants)
-            ]
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{namespace}:filter_variant"),
+                supported_filter_variants,
+            )
         )
     else:
         filter_variant = str(explicit_filter_variant)
@@ -1137,12 +1122,11 @@ def build_temporal_value_dataset_for_variant(
     )
 
     query_row_index = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}:query_row",
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{namespace}:query_row"),
+            tuple(range(int(row_count))),
         )
-    ) % int(row_count)
+    )
     query_row_label = str(row_labels[int(query_row_index)])
     query_cells: List[Dict[str, Any]] = []
 
@@ -1186,20 +1170,18 @@ def build_temporal_value_dataset_for_variant(
     interval_len_max = min(int(numeric_column_count), int(interval_len_max))
     if int(interval_len_min) > int(interval_len_max):
         raise ValueError("temporal interval length bounds must overlap available year columns")
-    interval_len = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}:interval_length",
-        )
-    ) % (int(interval_len_max) - int(interval_len_min) + 1) + int(interval_len_min)
+    interval_len, _probabilities = integer_range_choice(
+        spawn_rng(int(instance_seed), f"{namespace}:interval_length"),
+        int(interval_len_min),
+        int(interval_len_max),
+    )
+    interval_len = int(interval_len)
     start_index = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}:interval_start",
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{namespace}:interval_start"),
+            tuple(range(int(numeric_column_count - interval_len + 1))),
         )
-    ) % int(numeric_column_count - interval_len + 1)
+    )
     end_index = int(start_index + interval_len - 1)
     interval_indices = list(range(int(start_index), int(end_index) + 1))
     query_years = [str(column_headers[int(column_index)]) for column_index in interval_indices]
@@ -1211,14 +1193,11 @@ def build_temporal_value_dataset_for_variant(
     if int(row_count) < 2:
         raise ValueError("two-row temporal variants require at least two data rows")
     query_row_index_b = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}:query_row_b",
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{namespace}:query_row_b"),
+            tuple(index for index in range(int(row_count)) if int(index) != int(query_row_index)),
         )
-    ) % int(row_count - 1)
-    if int(query_row_index_b) >= int(query_row_index):
-        query_row_index_b += 1
+    )
     query_row_label_b = str(row_labels[int(query_row_index_b)])
     interval_values_a = [
         int(rng.randint(int(value_min), int(value_max)))

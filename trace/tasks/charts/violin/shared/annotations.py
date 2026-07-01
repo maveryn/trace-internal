@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from trace.tasks.charts.shared.distribution_chart_common import projected_mark_annotation
+from trace.tasks.charts.shared.cartesian.annotations import projected_mark_annotation
 from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_annotation_artifacts
 
 

@@ -1,7 +1,15 @@
 # `task_graph__binary_tree__bst_path_operation_label`
 
 ## Program Contract
-- `label(path_terminal(binary_search_tree_operation(tree, operation, key))); scene=binary_tree; scope=bst_path_operation_label`
+
+Program: `label(path_terminal(binary_search_tree_operation(tree, operation, key))); scene=binary_tree; scope=bst_path_operation_label`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `bst_path_operation_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `path_terminal`, `binary_search_tree_operation`, `tree`, `operation`, `key`, `binary_tree`, `bst_path_operation_label`.
+Operation: evaluate `label` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_sequence` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Summary
 1. Domain: `graph`

@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
+from itertools import cycle, islice
 from typing import Any
 
+from trace.core.sampling import shuffled_support, uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.charts.shared.label_assets import resolve_chart_entity_labels
-from trace.tasks.charts.shared.labeled_chart_common import resolve_chart_axis_variant
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.tasks.charts.shared.labeled_chart_variants import resolve_chart_axis_variant
 
 from .defaults import GEN_DEFAULTS, RENDER_DEFAULTS, generation_default, int_bounds, support_probability_map
 from .state import ProgressFrame, ProgressItem, RGB, SCENE_NAMESPACE, SUPPORTED_SCENE_VARIANTS
@@ -37,14 +38,12 @@ def sample_item_count(params: Mapping[str, Any], *, instance_seed: int) -> tuple
         fallback_max=10,
     )
     support = list(range(int(low), int(high) + 1))
-    index = abs(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{SCENE_NAMESPACE}.item_count",
-        )
+    selected = uniform_choice(
+        spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.item_count"),
+        tuple(support),
+        sort_keys=True,
     )
-    return int(support[int(index % len(support))]), support_probability_map(support)
+    return int(selected), support_probability_map(support)
 
 
 def sample_answer_count(
@@ -60,8 +59,12 @@ def sample_answer_count(
     )
     min_answer = int(params.get("answer_count_min", generation_default("answer_count_min", 1)))
     support = list(range(max(1, int(min_answer)), max(1, int(max_answer)) + 1))
-    index = abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)))
-    return int(support[int(index % len(support))]), list(support), support_probability_map(support)
+    selected = uniform_choice(
+        spawn_rng(int(instance_seed), str(namespace)),
+        tuple(support),
+        sort_keys=True,
+    )
+    return int(selected), list(support), support_probability_map(support)
 
 
 def choose_labels(*, count: int, instance_seed: int) -> list[str]:
@@ -92,14 +95,11 @@ def palette(params: Mapping[str, Any], *, count: int, instance_seed: int) -> lis
             (202, 138, 4),
             (14, 116, 144),
         ]
-    offset = abs(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{SCENE_NAMESPACE}.palette",
-        )
-    ) % len(colors)
-    return [colors[(index + int(offset)) % len(colors)] for index in range(int(count))]
+    shuffled = shuffled_support(
+        spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.palette"),
+        tuple(colors),
+    )
+    return list(islice(cycle(shuffled), int(count)))
 
 
 def value_support(params: Mapping[str, Any]) -> list[int]:
@@ -118,8 +118,13 @@ def sample_threshold(params: Mapping[str, Any], *, instance_seed: int, namespace
     threshold_values = [int(v) for v in params.get("threshold_values", generation_default("threshold_values", [30, 40, 50, 60, 70]))]
     if not threshold_values:
         threshold_values = [30, 40, 50, 60, 70]
-    index = abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))) % len(threshold_values)
-    return int(threshold_values[int(index)])
+    return int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), str(namespace)),
+            tuple(threshold_values),
+            sort_keys=True,
+        )
+    )
 
 
 def sample_range_pair(params: Mapping[str, Any], *, instance_seed: int, namespace: str) -> tuple[int, int]:
@@ -134,8 +139,11 @@ def sample_range_pair(params: Mapping[str, Any], *, instance_seed: int, namespac
                 pairs.append((int(raw[0]), int(raw[1])))
     if not pairs:
         pairs = [(25, 55), (30, 60), (35, 70), (40, 75)]
-    index = abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))) % len(pairs)
-    lower, upper = pairs[int(index)]
+    lower, upper = uniform_choice(
+        spawn_rng(int(instance_seed), str(namespace)),
+        tuple(pairs),
+        sort_keys=True,
+    )
     return (int(lower), int(upper)) if int(lower) <= int(upper) else (int(upper), int(lower))
 
 
@@ -212,11 +220,9 @@ def sample_title(params: Mapping[str, Any], *, instance_seed: int) -> str:
         str(value)
         for value in params.get("title_options", RENDER_DEFAULTS.get("title_options", ["Progress Summary"]))
     ] or ["Progress Summary"]
-    index = abs(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{SCENE_NAMESPACE}.title",
+    return str(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.title"),
+            tuple(title_options),
         )
-    ) % len(title_options)
-    return str(title_options[int(index)])
+    )

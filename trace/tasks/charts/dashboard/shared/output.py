@@ -5,26 +5,42 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Any, Dict, Mapping, Sequence
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.font_assets import font_asset_version
 from trace.tasks.shared.visual_style.context_layer import context_text_layer_metadata
 
 from .annotations import AnnotationRef
-from .defaults import POST_IMAGE_BACKGROUND_DEFAULTS, POST_IMAGE_NOISE_DEFAULTS, resolve_render_params
+from .defaults import POST_IMAGE_NOISE_DEFAULTS, resolve_render_params
 from .rendering import _bbox_map_to_json, _nested_bbox_map_to_json, _nested_point_map_to_json, render_dashboard
 from .state import DashboardDataset, RenderedDashboard, SCENE_ID
 
 
+def _context_layer_mode(layout: Mapping[str, Any]) -> str:
+    mode = str(layout.get("chart_context_mode", ""))
+    if mode in {"clean", "minimal", "paragraph_box"}:
+        return f"chart_context:{mode}"
+    return f"{layout.get('layout_mode', 'reserved_context')}:{layout.get('placement', 'none')}"
+
+
 def render_dataset(dataset: DashboardDataset, *, params: Mapping[str, Any], instance_seed: int) -> tuple[RenderedDashboard, Dict[str, Any], Dict[str, Any]]:
+    """Render one dashboard scene and return synchronized render metadata.
+
+    This shared helper is task-neutral: public task files bind answer and
+    annotation semantics, while this function only resolves visual style,
+    draws the scene, applies post-noise, and records render-side metadata from
+    the same image trace.
+    """
+
     render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
     render_params = resolve_render_params(render_style_params)
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    protected_colors = tuple(tuple(int(channel) for channel in category.color_rgb) for category in dataset.categories)
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=dict(params),
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id=SCENE_ID,
+        render_params=render_params,
+        protected_colors=protected_colors,
     )
     rendered = render_dashboard(background, dataset=dataset, render_params=render_params, params=dict(params), instance_seed=int(instance_seed))
     image, post_noise_meta = apply_post_image_noise(
@@ -42,16 +58,22 @@ def render_dataset(dataset: DashboardDataset, *, params: Mapping[str, Any], inst
         "category_count": int(len(dataset.categories)),
         "layout_jitter": dict(render_params.layout_jitter_meta),
         "font_assets": {"asset_version": font_asset_version(), "chart_font_family": str(render_params.font_family)},
+        "background_style": dict(background_meta),
+        "information_scene_style": dict(information_style_meta),
         "context_text_layer": context_text_layer_metadata(
             [],
             enabled=bool(rendered.context_text_layout.get("enabled", True)),
-            layout_mode=f"{rendered.context_text_layout.get('layout_mode', 'reserved_context')}:{rendered.context_text_layout.get('placement', 'none')}",
+            layout_mode=_context_layer_mode(rendered.context_text_layout),
             layout_spec=dict(rendered.context_text_layout),
         )
         | {"element_count": int(len(rendered.context_text_elements)), "elements": [dict(element) for element in rendered.context_text_elements]},
         "post_image_noise": dict(post_noise_meta),
     }
-    return rendered, render_meta, {"background": dict(background_meta), "post_image_noise": dict(post_noise_meta)}
+    return rendered, render_meta, {
+        "background": dict(background_meta),
+        "information_scene_style": dict(information_style_meta),
+        "post_image_noise": dict(post_noise_meta),
+    }
 
 
 def _category_records(dataset: DashboardDataset) -> list[dict[str, Any]]:

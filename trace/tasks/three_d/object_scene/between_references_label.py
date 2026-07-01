@@ -15,9 +15,9 @@ from ...registry import register_task
 from ...shared.config_defaults import (
     split_scene_generation_rendering_prompt_defaults,
 )
-from ...shared.deterministic_sampling import resolve_selection_index
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
+from ..shared.task_support import shuffled_repeated_support
 from ..shared.object_resources import SPATIAL_BETWEEN_REFERENCE_SHAPE_TYPES
 from ..shared.object_scene import (
     NAMED_SMALL_OBJECT_SHAPE_TYPES,
@@ -195,8 +195,8 @@ def _build_between_references_scene_dataset(
         ]
         rng.shuffle(ring_slots)
         distractor_specs: List[Dict[str, Any]] = []
-        for index, label in enumerate(remaining_labels):
-            shape = str(distractor_shapes[index % len(distractor_shapes)])
+        distractor_shape_order = shuffled_repeated_support(rng, distractor_shapes, len(remaining_labels))
+        for index, (label, shape) in enumerate(zip(remaining_labels, distractor_shape_order)):
             placed_spec: Dict[str, Any] | None = None
             for slot_x, slot_y in ring_slots[index:] + ring_slots[:index]:
                 for _jitter_attempt in range(8):
@@ -455,11 +455,11 @@ class ThreeDSpatialBetweenReferencesLabelTask:
             lower=2,
             upper=2,
         )
-        answer_label_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(answer_seed) if answer_seed is not None else int(instance_seed),
-            namespace=f"{TASK_ID}.answer_label",
+        answer_rng = spawn_rng(
+            int(answer_seed) if answer_seed is not None else int(instance_seed),
+            f"{TASK_ID}.answer_label",
         )
+        answer_label_index = int(answer_rng.randrange(int(point_count)))
         render_params = _resolve_render_params(
             params,
             render_defaults=_RENDER_DEFAULTS,

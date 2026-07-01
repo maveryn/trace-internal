@@ -15,7 +15,6 @@ from ....core.scene_config import (
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import split_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ..shared.task_support import normalize_unit as _normalize_unit
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
@@ -43,6 +42,7 @@ from .shared.state import (
     _WarehouseRenderParams,
     _bbox_area,
     _finalize_specs,
+    _resolve_camera_yaw_band,
     _resolve_render_params,
     _sample_reference_and_objects,
 )
@@ -53,33 +53,6 @@ TASK_ID = "task_three_d__warehouse__robot_forward_path_label"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = ("first_object_ahead",)
 PROMPT_QUERY_KEY = "first_object_ahead"
 MIN_FIRST_OBJECT_MARGIN = 0.52
-
-
-
-
-
-
-def _resolve_camera_yaw_band(params: Mapping[str, Any], *, instance_seed: int) -> Tuple[Tuple[float, float], Dict[str, float], int]:
-    support = tuple(range(len(WAREHOUSE_CAMERA_YAW_BANDS_DEGREES)))
-    explicit = params.get("camera_yaw_band_index")
-    locked = params.get("_locked_camera_yaw_band_index")
-    if explicit is not None:
-        selected = int(explicit)
-    elif locked is not None:
-        selected = int(locked)
-    else:
-        selection_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}.camera_yaw_band_index")
-        selected = int(support[abs(int(selection_index)) % len(support)])
-    if int(selected) not in set(support):
-        raise ValueError(f"unsupported camera_yaw_band_index: {selected}")
-    probabilities = dict(uniform_probability_map(support, selected=int(selected) if explicit is not None else None))
-    return (
-        tuple(float(value) for value in WAREHOUSE_CAMERA_YAW_BANDS_DEGREES[int(selected)]),
-        {str(key): float(value) for key, value in sorted(probabilities.items(), key=lambda item: int(item[0]))},
-        int(selected),
-    )
-
-
 def _visibility_ok(
     candidate_specs: Sequence[Mapping[str, Any]],
     reference_specs: Sequence[Mapping[str, Any]],
@@ -168,13 +141,11 @@ def _attach_path_answers(
     second = dict(ordered[1])
     if float(second["forward_distance_from_robot"]) - float(first["forward_distance_from_robot"]) < MIN_FIRST_OBJECT_MARGIN:
         raise ValueError("first reached object margin too small")
-    answer_label_index = abs(
-        int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}.answer_label"))
-    ) % int(candidate_count)
-    answer_label = str(POINT_LABELS[int(answer_label_index)])
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.answer_label")
+    answer_label = str(rng.choice(tuple(POINT_LABELS[: int(candidate_count)])))
     remaining_labels = [str(label) for label in POINT_LABELS[: int(candidate_count)] if str(label) != str(answer_label)]
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.answer_label_assignment")
-    rng.shuffle(remaining_labels)
+    assignment_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.answer_label_assignment")
+    assignment_rng.shuffle(remaining_labels)
     relabeled: List[Dict[str, Any]] = []
     for spec in candidate_specs:
         updated = dict(spec)
@@ -428,7 +399,11 @@ def _build_retry_locked_params(instance_seed: int, params: Mapping[str, Any]) ->
         upper=13,
         allow_locked=True,
     )
-    _camera_yaw_band, _camera_probabilities, camera_yaw_band_index = _resolve_camera_yaw_band(params=params, instance_seed=int(instance_seed))
+    _camera_yaw_band, _camera_probabilities, camera_yaw_band_index = _resolve_camera_yaw_band(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{TASK_ID}.camera_yaw_band_index",
+    )
     locked_params.update(
         {
             "_locked_query_id": str(query_id),
@@ -523,7 +498,11 @@ class ThreeDWarehouseRobotForwardPathLabelTask:
             upper=13,
             allow_locked=True,
         )
-        camera_yaw_band, camera_yaw_probabilities, camera_yaw_band_index = _resolve_camera_yaw_band(params=params, instance_seed=int(instance_seed))
+        camera_yaw_band, camera_yaw_probabilities, camera_yaw_band_index = _resolve_camera_yaw_band(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.camera_yaw_band_index",
+        )
         render_params = _resolve_render_params(
             params,
             render_defaults=_RENDER_DEFAULTS,

@@ -6,9 +6,6 @@ import json
 
 import pytest
 
-from trace.tasks.charts.single_series.baseline_from_aggregate_percent_change import (
-    ChartsHypotheticalBaselineFromAggregatePercentChangePublicTask,
-)
 from trace.tasks.charts.single_series.remaining_mean_after_removal import ChartsHypotheticalRemainingMeanAfterRemovalPublicTask
 from trace.tasks.charts.single_series.target_share_after_removal import ChartsHypotheticalTargetShareAfterRemovalPublicTask
 
@@ -36,11 +33,6 @@ def _expected_answer(trace: dict) -> int:
         target_value = values_by_label[str(trace["target_label"])]
         assert target_value * 100 % retained_total == 0
         return int(target_value * 100 // retained_total)
-    if operation == "aggregate_percent_higher_than_baseline":
-        aggregate_sum = sum(values_by_label[str(label)] for label in trace["aggregate_labels"])
-        scale = 100 + int(trace["percent_value"])
-        assert aggregate_sum * 100 % scale == 0
-        return int(aggregate_sum * 100 // scale)
     raise AssertionError(f"unsupported operation: {operation}")
 
 
@@ -49,7 +41,6 @@ def _expected_answer(trace: dict) -> int:
     [
         (ChartsHypotheticalRemainingMeanAfterRemovalPublicTask(), "bar"),
         (ChartsHypotheticalTargetShareAfterRemovalPublicTask(), "dot_plot"),
-        (ChartsHypotheticalBaselineFromAggregatePercentChangePublicTask(), "lollipop"),
     ],
 )
 def test_chart_hypothetical_tasks_match_contract(task, scene_variant: str) -> None:
@@ -92,10 +83,6 @@ def test_chart_hypothetical_prompt_examples_match_selected_task() -> None:
             ChartsHypotheticalTargetShareAfterRemovalPublicTask(),
             {"annotation": [[180, 260], [320, 340], [460, 220]], "answer": 25},
         ),
-        (
-            ChartsHypotheticalBaselineFromAggregatePercentChangePublicTask(),
-            {"annotation": [[220, 340], [360, 280], [500, 220]], "answer": 40},
-        ),
     )
     for index, (task, expected) in enumerate(cases, start=12300):
         out = task.generate(index, params={"query_id": "single"}, max_attempts=10)
@@ -126,6 +113,6 @@ def test_chart_hypothetical_task_is_deterministic() -> None:
 
 
 def test_chart_hypothetical_rejects_unsupported_query_id() -> None:
-    task = ChartsHypotheticalBaselineFromAggregatePercentChangePublicTask()
+    task = ChartsHypotheticalRemainingMeanAfterRemovalPublicTask()
     with pytest.raises(ValueError, match="query_id"):
         task.generate(12600, params={"query_id": "__unsupported_query_id__"}, max_attempts=10)

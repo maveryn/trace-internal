@@ -15,12 +15,9 @@ from ...registry import register_task
 from ...shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
-from ...shared.deterministic_sampling import (
-    resolve_selection_index,
-    uniform_probability_map,
-)
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
+from ..shared.task_support import resolve_support_choice_for_namespace
 from ..shared.object_resources import (
     STREET_OBJECT_TYPES,
 )
@@ -93,14 +90,14 @@ def _resolve_camera_yaw_band(
         selected_index = int(explicit)
         if selected_index not in set(support):
             raise ValueError(f"unsupported camera_yaw_band_index: {selected_index}")
+        probabilities = {str(value): (1.0 if int(value) == int(selected_index) else 0.0) for value in support}
     else:
-        selection_index = resolve_selection_index(
+        selected_index, probabilities = resolve_support_choice_for_namespace(
             params=params,
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}.camera_yaw_band_index",
+            support_values=support,
         )
-        selected_index = int(support[abs(int(selection_index)) % len(support)])
-    probabilities = dict(uniform_probability_map(support, selected=int(selected_index) if explicit is not None else None))
     return (
         tuple(float(value) for value in STREET_CAMERA_YAW_BANDS_DEGREES[int(selected_index)]),
         {str(key): float(value) for key, value in sorted(probabilities.items(), key=lambda item: int(item[0]))},
@@ -265,16 +262,8 @@ def _build_street_dataset(
             continue
 
         answer_object_id = str(sorted_by_distance[0]["object_id"])
-        answer_label_index = abs(
-            int(
-                resolve_selection_index(
-                    params=params,
-                    instance_seed=int(instance_seed),
-                    namespace=f"{TASK_ID}.answer_label",
-                )
-            )
-        ) % int(candidate_count)
-        answer_label = str(POINT_LABELS[int(answer_label_index)])
+        label_support = tuple(POINT_LABELS[: int(candidate_count)])
+        answer_label = str(spawn_rng(int(instance_seed), f"{TASK_ID}.answer_label").choice(label_support))
         remaining_labels = [
             str(label)
             for label in POINT_LABELS[: int(candidate_count)]

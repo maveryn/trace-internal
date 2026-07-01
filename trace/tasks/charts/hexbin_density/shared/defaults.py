@@ -5,19 +5,20 @@ from __future__ import annotations
 import math
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.scene_config import get_scene_defaults
+from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import (
     group_default,
     resolve_required_int_bounds,
     split_scene_generation_rendering_prompt_defaults,
 )
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.render_variation import (
     apply_layout_jitter_to_margins,
     resolve_render_int,
     resolve_render_rgb,
 )
-from trace.tasks.charts.shared.labeled_chart_common import resolve_chart_axis_variant
+from trace.tasks.charts.shared.labeled_chart_variants import resolve_chart_axis_variant
 from trace.tasks.charts.shared.visual_defaults import (
     load_chart_scene_background_defaults,
     load_chart_scene_noise_defaults,
@@ -41,13 +42,6 @@ SUPPORTED_DENSITY_PALETTE_SCHEMES: Tuple[str, ...] = (
     "slate",
     "viridis",
     "cividis",
-)
-TITLE_OPTIONS: Tuple[str, ...] = (
-    "Density Field",
-    "Sample Density Map",
-    "Observation Density",
-    "Hexbin Frequency",
-    "Spatial Density Summary",
 )
 AXIS_LABELS: Tuple[Tuple[str, str], ...] = (
     ("x", "y"),
@@ -180,12 +174,13 @@ def balanced_int(
     values = tuple(int(value) for value in support)
     if not values:
         raise ValueError(f"empty integer support for {key}")
-    if params.get("_sample_cursor") is not None:
-        cursor = abs(int(params["_sample_cursor"]))
-        offset = resolve_selection_index(params=params, instance_seed=0, namespace=f"{SCENE_NAMESPACE}.{namespace}.offset")
-        return int(values[(cursor + offset) % len(values)])
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{SCENE_NAMESPACE}.{namespace}")
-    return int(values[index % len(values)])
+    return int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.{namespace}"),
+            values,
+            sort_keys=True,
+        )
+    )
 
 
 def resolve_bounds(
@@ -324,7 +319,6 @@ __all__ = [
     "SCENE_ID",
     "SCENE_NAMESPACE",
     "SUPPORTED_DENSITY_PALETTE_SCHEMES",
-    "TITLE_OPTIONS",
     "balanced_int",
     "generation_int",
     "jittered_margins",

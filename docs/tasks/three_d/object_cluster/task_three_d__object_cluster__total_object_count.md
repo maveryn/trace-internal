@@ -10,7 +10,15 @@
 - Annotation schema: `bbox_set`
 
 ## Program Contract
-`count(filter(object_cluster_objects, is_countable_object = true)); scene=object_cluster; scope=total_object_count`
+
+Program: `count(filter(object_cluster_objects, is_countable_object = true)); scene=object_cluster; scope=total_object_count`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `total_object_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `object_cluster_objects`, `is_countable_object`, `true`, `object_cluster`, `total_object_count`.
+Operation: evaluate `count` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Contract
 The image shows many small synthetic perspective 3D objects arranged on a plain

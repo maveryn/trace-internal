@@ -28,12 +28,14 @@ OBJECT_DESCRIPTION_BY_VARIANT: dict[str, str] = {
 ANNOTATION_HINT_BY_KIND: dict[str, str] = {
     "answer_item_bbox": 'set "annotation" to one bounding box [x0, y0, x1, y1] around the answer item',
     "reference_answer_bbox_map": 'set "annotation" to an object mapping "reference_item" and "answer_item" to their [x0, y0, x1, y1] pixel boxes',
+    "reference_counted_bbox_set_map": 'set "annotation" to an object mapping "reference_item" to an array containing one [x0, y0, x1, y1] box for the reference item and "counted_items" to an array of [x0, y0, x1, y1] boxes for the counted items',
     "answer_category_bbox_set": 'set "annotation" to an array of bounding boxes [x0, y0, x1, y1] for the items in the answer category',
 }
 
 JSON_EXAMPLE_BY_KIND: dict[str, str] = {
     "answer_item_bbox": '{"annotation":[410,235,548,292],"answer":"Aero"}',
     "reference_answer_bbox_map": '{"annotation":{"reference_item":[238,460,322,544],"answer_item":[628,306,710,388]},"answer":"Cair"}',
+    "reference_counted_bbox_set_map": '{"annotation":{"reference_item":[[238,460,322,544]],"counted_items":[[628,306,710,388],[720,250,780,310]]},"answer":2}',
     "answer_category_bbox_set": '{"annotation":[[118,250,236,318],[330,410,470,485],[710,205,842,280]],"answer":"Coastal"}',
 }
 

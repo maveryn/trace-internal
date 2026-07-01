@@ -7,26 +7,26 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from trace.core.sampling import sample_without_replacement, uniform_choice
 from trace.core.seed import spawn_rng
-from trace.tasks.shared.config_defaults import group_default, resolve_required_int_bounds
+from trace.tasks.shared.named_colors import sample_named_color_palette
+from trace.tasks.shared.config_defaults import group_default
 
 from .rules import (
+    canonical_face_assignment_signature,
+    cube_rotation_matrices,
     face_across_display_side,
-    random_start_orientation,
-    roll_orientation,
-    sample_roll_path,
+    rotate_face_assignment,
 )
 from .state import (
     DEFAULTS,
     FACE_IDS,
     FACE_LABEL_POOL,
+    NET_COORDS,
+    NetEquivalenceDataset,
+    NetEquivalenceOption,
     FaceOption,
     FaceRelationDataset,
     OPPOSITE_FACE,
-    PathSequenceOption,
-    ROLL_OFFSETS,
-    RollingDataset,
     SIDE_OFFSETS,
-    SurfacePathDataset,
 )
 
 
@@ -73,14 +73,24 @@ def option_order(
     option_count: int,
     instance_seed: int,
     namespace: str,
+    excluded_faces: Sequence[str] = (),
 ) -> Tuple[Tuple[FaceOption, ...], str]:
     """Build one face-label option set with exactly one correct option."""
 
     rng = spawn_rng(int(instance_seed), f"{namespace}.option_order")
     if int(option_count) < 2 or int(option_count) > len(FACE_IDS):
         raise ValueError("cube-net option_count must be between 2 and the number of cube faces")
+    excluded = {str(face) for face in excluded_faces}
+    excluded.discard(str(correct_face))
+    available_faces = [
+        str(face)
+        for face in FACE_IDS
+        if str(face) != str(correct_face) and str(face) not in excluded
+    ]
+    if int(option_count) - 1 > len(available_faces):
+        raise ValueError("cube-net option_count exceeds available distractor faces")
     correct_index = int(rng.randrange(int(option_count)))
-    distractors = [face for face in FACE_IDS if str(face) != str(correct_face)]
+    distractors = list(available_faces)
     rng.shuffle(distractors)
     ordered_faces = list(distractors[: max(0, int(option_count) - 1)])
     ordered_faces.insert(correct_index, str(correct_face))
@@ -96,64 +106,17 @@ def option_order(
     return options, str(labels[correct_index])
 
 
-def _mutated_face_sequence(
-    *,
-    base_sequence: Sequence[str],
-    rng: Any,
-    protected_first: bool = True,
-) -> Tuple[str, ...]:
-    """Create one plausible sequence distractor by mutating a nonprotected face."""
+def _exposed_net_edge_pairs() -> Tuple[Tuple[str, str], ...]:
+    """Return face-side pairs whose side is not shared in the flat net."""
 
-    sequence = [str(face) for face in base_sequence]
-    if not sequence:
-        return tuple(sequence)
-    start_index = 1 if bool(protected_first) and len(sequence) > 1 else 0
-    index = int(rng.randrange(start_index, len(sequence)))
-    choices = [face for face in FACE_IDS if str(face) != sequence[index]]
-    sequence[index] = str(uniform_choice(rng, tuple(choices)))
-    return tuple(sequence)
-
-
-def surface_sequence_options(
-    *,
-    face_labels: Mapping[str, str],
-    correct_sequence: Sequence[str],
-    option_count: int,
-    instance_seed: int,
-    namespace: str,
-) -> Tuple[Tuple[PathSequenceOption, ...], str]:
-    """Build unique folded-path sequence options while preserving the start face."""
-
-    rng = spawn_rng(int(instance_seed), f"{namespace}.sequence_option_order")
-    if int(option_count) < 2 or int(option_count) > len(FACE_IDS):
-        raise ValueError("cube-net option_count must be between 2 and the number of cube faces")
-    correct_index = int(rng.randrange(int(option_count)))
-    sequences: list[tuple[str, ...]] = [tuple(str(face) for face in correct_sequence)]
-    attempts = 0
-    while len(sequences) < int(option_count) and attempts < 200:
-        attempts += 1
-        candidate = _mutated_face_sequence(base_sequence=correct_sequence, rng=rng)
-        if candidate not in sequences:
-            sequences.append(tuple(candidate))
-    while len(sequences) < int(option_count):
-        shuffled = list(str(face) for face in correct_sequence)
-        rng.shuffle(shuffled)
-        candidate = tuple(shuffled)
-        if candidate not in sequences:
-            sequences.append(candidate)
-    correct = sequences.pop(0)
-    rng.shuffle(sequences)
-    sequences.insert(correct_index, correct)
-    labels = tuple(ascii_uppercase[index] for index in range(len(sequences)))
-    options = tuple(
-        PathSequenceOption(
-            option_label=str(label),
-            face_ids=tuple(str(face) for face in sequence),
-            face_labels=tuple(str(face_labels[str(face)]) for face in sequence),
-        )
-        for label, sequence in zip(labels, sequences)
-    )
-    return options, str(labels[correct_index])
+    occupied_coords = {tuple(coord) for coord in NET_COORDS.values()}
+    pairs: list[tuple[str, str]] = []
+    for face in FACE_IDS:
+        x, y = NET_COORDS[str(face)]
+        for side, (dx, dy) in SIDE_OFFSETS.items():
+            if (int(x + dx), int(y + dy)) not in occupied_coords:
+                pairs.append((str(face), str(side)))
+    return tuple(pairs)
 
 
 def sample_face_relation_dataset(
@@ -174,8 +137,7 @@ def sample_face_relation_dataset(
     if str(relation_kind) == "opposite":
         correct_face = str(OPPOSITE_FACE[reference_face])
     elif str(relation_kind) == "edge_neighbor":
-        side_support = tuple(SIDE_OFFSETS.keys())
-        marked_side = str(uniform_choice(rng, side_support))
+        reference_face, marked_side = uniform_choice(rng, _exposed_net_edge_pairs())
         correct_face = face_across_display_side(reference_face, marked_side)
     else:
         raise ValueError(f"unsupported face relation kind: {relation_kind}")
@@ -185,6 +147,7 @@ def sample_face_relation_dataset(
         option_count=int(option_count),
         instance_seed=int(instance_seed),
         namespace=f"{namespace}.{relation_kind}",
+        excluded_faces=(reference_face,),
     )
     return FaceRelationDataset(
         relation_kind=str(relation_kind),
@@ -197,171 +160,120 @@ def sample_face_relation_dataset(
     )
 
 
-def sample_surface_path_dataset(
+def _face_assignment_tuple(face_color_names: Mapping[str, str]) -> Tuple[str, ...]:
+    """Return one stable face-order tuple for duplicate-option rejection."""
+
+    return tuple(str(face_color_names[str(face)]) for face in FACE_IDS)
+
+
+def _swap_face_colors(
+    face_color_names: Mapping[str, str],
+    first_face: str,
+    second_face: str,
+) -> Dict[str, str]:
+    """Return a copy with two face colors exchanged."""
+
+    swapped = {str(face): str(color) for face, color in face_color_names.items()}
+    swapped[str(first_face)], swapped[str(second_face)] = (
+        swapped[str(second_face)],
+        swapped[str(first_face)],
+    )
+    return swapped
+
+
+def sample_equivalent_net_dataset(
     *,
     params: Mapping[str, Any],
     generation_defaults: Mapping[str, Any],
     instance_seed: int,
     namespace: str,
-) -> SurfacePathDataset:
-    """Sample one folded-edge path and both public answer option families."""
+) -> NetEquivalenceDataset:
+    """Sample one colored-net equivalence task with exactly one matching option."""
 
-    rng = spawn_rng(int(instance_seed), f"{namespace}.surface_path")
     option_count = resolve_option_count(params, generation_defaults)
-    step_min, step_max = resolve_required_int_bounds(
-        params,
-        generation_defaults,
-        min_key="surface_path_step_count_min",
-        max_key="surface_path_step_count_max",
-        fallback_min=DEFAULTS.surface_path_step_count_min,
-        fallback_max=DEFAULTS.surface_path_step_count_max,
-        context="cube-net folded path step count",
-    )
-    step_count = int(rng.randint(int(step_min), int(step_max)))
-    face_labels = sample_face_labels(int(instance_seed), f"{namespace}.surface_path")
-    sides = tuple(SIDE_OFFSETS.keys())
-    sequence: list[str] = []
-    path_sides: list[str] = []
-    for attempt in range(80):
-        start_face = str(uniform_choice(rng, FACE_IDS))
-        current = str(start_face)
-        sequence = [current]
-        path_sides = []
-        previous_side: str | None = None
-        for _ in range(step_count):
-            candidates = list(sides)
-            if previous_side is not None and len(candidates) > 1:
-                opposite = {
-                    "top": "bottom",
-                    "bottom": "top",
-                    "left": "right",
-                    "right": "left",
-                }[previous_side]
-                candidates = [side for side in candidates if side != opposite]
-            side = str(uniform_choice(rng, tuple(candidates)))
-            current = face_across_display_side(current, side)
-            path_sides.append(side)
-            sequence.append(current)
-            previous_side = side
-        if len(set(sequence)) >= min(3, len(sequence)) or attempt >= 12:
-            break
+    if int(option_count) != 4:
+        raise ValueError("cube-net equivalence currently requires exactly four options")
+    rng = spawn_rng(int(instance_seed), f"{namespace}.equivalent_net")
+    palette = sample_named_color_palette(rng, palette_size=len(FACE_IDS))
+    if len(palette) != len(FACE_IDS):
+        raise ValueError("cube-net equivalence requires six named colors")
+    reference = {
+        str(face): str(color_name)
+        for face, (color_name, _rgb) in zip(FACE_IDS, palette)
+    }
+    reference_signature = canonical_face_assignment_signature(reference)
 
-    endpoint_options, endpoint_label = option_order(
-        face_labels=face_labels,
-        correct_face=str(sequence[-1]),
-        option_count=int(option_count),
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.endpoint",
-    )
-    sequence_options, sequence_label = surface_sequence_options(
-        face_labels=face_labels,
-        correct_sequence=tuple(sequence),
-        option_count=int(option_count),
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.sequence",
-    )
-    return SurfacePathDataset(
-        face_labels=dict(face_labels),
-        start_face=str(sequence[0]),
-        path_sides=tuple(path_sides),
-        face_sequence=tuple(sequence),
-        endpoint_face=str(sequence[-1]),
-        endpoint_options=tuple(endpoint_options),
-        sequence_options=tuple(sequence_options),
-        endpoint_correct_option_label=str(endpoint_label),
-        sequence_correct_option_label=str(sequence_label),
-    )
+    rotated_candidates = [
+        rotate_face_assignment(reference, rotation)
+        for rotation in cube_rotation_matrices()
+    ]
+    non_identity_rotations = [
+        candidate
+        for candidate in rotated_candidates
+        if _face_assignment_tuple(candidate) != _face_assignment_tuple(reference)
+    ]
+    correct_face_colors = dict(uniform_choice(rng, tuple(non_identity_rotations)))
+    correct_signature = canonical_face_assignment_signature(correct_face_colors)
+    if correct_signature != reference_signature:
+        raise ValueError("sampled correct net is not equivalent to the reference")
 
-
-def sample_rolling_dataset(
-    *,
-    target_slot: str,
-    params: Mapping[str, Any],
-    generation_defaults: Mapping[str, Any],
-    instance_seed: int,
-    namespace: str,
-) -> RollingDataset:
-    """Sample a cube roll path whose final orientation determines the answer."""
-
-    rng = spawn_rng(int(instance_seed), f"{namespace}.{target_slot}.rolling")
-    option_count = resolve_option_count(params, generation_defaults)
-    rows_min, rows_max = resolve_required_int_bounds(
-        params,
-        generation_defaults,
-        min_key="rolling_grid_rows_min",
-        max_key="rolling_grid_rows_max",
-        fallback_min=DEFAULTS.rolling_grid_rows_min,
-        fallback_max=DEFAULTS.rolling_grid_rows_max,
-        context="cube rolling grid row count",
-    )
-    cols_min, cols_max = resolve_required_int_bounds(
-        params,
-        generation_defaults,
-        min_key="rolling_grid_cols_min",
-        max_key="rolling_grid_cols_max",
-        fallback_min=DEFAULTS.rolling_grid_cols_min,
-        fallback_max=DEFAULTS.rolling_grid_cols_max,
-        context="cube rolling grid column count",
-    )
-    len_min, len_max = resolve_required_int_bounds(
-        params,
-        generation_defaults,
-        min_key="rolling_path_length_min",
-        max_key="rolling_path_length_max",
-        fallback_min=DEFAULTS.rolling_path_length_min,
-        fallback_max=DEFAULTS.rolling_path_length_max,
-        context="cube rolling path length",
-    )
-    rows = int(rng.randint(int(rows_min), int(rows_max)))
-    cols = int(rng.randint(int(cols_min), int(cols_max)))
-    path_length = int(rng.randint(int(len_min), int(len_max)))
-    if str(target_slot) not in {"top", "south", "east"}:
-        raise ValueError(f"unsupported rolling target slot: {target_slot}")
-    face_labels = sample_face_labels(int(instance_seed), f"{namespace}.{target_slot}")
-    start_orientation: dict[str, str] = {}
-    final_orientation: dict[str, str] = {}
-    path_cells: tuple[tuple[int, int], ...] = ()
-    path_dirs: tuple[str, ...] = ()
-    for attempt in range(40):
-        attempt_seed = int(instance_seed) + int(attempt)
-        start_orientation = random_start_orientation(
-            attempt_seed,
-            f"{namespace}.{target_slot}",
+    distractors: list[NetEquivalenceOption] = []
+    seen_assignments = {
+        _face_assignment_tuple(reference),
+        _face_assignment_tuple(correct_face_colors),
+    }
+    seen_signatures = {reference_signature}
+    for attempt in range(240):
+        base = correct_face_colors if attempt % 2 == 0 else reference
+        first_face, second_face = rng.sample(list(FACE_IDS), k=2)
+        candidate = _swap_face_colors(base, str(first_face), str(second_face))
+        assignment_key = _face_assignment_tuple(candidate)
+        if assignment_key in seen_assignments:
+            continue
+        signature = canonical_face_assignment_signature(candidate)
+        if signature in seen_signatures:
+            continue
+        distractors.append(
+            NetEquivalenceOption(
+                option_label="",
+                face_color_names=dict(candidate),
+                equivalence_kind="non_equivalent_swap",
+                canonical_signature=tuple(signature),
+            )
         )
-        path_cells, path_dirs = sample_roll_path(
-            instance_seed=attempt_seed,
-            rows=rows,
-            cols=cols,
-            length=path_length,
-            namespace=f"{namespace}.{target_slot}",
-        )
-        final_orientation = dict(start_orientation)
-        for direction in path_dirs:
-            final_orientation = roll_orientation(final_orientation, str(direction))
-        if str(final_orientation[str(target_slot)]) != str(start_orientation[str(target_slot)]):
+        seen_assignments.add(assignment_key)
+        seen_signatures.add(tuple(signature))
+        if len(distractors) == 3:
             break
-        if attempt >= 8:
-            break
-    correct_face = str(final_orientation[str(target_slot)])
-    options, correct_label = option_order(
-        face_labels=face_labels,
-        correct_face=correct_face,
-        option_count=int(option_count),
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.{target_slot}",
+    if len(distractors) != 3:
+        raise ValueError("could not sample three unique non-equivalent cube-net distractors")
+
+    correct_index = int(rng.randrange(4))
+    labels = tuple(ascii_uppercase[index] for index in range(4))
+    unlabeled_options: list[NetEquivalenceOption] = list(distractors)
+    unlabeled_options.insert(
+        correct_index,
+        NetEquivalenceOption(
+            option_label="",
+            face_color_names=dict(correct_face_colors),
+            equivalence_kind="equivalent_by_cube_rotation",
+            canonical_signature=tuple(correct_signature),
+        ),
     )
-    return RollingDataset(
-        target_slot=str(target_slot),
-        face_labels=dict(face_labels),
-        start_orientation=dict(start_orientation),
-        final_orientation=dict(final_orientation),
-        grid_rows=int(rows),
-        grid_cols=int(cols),
-        path_cells=tuple(path_cells),
-        path_directions=tuple(path_dirs),
-        correct_face=correct_face,
+    options = tuple(
+        NetEquivalenceOption(
+            option_label=str(label),
+            face_color_names=dict(option.face_color_names),
+            equivalence_kind=str(option.equivalence_kind),
+            canonical_signature=tuple(option.canonical_signature),
+        )
+        for label, option in zip(labels, unlabeled_options)
+    )
+    return NetEquivalenceDataset(
+        reference_face_color_names=dict(reference),
+        reference_signature=tuple(reference_signature),
         options=tuple(options),
-        correct_option_label=str(correct_label),
+        correct_option_label=str(labels[correct_index]),
     )
 
 
@@ -378,28 +290,27 @@ def face_option_specs(options: Sequence[FaceOption]) -> list[dict[str, str]]:
     ]
 
 
-def sequence_option_specs(options: Sequence[PathSequenceOption]) -> list[dict[str, Any]]:
-    """Convert sequence options to JSON-friendly trace records."""
+def equivalent_net_option_specs(options: Sequence[NetEquivalenceOption]) -> list[dict[str, Any]]:
+    """Convert colored-net options to JSON-friendly trace records."""
 
     return [
         {
             "option_label": str(option.option_label),
-            "face_ids": [str(face) for face in option.face_ids],
-            "face_labels": [str(label) for label in option.face_labels],
+            "face_color_names": dict(option.face_color_names),
+            "equivalence_kind": str(option.equivalence_kind),
+            "canonical_signature": list(option.canonical_signature),
         }
         for option in options
     ]
 
 
 __all__ = [
+    "equivalent_net_option_specs",
     "face_option_specs",
     "option_order",
     "resolve_option_count",
     "resolve_scene_int",
+    "sample_equivalent_net_dataset",
     "sample_face_labels",
     "sample_face_relation_dataset",
-    "sample_rolling_dataset",
-    "sample_surface_path_dataset",
-    "sequence_option_specs",
-    "surface_sequence_options",
 ]

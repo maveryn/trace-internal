@@ -16,7 +16,7 @@ instances and query ids:
 
 - scene id and rendered scene grammar
 - answer schema
-- annotation schema, including the semantic role of keyed annotation entries
+- annotation schema, including the semantic role of map annotation entries
 - concrete reasoning program schema
 - prompt scaffold and output JSON shape
 
@@ -66,6 +66,11 @@ A `query_id` is a semantic branch of the same public task. It must change the
 user-facing task operation, not merely the sampled value used to instantiate the
 same operation.
 
+Tasks with no semantic query branch must use the repo-wide sentinel
+`query_id="single"` and `supported_query_ids=("single",)`. Do not use
+`default`, the public task id, or the objective-contract name as a single-query
+placeholder.
+
 Use a query id only when the branch changes at least one of:
 
 - prompt predicate or operator wording, such as above vs below or largest vs
@@ -76,6 +81,12 @@ Use a query id only when the branch changes at least one of:
 - operation applied, such as sum vs mean or absolute vs signed difference, when
   the approved task contract intentionally keeps that as one task
 - annotation role semantics, while preserving the same annotation schema
+
+For map annotations, do not treat literal visible key names as the schema.
+The schema is stable when the annotation type, semantic role family, and
+cardinality/order stay fixed. A branch that asks for a resolved segment such as
+`AY` or `XB` may annotate different visible keys while still sharing the same
+schema if both branches require exactly the requested segment endpoints.
 
 Valid query ids include narrow mirrors such as:
 
@@ -119,6 +130,10 @@ Examples:
   changes from single-attribute count to multi-attribute conjunction count.
 - If a chart scene renders as line, bar, or lollipop while the task prompt and
   operation are unchanged, chart type is a scene/render variant, not a query id.
+- If a geometry prompt asks for the length of resolved segment `AY` or `XB`,
+  the concrete endpoint labels are sample bindings. They are not different
+  annotation schemas when the task always asks for exactly the two requested
+  segment endpoints.
 
 Split the public task if a branch changes:
 
@@ -133,13 +148,55 @@ Every supported query id must map to a concrete tuple of program arguments. No
 orphan query ids, hidden mirrors, or query names that duplicate renderer
 variation are allowed.
 
+## Scalar Annotation Check
+
+Apply `SCALAR_ANNOTATION_ROLLOUT.md` during taxonomy review.
+
+Annotation schema must match witness cardinality:
+
+- guaranteed exactly one point: `point`
+- guaranteed exactly one box: `bbox`
+- guaranteed exactly one visual line/edge/path witness: `segment`
+- variable homogeneous witnesses: `point_set` / `bbox_set`
+- multiple unordered visual line/edge/path witnesses: `segment_set`
+- ordered homogeneous witnesses: `point_sequence` / `bbox_sequence`
+- key-bound witnesses: map types
+
+Annotation witnesses are answer-verification witnesses, not proof traces. Apply
+the task-family hierarchy from
+`docs/contracts/ANNOTATION_AND_REWARD_CONTRACTS.md`: direct visible-answer
+tasks usually annotate the selected/countable answer object, derived
+chart/graph/measurement/arithmetic tasks annotate minimal visible operands, and
+diagram tasks annotate canonical visual primitives. Do not require annotation
+to cover every visual cue or proof step needed to derive the answer. Scope
+regions, reference objects, candidate lists, ranked candidates, formula inputs,
+and other derivation context belong in trace metadata unless they are part of
+the task's answer-verification witness.
+
+Do not use `point_map` or `bbox_map` only to avoid a one-item set.
+Map annotations are for binding multiple semantic roles. Do not pass taxonomy
+review if a task uses a one-item set or one-key map while the task contract
+guarantees exactly one point, box, or segment witness. Use `segment` or
+`segment_set` for visual line/edge/path witnesses.
+
 ## Agent Pre-Review Checklist
 
 Before generating task reviews for a migrated scene, the agent must verify:
 
 - every active task id has a written task contract
-- every task has concrete program code and explicit allowed argument values
+- every task doc has an app-visible `## Program Contract` section with a
+  concrete program code, including `scene=` and `scope=`
+- every task has explicit allowed argument values in the taxonomy/review
+  metadata when the task has semantic query branches
 - every query id is a user-facing semantic branch under this checklist
+- every task with no semantic query branch uses `single`
+- every guaranteed-single point/box task uses scalar annotation once scalar
+  contracts are available
+- every guaranteed-single line/edge/path witness uses `segment`, not one-item
+  `segment_set`
+- `scalar_annotation_checked` is recorded as true in the taxonomy status only
+  after every task in the scene has been checked against
+  `SCALAR_ANNOTATION_ROLLOUT.md`
 - non-semantic query ids were moved to trace metadata or removed
 - tasks were split, merged, or deleted where the contract requires it
 - prompt assets match the task/query semantics
@@ -174,6 +231,7 @@ Use this minimal shape:
     "query_ids_semantic": true,
     "prompt_taxonomy_aligned": true,
     "annotation_contracts_stable": true,
+    "scalar_annotation_checked": true,
     "all_query_branches_smoked": true
   },
   "notes": ""
@@ -181,6 +239,13 @@ Use this minimal shape:
 ```
 
 Do not write a passing status file unless the checklist actually passed.
+The review app treats a passing `taxonomy_review_status.json` as invalid if
+any listed task is missing a concrete `## Program Contract` in
+`docs/tasks/<domain>/<scene_id>/<task_id>.md`; coarse Query Details rows are not
+enough.
+Task-review generation also rejects stale taxonomy status files that omit
+`checklist.scalar_annotation_checked=true`, or that leave a task doc classified
+as an automatic scalar `point`/`bbox` candidate.
 
 Do not use stale generated taxonomy audit packages as migration source of
 truth.

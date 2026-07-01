@@ -40,6 +40,11 @@ generation:
       winning_move_label_threat_kind_weights:
         vertical_threat: 1.0
         horizontal_threat: 1.0
+    task_games__connect_four__blocking_move_column_label:
+      balanced_blocking_move_label_threat_kind_sampling: true
+      blocking_move_label_threat_kind_weights:
+        vertical_threat: 1.0
+        horizontal_threat: 1.0
 rendering:
   shared:
     canvas_width: 980

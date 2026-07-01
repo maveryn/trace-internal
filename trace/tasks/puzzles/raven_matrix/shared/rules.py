@@ -18,43 +18,35 @@ COLOR_POOL: tuple[dict[str, Any], ...] = (
     {"name": "purple", "rgb": [136, 100, 196]},
     {"name": "gold", "rgb": [205, 162, 62]},
 )
-TRANSFORM_OPS: tuple[str, ...] = (
+ROTATION_OPS: tuple[str, ...] = (
     "identity",
-    "rot90",
-    "rot180",
-    "flip_h",
-    "flip_v",
+    "rotate_cw_90",
+    "rotate_ccw_90",
 )
-TRANSFORM_RULES: tuple[tuple[tuple[str, str, str], tuple[str, str, str]], ...] = (
-    (("identity", "identity", "identity"), ("identity", "rot90", "rot180")),
-    (("identity", "identity", "identity"), ("identity", "flip_h", "flip_v")),
-    (("identity", "rot90", "rot180"), ("identity", "identity", "identity")),
-    (("identity", "flip_h", "flip_v"), ("identity", "identity", "identity")),
-    (("identity", "rot90", "rot180"), ("identity", "flip_h", "flip_v")),
-    (("identity", "flip_h", "flip_v"), ("identity", "rot90", "rot180")),
+ROTATION_SEQUENCES: tuple[tuple[str, str, tuple[str, str, str]], ...] = (
+    ("row_clockwise_first", "row", ("identity", "rotate_cw_90", "rotate_ccw_90")),
+    ("row_counterclockwise_first", "row", ("identity", "rotate_ccw_90", "rotate_cw_90")),
+    ("column_clockwise_first", "column", ("identity", "rotate_cw_90", "rotate_ccw_90")),
+    ("column_counterclockwise_first", "column", ("identity", "rotate_ccw_90", "rotate_cw_90")),
 )
-BASE_PATTERNS: tuple[tuple[tuple[int, int], ...], ...] = (
-    ((0, 0), (0, 1), (1, 1), (2, 1)),
-    ((0, 1), (1, 1), (1, 2), (2, 0)),
-    ((0, 2), (1, 0), (1, 1), (2, 1)),
-    ((0, 0), (1, 0), (1, 2), (2, 1)),
-)
-SET_OPERATIONS: tuple[str, ...] = ("union", "intersection", "xor")
+SET_OPERATIONS: tuple[str, ...] = ("union", "intersection")
 ANALOGICAL_TRANSFORMS: tuple[str, ...] = (
     "shape_cycle",
     "color_cycle",
     "size_cycle",
 )
 SIZE_CYCLE: tuple[float, ...] = (0.48, 0.66, 0.84)
-POSITION_STEPS: tuple[tuple[int, int], ...] = (
-    (1, 0),
-    (2, 0),
-    (0, 1),
-    (0, 2),
-    (1, 1),
-    (1, 2),
-    (2, 1),
-    (2, 2),
+POSITION_PROGRESSIONS: tuple[tuple[str, str, str], ...] = (
+    ("row_left_to_right", "row", "left_to_right"),
+    ("row_right_to_left", "row", "right_to_left"),
+    ("column_top_to_bottom", "column", "top_to_bottom"),
+    ("column_bottom_to_top", "column", "bottom_to_top"),
+)
+FEATURE_BINDING_MODES: tuple[tuple[str, str, str], ...] = (
+    ("row_shape_column_color", "shape", "color"),
+    ("row_color_column_shape", "color", "shape"),
+    ("row_shape_column_size", "shape", "size"),
+    ("row_size_column_shape", "size", "shape"),
 )
 
 
@@ -147,6 +139,29 @@ def attribute_panel_spec(
     }
 
 
+def _feature_value_label(feature_name: str, value: Any) -> str:
+    """Return a compact trace label for one feature value."""
+
+    if str(feature_name) == "color":
+        return str(value["name"])
+    if str(feature_name) == "size":
+        return f"{float(value):.2f}"
+    return str(value)
+
+
+def _feature_panel_spec(
+    *,
+    feature_values: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Build one attribute panel from feature-axis values."""
+
+    return attribute_panel_spec(
+        object_type=str(feature_values["shape"]),
+        color=dict(feature_values["color"]),
+        size_scale=float(feature_values["size"]),
+    )
+
+
 def count_panel_spec(
     *,
     count: int,
@@ -172,28 +187,48 @@ def build_count_progression_dataset(
     option_count: int,
     correct_option_index: int,
 ) -> dict[str, Any]:
-    """Construct an additive-count Raven matrix dataset."""
+    """Construct a direct row/column count-progression Raven dataset."""
 
     if int(count_max - count_min + 1) < int(option_count):
         raise ValueError("count support must contain at least option_count values")
     table: list[list[int]] | None = None
-    row_terms: list[int] = []
-    col_terms: list[int] = []
-    base_count = 1
+    progression_axis = "row"
+    progression_delta = 1
+    progression_starts: list[int] = []
+    delta_candidates = (-3, -2, -1, 1, 2, 3)
     for _ in range(200):
-        row_terms = [int(value) for value in rng.sample(range(0, 4), 3)]
-        col_terms = [int(value) for value in rng.sample(range(0, 4), 3)]
-        base_count = int(rng.randint(int(count_min), max(int(count_min), int(count_min) + 1)))
-        candidate_table = [
-            [
-                int(base_count + row_terms[row_index] + col_terms[col_index])
-                for col_index in range(3)
-            ]
-            for row_index in range(3)
+        axis = str(rng.choice(("row", "column")))
+        delta = int(rng.choice(delta_candidates))
+        valid_starts = [
+            int(start)
+            for start in range(int(count_min), int(count_max) + 1)
+            if int(count_min) <= int(start + delta) <= int(count_max)
+            and int(count_min) <= int(start + (2 * delta)) <= int(count_max)
         ]
+        if len(valid_starts) < 3:
+            continue
+        starts = [int(value) for value in rng.sample(valid_starts, 3)]
+        if axis == "row":
+            candidate_table = [
+                [
+                    int(start),
+                    int(start + delta),
+                    int(start + (2 * delta)),
+                ]
+                for start in starts
+            ]
+        else:
+            candidate_table = [[0 for _ in range(3)] for _ in range(3)]
+            for col_index, start in enumerate(starts):
+                candidate_table[0][col_index] = int(start)
+                candidate_table[1][col_index] = int(start + delta)
+                candidate_table[2][col_index] = int(start + (2 * delta))
         flat_counts = [int(value) for row in candidate_table for value in row]
         if min(flat_counts) >= int(count_min) and max(flat_counts) <= int(count_max):
             table = candidate_table
+            progression_axis = axis
+            progression_delta = int(delta)
+            progression_starts = starts
             break
     if table is None:
         raise RuntimeError("failed to construct count-progression Raven matrix")
@@ -242,10 +277,15 @@ def build_count_progression_dataset(
         "option_count": int(option_count),
         "solver_trace": {
             "rule_type": "count_progression_matrix",
-            "count_rule": "count = base + row_term + column_term",
-            "base_count": int(base_count),
-            "row_terms": [int(value) for value in row_terms],
-            "column_terms": [int(value) for value in col_terms],
+            "count_rule": (
+                "repeat the same count change across rows"
+                if progression_axis == "row"
+                else "repeat the same count change down columns"
+            ),
+            "progression_axis": str(progression_axis),
+            "progression_delta": int(progression_delta),
+            "progression_deltas": [int(progression_delta), int(progression_delta)],
+            "progression_starts": [int(value) for value in progression_starts],
             "count_table": [[int(value) for value in row] for row in table],
             "target_row_index": 2,
             "target_col_index": 2,
@@ -263,14 +303,10 @@ def transform_coord(row: int, col: int, op: str) -> tuple[int, int]:
     c = int(col)
     if op == "identity":
         return r, c
-    if op == "rot90":
+    if op == "rotate_cw_90":
         return c, 2 - r
-    if op == "rot180":
-        return 2 - r, 2 - c
-    if op == "flip_h":
-        return r, 2 - c
-    if op == "flip_v":
-        return 2 - r, c
+    if op == "rotate_ccw_90":
+        return 2 - c, r
     raise ValueError(f"unsupported Raven transform op: {op}")
 
 
@@ -286,20 +322,6 @@ def apply_transform(
             for row, col in coords
         )
     )
-
-
-def apply_transform_sequence(
-    coords: Sequence[Sequence[int]],
-    ops: Sequence[str],
-) -> tuple[tuple[int, int], ...]:
-    """Apply a sequence of transform ops to a coordinate set."""
-
-    transformed: tuple[tuple[int, int], ...] = tuple(
-        sorted((int(row), int(col)) for row, col in coords)
-    )
-    for op in ops:
-        transformed = apply_transform(transformed, str(op))
-    return tuple(sorted(transformed))
 
 
 def pattern_panel_spec(
@@ -372,6 +394,20 @@ def random_pattern_distractor_specs(
     return specs
 
 
+def sample_rotation_base_cells(*, rng) -> tuple[tuple[int, int], ...]:
+    """Sample a 3x3 cell set with distinct 90-degree rotation states."""
+
+    for _ in range(400):
+        cells = sample_cell_set(rng=rng, min_count=3, max_count=5)
+        signatures = {
+            tuple(apply_transform(cells, str(op)))
+            for op in ROTATION_OPS
+        }
+        if len(signatures) == len(ROTATION_OPS):
+            return tuple(cells)
+    raise RuntimeError("failed to sample non-symmetric Raven rotation base")
+
+
 def spatial_distractor_specs(
     *,
     target_cells: Sequence[Sequence[int]],
@@ -385,7 +421,7 @@ def spatial_distractor_specs(
     )
     specs: list[dict[str, Any]] = []
     seen = {target_signature}
-    for op in TRANSFORM_OPS:
+    for op in ROTATION_OPS:
         spec = pattern_panel_spec(cells=apply_transform(base_cells, op), color=color)
         signature = canonical_panel_spec(spec)
         if signature not in seen:
@@ -418,29 +454,64 @@ def build_spatial_transform_dataset(
     option_count: int,
     correct_option_index: int,
 ) -> dict[str, Any]:
-    """Construct a spatial-transform Raven matrix dataset."""
+    """Construct a row/column Raven matrix from 90-degree rotations only."""
 
-    base_cells = tuple(tuple(coord) for coord in rng.choice(BASE_PATTERNS))
-    row_ops, col_ops = rng.choice(TRANSFORM_RULES)
     color = dict(rng.choice(COLOR_POOL))
-    panel_grid = [
-        [
-            pattern_panel_spec(
-                cells=apply_transform_sequence(
-                    base_cells,
-                    (row_ops[row_index], col_ops[col_index]),
-                ),
-                color=color,
-            )
+    panel_grid: list[list[dict[str, Any]]] | None = None
+    base_patterns: list[tuple[tuple[int, int], ...]] = []
+    rotation_mode = "row_clockwise_first"
+    progression_axis = "row"
+    rotation_sequence: tuple[str, str, str] = ROTATION_SEQUENCES[0][2]
+    for _ in range(300):
+        mode, axis, sequence = rng.choice(ROTATION_SEQUENCES)
+        bases = [sample_rotation_base_cells(rng=rng) for _ in range(3)]
+        candidate_grid: list[list[dict[str, Any]]]
+        if str(axis) == "row":
+            candidate_grid = [
+                [
+                    pattern_panel_spec(
+                        cells=apply_transform(bases[row_index], str(op)),
+                        color=color,
+                    )
+                    for op in sequence
+                ]
+                for row_index in range(3)
+            ]
+        else:
+            candidate_grid = [
+                [
+                    pattern_panel_spec(
+                        cells=apply_transform(bases[col_index], str(sequence[row_index])),
+                        color=color,
+                    )
+                    for col_index in range(3)
+                ]
+                for row_index in range(3)
+            ]
+        target_signature = canonical_panel_spec(candidate_grid[2][2])
+        visible_signatures = {
+            canonical_panel_spec(candidate_grid[row_index][col_index])
+            for row_index in range(3)
             for col_index in range(3)
-        ]
-        for row_index in range(3)
-    ]
+            if not (row_index == 2 and col_index == 2)
+        }
+        if target_signature in visible_signatures:
+            continue
+        panel_grid = candidate_grid
+        base_patterns = bases
+        rotation_mode = str(mode)
+        progression_axis = str(axis)
+        rotation_sequence = tuple(str(op) for op in sequence)
+        break
+    if panel_grid is None:
+        raise RuntimeError("failed to construct rotation-only Raven matrix")
+
     answer_panel_spec = dict(panel_grid[2][2])
     target_cells = tuple(tuple(coord) for coord in answer_panel_spec["cells"])
+    target_base = base_patterns[2]
     distractors = spatial_distractor_specs(
         target_cells=target_cells,
-        base_cells=base_cells,
+        base_cells=target_base,
         color=color,
     )
     rng.shuffle(distractors)
@@ -462,9 +533,13 @@ def build_spatial_transform_dataset(
         "option_count": int(option_count),
         "solver_trace": {
             "rule_type": "spatial_transform_matrix",
-            "base_cells": [[int(row), int(col)] for row, col in base_cells],
-            "row_transforms": [str(value) for value in row_ops],
-            "column_transforms": [str(value) for value in col_ops],
+            "rotation_mode": str(rotation_mode),
+            "progression_axis": str(progression_axis),
+            "rotation_sequence": [str(value) for value in rotation_sequence],
+            "base_patterns": [
+                [[int(row), int(col)] for row, col in base_cells]
+                for base_cells in base_patterns
+            ],
             "target_row_index": 2,
             "target_col_index": 2,
             "answer_cells": [[int(row), int(col)] for row, col in target_cells],
@@ -487,8 +562,6 @@ def apply_set_operation(
         result = left | right
     elif operation == "intersection":
         result = left & right
-    elif operation == "xor":
-        result = left ^ right
     else:
         raise ValueError(f"unsupported Raven set operation: {operation}")
     return tuple(sorted(result))
@@ -775,11 +848,107 @@ def build_analogical_transform_dataset(
     }
 
 
-def independent_mod3_steps(left: Sequence[int], right: Sequence[int]) -> bool:
-    """Return whether two 2D mod-3 steps are linearly independent."""
+def build_feature_binding_dataset(
+    *,
+    rng,
+    option_count: int,
+    correct_option_index: int,
+) -> dict[str, Any]:
+    """Construct a Raven matrix where row and column bind independent features."""
 
-    determinant = (int(left[0]) * int(right[1])) - (int(left[1]) * int(right[0]))
-    return int(determinant % 3) != 0
+    binding_mode, row_feature, column_feature = [
+        str(value) for value in rng.choice(FEATURE_BINDING_MODES)
+    ]
+    shapes = [str(value) for value in PUZZLE_OBJECT_TYPES]
+    rng.shuffle(shapes)
+    colors = [dict(value) for value in COLOR_POOL]
+    rng.shuffle(colors)
+    sizes = [float(value) for value in SIZE_CYCLE]
+    rng.shuffle(sizes)
+
+    axis_values: dict[str, list[Any]] = {
+        "shape": list(shapes[:3]),
+        "color": [dict(value) for value in colors[:3]],
+        "size": [float(value) for value in sizes[:3]],
+    }
+    default_values: dict[str, Any] = {
+        "shape": str(shapes[3] if len(shapes) > 3 else shapes[0]),
+        "color": dict(colors[3] if len(colors) > 3 else colors[0]),
+        "size": 0.76,
+    }
+
+    def values_for(row_index: int, col_index: int) -> dict[str, Any]:
+        values = {
+            "shape": default_values["shape"],
+            "color": dict(default_values["color"]),
+            "size": float(default_values["size"]),
+        }
+        values[row_feature] = axis_values[row_feature][int(row_index)]
+        col_value = axis_values[column_feature][int(col_index)]
+        values[column_feature] = dict(col_value) if column_feature == "color" else col_value
+        return values
+
+    panel_grid = [
+        [
+            _feature_panel_spec(feature_values=values_for(row_index, col_index))
+            for col_index in range(3)
+        ]
+        for row_index in range(3)
+    ]
+    answer_panel_spec = dict(panel_grid[2][2])
+    distractors = [
+        dict(panel_grid[row_index][col_index])
+        for row_index in range(3)
+        for col_index in range(3)
+        if not (row_index == 2 and col_index == 2)
+    ]
+    rng.shuffle(distractors)
+    option_specs, option_labels = build_option_specs(
+        correct_panel_spec=answer_panel_spec,
+        distractor_panel_specs=distractors,
+        correct_option_index=int(correct_option_index),
+        option_count=int(option_count),
+    )
+    feature_table = [
+        [
+            {
+                str(feature): _feature_value_label(str(feature), value)
+                for feature, value in values_for(row_index, col_index).items()
+            }
+            for col_index in range(3)
+        ]
+        for row_index in range(3)
+    ]
+    return {
+        "matrix_rows": matrix_rows_from_specs(panel_grid),
+        "matrix_panel_specs": [[dict(spec) for spec in row] for row in panel_grid],
+        "answer_panel_spec": dict(answer_panel_spec),
+        "correct_option_index": int(correct_option_index),
+        "correct_option_panel_id": str(option_specs[correct_option_index]["option_panel_id"]),
+        "answer_option_label": str(option_label_for_index(correct_option_index)),
+        "option_specs": option_specs,
+        "option_labels": option_labels,
+        "option_count": int(option_count),
+        "solver_trace": {
+            "rule_type": "feature_binding_matrix",
+            "binding_mode": str(binding_mode),
+            "row_feature": str(row_feature),
+            "column_feature": str(column_feature),
+            "row_feature_values": [
+                _feature_value_label(str(row_feature), value)
+                for value in axis_values[row_feature]
+            ],
+            "column_feature_values": [
+                _feature_value_label(str(column_feature), value)
+                for value in axis_values[column_feature]
+            ],
+            "feature_table": feature_table,
+            "target_row_index": 2,
+            "target_col_index": 2,
+            "correct_option_index": int(correct_option_index),
+            "correct_option_label": str(option_label_for_index(correct_option_index)),
+        },
+    }
 
 
 def build_position_progression_dataset(
@@ -788,21 +957,26 @@ def build_position_progression_dataset(
     option_count: int,
     correct_option_index: int,
 ) -> dict[str, Any]:
-    """Construct a marker-position progression Raven matrix dataset."""
+    """Construct the neutral non-wrapping marker-position progression dataset."""
 
     color = dict(rng.choice(COLOR_POOL))
-    base_position = (int(rng.randrange(3)), int(rng.randrange(3)))
-    row_step = tuple(rng.choice(POSITION_STEPS))
-    col_candidates = [
-        step for step in POSITION_STEPS if independent_mod3_steps(row_step, step)
+    progression_mode, progression_axis, progression_direction = [
+        str(value) for value in rng.choice(POSITION_PROGRESSIONS)
     ]
-    col_step = tuple(rng.choice(col_candidates))
+    progression_line_indices = [int(value) for value in rng.sample(range(3), 3)]
 
     def position_for(row_index: int, col_index: int) -> tuple[int, int]:
-        return (
-            int((base_position[0] + row_index * row_step[0] + col_index * col_step[0]) % 3),
-            int((base_position[1] + row_index * row_step[1] + col_index * col_step[1]) % 3),
-        )
+        if progression_axis == "row":
+            mini_row = int(progression_line_indices[row_index])
+            mini_col = int(col_index)
+            if progression_direction == "right_to_left":
+                mini_col = int(2 - mini_col)
+            return mini_row, mini_col
+        mini_row = int(row_index)
+        mini_col = int(progression_line_indices[col_index])
+        if progression_direction == "bottom_to_top":
+            mini_row = int(2 - mini_row)
+        return mini_row, mini_col
 
     panel_grid = [
         [
@@ -841,9 +1015,22 @@ def build_position_progression_dataset(
         "option_count": int(option_count),
         "solver_trace": {
             "rule_type": "position_progression_matrix",
-            "base_position": [int(base_position[0]), int(base_position[1])],
-            "row_step_mod3": [int(row_step[0]), int(row_step[1])],
-            "column_step_mod3": [int(col_step[0]), int(col_step[1])],
+            "progression_axis": str(progression_axis),
+            "progression_direction": str(progression_direction),
+            "progression_mode": str(progression_mode),
+            "progression_line_indices": [
+                int(value) for value in progression_line_indices
+            ],
+            "position_table": [
+                [
+                    [
+                        int(value)
+                        for value in position_for(int(row_index), int(col_index))
+                    ]
+                    for col_index in range(3)
+                ]
+                for row_index in range(3)
+            ],
             "target_row_index": 2,
             "target_col_index": 2,
             "answer_position": [int(target_position[0]), int(target_position[1])],
@@ -855,15 +1042,16 @@ def build_position_progression_dataset(
 
 __all__ = [
     "ANALOGICAL_TRANSFORMS",
-    "BASE_PATTERNS",
     "COLOR_POOL",
-    "POSITION_STEPS",
     "SET_OPERATIONS",
     "SIZE_CYCLE",
-    "TRANSFORM_OPS",
-    "TRANSFORM_RULES",
+    "ROTATION_OPS",
+    "ROTATION_SEQUENCES",
+    "FEATURE_BINDING_MODES",
+    "POSITION_PROGRESSIONS",
     "build_analogical_transform_dataset",
     "build_count_progression_dataset",
+    "build_feature_binding_dataset",
     "build_position_progression_dataset",
     "build_set_operation_dataset",
     "build_spatial_transform_dataset",

@@ -10,7 +10,15 @@
 Renders an indoor-room source illustration as a numbered `3x3` grid, swaps exactly two grid cells, and shows four lettered options naming possible swapped cell pairs. The model selects the option letter for the actual swapped pair.
 
 ## Program Contract
-`select_option(identify_swapped_tile_pair(numbered_tile_grid, option_pairs)); scene=indoor_room; scope=swapped_tile_pair_label`
+
+Program: `select_option(identify_swapped_tile_pair(numbered_tile_grid, option_pairs)); scene=indoor_room; scope=swapped_tile_pair_label`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `swapped_tile_pair_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `identify_swapped_tile_pair`, `numbered_tile_grid`, `option_pairs`, `indoor_room`, `swapped_tile_pair_label`.
+Operation: evaluate `select_option` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; one of the visible option letters `A` through `D`.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

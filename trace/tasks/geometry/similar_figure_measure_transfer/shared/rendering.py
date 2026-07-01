@@ -133,6 +133,7 @@ def render_measure_scene(case: SimilarMeasureCase, *, context: RenderContext, in
         geometry,
         readouts=readouts,
         constructions=constructions,
+        layout_kind=str(case.layout_kind),
         target_side=case.target_side,
         support_side=case.support_side,
         source_target_label=(None if case.source_target_side_value is None else str(case.source_target_side_value)),
@@ -144,7 +145,7 @@ def render_measure_scene(case: SimilarMeasureCase, *, context: RenderContext, in
         support_source_label=(None if case.support_source_side_value is None else str(case.support_source_side_value)),
         support_target_label=(None if case.support_target_side_value is None else str(case.support_target_side_value)),
     )
-    _draw_metric_captions(context, geometry, case, readouts)
+    _draw_metric_captions(context, geometry, case, readouts, point_label_bboxes)
     return _rendered_scene(context, geometry, point_label_bboxes, readouts, constructions)
 
 
@@ -168,6 +169,7 @@ def render_equation_scene(case: SimilarEquationCase, *, context: RenderContext, 
         geometry,
         readouts=readouts,
         constructions=constructions,
+        layout_kind="rotated_pair",
         target_side=(0, 1),
         support_side=support_side,
         source_target_label=str(case.source_target_label),
@@ -280,6 +282,7 @@ def _draw_side_measurements(
     *,
     readouts: dict[str, BBox],
     constructions: dict[str, BBox],
+    layout_kind: str,
     target_side: Side,
     support_side: Side,
     source_target_label: str | None,
@@ -290,29 +293,124 @@ def _draw_side_measurements(
     """Draw the two marked side pairs when their labels are present."""
 
     if source_target_label is not None and target_target_label is not None:
-        readouts["source_target_side_label"] = _draw_side_label(context, geometry.source_vertices, target_side, source_target_label, offset=-30.0)
-        readouts["target_target_side_label"] = _draw_side_label(context, geometry.target_vertices, target_side, target_target_label, offset=34.0)
+        if str(layout_kind) == "nested":
+            readouts["source_target_side_label"] = _draw_side_label_relative(
+                context,
+                geometry.source_vertices,
+                target_side,
+                source_target_label,
+                distance=24.0,
+                outward=False,
+            )
+            readouts["target_target_side_label"] = _draw_side_label_relative(
+                context,
+                geometry.target_vertices,
+                target_side,
+                target_target_label,
+                distance=30.0,
+                outward=True,
+            )
+        else:
+            readouts["source_target_side_label"] = _draw_side_label(context, geometry.source_vertices, target_side, source_target_label, offset=-30.0)
+            readouts["target_target_side_label"] = _draw_side_label(context, geometry.target_vertices, target_side, target_target_label, offset=34.0)
         constructions["source_target_side_tick"] = _draw_tick(context, geometry.source_vertices[target_side[0]], geometry.source_vertices[target_side[1]], count=1)
         constructions["target_target_side_tick"] = _draw_tick(context, geometry.target_vertices[target_side[0]], geometry.target_vertices[target_side[1]], count=1)
     if support_source_label is not None and support_target_label is not None:
-        readouts["support_source_side_label"] = _draw_side_label(context, geometry.source_vertices, support_side, support_source_label, offset=32.0)
-        readouts["support_target_side_label"] = _draw_side_label(context, geometry.target_vertices, support_side, support_target_label, offset=-36.0)
+        if str(layout_kind) == "nested":
+            readouts["support_source_side_label"] = _draw_side_label_relative(
+                context,
+                geometry.source_vertices,
+                support_side,
+                support_source_label,
+                distance=24.0,
+                outward=False,
+            )
+            readouts["support_target_side_label"] = _draw_side_label_relative(
+                context,
+                geometry.target_vertices,
+                support_side,
+                support_target_label,
+                distance=30.0,
+                outward=True,
+            )
+        else:
+            readouts["support_source_side_label"] = _draw_side_label(context, geometry.source_vertices, support_side, support_source_label, offset=32.0)
+            readouts["support_target_side_label"] = _draw_side_label(context, geometry.target_vertices, support_side, support_target_label, offset=-36.0)
         constructions["support_source_side_tick"] = _draw_tick(context, geometry.source_vertices[support_side[0]], geometry.source_vertices[support_side[1]], count=2)
         constructions["support_target_side_tick"] = _draw_tick(context, geometry.target_vertices[support_side[0]], geometry.target_vertices[support_side[1]], count=2)
 
 
-def _draw_metric_captions(context: RenderContext, geometry: FigureGeometry, case: SimilarMeasureCase, readouts: dict[str, BBox]) -> None:
-    source_center = _polygon_center(geometry.source_vertices)
-    target_center = _polygon_center(geometry.target_vertices)
+def _draw_metric_captions(
+    context: RenderContext,
+    geometry: FigureGeometry,
+    case: SimilarMeasureCase,
+    readouts: dict[str, BBox],
+    point_label_bboxes: Mapping[str, BBox],
+) -> None:
+    """Place area/perimeter readouts outside figures without changing task semantics."""
+
+    occupied_labels = tuple(point_label_bboxes.values())
     if case.source_perimeter is not None and case.target_perimeter is not None:
-        readouts["source_perimeter_label"] = _draw_text_centered(context, f"perimeter = {case.source_perimeter}", add_scaled(source_center, (0.0, 1.0), 118.0), small=True)
-        readouts["target_perimeter_label"] = _draw_text_centered(context, f"perimeter = {case.target_perimeter}", add_scaled(target_center, (0.0, 1.0), 138.0), small=True)
+        readouts["source_perimeter_label"] = _draw_caption_near_polygon(
+            context,
+            f"perimeter = {case.source_perimeter}",
+            geometry.source_vertices,
+            occupied=(*occupied_labels, *readouts.values()),
+            preferred=("below", "above", "left", "right"),
+        )
+        readouts["target_perimeter_label"] = _draw_caption_near_polygon(
+            context,
+            f"perimeter = {case.target_perimeter}",
+            geometry.target_vertices,
+            occupied=(*occupied_labels, *readouts.values()),
+            preferred=("below", "above", "right", "left"),
+        )
     if case.source_area is not None and case.target_area is not None:
-        readouts["source_area_label"] = _draw_text_centered(context, f"area = {case.source_area}", add_scaled(source_center, (0.0, 1.0), 118.0), small=True)
         if str(case.construction_family) == "area_ratio_label":
-            readouts["area_ratio_label"] = _draw_text_centered(context, f"area ratio = {case.area_ratio_label}", (context.width / 2.0, 62.0), small=True)
+            readouts["source_area_label"] = _draw_caption_near_polygon(
+                context,
+                f"area = {case.source_area}",
+                geometry.source_vertices,
+                occupied=(*occupied_labels, *readouts.values()),
+                preferred=("below", "above", "left", "right"),
+            )
+            readouts["area_ratio_label"] = _draw_caption_near_polygon(
+                context,
+                f"area ratio = {case.area_ratio_label}",
+                (*geometry.source_vertices, *geometry.target_vertices),
+                occupied=(*occupied_labels, *readouts.values()),
+                preferred=("above", "below", "right", "left"),
+            )
+        elif str(case.layout_kind) == "nested":
+            readouts["source_area_label"] = _draw_caption_near_polygon(
+                context,
+                f"inner area = {case.source_area}",
+                geometry.target_vertices,
+                occupied=(*occupied_labels, *readouts.values()),
+                preferred=("below", "above", "right", "left"),
+            )
+            readouts["target_area_label"] = _draw_caption_near_polygon(
+                context,
+                f"outer area = {case.target_area}",
+                geometry.target_vertices,
+                occupied=(*occupied_labels, *readouts.values()),
+                preferred=("above", "below", "right", "left"),
+            )
         else:
-            readouts["target_area_label"] = _draw_text_centered(context, f"area = {case.target_area}", add_scaled(target_center, (0.0, 1.0), 138.0), small=True)
+            readouts["source_area_label"] = _draw_caption_near_polygon(
+                context,
+                f"area = {case.source_area}",
+                geometry.source_vertices,
+                occupied=(*occupied_labels, *readouts.values()),
+                preferred=("below", "above", "left", "right"),
+            )
+            readouts["target_area_label"] = _draw_caption_near_polygon(
+                context,
+                f"area = {case.target_area}",
+                geometry.target_vertices,
+                occupied=(*occupied_labels, *readouts.values()),
+                preferred=("below", "above", "right", "left"),
+            )
 
 
 def _draw_text_centered(context: RenderContext, text: str, center: Point, *, small: bool = True) -> BBox:
@@ -343,6 +441,32 @@ def _draw_side_label(context: RenderContext, points: Sequence[Point], side: Side
     a = points[int(side[0])]
     b = points[int(side[1])]
     label_center = add_scaled(mid(a, b), _offset_from_segment(a, b, offset), 1.0)
+    return _draw_text_centered(context, str(text), label_center, small=True)
+
+
+def _draw_side_label_relative(
+    context: RenderContext,
+    points: Sequence[Point],
+    side: Side,
+    text: str,
+    *,
+    distance: float,
+    outward: bool,
+) -> BBox:
+    a = points[int(side[0])]
+    b = points[int(side[1])]
+    side_mid = mid(a, b)
+    center = _polygon_center(points)
+    tangent = unit(sub(b, a))
+    normal = (-tangent[1], tangent[0])
+    option_a = add_scaled(side_mid, normal, float(distance))
+    option_b = add_scaled(side_mid, normal, -float(distance))
+    distance_a = math.hypot(option_a[0] - center[0], option_a[1] - center[1])
+    distance_b = math.hypot(option_b[0] - center[0], option_b[1] - center[1])
+    if bool(outward):
+        label_center = option_a if distance_a >= distance_b else option_b
+    else:
+        label_center = option_a if distance_a < distance_b else option_b
     return _draw_text_centered(context, str(text), label_center, small=True)
 
 
@@ -395,3 +519,98 @@ def _offset_from_segment(a: Point, b: Point, distance: float) -> Point:
 
 def _polygon_center(points: Sequence[Point]) -> Point:
     return (sum(point[0] for point in points) / float(len(points)), sum(point[1] for point in points) / float(len(points)))
+
+
+def _draw_caption_near_polygon(
+    context: RenderContext,
+    text: str,
+    points: Sequence[Point],
+    *,
+    occupied: Sequence[BBox],
+    preferred: Sequence[str],
+) -> BBox:
+    """Draw a readout outside the visible polygon bbox with stable fallbacks."""
+
+    polygon_bbox = bbox_from_points(points, width=context.width, height=context.height, pad=8.0)
+    blocked = tuple(occupied)
+    first_inside_candidate: Point | None = None
+    for direction in preferred:
+        candidate = _caption_candidate_center(context, str(text), polygon_bbox, direction=str(direction))
+        bbox = _text_bbox_at(context, str(text), candidate)
+        if not _bbox_inside_canvas(context, bbox):
+            continue
+        if first_inside_candidate is None:
+            first_inside_candidate = candidate
+        if not _bbox_overlaps_any(bbox, (*blocked, polygon_bbox)):
+            return _draw_text_centered(context, str(text), candidate, small=True)
+    if first_inside_candidate is not None:
+        return _draw_text_centered(context, str(text), first_inside_candidate, small=True)
+    center = _clamp_caption_center(context, str(text), _caption_candidate_center(context, str(text), polygon_bbox, direction=str(preferred[0])))
+    return _draw_text_centered(context, str(text), center, small=True)
+
+
+def _caption_candidate_center(context: RenderContext, text: str, polygon_bbox: BBox, *, direction: str) -> Point:
+    font = context.small_font
+    text_bbox = context.draw.textbbox((0.0, 0.0), str(text), anchor="mm", font=font, stroke_width=max(0, int(context.label_stroke_width)))
+    text_width = float(text_bbox[2] - text_bbox[0])
+    text_height = float(text_bbox[3] - text_bbox[1])
+    x0, y0, x1, y1 = (float(value) for value in polygon_bbox)
+    cx = (x0 + x1) / 2.0
+    cy = (y0 + y1) / 2.0
+    gap = 14.0
+    if str(direction) == "above":
+        return (cx, y0 - gap - text_height / 2.0)
+    if str(direction) == "below":
+        return (cx, y1 + gap + text_height / 2.0)
+    if str(direction) == "left":
+        return (x0 - gap - text_width / 2.0, cy)
+    if str(direction) == "right":
+        return (x1 + gap + text_width / 2.0, cy)
+    raise ValueError(f"unknown caption direction: {direction!r}")
+
+
+def _text_bbox_at(context: RenderContext, text: str, center: Point) -> BBox:
+    bbox = context.draw.textbbox(
+        (float(center[0]), float(center[1])),
+        str(text),
+        anchor="mm",
+        font=context.small_font,
+        stroke_width=max(0, int(context.label_stroke_width)),
+    )
+    return (
+        float(bbox[0]) - 3.0,
+        float(bbox[1]) - 3.0,
+        float(bbox[2]) + 3.0,
+        float(bbox[3]) + 3.0,
+    )
+
+
+def _bbox_inside_canvas(context: RenderContext, bbox: BBox, *, margin: float = 32.0) -> bool:
+    x0, y0, x1, y1 = (float(value) for value in bbox)
+    return x0 >= margin and y0 >= margin and x1 <= float(context.width) - margin and y1 <= float(context.height) - margin
+
+
+def _bbox_overlaps_any(bbox: BBox, others: Sequence[BBox]) -> bool:
+    return any(_bbox_overlaps(bbox, other) for other in others)
+
+
+def _bbox_overlaps(a: BBox, b: BBox) -> bool:
+    ax0, ay0, ax1, ay1 = (float(value) for value in a)
+    bx0, by0, bx1, by1 = (float(value) for value in b)
+    return ax0 < bx1 and ax1 > bx0 and ay0 < by1 and ay1 > by0
+
+
+def _clamp_caption_center(context: RenderContext, text: str, center: Point) -> Point:
+    bbox = _text_bbox_at(context, str(text), center)
+    x0, y0, x1, y1 = (float(value) for value in bbox)
+    cx, cy = float(center[0]), float(center[1])
+    margin = 10.0
+    if x0 < margin:
+        cx += margin - x0
+    if x1 > float(context.width) - margin:
+        cx -= x1 - (float(context.width) - margin)
+    if y0 < margin:
+        cy += margin - y0
+    if y1 > float(context.height) - margin:
+        cy -= y1 - (float(context.height) - margin)
+    return (cx, cy)

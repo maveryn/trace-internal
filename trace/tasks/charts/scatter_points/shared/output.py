@@ -55,6 +55,8 @@ def render_spec(rendered: ScatterPointsRenderResult) -> dict[str, Any]:
         "font_asset_version": str(font_assets["font_asset_version"]),
         "chart_font_family": str(font_assets["chart_font_family"]),
         "font_assets": dict(font_assets),
+        "background_style": dict(rendered.background_meta),
+        "information_scene_style": dict(rendered.background_meta.get("information_scene_style", {})),
         "post_image_noise": dict(rendered.post_noise_meta),
     }
 

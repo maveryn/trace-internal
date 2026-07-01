@@ -1,6 +1,12 @@
 """Shared non-semantic visual style primitives for task renderers."""
 
 from .palette import PANEL_SCENE_PALETTES, PanelScenePalette
+from .surface_tones import (
+    DARK_SURFACE_TONE_IDS,
+    DEFAULT_SURFACE_TONES,
+    LIGHT_SURFACE_TEXT_RGB,
+    LIGHT_SURFACE_TEXT_STROKE_RGB,
+)
 from .metadata import color_separation_metadata
 from .request import (
     VISUAL_STYLE_FAMILIES,
@@ -37,6 +43,8 @@ from .technical_diagram import (
 
 __all__ = [
     "DEFAULT_PANEL_SCENE_STYLE",
+    "DARK_SURFACE_TONE_IDS",
+    "DEFAULT_SURFACE_TONES",
     "DEFAULT_TECHNICAL_DIAGRAM_STYLE",
     "DEFAULT_TECHNICAL_DIAGRAM_FRAME_WEIGHTS",
     "PANEL_SCENE_PALETTES",
@@ -52,6 +60,8 @@ __all__ = [
     "TechnicalDiagramStyle",
     "TechnicalDiagramTreatment",
     "VisualStyleRequest",
+    "LIGHT_SURFACE_TEXT_RGB",
+    "LIGHT_SURFACE_TEXT_STROKE_RGB",
     "build_visual_style_request",
     "color_separation_metadata",
     "draw_panel_grid_cell",

@@ -206,13 +206,16 @@ def _draw_conveyor_belts(
     belt_bboxes: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = []
     for index, lane_key in enumerate(lane_keys):
+        fill_index = int(index)
+        while fill_index >= len(fill_cycle):
+            fill_index -= len(fill_cycle)
         bbox, entity = _draw_lane_belt(
             draw,
             lane_key=str(lane_key),
             layout_orientation=str(layout_orientation),
             camera=camera,
             frame=frame,
-            fill=fill_cycle[index % len(fill_cycle)],
+            fill=fill_cycle[fill_index],
             outline=outline,
             arrow_rgb=arrow_rgb,
         )

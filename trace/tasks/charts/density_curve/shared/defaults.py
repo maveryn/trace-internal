@@ -5,16 +5,15 @@ from __future__ import annotations
 from typing import Any, Mapping, Tuple
 
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.charts.shared.distribution_chart_common import (
-    DistributionChartDefaults,
-    LabeledChartDefaults,
-    resolve_chart_render_params_for_task,
-)
+from trace.tasks.charts.shared.distribution.config import DistributionChartDefaults
+from trace.tasks.charts.shared.labeled_chart_defaults import LabeledChartDefaults
+from trace.tasks.charts.shared.labeled_chart_render_params import resolve_chart_render_params_for_task
 from trace.tasks.charts.shared.visual_defaults import load_chart_scene_noise_defaults
 from trace.tasks.shared.config_defaults import (
     group_default,
     split_scene_generation_rendering_prompt_defaults,
 )
+from trace.tasks.shared.color_distance import VISIBILITY_SAFE_FALLBACK_COLORS
 
 
 SCENE_NAMESPACE = "charts.density_curve"
@@ -31,6 +30,12 @@ SUPPORTED_DENSITY_FAMILIES: Tuple[str, ...] = (
     "asymmetric_bimodal",
 )
 SUPPORTED_CURVE_LINE_STYLES: Tuple[str, ...] = ("solid", "dash", "dot")
+TRACE_SAFE_DENSITY_CURVE_PALETTE_RGB: Tuple[Tuple[int, int, int], ...] = tuple(
+    tuple(int(channel) for channel in color)
+    for color in VISIBILITY_SAFE_FALLBACK_COLORS
+    if tuple(int(channel) for channel in color) not in {(255, 255, 255), (0, 0, 0)}
+)
+DEFAULT_DENSITY_CURVE_PAIRWISE_DELTA_E = 50.0
 
 _SCENE_DEFAULTS = get_scene_defaults("charts", SCENE_ID)
 GEN_DEFAULTS, RENDER_DEFAULTS, PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
@@ -82,5 +87,5 @@ def density_curve_count_bounds(params: Mapping[str, Any]) -> tuple[int, int]:
 
     return (
         int(gen_int(params, "density_curve_count_min", 4)),
-        int(gen_int(params, "density_curve_count_max", 7)),
+        int(gen_int(params, "density_curve_count_max", 6)),
     )

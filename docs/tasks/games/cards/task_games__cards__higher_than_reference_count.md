@@ -10,7 +10,15 @@
 7. Program schema: `count(filter(cards, compare(rank(card), rank(reference_card), direction=greater_than))); scene=cards; scope=higher_than_reference_count`
 
 ## Program Contract
-- `count(filter(cards, compare(rank(card), rank(reference_card), direction=greater_than))); scene=cards; scope=higher_than_reference_count`
+
+Program: `count(filter(cards, compare(rank(card), rank(reference_card), direction=greater_than))); scene=cards; scope=higher_than_reference_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `higher_than_reference_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `cards`, `compare`, `rank`, `card`, `reference_card`, `direction`, `greater_than`, `higher_than_reference_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 2. Prompt wording comes from `prompts/games/cards/games_cards_v1.json`.

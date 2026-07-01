@@ -5,13 +5,12 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Any, Dict, Mapping
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.charts.errorbar_series.shared.defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
 )
-from trace.tasks.charts.errorbar_series.shared.rendering import render_errorbar_series_chart
+from trace.tasks.charts.errorbar_series.shared.rendering import render_errorbar_series_chart, resolve_errorbar_render_params
 from trace.tasks.charts.errorbar_series.shared.state import SCENE_ID, ErrorbarDataset, ErrorbarRendered
 from trace.tasks.charts.shared.visual_defaults import chart_font_asset_metadata, sample_chart_font_family
 from trace.tasks.shared.text_rendering import temporary_default_font_family
@@ -30,12 +29,18 @@ def render_dataset(
         namespace="charts_errorbar_series.chart_font",
         params=params,
     )
-    background, background_meta = make_background_canvas(
-        canvas_width=int(params.get("canvas_width", 1280)),
-        canvas_height=int(params.get("canvas_height", 820)),
+    render_params = resolve_errorbar_render_params(
+        params,
+        instance_seed=int(instance_seed),
+        chart_font_family=str(chart_font_family),
+    )
+    protected_colors = tuple(tuple(int(channel) for channel in series.color_rgb) for series in dataset.series)
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=dict(params),
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id=SCENE_ID,
+        render_params=render_params,
+        protected_colors=protected_colors,
     )
     with temporary_default_font_family(str(chart_font_family)):
         rendered = render_errorbar_series_chart(
@@ -44,6 +49,7 @@ def render_dataset(
             params=params,
             instance_seed=int(instance_seed),
             chart_font_family=str(chart_font_family),
+            render_params=render_params,
         )
     image, post_noise_meta = apply_post_image_noise(
         rendered.image,
@@ -60,10 +66,15 @@ def render_dataset(
         "plot_bbox_px": list(rendered.plot_bbox_px),
         "font_assets": chart_font_asset_metadata(str(chart_font_family)),
         "background_style": dict(background_meta),
+        "information_scene_style": dict(information_style_meta),
         "post_image_noise": dict(post_noise_meta),
         **dict(rendered.render_meta),
     }
-    sidecar_meta = {"background": dict(background_meta), "post_image_noise": dict(post_noise_meta)}
+    sidecar_meta = {
+        "background": dict(background_meta),
+        "information_scene_style": dict(information_style_meta),
+        "post_image_noise": dict(post_noise_meta),
+    }
     return rendered, dict(render_meta), dict(sidecar_meta)
 
 

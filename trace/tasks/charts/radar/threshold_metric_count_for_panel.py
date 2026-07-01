@@ -11,7 +11,7 @@ from ._lifecycle import build_radar_dataset_from_components, build_radar_plan, r
 from .shared.defaults import resolve_gen_int
 from .shared.sampling import (
     balanced_choice,
-    choice_index,
+    choose_index,
     force_metric_threshold_by_panel,
     make_single_profile_panels,
     metric_count,
@@ -31,11 +31,12 @@ PROMPT_QUERY_KEY = "threshold_metric_count_for_panel"
 
 
 def _selected_panel_label(panel_labels: tuple[str, ...], params: dict[str, Any], instance_seed: int) -> str:
-    panel_index = choice_index(
+    panel_index = choose_index(
+        len(panel_labels),
         without_sample_cursor(params),
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}.panel",
-    ) % len(panel_labels)
+    )
     return str(panel_labels[int(panel_index)])
 
 

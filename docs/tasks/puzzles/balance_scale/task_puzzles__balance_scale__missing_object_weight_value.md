@@ -1,7 +1,15 @@
 # `task_puzzles__balance_scale__missing_object_weight_value`
 
 ## Program Contract
-`solve_value(direct_and_compound_balance_equations, target=query_object_weight, unknowns=A|B|C, panels=3); scene=balance_scale; scope=missing_object_weight_value`
+
+Program: `solve_value(direct_and_compound_balance_equations, target=query_object_weight, unknowns=A|B|C, panels=3); scene=balance_scale; scope=missing_object_weight_value`
+
+Candidate set: the visible balance-scale panels, object symbols, object counts, side relations, and query markers inside the `missing_object_weight_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `direct_and_compound_balance_equations`, `query_object_weight`, `unknowns`, `A`, `B`, `C`, `panels`, `balance_scale`, `missing_object_weight_value`.
+Operation: evaluate `solve_value` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the scalar bbox marks the question-mark value box in the query row.
+Query ids: `single`.
 
 ## 2) Scene + task contract
 1. Entities/relations: Three balanced pan-scale panels with three labeled unknown object tokens, numbered weights, at least one direct single-object value panel, at least one compound/context panel, and a query row showing one object equal to a question-mark value.

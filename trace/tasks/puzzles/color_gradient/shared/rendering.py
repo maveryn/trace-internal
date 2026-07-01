@@ -7,9 +7,8 @@ from typing import Any, Dict, List, Tuple
 from PIL import Image, ImageDraw
 
 from trace.tasks.shared.drawing import draw_centered_text, draw_rounded_rect
-from trace.tasks.shared.text_rendering import load_font
+from trace.tasks.shared.text_rendering import fit_font_to_box, load_font
 
-from .sampling import luminance
 from .state import (
     CompletionDataset,
     RenderParams,
@@ -46,10 +45,9 @@ def draw_label_chip(
     *,
     label: str,
     swatch_bbox: Tuple[int, int, int, int],
-    swatch_rgb: Tuple[int, int, int],
     render_params: RenderParams,
 ) -> None:
-    """Draw a high-contrast label chip on top of one colored swatch."""
+    """Draw the fixed white/black label chip used on color swatches."""
 
     chip_size = int(render_params.label_chip_size_px)
     chip_margin = int(render_params.label_margin_px)
@@ -59,10 +57,19 @@ def draw_label_chip(
         int(swatch_bbox[0] + chip_margin + chip_size),
         int(swatch_bbox[1] + chip_margin + chip_size),
     )
-    chip_fill = (255, 255, 255) if luminance(swatch_rgb) < 0.72 else (36, 42, 52)
-    chip_outline = (36, 42, 52) if chip_fill == (255, 255, 255) else (255, 255, 255)
-    label_fill = (28, 32, 38) if chip_fill == (255, 255, 255) else (255, 255, 255)
-    label_font = load_font(int(render_params.label_font_size_px), bold=True)
+    chip_fill = (255, 255, 255)
+    chip_outline = (36, 42, 52)
+    label_fill = (28, 32, 38)
+    label_font = fit_font_to_box(
+        draw,
+        text=str(label),
+        max_width=max(1.0, float(chip_size) - 7.0),
+        max_height=max(1.0, float(chip_size) - 7.0),
+        bold=True,
+        min_size_px=min(16, int(render_params.label_font_size_px)),
+        max_size_px=int(render_params.label_font_size_px),
+        fill_ratio=0.92,
+    )
     draw.rounded_rectangle(
         chip_bbox, radius=8, fill=chip_fill, outline=chip_outline, width=1
     )
@@ -159,7 +166,6 @@ def render_violation_scene(
             draw,
             label=str(cell.label),
             swatch_bbox=bbox,
-            swatch_rgb=tuple(cell.observed_rgb),
             render_params=render_params,
         )
 
@@ -350,7 +356,6 @@ def render_completion_scene(
             draw,
             label=str(option.label),
             swatch_bbox=bbox,
-            swatch_rgb=tuple(option.rgb),
             render_params=render_params,
         )
         cell_bbox_map[str(option.option_id)] = tuple(int(value) for value in bbox)

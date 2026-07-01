@@ -15,13 +15,24 @@
 
 ## Annotation Contract
 1. Answer schema: `string_label`.
-2. Annotation schema: `keyed_bbox_map`.
-3. Annotation should mark the visible mean marker for the answer curve, not the legend label, title, or axis text.
+2. Annotation schema: `point`.
+3. Annotation should mark the center point of the visible mean marker for the answer curve, not the legend label, title, or axis text.
 4. Renderer context such as legends, axes, interval guides, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Program Contract
+
+Program: `arg_extreme(curve_label, mean(curve_label), direction={highest,lowest}); output=string_label; annotation=point(answer_mean_marker); scene=density_curve; scope=mean_extremum_label`
+
+Candidate set: the visible density curves, shaded regions, and axis labels inside the `mean_extremum_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `arg_extreme` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `point` witnesses bound by `point(answer_mean_marker)`. Annotation should mark the center point of the visible mean marker for the answer curve, not the legend label, title, or axis text. Renderer context such as legends, axes, interval guides, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `highest_mean_label`, `lowest_mean_label`.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `highest_mean_label` | `selection.density_mean_extremum_label` | `string_label` | `keyed_bbox_map` |
-| `lowest_mean_label` | `selection.density_mean_extremum_label` | `string_label` | `keyed_bbox_map` |
+| `highest_mean_label` | `selection.mean_extremum_label` | `string_label` | `point` |
+| `lowest_mean_label` | `selection.mean_extremum_label` | `string_label` | `point` |

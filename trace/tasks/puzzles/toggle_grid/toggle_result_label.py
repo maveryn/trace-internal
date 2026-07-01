@@ -20,7 +20,7 @@ _NAMESPACE_BASE = f"{DOMAIN}.{SCENE_ID}.toggle_result_label"
 
 
 def _sample_result(params, generation_defaults, rng):
-    """Construct one numbered-press result-option dataset."""
+    """Construct one red-marked single-press result-option dataset."""
 
     return sample_result_dataset(
         params=params,
@@ -67,7 +67,7 @@ def _bind_result_output(
 
 @register_task
 class PuzzlesToggleGridToggleResultLabelTask(ToggleGridSceneTask):
-    """Choose the result grid after pressing numbered toggle switches."""
+    """Choose the result grid after pressing the red marked toggle switch."""
 
     task_id = TASK_ID
     supported_query_ids = SUPPORTED_QUERY_IDS

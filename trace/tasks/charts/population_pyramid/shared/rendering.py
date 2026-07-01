@@ -8,6 +8,9 @@ from typing import Any
 
 from PIL import Image, ImageDraw
 
+from trace.tasks.charts.shared.cartesian.axes import draw_axis_lines
+from trace.tasks.charts.shared.cartesian.geometry import round_bbox
+from trace.tasks.charts.shared.dense_text import dense_fit_bold, dense_stroke_width, dense_text_style_meta
 from .....core.visual.noise import apply_post_image_noise
 from ....shared.bbox_projection import bbox_union_raw as _bbox_union
 from ....shared.config_defaults import group_default
@@ -15,7 +18,7 @@ from ....shared.render_variation import apply_layout_jitter_to_margins, resolve_
 from ....shared.text_legibility import draw_traced_text
 from ....shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
 from ...shared.information_style import make_chart_information_background, resolve_chart_information_style
-from ...shared.visual_defaults import chart_font_asset_metadata, sample_chart_font_family
+from ...shared.visual_defaults import chart_font_asset_metadata, relative_luminance, sample_chart_font_family
 
 from .defaults import POST_IMAGE_NOISE_DEFAULTS, RENDER_DEFAULTS
 from .state import (
@@ -36,7 +39,7 @@ class PopulationPyramidRenderResult:
 
 
 def _bbox(values: Sequence[float]) -> list[float]:
-    return [round(float(value), 3) for value in values]
+    return round_bbox(values)
 
 
 def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> PopulationPyramidRenderParams:
@@ -63,7 +66,7 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
         exclude_tags=("display",),
     )
     return PopulationPyramidRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(RENDER_DEFAULTS, "canvas_width", 1280))),
+        canvas_width=int(params.get("canvas_width", group_default(RENDER_DEFAULTS, "canvas_width", 1040))),
         canvas_height=int(params.get("canvas_height", group_default(RENDER_DEFAULTS, "canvas_height", 900))),
         plot_margin_left_px=int(left),
         plot_margin_right_px=int(right),
@@ -94,19 +97,8 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
     )
 
 
-def _relative_luminance(color: Sequence[int]) -> float:
-    def _channel(value: int) -> float:
-        normalized = float(value) / 255.0
-        if normalized <= 0.03928:
-            return normalized / 12.92
-        return ((normalized + 0.055) / 1.055) ** 2.4
-
-    rgb = [max(0, min(255, int(channel))) for channel in color[:3]]
-    return (0.2126 * _channel(rgb[0])) + (0.7152 * _channel(rgb[1])) + (0.0722 * _channel(rgb[2]))
-
-
 def _readable_chart_text_colors(surface_rgb: Sequence[int]) -> tuple[RGB, RGB, RGB]:
-    if _relative_luminance(surface_rgb) >= 0.55:
+    if relative_luminance(surface_rgb) >= 0.55:
         return (34, 42, 54), (72, 84, 100), (34, 42, 54)
     return (246, 250, 255), (205, 218, 232), (18, 24, 32)
 
@@ -116,7 +108,7 @@ def _darken(color: RGB, factor: float = 0.70) -> RGB:
 
 
 def _text_on_bar(color: RGB) -> RGB:
-    return (18, 24, 32) if _relative_luminance(color) > 0.52 else (248, 250, 252)
+    return (18, 24, 32) if relative_luminance(color) > 0.52 else (248, 250, 252)
 
 
 def _draw_text(
@@ -152,7 +144,6 @@ def _render_dataset(dataset: PopulationPyramidDataset, params: Mapping[str, Any]
         params=params,
         scene_id=SCENE_ID,
         protected_colors=(dataset.left_color_rgb, dataset.right_color_rgb),
-        allow_dark=False,
         allow_colored_surface=True,
     )
     image, background_meta = make_chart_information_background(
@@ -170,12 +161,13 @@ def _render_dataset(dataset: PopulationPyramidDataset, params: Mapping[str, Any]
     axis_rgb = tuple(int(value) for value in style.axis_rgb)
     grid_rgb = tuple(int(value) for value in style.grid_rgb)
     text_rgb, muted_text_rgb, text_stroke_rgb = _readable_chart_text_colors(panel_fill_rgb)
-    text_stroke_width = 1
+    text_stroke_width = dense_stroke_width()
 
     plot_left = float(render_params.plot_margin_left_px)
     plot_right = float(render_params.canvas_width - render_params.plot_margin_right_px)
     plot_top = float(render_params.plot_margin_top_px + render_params.title_band_height_px)
     plot_bottom = float(render_params.canvas_height - render_params.plot_margin_bottom_px)
+    plot_bbox = [float(plot_left), float(plot_top), float(plot_right), float(plot_bottom)]
     plot_width = float(plot_right - plot_left)
     plot_height = float(plot_bottom - plot_top)
     if plot_width <= 100 or plot_height <= 100:
@@ -192,10 +184,10 @@ def _render_dataset(dataset: PopulationPyramidDataset, params: Mapping[str, Any]
     ]
     draw.rounded_rectangle(tuple(panel_bbox), radius=14, fill=panel_fill_rgb, outline=panel_border_rgb, width=2)
 
-    title_font = load_font(render_params.title_font_size_px, bold=True, font_family=render_params.font_family)
+    title_font = load_font(render_params.title_font_size_px, bold=False, font_family=render_params.font_family)
     tick_font = load_font(render_params.tick_font_size_px, bold=False, font_family=render_params.font_family)
-    legend_font = load_font(render_params.legend_font_size_px, bold=True, font_family=render_params.font_family)
-    value_font = load_font(render_params.value_font_size_px, bold=True, font_family=render_params.font_family)
+    legend_font = load_font(render_params.legend_font_size_px, bold=False, font_family=render_params.font_family)
+    value_font = load_font(render_params.value_font_size_px, bold=dense_fit_bold(), font_family=render_params.font_family)
 
     _draw_text(
         draw,
@@ -241,9 +233,22 @@ def _render_dataset(dataset: PopulationPyramidDataset, params: Mapping[str, Any]
                 stroke_fill=text_stroke_rgb,
                 stroke_width=text_stroke_width,
             )
-    draw.line((plot_left, plot_bottom, plot_right, plot_bottom), fill=axis_rgb, width=int(render_params.axis_line_width_px))
-    draw.line((plot_left, plot_top, plot_left, plot_bottom), fill=axis_rgb, width=1)
-    draw.line((plot_right, plot_top, plot_right, plot_bottom), fill=axis_rgb, width=1)
+    draw_axis_lines(
+        draw,
+        plot_bbox,
+        axis_rgb=axis_rgb,
+        axis_width_px=int(render_params.axis_line_width_px),
+        left=False,
+    )
+    draw_axis_lines(
+        draw,
+        plot_bbox,
+        axis_rgb=axis_rgb,
+        axis_width_px=1,
+        left=True,
+        bottom=False,
+        right=True,
+    )
 
     row_step = plot_height / float(len(dataset.rows))
     bar_height = max(12.0, min(36.0, row_step - float(render_params.bar_gap_px)))
@@ -276,12 +281,12 @@ def _render_dataset(dataset: PopulationPyramidDataset, params: Mapping[str, Any]
             text=label,
             max_width=86,
             max_height=bar_height + 8,
-            bold=True,
+            bold=dense_fit_bold(),
             font_family=render_params.font_family,
             min_size_px=9,
             max_size_px=render_params.label_font_size_px,
         )
-        text_bbox = draw.textbbox((0, 0), label, font=label_font_fitted, stroke_width=1)
+        text_bbox = draw.textbbox((0, 0), label, font=label_font_fitted, stroke_width=text_stroke_width)
         label_xy = (plot_left - 16 - float(text_bbox[2] - text_bbox[0]), center_y - 0.5 * float(text_bbox[3] - text_bbox[1]))
         label_record = draw_traced_text(
             draw,
@@ -301,7 +306,7 @@ def _render_dataset(dataset: PopulationPyramidDataset, params: Mapping[str, Any]
             ("right", int(row.right_value), right_bbox, dataset.right_color_rgb),
         ):
             value_text = str(value)
-            value_box = draw.textbbox((0, 0), value_text, font=value_font, stroke_width=1)
+            value_box = draw.textbbox((0, 0), value_text, font=value_font, stroke_width=text_stroke_width)
             value_width = float(value_box[2] - value_box[0])
             x0, _by0, x1, _by1 = [float(v) for v in bbox]
             if float(x1 - x0) >= value_width + 12:
@@ -323,7 +328,7 @@ def _render_dataset(dataset: PopulationPyramidDataset, params: Mapping[str, Any]
                 font=value_font,
                 fill=fill,
                 stroke_fill=stroke,
-                stroke_width=1,
+                stroke_width=text_stroke_width,
             )
 
         entities.append(
@@ -362,6 +367,7 @@ def _render_dataset(dataset: PopulationPyramidDataset, params: Mapping[str, Any]
             "layout_jitter": dict(render_params.layout_jitter_meta),
             "background": dict(background_meta),
             "information_style": dict(style_meta),
+            "dense_text_style": dense_text_style_meta(role="population_pyramid_labels"),
         },
     )
 

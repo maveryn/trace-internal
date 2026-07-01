@@ -67,6 +67,7 @@ class TrapezoidExtensionProblem:
     support_labels: tuple[LabelSpec, ...]
     target_support_probabilities: Mapping[str, float]
     include_height_in_support: bool = True
+    annotation_mode: str = "original_trapezoid_bbox"
 
 
 @dataclass
@@ -99,6 +100,9 @@ class RenderedTrapezoidExtensionScene:
     answer: float
     annotation_bboxes: Mapping[str, BBox]
     annotation_roles: tuple[str, ...]
+    annotation_mode: str
+    annotation_segment: tuple[Point, Point] | None
+    annotation_bbox: BBox | None
     label_bboxes: Mapping[str, BBox]
     scene_entities: tuple[dict[str, Any], ...]
     render_map: Mapping[str, Any]

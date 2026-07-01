@@ -6,9 +6,9 @@ from trace.tasks import TASK_REGISTRY
 
 
 AREA_TASKS = {
-    "task_charts__area__interval_area_value": {"default"},
-    "task_charts__area__stacked_band_interval_sum_value": {"default"},
-    "task_charts__area__stacked_band_dominance_label": {"default"},
+    "task_charts__area__interval_area_value": {"single"},
+    "task_charts__area__stacked_band_interval_sum_value": {"single"},
+    "task_charts__area__stacked_band_dominance_label": {"single"},
 }
 
 
@@ -71,7 +71,7 @@ def test_area_numeric_tasks_generate_default_query_outputs() -> None:
             max_attempts=80,
         )
         assert output.scene_id == "area"
-        assert output.query_id == "default"
+        assert output.query_id == "single"
         assert output.answer_gt.type == "integer"
         assert output.annotation_gt.type == "point_set"
         assert output.annotation_gt.value

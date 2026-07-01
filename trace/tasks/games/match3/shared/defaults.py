@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Tuple
 
-from trace.tasks.shared.named_colors import available_named_colors, named_color
+from trace.tasks.shared.named_colors import named_color
 from trace.tasks.games.shared.visual_defaults import load_games_scene_noise_defaults
 
 
@@ -19,7 +19,7 @@ SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
     "orb_tokens",
 )
 OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H")
-GEM_KEYS: Tuple[str, ...] = tuple(str(name) for name, _rgb in available_named_colors())
+GEM_KEYS: Tuple[str, ...] = ("red", "blue", "green", "yellow", "purple", "cyan")
 GEM_RGB: Dict[str, Tuple[int, int, int]] = {
     str(name): tuple(int(value) for value in named_color(str(name)))
     for name in GEM_KEYS

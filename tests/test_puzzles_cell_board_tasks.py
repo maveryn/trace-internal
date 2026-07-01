@@ -14,12 +14,6 @@ from trace.tasks.puzzles.cell_board.shared.topology import (
 
 _TASK_CASES = [
     (
-        "task_puzzles__cell_board__scoped_attribute_count",
-        ("row_color_cell_count", "column_color_cell_count", "edge_color_cell_count"),
-        "bbox_set",
-        True,
-    ),
-    (
         "task_puzzles__cell_board__largest_component_size",
         ("single",),
         "bbox_set",
@@ -113,19 +107,6 @@ def test_cell_board_tasks_are_deterministic(
     assert out_a.trace_payload["query_spec"] == out_b.trace_payload["query_spec"]
     assert out_a.image.size == out_b.image.size
     assert out_a.image.tobytes() == out_b.image.tobytes()
-
-
-def test_cell_board_query_ids_are_task_local() -> None:
-    scoped = TASK_REGISTRY["task_puzzles__cell_board__scoped_attribute_count"]()
-    output = scoped.generate(
-        123,
-        params={"query_id": "column_color_cell_count"},
-        max_attempts=80,
-    )
-
-    assert output.query_id == "column_color_cell_count"
-    assert output.trace_payload["execution_trace"]["scope_kind"] == "column"
-    assert "query_id_weights" not in output.trace_payload["query_spec"]["params"]
 
 
 def _has_path_without_edge(

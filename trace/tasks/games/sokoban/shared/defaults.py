@@ -13,7 +13,7 @@ DEFAULTS = get_scene_defaults("games", SCENE_ID)
 GEN_DEFAULTS, RENDER_DEFAULTS, PROMPT_DEFAULTS = split_scene_generation_rendering_prompt_defaults(
     DEFAULTS if isinstance(DEFAULTS, dict) else {},
 )
-POST_IMAGE_NOISE_DEFAULTS = load_games_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_games_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.5)
 
 
 __all__ = [

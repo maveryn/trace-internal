@@ -19,7 +19,15 @@
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
 ## Program Contract
-`count(filter(series, compare(value(series, x_position), threshold, comparator={above,below}))); output=integer_count; annotation=point_set; scene=style_legend; scope=threshold_series_count`
+
+Program: `count(filter(series, compare(value(series, x_position), threshold, comparator={above,below}))); output=integer_count; annotation=point_set; scene=style_legend; scope=threshold_series_count`
+
+Candidate set: the visible plotted series/marks and legend entries inside the `threshold_series_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_count` value bound by `integer_count`.
+Annotation witnesses: `point_set` witnesses bound by `point_set`. Annotation marks each counted plotted marker at the queried x-axis label; use an empty array when the count is zero. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `above_threshold_series_count`, `below_threshold_series_count`.
 
 ## Query Details
 

@@ -10,7 +10,15 @@
 Counts visible target entities that lie strictly on one named side of the river.
 
 ## Program Contract
-`count(filter(pixel_village_entities, target_entity_type(entity)=target_object and strict_side_of_river(entity_tile_footprint, river_side))); scene=pixel_village; scope=river_side_object_count`
+
+Program: `count(filter(pixel_village_entities, target_entity_type(entity)=target_object and strict_side_of_river(entity_tile_footprint, river_side))); scene=pixel_village; scope=river_side_object_count`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `river_side_object_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `pixel_village_entities`, `target_entity_type`, `entity`, `target_object`, `strict_side_of_river`, `entity_tile_footprint`, `river_side`, `pixel_village`, `river_side_object_count`.
+Operation: evaluate `count` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; a positive integer derived from the same execution trace as the annotation.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

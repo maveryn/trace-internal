@@ -13,13 +13,6 @@
       ]
     },
     "task": {
-      "forward_bearing_from_back_bearing_value_query": [
-        "Use the shown back bearing between the two stations to find the bearing marked ?.",
-        "The field note gives the reverse bearing. Find the forward bearing marked ?.",
-        "Use the opposite-direction bearing for the same station line to determine the marked bearing.",
-        "Read the reverse station-line bearing and compute the requested bearing.",
-        "Find the marked bearing from the visible back-bearing note."
-      ],
       "outgoing_bearing_from_turn_value_query": [
         "Use the shown incoming bearing and turn angle at the station to find the outgoing bearing marked ?.",
         "The marked bearing follows from the visible traverse turn at the middle station.",
@@ -57,20 +50,6 @@
         "Compute height of instrument, then the target station elevation.",
         "Use the level line and field note to find the elevation marked ?"
       ],
-      "slope_distance_elevation_change": [
-        "Use the start elevation, distance, and rise or fall rate to find the elevation marked ?",
-        "Apply the slope field note to compute the missing station elevation.",
-        "Use the station-line distance and change per 20 units to determine the target elevation.",
-        "Compute total elevation change, then the target station elevation.",
-        "Use the station profile and field note to find the elevation marked ?"
-      ],
-      "coordinate_traverse_area": [
-        "Use the coordinate field note and plotted polygon to find the area marked ?",
-        "Compute the coordinate traverse area from the station coordinates.",
-        "Apply polygon area to the station coordinates.",
-        "Use the coordinate table and traverse sketch to find the enclosed area.",
-        "Find the station polygon area."
-      ],
       "offset_trapezoid_area": [
         "Use the chainage and offset field note with the offset sketch to find the area marked ?",
         "Compute the offset traverse area by summing adjacent trapezoids.",
@@ -103,9 +82,6 @@
     "global": {
       "json_output_contract": "Return a JSON object with exactly two keys: \"annotation\" and \"answer\".",
       "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."
-    },
-    "task:forward_bearing_from_back_bearing_value_query": {
-      "answer_hint": "set \"answer\" to the marked survey bearing as an integer number of degrees clockwise from north"
     },
     "task:outgoing_bearing_from_turn_value_query": {
       "answer_hint": "set \"answer\" to the marked survey bearing as an integer number of degrees clockwise from north"

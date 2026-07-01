@@ -1,0 +1,153 @@
+{
+  "bundle_id": "pages_step_list_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "step_list": [
+        "The image shows {object_description}.",
+        "The page shows {object_description}.",
+        "This page shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The visual shows {object_description}."
+      ]
+    },
+    "task": {
+      "step_lookup_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "nth_step_title": [
+        "What title is shown on the {step_reference} step?",
+        "Read the title on the {step_reference} step.",
+        "What is the visible title for the {step_reference} step?",
+        "Find the {step_reference} step. What title is printed on it?",
+        "Which title appears on the {step_reference} step?"
+      ],
+      "nth_step_detail": [
+        "What detail text is shown in the {step_reference} step?",
+        "Read the detail line on the {step_reference} step.",
+        "What is the visible detail text for the {step_reference} step?",
+        "Find the {step_reference} step. What detail is printed on it?",
+        "Which detail line appears in the {step_reference} step?"
+      ],
+      "step_after_named_step": [
+        "What step title comes immediately after {source_step_title}?",
+        "Find {source_step_title}. What is the title of the next step?",
+        "Which step title appears directly after {source_step_title}?",
+        "Read the title on the step immediately following {source_step_title}.",
+        "After {source_step_title}, what title is printed on the next numbered step?"
+      ],
+      "step_title_for_detail": [
+        "Which step title contains the detail {source_step_detail}?",
+        "Find the detail {source_step_detail}. What title is shown on that step?",
+        "What is the title of the step whose detail line reads {source_step_detail}?",
+        "Use the detail {source_step_detail}. Which step title owns it?",
+        "Read the card containing {source_step_detail}. What title is printed on that card?"
+      ],
+      "step_number_for_detail": [
+        "Which step number contains the detail {source_step_detail}?",
+        "Find the detail {source_step_detail}. What number is shown on that step?",
+        "What is the step number for the card whose detail line reads {source_step_detail}?",
+        "Use the detail {source_step_detail}. Which numbered step owns it?",
+        "Read the card containing {source_step_detail}. What number is printed on that card?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "global": {
+      "json_output_contract": "Return a JSON object with \"annotation\" and \"answer\".",
+      "json_output_contract_answer_only": "Return a JSON object with \"answer\" only."
+    },
+    "scene:step_list": {
+      "object_description": "a numbered step list with a title and detail line on each step card"
+    },
+    "query:nth_step_title": {
+      "answer_hint": "set \"answer\" to the exact visible step title requested by the question",
+      "annotation_hint": "set \"annotation\" to one [x0, y0, x1, y1] box around the requested step title",
+      "json_example": "{\"annotation\":[220,216,340,244],\"answer\":\"Review\"}",
+      "json_example_answer_only": "{\"answer\":\"Review\"}"
+    },
+    "query:nth_step_detail": {
+      "answer_hint": "set \"answer\" to the exact visible step detail text requested by the question",
+      "annotation_hint": "set \"annotation\" to one [x0, y0, x1, y1] box around the requested step detail text",
+      "json_example": "{\"annotation\":[220,250,370,278],\"answer\":\"Review packet\"}",
+      "json_example_answer_only": "{\"answer\":\"Review packet\"}"
+    },
+    "query:step_after_named_step": {
+      "answer_hint": "set \"answer\" to the exact visible title of the step immediately after the named source step",
+      "annotation_hint": "set \"annotation\" to one [x0, y0, x1, y1] box around the answer step title",
+      "json_example": "{\"annotation\":[220,216,300,244],\"answer\":\"Approve\"}",
+      "json_example_answer_only": "{\"answer\":\"Approve\"}"
+    },
+    "query:step_title_for_detail": {
+      "answer_hint": "set \"answer\" to the exact visible title of the step containing the named detail text",
+      "annotation_hint": "set \"annotation\" to one [x0, y0, x1, y1] box around the answer step title",
+      "json_example": "{\"annotation\":[220,216,340,244],\"answer\":\"Review\"}",
+      "json_example_answer_only": "{\"answer\":\"Review\"}"
+    },
+    "query:step_number_for_detail": {
+      "answer_hint": "set \"answer\" to the step number as visible text",
+      "annotation_hint": "set \"annotation\" to one [x0, y0, x1, y1] box around the answer step number badge",
+      "json_example": "{\"annotation\":[164,208,206,250],\"answer\":\"3\"}",
+      "json_example_answer_only": "{\"answer\":\"3\"}"
+    }
+  },
+  "dynamic_slots": {
+    "step_reference": {"type": "string"},
+    "source_step_title": {"type": "string"},
+    "source_step_detail": {"type": "string"}
+  },
+  "required_slots_by_key": {
+    "scene:step_list": [
+      "object_description"
+    ],
+    "query:nth_step_title": [
+      "step_reference"
+    ],
+    "query:nth_step_detail": [
+      "step_reference"
+    ],
+    "query:step_after_named_step": [
+      "source_step_title"
+    ],
+    "query:step_title_for_detail": [
+      "source_step_detail"
+    ],
+    "query:step_number_for_detail": [
+      "source_step_detail"
+    ],
+    "output:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "output:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  }
+}

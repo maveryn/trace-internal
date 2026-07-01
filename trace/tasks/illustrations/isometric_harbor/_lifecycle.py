@@ -5,10 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable, Mapping, Sequence
 
+from trace.core.seed import spawn_rng
+from trace.core.sampling import support_probability_map
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.config_defaults import required_group_defaults
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.illustrations.shared.canvas_profiles import resolve_canvas_profile
@@ -35,7 +36,7 @@ class HarborCountPlan:
     required_prompt_keys: tuple[str, ...]
     sample_spec: Callable[[int, Mapping[str, Any]], CountTaskSampleSpec]
     prompt_slots: Callable[[Mapping[str, Any], CountTaskSampleSpec], Mapping[str, Any]]
-    scene_builder: Callable[[int, CountTaskSampleSpec], IsoHarborScene]
+    scene_builder: Callable[[int, CountTaskSampleSpec, Mapping[str, Any]], IsoHarborScene]
     entity_selector: Callable[[IsoHarborScene, CountTaskSampleSpec], Sequence[IsoHarborEntity]]
     render_map: Callable[[IsoHarborScene, CountTaskSampleSpec, tuple[str, ...]], Mapping[str, Any]]
     identity_fields: Callable[[CountTaskSampleSpec], Mapping[str, Any]]
@@ -102,12 +103,11 @@ def _heading_status_counts(
     if len(other_statuses) == 1:
         counts[other_statuses[0]] = int(remaining)
     elif len(other_statuses) > 1:
-        split_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{config.public_id}:other_heading_split:{target_status}",
+        rng = spawn_rng(
+            int(instance_seed),
+            f"{config.public_id}:other_heading_split:{target_status}",
         )
-        first_count = int(split_index) % (int(remaining) + 1)
+        first_count = int(rng.randint(0, int(remaining)))
         counts[other_statuses[0]] = int(first_count)
         counts[other_statuses[1]] = int(remaining) - int(first_count)
     return counts
@@ -161,7 +161,7 @@ def _heading_sample_spec(
         target_count=int(target_count),
         target_count_probabilities=dict(target_count_probabilities),
         answer_count_support=tuple(int(value) for value in answer_count_support),
-        answer_count_probabilities=dict(uniform_probability_map(answer_count_support)),
+        answer_count_probabilities=dict(support_probability_map(answer_count_support, sort_keys=True)),
         canvas_width=int(profile.width),
         canvas_height=int(profile.height),
         canvas_profile=str(profile.profile_id),
@@ -211,7 +211,13 @@ def _heading_extra_query_params(sample: CountTaskSampleSpec) -> dict[str, Any]:
     }
 
 
-def _render_heading_scene_from_sample(scene_seed: int, sample: CountTaskSampleSpec) -> IsoHarborScene:
+def _render_heading_scene_from_sample(
+    scene_seed: int,
+    sample: CountTaskSampleSpec,
+    params: Mapping[str, Any],
+    *,
+    rendering_defaults: Mapping[str, Any],
+) -> IsoHarborScene:
     """Render open-water boats with exact shoreline-relative heading counts."""
 
     if not isinstance(sample, HarborHeadingCountSampleSpec):
@@ -223,6 +229,8 @@ def _render_heading_scene_from_sample(scene_seed: int, sample: CountTaskSampleSp
         canvas_profile=sample.canvas_profile,
         canvas_profile_probabilities=sample.canvas_profile_probabilities,
         required_heading_status_counts=sample.heading_status_counts,
+        render_style_params=params,
+        render_style_defaults=rendering_defaults,
     )
 
 
@@ -250,7 +258,12 @@ def build_harbor_heading_count_plan(config: HarborHeadingCountConfig) -> HarborC
             params=params,
         ),
         prompt_slots=_heading_prompt_slots,
-        scene_builder=_render_heading_scene_from_sample,
+        scene_builder=lambda scene_seed, sample, params: _render_heading_scene_from_sample(
+            scene_seed,
+            sample,
+            params,
+            rendering_defaults=config.rendering_defaults,
+        ),
         entity_selector=lambda scene, sample: sorted_harbor_boats(
             scene,
             predicate=lambda entity: (
@@ -292,7 +305,7 @@ def run_harbor_count_lifecycle(
     for attempt in range(max(1, int(max_attempts))):
         try:
             scene_seed = int(instance_seed) + int(attempt) * 1009
-            scene = plan.scene_builder(scene_seed, sample)
+            scene = plan.scene_builder(scene_seed, sample, params)
             counted_entities = tuple(plan.entity_selector(scene, sample))
             if len(counted_entities) != int(sample.target_count):
                 raise ValueError(f"count {len(counted_entities)} did not match target_count {sample.target_count}")

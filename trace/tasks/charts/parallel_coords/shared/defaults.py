@@ -9,10 +9,11 @@ from ....shared.config_defaults import (
     group_default,
     split_scene_generation_rendering_prompt_defaults,
 )
-from ....shared.font_assets import sample_font_family
 from ...shared.visual_defaults import (
     load_chart_scene_background_defaults,
     load_chart_scene_noise_defaults,
+    render_style_seed,
+    sample_chart_font_family as sample_shared_chart_font_family,
 )
 from .state import ParallelRenderParams, RGB
 
@@ -57,26 +58,13 @@ def rendering_int(params: Mapping[str, Any], key: str, fallback: int) -> int:
     return int(params.get(str(key), group_default(RENDERING_DEFAULTS, str(key), int(fallback))))
 
 
-def render_style_seed(params: Mapping[str, Any]) -> int:
-    try:
-        return int(params.get("_render_style_seed", params.get("_sample_cursor", 0)) or 0)
-    except Exception:
-        return 0
-
-
 def sample_chart_font_family(instance_seed: int, params: Mapping[str, Any]) -> str:
     """Sample the shared chart text font for one render."""
 
-    return str(
-        sample_font_family(
-            role="readout",
-            instance_seed=int(instance_seed),
-            namespace=f"{SCENE_NAMESPACE}.chart_font",
-            params=params,
-            exclude_tags=("display",),
-            explicit_key="chart_font_family",
-            weights_key="chart_font_family_weights",
-        )
+    return sample_shared_chart_font_family(
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.chart_font",
+        params=params,
     )
 
 
@@ -85,8 +73,8 @@ def resolve_render_params(params: Mapping[str, Any]) -> ParallelRenderParams:
 
     from ....shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
 
-    left = rendering_int(params, "plot_margin_left_px", 138)
-    right = rendering_int(params, "plot_margin_right_px", 138)
+    left = rendering_int(params, "plot_margin_left_px", 168)
+    right = rendering_int(params, "plot_margin_right_px", 168)
     top = rendering_int(params, "plot_margin_top_px", 116)
     bottom = rendering_int(params, "plot_margin_bottom_px", 118)
     left, right, top, bottom, layout_jitter_meta = apply_layout_jitter_to_margins(

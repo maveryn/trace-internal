@@ -14,7 +14,15 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Program Contract
-`count(intersections(profile_pair_lines, adjacent_axis_interval)); output=integer_count; annotation=point_set(crossing_points); scene=parallel_coords; scope=all_crossings_between_adjacent_axes`
+
+Program: `count(intersections(profile_pair_lines, adjacent_axis_interval)); output=integer_count; annotation=point_set(crossing_points); scene=parallel_coords; scope=all_crossings_between_adjacent_axes`
+
+Candidate set: the visible polylines, axes, and axis-value positions inside the `all_crossings_between_adjacent_axes` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_count` value bound by `integer_count`.
+Annotation witnesses: `point_set` witnesses bound by `point_set(crossing_points)`. Annotation marks one point at each counted profile-line crossing between the named adjacent axes. Axes, labels, threshold text, and decorative context are renderer context unless explicitly requested.
+Query ids: `single`.
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.

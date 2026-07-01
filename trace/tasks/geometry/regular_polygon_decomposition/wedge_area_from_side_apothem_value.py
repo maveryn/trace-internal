@@ -39,7 +39,11 @@ def _prepare_wedge_area(instance_seed, task_params, selected_branch, branch_prob
             "n_sides": int(problem.n_sides),
             "wedge_count": int(problem.wedge_count),
         },
-        trace_values={"answer_family": "area", "target_role": "wedge_area"},
+        trace_values={
+            "answer_family": "area",
+            "target_role": "wedge_area",
+            "answer_rounding": "one_decimal",
+        },
     )
 
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence
 
 from trace.core.types import TypedValue
-from trace.tasks.charts.shared.labeled_chart_common import projected_mark_annotation
+from trace.tasks.charts.shared.cartesian.annotations import projected_mark_annotation
 
 
 def mark_annotation(

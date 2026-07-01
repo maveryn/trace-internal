@@ -3,9 +3,10 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `similar_figure_measure_transfer`
-5. Query id: `single`
-6. Answer schema: `number`
-7. Annotation schema: `point_map`
+3. Query id: `single`
+4. Answer schema: `number`
+5. Answer precision: `one_decimal`
+6. Annotation schema: `point_map`
 
 ## Program Contract
 - `solve_formula(visible_similar_figure_marked_side_equation, unknown_role=variable_value, formula_schema=similar_side_ratio); scene=similar_figure_measure_transfer; scope=variable_value`

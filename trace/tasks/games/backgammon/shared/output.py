@@ -40,6 +40,7 @@ def common_backgammon_trace_params(
         "stack_state": str(sample.stack_state),
         "dice": [int(value) for value in sample.dice],
         "target_answer": int(sample.answer),
+        "use_dice_for_moves": bool(sample.use_dice_for_moves),
         "scene_variant_probabilities": dict(axes.scene_variant_probabilities),
         "style_variant_probabilities": dict(axes.style_variant_probabilities),
         "active_player_probabilities": dict(axes.active_player_probabilities),
@@ -81,6 +82,7 @@ def build_backgammon_trace_payload(
                 "target_destinations": [int(point) for point in sample.target_destinations],
                 "target_points": [int(point) for point in target_points],
                 "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
+                "use_dice_for_moves": bool(sample.use_dice_for_moves),
             },
         },
         "query_spec": dict(query_spec),
@@ -112,6 +114,11 @@ def build_backgammon_trace_payload(
             },
             "target_destinations": [int(point) for point in sample.target_destinations],
             "target_points": [int(point) for point in target_points],
+            "pip_count_contributions": {
+                str(point): int(value)
+                for point, value in sorted(sample.pip_count_contributions.items())
+            },
+            "use_dice_for_moves": bool(sample.use_dice_for_moves),
             "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],
             "construction_mode": str(construction_mode),
             **dict(execution_extra),

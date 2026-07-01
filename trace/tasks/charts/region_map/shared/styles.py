@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....shared.color_distance import coerce_rgb as _rgb
-from ...shared.labeled_chart_common import resolve_chart_axis_variant_for_namespace
+from ...shared.labeled_chart_variants import resolve_chart_axis_variant_for_namespace
 
 
 SUPPORTED_LEGEND_POSITIONS: Tuple[str, ...] = ("right", "bottom", "top", "none")
@@ -257,6 +257,39 @@ WORLD_MAP_STYLES: Dict[str, Dict[str, Any]] = {
     },
 }
 
+MARKER_STYLES: Dict[str, Dict[str, Tuple[int, int, int]]] = {
+    "teal": {
+        "fill": (20, 126, 136),
+        "outline": (8, 70, 78),
+        "label_fill": (255, 255, 255),
+        "label_outline": (31, 55, 64),
+    },
+    "coral": {
+        "fill": (218, 88, 64),
+        "outline": (122, 45, 34),
+        "label_fill": (255, 255, 255),
+        "label_outline": (97, 48, 41),
+    },
+    "violet": {
+        "fill": (118, 94, 188),
+        "outline": (61, 48, 112),
+        "label_fill": (255, 255, 255),
+        "label_outline": (54, 47, 84),
+    },
+    "gold": {
+        "fill": (224, 166, 55),
+        "outline": (121, 82, 28),
+        "label_fill": (255, 255, 255),
+        "label_outline": (88, 66, 40),
+    },
+    "ink": {
+        "fill": (52, 74, 94),
+        "outline": (20, 31, 43),
+        "label_fill": (255, 255, 255),
+        "label_outline": (20, 31, 43),
+    },
+}
+
 def select_choropleth_palette_colors(
     palette: Sequence[Sequence[int]],
     *,
@@ -365,13 +398,39 @@ def resolve_choropleth_world_map_style(
     )
 
 
+def resolve_choropleth_marker_style(
+    params: Mapping[str, Any],
+    *,
+    render_defaults: Mapping[str, Any],
+    namespace: str,
+    instance_seed: int,
+) -> Tuple[str, Dict[str, float], Dict[str, Tuple[int, int, int]]]:
+    style_id, probabilities = resolve_chart_axis_variant_for_namespace(
+        params=params,
+        gen_defaults=render_defaults,
+        instance_seed=int(instance_seed),
+        supported_variants=tuple(sorted(MARKER_STYLES.keys())),
+        namespace=f"{namespace}.marker_style_variant",
+        explicit_key="marker_style_variant",
+        weights_key="marker_style_variant_weights",
+        balance_flag_key="balanced_marker_style_variant_sampling",
+    )
+    return (
+        str(style_id),
+        {str(key): float(value) for key, value in sorted(probabilities.items())},
+        dict(MARKER_STYLES[str(style_id)]),
+    )
+
+
 __all__ = [
     "CATEGORICAL_PALETTES_RGB",
+    "MARKER_STYLES",
     "NUMERIC_PALETTES_RGB",
     "SUPPORTED_LEGEND_POSITIONS",
     "SUPPORTED_WORLD_MAP_STYLES",
     "WORLD_MAP_STYLES",
     "resolve_choropleth_legend_position",
+    "resolve_choropleth_marker_style",
     "resolve_choropleth_palette",
     "resolve_choropleth_world_map_style",
     "select_choropleth_palette_colors",

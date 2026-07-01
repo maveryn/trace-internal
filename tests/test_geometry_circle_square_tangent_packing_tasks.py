@@ -35,12 +35,10 @@ QUERY_IDS_BY_TASK = {
     GeometryTwoCirclesInRectangleGapAreaTask: (SINGLE_QUERY_ID,),
 }
 
-ANNOTATION_KEYS = {"target_cue", "packing_region", "support_measurement"}
-
 EXPECTED_FORMULA_BY_TASK = {
-    GeometryCircleInSquareRadiusFromGapAreaTask: lambda radius: float(radius),
+    GeometryCircleInSquareRadiusFromGapAreaTask: lambda radius: _round1(radius),
     GeometrySquareInCircleSideFromGapAreaTask: lambda radius: _round1(radius * math.sqrt(2.0)),
-    GeometryTwoCirclesInRectangleRadiusFromGapAreaTask: lambda radius: float(radius),
+    GeometryTwoCirclesInRectangleRadiusFromGapAreaTask: lambda radius: _round1(radius),
     GeometryCircleInSquareGapAreaTask: lambda radius: _round1((2 * radius) ** 2 - math.pi * radius * radius),
     GeometrySquareInCircleGapAreaTask: lambda radius: _round1(math.pi * radius * radius - 2 * radius * radius),
     GeometryTwoCirclesInRectangleGapAreaTask: lambda radius: _round1(
@@ -53,6 +51,14 @@ def _round1(value: float) -> float:
     return round(float(value) + 1e-9, 1)
 
 
+def _expected_answer_type(task_cls) -> str:
+    return "number"
+
+
+def _expected_answer_rounding(task_cls) -> str:
+    return "one_decimal"
+
+
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
 def test_tangent_packing_tasks_emit_public_contract(task_cls) -> None:
     task = task_cls()
@@ -60,10 +66,13 @@ def test_tangent_packing_tasks_emit_public_contract(task_cls) -> None:
 
     assert out.scene_id == SCENE_ID
     assert out.query_id in QUERY_IDS_BY_TASK[task_cls]
-    assert out.answer_gt.type == "number"
-    assert out.annotation_gt.type == "bbox_map"
-    assert set(out.annotation_gt.value) == ANNOTATION_KEYS
+    assert out.answer_gt.type == _expected_answer_type(task_cls)
+    assert isinstance(out.answer_gt.value, float)
+    assert out.annotation_gt.type == "bbox"
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
+    assert "target_cue" not in out.prompt_variants["answer_and_annotation"]
+    assert "packing_region" not in out.prompt_variants["answer_and_annotation"]
+    assert "support_measurement" not in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload
@@ -72,9 +81,19 @@ def test_tangent_packing_tasks_emit_public_contract(task_cls) -> None:
     assert trace["witness_symbolic"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["query_id"] == out.query_id
     assert trace["execution_trace"]["query_id"] == out.query_id
-    assert trace["projected_annotation"]["type"] == "bbox_map"
-    assert set(trace["projected_annotation"]["bbox_map"]) == ANNOTATION_KEYS
-    assert trace["witness_symbolic"]["source_witness_type"] == "bbox_map"
+    assert trace["execution_trace"]["answer_type"] == _expected_answer_type(task_cls)
+    assert trace["execution_trace"]["answer_rounding"] == _expected_answer_rounding(task_cls)
+    assert trace["execution_trace"]["answer_value"] == out.answer_gt.value
+    assert trace["witness_symbolic"]["answer_value"] == out.answer_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
+    assert trace["witness_symbolic"]["source_witness_type"] == "bbox"
+    assert trace["scene_ir"]["relations"]["annotation_roles"] == ["diagram"]
+    assert trace["execution_trace"]["annotation_roles"] == ["diagram"]
+    assert trace["render_map"]["gap_shading_mode"] == "container_minus_packed_shape_mask"
+    assert trace["render_map"]["packed_region_fill_mode"] == "background_unshaded"
+    assert trace["render_map"]["gap_texture"] == "high_contrast_diagonal_hatch"
 
     radius = int(trace["execution_trace"]["radius"])
     square_side = int(trace["execution_trace"]["square_side"])
@@ -86,7 +105,8 @@ def test_tangent_packing_tasks_emit_public_contract(task_cls) -> None:
         assert container_width == 4 * radius
         assert container_height == 2 * radius
 
-    assert out.answer_gt.value == pytest.approx(EXPECTED_FORMULA_BY_TASK[task_cls](radius))
+    expected_answer = EXPECTED_FORMULA_BY_TASK[task_cls](radius)
+    assert out.answer_gt.value == pytest.approx(expected_answer)
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
@@ -113,7 +133,7 @@ def test_tangent_packing_tasks_support_every_explicit_query(task_cls) -> None:
             max_attempts=20,
         )
         assert out.query_id == query_id
-        assert out.answer_gt.type == "number"
+        assert out.answer_gt.type == _expected_answer_type(task_cls)
         assert out.trace_payload["query_spec"]["params"][
             "query_id_probabilities"
         ] == {query_id: 1.0}
@@ -144,12 +164,11 @@ def test_tangent_packing_annotation_stays_inside_canvas(task_cls) -> None:
             max_attempts=20,
         )
         width, height = out.image.size
-        assert set(out.annotation_gt.value) == ANNOTATION_KEYS
-        for x0, y0, x1, y1 in out.annotation_gt.value.values():
-            assert 0.0 <= x0 < x1 <= float(width)
-            assert 0.0 <= y0 < y1 <= float(height)
-            assert (x1 - x0) > 8.0
-            assert (y1 - y0) > 8.0
+        x0, y0, x1, y1 = out.annotation_gt.value
+        assert 0.0 <= x0 < x1 <= float(width)
+        assert 0.0 <= y0 < y1 <= float(height)
+        assert (x1 - x0) > 8.0
+        assert (y1 - y0) > 8.0
 
 
 def test_tangent_packing_tasks_reject_unknown_query_id() -> None:

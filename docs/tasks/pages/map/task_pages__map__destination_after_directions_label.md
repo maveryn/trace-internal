@@ -1,26 +1,27 @@
 # `task_pages__map__destination_after_directions_label`
 
-## 1) Identity
+## Identity
 1. Domain: `pages`
-2. Scene: `map`
-3. Scene id: `map`
+2. Scene id: `map`
+3. Source scene: `map`
 4. Task id: `task_pages__map__destination_after_directions_label`
-5. Objective: Identify the destination landmark reached by following visible map directions.
 
-## 2) Scene + Task Contract
-1. Supported `query_id` values: `destination_after_directions`
-2. `answer_gt.type`: `string`
-3. `annotation_gt.type`: `bbox_sequence`
-4. Annotation witness policy: Ordered route landmark boxes used to follow the directions.
-5. `query_id` is retained as internal replay metadata; this public task id is the sampling unit.
+## Contract
+1. Objective: identify the destination landmark reached by starting at a named landmark and following visible map directions.
+2. Public task contract: `destination_after_directions_label`
+3. Supported `query_id` values: `single`
+4. Answer type: `string`
+5. Annotation schema: `bbox_sequence`
+6. Annotation witness: ordered landmark boxes along the followed route, from start through destination.
+7. Query argument axes: start landmark, direction sequence, route length, landmark count, and map layout jitter/style.
 
-## 3) Prompt Contract
-1. `prompt_bundle_id`: `pages_map_v0`
-2. Prompt templates come from `prompts/pages/map/` and are rendered with the scene layer plus task/query layer.
-3. Output modes: `answer_only` and `answer_and_annotation`.
-4. Annotation examples must match the role names and annotation type above.
+## Program Contract
+- `map_destination_after_directions(start_label, direction_sequence); output=string_visible_landmark_label; annotation=bbox_sequence(route_landmarks_ordered); scene=map; scope=one printed campus map`
 
-## 4) Determinism + Constraints
-1. Generation is deterministic for `instance_seed` plus params.
-2. Answers and annotation come from the same rendered trace payload.
-3. The generator constructs unique final answers and rejects invalid samples instead of semantically relaxing constraints.
+## Prompt + Trace
+1. Prompt bundle: `pages_map_v1`
+2. Scene key: `printed_map`
+3. Task key: `map_navigation_query`
+4. Prompt query key: `destination_after_directions`
+5. Trace records the sampled map graph, visible landmark labels, route landmark ids, direction text, final rendered bboxes, sampled style metadata, and layout geometry.
+6. Generation is deterministic from `instance_seed`; answers and annotation come from the finalized map render metadata.

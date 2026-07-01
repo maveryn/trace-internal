@@ -2,31 +2,18 @@
 
 from __future__ import annotations
 
-import json
-
 import pytest
 
 from trace.tasks import TASK_REGISTRY
 from trace.tasks.charts.part_whole.adjacent_transfer_gap_value import ChartsCompositionChartAdjacentTransferGapValueTask
-from trace.tasks.charts.part_whole.chart_order_share_to_count import ChartsCompositionChartOrderShareToCountTask
 from trace.tasks.charts.part_whole.contiguous_chart_order_sum import ChartsCompositionChartContiguousOrderSumTask
-from trace.tasks.charts.part_whole.positional_segment_share_sum import ChartsCompositionChartPositionalSegmentShareSumTask
 from trace.tasks.charts.part_whole.sector_share_to_angle import ChartsCompositionChartSectorShareToAngleTask
 from trace.tasks.charts.part_whole.subset_denominator_share_value import ChartsCompositionSubsetDenominatorShareValueTask
 
 
-def _extract_prompt_json_example(prompt: str) -> dict:
-    marker = "Example JSON:\n"
-    assert marker in str(prompt)
-    payload = str(prompt).split(marker, 1)[1].strip()
-    return json.loads(payload)
-
-
 PART_WHOLE_TASKS = (
     ("task_charts__part_whole__adjacent_transfer_gap_value", ChartsCompositionChartAdjacentTransferGapValueTask),
-    ("task_charts__part_whole__chart_order_share_to_count", ChartsCompositionChartOrderShareToCountTask),
     ("task_charts__part_whole__contiguous_chart_order_sum", ChartsCompositionChartContiguousOrderSumTask),
-    ("task_charts__part_whole__positional_segment_share_sum", ChartsCompositionChartPositionalSegmentShareSumTask),
     ("task_charts__part_whole__sector_share_to_angle", ChartsCompositionChartSectorShareToAngleTask),
     ("task_charts__part_whole__subset_denominator_share_value", ChartsCompositionSubsetDenominatorShareValueTask),
 )
@@ -47,17 +34,6 @@ def _expected_part_whole_answer(task_id: str, trace: dict) -> int:
         selected_share = sum(values_by_label[str(label)] for label in trace["category_list"])
         assert int(trace["selected_share_value"]) == int(selected_share)
         return int(selected_share)
-    if task_id.endswith("__positional_segment_share_sum"):
-        selected_indices = [int(index) for index in trace["selected_indices"]]
-        labels = [str(label) for label in trace["chart_order_labels"]]
-        assert [labels[index] for index in selected_indices] == [str(label) for label in trace["category_list"]]
-        selected_share = sum(values_by_label[str(label)] for label in trace["category_list"])
-        assert int(trace["selected_share_value"]) == int(selected_share)
-        return int(selected_share)
-    if task_id.endswith("__chart_order_share_to_count"):
-        selected_share = sum(values_by_label[str(label)] for label in trace["category_list"])
-        assert int(trace["selected_share_value"]) == int(selected_share)
-        return int(int(trace["total_count"]) * int(selected_share) // 100)
     if task_id.endswith("__subset_denominator_share_value"):
         selected_share = sum(values_by_label[str(label)] for label in trace["category_list"])
         target_share = int(values_by_label[str(trace["target_category"])])
@@ -123,15 +99,6 @@ def test_part_whole_tasks_match_contract(task_id: str, task_cls: type, query_id:
     assert len(trace["scene_ir"]["entities"]) >= int(execution["category_count"]) * 2
 
 
-def test_part_whole_share_to_count_annotation_includes_total_count() -> None:
-    task = ChartsCompositionChartOrderShareToCountTask()
-    out = task.generate(41600, params={"query_id": "clockwise_share_to_count"}, max_attempts=100)
-    assert "total_count" in out.annotation_gt.value
-    assert "__total__" in out.trace_payload["execution_trace"]["annotation_labels"]
-    prompt_example = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
-    assert "total_count" in prompt_example["annotation"]
-
-
 def test_part_whole_single_query_task_uses_single_sentinel() -> None:
     task = ChartsCompositionSubsetDenominatorShareValueTask()
     assert task.supported_query_ids == ("single",)
@@ -146,7 +113,7 @@ def test_part_whole_tasks_reject_unsupported_query_and_scene_variant() -> None:
         with pytest.raises(ValueError, match="query_id"):
             task.generate(41800, params={"query_id": "__unsupported_query_id__"}, max_attempts=10)
         with pytest.raises(ValueError):
-            task.generate(41801, params={"scene_variant": "small_multiple_pie"}, max_attempts=10)
+            task.generate(41801, params={"scene_variant": "composition_pie_panels"}, max_attempts=10)
 
 
 def test_part_whole_tasks_are_registered_and_deterministic() -> None:

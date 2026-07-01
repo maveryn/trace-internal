@@ -89,6 +89,30 @@ def simulate_move(board: Board, move: SwapMove) -> MoveOutcome:
     )
 
 
+def external_same_color_neighbors_for_clear(board: Board, outcome: MoveOutcome) -> Tuple[Coord, ...]:
+    """Return same-color neighbors touching cleared cells but not clearing."""
+
+    cleared = set(outcome.cleared_cells)
+    if not cleared:
+        return tuple()
+    after = swap_board(board, outcome.move)
+    rows = len(after)
+    cols = len(after[0]) if rows else 0
+    external: set[Coord] = set()
+    for row, col in cleared:
+        color = str(after[int(row)][int(col)])
+        for dr, dc in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            neighbor = (int(row + dr), int(col + dc))
+            nr, nc = neighbor
+            if nr < 0 or nr >= rows or nc < 0 or nc >= cols:
+                continue
+            if neighbor in cleared:
+                continue
+            if str(after[nr][nc]) == color:
+                external.add(neighbor)
+    return tuple(sorted(external))
+
+
 def all_move_outcomes(board: Board) -> Tuple[MoveOutcome, ...]:
     """Evaluate all distinct adjacent swaps that exchange unlike neighboring gems."""
 
@@ -149,6 +173,7 @@ def histogram(values: Sequence[int]) -> dict[str, int]:
 __all__ = [
     "all_move_outcomes",
     "cell_entity_id",
+    "external_same_color_neighbors_for_clear",
     "find_runs",
     "gem_count_matches",
     "generate_board",

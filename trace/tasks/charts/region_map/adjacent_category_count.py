@@ -39,6 +39,7 @@ class ChartsMapAdjacentCategoryCountTask:
             relations={
                 "query_id": str(selected_query_id),
                 "reference_region_id": str(dataset["question_params"]["reference_region_id"]),
+                "reference_region_label": str(dataset["question_params"]["reference_region_label"]),
                 "category_label": str(dataset["question_params"]["category_label"]),
                 "adjacent_neighbor_region_ids": list(dataset["question_params"]["adjacent_neighbor_region_ids"]),
                 "annotation_region_count": int(len(annotation.annotation_region_ids)),
@@ -46,6 +47,7 @@ class ChartsMapAdjacentCategoryCountTask:
             witness_symbolic={
                 "type": "region_map_adjacent_category_count_witness",
                 "reference_region_id": str(dataset["question_params"]["reference_region_id"]),
+                "reference_region_label": str(dataset["question_params"]["reference_region_label"]),
                 "candidate_region_ids": list(annotation.annotation_region_ids),
                 "answer_value": int(dataset["answer_value"]),
             },

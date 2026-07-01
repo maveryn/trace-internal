@@ -10,7 +10,7 @@ from trace.core.types import TypedValue
 from .state import RenderedTreemap
 
 
-def leaf_value_boxes(rendered: RenderedTreemap, leaf_ids: Sequence[str]) -> list[list[float]]:
+def leaf_cell_boxes(rendered: RenderedTreemap, leaf_ids: Sequence[str]) -> list[list[float]]:
     lookup = {
         str(leaf_id): [round(float(value), 3) for value in bbox]
         for leaf_id, bbox in rendered.annotation_bbox_by_leaf_id.items()
@@ -30,4 +30,4 @@ def annotation_value_from_projection(projected: Mapping[str, Any]) -> TypedValue
     raise ValueError(f"unsupported treemap annotation type: {kind}")
 
 
-__all__ = ["annotation_value_from_projection", "bbox_set_projection", "leaf_value_boxes"]
+__all__ = ["annotation_value_from_projection", "bbox_set_projection", "leaf_cell_boxes"]

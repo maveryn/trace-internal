@@ -1,4 +1,4 @@
-"""Contract tests for physics magnetism force-field tasks."""
+"""Contract tests for magnetic-force scene tasks."""
 
 from __future__ import annotations
 
@@ -6,13 +6,22 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from trace.tasks.physics.magnetism.force_field import (
-    PhysicsMagnetismForceDirectionChoiceTask,
+from trace.tasks.physics.magnetic_force.force_direction_choice import (
+    PhysicsMagneticForceForceDirectionChoiceTask,
 )
 
 
+def _bbox_inside(inner: list[float], outer: list[float], *, margin_px: float = 0.0) -> bool:
+    return (
+        float(inner[0]) >= float(outer[0]) - float(margin_px)
+        and float(inner[1]) >= float(outer[1]) - float(margin_px)
+        and float(inner[2]) <= float(outer[2]) + float(margin_px)
+        and float(inner[3]) <= float(outer[3]) + float(margin_px)
+    )
+
+
 def test_physics_magnetism_force_direction_choice_contract() -> None:
-    out = PhysicsMagnetismForceDirectionChoiceTask().generate(
+    out = PhysicsMagneticForceForceDirectionChoiceTask().generate(
         97001,
         params={
             "scene_variant": "clean_panel",
@@ -33,14 +42,14 @@ def test_physics_magnetism_force_direction_choice_contract() -> None:
 
     assert out.answer_gt.value == "D"
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
 
     assert set(out.annotation_gt.value) == {"field_orientation", "charge", "velocity"}
 
     assert out.scene_id == "magnetic_force"
 
-    assert out.query_id == "force_direction_choice"
-    assert trace["query_spec"]["query_id"] == "force_direction_choice"
+    assert out.query_id == "single"
+    assert trace["query_spec"]["query_id"] == "single"
 
     assert trace["query_spec"]["params"]["internal_query_id"] == "force_direction_choice"
 
@@ -56,13 +65,20 @@ def test_physics_magnetism_force_direction_choice_contract() -> None:
 
     assert execution["annotation_entity_ids"] == ["field_orientation_label", "particle", "velocity_vector"]
 
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
+    assert trace["projected_annotation"]["type"] == "bbox_map"
 
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
 
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_map"] == out.annotation_gt.value
 
     assert trace["render_map"]["correct_option_bbox_px"] not in out.annotation_gt.value.values()
+
+    assert set(trace["render_map"]["option_cell_bboxes_px"]) == set("ABCDEFGH")
+
+    assert set(trace["render_map"]["option_arrow_bboxes_px"]) == set("ABCDEFGH")
+
+    for letter, arrow_bbox in trace["render_map"]["option_arrow_bboxes_px"].items():
+        assert _bbox_inside(arrow_bbox, trace["render_map"]["option_cell_bboxes_px"][letter])
 
     assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
 
@@ -78,7 +94,7 @@ def test_physics_magnetism_tasks_are_deterministic() -> None:
         "correct_option_letter": "F",
         "accent_color_name": "orange",
     }
-    task = PhysicsMagnetismForceDirectionChoiceTask()
+    task = PhysicsMagneticForceForceDirectionChoiceTask()
     out_a = task.generate(97031, params=params, max_attempts=60)
     out_b = task.generate(97031, params=params, max_attempts=60)
 
@@ -101,7 +117,7 @@ def test_physics_magnetism_sampling_covers_internal_axes() -> None:
     direction_letters: Counter[str] = Counter()
 
     for sampling_index in range(96):
-        direction = PhysicsMagnetismForceDirectionChoiceTask().generate(
+        direction = PhysicsMagneticForceForceDirectionChoiceTask().generate(
             97100 + sampling_index,
             params={},
             max_attempts=80,
@@ -132,20 +148,10 @@ def test_physics_magnetism_sampling_covers_internal_axes() -> None:
 
 
 def test_physics_magnetism_prompt_bundle_supports_variants() -> None:
-    bundle = json.loads(Path("prompts/physics/magnetism/physics_magnetism_v0.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/physics/magnetic_force/physics_magnetic_force_v1.json").read_text(encoding="utf-8"))
 
-    assert len(bundle["scene_templates"]["magnetic_force_field"]) == 5
+    assert len(bundle["templates"]["scene"]["magnetic_force_field"]) == 5
 
-    assert {
-        "force_direction_choice",
-        "field_direction_at_point",
-        "clockwise_induced_current_count",
-        "counterclockwise_induced_current_count",
-        "no_induced_current_count",
-    }.issubset(set(bundle["query_templates"]))
+    assert set(bundle["templates"]["query"]) == {"single"}
 
-    assert len(bundle["query_templates"]["force_direction_choice"]) == 5
-
-    assert len(bundle["query_templates"]["field_direction_at_point"]) == 5
-
-    assert len(bundle["query_templates"]["clockwise_induced_current_count"]) == 5
+    assert len(bundle["templates"]["query"]["single"]) == 5

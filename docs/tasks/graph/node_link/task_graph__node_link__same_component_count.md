@@ -1,7 +1,15 @@
 # `task_graph__node_link__same_component_count`
 
 ## Program Contract
-- `count(component_nodes(graph, reference_node)); scene=node_link; scope=same_component_count`
+
+Program: `count(component_nodes(graph, reference_node)); scene=node_link; scope=same_component_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `same_component_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `component_nodes`, `graph`, `reference_node`, `node_link`, `same_component_count`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Summary
 1. Domain: `graph`

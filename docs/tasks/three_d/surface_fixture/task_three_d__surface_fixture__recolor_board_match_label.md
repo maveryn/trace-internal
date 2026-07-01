@@ -10,7 +10,15 @@
 - Annotation schema: `bbox`
 
 ## Program Contract
-- `match(option_board where fixed_position_color_state == recolor(original_fixed_position_color_state, source_color, destination_color)); scene=surface_fixture; scope=recolor_board_match_label`
+
+Program: `match(option_board where fixed_position_color_state == recolor(original_fixed_position_color_state, source_color, destination_color)); scene=surface_fixture; scope=recolor_board_match_label`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `recolor_board_match_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `option_board`, `where`, `fixed_position_color_state`, `recolor`, `original_fixed_position_color_state`, `source_color`, `destination_color`, `surface_fixture`, `recolor_board_match_label`.
+Operation: evaluate `match` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Contract
 The image shows one original projected fixture board and four labeled candidate

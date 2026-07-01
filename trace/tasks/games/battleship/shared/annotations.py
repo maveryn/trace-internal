@@ -156,12 +156,36 @@ def project_ship_status_annotation(
     )
 
 
+def project_shape_option_annotation(
+    *,
+    option_label: str,
+    rendered_scene: RenderedBattleshipScene,
+) -> BattleshipAnnotationProjection:
+    """Project one labeled shape answer option to a scalar bbox annotation."""
+
+    option_bboxes = rendered_scene.render_map.get("shape_option_bboxes_px", {})
+    if str(option_label) not in option_bboxes:
+        raise ValueError(f"unknown Battleship shape option label: {option_label}")
+    bbox = rounded_bbox(option_bboxes[str(option_label)])
+    return BattleshipAnnotationProjection(
+        annotation_cell_ids=tuple(),
+        annotation_points=[bbox_center(bbox)],
+        annotation_bboxes=[bbox],
+        annotation_entity_ids=(f"shape_option_{str(option_label)}",),
+        annotation_point_set_map={},
+        annotation_bbox_set_map={},
+        annotation_key_to_ship_id={},
+        annotation_hit_cell_ids_by_key={},
+    )
+
+
 __all__ = [
     "BattleshipAnnotationProjection",
     "bbox_center",
     "cell_ids_for_coords",
     "project_bbox_set_annotation",
     "project_point_set_annotation",
+    "project_shape_option_annotation",
     "project_ship_status_annotation",
     "rounded_bbox",
 ]

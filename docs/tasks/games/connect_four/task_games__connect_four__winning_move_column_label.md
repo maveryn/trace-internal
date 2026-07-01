@@ -10,7 +10,15 @@
 7. Program schema: `select(column_label, legal_drop_result=immediate_win_for_current_player); scene=connect_four; scope=winning_move_column_label`
 
 ## Program Contract
-- `select(column_label, legal_drop_result=immediate_win_for_current_player); scene=connect_four; scope=winning_move_column_label`
+
+Program: `select(column_label, legal_drop_result=immediate_win_for_current_player); scene=connect_four; scope=winning_move_column_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `winning_move_column_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `column_label`, `legal_drop_result`, `immediate_win_for_current_player`, `connect_four`, `winning_move_column_label`.
+Operation: evaluate `select` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. Column labels are rendered below the board; annotation marks the center of the selected column's landing cell, not the label text.

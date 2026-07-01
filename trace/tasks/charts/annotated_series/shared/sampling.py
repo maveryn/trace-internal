@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
+from trace.core.sampling import uniform_choice_with_probabilities
 from trace.core.seed import spawn_rng
 from trace.tasks.charts.annotated_series.shared.defaults import (
     FALLBACK_CHART_DEFAULTS,
@@ -15,8 +16,8 @@ from trace.tasks.charts.annotated_series.shared.defaults import (
     group_default,
 )
 from trace.tasks.charts.annotated_series.shared.state import SeriesSample
-from trace.tasks.charts.shared.labeled_chart_common import balanced_choice_from_values, sample_chart_labels
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.tasks.charts.shared.label_assets import sample_chart_labels
+from trace.tasks.charts.shared.labeled_chart_values import balanced_choice_from_values
 
 
 def _probability_map_from_weights(weights: Mapping[str, float]) -> dict[str, float]:
@@ -73,13 +74,11 @@ def choose_scene_variant(
         support = tuple(name for name in SUPPORTED_SCENE_VARIANTS if weights.get(name, 0.0) > 0.0)
         if not support:
             raise ValueError("scene_variant_weights must leave at least one positive scene variant")
-        index = resolve_selection_index(
-            params=params,
-            namespace=f"{SCENE_NAMESPACE}.scene_variant",
-            instance_seed=instance_seed,
+        selected, probabilities = uniform_choice_with_probabilities(
+            spawn_rng(instance_seed, f"{SCENE_NAMESPACE}.scene_variant"),
+            support,
         )
-        probability = 1.0 / float(len(support))
-        return support[index % len(support)], {name: probability for name in support}
+        return str(selected), dict(probabilities)
 
     return _choice_from_weight_map(
         weights,
@@ -162,13 +161,11 @@ def choose_semantic_branch(
             raise ValueError(f"{branch_name} must be one of {tuple(support)}, got {value!r}")
         return value, {name: 1.0 if name == value else 0.0 for name in support}
 
-    index = resolve_selection_index(
-        params=params,
-        namespace=f"{SCENE_NAMESPACE}.{branch_name}",
-        instance_seed=instance_seed,
+    selected, probabilities = uniform_choice_with_probabilities(
+        spawn_rng(instance_seed, f"{SCENE_NAMESPACE}.{branch_name}"),
+        tuple(str(value) for value in support),
     )
-    probability = 1.0 / float(len(support))
-    return support[index % len(support)], {name: probability for name in support}
+    return str(selected), dict(probabilities)
 
 
 def uniform_probability_map(support: Sequence[str]) -> dict[str, float]:

@@ -11,7 +11,7 @@ from PIL import Image
 from trace.core.seed import hash64
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.charts.sunburst.shared.annotations import leaf_value_boxes
+from trace.tasks.charts.sunburst.shared.annotations import leaf_value_points
 from trace.tasks.charts.sunburst.shared.rendering import render_scene
 from trace.tasks.charts.sunburst.shared.sampling import hierarchy_rows, nodes_by_id
 from trace.tasks.charts.sunburst.shared.state import SCENE_ID, SCENE_KIND, SCENE_VARIANT, SunburstTree
@@ -80,7 +80,7 @@ def materialize_sunburst_plan(
         font_namespace="charts.sunburst.chart_font",
     )
     annotation_leaf_ids = tuple(str(leaf_id) for leaf_id in plan.annotation_leaf_ids)
-    annotation_boxes = leaf_value_boxes(rendered, annotation_leaf_ids)
+    annotation_points = leaf_value_points(rendered, annotation_leaf_ids)
     node_lookup = nodes_by_id(plan.tree)
     relation_fields = {
         "query_id": str(selected_query_id),
@@ -95,8 +95,8 @@ def materialize_sunburst_plan(
         **dict(plan.tree.generation_ranges),
     }
     projected_annotation = {
-        "type": "bbox_set",
-        "bbox_set": list(annotation_boxes),
+        "type": "point_set",
+        "point_set": list(annotation_points),
         "annotation_node_ids": [str(leaf_id) for leaf_id in annotation_leaf_ids],
     }
     trace_payload = {
@@ -149,7 +149,7 @@ def materialize_sunburst_plan(
     return MaterializedSunburstTask(
         prompt=str(plan.prompt_artifacts.prompt),
         answer_gt=plan.answer_gt,
-        annotation_gt=TypedValue(type="bbox_set", value=list(annotation_boxes)),
+        annotation_gt=TypedValue(type="point_set", value=list(annotation_points)),
         image=rendered.image,
         trace_payload=trace_payload,
         query_id=str(selected_query_id),

@@ -10,7 +10,15 @@
 Computes the fewest movement-point cost for the blue unit to reach one visibly marked destination tile on a top-down tactical RPG map.
 
 ## Program Contract
-`value(shortest_movement_cost(unit, marked_tile, terrain_costs)); scene=rpg_tactical_map; scope=movement_cost_value`
+
+Program: `value(shortest_movement_cost(unit, marked_tile, terrain_costs)); scene=rpg_tactical_map; scope=movement_cost_value`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `movement_cost_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `shortest_movement_cost`, `unit`, `marked_tile`, `terrain_costs`, `rpg_tactical_map`, `movement_cost_value`.
+Operation: evaluate `value` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

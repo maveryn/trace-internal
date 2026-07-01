@@ -20,15 +20,25 @@
   </head>
   <body>
     {% set current_domain = '' %}
+    {% set current_scene_id = '' %}
     {% if domain_record is defined %}
       {% set current_domain = domain_record.domain %}
     {% elif scene is defined %}
       {% set current_domain = scene.domain %}
+      {% set current_scene_id = scene.scene_id %}
     {% elif task is defined %}
       {% set current_domain = task.domain %}
+      {% set current_scene_id = task.scene_id %}
     {% elif sample is defined %}
       {% set current_domain = sample.domain %}
+      {% set current_scene_id = sample.scene_id %}
     {% endif %}
+    {% set current_scene_key = '' %}
+    {% if current_domain and current_scene_id %}
+      {% set current_scene_key = current_domain ~ '/' ~ current_scene_id %}
+    {% endif %}
+    {% set current_scene_stale = current_scene_key and current_scene_key in review_stale_scene_keys %}
+    {% set show_stale_banner = review_index_stale and ((current_domain and current_scene_id and current_scene_stale) or not (current_domain and current_scene_id)) %}
     <div class="app-shell">
       <header class="site-header">
         <div class="site-header-main">
@@ -68,11 +78,25 @@
             <a class="button-link" href="{{ app_path('/resources') }}">Resources</a>
             <a class="button-link" href="{{ app_path('/taxonomy') }}">Taxonomy</a>
             <a class="button-link" href="{{ app_path('/issues') }}">Issues{% if feedback_open_count|default(0) %} {{ feedback_open_count }}{% endif %}</a>
-            <form action="{{ app_path('/api/reload') }}" method="post">
-              <button type="submit" formaction="{{ app_path('/api/reload') }}" data-reload>
-                {% if review_reload_status.in_progress|default(false) %}Reloading...{% else %}Reload Index{% endif %}
-              </button>
-            </form>
+            {% if current_domain and current_scene_id %}
+              {% set scene_reload_path = '/api/reload/scene/' ~ current_domain ~ '/' ~ current_scene_id %}
+              <form action="{{ app_path(scene_reload_path) }}" method="post">
+                <button
+                  type="submit"
+                  formaction="{{ app_path(scene_reload_path) }}"
+                  data-reload
+                  data-reload-url="{{ app_path(scene_reload_path) }}"
+                >
+                  {% if review_reload_status.in_progress|default(false) %}Reloading...{% else %}Reload Scene{% endif %}
+                </button>
+              </form>
+            {% elif review_full_reload_enabled %}
+              <form action="{{ app_path('/api/reload') }}" method="post">
+                <button type="submit" formaction="{{ app_path('/api/reload') }}" data-reload data-reload-url="{{ app_path('/api/reload') }}">
+                  {% if review_reload_status.in_progress|default(false) %}Reloading...{% else %}Full Reload{% endif %}
+                </button>
+              </form>
+            {% endif %}
             {% if request.app.state.auth_token %}
               <form action="{{ app_path('/logout') }}" method="post">
                 <button type="submit">Log Out</button>
@@ -96,21 +120,52 @@
             <p class="muted">Review root: {{ review_root_display }}</p>
           </div>
         </header>
-        {% if review_index_stale %}
+        {% if show_stale_banner %}
           <section class="notice stale">
             <strong>Review artifacts changed.</strong>
-            <span>Start an index reload before inspecting generated samples. Existing pages stay available while the index rebuilds.</span>
-            <form action="{{ app_path('/api/reload') }}" method="post">
-              <button type="submit" formaction="{{ app_path('/api/reload') }}" data-reload>
-                {% if review_reload_status.in_progress|default(false) %}Reloading...{% else %}Reload Index{% endif %}
-              </button>
-            </form>
+            {% if current_domain and current_scene_id %}
+              {% set scene_reload_path = '/api/reload/scene/' ~ current_domain ~ '/' ~ current_scene_id %}
+              <span>Reload this scene before inspecting updated generated samples. Existing pages stay available while the scene index rebuilds.</span>
+              <form action="{{ app_path(scene_reload_path) }}" method="post">
+                <button
+                  type="submit"
+                  formaction="{{ app_path(scene_reload_path) }}"
+                  data-reload
+                  data-reload-url="{{ app_path(scene_reload_path) }}"
+                >
+                  {% if review_reload_status.in_progress|default(false) %}Reloading...{% else %}Reload This Scene{% endif %}
+                </button>
+              </form>
+            {% elif review_full_reload_enabled %}
+              <span>Start a full index reload before inspecting generated samples. Existing pages stay available while the index rebuilds.</span>
+              <form action="{{ app_path('/api/reload') }}" method="post">
+                <button type="submit" formaction="{{ app_path('/api/reload') }}" data-reload data-reload-url="{{ app_path('/api/reload') }}">
+                  {% if review_reload_status.in_progress|default(false) %}Reloading...{% else %}Full Reload{% endif %}
+                </button>
+              </form>
+            {% elif review_stale_scenes %}
+              <span>
+                Artifacts changed for
+                {% for stale_scene in review_stale_scenes[:6] %}
+                  <a href="{{ app_path('/domains/' ~ stale_scene.domain ~ '/scenes/' ~ stale_scene.scene_id) }}">{{ stale_scene.key }}</a>{% if not loop.last %}, {% endif %}
+                {% endfor %}
+                {% if review_stale_scenes|length > 6 %} and {{ review_stale_scenes|length - 6 }} more{% endif %}.
+                Open the affected scene and use Reload This Scene.
+              </span>
+            {% else %}
+              <span>Review artifacts changed outside a scene. Full index reload is disabled on this shared app unless it is restarted in explicit maintenance mode.</span>
+            {% endif %}
           </section>
         {% endif %}
         {% if review_reload_status.in_progress|default(false) %}
           <section class="notice">
             <strong>Index reload running.</strong>
-            <span>The current index is still being served and will refresh when the rebuild finishes.</span>
+            <span>
+              The current index is still being served and will refresh when the rebuild finishes.
+              {% if review_reload_status.queued|default(false) %}
+                Queued reloads: {{ review_reload_status.queued_scopes|join(', ') }}.
+              {% endif %}
+            </span>
           </section>
         {% elif review_reload_status.status|default('idle') == 'failed' %}
           <section class="notice error">

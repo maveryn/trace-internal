@@ -18,6 +18,12 @@ SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "packed_bubble_cloud",
     "small_multiple_bubble_cloud",
 )
+SINGLE_PANEL_SCENE_VARIANTS: Tuple[str, ...] = (
+    "rect_word_cloud",
+    "circle_word_cloud",
+    "packed_bubble_cloud",
+)
+PANEL_SCENE_VARIANTS: Tuple[str, ...] = ("small_multiple_bubble_cloud",)
 SUPPORTED_EXTREMUM_DIRECTIONS: Tuple[str, ...] = ("largest", "smallest")
 
 BBox = Tuple[float, float, float, float]

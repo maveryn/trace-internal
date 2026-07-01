@@ -9,7 +9,9 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
+from trace.tasks.games.connect_four.blocking_move_column_label import GamesConnectFourBlockingMoveColumnLabelTask
 from trace.tasks.games.connect_four.column_disc_profile_label import GamesConnectFourColumnDiscProfileLabelTask
+from trace.tasks.games.connect_four.shared.rules import RED, YELLOW, drop_disc, opponent, player_name, winning_drop_map
 from trace.tasks.games.connect_four.winning_move_column_label import GamesConnectFourWinningMoveColumnLabelTask
 from trace.tasks.games.connect_four.winning_move_count import GamesConnectFourWinningMoveCountTask
 from tests.helpers import read_jsonl
@@ -30,7 +32,7 @@ def test_games_connect_four_move_count_emits_expected_contract() -> None:
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == 3
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert len(out.annotation_gt.value) == 3
     assert trace["query_spec"]["params"]["query_id"] == out.query_id
     assert int(execution["target_answer"]) == 3
@@ -38,7 +40,7 @@ def test_games_connect_four_move_count_emits_expected_contract() -> None:
     assert int(execution["board_column_count"]) == 7
     assert int(trace["render_map"]["rows"]) == 6
     assert int(trace["render_map"]["columns"]) == 7
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert len(execution["annotation_entity_ids"]) == 3
     assert all(str(entity_id).startswith("cell_r") for entity_id in execution["annotation_entity_ids"])
 
@@ -114,6 +116,69 @@ def test_games_connect_four_winning_move_column_label_contract(
     assert trace["render_map"]["marked_square_bbox_px"] is None
 
 
+@pytest.mark.parametrize(
+    ("params", "expected_label", "expected_column", "expected_columns"),
+    (
+        (
+            {
+                "scene_variant": "midgame_board",
+                "board_size_variant": "small_6x5",
+                "target_column_label": "C",
+                "blocking_move_label_threat_kind": "horizontal_threat",
+            },
+            "C",
+            2,
+            6,
+        ),
+        (
+            {
+                "scene_variant": "crowded_board",
+                "board_size_variant": "standard_7x6",
+                "target_column_label": "G",
+                "blocking_move_label_threat_kind": "vertical_threat",
+            },
+            "G",
+            6,
+            7,
+        ),
+    ),
+)
+def test_games_connect_four_blocking_move_column_label_contract(
+    params: dict[str, str],
+    expected_label: str,
+    expected_column: int,
+    expected_columns: int,
+) -> None:
+    out = GamesConnectFourBlockingMoveColumnLabelTask().generate(31027, params=params, max_attempts=128)
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    board = tuple(tuple(int(cell) for cell in row) for row in execution["board"])
+    current_player = RED if str(execution["current_player"]) == "red" else YELLOW
+    opposing_player = opponent(int(current_player))
+
+    assert out.answer_gt.type == "string"
+    assert str(out.answer_gt.value) == str(expected_label)
+    assert out.annotation_gt.type == "point"
+    assert len(out.annotation_gt.value) == 2
+    assert str(out.query_id) == "single"
+    assert trace["query_spec"]["prompt_variant"]["selected_keys"]["query"] == "blocking_move_column_label"
+    assert int(execution["answer_column"]) == int(expected_column)
+    assert execution["column_labels"] == list("ABCDEFG"[: int(expected_columns)])
+    assert trace["render_map"]["column_label_to_col"][str(expected_label)] == int(expected_column)
+    assert execution["annotation_coords"] == execution["blocking_move_coords"]
+    assert int(execution["blocking_move_coords"][0][1]) == int(expected_column)
+    assert trace["projected_annotation"]["point"] == out.annotation_gt.value
+    assert trace["render_map"]["marked_square_bbox_px"] is None
+    assert execution["opponent_player"] == player_name(int(opposing_player)).lower()
+
+    opponent_wins = winning_drop_map(board, int(opposing_player))
+    assert set(opponent_wins.keys()) == {int(expected_column)}
+    assert not winning_drop_map(board, int(current_player))
+    blocked_board, landing_coord = drop_disc(board, int(current_player), int(expected_column))
+    assert list(landing_coord) == execution["blocking_move_coords"][0]
+    assert not winning_drop_map(blocked_board, int(opposing_player))
+
+
 def test_games_connect_four_column_disc_profile_label_contract() -> None:
     out = GamesConnectFourColumnDiscProfileLabelTask().generate(
         31025,
@@ -131,7 +196,7 @@ def test_games_connect_four_column_disc_profile_label_contract() -> None:
 
     assert out.answer_gt.type == "string"
     assert str(out.answer_gt.value) == "D"
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert len(out.annotation_gt.value) == 5
     assert str(out.query_id) == "single"
     assert trace["query_spec"]["prompt_variant"]["selected_keys"]["query"] == "column_disc_profile_label"
@@ -141,7 +206,7 @@ def test_games_connect_four_column_disc_profile_label_contract() -> None:
     assert execution["column_labels"] == list("ABCDEF")
     assert trace["render_map"]["column_label_to_col"]["D"] == 3
     assert all(int(coord[1]) == 3 for coord in execution["annotation_coords"])
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
 
 
 def test_games_connect_four_move_count_tasks_cover_style_axis() -> None:
@@ -224,6 +289,12 @@ def test_games_connect_four_move_count_prompt_bundle_requires_rule_text_for_quer
         "legal_drop_rule_text",
         "winning_rule_text",
     ]
+    assert required["query:blocking_move_column_label"] == [
+        "current_player_name",
+        "opponent_player_name",
+        "legal_drop_rule_text",
+        "winning_rule_text",
+    ]
     assert required["query:column_disc_profile_label"] == [
         "target_red_count",
         "target_yellow_count",
@@ -253,7 +324,7 @@ def test_games_connect_four_move_count_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "games" for record in train_records)
-    assert all(record.get("scene_id") == "connect_four" for record in train_records)
+    assert all(record["task"] == "task_games__connect_four__winning_move_count" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_games__connect_four__winning_move_count"]) == 4

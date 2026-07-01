@@ -195,14 +195,14 @@ NEW_SCENE_CANDIDATES: list[dict[str, Any]] = [
             {
                 "task_id": "proposal:geometry/measuring_tools/shape_length_value",
                 "answer_type": "integer",
-                "annotation_type": "keyed_point_map",
+                "annotation_type": "point_map",
                 "difficulty_knobs": "shape kind, tick spacing, start offset, side/radius target, distractor marks",
                 "rationale": "Read a polygon side or circle radius from a rendered ruler placed on the shape.",
             },
             {
                 "task_id": "proposal:geometry/measuring_tools/shape_angle_value",
                 "answer_type": "integer",
-                "annotation_type": "keyed_point_map",
+                "annotation_type": "point_map",
                 "difficulty_knobs": "shape kind, inner/outer scale, angle orientation, distractor rays",
                 "rationale": "Read a polygon vertex angle from a rendered protractor placed on the shape.",
             },

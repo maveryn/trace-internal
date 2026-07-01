@@ -7,6 +7,8 @@ from typing import Any
 
 from PIL import Image
 
+from trace.tasks.charts.shared.cartesian.geometry import round_bbox, round_point
+
 
 DOMAIN = "charts"
 SCENE_ID = "scientific_axis_frame"
@@ -24,6 +26,7 @@ class AxisSpec:
     start: int
     step: int
     count: int
+    deltas: tuple[int, ...]
 
 
 @dataclass(frozen=True)
@@ -77,6 +80,7 @@ class RenderedAxisFrameScene:
     entities: tuple[dict[str, Any], ...]
     plot_bbox_px: BBox
     tick_label_bboxes_px: dict[str, BBox]
+    tick_points_px: dict[str, list[float]]
     axis_label_bboxes_px: dict[str, BBox]
     render_meta: dict[str, Any]
 
@@ -92,11 +96,11 @@ class AxisFrameRenderResult:
 
 
 def bbox(values: tuple[float, float, float, float] | list[float]) -> BBox:
-    return [round(float(value), 3) for value in values]
+    return round_bbox(values)
 
 
 def point(x: float, y: float) -> list[float]:
-    return [round(float(x), 3), round(float(y), 3)]
+    return round_point(float(x), float(y))
 
 
 __all__ = [

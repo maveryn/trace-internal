@@ -40,7 +40,7 @@ def _prompt_strings(value: Any) -> list[str]:
 
 
 def test_icons_prompt_defaults_avoid_generator_facing_scene_phrases() -> None:
-    configs = [get_scene_defaults("icons", group) for group in ("counting", "relation", "pattern", "pattern_grid", "sequence")]
+    configs = [get_scene_defaults("icons", group) for group in ("counting", "relation", "pattern", "sequence")]
     configs.append(get_scene_defaults("icons", "named_field"))
     configs.append(get_scene_defaults("icons", "named_grid"))
     configs.append(get_scene_defaults("icons", "paired_canvas"))
@@ -94,10 +94,6 @@ def test_icons_named_feedback_tasks_render_natural_prompt_text() -> None:
             },
         ),
         (
-            "task_icons__paired_canvas__original_attribute_label",
-            {"query_id": "original_shape_label", "answer_label": "C", "distractor_count": 5},
-        ),
-        (
             "task_icons__mirror_grid__mirror_symmetry_match_label",
             {"option_count": 6, "answer_label": "C"},
         ),
@@ -129,11 +125,6 @@ def test_icons_option_scene_prompts_use_positive_option_wording() -> None:
                 "distractor_count": 4,
                 "target_occurrence_count": 3,
             },
-            "six option icons labeled A-F",
-        ),
-        (
-            "task_icons__paired_canvas__original_attribute_label",
-            {"query_id": "original_color_shape_label", "answer_label": "D", "distractor_count": 4},
             "six option icons labeled A-F",
         ),
     ]

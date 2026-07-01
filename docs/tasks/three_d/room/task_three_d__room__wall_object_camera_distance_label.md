@@ -20,9 +20,15 @@ The renderer uses a lower interior camera, extends the open/front floor toward t
 The answer is computed from finalized metadata using the minimum `camera_distance` among candidate wall-mounted objects. Generation also requires that the selected candidate is the front-most candidate by room depth with a visible depth margin, so lateral camera position cannot make a visually farther side-wall object win. The trace records the full near-to-far option-label order, front-to-back room-depth order, per-label camera distances, candidate walls, and nearest/depth margins.
 
 ## Program Contract
-`select(label(candidate_wall_objects, argmin(camera_distance))); scene=room; scope=wall_object_camera_distance_label`
 
-The public query id is `single`; closest-to-camera is the fixed objective contract.
+Program: `select(label(candidate_wall_objects, argmin(camera_distance))); scene=room; scope=wall_object_camera_distance_label`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `wall_object_camera_distance_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `label`, `candidate_wall_objects`, `argmin`, `camera_distance`, `room`, `wall_object_camera_distance_label`.
+Operation: evaluate `select` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Annotation Contract
 Annotation is the bounding box of the selected wall-mounted object in the room scene. The option panel and option text are not annotation.

@@ -6,7 +6,7 @@
 3. Task id: `task_geometry__survey_traverse__outgoing_bearing_from_turn_value`
 4. Supported `query_id`: `single`
 5. Answer schema: `integer`
-6. Annotation schema: `point_map`
+6. Annotation schema: `bbox_map`
 
 ## Program Contract
 - `survey_outgoing_bearing_from_turn(visible_station_line, visible_north_reference, incoming_bearing, turn_angle, turn_direction=left|right) -> outgoing_bearing_degrees; scene=survey_traverse; scope=outgoing_bearing_from_turn_value`
@@ -16,13 +16,10 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space point witnesses. Map annotation binds station and turn roles:
+Prompt-facing annotation uses pixel-space bbox witnesses. Map annotation binds the visible turn diagram and field-note region:
 
-- `station_a`
-- `station_b`
-- `reference_north`
-- `target_direction`
-- `turn_vertex`
+- `turn_diagram`
+- `field_note_region`
 
 Numeric bearing labels, turn labels, station labels, and field-note text remain visible annotations plus private verifier metadata.
 

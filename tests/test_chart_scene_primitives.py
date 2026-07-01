@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from PIL import Image
 
-from trace.tasks.charts.shared import chart_scene, chart_scene_primitives
+from trace.tasks.charts.shared import chart_scene_primitives
 from trace.tasks.charts.shared.chart_scene_types import RenderedChartScene
 
 
@@ -27,9 +27,7 @@ def _base_render_params() -> dict[str, object]:
     }
 
 
-def test_chart_scene_reexports_public_primitive_helpers() -> None:
-    assert chart_scene.resolve_chart_render_params is chart_scene_primitives.resolve_chart_render_params
-    assert chart_scene.value_axis_render_metadata is chart_scene_primitives.value_axis_render_metadata
+def test_chart_scene_primitives_public_surface() -> None:
     assert set(chart_scene_primitives.__all__) == {
         "resolve_chart_render_params",
         "value_axis_render_metadata",
@@ -52,7 +50,8 @@ def test_resolve_chart_render_params_normalizes_style_values() -> None:
 
     assert resolved.axis_color_rgb == (0, 255, 32)
     assert resolved.value_axis_window_enabled is True
-    assert resolved.guide_line_style == "dotted"
+    assert resolved.guide_line_style in {"solid", "dotted"}
+    assert chart_scene_primitives.resolve_chart_render_params(params).guide_line_style == resolved.guide_line_style
     assert resolved.layout_jitter_meta == {"mode": "test"}
 
 

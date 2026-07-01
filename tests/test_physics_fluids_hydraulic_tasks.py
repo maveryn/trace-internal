@@ -1,4 +1,4 @@
-"""Contract tests for the physics fluids hydraulic-piston task."""
+"""Contract tests for the hydraulic-piston physics task."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.physics.fluids.hydraulic_missing_value import PhysicsFluidsHydraulicMissingValueTask
+from trace.tasks.physics.hydraulic.hydraulic_missing_value import PhysicsHydraulicMissingValueTask
 from tests.helpers import read_jsonl
 
 
@@ -63,7 +63,7 @@ def test_physics_fluids_hydraulic_task_emits_expected_contract(
     params: dict[str, int | str],
     expected_answer: int,
 ) -> None:
-    out = PhysicsFluidsHydraulicMissingValueTask().generate(61001, params=params, max_attempts=40)
+    out = PhysicsHydraulicMissingValueTask().generate(61001, params=params, max_attempts=40)
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
@@ -72,21 +72,30 @@ def test_physics_fluids_hydraulic_task_emits_expected_contract(
 
     assert int(out.answer_gt.value) == int(expected_answer)
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
 
-    assert len(out.annotation_gt.value) == 3
+    assert len(out.annotation_gt.value) == 2
+    assert set(out.annotation_gt.value) == {"input_side", "output_side"}
 
     assert out.scene_id == "hydraulic"
 
     assert out.query_id == params["query_id"]
 
     assert trace["query_spec"]["query_id"] == params["query_id"]
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
 
     assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
 
     assert trace["render_spec"]["layout_placement"]["mode"] == "whole_hydraulic_diagram_offset"
+
+    assert execution["annotation_entity_ids"] == ["input_side", "output_side"]
+    assert execution["annotation_key_by_entity_id"] == {
+        "input_side": "input_side",
+        "output_side": "output_side",
+    }
+    assert out.annotation_gt.value["input_side"] == trace["render_map"]["input_side_bbox_px"]
+    assert out.annotation_gt.value["output_side"] == trace["render_map"]["output_side_bbox_px"]
 
 
     assert int(execution["output_force_value"]) * int(execution["input_area_value"]) == int(
@@ -110,17 +119,6 @@ def test_physics_fluids_hydraulic_task_emits_expected_contract(
 
         assert int(execution["shown_input_force_value"]) == int(execution["input_force_value"])
 
-        assert execution["annotation_entity_ids"] == [
-            "left_force_label",
-            "left_area_label",
-            "right_area_label",
-        ]
-        assert execution["annotation_key_by_entity_id"] == {
-            "left_force_label": "input_force",
-            "left_area_label": "input_area",
-            "right_area_label": "output_area",
-        }
-        assert set(out.annotation_gt.value) == {"input_force", "input_area", "output_area"}
     elif str(params["query_id"]) == "missing_input_force":
 
         assert execution["shown_input_force_value"] is None
@@ -128,17 +126,6 @@ def test_physics_fluids_hydraulic_task_emits_expected_contract(
         assert int(execution["shown_output_force_value"]) == int(execution["output_force_value"])
         assert int(execution["shown_input_area_value"]) == int(execution["input_area_value"])
 
-        assert execution["annotation_entity_ids"] == [
-            "right_force_label",
-            "left_area_label",
-            "right_area_label",
-        ]
-        assert execution["annotation_key_by_entity_id"] == {
-            "right_force_label": "output_force",
-            "left_area_label": "input_area",
-            "right_area_label": "output_area",
-        }
-        assert set(out.annotation_gt.value) == {"output_force", "input_area", "output_area"}
     elif str(params["query_id"]) == "missing_piston_area":
 
         assert execution["shown_output_area_value"] is None
@@ -146,17 +133,6 @@ def test_physics_fluids_hydraulic_task_emits_expected_contract(
         assert int(execution["shown_output_force_value"]) == int(execution["output_force_value"])
         assert int(execution["shown_input_area_value"]) == int(execution["input_area_value"])
 
-        assert execution["annotation_entity_ids"] == [
-            "left_force_label",
-            "right_force_label",
-            "left_area_label",
-        ]
-        assert execution["annotation_key_by_entity_id"] == {
-            "left_force_label": "input_force",
-            "right_force_label": "output_force",
-            "left_area_label": "input_area",
-        }
-        assert set(out.annotation_gt.value) == {"input_force", "output_force", "input_area"}
     else:
 
         assert execution["shown_input_area_value"] is None
@@ -164,17 +140,6 @@ def test_physics_fluids_hydraulic_task_emits_expected_contract(
         assert int(execution["shown_output_force_value"]) == int(execution["output_force_value"])
         assert int(execution["shown_output_area_value"]) == int(execution["output_area_value"])
 
-        assert execution["annotation_entity_ids"] == [
-            "left_force_label",
-            "right_force_label",
-            "right_area_label",
-        ]
-        assert execution["annotation_key_by_entity_id"] == {
-            "left_force_label": "input_force",
-            "right_force_label": "output_force",
-            "right_area_label": "output_area",
-        }
-        assert set(out.annotation_gt.value) == {"input_force", "output_force", "output_area"}
 
 
 def test_physics_fluids_hydraulic_task_is_deterministic() -> None:
@@ -185,7 +150,7 @@ def test_physics_fluids_hydraulic_task_is_deterministic() -> None:
         "mechanical_advantage": 4,
         "accent_color_name": "cyan",
     }
-    task = PhysicsFluidsHydraulicMissingValueTask()
+    task = PhysicsHydraulicMissingValueTask()
     out_a = task.generate(61021, params=params, max_attempts=40)
     out_b = task.generate(61021, params=params, max_attempts=40)
 
@@ -201,7 +166,7 @@ def test_physics_fluids_hydraulic_task_is_deterministic() -> None:
 
 
 def test_physics_fluids_hydraulic_sampling_covers_scene_query_cross_product() -> None:
-    task = PhysicsFluidsHydraulicMissingValueTask()
+    task = PhysicsHydraulicMissingValueTask()
     combos: Counter[tuple[str, str]] = Counter()
     answers_by_query: dict[str, set[int]] = {
         "missing_output_force": set(),
@@ -236,7 +201,7 @@ def test_physics_fluids_hydraulic_sampling_covers_scene_query_cross_product() ->
 
 def test_physics_fluids_hydraulic_rejects_unknown_query_id() -> None:
     with pytest.raises(ValueError):
-        PhysicsFluidsHydraulicMissingValueTask().generate(
+        PhysicsHydraulicMissingValueTask().generate(
             61200,
             params={"query_id": "missing_pressure"},
             max_attempts=20,
@@ -244,29 +209,22 @@ def test_physics_fluids_hydraulic_rejects_unknown_query_id() -> None:
 
 
 def test_physics_fluids_hydraulic_prompt_bundle_supports_variants() -> None:
-    bundle = json.loads(Path("prompts/physics/fluids/physics_fluids_v0.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/physics/hydraulic/physics_hydraulic_v1.json").read_text(encoding="utf-8"))
 
-    assert len(bundle["scene_templates"]["hydraulic_piston_diagram"]) == 5
+    assert str(bundle["schema_version"]) == "v1"
 
-    assert set(bundle["query_templates"]) == {
+    assert len(bundle["templates"]["scene"]["hydraulic_piston_diagram"]) == 5
+
+    assert set(bundle["templates"]["query"]) == {
         "missing_output_force",
         "missing_input_force",
         "missing_piston_area",
         "missing_input_area",
-        "single_cylinder_volume_readout",
-        "before_after_displacement_volume",
-        "floating_object_density_value",
-        "u_tube_pressure_difference",
-        "continuity_missing_speed",
     }
 
-    assert len(bundle["query_templates"]["missing_output_force"]) == 5
-    assert len(bundle["scene_templates"]["buoyancy_density_diagram"]) == 5
-    assert len(bundle["scene_templates"]["fluid_flow_diagram"]) == 5
-    assert len(bundle["query_templates"]["floating_object_density_value"]) == 5
-    assert len(bundle["query_templates"]["continuity_missing_speed"]) == 5
+    assert len(bundle["templates"]["query"]["missing_output_force"]) == 5
 
-    assert len(set(bundle["answer_or_annotation_templates"]["answer_and_annotation"])) == 5
+    assert len(set(bundle["templates"]["output"]["answer_and_annotation"])) == 5
 
 
 def test_physics_fluids_hydraulic_build_smoke(tmp_path: Path) -> None:
@@ -287,7 +245,7 @@ def test_physics_fluids_hydraulic_build_smoke(tmp_path: Path) -> None:
         max_attempts_per_instance=40,
         sampling_seed=91,
     )
-    final_path = build_dataset(config, code_hash="physics-fluids-hydraulic-smoke")
+    final_path = build_dataset(config, code_hash="physics-hydraulic-smoke")
 
     assert final_path.exists()
     train_records = read_jsonl(final_path / "train_instances.jsonl")
@@ -296,7 +254,7 @@ def test_physics_fluids_hydraulic_build_smoke(tmp_path: Path) -> None:
 
     assert all(record["domain"] == "physics" for record in train_records)
 
-    assert all(record["scene_id"] == "fluids" for record in train_records)
+    assert all(record["scene_id"] == "hydraulic" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
 

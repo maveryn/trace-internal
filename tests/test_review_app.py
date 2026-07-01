@@ -9,13 +9,15 @@ import threading
 import time
 
 from PIL import Image
+import pytest
 
 from trace.review_app.artifact_index import build_review_index
 from trace.review_app.feedback import FeedbackStore
+from trace.review_app.locks import ReviewFileLock, ReviewLockError, review_app_lock_path, scene_publish_lock_path
 
 
-TASK_ID = "task_pages__workspace__toolbar_palette_control_label"
-TASK_ID_2 = "task_pages__workspace__property_panel_control_label"
+TASK_ID = "task_pages__workspace__control_label"
+TASK_ID_2 = "task_pages__workspace__context_control_count"
 
 
 def _write_json(path: Path, payload: dict) -> None:
@@ -23,34 +25,40 @@ def _write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
 
 
-def _make_review_fixture(tmp_path: Path, *, prompt: str = "What label is on the target control?") -> Path:
+def _make_review_fixture(
+    tmp_path: Path,
+    *,
+    prompt: str = "What label is on the target control?",
+    scene_id: str = "workspace",
+    task_id: str = TASK_ID,
+) -> Path:
     root = tmp_path / "review" / "task-reviews"
-    task_dir = root / "pages" / "workspace" / TASK_ID
-    image_rel = f"pages/workspace/{TASK_ID}/images/lookup/0000.png"
-    data_rel = f"pages/workspace/{TASK_ID}/data/lookup/0000.json"
+    task_dir = root / "pages" / scene_id / task_id
+    image_rel = f"pages/{scene_id}/{task_id}/images/lookup/0000.png"
+    data_rel = f"pages/{scene_id}/{task_id}/data/lookup/0000.json"
 
     image_path = root / image_rel
     image_path.parent.mkdir(parents=True, exist_ok=True)
     Image.new("RGB", (120, 90), (245, 247, 250)).save(image_path)
 
     _write_json(
-        root / "pages" / "workspace" / "scene_review_manifest.json",
+        root / "pages" / scene_id / "scene_review_manifest.json",
         {
             "calibration_baseline": "v0",
             "domain": "pages",
-            "scene_id": "workspace",
+            "scene_id": scene_id,
             "task_count": 1,
             "inspection_count": 1,
-            "workbook": "pages/workspace/scene_review.xlsx",
-            "tasks": {TASK_ID: {"task_manifest": f"pages/workspace/{TASK_ID}/manifest.json"}},
+            "workbook": f"pages/{scene_id}/scene_review.xlsx",
+            "tasks": {task_id: {"task_manifest": f"pages/{scene_id}/{task_id}/manifest.json"}},
         },
     )
     _write_json(
-        root / "pages" / "workspace" / "migration_test_status.json",
+        root / "pages" / scene_id / "migration_test_status.json",
         {
             "schema": "trace_scene_migration_test_status_v1",
             "domain": "pages",
-            "scene_id": "workspace",
+            "scene_id": scene_id,
             "passed": True,
             "status": "passed",
             "summary": "3 passed",
@@ -60,11 +68,11 @@ def _make_review_fixture(tmp_path: Path, *, prompt: str = "What label is on the 
         },
     )
     _write_json(
-        root / "pages" / "workspace" / "manual_code_audit_status.json",
+        root / "pages" / scene_id / "manual_code_audit_status.json",
         {
             "schema": "trace_scene_manual_code_audit_status_v1",
             "domain": "pages",
-            "scene_id": "workspace",
+            "scene_id": scene_id,
             "passed": True,
             "status": "passed",
             "summary": "role-boundary audit passed",
@@ -74,15 +82,15 @@ def _make_review_fixture(tmp_path: Path, *, prompt: str = "What label is on the 
                 "public_tasks_own_objectives": True,
                 "shared_code_identity_free": True,
             },
-            "files_reviewed": ["trace/tasks/pages/workspace/example.py"],
+            "files_reviewed": [f"trace/tasks/pages/{scene_id}/example.py"],
         },
     )
     _write_json(
-        root / "pages" / "workspace" / "taxonomy_review_status.json",
+        root / "pages" / scene_id / "taxonomy_review_status.json",
         {
             "schema": "trace_scene_taxonomy_review_status_v1",
             "domain": "pages",
-            "scene_id": "workspace",
+            "scene_id": scene_id,
             "passed": True,
             "status": "passed",
             "summary": "taxonomy contract audit passed",
@@ -92,8 +100,9 @@ def _make_review_fixture(tmp_path: Path, *, prompt: str = "What label is on the 
                 "program_codes_concrete": True,
                 "query_ids_semantic": True,
                 "task_contracts_stable": True,
+                "scalar_annotation_checked": True,
             },
-            "task_ids": [TASK_ID],
+            "task_ids": [task_id],
         },
     )
     _write_json(
@@ -102,8 +111,8 @@ def _make_review_fixture(tmp_path: Path, *, prompt: str = "What label is on the 
             "calibration_baseline": "v0",
             "inspection_count": 1,
             "query_ids": {"lookup": 1},
-            "task_id": TASK_ID,
-            "workbook": f"pages/workspace/{TASK_ID}/{TASK_ID}.xlsx",
+            "task_id": task_id,
+            "workbook": f"pages/{scene_id}/{task_id}/{task_id}.xlsx",
         },
     )
     _write_json(
@@ -152,37 +161,37 @@ def _make_review_fixture(tmp_path: Path, *, prompt: str = "What label is on the 
                 "answer_and_annotation": prompt + " Include annotation.",
             },
             "query_id": "lookup",
-            "scene_id": "workspace",
-            "task": TASK_ID,
+            "scene_id": scene_id,
+            "task": task_id,
             "trace_payload": {
                 "execution_trace": {"query_id": "lookup"},
                 "taxonomy": {
                     "public": {
                         "domain": "pages",
-                        "scene_id": "workspace",
-                        "task_id": TASK_ID,
+                        "scene_id": scene_id,
+                        "task_id": task_id,
                         "query_id": "lookup",
                     }
                 },
             },
         },
     )
-    task_doc = tmp_path / "docs" / "tasks" / "pages" / "workspace" / f"{TASK_ID}.md"
+    task_doc = tmp_path / "docs" / "tasks" / "pages" / scene_id / f"{task_id}.md"
     task_doc.parent.mkdir(parents=True, exist_ok=True)
     task_doc.write_text(
         "\n".join(
             [
-                f"# `{TASK_ID}`",
+                f"# `{task_id}`",
                 "",
                 "## Contract",
                 "1. Domain: `pages`",
-                "2. Scene id: `workspace`",
+                f"2. Scene id: `{scene_id}`",
                 "3. Query id: `lookup`",
                 "4. Answer schema: `option_letter`",
                 "5. Annotation schema: `bbox_set`",
                 "",
                 "## Program Contract",
-                "- `select_labeled_control(toolbar_palette, target_role=palette_control); scene=workspace; scope=toolbar_palette_control_label`",
+                f"- `workspace_control_label(instruction, guide_cue, context_row, coded_header); scene={scene_id}; scope=control_label`",
                 "",
             ]
         ),
@@ -306,7 +315,7 @@ def _write_taxonomy_audit_fixture(tmp_path: Path) -> None:
                 "domain,scene_id,current_task_id,current_query_id,current_task_slug,proposed_task_id,proposed_task_slug,scene_contract,view_contract,answer_schema,answer_type_observed,annotation_schema,annotation_type_observed,annotation_schema_notes,program_signature_id,program_schema,base_program_contract,parameter_axes,program_arguments_json,decision_source,rationale,generation_failures,source_file,doc_path,sample_count,example_json_paths,example_image_paths,decision,split_from,merge_with,proposed_scene_id_size",
                 (
                     "pages,workspace,"
-                    f"{TASK_ID},lookup,toolbar_palette_control_label,"
+                    f"{TASK_ID},lookup,control_label,"
                     "task_pages__workspace__control_text_label,"
                     "control_text_label,"
                     "pages/workspace renderer grammar,workspace.default_view,"
@@ -381,6 +390,43 @@ def test_review_index_scans_domain_scene_task_query_samples(tmp_path: Path) -> N
     assert "assets/fonts" not in index.scenes
 
 
+def test_review_index_rejects_passed_taxonomy_status_without_program_contract(tmp_path: Path) -> None:
+    root = _make_review_fixture(tmp_path)
+    task_doc = tmp_path / "docs" / "tasks" / "pages" / "workspace" / f"{TASK_ID}.md"
+    task_doc.write_text(
+        "\n".join(
+            [
+                f"# `{TASK_ID}`",
+                "",
+                "## Contract",
+                "1. Domain: `pages`",
+                "2. Scene id: `workspace`",
+                "3. Query id: `lookup`",
+                "4. Answer schema: `option_letter`",
+                "5. Annotation schema: `bbox_set`",
+                "",
+                "## Query Details",
+                "",
+                "| Query id | Program signature | Answer schema | Annotation schema |",
+                "|---|---|---|---|",
+                "| `lookup` | `selection.direct_lookup` | `option_letter` | `bbox_set` |",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    index = build_review_index(root, repo_root=tmp_path, enforce_migration_registry=False)
+
+    scene = index.scenes["pages/workspace"]
+    assert scene.taxonomy_review_pass is False
+    assert scene.taxonomy_review_summary["passed"] is False
+    assert scene.taxonomy_review_summary["status"] == "failed"
+    assert scene.taxonomy_review_summary["checklist"]["program_codes_concrete"] is False
+    assert scene.taxonomy_review_summary["program_contract_task_ids_missing"] == [TASK_ID]
+    assert any("taxonomy_review_status.json claims passed" in error for error in index.errors)
+
+
 def test_review_index_accepts_program_schema_after_contract_metadata(tmp_path: Path) -> None:
     root = _make_review_fixture(tmp_path)
     task_doc = tmp_path / "docs" / "tasks" / "pages" / "workspace" / f"{TASK_ID}.md"
@@ -399,9 +445,9 @@ def test_review_index_accepts_program_schema_after_contract_metadata(tmp_path: P
                 "## Program Contract",
                 "- Domain: `pages`",
                 "- Scene: `workspace`",
-                "- Public task id: `task_pages__workspace__toolbar_palette_control_label`",
-                "- Program schema: `select_labeled_control(toolbar_palette, target_role=palette_control); scene=workspace; scope=toolbar_palette_control_label`",
-                "- Program code: `select.pages.toolbar_palette_control`",
+                "- Public task id: `task_pages__workspace__control_label`",
+                "- Program schema: `workspace_control_label(instruction, guide_cue, context_row, coded_header); scene=workspace; scope=control_label`",
+                "- Program code: `select.pages.workspace_control`",
                 "",
             ]
         ),
@@ -414,14 +460,18 @@ def test_review_index_accepts_program_schema_after_contract_metadata(tmp_path: P
     task = index.tasks[f"pages/workspace/{TASK_ID}"]
     assert scene.taxonomy_review_pass is True
     assert task.taxonomy_summary["program_contract"] == (
-        "select_labeled_control(toolbar_palette, target_role=palette_control); "
-        "scene=workspace; scope=toolbar_palette_control_label"
+        "workspace_control_label(instruction, guide_cue, context_row, coded_header); "
+        "scene=workspace; scope=control_label"
     )
     assert not any("taxonomy_review_status.json claims passed" in error for error in index.errors)
 
 
 def test_review_index_default_hides_unregistered_migration_scenes(tmp_path: Path) -> None:
-    root = _make_review_fixture(tmp_path)
+    root = _make_review_fixture(
+        tmp_path,
+        scene_id="unregistered_workspace",
+        task_id="task_pages__unregistered_workspace__control_label",
+    )
 
     index = build_review_index(root, repo_root=tmp_path)
 
@@ -699,6 +749,42 @@ def test_review_app_requires_token_and_serves_index(tmp_path: Path) -> None:
     assert "TRACE Review" in page.text
 
 
+def test_review_file_lock_reports_current_owner(tmp_path: Path) -> None:
+    lock_path = review_app_lock_path(
+        review_root=tmp_path / "review" / "task-reviews",
+        feedback_db=tmp_path / "review" / "feedback" / "review_feedback.sqlite",
+    )
+    with ReviewFileLock(lock_path, metadata={"port": 7860, "base_url": "/proxy/7860"}, blocking=False):
+        with pytest.raises(ReviewLockError) as exc_info:
+            ReviewFileLock(lock_path, metadata={"port": 7861}, blocking=False).acquire()
+
+    assert exc_info.value.metadata["port"] == 7860
+    assert exc_info.value.metadata["base_url"] == "/proxy/7860"
+
+
+def test_review_app_returns_503_for_missing_sample_payload_during_regeneration(tmp_path: Path) -> None:
+    __import__("pytest").importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    from trace.review_app.server import create_app
+
+    root = _make_review_fixture(tmp_path)
+    app = create_app(
+        review_root=root,
+        enforce_migration_registry=False,
+        repo_root=tmp_path,
+        feedback_db=tmp_path / "feedback.sqlite",
+        token="secret",
+    )
+    sample = next(iter(app.state.review.index().samples.values()))
+    (root / sample.data_rel_path).unlink()
+    client = TestClient(app)
+
+    response = client.get(f"/samples/{sample.uid}", headers={"Authorization": "Bearer secret"})
+
+    assert response.status_code == 503
+    assert "review sample artifacts are being regenerated" in response.text
+
+
 def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
     __import__("pytest").importorskip("fastapi")
     from fastapi.testclient import TestClient
@@ -742,6 +828,7 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
     assert 'href="/proxy/7860/three-d/objects"' not in page.text
     assert 'href="/proxy/7860/illustrations/objects"' not in page.text
     assert 'href="/proxy/7860/issues"' in page.text
+    assert 'data-reload-url="/proxy/7860/api/reload"' not in page.text
     assert 'class="theme-switch"' in page.text
     assert 'data-theme-choice="dark"' in page.text
     assert 'data-theme-choice="light"' in page.text
@@ -765,6 +852,8 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
         headers={"Authorization": "Bearer secret"},
     )
     assert task_page.status_code == 200
+    assert 'data-reload-url="/proxy/7860/api/reload/scene/pages/workspace"' in task_page.text
+    assert 'data-reload-url="/proxy/7860/api/reload"' not in task_page.text
     assert 'data-preview-root data-active-view="rows"' in task_page.text
     assert 'data-preview-switch="rows"' in task_page.text
     assert 'data-preview-switch="images"' in task_page.text
@@ -774,7 +863,7 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
     assert 'data-task-feedback-form' in task_page.text
     assert "<h2>Taxonomy</h2>" in task_page.text
     assert "Program Code" in task_page.text
-    assert "select_labeled_control(toolbar_palette, target_role=palette_control)" in task_page.text
+    assert "workspace_control_label(instruction, guide_cue, context_row, coded_header)" in task_page.text
     assert "Answer Schema" in task_page.text
     assert "option_letter" in task_page.text
     assert "Annotation Schema" in task_page.text
@@ -1374,6 +1463,7 @@ def test_review_app_supports_scene_review_and_scene_level_issues(tmp_path: Path)
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
+        allow_full_reload=True,
     )
     client = TestClient(app)
     headers = {"Authorization": "Bearer secret"}
@@ -1451,6 +1541,7 @@ def test_review_app_warns_when_review_artifacts_are_stale(tmp_path: Path) -> Non
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
+        allow_full_reload=True,
     )
     client = TestClient(app)
 
@@ -1465,7 +1556,7 @@ def test_review_app_warns_when_review_artifacts_are_stale(tmp_path: Path) -> Non
 
     stale_page = client.get("/", headers={"Authorization": "Bearer secret"})
     assert "Review artifacts changed." in stale_page.text
-    assert "Start an index reload before inspecting generated samples." in stale_page.text
+    assert "Start a full index reload before inspecting generated samples." in stale_page.text
 
     reload_response = client.post("/api/reload", headers={"Authorization": "Bearer secret"})
     assert reload_response.status_code == 200
@@ -1478,6 +1569,28 @@ def test_review_app_warns_when_review_artifacts_are_stale(tmp_path: Path) -> Non
     assert status["status"] == "succeeded"
     fresh_page = client.get("/", headers={"Authorization": "Bearer secret"})
     assert "Review artifacts changed." not in fresh_page.text
+
+
+def test_review_app_full_reload_disabled_by_default(tmp_path: Path) -> None:
+    __import__("pytest").importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    root = _make_review_fixture(tmp_path)
+    from trace.review_app.server import create_app
+
+    app = create_app(
+        review_root=root,
+        enforce_migration_registry=False,
+        repo_root=tmp_path,
+        feedback_db=tmp_path / "feedback.sqlite",
+        token="secret",
+    )
+    client = TestClient(app)
+
+    reload_response = client.post("/api/reload", headers={"Authorization": "Bearer secret"})
+
+    assert reload_response.status_code == 403
+    assert "Full index reload is disabled" in reload_response.json()["detail"]
 
 
 def test_review_app_reload_keeps_serving_current_index_while_rebuilding(tmp_path: Path, monkeypatch) -> None:
@@ -1494,6 +1607,7 @@ def test_review_app_reload_keeps_serving_current_index_while_rebuilding(tmp_path
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
+        allow_full_reload=True,
     )
     client = TestClient(app)
     current_index = app.state.review.index()
@@ -1548,6 +1662,7 @@ def test_review_app_scene_reload_updates_one_scene_without_full_rebuild(tmp_path
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
+        allow_full_reload=True,
     )
     client = TestClient(app)
     assert next(iter(app.state.review.index().samples.values())).prompt == "What label is on the target control?"
@@ -1578,6 +1693,154 @@ def test_review_app_scene_reload_updates_one_scene_without_full_rebuild(tmp_path
     assert finished["status"] == "succeeded"
     assert finished["scope"] == "scene:pages/workspace"
     assert next(iter(app.state.review.index().samples.values())).prompt == "Updated prompt from scoped reload."
+
+
+def test_review_app_queues_overlapping_reload_requests(tmp_path: Path, monkeypatch) -> None:
+    __import__("pytest").importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    import trace.review_app.server as review_server
+
+    root = _make_review_fixture(tmp_path)
+    from trace.review_app.server import create_app
+
+    app = create_app(
+        review_root=root,
+        enforce_migration_registry=False,
+        repo_root=tmp_path,
+        feedback_db=tmp_path / "feedback.sqlite",
+        token="secret",
+        allow_full_reload=True,
+    )
+    client = TestClient(app)
+    current_index = app.state.review.index()
+    started = threading.Event()
+    release = threading.Event()
+
+    def slow_build_review_index(*args, **kwargs):
+        started.set()
+        if not release.wait(timeout=5):
+            raise TimeoutError("test did not release index rebuild")
+        return current_index
+
+    monkeypatch.setattr(review_server, "build_review_index", slow_build_review_index)
+
+    reload_response = client.post("/api/reload", headers={"Authorization": "Bearer secret"})
+    assert reload_response.status_code == 200
+    assert started.wait(timeout=2)
+
+    data_path = root / "pages" / "workspace" / TASK_ID / "data" / "lookup" / "0000.json"
+    payload = json.loads(data_path.read_text(encoding="utf-8"))
+    payload["prompt"] = "Queued scene reload prompt."
+    _write_json(data_path, payload)
+
+    queued_response = client.post(
+        "/api/reload/scene/pages/workspace",
+        headers={"Authorization": "Bearer secret"},
+    )
+    assert queued_response.status_code == 200
+    queued_payload = queued_response.json()
+    assert queued_payload["accepted"] is True
+    assert queued_payload["already_running"] is True
+    assert queued_payload["queued"] is True
+    assert queued_payload["queued_scopes"] == ["scene:pages/workspace"]
+
+    release.set()
+    deadline = time.time() + 5
+    while time.time() < deadline:
+        finished = client.get("/api/reload/status", headers={"Authorization": "Bearer secret"}).json()
+        if not finished["in_progress"]:
+            break
+        time.sleep(0.01)
+    assert finished["status"] == "succeeded"
+    assert finished["queued"] is False
+    assert next(iter(app.state.review.index().samples.values())).prompt == "Queued scene reload prompt."
+
+
+def test_review_app_preserves_scene_during_publish_lock(tmp_path: Path) -> None:
+    __import__("pytest").importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    root = _make_review_fixture(tmp_path)
+    from trace.review_app.server import create_app
+
+    app = create_app(
+        review_root=root,
+        enforce_migration_registry=False,
+        repo_root=tmp_path,
+        feedback_db=tmp_path / "feedback.sqlite",
+        token="secret",
+    )
+    client = TestClient(app)
+    original_prompt = next(iter(app.state.review.index().samples.values())).prompt
+
+    data_path = root / "pages" / "workspace" / TASK_ID / "data" / "lookup" / "0000.json"
+    payload = json.loads(data_path.read_text(encoding="utf-8"))
+    payload["prompt"] = "Prompt written while publish lock is active."
+    _write_json(data_path, payload)
+
+    lock_path = scene_publish_lock_path(review_root=root, domain="pages", scene_id="workspace")
+    with ReviewFileLock(lock_path, metadata={"kind": "test_publish_lock"}, blocking=False):
+        reload_response = client.post(
+            "/api/reload/scene/pages/workspace",
+            headers={"Authorization": "Bearer secret"},
+        )
+        assert reload_response.status_code == 200
+        deadline = time.time() + 5
+        while time.time() < deadline:
+            locked_status = client.get("/api/reload/status", headers={"Authorization": "Bearer secret"}).json()
+            if not locked_status["in_progress"]:
+                break
+            time.sleep(0.01)
+        assert locked_status["status"] == "succeeded"
+        assert locked_status["stale"] is True
+        locked_index = app.state.review.index()
+        assert next(iter(locked_index.samples.values())).prompt == original_prompt
+        assert any("review artifact publish in progress" in error for error in locked_index.errors)
+
+    reload_response = client.post(
+        "/api/reload/scene/pages/workspace",
+        headers={"Authorization": "Bearer secret"},
+    )
+    assert reload_response.status_code == 200
+    deadline = time.time() + 5
+    while time.time() < deadline:
+        finished = client.get("/api/reload/status", headers={"Authorization": "Bearer secret"}).json()
+        if not finished["in_progress"]:
+            break
+        time.sleep(0.01)
+    assert finished["status"] == "succeeded"
+    assert next(iter(app.state.review.index().samples.values())).prompt == "Prompt written while publish lock is active."
+
+
+def test_review_app_prunes_inactive_publish_issue_without_reload(tmp_path: Path) -> None:
+    __import__("pytest").importorskip("fastapi")
+    from fastapi.testclient import TestClient
+
+    root = _make_review_fixture(tmp_path)
+    from trace.review_app.server import create_app
+
+    app = create_app(
+        review_root=root,
+        enforce_migration_registry=False,
+        repo_root=tmp_path,
+        feedback_db=tmp_path / "feedback.sqlite",
+        token="secret",
+    )
+    client = TestClient(app)
+
+    lock_path = scene_publish_lock_path(review_root=root, domain="pages", scene_id="workspace")
+    with ReviewFileLock(lock_path, metadata={"kind": "test_publish_lock"}, blocking=False):
+        reload_response = client.post(
+            "/api/reload/scene/pages/workspace",
+            headers={"Authorization": "Bearer secret"},
+        )
+        assert reload_response.status_code == 200
+        assert any("review artifact publish in progress" in error for error in app.state.review.index().errors)
+
+    page = client.get("/domains/pages/scenes/workspace", headers={"Authorization": "Bearer secret"})
+    assert page.status_code == 200
+    assert "review artifact publish in progress" not in page.text
+    assert not any("review artifact publish in progress" in error for error in app.state.review.index().errors)
 
 
 def test_review_app_deferred_initial_index_binds_before_index_scan(tmp_path: Path, monkeypatch) -> None:

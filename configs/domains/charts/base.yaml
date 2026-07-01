@@ -357,26 +357,50 @@ rendering:
     - news_graphic
     - academic_figure
     - journal_appendix
-    - caption_heavy_figure
-    - compact_small_multiples
-    - print_scan_sheet
     - infographic_panel
+    - poster_explainer
+    - annotated_callout
+    - caption_heavy_figure
+    - source_note_sheet
+    - compact_small_multiples
+    - data_table_report
+    - web_article_embed
+    - desktop_app_window
+    - control_console
+    - lab_report_sheet
     - presentation_slide
+    - print_scan_sheet
     - dark_analytics_board
+    - dark_report_card
+    - dark_publication_figure
+    - dark_dashboard_tile
+    - dark_console_panel
     information_scene_treatment_weights:
-      clean_default: 0.8
-      report_card: 0.8
-      dashboard_tile: 0.7
-      executive_dashboard: 0.7
-      news_graphic: 0.55
-      academic_figure: 0.65
-      journal_appendix: 0.45
-      caption_heavy_figure: 0.4
-      compact_small_multiples: 0.35
-      print_scan_sheet: 0.4
-      infographic_panel: 0.55
-      presentation_slide: 0.65
-      dark_analytics_board: 0.7
+      clean_default: 1.0
+      report_card: 1.0
+      dashboard_tile: 1.0
+      executive_dashboard: 1.0
+      news_graphic: 1.0
+      academic_figure: 1.0
+      journal_appendix: 1.0
+      infographic_panel: 1.0
+      poster_explainer: 1.0
+      annotated_callout: 1.0
+      caption_heavy_figure: 1.0
+      source_note_sheet: 1.0
+      compact_small_multiples: 1.0
+      data_table_report: 1.0
+      web_article_embed: 1.0
+      desktop_app_window: 1.0
+      control_console: 1.0
+      lab_report_sheet: 1.0
+      presentation_slide: 1.0
+      print_scan_sheet: 1.0
+      dark_analytics_board: 1.0
+      dark_report_card: 1.0
+      dark_publication_figure: 1.0
+      dark_dashboard_tile: 1.0
+      dark_console_panel: 1.0
     information_scene_palette_weights:
       neutral_report: 0.75
       publication_gray: 0.7
@@ -403,10 +427,11 @@ rendering:
       thin_frame: 0.28
       accent_frame: 0.3
     chart_context_text_enabled: true
+    chart_context_profile: dense_clean_minimal
     chart_context_mode_weights:
-      clean: 0.18
-      minimal: 0.52
-      paragraph_box: 0.3
+      clean: 0.7
+      minimal: 0.3
+      paragraph_box: 0.0
     chart_context_mode_configs:
       clean:
         simple_count_min: 0

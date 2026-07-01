@@ -10,7 +10,15 @@
 7. Program schema: `count(filter(collectibles, collected_by_route=True)); scene=platformer; scope=collectible_count`
 
 ## Program Contract
-`scene=platformer; scope=collectible_count; program=count(collectibles_on_shown_jump_arc)`
+
+Program: `scene=platformer; scope=collectible_count; program=count(collectibles_on_shown_jump_arc)`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `collectible_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `platformer`, `collectible_count`, `program`, `collectibles_on_shown_jump_arc`.
+Operation: evaluate `scene=platformer` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.

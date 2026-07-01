@@ -1,0 +1,61 @@
+{
+  "bundle_id": "physics_vernier_caliper_v1",
+  "schema_version": "v1",
+  "templates": {
+    "scene": {
+      "vernier_caliper_diagram": [
+        "The image shows {object_description}.",
+        "The diagram shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The visual shows {object_description}.",
+        "The image contains {object_description}."
+      ]
+    },
+    "task": {
+      "vernier_caliper_readout_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "single": [
+        "Read the caliper using the main-scale reading at the vernier zero plus the aligned vernier tick. What is the measured length in millimeters?",
+        "Use the main millimeter scale and the aligned vernier tick to read the caliper. What length is shown in mm?",
+        "The vernier resolution is 0.1 mm. What length does the caliper indicate?",
+        "Read the main scale at the vernier zero, then add the matching vernier tick value. What is the length in millimeters?",
+        "What measurement is shown by the Vernier caliper, in millimeters?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Answer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Required annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Format for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Use this annotation format: {annotation_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "scene:vernier_caliper_diagram": {
+      "object_description": "a Vernier caliper measuring an object, with a main scale in millimeters, a sliding vernier scale, and a 0.1 mm vernier resolution"
+    },
+    "query:single": {
+      "answer_hint": "set \"answer\" to the measured length in millimeters as a number with one decimal place and no unit",
+      "annotation_hint": "set \"annotation\" to an object with keys \"vernier_zero_tick\" and \"aligned_vernier_tick\", each mapped to one [x,y] pixel point at the center of that tick mark",
+      "json_example": "{\"annotation\":{\"vernier_zero_tick\":[410,356],\"aligned_vernier_tick\":[456,358]},\"answer\":23.4}",
+      "json_example_answer_only": "{\"answer\":23.4}"
+    }
+  },
+  "allow_empty_task_templates": true
+}

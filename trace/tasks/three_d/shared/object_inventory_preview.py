@@ -683,11 +683,16 @@ def _render_surface_fixture_profile(
     rows = 3
     cols = 4
     rng = _profile_rng(profile, int(instance_seed), "surface_fixture_preview")
+    color_pool: List[str] = []
+    while len(color_pool) < rows * cols:
+        color_cycle = [str(value) for value in SEMANTIC_COLOR_SUPPORT]
+        rng.shuffle(color_cycle)
+        color_pool.extend(color_cycle)
     cells: List[Dict[str, Any]] = []
     for index in range(rows * cols):
         row = index // cols
         col = index % cols
-        color_name = str(SEMANTIC_COLOR_SUPPORT[(index + int(rng.randrange(len(SEMANTIC_COLOR_SUPPORT)))) % len(SEMANTIC_COLOR_SUPPORT)])
+        color_name = str(color_pool[int(index)])
         state = "normal"
         if scene_variant in {"locker_bank", "mailbox_bank", "door_bank"} and index % 5 == 0:
             state = "open"

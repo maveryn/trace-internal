@@ -1,7 +1,15 @@
 # `task_graph__node_link__topological_endpoint_node_label`
 
 ## Program Contract
-- `label(endpoint(topological_order(dag), endpoint=first_or_last)); scene=node_link; scope=topological_endpoint_node_label`
+
+Program: `label(endpoint(topological_order(dag), endpoint=first_or_last)); scene=node_link; scope=topological_endpoint_node_label`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `topological_endpoint_node_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `endpoint`, `topological_order`, `dag`, `first_or_last`, `node_link`, `topological_endpoint_node_label`.
+Operation: evaluate `label` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Summary
 1. Domain: `graph`

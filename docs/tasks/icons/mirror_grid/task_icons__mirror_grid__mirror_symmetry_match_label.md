@@ -8,14 +8,22 @@
 5. Objective: select the labeled option cell with the same mirror symmetry as the Reference cell.
 
 ## Program Contract
-`selection.option_match(scene=mirror_grid, scope=reference_and_option_cells, rule=mirror_symmetry_signature_match, output=option_letter)`
+
+Program: `selection.option_match(scene=mirror_grid, scope=reference_and_option_cells, rule=mirror_symmetry_signature_match, output=option_letter)`
+
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `reference_and_option_cells` objective scope.
+Operands: visible scene state and prompt-bound operands named by `mirror_grid`, `reference_and_option_cells`, `mirror_symmetry_signature_match`.
+Operation: evaluate `selection.option_match` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## 2) Scene + task contract
 1. Entities/relations: one two-panel image with a `Reference` cell on the left and labeled option cells on the right.
 2. Query ids: `single`.
 3. Internal `mirror_signature` values: `mirror_vertical`, `mirror_horizontal`, `mirror_diagonal_main`, `mirror_diagonal_anti`, `mirror_both_axes`.
 4. Answer type: `answer_gt.type = option_letter`.
-5. Annotation type: `annotation_gt.type = keyed_bbox_map` with keys `reference_cell` and `matching_option_cell`.
+5. Annotation type: `annotation_gt.type = bbox_map` with keys `reference_cell` and `matching_option_cell`.
 6. Option policy: option count is sampled from `4` or `6`; labels are fixed row-major as `A..D` or `A..F`.
 7. Unique-answer policy: exactly one option cell has the same exact mirror-symmetry signature as the Reference cell.
 8. Asset policy: cells use the curated asymmetric icon subset from `assets/icons/non_symmetry.txt`; icon identity is not part of the query.

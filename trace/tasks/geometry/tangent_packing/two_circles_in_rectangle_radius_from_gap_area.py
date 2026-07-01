@@ -6,15 +6,29 @@ from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.registry import register_task
 
 from ._lifecycle import run_tangent_packing_public_entry
-from .shared.measurements import case_trace_values, fmt_measure, rectangle_equal_circles_gap
+from .shared.algebra import (
+    RadiusFromGapAreaSpec,
+    prepare_radius_from_gap_area,
+    two_circles_rectangle_radius_trace_values,
+)
+from .shared.measurements import rectangle_equal_circles_gap
 from .shared.rendering import render_two_circles_rectangle_scene
-from .shared.sampling import choose_radius
 from .shared.state import DOMAIN, TangentPackingProblem
 
 TASK_ID = "task_geometry__tangent_packing__two_circles_in_rectangle_radius_from_gap_area"
 SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
 TASK_PROMPT_KEY = "two_circles_in_rectangle_radius_from_gap_area_query"
 FORMULA_FAMILY = "two_circles_in_rectangle_radius_from_gap_area"
+_OBJECTIVE_SPEC = RadiusFromGapAreaSpec(
+    namespace_key=TASK_ID,
+    family=FORMULA_FAMILY,
+    construction="two_circles_in_rectangle",
+    coefficient=float(8.0 - 2.0 * math.pi),
+    gap_area_fn=rectangle_equal_circles_gap,
+    formula_text="radius = sqrt(shaded area / (8 - 2*pi))",
+    extra_trace_fn=two_circles_rectangle_radius_trace_values,
+    derived_radius_key="radius_from_gap_area",
+)
 
 
 def _prepare_two_circle_radius_from_gap_area(
@@ -23,44 +37,13 @@ def _prepare_two_circle_radius_from_gap_area(
     params,
     selected_query,
     branch_probabilities,
-) -> tuple[TangentPackingProblem, float, dict[str, float | int | str]]:
+) -> tuple[TangentPackingProblem, float | int, dict[str, float | int | str]]:
     # Inverse rectangle-packing hook: bind visible gap area, then solve back to the common circle radius.
-    case, radius_probabilities = choose_radius(
-        params=params,
+    return prepare_radius_from_gap_area(
         instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.radius",
+        params=params,
+        spec=_OBJECTIVE_SPEC,
     )
-    answer = float(case.radius)
-    shaded_area = rectangle_equal_circles_gap(case.radius)
-    rectangle_area = float(case.packed_rectangle_width * case.packed_rectangle_height)
-    total_circle_area = float(2.0 * math.pi * case.radius * case.radius)
-    gap_coefficient = float(8.0 - 2.0 * math.pi)
-    radius_from_gap_area = math.sqrt(float(shaded_area) / gap_coefficient)
-    two_circle_problem = TangentPackingProblem(
-        construction_kind="two_circles_in_rectangle",
-        target_kind="radius",
-        support_kind="shaded_area",
-        target_text="r=?",
-        support_text=f"shaded area={fmt_measure(shaded_area)}",
-        answer=answer,
-        case=case,
-        formula_family=FORMULA_FAMILY,
-        formula_text="radius = sqrt(shaded area / (8 - 2*pi))",
-        reasoning_steps=1,
-    )
-    trace_values = {
-        **case_trace_values(case),
-        "formula_family": FORMULA_FAMILY,
-        "construction_kind": "two_circles_in_rectangle",
-        "target_kind": "radius",
-        "support_kind": "shaded_area",
-        "visible_shaded_area": float(shaded_area),
-        "rectangle_area": rectangle_area,
-        "total_circle_area": total_circle_area,
-        "gap_coefficient": gap_coefficient,
-        "radius_from_gap_area": radius_from_gap_area,
-    }
-    return two_circle_problem, float(answer), trace_values
 
 
 @register_task

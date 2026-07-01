@@ -22,7 +22,6 @@ from ...shared.config_defaults import (
     required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
-from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -542,11 +541,11 @@ class ThreeDSpatialHeightExtremumLabelTask:
             lower=HEIGHT_SUPPORT_COUNT,
             upper=HEIGHT_SUPPORT_COUNT,
         )
-        answer_label_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(answer_seed) if answer_seed is not None else int(instance_seed),
-            namespace=f"{TASK_ID}.answer_label",
+        answer_rng = spawn_rng(
+            int(answer_seed) if answer_seed is not None else int(instance_seed),
+            f"{TASK_ID}.answer_label",
         )
+        answer_label_index = int(answer_rng.randrange(int(point_count)))
         render_params = _resolve_render_params(
             params,
             render_defaults=_RENDER_DEFAULTS,

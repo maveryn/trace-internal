@@ -7,10 +7,10 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.cartesian.geometry import project_linear_inverted
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.charts.combo_mark.shared.defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDERING_DEFAULTS,
     SCENE_NAMESPACE,
@@ -125,6 +125,14 @@ def render_params(params: Mapping[str, Any], *, instance_seed: int) -> RenderPar
             instance_seed=instance_seed,
             namespace=SCENE_NAMESPACE,
         ),
+        text_stroke_rgb=resolve_render_rgb(
+            params,
+            RENDERING_DEFAULTS,
+            "text_stroke_rgb",
+            (255, 255, 255),
+            instance_seed=instance_seed,
+            namespace=SCENE_NAMESPACE,
+        ),
         panel_rgb=resolve_render_rgb(
             params,
             RENDERING_DEFAULTS,
@@ -142,7 +150,13 @@ def _round_axis_max(value: int) -> int:
 
 
 def _value_to_y(value: int, *, top: int, bottom: int, axis_max: int) -> float:
-    return float(bottom) - ((float(value) / float(max(1, int(axis_max)))) * float(bottom - top))
+    return project_linear_inverted(
+        float(value),
+        domain_min=0.0,
+        domain_max=float(axis_max),
+        pixel_top=float(top),
+        pixel_bottom=float(bottom),
+    )
 
 
 def _draw_label_box(
@@ -175,6 +189,8 @@ def _draw_axes(
     line_axis_max: int,
     dual_axis: bool,
 ) -> None:
+    """Draw shared combo-chart axes and labels without binding task semantics."""
+
     tick_font = load_font(p.tick_font_size, bold=False)
     label_font = load_font(p.label_font_size, bold=True)
     left, right, top, bottom = p.plot_left, p.plot_right, p.plot_top, p.plot_bottom
@@ -203,7 +219,15 @@ def _draw_axes(
     for idx, label in enumerate(labels):
         x = float(left) + (float(idx) + 0.5) * step
         draw.line((x, bottom, x, bottom + 6), fill=p.axis_rgb, width=1)
-        draw_text_centered(draw, text=str(label), center=(x, bottom + 24), font=label_font, fill=p.text_rgb, stroke_width=1)
+        draw_text_centered(
+            draw,
+            text=str(label),
+            center=(x, bottom + 24),
+            font=label_font,
+            fill=p.text_rgb,
+            stroke_fill=p.text_stroke_rgb,
+            stroke_width=1,
+        )
 
 
 def _draw_legend(
@@ -258,10 +282,11 @@ def render_combo_scene(
     line_name: str,
     params: Mapping[str, Any],
     instance_seed: int,
+    resolved_render_params: RenderParams | None = None,
 ) -> ComboScene:
     """Render one combo-mark chart and return projected mark centers."""
 
-    p = render_params(params, instance_seed=int(instance_seed))
+    p = resolved_render_params or render_params(params, instance_seed=int(instance_seed))
     image = base.convert("RGB")
     draw = ImageDraw.Draw(image)
     primary_axis_max = _round_axis_max(max(primary_values))
@@ -392,19 +417,25 @@ def render_dataset(
 ) -> ComboRenderArtifacts:
     """Render a sampled combo dataset without binding task semantics."""
 
-    background, background_meta = make_background_canvas(
-        canvas_width=int(params.get("canvas_width", scene_default(RENDERING_DEFAULTS, "canvas_width", 1080))),
-        canvas_height=int(params.get("canvas_height", scene_default(RENDERING_DEFAULTS, "canvas_height", 660))),
+    resolved_render_params = render_params(params, instance_seed=int(instance_seed))
+    protected_colors = (
+        resolved_render_params.primary_rgb,
+        resolved_render_params.primary_alt_rgb,
+        resolved_render_params.line_rgb,
+        resolved_render_params.area_rgb,
+    )
+    resolved_render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
-        params=dict(params),
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        params=params,
+        scene_id="combo_mark",
+        render_params=resolved_render_params,
+        protected_colors=protected_colors,
     )
     chart_font_family = sample_chart_font_family(
         instance_seed=int(instance_seed),
         namespace=f"{SCENE_NAMESPACE}.chart_font",
         params=params,
     )
-    resolved_render_params = render_params(params, instance_seed=int(instance_seed))
     with temporary_default_font_family(str(chart_font_family)):
         scene = render_combo_scene(
             background,
@@ -416,6 +447,7 @@ def render_dataset(
             line_name=str(dataset.line_name),
             params=params,
             instance_seed=int(instance_seed),
+            resolved_render_params=resolved_render_params,
         )
     image, post_noise_meta = apply_post_image_noise(
         scene.image,
@@ -442,7 +474,7 @@ def render_dataset(
     return ComboRenderArtifacts(
         scene=scene,
         render_params=resolved_render_params,
-        background_style=dict(background_meta),
+        background_style={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         font_assets=chart_font_asset_metadata(str(chart_font_family)),
         post_image_noise=dict(post_noise_meta),
     )

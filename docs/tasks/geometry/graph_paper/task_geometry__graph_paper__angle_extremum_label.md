@@ -18,7 +18,7 @@ Annotation marks the selected angle's vertex point.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-The annotation is a keyed pixel point map with keys `ray_a`, `vertex`, and `ray_b` for the selected angle.
+The annotation is one scalar pixel point at the selected angle's vertex.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

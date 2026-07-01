@@ -13,8 +13,9 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image
 
+from ....core.seed import spawn_rng
+from ....core.sampling import uniform_choice
 from ...shared.config_defaults import group_default
-from ...shared.deterministic_sampling import resolve_selection_index
 
 
 CANVAS_PROFILE_LANDSCAPE = "landscape"
@@ -114,13 +115,11 @@ def resolve_canvas_profile(
             probabilities={profile_id: 1.0},
         )
 
-    if params.get("_sample_cursor") is not None:
-        index = abs(int(params["_sample_cursor"])) % len(support)
-    elif instance_seed is not None:
-        index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)) % len(support)
+    if instance_seed is not None:
+        rng = spawn_rng(int(instance_seed), str(namespace))
+        profile_id = str(uniform_choice(rng, support, sort_keys=False))
     else:
-        index = 0
-    profile_id = str(support[int(index)])
+        profile_id = str(support[0])
     width, height = PROFILE_SIZES[profile_id]
     return CanvasProfile(
         profile_id=profile_id,

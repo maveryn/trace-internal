@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.fixed_query import geometry_selected_probability_map
 
@@ -35,12 +36,8 @@ def select_supported_integer(
             key_fn=lambda value: str(int(value)),
             is_selected=lambda value, target: int(value) == int(target),
         )
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    selected = supported_values[int(index) % len(supported_values)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    selected = int(uniform_choice(rng, supported_values))
     probability = 1.0 / float(len(supported_values))
     return selected, {str(value): float(probability) for value in supported_values}
 
@@ -56,12 +53,8 @@ def select_index(
 
     if int(count) <= 0:
         raise ValueError("count must be positive")
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    return int(index) % int(count)
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    return int(uniform_choice(rng, tuple(range(int(count)))))
 
 
 def build_angle_measurement_plan(

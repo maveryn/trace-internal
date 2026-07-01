@@ -19,7 +19,15 @@
 4. Node count, capacity values, target cut-edge count, target flow value, distractor-edge count, graph style, font, background, and layout transform are generation/render metadata, not public query branches.
 
 ## Program Contract
-- `count(edges(unique_minimum_cut(source=S, sink=T, directed_capacity_graph))); output=integer; annotation=segment_set(unique_minimum_cut_edges); scene=flow_network; scope=min_cut_edge_count`
+
+Program: `count(edges(unique_minimum_cut(source=S, sink=T, directed_capacity_graph))); output=integer; annotation=segment_set(unique_minimum_cut_edges); scene=flow_network; scope=min_cut_edge_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `min_cut_edge_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `edges`, `unique_minimum_cut`, `source`, `S`, `sink`, `T`, `directed_capacity_graph`, `unique_minimum_cut_edges`, `flow_network`, `min_cut_edge_count`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `segment_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. Answer type: `integer`.

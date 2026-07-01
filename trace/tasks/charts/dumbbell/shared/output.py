@@ -5,10 +5,9 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Any, Mapping
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.charts.dumbbell.shared.defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     SCENE_ID,
     SCENE_LOAD_BY_VARIANT,
@@ -30,12 +29,12 @@ def render_dataset(
     """Render one task-owned dumbbell dataset on the configured background."""
 
     render_params = resolve_dumbbell_render_params(params, instance_seed=int(instance_seed))
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=dict(params),
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id=SCENE_ID,
+        render_params=render_params,
+        protected_colors=(render_params.series_a_rgb, render_params.series_b_rgb),
     )
     rendered = render_dumbbell_chart(
         background,
@@ -51,8 +50,14 @@ def render_dataset(
     )
     rendered = replace(rendered, image=image)
     render_meta = render_metadata(render_params, rendered, dataset)
+    render_meta["background_style"] = dict(background_meta)
+    render_meta["information_scene_style"] = dict(information_style_meta)
     render_meta["post_image_noise"] = dict(post_noise_meta)
-    return rendered, dict(render_meta), {"background": dict(background_meta), "post_image_noise": dict(post_noise_meta)}
+    return rendered, dict(render_meta), {
+        "background": dict(background_meta),
+        "information_scene_style": dict(information_style_meta),
+        "post_image_noise": dict(post_noise_meta),
+    }
 
 
 def row_records(dataset: DumbbellDataset) -> list[dict[str, Any]]:

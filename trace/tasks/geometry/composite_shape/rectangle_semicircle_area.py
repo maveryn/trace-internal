@@ -91,7 +91,7 @@ def _resolve_problem(*, selected_query: str, instance_seed, params):
         metadata_fields={
             "target_answer_support_probabilities": dict(answer_probabilities),
         },
-        execution_fields={"area_formula": area_formula, "answer_rounding": "nearest_tenth"},
+        execution_fields={"area_formula": area_formula, "answer_rounding": "one_decimal"},
     )
 
 

@@ -1,26 +1,23 @@
 # `task_pages__infographic__section_ranked_total_label`
 
-## 1) Identity
+## Identity
 1. Domain: `pages`
-2. Scene: `infographic`
-3. Scene id: `infographic`
+2. Scene id: `infographic`
+3. Source path: `trace/tasks/pages/infographic/section_ranked_total_label.py`
 4. Task id: `task_pages__infographic__section_ranked_total_label`
-5. Objective: Identify the section at a requested rank by total metric value.
 
-## 2) Scene + Task Contract
-1. Supported `query_id` values: `section_ranked_total_label`
-2. `answer_gt.type`: `string`
-3. `annotation_gt.type`: `keyed_bbox_map`
-4. Annotation witness policy: Answer-section metric-card boxes keyed by visible metric-card labels.
-5. `query_id` is retained as internal replay metadata; this public task id is the sampling unit.
+## Program Contract
+1. Program schema: `selection.ranked_item(candidate_set=sections, metric=sum_printed_values, rank_direction=highest|lowest); scene=infographic; scope=one multi-section metric-card infographic`
+2. Contract: sum every section's metric-card values, rank sections by total, and return the requested section label.
+3. Public query id: `single`
+4. Answer schema: `string`
+5. Annotation schema: `bbox_set` containing the metric-card boxes in the answer section.
+6. Query argument axes: rank direction and rank position.
+7. scalar_annotation_checked=true
 
-## 3) Prompt Contract
-1. `prompt_bundle_id`: `pages_infographic_v0`
-2. Prompt templates come from `prompts/pages/infographic/` and are rendered with the scene layer plus task/query layer.
-3. Output modes: `answer_only` and `answer_and_annotation`.
-4. Annotation examples must match the role names and annotation type above.
-
-## 4) Determinism + Constraints
-1. Generation is deterministic for `instance_seed` plus params.
-2. Answers and annotation come from the same rendered trace payload.
-3. The generator constructs unique final answers and rejects invalid samples instead of semantically relaxing constraints.
+## Prompt + Trace
+1. Prompt bundle: `pages_infographic_v1`
+2. Scene key: `infographic_metric_arithmetic`
+3. Task key: `metric_arithmetic_query`
+4. Prompt query key: `section_ranked_total_label`
+5. Trace records section totals, rank direction, rank position, answer section, and answer-section card boxes. Public annotation is an unordered homogeneous set of selected-section metric-card boxes; label-keyed card boxes remain trace diagnostics.

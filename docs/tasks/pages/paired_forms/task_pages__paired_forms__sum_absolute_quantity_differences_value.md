@@ -1,26 +1,28 @@
 # `task_pages__paired_forms__sum_absolute_quantity_differences_value`
 
-## 1) Identity
+## Identity
 1. Domain: `pages`
-2. Scene: `cross_form`
-3. Scene id: `paired_forms`
+2. Scene id: `paired_forms`
+3. Source scene: `paired_forms`
 4. Task id: `task_pages__paired_forms__sum_absolute_quantity_differences_value`
-5. Objective: Compute the sum of absolute quantity differences across paired-form rows.
 
-## 2) Scene + Task Contract
-1. Supported `query_id` values: `sum_absolute_quantity_differences`
-2. `answer_gt.type`: `integer`
-3. `annotation_gt.type`: `bbox_set`
-4. Annotation witness policy: Full receiving-slip rows whose received quantities differ from matched purchase-order quantities.
-5. `query_id` is retained as internal replay metadata; this public task id is the sampling unit.
+## Contract
+1. Objective: compute the sum of absolute quantity differences across matched purchase-order and receiving-slip rows.
+2. Public task contract: `sum_absolute_quantity_differences_value`
+3. Supported `query_id` values: `single`
+4. Answer type: `integer`
+5. Annotation schema: `bbox_set`
+6. Annotation witness: full receiving-slip rows whose received quantity differs from the matching purchase-order quantity.
+7. Query argument axes: item count, mismatch count, row values, and scene variant.
 
-## 3) Prompt Contract
-1. `prompt_bundle_id`: `pages_cross_form_v0`
-2. Prompt templates come from `prompts/pages/cross_form/` and are rendered with the scene layer plus task/query layer.
-3. Output modes: `answer_only` and `answer_and_annotation`.
-4. Annotation examples must match the role names and annotation type above.
+## Program Contract
+- `aggregate_matched_row_delta(match_key=item_code, predicate=ordered_quantity!=received_quantity, term=abs(ordered_quantity-received_quantity), aggregate=sum); output=integer; annotation=bbox_set(receiving_mismatch_rows); scene=paired_forms; scope=two side-by-side matched business forms`
 
-## 4) Determinism + Constraints
-1. Generation is deterministic for `instance_seed` plus params.
-2. Answers and annotation come from the same rendered trace payload.
-3. The generator constructs unique final answers and rejects invalid samples instead of semantically relaxing constraints.
+## Prompt + Trace
+1. Prompt bundle: `pages_paired_forms_v1`
+2. Scene key: `paired_forms_reconciliation`
+3. Task key: `paired_forms_reconciliation_value_query`
+4. Prompt query key: `sum_absolute_quantity_differences`
+5. Runtime `query_id` is `single`; semantic branch identity is recorded as `prompt_query_key` / `source_query_id`.
+6. Trace records all purchase-order rows, receiving-slip rows, row/cell boxes, mismatch row ids, answer value, sampled render metadata, and prompt metadata.
+7. Generation is deterministic from `instance_seed`; answer and annotation come from the finalized render metadata.

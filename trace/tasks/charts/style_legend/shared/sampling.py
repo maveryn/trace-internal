@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from typing import Any
 
 from trace.core.seed import spawn_rng
@@ -27,6 +28,27 @@ from .state import (
     SeriesStyle,
     StyleLegendDataset,
 )
+
+
+@dataclass(frozen=True)
+class StyleLegendSampleContext:
+    """Scene-wide sampled support used by task-owned style-legend objectives."""
+
+    task_params: dict[str, Any]
+    x_count: int
+    series_count: int
+    labels_x: tuple[str, ...]
+    x_label_meta: dict[str, Any]
+    labels_series: tuple[str, ...]
+    series_label_meta: dict[str, Any]
+    palette_mode: str
+    palette_mode_probabilities: dict[str, float]
+    legend_position: str
+    legend_position_probabilities: dict[str, float]
+    styles: tuple[SeriesStyle, ...]
+    value_min: int
+    value_max: int
+    series: tuple[SeriesSpec, ...]
 
 
 def series_labels(params: Mapping[str, Any], *, instance_seed: int, count: int) -> tuple[tuple[str, ...], dict[str, Any]]:
@@ -155,6 +177,15 @@ def replace_series_value(series: SeriesSpec, *, x_index: int, value: int) -> Ser
     return SeriesSpec(series_id=str(series.series_id), label=str(series.label), values=tuple(values), style=series.style)
 
 
+def replace_series_values(series: SeriesSpec, values: Sequence[int]) -> SeriesSpec:
+    return SeriesSpec(
+        series_id=str(series.series_id),
+        label=str(series.label),
+        values=tuple(int(value) for value in values),
+        style=series.style,
+    )
+
+
 def common_setup(
     params: Mapping[str, Any],
     *,
@@ -199,6 +230,77 @@ def common_setup(
         str(legend_position),
         dict(legend_probs),
         tuple(styles),
+    )
+
+
+def sample_context(params: Mapping[str, Any], *, instance_seed: int) -> StyleLegendSampleContext:
+    """Sample scene support and base series without applying task objective constraints."""
+
+    task_params = dict(params)
+    (
+        x_count,
+        series_count,
+        labels_x,
+        meta_x,
+        labels_series,
+        meta_series,
+        palette_mode,
+        palette_probs,
+        legend_position,
+        legend_probs,
+        styles,
+    ) = common_setup(task_params, instance_seed=int(instance_seed))
+    value_min = int(gen_int(task_params, "style_legend_value_min", 0))
+    value_max = int(gen_int(task_params, "style_legend_value_max", 100))
+    if int(value_min) >= int(value_max):
+        raise ValueError("style_legend_value_min must be lower than style_legend_value_max")
+    series = base_series(
+        labels=labels_series,
+        x_count=int(x_count),
+        styles=styles,
+        instance_seed=int(instance_seed),
+        value_min=int(value_min),
+        value_max=int(value_max),
+    )
+    return StyleLegendSampleContext(
+        task_params=dict(task_params),
+        x_count=int(x_count),
+        series_count=int(series_count),
+        labels_x=tuple(labels_x),
+        x_label_meta=dict(meta_x),
+        labels_series=tuple(labels_series),
+        series_label_meta=dict(meta_series),
+        palette_mode=str(palette_mode),
+        palette_mode_probabilities=dict(palette_probs),
+        legend_position=str(legend_position),
+        legend_position_probabilities=dict(legend_probs),
+        styles=tuple(styles),
+        value_min=int(value_min),
+        value_max=int(value_max),
+        series=tuple(series),
+    )
+
+
+def dataset_from_context(
+    context: StyleLegendSampleContext,
+    *,
+    series: Sequence[SeriesSpec],
+    target_x_index: int,
+    threshold_value: int | None = None,
+    pair_series_ids: tuple[str, str] = (),
+) -> StyleLegendDataset:
+    return package_dataset(
+        x_labels_value=context.labels_x,
+        x_label_meta=context.x_label_meta,
+        series=series,
+        series_label_meta=context.series_label_meta,
+        target_x_index=int(target_x_index),
+        threshold_value=threshold_value,
+        pair_series_ids=pair_series_ids,
+        palette_mode=str(context.palette_mode),
+        palette_mode_probabilities=context.palette_mode_probabilities,
+        legend_position=str(context.legend_position),
+        legend_position_probabilities=context.legend_position_probabilities,
     )
 
 

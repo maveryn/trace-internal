@@ -8,18 +8,24 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import ImageDraw
 
 from trace.core.seed import spawn_rng
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.cartesian.axes import (
+    draw_axis_lines,
+    draw_horizontal_value_grid_ticks,
+    draw_plot_frame,
+    draw_vertical_value_grid_ticks,
+)
+from trace.tasks.charts.shared.cartesian.frame import plot_bbox_from_margins
+from trace.tasks.charts.shared.cartesian.geometry import project_xy, round_bbox
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
 from trace.tasks.charts.hexbin_density.shared.defaults import (
     AXIS_LABELS,
     BBox,
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RGB,
     SCENE_NAMESPACE,
-    TITLE_OPTIONS,
     jittered_margins,
     render_int,
     render_rgb,
@@ -28,7 +34,7 @@ from trace.tasks.charts.hexbin_density.shared.state import HexbinDataset, Render
 
 
 def bbox(values: Sequence[float]) -> List[float]:
-    return [round(float(value), 3) for value in values]
+    return round_bbox(values)
 
 
 def resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> RenderParams:
@@ -60,11 +66,15 @@ def resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> R
 
 
 def plot_bbox(render_params: RenderParams) -> BBox:
-    return (
-        float(render_params.margin_left),
-        float(render_params.margin_top),
-        float(render_params.canvas_width - render_params.margin_right),
-        float(render_params.canvas_height - render_params.margin_bottom),
+    return tuple(
+        plot_bbox_from_margins(
+            canvas_width=float(render_params.canvas_width),
+            canvas_height=float(render_params.canvas_height),
+            margin_left_px=float(render_params.margin_left),
+            margin_right_px=float(render_params.margin_right),
+            margin_top_px=float(render_params.margin_top),
+            margin_bottom_px=float(render_params.margin_bottom),
+        )
     )
 
 
@@ -79,26 +89,52 @@ def legend_bbox(plot_box: BBox, render_params: RenderParams) -> BBox:
 
 
 def scale_point(x_value: float, y_value: float, *, plot_box: BBox) -> Tuple[float, float]:
-    x0, y0, x1, y1 = (float(value) for value in plot_box)
-    return (
-        float(x0 + (float(x_value) / 100.0) * (x1 - x0)),
-        float(y1 - (float(y_value) / 100.0) * (y1 - y0)),
+    return project_xy(
+        x_value=float(x_value),
+        y_value=float(y_value),
+        plot_bbox=plot_box,
+        x_min=0.0,
+        x_max=100.0,
+        y_min=0.0,
+        y_max=100.0,
     )
 
 
 def draw_axes(draw: ImageDraw.ImageDraw, *, plot_box: BBox, render_params: RenderParams) -> Dict[str, Any]:
     x0, y0, x1, y1 = (float(value) for value in plot_box)
-    draw.rectangle([x0, y0, x1, y1], fill=render_params.plot_fill_rgb, outline=render_params.grid_rgb, width=1)
+    draw_plot_frame(draw, plot_box, fill=render_params.plot_fill_rgb, outline=render_params.grid_rgb, width=1)
     tick_font = load_font(int(render_params.tick_font_size), bold=False)
-    for tick in (0, 25, 50, 75, 100):
-        sx, _ = scale_point(float(tick), 0.0, plot_box=plot_box)
-        _, sy = scale_point(0.0, float(tick), plot_box=plot_box)
-        draw.line([sx, y0, sx, y1], fill=render_params.grid_rgb, width=max(1, int(render_params.grid_line_width)))
-        draw.line([x0, sy, x1, sy], fill=render_params.grid_rgb, width=max(1, int(render_params.grid_line_width)))
+    tick_values = (0, 25, 50, 75, 100)
+    x_tick_positions = draw_vertical_value_grid_ticks(
+        draw,
+        plot_box,
+        tick_values=tick_values,
+        domain_min=0,
+        domain_max=100,
+        grid_rgb=render_params.grid_rgb,
+        axis_rgb=render_params.axis_rgb,
+        grid_width_px=max(1, int(render_params.grid_line_width)),
+        tick_width_px=1,
+        tick_length_px=0.0,
+    )
+    y_tick_positions = draw_horizontal_value_grid_ticks(
+        draw,
+        plot_box,
+        tick_values=tick_values,
+        domain_min=0,
+        domain_max=100,
+        grid_rgb=render_params.grid_rgb,
+        axis_rgb=render_params.axis_rgb,
+        grid_width_px=max(1, int(render_params.grid_line_width)),
+        tick_width_px=1,
+        tick_length_px=0.0,
+    )
+    for tick in tick_values:
+        sx = float(x_tick_positions[float(tick)])
+        sy = float(y_tick_positions[float(tick)])
         draw_text_traced(draw, (sx - 8.0, y1 + 10.0), str(tick), font=tick_font, fill=render_params.muted_rgb, role="readout", required=False)
         draw_text_traced(draw, (x0 - 36.0, sy - 8.0), str(tick), font=tick_font, fill=render_params.muted_rgb, role="readout", required=False)
-    draw.line([x0, y1, x1, y1], fill=render_params.axis_rgb, width=max(1, int(render_params.axis_line_width)))
-    draw.line([x0, y0, x0, y1], fill=render_params.axis_rgb, width=max(1, int(render_params.axis_line_width)))
+    draw_axis_lines(draw, plot_box, axis_rgb=render_params.axis_rgb, axis_width_px=max(1, int(render_params.axis_line_width)))
     return {"axis_ticks": [0, 25, 50, 75, 100]}
 
 
@@ -205,34 +241,19 @@ def draw_threshold_guide(draw: ImageDraw.ImageDraw, *, dataset: HexbinDataset, p
 def render_dataset(dataset: HexbinDataset, *, params: Mapping[str, Any], instance_seed: int) -> RenderedHexbinScene:
     """Render one sampled density field and retain projected hex-bin witnesses."""
 
-    render_params = resolve_render_params(params, instance_seed=int(instance_seed))
-    image, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    resolved_params = resolve_render_params(params, instance_seed=int(instance_seed))
+    render_params, image, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
-        fallback_color=(248, 248, 248),
+        scene_id="hexbin_density",
+        render_params=resolved_params,
+        protected_colors=dataset.density_palette_rgb,
     )
     draw = ImageDraw.Draw(image)
     plot_box = plot_bbox(render_params)
     axes_meta = draw_axes(draw, plot_box=plot_box, render_params=render_params)
-    title_font = load_font(int(render_params.title_font_size), bold=True)
-    title_rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.title")
-    title = str(TITLE_OPTIONS[title_rng.randrange(len(TITLE_OPTIONS))])
-    x_axis, y_axis = AXIS_LABELS[title_rng.randrange(len(AXIS_LABELS))]
-    title_xy = (float(plot_box[0]), max(14.0, float(plot_box[1]) - 48.0))
-    title_text_bbox = draw.textbbox(title_xy, title, font=title_font, stroke_width=1)
-    draw_text_traced(
-        draw,
-        title_xy,
-        title,
-        font=title_font,
-        fill=render_params.text_rgb,
-        stroke_width=1,
-        role="readout",
-        required=False,
-    )
+    axis_rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.axis_labels")
+    x_axis, y_axis = AXIS_LABELS[axis_rng.randrange(len(AXIS_LABELS))]
     label_font = load_font(int(render_params.label_font_size), bold=False)
     x_label_bbox = draw.textbbox((0, 0), x_axis, font=label_font)
     x_label_xy = (
@@ -252,11 +273,10 @@ def render_dataset(dataset: HexbinDataset, *, params: Mapping[str, Any], instanc
         params=params,
         default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
-    title_bbox = bbox(title_text_bbox)
+    title_bbox: List[float] = []
     entities: list[Dict[str, Any]] = [
         {"entity_id": "plot_area", "entity_type": "plot", "bbox_px": bbox(plot_box)},
         {"entity_id": "legend", "entity_type": "legend", "bbox_px": bbox(legend_box)},
-        {"entity_id": "title", "entity_type": "title", "bbox_px": title_bbox},
         {"entity_id": "threshold_guide", "entity_type": "annotation", "bbox_px": threshold_box, "text": threshold_text},
     ]
     for bin_item in dataset.bins:
@@ -281,11 +301,12 @@ def render_dataset(dataset: HexbinDataset, *, params: Mapping[str, Any], instanc
         bin_bboxes_px=dict(bin_bboxes),
         bin_centers_px=dict(bin_centers),
         render_meta={
-            "background_style": dict(background_meta),
+            "background_style": {**dict(background_meta), "information_scene_style": dict(information_style_meta)},
+            "information_scene_style": dict(information_style_meta),
             "post_image_noise": dict(noise_meta),
             "layout_jitter": dict(render_params.layout_jitter),
             "axis_labels": {"x": str(x_axis), "y": str(y_axis)},
-            "title_text": str(title),
+            "title_text": "",
             "density_palette_scheme": str(dataset.density_palette_scheme),
             "density_palette_rgb": [list(color) for color in dataset.density_palette_rgb],
             "density_palette_contrast_policy": dict(dataset.density_palette_trace),

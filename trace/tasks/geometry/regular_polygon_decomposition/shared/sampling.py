@@ -32,8 +32,9 @@ def _clean_side_apothem_case(rng: Any, n_sides: int) -> tuple[float, float, floa
 
     side_order = list(SIDE_LENGTH_SUPPORT)
     start = int(rng.randrange(len(side_order)))
-    for offset in range(len(side_order)):
-        side_length = float(side_order[(start + offset) % len(side_order)])
+    rotated_side_order = side_order[start:] + side_order[:start]
+    for side_candidate in rotated_side_order:
+        side_length = float(side_candidate)
         apothem = round1(float(side_length) / (2.0 * math.tan(math.pi / float(n_sides))))
         if float(apothem) <= 0.0:
             continue

@@ -16,8 +16,6 @@ generation:
     condition_answer_count_max: 5
     crossing_answer_count_min: 1
     crossing_answer_count_max: 6
-    profile_crossing_answer_count_min: 1
-    profile_crossing_answer_count_max: 4
     scene_variant_weights:
       vertical_parallel_coordinates: 1.0
     balanced_scene_variant_sampling: true
@@ -25,8 +23,8 @@ rendering:
   shared:
     canvas_width: 1180
     canvas_height: 760
-    plot_margin_left_px: 138
-    plot_margin_right_px: 138
+    plot_margin_left_px: 168
+    plot_margin_right_px: 168
     plot_margin_top_px: 116
     plot_margin_bottom_px: 118
     line_width_px: 4

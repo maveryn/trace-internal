@@ -9,6 +9,9 @@ generation:
     sunburst_leaf_value_min: 5
     sunburst_leaf_value_max: 45
     sunburst_leaf_value_step: 5
+    sunburst_leaf_label_max_chars: 7
+    sunburst_subgroup_label_max_chars: 8
+    sunburst_parent_label_max_chars: 10
     sunburst_condition_count_support:
     - 1
     - 2
@@ -28,11 +31,20 @@ rendering:
     parent_outer_radius_px: 210
     subgroup_outer_radius_px: 334
     leaf_outer_radius_px: 456
-    parent_font_size_px: 17
-    subgroup_font_size_px: 15
-    leaf_font_size_px: 13
-    value_font_size_px: 14
+    parent_font_size_px: 18
+    subgroup_font_size_px: 16
+    leaf_font_size_px: 14
+    value_font_size_px: 15
+    label_stroke_width_px: 0
     chart_context_profile: dense_clean_minimal
+    chart_font_family_weights:
+      roboto: 1.0
+      source_sans_3: 1.0
+      nunito_sans: 1.0
+      fira_sans: 1.0
+      barlow: 1.0
+      karla: 1.0
+      cabin: 1.0
     panel_fill_rgb_options:
     - - 252
       - 253

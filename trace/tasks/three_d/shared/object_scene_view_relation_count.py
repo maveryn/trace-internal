@@ -17,6 +17,7 @@ from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
+from ...shared.annotation_artifacts import bbox_set_annotation_artifacts
 from ...shared.config_defaults import (
     group_default,
     required_group_defaults,
@@ -29,6 +30,7 @@ from ...shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 from .color_variation import resolve_three_d_object_fill_rgb
+from .annotation_geometry import normalize_annotation_bboxes
 from .task_support import normalize_unit as _normalize_unit
 from .task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from .task_support import resolve_count as _shared_resolve_count
@@ -210,12 +212,16 @@ def _place_screen_side_countable_objects(
     forward_xy = (float(camera.forward[0]), float(camera.forward[1]))
     axis_step = 0.0 if object_count == 1 else (2.0 * float(SCREEN_SIDE_AXIS_EXTENT)) / float(object_count - 1)
     depth_offsets = [float(value) for value in (-SCREEN_SIDE_DEPTH_EXTENT, -0.18, 0.18, SCREEN_SIDE_DEPTH_EXTENT)]
-    rng.shuffle(depth_offsets)
+    depth_sequence: List[float] = []
+    while len(depth_sequence) < int(object_count):
+        shuffled_offsets = list(depth_offsets)
+        rng.shuffle(shuffled_offsets)
+        depth_sequence.extend(shuffled_offsets)
 
     placed: List[Dict[str, Any]] = []
     for index, shape_type in enumerate(shape_types):
         axis_position = -float(SCREEN_SIDE_AXIS_EXTENT) + float(index) * float(axis_step)
-        depth_position = depth_offsets[int(index) % len(depth_offsets)] + rng.uniform(-0.05, 0.05)
+        depth_position = float(depth_sequence[int(index)]) + rng.uniform(-0.05, 0.05)
         axis_jitter = rng.uniform(-0.035, 0.035)
         candidate_xy = (
             float((axis_position + axis_jitter) * right_xy[0] + depth_position * forward_xy[0]),
@@ -284,6 +290,7 @@ def _select_reference_and_targets(
     *,
     query_id: str,
     target_count: int,
+    rng,
 ) -> Tuple[Dict[str, Any], List[str], Dict[str, bool], float]:
     if str(query_id) in SCREEN_SIDE_QUERY_IDS:
         ordered = sorted(specs, key=lambda spec: (float(spec["screen_xy"][0]), str(spec["object_id"])))
@@ -326,9 +333,7 @@ def _select_reference_and_targets(
                 valid_choices.append((reference, list(target_specs), relation_status_by_object_id, float(min_relation_margin)))
         if not valid_choices:
             raise ValueError("screen-side bbox relation could not satisfy requested target count")
-        reference, target_specs, relation_status_by_object_id, min_relation_margin = valid_choices[
-            abs(int(target_count)) % len(valid_choices)
-        ]
+        reference, target_specs, relation_status_by_object_id, min_relation_margin = rng.choice(valid_choices)
         return (
             dict(reference),
             [str(spec["object_id"]) for spec in sorted(target_specs, key=lambda item: str(item["object_id"]))],
@@ -469,6 +474,7 @@ def _build_view_relation_count_scene_dataset(
                 finalized_specs,
                 query_id=str(query_id),
                 target_count=int(target_count),
+                rng=rng,
             )
         except ValueError:
             continue
@@ -689,7 +695,20 @@ class _ThreeDSpatialViewRelationCountBase:
             default_config=_NOISE_DEFAULTS,
         )
         target_object_ids = [str(object_id) for object_id in dataset["target_object_ids"]]
-        annotation_bboxes = [list(rendered.object_bboxes_px[str(object_id)]) for object_id in target_object_ids]
+        raw_annotation_bboxes = [list(rendered.object_bboxes_px[str(object_id)]) for object_id in target_object_ids]
+        annotation_bboxes, annotation_bbox_normalization = normalize_annotation_bboxes(
+            raw_annotation_bboxes,
+            bounds_px=[0.0, 0.0, float(image.width), float(image.height)],
+        )
+        annotation_payload = bbox_set_annotation_artifacts(annotation_bboxes)
+        annotation_bbox_by_object_id = {
+            str(object_id): list(bbox)
+            for object_id, bbox in zip(target_object_ids, annotation_bboxes)
+        }
+        raw_annotation_bbox_by_object_id = {
+            str(object_id): list(bbox)
+            for object_id, bbox in zip(target_object_ids, raw_annotation_bboxes)
+        }
 
         prompt_defaults = required_group_defaults(
             prompt_defaults_config,
@@ -717,7 +736,7 @@ class _ThreeDSpatialViewRelationCountBase:
 
         answer_value = int(dataset["answer_value"])
         answer_gt = TypedValue(type="integer", value=int(answer_value))
-        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
+        annotation_gt = annotation_payload.annotation_gt
         solver_trace = dict(dataset["solver_trace"])
 
         trace_payload = {
@@ -777,6 +796,7 @@ class _ThreeDSpatialViewRelationCountBase:
                 "projection_frame": dict(dataset["projection_frame"]),
                 "room_extent": float(render_params.room_extent),
                 "full_bleed_floor": bool(render_params.full_bleed_floor),
+                "annotation_bbox_normalization": dict(annotation_bbox_normalization),
             },
             "render_map": {
                 "image_id": "img0",
@@ -785,7 +805,11 @@ class _ThreeDSpatialViewRelationCountBase:
                 "object_bboxes_px": dict(rendered.object_bboxes_px),
                 "object_centers_px": dict(rendered.object_centers_px),
                 "target_object_bboxes_px": {
-                    str(object_id): list(rendered.object_bboxes_px[str(object_id)])
+                    str(object_id): list(annotation_bbox_by_object_id[str(object_id)])
+                    for object_id in target_object_ids
+                },
+                "target_object_raw_bboxes_px": {
+                    str(object_id): list(raw_annotation_bbox_by_object_id[str(object_id)])
                     for object_id in target_object_ids
                 },
                 "target_object_centers_px": {
@@ -795,6 +819,9 @@ class _ThreeDSpatialViewRelationCountBase:
                 "reference_object_bbox_px": list(rendered.object_bboxes_px[str(dataset["reference_object_id"])]),
                 "reference_object_center_px": list(rendered.object_centers_px[str(dataset["reference_object_id"])]),
                 "reference_highlight_entity_id": f"red_reference_box_{str(dataset['reference_object_id'])}",
+                "annotation_raw_bboxes_px": [list(bbox) for bbox in raw_annotation_bboxes],
+                "annotation_bboxes_px": [list(bbox) for bbox in annotation_bboxes],
+                "annotation_bbox_normalization": dict(annotation_bbox_normalization),
             },
             "execution_trace": {
                 "query_id": str(query_id),
@@ -807,6 +834,8 @@ class _ThreeDSpatialViewRelationCountBase:
                 "view_relation_frame": str(dataset["view_relation_frame"]),
                 "view_relation_axis": str(dataset["view_relation_axis"]),
                 "target_object_ids": list(target_object_ids),
+                "target_object_bboxes_px": dict(annotation_bbox_by_object_id),
+                "target_object_raw_bboxes_px": dict(raw_annotation_bbox_by_object_id),
                 "reference_object_id": str(dataset["reference_object_id"]),
                 "reference_object_name": str(dataset["reference_object_name"]),
                 "reference_shape_type": str(dataset["reference_shape_type"]),
@@ -827,11 +856,7 @@ class _ThreeDSpatialViewRelationCountBase:
                 "view_relation_frame": str(dataset["view_relation_frame"]),
                 "answer_value": int(answer_value),
             },
-            "projected_annotation": {
-                "type": "bbox_set",
-                "bbox_set": [list(bbox) for bbox in annotation_bboxes],
-                "pixel_bbox_set": [list(bbox) for bbox in annotation_bboxes],
-            },
+            "projected_annotation": dict(annotation_payload.projected_annotation),
             "background": dict(background_meta),
             "post_image_noise": dict(post_noise_meta),
         }

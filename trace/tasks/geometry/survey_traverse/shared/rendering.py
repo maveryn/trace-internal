@@ -21,22 +21,27 @@ from .state import (
     BBox,
     DEGREE_SYMBOL,
     SCENE_ID,
-    AreaCoordinateCase,
     AreaOffsetCase,
-    BearingBackCase,
     BearingTurnCase,
     ElevationLevelingCase,
-    ElevationSlopeCase,
     Point,
     RenderContext,
     RenderedAreaScene,
-    RenderedPointScene,
 )
 
-POINT_ANNOTATION_KEYS = ("station_a", "station_b", "reference_north", "target_direction")
-CLOSED_POINT_ANNOTATION_KEYS = ("station_a", "station_b", "reference_north", "target_direction", "turn_vertex")
-ELEVATION_POINT_ANNOTATION_KEYS = ("reference_station", "target_station", "measurement_line", "field_note_region")
-AREA_BBOX_ANNOTATION_KEYS = ("traverse_region", "field_note_region", "area_reference_region")
+BEARING_BBOX_ANNOTATION_KEYS = ("turn_diagram", "field_note_region")
+ELEVATION_BBOX_ANNOTATION_KEYS = ("station_profile", "field_note_region")
+AREA_BBOX_ANNOTATION_KEYS = ("traverse_region", "field_note_region")
+
+
+def _union_bboxes(bboxes: Sequence[BBox], *, width: int, height: int, pad: float = 0.0) -> BBox:
+    """Return one clamped bbox covering the supplied visible regions."""
+
+    x0 = min(float(bbox[0]) for bbox in bboxes)
+    y0 = min(float(bbox[1]) for bbox in bboxes)
+    x1 = max(float(bbox[2]) for bbox in bboxes)
+    y1 = max(float(bbox[3]) for bbox in bboxes)
+    return pad_bbox((x0, y0, x1, y1), float(pad), width=int(width), height=int(height))
 
 
 def create_render_context(
@@ -78,7 +83,7 @@ def create_render_context(
         accent_color=tuple(style.accent_rgb),
         secondary_accent_color=tuple(style.secondary_accent_rgb),
         line_width=line_width,
-        label_stroke_width=1,
+        label_stroke_width=0,
         font=load_font(label_size, bold=False, font_family=str(render_defaults.get("readout_font_family", "roboto"))),
         small_font=load_font(small_size, bold=False, font_family=str(render_defaults.get("readout_font_family", "roboto"))),
         tiny_font=load_font(tiny_size, bold=False, font_family=str(render_defaults.get("readout_font_family", "roboto"))),
@@ -149,27 +154,49 @@ def _draw_station(ctx: RenderContext, point: Point, label: str, *, label_offset:
     )
 
 
-def _draw_angle_arc(
+def _draw_dashed_line(ctx: RenderContext, start: Point, end: Point, *, fill: tuple[int, int, int], width: int, dash: float = 10.0, gap: float = 7.0) -> None:
+    """Draw a dashed guide segment."""
+
+    x0, y0 = float(start[0]), float(start[1])
+    x1, y1 = float(end[0]), float(end[1])
+    length = math.hypot(x1 - x0, y1 - y0)
+    if length <= 0.0:
+        return
+    ux = (x1 - x0) / length
+    uy = (y1 - y0) / length
+    offset = 0.0
+    while offset < length:
+        segment_end = min(length, offset + float(dash))
+        ctx.draw.line(
+            [(x0 + ux * offset, y0 + uy * offset), (x0 + ux * segment_end, y0 + uy * segment_end)],
+            fill=fill,
+            width=int(width),
+        )
+        offset += float(dash) + float(gap)
+
+
+def _draw_turn_arc(
     ctx: RenderContext,
     center: Point,
     *,
     start_bearing: int,
-    end_bearing: int,
+    turn_angle: int,
+    turn_direction: str,
     radius: float,
-    label: str | None = None,
+    label: str,
 ) -> None:
-    box = [center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius]
-    start_angle = float(start_bearing) - 90.0
-    end_angle = float(end_bearing) - 90.0
-    ctx.draw.arc(box, start=start_angle, end=end_angle, fill=ctx.secondary_accent_color, width=max(2, ctx.line_width - 1))
-    if label:
-        mid = math.radians(((float(start_bearing) + float(end_bearing)) / 2.0) - 90.0)
-        _draw_label(
-            ctx,
-            (float(center[0]) + math.cos(mid) * (radius + 26.0), float(center[1]) + math.sin(mid) * (radius + 26.0)),
-            str(label),
-            font=ctx.tiny_font,
-        )
+    """Draw the non-reflex turn arc from the incoming course to the outgoing course."""
+
+    signed_step = -1.0 if str(turn_direction) == "left" else 1.0
+    samples = max(8, int(abs(int(turn_angle)) // 4) + 2)
+    arc_points = [
+        direction_endpoint(center, float(start_bearing) + signed_step * float(turn_angle) * idx / float(samples - 1), radius)
+        for idx in range(samples)
+    ]
+    ctx.draw.line(arc_points, fill=ctx.secondary_accent_color, width=max(2, ctx.line_width - 1))
+    mid_bearing = float(start_bearing) + signed_step * float(turn_angle) / 2.0
+    label_point = direction_endpoint(center, mid_bearing, radius + 34.0)
+    _draw_label(ctx, label_point, str(label), font=ctx.tiny_font, fill=ctx.secondary_accent_color)
 
 
 def _draw_note_box(ctx: RenderContext, bbox: BBox, lines: Sequence[str]) -> Dict[str, BBox]:
@@ -182,10 +209,6 @@ def _draw_note_box(ctx: RenderContext, bbox: BBox, lines: Sequence[str]) -> Dict
     return line_bboxes
 
 
-def _note_center(note_bbox: BBox) -> Point:
-    return ((float(note_bbox[0]) + float(note_bbox[2])) / 2.0, (float(note_bbox[1]) + float(note_bbox[3])) / 2.0)
-
-
 def _draw_staff(ctx: RenderContext, base: Point, *, height: float = 86.0) -> BBox:
     x, y = base
     ctx.draw.line([(x, y), (x, y - height)], fill=ctx.line_color, width=max(2, ctx.line_width - 1))
@@ -195,72 +218,7 @@ def _draw_staff(ctx: RenderContext, base: Point, *, height: float = 86.0) -> BBo
     return pad_bbox((x - 10.0, y - height, x + 10.0, y), 4.0, width=ctx.width, height=ctx.height)
 
 
-def render_back_bearing_scene(ctx: RenderContext, case: BearingBackCase, *, instance_seed: int) -> RenderedPointScene:
-    """Render a two-station back-bearing sketch with point witnesses tied to the shown ray."""
-
-    labels = case.station_labels
-    panel = (68.0, 72.0, 514.0, 458.0)
-    ctx.draw.rounded_rectangle(panel, radius=14, fill=ctx.panel_fill, outline=ctx.secondary_color, width=2)
-    station_a = (245.0, 362.0)
-    station_b = direction_endpoint(station_a, int(case.answer), 245.0)
-    if not (panel[0] + 55.0 < station_b[0] < panel[2] - 40.0 and panel[1] + 50.0 < station_b[1] < panel[3] - 45.0):
-        station_b = (420.0, 182.0)
-        station_a = direction_endpoint(station_b, int(case.given_bearing), 245.0)
-
-    label_bboxes: Dict[str, BBox] = {}
-    label_bboxes[labels[0]] = _draw_station(ctx, station_a, labels[0], label_offset=(-20.0, -20.0))
-    label_bboxes[labels[1]] = _draw_station(ctx, station_b, labels[1], label_offset=(22.0, -18.0))
-    ctx.draw.line([station_a, station_b], fill=ctx.line_color, width=ctx.line_width)
-    north_end = (station_a[0], station_a[1] - 92.0)
-    _draw_arrow(ctx, station_a, north_end, fill=ctx.guide_color, width=max(2, ctx.line_width - 1))
-    label_bboxes["north"] = _draw_label(ctx, (north_end[0], north_end[1] - 15), "N", font=ctx.small_font)
-    target_end = direction_endpoint(station_a, int(case.answer), 92.0)
-    _draw_arrow(ctx, station_a, target_end, fill=ctx.accent_color, width=ctx.line_width)
-    label_bboxes["target"] = _draw_label(
-        ctx,
-        (target_end[0] + 24.0, target_end[1] - 10.0),
-        "?",
-        font=ctx.font,
-        fill=ctx.accent_color,
-    )
-    known_text = f"{int(case.given_bearing)}{DEGREE_SYMBOL}"
-    back_mid = direction_endpoint(station_b, int(case.given_bearing), 80.0)
-    label_bboxes["known_bearing"] = _draw_label(ctx, (back_mid[0] + 20.0, back_mid[1] + 10.0), known_text, font=ctx.small_font)
-
-    note_bbox = (552.0, 86.0, float(ctx.width) - 68.0, 222.0)
-    _draw_note_box(ctx, note_bbox, [f"{labels[1]} to {labels[0]} bearing", known_text, f"Find {labels[0]} to {labels[1]}"])
-    reference_north = (north_end[0], north_end[1] + 18.0)
-    target_direction = direction_endpoint(station_a, int(case.answer), 72.0)
-    annotation = {
-        "station_a": station_a,
-        "station_b": station_b,
-        "reference_north": reference_north,
-        "target_direction": target_direction,
-    }
-    return RenderedPointScene(
-        image=ctx.image,
-        annotation_points=dict(annotation),
-        annotation_roles=POINT_ANNOTATION_KEYS,
-        scene_entities=(
-            {"id": "station_a", "type": "survey_station", "label": labels[0], "point": point_to_list(station_a)},
-            {"id": "station_b", "type": "survey_station", "label": labels[1], "point": point_to_list(station_b)},
-        ),
-        label_bboxes=dict(label_bboxes),
-        render_map={
-            "station_points": {labels[0]: point_to_list(station_a), labels[1]: point_to_list(station_b)},
-            "label_bboxes": {key: bbox_to_list(value) for key, value in label_bboxes.items()},
-            "field_note_bbox": bbox_to_list(note_bbox),
-            "panel_bbox": bbox_to_list(panel),
-        },
-        witness={
-            "known_back_bearing": int(case.given_bearing),
-            "target_forward_bearing": int(case.answer),
-            "station_labels": list(labels),
-        },
-    )
-
-
-def render_closed_traverse_scene(ctx: RenderContext, case: BearingTurnCase, *, instance_seed: int) -> RenderedPointScene:
+def render_closed_traverse_scene(ctx: RenderContext, case: BearingTurnCase, *, instance_seed: int) -> RenderedAreaScene:
     """Render a three-station traverse turn where the middle vertex binds the turn."""
 
     labels = case.station_labels
@@ -277,31 +235,41 @@ def render_closed_traverse_scene(ctx: RenderContext, case: BearingTurnCase, *, i
     label_bboxes[labels[1]] = _draw_station(ctx, station_b, labels[1], label_offset=(22.0, -18.0))
     label_bboxes[labels[2]] = _draw_station(ctx, station_c, labels[2])
     ctx.draw.line([station_a, station_b, station_c], fill=ctx.line_color, width=ctx.line_width)
+    incoming_arrow_start = direction_endpoint(station_b, incoming_bearing, 74.0)
+    incoming_arrow_end = direction_endpoint(station_b, incoming_bearing, 30.0)
+    _draw_arrow(ctx, incoming_arrow_start, incoming_arrow_end, fill=ctx.line_color, width=max(2, ctx.line_width - 1))
+    outgoing_arrow_start = direction_endpoint(station_b, int(case.answer), 28.0)
+    outgoing_arrow_end = direction_endpoint(station_b, int(case.answer), 74.0)
+    _draw_arrow(ctx, outgoing_arrow_start, outgoing_arrow_end, fill=ctx.line_color, width=max(2, ctx.line_width - 1))
     north_end = (station_b[0], station_b[1] - 92.0)
     _draw_arrow(ctx, station_b, north_end, fill=ctx.guide_color, width=max(2, ctx.line_width - 1))
     label_bboxes["north"] = _draw_label(ctx, (north_end[0], north_end[1] - 15), "N", font=ctx.small_font)
-    known_mid = direction_endpoint(station_b, int(case.base_bearing), 72.0)
+    incoming_guide_end = direction_endpoint(station_b, int(case.base_bearing), 90.0)
+    _draw_dashed_line(ctx, station_b, incoming_guide_end, fill=ctx.guide_color, width=max(2, ctx.line_width - 1))
+    known_mid = direction_endpoint(station_b, int(case.base_bearing), 112.0)
     target_mid = direction_endpoint(station_b, int(case.answer), 84.0)
-    label_bboxes["known_bearing"] = _draw_label(ctx, (known_mid[0] + 18.0, known_mid[1] - 6.0), f"{case.base_bearing}{DEGREE_SYMBOL}", font=ctx.small_font)
+    label_bboxes["known_bearing"] = _draw_label(ctx, known_mid, f"in {case.base_bearing}{DEGREE_SYMBOL}", font=ctx.tiny_font)
     label_bboxes["target"] = _draw_label(ctx, (target_mid[0] + 16.0, target_mid[1] - 4.0), "?", font=ctx.font, fill=ctx.accent_color)
-    start_bearing = int(case.base_bearing)
-    end_bearing = int(case.answer)
-    _draw_angle_arc(ctx, station_b, start_bearing=start_bearing, end_bearing=end_bearing, radius=54.0, label=f"{case.turn_angle}{DEGREE_SYMBOL}")
+    _draw_turn_arc(
+        ctx,
+        station_b,
+        start_bearing=int(case.base_bearing),
+        turn_angle=int(case.turn_angle),
+        turn_direction=str(case.turn_direction),
+        radius=58.0,
+        label=f"{case.turn_direction} {case.turn_angle}{DEGREE_SYMBOL}",
+    )
     note_bbox = (554.0, 90.0, float(ctx.width) - 70.0, 228.0)
     _draw_note_box(ctx, note_bbox, [f"At {labels[1]}", f"bearing in {case.base_bearing}{DEGREE_SYMBOL}", f"turn {case.turn_direction} {case.turn_angle}{DEGREE_SYMBOL}"])
 
-    target_direction = direction_endpoint(station_b, int(case.answer), 76.0)
-    annotation = {
-        "station_a": station_a,
-        "station_b": station_b,
-        "reference_north": (north_end[0], north_end[1] + 18.0),
-        "target_direction": target_direction,
-        "turn_vertex": station_b,
+    annotation_bboxes = {
+        "turn_diagram": pad_bbox(panel, 4.0, width=ctx.width, height=ctx.height),
+        "field_note_region": pad_bbox(note_bbox, 4.0, width=ctx.width, height=ctx.height),
     }
-    return RenderedPointScene(
+    return RenderedAreaScene(
         image=ctx.image,
-        annotation_points=dict(annotation),
-        annotation_roles=CLOSED_POINT_ANNOTATION_KEYS,
+        annotation_bboxes=dict(annotation_bboxes),
+        annotation_roles=BEARING_BBOX_ANNOTATION_KEYS,
         scene_entities=(
             {"id": "station_a", "type": "survey_station", "label": labels[0], "point": point_to_list(station_a)},
             {"id": "station_b", "type": "survey_station", "label": labels[1], "point": point_to_list(station_b)},
@@ -314,6 +282,7 @@ def render_closed_traverse_scene(ctx: RenderContext, case: BearingTurnCase, *, i
                 labels[1]: point_to_list(station_b),
                 labels[2]: point_to_list(station_c),
             },
+            "annotation_bboxes": {key: bbox_to_list(value) for key, value in annotation_bboxes.items()},
             "label_bboxes": {key: bbox_to_list(value) for key, value in label_bboxes.items()},
             "field_note_bbox": bbox_to_list(note_bbox),
             "panel_bbox": bbox_to_list(panel),
@@ -328,7 +297,7 @@ def render_closed_traverse_scene(ctx: RenderContext, case: BearingTurnCase, *, i
     )
 
 
-def render_leveling_station_scene(ctx: RenderContext, case: ElevationLevelingCase, *, instance_seed: int) -> RenderedPointScene:
+def render_leveling_station_scene(ctx: RenderContext, case: ElevationLevelingCase, *, instance_seed: int) -> RenderedAreaScene:
     """Render a leveling field-note diagram with station and note-center witnesses."""
 
     labels = case.station_labels
@@ -349,6 +318,20 @@ def render_leveling_station_scene(ctx: RenderContext, case: ElevationLevelingCas
     label_bboxes[labels[1]] = _draw_station(ctx, target_station, labels[1], label_offset=(24.0, -18.0))
     _draw_staff(ctx, reference_station)
     _draw_staff(ctx, target_station)
+    label_bboxes["backsight_label"] = _draw_label(
+        ctx,
+        (reference_station[0] + 42.0, reference_station[1] - 52.0),
+        f"backsight {case.backsight}",
+        font=ctx.tiny_font,
+        anchor="lm",
+    )
+    label_bboxes["foresight_label"] = _draw_label(
+        ctx,
+        (target_station[0] + 42.0, target_station[1] - 52.0),
+        f"foresight {case.foresight}",
+        font=ctx.tiny_font,
+        anchor="lm",
+    )
     sight_left = (reference_station[0], reference_station[1] - 86.0)
     sight_right = (target_station[0], target_station[1] - 86.0)
     ctx.draw.line([sight_left, sight_right], fill=ctx.secondary_accent_color, width=ctx.line_width)
@@ -361,19 +344,21 @@ def render_leveling_station_scene(ctx: RenderContext, case: ElevationLevelingCas
         _draw_note_box(
             ctx,
             note_bbox,
-            [f"BM {labels[0]} = {case.reference_elevation}", f"BS = {case.backsight}", f"FS = {case.foresight}"],
+            [
+                f"benchmark {labels[0]} = {case.reference_elevation}",
+                f"backsight = {case.backsight}",
+                f"foresight = {case.foresight}",
+            ],
         )
     )
-    annotation = {
-        "reference_station": reference_station,
-        "target_station": target_station,
-        "measurement_line": measurement_mid,
-        "field_note_region": _note_center(note_bbox),
+    annotation_bboxes = {
+        "station_profile": pad_bbox(panel, 4.0, width=ctx.width, height=ctx.height),
+        "field_note_region": pad_bbox(note_bbox, 4.0, width=ctx.width, height=ctx.height),
     }
-    return RenderedPointScene(
+    return RenderedAreaScene(
         image=ctx.image,
-        annotation_points=dict(annotation),
-        annotation_roles=ELEVATION_POINT_ANNOTATION_KEYS,
+        annotation_bboxes=dict(annotation_bboxes),
+        annotation_roles=ELEVATION_BBOX_ANNOTATION_KEYS,
         scene_entities=(
             {"id": "reference_station", "type": "survey_station", "label": labels[0], "point": point_to_list(reference_station)},
             {"id": "target_station", "type": "survey_station", "label": labels[1], "point": point_to_list(target_station)},
@@ -381,6 +366,7 @@ def render_leveling_station_scene(ctx: RenderContext, case: ElevationLevelingCas
         label_bboxes=dict(label_bboxes),
         render_map={
             "station_points": {labels[0]: point_to_list(reference_station), labels[1]: point_to_list(target_station)},
+            "annotation_bboxes": {key: bbox_to_list(value) for key, value in annotation_bboxes.items()},
             "label_bboxes": {key: bbox_to_list(value) for key, value in label_bboxes.items()},
             "field_note_bbox": bbox_to_list(note_bbox),
             "measurement_line_bbox": bbox_to_list(bbox_from_points((sight_left, sight_right), width=ctx.width, height=ctx.height, pad=6.0)),
@@ -392,168 +378,6 @@ def render_leveling_station_scene(ctx: RenderContext, case: ElevationLevelingCas
             "foresight": int(case.foresight),
             "height_of_instrument": int(case.height_of_instrument),
             "target_elevation": int(case.answer),
-            "station_labels": list(labels),
-        },
-    )
-
-
-def render_slope_elevation_scene(ctx: RenderContext, case: ElevationSlopeCase, *, instance_seed: int) -> RenderedPointScene:
-    """Render a sloped station profile with midpoint and note-center witnesses."""
-
-    labels = case.station_labels
-    panel = (62.0, 90.0, 520.0, 452.0)
-    ctx.draw.rounded_rectangle(panel, radius=14, fill=ctx.panel_fill, outline=ctx.secondary_color, width=2)
-    reference_station = (148.0, 384.0)
-    target_station = (432.0, 334.0 if int(case.rise_per_20) >= 0 else 422.0)
-    label_bboxes: Dict[str, BBox] = {}
-    ctx.draw.line([reference_station, target_station], fill=ctx.accent_color, width=ctx.line_width + 1)
-    label_bboxes[labels[0]] = _draw_station(ctx, reference_station, labels[0], label_offset=(-22.0, -18.0))
-    label_bboxes[labels[1]] = _draw_station(ctx, target_station, labels[1], label_offset=(24.0, -18.0))
-    measurement_mid = ((reference_station[0] + target_station[0]) / 2.0, (reference_station[1] + target_station[1]) / 2.0)
-    label_bboxes["distance"] = _draw_label(ctx, (measurement_mid[0], measurement_mid[1] - 22.0), f"{case.slope_distance} units", font=ctx.tiny_font)
-    rate_text = f"{abs(int(case.rise_per_20))} per 20"
-    label_bboxes["grade"] = _draw_label(
-        ctx,
-        (measurement_mid[0], measurement_mid[1] + 22.0),
-        ("rise " if int(case.rise_per_20) >= 0 else "fall ") + rate_text,
-        font=ctx.tiny_font,
-    )
-    label_bboxes["known_elevation"] = _draw_label(ctx, (reference_station[0] - 6.0, reference_station[1] + 32.0), f"{case.reference_elevation}", font=ctx.small_font)
-    label_bboxes["target_unknown"] = _draw_label(ctx, (target_station[0] + 8.0, target_station[1] + 32.0), "?", font=ctx.font, fill=ctx.accent_color)
-    note_bbox = (548.0, 70.0, float(ctx.width) - 70.0, 176.0)
-    label_bboxes.update(
-        _draw_note_box(
-            ctx,
-            note_bbox,
-            [f"{labels[0]} elev = {case.reference_elevation}", f"distance = {case.slope_distance}", f"change = {case.rise_per_20}/20"],
-        )
-    )
-    annotation = {
-        "reference_station": reference_station,
-        "target_station": target_station,
-        "measurement_line": measurement_mid,
-        "field_note_region": _note_center(note_bbox),
-    }
-    return RenderedPointScene(
-        image=ctx.image,
-        annotation_points=dict(annotation),
-        annotation_roles=ELEVATION_POINT_ANNOTATION_KEYS,
-        scene_entities=(
-            {"id": "reference_station", "type": "survey_station", "label": labels[0], "point": point_to_list(reference_station)},
-            {"id": "target_station", "type": "survey_station", "label": labels[1], "point": point_to_list(target_station)},
-        ),
-        label_bboxes=dict(label_bboxes),
-        render_map={
-            "station_points": {labels[0]: point_to_list(reference_station), labels[1]: point_to_list(target_station)},
-            "label_bboxes": {key: bbox_to_list(value) for key, value in label_bboxes.items()},
-            "field_note_bbox": bbox_to_list(note_bbox),
-            "measurement_line_bbox": bbox_to_list(bbox_from_points((reference_station, target_station), width=ctx.width, height=ctx.height, pad=6.0)),
-            "panel_bbox": bbox_to_list(panel),
-        },
-        witness={
-            "reference_elevation": int(case.reference_elevation),
-            "slope_distance": int(case.slope_distance),
-            "rise_per_20": int(case.rise_per_20),
-            "total_rise": int(case.total_rise),
-            "target_elevation": int(case.answer),
-            "station_labels": list(labels),
-        },
-    )
-
-
-def _map_unit_points(points: Sequence[tuple[int, int]], box: BBox) -> Dict[tuple[int, int], Point]:
-    xs = [int(point[0]) for point in points]
-    ys = [int(point[1]) for point in points]
-    min_x, max_x = min(xs), max(xs)
-    min_y, max_y = min(ys), max(ys)
-    span_x = max(1, max_x - min_x)
-    span_y = max(1, max_y - min_y)
-    x0, y0, x1, y1 = box
-    result: Dict[tuple[int, int], Point] = {}
-    for unit_x, unit_y in points:
-        px = x0 + ((int(unit_x) - min_x) / span_x) * (x1 - x0)
-        py = y1 - ((int(unit_y) - min_y) / span_y) * (y1 - y0)
-        result[(int(unit_x), int(unit_y))] = (float(px), float(py))
-    return result
-
-
-def _draw_coordinate_grid(ctx: RenderContext, box: BBox, *, max_x: int, max_y: int) -> BBox:
-    x0, y0, x1, y1 = box
-    for idx in range(0, max(2, int(max_x)) + 1):
-        x = x0 + (x1 - x0) * idx / max(1, int(max_x))
-        ctx.draw.line([(x, y0), (x, y1)], fill=ctx.guide_color, width=1)
-    for idx in range(0, max(2, int(max_y)) + 1):
-        y = y1 - (y1 - y0) * idx / max(1, int(max_y))
-        ctx.draw.line([(x0, y), (x1, y)], fill=ctx.guide_color, width=1)
-    ctx.draw.rectangle(box, outline=ctx.secondary_color, width=2)
-    return pad_bbox(box, 8.0, width=ctx.width, height=ctx.height)
-
-
-def render_coordinate_area_scene(ctx: RenderContext, case: AreaCoordinateCase, *, instance_seed: int) -> RenderedAreaScene:
-    """Render a coordinate traverse polygon with table and reference-grid bbox witnesses."""
-
-    labels = case.station_labels
-    points = tuple(case.coordinate_points)
-    panel = (56.0, 60.0, 524.0, 500.0)
-    ctx.draw.rounded_rectangle(panel, radius=14, fill=ctx.panel_fill, outline=ctx.secondary_color, width=2)
-    grid_box = (102.0, 118.0, 470.0, 438.0)
-    max_x = max(point[0] for point in points)
-    max_y = max(point[1] for point in points)
-    area_reference_bbox = _draw_coordinate_grid(ctx, grid_box, max_x=max_x, max_y=max_y)
-    point_map = _map_unit_points(points, grid_box)
-    pixel_points = [point_map[point] for point in points]
-    ctx.draw.polygon(pixel_points, fill=None, outline=ctx.accent_color)
-    ctx.draw.line(pixel_points + [pixel_points[0]], fill=ctx.accent_color, width=ctx.line_width + 1)
-    label_bboxes: Dict[str, BBox] = {}
-    for idx, (label, unit_point, pixel_point) in enumerate(zip(labels, points, pixel_points)):
-        label_bboxes[label] = _draw_station(
-            ctx,
-            pixel_point,
-            str(label),
-            label_offset=(18.0 if idx in {1, 2} else -22.0, -18.0 if idx in {0, 1} else 20.0),
-        )
-        label_bboxes[f"{label}_coord"] = _draw_label(
-            ctx,
-            (pixel_point[0] + (24.0 if idx in {1, 2} else -24.0), pixel_point[1] + 19.0),
-            f"({unit_point[0]},{unit_point[1]})",
-            font=ctx.tiny_font,
-        )
-    note_bbox = (548.0, 83.0, float(ctx.width) - 68.0, 220.0)
-    note_lines = [f"{label}: E {point[0]}, N {point[1]}" for label, point in zip(labels, points)]
-    label_bboxes.update(_draw_note_box(ctx, note_bbox, note_lines))
-    _draw_label(ctx, (float(note_bbox[0]) + 16.0, float(note_bbox[3]) + 30.0), "Area = ?", font=ctx.small_font, anchor="lm", fill=ctx.accent_color)
-    traverse_bbox = bbox_from_points(pixel_points, width=ctx.width, height=ctx.height, pad=14.0)
-    annotation_bboxes = {
-        "traverse_region": traverse_bbox,
-        "field_note_region": pad_bbox(note_bbox, 4.0, width=ctx.width, height=ctx.height),
-        "area_reference_region": area_reference_bbox,
-    }
-    return RenderedAreaScene(
-        image=ctx.image,
-        annotation_bboxes=dict(annotation_bboxes),
-        annotation_roles=AREA_BBOX_ANNOTATION_KEYS,
-        scene_entities=tuple(
-            {
-                "id": f"station_{label}",
-                "type": "survey_station",
-                "label": str(label),
-                "coordinate": [int(point[0]), int(point[1])],
-                "point": point_to_list(pixel),
-            }
-            for label, point, pixel in zip(labels, points, pixel_points)
-        ),
-        label_bboxes=dict(label_bboxes),
-        render_map={
-            "station_points": {label: point_to_list(pixel) for label, pixel in zip(labels, pixel_points)},
-            "coordinate_points": {label: [int(point[0]), int(point[1])] for label, point in zip(labels, points)},
-            "label_bboxes": {key: bbox_to_list(value) for key, value in label_bboxes.items()},
-            "field_note_bbox": bbox_to_list(note_bbox),
-            "traverse_bbox": bbox_to_list(traverse_bbox),
-            "area_reference_bbox": bbox_to_list(area_reference_bbox),
-            "panel_bbox": bbox_to_list(panel),
-        },
-        witness={
-            "coordinate_points": [[int(x), int(y)] for x, y in points],
             "station_labels": list(labels),
         },
     )
@@ -582,8 +406,7 @@ def render_offset_area_scene(ctx: RenderContext, case: AreaOffsetCase, *, instan
     label_bboxes: Dict[str, BBox] = {}
     for label, chain, offset, base, top in zip(labels, chainages, offsets, baseline_points, offset_points):
         ctx.draw.line([base, top], fill=ctx.secondary_accent_color, width=max(2, ctx.line_width - 1))
-        _draw_station(ctx, top, str(label), label_offset=(0.0, -18.0))
-        label_bboxes[label] = _draw_label(ctx, (top[0], top[1] - 18.0), str(label), font=ctx.small_font)
+        label_bboxes[label] = _draw_station(ctx, top, str(label), label_offset=(0.0, -18.0))
         label_bboxes[f"{label}_offset"] = _draw_label(ctx, (top[0] + 18.0, (top[1] + base[1]) / 2.0), str(offset), font=ctx.tiny_font)
         label_bboxes[f"{label}_chain"] = _draw_label(ctx, (base[0], base[1] + 20.0), str(chain), font=ctx.tiny_font)
     label_bboxes["baseline"] = _draw_label(ctx, ((baseline_points[0][0] + baseline_points[-1][0]) / 2.0, baseline_y + 42.0), "baseline chainage", font=ctx.tiny_font)
@@ -594,9 +417,8 @@ def render_offset_area_scene(ctx: RenderContext, case: AreaOffsetCase, *, instan
     traverse_bbox = bbox_from_points(shape_points, width=ctx.width, height=ctx.height, pad=14.0)
     area_reference_bbox = bbox_from_points(baseline_points, width=ctx.width, height=ctx.height, pad=18.0)
     annotation_bboxes = {
-        "traverse_region": traverse_bbox,
+        "traverse_region": _union_bboxes((traverse_bbox, area_reference_bbox), width=ctx.width, height=ctx.height, pad=0.0),
         "field_note_region": pad_bbox(note_bbox, 4.0, width=ctx.width, height=ctx.height),
-        "area_reference_region": area_reference_bbox,
     }
     return RenderedAreaScene(
         image=ctx.image,
@@ -635,14 +457,10 @@ def render_offset_area_scene(ctx: RenderContext, case: AreaOffsetCase, *, instan
 
 __all__ = [
     "AREA_BBOX_ANNOTATION_KEYS",
-    "CLOSED_POINT_ANNOTATION_KEYS",
-    "ELEVATION_POINT_ANNOTATION_KEYS",
-    "POINT_ANNOTATION_KEYS",
+    "BEARING_BBOX_ANNOTATION_KEYS",
+    "ELEVATION_BBOX_ANNOTATION_KEYS",
     "create_render_context",
-    "render_back_bearing_scene",
     "render_closed_traverse_scene",
-    "render_coordinate_area_scene",
     "render_leveling_station_scene",
     "render_offset_area_scene",
-    "render_slope_elevation_scene",
 ]

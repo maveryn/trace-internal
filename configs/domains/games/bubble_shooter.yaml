@@ -56,6 +56,19 @@ generation:
         - D
         - E
         - F
+    task_games__bubble_shooter__pop_target_label:
+      balanced_target_label_sampling: true
+      balanced_positive_pop_count_sampling: true
+      positive_pop_count_support:
+        - 2
+        - 3
+        - 4
+        - 5
+      pop_target_label_support:
+        - A
+        - B
+        - C
+        - D
 rendering:
   shared:
     canvas_width: 980

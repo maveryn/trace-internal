@@ -8,6 +8,7 @@ import yaml
 
 from trace.core.scene_config import get_scene_defaults
 from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.visual_style.surface_tones import DEFAULT_SURFACE_TONES
 from trace.tasks.three_d.shared.object_scene import _resolve_render_params as resolve_object_scene_render_params
 from trace.tasks.three_d.shared.visual_styles import DEFAULT_CONVEYOR_BELT_STYLES, DEFAULT_THREE_D_SURFACE_TONES
 from trace.tasks.three_d.street.shared.state import _resolve_render_params as resolve_street_render_params
@@ -60,6 +61,10 @@ def test_three_d_surface_tone_pool_has_expected_light_dark_split() -> None:
     assert len(set(DEFAULT_THREE_D_SURFACE_TONES) - dark_tones) == 20
     for tone_id, tone in DEFAULT_THREE_D_SURFACE_TONES.items():
         assert {"floor_rgb", "grid_rgb", "edge_rgb", "surface_accent_rgb", "text_rgb", "text_stroke_rgb"}.issubset(tone), tone_id
+
+
+def test_three_d_surface_tones_use_shared_pool() -> None:
+    assert DEFAULT_THREE_D_SURFACE_TONES == DEFAULT_SURFACE_TONES
 
 
 def test_shared_three_d_surface_tones_cover_current_scene_renderers() -> None:

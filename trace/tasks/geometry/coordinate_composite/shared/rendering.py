@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
@@ -12,6 +12,12 @@ from trace.tasks.geometry.shared.shape_style import extract_background_anchor_co
 from trace.tasks.geometry.shared.single_object_scene import finalize_graph_scene_image, make_graph_scene_canvas, resolve_graph_scene_context
 from trace.tasks.geometry.shared.vector2d import point_to_list
 from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.shared.text_rendering import (
+    draw_text_centered,
+    load_font,
+    resolve_scene_label_font_size_px,
+    resolve_text_label_center,
+)
 
 from .relations import filtered_intersections, object_to_trace
 from .state import CircleObject, Color, LineObject, PairFilter, PolygonObject, RenderedScene, SceneObject
@@ -82,6 +88,126 @@ def _sample_object_colors(rng: Any, *, shape_color: Color) -> Tuple[Color, ...]:
     return tuple(palette[(offset + index) % len(palette)] for index in range(len(palette)))
 
 
+def _scale_bbox_down(bbox: Sequence[float], *, scale: int) -> List[float]:
+    factor = float(max(1, int(scale)))
+    return [round(float(value) / factor, 3) for value in bbox]
+
+
+def _draw_candidate_points(
+    draw: ImageDraw.ImageDraw,
+    *,
+    candidate_points: Sequence[Tuple[str, Tuple[float, float]]],
+    context: Any,
+) -> Dict[str, Any]:
+    """Draw labeled candidate points and return canonical pixel metadata."""
+
+    if not candidate_points:
+        return {
+            "candidate_points_graph": [],
+            "candidate_points_px": [],
+            "candidate_point_labels": [],
+            "candidate_marker_bboxes": {},
+            "candidate_label_bboxes": {},
+        }
+    scale = int(context.scene_scale)
+    label_font_size = resolve_scene_label_font_size_px(
+        canvas_size=int(context.canvas_size),
+        graph_spacing=int(context.graph_spacing),
+        scene_scale=int(scale),
+        min_px=16,
+        max_px=24,
+    )
+    font = load_font(int(label_font_size), bold=True)
+    stroke_width = max(1, int(round(1.3 * float(scale))))
+    marker_radius = max(5.0 * float(scale), 0.18 * float(context.graph_spacing) * float(scale))
+    marker_fill = (214, 54, 64)
+    marker_outline = (255, 255, 255)
+    label_fill = (20, 29, 43)
+    label_stroke = (255, 255, 255)
+    graph_points = [(label, (float(point[0]), float(point[1]))) for label, point in candidate_points]
+    canonical_points = {
+        str(label): graph_units_to_pixel(
+            point,
+            origin=context.graph_origin,
+            spacing=int(context.graph_spacing),
+        )
+        for label, point in graph_points
+    }
+    render_points = {
+        str(label): scale_point(point, int(scale))
+        for label, point in canonical_points.items()
+    }
+    centroid_x = sum(float(point[0]) for point in render_points.values()) / float(len(render_points))
+    centroid_y = sum(float(point[1]) for point in render_points.values()) / float(len(render_points))
+    occupied_boxes: List[Tuple[float, float, float, float]] = []
+    marker_bboxes: Dict[str, List[float]] = {}
+    label_bboxes: Dict[str, List[float]] = {}
+    blocked_points = list(render_points.values())
+    canvas_size = int(context.canvas_size) * int(scale)
+
+    for label, _graph_point in graph_points:
+        point = render_points[str(label)]
+        px, py = float(point[0]), float(point[1])
+        marker_bbox = [
+            float(px - marker_radius),
+            float(py - marker_radius),
+            float(px + marker_radius),
+            float(py + marker_radius),
+        ]
+        draw.ellipse(marker_bbox, fill=marker_outline)
+        inset = max(1.0, float(scale))
+        draw.ellipse(
+            [
+                marker_bbox[0] + inset,
+                marker_bbox[1] + inset,
+                marker_bbox[2] - inset,
+                marker_bbox[3] - inset,
+            ],
+            fill=marker_fill,
+        )
+        marker_bboxes[str(label)] = _scale_bbox_down(marker_bbox, scale=int(scale))
+        base_direction = (float(px - centroid_x), float(py - centroid_y))
+        center, label_bbox = resolve_text_label_center(
+            draw,
+            text=str(label),
+            anchor=(float(px), float(py)),
+            base_direction=base_direction,
+            offset_px=max(22.0 * float(scale), 0.70 * float(context.graph_spacing) * float(scale)),
+            font=font,
+            blocked_points=blocked_points,
+            occupied_boxes=occupied_boxes,
+            stroke_width=int(stroke_width),
+            point_clearance_px=float(marker_radius + (8.0 * float(scale))),
+            canvas_size=int(canvas_size),
+        )
+        draw_text_centered(
+            draw,
+            text=str(label),
+            center=(float(center[0]), float(center[1])),
+            font=font,
+            fill=label_fill,
+            stroke_fill=label_stroke,
+            stroke_width=int(stroke_width),
+        )
+        occupied_boxes.append(label_bbox)
+        label_bboxes[str(label)] = _scale_bbox_down(label_bbox, scale=int(scale))
+
+    labels = tuple(str(label) for label, _point in graph_points)
+    return {
+        "candidate_points_graph": [
+            {"label": str(label), "point": point_to_list(point)}
+            for label, point in graph_points
+        ],
+        "candidate_points_px": [
+            {"label": str(label), "point": point_to_list(canonical_points[str(label)])}
+            for label in labels
+        ],
+        "candidate_point_labels": list(labels),
+        "candidate_marker_bboxes": dict(marker_bboxes),
+        "candidate_label_bboxes": dict(label_bboxes),
+    }
+
+
 def render_coordinate_composite_scene(
     *,
     instance_seed: int,
@@ -94,6 +220,7 @@ def render_coordinate_composite_scene(
     background_defaults: Mapping[str, Any],
     noise_defaults: Mapping[str, Any],
     random_namespace: str,
+    candidate_points: Sequence[Tuple[str, Tuple[float, float]]] | None = None,
 ) -> RenderedScene:
     """Render a coordinate diagram after public task code selects the objects."""
 
@@ -154,6 +281,12 @@ def render_coordinate_composite_scene(
         drawn["color"] = [int(value) for value in object_color]
         drawn_objects.append(drawn)
 
+    candidate_meta = _draw_candidate_points(
+        draw,
+        candidate_points=tuple(candidate_points or ()),
+        context=context,
+    )
+
     intersections_px = tuple(
         graph_units_to_pixel(point, origin=context.graph_origin, spacing=int(context.graph_spacing))
         for point in intersections
@@ -178,6 +311,7 @@ def render_coordinate_composite_scene(
         "intersection_points_graph": [point_to_list(point) for point in intersections],
         "intersection_points_px": [point_to_list(point) for point in intersections_px],
         "transform": str(transform),
+        **dict(candidate_meta),
     }
     return RenderedScene(
         image=final_image,
@@ -188,6 +322,17 @@ def render_coordinate_composite_scene(
         background_meta=dict(final_background_meta),
         post_noise_meta=dict(post_noise_meta),
         render_spec_extra=render_spec_extra,
+        candidate_points_px=tuple(
+            tuple(float(value) for value in item["point"])
+            for item in candidate_meta["candidate_points_px"]
+        ),
+        candidate_points_graph=tuple(
+            tuple(float(value) for value in item["point"])
+            for item in candidate_meta["candidate_points_graph"]
+        ),
+        candidate_point_labels=tuple(str(label) for label in candidate_meta["candidate_point_labels"]),
+        candidate_marker_bboxes=dict(candidate_meta["candidate_marker_bboxes"]),
+        candidate_label_bboxes=dict(candidate_meta["candidate_label_bboxes"]),
     )
 
 

@@ -2419,7 +2419,9 @@ tbody tr:hover {
 
 .sample-image-card img {
   display: block;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
+  height: auto;
   max-height: 78vh;
   object-fit: contain;
   border: 1px solid var(--border-strong);

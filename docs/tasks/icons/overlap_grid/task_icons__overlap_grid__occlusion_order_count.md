@@ -2,7 +2,14 @@
 
 ## Program Contract
 
-`count.relation_attribute(scene=overlap_grid, scope=curated_icon_overlap_cells, candidates=labeled_scene_cells, relation=front_to_back_order_equals_reference, output=integer)`
+Program: `count.relation_attribute(scene=overlap_grid, scope=curated_icon_overlap_cells, candidates=labeled_scene_cells, relation=front_to_back_order_equals_reference, output=integer)`
+
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `curated_icon_overlap_cells` objective scope.
+Operands: visible scene state and prompt-bound operands named by `overlap_grid`, `curated_icon_overlap_cells`, `candidates`, `labeled_scene_cells`, `relation`, `front_to_back_order_equals_reference`.
+Operation: evaluate `count.relation_attribute` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Identity
 

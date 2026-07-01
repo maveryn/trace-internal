@@ -1,0 +1,1680 @@
+{
+  "checked_at": "2026-06-27T09:54:15Z",
+  "docs_root": "docs/tasks",
+  "domains": [
+    "graph"
+  ],
+  "min_side_px": 24.0,
+  "records": [
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "segment_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "segment_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "adjacency",
+      "status": "not_applicable",
+      "task_id": "task_graph__adjacency__directed_pair_reciprocity_count"
+    },
+    {
+      "bbox_count": 403,
+      "bbox_family_runtime": true,
+      "doc_annotation_type": "bbox_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": 35.0,
+      "min_side_px_observed": 35.0,
+      "min_width_px_observed": 49.0,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "bbox_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "adjacency",
+      "status": "pass",
+      "task_id": "task_graph__adjacency__directed_strong_component_count"
+    },
+    {
+      "bbox_count": 466,
+      "bbox_family_runtime": true,
+      "doc_annotation_type": "bbox_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": 61.0,
+      "min_side_px_observed": 61.0,
+      "min_width_px_observed": 61.0,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "bbox_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "adjacency",
+      "status": "pass",
+      "task_id": "task_graph__adjacency__mst_weight"
+    },
+    {
+      "bbox_count": 425,
+      "bbox_family_runtime": true,
+      "doc_annotation_type": "bbox_sequence",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": 36.0,
+      "min_side_px_observed": 36.0,
+      "min_width_px_observed": 88.0,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "bfs_kth_visit_label",
+        "dfs_kth_visit_label"
+      ],
+      "runtime_annotation_types": [
+        "bbox_sequence"
+      ],
+      "sample_count": 100,
+      "scene_id": "adjacency",
+      "status": "pass",
+      "task_id": "task_graph__adjacency__traversal_kth_label"
+    },
+    {
+      "bbox_count": 411,
+      "bbox_family_runtime": true,
+      "doc_annotation_type": "bbox_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": 35.0,
+      "min_side_px_observed": 35.0,
+      "min_width_px_observed": 49.0,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "bbox_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "adjacency",
+      "status": "pass",
+      "task_id": "task_graph__adjacency__undirected_component_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_sequence",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_sequence"
+      ],
+      "sample_count": 100,
+      "scene_id": "automaton",
+      "status": "not_applicable",
+      "task_id": "task_graph__automaton__dfa_accepted_string_label"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_sequence",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_sequence"
+      ],
+      "sample_count": 100,
+      "scene_id": "automaton",
+      "status": "not_applicable",
+      "task_id": "task_graph__automaton__nfa_accepted_string_label"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "automaton",
+      "status": "not_applicable",
+      "task_id": "task_graph__automaton__nondeterministic_state_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "final_state_label",
+        "transition_step_state_label"
+      ],
+      "runtime_annotation_types": [
+        "point_sequence"
+      ],
+      "sample_count": 100,
+      "scene_id": "automaton",
+      "status": "not_applicable",
+      "task_id": "task_graph__automaton__state_after_input_label"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_sequence",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "bst_insert_parent_label",
+        "bst_search_terminal_label"
+      ],
+      "runtime_annotation_types": [
+        "point_sequence"
+      ],
+      "sample_count": 100,
+      "scene_id": "binary_tree",
+      "status": "not_applicable",
+      "task_id": "task_graph__binary_tree__bst_path_operation_label"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "internal_node_count",
+        "leaf_node_count",
+        "single_child_node_count",
+        "two_child_node_count"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "binary_tree",
+      "status": "not_applicable",
+      "task_id": "task_graph__binary_tree__child_structure_node_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "binary_tree",
+      "status": "not_applicable",
+      "task_id": "task_graph__binary_tree__depth_level_node_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_map",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_map"
+      ],
+      "sample_count": 100,
+      "scene_id": "binary_tree",
+      "status": "not_applicable",
+      "task_id": "task_graph__binary_tree__heap_property_violation_label"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_map",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "left_child_label",
+        "parent_label",
+        "right_child_label",
+        "sibling_label"
+      ],
+      "runtime_annotation_types": [
+        "point_map"
+      ],
+      "sample_count": 100,
+      "scene_id": "binary_tree",
+      "status": "not_applicable",
+      "task_id": "task_graph__binary_tree__local_relative_node_label"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_map",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_map"
+      ],
+      "sample_count": 100,
+      "scene_id": "binary_tree",
+      "status": "not_applicable",
+      "task_id": "task_graph__binary_tree__lowest_common_ancestor_label"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_sequence",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "inorder_kth_node_label",
+        "level_order_kth_node_label",
+        "postorder_kth_node_label",
+        "preorder_kth_node_label"
+      ],
+      "runtime_annotation_types": [
+        "point_sequence"
+      ],
+      "sample_count": 100,
+      "scene_id": "binary_tree",
+      "status": "not_applicable",
+      "task_id": "task_graph__binary_tree__traversal_kth_label"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "segment_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "segment_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "flow_network",
+      "status": "not_applicable",
+      "task_id": "task_graph__flow_network__max_flow_value"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "segment_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "segment_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "flow_network",
+      "status": "not_applicable",
+      "task_id": "task_graph__flow_network__min_cut_edge_count"
+    },
+    {
+      "bbox_count": 100,
+      "bbox_family_runtime": true,
+      "doc_annotation_type": "bbox",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": 235.0,
+      "min_side_px_observed": 235.0,
+      "min_width_px_observed": 551.0,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "bbox"
+      ],
+      "sample_count": 100,
+      "scene_id": "graph_options",
+      "status": "pass",
+      "task_id": "task_graph__graph_options__contained_subgraph_label"
+    },
+    {
+      "bbox_count": 100,
+      "bbox_family_runtime": true,
+      "doc_annotation_type": "bbox",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": 235.0,
+      "min_side_px_observed": 235.0,
+      "min_width_px_observed": 551.0,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "bbox"
+      ],
+      "sample_count": 100,
+      "scene_id": "graph_options",
+      "status": "pass",
+      "task_id": "task_graph__graph_options__same_structure_label"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "metro",
+      "status": "not_applicable",
+      "task_id": "task_graph__metro__exact_distance_station_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "metro_route_single_route_station_count",
+        "metro_route_transfer_station_count"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "metro",
+      "status": "not_applicable",
+      "task_id": "task_graph__metro__route_condition_station_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_sequence",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_sequence"
+      ],
+      "sample_count": 100,
+      "scene_id": "metro",
+      "status": "not_applicable",
+      "task_id": "task_graph__metro__shortest_path_length"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "metro_single_route_station_count",
+        "metro_transfer_station_count"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "metro",
+      "status": "not_applicable",
+      "task_id": "task_graph__metro__station_membership_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__articulation_point_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "segment_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__bridge_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "directed_common_predecessor_count",
+        "directed_common_successor_count",
+        "undirected_common_neighbor_count"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__common_related_node_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "component_size_after_edge_addition",
+        "component_size_after_edge_removal"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__component_size_after_edge_edit"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "cross_color_edge_count",
+        "directed_cross_color_edge_count"
+      ],
+      "runtime_annotation_types": [
+        "segment_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__cross_color_edge_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "directed_in_degree_one_filter_remaining_count",
+        "directed_out_degree_one_filter_remaining_count",
+        "undirected_degree_one_filter_remaining_count"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__degree_after_removal_filter_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "directed_max_in_degree_value",
+        "directed_max_out_degree_value",
+        "undirected_max_degree_value",
+        "undirected_min_degree_value"
+      ],
+      "runtime_annotation_types": [
+        "point"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__degree_extremum_value"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "directed_in_degree_count",
+        "directed_out_degree_count",
+        "undirected_degree_count"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__degree_value_filter_count"
+    },
+    {
+      "bbox_count": 100,
+      "bbox_family_runtime": true,
+      "doc_annotation_type": "bbox",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": 24.0,
+      "min_side_px_observed": 24.0,
+      "min_width_px_observed": 36.0,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "directed_edge_between_nodes_label",
+        "edge_between_nodes_label"
+      ],
+      "runtime_annotation_types": [
+        "bbox"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "pass",
+      "task_id": "task_graph__node_link__edge_between_nodes_label"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "segment_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__edge_color_count"
+    },
+    {
+      "bbox_count": 300,
+      "bbox_family_runtime": true,
+      "doc_annotation_type": "",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": 24.0,
+      "min_side_px_observed": 24.0,
+      "min_width_px_observed": 35.0,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "bbox_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "pass",
+      "task_id": "task_graph__node_link__edge_text_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "next_in_hamiltonian_cycle_label",
+        "previous_in_hamiltonian_cycle_label"
+      ],
+      "runtime_annotation_types": [
+        "point"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__hamiltonian_cycle_neighbor_label"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__isolated_after_removal_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__largest_chordless_cycle_size"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__largest_component_size"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_sequence"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__longest_path_length"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "segment_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__mst_weight"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "directed_named_node_in_degree_value",
+        "directed_named_node_out_degree_value",
+        "directed_named_node_total_degree_value",
+        "undirected_named_node_degree_value"
+      ],
+      "runtime_annotation_types": [
+        "segment_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__named_node_degree_value"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__node_color_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__reachable_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "reachable_count_after_edge_addition",
+        "reachable_count_after_edge_removal"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__reachable_count_after_edge_edit"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__same_component_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "directed_shortest_path_length",
+        "undirected_shortest_path_length"
+      ],
+      "runtime_annotation_types": [
+        "point_sequence"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__shortest_path_length"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "first_in_topological_order_label",
+        "last_in_topological_order_label"
+      ],
+      "runtime_annotation_types": [
+        "point"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__topological_endpoint_node_label"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__unique_cycle_size"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "unique_neighbor_label",
+        "unique_predecessor_label",
+        "unique_successor_label"
+      ],
+      "runtime_annotation_types": [
+        "point"
+      ],
+      "sample_count": 100,
+      "scene_id": "node_link",
+      "status": "not_applicable",
+      "task_id": "task_graph__node_link__unique_related_node_label"
+    },
+    {
+      "bbox_count": 460,
+      "bbox_family_runtime": true,
+      "doc_annotation_type": "bbox_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": 36.0,
+      "min_side_px_observed": 36.0,
+      "min_width_px_observed": 36.0,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "bbox_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "pedigree_chart",
+      "status": "pass",
+      "task_id": "task_graph__pedigree_chart__relatedness_coefficient_label"
+    },
+    {
+      "bbox_count": 268,
+      "bbox_family_runtime": true,
+      "doc_annotation_type": "bbox_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": 36.0,
+      "min_side_px_observed": 36.0,
+      "min_width_px_observed": 36.0,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "bbox_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "pedigree_chart",
+      "status": "pass",
+      "task_id": "task_graph__pedigree_chart__relationship_label"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "phylogeny_tree",
+      "status": "not_applicable",
+      "task_id": "task_graph__phylogeny_tree__clade_leaf_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "phylogeny_tree",
+      "status": "not_applicable",
+      "task_id": "task_graph__phylogeny_tree__mrca_clade_membership_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point"
+      ],
+      "sample_count": 100,
+      "scene_id": "phylogeny_tree",
+      "status": "not_applicable",
+      "task_id": "task_graph__phylogeny_tree__sister_leaf_label"
+    },
+    {
+      "bbox_count": 100,
+      "bbox_family_runtime": true,
+      "doc_annotation_type": "bbox",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": 419.0,
+      "min_side_px_observed": 419.0,
+      "min_width_px_observed": 589.0,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "bbox"
+      ],
+      "sample_count": 100,
+      "scene_id": "phylogeny_tree",
+      "status": "pass",
+      "task_id": "task_graph__phylogeny_tree__topology_outlier_label"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "segment_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "segment_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "pipe_network",
+      "status": "not_applicable",
+      "task_id": "task_graph__pipe_network__bridge_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "pipe_network",
+      "status": "not_applicable",
+      "task_id": "task_graph__pipe_network__pipe_exact_distance_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_set",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_set"
+      ],
+      "sample_count": 100,
+      "scene_id": "pipe_network",
+      "status": "not_applicable",
+      "task_id": "task_graph__pipe_network__pipe_reachable_junction_count"
+    },
+    {
+      "bbox_count": 0,
+      "bbox_family_runtime": false,
+      "doc_annotation_type": "point_sequence",
+      "doc_runtime_mismatch": false,
+      "domain": "graph",
+      "empty_bbox_sample_count": 0,
+      "failure_count": 0,
+      "failures": [],
+      "image_missing_count": 0,
+      "invalid_count": 0,
+      "invalids": [],
+      "min_height_px_observed": null,
+      "min_side_px_observed": null,
+      "min_width_px_observed": null,
+      "out_of_bounds_count": 0,
+      "query_ids": [
+        "single"
+      ],
+      "runtime_annotation_types": [
+        "point_sequence"
+      ],
+      "sample_count": 100,
+      "scene_id": "pipe_network",
+      "status": "not_applicable",
+      "task_id": "task_graph__pipe_network__shortest_path_length"
+    }
+  ],
+  "review_root": "review/task-reviews",
+  "schema": "trace_review_bbox_min_side_audit_v1",
+  "totals": {
+    "bbox_count": 3133,
+    "bbox_task_count": 11,
+    "doc_runtime_mismatch_task_count": 0,
+    "failing_task_count": 0,
+    "invalid_task_count": 0,
+    "missing_review_artifact_task_count": 0,
+    "non_bbox_task_count": 49,
+    "pass": true,
+    "sample_count": 6000,
+    "scene_count": 10,
+    "task_count": 60
+  }
+}

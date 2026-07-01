@@ -9,30 +9,30 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.physics.mechanics.lever_balance import (
-    PhysicsMechanicsMissingWeightBalanceValueTask,
-    PhysicsMechanicsSideTorqueValueTask,
+from trace.tasks.physics.lever.missing_weight_balance_value import (
+    PhysicsLeverMissingWeightBalanceValueTask,
 )
+from trace.tasks.physics.lever.side_torque_value import PhysicsLeverSideTorqueValueTask
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "params", "expected_query_id", "expected_answer"),
+    ("task_cls", "params", "expected_internal_query_id", "expected_answer"),
     (
         (
-            PhysicsMechanicsSideTorqueValueTask,
+            PhysicsLeverSideTorqueValueTask,
             {"scene_variant": "center_fulcrum", "torque_side": "left", "target_answer": 8},
-            "side_torque",
+            "left_torque",
             8,
         ),
         (
-            PhysicsMechanicsSideTorqueValueTask,
+            PhysicsLeverSideTorqueValueTask,
             {"scene_variant": "offset_fulcrum", "torque_side": "right", "target_answer": 12},
-            "side_torque",
+            "right_torque",
             12,
         ),
         (
-            PhysicsMechanicsMissingWeightBalanceValueTask,
+            PhysicsLeverMissingWeightBalanceValueTask,
             {"scene_variant": "textured_beam", "target_answer": 5},
             "missing_weight_to_balance",
             5,
@@ -42,7 +42,7 @@ from tests.helpers import read_jsonl
 def test_physics_mechanics_lever_tasks_emit_expected_contract(
     task_cls: type,
     params: dict[str, int | str],
-    expected_query_id: str,
+    expected_internal_query_id: str,
     expected_answer: int,
 ) -> None:
     out = task_cls().generate(25001, params=params, max_attempts=40)
@@ -54,21 +54,18 @@ def test_physics_mechanics_lever_tasks_emit_expected_contract(
 
     assert int(out.answer_gt.value) == int(expected_answer)
 
-    expected_annotation_type = "keyed_bbox_set_map" if expected_query_id == "missing_weight_to_balance" else "bbox_set"
+    expected_annotation_type = "bbox_set_map" if expected_internal_query_id == "missing_weight_to_balance" else "bbox_set"
     assert out.annotation_gt.type == expected_annotation_type
 
-    assert out.query_id == expected_query_id
+    assert out.query_id == "single"
 
-    assert trace["query_spec"]["query_id"] == expected_query_id
+    assert trace["query_spec"]["query_id"] == "single"
 
-    assert trace["query_spec"]["params"]["query_id"] == expected_query_id
-    expected_internal_query = (
-        f"{params['torque_side']}_torque" if expected_query_id == "side_torque" else expected_query_id
-    )
-    assert trace["query_spec"]["params"]["internal_query_id"] == expected_internal_query
+    assert trace["query_spec"]["params"]["query_id"] == "single"
+    assert trace["query_spec"]["params"]["internal_query_id"] == expected_internal_query_id
 
-    assert execution["query_id"] == expected_query_id
-    assert execution["internal_query_id"] == expected_internal_query
+    assert execution["query_id"] == "single"
+    assert execution["internal_query_id"] == expected_internal_query_id
 
     assert str(trace["query_spec"]["params"]["accent_color_name"]) == str(trace["execution_trace"]["accent_color_name"])
 
@@ -76,13 +73,13 @@ def test_physics_mechanics_lever_tasks_emit_expected_contract(
 
     assert int(execution["target_answer"]) == int(expected_answer)
 
-    if expected_query_id == "missing_weight_to_balance":
-        assert trace["projected_annotation"]["keyed_bbox_set_map"] == out.annotation_gt.value
+    if expected_internal_query_id == "missing_weight_to_balance":
+        assert trace["projected_annotation"]["bbox_set_map"] == out.annotation_gt.value
     else:
         assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
     assert trace["render_spec"]["layout_placement"]["mode"] == "whole_lever_diagram_offset"
-    if expected_query_id == "missing_weight_to_balance":
+    if expected_internal_query_id == "missing_weight_to_balance":
 
         assert trace["render_map"]["missing_weight_marker_bbox_px"] in out.annotation_gt.value["target_weight"]
 
@@ -109,10 +106,10 @@ def test_physics_mechanics_lever_tasks_emit_expected_contract(
 
 def test_physics_mechanics_missing_weight_balance_value_is_deterministic() -> None:
     params = {
-        "scene_variant": "offset_fulcrum",
+        "scene_variant": "textured_beam",
         "target_answer": 6,
     }
-    task = PhysicsMechanicsMissingWeightBalanceValueTask()
+    task = PhysicsLeverMissingWeightBalanceValueTask()
     out_a = task.generate(25021, params=params, max_attempts=40)
     out_b = task.generate(25021, params=params, max_attempts=40)
 
@@ -130,7 +127,7 @@ def test_physics_mechanics_missing_weight_balance_value_is_deterministic() -> No
 
 
 def test_physics_mechanics_side_torque_value_accepts_explicit_accent_color() -> None:
-    out = PhysicsMechanicsSideTorqueValueTask().generate(
+    out = PhysicsLeverSideTorqueValueTask().generate(
         25029,
         params={
             "scene_variant": "center_fulcrum",
@@ -148,7 +145,7 @@ def test_physics_mechanics_side_torque_value_accepts_explicit_accent_color() -> 
 
 def test_physics_mechanics_lever_tasks_reject_unknown_scene_variant() -> None:
     with pytest.raises(ValueError):
-        PhysicsMechanicsSideTorqueValueTask().generate(
+        PhysicsLeverSideTorqueValueTask().generate(
             25031,
             params={"scene_variant": "swinging_beam", "torque_side": "left"},
             max_attempts=20,
@@ -156,13 +153,13 @@ def test_physics_mechanics_lever_tasks_reject_unknown_scene_variant() -> None:
 
 
 def test_physics_mechanics_lever_tasksseeded_sampler_decouples_answer_support() -> None:
-    side_task = PhysicsMechanicsSideTorqueValueTask()
+    side_task = PhysicsLeverSideTorqueValueTask()
     answers_by_query: dict[tuple[str, str | None], set[int]] = {
         ("side_torque", "left"): set(),
         ("side_torque", "right"): set(),
         ("missing_weight_to_balance", None): set(),
     }
-    for sampling_index in range(92):
+    for sampling_index in range(120):
         out = side_task.generate(
             25100 + sampling_index,
             params={},
@@ -171,7 +168,7 @@ def test_physics_mechanics_lever_tasksseeded_sampler_decouples_answer_support() 
         execution = out.trace_payload["execution_trace"]
         answers_by_query[("side_torque", str(execution["torque_side"]))].add(int(out.answer_gt.value))
 
-    missing_task = PhysicsMechanicsMissingWeightBalanceValueTask()
+    missing_task = PhysicsLeverMissingWeightBalanceValueTask()
     for sampling_index in range(46):
         out = missing_task.generate(
             25200 + sampling_index,
@@ -191,11 +188,11 @@ def test_physics_mechanics_lever_tasksseeded_sampler_decouples_answer_support() 
 
 
 def test_physics_mechanics_lever_prompt_bundle_supports_variants() -> None:
-    bundle = json.loads(Path("prompts/physics/mechanics/physics_mechanics_v0.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/physics/lever/physics_lever_v1.json").read_text(encoding="utf-8"))
 
-    assert len(bundle["query_templates"]["side_torque"]) == 5
+    assert len(bundle["templates"]["task"]["side_torque_value_query"]) == 5
 
-    assert len(bundle["query_templates"]["missing_weight_to_balance"]) == 5
+    assert len(bundle["templates"]["task"]["missing_weight_balance_value_query"]) == 5
 
 
 def test_physics_mechanics_lever_tasks_build_smoke(tmp_path: Path) -> None:
@@ -230,14 +227,14 @@ def test_physics_mechanics_lever_tasks_build_smoke(tmp_path: Path) -> None:
 
     assert all(record["domain"] == "physics" for record in train_records)
 
-    assert all(record["scene_id"] == "mechanics" for record in train_records)
+    assert all(record["scene_id"] == "lever" for record in train_records)
 
     assert {record["task"] for record in train_records} == {
         "task_physics__lever__side_torque_value",
         "task_physics__lever__missing_weight_balance_value",
     }
 
-    assert {record["query_id"] for record in train_records} == {"side_torque", "missing_weight_to_balance"}
+    assert {record["query_id"] for record in train_records} == {"single"}
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
 

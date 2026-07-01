@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.charts.shared.label_assets import resolve_chart_entity_labels
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from .defaults import GEN_DEFAULTS, gen_int
 from .state import OPTION_LABELS, SCENE_NAMESPACE, ScatterClusterInputs
@@ -77,12 +77,16 @@ def option_count_support(params: Mapping[str, Any]) -> tuple[int, ...]:
 
 def target_option_count(params: Mapping[str, Any], *, instance_seed: int) -> int:
     support = option_count_support(params)
-    base_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{SCENE_NAMESPACE}.centroid_option.option_count",
+    return int(
+        uniform_choice(
+            spawn_rng(
+                int(instance_seed),
+                f"{SCENE_NAMESPACE}.centroid_option.option_count",
+            ),
+            support,
+            sort_keys=True,
+        )
     )
-    return int(support[abs(int(base_index)) % len(support)])
 
 
 def option_labels_for_count(option_count: int) -> tuple[str, ...]:
@@ -98,6 +102,12 @@ def target_option_label(
     cluster_count: int,
     option_labels: Sequence[str],
 ) -> str:
-    sampling_index = params.get("_sample_cursor")
-    occurrence = abs(int(sampling_index)) // max(1, int(cluster_count)) if sampling_index is not None else abs(int(instance_seed))
-    return str(option_labels[int(occurrence) % len(option_labels)])
+    return str(
+        uniform_choice(
+            spawn_rng(
+                int(instance_seed),
+                f"{SCENE_NAMESPACE}.centroid_option.label",
+            ),
+            tuple(str(label) for label in option_labels),
+        )
+    )

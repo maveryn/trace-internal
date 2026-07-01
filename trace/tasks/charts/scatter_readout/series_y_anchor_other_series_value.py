@@ -20,7 +20,7 @@ PROMPT_QUERY_KEY = "series_y_anchor_other_series_value"
 QUESTION_FORMAT = "scatter_series_readout_query"
 PROGRAM_CODE = (
     "value(comparison_series, x_label(point in anchor_series where y_value=anchor_value)); "
-    "output=integer_value; annotation=bbox_map(target_point_readout,comparison_point_readout,x_axis_label); "
+    "output=integer_value; annotation=point(comparison_mark); "
     "scene=scatter_readout; scope=series_y_anchor_other_series_value"
 )
 QUERY_IDS = (SINGLE_QUERY_ID,)
@@ -44,6 +44,7 @@ def _build_anchor_transfer_plan(
         prompt_query_key=PROMPT_QUERY_KEY,
         question_format=QUESTION_FORMAT,
         program_code=PROGRAM_CODE,
+        annotation_kind="comparison_point",
         operation="same_x_transfer_value",
         reasoning_load=REASONING_LOAD,
         answer_fn=lambda _target, comparison: int(comparison.y_value),

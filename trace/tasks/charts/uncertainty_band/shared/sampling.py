@@ -5,11 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import sample_without_replacement, uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.charts.shared.label_assets import resolve_chart_axis_labels, resolve_chart_entity_labels
 from trace.tasks.shared.color_distance import sample_color_palette_with_distance_constraints
 from trace.tasks.shared.config_defaults import resolve_required_int_bounds
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from .defaults import GEN_DEFAULTS, RENDER_DEFAULTS, generation_default, rendering_default
 from .state import RGB, SCENE_NAMESPACE
@@ -35,13 +35,6 @@ def probability_map(values: Sequence[int | str]) -> Dict[str, float]:
     return {str(value): float(weight) for value in support}
 
 
-def selection_index(params: Mapping[str, Any], *, instance_seed: int, namespace: str) -> int:
-    sample_cursor = params.get("_sample_cursor")
-    if sample_cursor is not None:
-        return abs(int(sample_cursor))
-    return abs(int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))))
-
-
 def choose_from_values(
     params: Mapping[str, Any],
     *,
@@ -49,11 +42,14 @@ def choose_from_values(
     instance_seed: int,
     namespace: str,
 ) -> int | str:
+    """Sample one value uniformly from an explicit support."""
+
+    del params
     candidates = tuple(values)
     if not candidates:
         raise ValueError(f"empty support for {namespace}")
-    index = selection_index(params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return candidates[int(index) % len(candidates)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    return uniform_choice(rng, candidates)
 
 
 def resolve_x_count(params: Mapping[str, Any], *, instance_seed: int) -> tuple[int, Dict[str, float]]:
@@ -88,8 +84,12 @@ def resolve_colors(params: Mapping[str, Any], *, instance_seed: int) -> tuple[RG
             if isinstance(raw, Sequence) and not isinstance(raw, (str, bytes)) and len(raw) >= 3:
                 colors.append(tuple(max(0, min(255, int(channel))) for channel in raw[:3]))  # type: ignore[arg-type]
         if len(colors) >= 2:
-            offset = selection_index(params, instance_seed=int(instance_seed), namespace=f"{SCENE_NAMESPACE}.palette")
-            return colors[int(offset) % len(colors)], colors[(int(offset) + 1) % len(colors)]
+            sampled = sample_without_replacement(
+                spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.palette"),
+                tuple(colors),
+                2,
+            )
+            return tuple(sampled[0]), tuple(sampled[1])
     rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.palette")
     palette = sample_color_palette_with_distance_constraints(
         rng,
@@ -156,7 +156,10 @@ def sample_base_band_scene(params: Mapping[str, Any], *, instance_seed: int) -> 
     title_options = params.get("title_options", rendering_default("title_options", ("Uncertainty Bands",)))
     if not isinstance(title_options, Sequence) or isinstance(title_options, (str, bytes)) or not title_options:
         title_options = ("Uncertainty Bands",)
-    title_index = selection_index(params, instance_seed=int(instance_seed), namespace=f"{SCENE_NAMESPACE}.title")
+    title = uniform_choice(
+        spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.title"),
+        tuple(str(option) for option in title_options),
+    )
     return BaseBandSample(
         x_count=int(x_count),
         x_count_probabilities=dict(x_count_probabilities),
@@ -165,7 +168,7 @@ def sample_base_band_scene(params: Mapping[str, Any], *, instance_seed: int) -> 
         series_labels=(str(series_labels[0]), str(series_labels[1])),
         series_label_meta=dict(series_label_meta),
         colors=colors,
-        title=str(title_options[int(title_index) % len(title_options)]),
+        title=str(title),
     )
 
 
@@ -176,5 +179,4 @@ __all__ = [
     "interval_from_mid_width",
     "probability_map",
     "sample_base_band_scene",
-    "selection_index",
 ]

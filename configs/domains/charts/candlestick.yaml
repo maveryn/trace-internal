@@ -12,6 +12,7 @@ generation:
     counterfactual_change_max: 6
 rendering:
   shared:
+    chart_context_profile: report_paragraph
     canvas_width: 1440
     canvas_height: 820
     plot_margin_left_px: 94

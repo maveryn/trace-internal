@@ -10,9 +10,11 @@ from PIL import Image, ImageDraw
 from ....shared.bbox_projection import bbox_union_raw as _bbox_union, round_bbox as _round_bbox
 from ....shared.color_distance import coerce_rgb as _rgb
 from ....shared.font_assets import sample_font_family
-from ....shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
+from ....shared.render_variation import apply_layout_jitter_to_margins
 from ....shared.text_legibility import draw_text_traced
 from ....shared.text_rendering import fit_font_to_box, load_font
+from ...shared.visual_defaults import render_style_seed as _render_style_seed
+from ...shared.visual_defaults import resolve_chart_render_rgb
 from .defaults import (
     BBox,
     _CALENDAR_PALETTE,
@@ -64,22 +66,8 @@ class _RenderedHeatmap:
     column_label_bbox_map: Dict[str, List[float]]
 
 
-def _render_style_seed(params: Mapping[str, Any]) -> int:
-    try:
-        return int(params.get("_render_style_seed", params.get("_sample_cursor", 0)) or 0)
-    except Exception:
-        return 0
-
-
 def _rgb_param(params: Mapping[str, Any], key: str, fallback: Tuple[int, int, int]) -> Tuple[int, int, int]:
-    return resolve_render_rgb(
-        params,
-        RENDER_DEFAULTS,
-        str(key),
-        fallback,
-        instance_seed=_render_style_seed(params),
-        namespace=SCENE_NAMESPACE,
-    )
+    return resolve_chart_render_rgb(params, RENDER_DEFAULTS, str(key), fallback, namespace=SCENE_NAMESPACE)
 
 
 def _int_param(params: Mapping[str, Any], key: str, fallback: int) -> int:
@@ -290,20 +278,7 @@ def _render_heatmap(
         float(height - render_params.outer_margin_px) + offset_y,
     )
     draw.rounded_rectangle(panel_bbox, radius=6, fill=render_params.panel_fill_rgb, outline=render_params.panel_border_rgb, width=2)
-    title_bbox = (
-        panel_bbox[0] + render_params.panel_padding_px,
-        panel_bbox[1] + 12,
-        panel_bbox[2] - render_params.panel_padding_px,
-        panel_bbox[1] + render_params.title_band_height_px,
-    )
-    _draw_text_in_box(
-        draw,
-        str(scene_title),
-        title_bbox,
-        font_size=render_params.title_font_size_px,
-        fill=render_params.title_rgb,
-        font_family=render_params.font_family,
-    )
+    title_bbox = (0.0, 0.0, 0.0, 0.0)
 
     grid_left = panel_bbox[0] + render_params.panel_padding_px + render_params.row_label_width_px
     grid_top = panel_bbox[1] + render_params.title_band_height_px + render_params.col_label_height_px
@@ -327,12 +302,6 @@ def _render_heatmap(
             "entity_type": "chart_panel",
             "bbox_xyxy": _round_bbox(panel_bbox),
             "attrs": {"scene_variant": str(scene_variant)},
-        },
-        {
-            "entity_id": "chart_title",
-            "entity_type": "chart_title",
-            "bbox_xyxy": _round_bbox(title_bbox),
-            "attrs": {"title": str(scene_title)},
         },
     ]
 

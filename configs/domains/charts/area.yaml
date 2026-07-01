@@ -14,6 +14,7 @@ generation:
     dominance_margin_min: 4
 rendering:
   shared:
+    chart_context_profile: report_paragraph
     canvas_width: 1060
     canvas_height: 680
     plot_margin_left_px: 84

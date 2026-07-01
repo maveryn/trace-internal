@@ -30,7 +30,7 @@ generation:
     balanced_glyph_sampling: true
 rendering:
   shared:
-    canvas_width: 1320
+    canvas_width: 920
     canvas_height: 900
     outer_margin_px: 44
     bottom_margin_px: 48
@@ -157,7 +157,7 @@ rendering:
     - - 70
       - 64
       - 58
-    chart_context_profile: dense_clean_minimal
+    chart_context_profile: report_paragraph
 prompt:
   shared:
     bundle_id: charts_pictogram_v1

@@ -24,22 +24,22 @@ def test_graph_relation_reachable_count_contract_matches_trace() -> None:
     edge_entities = [entity for entity in scene_entities if entity['entity_kind'] == 'graph_edge']
     assert out.answer_gt.type == 'integer'
     assert out.annotation_gt.type == 'point_set'
-    assert trace['scene_ir']['scene_kind'] == 'graph_reachable_relation'
-    assert execution['question_format'] == 'count_reachable_nodes_including_query'
+    assert trace['scene_ir']['scene_kind'] == 'graph_reachable_count'
+    assert execution['question_format'] == 'reachable_count'
     assert execution['graph_directionality'] == 'directed'
-    assert 5 <= int(execution['node_count']) <= 9
-    assert 1 <= int(execution['target_reachable_count']) <= 7
+    assert 5 <= int(execution['node_count']) <= 15
+    assert 1 <= int(execution['target_reachable_count']) <= 6
     assert len(node_entities) == 8
     assert len(edge_entities) == int(execution['edge_count'])
     assert all((bool(edge['directed']) for edge in edge_entities))
-    assert str(execution['query_label']) in set(execution['matching_labels'])
+    assert str(execution['query_label']) not in set(execution['matching_labels'])
     assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
     assert trace['query_spec']['prompt_variant']['query_key'] == 'reachable_count'
     assert 'reachable' in str(out.prompt).lower()
     assert 'arrow' in str(out.prompt).lower() or 'directed' in str(out.prompt).lower()
     successors = {str(key): [str(value) for value in values] for key, values in execution['successors_by_label'].items()}
     dist_start, _ = bfs_dist_count_by_adjacency(successors, start=str(execution['query_label']))
-    reachable_labels = sorted((str(label) for label in dist_start.keys()), key=lambda value: int(value) if str(value).isdigit() else str(value))
+    reachable_labels = sorted((str(label) for label in dist_start.keys() if str(label) != str(execution['query_label'])), key=lambda value: int(value) if str(value).isdigit() else str(value))
     annotation_points = list(out.annotation_gt.value)
     assert int(out.answer_gt.value) == len(reachable_labels) == len(annotation_points)
     assert reachable_labels == [str(value) for value in execution['matching_labels']]
@@ -58,7 +58,7 @@ def test_graph_relation_reachable_count_prompt_examples_follow_label_variant() -
     numbers = task.generate(19703, params={'label_variant': 'numbers', 'node_count': 8, 'target_reachable_count': 4}, max_attempts=80)
     letters_example = _extract_prompt_json_example(letters.prompt_variants['answer_and_annotation'])
     numbers_example = _extract_prompt_json_example(numbers.prompt_variants['answer_and_annotation'])
-    expected_example = {'annotation': [[180, 220], [310, 180], [430, 260]], 'answer': 3}
+    expected_example = {'annotation': [[180, 220], [310, 180]], 'answer': 2}
     assert letters_example == expected_example
     assert numbers_example == expected_example
 
@@ -91,13 +91,13 @@ def test_graph_relation_reachable_count_balanced_sampling_defaults() -> None:
         node_shape_variants[str(execution['node_shape_variant'])] += 1
         layout_variants[str(execution['layout_variant_requested'])] += 1
         topology_profiles[str(execution['topology_profile'])] += 1
-        assert 5 <= int(execution['node_count']) <= 10
-        assert 1 <= int(execution['target_reachable_count']) <= 8
-        assert int(execution['target_reachable_count']) <= int(execution['node_count'])
-        assert str(execution['query_label']) in set(execution['matching_labels'])
+        assert 5 <= int(execution['node_count']) <= 15
+        assert 1 <= int(execution['target_reachable_count']) <= 6
+        assert int(execution['target_reachable_count']) < int(execution['node_count'])
+        assert str(execution['query_label']) not in set(execution['matching_labels'])
     assert set(label_variants.keys()) == {'letters', 'numbers', 'named'}
     assert set(node_shape_variants.keys()) == {'circle', 'rounded_square', 'hexagon'}
     assert set(layout_variants.keys()) == set(SUPPORTED_LAYOUT_VARIANTS)
     assert set(topology_profiles.keys()) == {'balanced', 'hub_heavy', 'low_degree'}
     assert min(target_counts.keys()) >= 1
-    assert max(target_counts.keys()) <= 8
+    assert max(target_counts.keys()) <= 6

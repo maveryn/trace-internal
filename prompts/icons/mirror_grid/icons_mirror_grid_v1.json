@@ -9,10 +9,24 @@
         "This image shows {object_description}.",
         "The scene shows {object_description}.",
         "The picture shows {object_description}."
+      ],
+      "missing_mirror_grid": [
+        "The image shows {object_description}.",
+        "The figure shows {object_description}.",
+        "This image shows {object_description}.",
+        "The scene shows {object_description}.",
+        "The picture shows {object_description}."
       ]
     },
     "task": {
       "mirror_symmetry_match_label": [
+        "{question_text}",
+        "{question_text}",
+        "{question_text}",
+        "{question_text}",
+        "{question_text}"
+      ],
+      "missing_mirror_cell_label": [
         "{question_text}",
         "{question_text}",
         "{question_text}",
@@ -51,7 +65,13 @@
     "scene:reference_mirror_grid": [
       "object_description"
     ],
+    "scene:missing_mirror_grid": [
+      "object_description"
+    ],
     "task:mirror_symmetry_match_label": [
+      "question_text"
+    ],
+    "task:missing_mirror_cell_label": [
       "question_text"
     ],
     "output:answer_only": [

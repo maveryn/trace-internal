@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from .....core.seed import spawn_rng
+from .....core.sampling import uniform_choice_with_probabilities
 from ....shared.color_format import format_named_color_with_hex
 from ....shared.config_defaults import group_default
-from ....shared.deterministic_sampling import resolve_selection_index
 from ....shared.named_colors import available_named_colors, named_color
 from ...shared.object_library import STYLE_IDS
 from ...shared.task_support import (
@@ -48,8 +49,9 @@ def support_choice(
         if selected not in set(values):
             raise ValueError(f"{explicit_key} is outside configured support")
         return selected, uniform_string_probability_map(values, selected=selected)
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return str(values[int(index) % len(values)]), uniform_string_probability_map(values)
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    selected, probabilities = uniform_choice_with_probabilities(rng, values, sort_keys=False)
+    return str(selected), dict(probabilities)
 
 
 def section_support(params: Mapping[str, Any], defaults: Mapping[str, Any]) -> Tuple[str, ...]:

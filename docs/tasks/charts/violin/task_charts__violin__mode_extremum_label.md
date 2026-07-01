@@ -10,11 +10,14 @@
 
 ## Program Contract
 
-- Program schema: `arg_extreme(label, mode_location(distribution(label)), direction={highest,lowest}); output=string_label; annotation=bbox(selected_violin); scene=violin; scope=mode_extremum_label`.
-- Program: select the visible violin plot whose main density peak occurs at the highest or lowest value.
-- Answer: `string`.
-- Annotation schema: `bbox`, one box around the selected violin plot.
-- The answer and annotation are bound from the same sampled violin execution trace.
+Program: `arg_extreme(label, mode_location(distribution(label)), direction={highest,lowest}); output=string_label; annotation=bbox(selected_violin); scene=violin; scope=mode_extremum_label`
+
+Candidate set: the visible violin glyphs, summary markers, and group labels inside the `mode_extremum_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `arg_extreme` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `unspecified` value bound by `string_label`.
+Annotation witnesses: `unspecified` witnesses bound by `bbox(selected_violin)`. The Annotation Contract below defines the prompt-facing witnesses.
+Query ids: `highest_mode`, `lowest_mode`.
 
 ## Review Notes
 

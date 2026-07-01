@@ -4,23 +4,22 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
+from trace.core.sampling import uniform_choice_with_probabilities
 from trace.core.seed import spawn_rng
 from trace.tasks.charts.boxplot.shared.defaults import (
     BOXPLOT_DEFAULTS,
     GENERATION_DEFAULTS,
     SCENE_NAMESPACE,
 )
-from trace.tasks.charts.shared.chart_scene import BoxPlotSpec
-from trace.tasks.charts.shared.distribution_chart_config import (
+from trace.tasks.charts.shared.chart_scene_types import BoxPlotSpec
+from trace.tasks.charts.shared.distribution.config import (
     _build_boxplot_spec_for_median,
     _resolve_boxplot_category_count_bounds,
     _resolve_boxplot_value_bounds,
 )
-from trace.tasks.charts.shared.labeled_chart_common import (
-    balanced_choice_from_values,
-    choose_mark_count,
-    sample_chart_labels,
-)
+from trace.tasks.charts.shared.label_assets import sample_chart_labels
+from trace.tasks.charts.shared.labeled_chart_values import balanced_choice_from_values
+from trace.tasks.charts.shared.labeled_chart_sampling import choose_mark_count
 
 
 def select_semantic_branch(
@@ -31,7 +30,7 @@ def select_semantic_branch(
     instance_seed: int,
     namespace: str,
 ) -> tuple[str, dict[str, float], dict[str, Any]]:
-    """Select a non-public semantic branch and preserve review cursor cycling."""
+    """Select a non-public semantic branch from explicit support with seeded RNG."""
 
     values = tuple(str(value) for value in support if str(value))
     if not values:
@@ -45,16 +44,9 @@ def select_semantic_branch(
         stripped.pop(str(branch_key), None)
         return selected, _probabilities(values, selected), stripped
 
-    sample_cursor = params.get("_sample_cursor")
-    if sample_cursor is not None:
-        cursor = abs(int(sample_cursor))
-        selected = values[cursor % len(values)]
-        branch_params = dict(params)
-        branch_params["_sample_cursor"] = cursor // len(values)
-        return str(selected), _probabilities(values), branch_params
-
     rng = spawn_rng(int(instance_seed), str(namespace))
-    return str(rng.choice(values)), _probabilities(values), dict(params)
+    selected, probabilities = uniform_choice_with_probabilities(rng, values)
+    return str(selected), dict(probabilities), dict(params)
 
 
 def _probabilities(values: Sequence[str], selected: str | None = None) -> dict[str, float]:

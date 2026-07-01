@@ -19,7 +19,15 @@
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
 ## Program Contract
-`arg_extremum(series, value(series, x_position), direction={highest,lowest}); output=string_label; annotation=point; scene=style_legend; scope=x_position_extremum_series_label`
+
+Program: `arg_extremum(series, value(series, x_position), direction={highest,lowest}); output=string_label; annotation=point; scene=style_legend; scope=x_position_extremum_series_label`
+
+Candidate set: the visible plotted series/marks and legend entries inside the `x_position_extremum_series_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `arg_extremum` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `point` witnesses bound by `point`. Annotation marks the selected plotted marker at the queried x-axis label. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `x_position_highest_series_label`, `x_position_lowest_series_label`.
 
 ## Query Details
 

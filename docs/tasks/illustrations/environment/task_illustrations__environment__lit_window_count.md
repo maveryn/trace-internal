@@ -10,7 +10,15 @@
 Counts lit windows in rendered environment buildings.
 
 ## Program Contract
-`count(filter(building_windows, is_lit(window))); scene=environment; scope=lit_window_count`
+
+Program: `count(filter(building_windows, is_lit(window))); scene=environment; scope=lit_window_count`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `lit_window_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `building_windows`, `is_lit`, `window`, `environment`, `lit_window_count`.
+Operation: evaluate `count` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; an integer in the default range `1..6`, derived from the same execution trace as the annotation.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

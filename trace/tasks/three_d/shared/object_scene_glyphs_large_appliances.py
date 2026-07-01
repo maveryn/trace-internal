@@ -314,7 +314,10 @@ def _draw_vending_machine_object(
                 item_center[0] + item_w,
                 item_center[1] + item_h,
             ]
-            draw.rounded_rectangle(packet, radius=max(1, int(item_w * 0.25)), fill=snack_colors[(row + col) % len(snack_colors)], outline=outline, width=1)
+            color_index = int(row + col)
+            while color_index >= len(snack_colors):
+                color_index -= len(snack_colors)
+            draw.rounded_rectangle(packet, radius=max(1, int(item_w * 0.25)), fill=snack_colors[color_index], outline=outline, width=1)
 
     panel_left = x + width * 0.16
     panel_right = x + width * 0.34

@@ -5,22 +5,6 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Tuple
 
 from ...core.sampling import normalize_positive_weights, weighted_choice
-from .deterministic_sampling import resolve_selection_index
-
-
-def _has_non_null_param(params: Mapping[str, Any], key: str) -> bool:
-    """Return true when one explicit non-null override is present."""
-
-    return key in params and params.get(key) is not None
-
-
-def _is_uniform_probability_map(probabilities: Mapping[str, float], *, tol: float = 1e-9) -> bool:
-    """Return true when all positive probabilities are approximately equal."""
-
-    positives = [float(value) for value in probabilities.values() if float(value) > 0.0]
-    if not positives:
-        return False
-    return max(positives) - min(positives) <= float(tol)
 
 
 def resolve_counting_object_count(
@@ -61,15 +45,6 @@ def resolve_counting_object_count(
     probabilities = normalize_positive_weights(weights, default_keys=[str(value) for value in supported_counts])
     selected = int(weighted_choice(rng, probabilities, sort_keys=True))
 
-    enabled = bool(params.get("balanced_sampling", gen_defaults.get("balanced_sampling", True)))
-    overridden = any(_has_non_null_param(params, key) for key in ("object_count", "object_count_weights"))
-    if bool(enabled) and (not overridden) and _is_uniform_probability_map(probabilities):
-        selection_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace="counting_object_count",
-        )
-        selected = int(supported_counts[int(selection_index) % len(supported_counts)])
     return int(selected), {
         str(key): float(value)
         for key, value in sorted(probabilities.items(), key=lambda item: int(item[0]))
@@ -120,15 +95,6 @@ def resolve_counting_target_count(
     probabilities = normalize_positive_weights(weights, default_keys=[str(value) for value in supported_counts])
     selected = int(weighted_choice(rng, probabilities, sort_keys=True))
 
-    enabled = bool(params.get("balanced_sampling", gen_defaults.get("balanced_sampling", True)))
-    overridden = any(_has_non_null_param(params, key) for key in ("target_count", "target_count_weights"))
-    if bool(enabled) and (not overridden) and _is_uniform_probability_map(probabilities):
-        selection_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"counting_target_count_{int(object_count)}",
-        )
-        selected = int(supported_counts[int(selection_index) % len(supported_counts)])
     return int(selected), {
         str(key): float(value)
         for key, value in sorted(probabilities.items(), key=lambda item: int(item[0]))
@@ -217,7 +183,6 @@ def resolve_counting_cardinality_pair(
             dict(target_probabilities),
         )
 
-    enabled = bool(params.get("balanced_sampling", gen_defaults.get("balanced_sampling", True)))
     target_weights_raw = params.get(
         "target_count_weights",
         gen_defaults.get("target_count_weights", {str(value): 1.0 for value in supported_target_counts}),
@@ -241,14 +206,6 @@ def resolve_counting_cardinality_pair(
             raise ValueError("target_count is outside configured supported range")
     else:
         target_count = int(weighted_choice(rng, target_probabilities, sort_keys=True))
-        target_overridden = any(_has_non_null_param(params, key) for key in ("target_count", "target_count_weights"))
-        if bool(enabled) and (not target_overridden) and _is_uniform_probability_map(target_probabilities):
-            selection_index = resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace="counting_global_target_count",
-            )
-            target_count = int(supported_target_counts[int(selection_index) % len(supported_target_counts)])
 
     feasible_object_counts = [
         int(value)
@@ -274,14 +231,6 @@ def resolve_counting_cardinality_pair(
         default_keys=[str(value) for value in feasible_object_counts],
     )
     object_count = int(weighted_choice(rng, object_probabilities, sort_keys=True))
-    object_overridden = any(_has_non_null_param(params, key) for key in ("object_count", "object_count_weights"))
-    if bool(enabled) and (not object_overridden) and _is_uniform_probability_map(object_probabilities):
-        selection_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"counting_object_count_for_target_{int(target_count)}",
-        )
-        object_count = int(feasible_object_counts[int(selection_index) % len(feasible_object_counts)])
 
     return (
         int(object_count),
@@ -417,7 +366,6 @@ def resolve_counting_target_first_cardinality_triplet(
             distractor_probabilities,
         )
 
-    enabled = bool(params.get("balanced_sampling", gen_defaults.get("balanced_sampling", True)))
     target_weights_raw = params.get(
         "target_count_weights",
         gen_defaults.get("target_count_weights", {str(value): 1.0 for value in supported_target_counts}),
@@ -441,14 +389,6 @@ def resolve_counting_target_first_cardinality_triplet(
             raise ValueError("target_count is outside configured supported range")
     else:
         target_count = int(weighted_choice(rng, target_probabilities, sort_keys=True))
-        target_overridden = any(_has_non_null_param(params, key) for key in ("target_count", "target_count_weights"))
-        if bool(enabled) and (not target_overridden) and _is_uniform_probability_map(target_probabilities):
-            selection_index = resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace="counting_target_first_target_count",
-            )
-            target_count = int(supported_target_counts[int(selection_index) % len(supported_target_counts)])
 
     feasible_object_counts = [int(value) for value in supported_object_counts if int(value) >= int(target_count)]
     if not feasible_object_counts:
@@ -496,14 +436,6 @@ def resolve_counting_target_first_cardinality_triplet(
             default_keys=[str(value) for value in feasible_object_counts],
         )
         object_count = int(weighted_choice(rng, object_probabilities, sort_keys=True))
-        object_overridden = any(_has_non_null_param(params, key) for key in ("object_count", "object_count_weights"))
-        if bool(enabled) and (not object_overridden) and _is_uniform_probability_map(object_probabilities):
-            selection_index = resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=f"counting_target_first_object_count_for_target_{int(target_count)}",
-            )
-            object_count = int(feasible_object_counts[int(selection_index) % len(feasible_object_counts)])
 
     distractor_count = int(object_count) - int(target_count)
     distractor_probabilities = _distractor_probability_map_for_target(
@@ -662,7 +594,6 @@ def resolve_counting_target_and_distractor_triplet(
             _one_hot_probability_map(int(distractor_count), supported_distractors),
         )
 
-    enabled = bool(params.get("balanced_sampling", gen_defaults.get("balanced_sampling", True)))
     target_weights_raw = params.get(
         "target_count_weights",
         gen_defaults.get("target_count_weights", {str(value): 1.0 for value in supported_targets}),
@@ -684,14 +615,6 @@ def resolve_counting_target_and_distractor_triplet(
             raise ValueError("target_count is outside configured supported range")
     else:
         target_count = int(weighted_choice(rng, target_probabilities, sort_keys=True))
-        target_overridden = any(_has_non_null_param(params, key) for key in ("target_count", "target_count_weights"))
-        if bool(enabled) and (not target_overridden) and _is_uniform_probability_map(target_probabilities):
-            selection_index = resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace="counting_independent_target_count",
-            )
-            target_count = int(supported_targets[int(selection_index) % len(supported_targets)])
 
     feasible_distractors = _feasible_distractors_for_target(int(target_count))
     if not feasible_distractors:
@@ -718,16 +641,6 @@ def resolve_counting_target_and_distractor_triplet(
             raise ValueError("distractor_count is outside configured supported range")
     else:
         distractor_count = int(weighted_choice(rng, distractor_probabilities, sort_keys=True))
-        distractor_overridden = any(
-            _has_non_null_param(params, key) for key in ("distractor_count", "distractor_count_weights")
-        )
-        if bool(enabled) and (not distractor_overridden) and _is_uniform_probability_map(distractor_probabilities):
-            selection_index = resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=f"counting_independent_distractor_count_for_target_{int(target_count)}",
-            )
-            distractor_count = int(feasible_distractors[int(selection_index) % len(feasible_distractors)])
 
     object_count = int(target_count) + int(distractor_count)
     object_probabilities = {

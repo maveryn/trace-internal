@@ -5,8 +5,9 @@
 2. Scene id: `tangent_packing`
 3. Task id: `task_geometry__tangent_packing__two_circles_in_rectangle_gap_area`
 4. Supported `query_id`: `single`
-5. Answer schema: `number` rounded to one decimal place
-6. Annotation schema: `bbox_map`
+5. Answer schema: `number`
+6. Answer precision: `one_decimal`
+7. Annotation schema: `bbox`
 
 ## Program Contract
 - `curvilinear_gap_area(container=rectangle, packed_shape=two_equal_circles, given=rectangle_width, target=shaded_area); scene=tangent_packing; scope=two_circles_in_rectangle_gap_area`
@@ -16,13 +17,9 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses a role-bound pixel bbox map with exactly these keys:
+Prompt-facing annotation is one scalar pixel bbox around the marked target geometric region or shape, excluding numeric labels and measurement text.
 
-- `target_cue`
-- `packing_region`
-- `support_measurement`
-
-Numeric labels and formula metadata remain private verifier metadata unless they are visible witnesses.
+The answer placeholder label is not a separate annotation witness. Formula metadata remains private verifier metadata.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

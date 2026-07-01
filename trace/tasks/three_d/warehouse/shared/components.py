@@ -71,7 +71,11 @@ def _draw_shelf_rack_object(
     for load_index, raw_load in enumerate(spec.get("shelf_load_slots", ())):
         if not isinstance(raw_load, Mapping):
             continue
-        color_index = int(raw_load.get("color_index", load_index)) % len(SHELF_LOAD_COLORS)
+        color_index = int(raw_load.get("color_index", load_index))
+        while color_index < 0:
+            color_index += len(SHELF_LOAD_COLORS)
+        while color_index >= len(SHELF_LOAD_COLORS):
+            color_index -= len(SHELF_LOAD_COLORS)
         load_fill = SHELF_LOAD_COLORS[color_index]
         load_part = _sub_box_spec(
             spec,

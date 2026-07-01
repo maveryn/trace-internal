@@ -13,7 +13,14 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.bowling.first_pin_hit_label import (
     GamesBowlingFirstPinHitLabelTask,
 )
-from trace.tasks.games.bowling.shared.rules import first_intersected_pin_id
+from trace.tasks.games.bowling.path_hit_count import (
+    GamesBowlingPathHitCountTask,
+)
+from trace.tasks.games.bowling.shared.rules import (
+    PATH_NON_HIT_CLEARANCE_PX,
+    first_intersected_pin_id,
+    path_intersected_pin_ids,
+)
 from trace.tasks.games.bowling.shared.state import BowlingPin
 from trace.tasks.games.bowling.spare_path_label import GamesBowlingSparePathLabelTask
 from tests.helpers import read_jsonl
@@ -22,6 +29,7 @@ from tests.helpers import read_jsonl
 def test_games_bowling_scene_package_source_layout() -> None:
     expected_sources = {
         GamesBowlingFirstPinHitLabelTask: Path("trace/tasks/games/bowling/first_pin_hit_label.py"),
+        GamesBowlingPathHitCountTask: Path("trace/tasks/games/bowling/path_hit_count.py"),
         GamesBowlingSparePathLabelTask: Path("trace/tasks/games/bowling/spare_path_label.py"),
     }
 
@@ -40,6 +48,11 @@ def test_games_bowling_scene_package_source_layout() -> None:
             "first_pin_hit_label",
         ),
         (
+            GamesBowlingPathHitCountTask,
+            {"target_answer": 4, "style_variant": "retro"},
+            "path_hit_count",
+        ),
+        (
             GamesBowlingSparePathLabelTask,
             {"path_option_count": 6, "target_path_index": 4, "style_variant": "paper"},
             "spare_path_label",
@@ -55,11 +68,18 @@ def test_games_bowling_public_tasks_emit_expected_contract(
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
-    assert out.answer_gt.type == "string"
+    if expected_internal_query == "path_hit_count":
+        assert out.answer_gt.type == "integer"
+    else:
+        assert out.answer_gt.type == "string"
     if expected_internal_query == "spare_path_label":
         assert out.annotation_gt.type == "segment"
         assert len(out.annotation_gt.value) == 2
         assert trace["projected_annotation"]["segment"] == out.annotation_gt.value
+    elif expected_internal_query == "path_hit_count":
+        assert out.annotation_gt.type == "bbox_set"
+        assert len(out.annotation_gt.value) == int(out.answer_gt.value)
+        assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     else:
         assert out.annotation_gt.type == "point"
         assert len(out.annotation_gt.value) == 2
@@ -71,7 +91,10 @@ def test_games_bowling_public_tasks_emit_expected_contract(
     assert trace["query_spec"]["params"]["query_id"] == "single"
     assert trace["query_spec"]["params"]["internal_query_id"] == expected_internal_query
     assert execution["query_id"] == "single"
-    assert len(execution["annotation_entity_ids"]) == 1
+    if expected_internal_query == "path_hit_count":
+        assert len(execution["annotation_entity_ids"]) == int(out.answer_gt.value)
+    else:
+        assert len(execution["annotation_entity_ids"]) == 1
     assert trace["render_spec"]["text_style"]["font_family"]
     assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
     assert float(trace["render_map"]["path_color_safety"]["min_path_anchor_lab_distance"]) >= 40.0
@@ -84,6 +107,10 @@ def test_games_bowling_public_tasks_emit_expected_contract(
         for x, y in out.annotation_gt.value:
             assert 0 <= float(x) <= float(trace["render_spec"]["canvas_width"])
             assert 0 <= float(y) <= float(trace["render_spec"]["canvas_height"])
+    elif out.annotation_gt.type == "bbox_set":
+        for x0, y0, x1, y1 in out.annotation_gt.value:
+            assert 0 <= float(x0) <= float(x1) <= float(trace["render_spec"]["canvas_width"])
+            assert 0 <= float(y0) <= float(y1) <= float(trace["render_spec"]["canvas_height"])
     else:
         raise AssertionError(f"unexpected annotation type: {out.annotation_gt.type}")
 
@@ -128,6 +155,49 @@ def test_games_bowling_first_pin_hit_label_matches_target_pin() -> None:
     assert full_path["visible_end"] != full_path["end"]
 
 
+def test_games_bowling_path_hit_count_matches_recomputed_hits() -> None:
+    out = GamesBowlingPathHitCountTask().generate(
+        95015,
+        params={"target_answer": 5},
+        max_attempts=512,
+    )
+    execution = out.trace_payload["execution_trace"]
+    target_id = str(execution["target_pin_id"])
+    target_pin = next(pin for pin in execution["pins"] if str(pin["pin_id"]) == target_id)
+    pins = tuple(
+        BowlingPin(
+            pin_id=str(pin["pin_id"]),
+            label=str(pin["label"]),
+            rack_index=int(pin["rack_index"]),
+            row=int(pin["row"]),
+            col=int(pin["col"]),
+            color_index=0,
+            standing=bool(pin["standing"]),
+            x_norm=float(pin["x_norm"]),
+            y_norm=float(pin["y_norm"]),
+        )
+        for pin in execution["pins"]
+    )
+    hit_ids = path_intersected_pin_ids(
+        pins=pins,
+        ball_x_norm=float(execution["ball_x_norm"]),
+        aim_x_norm=float(target_pin["x_norm"]),
+        aim_y_norm=float(target_pin["y_norm"]),
+    )
+
+    assert out.answer_gt.type == "integer"
+    assert out.annotation_gt.type == "bbox_set"
+    assert int(out.answer_gt.value) == len(hit_ids) == 5
+    assert tuple(execution["path_hit_pin_ids"]) == tuple(hit_ids)
+    assert tuple(execution["annotation_entity_ids"]) == tuple(hit_ids)
+    assert len(out.annotation_gt.value) == int(out.answer_gt.value)
+    assert str(execution["construction_mode"]) == "exact_path_hit_count_with_clearance"
+    assert float(execution["path_clearance_px"]) >= float(PATH_NON_HIT_CLEARANCE_PX)
+    shown_path = out.trace_payload["render_map"]["motion_paths_px"]["shown_path"]
+    assert shown_path["visible_end"] != shown_path["end"]
+    assert shown_path["visible_fraction"] == 0.62
+
+
 def test_games_bowling_spare_path_label_matches_target_path() -> None:
     out = GamesBowlingSparePathLabelTask().generate(
         95020,
@@ -165,6 +235,7 @@ def test_games_bowling_build_smoke(tmp_path: Path) -> None:
         image_format="png",
         tasks=[
             BuildTaskConfig(task_id="task_games__bowling__first_pin_hit_label", count=1, params={}),
+            BuildTaskConfig(task_id="task_games__bowling__path_hit_count", count=1, params={}),
             BuildTaskConfig(task_id="task_games__bowling__spare_path_label", count=1, params={}),
         ],
         max_attempts_per_instance=256,
@@ -173,7 +244,11 @@ def test_games_bowling_build_smoke(tmp_path: Path) -> None:
     final_path = build_dataset(config, code_hash="games-bowling-smoke")
     rows = read_jsonl(final_path / "train_instances.jsonl")
 
-    assert len(rows) == 2
+    assert len(rows) == 3
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row["scene_id"] == "bowling" for row in rows)
-    assert all(row.get("scene_id") for row in rows)
+    assert all("scene_id" not in row for row in rows)
+    assert {row["task"] for row in rows} == {
+        "task_games__bowling__first_pin_hit_label",
+        "task_games__bowling__path_hit_count",
+        "task_games__bowling__spare_path_label",
+    }

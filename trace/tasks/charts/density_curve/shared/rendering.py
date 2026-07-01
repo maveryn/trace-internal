@@ -2,10 +2,18 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any, Dict, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.tasks.charts.shared.cartesian.frame import plot_bbox_from_margins
+from trace.tasks.charts.shared.cartesian.geometry import (
+    clip_bbox_to_container as cartesian_clip_bbox_to_container,
+    project_xy,
+    round_bbox,
+    union_bboxes as cartesian_union_bboxes,
+)
 from trace.tasks.charts.density_curve.shared.state import (
     BBox,
     DensityCurve,
@@ -17,26 +25,21 @@ from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
 
 
+DASH_ON_PX = 14.0
+DASH_OFF_PX = 5.0
+DOT_SPACING_PX = 10.0
+
+
 def bbox(values: Sequence[float]) -> BBox:
     """Return a rounded bbox list."""
 
-    return [round(float(value), 3) for value in values]
+    return round_bbox(values)
 
 
 def bbox_union(boxes: Sequence[Sequence[float]]) -> BBox:
     """Return the union of non-empty bbox lists."""
 
-    valid = [tuple(float(value) for value in box[:4]) for box in boxes if len(box) >= 4]
-    if not valid:
-        return []
-    return bbox(
-        (
-            min(box[0] for box in valid),
-            min(box[1] for box in valid),
-            max(box[2] for box in valid),
-            max(box[3] for box in valid),
-        )
-    )
+    return cartesian_union_bboxes(boxes)
 
 
 def value_to_px(
@@ -50,10 +53,17 @@ def value_to_px(
 ) -> Tuple[float, float]:
     """Project one chart value into pixel coordinates."""
 
-    px0, py0, px1, py1 = [float(value) for value in plot_bbox[:4]]
-    x_unit = (float(x_value) - float(x_min)) / max(1e-9, float(x_max) - float(x_min))
-    y_unit = float(y_value) / max(1e-9, float(y_max))
-    return px0 + max(0.0, min(1.0, x_unit)) * (px1 - px0), py1 - max(0.0, min(1.0, y_unit)) * (py1 - py0)
+    return project_xy(
+        x_value=float(x_value),
+        y_value=float(y_value),
+        plot_bbox=plot_bbox,
+        x_min=float(x_min),
+        x_max=float(x_max),
+        y_min=0.0,
+        y_max=float(y_max),
+        min_span=1e-9,
+        clamp=True,
+    )
 
 
 def draw_polyline(
@@ -72,18 +82,99 @@ def draw_polyline(
         draw.line(tuple(points), fill=tuple(fill) + (255,), width=int(width), joint="curve")
         return
     if str(style) == "dot":
-        radius = max(1.4, float(width) * 0.55)
-        for index, point in enumerate(points):
-            if index % 4 != 0:
-                continue
+        radius = max(1.4, float(width) * 0.50)
+        for point in _points_at_spacing(points, spacing_px=DOT_SPACING_PX):
             x, y = float(point[0]), float(point[1])
             draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=tuple(fill) + (255,))
         return
-    chunk = 6
-    for start in range(0, len(points) - 1, chunk * 2):
-        segment = points[start : min(len(points), start + chunk)]
-        if len(segment) >= 2:
-            draw.line(tuple(segment), fill=tuple(fill) + (255,), width=int(width), joint="curve")
+    _draw_dashed_polyline(
+        draw,
+        points,
+        fill=fill,
+        width=int(width),
+        dash_on_px=DASH_ON_PX,
+        dash_off_px=DASH_OFF_PX,
+    )
+
+
+def _distance(point_a: Tuple[float, float], point_b: Tuple[float, float]) -> float:
+    """Return Euclidean distance between two pixel points."""
+
+    return float(math.hypot(float(point_b[0]) - float(point_a[0]), float(point_b[1]) - float(point_a[1])))
+
+
+def _interpolate(point_a: Tuple[float, float], point_b: Tuple[float, float], fraction: float) -> Tuple[float, float]:
+    """Interpolate between two pixel points."""
+
+    t = max(0.0, min(1.0, float(fraction)))
+    return (
+        float(point_a[0]) + (float(point_b[0]) - float(point_a[0])) * t,
+        float(point_a[1]) + (float(point_b[1]) - float(point_a[1])) * t,
+    )
+
+
+def _points_at_spacing(
+    points: Sequence[Tuple[float, float]],
+    *,
+    spacing_px: float,
+) -> Tuple[Tuple[float, float], ...]:
+    """Return points sampled at approximately even pixel spacing."""
+
+    if not points:
+        return tuple()
+    spacing = max(1.0, float(spacing_px))
+    sampled = [tuple(float(value) for value in points[0])]
+    carried = 0.0
+    previous = tuple(float(value) for value in points[0])
+    for target_raw in points[1:]:
+        target = tuple(float(value) for value in target_raw)
+        segment_length = _distance(previous, target)
+        while segment_length > 1e-6 and carried + segment_length >= spacing:
+            needed = spacing - carried
+            point = _interpolate(previous, target, needed / segment_length)
+            sampled.append(point)
+            previous = point
+            segment_length = _distance(previous, target)
+            carried = 0.0
+        carried += segment_length
+        previous = target
+    return tuple(sampled)
+
+
+def _draw_dashed_polyline(
+    draw: ImageDraw.ImageDraw,
+    points: Sequence[Tuple[float, float]],
+    *,
+    fill: RGB,
+    width: int,
+    dash_on_px: float,
+    dash_off_px: float,
+) -> None:
+    """Draw one polyline with short, readable dash gaps."""
+
+    if len(points) < 2:
+        return
+    drawing = True
+    remaining = max(1.0, float(dash_on_px))
+    on_length = max(1.0, float(dash_on_px))
+    off_length = max(1.0, float(dash_off_px))
+    previous = tuple(float(value) for value in points[0])
+    for target_raw in points[1:]:
+        target = tuple(float(value) for value in target_raw)
+        segment_start = previous
+        segment_length = _distance(segment_start, target)
+        while segment_length > 1e-6:
+            step = min(float(remaining), float(segment_length))
+            segment_end = _interpolate(segment_start, target, step / segment_length)
+            if drawing:
+                draw.line((segment_start, segment_end), fill=tuple(fill) + (255,), width=int(width), joint="curve")
+            segment_start = segment_end
+            segment_length = _distance(segment_start, target)
+            remaining -= step
+            if remaining <= 1e-6:
+                drawing = not drawing
+                remaining = on_length if drawing else off_length
+        previous = target
 
 
 def curve_points_px(
@@ -109,6 +200,51 @@ def curve_points_px(
     )
 
 
+def curve_point_at_x_px(
+    curve: DensityCurve,
+    plot_bbox: Sequence[float],
+    *,
+    x_value: float,
+    x_min: float,
+    x_max: float,
+    y_max: float,
+) -> list[float]:
+    """Project one interpolated point on a curve at a target x-value."""
+
+    if not curve.points:
+        return []
+    target_x = max(float(x_min), min(float(x_max), float(x_value)))
+    previous = curve.points[0]
+    for current in curve.points[1:]:
+        prev_x = float(previous.x_value)
+        curr_x = float(current.x_value)
+        if prev_x <= target_x <= curr_x or curr_x <= target_x <= prev_x:
+            fraction = 0.0 if abs(curr_x - prev_x) < 1e-9 else (target_x - prev_x) / (curr_x - prev_x)
+            y_value = float(previous.y_value) + max(0.0, min(1.0, fraction)) * (
+                float(current.y_value) - float(previous.y_value)
+            )
+            x_px, y_px = value_to_px(
+                plot_bbox,
+                x_value=target_x,
+                y_value=y_value,
+                x_min=x_min,
+                x_max=x_max,
+                y_max=y_max,
+            )
+            return [round(float(x_px), 3), round(float(y_px), 3)]
+        previous = current
+    nearest = min(curve.points, key=lambda point: abs(float(point.x_value) - target_x))
+    x_px, y_px = value_to_px(
+        plot_bbox,
+        x_value=float(nearest.x_value),
+        y_value=float(nearest.y_value),
+        x_min=x_min,
+        x_max=x_max,
+        y_max=y_max,
+    )
+    return [round(float(x_px), 3), round(float(y_px), 3)]
+
+
 def curve_bbox(points: Sequence[Tuple[float, float]], *, pad: float = 3.0) -> BBox:
     """Return a bbox covering projected curve points."""
 
@@ -129,9 +265,7 @@ def clip_bbox_to_container(bbox_values: Sequence[float], container: Sequence[flo
 
     if len(bbox_values) < 4 or len(container) < 4:
         return []
-    x0, y0, x1, y1 = [float(value) for value in bbox_values[:4]]
-    cx0, cy0, cx1, cy1 = [float(value) for value in container[:4]]
-    return bbox((max(cx0, x0), max(cy0, y0), min(cx1, x1), min(cy1, y1)))
+    return cartesian_clip_bbox_to_container(bbox_values, container)
 
 
 def render_density_curve_scene(
@@ -148,17 +282,16 @@ def render_density_curve_scene(
     """
 
     draw = ImageDraw.Draw(image, "RGBA")
-    title_font = load_font(max(12, int(render_params.label_font_size_px) + 4))
     label_font = load_font(int(render_params.label_font_size_px))
     tick_font = load_font(int(render_params.tick_font_size_px))
     legend_font = load_font(max(10, int(render_params.tick_font_size_px) + 1))
-    plot_bbox = bbox(
-        (
-            int(render_params.plot_margin_left_px),
-            int(render_params.plot_margin_top_px),
-            int(render_params.canvas_width) - int(render_params.plot_margin_right_px),
-            int(render_params.canvas_height) - int(render_params.plot_margin_bottom_px),
-        )
+    plot_bbox = plot_bbox_from_margins(
+        canvas_width=float(render_params.canvas_width),
+        canvas_height=float(render_params.canvas_height),
+        margin_left_px=float(render_params.plot_margin_left_px),
+        margin_right_px=float(render_params.plot_margin_right_px),
+        margin_top_px=float(render_params.plot_margin_top_px),
+        margin_bottom_px=float(render_params.plot_margin_bottom_px),
     )
     px0, py0, px1, py1 = [float(value) for value in plot_bbox]
     draw.rectangle(
@@ -260,6 +393,7 @@ def render_density_curve_scene(
     mean_marker_bboxes: Dict[str, BBox] = {}
     mode_marker_bboxes: Dict[str, BBox] = {}
     interval_mass_bboxes: Dict[str, BBox] = {}
+    interval_mass_points: Dict[str, list[float]] = {}
     density_at_x_points: Dict[str, list[float]] = {}
     entities: list[dict[str, Any]] = []
 
@@ -275,8 +409,17 @@ def render_density_curve_scene(
     }
 
     if dataset.query.visible_role == "interval_mass":
+        interval_mid = (float(dataset.query.interval_start) + float(dataset.query.interval_end)) / 2.0
         for curve in dataset.curves:
             points = curve_points_by_label[str(curve.label)]
+            interval_mass_points[str(curve.label)] = curve_point_at_x_px(
+                curve,
+                plot_bbox,
+                x_value=float(interval_mid),
+                x_min=dataset.x_min,
+                x_max=dataset.x_max,
+                y_max=y_scale_max,
+            )
             area_points = [(interval_start_px, py1)]
             area_points.extend(
                 point
@@ -386,18 +529,6 @@ def render_density_curve_scene(
             )
             density_at_x_points[str(curve.label)] = [round(float(x_px), 3), round(float(y_px), 3)]
 
-    title_record = draw_text_traced(
-        draw,
-        ((px0 + px1) / 2.0, max(24.0, py0 - 28.0)),
-        "Density curve comparison",
-        font=title_font,
-        fill=render_params.text_color_rgb,
-        stroke_fill=render_params.text_stroke_rgb,
-        stroke_width=1,
-        anchor="mm",
-        role="readout",
-        required=False,
-    )
     draw_text_traced(
         draw,
         ((px0 + px1) / 2.0, py1 + 44.0),
@@ -438,14 +569,19 @@ def render_density_curve_scene(
     legend_items: Dict[str, BBox] = {}
     for index, curve in enumerate(dataset.curves):
         row_y = legend_y0 + 12.0 + (float(index) * row_h)
-        draw.line(
-            (legend_x0 + 10.0, row_y + 7.0, legend_x0 + 42.0, row_y + 7.0),
-            fill=tuple(curve.color_rgb) + (255,),
+        draw_polyline(
+            draw,
+            (
+                (legend_x0 + 10.0, row_y + 7.0),
+                (legend_x0 + 58.0, row_y + 7.0),
+            ),
+            fill=tuple(curve.color_rgb),
             width=max(3, int(render_params.line_width_px)),
+            style=str(curve.line_style),
         )
         label_record = draw_text_traced(
             draw,
-            (legend_x0 + 50.0, row_y),
+            (legend_x0 + 66.0, row_y),
             str(curve.label),
             font=legend_font,
             fill=render_params.text_color_rgb,
@@ -471,6 +607,7 @@ def render_density_curve_scene(
                 "mean_marker_bbox_px": list(mean_marker_bboxes.get(str(curve.label), [])),
                 "mode_marker_bbox_px": list(mode_marker_bboxes.get(str(curve.label), [])),
                 "interval_mass_bbox_px": list(interval_mass_bboxes.get(str(curve.label), [])),
+                "interval_mass_point_px": list(interval_mass_points.get(str(curve.label), [])),
                 "density_at_x_point_px": list(density_at_x_points.get(str(curve.label), [])),
             }
         )
@@ -485,10 +622,16 @@ def render_density_curve_scene(
         mean_marker_bboxes_px=dict(mean_marker_bboxes),
         mode_marker_bboxes_px=dict(mode_marker_bboxes),
         interval_mass_bboxes_px=dict(interval_mass_bboxes),
+        interval_mass_points_px=dict(interval_mass_points),
         density_at_x_points_px=dict(density_at_x_points),
-        title_bbox_px=list(title_record["bbox_px"]),
+        title_bbox_px=[],
         render_meta={
             "y_scale_max": round(float(y_scale_max), 8),
+            "line_style_rendering": {
+                "dash_on_px": float(DASH_ON_PX),
+                "dash_off_px": float(DASH_OFF_PX),
+                "dot_spacing_px": float(DOT_SPACING_PX),
+            },
             "interval_visible": bool(dataset.query.visible_role == "interval_mass"),
             "mean_markers_visible": bool(dataset.query.visible_role == "mean"),
             "mode_markers_visible": bool(dataset.query.visible_role == "mode"),

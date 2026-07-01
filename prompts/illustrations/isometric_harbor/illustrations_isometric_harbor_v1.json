@@ -185,7 +185,7 @@
     "json_example_answer_only_boat_heading_status_count": "{\"answer\":2}",
     "answer_hint_shoreline_nearest_boat_label": "set \"answer\" to the selected boat letter",
     "annotation_hint_shoreline_nearest_boat_label": "set \"annotation\" to [x0, y0, x1, y1] pixel bounding box around the selected boat",
-    "json_example_shoreline_nearest_boat_label": "{\"annotation\":[[188,408,252,452]],\"answer\":\"C\"}",
+    "json_example_shoreline_nearest_boat_label": "{\"annotation\":[188,408,252,452],\"answer\":\"C\"}",
     "json_example_answer_only_shoreline_nearest_boat_label": "{\"answer\":\"C\"}"
   }
 }

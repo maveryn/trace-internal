@@ -291,6 +291,52 @@ def sample_darts_for_score_value(
     )
 
 
+def sample_darts_for_highest_scoring_label(
+    rng,
+    *,
+    target_label_index: int,
+    option_labels: Sequence[str],
+    render_params: DartboardRenderParams,
+) -> DartsSampledScene:
+    """Sample four labeled sector darts with a unique highest-scoring option."""
+
+    labels = tuple(str(label) for label in option_labels)
+    if len(labels) != 4:
+        raise ValueError("highest-scoring dart label task requires exactly four labels")
+    target_index = int(target_label_index)
+    if target_index < 0 or target_index >= len(labels):
+        raise ValueError(f"unsupported highest-scoring dart label index: {target_index}")
+
+    winner_score = int(rng.choice([score for score in STANDARD_DART_SECTORS if int(score) >= 8]))
+    lower_scores = [int(score) for score in STANDARD_DART_SECTORS if int(score) < int(winner_score)]
+    if len(lower_scores) < len(labels) - 1:
+        raise ValueError("not enough lower-scoring darts to construct unique maximum")
+    rng.shuffle(lower_scores)
+    label_scores: list[int | None] = [None] * len(labels)
+    label_scores[target_index] = int(winner_score)
+    lower_iter = iter(lower_scores)
+    for label_index in range(len(labels)):
+        if label_scores[label_index] is None:
+            label_scores[label_index] = int(next(lower_iter))
+
+    selected_slots = []
+    for score in label_scores:
+        matching_slots = slots_for_score(int(score))
+        if not matching_slots:
+            raise ValueError(f"unsupported darts score: {score}")
+        selected_slots.append(_sample_slot(rng, matching_slots))
+
+    return _sample_darts_from_slots(
+        rng,
+        render_params=render_params,
+        selected_slots=selected_slots,
+        annotation_flags=[int(index) == int(target_index) for index in range(len(labels))],
+        marked_flags=[False for _ in labels],
+        labels=labels,
+        target_score=int(winner_score),
+    )
+
+
 def _sample_darts_from_slots(
     rng,
     *,
@@ -298,6 +344,7 @@ def _sample_darts_from_slots(
     selected_slots: Sequence[DartsScoreSlot],
     annotation_flags: Sequence[bool],
     marked_flags: Sequence[bool],
+    labels: Sequence[str | None] | None = None,
     target_score: int | None = None,
 ) -> DartsSampledScene:
     """Project sampled score slots to visible dart markers."""
@@ -305,6 +352,7 @@ def _sample_darts_from_slots(
     darts: List[DartInstance] = []
     annotation_ids: List[str] = []
     points: List[Tuple[float, float]] = []
+    dart_labels = tuple(labels or [None for _ in selected_slots])
     for index, slot in enumerate(selected_slots):
         dart_id = f"dart_{index + 1:02d}"
         x_px, y_px = _sample_position_without_overlap(rng, slot=slot, params=render_params, existing_points=points)
@@ -315,6 +363,7 @@ def _sample_darts_from_slots(
         darts.append(
             DartInstance(
                 dart_id=str(dart_id),
+                label=None if dart_labels[index] is None else str(dart_labels[index]),
                 area_kind=str(slot.area_kind),
                 sector_value=None if slot.sector_value is None else int(slot.sector_value),
                 score=int(slot.score),
@@ -399,5 +448,6 @@ __all__ = [
     "resolve_darts_scene_axes",
     "resolve_darts_score_axis",
     "sample_darts_for_count",
+    "sample_darts_for_highest_scoring_label",
     "sample_darts_for_score_value",
 ]

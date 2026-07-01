@@ -9,13 +9,15 @@
 6. Annotation schema: `bbox_set`
 
 ## Program Contract
-`count(filter(pieces, participates_in_mill(piece)=true)); scene=nine_mens_morris; scope=pieces_in_mill_count`
 
-The rendered board shows light and dark pieces on Nine Men's Morris
-intersections. A mill is three same-color pieces on one straight board line.
-The program counts each visible piece that belongs to at least one mill,
-deduplicating pieces that are in multiple mills, and annotates the bbox of
-every counted piece.
+Program: `count(filter(pieces, participates_in_mill(piece)=true)); scene=nine_mens_morris; scope=pieces_in_mill_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `pieces_in_mill_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `pieces`, `participates_in_mill`, `piece`, `true`, `nine_mens_morris`, `pieces_in_mill_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. Query ids are internal replay/sampling keys and do not define public task units.

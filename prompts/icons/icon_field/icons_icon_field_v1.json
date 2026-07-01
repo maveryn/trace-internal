@@ -35,6 +35,20 @@
         "Count the Scene icons whose type is the unique most frequent type.",
         "What is the number of Scene icons in the unique most frequent type?",
         "How many Scene icons share the type that appears most often?"
+      ],
+      "most_frequent_type_label": [
+        "Which marked icon type appears most often in the image?",
+        "Which marked icon type is shown the most times?",
+        "Choose the marked icon type that appears most frequently.",
+        "Which marked type has the largest number of icons?",
+        "Which marked icon type occurs most often?"
+      ],
+      "least_frequent_type_label": [
+        "Which marked icon type appears least often in the image?",
+        "Which marked icon type is shown the fewest times?",
+        "Choose the marked icon type that appears least frequently.",
+        "Which marked type has the smallest number of icons?",
+        "Which marked icon type occurs least often?"
       ]
     },
     "output": {
@@ -68,6 +82,18 @@
     },
     "query:most_frequent_type_count": {
       "annotation_hint": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every counted icon of the unique most frequent type"
+    },
+    "query:most_frequent_type_label": {
+      "answer_hint": "set \"answer\" to the option letter on the marked icon type that appears most often",
+      "annotation_hint": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every icon of the selected marked type, including the marked representative",
+      "json_example": "{\"annotation\":[[116,128,176,188],[639,307,699,367]],\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
+    },
+    "query:least_frequent_type_label": {
+      "answer_hint": "set \"answer\" to the option letter on the marked icon type that appears least often",
+      "annotation_hint": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every icon of the selected marked type, including the marked representative",
+      "json_example": "{\"annotation\":[[116,128,176,188],[639,307,699,367]],\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
     }
   },
   "dynamic_slots": {},
@@ -80,6 +106,18 @@
     ],
     "query:most_frequent_type_count": [
       "annotation_hint"
+    ],
+    "query:most_frequent_type_label": [
+      "annotation_hint",
+      "answer_hint",
+      "json_example",
+      "json_example_answer_only"
+    ],
+    "query:least_frequent_type_label": [
+      "annotation_hint",
+      "answer_hint",
+      "json_example",
+      "json_example_answer_only"
     ],
     "output:answer_only": [
       "answer_hint",

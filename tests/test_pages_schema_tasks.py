@@ -3,25 +3,42 @@
 from __future__ import annotations
 
 from collections import Counter
+from collections import deque
 
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.seed import hash64
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.pages.schema.database_diagram import (
-    FIELD_ROLE_COUNT_TASK_ID,
-    RELATIONSHIP_CARDINALITY_TASK_ID,
-    RELATIONSHIP_ENDPOINT_TASK_ID,
-    RELATIONSHIP_COUNT_TASK_ID,
+from trace.tasks.pages.schema.field_role_count import (
+    TASK_ID as FIELD_ROLE_COUNT_TASK_ID,
     PagesSchemaFieldRoleCountTask,
+)
+from trace.tasks.pages.schema.join_path_length_value import (
+    TASK_ID as JOIN_PATH_LENGTH_TASK_ID,
+    PagesSchemaJoinPathLengthValueTask,
+)
+from trace.tasks.pages.schema.relationship_cardinality_label import (
+    TASK_ID as RELATIONSHIP_CARDINALITY_TASK_ID,
     PagesSchemaRelationshipCardinalityLabelTask,
-    PagesSchemaRelationshipEndpointLabelTask,
+)
+from trace.tasks.pages.schema.relationship_count import (
+    TASK_ID as RELATIONSHIP_COUNT_TASK_ID,
     PagesSchemaRelationshipCountTask,
+)
+from trace.tasks.pages.schema.relationship_endpoint_label import (
+    TASK_ID as RELATIONSHIP_ENDPOINT_TASK_ID,
+    PagesSchemaRelationshipEndpointLabelTask,
 )
 
 
 def _assert_bboxes_inside_image(out) -> None:
     width, height = out.image.size
     annotation_value = out.annotation_gt.value
-    bboxes = annotation_value.values() if isinstance(annotation_value, dict) else annotation_value
+    if out.annotation_gt.type == "bbox":
+        bboxes = [annotation_value]
+    elif isinstance(annotation_value, dict):
+        bboxes = annotation_value.values()
+    else:
+        bboxes = annotation_value
     for bbox in bboxes:
         x0, y0, x1, y1 = [float(value) for value in bbox]
         assert 0.0 <= x0 <= x1 <= float(width)
@@ -41,6 +58,7 @@ def _assert_point_pairs_inside_image(out) -> None:
 def test_pages_schema_tasks_are_registered_in_public_taxonomy() -> None:
     for task_id in [
         FIELD_ROLE_COUNT_TASK_ID,
+        JOIN_PATH_LENGTH_TASK_ID,
         RELATIONSHIP_COUNT_TASK_ID,
         RELATIONSHIP_ENDPOINT_TASK_ID,
         RELATIONSHIP_CARDINALITY_TASK_ID,
@@ -48,7 +66,39 @@ def test_pages_schema_tasks_are_registered_in_public_taxonomy() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "pages"
         assert taxonomy.scene_id == "schema"
-        assert taxonomy.source_scene_id == "schema"
+        assert taxonomy.source_scene_id == ""
+
+
+def _shortest_path_count(relationships, source_id: str, target_id: str) -> tuple[int, int]:
+    adjacency: dict[str, list[tuple[str, str]]] = {}
+    for relationship in relationships:
+        source = str(relationship["source_table_id"])
+        target = str(relationship["target_table_id"])
+        rid = str(relationship["relationship_id"])
+        adjacency.setdefault(source, []).append((target, rid))
+        adjacency.setdefault(target, []).append((source, rid))
+    queue = deque([(str(source_id), tuple(), frozenset({str(source_id)}))])
+    best_length: int | None = None
+    path_count = 0
+    while queue:
+        table_id, edges, seen = queue.popleft()
+        if best_length is not None and len(edges) >= best_length:
+            continue
+        for next_table, relationship_id in adjacency.get(str(table_id), []):
+            if next_table in seen:
+                continue
+            next_edges = tuple([*edges, str(relationship_id)])
+            if str(next_table) == str(target_id):
+                if best_length is None or len(next_edges) < best_length:
+                    best_length = len(next_edges)
+                    path_count = 1
+                elif len(next_edges) == best_length:
+                    path_count += 1
+            else:
+                queue.append((str(next_table), next_edges, frozenset({*seen, str(next_table)})))
+    if best_length is None:
+        raise AssertionError("no path found between selected schema tables")
+    return int(best_length), int(path_count)
 
 
 def test_pages_schema_field_role_count_contract() -> None:
@@ -75,7 +125,7 @@ def test_pages_schema_field_role_count_contract() -> None:
 
 def test_pages_schema_relationship_count_contract() -> None:
     task = PagesSchemaRelationshipCountTask()
-    for query_id in ("total_relationship_count",):
+    for query_id in (SINGLE_QUERY_ID,):
         out = task.generate(94240, params={"query_id": query_id, "layout_variant": "radial"}, max_attempts=10)
         trace = out.trace_payload
         query = trace["execution_trace"]["query"]
@@ -94,11 +144,58 @@ def test_pages_schema_relationship_count_contract() -> None:
         _assert_point_pairs_inside_image(out)
 
 
+def test_pages_schema_join_path_length_contract() -> None:
+    task = PagesSchemaJoinPathLengthValueTask()
+    for expected_length in (1, 2, 3, 4):
+        out = task.generate(
+            94300 + expected_length,
+            params={"query_id": SINGLE_QUERY_ID, "join_path_length": expected_length, "layout_variant": "grid"},
+            max_attempts=10,
+        )
+        trace = out.trace_payload
+        query = trace["execution_trace"]["query"]
+        relationships = trace["execution_trace"]["relationships"]
+        path_relationship_ids = [str(value) for value in query["path_relationship_ids"]]
+        expected = [
+            trace["render_map"]["relationship_point_pairs_px"][relationship_id]
+            for relationship_id in path_relationship_ids
+        ]
+        shortest_length, shortest_count = _shortest_path_count(
+            relationships,
+            str(query["source_table_id"]),
+            str(query["target_table_id"]),
+        )
+
+        assert out.scene_id == "schema"
+        assert out.query_id == SINGLE_QUERY_ID
+        assert trace["execution_trace"]["source_query_id"] == "join_path_length_value"
+        assert out.answer_gt.type == "integer"
+        assert out.annotation_gt.type == "segment_set"
+        assert int(out.answer_gt.value) == expected_length
+        assert int(out.answer_gt.value) == int(query["answer"])
+        assert int(query["path_length"]) == expected_length
+        assert shortest_length == expected_length
+        assert shortest_count == 1
+        assert len(path_relationship_ids) == expected_length
+        assert out.annotation_gt.value == expected
+        assert trace["projected_annotation"]["type"] == "segment_set"
+        assert trace["projected_annotation"]["segment_set"] == expected
+        assert trace["execution_trace"]["supporting_segment_ids"] == [
+            f"relationship_segment:{relationship_id}"
+            for relationship_id in path_relationship_ids
+        ]
+        assert trace["query_spec"]["params"]["context_bbox_ids"] == {
+            "source_table": f"table:{query['source_table_id']}",
+            "target_table": f"table:{query['target_table_id']}",
+        }
+        _assert_point_pairs_inside_image(out)
+
+
 def test_pages_schema_relationship_endpoint_label_contract() -> None:
     task = PagesSchemaRelationshipEndpointLabelTask()
     out = task.generate(
         94260,
-        params={"query_id": "target_table_for_relationship_label", "layout_variant": "grid"},
+        params={"query_id": SINGLE_QUERY_ID, "layout_variant": "grid"},
         max_attempts=10,
     )
     trace = out.trace_payload
@@ -110,23 +207,26 @@ def test_pages_schema_relationship_endpoint_label_contract() -> None:
         if str(relationship["source_label"]) == str(query["source_table_label"])
         and str(relationship["label"]) == str(query["relationship_label"])
     ]
-    expected = {
-        "source_table": trace["render_map"]["table_bboxes_px"][str(query["source_table_id"])],
-        "relationship_label": trace["render_map"]["relationship_label_bboxes_px"][str(query["relationship_id"])],
-        "target_table": trace["render_map"]["table_bboxes_px"][str(query["target_table_id"])],
-    }
+    expected = trace["render_map"]["table_bboxes_px"][str(query["target_table_id"])]
 
     assert out.scene_id == "schema"
-    assert out.query_id == "target_table_for_relationship_label"
+    assert out.query_id == SINGLE_QUERY_ID
+    assert trace["execution_trace"]["source_query_id"] == "target_table_for_relationship_label"
     assert out.answer_gt.type == "string"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox"
     assert str(out.answer_gt.value) == str(query["target_table_label"])
     assert str(out.answer_gt.value) == str(query["answer"])
     assert len(matches) == 1
     assert str(matches[0]["target_label"]) == str(out.answer_gt.value)
     assert out.annotation_gt.value == expected
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["witness_symbolic"]["type"] == "keyed_bbox_id_map"
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == expected
+    assert trace["witness_symbolic"]["type"] == "bbox_id"
+    assert trace["execution_trace"]["supporting_bbox_ids"] == [f"table:{query['target_table_id']}"]
+    assert trace["query_spec"]["params"]["context_bbox_ids"] == {
+        "source_table": f"table:{query['source_table_id']}",
+        "relationship_label": f"relationship_label:{query['relationship_id']}",
+    }
     _assert_bboxes_inside_image(out)
 
 
@@ -134,7 +234,7 @@ def test_pages_schema_relationship_cardinality_label_contract() -> None:
     task = PagesSchemaRelationshipCardinalityLabelTask()
     out = task.generate(
         94270,
-        params={"query_id": "relationship_cardinality_between_tables", "layout_variant": "grid"},
+        params={"query_id": SINGLE_QUERY_ID, "layout_variant": "grid"},
         max_attempts=10,
     )
     trace = out.trace_payload
@@ -147,41 +247,51 @@ def test_pages_schema_relationship_cardinality_label_contract() -> None:
         if str(relationship["relationship_id"]) == relationship_id
     ]
     expected = {
-        "source_table": trace["render_map"]["table_bboxes_px"][str(query["source_table_id"])],
-        "target_table": trace["render_map"]["table_bboxes_px"][str(query["target_table_id"])],
         "source_cardinality_marker": trace["render_map"]["cardinality_marker_bboxes_px"][f"{relationship_id}:source"],
         "target_cardinality_marker": trace["render_map"]["cardinality_marker_bboxes_px"][f"{relationship_id}:target"],
     }
 
     assert out.scene_id == "schema"
-    assert out.query_id == "relationship_cardinality_between_tables"
+    assert out.query_id == SINGLE_QUERY_ID
+    assert trace["execution_trace"]["source_query_id"] == "relationship_cardinality_between_tables"
     assert out.answer_gt.type == "string"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     assert str(out.answer_gt.value) == str(query["cardinality_kind"])
     assert str(out.answer_gt.value) == str(query["answer"])
-    assert str(out.answer_gt.value) in {"one_to_one", "one_to_many", "optional_many"}
-    assert trace["query_spec"]["params"]["answer_support"] == ["one_to_many", "optional_many", "one_to_one"]
+    assert str(out.answer_gt.value) in {"one_to_one", "one_to_many", "optional_many", "many_to_many"}
+    assert trace["query_spec"]["params"]["answer_support"] == [
+        "one_to_many",
+        "optional_many",
+        "one_to_one",
+        "many_to_many",
+    ]
     assert len(matches) == 1
     assert str(matches[0]["cardinality_kind"]) == str(out.answer_gt.value)
     assert str(matches[0]["source_marker"]) == str(query["source_cardinality_marker"])
     assert str(matches[0]["target_marker"]) == str(query["target_cardinality_marker"])
     assert list(out.annotation_gt.value.keys()) == [
-        "source_table",
-        "target_table",
         "source_cardinality_marker",
         "target_cardinality_marker",
     ]
     assert out.annotation_gt.value == expected
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == expected
+    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["bbox_map"] == expected
     assert trace["witness_symbolic"]["type"] == "keyed_bbox_id_map"
+    assert trace["execution_trace"]["supporting_bbox_ids"] == [
+        f"cardinality_marker:{relationship_id}:source",
+        f"cardinality_marker:{relationship_id}:target",
+    ]
+    assert trace["query_spec"]["params"]["context_bbox_ids"] == {
+        "source_table": f"table:{query['source_table_id']}",
+        "target_table": f"table:{query['target_table_id']}",
+    }
     _assert_bboxes_inside_image(out)
 
 
 def test_pages_schema_generation_is_deterministic() -> None:
     task = PagesSchemaRelationshipEndpointLabelTask()
     params = {
-        "query_id": "target_table_for_relationship_label",
+        "query_id": SINGLE_QUERY_ID,
         "layout_variant": "grid",
         "style_variant": "green_erd",
     }
@@ -198,7 +308,7 @@ def test_pages_schema_generation_is_deterministic() -> None:
 def test_pages_schema_relationship_cardinality_generation_is_deterministic() -> None:
     task = PagesSchemaRelationshipCardinalityLabelTask()
     params = {
-        "query_id": "relationship_cardinality_between_tables",
+        "query_id": SINGLE_QUERY_ID,
         "layout_variant": "radial",
         "style_variant": "amber_blueprint",
     }
@@ -230,4 +340,4 @@ def test_pages_schema_sampling_covers_visual_and_text_axes() -> None:
     assert set(layouts) == {"grid", "layered", "radial"}
     assert set(styles) == {"green_erd", "violet_cards", "monochrome_sql", "amber_blueprint"}
     assert len(contexts) >= 5
-    assert set(queries) == {"target_table_for_relationship_label"}
+    assert set(queries) == {SINGLE_QUERY_ID}

@@ -12,7 +12,15 @@
 9. Program schema: `solve_value(operation_table, target=question_mark_cell); scene=arithmetic_panel; scope=operation_table_cell_value`
 
 ## Program Contract
-`solve_value(operation_table, target=question_mark_cell); scene=arithmetic_panel; scope=operation_table_cell_value`
+
+Program: `solve_value(operation_table, target=question_mark_cell); scene=arithmetic_panel; scope=operation_table_cell_value`
+
+Candidate set: the visible arithmetic panels, numeric entries, operators, totals, and marked target cell/node/brick inside the `operation_table_cell_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `operation_table`, `question_mark_cell`, `arithmetic_panel`, `operation_table_cell_value`.
+Operation: evaluate `solve_value` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the scalar bbox is the pixel box around the single visible question-mark target cell, node, or brick. It is not a one-item set.
+Query ids: `single`.
 
 ## 2) Scene + task contract
 1. Entities/relations: A row/column header operation table with filled examples and one question-mark target table cell.

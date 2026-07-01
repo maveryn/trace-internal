@@ -10,9 +10,17 @@
 7. Program schema: `label(unique_completed_column(board)); scene=bingo; scope=completed_column_label`
 
 ## Program Contract
-- `label(unique_completed_column(board)); scene=bingo; scope=completed_column_label`
+
+Program: `label(unique_completed_column(board)); scene=bingo; scope=completed_column_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `completed_column_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `unique_completed_column`, `board`, `bingo`, `completed_column_label`.
+Operation: evaluate `label` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `segment` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The card has exactly one completed BINGO column.
 2. The answer is one of `B`, `I`, `N`, `G`, or `O`.
-3. Annotation is one `segment` `[[x1, y1], [x2, y2]]` connecting the top and bottom cell centers of the completed column.
+3. Annotation is one `segment` `[[x0, y0], [x1, y1]]` connecting the top and bottom cell centers of the completed column.

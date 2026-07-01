@@ -19,7 +19,6 @@ generation:
       cyan: 1.0
       magenta: 1.0
       maroon: 1.0
-    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     balanced_style_variant_sampling: true
     balanced_accent_color_name_sampling: true
@@ -27,70 +26,61 @@ generation:
     end_hour: 18
     slot_minutes: 30
     max_lane_count: 5
-  task_overrides:
-    pages_schedule_day_planner_base:
-      query_id_weights:
-        overlap_count: 1.0
-        longer_than_reference_count: 1.0
-        maximum_non_overlapping_count: 1.0
-      balanced_query_id_sampling: true
-      event_count_support:
-      - 7
-      - 8
-      - 9
-      - 10
-      overlap_count_support:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      overlap_max_lane_count: 4
-      overlap_nonoverlap_min_gap_slots: 1
-      longer_than_count_support:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      maximum_non_overlapping_support:
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
-      reference_duration_slots_support:
-      - 2
-      - 3
-      - 4
-      duration_slots_support:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      day_label_support:
-      - Monday
-      - Tuesday
-      - Wednesday
-      - Thursday
-      - Friday
-      event_label_pool:
-      - A
-      - B
-      - C
-      - D
-      - E
-      - F
-      - G
-      - H
-      - I
-      - J
-      - K
-      - L
-      - M
+    event_count_support:
+    - 7
+    - 8
+    - 9
+    - 10
+    overlap_count_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    overlap_max_lane_count: 4
+    overlap_nonoverlap_min_gap_slots: 1
+    longer_than_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    maximum_non_overlapping_support:
+    - 2
+    - 3
+    - 4
+    - 5
+    reference_duration_slots_support:
+    - 2
+    - 3
+    - 4
+    duration_slots_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    day_label_support:
+    - Monday
+    - Tuesday
+    - Wednesday
+    - Thursday
+    - Friday
+    event_label_pool:
+    - A
+    - B
+    - C
+    - D
+    - E
+    - F
+    - G
+    - H
+    - I
+    - J
+    - K
+    - L
+    - M
 rendering:
   shared:
     canvas_width: 920
@@ -116,38 +106,7 @@ rendering:
     event_label_font_size_px: 18
     event_corner_radius_px: 12
     event_text_padding_px: 8
-  task_overrides:
-    pages_schedule_day_planner_base:
-      show_reference_time_band: true
+    show_reference_time_band: false
 prompt:
   shared:
-    bundle_id: pages_schedule_v0
-  task_overrides:
-    pages_schedule_day_planner_base:
-      scene_key: day_schedule
-      task_key: schedule_day_query
-      object_description_overlap_count: one single-day schedule with time labels,
-        {event_count} scheduled event blocks, one highlighted reference event, and
-        horizontal reference-time guide lines
-      object_description_longer_than_reference_count: one single-day schedule with
-        time labels, {event_count} scheduled event blocks, and one highlighted reference
-        event
-      object_description_maximum_non_overlapping_count: one single-day schedule with
-        time labels and {event_count} scheduled event blocks
-      answer_hint_overlap_count: set "answer" to the integer count of events that
-        overlap the reference event
-      answer_hint_longer_than_reference_count: set "answer" to the integer count of
-        events that are longer than the reference event
-      answer_hint_maximum_non_overlapping_count: set "answer" to the maximum number
-        of non-overlapping events as an integer
-      annotation_hint_satisfying_event_blocks: set "annotation" to an array of bounding
-        boxes [x0, y0, x1, y1] for all event blocks that satisfy the query
-      annotation_hint_maximum_non_overlapping_count: set "annotation" to an array
-        of bounding boxes [x0, y0, x1, y1] for the unique maximum-size non-overlapping
-        event set
-      json_example_overlap_count: '{"annotation":[[250,276,396,366],[404,318,550,438]],"answer":2}'
-      json_example_answer_only_overlap_count: '{"answer":2}'
-      json_example_longer_than_reference_count: '{"annotation":[[250,240,396,408],[404,430,550,634],[558,352,704,568]],"answer":3}'
-      json_example_answer_only_longer_than_reference_count: '{"answer":3}'
-      json_example_maximum_non_overlapping_count: '{"annotation":[[250,220,396,316],[404,316,550,412],[558,412,704,508],[250,508,396,604]],"answer":4}'
-      json_example_answer_only_maximum_non_overlapping_count: '{"answer":4}'
+    bundle_id: pages_schedule_v1

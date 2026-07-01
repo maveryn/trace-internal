@@ -78,8 +78,8 @@ TOKEN_COLOR_SPECS: Tuple[Tuple[str, Tuple[int, int, int]], ...] = (
 class CyclicOrderDefaults:
     """Stable code fallbacks for cyclic-order generation bounds."""
 
-    option_count_min: int = 6
-    option_count_max: int = 6
+    option_count_min: int = 4
+    option_count_max: int = 4
     bead_count_min: int = 4
     bead_count_max: int = 5
     shape_bead_count_max: int = 5

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
@@ -13,6 +14,7 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.charts.table.shared.annotations import (
     annotation_value_from_projection,
+    boxed_map_projection,
     boxed_projection,
     boxed_set_map_projection,
     boxed_set_projection,
@@ -20,8 +22,8 @@ from trace.tasks.charts.table.shared.annotations import (
     cell_boxes,
     column_box,
 )
+from trace.tasks.charts.shared.grid.geometry import bbox_union
 from trace.tasks.charts.table.shared.defaults import (
-    BACKGROUND_DEFAULTS,
     GENERATION_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDERING_DEFAULTS,
@@ -38,6 +40,7 @@ from trace.tasks.charts.table.shared.prompts import (
     ANNOTATION_HINT_FILTER_MAP,
     ANNOTATION_HINT_RANK_CELL,
     ANNOTATION_HINT_TEMPORAL,
+    ANNOTATION_HINT_TEMPORAL_ROW_SPAN_MAP,
     ANSWER_HINT_COUNT,
     ANSWER_HINT_INTEGER,
     ANSWER_HINT_ROW_LABEL,
@@ -73,7 +76,7 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.prompt_variants import PromptTraceArtifacts, build_prompt_query_spec
 from trace.tasks.shared.text_rendering import temporary_default_font_family
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 
 
@@ -169,6 +172,13 @@ def _project_annotation(plan: TableTaskPlan, rendered) -> dict[str, Any]:
                 for key, cell_ids in plan.annotation_cell_id_map.items()
             }
         )
+    if plan.annotation_kind == "bbox_map":
+        return boxed_map_projection(
+            {
+                str(key): bbox_union(cell_boxes(rendered, [str(cell_id) for cell_id in cell_ids]))
+                for key, cell_ids in plan.annotation_cell_id_map.items()
+            }
+        )
     raise ValueError(f"unsupported table annotation kind: {plan.annotation_kind}")
 
 
@@ -198,12 +208,11 @@ def materialize_table_plan(
         defaults=defaults,
         instance_seed=int(instance_seed),
     )
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=BACKGROUND_DEFAULTS,
+        scene_id="table",
+        render_params=render_params,
     )
     table_font_family = sample_table_font_family(
         instance_seed=int(instance_seed),
@@ -254,6 +263,7 @@ def materialize_table_plan(
             "coord_space": "pixel",
             "scene_variant": str(plan.scene_variant),
             "background_style": dict(background_meta),
+            "information_scene_style": dict(information_style_meta),
             "post_image_noise": dict(post_noise_meta),
             "font_assets": table_font_asset_metadata(str(table_font_family)),
             "table_bbox_px": list(rendered.table_bbox_px),
@@ -920,14 +930,35 @@ def build_table_temporal_two_row_plan(
         defaults=TableDefaults(),
         namespace=str(public_task_id),
     )
+    query_cells = [dict(cell) for cell in dataset["query_cells"]]
+    cell_ids = tuple(str(cell["cell_id"]) for cell in query_cells)
+    use_row_span_map = str(operation) == "row_interval_sum_difference_abs"
+    row_span_cell_ids = {
+        str(dataset["query_row_label_a"]): tuple(
+            str(cell["cell_id"]) for cell in query_cells if str(cell.get("row_role")) == "row_a"
+        ),
+        str(dataset["query_row_label_b"]): tuple(
+            str(cell["cell_id"]) for cell in query_cells if str(cell.get("row_role")) == "row_b"
+        ),
+    }
+    row_span_json_example = json.dumps(
+        {
+            "annotation": {
+                str(dataset["query_row_label_a"]): [260, 180, 444, 220],
+                str(dataset["query_row_label_b"]): [260, 236, 444, 276],
+            },
+            "answer": 7,
+        },
+        separators=(",", ":"),
+    )
     prompt = render_prompt_artifacts(
         bundle_id=TEMPORAL_BUNDLE_ID,
         scene_key=SCENE_KEY_TEMPORAL,
         task_key=TASK_KEY_TEMPORAL,
         prompt_key=str(prompt_key),
         answer_hint=ANSWER_HINT_INTEGER,
-        annotation_hint=ANNOTATION_HINT_TEMPORAL,
-        json_example=str(json_example),
+        annotation_hint=ANNOTATION_HINT_TEMPORAL_ROW_SPAN_MAP if use_row_span_map else ANNOTATION_HINT_TEMPORAL,
+        json_example=str(row_span_json_example if use_row_span_map else json_example),
         json_example_answer_only=str(json_example_answer_only),
         dynamic_slot_values={
             "object_description": object_description(scene_variant, temporal=True),
@@ -938,8 +969,6 @@ def build_table_temporal_two_row_plan(
         },
         instance_seed=int(instance_seed),
     )
-    query_cells = [dict(cell) for cell in dataset["query_cells"]]
-    cell_ids = tuple(str(cell["cell_id"]) for cell in query_cells)
     relations = {
         "program_code": str(program_code),
         "operation": str(prompt_key),
@@ -956,6 +985,10 @@ def build_table_temporal_two_row_plan(
         "row_interval_sums": dict(dataset["row_interval_sums"]),
         "paired_absolute_differences": [int(value) for value in dataset["paired_absolute_differences"]],
         "supporting_cell_ids": [str(cell_id) for cell_id in cell_ids],
+        "supporting_cell_ids_by_row": {
+            str(row_label): [str(cell_id) for cell_id in ids]
+            for row_label, ids in row_span_cell_ids.items()
+        },
         "row_count": int(dataset["row_count"]),
         "numeric_column_count": int(dataset["numeric_column_count"]),
         "row_count_range": list(dataset["row_count_range"]),
@@ -980,14 +1013,14 @@ def build_table_temporal_two_row_plan(
         answer_gt=TypedValue(type="integer", value=int(dataset["answer_value"])),
         answer_value=int(dataset["answer_value"]),
         question_format=str(question_format),
-        annotation_kind="bbox_set",
-        annotation_cell_ids=tuple(str(cell_id) for cell_id in cell_ids),
+        annotation_kind="bbox_map" if use_row_span_map else "bbox_set",
+        annotation_cell_ids=() if use_row_span_map else tuple(str(cell_id) for cell_id in cell_ids),
         annotation_cell_id="",
         annotation_column_header="",
-        annotation_cell_id_map={},
+        annotation_cell_id_map=row_span_cell_ids if use_row_span_map else {},
         relations=relations,
         prompt_artifacts=prompt,
-        witness_type="bbox_set",
+        witness_type="bbox_map" if use_row_span_map else "bbox_set",
         witness_calculation=witness_calculation,
         render_defaults=rendering_defaults,
     )

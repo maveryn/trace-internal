@@ -9,7 +9,10 @@ from typing import Any
 from trace.core.seed import hash64
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.charts.scatter_points.shared.annotations import point_set_annotation_for_ids
+from trace.tasks.charts.scatter_points.shared.annotations import (
+    bbox_annotation_for_ids,
+    point_set_annotation_for_ids,
+)
 from trace.tasks.charts.scatter_points.shared.output import (
     answer_value,
     base_execution_record,
@@ -34,6 +37,7 @@ class ScatterPointsTaskPlan:
     program_code: str
     query_params: dict[str, Any]
     reasoning_load: float
+    annotation_kind: str = "point_set"
 
 
 PlanBuilder = Callable[
@@ -63,7 +67,12 @@ def materialize_scatter_points_plan(
         params=dict(plan.params),
         instance_seed=int(instance_seed),
     )
-    annotation, witness_symbolic = point_set_annotation_for_ids(dataset=dataset, rendered=rendered)
+    if str(plan.annotation_kind) == "bbox":
+        annotation, witness_symbolic = bbox_annotation_for_ids(dataset=dataset, rendered=rendered)
+    elif str(plan.annotation_kind) == "point_set":
+        annotation, witness_symbolic = point_set_annotation_for_ids(dataset=dataset, rendered=rendered)
+    else:
+        raise ValueError(f"unsupported scatter-points annotation kind: {plan.annotation_kind}")
     prompt_artifacts = build_prompt_artifacts(
         prompt_query_key=str(plan.prompt_query_key),
         dynamic_slot_values=dict(plan.dynamic_slots),

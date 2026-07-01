@@ -10,7 +10,15 @@
 Counts visible doors in a requested state within a top-down pixel RPG house layout.
 
 ## Program Contract
-`count(door, state(door, target_state)); scene=rpg_house; scope=door_state_count`
+
+Program: `count(door, state(door, target_state)); scene=rpg_house; scope=door_state_count`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `door_state_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `door`, `state`, `target_state`, `rpg_house`, `door_state_count` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `open_door_count`, `closed_door_count`.
 
 ## Query Branches
 

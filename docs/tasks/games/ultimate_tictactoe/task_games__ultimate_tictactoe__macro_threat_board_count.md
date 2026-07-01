@@ -10,7 +10,15 @@
 7. Annotation schema: `bbox_set`
 
 ## Program Contract
-`count(filter(local_boards, status=open and immediate_win_exists(player))); scene=ultimate_tictactoe; scope=macro_threat_board_count`
+
+Program: `count(filter(local_boards, status=open and immediate_win_exists(player))); scene=ultimate_tictactoe; scope=macro_threat_board_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `macro_threat_board_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `local_boards`, `status`, `open`, `immediate_win_exists`, `player`, `ultimate_tictactoe`, `macro_threat_board_count` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `x_immediate_win_board_count`, `o_immediate_win_board_count`.
 
 ## Generation Notes
 1. Query ids choose whether X or O immediate-win boards are counted.

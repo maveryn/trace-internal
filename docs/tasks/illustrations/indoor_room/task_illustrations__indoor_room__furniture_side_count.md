@@ -10,7 +10,15 @@
 Counts visible small indoor objects of a sampled object type that lie to the left or right of the table.
 
 ## Program Contract
-`count(filter(visible_room_objects, object_type(object)=target_object_type and side_relation(object, target_furniture)=query_side)); scene=indoor_room; scope=furniture_side_count`
+
+Program: `count(filter(visible_room_objects, object_type(object)=target_object_type and side_relation(object, target_furniture)=query_side)); scene=indoor_room; scope=furniture_side_count`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `furniture_side_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `visible_room_objects`, `object_type`, `object`, `target_object_type`, `side_relation`, `target_furniture`, `query_side`, `indoor_room`, `furniture_side_count` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; a non-negative integer derived from the same execution trace as the annotation.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `left_side`, `right_side`.
 
 ## Query Branches
 

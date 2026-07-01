@@ -17,7 +17,11 @@ from trace.tasks.three_d.shared.object_inventory_preview import render_three_d_o
 from trace.tasks.three_d.shared.object_resources import OBJECT_CLUSTER_EXTRA_SHAPE_TYPES, object_profiles
 from trace.tasks.three_d.shared import object_scene_glyphs_tools_devices as tools_glyphs
 from trace.tasks.three_d.object_cluster.color_membership_count import TASK_ID as COLOR_MEMBERSHIP_COUNT_TASK_ID
-from trace.tasks.three_d.object_cluster.count_arithmetic import TASK_ID as COUNT_ARITHMETIC_TASK_ID
+from trace.tasks.three_d.object_cluster.object_type_count_arithmetic import (
+    DIFFERENCE_QUERY_ID as OBJECT_TYPE_ARITHMETIC_DIFFERENCE_QUERY_ID,
+    TASK_ID as OBJECT_TYPE_COUNT_ARITHMETIC_TASK_ID,
+)
+from trace.tasks.three_d.object_cluster.color_count_arithmetic import TASK_ID as COLOR_COUNT_ARITHMETIC_TASK_ID
 from trace.tasks.three_d.object_cluster.counterfactual_count import TASK_ID as COUNTERFACTUAL_COUNT_TASK_ID
 from trace.tasks.three_d.object_cluster.multi_attribute_and_count import TASK_ID as MULTI_ATTRIBUTE_AND_TASK_ID
 from trace.tasks.three_d.object_cluster.multi_attribute_exclusion_count import (
@@ -855,11 +859,11 @@ def test_object_cluster_multi_attribute_exclusion_count_answer_and_annotation() 
 
 
 def test_object_cluster_count_arithmetic_keyed_operand_annotation() -> None:
-    task = create_task(COUNT_ARITHMETIC_TASK_ID)
+    task = create_task(OBJECT_TYPE_COUNT_ARITHMETIC_TASK_ID)
     output = task.generate(
         20260615,
         params={
-            "query_id": "two_type_difference_count",
+            "query_id": OBJECT_TYPE_ARITHMETIC_DIFFERENCE_QUERY_ID,
             "scene_variant": "shallow_tray",
             "left_shape_type": "button",
             "right_shape_type": "dice",
@@ -877,7 +881,8 @@ def test_object_cluster_count_arithmetic_keyed_operand_annotation() -> None:
     left_ids = [str(object_id) for object_id in role_object_ids["left_operand"]]
     right_ids = [str(object_id) for object_id in role_object_ids["right_operand"]]
 
-    assert output.query_id == "two_type_difference_count"
+    assert output.query_id == OBJECT_TYPE_ARITHMETIC_DIFFERENCE_QUERY_ID
+    assert trace["internal_query_id"] == "two_type_difference_count"
     assert output.answer_gt.value == 4
     assert output.annotation_gt.type == "bbox_set_map"
     assert set(output.annotation_gt.value) == {"left_operand", "right_operand"}
@@ -897,7 +902,8 @@ def test_object_cluster_first_wave_tasks_registered_in_three_d_taxonomy() -> Non
         MULTI_ATTRIBUTE_OR_COUNT_TASK_ID,
         MULTI_ATTRIBUTE_XOR_COUNT_TASK_ID,
         MULTI_ATTRIBUTE_EXCLUSION_COUNT_TASK_ID,
-        COUNT_ARITHMETIC_TASK_ID,
+        OBJECT_TYPE_COUNT_ARITHMETIC_TASK_ID,
+        COLOR_COUNT_ARITHMETIC_TASK_ID,
     ):
         taxonomy = resolve_task_taxonomy(task_id)
 

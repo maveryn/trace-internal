@@ -121,6 +121,7 @@ def _trace_payload(
             "ring_line_rgb": list(render_params.ring_line_rgb),
             "layout_jitter": dict(render_params.layout_jitter_meta),
             "background_style": dict(rendered.background_meta),
+            "information_scene_style": dict(rendered.background_meta.get("information_scene_style", {})),
             "font_assets": font_assets_payload(chart_font_family=rendered.chart_font_family),
             "post_image_noise": dict(rendered.post_noise_meta),
         },

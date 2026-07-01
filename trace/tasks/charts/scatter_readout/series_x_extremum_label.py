@@ -5,7 +5,9 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from trace.tasks.charts.shared.unanswerable import (
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
+from trace.tasks.shared.unanswerable import (
     UNANSWERABLE_ANSWER,
     absence_proof,
     should_use_unanswerable_branch,
@@ -13,19 +15,19 @@ from trace.tasks.charts.shared.unanswerable import (
 from trace.tasks.charts.scatter_readout._lifecycle import (
     ScatterReadoutTaskPlan,
     run_scatter_readout_lifecycle,
+    single_point_readout_binding,
+    single_point_readout_plan,
 )
-from trace.tasks.charts.scatter_readout.shared.prompts import dynamic_slots
 from trace.tasks.charts.scatter_readout.shared.sampling import build_base_dataset, missing_series_label
 from trace.tasks.charts.scatter_readout.shared.state import DOMAIN, QueryBinding
 from trace.tasks.registry import register_task
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 
 TASK_ID = "task_charts__scatter_readout__series_x_extremum_label"
 QUESTION_FORMAT = "scatter_series_readout_query"
 PROGRAM_CODE = (
     "select_label(x_label(arg_extreme(point in series, y_value(point), direction))); "
-    "output=string_label; annotation=bbox_map(target_point_readout,x_axis_label); "
+    "output=string_label_or_unanswerable; annotation=point(target_mark)|empty_map; "
     "scene=scatter_readout; scope=series_x_extremum_label"
 )
 QUERY_IDS = ("series_highest_x_label", "series_lowest_x_label")
@@ -50,12 +52,10 @@ def _build_extremum_plan(
         raise ValueError(f"unsupported query_id for {TASK_ID}: {selected_query_id}")
     semantic_args = dict(QUERY_ARGS[str(selected_query_id)])
     dataset = build_base_dataset(params=params, instance_seed=int(instance_seed))
-    selection = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.target",
+    target_series = uniform_choice(
+        spawn_rng(int(instance_seed), f"{TASK_ID}.target"),
+        tuple(dataset.series),
     )
-    target_series = dataset.series[int(selection) % len(dataset.series)]
 
     if should_use_unanswerable_branch(
         params,
@@ -98,33 +98,24 @@ def _build_extremum_plan(
             target_point = max(target_series.points, key=lambda point: (int(point.y_value), str(point.x_label)))
         else:
             target_point = min(target_series.points, key=lambda point: (int(point.y_value), str(point.x_label)))
-        binding = QueryBinding(
+        binding = single_point_readout_binding(
             answer=str(target_point.x_label),
             answer_type="string",
             target_series_label=str(target_series.label),
             target_point_id=str(target_point.point_id),
-            annotation_point_ids=(str(target_point.point_id),),
-            annotation_x_label=str(target_point.x_label),
-            trace={
-                "target_series_label": str(target_series.label),
-                "target_point_id": str(target_point.point_id),
-                "target_x_label": str(target_point.x_label),
-                "target_y_value": int(target_point.y_value),
-                "annotation_point_ids": [str(target_point.point_id)],
-                "annotation_x_label": str(target_point.x_label),
-                "answer": str(target_point.x_label),
-                "answer_type": "string",
+            target_x_label=str(target_point.x_label),
+            target_y_value=int(target_point.y_value),
+            extra_trace={
                 "answerability": "answerable",
                 **dict(semantic_args),
             },
         )
 
-    return ScatterReadoutTaskPlan(
+    return single_point_readout_plan(
         dataset=dataset,
         binding=binding,
         params={**TASK_PARAM_DEFAULTS, **dict(params)},
         prompt_query_key=str(selected_query_id),
-        dynamic_slots=dynamic_slots(binding=binding, include_unanswerable_instruction=True),
         question_format=QUESTION_FORMAT,
         program_code=PROGRAM_CODE,
         query_params={
@@ -132,6 +123,7 @@ def _build_extremum_plan(
             "query_id_probabilities": dict(query_probabilities),
         },
         reasoning_load=REASONING_LOAD,
+        include_unanswerable_instruction=True,
     )
 
 

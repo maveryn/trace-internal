@@ -28,8 +28,6 @@ UPWARD_QUERY_ID = "panel_curve_upward_threshold_crossing_count"
 DOWNWARD_QUERY_ID = "panel_curve_downward_threshold_crossing_count"
 QUERY_DIRECTIONS = {UPWARD_QUERY_ID: "upward", DOWNWARD_QUERY_ID: "downward"}
 TASK_PARAM_DEFAULTS: dict[str, Any] = {
-    "panel_count_min": 4,
-    "panel_count_max": 6,
     "method_count_min": 5,
     "method_count_max": 6,
     "x_tick_count_min": 5,

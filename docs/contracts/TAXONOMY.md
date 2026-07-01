@@ -74,6 +74,12 @@ Query sampling happens inside the selected task. Query ids should be uniform by
 default and should not have config-level weights in review-candidate migrated
 scenes.
 
+Uniform or equal-weight task-internal sampling means a seeded RNG draw over an
+explicit probability map. Do not use seed modulo, hash modulo, cursor cycling,
+or deterministic index enumeration as a substitute for random sampling of
+semantic axes. Exact stratification belongs in the external sampler/review
+harness, not inside public task generators.
+
 ## 6) Source Of Truth
 The active taxonomy mapping lives in `trace/core/taxonomy.py`. Build,
 validation, RLVR export, review tooling, and docs checks should resolve public

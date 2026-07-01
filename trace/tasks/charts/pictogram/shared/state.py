@@ -35,7 +35,7 @@ class PictogramCategory:
 @dataclass(frozen=True)
 class PictogramQuery:
     branch_id: str
-    answer: int
+    answer: Any
     answer_type: str
     annotation_type: str
     annotation_category_ids: tuple[str, ...]

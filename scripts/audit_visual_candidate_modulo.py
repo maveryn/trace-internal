@@ -96,13 +96,111 @@ NON_VISUAL_SOURCE_RULES: tuple[tuple[str, str], ...] = (
         "trace/tasks/games/mancala_pit_board/shared/rules.py",
         r"return\s+str\(LABELS\[int\(index\)\s*%\s*len\(LABELS\)\]\)",
     ),
+    (
+        "trace/tasks/geometry/coordinate_plane/quadrilateral_completion_label.py",
+        r"(nxt|b|c)\s*=\s*vertices\[\(?(int\(index\)|index)\s*\+\s*[12]\)?\s*%\s*len\(vertices\)\]",
+    ),
+    (
+        "trace/tasks/geometry/shared/multi_polygon_scene.py",
+        r"point_b\s*=\s*polygon\[\(index\s*\+\s*1\)\s*%\s*len\(polygon\)\]",
+    ),
 )
 
 SAFE_SOURCE_RULES: tuple[tuple[str, str, str], ...] = (
     (
+        "trace/tasks/charts/bar_3d/shared/sampling.py",
+        r"_DEFAULT_PALETTE\[index\s*%\s*len\(_DEFAULT_PALETTE\)\]",
+        "default palette normalization before seeded palette shuffle",
+    ),
+    (
+        "trace/tasks/charts/bar_3d/shared/sampling.py",
+        r"palette\[int\(series_index\)\s*%\s*len\(palette\)\]",
+        "deterministic per-series palette assignment from sampled palette",
+    ),
+    (
+        "trace/tasks/charts/contour_density/shared/sampling.py",
+        r"colors\[int\(index\)\s*%\s*len\(colors\)\]",
+        "deterministic region-color assignment from sampled palette",
+    ),
+    (
+        "trace/tasks/charts/curve_panels/shared/sampling.py",
+        r"colors\[int\(index\)\s*%\s*len\(colors\)\]",
+        "deterministic curve-color assignment from sampled palette",
+    ),
+    (
+        "trace/tasks/charts/density_curve/shared/sampling.py",
+        r"palette\[int\(index\)\s*%\s*len\(palette\)\]",
+        "deterministic density-curve color assignment from sampled palette",
+    ),
+    (
+        "trace/tasks/charts/radar/shared/sampling.py",
+        r"colors\[index\s*%\s*len\(colors\)\]",
+        "deterministic panel-profile color assignment from sampled palette",
+    ),
+    (
+        "trace/tasks/charts/region_map/shared/rendering.py",
+        r"neutral_fills\[int\(_region_sort_key\(region_id\)\[1\]\)\s*%\s*len\(neutral_fills\)\]",
+        "deterministic neutral-region fill cycling from render palette",
+    ),
+    (
+        "trace/tasks/charts/scatter_cluster/shared/data.py",
+        r"colors\[int\(index\)\s*%\s*len\(colors\)\]",
+        "deterministic cluster-color assignment from sampled palette",
+    ),
+    (
+        "trace/tasks/charts/shared/cartesian/lines.py",
+        r"pattern\[int\(pattern_index\)\s*%\s*len\(pattern\)\]",
+        "dash/gap line rendering cycles through a selected stroke pattern",
+    ),
+    (
+        "trace/tasks/charts/shared/chart_scene_primitives.py",
+        r"muted_palette\[\(int\(index\)\s*\+\s*int\(offset\)\)\s*%\s*len\(muted_palette\)\]",
+        "deterministic muted violin fill cycling from render palette",
+    ),
+    (
+        "trace/tasks/charts/size_encoding/shared/sampling.py",
+        r"assigned_categories\s*=\s*\[panel_categories\[index\s*%\s*len\(panel_categories\)\]",
+        "deterministic balanced category expansion after shuffled category support",
+    ),
+    (
+        "trace/tasks/charts/style_legend/shared/sampling.py",
+        r"palette\[index\s*%\s*len\(palette\)\]",
+        "deterministic legend color cycling from selected palette mode",
+    ),
+    (
+        "trace/tasks/charts/style_legend/shared/sampling.py",
+        r"colors\[int\(index\)\s*%\s*len\(colors\)\]",
+        "deterministic series color assignment from selected palette mode",
+    ),
+    (
         "trace/tasks/charts/surface_3d/",
         r"color_rgb\s*=\s*PALETTE\[.*%\s*len\(PALETTE\)",
         "deterministic surface-series palette assignment",
+    ),
+    (
+        "trace/tasks/illustrations/isometric_harbor/shared/rendering.py",
+        r"BOAT_COLOR_PALETTES\[int\(rank\)\s*%\s*len\(BOAT_COLOR_PALETTES\)\]",
+        "deterministic boat-rank palette assignment",
+    ),
+    (
+        "trace/tasks/illustrations/pixel_village/shared/rendering.py",
+        r"colors\[variant\s*%\s*len\(colors\)\]",
+        "deterministic pixel-village sprite texture cycle",
+    ),
+    (
+        "trace/tasks/illustrations/shared/object_rendering.py",
+        r"palette\[index\s*%\s*len\(palette\)\]",
+        "deterministic produce-bin palette cycle",
+    ),
+    (
+        "trace/tasks/illustrations/shared/pixel_farm_rendering.py",
+        r"colors\[\(x\s*\*\s*5\s*\+\s*y\s*\*\s*3\)\s*%\s*len\(colors\)\]",
+        "deterministic pixel-farm texture cycle",
+    ),
+    (
+        "trace/tasks/illustrations/shared/pixel_world_objects.py",
+        r"palette\[index\s*%\s*len\(palette\)\]",
+        "deterministic pixel-world object palette cycle",
     ),
 )
 

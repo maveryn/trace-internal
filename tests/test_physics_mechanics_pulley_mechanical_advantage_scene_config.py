@@ -1,4 +1,4 @@
-"""Config regression tests for physics mechanics pulley defaults."""
+"""Config regression tests for physics pulley defaults."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from trace.tasks.shared.config_defaults import split_generation_rendering_prompt
 
 
 def test_physics_mechanics_pulley_defaults_expose_scene_query_and_answer_support() -> None:
-    cfg = get_scene_defaults("physics", "mechanics")
+    cfg = get_scene_defaults("physics", "pulley")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="task_physics__pulley__pulley_mechanical_advantage",
@@ -15,8 +15,6 @@ def test_physics_mechanics_pulley_defaults_expose_scene_query_and_answer_support
 
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-
-    assert bool(generation["balanced_query_id_sampling"]) is True
 
     assert bool(generation["balanced_target_answer_sampling"]) is True
 
@@ -28,13 +26,9 @@ def test_physics_mechanics_pulley_defaults_expose_scene_query_and_answer_support
         "tall_block",
     }
 
-    assert set(generation["query_id_weights"].keys()) == {
-        "force_relation",
-    }
+    assert "solve_for_weights" not in generation
 
-    assert set(generation["solve_for_weights"].keys()) == {"effort_force", "load_force"}
-
-    assert bool(generation["balanced_solve_for_sampling"]) is True
+    assert "balanced_solve_for_sampling" not in generation
 
     assert bool(generation["balanced_connected_support_count_sampling"]) is False
 
@@ -64,16 +58,21 @@ def test_physics_mechanics_pulley_defaults_expose_scene_query_and_answer_support
 
     assert bool(rendering["layout_jitter_enabled"]) is True
 
-    assert str(prompt["bundle_id"]) == "physics_mechanics_v0"
+    assert "query_id_weights" not in generation
 
-    assert "one open" in str(prompt["object_description_open_block"])
+    assert "balanced_query_id_sampling" not in generation
 
-    assert "optional cut non-supporting strands" in str(prompt["object_description_open_block"])
+    assert str(prompt["bundle_id"]) == "physics_pulley_v1"
 
-    assert "known_force" in str(prompt["annotation_hint_effort_force"])
+    assert str(prompt["task_key"]) == "pulley_mechanical_advantage_query"
 
-    assert "target_force" in str(prompt["annotation_hint_load_force"])
+    assert {
+        "bundle_id",
+        "task_key",
+        "json_output_contract",
+        "json_output_contract_answer_only",
+    }.issubset(set(prompt.keys()))
 
-    assert "[x0, y0, x1, y1] pixel boxes" in str(prompt["annotation_hint_load_force"])
+    assert not any("object_description" in key for key in prompt)
 
-    assert "exclude" not in str(prompt["annotation_hint_load_force"]).lower()
+    assert not any("annotation_hint" in key for key in prompt)

@@ -29,25 +29,27 @@ def _axis_point(
     return _bbox_center(bbox)
 
 
-def profile_segment_midpoint(
+def profile_segment(
     dataset: ParallelDataset,
     rendered: RenderedParallelScene,
     *,
     profile_id: str,
-) -> Point:
+) -> list[Point]:
+    """Return the selected visible profile segment endpoints."""
+
     x0, y0 = _axis_point(rendered, profile_id=str(profile_id), axis_index=int(dataset.query.axis_i))
     x1, y1 = _axis_point(rendered, profile_id=str(profile_id), axis_index=int(dataset.query.axis_j))
-    return _round_point((float(x0) + float(x1)) / 2.0, (float(y0) + float(y1)) / 2.0)
+    return [_round_point(x0, y0), _round_point(x1, y1)]
 
 
-def profile_segment_point_set(
+def profile_segment_set(
     dataset: ParallelDataset,
     rendered: RenderedParallelScene,
     *,
     profile_ids: Sequence[str],
-) -> list[Point]:
+) -> list[list[Point]]:
     return [
-        profile_segment_midpoint(dataset, rendered, profile_id=str(profile_id))
+        profile_segment(dataset, rendered, profile_id=str(profile_id))
         for profile_id in profile_ids
     ]
 
@@ -92,15 +94,6 @@ def crossing_point_set(
     ]
 
 
-def point_annotation(point: Sequence[float]) -> tuple[TypedValue, dict[str, Any], dict[str, Any]]:
-    value = [round(float(point[0]), 2), round(float(point[1]), 2)]
-    return (
-        TypedValue(type="point", value=list(value)),
-        {"type": "point", "point": list(value)},
-        {"type": "point", "point": list(value), "pixel_point": list(value)},
-    )
-
-
 def point_set_annotation(points: Sequence[Sequence[float]]) -> tuple[TypedValue, dict[str, Any], dict[str, Any]]:
     value = [[round(float(point[0]), 2), round(float(point[1]), 2)] for point in points]
     return (
@@ -110,10 +103,45 @@ def point_set_annotation(points: Sequence[Sequence[float]]) -> tuple[TypedValue,
     )
 
 
+def segment_annotation(segment: Sequence[Sequence[float]]) -> tuple[TypedValue, dict[str, Any], dict[str, Any]]:
+    value = [
+        [round(float(point[0]), 2), round(float(point[1]), 2)]
+        for point in segment[:2]
+    ]
+    return (
+        TypedValue(type="segment", value=[list(point) for point in value]),
+        {"type": "segment", "segment": [list(point) for point in value]},
+        {
+            "type": "segment",
+            "segment": [list(point) for point in value],
+            "pixel_segment": [list(point) for point in value],
+        },
+    )
+
+
+def segment_set_annotation(
+    segments: Sequence[Sequence[Sequence[float]]],
+) -> tuple[TypedValue, dict[str, Any], dict[str, Any]]:
+    value = [
+        [[round(float(point[0]), 2), round(float(point[1]), 2)] for point in segment[:2]]
+        for segment in segments
+    ]
+    return (
+        TypedValue(type="segment_set", value=[[list(point) for point in segment] for segment in value]),
+        {"type": "segment_set", "count": len(value)},
+        {
+            "type": "segment_set",
+            "segment_set": [[list(point) for point in segment] for segment in value],
+            "pixel_segment_set": [[list(point) for point in segment] for segment in value],
+        },
+    )
+
+
 __all__ = [
     "crossing_point_set",
-    "point_annotation",
     "point_set_annotation",
-    "profile_segment_midpoint",
-    "profile_segment_point_set",
+    "profile_segment",
+    "profile_segment_set",
+    "segment_annotation",
+    "segment_set_annotation",
 ]

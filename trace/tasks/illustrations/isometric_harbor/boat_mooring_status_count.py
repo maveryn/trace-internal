@@ -6,10 +6,11 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
 from trace.core.scene_config import get_scene_defaults
+from trace.core.seed import spawn_rng
+from trace.core.sampling import support_probability_map, uniform_choice_with_probabilities
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.illustrations.shared.canvas_profiles import resolve_canvas_profile
 
@@ -79,17 +80,13 @@ def _select_other_count(
         value = int(explicit)
         if value not in set(valid_support):
             raise ValueError(f"other_count must be one of {valid_support}")
-        return value, {str(value): 1.0}
+        return value, support_probability_map(valid_support, selected=value, sort_keys=True)
+    namespace = f"{TASK_ID}:other_count"
     if params.get("_sample_cursor") is not None:
-        index = abs(int(params["_sample_cursor"])) // max(1, len(support))
-    else:
-        index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}:other_count",
-        )
-    value = int(valid_support[int(index) % len(valid_support)])
-    return value, dict(uniform_probability_map(valid_support))
+        namespace = f"{namespace}:{int(params['_sample_cursor'])}"
+    rng = spawn_rng(int(instance_seed), namespace)
+    value, probabilities = uniform_choice_with_probabilities(rng, valid_support, sort_keys=True)
+    return int(value), dict(probabilities)
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpec:
@@ -134,7 +131,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
         target_count=int(target_count),
         target_count_probabilities=dict(target_count_probabilities),
         answer_count_support=tuple(int(value) for value in answer_count_support),
-        answer_count_probabilities=dict(uniform_probability_map(answer_count_support)),
+        answer_count_probabilities=dict(support_probability_map(answer_count_support, sort_keys=True)),
         canvas_width=int(profile.width),
         canvas_height=int(profile.height),
         canvas_profile=str(profile.profile_id),
@@ -230,7 +227,7 @@ def _build_plan() -> HarborCountPlan:
     )
 
 
-def _render_scene_from_sample(scene_seed: int, sample: CountTaskSampleSpec) -> IsoHarborScene:
+def _render_scene_from_sample(scene_seed: int, sample: CountTaskSampleSpec, params: Mapping[str, Any]) -> IsoHarborScene:
     """Render with exact moored/open-water counts requested by the public task sample."""
 
     if not isinstance(sample, _SampleSpec):
@@ -244,6 +241,8 @@ def _render_scene_from_sample(scene_seed: int, sample: CountTaskSampleSpec) -> I
         canvas_profile_probabilities=sample.canvas_profile_probabilities,
         required_moored_boat_count=moored_count,
         required_open_water_boat_count=open_water_count,
+        render_style_params=params,
+        render_style_defaults=_RENDER_DEFAULTS,
     )
 
 

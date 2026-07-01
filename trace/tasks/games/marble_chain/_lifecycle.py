@@ -32,12 +32,13 @@ from .shared.rules import insertion_point_annotation_ids
 from .shared.sampling import (
     DisplayValidator,
     SlotGroupBuilder,
+    StateSlotGroupBuilder,
     answer_option_label,
     resolve_chain_length_axis,
     resolve_color_count_axis,
     resolve_marble_scene_axes,
     resolve_option_count_axis,
-    sample_direction_option_scene,
+    sample_direction_option_scene_from_state_groups,
 )
 from .shared.state import MarbleSample, MarbleSceneAxes, RenderedMarbleScene
 
@@ -197,19 +198,19 @@ def marble_point_attempt(
     )
 
 
-def prepare_marble_direction_option_plan(
+def _prepare_marble_direction_option_plan_from_state_groups(
     *,
     instance_seed: int,
     task_params: Mapping[str, Any],
     gen_defaults: Mapping[str, Any],
     namespace: str,
     prompt_slots: MarblePromptSlots,
-    slot_group_builder: SlotGroupBuilder,
+    slot_group_builder: StateSlotGroupBuilder,
     display_validator: DisplayValidator,
     target_pop_count: int | None = None,
     extra_params: Mapping[str, Any] | None = None,
 ) -> MarbleObjectivePlan:
-    """Prepare common labeled-arrow plumbing around task-owned slot semantics."""
+    """Prepare common labeled-arrow plumbing around state-aware slot semantics."""
 
     chain_axis = resolve_chain_length_axis(
         gen_defaults=gen_defaults,
@@ -251,7 +252,7 @@ def prepare_marble_direction_option_plan(
     def construct_attempt(rng: Any, axes: MarbleSceneAxes):
         """Bind one labeled shot option, its answer, and insertion-point annotation."""
 
-        chain_colors, shooter_color, option_specs = sample_direction_option_scene(
+        chain_colors, shooter_color, option_specs = sample_direction_option_scene_from_state_groups(
             rng,
             chain_length=int(chain_axis.value),
             color_count=int(color_axis.value),
@@ -283,6 +284,60 @@ def prepare_marble_direction_option_plan(
     return MarbleObjectivePlan(
         attempt_namespace=str(namespace),
         construct_attempt=construct_attempt,
+    )
+
+
+def prepare_marble_direction_option_plan(
+    *,
+    instance_seed: int,
+    task_params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    namespace: str,
+    prompt_slots: MarblePromptSlots,
+    slot_group_builder: SlotGroupBuilder,
+    display_validator: DisplayValidator,
+    target_pop_count: int | None = None,
+    extra_params: Mapping[str, Any] | None = None,
+) -> MarbleObjectivePlan:
+    """Prepare common labeled-arrow plumbing around task-owned slot semantics."""
+
+    return _prepare_marble_direction_option_plan_from_state_groups(
+        instance_seed=int(instance_seed),
+        task_params=task_params,
+        gen_defaults=gen_defaults,
+        namespace=str(namespace),
+        prompt_slots=prompt_slots,
+        slot_group_builder=lambda _chain_colors, outcomes: slot_group_builder(outcomes),
+        display_validator=display_validator,
+        target_pop_count=target_pop_count,
+        extra_params=extra_params,
+    )
+
+
+def prepare_marble_state_direction_option_plan(
+    *,
+    instance_seed: int,
+    task_params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    namespace: str,
+    prompt_slots: MarblePromptSlots,
+    slot_group_builder: StateSlotGroupBuilder,
+    display_validator: DisplayValidator,
+    target_pop_count: int | None = None,
+    extra_params: Mapping[str, Any] | None = None,
+) -> MarbleObjectivePlan:
+    """Prepare labeled-arrow plumbing for objectives that inspect chain colors."""
+
+    return _prepare_marble_direction_option_plan_from_state_groups(
+        instance_seed=int(instance_seed),
+        task_params=task_params,
+        gen_defaults=gen_defaults,
+        namespace=str(namespace),
+        prompt_slots=prompt_slots,
+        slot_group_builder=slot_group_builder,
+        display_validator=display_validator,
+        target_pop_count=target_pop_count,
+        extra_params=extra_params,
     )
 
 
@@ -469,6 +524,7 @@ __all__ = [
     "marble_point_attempt",
     "marble_point_set_attempt",
     "prepare_marble_direction_option_plan",
+    "prepare_marble_state_direction_option_plan",
     "render_marble_lifecycle",
     "run_marble_lifecycle",
     "run_marble_registered_task",

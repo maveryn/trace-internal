@@ -8,7 +8,7 @@ from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.registry import register_task
 
 from ._lifecycle import build_scatter_cluster_plan, run_scatter_cluster_task
-from .shared.annotations import centroid_option_bbox_map_annotation
+from .shared.annotations import centroid_option_point_annotation
 from .shared.data import build_centroid_option_dataset
 from .shared.sampling import (
     option_labels_for_count,
@@ -26,10 +26,9 @@ PROMPT_QUERY_KEY = "centroid_option_selection_label"
 
 
 def _centroid_option_annotation(dataset, rendered):
-    return centroid_option_bbox_map_annotation(
+    return centroid_option_point_annotation(
         dataset=dataset,
         rendered=rendered,
-        target_cluster_label=str(dataset.question.params["target_cluster_label"]),
         selected_option_label=str(dataset.question.answer),
     )
 
@@ -65,7 +64,7 @@ def _build_plan(params: dict[str, Any], instance_seed: int, selected: str, proba
         inputs=inputs,
         prompt_key=PROMPT_QUERY_KEY,
         question_format="scatter_cluster_centroid_option_selection_label",
-        witness_type="scatter_cluster_centroid_option_bbox_map",
+        witness_type="scatter_cluster_centroid_option_point",
         annotation_builder=_centroid_option_annotation,
     )
 

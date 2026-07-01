@@ -74,10 +74,16 @@ def annotation_value(
         projection = projected_node_point_annotation(rendered_scene, labels)
         points = [list(point) for point in projection["pixel_point_set"]]
         annotation_type = "point_sequence" if kind == "node_point_sequence" else "point_set"
+        witness = {
+            "type": "object_sequence" if kind == "node_point_sequence" else "object_set",
+            "labels": list(labels),
+        }
+        if hasattr(sample, "removed_node_label"):
+            witness["removed_node_label"] = str(getattr(sample, "removed_node_label"))
         return (
             TypedValue(type=annotation_type, value=list(points)),
             {"type": annotation_type, annotation_type: list(points), **dict(projection)},
-            {"type": "object_sequence" if kind == "node_point_sequence" else "object_set", "labels": list(labels)},
+            witness,
         )
     if kind == "edge_segment_set":
         edges = edges_from_sample(sample, str(annotation_field))

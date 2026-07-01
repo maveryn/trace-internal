@@ -1,27 +1,105 @@
-"""Cube topology and rolling mechanics for cube-net puzzle scenes."""
+"""Cube topology helpers for cube-net puzzle scenes."""
 
 from __future__ import annotations
 
+from functools import lru_cache
+from itertools import permutations, product
 from typing import Dict, Mapping, Sequence, Tuple
-
-from trace.core.sampling import uniform_choice
-from trace.core.seed import spawn_rng
 
 from .state import (
     FACE_BY_NORMAL,
     FACE_IDS,
     NET_COORDS,
-    ROLL_OFFSETS,
+    NORMAL_BY_FACE,
     SIDE_OFFSETS,
 )
 
 
 Vector3 = Tuple[int, int, int]
 FaceBasis = Tuple[Vector3, Vector3, Vector3]
+RotationMatrix = Tuple[Vector3, Vector3, Vector3]
 
 
 def _neg(vec: Sequence[int]) -> Vector3:
     return (-int(vec[0]), -int(vec[1]), -int(vec[2]))
+
+
+def _permutation_parity(perm: Sequence[int]) -> int:
+    """Return +1 for even permutations and -1 for odd permutations."""
+
+    inversions = 0
+    values = [int(value) for value in perm]
+    for left in range(len(values)):
+        for right in range(left + 1, len(values)):
+            if values[left] > values[right]:
+                inversions += 1
+    return 1 if inversions % 2 == 0 else -1
+
+
+def _apply_rotation(matrix: RotationMatrix, vec: Sequence[int]) -> Vector3:
+    """Apply one signed permutation matrix to a cube normal vector."""
+
+    return (
+        int(matrix[0][0]) * int(vec[0])
+        + int(matrix[0][1]) * int(vec[1])
+        + int(matrix[0][2]) * int(vec[2]),
+        int(matrix[1][0]) * int(vec[0])
+        + int(matrix[1][1]) * int(vec[1])
+        + int(matrix[1][2]) * int(vec[2]),
+        int(matrix[2][0]) * int(vec[0])
+        + int(matrix[2][1]) * int(vec[1])
+        + int(matrix[2][2]) * int(vec[2]),
+    )
+
+
+@lru_cache(maxsize=1)
+def cube_rotation_matrices() -> Tuple[RotationMatrix, ...]:
+    """Return the 24 orientation-preserving rotations of a cube."""
+
+    rotations: list[RotationMatrix] = []
+    for perm in permutations((0, 1, 2)):
+        parity = _permutation_parity(perm)
+        for signs in product((-1, 1), repeat=3):
+            if parity * int(signs[0]) * int(signs[1]) * int(signs[2]) != 1:
+                continue
+            rows: list[Vector3] = []
+            for row_index in range(3):
+                row = [0, 0, 0]
+                row[int(perm[row_index])] = int(signs[row_index])
+                rows.append((int(row[0]), int(row[1]), int(row[2])))
+            rotations.append((rows[0], rows[1], rows[2]))
+    if len(rotations) != 24:
+        raise ValueError("cube rotation construction did not produce 24 rotations")
+    return tuple(rotations)
+
+
+def rotate_face_assignment(
+    face_assignment: Mapping[str, str],
+    rotation: RotationMatrix,
+) -> Dict[str, str]:
+    """Rotate one face-value assignment by a physical cube rotation."""
+
+    rotated: Dict[str, str] = {}
+    for face_id, value in face_assignment.items():
+        normal = NORMAL_BY_FACE[str(face_id)]
+        target_face = FACE_BY_NORMAL[_apply_rotation(rotation, normal)]
+        rotated[str(target_face)] = str(value)
+    if set(rotated) != set(FACE_IDS):
+        raise ValueError("rotated face assignment did not cover all cube faces")
+    return rotated
+
+
+def canonical_face_assignment_signature(face_assignment: Mapping[str, str]) -> Tuple[str, ...]:
+    """Normalize a face-value assignment over all whole-cube rotations."""
+
+    signatures = [
+        tuple(rotated[str(face)] for face in FACE_IDS)
+        for rotated in (
+            rotate_face_assignment(face_assignment, rotation)
+            for rotation in cube_rotation_matrices()
+        )
+    ]
+    return min(signatures)
 
 
 def basis_across_side(
@@ -92,123 +170,12 @@ def face_across_display_side(face_id: str, side: str) -> str:
     return str(FACE_BY_NORMAL[tuple(target_normal)])
 
 
-def roll_orientation(orientation: Mapping[str, str], direction: str) -> Dict[str, str]:
-    """Apply one cardinal rolling step to the cube orientation slots."""
-
-    top = str(orientation["top"])
-    bottom = str(orientation["bottom"])
-    north = str(orientation["north"])
-    south = str(orientation["south"])
-    west = str(orientation["west"])
-    east = str(orientation["east"])
-    if str(direction) == "N":
-        return {
-            "top": south,
-            "bottom": north,
-            "north": top,
-            "south": bottom,
-            "west": west,
-            "east": east,
-        }
-    if str(direction) == "S":
-        return {
-            "top": north,
-            "bottom": south,
-            "north": bottom,
-            "south": top,
-            "west": west,
-            "east": east,
-        }
-    if str(direction) == "E":
-        return {
-            "top": west,
-            "bottom": east,
-            "north": north,
-            "south": south,
-            "west": bottom,
-            "east": top,
-        }
-    if str(direction) == "W":
-        return {
-            "top": east,
-            "bottom": west,
-            "north": north,
-            "south": south,
-            "west": top,
-            "east": bottom,
-        }
-    raise ValueError(f"unsupported roll direction: {direction}")
-
-
-def random_start_orientation(instance_seed: int, namespace: str) -> Dict[str, str]:
-    """Sample a valid start orientation by applying random legal roll steps."""
-
-    rng = spawn_rng(int(instance_seed), f"{namespace}.start_orientation")
-    orientation = {
-        "top": "U",
-        "bottom": "D",
-        "north": "B",
-        "south": "F",
-        "west": "L",
-        "east": "R",
-    }
-    for _ in range(int(rng.randrange(1, 7))):
-        orientation = roll_orientation(
-            orientation,
-            str(uniform_choice(rng, tuple(ROLL_OFFSETS.keys()))),
-        )
-    return dict(orientation)
-
-
-def sample_roll_path(
-    *,
-    instance_seed: int,
-    rows: int,
-    cols: int,
-    length: int,
-    namespace: str,
-) -> Tuple[Tuple[Tuple[int, int], ...], Tuple[str, ...]]:
-    """Sample a bounded grid path whose cells and directions are mutually valid."""
-
-    rng = spawn_rng(int(instance_seed), f"{namespace}.path")
-    fallback_path: list[tuple[int, int]] = [(0, 0)]
-    fallback_dirs: list[str] = []
-    for _attempt in range(80):
-        row = int(rng.randrange(1, max(2, int(rows) - 1)))
-        col = int(rng.randrange(1, max(2, int(cols) - 1)))
-        path = [(row, col)]
-        dirs: list[str] = []
-        previous: str | None = None
-        for _step in range(int(length)):
-            candidates = []
-            for direction, (dr, dc) in ROLL_OFFSETS.items():
-                nr = int(row + dr)
-                nc = int(col + dc)
-                if 0 <= nr < int(rows) and 0 <= nc < int(cols):
-                    candidates.append(str(direction))
-            if previous is not None and len(candidates) > 1:
-                opposite = {"N": "S", "S": "N", "E": "W", "W": "E"}[previous]
-                candidates = [item for item in candidates if item != opposite] or candidates
-            direction = str(uniform_choice(rng, tuple(candidates)))
-            dr, dc = ROLL_OFFSETS[direction]
-            row = int(row + dr)
-            col = int(col + dc)
-            path.append((row, col))
-            dirs.append(direction)
-            previous = direction
-        fallback_path = list(path)
-        fallback_dirs = list(dirs)
-        if len(set(path)) >= min(4, len(path)):
-            return tuple(path), tuple(dirs)
-    return tuple(fallback_path), tuple(fallback_dirs)
-
-
 __all__ = [
     "NET_FACE_BASES",
     "basis_across_side",
+    "canonical_face_assignment_signature",
+    "cube_rotation_matrices",
     "face_across_display_side",
     "net_face_bases",
-    "random_start_orientation",
-    "roll_orientation",
-    "sample_roll_path",
+    "rotate_face_assignment",
 ]

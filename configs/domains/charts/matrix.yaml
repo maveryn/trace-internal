@@ -32,6 +32,7 @@ generation:
     balanced_grid_style_sampling: true
 rendering:
   shared:
+    chart_context_profile: report_paragraph
     canvas_width: 1368
     canvas_height: 928
     outer_margin_px: 38

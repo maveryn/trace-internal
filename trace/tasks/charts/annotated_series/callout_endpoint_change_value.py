@@ -9,7 +9,7 @@ from trace.tasks.charts.annotated_series.shared.prompts import TASK_PROMPT_KEY, 
 from trace.tasks.charts.annotated_series.shared.rendering import draw_callout_markup, finish_rendered_image, render_base_series
 from trace.tasks.charts.annotated_series.shared.sampling import build_series_sample, choose_semantic_branch
 from trace.tasks.charts.annotated_series.shared.output import build_trace_payload_scaffold, mark_count_range_for_params
-from trace.tasks.charts.shared.labeled_chart_common import balanced_choice_from_values
+from trace.tasks.charts.shared.labeled_chart_values import balanced_choice_from_values
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions

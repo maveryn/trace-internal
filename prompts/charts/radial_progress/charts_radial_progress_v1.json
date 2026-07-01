@@ -50,13 +50,6 @@
         "How many displayed progress indicators are {range_phrase}?",
         "From the progress arcs, count widgets with values {range_phrase}."
       ],
-      "remaining_at_least_threshold_count": [
-        "How many progress widgets have {threshold_phrase}?",
-        "Count the labeled progress widgets with {threshold_phrase}.",
-        "Using the radial progress scale, how many widgets still have {threshold_phrase}?",
-        "How many displayed progress indicators meet the remaining-progress condition {threshold_phrase}?",
-        "From the progress arcs, count widgets whose unfilled portion is {threshold_phrase}."
-      ],
       "highest_remaining_label": [
         "Which visible label has {extremum_phrase}?",
         "Find the progress widget with {extremum_phrase}. What is its visible label?",
@@ -103,12 +96,6 @@
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:within_range_count": {
-      "answer_hint": "set \"answer\" to the requested integer count",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes, one around each counted widget",
-      "json_example": "{\"annotation\":[[92,154,352,388],[382,154,642,388],[672,154,932,388]],\"answer\":3}",
-      "json_example_answer_only": "{\"answer\":3}"
-    },
-    "query:remaining_at_least_threshold_count": {
       "answer_hint": "set \"answer\" to the requested integer count",
       "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes, one around each counted widget",
       "json_example": "{\"annotation\":[[92,154,352,388],[382,154,642,388],[672,154,932,388]],\"answer\":3}",

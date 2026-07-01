@@ -1,7 +1,15 @@
 # `task_graph__node_link__degree_extremum_value`
 
 ## Program Contract
-- `value(extreme(metric(nodes(graph), degree_metric), direction=max_or_min)); scene=node_link; scope=degree_extremum_value`
+
+Program: `value(extreme(metric(nodes(graph), degree_metric), direction=max_or_min)); scene=node_link; scope=degree_extremum_value`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `degree_extremum_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `extreme`, `metric`, `nodes`, `graph`, `degree_metric`, `direction`, `max_or_min`, `node_link`, `degree_extremum_value` plus the active `query_id` branch.
+Operation: evaluate `value` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; the queried extreme degree value,.
+Annotation witnesses: `annotation` uses the `point` schema; one point at the node center whose branch-specific degree value equals the requested maximum or minimum.
+Query ids: `undirected_max_degree_value`, `undirected_min_degree_value`, `directed_max_in_degree_value`, `directed_max_out_degree_value`.
 
 ## 1) Identity
 1. Domain: `graph`

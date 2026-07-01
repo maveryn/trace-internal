@@ -7,7 +7,10 @@ from typing import Any, Dict, Mapping
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.config_defaults import (
+    load_scene_generation_rendering_prompt_defaults,
+)
+from trace.tasks.games.shared.sampling import resolve_games_named_axis
 
 from ._lifecycle import HexAttemptResult, HexObjectivePlan, run_hex_lifecycle
 from .shared.sampling import (
@@ -16,20 +19,19 @@ from .shared.sampling import (
 )
 from .shared.state import SCENE_ID
 
-
 TASK_ID = "task_games__hex__candidate_neighbor_count"
-SUPPORTED_QUERY_IDS = ("red_neighbor_count", "blue_neighbor_count", "empty_neighbor_count")
-QUERY_TO_TARGET_STATE = {
-    "red_neighbor_count": "red",
-    "blue_neighbor_count": "blue",
-    "empty_neighbor_count": "empty",
-}
+QUERY_ID = "single"
+PROMPT_QUERY_KEY = "candidate_neighbor_count"
+SUPPORTED_QUERY_IDS = (QUERY_ID,)
+SUPPORTED_NEIGHBOR_STATES = ("red", "blue", "empty")
 NEIGHBOR_COUNT_SUPPORT = (0, 1, 2, 3, 4, 5, 6)
 
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
-    "games",
-    SCENE_ID,
-    task_id=TASK_ID,
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = (
+    load_scene_generation_rendering_prompt_defaults(
+        "games",
+        SCENE_ID,
+        task_id=TASK_ID,
+    )
 )
 
 
@@ -43,7 +45,18 @@ def _prepare_neighbor_count_objective(
     """Bind the selected neighbor-state query to a labeled-cell count."""
 
     del scene_axes
-    target_state = str(QUERY_TO_TARGET_STATE[str(selected_query_id)])
+    if str(selected_query_id) != QUERY_ID:
+        raise ValueError(f"unsupported Hex neighbor-count query: {selected_query_id}")
+    target_state, target_state_probabilities = resolve_games_named_axis(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        gen_defaults=_GEN_DEFAULTS,
+        namespace=f"{TASK_ID}.neighbor_target_state",
+        explicit_key="neighbor_target_state",
+        weights_key="neighbor_target_state_weights",
+        balance_flag_key="balanced_neighbor_target_state_sampling",
+        supported_variants=SUPPORTED_NEIGHBOR_STATES,
+    )
     target_axis = resolve_hex_integer_axis(
         instance_seed=int(instance_seed),
         params=task_params,
@@ -51,9 +64,10 @@ def _prepare_neighbor_count_objective(
         support_key="neighbor_count_support",
         explicit_key="target_answer",
         fallback_support=NEIGHBOR_COUNT_SUPPORT,
-        namespace=f"{selected_query_id}.target_answer",
+        namespace="candidate_neighbor_count.target_answer",
         balanced_flag_key="balanced_target_answer_sampling",
     )
+
     def construct_attempt(rng, axes) -> HexAttemptResult:
         sample = sample_neighbor_count_scene(
             rng=rng,
@@ -68,12 +82,15 @@ def _prepare_neighbor_count_objective(
         )
 
     return HexObjectivePlan(
-        prompt_query_key=str(selected_query_id),
+        prompt_query_key=PROMPT_QUERY_KEY,
         answer_gt=TypedValue(type="integer", value=int(target_axis.value)),
         target_axis=target_axis,
         candidate_count_axis=None,
-        extra_query_params={"neighbor_target_state": target_state},
-        attempt_namespace=f"games.hex.{selected_query_id}",
+        extra_query_params={
+            "neighbor_target_state": target_state,
+            "neighbor_target_state_probabilities": dict(target_state_probabilities),
+        },
+        attempt_namespace=f"games.hex.candidate_neighbor_count.{target_state}",
         construct_attempt=construct_attempt,
     )
 
@@ -87,7 +104,9 @@ class GamesHexCandidateNeighborCountTask:
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+    def generate(
+        self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int
+    ) -> TaskOutput:
         return run_hex_lifecycle(
             task_id=TASK_ID,
             domain=self.domain,

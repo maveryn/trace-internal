@@ -23,9 +23,12 @@ artifacts, forged status files, or compatibility aliases.
 
 1. `SCENE_MIGRATION_GUIDE.md`
 2. `TAXONOMY_REVIEW_CHECKLIST.md`
-3. `../contracts/PROGRAM_SCHEMA_CATALOG.md`
-4. `ENFORCEMENT_TESTS.md`
-5. `RECEIPT_SCHEMA.md`
+3. `SCALAR_ANNOTATION_ROLLOUT.md`
+4. `../contracts/PROGRAM_SCHEMA_CATALOG.md`
+5. `ENFORCEMENT_TESTS.md`
+6. `RECEIPT_SCHEMA.md`
+7. `POST_MIGRATION_DOMAIN_CHECKLIST.md` after every scene in a domain has
+   passed human review and the domain needs a final consistency sweep.
 
 Domain-level companion docs may be added here only when a domain has shared
 scene infrastructure that needs explicit ownership rules before scene work can
@@ -48,6 +51,19 @@ proceed. Current companion docs:
   reusable object/person renderers, scene-local visual grammars, derived visual
   scenes, and legacy counting/task-common surfaces to decompose during scene
   migration.
+- `PAGES_SHARED_BOUNDARY.md`: pages-domain ownership plan for page-layout,
+  text, control, form, route, document, and infographic primitives versus
+  scene-local page grammars and legacy routing surfaces to decompose during
+  scene migration.
+- `PHYSICS_SHARED_BOUNDARY.md`: physics-domain ownership plan for physical
+  system diagrams, formulas, apparatus renderers, scene-local physical
+  grammars, and legacy family modules to decompose during scene migration.
+- `PUZZLES_SHARED_BOUNDARY.md`: puzzles-domain ownership plan for repeated-cell
+  puzzle primitives, scene-local rules/constraints/solvers, and legacy
+  `*_scene.py` / `*_common.py` surfaces to decompose during scene migration.
+- `SYMBOLIC_SHARED_BOUNDARY.md`: symbolic-domain ownership plan for notation,
+  readout, automaton, probability-device, logic-circuit, and chemistry-scene
+  primitives versus scene-local shared packages.
 - `THREE_D_SHARED_BOUNDARY.md`: three_d-domain ownership plan for reusable 3D
   object resources/renderers, scene-local spatial grammars, and legacy
   objective-base surfaces to decompose during scene migration.
@@ -72,6 +88,10 @@ Even with a companion doc, migrate one scene correctly before broad domain work.
 - No generated review artifacts for scenes that fail pre-review gates.
 - No generated review artifacts without a passing scene-level taxonomy review
   status file.
+- No generated review artifacts without passing scene-level manual source audit
+  and scene-scoped migration test status files.
+- No scene taxonomy review passes with a one-item set annotation for a task that
+  guarantees exactly one point or box witness.
 - No task can be review-done until the human reviewer checks the task-level
   taxonomy review gate in the browser app.
 - No speculative domain-shared promotion. Keep helpers scene-local first, then
@@ -89,8 +109,9 @@ valid.
 - `review-candidate`: scene is listed in
   `SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES` so migration tests and review gates
   inspect it.
-- `review-ready`: source audit, taxonomy audit, tests, smoke generation, review
-  artifacts, and app reload are complete. Human review is still required.
+- `review-ready`: source audit, taxonomy audit, scene-scoped migration tests,
+  automated source audit, smoke generation, review artifacts, and app reload
+  are complete. Human review is still required.
 - `accepted`: the human reviewer accepted the scene in the browser app and a
   receipt was recorded in the review workspace.
 

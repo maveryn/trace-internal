@@ -5,8 +5,9 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Any, Callable, Mapping, Sequence, TypeVar
 
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.measurement_rendering import fmt_measure
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.fixed_query import geometry_selected_probability_map
 
 from .measurements import (
@@ -72,24 +73,17 @@ def _resolve_answer_first_case(
         raise ValueError("solid cross-section case support is empty")
     explicit_answer = params.get("target_answer")
     if explicit_answer is None:
-        answer_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}.answer",
-        )
-        answer_key = str(answer_keys[int(answer_index) % len(answer_keys)])
+        rng = spawn_rng(int(instance_seed), f"{namespace}.answer")
+        answer_key = str(uniform_choice(rng, answer_keys))
     else:
         answer_key = _answer_key(float(explicit_answer))
         if answer_key not in cases_by_answer:
             raise ValueError(f"target_answer={explicit_answer} is not supported")
     answer_cases = tuple(cases_by_answer[str(answer_key)])
-    case_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.case.{answer_key}",
-    )
-    selected = answer_cases[int(case_index) % len(answer_cases)]
-    return selected, int(case_index) % len(answer_cases), tuple(float(value) for value in answer_keys), len(answer_cases)
+    rng = spawn_rng(int(instance_seed), f"{namespace}.case.{answer_key}")
+    selected = uniform_choice(rng, answer_cases)
+    case_index = answer_cases.index(selected)
+    return selected, int(case_index), tuple(float(value) for value in answer_keys), len(answer_cases)
 
 
 def _support_probabilities(support_values: Sequence[float], answer: float) -> dict[str, float]:

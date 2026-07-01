@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.core.scene_config import get_scene_defaults
 from trace.core.visual.noise import apply_post_image_noise
@@ -224,12 +225,8 @@ def _select_winner_label(
         if label not in set(labels):
             raise ValueError(f"winner_label={label!r} is not in label pool {labels!r}")
         return label, {label: 1.0}
-    selection_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.winner_label",
-    )
-    return str(labels[int(selection_index) % len(labels)]), _probability_map(labels)
+    rng = spawn_rng(int(instance_seed), f"{namespace}.winner_label")
+    return str(uniform_choice(rng, labels)), _probability_map(labels)
 
 
 def _candidate_labels_for_selection(query: _ResolvedQuery, *, candidate_count: int) -> Tuple[str, ...]:

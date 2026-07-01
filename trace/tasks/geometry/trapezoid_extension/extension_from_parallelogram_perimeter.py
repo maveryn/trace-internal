@@ -69,6 +69,7 @@ def _prepare_extension_from_perimeter(
         ),
         target_support_probabilities=dict(answer_probabilities),
         include_height_in_support=False,
+        annotation_mode="extension_segment",
     )
     return problem, float(answer), trace_values
 

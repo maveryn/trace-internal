@@ -21,7 +21,6 @@ from trace.tasks.geometry.shared.measurement_rendering import (
     pad_bbox,
 )
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.font_assets import font_role_trace, sample_font_family
 from trace.tasks.shared.text_rendering import load_font, temporary_default_font_family
 
@@ -71,12 +70,9 @@ def create_render_context(
             tuple(int(v) for v in diagram_style.guide_rgb),
         ),
     )
-    palette_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{random_namespace}.palette",
-    )
-    fill_color, solid_fill_color, accent_color, muted_color = palettes[int(palette_index) % len(palettes)]
+    palette_rng = spawn_rng(int(instance_seed), f"{random_namespace}.palette")
+    palette_index = int(palette_rng.randrange(len(palettes)))
+    fill_color, solid_fill_color, accent_color, muted_color = palettes[palette_index]
     font_size = int(params.get("label_font_size", group_default(rendering_defaults, "label_font_size", 22)))
     small_font_size = int(
         params.get("small_label_font_size", group_default(rendering_defaults, "small_label_font_size", 18))
@@ -115,7 +111,7 @@ def create_render_context(
             "solid_fill_color": list(solid_fill_color),
             "accent_color": list(accent_color),
             "muted_color": list(muted_color),
-            "palette_index": int(palette_index) % len(palettes),
+            "palette_index": int(palette_index),
         },
     )
 
@@ -323,6 +319,7 @@ def _render_map(
     axis_bbox: BBox,
     solid_bbox: BBox,
     label_bboxes: Mapping[str, BBox],
+    annotation_bboxes: Mapping[str, BBox],
 ) -> dict[str, Any]:
     return {
         "coord_space": "pixel",
@@ -334,6 +331,7 @@ def _render_map(
         "rotation_axis": {"bbox": bbox_to_list(axis_bbox)},
         "solid": {"kind": str(solid_kind), "bbox": bbox_to_list(solid_bbox)},
         "label_bboxes": {str(key): bbox_to_list(value) for key, value in label_bboxes.items()},
+        "annotation_bboxes": {str(key): bbox_to_list(value) for key, value in annotation_bboxes.items()},
     }
 
 
@@ -350,11 +348,22 @@ def _pack_scene(
     """Pack rendered geometry and labels into scene-neutral output state."""
 
     figure_bbox = bbox_from_points(figure_points, width=ctx.width, height=ctx.height, pad=36.0)
-    annotation_bboxes = {
-        "generating_shape": figure_bbox,
-        "rotation_axis": axis_bbox,
-        "solid_preview": solid_bbox,
-        **{str(key): label_bboxes[str(key)] for key in label_bboxes},
+    source_diagram_bbox = bbox_from_points(
+        (
+            (figure_bbox[0], figure_bbox[1]),
+            (figure_bbox[2], figure_bbox[3]),
+            (axis_bbox[0], axis_bbox[1]),
+            (axis_bbox[2], axis_bbox[3]),
+            *((bbox[0], bbox[1]) for bbox in label_bboxes.values()),
+            *((bbox[2], bbox[3]) for bbox in label_bboxes.values()),
+        ),
+        width=ctx.width,
+        height=ctx.height,
+        pad=8.0,
+    )
+    public_annotation_bboxes = {
+        "source_diagram_bbox": source_diagram_bbox,
+        "resulting_solid_bbox": solid_bbox,
     }
     measurements = {
         "solid_kind": str(problem.solid_kind),
@@ -376,7 +385,7 @@ def _pack_scene(
     }
     return RenderedSolidRevolutionScene(
         image=ctx.image,
-        annotation_bboxes=dict(annotation_bboxes),
+        annotation_bboxes=dict(public_annotation_bboxes),
         annotation_roles=tuple(annotation_roles),
         label_bboxes=dict(label_bboxes),
         scene_entities=(
@@ -400,12 +409,13 @@ def _pack_scene(
             axis_bbox=axis_bbox,
             solid_bbox=solid_bbox,
             label_bboxes=label_bboxes,
+            annotation_bboxes=public_annotation_bboxes,
         ),
         measurements=measurements,
     )
 
 
-def _draw_common_cues(ctx: RenderContext, *, axis_start: Point, axis_end: Point, preview_center: Point) -> tuple[BBox, BBox]:
+def _draw_common_cues(ctx: RenderContext, *, axis_start: Point, axis_end: Point, preview_center: Point) -> BBox:
     _draw_dashed_line(ctx, axis_start, axis_end, fill=ctx.accent_color, width=3)
     axis_bbox = pad_bbox(
         (float(axis_start[0]), float(axis_start[1]), float(axis_end[0]), float(axis_end[1])),
@@ -415,14 +425,14 @@ def _draw_common_cues(ctx: RenderContext, *, axis_start: Point, axis_end: Point,
     )
     _draw_rotation_cue(ctx, (float(axis_start[0]) + 78.0, float(axis_start[1]) - 28.0))
     _draw_arrow(ctx, (395.0, 288.0), (494.0, 288.0))
-    target_bbox = draw_readout_centered(
+    draw_readout_centered(
         ctx,
         "V=?",
         (float(preview_center[0]), float(preview_center[1]) - 168.0),
         small=True,
         required=True,
     )
-    return axis_bbox, target_bbox
+    return axis_bbox
 
 
 def render_cylinder_revolution(
@@ -444,14 +454,13 @@ def render_cylinder_revolution(
     for start, end in zip(figure_points, figure_points[1:] + figure_points[:1]):
         ctx.draw.line([start, end], fill=ctx.line_color, width=ctx.line_width)
     preview_center = (638.0, 288.0)
-    axis_bbox, target_bbox = _draw_common_cues(
+    axis_bbox = _draw_common_cues(
         ctx,
         axis_start=(axis_x, top_y - 34.0),
         axis_end=(axis_x, bottom_y + 34.0),
         preview_center=preview_center,
     )
     label_bboxes: dict[str, BBox] = {
-        "target_volume_cue": target_bbox,
         "height_label": _draw_dimension(
             ctx,
             (rect_left_x - 36.0, top_y),
@@ -485,12 +494,8 @@ def render_cylinder_revolution(
         solid_bbox=solid_bbox,
         label_bboxes=label_bboxes,
         annotation_roles=(
-            "generating_shape",
-            "rotation_axis",
-            "solid_preview",
-            "target_volume_cue",
-            "height_label",
-            "radial_input_label",
+            "source_diagram_bbox",
+            "resulting_solid_bbox",
         ),
     )
 
@@ -509,14 +514,13 @@ def render_cone_revolution(
         ctx.draw.line([start, end], fill=ctx.line_color, width=ctx.line_width)
     draw_right_angle_marker(ctx, (left_x, bottom_y), arm_a=(left_x, top_y), arm_b=(right_x, bottom_y), color=ctx.line_color)
     preview_center = (638.0, 288.0)
-    axis_bbox, target_bbox = _draw_common_cues(
+    axis_bbox = _draw_common_cues(
         ctx,
         axis_start=(left_x, top_y - 34.0),
         axis_end=(left_x, bottom_y + 34.0),
         preview_center=preview_center,
     )
     label_bboxes = {
-        "target_volume_cue": target_bbox,
         "height_label": _draw_dimension(
             ctx,
             (left_x - 36.0, top_y),
@@ -541,12 +545,8 @@ def render_cone_revolution(
         solid_bbox=solid_bbox,
         label_bboxes=label_bboxes,
         annotation_roles=(
-            "generating_shape",
-            "rotation_axis",
-            "solid_preview",
-            "target_volume_cue",
-            "height_label",
-            "slant_height_label",
+            "source_diagram_bbox",
+            "resulting_solid_bbox",
         ),
     )
 
@@ -565,14 +565,13 @@ def render_double_cone_revolution(
     for start, end in zip(figure_points, figure_points[1:] + figure_points[:1]):
         ctx.draw.line([start, end], fill=ctx.line_color, width=ctx.line_width)
     preview_center = (638.0, 288.0)
-    axis_bbox, target_bbox = _draw_common_cues(
+    axis_bbox = _draw_common_cues(
         ctx,
         axis_start=(left_x, top_y - 34.0),
         axis_end=(left_x, bottom_y + 34.0),
         preview_center=preview_center,
     )
     label_bboxes = {
-        "target_volume_cue": target_bbox,
         "half_height_label": _draw_dimension(
             ctx,
             (left_x - 36.0, top_y),
@@ -597,12 +596,8 @@ def render_double_cone_revolution(
         solid_bbox=solid_bbox,
         label_bboxes=label_bboxes,
         annotation_roles=(
-            "generating_shape",
-            "rotation_axis",
-            "solid_preview",
-            "target_volume_cue",
-            "half_height_label",
-            "radius_label",
+            "source_diagram_bbox",
+            "resulting_solid_bbox",
         ),
     )
 
@@ -621,14 +616,13 @@ def render_frustum_revolution(
         ctx.draw.line([start, end], fill=ctx.line_color, width=ctx.line_width)
     draw_right_angle_marker(ctx, (left_x, bottom_y), arm_a=(left_x, top_y), arm_b=(bottom_right, bottom_y), color=ctx.line_color)
     preview_center = (638.0, 288.0)
-    axis_bbox, target_bbox = _draw_common_cues(
+    axis_bbox = _draw_common_cues(
         ctx,
         axis_start=(left_x, top_y - 34.0),
         axis_end=(left_x, bottom_y + 34.0),
         preview_center=preview_center,
     )
     label_bboxes = {
-        "target_volume_cue": target_bbox,
         "height_label": _draw_dimension(
             ctx,
             (left_x - 36.0, top_y),
@@ -660,13 +654,8 @@ def render_frustum_revolution(
         solid_bbox=solid_bbox,
         label_bboxes=label_bboxes,
         annotation_roles=(
-            "generating_shape",
-            "rotation_axis",
-            "solid_preview",
-            "target_volume_cue",
-            "height_label",
-            "top_radius_label",
-            "bottom_radius_label",
+            "source_diagram_bbox",
+            "resulting_solid_bbox",
         ),
     )
 

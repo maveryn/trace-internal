@@ -246,75 +246,6 @@ def build_trend_dataset(
     )
 
 
-def build_separation_dataset(
-    *,
-    params: Mapping[str, Any],
-    instance_seed: int,
-    labels: Sequence[str],
-    answer_label: str,
-    points_per_cluster: int,
-    separation_extremum: str,
-    branch_id: str,
-    branch_probabilities: Mapping[str, float],
-    question_params: Mapping[str, Any],
-) -> ScatterClusterDataset:
-    """Construct a scatter frame with one reference cluster and one closest/farthest answer."""
-
-    rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.separation")
-    label_list = [str(label) for label in labels]
-    answer_index = label_list.index(str(answer_label))
-    reference_label = label_list[(int(answer_index) + 2) % len(label_list)]
-    remaining = [label for label in label_list if label not in {str(answer_label), str(reference_label)}]
-    centers: dict[str, tuple[float, float]] = {str(reference_label): (50.0, 50.0)}
-    if str(separation_extremum) == "closest":
-        centers[str(answer_label)] = (59.0, 54.0)
-        candidate_centers = [(37.0, 42.0), (44.0, 67.0), (66.0, 42.0), (67.0, 65.0), (32.0, 57.0), (58.0, 70.0)]
-    else:
-        centers[str(answer_label)] = (29.0, 34.0)
-        candidate_centers = [(43.0, 46.0), (61.0, 43.0), (48.0, 68.0), (66.0, 62.0), (35.0, 58.0), (58.0, 32.0)]
-    rng.shuffle(candidate_centers)
-    for label, center in zip(remaining, candidate_centers):
-        centers[str(label)] = (float(center[0]) + rng.uniform(-1.5, 1.5), float(center[1]) + rng.uniform(-1.5, 1.5))
-    clusters = _build_clusters(
-        labels=labels,
-        colors=palette(params),
-        centers=centers,
-        slopes={str(label): 0.0 for label in labels},
-        spreads={str(label): (6.0, 6.0) for label in labels},
-        points_per_cluster=int(points_per_cluster),
-        instance_seed=int(instance_seed),
-    )
-    distances = {
-        str(label): round(
-            math.hypot(
-                float(centers[str(label)][0]) - float(centers[str(reference_label)][0]),
-                float(centers[str(label)][1]) - float(centers[str(reference_label)][1]),
-            ),
-            4,
-        )
-        for label in label_list
-        if str(label) != str(reference_label)
-    }
-    return ScatterClusterDataset(
-        scene_variant=SINGLE_SCATTER,
-        clusters=clusters,
-        question=ScatterClusterQuestion(
-            branch_id=str(branch_id),
-            branch_probabilities=dict(branch_probabilities),
-            answer=str(answer_label),
-            answer_type="string",
-            annotation_type="bbox_map",
-            annotation_cluster_labels=(str(reference_label), str(answer_label)),
-            params={
-                **dict(question_params),
-                "reference_cluster_label": str(reference_label),
-                "separation_extremum": str(separation_extremum),
-                "centroid_distances_from_reference": dict(distances),
-            },
-        ),
-    )
-
-
 def _spread_metric(spread: tuple[float, float], axis: str) -> float:
     if str(axis) == "horizontal":
         return float(spread[0])
@@ -499,9 +430,7 @@ def build_area_rank_dataset(
     metrics = {str(label): float(area_envelopes[str(label)].area_value) for label in label_list}
     largest_to_smallest = sorted(label_list, key=lambda label: (-float(metrics[str(label)]), str(label)))
     smallest_to_largest = list(reversed(largest_to_smallest))
-    if str(area_rank) == "second_largest":
-        answer_label = str(largest_to_smallest[1])
-    elif str(area_rank) == "smallest":
+    if str(area_rank) == "smallest":
         answer_label = str(smallest_to_largest[0])
     else:
         answer_label = str(largest_to_smallest[0])
@@ -614,7 +543,7 @@ def build_centroid_option_dataset(
             branch_probabilities=dict(branch_probabilities),
             answer=str(answer_option_label),
             answer_type="option_letter",
-            annotation_type="bbox_map",
+            annotation_type="point",
             annotation_cluster_labels=(str(target_cluster_label),),
             annotation_option_labels=(str(answer_option_label),),
             params={

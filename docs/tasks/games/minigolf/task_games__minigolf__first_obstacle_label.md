@@ -9,12 +9,15 @@
 6. Annotation schema: `point`
 
 ## Program Contract
-`label(first_collision(shot_path, obstacles)); scene=minigolf; scope=first_obstacle_label`
 
-The rendered course shows one ball, a dashed cue direction, a hole, and labeled
-obstacles. The program extends the shown cue as a straight line from the ball,
-finds the first obstacle intersected by that ray, returns that obstacle label,
-and annotates the obstacle center point.
+Program: `label(first_collision(shot_path, obstacles)); scene=minigolf; scope=first_obstacle_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `first_obstacle_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `first_collision`, `shot_path`, `obstacles`, `minigolf`, `first_obstacle_label`.
+Operation: evaluate `label` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. Query ids are internal replay/sampling keys and do not define public task units.

@@ -1,109 +1,145 @@
-"""Behavior tests for pages hierarchy tasks."""
+"""Behavior tests for pages hierarchy org-chart tasks."""
 
 from __future__ import annotations
 
+import importlib
 from collections import Counter, defaultdict
 
+import pytest
+
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.seed import hash64
-from trace.tasks.pages.hierarchy.tree_count import (
-    PagesHierarchyPathLengthCountTask,
+from trace.tasks.pages.hierarchy.manager_most_direct_reports_label import (
+    PagesHierarchyManagerMostDirectReportsLabelTask,
+)
+from trace.tasks.pages.hierarchy.manager_most_total_reports_label import (
+    PagesHierarchyManagerMostTotalReportsLabelTask,
+)
+from trace.tasks.pages.hierarchy.subtree_descendant_count import (
     PagesHierarchySubtreeDescendantCountTask,
-    PagesHierarchySubtreeLeafCountTask,
 )
 from tests.helpers import extract_prompt_json_example
 
 
-def test_pages_hierarchy_tree_count_contract_matches_counted_annotation() -> None:
+def _direct_children(edge_specs: list[dict]) -> dict[str, list[str]]:
+    children: dict[str, list[str]] = defaultdict(list)
+    for edge in edge_specs:
+        children[str(edge["source_node_id"])].append(str(edge["target_node_id"]))
+    return dict(children)
+
+
+def _descendants(node_id: str, children_by_parent: dict[str, list[str]]) -> list[str]:
+    collected: list[str] = []
+
+    def _walk(parent_id: str) -> None:
+        for child_id in children_by_parent.get(str(parent_id), []):
+            collected.append(str(child_id))
+            _walk(str(child_id))
+
+    _walk(str(node_id))
+    return collected
+
+
+def test_pages_hierarchy_active_org_chart_contracts() -> None:
     task_cases = (
-        (PagesHierarchySubtreeDescendantCountTask(), "subtree_descendant_count"),
-        (PagesHierarchySubtreeLeafCountTask(), "subtree_leaf_count"),
-        (PagesHierarchyPathLengthCountTask(), "path_length_between_two_nodes"),
+        (PagesHierarchySubtreeDescendantCountTask(), "subtree_descendant_count", "integer", "bbox_set"),
+        (PagesHierarchyManagerMostTotalReportsLabelTask(), "manager_most_total_reports_label", "string", "bbox"),
+        (PagesHierarchyManagerMostDirectReportsLabelTask(), "manager_most_direct_reports_label", "string", "bbox"),
     )
 
-    for query_id_index, (task, query_id) in enumerate(task_cases):
+    for query_id_index, (task, source_query_id, answer_type, annotation_type) in enumerate(task_cases):
         out = task.generate(
             61400 + query_id_index,
-            params={"query_id": query_id, "scene_variant": "rooted_tree"},
+            params={"query_id": SINGLE_QUERY_ID, "scene_variant": "org_chart", "pages_context_text_enabled": False},
             max_attempts=10,
         )
         trace = out.trace_payload
         execution = trace["execution_trace"]
         render = trace["render_spec"]
         render_map = trace["render_map"]
-        annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
-        annotation_bbox_ids = [str(bbox_id) for bbox_id in execution["annotation_node_bbox_ids"]]
 
-        assert out.answer_gt.type == "integer"
-        expected_annotation_type = "bbox_sequence" if str(query_id) == "path_length_between_two_nodes" else "bbox_set"
-        assert out.annotation_gt.type == expected_annotation_type
+        assert out.answer_gt.type == answer_type
+        assert out.annotation_gt.type == annotation_type
         assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
-        assert str(out.query_id) == str(query_id)
-        assert str(execution["query_id"]) == str(query_id)
-        assert str(execution["source_query_id"]) == str(query_id)
-        assert str(execution["scene_variant"]) == "rooted_tree"
-        assert str(execution["question_format"]) == "hierarchy_tree_count"
-        assert str(execution["view_family"]) == "rooted_tree_diagram"
+        assert str(out.query_id) == SINGLE_QUERY_ID
+        assert str(execution["query_id"]) == SINGLE_QUERY_ID
+        assert str(execution["source_query_id"]) == source_query_id
+        assert str(execution["prompt_query_key"]) == source_query_id
+        assert str(execution["scene_variant"]) == "org_chart"
+        assert str(execution["question_format"]) == "hierarchy_org_chart"
+        assert str(execution["view_family"]) == "org_chart_diagram"
+        assert "CEO" in {str(node["node_label"]) for node in execution["node_specs"]}
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
-        if str(expected_annotation_type) == "bbox_sequence":
-            assert trace["projected_annotation"]["type"] == "bbox_sequence"
-            assert trace["projected_annotation"]["bbox_sequence"] == annotation_bboxes
-        else:
-            assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
-        assert int(out.answer_gt.value) == int(execution["answer_count"])
         assert 16 <= int(execution["tree_node_count"]) <= 30
         assert 4 <= int(execution["tree_depth"]) <= 8
-        prompt_slots = dict(execution["query_prompt_slots"])
-        for label in execution["query_node_labels"]:
-            assert str(label) in {str(value) for value in prompt_slots.values()}
-            assert f'"{label}"' in out.prompt
-
-        expected_bboxes = [
-            [float(value) for value in render_map["node_bboxes_px"][str(bbox_id)]]
-            for bbox_id in annotation_bbox_ids
-        ]
-        assert annotation_bboxes == expected_bboxes
-        assert [str(item) for item in execution["supporting_node_bbox_ids"]] == annotation_bbox_ids
         assert len(execution["node_specs"]) == int(execution["tree_node_count"])
         assert len(render_map["node_bboxes_px"]) == int(execution["tree_node_count"])
         assert len(render_map["edge_bboxes_px"]) == len(execution["edge_specs"])
+        assert "node" not in out.prompt.lower()
+        assert "leaf" not in out.prompt.lower()
+        assert "subtree" not in out.prompt.lower()
+        assert "path" not in out.prompt.lower()
+        assert "hop" not in out.prompt.lower()
 
-        if str(query_id) == "subtree_descendant_count":
+        if source_query_id == "subtree_descendant_count":
+            annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
+            annotation_bbox_ids = [str(bbox_id) for bbox_id in execution["annotation_node_bbox_ids"]]
+            expected_bboxes = [
+                [float(value) for value in render_map["node_bboxes_px"][str(bbox_id)]]
+                for bbox_id in annotation_bbox_ids
+            ]
+            prompt_slots = dict(execution["query_prompt_slots"])
+            for label in execution["query_node_labels"]:
+                assert str(label) in {str(value) for value in prompt_slots.values()}
+                assert f'"{label}"' in out.prompt
+            assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
+            assert annotation_bboxes == expected_bboxes
+            assert int(out.answer_gt.value) == int(execution["answer_count"])
             assert int(execution["answer_count"]) == int(execution["descendant_count"])
             assert len(execution["annotation_node_ids"]) == int(execution["answer_count"])
-            assert str(execution["annotation_semantics"]) == "descendant_nodes_unordered"
-        elif str(query_id) == "subtree_leaf_count":
-            assert int(execution["answer_count"]) == int(execution["leaf_descendant_count"])
-            assert len(execution["annotation_node_ids"]) == int(execution["answer_count"])
-            assert str(execution["annotation_semantics"]) == "leaf_descendant_nodes_unordered"
+            assert str(execution["annotation_semantics"]) == "all_reports_under_named_manager"
         else:
-            assert int(execution["answer_count"]) == int(execution["path_length_between_nodes"])
-            assert len(execution["annotation_node_ids"]) == int(execution["answer_count"]) + 1
-            assert execution["annotation_node_ids"] == execution["path_node_ids"]
-            assert len(execution["query_node_ids"]) == 2
-            assert str(execution["annotation_node_ids"][0]) == str(execution["query_node_ids"][0])
-            assert str(execution["annotation_node_ids"][-1]) == str(execution["query_node_ids"][1])
-            assert str(execution["annotation_semantics"]) == "path_nodes_between_query_nodes_ordered"
+            answer_bbox_id = str(execution["answer_node_bbox_id"])
+            expected_bbox = [float(value) for value in render_map["node_bboxes_px"][answer_bbox_id]]
+            assert [float(value) for value in out.annotation_gt.value] == expected_bbox
+            assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+            assert str(out.answer_gt.value) == str(execution["answer_node_label"])
+            assert str(execution["answer_value"]) == str(execution["answer_node_label"])
+            assert str(execution["answer_node_id"]) != str(execution["root_node_id"])
+            assert str(execution["annotation_semantics"]) == "selected_manager_node"
+            candidate_counts = [dict(row) for row in execution["candidate_manager_counts"]]
+            assert candidate_counts
+            max_count = max(int(row["count"]) for row in candidate_counts)
+            winners = [row for row in candidate_counts if int(row["count"]) == int(max_count)]
+            assert len(winners) == 1
+            assert str(winners[0]["node_id"]) == str(execution["answer_node_id"])
+            assert int(winners[0]["count"]) == int(execution["answer_metric_count"])
 
 
-def test_pages_hierarchy_tree_count_prompt_examples_match_integer_contract() -> None:
+def test_pages_hierarchy_prompt_examples_match_answer_contracts() -> None:
     expected = (
-        (PagesHierarchySubtreeDescendantCountTask(), "subtree_descendant_count", 4),
-        (PagesHierarchySubtreeLeafCountTask(), "subtree_leaf_count", 3),
-        (PagesHierarchyPathLengthCountTask(), "path_length_between_two_nodes", 4),
+        (PagesHierarchySubtreeDescendantCountTask(), "subtree_descendant_count", int),
+        (PagesHierarchyManagerMostTotalReportsLabelTask(), "manager_most_total_reports_label", str),
+        (PagesHierarchyManagerMostDirectReportsLabelTask(), "manager_most_direct_reports_label", str),
     )
 
-    for index, (task, query_id, expected_answer) in enumerate(expected, start=61460):
-        out = task.generate(index, params={"query_id": query_id, "scene_variant": "rooted_tree"}, max_attempts=10)
+    for index, (task, source_query_id, answer_cls) in enumerate(expected, start=61460):
+        out = task.generate(index, params={"query_id": SINGLE_QUERY_ID, "scene_variant": "org_chart"}, max_attempts=10)
+        assert out.trace_payload["execution_trace"]["source_query_id"] == source_query_id
         answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert int(answer_and_annotation["answer"]) == int(expected_answer)
-        assert int(answer_only["answer"]) == int(expected_answer)
+        assert isinstance(answer_and_annotation["answer"], answer_cls)
+        assert isinstance(answer_only["answer"], answer_cls)
         assert isinstance(answer_and_annotation["annotation"], list)
+        if source_query_id == "subtree_descendant_count":
+            assert all(isinstance(item, list) for item in answer_and_annotation["annotation"])
+        else:
+            assert len(answer_and_annotation["annotation"]) == 4
 
 
-def test_pages_hierarchy_tree_count_is_deterministic() -> None:
-    task = PagesHierarchySubtreeLeafCountTask()
-    params = {"query_id": "subtree_leaf_count", "scene_variant": "rooted_tree"}
+def test_pages_hierarchy_org_chart_is_deterministic() -> None:
+    task = PagesHierarchyManagerMostTotalReportsLabelTask()
+    params = {"query_id": SINGLE_QUERY_ID, "scene_variant": "org_chart"}
     out_a = task.generate(61510, params=params, max_attempts=10)
     out_b = task.generate(61510, params=params, max_attempts=10)
 
@@ -115,14 +151,14 @@ def test_pages_hierarchy_tree_count_is_deterministic() -> None:
     assert out_a.image.tobytes() == out_b.image.tobytes()
 
 
-def test_pages_hierarchy_tree_count_balanced_sampling_covers_variants_and_answers() -> None:
+def test_pages_hierarchy_org_chart_sampling_covers_active_tasks() -> None:
     tasks = (
         PagesHierarchySubtreeDescendantCountTask(),
-        PagesHierarchySubtreeLeafCountTask(),
-        PagesHierarchyPathLengthCountTask(),
+        PagesHierarchyManagerMostTotalReportsLabelTask(),
+        PagesHierarchyManagerMostDirectReportsLabelTask(),
     )
-    query_ids: Counter[str] = Counter()
-    answers_by_variant: dict[str, set[int]] = defaultdict(set)
+    source_ids: Counter[str] = Counter()
+    answers_by_variant: dict[str, set[str]] = defaultdict(set)
 
     for task in tasks:
         for index in range(15):
@@ -132,27 +168,27 @@ def test_pages_hierarchy_tree_count_balanced_sampling_covers_variants_and_answer
                 max_attempts=10,
             )
             execution = out.trace_payload["execution_trace"]
-            query_id = str(execution["query_id"])
-            query_ids[query_id] += 1
-            answers_by_variant[query_id].add(int(execution["answer_count"]))
+            assert str(execution["query_id"]) == SINGLE_QUERY_ID
+            assert str(execution["scene_variant"]) == "org_chart"
+            source_query_id = str(execution["source_query_id"])
+            source_ids[source_query_id] += 1
+            answers_by_variant[source_query_id].add(str(execution["answer_value"]))
 
-    assert set(query_ids.keys()) == {
+    assert set(source_ids.keys()) == {
+        "manager_most_direct_reports_label",
+        "manager_most_total_reports_label",
         "subtree_descendant_count",
-        "subtree_leaf_count",
-        "path_length_between_two_nodes",
     }
-    assert query_ids["path_length_between_two_nodes"] == 15
-    assert query_ids["subtree_descendant_count"] >= 6
-    assert query_ids["subtree_leaf_count"] >= 6
+    assert all(count == 15 for count in source_ids.values())
     assert all(len(values) >= 3 for values in answers_by_variant.values())
 
 
-def test_pages_hierarchy_tree_count_layout_keeps_same_depth_nodes_separated() -> None:
+def test_pages_hierarchy_org_chart_layout_keeps_same_depth_nodes_separated() -> None:
     task = PagesHierarchySubtreeDescendantCountTask()
 
     for index in range(100):
         out = task.generate(
-            hash64(61580, "pages_hierarchy_tree_count_layout_v0", index),
+            hash64(61580, "pages_hierarchy_org_chart_layout_v0", index),
             params={},
             max_attempts=10,
         )
@@ -167,3 +203,12 @@ def test_pages_hierarchy_tree_count_layout_keeps_same_depth_nodes_separated() ->
             ordered = sorted(depth_nodes, key=lambda item: item[1][0])
             for left, right in zip(ordered, ordered[1:]):
                 assert float(right[1][0]) - float(left[1][2]) >= 8.0
+
+
+def test_pages_hierarchy_retired_graph_like_tasks_are_removed() -> None:
+    for module_name in (
+        "trace.tasks.pages.hierarchy.path_length_count",
+        "trace.tasks.pages.hierarchy.subtree_leaf_count",
+    ):
+        with pytest.raises(ModuleNotFoundError):
+            importlib.import_module(module_name)

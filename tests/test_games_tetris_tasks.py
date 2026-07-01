@@ -8,13 +8,11 @@ from trace.core.seed import spawn_rng
 from trace.tasks.games.tetris.active_piece_shape_label import GamesTetrisActivePieceShapeLabelTask
 from trace.tasks.games.tetris.drop_collision_time_value import GamesTetrisDropCollisionTimeValueTask
 from trace.tasks.games.tetris.drop_result_label import GamesTetrisDropResultLabelTask
-from trace.tasks.games.tetris.edge_occupied_row_cell_count import GamesTetrisEdgeOccupiedRowCellCountTask
 from trace.tasks.games.tetris.line_clear_count import GamesTetrisLineClearCountTask
 from trace.tasks.games.tetris.row_occupancy_status_count import GamesTetrisRowOccupancyStatusCountTask
 from trace.tasks.games.tetris.shared.rules import (
     best_clear_outcomes,
     drop_collision,
-    edge_occupied_row_index,
     evaluate_outcome,
     freeze,
     is_supported_stack_board,
@@ -308,59 +306,9 @@ def test_games_tetris_drop_collision_time_contract_and_rule_match() -> None:
         assert out.trace_payload["projected_annotation"]["bbox_set_map"] == expected_annotation
 
 
-def test_games_tetris_edge_occupied_row_cell_count_contract_and_rule_match() -> None:
-    cases = (
-        ("top_occupied_row_filled_cell_count", 3, 26052501),
-        ("top_occupied_row_empty_cell_count", 4, 26052511),
-        ("bottom_occupied_row_filled_cell_count", 5, 26052521),
-        ("bottom_occupied_row_empty_cell_count", 2, 26052531),
-    )
-    for query_id, target_cell_count, seed in cases:
-        out = GamesTetrisEdgeOccupiedRowCellCountTask().generate(
-            int(seed),
-            params={
-                "query_id": str(query_id),
-                "target_cell_count": int(target_cell_count),
-                "board_rows": 12,
-                "board_cols": 8,
-            },
-            max_attempts=64,
-        )
-        execution = out.trace_payload["execution_trace"]
-        board = _board_from_execution(execution)
-        _assert_supported_stack_execution(execution)
-        edge = "top" if str(query_id).startswith("top_") else "bottom"
-        status = "filled" if "_filled_" in str(query_id) else "empty"
-        row_index = edge_occupied_row_index(board, edge=str(edge))
-        expected_entity_ids = tuple(
-            f"main_cell_{int(row_index)}_{int(col)}"
-            for col, cell in enumerate(board[int(row_index)])
-            if (status == "filled" and str(cell) != ".") or (status == "empty" and str(cell) == ".")
-        )
-        expected_bboxes = [
-            [float(v) for v in out.trace_payload["render_map"]["cell_bboxes_px"][str(entity_id)]]
-            for entity_id in expected_entity_ids
-        ]
-
-        assert out.scene_id == "tetris"
-        assert out.query_id == str(query_id)
-        assert out.answer_gt.type == "integer"
-        assert int(out.answer_gt.value) == len(expected_entity_ids) == int(target_cell_count)
-        assert execution["target_cell_count"] == int(target_cell_count)
-        assert execution["edge_row_selector"] == str(edge)
-        assert execution["counted_cell_status"] == str(status)
-        assert execution["selected_row_index"] == int(row_index)
-        assert tuple(execution["annotation_entity_ids"]) == expected_entity_ids
-        assert out.annotation_gt.type == "bbox_set"
-        assert out.annotation_gt.value == expected_bboxes
-        assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
-        assert out.trace_payload["projected_annotation"]["bbox_set"] == expected_bboxes
-
-
 def test_games_tetris_taxonomy() -> None:
     assert resolve_task_taxonomy("task_games__tetris__active_piece_shape_label").scene_id == "tetris"
     assert resolve_task_taxonomy("task_games__tetris__line_clear_count").scene_id == "tetris"
     assert resolve_task_taxonomy("task_games__tetris__drop_result_label").scene_id == "tetris"
     assert resolve_task_taxonomy("task_games__tetris__row_occupancy_status_count").scene_id == "tetris"
     assert resolve_task_taxonomy("task_games__tetris__drop_collision_time_value").scene_id == "tetris"
-    assert resolve_task_taxonomy("task_games__tetris__edge_occupied_row_cell_count").scene_id == "tetris"

@@ -23,7 +23,7 @@ from ...shared.prompt_variants import (
     render_scene_prompt_variants,
 )
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from ..shared.annotation import bbox_set_annotation
+from ..shared.annotation import icon_bbox_set_annotation
 from ..shared.icon_assets import resolve_icon_pool
 from ..shared.icon_scene import (
     IconInstanceSpec,
@@ -511,7 +511,10 @@ class IconsReferenceCanvasReferenceMetricRelationCountTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         annotation_bboxes = sort_bboxes_reading_order(scene_payload.match_bboxes)
-        annotation_payload = bbox_set_annotation(annotation_bboxes)
+        annotation_payload = icon_bbox_set_annotation(
+            annotation_bboxes,
+            clip_bbox=scene_payload.panel_geometry["scene_content_xyxy"],
+        )
         answer_gt = TypedValue(type="integer", value=int(scene_payload.target_count))
         annotation_gt = TypedValue(
             type=str(annotation_payload["annotation_type"]),

@@ -35,13 +35,6 @@
         "After excluding {removed_labels_text}, compute the share of label \"{target_label}\" in the remaining total as a percent.",
         "Ignoring labels {removed_labels_text}, what percent of the remaining total is contributed by \"{target_label}\"?",
         "What is the integer percent share of label \"{target_label}\" after removing {removed_labels_text}?"
-      ],
-      "baseline_from_aggregate_percent_change": [
-        "The combined value of labels {aggregate_labels_text} is {percent_value}% higher than a baseline. What is the baseline?",
-        "Labels {aggregate_labels_text} together are {percent_value}% above a baseline. Compute that baseline.",
-        "If the sum of {aggregate_labels_text} is {percent_value}% higher than a baseline amount, what is the baseline amount?",
-        "The aggregate for {aggregate_labels_text} equals a baseline plus {percent_value}%. What is the baseline?",
-        "Compute the baseline if the combined value of {aggregate_labels_text} is {percent_value}% higher than it."
       ]
     },
     "output": {
@@ -62,13 +55,7 @@
     }
   },
   "dynamic_slots": {
-    "aggregate_labels_text": {
-      "type": "string"
-    },
     "object_description": {
-      "type": "string"
-    },
-    "percent_value": {
       "type": "string"
     },
     "removed_labels_text": {
@@ -98,12 +85,6 @@
       "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points on the chart marks whose values remain in the total after the stated removals",
       "json_example": "{\"annotation\":[[180,260],[320,340],[460,220]],\"answer\":25}",
       "json_example_answer_only": "{\"answer\":25}"
-    },
-    "query:baseline_from_aggregate_percent_change": {
-      "answer_hint": "set \"answer\" to the requested integer value; for percentage questions, omit the percent sign",
-      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points on the chart marks whose values are combined before solving for the baseline",
-      "json_example": "{\"annotation\":[[220,340],[360,280],[500,220]],\"answer\":40}",
-      "json_example_answer_only": "{\"answer\":40}"
     }
   }
 }

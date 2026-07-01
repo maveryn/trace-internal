@@ -6,11 +6,11 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
+from ....core.sampling import support_probability_map, uniform_choice_with_probabilities
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults, required_group_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
 from ..shared.cutouts import (
@@ -122,9 +122,9 @@ def _sample_query(*, params: Mapping[str, Any], instance_seed: int) -> Tuple[str
         if selected not in set(QUERY_IDS):
             raise ValueError(f"query_id must be one of {QUERY_IDS}")
         return selected, uniform_string_probability_map(QUERY_IDS, selected=selected)
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:query")
-    selected = str(QUERY_IDS[int(index) % len(QUERY_IDS)])
-    return selected, uniform_string_probability_map(QUERY_IDS)
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:query")
+    selected, probabilities = uniform_choice_with_probabilities(rng, QUERY_IDS, sort_keys=False)
+    return str(selected), dict(probabilities)
 
 
 def _sample_range(
@@ -157,11 +157,10 @@ def _sample_option_count(*, params: Mapping[str, Any], instance_seed: int) -> Tu
         option_count = int(explicit)
         if option_count not in set(support):
             raise ValueError(f"option_count must be one of {support}")
-        return int(option_count), {str(option_count): 1.0}
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:option_count")
-    selected = int(support[int(index) % len(support)])
-    probability = 1.0 / float(len(support))
-    return int(selected), {str(value): float(probability) for value in support}
+        return int(option_count), support_probability_map(support, selected=int(option_count), sort_keys=True)
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:option_count")
+    selected, probabilities = uniform_choice_with_probabilities(rng, support, sort_keys=True)
+    return int(selected), dict(probabilities)
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int) -> _SampleSpec:
@@ -210,8 +209,14 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
             raise ValueError("correct_index outside option support")
         correct_index_probabilities = {str(correct_index): 1.0}
     else:
-        correct_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:answer")) % int(option_count)
-        correct_index_probabilities = {str(key): float(value) for key, value in uniform_probability_map(tuple(range(int(option_count)))).items()}
+        answer_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:answer")
+        correct_index, correct_index_probabilities = uniform_choice_with_probabilities(
+            answer_rng,
+            tuple(range(int(option_count))),
+            sort_keys=True,
+        )
+        correct_index = int(correct_index)
+        correct_index_probabilities = dict(correct_index_probabilities)
 
     source_profile = resolve_reconstruction_source_profile(
         params=params,

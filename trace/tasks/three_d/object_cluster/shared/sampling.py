@@ -7,8 +7,10 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from trace.core.sampling import normalize_positive_weights, weighted_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
-from trace.tasks.three_d.shared.task_support import resolve_axis_variant_for_namespace
+from trace.tasks.three_d.shared.task_support import (
+    resolve_axis_variant_for_namespace,
+    resolve_support_choice_for_namespace,
+)
 
 from .defaults import ANSWER_COUNT_BINS, DEFAULT_ANSWER_COUNT_BIN_WEIGHTS
 
@@ -207,19 +209,14 @@ def resolve_named_choice(
     """Resolve one semantic label from explicit params or deterministic support indexing."""
 
     support_values = tuple(str(value) for value in support)
-    explicit_value = params.get(str(key))
-    if explicit_value is not None:
-        selected = str(explicit_value)
-        if selected not in set(support_values):
-            raise ValueError(f"unsupported {key}: {selected}")
-        return selected, uniform_string_probability_map(support_values, selected=selected)
-    selected_index = resolve_selection_index(
+    selected, probabilities = resolve_support_choice_for_namespace(
         params=params,
+        explicit_key=str(key),
         instance_seed=int(instance_seed),
         namespace=str(namespace),
+        support_values=support_values,
     )
-    selected = str(support_values[abs(int(selected_index)) % len(support_values)])
-    return selected, uniform_string_probability_map(support_values)
+    return str(selected), {str(key): float(value) for key, value in probabilities.items()}
 
 
 def selected_probability_map(values: Sequence[str], selected_values: Sequence[str]) -> Dict[str, float]:
@@ -260,11 +257,12 @@ def resolve_string_subset(
             selected_values = selected_values[: int(count)]
             return list(selected_values), selected_probability_map(support_values, selected_values)
 
-    rng = spawn_rng(int(instance_seed), f"{namespace}.shuffle")
     ordered = list(support_values)
+    if int(count) > len(ordered):
+        raise ValueError(f"{key} requires at most {len(ordered)} values")
+    rng = spawn_rng(int(instance_seed), str(namespace))
     rng.shuffle(ordered)
-    start_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    selected = [str(ordered[(abs(int(start_index)) + offset) % len(ordered)]) for offset in range(int(count))]
+    selected = [str(value) for value in ordered[: int(count)]]
     return list(selected), selected_probability_map(support_values, selected)
 
 

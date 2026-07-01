@@ -78,9 +78,8 @@ def build_counterfactual_plan(
     def _bind_annotation(rendered: RenderedWaterfall) -> AnnotationArtifacts:
         return bbox_map_artifacts(
             {
-                "final_total_value": rendered.value_label_bboxes_px["final"],
-                "target_contribution_value": rendered.value_label_bboxes_px[str(target_step.step_id)],
-                "target_step_label": rendered.x_label_bboxes_px[str(target_step.step_id)],
+                "final_total_bar": rendered.bar_bboxes_px["final"],
+                "target_contribution_bar": rendered.bar_bboxes_px[str(target_step.step_id)],
             }
         )
 
@@ -103,9 +102,8 @@ def build_counterfactual_plan(
             "start_value": int(dataset.start_value),
             "final_value": int(dataset.final_value),
             "annotation_roles": {
-                "final_total_value": "final",
-                "target_contribution_value": str(target_step.step_id),
-                "target_step_label": str(target_step.step_id),
+                "final_total_bar": "final",
+                "target_contribution_bar": str(target_step.step_id),
             },
         },
         relations={

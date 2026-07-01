@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence
 
 from trace.tasks.base import TypedValue
-from trace.tasks.charts.shared.chart_scene import RenderedChartScene
+from trace.tasks.charts.shared.chart_scene_types import RenderedChartScene
 
 
 def mark_centers_by_label(rendered_scene: RenderedChartScene) -> dict[str, list[float]]:
@@ -63,14 +63,14 @@ def keyed_point_artifacts(
         str(role): [round(float(point[0]), 3), round(float(point[1]), 3)]
         for role, point in points_by_role.items()
     }
-    annotation_gt = TypedValue(type="keyed_point_map", value=annotation_map)
+    annotation_gt = TypedValue(type="point_map", value=annotation_map)
     witness_symbolic = {
         "type": "object_key_map",
         "keys": dict(labels_by_role),
     }
     projected_annotation = {
-        "type": "keyed_point_map",
-        "keyed_point_map": annotation_map,
-        "pixel_keyed_point_map": annotation_map,
+        "type": "point_map",
+        "point_map": annotation_map,
+        "pixel_point_map": annotation_map,
     }
     return annotation_gt, witness_symbolic, projected_annotation

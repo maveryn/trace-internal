@@ -39,7 +39,7 @@ COORDINATE_GRID_SCENE_IDS: frozenset[str] = frozenset(
         "function_panels",
         "graph_paper",
         "graph_paper_panel",
-        "shape_gallery",
+        "shape_reference",
     }
 )
 

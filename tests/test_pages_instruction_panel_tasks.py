@@ -2,7 +2,14 @@
 from __future__ import annotations
 import json
 import pytest
-from trace.tasks.pages.step_list.instruction_panel import CONTROL_PAIR_QUERY_ID, SCENE_VARIANTS, SHARED_CONTROL_QUERY_ID, PagesInstructionPanelSharedControlForStepSetLabelTask, PagesInstructionPanelStepForControlPairLabelTask
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.tasks.pages.instruction_panel import (
+    CONTROL_PAIR_PROMPT_QUERY_KEY,
+    SCENE_VARIANTS,
+    SHARED_CONTROL_PROMPT_QUERY_KEY,
+    PagesInstructionPanelSharedControlForStepSetLabelTask,
+    PagesInstructionPanelStepForControlPairLabelTask,
+)
 
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = 'Example JSON:\n'
@@ -16,12 +23,17 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
     assert 0 <= x0 < x1 <= width
     assert 0 <= y0 < y1 <= height
 
-def _assert_keyed_bbox_map_inside_canvas(annotation: dict, *, width: int, height: int) -> None:
+def _assert_bbox_map_inside_canvas(annotation: dict, *, width: int, height: int) -> None:
     assert annotation
     for bbox in annotation.values():
         _assert_bbox_inside_canvas([float(value) for value in bbox], width=int(width), height=int(height))
 
-def _assert_keyed_bbox_set_map_inside_canvas(annotation: dict, *, width: int, height: int) -> None:
+def _assert_bbox_set_inside_canvas(annotation: list, *, width: int, height: int) -> None:
+    assert annotation
+    for bbox in annotation:
+        _assert_bbox_inside_canvas([float(value) for value in bbox], width=int(width), height=int(height))
+
+def _assert_bbox_set_map_inside_canvas(annotation: dict, *, width: int, height: int) -> None:
     assert annotation
     for bboxes in annotation.values():
         assert bboxes
@@ -42,25 +54,29 @@ def test_pages_instruction_panel_shared_control_contract() -> None:
     render = trace['render_spec']
     target = dict(execution['target'])
     assert out.scene_id == 'instruction_panel'
-    assert out.query_id == SHARED_CONTROL_QUERY_ID
+    assert out.query_id == SINGLE_QUERY_ID
+    assert execution['prompt_query_key'] == SHARED_CONTROL_PROMPT_QUERY_KEY
+    assert trace['query_spec']['prompt_variant']['prompt_schema_version'] == 'v1'
+    assert trace['query_spec']['params']['source_query_id'] == SHARED_CONTROL_PROMPT_QUERY_KEY
     assert out.answer_gt.type == 'string'
-    assert out.annotation_gt.type == 'keyed_bbox_set_map'
+    assert out.annotation_gt.type == 'bbox_set'
     assert str(out.answer_gt.value) == str(target['target_control_label'])
-    assert trace['projected_annotation']['keyed_bbox_set_map'] == out.annotation_gt.value
-    assert trace['projected_annotation']['pixel_keyed_bbox_set_map'] == out.annotation_gt.value
-    assert set(out.annotation_gt.value) == {'step_numbers', 'shared_control_chips'}
+    assert trace['projected_annotation']['bbox_set'] == out.annotation_gt.value
+    assert trace['projected_annotation']['pixel_bbox_set'] == out.annotation_gt.value
+    assert set(trace['projected_annotation']['bbox_set_map']) == {'step_numbers', 'shared_control_chips'}
     selected_indices = [int(value) for value in target['target_step_indices']]
     selected_control_sets = [_step_control_ids(_step_by_index(execution, index)) for index in selected_indices]
     assert set.intersection(*selected_control_sets) == {str(target['target_control_id'])}
     render_map = trace['render_map']
     expected_number_bboxes = [render_map['step_number_bboxes_px'][str(_step_by_index(execution, index)['step_id'])] for index in selected_indices]
     expected_control_bboxes = [render_map['control_chip_bboxes_px'][str(_step_by_index(execution, index)['step_id'])][str(target['target_control_id'])] for index in selected_indices]
-    assert out.annotation_gt.value['step_numbers'] == expected_number_bboxes
-    assert out.annotation_gt.value['shared_control_chips'] == expected_control_bboxes
-    _assert_keyed_bbox_set_map_inside_canvas(out.annotation_gt.value, width=int(render['canvas_width']), height=int(render['canvas_height']))
+    assert out.annotation_gt.value == expected_control_bboxes
+    assert trace['projected_annotation']['bbox_set_map']['step_numbers'] == expected_number_bboxes
+    assert trace['projected_annotation']['bbox_set_map']['shared_control_chips'] == expected_control_bboxes
+    _assert_bbox_set_inside_canvas(out.annotation_gt.value, width=int(render['canvas_width']), height=int(render['canvas_height']))
     example = _extract_prompt_json_example(out.prompt)
     assert list(example.keys()) == ['annotation', 'answer']
-    assert sorted(example['annotation']) == ['shared_control_chips', 'step_numbers']
+    assert isinstance(example['annotation'], list)
     assert isinstance(example['answer'], str)
 
 def test_pages_instruction_panel_control_pair_contract() -> None:
@@ -71,26 +87,35 @@ def test_pages_instruction_panel_control_pair_contract() -> None:
     render = trace['render_spec']
     target = dict(execution['target'])
     assert out.scene_id == 'instruction_panel'
-    assert out.query_id == CONTROL_PAIR_QUERY_ID
+    assert out.query_id == SINGLE_QUERY_ID
+    assert execution['prompt_query_key'] == CONTROL_PAIR_PROMPT_QUERY_KEY
+    assert trace['query_spec']['prompt_variant']['prompt_schema_version'] == 'v1'
+    assert trace['query_spec']['params']['source_query_id'] == CONTROL_PAIR_PROMPT_QUERY_KEY
     assert out.answer_gt.type == 'integer'
-    assert out.annotation_gt.type == 'keyed_bbox_map'
+    assert out.annotation_gt.type == 'bbox_set'
     assert int(out.answer_gt.value) == int(target['target_step_number'])
-    assert trace['projected_annotation']['keyed_bbox_map'] == out.annotation_gt.value
-    assert trace['projected_annotation']['pixel_keyed_bbox_map'] == out.annotation_gt.value
-    assert set(out.annotation_gt.value) == {'first_control', 'second_control', 'target_step_number'}
+    assert trace['projected_annotation']['bbox_set'] == out.annotation_gt.value
+    assert trace['projected_annotation']['pixel_bbox_set'] == out.annotation_gt.value
+    assert set(trace['projected_annotation']['bbox_map']) == {'first_control', 'second_control', 'target_step_number'}
     pair_ids = {str(target['first_control_id']), str(target['second_control_id'])}
     matching_steps = [step for step in execution['steps'] if pair_ids.issubset({str(control['control_id']) for control in step['controls']})]
     assert len(matching_steps) == 1
     assert int(matching_steps[0]['step_number']) == int(out.answer_gt.value)
     target_step_id = str(matching_steps[0]['step_id'])
     render_map = trace['render_map']
-    assert out.annotation_gt.value['first_control'] == render_map['control_chip_bboxes_px'][target_step_id][str(target['first_control_id'])]
-    assert out.annotation_gt.value['second_control'] == render_map['control_chip_bboxes_px'][target_step_id][str(target['second_control_id'])]
-    assert out.annotation_gt.value['target_step_number'] == render_map['step_number_bboxes_px'][target_step_id]
-    _assert_keyed_bbox_map_inside_canvas(out.annotation_gt.value, width=int(render['canvas_width']), height=int(render['canvas_height']))
+    expected_bboxes = [
+        render_map['control_chip_bboxes_px'][target_step_id][str(target['first_control_id'])],
+        render_map['control_chip_bboxes_px'][target_step_id][str(target['second_control_id'])],
+        render_map['step_number_bboxes_px'][target_step_id],
+    ]
+    assert out.annotation_gt.value == expected_bboxes
+    assert trace['projected_annotation']['bbox_map']['first_control'] == expected_bboxes[0]
+    assert trace['projected_annotation']['bbox_map']['second_control'] == expected_bboxes[1]
+    assert trace['projected_annotation']['bbox_map']['target_step_number'] == expected_bboxes[2]
+    _assert_bbox_set_inside_canvas(out.annotation_gt.value, width=int(render['canvas_width']), height=int(render['canvas_height']))
     example = _extract_prompt_json_example(out.prompt)
     assert list(example.keys()) == ['annotation', 'answer']
-    assert sorted(example['annotation']) == ['first_control', 'second_control', 'target_step_number']
+    assert isinstance(example['annotation'], list)
     assert isinstance(example['answer'], int)
 
 @pytest.mark.parametrize('scene_variant', SCENE_VARIANTS)

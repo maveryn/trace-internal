@@ -14,6 +14,7 @@ class ChartsThreeDBarPairwiseComparisonCountTask:
     task_id = 'task_charts__bar_3d__pairwise_comparison_count'
     domain = DOMAIN
     supported_query_ids = ('series_comparison_count',)
+    default_dataset_enabled = True
 
     def _build_plan(self, instance_seed, params, selected_query_id):
         target_count = sample_pairwise_target_count(params, instance_seed=int(instance_seed), max_category_count=pairwise_target_max_category_count(params))

@@ -4,13 +4,17 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
+from .....core.sampling import integer_range_choice, uniform_choice
 from .....core.scene_config import get_scene_defaults
+from .....core.seed import spawn_rng
 from ....shared.config_defaults import group_default, split_scene_generation_rendering_prompt_defaults
-from ....shared.deterministic_sampling import resolve_selection_index
-from ....shared.font_assets import sample_font_family
 from ....shared.render_variation import resolve_render_rgb
-from ...shared.labeled_chart_common import resolve_chart_axis_variant
-from ...shared.visual_defaults import load_chart_scene_background_defaults, load_chart_scene_noise_defaults
+from ...shared.labeled_chart_variants import resolve_chart_axis_variant
+from ...shared.visual_defaults import (
+    load_chart_scene_background_defaults,
+    load_chart_scene_noise_defaults,
+    sample_chart_font_family as sample_shared_chart_font_family,
+)
 
 from .state import (
     DOMAIN,
@@ -54,8 +58,12 @@ def sample_balanced_int(
     high_i = int(high)
     if low_i > high_i:
         raise ValueError(f"invalid integer support for {namespace}: {low_i}>{high_i}")
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return int(low_i + (abs(int(index)) % (high_i - low_i + 1)))
+    selected, _probabilities = integer_range_choice(
+        spawn_rng(int(instance_seed), str(namespace)),
+        int(low_i),
+        int(high_i),
+    )
+    return int(selected)
 
 
 def sample_balanced_choice(
@@ -68,8 +76,13 @@ def sample_balanced_choice(
     support = [int(value) for value in values]
     if not support:
         raise ValueError(f"empty support for {namespace}")
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return int(support[abs(int(index)) % len(support)])
+    return int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), str(namespace)),
+            support,
+            sort_keys=True,
+        )
+    )
 
 
 def resolve_scene_variant(params: Mapping[str, object], *, instance_seed: int) -> tuple[str, dict[str, float]]:
@@ -101,16 +114,10 @@ def resolve_glyph(params: Mapping[str, object], *, instance_seed: int) -> tuple[
 
 
 def sample_chart_font_family(instance_seed: int, params: Mapping[str, object]) -> str:
-    return str(
-        sample_font_family(
-            role="readout",
-            instance_seed=int(instance_seed),
-            namespace=f"{SCENE_NAMESPACE}.chart_font",
-            params=params,
-            exclude_tags=("display",),
-            explicit_key="chart_font_family",
-            weights_key="chart_font_family_weights",
-        )
+    return sample_shared_chart_font_family(
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.chart_font",
+        params=params,
     )
 
 

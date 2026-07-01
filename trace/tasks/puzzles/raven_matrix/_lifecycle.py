@@ -233,7 +233,7 @@ def prepare_raven_scene(
         instance_seed=int(instance_seed),
     )
     annotation_artifacts = selected_option_bbox_annotation(
-        rendered_scene.option_panel_bbox_map,
+        rendered_scene.option_cell_bbox_map,
         str(dataset["correct_option_panel_id"]),
     )
     return RavenSceneArtifacts(
@@ -267,9 +267,13 @@ def build_trace_payload(
 ) -> dict[str, Any]:
     """Build scene/render/execution trace fields for one Raven task."""
 
-    option_bboxes = {
+    option_slot_bboxes = {
         str(key): [round(float(value), 3) for value in bbox]
         for key, bbox in rendered_scene.option_panel_bbox_map.items()
+    }
+    option_cell_bboxes = {
+        str(key): [round(float(value), 3) for value in bbox]
+        for key, bbox in rendered_scene.option_cell_bbox_map.items()
     }
     matrix_bboxes = {
         str(key): [round(float(value), 3) for value in bbox]
@@ -314,8 +318,9 @@ def build_trace_payload(
                     round(float(value), 3) for value in rendered_scene.scene_bbox_px
                 ],
                 "matrix_cell_bboxes_px": dict(matrix_bboxes),
-                "option_panel_bboxes_px": dict(option_bboxes),
-                "annotation_source": "option_panel_bboxes_px",
+                "option_panel_bboxes_px": dict(option_slot_bboxes),
+                "option_cell_bboxes_px": dict(option_cell_bboxes),
+                "annotation_source": "option_cell_bboxes_px",
             },
             render_params.unit_size_jitter,
         ),

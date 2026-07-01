@@ -15,16 +15,11 @@ from trace.tasks.charts.histogram.shared.defaults import (
     SCENE_VARIANT,
 )
 from trace.tasks.charts.histogram.shared.state import HistogramRenderArtifacts
-from trace.tasks.charts.shared.chart_scene import (
-    HistogramBinSpec,
-    RenderedChartScene,
-    render_histogram_scene,
-    value_axis_render_metadata,
-)
-from trace.tasks.charts.shared.distribution_chart_common import (
-    resolve_chart_mark_colors,
-    resolve_chart_render_params_for_task,
-)
+from trace.tasks.charts.shared.chart_scene_histogram import render_histogram_scene
+from trace.tasks.charts.shared.chart_scene_primitives import value_axis_render_metadata
+from trace.tasks.charts.shared.chart_scene_types import HistogramBinSpec, RenderedChartScene
+from trace.tasks.charts.shared.labeled_chart_marks import resolve_chart_mark_colors
+from trace.tasks.charts.shared.labeled_chart_render_params import resolve_chart_render_params_for_task
 from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.tasks.charts.shared.visual_defaults import (
     chart_font_asset_metadata,

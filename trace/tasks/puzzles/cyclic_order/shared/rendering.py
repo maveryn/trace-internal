@@ -253,6 +253,8 @@ def _draw_loop_image(
     render_params: CyclicOrderRenderParams,
     loop_entity_type: str,
     token_entity_type: str,
+    position_labels: Sequence[str] | None = None,
+    gap_labels: Sequence[str] | None = None,
 ) -> List[Dict[str, Any]]:
     """Draw one loop and return traced loop/token entities."""
 
@@ -282,6 +284,12 @@ def _draw_loop_image(
         start_angle_deg=int(start_angle_deg),
         loop_path_style=str(loop_path_style),
     )
+    label_font = load_font(max(18, int(render_params.option_label_font_size_px * 0.58)), bold=True)
+    gap_font = load_font(max(26, int(render_params.option_label_font_size_px * 0.82)), bold=True)
+    loop_center = (
+        float(0.5 * (loop_bbox[0] + loop_bbox[2])),
+        float(0.5 * (loop_bbox[1] + loop_bbox[3])),
+    )
     for token_index, (center, token_spec) in enumerate(zip(centers, token_specs), start=1):
         token_bbox = _draw_token(
             draw,
@@ -302,7 +310,158 @@ def _draw_loop_image(
                 },
             }
         )
+        if position_labels is not None:
+            direction_x = float(center[0] - loop_center[0])
+            direction_y = float(center[1] - loop_center[1])
+            distance = max(1.0, math.hypot(direction_x, direction_y))
+            badge_center = (
+                float(center[0] + (direction_x / distance) * 1.02 * render_params.bead_size_px),
+                float(center[1] + (direction_y / distance) * 1.02 * render_params.bead_size_px),
+            )
+            badge_radius = max(16.0, float(render_params.bead_size_px) * 0.36)
+            badge_bbox = (
+                float(badge_center[0] - badge_radius),
+                float(badge_center[1] - badge_radius),
+                float(badge_center[0] + badge_radius),
+                float(badge_center[1] + badge_radius),
+            )
+            draw.ellipse(
+                badge_bbox,
+                fill=tuple(render_params.panel_fill_rgb),
+                outline=tuple(render_params.border_color_rgb),
+                width=2,
+            )
+            draw_centered_text(
+                draw,
+                text=str(position_labels[int(token_index) - 1]),
+                center=badge_center,
+                font=label_font,
+                fill=render_params.text_color_rgb,
+                stroke_fill=render_params.text_stroke_rgb,
+                stroke_width=1,
+            )
+    if gap_labels is not None:
+        for gap_index, label in enumerate(gap_labels, start=1):
+            current_center = centers[int(gap_index) - 1]
+            next_center = centers[int(gap_index) % len(centers)]
+            midpoint = (
+                float(0.5 * (current_center[0] + next_center[0])),
+                float(0.5 * (current_center[1] + next_center[1])),
+            )
+            direction_x = float(midpoint[0] - loop_center[0])
+            direction_y = float(midpoint[1] - loop_center[1])
+            distance = max(1.0, math.hypot(direction_x, direction_y))
+            badge_center = (
+                float(midpoint[0] + (direction_x / distance) * 0.50 * render_params.bead_size_px),
+                float(midpoint[1] + (direction_y / distance) * 0.50 * render_params.bead_size_px),
+            )
+            badge_radius = max(19.0, float(render_params.bead_size_px) * 0.44)
+            badge_bbox = (
+                float(badge_center[0] - badge_radius),
+                float(badge_center[1] - badge_radius),
+                float(badge_center[0] + badge_radius),
+                float(badge_center[1] + badge_radius),
+            )
+            draw.ellipse(
+                badge_bbox,
+                fill=tuple(render_params.instruction_fill_rgb),
+                outline=tuple(render_params.border_color_rgb),
+                width=2,
+            )
+            label_bbox = draw_centered_text(
+                draw,
+                text=str(label),
+                center=badge_center,
+                font=gap_font,
+                fill=render_params.text_color_rgb,
+                stroke_fill=render_params.text_stroke_rgb,
+                stroke_width=1,
+            )
+            entities.append(
+                {
+                    "entity_id": f"{str(loop_id)}_gap_{int(gap_index)}",
+                    "entity_type": "puzzle_cyclic_order_gap_label",
+                    "bbox_px": _round_bbox(badge_bbox),
+                    "attrs": {
+                        "gap_label": str(label),
+                        "label_bbox_px": list(label_bbox),
+                    },
+                }
+            )
     return entities
+
+
+def _draw_titled_loop_panel(
+    draw: ImageDraw.ImageDraw,
+    *,
+    panel_bbox: Sequence[float],
+    title: str,
+    loop_id: str,
+    loop_shape_variant: str,
+    loop_path_style: str,
+    start_angle_deg: int,
+    token_specs: Sequence[Mapping[str, Any]],
+    render_params: CyclicOrderRenderParams,
+    position_labels: Sequence[str] | None = None,
+    gap_labels: Sequence[str] | None = None,
+) -> tuple[List[Dict[str, Any]], List[float]]:
+    """Draw one titled loop panel for repair-style cyclic puzzles."""
+
+    panel = tuple(float(value) for value in panel_bbox)
+    draw_rounded_rect(
+        draw,
+        panel,
+        radius=int(render_params.panel_corner_radius_px),
+        fill=render_params.panel_fill_rgb,
+        outline=render_params.border_color_rgb,
+        width=max(1, int(render_params.border_width_px)),
+    )
+    title_font = load_font(int(render_params.reference_label_font_size_px), bold=True)
+    title_bbox = draw_centered_text(
+        draw,
+        text=str(title),
+        center=(float(0.5 * (panel[0] + panel[2])), float(panel[1] + 31.0)),
+        font=title_font,
+        fill=render_params.text_color_rgb,
+        stroke_fill=render_params.text_stroke_rgb,
+        stroke_width=1,
+    )
+    loop_image_bbox = (
+        float(panel[0] + 28.0),
+        float(panel[1] + 60.0),
+        float(panel[2] - 28.0),
+        float(panel[3] - 24.0),
+    )
+    entities: List[Dict[str, Any]] = [
+        {
+            "entity_id": f"{loop_id}_panel",
+            "entity_type": "puzzle_cyclic_order_loop_panel",
+            "bbox_px": _round_bbox(panel),
+            "attrs": {"title": str(title)},
+        },
+        {
+            "entity_id": f"{loop_id}_title",
+            "entity_type": "puzzle_cyclic_order_loop_panel_title",
+            "bbox_px": list(title_bbox),
+            "attrs": {"text": str(title)},
+        },
+    ]
+    loop_entities = _draw_loop_image(
+        draw,
+        image_bbox=loop_image_bbox,
+        loop_id=str(loop_id),
+        loop_shape_variant=str(loop_shape_variant),
+        loop_path_style=str(loop_path_style),
+        start_angle_deg=int(start_angle_deg),
+        token_specs=token_specs,
+        render_params=render_params,
+        loop_entity_type="puzzle_cyclic_order_repair_loop",
+        token_entity_type="puzzle_cyclic_order_repair_token",
+        position_labels=position_labels,
+        gap_labels=gap_labels,
+    )
+    entities.extend(loop_entities)
+    return entities, list(loop_entities[0]["bbox_px"])
 
 
 def render_cyclic_order_scene(
@@ -401,7 +560,7 @@ def render_cyclic_order_scene(
     reference_loop_bbox = list(reference_loop_entities[0]["bbox_px"])
 
     option_count = int(len(option_specs))
-    option_columns = 3 if option_count <= 6 else 4
+    option_columns = 2 if option_count == 4 else (3 if option_count <= 6 else 4)
     option_rows = int(math.ceil(float(option_count) / float(option_columns)))
     option_block_height = float(render_params.option_image_height_px + render_params.option_label_gap_px + option_label_height)
     options_total_width = float(
@@ -492,4 +651,272 @@ def render_cyclic_order_scene(
     )
 
 
-__all__ = ["RenderedCyclicOrderScene", "render_cyclic_order_scene"]
+def render_swap_repair_scene(
+    background: Image.Image,
+    *,
+    scene_variant: str,
+    reference_token_specs: Sequence[Mapping[str, Any]],
+    reference_loop_shape_variant: str,
+    reference_loop_path_style: str,
+    reference_start_angle_deg: int,
+    broken_token_specs: Sequence[Mapping[str, Any]],
+    broken_loop_shape_variant: str,
+    broken_loop_path_style: str,
+    broken_start_angle_deg: int,
+    option_specs: Sequence[Mapping[str, Any]],
+    render_params: CyclicOrderRenderParams,
+) -> RenderedCyclicOrderScene:
+    """Render a reference loop, a numbered broken loop, and swap-option cards."""
+
+    selected_variant = str(scene_variant)
+    if selected_variant not in set(SCENE_VARIANTS):
+        raise ValueError(f"unsupported cyclic-order scene_variant: {scene_variant}")
+
+    image = background.convert("RGB")
+    draw = ImageDraw.Draw(image)
+    scene_left = float(render_params.scene_margin_left_px)
+    scene_top = float(render_params.scene_margin_top_px)
+    scene_right = float(render_params.canvas_width - render_params.scene_margin_right_px)
+    scene_bottom = float(render_params.canvas_height - render_params.scene_margin_bottom_px)
+    panel_gap = 42.0
+    panel_width = float((scene_right - scene_left - panel_gap) / 2.0)
+    top_panel_height = 305.0
+    reference_panel = (
+        scene_left,
+        scene_top,
+        scene_left + panel_width,
+        scene_top + top_panel_height,
+    )
+    broken_panel = (
+        scene_left + panel_width + panel_gap,
+        scene_top,
+        scene_right,
+        scene_top + top_panel_height,
+    )
+
+    entities: List[Dict[str, Any]] = []
+    reference_entities, reference_loop_bbox = _draw_titled_loop_panel(
+        draw,
+        panel_bbox=reference_panel,
+        title="Reference",
+        loop_id="reference_loop",
+        loop_shape_variant=str(reference_loop_shape_variant),
+        loop_path_style=str(reference_loop_path_style),
+        start_angle_deg=int(reference_start_angle_deg),
+        token_specs=reference_token_specs,
+        render_params=render_params,
+    )
+    entities.extend(reference_entities)
+    broken_entities, _broken_loop_bbox = _draw_titled_loop_panel(
+        draw,
+        panel_bbox=broken_panel,
+        title="Broken loop",
+        loop_id="broken_loop",
+        loop_shape_variant=str(broken_loop_shape_variant),
+        loop_path_style=str(broken_loop_path_style),
+        start_angle_deg=int(broken_start_angle_deg),
+        token_specs=broken_token_specs,
+        render_params=render_params,
+        position_labels=[str(index) for index in range(1, len(broken_token_specs) + 1)],
+    )
+    entities.extend(broken_entities)
+
+    option_count = int(len(option_specs))
+    option_columns = 2 if option_count == 4 else (3 if option_count <= 6 else 4)
+    option_rows = int(math.ceil(float(option_count) / float(option_columns)))
+    option_gap = float(render_params.option_gap_px)
+    option_row_gap = 28.0
+    options_top = float(reference_panel[3] + 64.0)
+    card_width = 260.0
+    card_height = 104.0
+    options_total_width = float(
+        (option_columns * card_width)
+        + (max(0, option_columns - 1) * option_gap)
+    )
+    options_left = float(scene_left + 0.5 * ((scene_right - scene_left) - options_total_width))
+    option_choice_bbox_map: Dict[str, List[float]] = {}
+    option_font = load_font(int(render_params.option_label_font_size_px), bold=True)
+    swap_font = load_font(30, bold=True)
+
+    for option_index, option_spec in enumerate(option_specs):
+        row_index = int(option_index // option_columns)
+        col_index = int(option_index % option_columns)
+        card_left = float(options_left + col_index * (card_width + option_gap))
+        card_top = float(options_top + row_index * (card_height + option_row_gap))
+        card_bbox = (
+            card_left,
+            card_top,
+            card_left + card_width,
+            card_top + card_height,
+        )
+        option_choice_id = str(option_spec["option_choice_id"])
+        option_choice_bbox_map[option_choice_id] = _round_bbox(card_bbox)
+        draw_rounded_rect(
+            draw,
+            card_bbox,
+            radius=18,
+            fill=render_params.instruction_fill_rgb,
+            outline=render_params.border_color_rgb,
+            width=max(1, int(render_params.border_width_px)),
+        )
+        draw_centered_text(
+            draw,
+            text=str(option_spec["option_label"]),
+            center=(float(card_left + 28.0), float(card_top + 28.0)),
+            font=option_font,
+            fill=render_params.text_color_rgb,
+            stroke_fill=render_params.text_stroke_rgb,
+            stroke_width=1,
+        )
+        swap_text = f'{int(option_spec["first_position"])} <-> {int(option_spec["second_position"])}'
+        draw_centered_text(
+            draw,
+            text=swap_text,
+            center=(float(0.5 * (card_bbox[0] + card_bbox[2])), float(card_top + 57.0)),
+            font=swap_font,
+            fill=render_params.text_color_rgb,
+            stroke_fill=render_params.text_stroke_rgb,
+            stroke_width=1,
+        )
+        entities.append(
+            {
+                "entity_id": str(option_choice_id),
+                "entity_type": "puzzle_cyclic_order_swap_option",
+                "bbox_px": _round_bbox(card_bbox),
+                "attrs": {
+                    "option_label": str(option_spec["option_label"]),
+                    "first_position": int(option_spec["first_position"]),
+                    "second_position": int(option_spec["second_position"]),
+                    "is_valid": bool(option_spec["is_valid"]),
+                },
+            }
+        )
+
+    scene_bbox = [
+        round(float(scene_left), 3),
+        round(float(scene_top), 3),
+        round(float(scene_right), 3),
+        round(
+            float(
+                max(
+                    scene_bottom,
+                    options_top + (option_rows * card_height) + ((option_rows - 1) * option_row_gap),
+                )
+            ),
+            3,
+        ),
+    ]
+    return RenderedCyclicOrderScene(
+        image=image,
+        entities=entities,
+        scene_bbox_px=list(scene_bbox),
+        reference_loop_bbox_px=list(reference_loop_bbox),
+        option_choice_bbox_map=option_choice_bbox_map,
+    )
+
+
+def render_insertion_position_scene(
+    background: Image.Image,
+    *,
+    scene_variant: str,
+    reference_token_specs: Sequence[Mapping[str, Any]],
+    reference_loop_shape_variant: str,
+    reference_loop_path_style: str,
+    reference_start_angle_deg: int,
+    partial_token_specs: Sequence[Mapping[str, Any]],
+    partial_loop_shape_variant: str,
+    partial_loop_path_style: str,
+    partial_start_angle_deg: int,
+    partial_gap_labels: Sequence[str],
+    option_specs: Sequence[Mapping[str, Any]],
+    render_params: CyclicOrderRenderParams,
+) -> RenderedCyclicOrderScene:
+    """Render a reference loop and partial loop with labeled insertion gaps."""
+
+    selected_variant = str(scene_variant)
+    if selected_variant not in set(SCENE_VARIANTS):
+        raise ValueError(f"unsupported cyclic-order scene_variant: {scene_variant}")
+
+    image = background.convert("RGB")
+    draw = ImageDraw.Draw(image)
+    scene_left = float(render_params.scene_margin_left_px)
+    scene_top = float(render_params.scene_margin_top_px)
+    scene_right = float(render_params.canvas_width - render_params.scene_margin_right_px)
+    scene_bottom = float(render_params.canvas_height - render_params.scene_margin_bottom_px)
+    panel_gap = 42.0
+    loop_panel_width = float((scene_right - scene_left - panel_gap) / 2.0)
+    top_panel_height = 335.0
+    reference_panel = (
+        scene_left,
+        scene_top,
+        scene_left + loop_panel_width,
+        scene_top + top_panel_height,
+    )
+    partial_panel = (
+        reference_panel[2] + panel_gap,
+        scene_top,
+        reference_panel[2] + panel_gap + loop_panel_width,
+        scene_top + top_panel_height,
+    )
+
+    entities: List[Dict[str, Any]] = []
+    reference_entities, reference_loop_bbox = _draw_titled_loop_panel(
+        draw,
+        panel_bbox=reference_panel,
+        title="Reference",
+        loop_id="reference_loop",
+        loop_shape_variant=str(reference_loop_shape_variant),
+        loop_path_style=str(reference_loop_path_style),
+        start_angle_deg=int(reference_start_angle_deg),
+        token_specs=reference_token_specs,
+        render_params=render_params,
+    )
+    entities.extend(reference_entities)
+    partial_entities, _partial_loop_bbox = _draw_titled_loop_panel(
+        draw,
+        panel_bbox=partial_panel,
+        title="Candidate gaps",
+        loop_id="partial_loop",
+        loop_shape_variant=str(partial_loop_shape_variant),
+        loop_path_style=str(partial_loop_path_style),
+        start_angle_deg=int(partial_start_angle_deg),
+        token_specs=partial_token_specs,
+        render_params=render_params,
+        gap_labels=[str(value) for value in partial_gap_labels],
+    )
+    entities.extend(partial_entities)
+
+    gap_bbox_by_label = {
+        str(entity.get("attrs", {}).get("gap_label")): list(entity["bbox_px"])
+        for entity in partial_entities
+        if str(entity.get("entity_type")) == "puzzle_cyclic_order_gap_label"
+    }
+    option_choice_bbox_map: Dict[str, List[float]] = {}
+    for option_spec in option_specs:
+        option_choice_id = str(option_spec["option_choice_id"])
+        option_label = str(option_spec["option_label"])
+        if option_label not in gap_bbox_by_label:
+            raise ValueError(f"missing insertion gap bbox for option {option_label}")
+        option_choice_bbox_map[option_choice_id] = _round_bbox(gap_bbox_by_label[option_label])
+
+    scene_bbox = [
+        round(float(scene_left), 3),
+        round(float(scene_top), 3),
+        round(float(scene_right), 3),
+        round(float(max(scene_bottom, reference_panel[3])), 3),
+    ]
+    return RenderedCyclicOrderScene(
+        image=image,
+        entities=entities,
+        scene_bbox_px=list(scene_bbox),
+        reference_loop_bbox_px=list(reference_loop_bbox),
+        option_choice_bbox_map=option_choice_bbox_map,
+    )
+
+
+__all__ = [
+    "RenderedCyclicOrderScene",
+    "render_cyclic_order_scene",
+    "render_insertion_position_scene",
+    "render_swap_repair_scene",
+]

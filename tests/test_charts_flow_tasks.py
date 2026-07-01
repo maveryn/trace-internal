@@ -16,16 +16,15 @@ from trace.tasks.charts.sankey.node_side_total_value import (
     ChartsFlowSankeyNodeSideTotalValuePublicTask,
 )
 from trace.tasks.charts.sankey.path_bottleneck_value import ChartsFlowSankeyPathBottleneckValuePublicTask
-from trace.tasks.charts.sankey.path_flow_difference import ChartsFlowSankeyPathFlowDifferencePublicTask
 from trace.tasks.charts.sankey.source_to_target_total_flow import ChartsFlowSankeySourceToTargetTotalFlowPublicTask
 from trace.tasks.registry import list_default_task_ids
 
 
-def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
-    assert len(bbox) == 4
-    x0, y0, x1, y1 = [float(value) for value in bbox]
-    assert 0 <= x0 < x1 <= width
-    assert 0 <= y0 < y1 <= height
+def _assert_point_inside_canvas(point: list[float], *, width: int, height: int) -> None:
+    assert len(point) == 2
+    x, y = [float(value) for value in point]
+    assert 0 <= x <= width
+    assert 0 <= y <= height
 
 
 def _expected_source_target_total(execution: dict) -> int:
@@ -38,12 +37,6 @@ def _expected_bottleneck(execution: dict) -> int:
     return min(int(path["first_value"]), int(path["second_value"]))
 
 
-def _expected_difference(execution: dict) -> int:
-    assert len(execution["query_path_details"]) == 1
-    path = dict(execution["query_path_details"][0])
-    return abs(int(path["first_value"]) - int(path["second_value"]))
-
-
 def _expected_node_total(execution: dict) -> int:
     if str(execution["query_id"]) == SOURCE_OUTGOING_QUERY_ID:
         return sum(int(path["first_value"]) for path in execution["query_path_details"])
@@ -53,14 +46,13 @@ def _expected_node_total(execution: dict) -> int:
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "seed", "expected_answer"),
+    ("task_cls", "seed", "expected_answer", "expected_annotation_type"),
     [
-        (ChartsFlowSankeySourceToTargetTotalFlowPublicTask, 69100, _expected_source_target_total),
-        (ChartsFlowSankeyPathBottleneckValuePublicTask, 69140, _expected_bottleneck),
-        (ChartsFlowSankeyPathFlowDifferencePublicTask, 69180, _expected_difference),
+        (ChartsFlowSankeySourceToTargetTotalFlowPublicTask, 69100, _expected_source_target_total, "point_set"),
+        (ChartsFlowSankeyPathBottleneckValuePublicTask, 69140, _expected_bottleneck, "point"),
     ],
 )
-def test_charts_sankey_single_branch_tasks_match_contract(task_cls, seed: int, expected_answer) -> None:
+def test_charts_sankey_single_branch_tasks_match_contract(task_cls, seed: int, expected_answer, expected_annotation_type: str) -> None:
     task = task_cls()
     out = task.generate(seed, params={"query_id": SINGLE_QUERY_ID}, max_attempts=100)
     trace = out.trace_payload
@@ -73,7 +65,7 @@ def test_charts_sankey_single_branch_tasks_match_contract(task_cls, seed: int, e
     assert out.query_id == SINGLE_QUERY_ID
     assert str(execution["query_id"]) == SINGLE_QUERY_ID
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == expected_annotation_type
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
     assert 2 <= int(execution["source_count"]) <= 3
     assert 2 <= int(execution["middle_count"]) <= 3
@@ -81,15 +73,22 @@ def test_charts_sankey_single_branch_tasks_match_contract(task_cls, seed: int, e
     assert 3 <= int(execution["path_count"]) <= 4
     assert int(out.answer_gt.value) == int(expected_answer(execution))
     refs = [str(value) for value in execution["annotation_segment_ids"]]
-    expected_boxes = [render_map["segment_label_bboxes_px"][ref] for ref in refs]
-    assert out.annotation_gt.value == expected_boxes
-    assert trace["projected_annotation"]["type"] == "bbox_set"
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    expected_points = [render_map["segment_centers_px"][ref] for ref in refs]
+    if str(expected_annotation_type) == "point":
+        assert len(expected_points) == 1
+        assert out.annotation_gt.value == expected_points[0]
+        assert trace["projected_annotation"]["point"] == out.annotation_gt.value
+        points_to_check = [out.annotation_gt.value]
+    else:
+        assert out.annotation_gt.value == expected_points
+        assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+        points_to_check = list(out.annotation_gt.value)
+    assert trace["projected_annotation"]["type"] == expected_annotation_type
     assert trace["query_spec"]["params"]["query_id"] == SINGLE_QUERY_ID
     assert str(render["font_assets"]["font_asset_version"])
     assert str(render["font_assets"]["chart_font_family"])
-    for bbox in out.annotation_gt.value:
-        _assert_bbox_inside_canvas([float(value) for value in bbox], width=int(render["canvas_width"]), height=int(render["canvas_height"]))
+    for point in points_to_check:
+        _assert_point_inside_canvas([float(value) for value in point], width=int(render["canvas_width"]), height=int(render["canvas_height"]))
 
 
 @pytest.mark.parametrize("query_id", NODE_SIDE_QUERY_IDS)
@@ -105,21 +104,20 @@ def test_charts_sankey_node_side_total_matches_contract(query_id: str) -> None:
     assert out.query_id == query_id
     assert str(execution["query_id"]) == query_id
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "bbox_set"
+    assert out.annotation_gt.type == "point_set"
     assert int(out.answer_gt.value) == int(_expected_node_total(execution))
     assert trace["query_spec"]["params"]["query_id"] == query_id
     refs = [str(value) for value in execution["annotation_segment_ids"]]
-    expected_boxes = [render_map["segment_label_bboxes_px"][ref] for ref in refs]
-    assert out.annotation_gt.value == expected_boxes
-    for bbox in out.annotation_gt.value:
-        _assert_bbox_inside_canvas([float(value) for value in bbox], width=int(render["canvas_width"]), height=int(render["canvas_height"]))
+    expected_points = [render_map["segment_centers_px"][ref] for ref in refs]
+    assert out.annotation_gt.value == expected_points
+    for point in out.annotation_gt.value:
+        _assert_point_inside_canvas([float(value) for value in point], width=int(render["canvas_width"]), height=int(render["canvas_height"]))
 
 
 def test_charts_sankey_prompt_examples_match_contract() -> None:
     for task_cls in (
         ChartsFlowSankeySourceToTargetTotalFlowPublicTask,
         ChartsFlowSankeyPathBottleneckValuePublicTask,
-        ChartsFlowSankeyPathFlowDifferencePublicTask,
         ChartsFlowSankeyNodeSideTotalValuePublicTask,
     ):
         out = task_cls().generate(69300 + len(task_cls.__name__), params={}, max_attempts=100)
@@ -127,8 +125,12 @@ def test_charts_sankey_prompt_examples_match_contract() -> None:
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert isinstance(answer_and_annotation["answer"], int)
         assert isinstance(answer_only["answer"], int)
-        assert isinstance(answer_and_annotation["annotation"], list)
-        assert answer_and_annotation["annotation"] and all(len(box) == 4 for box in answer_and_annotation["annotation"])
+        annotation = answer_and_annotation["annotation"]
+        assert isinstance(annotation, list)
+        if task_cls is ChartsFlowSankeyPathBottleneckValuePublicTask:
+            assert len(annotation) == 2 and all(isinstance(value, int) for value in annotation)
+        else:
+            assert annotation and all(len(point) == 2 for point in annotation)
 
 
 def test_charts_sankey_node_side_sampling_covers_branches() -> None:

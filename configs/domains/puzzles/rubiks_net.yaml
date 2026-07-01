@@ -11,7 +11,7 @@ generation:
     inverse_base_move_count_max: 2
     face_color_count_answer_min: 1
     face_color_count_answer_max: 6
-    option_count: 6
+    option_count: 4
     rubiks_dataset_max_attempts: 128
     balanced_scene_variant_sampling: true
     scene_variant_weights:
@@ -21,13 +21,12 @@ generation:
 rendering:
   shared:
     canvas_width: 1480
-    canvas_height: 940
+    canvas_height: 780
     scene_margin_left_px: 58
     scene_margin_top_px: 52
     main_cell_size_px: 44
     unit_size_scale_min: 0.5
     unit_size_scale_max: 1.0
-    candidate_cell_size_px: 15
     net_panel_padding_px: 22
     panel_corner_radius_px: 26
     option_panel_width_px: 136
@@ -60,12 +59,8 @@ prompt:
     bundle_id: puzzles_rubiks_net_v1
     scene_key: rubiks_net
   task_overrides:
-    task_puzzles__rubiks_net__static_sticker_color_label:
-      task_key: static_sticker_color_label_query
     task_puzzles__rubiks_net__post_move_sticker_color_label:
       task_key: post_move_sticker_color_label_query
-    task_puzzles__rubiks_net__static_face_color_count_label:
-      task_key: static_face_color_count_label_query
     task_puzzles__rubiks_net__post_move_face_color_count_label:
       task_key: post_move_face_color_count_label_query
     task_puzzles__rubiks_net__rubiks_move_result_label:

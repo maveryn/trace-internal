@@ -24,6 +24,7 @@ def option_panel_bbox(
         raise RuntimeError(f"missing nonogram option bbox for {option_id!r}")
     bbox = _round_bbox(item_bbox_map[option_id])
     projected = {
+        "type": "bbox",
         "bbox": list(bbox),
         "pixel_bbox": list(bbox),
         "value": list(bbox),

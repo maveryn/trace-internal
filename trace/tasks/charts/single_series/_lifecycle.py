@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from trace.core.seed import hash64
@@ -302,6 +302,7 @@ def build_crossing_plan(
     projected: bool,
     program_code: str,
     reasoning_load: float,
+    annotation_kind: str = "point_set",
 ) -> SingleSeriesTaskPlan:
     """Build observed/projected threshold crossing label tasks."""
 
@@ -318,6 +319,18 @@ def build_crossing_plan(
         instance_seed=int(seed),
         namespace=str(namespace),
     )
+    if str(annotation_kind) == "point":
+        answer_label = str(dataset.answer_value)
+        dataset = replace(
+            dataset,
+            annotation_labels=(answer_label,),
+            ordered_annotation_labels=(answer_label,),
+            trace={
+                **dict(dataset.trace),
+                "annotation_labels": (answer_label,),
+                "ordered_annotation_labels": (answer_label,),
+            },
+        )
     return package_single_series_plan(
         dataset=dataset,
         params=params,
@@ -334,7 +347,7 @@ def build_crossing_plan(
             **crossing_slots(str(direction), projected=bool(projected)),
         },
         answer_type="string",
-        annotation_kind="point_set",
+        annotation_kind=str(annotation_kind),
         relation_params={
             "crossing_variant": str(crossing_variant),
             "crossing_mode": str(crossing_mode),

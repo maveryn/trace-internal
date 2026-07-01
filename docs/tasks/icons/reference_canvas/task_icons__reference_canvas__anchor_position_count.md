@@ -7,16 +7,15 @@
 - prompt bundle: `icons_reference_canvas_v1`
 
 ## Program Contract
-`count.reference_icon_anchor_spatial_predicate(scene=reference_canvas, scope=scene_panel_candidate_icons, reference=left_panel_reference_icon, anchor=marked_scene_icon, predicates=left_of_anchor|right_of_anchor|above_anchor|below_anchor, output=count)`
 
-Renders a Reference icon and a Scene panel with one marked Anchor icon, then
-asks for an integer count of Scene candidate icons that match the Reference type
-and lie on the requested side of the Anchor.
+Program: `count.reference_icon_anchor_spatial_predicate(scene=reference_canvas, scope=scene_panel_candidate_icons, reference=left_panel_reference_icon, anchor=marked_scene_icon, predicates=left_of_anchor|right_of_anchor|above_anchor|below_anchor, output=count)`
 
-Supported `query_id`: `left_of_anchor`, `right_of_anchor`, `above_anchor`, `below_anchor`.
-
-Answer schema: integer.
-Annotation schema: `bbox_set` over counted Scene candidate icon boxes only.
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `scene_panel_candidate_icons` objective scope.
+Operands: visible scene state and prompt-bound operands named by `reference_canvas`, `scene_panel_candidate_icons`, `reference`, `left_panel_reference_icon`, `anchor`, `marked_scene_icon`, `predicates`, `left_of_anchor`, `right_of_anchor`, `above_anchor`, `below_anchor`.
+Operation: evaluate `count.reference_icon_anchor_spatial_predicate` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Notes
 The Reference and Anchor boxes are retained in trace metadata but are not part

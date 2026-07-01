@@ -28,7 +28,7 @@ from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_
 from ..shared.anchor_marking import draw_anchor_marker
 from ..shared.icon_assets import render_icon_rgba, resolve_icon_pool
 from ..shared.defaults import ICON_SHARED_DEFAULTS
-from ..shared.annotation import bbox_set_annotation
+from ..shared.annotation import icon_bbox_set_annotation
 from ..shared.icon_noise import serialize_icon_noise_edits
 from ..shared.icon_scene import (
     draw_two_panel_panels,
@@ -848,7 +848,10 @@ class IconsRelationRelativePositionTypeTask:
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
         annotation_value = sort_bboxes_reading_order(scene_payload.matching_bboxes)
-        annotation_payload = bbox_set_annotation(annotation_value)
+        annotation_payload = icon_bbox_set_annotation(
+            annotation_value,
+            clip_bbox=scene_payload.panel_geometry["scene_content_xyxy"],
+        )
         answer_value = int(scene_payload.target_count)
 
         scene_entities = [

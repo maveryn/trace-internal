@@ -50,7 +50,9 @@ def empty_coords(board: Sequence[Sequence[str | None]]) -> tuple[Coord, ...]:
     )
 
 
-def outside_reachable_empty_coords(board: Sequence[Sequence[str | None]]) -> tuple[Coord, ...]:
+def outside_reachable_empty_coords(
+    board: Sequence[Sequence[str | None]],
+) -> tuple[Coord, ...]:
     """Return empty slots connected to the open shooter-side exterior."""
 
     rows = len(board)
@@ -76,7 +78,9 @@ def outside_reachable_empty_coords(board: Sequence[Sequence[str | None]]) -> tup
     return sorted_coords(seen)
 
 
-def is_playable_landing_coord(board: Sequence[Sequence[str | None]], landing_coord: Coord) -> bool:
+def is_playable_landing_coord(
+    board: Sequence[Sequence[str | None]], landing_coord: Coord
+) -> bool:
     """Return whether a shot can plausibly land at an exposed empty slot."""
 
     rows = len(board)
@@ -153,7 +157,11 @@ def connected_component(
     start_value = board_value(board, start)
     if start_value is None:
         return tuple()
-    allowed = set(str(value) for value in allowed_colors) if allowed_colors is not None else {str(start_value)}
+    allowed = (
+        set(str(value) for value in allowed_colors)
+        if allowed_colors is not None
+        else {str(start_value)}
+    )
     stack = [tuple(start)]
     seen: set[Coord] = set()
     while stack:
@@ -224,7 +232,11 @@ def top_connected_occupied(
             continue
         seen.add(coord)
         for neighbor in bubble_neighbors(coord, rows=rows, cols=cols):
-            if neighbor not in seen and neighbor not in removed_set and board_value(board, neighbor) is not None:
+            if (
+                neighbor not in seen
+                and neighbor not in removed_set
+                and board_value(board, neighbor) is not None
+            ):
                 stack.append(neighbor)
     return sorted_coords(seen)
 
@@ -247,7 +259,9 @@ def compute_shot_outcome(
     popped = same_color if len(same_color) + 1 >= 3 else tuple()
     occupied_after_pop = set(occupied_coords(board)) - set(popped)
     anchored = set(top_connected_occupied(board, removed=popped))
-    dropped = sorted_coords(coord for coord in occupied_after_pop if coord not in anchored)
+    dropped = sorted_coords(
+        coord for coord in occupied_after_pop if coord not in anchored
+    )
     return BubbleShotOutcome(
         landing_coord=tuple(landing_coord),
         color_key=str(color_key),
@@ -262,12 +276,18 @@ def validate_bubble_shooter_state(state: BubbleShooterState) -> None:
 
     if int(state.row_count) <= 0 or int(state.col_count) <= 0:
         raise ValueError("bubble shooter board dimensions must be positive")
-    if len(state.board) != int(state.row_count) or any(len(row) != int(state.col_count) for row in state.board):
-        raise ValueError("bubble shooter board dimensions do not match row_count/col_count")
+    if len(state.board) != int(state.row_count) or any(
+        len(row) != int(state.col_count) for row in state.board
+    ):
+        raise ValueError(
+            "bubble shooter board dimensions do not match row_count/col_count"
+        )
     if board_value(state.board, state.landing_coord) is not None:
         raise ValueError("bubble shooter landing slot must be empty")
     if not is_playable_landing_coord(state.board, state.landing_coord):
-        raise ValueError("bubble shooter landing slot must be exposed to the shooter side")
+        raise ValueError(
+            "bubble shooter landing slot must be exposed to the shooter side"
+        )
 
     outcome = compute_shot_outcome(
         state.board,
@@ -275,12 +295,16 @@ def validate_bubble_shooter_state(state: BubbleShooterState) -> None:
         color_key=str(state.outcome.color_key),
     )
     if outcome != state.outcome:
-        raise ValueError("bubble shooter stored outcome does not match board computation")
+        raise ValueError(
+            "bubble shooter stored outcome does not match board computation"
+        )
 
     if state.option_specs:
         answer_options = [option for option in state.option_specs if option.is_answer]
         if len(answer_options) != 1:
-            raise ValueError("bubble shooter option scenes require exactly one answer option")
+            raise ValueError(
+                "bubble shooter option scenes require exactly one answer option"
+            )
         pop_positive = [
             option
             for option in state.option_specs
@@ -293,8 +317,52 @@ def validate_bubble_shooter_state(state: BubbleShooterState) -> None:
             )
             > 0
         ]
-        if len(pop_positive) != 1 or str(pop_positive[0].label) != str(answer_options[0].label):
-            raise ValueError("bubble shooter option scenes must have exactly one displayed popping color")
+        if len(pop_positive) != 1 or str(pop_positive[0].label) != str(
+            answer_options[0].label
+        ):
+            raise ValueError(
+                "bubble shooter option scenes must have exactly one displayed popping color"
+            )
+
+    if state.landing_option_specs:
+        answer_options = [
+            option for option in state.landing_option_specs if option.is_answer
+        ]
+        if len(answer_options) != 1:
+            raise ValueError(
+                "bubble shooter landing-option scenes require exactly one answer option"
+            )
+        if tuple(answer_options[0].landing_coord) != tuple(state.landing_coord):
+            raise ValueError(
+                "bubble shooter answer landing option must match state landing coordinate"
+            )
+        seen_labels: set[str] = set()
+        seen_coords: set[Coord] = set()
+        pop_positive_labels: list[str] = []
+        for option in state.landing_option_specs:
+            label = str(option.label)
+            coord = tuple(option.landing_coord)
+            if label in seen_labels:
+                raise ValueError("bubble shooter landing-option labels must be unique")
+            if coord in seen_coords:
+                raise ValueError(
+                    "bubble shooter landing-option coordinates must be unique"
+                )
+            if not is_playable_landing_coord(state.board, coord):
+                raise ValueError("bubble shooter landing option must be playable")
+            seen_labels.add(label)
+            seen_coords.add(coord)
+            option_outcome = compute_shot_outcome(
+                state.board,
+                landing_coord=coord,
+                color_key=str(state.outcome.color_key),
+            )
+            if option_outcome.popped_coords:
+                pop_positive_labels.append(label)
+        if pop_positive_labels != [str(answer_options[0].label)]:
+            raise ValueError(
+                "bubble shooter landing-option scenes must have exactly one displayed popping target"
+            )
 
 
 __all__ = [

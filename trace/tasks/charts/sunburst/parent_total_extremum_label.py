@@ -8,7 +8,7 @@ from trace.tasks.charts.sunburst.shared.state import DOMAIN
 from trace.tasks.registry import register_task
 
 
-PROGRAM_CODE = "arg_extremum(parent, sum(value(leaf) for leaf under parent), direction); output=string_label; annotation=bbox_set(all_leaf_value_labels); scene=sunburst; scope=parent_total_extremum_label"
+PROGRAM_CODE = "arg_extremum(parent, sum(value(leaf) for leaf under parent), direction); output=string_label; annotation=point_set(answer_parent_leaf_value_labels); scene=sunburst; scope=parent_total_extremum_label"
 
 
 def _direction(selected_query_id):
@@ -31,18 +31,14 @@ class ChartsSunburstParentTotalExtremumLabelTask:
     default_dataset_enabled = True
 
     def _build_plan(self, instance_seed, params, selected_query_id):
-        """Bind all parent totals and annotate all leaf values used to compare them."""
+        """Bind all parent totals and annotate the answer parent's leaf values."""
 
         tree = sample_tree(params, instance_seed=int(instance_seed))
         direction = _direction(selected_query_id)
         answer_parent = unique_extreme_parent(tree, direction=direction)
         lookup = nodes_by_id(tree)
         answer_leaf_ids = descendant_leaf_ids(lookup, str(answer_parent.node_id))
-        annotation_leaf_ids = tuple(
-            leaf_id
-            for parent_id in tree.parent_ids
-            for leaf_id in descendant_leaf_ids(lookup, str(parent_id))
-        )
+        annotation_leaf_ids = tuple(str(leaf_id) for leaf_id in answer_leaf_ids)
         parent_totals = {str(lookup[parent_id].label): int(lookup[parent_id].value) for parent_id in tree.parent_ids}
         prompt = render_prompt_artifacts(
             prompt_key=str(selected_query_id),

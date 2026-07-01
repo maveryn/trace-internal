@@ -2,15 +2,14 @@
 
 ## Program Contract
 
-- Domain: `games`
-- Scene: `reversi`
-- Public task id: `task_games__reversi__marked_move_flip_count`
-- Supported `query_id` values: `single`
-- Answer schema: `integer_count`
-- Annotation schema: `point_set`
-- Program schema: `count(flipped_discs(apply(marked_legal_move))); scene=reversi; scope=marked_move_flip_count`
-- Program code: `count.transform.reversi_marked_move_flips`
-- Scalar annotation checked: `true`
+Program: `count(flipped_discs(apply(marked_legal_move))); scene=reversi; scope=marked_move_flip_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `marked_move_flip_count` objective scope.
+Operands: visible scene state and prompt-bound target operands named by the task contract.
+Operation: evaluate `count(flipped_discs(apply(marked_legal_move)))` over the candidate set using the visible Reversi board state; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema for the centers of all discs flipped by the marked move.
+Query ids: `single`.
 
 ## Generation Notes
 

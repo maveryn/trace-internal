@@ -4,17 +4,21 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence, Tuple
 
+from .....core.sampling import uniform_choice
 from .....core.scene_config import get_scene_defaults
+from .....core.seed import spawn_rng
 from ....shared.config_defaults import (
     group_default,
     resolve_required_int_bounds,
     split_scene_generation_rendering_prompt_defaults,
 )
-from ....shared.deterministic_sampling import resolve_selection_index
-from ....shared.render_variation import resolve_render_int, resolve_render_rgb
 from ...shared.visual_defaults import (
+    coerce_rgb,
     load_chart_scene_background_defaults,
     load_chart_scene_noise_defaults,
+    render_style_seed,
+    resolve_chart_render_int,
+    resolve_chart_render_rgb,
 )
 from .state import RGB
 
@@ -41,52 +45,19 @@ POST_IMAGE_NOISE_DEFAULTS = load_chart_scene_noise_defaults(
 def as_rgb(value: Any, fallback: RGB) -> RGB:
     """Coerce a config value to an RGB tuple."""
 
-    if (
-        not isinstance(value, Sequence)
-        or isinstance(value, (str, bytes))
-        or len(value) < 3
-    ):
-        return tuple(int(channel) for channel in fallback)
-    return tuple(max(0, min(255, int(channel))) for channel in value[:3])  # type: ignore[index]
-
-
-def render_style_seed(params: Mapping[str, Any]) -> int:
-    """Return the deterministic seed used for render-style config choices."""
-
-    try:
-        return int(
-            params.get("_render_style_seed", params.get("_sample_cursor", 0)) or 0
-        )
-    except Exception:
-        return 0
+    return coerce_rgb(value, fallback)
 
 
 def resolve_int(params: Mapping[str, Any], key: str, fallback: int) -> int:
     """Resolve an integer rendering parameter."""
 
-    return int(
-        resolve_render_int(
-            params,
-            RENDER_DEFAULTS,
-            str(key),
-            int(fallback),
-            instance_seed=render_style_seed(params),
-            namespace=SCENE_NAMESPACE,
-        )
-    )
+    return resolve_chart_render_int(params, RENDER_DEFAULTS, str(key), int(fallback), namespace=SCENE_NAMESPACE)
 
 
 def resolve_rgb(params: Mapping[str, Any], key: str, fallback: RGB) -> RGB:
     """Resolve an RGB rendering parameter."""
 
-    return resolve_render_rgb(
-        params,
-        RENDER_DEFAULTS,
-        str(key),
-        fallback,
-        instance_seed=render_style_seed(params),
-        namespace=SCENE_NAMESPACE,
-    )
+    return resolve_chart_render_rgb(params, RENDER_DEFAULTS, str(key), fallback, namespace=SCENE_NAMESPACE)
 
 
 def generation_int(params: Mapping[str, Any], key: str, fallback: int) -> int:
@@ -107,18 +78,6 @@ def without_sample_cursor(params: Mapping[str, Any]) -> dict[str, Any]:
     return copied
 
 
-def choice_index(
-    params: Mapping[str, Any], *, instance_seed: int, namespace: str
-) -> int:
-    """Return a deterministic balanced-choice index for one support."""
-
-    return int(
-        resolve_selection_index(
-            params=params, instance_seed=int(instance_seed), namespace=str(namespace)
-        )
-    )
-
-
 def balanced_choice(
     values: Sequence[Any],
     params: Mapping[str, Any],
@@ -131,10 +90,11 @@ def balanced_choice(
     support = list(values)
     if not support:
         raise ValueError(f"empty support for {namespace}")
-    index = choice_index(
-        params, instance_seed=int(instance_seed), namespace=str(namespace)
+    return uniform_choice(
+        spawn_rng(int(instance_seed), str(namespace)),
+        support,
+        sort_keys=True,
     )
-    return support[int(index) % len(support)]
 
 
 def palette(params: Mapping[str, Any]) -> Tuple[RGB, ...]:

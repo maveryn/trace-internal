@@ -6,7 +6,7 @@
 3. Public task id: `task_geometry__function_panels__intersection_property_label`
 4. Supported `query_id`: `line_circle_tangent_label`, `line_circle_two_intersections_label`, `circle_circle_two_intersections_label`
 5. Answer schema: `option_letter`
-6. Annotation schema: `bbox_set_map`
+6. Annotation schema: `bbox`
 
 ## Program Contract
 - `label(select_panel(candidate_coordinate_primitive_pairs, requested_intersection_condition)); scene=function_panels; scope=intersection_property_label`
@@ -16,7 +16,7 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-The annotation is a `bbox_set_map` with `selected_panel` containing the selected panel bbox and `intersection_points` containing the visible intersection point bboxes for that panel.
+The annotation is one scalar pixel bbox around the selected panel. Visible intersection-point boxes remain private trace metadata, not prompt-facing annotation.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

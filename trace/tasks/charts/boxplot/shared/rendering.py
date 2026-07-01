@@ -5,28 +5,21 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Any, Mapping, Sequence
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.charts.boxplot.shared.defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDER_FALLBACKS,
     RENDERING_DEFAULTS,
     SCENE_NAMESPACE,
     SCENE_VARIANT,
 )
-from trace.tasks.charts.shared.chart_scene import (
-    BoxPlotSpec,
-    RenderedChartScene,
-    render_boxplot_scene,
-    render_paired_boxplot_scene,
-    value_axis_render_metadata,
-)
-from trace.tasks.charts.shared.distribution_chart_common import (
-    projected_mark_annotation,
-    resolve_chart_mark_colors,
-    resolve_chart_render_params_for_task,
-)
+from trace.tasks.charts.shared.chart_scene_boxplot import render_boxplot_scene, render_paired_boxplot_scene
+from trace.tasks.charts.shared.chart_scene_primitives import value_axis_render_metadata
+from trace.tasks.charts.shared.chart_scene_types import BoxPlotSpec, RenderedChartScene
+from trace.tasks.charts.shared.cartesian.annotations import projected_mark_annotation
+from trace.tasks.charts.shared.labeled_chart_marks import resolve_chart_mark_colors
+from trace.tasks.charts.shared.labeled_chart_render_params import resolve_chart_render_params_for_task
 from trace.tasks.charts.shared.visual_defaults import (
     chart_font_asset_metadata,
     sample_chart_font_family,
@@ -70,6 +63,15 @@ def _render_params(params: Mapping[str, Any], mark_style: Mapping[str, Any], *, 
     )
 
 
+def _protected_mark_colors(mark_style: Mapping[str, Any]) -> tuple[tuple[int, int, int], ...]:
+    colors: list[tuple[int, int, int]] = []
+    for key in ("mark_fill_rgb", "mark_outline_rgb"):
+        value = mark_style.get(str(key))
+        if value is not None:
+            colors.append(tuple(int(channel) for channel in value))
+    return tuple(colors)
+
+
 def render_single_boxplot_scene(
     *,
     boxplots: Sequence[BoxPlotSpec],
@@ -77,13 +79,15 @@ def render_single_boxplot_scene(
     mark_style: Mapping[str, Any],
     instance_seed: int,
 ) -> BoxplotRenderArtifacts:
+    """Render one boxplot canvas while leaving objective binding to public task files."""
+
     render_params = _render_params(params, mark_style, instance_seed=int(instance_seed))
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
-        params=dict(params),
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        params=params,
+        scene_id="boxplot",
+        render_params=render_params,
+        protected_colors=_protected_mark_colors(mark_style),
     )
     chart_font_family = sample_chart_font_family(
         instance_seed=int(instance_seed),
@@ -104,7 +108,7 @@ def render_single_boxplot_scene(
     )
     return BoxplotRenderArtifacts(
         rendered_scene=replace(rendered_scene, image=image),
-        background_style=dict(background_meta),
+        background_style={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         font_assets=chart_font_asset_metadata(str(chart_font_family)),
         mark_style=dict(mark_style),
         post_image_noise=dict(post_noise_meta),
@@ -124,12 +128,12 @@ def render_paired_boxplot_panels(
     """Render before/after boxplot panels with a shared value axis and labels."""
 
     render_params = _render_params(params, mark_style, instance_seed=int(instance_seed))
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
-        params=dict(params),
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        params=params,
+        scene_id="boxplot",
+        render_params=render_params,
+        protected_colors=_protected_mark_colors(mark_style),
     )
     chart_font_family = sample_chart_font_family(
         instance_seed=int(instance_seed),
@@ -153,7 +157,7 @@ def render_paired_boxplot_panels(
     )
     return BoxplotRenderArtifacts(
         rendered_scene=replace(rendered_scene, image=image),
-        background_style=dict(background_meta),
+        background_style={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         font_assets=chart_font_asset_metadata(str(chart_font_family)),
         mark_style=dict(mark_style),
         post_image_noise=dict(post_noise_meta),
@@ -172,6 +176,20 @@ def point_map_for_labels(
     }
 
 
+def box_bbox_map_for_labels(
+    rendered_scene: RenderedChartScene,
+    labels: Sequence[str],
+) -> dict[str, list[float]]:
+    """Return rendered IQR box bboxes for the requested labels."""
+
+    requested = {str(label) for label in labels}
+    return {
+        str(mark["label"]): [round(float(value), 3) for value in mark["box_bbox_px"]]
+        for mark in rendered_scene.mark_traces
+        if str(mark.get("label")) in requested and "box_bbox_px" in mark
+    }
+
+
 def label_centers(rendered_scene: RenderedChartScene) -> dict[str, list[float]]:
     return {
         str(mark["label"]): list(mark["label_center_px"])
@@ -187,6 +205,7 @@ def render_trace_sections(artifacts: BoxplotRenderArtifacts) -> tuple[dict[str, 
         "coord_space": "pixel",
         "scene_variant": SCENE_VARIANT,
         "background_style": dict(artifacts.background_style),
+        "information_scene_style": dict(artifacts.background_style["information_scene_style"]),
         "font_assets": dict(artifacts.font_assets),
         "post_image_noise": dict(artifacts.post_image_noise),
         "text_style": {
@@ -204,6 +223,10 @@ def render_trace_sections(artifacts: BoxplotRenderArtifacts) -> tuple[dict[str, 
         "image_id": "img0",
         "plot_bbox_px": list(rendered_scene.plot_bbox_px),
         "label_centers_px": label_centers(rendered_scene),
+        "box_bboxes_px": box_bbox_map_for_labels(
+            rendered_scene,
+            [str(mark["label"]) for mark in rendered_scene.mark_traces],
+        ),
     }
     return render_spec, render_map
 
@@ -238,6 +261,7 @@ def build_trace_scaffold(
 
 __all__ = [
     "BoxplotRenderArtifacts",
+    "box_bbox_map_for_labels",
     "build_trace_scaffold",
     "point_map_for_labels",
     "render_paired_boxplot_panels",

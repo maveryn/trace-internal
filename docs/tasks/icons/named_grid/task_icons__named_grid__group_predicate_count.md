@@ -6,19 +6,15 @@
 - module: `trace/tasks/icons/named_grid/group_predicate_count.py`
 
 ## Program Contract
-`count.group_predicate(scene=named_grid, scope=numbered_rows_or_columns, groups=grid_lines, predicates=at_least|exactly|none, output=count)`
 
-1. The image shows one visible grid with numbered rows and numbered columns.
-2. Each grid cell contains one procedural named icon.
-3. The prompt names one target icon shape in quotes and asks how many rows or
-   columns satisfy a count condition for that shape.
-4. Supported conditions are at least `N`, exactly `N`, and no target-shape
-   icons.
-5. The answer is the number of qualifying rows or columns.
-6. `answer_gt.type = integer`.
-7. `annotation_gt.type = bbox_set` with one bounding box for each qualifying
-   row or column region. `projected_annotation` mirrors this as typed bbox-set
-   annotation with `bbox_set`, `pixel_bbox_set`, and derived `pixel_point_set`.
+Program: `count.group_predicate(scene=named_grid, scope=numbered_rows_or_columns, groups=grid_lines, predicates=at_least|exactly|none, output=count)`
+
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `numbered_rows_or_columns` objective scope.
+Operands: visible scene state and prompt-bound operands named by `named_grid`, `numbered_rows_or_columns`, `groups`, `grid_lines`, `predicates`, `at_least`, `exactly`, `none`.
+Operation: evaluate `count.group_predicate` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query IDs
 - `row_at_least_shape_count`

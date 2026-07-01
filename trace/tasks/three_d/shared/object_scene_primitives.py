@@ -54,7 +54,10 @@ def _object_vertices(spec: Mapping[str, Any]) -> Dict[str, Tuple[float, float, f
 def _draw_polyline(draw: ImageDraw.ImageDraw, points: Sequence[Sequence[float]], *, fill: Tuple[int, int, int], width: int = 2) -> None:
     for index in range(len(points)):
         start = points[index]
-        end = points[(index + 1) % len(points)]
+        next_index = index + 1
+        if next_index >= len(points):
+            next_index = 0
+        end = points[next_index]
         _draw_line(draw, start, end, fill=fill, width=width)
 
 
@@ -267,7 +270,9 @@ def _draw_footprint_prism_object(
         (list(top), _tint(fill, 0.22)),
     ]
     for index in range(len(base)):
-        next_index = (index + 1) % len(base)
+        next_index = index + 1
+        if next_index >= len(base):
+            next_index = 0
         shade_factor = 0.70 + 0.18 * ((index % 3) / 2.0)
         faces.append(
             (

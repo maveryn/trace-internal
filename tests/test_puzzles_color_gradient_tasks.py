@@ -72,6 +72,21 @@ def test_color_gradient_violation_contract() -> None:
         "global_font_pool"
     )
     assert out.trace_payload["render_spec"]["label_style"]["font"]["font_family"]
+    assert out.trace_payload["render_spec"]["label_style"]["chip_fill_rgb"] == [
+        255,
+        255,
+        255,
+    ]
+    assert out.trace_payload["render_spec"]["label_style"]["chip_outline_rgb"] == [
+        36,
+        42,
+        52,
+    ]
+    assert out.trace_payload["render_spec"]["label_style"]["label_fill_rgb"] == [
+        28,
+        32,
+        38,
+    ]
     assert out.trace_payload["render_spec"]["post_image_noise_policy"]["reason"] == (
         "color_semantics_preserve_rgb_separability"
     )
@@ -138,6 +153,21 @@ def test_color_gradient_completion_contract() -> None:
         "global_font_pool"
     )
     assert out.trace_payload["render_spec"]["label_style"]["font"]["font_family"]
+    assert out.trace_payload["render_spec"]["label_style"]["chip_fill_rgb"] == [
+        255,
+        255,
+        255,
+    ]
+    assert out.trace_payload["render_spec"]["label_style"]["chip_outline_rgb"] == [
+        36,
+        42,
+        52,
+    ]
+    assert out.trace_payload["render_spec"]["label_style"]["label_fill_rgb"] == [
+        28,
+        32,
+        38,
+    ]
 
 
 def test_color_gradient_completion_is_deterministic() -> None:

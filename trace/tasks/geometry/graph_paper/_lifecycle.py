@@ -654,11 +654,13 @@ def _build_line_slope_value(
     annotation_value, projected = scalar_segment_artifacts(
         segment.points_px[0], segment.points_px[1]
     )
-    answer_value = round(float(dy) / float(dx), 2)
+    answer_value = round(float(dy) / float(dx), 1)
+    if answer_value == -0.0:
+        answer_value = 0.0
     prompt_plan = _make_prompt(
         context["prompt_defaults"],
         prompt_key=plan.prompt_key_for(str(context["branch_name"])),
-        answer_hint='set "answer" to the slope as a number',
+        answer_hint='set "answer" to the slope as a number rounded to one decimal place',
         annotation_hint='set "annotation" to the line segment as [[x0,y0],[x1,y1]] in pixels',
         json_example='{"annotation":[[210,420],[460,250]],"answer":-1.5}',
         json_example_answer_only='{"answer":-1.5}',
@@ -682,7 +684,7 @@ def _build_line_slope_value(
         prompt_key=plan.prompt_key_for(str(context["branch_name"])),
         program_code="single_segment.slope_value",
         scene_kind="geometry_graph_paper_single_segment",
-        semantic_args={"dx": int(dx), "dy": int(dy)},
+        semantic_args={"dx": int(dx), "dy": int(dy), "answer_rounding": "one_decimal"},
     )
 
 

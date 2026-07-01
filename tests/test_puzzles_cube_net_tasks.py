@@ -3,25 +3,20 @@
 from __future__ import annotations
 
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.puzzles.cube_net.cube_net_face_relation_label import (
-    SUPPORTED_QUERY_IDS as FACE_RELATION_QUERY_IDS,
-    TASK_ID as FACE_RELATION_TASK_ID,
-    PuzzlesCubeNetFaceRelationLabelTask,
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.tasks.puzzles.cube_net.equivalent_net_label import (
+    TASK_ID as EQUIVALENT_NET_TASK_ID,
+    PuzzlesCubeNetEquivalentNetLabelTask,
 )
-from trace.tasks.puzzles.cube_net.cube_rolling_result_label import (
-    SUPPORTED_QUERY_IDS as ROLLING_QUERY_IDS,
-    TASK_ID as ROLLING_RESULT_TASK_ID,
-    PuzzlesCubeRollingResultLabelTask,
+from trace.tasks.puzzles.cube_net.marked_edge_neighbor_face_label import (
+    TASK_ID as MARKED_EDGE_NEIGHBOR_TASK_ID,
+    PuzzlesCubeNetMarkedEdgeNeighborFaceLabelTask,
 )
-from trace.tasks.puzzles.cube_net.folded_path_endpoint_label import (
-    TASK_ID as FOLDED_PATH_ENDPOINT_TASK_ID,
-    PuzzlesCubeFoldedPathEndpointLabelTask,
+from trace.tasks.puzzles.cube_net.opposite_face_label import (
+    TASK_ID as OPPOSITE_FACE_TASK_ID,
+    PuzzlesCubeNetOppositeFaceLabelTask,
 )
-from trace.tasks.puzzles.cube_net.folded_path_face_sequence_label import (
-    TASK_ID as FOLDED_PATH_FACE_SEQUENCE_TASK_ID,
-    PuzzlesCubeFoldedPathFaceSequenceLabelTask,
-)
-from trace.tasks.puzzles.cube_net.shared.state import SCENE_ID
+from trace.tasks.puzzles.cube_net.shared.state import NET_COORDS, SCENE_ID, SIDE_OFFSETS
 
 
 def _assert_bbox_in_image(bbox: list[float], image_size: tuple[int, int]) -> None:
@@ -30,23 +25,18 @@ def _assert_bbox_in_image(bbox: list[float], image_size: tuple[int, int]) -> Non
     assert 0 <= float(bbox[1]) < float(bbox[3]) <= image_size[1]
 
 
-def _assert_keyed_bboxes_in_image(annotation: dict[str, list[float]], image_size: tuple[int, int]) -> None:
-    assert annotation
-    for bbox in annotation.values():
-        _assert_bbox_in_image(bbox, image_size)
-
-
 def test_cube_surface_tasks_are_registered() -> None:
-    assert TASK_REGISTRY[FACE_RELATION_TASK_ID] is PuzzlesCubeNetFaceRelationLabelTask
-    assert TASK_REGISTRY[ROLLING_RESULT_TASK_ID] is PuzzlesCubeRollingResultLabelTask
-    assert TASK_REGISTRY[FOLDED_PATH_ENDPOINT_TASK_ID] is PuzzlesCubeFoldedPathEndpointLabelTask
-    assert TASK_REGISTRY[FOLDED_PATH_FACE_SEQUENCE_TASK_ID] is PuzzlesCubeFoldedPathFaceSequenceLabelTask
+    assert TASK_REGISTRY[OPPOSITE_FACE_TASK_ID] is PuzzlesCubeNetOppositeFaceLabelTask
+    assert (
+        TASK_REGISTRY[MARKED_EDGE_NEIGHBOR_TASK_ID]
+        is PuzzlesCubeNetMarkedEdgeNeighborFaceLabelTask
+    )
+    assert TASK_REGISTRY[EQUIVALENT_NET_TASK_ID] is PuzzlesCubeNetEquivalentNetLabelTask
 
     for task_cls in (
-        PuzzlesCubeNetFaceRelationLabelTask,
-        PuzzlesCubeRollingResultLabelTask,
-        PuzzlesCubeFoldedPathEndpointLabelTask,
-        PuzzlesCubeFoldedPathFaceSequenceLabelTask,
+        PuzzlesCubeNetOppositeFaceLabelTask,
+        PuzzlesCubeNetMarkedEdgeNeighborFaceLabelTask,
+        PuzzlesCubeNetEquivalentNetLabelTask,
     ):
         task = task_cls()
         assert task.domain == "puzzles"
@@ -54,126 +44,120 @@ def test_cube_surface_tasks_are_registered() -> None:
 
 
 def test_cube_net_face_relation_contracts() -> None:
-    task = PuzzlesCubeNetFaceRelationLabelTask()
-    for index, query_id in enumerate(FACE_RELATION_QUERY_IDS):
-        out = task.generate(2026052800 + index, params={"query_id": query_id}, max_attempts=50)
+    cases = (
+        (
+            PuzzlesCubeNetOppositeFaceLabelTask(),
+            "opposite",
+        ),
+        (
+            PuzzlesCubeNetMarkedEdgeNeighborFaceLabelTask(),
+            "edge_neighbor",
+        ),
+    )
+    for index, (task, relation_kind) in enumerate(cases):
+        out = task.generate(2026052800 + index, params={}, max_attempts=50)
         trace = out.trace_payload
         execution = trace["execution_trace"]
 
         assert out.scene_id == SCENE_ID
-        assert out.query_id == query_id
+        assert out.query_id == SINGLE_QUERY_ID
         assert out.answer_gt.type == "option_letter"
-        assert out.annotation_gt.type == "bbox_map"
-        assert trace["query_spec"]["params"]["query_id"] == query_id
+        assert out.annotation_gt.type == "bbox"
+        assert trace["query_spec"]["params"]["query_id"] == SINGLE_QUERY_ID
         assert trace["render_spec"]["scene_id"] == SCENE_ID
         assert trace["render_spec"]["label_style"]["font"]["source"] == "global_font_pool"
-        assert trace["render_spec"]["scene_variant_style"]["semantic_policy"] == "non_semantic_chrome_only_no_layout_or_answer_change"
+        assert (
+            trace["render_spec"]["scene_variant_style"]["semantic_policy"]
+            == "non_semantic_chrome_only_no_layout_or_answer_change"
+        )
         assert trace["render_spec"]["post_image_noise"]["apply_prob"] == 0.5
+        assert trace["render_spec"]["net_rotation_degrees"] in {0, 90, 180, 270}
         assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
         assert str(out.answer_gt.value) == str(execution["answer_value"])
-        assert set(out.annotation_gt.value) == {"marked_face", "selected_option"}
-        assert trace["projected_annotation"]["type"] == "bbox_map"
-        assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
+        assert str(execution["relation_kind"]) == relation_kind
+        assert trace["projected_annotation"]["type"] == "bbox"
+        assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
+        selected_option_bbox = trace["render_map"]["option_panel_bboxes_px"][
+            f"option_{out.answer_gt.value}"
+        ]
+        assert out.annotation_gt.value == [
+            round(float(value), 3) for value in selected_option_bbox
+        ]
         option_labels = {str(option["option_label"]) for option in execution["option_specs"]}
         assert option_labels == {"A", "B", "C", "D"}
         assert str(out.answer_gt.value) in option_labels
-        _assert_keyed_bboxes_in_image(out.annotation_gt.value, out.image.size)
+        option_face_ids = {str(option["face_id"]) for option in execution["option_specs"]}
+        assert str(execution["reference_face"]) not in option_face_ids
+        assert str(execution["correct_face"]) in option_face_ids
+        if relation_kind == "edge_neighbor":
+            ref_x, ref_y = NET_COORDS[str(execution["reference_face"])]
+            side_dx, side_dy = SIDE_OFFSETS[str(execution["marked_side"])]
+            flat_neighbor_coord = (int(ref_x + side_dx), int(ref_y + side_dy))
+            assert flat_neighbor_coord not in {tuple(coord) for coord in NET_COORDS.values()}
+        _assert_bbox_in_image(out.annotation_gt.value, out.image.size)
 
 
-def test_cube_rolling_result_contracts() -> None:
-    task = PuzzlesCubeRollingResultLabelTask()
-    for index, query_id in enumerate(ROLLING_QUERY_IDS):
-        out = task.generate(2026052900 + index, params={"query_id": query_id}, max_attempts=50)
-        trace = out.trace_payload
-        execution = trace["execution_trace"]
+def test_cube_net_equivalent_net_contracts() -> None:
+    task = PuzzlesCubeNetEquivalentNetLabelTask()
+    out = task.generate(2026052850, params={}, max_attempts=50)
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
 
-        assert out.scene_id == SCENE_ID
-        assert out.query_id == query_id
-        assert out.answer_gt.type == "option_letter"
-        assert out.annotation_gt.type == "bbox_map"
-        assert trace["query_spec"]["params"]["query_id"] == query_id
-        assert trace["render_spec"]["scene_id"] == SCENE_ID
-        assert trace["render_spec"]["label_style"]["font"]["source"] == "global_font_pool"
-        assert trace["render_spec"]["scene_variant_style"]["semantic_policy"] == "non_semantic_chrome_only_no_layout_or_answer_change"
-        assert trace["render_spec"]["post_image_noise"]["apply_prob"] == 0.5
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
-
-        assert str(out.answer_gt.value) == str(execution["answer_value"])
-        assert set(out.annotation_gt.value) == {"start_cube", "roll_path", "selected_option"}
-        assert trace["projected_annotation"]["type"] == "bbox_map"
-        assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
-        assert len(execution["path_cells"]) == len(execution["path_directions"]) + 1
-        assert {str(option["option_label"]) for option in execution["option_specs"]} == {
-            "A",
-            "B",
-            "C",
-            "D",
-        }
-        assert execution["correct_face"] == execution["final_orientation"][execution["target_slot"]]
-        _assert_keyed_bboxes_in_image(out.annotation_gt.value, out.image.size)
-
-
-def test_cube_surface_path_contracts() -> None:
-    cases = (
-        (PuzzlesCubeFoldedPathEndpointLabelTask(), "single", "endpoint"),
-        (PuzzlesCubeFoldedPathFaceSequenceLabelTask(), "single", "face_sequence"),
+    assert out.scene_id == SCENE_ID
+    assert out.query_id == SINGLE_QUERY_ID
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "bbox"
+    assert trace["query_spec"]["params"]["query_id"] == SINGLE_QUERY_ID
+    assert trace["render_spec"]["scene_id"] == SCENE_ID
+    assert trace["render_spec"]["label_style"]["font"]["source"] == "global_font_pool"
+    assert (
+        trace["render_spec"]["scene_variant_style"]["semantic_policy"]
+        == "non_semantic_chrome_only_no_layout_or_answer_change"
     )
-    for index, (task, query_id, answer_mode) in enumerate(cases):
-        out = task.generate(2026053000 + index, params={"query_id": query_id}, max_attempts=50)
-        trace = out.trace_payload
-        execution = trace["execution_trace"]
+    assert trace["render_spec"]["post_image_noise"]["apply_prob"] == 0.5
+    assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
-        assert out.scene_id == SCENE_ID
-        assert out.query_id == query_id
-        assert out.answer_gt.type == "option_letter"
-        assert out.annotation_gt.type == "bbox_map"
-        assert trace["query_spec"]["params"]["query_id"] == query_id
-        assert trace["query_spec"]["params"]["answer_mode"] == answer_mode
-        assert trace["render_spec"]["scene_id"] == SCENE_ID
-        assert trace["render_spec"]["label_style"]["font"]["source"] == "global_font_pool"
-        assert trace["render_spec"]["scene_variant_style"]["semantic_policy"] == "non_semantic_chrome_only_no_layout_or_answer_change"
-        assert trace["render_spec"]["post_image_noise"]["apply_prob"] == 0.5
-        assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
-
-        assert str(out.answer_gt.value) == str(execution["answer_value"])
-        assert set(out.annotation_gt.value) == {"start_face", "move_instructions", "selected_option"}
-        assert trace["projected_annotation"]["type"] == "bbox_map"
-        assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
-        assert len(execution["face_sequence"]) == len(execution["path_sides"]) + 1
-        assert {str(option["option_label"]) for option in execution["option_specs"]} == {
-            "A",
-            "B",
-            "C",
-            "D",
-        }
-        assert execution["face_sequence"][0] == execution["start_face"]
-        assert execution["face_sequence"][-1] == execution["endpoint_face"]
-        correct = next(option for option in execution["option_specs"] if option["option_label"] == execution["answer_value"])
-        if answer_mode == "endpoint":
-            assert correct["face_id"] == execution["endpoint_face"]
-        else:
-            assert correct["face_ids"] == execution["face_sequence"]
-        _assert_keyed_bboxes_in_image(out.annotation_gt.value, out.image.size)
+    assert str(out.answer_gt.value) == str(execution["answer_value"])
+    assert trace["projected_annotation"]["type"] == "bbox"
+    selected_option_bbox = trace["render_map"]["option_panel_bboxes_px"][
+        f"option_{out.answer_gt.value}"
+    ]
+    assert out.annotation_gt.value == [
+        round(float(value), 3) for value in selected_option_bbox
+    ]
+    option_specs = execution["option_specs"]
+    assert {str(option["option_label"]) for option in option_specs} == {"A", "B", "C", "D"}
+    reference_signature = tuple(execution["reference_signature"])
+    equivalent_options = [
+        str(option["option_label"])
+        for option in option_specs
+        if tuple(option["canonical_signature"]) == reference_signature
+    ]
+    assert equivalent_options == [str(out.answer_gt.value)]
+    _assert_bbox_in_image(out.annotation_gt.value, out.image.size)
 
 
 def test_cube_surface_scene_variants_are_visible() -> None:
-    task = PuzzlesCubeNetFaceRelationLabelTask()
-    common = {"query_id": "opposite_face_label"}
-    clean = task.generate(2026053010, params={**common, "scene_variant": "clean_net"}, max_attempts=50)
-    paper = task.generate(2026053010, params={**common, "scene_variant": "paper_model"}, max_attempts=50)
-    mat = task.generate(2026053010, params={**common, "scene_variant": "game_mat"}, max_attempts=50)
+    task = PuzzlesCubeNetOppositeFaceLabelTask()
+    clean = task.generate(2026053010, params={"scene_variant": "clean_net"}, max_attempts=50)
+    paper = task.generate(2026053010, params={"scene_variant": "paper_model"}, max_attempts=50)
+    mat = task.generate(2026053010, params={"scene_variant": "game_mat"}, max_attempts=50)
 
     assert clean.trace_payload["render_spec"]["scene_variant_style"]["scene_variant"] == "clean_net"
-    assert paper.trace_payload["render_spec"]["scene_variant_style"]["scene_variant"] == "paper_model"
+    assert (
+        paper.trace_payload["render_spec"]["scene_variant_style"]["scene_variant"]
+        == "paper_model"
+    )
     assert mat.trace_payload["render_spec"]["scene_variant_style"]["scene_variant"] == "game_mat"
     assert clean.image.tobytes() != paper.image.tobytes()
     assert clean.image.tobytes() != mat.image.tobytes()
 
 
 def test_cube_surface_generation_is_deterministic() -> None:
-    task = PuzzlesCubeRollingResultLabelTask()
-    params = {"query_id": "final_right_face_label", "scene_variant": "paper_model"}
+    task = PuzzlesCubeNetEquivalentNetLabelTask()
+    params = {"scene_variant": "paper_model"}
     out_a = task.generate(2026052999, params=params, max_attempts=50)
     out_b = task.generate(2026052999, params=params, max_attempts=50)
 

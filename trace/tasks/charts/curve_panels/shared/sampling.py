@@ -359,13 +359,20 @@ def panels_from_values(
     panel_labels: Sequence[str],
     method_labels: Sequence[str],
     colors: Sequence[RGB],
+    omitted_panel_methods: Mapping[str, Sequence[str]] | None = None,
 ) -> Tuple[Panel, ...]:
     """Convert sampled values into renderable panels."""
 
+    omitted = {
+        str(panel): {str(method) for method in methods}
+        for panel, methods in dict(omitted_panel_methods or {}).items()
+    }
     panels: List[Panel] = []
     for panel in panel_labels:
         curves: List[Curve] = []
         for index, method in enumerate(method_labels):
+            if str(method) in omitted.get(str(panel), set()):
+                continue
             curves.append(
                 Curve(
                     method_label=str(method),

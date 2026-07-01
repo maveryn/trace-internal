@@ -20,9 +20,6 @@ from trace.tasks.charts.radial_progress.progress_threshold_count import (
     SUPPORTED_QUERY_IDS as PROGRESS_THRESHOLD_QUERY_IDS,
     ChartsRadialProgressThresholdCountTask,
 )
-from trace.tasks.charts.radial_progress.remaining_threshold_count import (
-    ChartsRadialProgressRemainingThresholdCountTask,
-)
 from trace.tasks.charts.radial_progress.shared.state import SUPPORTED_SCENE_VARIANTS
 from trace.tasks.registry import list_default_task_ids
 
@@ -47,9 +44,6 @@ def _expected_answer(execution: dict) -> int | str:
         lower = int(execution["range_lower"])
         upper = int(execution["range_upper"])
         return sum(1 for item in items if lower <= int(item["value"]) <= upper)
-    if condition == "remaining_at_least_threshold":
-        threshold = int(execution["threshold_value"])
-        return sum(1 for item in items if 100 - int(item["value"]) >= threshold)
     extremum = str(execution.get("remaining_extremum", ""))
     if extremum == "highest_remaining":
         return str(min(items, key=lambda item: int(item["value"]))["label"])
@@ -62,7 +56,6 @@ RADIAL_COUNT_CASES = (
     (ChartsRadialProgressThresholdCountTask, "at_least_threshold_count"),
     (ChartsRadialProgressThresholdCountTask, "below_threshold_count"),
     (ChartsRadialProgressIntervalCountTask, SINGLE_QUERY_ID),
-    (ChartsRadialProgressRemainingThresholdCountTask, SINGLE_QUERY_ID),
 )
 
 
@@ -177,6 +170,29 @@ def test_charts_radial_progress_remaining_balanced_sampling_covers_axes() -> Non
         queries[str(out.query_id)] += 1
     assert set(scenes) == set(SUPPORTED_SCENE_VARIANTS)
     assert set(queries) == set(REMAINING_EXTREMUM_QUERY_IDS)
+
+
+def test_charts_radial_progress_dark_theme_uses_inactive_track() -> None:
+    params = {
+        "query_id": "highest_remaining_label",
+        "scene_variant": "segmented_radial_bars",
+        "information_scene_treatments": ["dark_report_card"],
+        "information_scene_palettes": ["dark_mint"],
+        "information_scene_chrome_modes": ["none"],
+    }
+    out = ChartsRadialProgressExtremumRemainingLabelTask().generate(1516849462425006, params=params, max_attempts=60)
+    style = out.trace_payload["render_spec"]["render_meta"]["style"]
+    track_style = out.trace_payload["render_spec"]["render_meta"]["progress_track_style"]
+    card_fill = style["card_fill_rgb"]
+    track = style["track_rgb"]
+    base_track = track_style["base_track_rgb"]
+
+    def luminance(rgb: list[int]) -> float:
+        return (0.2126 * float(rgb[0])) + (0.7152 * float(rgb[1])) + (0.0722 * float(rgb[2]))
+
+    assert track_style["progress_track_policy"] == "dark_inactive_track"
+    assert luminance(track) < luminance(card_fill)
+    assert luminance(base_track) > luminance(card_fill)
 
 
 def test_charts_radial_progress_is_deterministic() -> None:

@@ -2,26 +2,32 @@
 
 from __future__ import annotations
 
-from trace.tasks.geometry.shared.annotation_values import PixelAnnotationArtifacts, keyed_bbox_annotation_artifacts
+from trace.tasks.geometry.shared.annotation_values import PixelAnnotationArtifacts
+from trace.tasks.shared.annotation_artifacts import bbox_annotation_artifacts, segment_annotation_artifacts
 
 from .state import RenderedTrapezoidExtensionScene
 
-ANNOTATION_KEYS: tuple[str, str, str, str] = (
-    "target_cue",
-    "original_trapezoid",
-    "dashed_parallelogram_completion",
-    "supporting_visible_labels",
-)
-
 
 def trapezoid_extension_annotation(rendered: RenderedTrapezoidExtensionScene) -> PixelAnnotationArtifacts:
-    """Build role-bound bbox-map annotation for rendered trapezoid witnesses."""
+    """Build the scalar public annotation for the rendered geometric witness."""
 
-    return keyed_bbox_annotation_artifacts(
-        rendered.annotation_bboxes,
-        roles=ANNOTATION_KEYS,
-        include_point_centers=True,
+    if str(rendered.annotation_mode) == "extension_segment":
+        if rendered.annotation_segment is None:
+            raise ValueError("extension_segment annotation requested without a segment")
+        artifacts = segment_annotation_artifacts(rendered.annotation_segment)
+        return PixelAnnotationArtifacts(
+            annotation_type=artifacts.annotation_type,
+            value=artifacts.value,
+            projected_annotation=artifacts.projected_annotation,
+        )
+    if rendered.annotation_bbox is None:
+        raise ValueError("bbox annotation requested without a bbox")
+    artifacts = bbox_annotation_artifacts(rendered.annotation_bbox)
+    return PixelAnnotationArtifacts(
+        annotation_type=artifacts.annotation_type,
+        value=artifacts.value,
+        projected_annotation=artifacts.projected_annotation,
     )
 
 
-__all__ = ["ANNOTATION_KEYS", "trapezoid_extension_annotation"]
+__all__ = ["trapezoid_extension_annotation"]

@@ -77,34 +77,6 @@
         "Starting from the shown falling piece, {shift_instruction}. {collision_time_rule_text} How many downward timesteps can it move before collision?",
         "After the START piece is instructed to {shift_instruction}, it falls straight down. {collision_time_rule_text} How many timesteps happen before the collision?",
         "For the shown falling piece, {shift_instruction} and then let it drop vertically. {collision_time_rule_text} What is the number of successful downward timesteps?"
-      ],
-      "top_occupied_row_filled_cell_count": [
-        "In the highest row that contains any block, how many filled cells are there?",
-        "Find the topmost occupied row. How many cells in that row are filled?",
-        "In the highest board row with at least one block, how many filled cells are there?",
-        "How many blocks are in the topmost occupied row?",
-        "In the top occupied row of the board, count the filled cells."
-      ],
-      "top_occupied_row_empty_cell_count": [
-        "In the highest row that contains any block, how many empty cells are there?",
-        "Find the topmost occupied row. How many cells in that row are empty?",
-        "In the highest board row with at least one block, how many empty cells are there?",
-        "How many gaps are in the topmost occupied row?",
-        "In the top occupied row of the board, count the empty cells."
-      ],
-      "bottom_occupied_row_filled_cell_count": [
-        "In the lowest row that contains any block, how many filled cells are there?",
-        "Find the bottommost occupied row. How many cells in that row are filled?",
-        "In the lowest board row with at least one block, how many filled cells are there?",
-        "How many blocks are in the bottommost occupied row?",
-        "In the bottom occupied row of the board, count the filled cells."
-      ],
-      "bottom_occupied_row_empty_cell_count": [
-        "In the lowest row that contains any block, how many empty cells are there?",
-        "Find the bottommost occupied row. How many cells in that row are empty?",
-        "In the lowest board row with at least one block, how many empty cells are there?",
-        "How many gaps are in the bottommost occupied row?",
-        "In the bottom occupied row of the board, count the empty cells."
       ]
     },
     "output": {
@@ -138,7 +110,6 @@
       "line_clear_rule_text"
     ],
     "query:full_row_count": [],
-    "query:one_gap_row_count": [],
     "query:no_shift_collision_time": [
       "shift_instruction",
       "collision_time_rule_text"
@@ -151,10 +122,6 @@
       "shift_instruction",
       "collision_time_rule_text"
     ],
-    "query:top_occupied_row_filled_cell_count": [],
-    "query:top_occupied_row_empty_cell_count": [],
-    "query:bottom_occupied_row_filled_cell_count": [],
-    "query:bottom_occupied_row_empty_cell_count": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -224,8 +191,6 @@
     "annotation_hint_row_occupancy_status_count": "set \"annotation\" to an array containing one whole-row bounding box [x0, y0, x1, y1] for each qualifying row",
     "answer_hint_row_occupancy_status_count": "set \"answer\" to the number of qualifying rows",
     "annotation_hint_drop_collision_time_value": "set \"annotation\" to an object mapping \"start_piece\" and \"stop_witness\" to arrays of cell bounding boxes [x0, y0, x1, y1]",
-    "answer_hint_drop_collision_time_value": "set \"answer\" to the number of successful downward timesteps",
-    "annotation_hint_edge_occupied_row_cell_count": "set \"annotation\" to an array containing one cell bounding box [x0, y0, x1, y1] for each counted cell in the selected row",
-    "answer_hint_edge_occupied_row_cell_count": "set \"answer\" to the number of counted cells in the selected row"
+    "answer_hint_drop_collision_time_value": "set \"answer\" to the number of successful downward timesteps"
   }
 }

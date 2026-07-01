@@ -45,3 +45,10 @@ def test_games_darts_count_task_overrides_are_task_owned() -> None:
     assert bool(bull_generation["balanced_target_answer_sampling"]) is True
     assert list(bull_generation["count_target_answer_support"]) == [0, 1, 2, 3, 4, 5]
     assert list(bull_generation["count_query_dart_count_support"]) == [4, 5, 6, 7]
+
+    label_generation, _rendering, _prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_games__darts__highest_scoring_dart_label",
+    )
+    assert bool(label_generation["balanced_target_answer_sampling"]) is True
+    assert list(label_generation["highest_scoring_dart_label_support"]) == [0, 1, 2, 3]

@@ -11,7 +11,15 @@
 8. Scalar annotation checked: `true`
 
 ## Program Contract
-- `select_closest_box_by_matching_goal(boxes, matching_goals, distance=manhattan); scene=sokoban; scope=closest_box_goal_label`
+
+Program: `select_closest_box_by_matching_goal(boxes, matching_goals, distance=manhattan); scene=sokoban; scope=closest_box_goal_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `closest_box_goal_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `boxes`, `matching_goals`, `distance`, `manhattan`, `sokoban`, `closest_box_goal_label`.
+Operation: evaluate `select_closest_box_by_matching_goal` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The board shows lettered colored boxes and matching colored goal dots.

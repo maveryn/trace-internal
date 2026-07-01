@@ -5,10 +5,9 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Any, Dict, Mapping
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.charts.error_interval.shared.defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     SCENE_ID,
 )
@@ -29,18 +28,20 @@ def render_dataset(
     """Render one sampled dataset and return render/sidecar metadata."""
 
     render_params = resolve_error_interval_render_params(params, instance_seed=int(instance_seed))
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    protected_colors = tuple(tuple(int(channel) for channel in item.color_rgb) for item in dataset.items)
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=dict(params),
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id=SCENE_ID,
+        render_params=render_params,
+        protected_colors=protected_colors,
     )
     rendered = render_error_interval_chart(
         background,
         dataset=dataset,
         params=params,
         instance_seed=int(instance_seed),
+        render_params=render_params,
     )
     image, post_noise_meta = apply_post_image_noise(
         rendered.image,
@@ -59,9 +60,15 @@ def render_dataset(
         "layout_jitter": dict(rendered.render_meta.get("layout_jitter", {})),
         "font_assets": dict(rendered.render_meta.get("font_assets", {}))
         or {"asset_version": str(font_asset_version())},
+        "background_style": dict(background_meta),
+        "information_scene_style": dict(information_style_meta),
         "post_image_noise": dict(post_noise_meta),
     }
-    return rendered, dict(render_meta), {"background": dict(background_meta), "post_image_noise": dict(post_noise_meta)}
+    return rendered, dict(render_meta), {
+        "background": dict(background_meta),
+        "information_scene_style": dict(information_style_meta),
+        "post_image_noise": dict(post_noise_meta),
+    }
 
 
 def interval_records(dataset: _Dataset) -> list[dict[str, Any]]:
@@ -112,6 +119,7 @@ def build_trace_scaffold(
             "plot_bbox_px": list(rendered.plot_bbox_px),
             "item_bboxes_px": dict(rendered.item_bboxes_px),
             "interval_bboxes_px": dict(rendered.interval_bboxes_px),
+            "interval_center_points_px": dict(rendered.interval_center_points_px),
         },
         "execution_trace": {
             "scene_id": SCENE_ID,

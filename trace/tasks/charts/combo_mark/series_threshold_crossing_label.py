@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import hash64, spawn_rng
 from trace.tasks.base import TaskOutput
 from ._lifecycle import (
@@ -61,12 +62,14 @@ def _balanced_crossing_index(
         raise ValueError("no feasible combo threshold-crossing index support")
     support = tuple(range(int(low), int(high) + 1))
     probabilities = {int(value): 1.0 / float(len(support)) for value in support}
-    sampling_index = params.get("_sample_cursor")
-    if sampling_index is not None:
-        index = abs(int(sampling_index)) // max(1, int(sampling_divisor))
-    else:
-        index = int(hash64(instance_seed, f"{SCENE_NAMESPACE}.crossing_index:{int(label_count)}"))
-    return int(support[int(index) % len(support)]), probabilities, (int(low), int(high))
+    selected = int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.crossing_index:{int(label_count)}"),
+            support,
+            sort_keys=True,
+        )
+    )
+    return int(selected), probabilities, (int(low), int(high))
 
 
 def _crossing_series_values(
@@ -129,6 +132,7 @@ class ChartsComboSeriesThresholdCrossingLabelTask:
         LINE_ABOVE_QUERY_ID,
         LINE_BELOW_QUERY_ID,
     )
+    default_dataset_enabled = True
     default_crossing_dataset_enabled = True
 
     def _build_crossing_threshold_crossing_plan(
@@ -192,7 +196,7 @@ class ChartsComboSeriesThresholdCrossingLabelTask:
             answer_value=str(crossing_answer_label),
             question_format="series_threshold_crossing_label_query",
             annotation_indices=(int(crossing_answer_index),),
-            annotation_mode="single_mark_map",
+            annotation_mode="single_mark_point",
             annotation_mark_role=str(target_role),
             relations={
                 **dict(controlled_trace),

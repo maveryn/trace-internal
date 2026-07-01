@@ -10,7 +10,15 @@
 Counts all distinct enclosed rooms in a top-down pixel RPG house layout.
 
 ## Program Contract
-`count(room, enclosed(room)); scene=rpg_house; scope=room_count`
+
+Program: `count(room, enclosed(room)); scene=rpg_house; scope=room_count`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `room_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `room`, `enclosed`, `rpg_house`, `room_count`.
+Operation: evaluate `count` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

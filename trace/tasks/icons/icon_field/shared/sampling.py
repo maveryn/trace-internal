@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Tuple
 
+from .....core.sampling import uniform_choice
+from .....core.seed import spawn_rng
 from ....shared.config_defaults import group_default
-from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ....shared.deterministic_sampling import uniform_probability_map
 
 from .defaults import IconFieldDefaults
 from .state import TypeFrequencySpec
@@ -88,13 +90,6 @@ def resolve_singleton_frequency_spec(
     singleton_support = tuple(range(int(target_count_min), int(target_count_max) + 1))
     if not singleton_support:
         raise ValueError("singleton target support is empty")
-    selection_index = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(selection_namespace),
-        )
-    )
     explicit_target = params.get("target_count")
     explicit_object_count = params.get("object_count")
 
@@ -102,7 +97,12 @@ def resolve_singleton_frequency_spec(
         singleton_count = int(explicit_target)
         answer_probability_selected = int(singleton_count)
     else:
-        singleton_count = int(singleton_support[int(selection_index % len(singleton_support))])
+        singleton_count = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{str(selection_namespace)}:singleton_count"),
+                singleton_support,
+            )
+        )
         answer_probability_selected = None
     if singleton_count not in singleton_support:
         raise ValueError("target_count is outside configured support")
@@ -119,8 +119,12 @@ def resolve_singleton_frequency_spec(
     if explicit_object_count is not None:
         object_count = int(explicit_object_count)
     else:
-        object_offset = int(selection_index // len(singleton_support))
-        object_count = int(object_support[int(object_offset % len(object_support))])
+        object_count = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{str(selection_namespace)}:object_count"),
+                object_support,
+            )
+        )
     if object_count not in object_support:
         raise ValueError("object_count is outside configured singleton-type support")
     repeated_icon_count = int(object_count) - int(singleton_count)
@@ -144,8 +148,12 @@ def resolve_singleton_frequency_spec(
     group_support = group_support_for(int(repeated_icon_count))
     if not group_support:
         raise ValueError("no feasible repeated_type_count values exist for singleton-type counting")
-    partition_index = int(selection_index // max(1, len(singleton_support)))
-    repeated_type_count = int(group_support[int(partition_index % len(group_support))])
+    repeated_type_count = int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{str(selection_namespace)}:repeated_type_count"),
+            group_support,
+        )
+    )
     multiplicity_support = bounded_compositions(
         int(repeated_icon_count),
         int(repeated_type_count),
@@ -156,7 +164,10 @@ def resolve_singleton_frequency_spec(
         raise ValueError("no feasible repeated multiplicities exist for singleton-type counting")
     repeated_type_multiplicities = tuple(
         int(value)
-        for value in multiplicity_support[int(partition_index % len(multiplicity_support))]
+        for value in uniform_choice(
+            spawn_rng(int(instance_seed), f"{str(selection_namespace)}:multiplicity_partition"),
+            tuple(multiplicity_support),
+        )
     )
 
     return TypeFrequencySpec(
@@ -181,6 +192,7 @@ def resolve_singleton_frequency_spec(
                 selected=answer_probability_selected,
             )
         ),
+        distinct_color_count=1,
     )
 
 
@@ -255,20 +267,18 @@ def resolve_most_frequent_frequency_spec(
         raise ValueError("other_repeated_type_count_max must be non-negative")
 
     answer_support = tuple(range(int(target_count_min), int(target_count_max) + 1))
-    selection_index = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(selection_namespace),
-        )
-    )
     explicit_target = params.get("target_count")
     explicit_object_count = params.get("object_count")
 
     if explicit_target is not None:
         winning_frequency = int(explicit_target)
     else:
-        winning_frequency = int(answer_support[int(selection_index % len(answer_support))])
+        winning_frequency = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{str(selection_namespace)}:winning_frequency"),
+                answer_support,
+            )
+        )
     if winning_frequency not in answer_support:
         raise ValueError("target_count is outside configured most-frequent support")
 
@@ -286,8 +296,12 @@ def resolve_most_frequent_frequency_spec(
     if explicit_object_count is not None:
         object_count = int(explicit_object_count)
     else:
-        object_offset = int(selection_index // len(answer_support))
-        object_count = int(object_support[int(object_offset % len(object_support))])
+        object_count = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{str(selection_namespace)}:object_count"),
+                object_support,
+            )
+        )
     if object_count not in object_support:
         raise ValueError("object_count is outside configured most-frequent support")
 
@@ -298,8 +312,10 @@ def resolve_most_frequent_frequency_spec(
     )
     if not candidates:
         raise ValueError("no feasible frequency partition exists")
-    candidate_index = int(selection_index // max(1, len(answer_support) * len(object_support)))
-    singleton_count, repeated_type_multiplicities = candidates[int(candidate_index % len(candidates))]
+    singleton_count, repeated_type_multiplicities = uniform_choice(
+        spawn_rng(int(instance_seed), f"{str(selection_namespace)}:frequency_partition"),
+        tuple(candidates),
+    )
 
     return TypeFrequencySpec(
         object_count=int(object_count),
@@ -317,6 +333,7 @@ def resolve_most_frequent_frequency_spec(
                 selected=int(winning_frequency) if explicit_target is not None else None,
             )
         ),
+        distinct_color_count=1,
     )
 
 

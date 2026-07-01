@@ -1,7 +1,0 @@
-task_id: task_icons__pair_grid__reference_transform_match_count
-params:
-  query_id: single
-  object_count: 8
-  target_count: 3
-  pool_manifest: non_symmetry.txt
-  transform_ids: [rot90, rot180, rot270, flip_h, flip_v, flip_diag_main, flip_diag_anti]

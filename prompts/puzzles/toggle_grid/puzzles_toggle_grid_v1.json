@@ -4,8 +4,8 @@
   "allow_empty_task_templates": true,
   "code_prompt_defaults": {
     "object_description_toggle_clean": "a toggle grid with switch cells, binary cell states, and visual answer options",
-    "object_description_toggle_notebook": "a notebook-style toggle grid with switch cells, binary cell states, and visual answer options",
-    "object_description_toggle_console": "a console-style toggle grid with switch cells, binary cell states, and visual answer options"
+    "object_description_toggle_notebook": "a toggle grid with switch cells, binary cell states, and visual answer options",
+    "object_description_toggle_console": "a toggle grid with switch cells, binary cell states, and visual answer options"
   },
   "templates": {
     "scene": {
@@ -35,11 +35,11 @@
     },
     "query": {
       "toggle_result_label": [
-        "Press the numbered switches in order on the start grid. A press flips that cell and its up, down, left, and right neighbors when present. Which labeled option shows the final grid?",
-        "Starting with the shown grid, apply the numbered switch presses in order. Each press flips the selected cell and its orthogonal neighbors. Which option is the result?",
-        "Use the start grid and the marked press order. After every numbered press toggles its cell and edge-neighbor cells, which labeled option matches the final state?",
-        "Follow the numbered switch sequence. Each switch press flips itself plus adjacent up, down, left, and right cells. Which result option is correct?",
-        "Apply the visible switch presses to the start grid using the orthogonal-neighbor toggle rule. Which labeled result grid is produced?"
+        "Press the red marked switch on the start grid. A press flips that cell and its up, down, left, and right neighbors when present. Which labeled option shows the final grid?",
+        "Starting with the shown grid, apply the single red marked switch press. It flips the selected cell and its orthogonal neighbors. Which option is the result?",
+        "Use the start grid and the red marked switch. After that one press toggles its cell and edge-neighbor cells, which labeled option matches the final state?",
+        "Follow the red marked switch press. The switch flips itself plus adjacent up, down, left, and right cells. Which result option is correct?",
+        "Apply the visible red switch press to the start grid using the orthogonal-neighbor toggle rule. Which labeled result grid is produced?"
       ],
       "toggle_repair_switch_label": [
         "Which lettered switch in the start grid should be pressed once to produce the target grid? A press flips that cell and its up, down, left, and right neighbors when present.",
@@ -51,24 +51,24 @@
     },
     "output": {
       "answer_only": [
-        "Set answer to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nUse the answer-only JSON shape shown here.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nReturn the answer in JSON.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nUse this JSON shape for the final response.\nExample JSON:\n{json_example_answer_only}"
+        "Answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Use this answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}"
       ],
       "answer_and_annotation": [
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nReturn both fields in JSON.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse this JSON shape for the final response.\nExample JSON:\n{json_example}"
+        "Annotation format: {annotation_hint}\nAnswer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Required annotation format: {annotation_hint}\nRequired answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Format for the \"annotation\" field: {annotation_hint}\nFormat for the \"answer\" field: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Use this annotation format: {annotation_hint}\nUse this answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}\nFinal answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}"
       ]
     }
   },
   "static_slots_by_key": {
     "query:toggle_result_label": {
-      "answer_instruction": "the label of the result-grid option produced by the numbered switch presses",
+      "answer_instruction": "the label of the result-grid option produced by pressing the red marked switch",
       "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected result option panel.",
       "json_example": "{\"annotation\":[722,552,882,806],\"answer\":\"D\"}",
       "json_example_answer_only": "{\"answer\":\"D\"}"

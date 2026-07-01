@@ -6,8 +6,9 @@
 3. Task id: `task_geometry__regular_polygon_decomposition__wedge_area_from_side_apothem_value`
 4. Supported `query_id` values: `single`
 5. Answer schema: `number`
-6. Annotation schema: `point_map`
-7. Scalar annotation checked: `true` (not scalar-eligible; the task binds triangular wedge and apothem-foot roles)
+6. Answer precision: `one_decimal`
+7. Annotation schema: `point_map`
+8. Scalar annotation checked: `true` (not scalar-eligible; the task binds triangular wedge and apothem-foot roles)
 
 ## Program Contract
 - `solve_formula(regular_polygon_equal_wedge_decomposition, target=single_wedge_area, formula_schema=side_length_times_apothem_divided_by_two); scene=regular_polygon_decomposition; scope=wedge_area_from_side_apothem_value`

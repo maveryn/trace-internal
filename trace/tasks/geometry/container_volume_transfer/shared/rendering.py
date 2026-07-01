@@ -6,11 +6,11 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.diagram_style import prepare_geometry_diagram_style_and_background
 from trace.tasks.geometry.shared.measurement_rendering import bbox_to_list, bbox_union_from_bboxes as _bbox_union, pad_bbox
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
 
@@ -197,8 +197,11 @@ def create_render_context(
         ((239, 235, 255), (235, 248, 246), (220, 239, 249), (111, 92, 190)),
         ((232, 248, 237), (255, 241, 222), (214, 237, 229), (38, 137, 95)),
     )
-    palette_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{random_namespace}.palette")
-    source_fill, target_fill, liquid_fill, accent_color = fill_palettes[int(palette_index) % len(fill_palettes)]
+    palette_rng = spawn_rng(int(instance_seed), f"{random_namespace}.palette")
+    source_fill, target_fill, liquid_fill, accent_color = uniform_choice(
+        palette_rng,
+        fill_palettes,
+    )
     font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 22)))
     small_font_size = int(params.get("small_label_font_size", group_default(render_defaults, "small_label_font_size", 18)))
     line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 3)))

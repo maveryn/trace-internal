@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any
 
 from trace.core.types import TypedValue
 
-from .state import BBox, ScatterClusterDataset, ScatterClusterRenderResult
+from .state import ScatterClusterDataset, ScatterClusterRenderResult
 
 
 @dataclass(frozen=True)
@@ -58,71 +58,27 @@ def cluster_bbox_annotation(
     )
 
 
-def cluster_pair_bbox_map_annotation(
+def centroid_option_point_annotation(
     *,
     dataset: ScatterClusterDataset,
     rendered: ScatterClusterRenderResult,
-    reference_cluster_label: str,
-    answer_cluster_label: str,
-) -> ScatterClusterAnnotationBundle:
-    rendered_scene = rendered.rendered_scene
-    ref_label = str(reference_cluster_label)
-    answer_label = str(answer_cluster_label)
-    bbox_map: dict[str, BBox] = {
-        "reference_cluster": list(rendered_scene.cluster_bboxes[ref_label]),
-        "answer_cluster": list(rendered_scene.cluster_bboxes[answer_label]),
-    }
-    cluster_labels = [ref_label, answer_label]
-    point_ids = _point_ids_for_clusters(dataset, cluster_labels)
-    return ScatterClusterAnnotationBundle(
-        annotation_type="bbox_map",
-        annotation_gt=TypedValue(type="bbox_map", value=dict(bbox_map)),
-        projected_annotation={
-            "type": "bbox_map",
-            "bbox_map": dict(bbox_map),
-            "pixel_bbox_map": dict(bbox_map),
-            "point_ids": list(point_ids),
-            "cluster_labels": list(cluster_labels),
-            "cluster_bboxes": {label: list(rendered_scene.cluster_bboxes[label]) for label in cluster_labels},
-            "cluster_envelope_bboxes": dict(rendered_scene.cluster_envelope_bboxes),
-        },
-        annotation_refs=list(bbox_map),
-        annotation_cluster_labels=list(cluster_labels),
-        annotation_point_ids=list(point_ids),
-    )
-
-
-def centroid_option_bbox_map_annotation(
-    *,
-    dataset: ScatterClusterDataset,
-    rendered: ScatterClusterRenderResult,
-    target_cluster_label: str,
     selected_option_label: str,
 ) -> ScatterClusterAnnotationBundle:
     rendered_scene = rendered.rendered_scene
-    cluster_label = str(target_cluster_label)
     option_label = str(selected_option_label)
-    bbox_map: dict[str, BBox] = {
-        "target_cluster": list(rendered_scene.cluster_bboxes[cluster_label]),
-        "selected_option_marker": list(rendered_scene.option_bboxes[option_label]),
-    }
-    point_ids = _point_ids_for_clusters(dataset, [cluster_label])
+    point = list(rendered_scene.option_centers_px[option_label])
     return ScatterClusterAnnotationBundle(
-        annotation_type="bbox_map",
-        annotation_gt=TypedValue(type="bbox_map", value=dict(bbox_map)),
+        annotation_type="point",
+        annotation_gt=TypedValue(type="point", value=list(point)),
         projected_annotation={
-            "type": "bbox_map",
-            "bbox_map": dict(bbox_map),
-            "pixel_bbox_map": dict(bbox_map),
-            "point_ids": list(point_ids),
-            "cluster_labels": [cluster_label],
+            "type": "point",
+            "point": list(point),
+            "pixel_point": list(point),
             "option_labels": [option_label],
-            "cluster_bboxes": {cluster_label: list(rendered_scene.cluster_bboxes[cluster_label])},
             "option_bboxes": dict(rendered_scene.option_bboxes),
             "option_centers_px": dict(rendered_scene.option_centers_px),
-            "cluster_envelope_bboxes": dict(rendered_scene.cluster_envelope_bboxes),
         },
-        annotation_refs=list(bbox_map),
-        annotation_cluster_labels=[cluster_label],
-        annotation_point_ids=list(point_ids),
+        annotation_refs=[option_label],
+        annotation_cluster_labels=[],
+        annotation_point_ids=[],
     )

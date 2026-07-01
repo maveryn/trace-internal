@@ -162,8 +162,8 @@ family.
 | Family | Candidate shared surface | Scenes to compare |
 |---|---|---|
 | Circle diagrams | circle centers, radii, chords, tangents, secants, arcs, circle labels | `circle_theorem`, `circle_pair_tangents`, `circle_centerline_overlap`, `concentric_chord`, `incircle_tangents`, `circle_polygon_composite` |
-| Similarity/proportion | proportional segment equations, corresponding side maps, scale factors, marked correspondence | `similar_figure_measure_transfer`, `triangle_congruence_correspondence`, selected `triangle_relations` |
-| Polygon equation marks | equal-side/equal-angle marks, expression labels, variable solution setup | `polygon_equation_diagram`, `special_quadrilateral`, `triangle_congruence_correspondence`, selected `triangle_relations` |
+| Similarity/proportion | proportional segment equations, corresponding side maps, scale factors, marked correspondence | `similar_figure_measure_transfer`, selected `triangle_relations` |
+| Polygon equation marks | equal-side/equal-angle marks, expression labels, variable solution setup | `polygon_equation_diagram`, `special_quadrilateral`, selected `triangle_relations` |
 | Solid/volume diagrams | prism/cylinder/cone dimensions, volume-transfer layouts, orthographic panels | `rectangular_solid`, `solid_formula`, `solid_cross_section`, `solid_revolution`, `container_volume_transfer`, `volume_equivalence_conversion`, `cuboid_views` |
 | Curvilinear composites | sector/semicircle/quarter-circle cutouts and caps | `composite_shape`, `sector`, `circle_polygon_composite`, `tangent_packing` |
 | Graph-coordinate scenes | graph canvas, labels, options, point/shape projection | `graph_paper`, `coordinate_plane`, `coordinate_panels`, `coordinate_composite`, `function_graph`, `function_panels` |

@@ -1,14 +1,22 @@
 """Rendering helpers for scatter-point chart scenes."""
 
 from __future__ import annotations
-
-import math
 from typing import Any, Mapping, Sequence
 
 from PIL import Image, ImageDraw
 
 from trace.core.seed import spawn_rng
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.cartesian.axes import (
+    draw_axis_lines,
+    draw_horizontal_value_grid_ticks,
+    draw_plot_frame,
+    draw_vertical_value_grid_ticks,
+)
+from trace.tasks.charts.shared.cartesian.frame import plot_bbox_from_margins
+from trace.tasks.charts.shared.cartesian.geometry import project_xy, round_bbox, union_bboxes as cartesian_union_bboxes
+from trace.tasks.charts.shared.cartesian.lines import draw_dashed_line as draw_cartesian_dashed_line
+from trace.tasks.charts.shared.cartesian.markers import draw_marker as draw_cartesian_marker
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.render_variation import apply_layout_jitter_to_margins
 from trace.tasks.shared.text_legibility import draw_text_traced
@@ -16,7 +24,6 @@ from trace.tasks.shared.text_rendering import load_font, temporary_default_font_
 from trace.tasks.charts.shared.visual_defaults import chart_font_asset_metadata, sample_chart_font_family
 
 from .defaults import (
-    BACKGROUND_DEFAULTS,
     NOISE_DEFAULTS,
     RENDER_DEFAULTS,
     group_default,
@@ -29,21 +36,11 @@ from .state import BBox, Dataset, RGB, RenderParams, RenderedScene, SCENE_NAMESP
 
 
 def bbox(values: Sequence[float]) -> list[float]:
-    return [round(float(value), 3) for value in values]
+    return round_bbox(values)
 
 
 def bbox_union(boxes: Sequence[Sequence[float]]) -> list[float]:
-    valid = [tuple(float(value) for value in box[:4]) for box in boxes if len(box) >= 4]
-    if not valid:
-        return []
-    return bbox(
-        (
-            min(box[0] for box in valid),
-            min(box[1] for box in valid),
-            max(box[2] for box in valid),
-            max(box[3] for box in valid),
-        )
-    )
+    return cartesian_union_bboxes(boxes)
 
 
 def resolve_render_params(params: Mapping[str, Any]) -> RenderParams:
@@ -94,10 +91,7 @@ def resolve_render_params(params: Mapping[str, Any]) -> RenderParams:
 
 
 def data_to_pixel(x_value: float, y_value: float, plot_bbox: BBox) -> tuple[float, float]:
-    x0, y0, x1, y1 = [float(value) for value in plot_bbox]
-    px = x0 + (float(x_value) / 100.0) * (x1 - x0)
-    py = y1 - (float(y_value) / 100.0) * (y1 - y0)
-    return (float(px), float(py))
+    return project_xy(x_value=float(x_value), y_value=float(y_value), plot_bbox=plot_bbox)
 
 
 def text_bbox(
@@ -123,27 +117,15 @@ def draw_dashed_line(
     dash_px: int = 10,
     gap_px: int = 7,
 ) -> None:
-    x0, y0 = start
-    x1, y1 = end
-    length = math.hypot(x1 - x0, y1 - y0)
-    if length <= 0:
-        return
-    dx = (x1 - x0) / length
-    dy = (y1 - y0) / length
-    position = 0.0
-    while position < length:
-        segment_end = min(length, position + float(dash_px))
-        draw.line(
-            (
-                x0 + dx * position,
-                y0 + dy * position,
-                x0 + dx * segment_end,
-                y0 + dy * segment_end,
-            ),
-            fill=fill,
-            width=max(1, int(width)),
-        )
-        position += float(dash_px + gap_px)
+    draw_cartesian_dashed_line(
+        draw,
+        (float(start[0]), float(start[1])),
+        (float(end[0]), float(end[1])),
+        fill=fill,
+        width=int(width),
+        dash_px=int(dash_px),
+        gap_px=int(gap_px),
+    )
 
 
 def draw_marker(
@@ -155,32 +137,17 @@ def draw_marker(
     fill: RGB,
     outline: RGB,
 ) -> list[float]:
-    cx, cy = float(center[0]), float(center[1])
-    r = float(radius)
-    box = (cx - r, cy - r, cx + r, cy + r)
-    shape_text = str(shape)
-    if shape_text == "square":
-        draw.rectangle(box, fill=fill, outline=outline, width=2)
-    elif shape_text == "diamond":
-        draw.polygon([(cx, cy - r), (cx + r, cy), (cx, cy + r), (cx - r, cy)], fill=fill, outline=outline)
-    elif shape_text == "triangle":
-        draw.polygon([(cx, cy - r), (cx + r * 0.9, cy + r * 0.8), (cx - r * 0.9, cy + r * 0.8)], fill=fill, outline=outline)
-    elif shape_text == "ring":
-        draw.ellipse(box, fill=(255, 255, 255), outline=outline, width=2)
-        inner = (cx - r * 0.58, cy - r * 0.58, cx + r * 0.58, cy + r * 0.58)
-        draw.ellipse(inner, fill=fill, outline=fill)
-    elif shape_text == "pentagon":
-        points = [
-            (
-                cx + math.cos((-90.0 + 72.0 * index) * math.pi / 180.0) * r,
-                cy + math.sin((-90.0 + 72.0 * index) * math.pi / 180.0) * r,
-            )
-            for index in range(5)
-        ]
-        draw.polygon(points, fill=fill, outline=outline)
-    else:
-        draw.ellipse(box, fill=fill, outline=outline, width=2)
-    return bbox(box)
+    return draw_cartesian_marker(
+        draw,
+        center=(float(center[0]), float(center[1])),
+        radius=float(radius),
+        shape=str(shape),
+        fill=fill,
+        outline=outline,
+        width=2,
+        triangle_style="up_wide",
+        ring_style="inner_fill",
+    )
 
 
 def draw_rotated_y_label(
@@ -228,14 +195,16 @@ def render_scatter_points_scene(
     height = int(render_params.canvas_height)
     panel_margin = 34
     panel_bbox = (panel_margin, panel_margin, width - panel_margin, height - panel_margin)
-    plot_bbox = (
-        float(render_params.plot_margin_left_px),
-        float(render_params.plot_margin_top_px),
-        float(width - render_params.plot_margin_right_px),
-        float(height - render_params.plot_margin_bottom_px),
+    plot_bbox = plot_bbox_from_margins(
+        canvas_width=float(width),
+        canvas_height=float(height),
+        margin_left_px=float(render_params.plot_margin_left_px),
+        margin_right_px=float(render_params.plot_margin_right_px),
+        margin_top_px=float(render_params.plot_margin_top_px),
+        margin_bottom_px=float(render_params.plot_margin_bottom_px),
     )
     draw.rounded_rectangle(panel_bbox, radius=18, fill=render_params.panel_fill_rgb, outline=render_params.panel_border_rgb, width=2)
-    draw.rectangle(plot_bbox, fill=render_params.plot_fill_rgb, outline=render_params.panel_border_rgb, width=1)
+    draw_plot_frame(draw, plot_bbox, fill=render_params.plot_fill_rgb, outline=render_params.panel_border_rgb, width=1)
 
     title_font = load_font(render_params.title_font_size_px, bold=True)
     label_font = load_font(render_params.label_font_size_px, bold=True)
@@ -262,14 +231,36 @@ def render_scatter_points_scene(
 
     x0, y0, x1, y1 = plot_bbox
     tick_values = [0, 20, 40, 60, 80, 100]
+    grid_values = [20, 40, 60, 80]
+    x_tick_positions = draw_vertical_value_grid_ticks(
+        draw,
+        plot_bbox,
+        tick_values=tick_values,
+        domain_min=0,
+        domain_max=100,
+        grid_rgb=render_params.grid_color_rgb,
+        axis_rgb=render_params.axis_color_rgb,
+        grid_width_px=render_params.grid_line_width_px,
+        tick_width_px=render_params.axis_line_width_px,
+        tick_length_px=float(render_params.tick_length_px),
+        grid_values=grid_values,
+    )
+    y_tick_positions = draw_horizontal_value_grid_ticks(
+        draw,
+        plot_bbox,
+        tick_values=tick_values,
+        domain_min=0,
+        domain_max=100,
+        grid_rgb=render_params.grid_color_rgb,
+        axis_rgb=render_params.axis_color_rgb,
+        grid_width_px=render_params.grid_line_width_px,
+        tick_width_px=render_params.axis_line_width_px,
+        tick_length_px=float(render_params.tick_length_px),
+        grid_values=grid_values,
+    )
     for tick in tick_values:
-        px = x0 + (float(tick) / 100.0) * (x1 - x0)
-        py = y1 - (float(tick) / 100.0) * (y1 - y0)
-        if tick not in (0, 100):
-            draw.line((px, y0, px, y1), fill=render_params.grid_color_rgb, width=render_params.grid_line_width_px)
-            draw.line((x0, py, x1, py), fill=render_params.grid_color_rgb, width=render_params.grid_line_width_px)
-        draw.line((px, y1, px, y1 + render_params.tick_length_px), fill=render_params.axis_color_rgb, width=render_params.axis_line_width_px)
-        draw.line((x0 - render_params.tick_length_px, py, x0, py), fill=render_params.axis_color_rgb, width=render_params.axis_line_width_px)
+        px = float(x_tick_positions[float(tick)])
+        py = float(y_tick_positions[float(tick)])
         draw_text_traced(
             draw,
             (px, y1 + render_params.tick_length_px + 4),
@@ -291,8 +282,12 @@ def render_scatter_points_scene(
             required=False,
         )
 
-    draw.line((x0, y1, x1, y1), fill=render_params.axis_color_rgb, width=render_params.axis_line_width_px + 1)
-    draw.line((x0, y0, x0, y1), fill=render_params.axis_color_rgb, width=render_params.axis_line_width_px + 1)
+    draw_axis_lines(
+        draw,
+        plot_bbox,
+        axis_rgb=render_params.axis_color_rgb,
+        axis_width_px=render_params.axis_line_width_px + 1,
+    )
 
     x_axis_label = str(params.get("scatter_points_x_axis_label", group_default(RENDER_DEFAULTS, "scatter_points_x_axis_label", "X value")))
     y_axis_label = str(params.get("scatter_points_y_axis_label", group_default(RENDER_DEFAULTS, "scatter_points_y_axis_label", "Y value")))
@@ -433,13 +428,14 @@ def render_scatter_points_dataset(
     """Apply background/font/noise wrappers around the identity-free scatter renderer."""
 
     render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
-    render_params = resolve_render_params(render_style_params)
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    resolved_params = resolve_render_params(render_style_params)
+    protected_colors = [tuple(int(channel) for channel in category.color_rgb) for category in dataset.categories]
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=BACKGROUND_DEFAULTS,
+        scene_id="scatter_points",
+        render_params=resolved_params,
+        protected_colors=protected_colors,
     )
     chart_font_family = sample_chart_font_family(
         instance_seed=int(instance_seed),
@@ -464,7 +460,7 @@ def render_scatter_points_dataset(
         image=image,
         rendered_scene=rendered_scene,
         render_params=render_params,
-        background_meta=dict(background_meta),
+        background_meta={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         post_noise_meta=dict(post_noise_meta),
         chart_font_family=str(chart_font_family),
     )

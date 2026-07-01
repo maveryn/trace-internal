@@ -69,17 +69,6 @@ class PacmanCountAxis:
     probabilities: Dict[str, float]
 
 
-@dataclass(frozen=True)
-class PacmanRoutePelletSceneParts:
-    """Reusable sampled route, pellet, and ghost pieces for route-count scenes."""
-
-    route: Tuple[Coord, ...]
-    open_cells: Tuple[Coord, ...]
-    pellets: Tuple[Coord, ...]
-    counted_pellets: Tuple[Coord, ...]
-    ghosts: Tuple[PacmanGhost, ...]
-
-
 def _resolve_named_axis(
     *,
     gen_defaults: Mapping[str, Any],
@@ -397,49 +386,10 @@ def sample_decorative_ghosts(
     return tuple(ghosts)
 
 
-def sample_route_pellet_scene_parts(
-    *,
-    rng: Any,
-    axes: PacmanVisualAxes,
-    counted_pellet_count: int,
-) -> PacmanRoutePelletSceneParts:
-    """Build identity-free maze pieces with a target number of route pellets."""
-
-    target = int(counted_pellet_count)
-    rows, cols = int(axes.row_count), int(axes.col_count)
-    route_len = min(max(target + int(rng.randint(4, 8)), target + 1), max(8, (rows - 2) * (cols - 2) - 2))
-    route = sample_route(rng=rng, rows=rows, cols=cols, length=route_len)
-    min_open = len(route) + target + int(rng.randint(8, 16))
-    open_cells = expand_open_cells(rng=rng, rows=rows, cols=cols, route_coords=route, min_open_cells=min_open)
-    route_candidates = list(route[1:])
-    if len(route_candidates) < target:
-        raise ValueError("route too short for target pellets")
-    rng.shuffle(route_candidates)
-    counted_pellets = sorted_coords(route_candidates[:target])
-    off_route = list(available_open_cells(open_cells, excluded=route))
-    rng.shuffle(off_route)
-    distractor_count = min(len(off_route), int(rng.randint(4, 8)))
-    pellets = sorted_coords(tuple(counted_pellets) + tuple(off_route[:distractor_count]))
-    ghosts = sample_decorative_ghosts(
-        rng=rng,
-        open_cells=open_cells,
-        excluded=tuple(route) + tuple(pellets),
-        start_index=1,
-    )
-    return PacmanRoutePelletSceneParts(
-        route=tuple(route),
-        open_cells=tuple(open_cells),
-        pellets=tuple(pellets),
-        counted_pellets=tuple(counted_pellets),
-        ghosts=tuple(ghosts),
-    )
-
-
 __all__ = [
     "PacmanCountAxis",
     "PacmanIntegerTargetAxis",
     "PacmanLabelTargetAxis",
-    "PacmanRoutePelletSceneParts",
     "PacmanVisualAxes",
     "available_open_cells",
     "expand_open_cells",
@@ -449,7 +399,6 @@ __all__ = [
     "resolve_pacman_visual_axes",
     "sample_decorative_ghosts",
     "sample_route",
-    "sample_route_pellet_scene_parts",
     "string_support",
     "wall_cells",
 ]

@@ -44,6 +44,7 @@ class ChartsComboCrossMarkDifferenceValueTask:
     domain = DOMAIN
     objective_contract = "cross_mark_difference_value"
     supported_query_ids = (PRIMARY_MINUS_LINE_QUERY_ID, LINE_MINUS_PRIMARY_QUERY_ID)
+    default_dataset_enabled = True
     default_difference_dataset_enabled = True
 
     def _build_cross_difference_plan(

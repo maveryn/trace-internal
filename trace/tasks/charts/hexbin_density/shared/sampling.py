@@ -5,8 +5,8 @@ from __future__ import annotations
 import math
 from typing import Any, Mapping, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.charts.hexbin_density.shared.defaults import (
     SCENE_NAMESPACE,
     balanced_int,
@@ -27,7 +27,13 @@ def occupied_cells(
     if int(occupied_count) >= len(all_cells):
         return tuple(all_cells)
     rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.occupied_cells")
-    center_count = 2 + (resolve_selection_index(params={}, instance_seed=int(instance_seed), namespace=f"{SCENE_NAMESPACE}.cluster_count") % 2)
+    center_count = int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.cluster_count"),
+            (2, 3),
+            sort_keys=True,
+        )
+    )
     centers = [(rng.uniform(0.15, 0.85), rng.uniform(0.15, 0.85)) for _ in range(int(center_count))]
 
     def score(cell: Tuple[int, int]) -> float:

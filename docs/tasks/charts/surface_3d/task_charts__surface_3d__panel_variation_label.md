@@ -18,13 +18,22 @@
 1. Answer schema: `string_label`.
 2. Annotation schema: `bbox`.
 3. Annotation marks one [x0,y0,x1,y1] pixel box around the selected panel.
-4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+4. The image shows either `4` or `6` chart panels by construction.
+5. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
 ## Program Contract
-`selection.extreme_label(range(values(panel)), largest); scene=surface_3d; scope=panel_variation_label`
+
+Program: `selection.extreme_label(range(z_values(panel)), largest); scene=surface_3d; scope=panel_variation_label`
+
+Candidate set: the visible 3D surface samples, grid lines, and axis labels inside the `panel_variation_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `selection.extreme_label` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `bbox` witnesses bound by `see_annotation_contract`. Annotation marks one [x0,y0,x1,y1] pixel box around the selected panel. The image shows either `4` or `6` chart panels by construction. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `single`.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `single` | `selection.extreme_label(range(values(panel)), largest)` | `string_label` | `bbox` |
+| `single` | `selection.extreme_label(range(z_values(panel)), largest)` | `string_label` | `bbox` |

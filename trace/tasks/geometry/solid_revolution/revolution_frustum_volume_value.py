@@ -20,13 +20,8 @@ TASK_ID = "task_geometry__solid_revolution__revolution_frustum_volume_value"
 QUERY_ID = "single"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 ANNOTATION_KEYS = (
-    "generating_shape",
-    "rotation_axis",
-    "solid_preview",
-    "target_volume_cue",
-    "height_label",
-    "top_radius_label",
-    "bottom_radius_label",
+    "source_diagram_bbox",
+    "resulting_solid_bbox",
 )
 
 

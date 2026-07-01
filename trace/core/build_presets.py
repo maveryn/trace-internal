@@ -10,6 +10,7 @@ from ..tasks import create_task
 from ..tasks.base import TaskOutput
 from ..tasks.registry import list_default_task_ids
 from .config import BuildConfig, BuildTaskConfig
+from .query_ids import NO_BRANCH_QUERY_IDS
 from .seed import hash64
 
 
@@ -143,7 +144,7 @@ def resolve_task_active_query_id_count(
             return max(1, int(probability_count))
 
         query_id_label = str(getattr(output, "query_id", "") or "").strip()
-        if query_id_label and query_id_label != "default":
+        if query_id_label and query_id_label not in NO_BRANCH_QUERY_IDS:
             observed_query_ids.add(query_id_label)
 
     if observed_query_ids:

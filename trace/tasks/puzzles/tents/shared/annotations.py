@@ -63,4 +63,34 @@ def candidate_bbox_set_annotation(
     return annotation_gt, projected, witness
 
 
-__all__ = ["candidate_bbox_annotation", "candidate_bbox_set_annotation"]
+def labeled_tent_bbox_annotation(
+    item_bbox_map: Mapping[str, Sequence[float]],
+    label: str,
+) -> tuple[TypedValue, dict[str, Any], dict[str, Any]]:
+    """Project one labeled tent cell to scalar bbox annotation."""
+
+    item_id = f"labeled_tent_{str(label)}"
+    if item_id not in item_bbox_map:
+        raise RuntimeError(f"missing labeled tent bbox for label {label!r}")
+    bbox = [round(float(value), 3) for value in item_bbox_map[item_id]]
+    annotation_gt = TypedValue(type="bbox", value=list(bbox))
+    projected = {
+        "type": "bbox",
+        "bbox": list(bbox),
+        "pixel_bbox": list(bbox),
+        "value": list(bbox),
+    }
+    witness = {
+        "type": "bbox",
+        "item_id": item_id,
+        "label": str(label),
+        "value": list(bbox),
+    }
+    return annotation_gt, projected, witness
+
+
+__all__ = [
+    "candidate_bbox_annotation",
+    "candidate_bbox_set_annotation",
+    "labeled_tent_bbox_annotation",
+]

@@ -7,12 +7,14 @@ from typing import Any, Mapping
 
 from PIL import Image
 
+from ....core.sampling import uniform_choice, weighted_support_choice
+from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...shared.config_defaults import group_default, required_group_default
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.fixed_query import force_query_id_params, select_task_query_id
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
@@ -265,6 +267,7 @@ def common_prompt_slots(
     json_example: str,
     json_example_answer_only: str,
     annotation_hint: str,
+    answer_hint: str,
     object_description: str | None = None,
     target_depth: str = "",
     target_key: str = "",
@@ -288,7 +291,7 @@ def common_prompt_slots(
         "json_output_contract": str(_prompt_default(prompt_defaults, "json_output_contract")),
         "json_output_contract_answer_only": str(_prompt_default(prompt_defaults, "json_output_contract_answer_only")),
         "annotation_hint": str(annotation_hint),
-        "answer_hint": str(_prompt_default(prompt_defaults, "answer_hint")),
+        "answer_hint": str(answer_hint),
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
     }
@@ -388,12 +391,12 @@ def _resolve_axis_value(
         if value not in set(support):
             raise ValueError(f"{axis_name} is outside configured binary-tree support")
         return int(value), uniform_probability_map(support, selected=int(value))
-    selection_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{owner_id}:{axis_name}",
+    value = int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{owner_id}:{axis_name}"),
+            support,
+        )
     )
-    value = int(support[int(selection_index % len(support))])
     return int(value), uniform_probability_map(support)
 
 
@@ -414,23 +417,12 @@ def _resolve_weighted_string_axis(
         if value not in support:
             raise ValueError(f"{axis_name} is outside configured binary-tree support")
         return value, {str(key): (1.0 if str(key) == value else 0.0) for key in support}
-    total_weight = sum(float(weights[str(key)]) for key in support)
-    threshold = (
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{owner_id}:{axis_name}",
-        )
-        % 1_000_000
-    ) / 1_000_000.0 * float(total_weight)
-    cumulative = 0.0
-    selected = support[-1]
-    for key in support:
-        cumulative += float(weights[str(key)])
-        if threshold < cumulative:
-            selected = str(key)
-            break
-    return str(selected), {str(key): float(weights[str(key)]) / float(total_weight) for key in support}
+    selected, probabilities = weighted_support_choice(
+        spawn_rng(int(instance_seed), f"{owner_id}:{axis_name}"),
+        support,
+        weights=weights,
+    )
+    return str(selected), dict(probabilities)
 
 
 def run_binary_tree_count_plan(
@@ -524,6 +516,7 @@ def run_binary_tree_count_plan(
             json_example=str(json_example),
             json_example_answer_only=str(json_example_answer_only),
             annotation_hint=annotation_hint,
+            answer_hint=str(_prompt_default(prompt_defaults_map, "answer_hint_count")),
         ),
         instance_seed=int(instance_seed),
     )
@@ -670,6 +663,7 @@ def run_binary_tree_traversal_plan(
                 json_example=str(json_example),
                 json_example_answer_only=str(json_example_answer_only),
                 annotation_hint=str(_prompt_default(prompt_defaults_map, f"annotation_hint_{branch_name}")),
+                answer_hint=str(_prompt_default(prompt_defaults_map, "answer_hint_node_label")),
             ),
             "traversal_position": str(traversal_position),
         },
@@ -837,6 +831,7 @@ def run_binary_tree_relation_plan(
             json_example=str(json_example),
             json_example_answer_only=str(json_example_answer_only),
             annotation_hint=str(_prompt_default(prompt_defaults_map, f"annotation_hint_{branch_name}")),
+            answer_hint=str(_prompt_default(prompt_defaults_map, "answer_hint_node_label")),
         ),
         instance_seed=int(instance_seed),
     )
@@ -1023,6 +1018,7 @@ def run_binary_tree_operation_plan(
             json_example=str(json_example),
             json_example_answer_only=str(json_example_answer_only),
             annotation_hint=str(_prompt_default(prompt_defaults_map, f"annotation_hint_{branch_name}")),
+            answer_hint=str(_prompt_default(prompt_defaults_map, "answer_hint_numeric_key_label")),
         ),
         instance_seed=int(instance_seed),
     )

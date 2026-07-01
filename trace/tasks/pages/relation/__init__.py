@@ -1,1 +1,0 @@
-"""GUI relation scene."""

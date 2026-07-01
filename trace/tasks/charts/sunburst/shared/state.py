@@ -16,6 +16,7 @@ SCENE_NAMESPACE = "charts.sunburst"
 
 RGB = tuple[int, int, int]
 BBox = list[float]
+Point = list[float]
 
 
 @dataclass(frozen=True)
@@ -78,6 +79,7 @@ class RenderedSunburst:
 __all__ = [
     "BBox",
     "DOMAIN",
+    "Point",
     "RGB",
     "RenderedSunburst",
     "RenderParams",

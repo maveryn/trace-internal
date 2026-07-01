@@ -1,7 +1,15 @@
 # `task_graph__binary_tree__depth_level_node_count`
 
 ## Program Contract
-- `count(filter(nodes(binary_tree), depth=target_depth)); scene=binary_tree; scope=depth_level_node_count`
+
+Program: `count(filter(nodes(binary_tree), depth=target_depth)); scene=binary_tree; scope=depth_level_node_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `depth_level_node_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `nodes`, `binary_tree`, `depth`, `target_depth`, `depth_level_node_count`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Summary
 1. Domain: `graph`

@@ -50,8 +50,8 @@ def _largest_target_question(
         branch_probabilities=dict(branch_probabilities),
         answer=str(winner.target_label),
         answer_type="string",
-        annotation_type="bbox_set_map",
-        annotation_link_ids=tuple(link_refs),
+        annotation_type="bbox",
+        annotation_link_ids=tuple(),
         annotation_node_ids=(str(winner.target_id),),
         params={
             "program_code": "argmax_label(target(flow), value(flow), where source(flow) == source_label)",
@@ -89,8 +89,8 @@ def _largest_source_question(
         branch_probabilities=dict(branch_probabilities),
         answer=str(winner.source_label),
         answer_type="string",
-        annotation_type="bbox_set_map",
-        annotation_link_ids=tuple(link_refs),
+        annotation_type="bbox",
+        annotation_link_ids=tuple(),
         annotation_node_ids=(str(winner.source_id),),
         params={
             "program_code": "argmax_label(source(flow), value(flow), where target(flow) == target_label)",

@@ -155,6 +155,7 @@ class ChartsScientificEarliestMaximumPanelLabelTask:
             query=query,
             dynamic_slots={"method_label": f'"{query.method_label}"'},
             instance_seed=int(instance_seed),
+            annotation_type="point",
         )
 
     def generate(

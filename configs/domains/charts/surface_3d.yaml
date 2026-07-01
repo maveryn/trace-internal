@@ -2,10 +2,6 @@ generation:
   shared:
     category_count_min: 5
     category_count_max: 8
-    surface_x_count_min: 5
-    surface_x_count_max: 7
-    surface_y_count_min: 4
-    surface_y_count_max: 6
     series_count_min: 4
     series_count_max: 6
     time_count_min: 5

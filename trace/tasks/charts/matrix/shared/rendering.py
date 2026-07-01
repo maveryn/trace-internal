@@ -6,14 +6,14 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 
-from .....core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
+from trace.tasks.charts.shared.dense_text import dense_fit_bold, dense_stroke_width
 from .....core.visual.noise import apply_post_image_noise
 from ....shared.bbox_projection import round_bbox as _round_bbox
 from ....shared.font_assets import font_asset_version
 from ....shared.text_rendering import fit_font_to_box, load_font
 from ....shared.text_legibility import draw_text_traced
 from .defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     _cell_fill_rgb,
     _column_header_key,
@@ -112,7 +112,7 @@ def _render_matrix(
         panel_bbox[2] - p.panel_padding_px,
         panel_bbox[1] + p.panel_padding_px + p.title_band_height_px,
     )
-    title_font = load_font(p.title_font_size_px, bold=True, font_family=p.font_family)
+    title_font = load_font(p.title_font_size_px, bold=False, font_family=p.font_family)
     _draw_centered_text(draw, box=title_bbox, text=str(scene_title), font=title_font, fill=p.title_rgb)
 
     row_count = len(row_labels)
@@ -137,7 +137,7 @@ def _render_matrix(
 
     row_axis_box = (panel_bbox[0] + 10, matrix_top, panel_bbox[0] + p.panel_padding_px + 24, matrix_bbox[3])
     col_axis_box = (matrix_left, title_bbox[3], matrix_bbox[2], title_bbox[3] + 28)
-    axis_font = load_font(18, bold=True, font_family=p.font_family)
+    axis_font = load_font(18, bold=False, font_family=p.font_family)
     _draw_centered_text(draw, box=col_axis_box, text=str(scene_meta.get("column_axis_title", "Column")), font=axis_font, fill=p.header_text_rgb)
     _draw_rotated_text(image, box=row_axis_box, text=str(scene_meta.get("row_axis_title", "Row")), font=axis_font, fill=p.header_text_rgb)
 
@@ -150,7 +150,7 @@ def _render_matrix(
             text=str(label),
             max_width=bbox[2] - bbox[0],
             max_height=bbox[3] - bbox[1],
-            bold=True,
+            bold=dense_fit_bold(),
             max_size_px=p.header_font_size_px,
             font_family=p.font_family,
         )
@@ -177,7 +177,7 @@ def _render_matrix(
             text=str(label),
             max_width=bbox[2] - bbox[0],
             max_height=bbox[3] - bbox[1],
-            bold=True,
+            bold=dense_fit_bold(),
             max_size_px=p.header_font_size_px,
             font_family=p.font_family,
         )
@@ -233,7 +233,7 @@ def _render_matrix(
                     text=text,
                     max_width=float(cell_w),
                     max_height=float(cell_h),
-                    bold=True,
+                    bold=dense_fit_bold(),
                     min_size_px=9,
                     max_size_px=p.cell_font_size_px,
                     fill_ratio=0.72,
@@ -247,7 +247,7 @@ def _render_matrix(
                     font=cell_font,
                     fill=text_fill,
                     stroke_fill=(255, 255, 255) if text_fill != (255, 255, 255) else (24, 30, 38),
-                    stroke_width=1 if min(cell_w, cell_h) >= 42 else 0,
+                    stroke_width=dense_stroke_width(),
                 )
             entities.append(
                 {
@@ -310,12 +310,23 @@ def render_matrix_scene(
 
     render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
     render_params = resolve_render_params(render_style_params)
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    protected_colors = tuple(
+        _cell_fill_rgb(
+            value=int(cell["value"]),
+            value_min=int(dataset["value_min"]),
+            value_max=int(dataset["value_max"]),
+            palette_variant=str(palette_variant),
+            scene_variant=str(scene_variant),
+        )
+        for cell in dataset["cells"]
+        if bool(cell.get("active", False)) and cell.get("value") is not None
+    )
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="matrix",
+        render_params=render_params,
+        protected_colors=protected_colors,
     )
     rendered_scene = _render_matrix(
         background,
@@ -342,7 +353,7 @@ def render_matrix_scene(
         image=image,
         rendered_scene=rendered_scene,
         render_params=render_params,
-        background_meta=dict(background_meta),
+        background_meta={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         post_noise_meta=dict(post_noise_meta),
     )
 

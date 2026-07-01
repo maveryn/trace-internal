@@ -9,7 +9,8 @@ and rendered pieces are enough to solve the query. Prefer fully observable,
 low-convention tasks over hidden-information strategy.
 
 Scenes may include boards, cards, dice, arcade screens, score strips, option
-boards, or rule panels when those elements are part of the visible game state.
+boards, counterfactual board-style grids, or rule panels when those elements
+are part of the visible game state.
 
 ## Scene Boundary
 A games scene is the stable game grammar: board topology, piece vocabulary,

@@ -1,4 +1,4 @@
-"""Count neighboring regions with the same category as a highlighted region."""
+"""Count neighboring regions with the same category as a labeled reference region."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ SUPPORTED_QUERY_IDS = (QUERY_ID,)
 
 @register_task
 class ChartsMapAdjacentSameCategoryCountTask:
-    """Count neighboring regions with the same category as a highlighted region."""
+    """Count neighboring regions with the same category as a labeled reference region."""
 
     task_id = TASK_ID
     domain = "charts"
@@ -39,6 +39,7 @@ class ChartsMapAdjacentSameCategoryCountTask:
             relations={
                 "query_id": str(selected_query_id),
                 "reference_region_id": str(dataset["question_params"]["reference_region_id"]),
+                "reference_region_label": str(dataset["question_params"]["reference_region_label"]),
                 "category_label": str(dataset["question_params"]["category_label"]),
                 "adjacent_neighbor_region_ids": list(dataset["question_params"]["adjacent_neighbor_region_ids"]),
                 "annotation_region_count": int(len(annotation.annotation_region_ids)),
@@ -46,6 +47,7 @@ class ChartsMapAdjacentSameCategoryCountTask:
             witness_symbolic={
                 "type": "region_map_adjacent_same_category_count_witness",
                 "reference_region_id": str(dataset["question_params"]["reference_region_id"]),
+                "reference_region_label": str(dataset["question_params"]["reference_region_label"]),
                 "candidate_region_ids": list(annotation.annotation_region_ids),
                 "answer_value": int(dataset["answer_value"]),
             },

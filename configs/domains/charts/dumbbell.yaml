@@ -18,6 +18,7 @@ generation:
     gap_threshold_count_max: 10
 rendering:
   shared:
+    chart_context_profile: report_paragraph
     canvas_width: 1280
     canvas_height: 900
     plot_margin_left_px: 224

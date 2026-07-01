@@ -9,8 +9,8 @@ from trace.tasks.charts.histogram.shared.defaults import (
     HISTOGRAM_DEFAULTS,
     SCENE_NAMESPACE,
 )
-from trace.tasks.charts.shared.chart_scene import HistogramBinSpec
-from trace.tasks.charts.shared.distribution_chart_common import build_histogram_dataset_for_variant
+from trace.tasks.charts.shared.chart_scene_types import HistogramBinSpec
+from trace.tasks.charts.shared.distribution.histogram import build_histogram_dataset_for_variant
 
 
 def build_histogram_dataset(

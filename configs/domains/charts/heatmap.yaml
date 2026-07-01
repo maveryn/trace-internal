@@ -37,6 +37,7 @@ generation:
       column: 1.0
 rendering:
   shared:
+    chart_context_profile: report_paragraph
     canvas_width: 1260
     canvas_height: 820
     outer_margin_px: 42

@@ -1,7 +1,15 @@
 # `task_puzzles__cell_board__largest_component_size`
 
 ## Program Contract
-`max_component_size(cell_board, cells=color_equals_query_color, adjacency=orthogonal_4_neighbor); scene=cell_board; scope=largest_component_size`
+
+Program: `max_component_size(cell_board, cells=color_equals_query_color, adjacency=orthogonal_4_neighbor); scene=cell_board; scope=largest_component_size`
+
+Candidate set: the visible grid cells, cell colors/states, labels, walls, start/goal markers, and mirror or connectivity cues inside the `largest_component_size` objective scope.
+Operands: visible scene state and prompt-bound operands named by `cell_board`, `cells`, `color_equals_query_color`, `adjacency`, `orthogonal_4_neighbor`, `largest_component_size`.
+Operation: evaluate `max_component_size` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; image-pixel cell bboxes for all cells in the unique largest component; bbox-set cardinality equals the answer.
+Query ids: `single`.
 
 ## 2) Scene + task contract
 1. Entities/relations: A rectangular colored cell board with a single largest target-color component containing one or more cells.

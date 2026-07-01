@@ -10,7 +10,15 @@
 - Annotation schema: `bbox_set`
 
 ## Program Contract
-- `count(filter(surface_fixture_elements, present=true, scope_axis=scope_axis, scope_index=scope_index, color_name=target_color_name)); scene=surface_fixture; scope=scoped_colored_element_count`
+
+Program: `count(filter(surface_fixture_elements, present=true, scope_axis=scope_axis, scope_index=scope_index, color_name=target_color_name)); scene=surface_fixture; scope=scoped_colored_element_count`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `scoped_colored_element_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `surface_fixture_elements`, `present`, `true`, `scope_axis`, `scope_index`, `color_name`, `target_color_name`, `surface_fixture`, `scoped_colored_element_count` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `row_scoped_color_count`, `column_scoped_color_count`.
 
 ## Contract
 The image shows one projected fixture surface arranged in rows and columns with

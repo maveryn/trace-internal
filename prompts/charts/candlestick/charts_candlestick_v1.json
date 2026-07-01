@@ -85,38 +85,38 @@
   "static_slots_by_key": {
     "query:largest_wick_range_label": {
       "answer_hint": "set \"answer\" to the exact period label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x,y] pixel point at the center of the answer candle's high-low wick line",
-      "json_example": "{\"annotation\":[[542,276]],\"answer\":\"K4\"}",
+      "annotation_hint": "set \"annotation\" to one segment: two [x, y] pixel points formatted [[x0, y0], [x1, y1]], running along the answer candle's high-low wick line",
+      "json_example": "{\"annotation\":[[542,210],[542,342]],\"answer\":\"K4\"}",
       "json_example_answer_only": "{\"answer\":\"K4\"}"
     },
     "query:smallest_wick_range_label": {
       "answer_hint": "set \"answer\" to the exact period label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x,y] pixel point at the center of the answer candle's high-low wick line",
-      "json_example": "{\"annotation\":[[542,276]],\"answer\":\"K4\"}",
+      "annotation_hint": "set \"annotation\" to one segment: two [x, y] pixel points formatted [[x0, y0], [x1, y1]], running along the answer candle's high-low wick line",
+      "json_example": "{\"annotation\":[[542,210],[542,342]],\"answer\":\"K4\"}",
       "json_example_answer_only": "{\"answer\":\"K4\"}"
     },
     "query:largest_body_range_label": {
       "answer_hint": "set \"answer\" to the exact period label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x,y] pixel point at the center of the answer candle's open-close body rectangle",
-      "json_example": "{\"annotation\":[[542,276]],\"answer\":\"K4\"}",
+      "annotation_hint": "set \"annotation\" to one segment: two [x, y] pixel points formatted [[x0, y0], [x1, y1]], running vertically through the answer candle's open-close body",
+      "json_example": "{\"annotation\":[[542,238],[542,314]],\"answer\":\"K4\"}",
       "json_example_answer_only": "{\"answer\":\"K4\"}"
     },
     "query:smallest_body_range_label": {
       "answer_hint": "set \"answer\" to the exact period label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x,y] pixel point at the center of the answer candle's open-close body rectangle",
-      "json_example": "{\"annotation\":[[542,276]],\"answer\":\"K4\"}",
+      "annotation_hint": "set \"annotation\" to one segment: two [x, y] pixel points formatted [[x0, y0], [x1, y1]], running vertically through the answer candle's open-close body",
+      "json_example": "{\"annotation\":[[542,238],[542,314]],\"answer\":\"K4\"}",
       "json_example_answer_only": "{\"answer\":\"K4\"}"
     },
     "query:close_after_body_increase_value": {
       "answer_hint": "set \"answer\" to the requested integer value",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around the target candle body",
-      "json_example": "{\"annotation\":[[240,220,284,340]],\"answer\":42}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point at the center of the target candle body",
+      "json_example": "{\"annotation\":[262,280],\"answer\":42}",
       "json_example_answer_only": "{\"answer\":42}"
     },
     "query:close_after_body_decrease_value": {
       "answer_hint": "set \"answer\" to the requested integer value",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around the target candle body",
-      "json_example": "{\"annotation\":[[240,220,284,340]],\"answer\":42}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point at the center of the target candle body",
+      "json_example": "{\"annotation\":[262,280],\"answer\":42}",
       "json_example_answer_only": "{\"answer\":42}"
     }
   },

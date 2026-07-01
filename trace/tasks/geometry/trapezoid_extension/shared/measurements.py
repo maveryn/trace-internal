@@ -101,6 +101,11 @@ def completion_length_from_perimeter(case: TrapezoidExtensionCase) -> float:
     return round1(float(case.parallelogram_perimeter) / 2.0 - float(case.side) - float(case.top_base))
 
 
+def trapezoid_area_from_parallelogram_perimeter(case: TrapezoidExtensionCase) -> float:
+    derived_bottom_base = (float(case.parallelogram_perimeter) / 2.0) - float(case.side)
+    return round1(float(case.height) * (float(case.top_base) + derived_bottom_base) / 2.0)
+
+
 def case_trace_values(case: TrapezoidExtensionCase) -> dict[str, float | int]:
     return {
         "top_base": int(case.top_base),

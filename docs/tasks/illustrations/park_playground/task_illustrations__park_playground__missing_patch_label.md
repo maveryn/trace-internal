@@ -10,7 +10,15 @@
 Render a park/playground source panel with one missing visual region and four or six lettered patch options. The model selects the option letter that restores the missing region.
 
 ## Program Contract
-`select_option(match_patch(source_image, missing_region, options)); scene=park_playground; scope=missing_patch_label`
+
+Program: `select_option(match_patch(source_image, missing_region, options)); scene=park_playground; scope=missing_patch_label`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `missing_patch_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `match_patch`, `source_image`, `missing_region`, `park_playground`, `missing_patch_label`.
+Operation: evaluate `select_option` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; one of the visible option letters.
+Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

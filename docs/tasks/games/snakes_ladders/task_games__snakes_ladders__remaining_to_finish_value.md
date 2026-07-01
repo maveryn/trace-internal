@@ -11,7 +11,15 @@
 8. Scalar annotation checked: `true`
 
 ## Program Contract
-- `value(final_square - token_square); scene=snakes_ladders; scope=remaining_to_finish_value`
+
+Program: `value(final_square - token_square); scene=snakes_ladders; scope=remaining_to_finish_value`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `remaining_to_finish_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `final_square`, `token_square`, `snakes_ladders`, `remaining_to_finish_value`.
+Operation: evaluate `value` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. Use the numbered board only; do not roll dice or follow snakes/ladders.

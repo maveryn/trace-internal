@@ -10,11 +10,18 @@
 6. Prompt query key: `single`
 7. Answer schema: `option_letter`
 8. Annotation schema: `bbox`
-9. Program schema: `select_option(cyclic_order.equivalent_loop, rule=rotation_allowed_reflection_disallowed, options=6); scene=cyclic_order; scope=cyclic_order_equivalent_label`
+9. Program schema: `select_option(cyclic_order.equivalent_loop, rule=rotation_allowed_reflection_disallowed, options=4); scene=cyclic_order; scope=cyclic_order_equivalent_label`
 
 ## Program Contract
 
-- `select_option(cyclic_order.equivalent_loop, rule=rotation_allowed_reflection_disallowed, options=6); scene=cyclic_order; scope=cyclic_order_equivalent_label`
+Program: `select_option(cyclic_order.equivalent_loop, rule=rotation_allowed_reflection_disallowed, options=4); scene=cyclic_order; scope=cyclic_order_equivalent_label`
+
+Candidate set: the visible cyclic-order tokens, reference loop, gap/swap markers, numbered positions, and labeled options inside the `cyclic_order_equivalent_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `cyclic_order`, `equivalent_loop`, `rotation_allowed_reflection_disallowed`, `cyclic_order_equivalent_label`.
+Operation: evaluate `select_option` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; the unique valid option label.
+Annotation witnesses: `annotation` uses the `bbox` schema; one image-pixel bounding box around the matching option-loop image.
+Query ids: `single`.
 
 ## Query Contract
 
@@ -23,7 +30,7 @@
 
 ## Generation Contract
 
-- The renderer shows one reference loop and exactly six labeled option loops.
+- The renderer shows one reference loop and exactly four labeled option loops.
 - Exactly one option is equivalent to the reference up to cyclic rotation.
 - Every distractor breaks cyclic order by construction.
 - Token count is sampled from `4..5`.

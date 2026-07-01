@@ -14,7 +14,7 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import OPTION_ANNOTATION_KEYS, projected_annotation
+from .shared.annotations import OPTION_ANNOTATION_KEYS, projected_bbox_annotation
 from .shared.construction import (
     CONE_SOURCE_OPTION_CASES,
     CUBOID_SOURCE_OPTION_CASES,
@@ -195,7 +195,7 @@ def _trace_payload(
     problem: ResolvedProblem,
     rendered: RenderedScene,
     prompt_artifacts: Any,
-    annotation_value: Mapping[str, list[float]],
+    annotation_value: list[float],
     noise_meta: Mapping[str, Any],
     image_size: tuple[int, int],
 ) -> dict[str, Any]:
@@ -242,7 +242,7 @@ def _trace_payload(
         }
     )
     trace_payload["witness_symbolic"] = dict(params)
-    trace_payload["projected_annotation"] = projected_annotation(dict(annotation_value))
+    trace_payload["projected_annotation"] = projected_bbox_annotation(list(annotation_value))
     return trace_payload
 
 
@@ -278,6 +278,7 @@ class GeometryVolumeEquivalenceConversionEqualVolumeOptionLabelTask:
             prompt_task_key=PROMPT_TASK_KEY,
             prompt_branch_key=str(selected_branch),
             annotation_keys=OPTION_ANNOTATION_KEYS,
+            annotation_schema="bbox",
             answer=str(problem.answer),
             instance_seed=int(instance_seed),
             params=task_params,
@@ -289,7 +290,7 @@ class GeometryVolumeEquivalenceConversionEqualVolumeOptionLabelTask:
         return TaskOutput(
             prompt=str(artifacts.prompt_artifacts.prompt),
             answer_gt=TypedValue(type="option_letter", value=str(problem.answer)),
-            annotation_gt=TypedValue(type="bbox_map", value=dict(artifacts.annotation_value)),
+            annotation_gt=TypedValue(type="bbox", value=list(artifacts.annotation_value)),
             image=artifacts.image,
             image_id="img0",
             trace_payload=_trace_payload(

@@ -8,7 +8,15 @@
 5. Supported `query_id` values: `source_outgoing_total_flow`, `target_incoming_total_flow`
 
 ## Program Contract
-`sum(value(link) for link in node_side_links(node, side)); scene=sankey; scope=node_side_total_value`
+
+Program: `sum(value(link) for link in node_side_links(node, side)); scene=sankey; scope=node_side_total_value`
+
+Candidate set: the visible flow nodes, links, and labels inside the `node_side_total_value` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `sum` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `point_set` witnesses bound by `see_annotation_contract`. Annotation marks multiple printed value-label centers: every outgoing or incoming band included in the node-side total contributes one point. Node boxes, unselected flow labels, flow curves, title, and panel frame are context unless explicitly referenced by the task.
+Query ids: `source_outgoing_total_flow`, `target_incoming_total_flow`.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.sankey.node_side_total_value.ChartsFlowSankeyNodeSideTotalValuePublicTask`
@@ -19,13 +27,13 @@
 
 ## Annotation Contract
 1. Answer schema: `integer_value`
-2. Annotation schema: `bbox_set`
-3. Annotation marks multiple printed value-label boxes: every outgoing or incoming band included in the node-side total contributes one box.
+2. Annotation schema: `point_set`
+3. Annotation marks multiple printed value-label centers: every outgoing or incoming band included in the node-side total contributes one point.
 4. Node boxes, unselected flow labels, flow curves, title, and panel frame are context unless explicitly referenced by the task.
 
 ## Query Details
 
 | Query id | Program argument | Answer schema | Annotation schema |
 |---|---|---|---|
-| `source_outgoing_total_flow` | `side=source_outgoing` | `integer_value` | `bbox_set` |
-| `target_incoming_total_flow` | `side=target_incoming` | `integer_value` | `bbox_set` |
+| `source_outgoing_total_flow` | `side=source_outgoing` | `integer_value` | `point_set` |
+| `target_incoming_total_flow` | `side=target_incoming` | `integer_value` | `point_set` |

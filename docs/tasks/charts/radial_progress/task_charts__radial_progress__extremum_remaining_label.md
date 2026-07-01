@@ -8,7 +8,15 @@
 5. Supported `query_id` values: `highest_remaining_label`, `lowest_remaining_label`
 
 ## Program Contract
-`select_label(arg_extreme(radial_progress_widgets, 100 - progress_value(widget), direction=max|min)); scene=radial_progress; scope=extremum_remaining_label`
+
+Program: `select_label(arg_extreme(radial_progress_widgets, 100 - progress_value(widget), direction=max|min)); scene=radial_progress; scope=extremum_remaining_label`
+
+Candidate set: the visible radial progress rings, arcs, and labels inside the `extremum_remaining_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `select_label` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `bbox` witnesses bound by `see_annotation_contract`. Annotation marks the single answer widget card bbox. Titles, tick marks, card decorations, and non-answer widgets are context, not annotation.
+Query ids: `highest_remaining_label`, `lowest_remaining_label`.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.radial_progress.extremum_remaining_label.ChartsRadialProgressExtremumRemainingLabelTask`

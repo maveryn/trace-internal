@@ -7,14 +7,14 @@ from trace.tasks.charts.annotated_series.callout_endpoint_change_value import (
 )
 
 
-def _assert_keyed_point_map_contract(out: object) -> None:
+def _assert_point_map_contract(out: object) -> None:
     trace = out.trace_payload
     annotation_points = {str(key): list(point) for key, point in out.annotation_gt.value.items()}
-    assert out.annotation_gt.type == "keyed_point_map"
+    assert out.annotation_gt.type == "point_map"
     assert trace["projected_annotation"] == {
-        "type": "keyed_point_map",
-        "keyed_point_map": annotation_points,
-        "pixel_keyed_point_map": annotation_points,
+        "type": "point_map",
+        "point_map": annotation_points,
+        "pixel_point_map": annotation_points,
     }
     assert trace["witness_symbolic"]["type"] == "object_key_map"
     assert set(trace["witness_symbolic"]["keys"]) == {"callout_mark", "endpoint_mark"}
@@ -41,7 +41,7 @@ def test_annotated_series_callout_change_uses_anchor_and_endpoint_points() -> No
     anchor_label = str(execution["anchor_label"])
     endpoint_label = str(execution["endpoint_label"])
 
-    _assert_keyed_point_map_contract(out)
+    _assert_point_map_contract(out)
     assert out.answer_gt.type == "integer"
     assert out.annotation_gt.value == {
         "callout_mark": trace["render_map"]["mark_center_by_label"][anchor_label],
@@ -56,7 +56,6 @@ def test_annotated_series_callout_box_does_not_cover_critical_endpoint_marks() -
             347784840739934,
             {
                 "scene_variant": "lollipop",
-                "query_id": "callout_endpoint_change_value",
                 "endpoint_side": "last",
                 "mark_count_min": 12,
                 "mark_count_max": 12,
@@ -66,7 +65,6 @@ def test_annotated_series_callout_box_does_not_cover_critical_endpoint_marks() -
             762788342831494,
             {
                 "scene_variant": "line",
-                "query_id": "callout_endpoint_change_value",
                 "endpoint_side": "first",
                 "mark_count_min": 13,
                 "mark_count_max": 13,

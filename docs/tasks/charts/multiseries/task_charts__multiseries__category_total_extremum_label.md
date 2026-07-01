@@ -3,13 +3,21 @@
 ## Contract
 - Domain: `charts`
 - Scene id: `multiseries`
-- Query id: `single`
+- Query ids: `largest_category_total_label`, `smallest_category_total_label`
 - Answer schema: `string_label`
 - Annotation schema: `point_map`
-- Program contract: `select_ranked(categories, sum(series_values), extremum_direction, rank)`
+- Program contract: `arg_extreme(categories, sum(series_values), extremum_direction)`
 
 ## Program Contract
-- `select_label(arg_ranked_extreme(categories, sum(series_values(category)), direction={largest,smallest}, rank)); output=string_label; annotation=point_map(mark_center(answer_category, all_series)); scene=multiseries; scope=category_total_extremum_label`
+
+Program: `select_label(arg_extreme(categories, sum(series_values(category)), direction={largest,smallest})); output=string_label; annotation=point_map(mark_center(answer_category, all_series)); scene=multiseries; scope=category_total_extremum_label`
+
+Candidate set: the visible series marks across shared x/category labels inside the `category_total_extremum_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `select_label` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `unspecified` value bound by `string_label`.
+Annotation witnesses: `unspecified` witnesses bound by `point_map(mark_center(answer_category, all_series))`. The Annotation Contract below defines the prompt-facing witnesses.
+Query ids: `largest_category_total_label`, `smallest_category_total_label`.
 
 ## Implementation
 - Source: `trace/tasks/charts/multiseries/category_total_extremum_label.py`

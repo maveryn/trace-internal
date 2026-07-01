@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from .....core.sampling import sample_without_replacement, uniform_choice
 from .....core.scene_config import get_scene_defaults
 from .....core.seed import spawn_rng
 from ....shared.color_distance import sample_color_palette_with_distance_constraints
@@ -13,7 +14,6 @@ from ....shared.config_defaults import (
     resolve_required_int_bounds,
     split_scene_generation_rendering_prompt_defaults,
 )
-from ....shared.deterministic_sampling import resolve_selection_index
 from ...shared.visual_defaults import load_chart_scene_noise_defaults
 
 from .state import PROMPT_BUNDLE_ID, RGB, SCENE_ID, SCENE_NAMESPACE
@@ -35,13 +35,6 @@ def support_probability_map(values: Sequence[int | str]) -> dict[str, float]:
     return {str(value): float(weight) for value in support}
 
 
-def selection_index(params: Mapping[str, Any], *, instance_seed: int, namespace: str) -> int:
-    sample_cursor = params.get("_sample_cursor")
-    if sample_cursor is not None:
-        return abs(int(sample_cursor))
-    return abs(int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))))
-
-
 def choose_from_values(
     params: Mapping[str, Any],
     *,
@@ -52,8 +45,11 @@ def choose_from_values(
     candidates = tuple(values)
     if not candidates:
         raise ValueError(f"empty support for {namespace}")
-    index = selection_index(params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return candidates[int(index) % len(candidates)]
+    return uniform_choice(
+        spawn_rng(int(instance_seed), str(namespace)),
+        candidates,
+        sort_keys=True,
+    )
 
 
 def resolve_row_count(params: Mapping[str, Any], *, instance_seed: int) -> tuple[int, dict[str, float]]:
@@ -87,10 +83,11 @@ def resolve_series_labels(params: Mapping[str, Any], *, instance_seed: int) -> t
                 normalized.append((str(pair[0]), str(pair[1])))  # type: ignore[index]
     if not normalized:
         normalized = [("Female", "Male")]
-    selected = normalized[
-        selection_index(params, instance_seed=int(instance_seed), namespace=f"{SCENE_NAMESPACE}.series_labels")
-        % len(normalized)
-    ]
+    selected = uniform_choice(
+        spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.series_labels"),
+        tuple(normalized),
+        sort_keys=True,
+    )
     return str(selected[0]), str(selected[1]), {
         "series_label_pairs": [[left, right] for left, right in normalized],
         "series_label_pair_probabilities": {
@@ -108,8 +105,12 @@ def resolve_series_colors(params: Mapping[str, Any], *, instance_seed: int) -> t
             if isinstance(raw, Sequence) and not isinstance(raw, (str, bytes)) and len(raw) >= 3:
                 colors.append(tuple(max(0, min(255, int(channel))) for channel in raw[:3]))  # type: ignore[arg-type]
         if len(colors) >= 2:
-            offset = selection_index(params, instance_seed=int(instance_seed), namespace=f"{SCENE_NAMESPACE}.palette")
-            return colors[int(offset) % len(colors)], colors[(int(offset) + 1) % len(colors)]
+            left, right = sample_without_replacement(
+                spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.palette"),
+                tuple(colors),
+                2,
+            )
+            return left, right
     rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.palette")
     palette = sample_color_palette_with_distance_constraints(
         rng,
@@ -166,10 +167,10 @@ def sample_title(params: Mapping[str, Any], *, instance_seed: int) -> str:
     if not isinstance(title_options, Sequence) or isinstance(title_options, (str, bytes)) or not title_options:
         title_options = ("Population Pyramid",)
     return str(
-        title_options[
-            selection_index(params, instance_seed=int(instance_seed), namespace=f"{SCENE_NAMESPACE}.title")
-            % len(title_options)
-        ]
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.title"),
+            tuple(str(value) for value in title_options),
+        )
     )
 
 

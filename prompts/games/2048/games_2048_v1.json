@@ -68,7 +68,7 @@
     "query:merge_count": {
       "move_rule_text": "In 2048, a move slides all tiles toward the arrow; equal adjacent tiles in that direction merge once.",
       "answer_hint": "set \"answer\" to the number of merges made by the shown move",
-      "annotation_hint": "set \"annotation\" to a list of merge segments. Each segment is [[x1, y1], [x2, y2]], connecting the centers of the two source tile cells before the move that combine into one tile after the move. Include one segment per merge; do not mark sliding-only tiles. Use [] if no merge occurs",
+      "annotation_hint": "set \"annotation\" to a list of merge segments. Each segment uses two pixel-point endpoints [x, y] in [[x0, y0], [x1, y1]] form, connecting the centers of the two source tile cells before the move that combine into one tile after the move; use [] when the merge count is 0",
       "json_example": "{\"annotation\":[[[284,284],[418,284]],[[284,418],[418,418]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },

@@ -6,15 +6,16 @@ from typing import Any, Mapping
 
 from trace.core.scene_config import get_scene_defaults
 from trace.tasks.charts.shared.visual_defaults import (
+    chart_font_asset_metadata,
     load_chart_scene_background_defaults,
     load_chart_scene_noise_defaults,
+    sample_chart_font_family as sample_shared_chart_font_family,
 )
 from trace.tasks.shared.config_defaults import (
     group_default,
     resolve_required_int_bounds,
     split_scene_generation_rendering_prompt_defaults,
 )
-from trace.tasks.shared.font_assets import font_asset_version, sample_font_family
 from trace.tasks.shared.render_variation import resolve_render_rgb
 
 from .state import RGB, SCENE_ID, SCENE_NAMESPACE
@@ -92,21 +93,12 @@ def support_probability_map(values: list[int] | tuple[int | str, ...] | range) -
 
 
 def sample_chart_font_family(instance_seed: int, params: Mapping[str, Any]) -> str:
-    return str(
-        sample_font_family(
-            role="readout",
-            instance_seed=int(instance_seed),
-            namespace=f"{SCENE_NAMESPACE}.chart_font",
-            params=params,
-            exclude_tags=("display",),
-            explicit_key="chart_font_family",
-            weights_key="chart_font_family_weights",
-        )
+    return sample_shared_chart_font_family(
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.chart_font",
+        params=params,
     )
 
 
 def font_assets_payload(*, chart_font_family: str) -> dict[str, str]:
-    return {
-        "font_asset_version": str(font_asset_version()),
-        "chart_font_family": str(chart_font_family),
-    }
+    return chart_font_asset_metadata(str(chart_font_family))

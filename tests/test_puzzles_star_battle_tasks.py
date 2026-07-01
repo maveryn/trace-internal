@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from PIL import Image
 import pytest
 
 from trace.core.prompts import load_prompt_bundle
@@ -13,11 +14,9 @@ from trace.tasks.puzzles.star_battle.remaining_valid_cell_count import (
     SUPPORTED_QUERY_IDS as REMAINING_COUNT_QUERY_IDS,
     PuzzlesStarBattleRemainingValidCellCountTask,
 )
-from trace.tasks.puzzles.star_battle.scoped_valid_cell_label import (
-    SUPPORTED_QUERY_IDS as SCOPED_VALID_CELL_QUERY_IDS,
-    PuzzlesStarBattleScopedValidCellLabelTask,
-)
-from trace.tasks.puzzles.star_battle.shared.state import SCENE_ID
+from trace.tasks.puzzles.star_battle.shared.rendering import render_star_battle_scene
+from trace.tasks.puzzles.star_battle.shared.rules import cell_key
+from trace.tasks.puzzles.star_battle.shared.state import SCENE_ID, StarBattleDataset, StarBattleRenderParams
 from trace.tasks.puzzles.star_battle.valid_cell_anywhere_label import (
     SUPPORTED_QUERY_IDS as VALID_CELL_ANYWHERE_QUERY_IDS,
     PuzzlesStarBattleValidCellAnywhereLabelTask,
@@ -27,7 +26,6 @@ from trace.tasks.shared.config_defaults import split_generation_rendering_prompt
 
 LABEL_TASK_CLASSES = (
     PuzzlesStarBattleValidCellAnywhereLabelTask,
-    PuzzlesStarBattleScopedValidCellLabelTask,
 )
 TASK_CLASSES = (
     *LABEL_TASK_CLASSES,
@@ -60,8 +58,6 @@ def test_star_battle_prompt_bundle_supports_scene_package_variants() -> None:
     assert len(bundle.task_templates["star_battle_valid_cell_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["star_battle_remaining_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["valid_cell_anywhere_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["valid_cell_in_marked_region_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["valid_cell_for_marked_row_label"]) == REQUIRED_PROMPT_VARIANTS
     assert (
         len(bundle.query_templates["remaining_valid_cells_in_marked_region_count"])
         == REQUIRED_PROMPT_VARIANTS
@@ -116,18 +112,74 @@ def test_star_battle_remaining_count_emits_bbox_set_contract() -> None:
 
 
 @pytest.mark.parametrize(
+    "mark_kwargs",
+    [
+        {"marked_region_index": 0},
+        {"marked_row_index": 0},
+        {"marked_col_index": 0},
+    ],
+)
+def test_star_battle_marked_scope_preserves_region_fill(mark_kwargs: Mapping[str, int]) -> None:
+    base_fill = (246, 217, 215)
+    dataset = StarBattleDataset(
+        size=2,
+        grid_size_range=(2, 2),
+        solution_stars=(),
+        visible_stars=(),
+        region_grid=((0, 0), (1, 1)),
+        regions={"0": ((0, 0), (0, 1)), "1": ((1, 0), (1, 1))},
+        legal_cells=(),
+        scope_cells=((0, 0), (0, 1)),
+        scoped_legal_cells=(),
+        candidate_specs=(),
+        answer_value=0,
+        answer_type="integer",
+        option_count=0,
+        target_answer_support=(),
+        **mark_kwargs,
+    )
+    render_params = StarBattleRenderParams(
+        canvas_width=220,
+        canvas_height=220,
+        cell_size_px=48,
+        panel_padding_px=12,
+        panel_corner_radius_px=8,
+        grid_line_width_px=1,
+        heavy_line_width_px=3,
+        clue_size_px=24,
+        candidate_font_size_px=16,
+        clue_font_size_px=14,
+        text_color_rgb=(28, 32, 38),
+        text_stroke_rgb=(255, 255, 255),
+        style_overrides={
+            "region_palette": (base_fill, (219, 234, 249)),
+            "highlight_fill": (255, 241, 142),
+            "accent": (45, 91, 176),
+            "accent_backdrop": (255, 255, 255),
+        },
+        unit_size_jitter={},
+    )
+    rendered = render_star_battle_scene(
+        Image.new("RGB", (220, 220), (255, 255, 255)),
+        dataset=dataset,
+        scene_variant="star_battle_classic",
+        render_params=render_params,
+    )
+    x0, y0, x1, y1 = rendered.cell_bbox_map[cell_key((0, 0))]
+    center_pixel = rendered.image.getpixel((int((x0 + x1) / 2), int((y0 + y1) / 2)))
+
+    assert center_pixel == base_fill
+
+
+@pytest.mark.parametrize(
     ("task_cls", "query_id"),
     [
         (PuzzlesStarBattleValidCellAnywhereLabelTask, VALID_CELL_ANYWHERE_QUERY_IDS[0]),
-        *[
-            (PuzzlesStarBattleScopedValidCellLabelTask, query_id)
-            for query_id in SCOPED_VALID_CELL_QUERY_IDS
-        ],
     ],
 )
 def test_star_battle_valid_cell_task_has_one_correct_labeled_cell(task_cls, query_id: str) -> None:
     task = task_cls()
-    params = {} if task_cls is PuzzlesStarBattleValidCellAnywhereLabelTask else {"query_id": query_id}
+    params = {}
     out = task.generate(83111, params=params, max_attempts=80)
     trace = out.trace_payload["execution_trace"]
 

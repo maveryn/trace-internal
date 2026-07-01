@@ -68,7 +68,17 @@ A query id must not choose between public objectives. If changing `query_id`
 changes the answer schema, annotation schema, concrete program schema, semantic
 witness roles, or visible task scaffold, split the public task.
 
-For keyed annotation, the schema is defined by annotation type, semantic role
+For attribute-heavy scenes, distinguish literal operands from visual reasoning
+channels. Changing the literal target within one channel, such as red to blue
+or circle to square, is usually a task parameter. Switching channels or arity,
+such as type match vs color match, color-pattern violation vs size-pattern
+violation, shape-only lookup vs color+shape lookup, or one-attribute comparison
+vs multi-attribute binding, is a public task split when it changes the visual
+scan/reasoning operation. Operators over the same operand roles may remain
+queries when the program scaffold and witness roles stay fixed, such as
+`total_count` vs `difference_count` over the same two count operands.
+
+For map annotation, the schema is defined by annotation type, semantic role
 family, and cardinality/order requirements, not by fixed literal key names.
 Different samples or query branches may bind different visible labels as keys
 when those keys fill the same witness roles. For example, a segment-length task
@@ -112,7 +122,7 @@ Common split signals:
 - one-bound predicate count vs two-bound interval count;
 - choosing a move vs computing the resulting state;
 - reading a value vs comparing/ranking multiple values;
-- marking answer options instead of marking the visual witnesses used to decide.
+- selecting an answer option image instead of selecting a source-scene object.
 
 ## 6) What May Vary Inside One Task
 The following do not by themselves require a new task:
@@ -127,15 +137,63 @@ The following do not by themselves require a new task:
 Difficulty is not taxonomy. A hard and easy branch can stay one task if the
 scene and objective contracts are genuinely the same.
 
-## 7) Annotation Boundary
-Annotation should mark minimal visual witnesses, not answer labels unless the
-task is a true visual option-image task.
+## 7) Random Sampling Semantics
+Every semantic random choice must be represented as an explicit finite support
+or bounded range plus optional weights, then sampled with a seeded RNG draw.
+Uniform sampling is the default and means every support item has weight `1`.
+Do not implement semantic sampling by selecting `seed % n`,
+`hash(seed, namespace) % n`, a cursor modulo, or any other index-cycling scheme.
 
-Prefer keyed annotation types when roles matter or an unordered set would be
+This applies to task-internal semantic axes such as:
+
+1. target answer class;
+2. query branch;
+3. construction family;
+4. target object/attribute/role;
+5. answer support value when it is meant to be randomly sampled.
+
+Use shared sampling primitives rather than inventing task-local conventions.
+For weighted axes, build the support/weight map and use
+`weighted_support_choice`. For unweighted finite supports, use `uniform_choice`
+or `uniform_choice_with_probabilities`. For contiguous integer supports, use
+`integer_range_choice`. All of these take the same shared RNG-based path and
+produce explicit probability metadata where applicable.
+
+Index modulo is allowed only for non-random roles where deterministic
+enumeration is explicitly intended, such as assigning cyclic visual labels,
+laying out repeated colors, or choosing a fixed review sweep. Such use must not
+be described as random, uniform, equal-weight, or representative sampling.
+
+If a review or training run needs exact stratification, put that stratification
+in the sampler/review harness and record it as a sampling policy. Do not hide
+stratification inside an individual task generator.
+
+## 8) Annotation Boundary
+Annotation should mark minimal visual answer-verification witnesses for the
+task family. It is not the complete reasoning proof. Direct selection/counting
+tasks usually annotate the selected or counted answer objects. Derived
+chart/graph/measurement/arithmetic tasks annotate the minimal visible operands
+needed to verify the computed answer. Geometry and physics diagram tasks
+annotate canonical visual primitives such as points, segments, rays, intervals,
+axes, or marked regions. Do not include reference objects, scope panels,
+distractors, legends, intermediate values, or derivation scaffolding unless
+those elements are part of the task's answer-verification witness.
+
+Use trace metadata for the full derivation path: prompt operands, reference
+objects, scope regions, candidate lists, ranked candidates, formula inputs,
+debug maps, and other solver/audit context.
+
+Prefer map annotation types when roles matter or an unordered set would be
 ambiguous. Use unordered sets for homogeneous counting witnesses where
 cardinality is the answer or role identity does not matter.
 
-For `keyed_point_map` and `keyed_bbox_map`, the required key literals may be
+For scoped selection tasks, the scope is usually a prompt operand, not an
+annotation witness. For example, if the prompt asks which card in a named
+section has a requested rank, annotate the selected card; keep the section name
+and section bbox in trace metadata unless the section itself is needed to
+verify the answer contract.
+
+For `point_map` and `bbox_map`, the required key literals may be
 instance-bound visible labels as long as the role family remains stable. Split
 only when the semantic witness role changes, such as requested endpoints vs all
 construction points, point witnesses vs region bboxes, or two required points vs
@@ -143,7 +201,7 @@ a variable-size witness set.
 
 Answer and annotation must come from the same execution trace.
 
-## 8) Migration Policy
+## 9) Migration Policy
 Retired public ids must be deleted, not kept as compatibility tasks, disabled
 registry entries, alias modules, redirect docs, config stubs, prompt branches,
 absence-only tests, or stale review folders. After a task id is renamed, split,
@@ -155,7 +213,7 @@ query weights, retired scalar difficulty gates, or task-review artifacts as
 source contracts. Use the scene-package migration workflow for source-layout
 changes.
 
-## 9) Audit Outcomes
+## 10) Audit Outcomes
 When reviewing task boundaries, assign one concrete outcome:
 
 - `Keep`: current task already matches one stable scene/objective contract.

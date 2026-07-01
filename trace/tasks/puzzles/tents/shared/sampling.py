@@ -7,13 +7,11 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from trace.core.sampling import (
     integer_range_choice,
     uniform_choice,
-    weighted_support_choice,
 )
 from trace.tasks.puzzles.shared.common import get_int_range
-from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.mcq import option_label_for_index
 
-from .defaults import resolve_grid_size, resolve_option_count
+from .defaults import resolve_grid_size
 from .rules import (
     count_by_axis,
     legal_candidate_cells,
@@ -21,7 +19,7 @@ from .rules import (
     neighbors8,
     touches_any_tent,
 )
-from .state import CandidateCellSpec, Cell, TentsSample
+from .state import CandidateCellSpec, Cell, LabeledTentSpec, TentsSample
 
 
 def option_labels(count: int) -> List[str]:
@@ -44,29 +42,19 @@ def sample_single_legal_cell_board(
         generation_defaults=generation_defaults,
         rng=rng,
     )
-    option_count = resolve_option_count(
-        params, generation_defaults=generation_defaults, fallback=6
-    )
+    option_count = 4
     labels = option_labels(int(option_count))
     correct_index, _probabilities = integer_range_choice(rng, 0, int(option_count) - 1)
 
     for _attempt in range(200):
         marked_tree = _sample_marked_tree(int(rows), int(cols), rng=rng)
         adjacent = neighbors4(marked_tree, int(rows), int(cols))
-        if len(adjacent) < 4:
+        if len(adjacent) != 4:
             continue
         correct_cell = tuple(uniform_choice(rng, adjacent))
-        far_cells = _far_candidate_cells(
-            rows=int(rows),
-            cols=int(cols),
-            marked_tree=marked_tree,
-            excluded_cells=[marked_tree] + adjacent,
-            count=max(0, int(option_count) - len(adjacent)),
-            rng=rng,
-        )
         distractor_cells = [
             tuple(cell) for cell in adjacent if tuple(cell) != tuple(correct_cell)
-        ] + list(far_cells)
+        ]
         rng.shuffle(distractor_cells)
 
         ordered_cells: List[Cell] = []
@@ -105,6 +93,7 @@ def sample_single_legal_cell_board(
             grid_cols_range=tuple(col_range),
             marked_tree=tuple(marked_tree),
             candidate_specs=candidate_specs,
+            labeled_tent_specs=(),
             visible_tents=tuple(board["visible_tents"]),
             tree_cells=tuple(board["tree_cells"]),
             row_clues=tuple(board["row_clues"]),
@@ -117,90 +106,91 @@ def sample_single_legal_cell_board(
     raise RuntimeError("failed to build single-legal-cell Tents board")
 
 
-def sample_neighbor_legality_count_board(
+def sample_violating_tent_board(
     *,
     params: Mapping[str, Any],
     instance_seed: int,
     generation_defaults: Mapping[str, Any],
     rng,
 ) -> TentsSample:
-    """Build a board with a sampled count of legal neighbor candidate cells."""
+    """Build a one-board task with exactly one labeled tent lacking a tree."""
 
+    _ = int(instance_seed)
     rows, cols, row_range, col_range = resolve_grid_size(
         params,
         generation_defaults=generation_defaults,
         rng=rng,
     )
-    support_min = int(
-        params.get(
-            "target_count_min",
-            group_default(generation_defaults, "target_count_min", 0),
-        )
-    )
-    support_max = int(
-        params.get(
-            "target_count_max",
-            group_default(generation_defaults, "target_count_max", 4),
-        )
-    )
-    if support_min < 0 or support_max > 4 or support_min > support_max:
-        raise ValueError("Tents legal-candidate support must stay within 0..4")
-    target_count, _probabilities = weighted_support_choice(
-        rng,
-        tuple(range(int(support_min), int(support_max) + 1)),
-        sort_keys=True,
-    )
     labels = option_labels(4)
+    correct_index, _probabilities = integer_range_choice(rng, 0, len(labels) - 1)
 
-    for _attempt in range(200):
-        marked_tree = _sample_marked_tree(int(rows), int(cols), rng=rng)
-        adjacent = neighbors4(marked_tree, int(rows), int(cols))
-        if len(adjacent) != 4:
-            continue
-        shuffled_adjacent = list(adjacent)
-        rng.shuffle(shuffled_adjacent)
-        valid_cells = [tuple(cell) for cell in shuffled_adjacent[: int(target_count)]]
-        ordered_cells = list(adjacent)
-        rng.shuffle(ordered_cells)
-        board = _build_partial_board(
+    for _attempt in range(400):
+        tent_cells = _sample_non_touching_cells(
             rows=int(rows),
             cols=int(cols),
-            marked_tree=tuple(marked_tree),
-            candidate_cells=ordered_cells,
-            valid_cells=valid_cells,
-            generation_defaults=generation_defaults,
-            params=params,
+            count=len(labels),
             rng=rng,
         )
-        legal_set = {tuple(cell) for cell in board["legal_candidate_cells"]}
-        candidate_specs = tuple(
-            CandidateCellSpec(
+        invalid_tent = tuple(tent_cells[int(correct_index)])
+        tree_cells = _place_violation_task_trees(
+            tent_cells=tent_cells,
+            invalid_tent=invalid_tent,
+            rows=int(rows),
+            cols=int(cols),
+            rng=rng,
+        )
+        if tree_cells is None:
+            continue
+        if _tent_has_adjacent_tree(
+            invalid_tent,
+            tree_cells,
+            rows=int(rows),
+            cols=int(cols),
+        ):
+            continue
+        labeled_specs = tuple(
+            LabeledTentSpec(
                 label=str(labels[index]),
                 row=int(cell[0]),
                 col=int(cell[1]),
-                is_correct=False,
-                is_legal=bool(tuple(cell) in legal_set),
+                is_correct=bool(index == int(correct_index)),
+                violation_type=(
+                    "no_adjacent_tree" if index == int(correct_index) else ""
+                ),
             )
-            for index, cell in enumerate(ordered_cells)
+            for index, cell in enumerate(tent_cells)
         )
+        if sum(1 for spec in labeled_specs if bool(spec.is_correct)) != 1:
+            continue
+        if any(
+            not bool(spec.is_correct)
+            and not _tent_has_adjacent_tree(
+                spec.cell,
+                tree_cells,
+                rows=int(rows),
+                cols=int(cols),
+            )
+            for spec in labeled_specs
+        ):
+            continue
         return TentsSample(
             rows=int(rows),
             cols=int(cols),
             grid_rows_range=tuple(row_range),
             grid_cols_range=tuple(col_range),
-            marked_tree=tuple(marked_tree),
-            candidate_specs=candidate_specs,
-            visible_tents=tuple(board["visible_tents"]),
-            tree_cells=tuple(board["tree_cells"]),
-            row_clues=tuple(board["row_clues"]),
-            col_clues=tuple(board["col_clues"]),
-            legal_candidate_cells=tuple(board["legal_candidate_cells"]),
+            marked_tree=None,
+            candidate_specs=(),
+            labeled_tent_specs=tuple(labeled_specs),
+            visible_tents=tuple(tent_cells),
+            tree_cells=tuple(tree_cells),
+            row_clues=tuple(count_by_axis(tent_cells, int(rows), 0)),
+            col_clues=tuple(count_by_axis(tent_cells, int(cols), 1)),
+            legal_candidate_cells=tuple(),
             option_count=4,
-            target_answer_support=tuple(range(int(support_min), int(support_max) + 1)),
-            construction_mode="neighbor_legality_count",
-            target_count_range=(int(support_min), int(support_max)),
+            target_answer_support=tuple(labels),
+            construction_mode="violating_tent",
         )
-    raise RuntimeError("failed to build Tents neighbor-legality-count board")
+    raise RuntimeError("failed to build Tents violating-tent board")
 
 
 def _sample_marked_tree(rows: int, cols: int, *, rng) -> Cell:
@@ -208,6 +198,83 @@ def _sample_marked_tree(rows: int, cols: int, *, rng) -> Cell:
         int(rng.randint(1, max(1, int(rows) - 2))),
         int(rng.randint(1, max(1, int(cols) - 2))),
     )
+
+
+def _sample_non_touching_cells(
+    *,
+    rows: int,
+    cols: int,
+    count: int,
+    rng,
+) -> List[Cell]:
+    """Sample cells that do not touch side-by-side or diagonally."""
+
+    for _attempt in range(200):
+        cells = [
+            (int(row), int(col)) for row in range(int(rows)) for col in range(int(cols))
+        ]
+        rng.shuffle(cells)
+        selected: List[Cell] = []
+        for cell in cells:
+            if touches_any_tent(tuple(cell), selected, int(rows), int(cols)):
+                continue
+            selected.append(tuple(cell))
+            if len(selected) >= int(count):
+                break
+        if len(selected) == int(count):
+            return selected
+    raise RuntimeError("failed to sample non-touching Tents cells")
+
+
+def _tent_has_adjacent_tree(
+    tent_cell: Cell,
+    tree_cells: Sequence[Cell],
+    *,
+    rows: int,
+    cols: int,
+) -> bool:
+    tree_set = {tuple(cell) for cell in tree_cells}
+    return any(
+        tuple(cell) in tree_set
+        for cell in neighbors4(tuple(tent_cell), int(rows), int(cols))
+    )
+
+
+def _place_violation_task_trees(
+    *,
+    tent_cells: Sequence[Cell],
+    invalid_tent: Cell,
+    rows: int,
+    cols: int,
+    rng,
+) -> List[Cell] | None:
+    """Place one private tree for each non-violating labeled tent."""
+
+    tent_set = {tuple(cell) for cell in tent_cells}
+    invalid_neighbors = set(neighbors4(tuple(invalid_tent), int(rows), int(cols)))
+    tree_cells: List[Cell] = []
+    for tent_cell in tent_cells:
+        if tuple(tent_cell) == tuple(invalid_tent):
+            continue
+        other_tents = [
+            tuple(cell) for cell in tent_cells if tuple(cell) != tuple(tent_cell)
+        ]
+        choices = [
+            tuple(cell)
+            for cell in neighbors4(tuple(tent_cell), int(rows), int(cols))
+            if tuple(cell) not in tent_set
+            and tuple(cell) not in tree_cells
+            and tuple(cell) not in invalid_neighbors
+            and all(
+                tuple(cell) not in set(neighbors4(other, int(rows), int(cols)))
+                for other in other_tents
+            )
+        ]
+        rng.shuffle(choices)
+        if not choices:
+            return None
+        tree_cells.append(tuple(choices[0]))
+    return tree_cells
 
 
 def _candidate_blocker_positions(
@@ -400,36 +467,8 @@ def _build_partial_board(
     }
 
 
-def _far_candidate_cells(
-    *,
-    rows: int,
-    cols: int,
-    marked_tree: Cell,
-    excluded_cells: Sequence[Cell],
-    count: int,
-    rng,
-) -> List[Cell]:
-    excluded = {tuple(cell) for cell in excluded_cells}
-    marked_adjacent = set(neighbors4(tuple(marked_tree), int(rows), int(cols)))
-    candidates: List[Cell] = []
-    for row in range(int(rows)):
-        for col in range(int(cols)):
-            cell = (int(row), int(col))
-            if (
-                cell in excluded
-                or cell in marked_adjacent
-                or cell == tuple(marked_tree)
-            ):
-                continue
-            candidates.append(cell)
-    rng.shuffle(candidates)
-    if len(candidates) < int(count):
-        raise RuntimeError("failed to sample far Tents candidates")
-    return candidates[: int(count)]
-
-
 __all__ = [
     "option_labels",
-    "sample_neighbor_legality_count_board",
     "sample_single_legal_cell_board",
+    "sample_violating_tent_board",
 ]

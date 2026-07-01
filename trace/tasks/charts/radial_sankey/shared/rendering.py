@@ -4,19 +4,19 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping, Sequence
+from dataclasses import replace
 from typing import Any
 
 from PIL import Image, ImageDraw
 
 from trace.core.seed import spawn_rng
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.bbox_projection import round_bbox
 from trace.tasks.shared.drawing import draw_centered_text
 from trace.tasks.shared.text_rendering import fit_font_to_box, load_font, temporary_default_font_family
 
 from .defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     clamp_bbox,
     font_assets_payload,
@@ -91,6 +91,52 @@ def _flow_width(value: int, *, render_params: RadialRenderParams, value_min: int
         clamp_unit_interval(norm) * float(render_params.max_flow_width_px - render_params.min_flow_width_px)
     )
     return max(1, int(round(width)))
+
+
+def _rgb_luminance(rgb: Sequence[int]) -> float:
+    red, green, blue = (float(int(channel)) for channel in rgb[:3])
+    return (0.2126 * red) + (0.7152 * green) + (0.0722 * blue)
+
+
+def _style_role_rgb(information_style_meta: Mapping[str, Any], role: str, fallback: Sequence[int]) -> tuple[int, int, int]:
+    roles = information_style_meta.get("roles_rgb", {})
+    if isinstance(roles, Mapping):
+        raw = roles.get(str(role))
+        if isinstance(raw, Sequence) and not isinstance(raw, (str, bytes)) and len(raw) >= 3:
+            return tuple(int(raw[index]) for index in range(3))
+    return tuple(int(fallback[index]) for index in range(3))
+
+
+def _is_dark_information_style(render_params: RadialRenderParams, information_style_meta: Mapping[str, Any]) -> bool:
+    style_text = " ".join(
+        str(information_style_meta.get(key, ""))
+        for key in ("treatment", "palette_id", "style_pack")
+    ).casefold()
+    return "dark" in style_text or _rgb_luminance(render_params.panel_fill_rgb) < 96.0
+
+
+def _with_light_theme_subtle_node_fills(
+    render_params: RadialRenderParams,
+    *,
+    information_style_meta: Mapping[str, Any],
+) -> RadialRenderParams:
+    """Avoid dark source-node pills on light themes where they do not encode data."""
+
+    if _is_dark_information_style(render_params, information_style_meta):
+        return render_params
+    return replace(
+        render_params,
+        source_node_fill_rgb=_style_role_rgb(
+            information_style_meta,
+            "surface_alt",
+            render_params.panel_fill_rgb,
+        ),
+        target_node_fill_rgb=_style_role_rgb(
+            information_style_meta,
+            "panel_fill",
+            render_params.target_node_fill_rgb,
+        ),
+    )
 
 
 def _value_label_size(draw: ImageDraw.ImageDraw, *, text: str, render_params: RadialRenderParams) -> tuple[float, float]:
@@ -491,13 +537,17 @@ def render_radial_sankey_dataset(
     """Render one already-bound dataset and return image plus all projection maps."""
 
     render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
-    render_params = resolve_render_params(render_style_params)
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    resolved_params = resolve_render_params(render_style_params)
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="radial_sankey",
+        render_params=resolved_params,
+        protected_colors=resolved_params.flow_palette_rgb,
+    )
+    render_params = _with_light_theme_subtle_node_fills(
+        render_params,
+        information_style_meta=information_style_meta,
     )
     chart_font_family = sample_chart_font(int(instance_seed), params)
     with temporary_default_font_family(str(chart_font_family)):
@@ -522,7 +572,7 @@ def render_radial_sankey_dataset(
         image=image,
         rendered_scene=rendered_scene,
         render_params=render_params,
-        background_meta=dict(background_meta),
+        background_meta={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         post_noise_meta=dict(post_noise_meta),
         chart_font_family=str(chart_font_family),
     )

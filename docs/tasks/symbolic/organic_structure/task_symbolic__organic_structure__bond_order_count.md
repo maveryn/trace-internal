@@ -3,50 +3,42 @@
 ## Public Taxonomy
 1. Domain: `symbolic`
 2. Scene id: `organic_structure`
-3. Scene: `notation`
-4. Task id: `task_symbolic__organic_structure__bond_order_count`
+3. Task id: `task_symbolic__organic_structure__bond_order_count`
 
-## Query Contract
-1. Query metadata: `query_id`
-2. Supported `query_id` values:
-   - `bond_order_count`
-3. Prompts ask for the count of visible bonds matching a requested bond order.
-4. Query argument axes:
-   - `target_bond_order = double|triple`
-5. V1 answer support is `1..4`.
-6. Internal variation includes constrained skeletal chains, optional rings, branches, single bonds, double bonds, triple bonds, and `clean_worksheet|exam_scan|notebook_problem` scene variants.
+## Program Contract
+Program: `organic_structure.bond_order_count(scene=organic_structure, scope=symbolic, target_bond_order=double|triple, output=integer)`
+
+Candidate set: all explicit bond records in one rendered organic line-angle structure.
+Operands: each bond's semantic bond order and the sampled target bond order `double|triple`.
+Operation: count bonds whose semantic order equals the target bond order.
+Output binding: `answer` is the matching bond count as an integer.
+Annotation schema: `segment_set`.
+Annotation witnesses: a homogeneous `segment_set` of semantic endpoint-to-endpoint bond segments for matching bonds.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. `answer_gt.type = integer`
-2. `answer_gt.value` is the number of bonds whose rendered order matches `target_bond_order`.
+2. `answer_gt.value` is the number of visible bonds whose order matches `target_bond_order`.
 3. `annotation_gt.type = segment_set`
-4. Annotation is a `segment_set`; each segment is `[[x1, y1], [x2, y2]]` and connects the semantic endpoints of one matching bond.
-5. Each segment marks the semantic bond endpoints, not every parallel stroke in a double/triple bond.
-6. Bond bboxes may remain render/debug metadata, but prompt-facing annotation excludes vertices, rings, nonmatching bonds, panel marks, and annotations.
+4. Each segment is `[[x0, y0], [x1, y1]]` and connects the semantic endpoints of one matching bond.
+5. Segments mark semantic bond endpoints, not every parallel stroke in a double/triple bond.
+6. Configured answer support is `1..5`.
 
 ## Trace Contract
-1. `execution_trace.organic_metadata` records the supported bond orders, scaffold id/family, and constraint policy.
-2. `execution_trace.annotation_item_ids` records the rendered bond ids used for segment projection.
-3. `render_map.bond_point_pairs_px` exposes bond endpoints after final layout.
-4. `execution_trace.bonds` records each bond segment and rendered order.
-5. `execution_trace.atoms` records implicit line-angle atom vertices for downstream organic-structure tasks.
-6. `execution_trace.organic_metadata.constraint_report` records valence, ring-size, triple-linearity, and crossing-check metadata.
+1. `query_spec.query_id` is `single`; `query_spec.internal_query_id` is `bond_order_count`.
+2. `execution_trace.organic_metadata` records supported bond orders, scaffold id/family, and constraint policy.
+3. `execution_trace.annotation_item_ids` records the rendered bond ids used for segment projection.
+4. `render_map.bond_segments_px` exposes bond endpoints after final layout.
+5. `execution_trace.bonds` records each bond and rendered order.
 
 ## Prompt Contract
-1. Bundle: `symbolic_v0`
+1. Bundle: `symbolic_organic_structure_v1`
 2. Scene key: `organic_structure`
 3. Task key: `organic_structure_bond_order_count`
-4. Query key: `bond_order_count`
-5. Prompt wording must ask for visible double or triple bond notation. It must not ask for molecular formula, atom labels, implicit-carbon counts, stereochemistry, naming, or reaction reasoning.
+4. Prompt wording asks for visible double or triple bond notation. It must not ask for molecular formula, atom labels, implicit-carbon counts, stereochemistry, naming, or reaction reasoning.
 
 ## Determinism + Constraints
 1. Deterministic generation and rendering from `instance_seed`.
-2. Unique-answer policy: `target_bond_order` is sampled explicitly, and the answer is the exact count of rendered bonds with that order.
+2. Unique-answer policy: the answer is the exact count of rendered bonds with the sampled target order.
 3. Reject/resample conditions: generation fails rather than silently changing the semantic contract if the requested answer support cannot fit.
-4. No-auto-relaxation guarantee: the task never changes target bond order or answer bounds to force acceptance.
-5. The reusable organic-structure scene grammar enforces basic line-angle plausibility:
-   - carbon valence sum is at most four,
-   - triple-bond atoms are linear and unbranched,
-   - rings are curated pentagon/hexagon scaffolds,
-   - nonadjacent bond segments do not cross.
-6. The task remains notation-first and does not require identifying a real molecule.
+4. The scene grammar enforces basic line-angle plausibility: atom valence at most four, linear unbranched triple-bond atoms, curated pentagon/hexagon rings, optional atom/substituent labels, and no crossed nonadjacent bonds.

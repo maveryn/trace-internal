@@ -1,1 +1,0 @@
-"""Pages document-lookup scene."""

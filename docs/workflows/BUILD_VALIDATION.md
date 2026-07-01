@@ -52,12 +52,18 @@ For new or distribution-changing task logic:
      - pass `--balanced-inspection-by-query` only for a deliberately balanced per-query visual audit; calibration reviews should use the default 100 total task samples
    - review artifacts live under `review/task-reviews/<domain>/<scene_id>/<task_id>/` so the review root stays grouped by domain and scene as task count grows
    - current calibration artifacts must carry `calibration_baseline: "v0"` in manifests or stats files; artifacts without that metadata are stale for current acceptance
-   - after regenerating review artifacts, reload the browser review app index with **Reload Index** or `POST /api/reload` before inspection; if app code/templates/CSS/JS/indexer/resource/feedback logic changed, restart the app instead of only reloading; inspect the current artifacts in the app, verify the affected page reflects the updated local files, and save sample-specific issues there; Excel exports are optional static snapshots, not the required review surface. The app UI and browser route say "issue" and `/issues`; internal APIs/storage still use `feedback`.
+   - after regenerating review artifacts, reload only the affected scene with `POST /api/reload/scene/<domain>/<scene_id>` before inspection; if app code/templates/CSS/JS/indexer/resource/feedback logic changed, restart the app instead of only reloading; inspect the current artifacts in the app, verify the affected page reflects the updated local files, and save sample-specific issues there; Excel exports are optional static snapshots, not the required review surface. The app UI and browser route say "issue" and `/issues`; internal APIs/storage still use `feedback`.
 3. Required gating checks (computed from answer values only):
    - `unique_answers >= 4`
    - `max_answer_frequency < 1/3`
    - apply checks per query id; task-level pass requires every variant to pass.
    - zero collected samples for a task/variant review is a hard fail (`no_samples_collected`).
+   - if a 4-choice label task fails only the `max_answer_frequency` gate
+     marginally at the default 100-sample task-review size, run a same-sampler
+     supplemental distribution validation at 300 samples per query id before
+     filing a sampler issue; if the 300-sample validation passes, regenerate the
+     affected task review distribution artifacts at 300 samples and record the
+     escalation report with the domain audit.
 4. Solve-rate calibration must also gate the exact exported calibration parquet,
    not only a separately sampled review stream. `scripts/run_task_calibration_sweep.py`
    runs `scripts/check_rlvr_probe_distribution.py` on the realized `100` rows

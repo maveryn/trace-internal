@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.bbox_projection import round_bbox as _round_bbox
 from trace.tasks.shared.drawing import draw_centered_text
@@ -14,7 +14,6 @@ from trace.tasks.shared.text_rendering import fit_font_to_box, load_font, tempor
 
 from .defaults import (
     FLOW_PALETTE_RGB,
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     resolve_render_params,
     sample_font_family,
@@ -649,13 +648,13 @@ def render_sankey_dataset(
 
     frame = dataset.frame
     render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
-    render_params = resolve_render_params(render_style_params)
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    resolved_params = resolve_render_params(render_style_params)
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="sankey",
+        render_params=resolved_params,
+        protected_colors=FLOW_PALETTE_RGB,
     )
     chart_font_family = sample_font_family(int(instance_seed), params)
     with temporary_default_font_family(str(chart_font_family)):
@@ -680,7 +679,7 @@ def render_sankey_dataset(
         image=image,
         rendered_scene=rendered_scene,
         render_params=render_params,
-        background_meta=dict(background_meta),
+        background_meta={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         post_noise_meta=dict(post_noise_meta),
         chart_font_family=str(chart_font_family),
     )

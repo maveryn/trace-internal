@@ -4,18 +4,23 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from .....core.sampling import uniform_choice
 from .....core.seed import spawn_rng
 from .....core.scene_config import get_scene_defaults
 from ....shared.config_defaults import (
     resolve_required_int_bounds,
     split_scene_generation_rendering_prompt_defaults,
 )
-from ....shared.deterministic_sampling import resolve_selection_index
 from ....shared.font_assets import sample_font_family
-from ....shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
+from ....shared.render_variation import apply_layout_jitter_to_margins
 from ...shared.label_assets import resolve_chart_entity_labels
-from ...shared.labeled_chart_common import resolve_chart_axis_variant_for_namespace
-from ...shared.visual_defaults import load_chart_scene_background_defaults, load_chart_scene_noise_defaults
+from ...shared.labeled_chart_variants import resolve_chart_axis_variant_for_namespace
+from ...shared.visual_defaults import (
+    load_chart_scene_background_defaults,
+    load_chart_scene_noise_defaults,
+    render_style_seed as _render_style_seed,
+    resolve_chart_render_rgb,
+)
 from .state import MatrixRenderParams, MatrixVisualSelection
 
 
@@ -68,22 +73,8 @@ _SCENE_TITLES: Dict[str, Tuple[str, ...]] = {
     "clustered_block_matrix": ("Clustered Block Matrix", "Grouped Response Matrix"),
 }
 
-def _render_style_seed(params: Mapping[str, Any]) -> int:
-    try:
-        return int(params.get("_render_style_seed", params.get("_sample_cursor", 0)) or 0)
-    except Exception:
-        return 0
-
-
 def _rgb_param(params: Mapping[str, Any], key: str, fallback: Tuple[int, int, int]) -> Tuple[int, int, int]:
-    return resolve_render_rgb(
-        params,
-        _RENDER_DEFAULTS,
-        str(key),
-        fallback,
-        instance_seed=_render_style_seed(params),
-        namespace=SCENE_NAMESPACE,
-    )
+    return resolve_chart_render_rgb(params, _RENDER_DEFAULTS, str(key), fallback, namespace=SCENE_NAMESPACE)
 
 
 def _int_param(params: Mapping[str, Any], key: str, fallback: int) -> int:
@@ -161,8 +152,13 @@ def _balanced_int(
     ordered = [int(value) for value in support]
     if not ordered:
         raise ValueError(f"empty support for {namespace}")
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return int(ordered[int(index) % len(ordered)])
+    return int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), str(namespace)),
+            ordered,
+            sort_keys=True,
+        )
+    )
 
 
 def _resolve_axis_variant(

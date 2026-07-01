@@ -4,19 +4,16 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Sequence
 
-from .....core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from .....core.visual.noise import apply_post_image_noise
 from ....shared.font_assets import font_asset_version
 from ....shared.text_rendering import temporary_default_font_family
-from ...shared.chart_scene import (
-    MultiSeriesChartMarkSpec,
-    render_multiseries_chart_scene,
-    value_axis_render_metadata,
-)
-from ...shared.labeled_chart_common import resolve_chart_render_params_for_task
+from ...shared.chart_scene_multiseries import render_multiseries_chart_scene
+from ...shared.chart_scene_primitives import value_axis_render_metadata
+from ...shared.chart_scene_types import MultiSeriesChartMarkSpec
+from ...shared.labeled_chart_render_params import resolve_chart_render_params_for_task
 from .defaults import (
     DEFAULTS,
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDER_DEFAULTS,
     sample_chart_font_family,
@@ -95,12 +92,17 @@ def render_multiseries_dataset(
         defaults=DEFAULTS,
         instance_seed=int(instance_seed),
     )
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    protected_colors = tuple(
+        tuple(int(channel) for channel in color)
+        for key in ("series_fill_palette_rgb", "series_outline_palette_rgb")
+        for color in mark_style.get(key, ())
+    )
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="multiseries",
+        render_params=render_params,
+        protected_colors=protected_colors,
     )
     chart_font_family = sample_chart_font_family(int(instance_seed), params)
     with temporary_default_font_family(str(chart_font_family)):
@@ -122,7 +124,7 @@ def render_multiseries_dataset(
         rendered_scene=rendered_scene,
         render_params=render_params,
         mark_style=dict(mark_style),
-        background_meta=dict(background_meta),
+        background_meta={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         post_noise_meta=dict(post_noise_meta),
         chart_font_family=str(chart_font_family),
         category_labels=list(category_labels),
@@ -146,6 +148,7 @@ def render_spec_payload(result: MultiseriesRenderResult, *, scene_variant: str) 
         "coord_space": "pixel",
         "scene_variant": str(scene_variant),
         "background_style": dict(result.background_meta),
+        "information_scene_style": dict(result.background_meta["information_scene_style"]),
         "post_image_noise": dict(result.post_noise_meta),
         "font_assets": {
             "asset_version": font_asset_version(),

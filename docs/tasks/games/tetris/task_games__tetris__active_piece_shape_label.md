@@ -10,7 +10,15 @@
 7. Annotation schema: `bbox`
 
 ## Program Contract
-`label(option where option.shape_name = shape_label(active_falling_tetromino)); scene=tetris; scope=active_piece_shape_label`
+
+Program: `label(option where option.shape_name = shape_label(active_falling_tetromino)); scene=tetris; scope=active_piece_shape_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `active_piece_shape_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `where`, `shape_name`, `shape_label`, `active_falling_tetromino`, `tetris`, `active_piece_shape_label`.
+Operation: evaluate `label` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The renderer shows a Tetris board with one active falling piece and four text options naming tetromino shapes.

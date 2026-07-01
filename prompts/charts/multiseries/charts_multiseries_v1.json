@@ -22,53 +22,46 @@
       ]
     },
     "query": {
-      "series_comparison_count": [
-        "Across the labeled categories, in how many categories is \"{left_series}\" {comparison_phrase} \"{right_series}\"?",
-        "Count the category labels where \"{left_series}\" is {comparison_phrase} \"{right_series}\".",
-        "How many labeled categories have \"{left_series}\" {comparison_phrase} \"{right_series}\"?",
-        "Determine the number of categories where \"{left_series}\" is {comparison_phrase} \"{right_series}\".",
-        "Find how many category labels show \"{left_series}\" {comparison_phrase} \"{right_series}\"."
-      ],
       "ranked_directional_change": [
         "Which category label has the {ranked_largest} {change_direction} from \"{left_series}\" to \"{right_series}\"?",
         "Find the category where {change_expression} for \"{left_series}\" and \"{right_series}\" is the {ranked_largest}.",
         "Across the labeled categories, which one shows the {ranked_greatest} {change_direction} from \"{left_series}\" to \"{right_series}\"?",
-        "Compare \"{left_series}\" and \"{right_series}\" for each category. Which category ranks {rank} by {change_action}?",
+        "Compare \"{left_series}\" and \"{right_series}\" for each category. Which category has the {ranked_largest} {change_action}?",
         "Determine the category label with the {ranked_largest} {change_direction} when moving from \"{left_series}\" to \"{right_series}\"."
       ],
       "ranked_absolute_gap": [
         "Which category label has the {ranked_extremum} absolute gap between \"{left_series}\" and \"{right_series}\"?",
         "Find the category where the absolute difference between \"{left_series}\" and \"{right_series}\" is the {ranked_extremum}.",
         "Across the labeled categories, which one shows the {ranked_extremum} gap between \"{left_series}\" and \"{right_series}\"?",
-        "Compare \"{left_series}\" and \"{right_series}\" for each category. Which category ranks {rank} by the requested distance between their values?",
+        "Compare \"{left_series}\" and \"{right_series}\" for each category. Which category has the {ranked_extremum} requested distance between their values?",
         "Determine the category label with the {ranked_extremum} absolute difference between \"{left_series}\" and \"{right_series}\"."
       ],
       "ranked_series_share": [
         "Which category label has the {ranked_extremum} percentage share for \"{target_series}\" out of that category's total across all series?",
         "For each category, divide \"{target_series}\" by the total of all series in that category. Which category has the {ranked_extremum} share?",
-        "Across the labeled categories, which one ranks {rank} by the requested share of \"{target_series}\" within its category total?",
+        "Across the labeled categories, which one has the {ranked_extremum} requested share of \"{target_series}\" within its category total?",
         "Use every series in each category to compute the category total. Which category has the {ranked_extremum} \"{target_series}\" share?",
         "Determine the category label with the {ranked_extremum} percentage contribution from \"{target_series}\"."
       ],
       "ranked_pair_ratio": [
         "Which category label has the {ranked_extremum} ratio of \"{numerator_series}\" to \"{denominator_series}\"?",
         "For each category, divide \"{numerator_series}\" by \"{denominator_series}\". Which category has the {ranked_extremum} ratio?",
-        "Across the labeled categories, which one ranks {rank} by the requested ratio \"{numerator_series}\" over \"{denominator_series}\"?",
+        "Across the labeled categories, which one has the {ranked_extremum} requested ratio \"{numerator_series}\" over \"{denominator_series}\"?",
         "Use the legend to read \"{numerator_series}\" and \"{denominator_series}\" for each category. Which category has the {ranked_extremum} ratio?",
         "Determine the category label with the {ranked_extremum} percentage ratio of \"{numerator_series}\" to \"{denominator_series}\"."
       ],
       "category_total_extremum_label": [
         "Which category label has the {ranked_extremum} total across all series?",
-        "For each category, add all series values. Which category ranks {rank} by total?",
+        "For each category, add all series values. Which category has the {ranked_extremum} total?",
         "Across the labeled categories, which one has the {ranked_extremum} sum over all series?",
         "Use every series in each category to compute category totals. Which category label is the {ranked_extremum}?",
         "Determine the category label with the {ranked_extremum} total value across the legend series."
       ],
       "series_rank_at_category_label": [
         "At category \"{target_category}\", which series has the {ranked_extremum} value?",
-        "Use the marks at \"{target_category}\" only. Which series ranks {rank} by value there?",
+        "Use the marks at \"{target_category}\" only. Which series has the {ranked_extremum} value there?",
         "Within the category labeled \"{target_category}\", which legend series is the {ranked_extremum}?",
-        "Compare all series values at \"{target_category}\". What series label ranks {rank} there?",
+        "Compare all series values at \"{target_category}\". What series label has the {ranked_extremum} value there?",
         "For the single category \"{target_category}\", determine the series with the {ranked_extremum} value."
       ],
       "pair_equality_label": [
@@ -97,12 +90,6 @@
     }
   },
   "static_slots_by_key": {
-    "query:series_comparison_count": {
-      "answer_hint": "set \"answer\" to the number of category labels satisfying the requested series comparison as an integer",
-      "annotation_hint": "set \"annotation\" to an object mapping each \"<category>:<series>\" mark key to an [x,y] pixel point for the two queried series marks in each counted category",
-      "json_example": "{\"annotation\":{\"Q:Orly\":[180,260],\"Q:Vega\":[180,190],\"M:Orly\":[360,320],\"M:Vega\":[360,240],\"Z:Orly\":[540,210],\"Z:Vega\":[540,280]},\"answer\":3}",
-      "json_example_answer_only": "{\"answer\":3}"
-    },
     "query:ranked_directional_change": {
       "answer_hint": "set \"answer\" to the requested category label as a string",
       "annotation_hint": "set \"annotation\" to an object mapping each \"<category>:<series>\" mark key to an [x,y] pixel point for the answer category's two queried series marks",

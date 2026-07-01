@@ -35,7 +35,7 @@ when the program and annotation roles stay stable.
 ## Annotation Policy
 Annotation should mark visible physical witnesses: force arrows, masses,
 components, nodes, rays, target points, distances, angles, surfaces, or
-measurement labels. Use keyed annotation for role-bound operands such as input
+measurement labels. Use map annotation for role-bound operands such as input
 force and output force, resistor A and resistor B, source ray and reflected ray,
 or object and support.
 
@@ -52,9 +52,12 @@ decomposition is the objective. Labels and arrows must be legible and
 collision-aware.
 
 Physics technical diagrams share the same technical style profiles as geometry.
-Use `analytical_diagram` for apparatus, circuit, mechanics, optics, and formula
-diagrams that do not rely on a coordinate grid. Use `graph_paper` only when the
-visible grid or axes are part of the measurement or coordinate contract.
+Use `analytical_diagram` by default for apparatus, circuit, mechanics, optics,
+and formula diagrams, with the same 20 light and 5 dark analytical themes used
+by analytical geometry scenes. Use `graph_paper` only when the visible grid or
+axes are part of the measurement or coordinate contract, such as motion graphs
+and PV diagrams. Local panel guides, axes, tick marks, or helper grids inside an
+apparatus scene must not force the global graph-paper theme profile.
 Semantic colors for charges, fields, wires, rays, and components must remain
 protected against sampled non-semantic theme colors.
 

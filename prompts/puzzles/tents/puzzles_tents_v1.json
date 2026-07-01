@@ -3,9 +3,9 @@
   "schema_version": "v1",
   "allow_empty_task_templates": true,
   "code_prompt_defaults": {
-    "object_description_tents_classic": "a Tents puzzle grid with row and column clues, trees, visible tents, one marked tree, and labeled candidate cells",
-    "object_description_tents_card": "a card-style Tents puzzle grid with row and column clues, trees, visible tents, one marked tree, and labeled candidate cells",
-    "object_description_tents_blueprint": "a blueprint-style Tents puzzle grid with row and column clues, trees, visible tents, one marked tree, and labeled candidate cells"
+    "object_description_tents_classic": "a Tents puzzle grid with row and column clues, trees, visible tents, and labeled cells or tents",
+    "object_description_tents_card": "a Tents puzzle grid with row and column clues, trees, visible tents, and labeled cells or tents",
+    "object_description_tents_blueprint": "a Tents puzzle grid with row and column clues, trees, visible tents, and labeled cells or tents"
   },
   "templates": {
     "scene": {
@@ -25,7 +25,7 @@
         "",
         ""
       ],
-      "valid_candidate_count_query": [
+      "violating_tent_label_query": [
         "",
         "",
         "",
@@ -41,28 +41,28 @@
         "Find the only labeled candidate cell where the marked tree's missing tent can be placed while satisfying the clues and no-touch rule.",
         "Which labeled cell is the legal missing tent position for the marked tree?"
       ],
-      "valid_candidate_count": [
-        "Each tree needs one tent in an orthogonally adjacent cell, and tents cannot touch any other tent, even diagonally. How many labeled candidate cells could legally hold a tent for the marked tree?",
-        "Using the row and column clues, visible tents, and no-touch rule, count the labeled candidate cells that can hold the marked tree's tent.",
-        "For the marked tree, how many candidate labels are legal tent cells?",
-        "Count the labeled cells where the marked tree's tent could be placed without breaking the clues or the no-touch rule.",
-        "How many labeled candidate cells are valid positions for the marked tree's missing tent?"
+      "violating_tent_label": [
+        "Each tent should be orthogonally adjacent to at least one tree. Which labeled tent violates that rule?",
+        "A tent must be directly above, below, left, or right of a tree. Which labeled tent is not next to any tree?",
+        "Inspect the labeled tents. Which label marks the tent that has no orthogonally adjacent tree?",
+        "Which labeled tent breaks the Tents rule requiring a neighboring tree?",
+        "Find the labeled tent that is not orthogonally adjacent to any tree."
       ]
     },
     "output": {
       "answer_only": [
-        "Set answer to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nUse the answer-only JSON shape shown here.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nReturn the answer in JSON.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nUse this JSON shape for the final response.\nExample JSON:\n{json_example_answer_only}"
+        "Answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Use this answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}"
       ],
       "answer_and_annotation": [
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nReturn both fields in JSON.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse this JSON shape for the final response.\nExample JSON:\n{json_example}"
+        "Annotation format: {annotation_hint}\nAnswer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Required annotation format: {annotation_hint}\nRequired answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Format for the \"annotation\" field: {annotation_hint}\nFormat for the \"answer\" field: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Use this annotation format: {annotation_hint}\nUse this answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}\nFinal answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}"
       ]
     }
   },
@@ -73,11 +73,11 @@
       "json_example": "{\"annotation\":[512,386,574,448],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
-    "query:valid_candidate_count": {
-      "answer_instruction": "the number of labeled candidate cells that can legally hold a tent for the marked tree",
-      "annotation_hint": "Set annotation to an array of image-pixel cell bounding boxes [x0,y0,x1,y1], one for each legal labeled candidate cell; use [] if none are legal.",
-      "json_example": "{\"annotation\":[[512,386,574,448],[450,324,512,386]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
+    "query:violating_tent_label": {
+      "answer_instruction": "the label of the tent that is not orthogonally adjacent to any tree",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] for the selected labeled tent cell.",
+      "json_example": "{\"annotation\":[356,226,416,286],\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
     }
   },
   "dynamic_slots": {

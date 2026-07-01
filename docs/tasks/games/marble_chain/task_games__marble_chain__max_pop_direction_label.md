@@ -2,17 +2,25 @@
 
 Public taxonomy: `games -> marble_chain -> task_games__marble_chain__max_pop_direction_label`.
 
+## Contract
+1. Domain: `games`
+2. Scene id: `marble_chain`
+3. Public task id: `task_games__marble_chain__max_pop_direction_label`
+4. Supported `query_id` values: `single`
+5. Answer schema: `option_letter`
+6. Annotation schema: `point`
+7. Program schema: `argmax(labelled_shot_options, metric=immediate_existing_marble_pop_count); scene=marble_chain; scope=max_pop_direction_label`
+
 ## Program Contract
 
-Program code: `argmax(labelled_shot_options, metric=immediate_existing_marble_pop_count); scene=marble_chain; scope=max_pop_direction_label`.
+Program: `argmax(labelled_shot_options, metric=immediate_existing_marble_pop_count); scene=marble_chain; scope=max_pop_direction_label`
 
-The scene renders a Zuma-like marble chain with a central shooter marble and 4 to 6 labeled shot arrows. A shot inserts the shooter marble at the arrow's indicated chain gap. If the inserted marble creates a same-color contiguous run of at least three marbles, only existing chain marbles in that run are removed. No later cascade is applied. The task asks which displayed arrow removes the most existing chain marbles, with a unique displayed answer.
-
-Answer schema: `option_letter`.
-
-Annotation schema: `point` at the selected arrow's insertion gap.
-
-Supported `query_id`: `single`.
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `max_pop_direction_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `labelled_shot_options`, `metric`, `immediate_existing_marble_pop_count`, `marble_chain`, `max_pop_direction_label`.
+Operation: evaluate `argmax` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generator
 

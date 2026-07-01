@@ -23,6 +23,7 @@ PARK_ZONE_TYPES: Tuple[str, ...] = variant_ids_with_tag("park_zone")
 PARK_PERSON_ACTIVITY_LABELS: Dict[str, str] = label_map_for_tag("park_person_activity")
 PARK_EQUIPMENT_LABELS: Dict[str, str] = plural_name_map_for_tag("park_equipment")
 PARK_ZONE_LABELS: Dict[str, str] = label_map_for_tag("park_zone")
+MIN_EQUIPMENT_BBOX_SIDE_PX = 24.5
 
 
 @dataclass(frozen=True)
@@ -223,6 +224,25 @@ def _clamp_bbox_to_canvas(box: BBox, *, width: int, height: int, margin: float =
     )
 
 
+def _expand_bbox_to_min_side(box: BBox, *, min_side: float, bounds: BBox) -> BBox:
+    x0, y0, x1, y1 = (float(v) for v in box)
+    bx0, by0, bx1, by1 = (float(v) for v in bounds)
+    target_w = min(max(float(min_side), x1 - x0), max(1.0, bx1 - bx0))
+    target_h = min(max(float(min_side), y1 - y0), max(1.0, by1 - by0))
+    cx = (x0 + x1) / 2.0
+    cy = (y0 + y1) / 2.0
+    nx0 = cx - target_w / 2.0
+    ny0 = cy - target_h / 2.0
+    nx0 = max(bx0, min(nx0, bx1 - target_w))
+    ny0 = max(by0, min(ny0, by1 - target_h))
+    return (
+        round(float(nx0), 3),
+        round(float(ny0), 3),
+        round(float(nx0 + target_w), 3),
+        round(float(ny0 + target_h), 3),
+    )
+
+
 def _safe_json(value: Any) -> Any:
     if isinstance(value, Mapping):
         return {str(key): _safe_json(item) for key, item in value.items()}
@@ -371,7 +391,8 @@ def _equipment_boxes(rng, *, playground: BBox, count: int) -> Tuple[BBox, ...]:
         y0 = inner[1] + float(row) * (cell_h + gap_y) + float(rng.uniform(-5.0, 6.0))
         ew = min(cell_w - 6.0, float(rng.uniform(94.0, 138.0)))
         eh = min(cell_h - 4.0, float(rng.uniform(74.0, 116.0)))
-        boxes.append((round(x0, 3), round(y0, 3), round(min(inner[2], x0 + ew), 3), round(min(inner[3], y0 + eh), 3)))
+        box = (round(x0, 3), round(y0, 3), round(min(inner[2], x0 + ew), 3), round(min(inner[3], y0 + eh), 3))
+        boxes.append(_expand_bbox_to_min_side(box, min_side=MIN_EQUIPMENT_BBOX_SIDE_PX, bounds=inner))
     return tuple(boxes)
 
 

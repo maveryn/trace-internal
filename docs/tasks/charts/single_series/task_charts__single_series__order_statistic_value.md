@@ -15,7 +15,15 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Program Contract
-`value(select_ranked_mark(marks, statistic_kind)); output=integer_value; annotation=point(selected_mark); scene=single_series; scope=order_statistic_value`
+
+Program: `value(select_ranked_mark(marks, statistic_kind)); output=integer_value; annotation=point(selected_mark); scene=single_series; scope=order_statistic_value`
+
+Candidate set: the visible marks in the ordered single-series chart inside the `order_statistic_value` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `value` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `point` witnesses bound by `point(selected_mark)`. Annotation marks the selected ranked-statistic mark point only. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
+Query ids: `median_order_statistic_value`, `nth_highest_order_statistic_value`, `nth_lowest_order_statistic_value`.
 
 ## Annotation Contract
 1. Answer schema: `integer_value`.

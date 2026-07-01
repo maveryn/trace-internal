@@ -11,6 +11,7 @@ from typing import Any, Dict, List
 
 from trace.core.answer_distribution import evaluate_answer_distribution
 from trace.core.json_io import write_json_file
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.task_review_sampling import collect_query_id_samples
 from trace.tasks import TASK_REGISTRY, create_task
 
@@ -218,7 +219,7 @@ def main() -> int:
             f"overall({_format_task_distribution_metrics(overall_report)})"
         )
         for query_id, variant_report in variant_reports.items():
-            label = str(query_id) if str(query_id).strip() else "<default>"
+            label = str(query_id) if str(query_id).strip() else f"<{SINGLE_QUERY_ID}>"
             variant_status = "PASS" if bool(variant_report["pass"]) else "FAIL"
             print(f"    - [{variant_status}] {label}: {_format_task_distribution_metrics(variant_report)}")
         if incomplete_query_ids:

@@ -7,12 +7,12 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
+from ....core.sampling import uniform_choice_with_probabilities
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.annotation_artifacts import bbox_set_annotation_artifacts
 from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from .shared.annotations import construction_worker_bbox_map, sort_construction_bbox_centers, sort_construction_bboxes
 from .shared.labels import construction_color_display_name, construction_color_hex
@@ -93,7 +93,6 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
     """Build worker specs with exactly one visible attribute count answer."""
 
     rng = spawned_task_rng(int(instance_seed), TASK_ID, int(attempt_index))
-    base_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:cycle")
     query_values = _shared_query_support(params, _GEN_DEFAULTS, QUERY_IDS)
     colors = color_support(params, _GEN_DEFAULTS)
     tools = tool_support(params, _GEN_DEFAULTS)
@@ -103,19 +102,31 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         query_id = str(explicit_query)
         if query_id not in set(query_values):
             raise ValueError("query_id is outside configured support")
-        query_index = int(query_values.index(query_id))
         query_probabilities = uniform_string_probability_map(query_values, selected=query_id)
     else:
-        query_index = int(base_index) % len(query_values)
-        query_id = str(query_values[query_index])
-        query_probabilities = uniform_string_probability_map(query_values)
+        query_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:query")
+        query_id, query_probabilities = uniform_choice_with_probabilities(
+            query_rng,
+            query_values,
+            sort_keys=False,
+        )
+        query_id = str(query_id)
 
     if "color" in query_id:
-        color_index = int(base_index // max(1, len(query_values))) % len(colors)
-        target_color = str(params.get("target_color", colors[color_index]))
-        if target_color not in set(colors):
-            raise ValueError("target_color is outside configured support")
-        color_probabilities = uniform_string_probability_map(colors, selected=target_color)
+        explicit_color = params.get("target_color")
+        if explicit_color is not None:
+            target_color = str(explicit_color)
+            if target_color not in set(colors):
+                raise ValueError("target_color is outside configured support")
+            color_probabilities = uniform_string_probability_map(colors, selected=target_color)
+        else:
+            color_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:target_color")
+            target_color, color_probabilities = uniform_choice_with_probabilities(
+                color_rng,
+                colors,
+                sort_keys=False,
+            )
+            target_color = str(target_color)
     else:
         target_color = None
         color_probabilities = uniform_string_probability_map(colors)
@@ -128,7 +139,6 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         low=int(target_min),
         high=int(target_max),
         explicit_key="target_count",
-        cycle_index=int(base_index // max(1, len(query_values) * len(colors))) + int(query_index),
     )
     worker_min, worker_max = bounds(params, _GEN_DEFAULTS, "worker_count_min", "worker_count_max", _DEFAULTS.worker_count_min, _DEFAULTS.worker_count_max)
     worker_low = max(int(worker_min), int(target_count) + 2)
@@ -139,7 +149,6 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         low=int(worker_low),
         high=int(worker_max),
         explicit_key="worker_count",
-        cycle_index=int(base_index // max(1, len(query_values) * len(colors) * int(target_max - target_min + 1))),
     )
 
     non_target_colors = [str(color) for color in colors if str(color) != str(target_color)]

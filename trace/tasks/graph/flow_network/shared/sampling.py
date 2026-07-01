@@ -8,9 +8,10 @@ from typing import Dict, Mapping, Sequence, Tuple
 
 import networkx as nx
 
+from .....core.sampling import uniform_choice
 from .....core.seed import spawn_rng
 from ....shared.config_defaults import group_default
-from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ....shared.deterministic_sampling import uniform_probability_map
 from ....shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ...shared.graph_scene import SUPPORTED_EDGE_ROUTING_VARIANTS, SUPPORTED_LAYOUT_TRANSFORM_VARIANTS
 from ...shared.graph_sample_types import (
@@ -55,8 +56,12 @@ def resolve_integer_axis(
         if int(value) not in set(support_tuple):
             raise ValueError(f"{explicit_key} is outside feasible support")
         return int(value), integer_probability_map(support_tuple, selected=int(value))
-    index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)))
-    value = int(support_tuple[int(index % len(support_tuple))])
+    value = int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), str(namespace)),
+            support_tuple,
+        )
+    )
     return int(value), integer_probability_map(support_tuple)
 
 

@@ -199,21 +199,34 @@ def build_shot_options(
     return tuple(specs)
 
 
+def is_interior_slot(slot_index: int, *, chain_length: int) -> bool:
+    """Return whether an insertion slot is between two existing marbles."""
+
+    return 0 < int(slot_index) < int(chain_length)
+
+
+def interior_slots(candidates: Sequence[int], *, chain_length: int) -> list[int]:
+    """Filter candidate slots to visible gaps between existing marbles."""
+
+    return [int(slot) for slot in candidates if is_interior_slot(int(slot), chain_length=int(chain_length))]
+
+
 SlotGroupBuilder = Callable[[Mapping[int, MarbleOutcome]], tuple[Sequence[int], Sequence[int]]]
+StateSlotGroupBuilder = Callable[[Sequence[str], Mapping[int, MarbleOutcome]], tuple[Sequence[int], Sequence[int]]]
 DisplayValidator = Callable[[Sequence[ShotOption]], bool]
 
 
-def sample_direction_option_scene(
+def sample_direction_option_scene_from_state_groups(
     rng: Any,
     *,
     chain_length: int,
     color_count: int,
     option_count: int,
     answer_label: str,
-    slot_group_builder: SlotGroupBuilder,
+    slot_group_builder: StateSlotGroupBuilder,
     display_validator: DisplayValidator,
 ) -> tuple[Tuple[str, ...], str, tuple[ShotOption, ...]]:
-    """Construct labeled arrows once task-owned callbacks define valid slots."""
+    """Construct labeled arrows from callbacks that can inspect chain colors."""
 
     labels = OPTION_LABELS[: int(option_count)]
     for _attempt in range(800):
@@ -222,7 +235,9 @@ def sample_direction_option_scene(
             chain_length=int(chain_length),
             color_count=int(color_count),
         )
-        answer_candidates, distractor_candidates = slot_group_builder(outcomes)
+        answer_candidates, distractor_candidates = slot_group_builder(chain_colors, outcomes)
+        answer_candidates = interior_slots(answer_candidates, chain_length=len(chain_colors))
+        distractor_candidates = interior_slots(distractor_candidates, chain_length=len(chain_colors))
         if not answer_candidates or len(distractor_candidates) < int(option_count) - 1:
             continue
         answer_slot = int(answer_candidates[int(rng.randrange(len(answer_candidates)))])
@@ -246,6 +261,29 @@ def sample_direction_option_scene(
             continue
         return tuple(chain_colors), str(shooter_color), tuple(option_specs)
     raise ValueError("failed to sample marble-chain direction-option scene")
+
+
+def sample_direction_option_scene(
+    rng: Any,
+    *,
+    chain_length: int,
+    color_count: int,
+    option_count: int,
+    answer_label: str,
+    slot_group_builder: SlotGroupBuilder,
+    display_validator: DisplayValidator,
+) -> tuple[Tuple[str, ...], str, tuple[ShotOption, ...]]:
+    """Construct labeled arrows once task-owned callbacks define valid slots."""
+
+    return sample_direction_option_scene_from_state_groups(
+        rng,
+        chain_length=int(chain_length),
+        color_count=int(color_count),
+        option_count=int(option_count),
+        answer_label=str(answer_label),
+        slot_group_builder=lambda _chain_colors, outcomes: slot_group_builder(outcomes),
+        display_validator=display_validator,
+    )
 
 
 def resolve_chain_length_axis(
@@ -336,6 +374,8 @@ def resolve_target_pop_axis(
 __all__ = [
     "answer_option_label",
     "build_shot_options",
+    "interior_slots",
+    "is_interior_slot",
     "pick_slots_with_spacing",
     "resolve_chain_length_axis",
     "resolve_color_count_axis",
@@ -346,4 +386,5 @@ __all__ = [
     "sample_chain_state",
     "sample_color_keys",
     "sample_direction_option_scene",
+    "sample_direction_option_scene_from_state_groups",
 ]

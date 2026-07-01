@@ -7,47 +7,47 @@ from trace.tasks.shared.config_defaults import split_generation_rendering_prompt
 
 
 def test_physics_optics_ray_defaults_expose_scene_query_and_answer_support() -> None:
-    cfg = get_scene_defaults("physics", "optics")
-    generation, rendering, prompt = split_generation_rendering_prompt_defaults(
+    cfg = get_scene_defaults("physics", "ray_optics")
+    bounce_generation, rendering, bounce_prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="physics_optics_ray_trace_family",
+        task_id="task_physics__ray_optics__ray_bounce_count",
+    )
+    target_generation, _target_rendering, target_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_physics__ray_optics__ray_target_hit_count",
     )
 
 
-    assert bool(generation["balanced_scene_variant_sampling"]) is True
+    assert bool(bounce_generation["balanced_scene_variant_sampling"]) is True
 
-    assert bool(generation["balanced_query_id_sampling"]) is True
+    assert bool(bounce_generation["balanced_target_answer_sampling"]) is True
 
-    assert bool(generation["balanced_target_answer_sampling"]) is True
+    assert bool(bounce_generation["balanced_accent_color_name_sampling"]) is True
 
-    assert bool(generation["balanced_accent_color_name_sampling"]) is True
-
-    assert set(generation["scene_variant_weights"].keys()) == {
-        "single_mirror",
-        "double_mirror",
-        "triple_mirror",
+    assert set(bounce_generation["scene_variant_weights"].keys()) == {
         "quad_mirror",
         "five_mirror",
     }
 
-    assert set(generation["query_id_weights"].keys()) == {
-        "bounce_count",
-        "target_hit_count",
+    assert set(target_generation["scene_variant_weights"].keys()) == {
+        "single_mirror",
+        "double_mirror",
+        "triple_mirror",
     }
 
-    assert list(generation["bounce_count_support_single_mirror"]) == [0, 1]
+    assert list(target_generation["bounce_count_support_single_mirror"]) == [0, 1]
 
-    assert list(generation["bounce_count_support_double_mirror"]) == [0, 1, 2]
+    assert list(target_generation["bounce_count_support_double_mirror"]) == [0, 1, 2]
 
-    assert list(generation["bounce_count_support_triple_mirror"]) == [0, 1, 2, 3]
+    assert list(target_generation["bounce_count_support_triple_mirror"]) == [0, 1, 2, 3]
 
-    assert list(generation["bounce_count_support_quad_mirror"]) == [0, 1, 2, 3, 4]
+    assert list(bounce_generation["bounce_count_support_quad_mirror"]) == [0, 1, 2, 3, 4]
 
-    assert list(generation["bounce_count_support_five_mirror"]) == [1, 2, 3, 4, 5]
+    assert list(bounce_generation["bounce_count_support_five_mirror"]) == [1, 2, 3, 4, 5]
 
-    assert list(generation["target_hit_count_support"]) == [1, 2, 3, 4, 5]
+    assert list(target_generation["target_hit_count_support"]) == [1, 2, 3, 4, 5]
 
-    assert int(generation["target_count_max"]) == 5
+    assert int(target_generation["target_count_max"]) == 5
 
     assert int(rendering["board_cols"]) == 8
 
@@ -63,12 +63,8 @@ def test_physics_optics_ray_defaults_expose_scene_query_and_answer_support() -> 
 
     assert int(rendering["layout_jitter_min_margin_px"]) == 8
 
-    assert str(prompt["bundle_id"]) == "physics_optics_v0"
+    assert str(bounce_prompt["bundle_id"]) == "physics_ray_optics_v1"
 
-    assert "graph-paper" in str(prompt["object_description_double_mirror"])
+    assert str(bounce_prompt["task_key"]) == "ray_bounce_count"
 
-    assert "four diagonal mirrors" in str(prompt["object_description_quad_mirror"])
-
-    assert "five diagonal mirrors" in str(prompt["object_description_five_mirror"])
-
-    assert "image pixel points" in str(prompt["annotation_hint_bounce_count"])
+    assert str(target_prompt["task_key"]) == "ray_target_hit_count"

@@ -8,8 +8,14 @@ from typing import Any, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.charts.shared.cartesian.axes import draw_axis_lines, draw_horizontal_value_grid_ticks
+from trace.tasks.charts.shared.cartesian.geometry import project_index, project_linear_inverted
 from trace.tasks.charts.shared.information_style import make_chart_information_background, resolve_chart_information_style
-from trace.tasks.charts.shared.visual_defaults import chart_font_asset_metadata, sample_chart_font_family
+from trace.tasks.charts.shared.visual_defaults import (
+    chart_font_asset_metadata,
+    relative_luminance,
+    sample_chart_font_family,
+)
 from trace.tasks.shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
 from trace.tasks.shared.text_legibility import draw_traced_text
 from trace.tasks.shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
@@ -62,7 +68,7 @@ def resolve_uncertainty_band_render_params(params: Mapping[str, Any], *, instanc
         axis_min=int(params.get("axis_min", rendering_default("axis_min", 0))),
         axis_max=int(params.get("axis_max", rendering_default("axis_max", 100))),
         tick_step=int(params.get("tick_step", rendering_default("tick_step", 20))),
-        band_alpha=max(40, min(170, int(params.get("band_alpha", rendering_default("band_alpha", 82))))),
+        band_alpha=max(32, min(120, int(params.get("band_alpha", rendering_default("band_alpha", 58))))),
         panel_fill_rgb=resolve_render_rgb(params, RENDER_DEFAULTS, "panel_fill_rgb", (255, 255, 255), instance_seed=int(instance_seed), namespace=SCENE_NAMESPACE),
         panel_border_rgb=resolve_render_rgb(params, RENDER_DEFAULTS, "panel_border_rgb", (190, 198, 208), instance_seed=int(instance_seed), namespace=SCENE_NAMESPACE),
         axis_rgb=resolve_render_rgb(params, RENDER_DEFAULTS, "axis_rgb", (64, 68, 76), instance_seed=int(instance_seed), namespace=SCENE_NAMESPACE),
@@ -79,27 +85,20 @@ def _darken(color: RGB, factor: float = 0.72) -> RGB:
     return tuple(max(0, min(255, int(round(float(channel) * float(factor))))) for channel in color)  # type: ignore[return-value]
 
 
-def _relative_luminance(color: Sequence[int]) -> float:
-    def _channel(value: int) -> float:
-        normalized = float(value) / 255.0
-        if normalized <= 0.03928:
-            return normalized / 12.92
-        return ((normalized + 0.055) / 1.055) ** 2.4
-
-    rgb = [max(0, min(255, int(channel))) for channel in color[:3]]
-    return (0.2126 * _channel(rgb[0])) + (0.7152 * _channel(rgb[1])) + (0.0722 * _channel(rgb[2]))
-
-
 def _readable_chart_text_colors(surface_rgb: Sequence[int]) -> Tuple[RGB, RGB, RGB]:
-    if _relative_luminance(surface_rgb) >= 0.55:
+    if relative_luminance(surface_rgb) >= 0.55:
         return (34, 42, 54), (72, 84, 100), (34, 42, 54)
     return (246, 250, 255), (205, 218, 232), (18, 24, 32)
 
 
 def _scale_y(value: int | float, *, plot_bottom: float, plot_height: float, axis_min: int, axis_max: int) -> float:
-    span = max(1.0, float(axis_max) - float(axis_min))
-    norm = (float(value) - float(axis_min)) / span
-    return float(plot_bottom) - (float(norm) * float(plot_height))
+    return project_linear_inverted(
+        float(value),
+        domain_min=float(axis_min),
+        domain_max=float(axis_max),
+        pixel_top=float(plot_bottom) - float(plot_height),
+        pixel_bottom=float(plot_bottom),
+    )
 
 
 def _draw_text(
@@ -138,7 +137,6 @@ def _render_chart(dataset: Dataset, params: Mapping[str, Any], *, instance_seed:
         params=params,
         scene_id=SCENE_ID,
         protected_colors=[series.color_rgb for series in dataset.series],
-        allow_dark=False,
         allow_colored_surface=True,
     )
     image, background_meta = make_chart_information_background(
@@ -164,6 +162,7 @@ def _render_chart(dataset: Dataset, params: Mapping[str, Any], *, instance_seed:
     plot_bottom = float(render_params.canvas_height - render_params.margin_bottom_px)
     plot_width = float(plot_right - plot_left)
     plot_height = float(plot_bottom - plot_top)
+    plot_bbox = [float(plot_left), float(plot_top), float(plot_right), float(plot_bottom)]
     if plot_width <= 10 or plot_height <= 10:
         raise ValueError("uncertainty band plot area is too small")
     panel_bbox = [
@@ -193,9 +192,20 @@ def _render_chart(dataset: Dataset, params: Mapping[str, Any], *, instance_seed:
         stroke_width=int(text_stroke_width),
     )
 
-    for tick in range(int(render_params.axis_min), int(render_params.axis_max) + 1, int(render_params.tick_step)):
-        y = _scale_y(tick, plot_bottom=plot_bottom, plot_height=plot_height, axis_min=render_params.axis_min, axis_max=render_params.axis_max)
-        draw.line((plot_left, y, plot_right, y), fill=grid_rgb, width=int(render_params.grid_line_width_px))
+    y_tick_values = range(int(render_params.axis_min), int(render_params.axis_max) + 1, int(render_params.tick_step))
+    y_tick_positions = draw_horizontal_value_grid_ticks(
+        draw,
+        plot_bbox,
+        tick_values=y_tick_values,
+        domain_min=int(render_params.axis_min),
+        domain_max=int(render_params.axis_max),
+        grid_rgb=grid_rgb,
+        axis_rgb=axis_rgb,
+        grid_width_px=int(render_params.grid_line_width_px),
+        tick_width_px=1,
+    )
+    for tick in y_tick_values:
+        y = float(y_tick_positions[float(tick)])
         label = str(tick)
         bbox = draw.textbbox((0, 0), label, font=tick_font, stroke_width=1)
         _draw_text(
@@ -207,14 +217,12 @@ def _render_chart(dataset: Dataset, params: Mapping[str, Any], *, instance_seed:
             stroke=text_stroke_rgb,
             stroke_width=int(text_stroke_width),
         )
-    draw.line((plot_left, plot_bottom, plot_right, plot_bottom), fill=axis_rgb, width=int(render_params.axis_line_width_px))
-    draw.line((plot_left, plot_top, plot_left, plot_bottom), fill=axis_rgb, width=int(render_params.axis_line_width_px))
+    draw_axis_lines(draw, plot_bbox, axis_rgb=axis_rgb, axis_width_px=int(render_params.axis_line_width_px))
 
-    if len(dataset.x_labels) == 1:
-        x_positions = [0.5 * (plot_left + plot_right)]
-    else:
-        step = plot_width / float(len(dataset.x_labels) - 1)
-        x_positions = [float(plot_left + (index * step)) for index in range(len(dataset.x_labels))]
+    x_positions = [
+        project_index(index, pixel_min=float(plot_left), pixel_max=float(plot_right), count=len(dataset.x_labels))
+        for index in range(len(dataset.x_labels))
+    ]
 
     for index, label in enumerate(dataset.x_labels):
         x = float(x_positions[index])
@@ -245,8 +253,7 @@ def _render_chart(dataset: Dataset, params: Mapping[str, Any], *, instance_seed:
     entities: list[dict[str, Any]] = []
 
     base_rgba = image.convert("RGBA")
-    overlay = Image.new("RGBA", base_rgba.size, (0, 0, 0, 0))
-    overlay_draw = ImageDraw.Draw(overlay)
+    series_geometries: list[dict[str, Any]] = []
 
     for series in dataset.series:
         upper_points: list[tuple[float, float]] = []
@@ -283,11 +290,6 @@ def _render_chart(dataset: Dataset, params: Mapping[str, Any], *, instance_seed:
                 }
             )
         polygon = list(upper_points) + list(reversed(lower_points))
-        overlay_draw.polygon(polygon, fill=(*tuple(int(value) for value in series.color_rgb), int(render_params.band_alpha)))
-        outline_rgb = _darken(series.color_rgb, 0.62)
-        overlay_draw.line(upper_points, fill=(*outline_rgb, 210), width=int(render_params.band_outline_width_px))
-        overlay_draw.line(lower_points, fill=(*outline_rgb, 210), width=int(render_params.band_outline_width_px))
-        overlay_draw.line(mid_points, fill=(*outline_rgb, 255), width=int(render_params.center_line_width_px), joint="curve")
         xs = [point[0] for point in polygon]
         ys = [point[1] for point in polygon]
         series_band_bboxes[str(series.series_id)] = [
@@ -296,8 +298,50 @@ def _render_chart(dataset: Dataset, params: Mapping[str, Any], *, instance_seed:
             round(max(xs), 3),
             round(max(ys), 3),
         ]
+        series_geometries.append(
+            {
+                "series": series,
+                "polygon": polygon,
+                "upper_points": list(upper_points),
+                "lower_points": list(lower_points),
+                "mid_points": list(mid_points),
+            }
+        )
 
-    image = Image.alpha_composite(base_rgba, overlay).convert("RGB")
+    band_rgba = base_rgba
+    for geometry in series_geometries:
+        series = geometry["series"]
+        fill_layer = Image.new("RGBA", base_rgba.size, (0, 0, 0, 0))
+        fill_draw = ImageDraw.Draw(fill_layer)
+        fill_draw.polygon(
+            geometry["polygon"],
+            fill=(*tuple(int(value) for value in series.color_rgb), int(render_params.band_alpha)),
+        )
+        band_rgba = Image.alpha_composite(band_rgba, fill_layer)
+
+    line_layer = Image.new("RGBA", base_rgba.size, (0, 0, 0, 0))
+    line_draw = ImageDraw.Draw(line_layer)
+    for geometry in series_geometries:
+        series = geometry["series"]
+        outline_rgb = _darken(series.color_rgb, 0.55)
+        line_draw.line(
+            geometry["upper_points"],
+            fill=(*outline_rgb, 235),
+            width=int(render_params.band_outline_width_px),
+        )
+        line_draw.line(
+            geometry["lower_points"],
+            fill=(*outline_rgb, 235),
+            width=int(render_params.band_outline_width_px),
+        )
+        line_draw.line(
+            geometry["mid_points"],
+            fill=(*outline_rgb, 255),
+            width=int(render_params.center_line_width_px),
+            joint="curve",
+        )
+
+    image = Image.alpha_composite(band_rgba, line_layer).convert("RGB")
     draw = ImageDraw.Draw(image)
 
     for series in dataset.series:

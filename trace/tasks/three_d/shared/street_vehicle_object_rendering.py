@@ -89,7 +89,10 @@ def _draw_vehicle_projected_details(
     def draw_panel(points: List[Tuple[float, float]], color: Tuple[int, int, int], *, edge: Tuple[int, int, int] = outline) -> None:
         draw.polygon(points, fill=color)
         for index in range(len(points)):
-            _draw_line(draw, points[index], points[(index + 1) % len(points)], fill=edge, width=1)
+            next_index = index + 1
+            if next_index >= len(points):
+                next_index = 0
+            _draw_line(draw, points[index], points[next_index], fill=edge, width=1)
         bboxes.append(_screen_points_bbox(points, pad_px=1.0))
 
     if vehicle_type == "bus":

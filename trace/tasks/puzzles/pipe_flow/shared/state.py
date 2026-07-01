@@ -13,7 +13,8 @@ PROMPT_BUNDLE_ID = "puzzles_pipe_flow_v1"
 PROMPT_SCENE_KEY = "pipe_flow"
 PROMPT_TASK_KEY = "pipe_flow_repair_tile_label_query"
 
-GRID_SIZE_VARIANTS: Tuple[str, ...] = ("6x6", "7x7", "8x8", "9x9", "10x10")
+GRID_SIZE_VARIANTS: Tuple[str, ...] = ("5x5", "6x6", "7x7")
+GAP_SIZE_VARIANTS: Tuple[str, ...] = ("2x2",)
 SCENE_VARIANTS: Tuple[str, ...] = (
     "water_pipe",
     "circuit_trace",
@@ -47,6 +48,8 @@ class RenderParams:
     panel_corner_radius_px: int
     panel_border_width_px: int
     cell_gap_px: int
+    cell_size_min_px: int
+    cell_size_max_px: int
     cell_border_width_px: int
     pipe_width_px: int
     source_dest_font_size_px: int
@@ -82,14 +85,31 @@ class TileSpec:
 
 @dataclass(frozen=True)
 class OptionSpec:
-    """One labeled 2x2 replacement-piece option."""
+    """One labeled replacement-piece option."""
 
     option_id: str
     label: str
     local_openings: Tuple[Tuple[int, int, Openings], ...]
     is_correct: bool
+    connects_in_place: bool
     connects_after_rotation_turns: Tuple[int, ...]
     display_rotation_turns: int
+
+
+@dataclass(frozen=True)
+class RotatedTileCandidateSpec:
+    """One labeled tile candidate in the misrotated-tile task."""
+
+    candidate_id: str
+    label: str
+    tile_id: str
+    row: int
+    col: int
+    required_openings: Openings
+    current_openings: Openings
+    repair_rotation_turns: Tuple[int, ...]
+    is_correct: bool
+    connects_after_rotation: bool
 
 
 @dataclass(frozen=True)
@@ -99,6 +119,8 @@ class PipeFlowDataset:
     rows: int
     cols: int
     grid_size_variant: str
+    gap_size_variant: str
+    gap_size: int
     scene_variant: str
     path_cells: Tuple[Cell, ...]
     branch_cells: Tuple[Cell, ...]
@@ -113,6 +135,26 @@ class PipeFlowDataset:
     candidate_count: int
     tiles: Tuple[TileSpec, ...]
     options: Tuple[OptionSpec, ...]
+
+
+@dataclass(frozen=True)
+class PipeFlowMisrotatedDataset:
+    """One sampled pipe-flow misrotated-tile puzzle."""
+
+    rows: int
+    cols: int
+    grid_size_variant: str
+    scene_variant: str
+    path_cells: Tuple[Cell, ...]
+    branch_cells: Tuple[Cell, ...]
+    branch_terminal_cells: Tuple[Cell, ...]
+    start_cell: Cell
+    destination_cell: Cell
+    answer_label: str
+    candidate_count: int
+    misrotated_tile_id: str
+    tiles: Tuple[TileSpec, ...]
+    candidates: Tuple[RotatedTileCandidateSpec, ...]
 
 
 @dataclass(frozen=True)

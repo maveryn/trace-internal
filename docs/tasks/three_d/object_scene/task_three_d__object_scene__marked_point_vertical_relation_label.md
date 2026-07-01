@@ -10,7 +10,15 @@
 - Annotation schema: `point`
 
 ## Program Contract
-`select(label(marked_points, vertically_above(reference_object))); scene=object_scene; scope=marked_point_vertical_relation_label`
+
+Program: `select(label(marked_points, vertically_above(reference_object))); scene=object_scene; scope=marked_point_vertical_relation_label`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `marked_point_vertical_relation_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `label`, `marked_points`, `vertically_above`, `reference_object`, `object_scene`, `marked_point_vertical_relation_label`.
+Operation: evaluate `select` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Contract
 The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. Each marked point is rendered as a visible point glyph with a nearby letter label. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.

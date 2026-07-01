@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Sequence
 
 from trace.core.types import TypedValue
+from trace.tasks.charts.shared.grid.annotations import bbox_refs
+from trace.tasks.charts.shared.grid.geometry import bboxes_for_ids
 
 from .state import RenderedMatrix
 
@@ -22,13 +24,9 @@ class MatrixAnnotationBundle:
 def matrix_bbox_set_bundle(rendered_scene: RenderedMatrix, cell_ids: Sequence[str]) -> MatrixAnnotationBundle:
     """Return bbox-set annotations for the task-selected matrix cells."""
 
-    bboxes: List[List[float]] = []
-    refs: List[Dict[str, Any]] = []
     normalized_ids = [str(cell_id) for cell_id in cell_ids]
-    for cell_id in normalized_ids:
-        bbox = list(rendered_scene.cell_bbox_map[str(cell_id)])
-        bboxes.append(list(bbox))
-        refs.append({"role": "cell", "id": str(cell_id), "bbox": list(bbox)})
+    bboxes = bboxes_for_ids(rendered_scene.cell_bbox_map, normalized_ids, missing="error")
+    refs = bbox_refs(ids=normalized_ids, boxes=bboxes, role="cell", id_key="id", bbox_key="bbox")
     return MatrixAnnotationBundle(
         annotation_gt=TypedValue(type="bbox_set", value=list(bboxes)),
         projected_annotation={

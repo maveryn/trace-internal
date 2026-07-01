@@ -17,22 +17,16 @@ from trace.tasks.shared.config_defaults import (
     split_scene_generation_rendering_prompt_defaults,
 )
 from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
-from trace.tasks.three_d.room.shared.rendering import render_room_scene_3d
-from trace.tasks.three_d.room.shared.metrics import build_room_wall_camera_distance_dataset
 from trace.tasks.three_d.room.shared.relations import (
     REFERENCE_WALL_OBJECT_TYPES,
     build_room_wall_same_wall_reference_dataset,
 )
-from trace.tasks.three_d.room.shared.spatial_primitives import (
-    REFERENCE_OBJECT_TYPE,
-    build_room_wall_side_relation_dataset,
-)
+from trace.tasks.three_d.room.shared.rendering import render_room_scene_3d
 from trace.tasks.three_d.room.shared.state import SCENE_ID
 from trace.tasks.three_d.shared.canvas import render_params_canvas_metadata
 from trace.tasks.three_d.shared.object_scene import (
@@ -43,6 +37,7 @@ from trace.tasks.three_d.shared.object_scene import (
 from trace.tasks.three_d.shared.task_support import (
     resolve_axis_variant_for_namespace,
     resolve_count_for_namespace,
+    resolve_support_choice_for_namespace,
 )
 from trace.tasks.three_d.room.shared.state import SUPPORTED_SCENE_VARIANTS
 from trace.tasks.three_d.shared.option_panel import build_text_option_choices
@@ -81,6 +76,15 @@ class RoomOptionCounts:
     floor_context_count_probabilities: Mapping[str, float]
 
 
+@dataclass(frozen=True)
+class RoomOptionContext:
+    """Resolved shared scene/count operands for one room option-panel task."""
+
+    scene_variant: str
+    scene_probabilities: Mapping[str, float]
+    counts: RoomOptionCounts
+
+
 _DOMAIN_DEFAULTS = get_domain_defaults("three_d")
 _VISUAL_DEFAULTS = _DOMAIN_DEFAULTS.get("visual", {}) if isinstance(_DOMAIN_DEFAULTS, Mapping) else {}
 _BACKGROUND_DEFAULTS = _VISUAL_DEFAULTS.get("background", {}) if isinstance(_VISUAL_DEFAULTS, Mapping) else {}
@@ -115,14 +119,14 @@ def resolve_room_choice(
         if selected not in set(values):
             raise ValueError(f"unsupported {key}: {selected}")
         return selected, {value: (1.0 if value == selected else 0.0) for value in values}
-    selection_index = resolve_selection_index(
+    selected, probabilities = resolve_support_choice_for_namespace(
         params=params,
         instance_seed=int(instance_seed),
         namespace=f"{namespace}.{key}",
+        support_values=values,
+        explicit_key=str(key),
     )
-    selected = values[abs(int(selection_index)) % len(values)]
-    probability = round(1.0 / float(len(values)), 8)
-    return selected, {value: probability for value in values}
+    return str(selected), {str(value): float(probability) for value, probability in probabilities.items()}
 
 
 def require_single_query(params: Mapping[str, Any], *, expected: str, task_identifier: str) -> None:
@@ -211,6 +215,42 @@ def resolve_room_option_counts(
     )
 
 
+def resolve_room_option_context(
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    *,
+    instance_seed: int,
+    namespace: str,
+    candidate_min: int,
+    candidate_max: int,
+    candidate_lower: int,
+    candidate_upper: int,
+) -> RoomOptionContext:
+    """Resolve the scene variant and shared option counts for room tasks."""
+
+    scene_variant, scene_probabilities = resolve_room_scene_variant(
+        params,
+        gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+    )
+    counts = resolve_room_option_counts(
+        params,
+        gen_defaults,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+        candidate_min=int(candidate_min),
+        candidate_max=int(candidate_max),
+        candidate_lower=int(candidate_lower),
+        candidate_upper=int(candidate_upper),
+    )
+    return RoomOptionContext(
+        scene_variant=str(scene_variant),
+        scene_probabilities=dict(scene_probabilities),
+        counts=counts,
+    )
+
+
 def room_option_answer_label_probabilities(candidate_count: int) -> dict[str, float]:
     """Return the uniform label prior for an option-panel room task."""
 
@@ -218,6 +258,108 @@ def room_option_answer_label_probabilities(candidate_count: int) -> dict[str, fl
         str(label): round(1.0 / float(candidate_count), 8)
         for label in POINT_LABELS[: int(candidate_count)]
     }
+
+
+def build_room_option_objective_plan(
+    *,
+    dataset: Mapping[str, Any],
+    public_query_id: str,
+    query_probabilities: Mapping[str, float],
+    prompt_query_key: str,
+    prompt_dynamic_slots: Mapping[str, Any],
+    context: RoomOptionContext,
+    extra_query_params: Mapping[str, Any] | None = None,
+) -> RoomObjectivePlan:
+    """Assemble the common option-letter RoomObjectivePlan for public tasks."""
+
+    return RoomObjectivePlan(
+        dataset=dict(dataset),
+        public_query_id=str(public_query_id),
+        query_probabilities=dict(query_probabilities),
+        prompt_query_key=str(prompt_query_key),
+        prompt_dynamic_slots=dict(prompt_dynamic_slots),
+        answer_gt=TypedValue(type="option_letter", value=str(dataset["answer_label"])),
+        annotation_schema="bbox",
+        use_option_panel=True,
+        query_params={
+            **room_option_query_params(
+                scene_variant=str(context.scene_variant),
+                scene_probabilities=context.scene_probabilities,
+                counts=context.counts,
+                dataset=dataset,
+            ),
+            **dict(extra_query_params or {}),
+        },
+    )
+
+
+def prepare_same_wall_reference_objective_from_semantics(
+    *,
+    task_identifier: str,
+    single_branch: str,
+    objective_seed: int,
+    objective_params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+    render_params: ObjectSceneRenderParams,
+) -> RoomObjectivePlan:
+    """Build the same-wall reference objective from public task bindings."""
+
+    require_single_query(
+        objective_params,
+        expected=str(single_branch),
+        task_identifier=str(task_identifier),
+    )
+    context = resolve_room_option_context(
+        objective_params,
+        gen_defaults,
+        instance_seed=int(objective_seed),
+        namespace=str(task_identifier),
+        candidate_min=6,
+        candidate_max=6,
+        candidate_lower=4,
+        candidate_upper=6,
+    )
+    reference_wall, reference_wall_probabilities = resolve_room_choice(
+        objective_params,
+        instance_seed=int(objective_seed),
+        key="reference_wall",
+        support=("back", "left", "right"),
+        namespace=str(task_identifier),
+    )
+    reference_object_type, reference_object_type_probabilities = resolve_room_choice(
+        objective_params,
+        instance_seed=int(objective_seed),
+        key="reference_object_type",
+        support=REFERENCE_WALL_OBJECT_TYPES,
+        namespace=str(task_identifier),
+    )
+    dataset = build_room_wall_same_wall_reference_dataset(
+        scene_variant=str(context.scene_variant),
+        candidate_count=int(context.counts.candidate_count),
+        context_wall_count=int(context.counts.context_wall_count),
+        floor_context_count=int(context.counts.floor_context_count),
+        reference_wall=str(reference_wall),
+        reference_object_type=str(reference_object_type),
+        render_params=render_params,
+        namespace=str(task_identifier),
+        instance_seed=int(objective_seed),
+    )
+    reference_name = str(dataset["reference_object"]["prompt_name"])
+    return build_room_option_objective_plan(
+        dataset=dict(dataset),
+        public_query_id=str(single_branch),
+        query_probabilities={str(single_branch): 1.0},
+        prompt_query_key="same_wall_reference",
+        prompt_dynamic_slots={"reference_name": reference_name},
+        context=context,
+        extra_query_params={
+            "reference_wall": str(reference_wall),
+            "reference_wall_probabilities": dict(reference_wall_probabilities),
+            "reference_object_type": str(reference_object_type),
+            "reference_object_type_probabilities": dict(reference_object_type_probabilities),
+            "reference_name": reference_name,
+        },
+    )
 
 
 def room_option_query_params(
@@ -241,266 +383,6 @@ def room_option_query_params(
         "object_count": int(dataset["object_count"]),
         "answer_label_probabilities": room_option_answer_label_probabilities(int(counts.candidate_count)),
     }
-
-
-def generate_room_camera_distance_task(
-    instance_seed: int,
-    *,
-    params: Dict[str, Any],
-    max_attempts: int,
-    task_identifier: str,
-    single_branch: str,
-) -> TaskOutput:
-    """Generate the room closest-camera objective for a public wrapper."""
-
-    def prepare_objective(
-        objective_seed: int,
-        objective_params: Mapping[str, Any],
-        gen_defaults: Mapping[str, Any],
-        _prompt_defaults: Mapping[str, Any],
-        render_params: ObjectSceneRenderParams,
-    ) -> RoomObjectivePlan:
-        require_single_query(objective_params, expected=str(single_branch), task_identifier=str(task_identifier))
-        scene_variant, scene_probabilities = resolve_room_scene_variant(
-            objective_params,
-            gen_defaults,
-            instance_seed=int(objective_seed),
-            namespace=str(task_identifier),
-        )
-        counts = resolve_room_option_counts(
-            objective_params,
-            gen_defaults,
-            instance_seed=int(objective_seed),
-            namespace=str(task_identifier),
-            candidate_min=6,
-            candidate_max=6,
-            candidate_lower=4,
-            candidate_upper=6,
-        )
-        dataset = build_room_wall_camera_distance_dataset(
-            scene_variant=str(scene_variant),
-            candidate_count=int(counts.candidate_count),
-            context_wall_count=int(counts.context_wall_count),
-            floor_context_count=int(counts.floor_context_count),
-            render_params=render_params,
-            namespace=str(task_identifier),
-            instance_seed=int(objective_seed),
-        )
-        return RoomObjectivePlan(
-            dataset=dict(dataset),
-            public_query_id=str(single_branch),
-            query_probabilities={str(single_branch): 1.0},
-            prompt_query_key="closest_to_camera",
-            prompt_dynamic_slots={},
-            answer_gt=TypedValue(type="option_letter", value=str(dataset["answer_label"])),
-            annotation_schema="bbox",
-            use_option_panel=True,
-            query_params=room_option_query_params(
-                scene_variant=str(scene_variant),
-                scene_probabilities=scene_probabilities,
-                counts=counts,
-                dataset=dataset,
-            ),
-        )
-
-    return run_room_lifecycle(
-        int(instance_seed),
-        params=params,
-        max_attempts=int(max_attempts),
-        task_identifier=str(task_identifier),
-        prepare_objective=prepare_objective,
-    )
-
-
-def generate_room_same_wall_task(
-    instance_seed: int,
-    *,
-    params: Dict[str, Any],
-    max_attempts: int,
-    task_identifier: str,
-    single_branch: str,
-) -> TaskOutput:
-    """Generate the room same-wall reference objective for a public wrapper."""
-
-    def prepare_objective(
-        objective_seed: int,
-        objective_params: Mapping[str, Any],
-        gen_defaults: Mapping[str, Any],
-        _prompt_defaults: Mapping[str, Any],
-        render_params: ObjectSceneRenderParams,
-    ) -> RoomObjectivePlan:
-        require_single_query(objective_params, expected=str(single_branch), task_identifier=str(task_identifier))
-        scene_variant, scene_probabilities = resolve_room_scene_variant(
-            objective_params,
-            gen_defaults,
-            instance_seed=int(objective_seed),
-            namespace=str(task_identifier),
-        )
-        counts = resolve_room_option_counts(
-            objective_params,
-            gen_defaults,
-            instance_seed=int(objective_seed),
-            namespace=str(task_identifier),
-            candidate_min=6,
-            candidate_max=6,
-            candidate_lower=4,
-            candidate_upper=6,
-        )
-        reference_wall, reference_wall_probabilities = resolve_room_choice(
-            objective_params,
-            instance_seed=int(objective_seed),
-            key="reference_wall",
-            support=("back", "left", "right"),
-            namespace=str(task_identifier),
-        )
-        reference_object_type, reference_object_type_probabilities = resolve_room_choice(
-            objective_params,
-            instance_seed=int(objective_seed),
-            key="reference_object_type",
-            support=REFERENCE_WALL_OBJECT_TYPES,
-            namespace=str(task_identifier),
-        )
-        dataset = build_room_wall_same_wall_reference_dataset(
-            scene_variant=str(scene_variant),
-            candidate_count=int(counts.candidate_count),
-            context_wall_count=int(counts.context_wall_count),
-            floor_context_count=int(counts.floor_context_count),
-            reference_wall=str(reference_wall),
-            reference_object_type=str(reference_object_type),
-            render_params=render_params,
-            namespace=str(task_identifier),
-            instance_seed=int(objective_seed),
-        )
-        reference_name = str(dataset["reference_object"]["prompt_name"])
-        return RoomObjectivePlan(
-            dataset=dict(dataset),
-            public_query_id=str(single_branch),
-            query_probabilities={str(single_branch): 1.0},
-            prompt_query_key="same_wall_reference",
-            prompt_dynamic_slots={"reference_name": reference_name},
-            answer_gt=TypedValue(type="option_letter", value=str(dataset["answer_label"])),
-            annotation_schema="bbox",
-            use_option_panel=True,
-            query_params={
-                **room_option_query_params(
-                    scene_variant=str(scene_variant),
-                    scene_probabilities=scene_probabilities,
-                    counts=counts,
-                    dataset=dataset,
-                ),
-                "reference_wall": str(reference_wall),
-                "reference_wall_probabilities": dict(reference_wall_probabilities),
-                "reference_object_type": str(reference_object_type),
-                "reference_object_type_probabilities": dict(reference_object_type_probabilities),
-                "reference_name": reference_name,
-            },
-        )
-
-    return run_room_lifecycle(
-        int(instance_seed),
-        params=params,
-        max_attempts=int(max_attempts),
-        task_identifier=str(task_identifier),
-        prepare_objective=prepare_objective,
-    )
-
-
-def generate_room_side_relation_task(
-    instance_seed: int,
-    *,
-    params: Dict[str, Any],
-    max_attempts: int,
-    task_identifier: str,
-    supported_branches: tuple[str, ...],
-    branch_to_relation: Mapping[str, str],
-) -> TaskOutput:
-    """Generate the room wall-plane side-relation objective for a public wrapper."""
-
-    def prepare_objective(
-        objective_seed: int,
-        objective_params: Mapping[str, Any],
-        gen_defaults: Mapping[str, Any],
-        _prompt_defaults: Mapping[str, Any],
-        render_params: ObjectSceneRenderParams,
-    ) -> RoomObjectivePlan:
-        public_branch, branch_probabilities = resolve_axis_variant_for_namespace(
-            objective_params,
-            namespace=f"{task_identifier}.query_id",
-            gen_defaults=gen_defaults,
-            instance_seed=int(objective_seed),
-            supported_variants=tuple(str(value) for value in supported_branches),
-            explicit_key="query_id",
-            weights_key="query_id_weights",
-            balance_flag_key="balanced_query_id_sampling",
-        )
-        side_relation = str(branch_to_relation[str(public_branch)])
-        scene_variant, scene_probabilities = resolve_room_scene_variant(
-            objective_params,
-            gen_defaults,
-            instance_seed=int(objective_seed),
-            namespace=str(task_identifier),
-        )
-        counts = resolve_room_option_counts(
-            objective_params,
-            gen_defaults,
-            instance_seed=int(objective_seed),
-            namespace=str(task_identifier),
-            candidate_min=6,
-            candidate_max=6,
-            candidate_lower=6,
-            candidate_upper=6,
-        )
-        reference_wall_support = ("back", "right") if side_relation == "right" else ("back", "left", "right")
-        reference_wall, reference_wall_probabilities = resolve_room_choice(
-            objective_params,
-            instance_seed=int(objective_seed),
-            key="reference_wall",
-            support=reference_wall_support,
-            namespace=str(task_identifier),
-        )
-        dataset = build_room_wall_side_relation_dataset(
-            side_relation=str(side_relation),
-            scene_variant=str(scene_variant),
-            candidate_count=int(counts.candidate_count),
-            context_wall_count=int(counts.context_wall_count),
-            floor_context_count=int(counts.floor_context_count),
-            reference_wall=str(reference_wall),
-            render_params=render_params,
-            namespace=str(task_identifier),
-            instance_seed=int(objective_seed),
-        )
-        reference_name = str(dataset["reference_object"]["prompt_name"])
-        return RoomObjectivePlan(
-            dataset=dict(dataset),
-            public_query_id=str(public_branch),
-            query_probabilities=dict(branch_probabilities),
-            prompt_query_key=str(public_branch),
-            prompt_dynamic_slots={"reference_name": reference_name},
-            answer_gt=TypedValue(type="option_letter", value=str(dataset["answer_label"])),
-            annotation_schema="bbox",
-            use_option_panel=True,
-            query_params={
-                **room_option_query_params(
-                    scene_variant=str(scene_variant),
-                    scene_probabilities=scene_probabilities,
-                    counts=counts,
-                    dataset=dataset,
-                ),
-                "reference_wall": str(reference_wall),
-                "reference_wall_probabilities": dict(reference_wall_probabilities),
-                "reference_object_type": REFERENCE_OBJECT_TYPE,
-                "reference_name": reference_name,
-                "side_relation": str(side_relation),
-            },
-        )
-
-    return run_room_lifecycle(
-        int(instance_seed),
-        params=params,
-        max_attempts=int(max_attempts),
-        task_identifier=str(task_identifier),
-        prepare_objective=prepare_objective,
-    )
 
 
 def run_room_lifecycle(
@@ -718,13 +600,14 @@ def _run_once(
 __all__ = [
     "RoomObjectivePlan",
     "RoomOptionCounts",
+    "RoomOptionContext",
+    "build_room_option_objective_plan",
+    "prepare_same_wall_reference_objective_from_semantics",
     "require_single_query",
+    "resolve_room_option_context",
     "resolve_room_choice",
     "resolve_room_option_counts",
     "resolve_room_scene_variant",
     "room_option_query_params",
-    "generate_room_camera_distance_task",
-    "generate_room_same_wall_task",
-    "generate_room_side_relation_task",
     "run_room_lifecycle",
 ]

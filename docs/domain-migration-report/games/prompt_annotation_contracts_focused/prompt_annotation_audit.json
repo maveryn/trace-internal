@@ -1,0 +1,471 @@
+{
+  "config": {
+    "default_only": true,
+    "max_attempts": 200,
+    "max_total_samples_per_task": 1024,
+    "samples_per_query_id": 1,
+    "seed": 20260504,
+    "task_timeout_seconds": 240,
+    "tasks": [
+      "task_games__connect_four__column_disc_profile_label",
+      "task_games__connect_four__winning_move_count",
+      "task_games__crossing__moving_object_direction_count",
+      "task_games__darts__bullseye_membership_count",
+      "task_games__lane_runner__safe_path_label"
+    ],
+    "workers": 4
+  },
+  "coverage": [
+    {
+      "collected_query_id_counts": {
+        "column_disc_profile_label": 1
+      },
+      "expected_query_ids": [
+        "column_disc_profile_label"
+      ],
+      "generated_query_id_counts": {
+        "column_disc_profile_label": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "explicit_manifest",
+      "task": "task_games__connect_four__column_disc_profile_label",
+      "total_generated": 1
+    },
+    {
+      "collected_query_id_counts": {
+        "winning_move_count": 1
+      },
+      "expected_query_ids": [
+        "winning_move_count"
+      ],
+      "generated_query_id_counts": {
+        "winning_move_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "explicit_manifest",
+      "task": "task_games__connect_four__winning_move_count",
+      "total_generated": 1
+    },
+    {
+      "collected_query_id_counts": {
+        "left_moving_object_count": 1,
+        "right_moving_object_count": 1
+      },
+      "expected_query_ids": [
+        "left_moving_object_count",
+        "right_moving_object_count"
+      ],
+      "generated_query_id_counts": {
+        "left_moving_object_count": 1,
+        "right_moving_object_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_games__crossing__moving_object_direction_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "inside_bullseye_count": 1,
+        "outside_bullseye_count": 1
+      },
+      "expected_query_ids": [
+        "inside_bullseye_count",
+        "outside_bullseye_count"
+      ],
+      "generated_query_id_counts": {
+        "inside_bullseye_count": 1,
+        "outside_bullseye_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_games__darts__bullseye_membership_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_games__lane_runner__safe_path_label",
+      "total_generated": 2
+    }
+  ],
+  "issues": [],
+  "records": [
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 5,
+        "image_size": [
+          682,
+          672
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            386.0,
+            228.0,
+            445.0,
+            287.0
+          ],
+          [
+            386.0,
+            287.0,
+            445.0,
+            346.0
+          ],
+          [
+            386.0,
+            346.0,
+            445.0,
+            405.0
+          ],
+          [
+            386.0,
+            405.0,
+            445.0,
+            464.0
+          ],
+          [
+            386.0,
+            464.0,
+            445.0,
+            523.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "string",
+      "instance_seed": 4609819671535780,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 34,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows a Connect Four board in a midgame position with red and yellow discs. Using the visible column labels, select the column whose red-disc count is 2 and yellow-disc count is 3.\nAnnotation format: set \"annotation\" to a JSON array of pixel-space cell boxes [x0, y0, x1, y1] for the occupied cells in the selected column.\nAnswer format: set \"answer\" to the selected column label as a capital letter shown below the board.\nExample JSON:\n{\"annotation\":[[140,220,190,270],[140,290,190,340]],\"answer\":\"C\"}",
+          "word_count": 88
+        },
+        {
+          "body_word_count": 34,
+          "mode": "answer_only",
+          "prompt": "The visual shows a Connect Four board in a midgame position with red and yellow discs. Using the visible column labels, select the column whose red-disc count is 2 and yellow-disc count is 3.\nAnswer format: set \"answer\" to the selected column label as a capital letter shown below the board.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 55
+        }
+      ],
+      "query_id": "column_disc_profile_label",
+      "task": "task_games__connect_four__column_disc_profile_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          779,
+          769
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            70.0,
+            344.0,
+            143.0,
+            417.0
+          ],
+          [
+            362.0,
+            344.0,
+            435.0,
+            417.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "instance_seed": 432165500895689,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 57,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows a Connect Four board in a crowded late-game position with red and yellow discs. It is Red's turn. A legal drop chooses one non-full column and lands in its lowest empty square. A horizontal, vertical, or diagonal line of four matching discs wins. How many columns give Red an immediate win on this move?\nRequired annotation format: set \"annotation\" to a JSON array of pixel-space cell boxes [x0, y0, x1, y1] for every immediate-winning landing square.\nRequired answer format: set \"answer\" to the number of legal drop columns that win immediately.\nExample JSON:\n{\"annotation\":[[140,220,190,270],[210,220,260,270],[280,220,330,270]],\"answer\":3}",
+          "word_count": 111
+        },
+        {
+          "body_word_count": 57,
+          "mode": "answer_only",
+          "prompt": "The visual shows a Connect Four board in a crowded late-game position with red and yellow discs. It is Red's turn. A legal drop chooses one non-full column and lands in its lowest empty square. A horizontal, vertical, or diagonal line of four matching discs wins. How many columns give Red an immediate win on this move?\nFormat for the \"answer\" field: set \"answer\" to the number of legal drop columns that win immediately.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 78
+        }
+      ],
+      "query_id": "winning_move_count",
+      "task": "task_games__connect_four__winning_move_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          1000,
+          780
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            677.0,
+            212.23,
+            747.0,
+            254.23
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1029650648674477,
+      "issues": [],
+      "observed_query_id": "left_moving_object_count",
+      "prompts": [
+        {
+          "body_word_count": 21,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows a lane-crossing game board with moving objects and direction arrows. How many moving objects have arrows pointing left?\nRequired annotation format: set \"annotation\" to a JSON array of pixel-space object boxes [x0, y0, x1, y1], one for every moving object whose arrow points left.\nRequired answer format: set \"answer\" to the number of moving objects whose arrow points left; the value is between 1 and 6.\nExample JSON:\n{\"annotation\":[[190,285,258,330],[520,406,588,451]],\"answer\":2}",
+          "word_count": 82
+        },
+        {
+          "body_word_count": 21,
+          "mode": "answer_only",
+          "prompt": "The scene shows a lane-crossing game board with moving objects and direction arrows. How many moving objects have arrows pointing left?\nRequired answer format: set \"answer\" to the number of moving objects whose arrow points left; the value is between 1 and 6.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 47
+        }
+      ],
+      "query_id": "left_moving_object_count",
+      "task": "task_games__crossing__moving_object_direction_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          1000,
+          780
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            428.333,
+            333.45,
+            498.333,
+            375.45
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6074960665247937,
+      "issues": [],
+      "observed_query_id": "right_moving_object_count",
+      "prompts": [
+        {
+          "body_word_count": 22,
+          "mode": "answer_and_annotation",
+          "prompt": "This scene shows a lane-crossing game board with moving objects and direction arrows. Determine how many moving objects show a right-pointing arrow.\nFinal answer format: set \"answer\" to the number of moving objects whose arrow points right; the value is between 1 and 6.\nAnnotation format: set \"annotation\" to a JSON array of pixel-space object boxes [x0, y0, x1, y1], one for every moving object whose arrow points right.\nExample JSON:\n{\"annotation\":[[190,285,258,330],[520,406,588,451]],\"answer\":2}",
+          "word_count": 82
+        },
+        {
+          "body_word_count": 22,
+          "mode": "answer_only",
+          "prompt": "This scene shows a lane-crossing game board with moving objects and direction arrows. Determine how many moving objects show a right-pointing arrow.\nFinal answer format: set \"answer\" to the number of moving objects whose arrow points right; the value is between 1 and 6.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 48
+        }
+      ],
+      "query_id": "right_moving_object_count",
+      "task": "task_games__crossing__moving_object_direction_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 4,
+        "image_size": [
+          1040,
+          900
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            522.846,
+            377.721,
+            550.846,
+            405.721
+          ],
+          [
+            530.681,
+            420.485,
+            558.681,
+            448.485
+          ],
+          [
+            562.031,
+            388.567,
+            590.031,
+            416.567
+          ],
+          [
+            518.951,
+            329.469,
+            546.951,
+            357.469
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8360082722260073,
+      "issues": [],
+      "observed_query_id": "inside_bullseye_count",
+      "prompts": [
+        {
+          "body_word_count": 20,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows a simplified labeled dartboard with visible dart markers. How many visible darts are inside the bullseye circle?\nAnnotation format: set \"annotation\" to a JSON array of pixel-space dart boxes [x0, y0, x1, y1] for every dart inside the bullseye.\nAnswer format: set \"answer\" to the number of darts inside the bullseye.\nExample JSON:\n{\"annotation\":[[397,205,425,233],[511,350,539,378]],\"answer\":2}",
+          "word_count": 67
+        },
+        {
+          "body_word_count": 20,
+          "mode": "answer_only",
+          "prompt": "The scene shows a simplified labeled dartboard with visible dart markers. How many visible darts are inside the bullseye circle?\nFinal answer format: set \"answer\" to the number of darts inside the bullseye.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 37
+        }
+      ],
+      "query_id": "inside_bullseye_count",
+      "task": "task_games__darts__bullseye_membership_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 3,
+        "image_size": [
+          1040,
+          900
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            455.112,
+            493.142,
+            483.112,
+            521.142
+          ],
+          [
+            770.024,
+            465.731,
+            798.024,
+            493.731
+          ],
+          [
+            406.324,
+            416.975,
+            434.324,
+            444.975
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 542759776366329,
+      "issues": [],
+      "observed_query_id": "outside_bullseye_count",
+      "prompts": [
+        {
+          "body_word_count": 20,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows a simplified labeled dartboard with visible dart markers. How many visible darts are not inside the bullseye?\nAnnotation format: set \"annotation\" to a JSON array of pixel-space dart boxes [x0, y0, x1, y1] for every dart outside the bullseye.\nAnswer format: set \"answer\" to the number of darts outside the bullseye.\nExample JSON:\n{\"annotation\":[[397,205,425,233],[511,350,539,378]],\"answer\":2}",
+          "word_count": 67
+        },
+        {
+          "body_word_count": 32,
+          "mode": "answer_only",
+          "prompt": "The figure shows a simplified labeled dartboard with visible dart markers. How many visible darts are not inside the bullseye?\nAnswer field: set \"answer\" to the number of darts outside the bullseye.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 36
+        }
+      ],
+      "query_id": "outside_bullseye_count",
+      "task": "task_games__darts__bullseye_membership_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          512,
+          1172
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          257.0,
+          577.6,
+          413.0,
+          1063.2
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2984130647939785,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 44,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows labeled candidate path cards, each showing a two-lane track with hazard cells and one candidate path. Each path moves one row toward the finish. A safe path never enters a hazard cell. Select the path label that avoids all hazard cells.\nRequired annotation format: set \"annotation\" to one bounding box [x0,y0,x1,y1] around the selected path card.\nRequired answer format: set \"answer\" to the selected path label as a capital letter.\nExample JSON:\n{\"annotation\":[314,128,392,310],\"answer\":\"C\"}",
+          "word_count": 85
+        },
+        {
+          "body_word_count": 44,
+          "mode": "answer_only",
+          "prompt": "The image shows labeled candidate path cards, each showing a two-lane track with hazard cells and one candidate path. Each path moves one row toward the finish. A safe path never enters a hazard cell. Select the path label that avoids all hazard cells.\nRequired answer format: set \"answer\" to the selected path label as a capital letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 62
+        }
+      ],
+      "query_id": "single",
+      "task": "task_games__lane_runner__safe_path_label"
+    }
+  ],
+  "summary": {
+    "expected_public_query_id_count": 7,
+    "issue_count": 0,
+    "issue_counts_by_category": {},
+    "issue_counts_by_severity": {},
+    "sampled_instance_count": 7,
+    "sampled_query_id_count": 7,
+    "task_count": 5
+  }
+}

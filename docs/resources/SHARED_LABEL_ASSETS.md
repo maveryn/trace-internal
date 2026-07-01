@@ -68,6 +68,23 @@ labels = load_label_manifest(
 )
 ```
 
+For short alphabetic token pools such as Braille/Morse word options, use the
+global helper built on this same manifest layer:
+
+```python
+from trace.tasks.shared.word_assets import load_short_word_bank_by_length
+
+words_by_length = load_short_word_bank_by_length(min_length=3, max_length=5)
+```
+
+The helper defaults to a common leading slice of `people/first_names_ssa.txt`,
+normalizes tokens to lowercase, groups by exact length, and keeps up to 1000
+candidates per length bucket. Override the manifest, length support, or pool cap
+only when a task has a concrete rendering or semantics reason.
+
+Do not create scene-local word lists when a filtered shared label manifest is
+adequate.
+
 Use `load_label_sources()` when review tooling or documentation needs source
 and license metadata.
 

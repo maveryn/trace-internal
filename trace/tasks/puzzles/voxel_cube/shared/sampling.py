@@ -7,7 +7,6 @@ from typing import Any, Mapping, Sequence
 from trace.core.sampling import (
     integer_range_choice,
     sample_without_replacement,
-    shuffled_support,
     uniform_choice,
 )
 
@@ -21,21 +20,16 @@ from .rules import (
     complete_cuboid,
     corrupted_projection,
     cube_count,
-    exact_exposed_face_cube_count,
-    exterior_face_total,
     projection_grid,
     projection_signature,
     remove_top_cubes,
 )
 from .state import (
     CHANGE_TYPES,
-    PAINTED_QUERY_TYPES,
     VIEW_DIRECTIONS,
     ChangeDataset,
-    ConsistencyOption,
     CountDataset,
     CubeStack,
-    ProjectionConsistencyDataset,
     ProjectionCountDataset,
     ProjectionGrid,
     ProjectionMatchDataset,
@@ -104,62 +98,6 @@ def sample_structure_change_dataset(
         },
         answer_support=tuple(range(int(support[0]), int(support[1]) + 1)),
         answer_value=int(target),
-    )
-
-
-def sample_painted_face_dataset(
-    *,
-    params: Mapping[str, Any],
-    generation_defaults: Mapping[str, Any],
-    rng,
-) -> CountDataset:
-    """Construct one painted-exterior voxel-surface count case."""
-
-    query_type = resolve_axis_choice(
-        params,
-        key="painted_query",
-        support=PAINTED_QUERY_TYPES,
-        rng=rng,
-    )
-    if str(query_type) == "exact_k_faces_cube_count":
-        exact_faces, _face_probs = integer_range_choice(rng, 3, 5)
-        support = int_bounds(
-            params,
-            generation_defaults,
-            min_key="answer_min",
-            max_key="answer_max",
-            fallback_min=0,
-            fallback_max=8,
-        )
-        stack, answer = _sample_painted_exact_case(
-            rng,
-            int(exact_faces),
-            support=support,
-        )
-        semantic = {
-            "answer_schema": "integer_count",
-            "painted_query": str(query_type),
-            "exact_face_count": int(exact_faces),
-        }
-    else:
-        support = int_bounds(
-            params,
-            generation_defaults,
-            min_key="answer_min",
-            max_key="answer_max",
-            fallback_min=10,
-            fallback_max=32,
-        )
-        stack, answer = _sample_painted_total_case(rng, support=support)
-        semantic = {
-            "answer_schema": "integer_count",
-            "painted_query": str(query_type),
-        }
-    return CountDataset(
-        stack=stack,
-        semantic_params=semantic,
-        answer_support=tuple(range(int(support[0]), int(support[1]) + 1)),
-        answer_value=int(answer),
     )
 
 
@@ -239,48 +177,6 @@ def sample_projection_match_dataset(
         semantic_params={
             "answer_schema": "option_letter",
             "view_direction": str(direction),
-            "option_count": int(option_count),
-        },
-        answer_support=tuple(labels),
-    )
-
-
-def sample_projection_consistency_dataset(
-    *,
-    params: Mapping[str, Any],
-    generation_defaults: Mapping[str, Any],
-    rng,
-) -> ProjectionConsistencyDataset:
-    """Construct one projection panel set with exactly one inconsistent option."""
-
-    option_count = resolve_option_count(
-        params,
-        generation_defaults,
-        fallback=4,
-    )
-    labels = _ordered_labels(option_count)
-    stack = _random_stack(rng)
-    answer_label = _select_option_label(rng, params=params, labels=labels)
-    view_order = _projection_view_order(rng, option_count)
-    options: list[ConsistencyOption] = []
-    for label, direction in zip(labels, view_order, strict=True):
-        projection = projection_grid(stack, str(direction))
-        is_bad = str(label) == str(answer_label)
-        if is_bad:
-            projection = corrupted_projection(projection, rng=rng)
-        options.append(
-            ConsistencyOption(
-                label=str(label),
-                projection=projection,
-                is_inconsistent=bool(is_bad),
-            )
-        )
-    return ProjectionConsistencyDataset(
-        stack=stack,
-        options=tuple(options),
-        answer_label=str(answer_label),
-        semantic_params={
-            "answer_schema": "option_letter",
             "option_count": int(option_count),
         },
         answer_support=tuple(labels),
@@ -371,39 +267,6 @@ def _sample_removed_pair(rng, removed_count: int) -> tuple[CubeStack, CubeStack]
     raise ValueError("could not sample removed-cube voxel pair")
 
 
-def _sample_painted_total_case(
-    rng,
-    *,
-    support: tuple[int, int],
-) -> tuple[CubeStack, int]:
-    """Sample a stack whose total exterior-face count lies in support."""
-
-    lower, upper = int(support[0]), int(support[1])
-    for _attempt in range(300):
-        stack = _random_stack(rng)
-        answer = exterior_face_total(stack)
-        if lower <= int(answer) <= upper:
-            return stack, int(answer)
-    raise ValueError("could not sample painted total case inside answer support")
-
-
-def _sample_painted_exact_case(
-    rng,
-    exact_faces: int,
-    *,
-    support: tuple[int, int],
-) -> tuple[CubeStack, int]:
-    """Sample a stack whose exact-face count lies in support."""
-
-    lower, upper = int(support[0]), int(support[1])
-    for _attempt in range(300):
-        stack = _random_stack(rng)
-        answer = exact_exposed_face_cube_count(stack, int(exact_faces))
-        if lower <= int(answer) <= upper:
-            return stack, int(answer)
-    raise ValueError("could not sample exact exposed-face case inside support")
-
-
 def _sample_projection_count_case(
     rng,
     *,
@@ -471,16 +334,6 @@ def _unique_corrupted_projection(
     raise ValueError("could not produce a unique projection distractor")
 
 
-def _projection_view_order(rng, option_count: int) -> tuple[str, ...]:
-    """Return declared directions for consistency option panels."""
-
-    base = list(VIEW_DIRECTIONS)
-    while len(base) < int(option_count):
-        base.append(str(rng.choice(VIEW_DIRECTIONS)))
-    shuffled = list(shuffled_support(rng, tuple(base)))
-    return tuple(str(value) for value in shuffled[: int(option_count)])
-
-
 def _ordered_labels(option_count: int) -> tuple[str, ...]:
     """Return the first N canonical option labels."""
 
@@ -505,7 +358,4 @@ def _select_option_label(
         if selected not in options:
             raise ValueError(f"unsupported answer_option_label: {selected}")
         return selected
-    sample_cursor = params.get("_sample_cursor")
-    if sample_cursor is not None:
-        return options[abs(int(sample_cursor)) % len(options)]
     return str(uniform_choice(rng, options))

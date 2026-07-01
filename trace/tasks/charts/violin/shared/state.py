@@ -7,7 +7,7 @@ from typing import Any, Mapping
 
 from PIL import Image
 
-from trace.tasks.charts.shared.chart_scene import ChartRenderParams, RenderedChartScene
+from trace.tasks.charts.shared.chart_scene_types import ChartRenderParams, RenderedChartScene
 
 
 @dataclass(frozen=True)

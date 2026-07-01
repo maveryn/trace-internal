@@ -27,17 +27,15 @@ from trace.tasks.charts.annotated_series.shared.state import (
     RenderedBaseSeries,
     SeriesSample,
 )
-from trace.tasks.charts.shared.chart_scene import (
-    RenderedChartScene,
-    render_labeled_chart_scene,
-    value_axis_render_metadata,
-)
+from trace.tasks.charts.shared.chart_scene_labeled import render_labeled_chart_scene
+from trace.tasks.charts.shared.chart_scene_primitives import value_axis_render_metadata
+from trace.tasks.charts.shared.chart_scene_types import RenderedChartScene
 from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
-from trace.tasks.charts.shared.labeled_chart_common import (
+from trace.tasks.charts.shared.labeled_chart_marks import (
     build_chart_mark_specs,
     resolve_chart_mark_colors,
-    resolve_chart_render_params_for_task,
 )
+from trace.tasks.charts.shared.labeled_chart_render_params import resolve_chart_render_params_for_task
 from trace.tasks.shared.bbox_projection import bbox_union, round_bbox
 from trace.tasks.shared.context_text_assets import sample_context_text
 from trace.tasks.shared.font_assets import font_asset_version, sample_font_family
@@ -175,7 +173,7 @@ def draw_context_layer(
     accent_rgb = _rgb_role(information_style_meta, "accent", (35, 99, 180))
 
     mode = str(context_layout.get("mode", context_layout.get("layout_mode", "clean")))
-    if mode in {"right_sidebar", "bottom_band"}:
+    if mode == "paragraph_box":
         return draw_dashboard_reserved_margin_context(
             image,
             instance_seed=int(instance_seed),
@@ -555,6 +553,7 @@ def draw_callout_markup(
         instance_seed=int(instance_seed),
         namespace=SCENE_NAMESPACE,
     )
+    text_stroke_rgb = _rgb_role(base.information_style_meta, "text_stroke", (255, 255, 255))
     corner_radius = resolve_render_int(
         params,
         RENDERING_DEFAULTS,
@@ -604,7 +603,7 @@ def draw_callout_markup(
         center=callout_center,
         font=font,
         fill=text_rgb,
-        stroke_fill=(255, 255, 255),
+        stroke_fill=text_stroke_rgb,
         stroke_width=0,
     )
     line_start = (
@@ -736,6 +735,12 @@ def render_trace_sections(
     """
     render_params = base.render_params
     rendered_scene = base.rendered_scene
+    context_mode = str(base.context_layout.get("mode", "clean"))
+    context_layout_mode = (
+        f"chart_context:{context_mode}"
+        if context_mode in {"clean", "minimal", "paragraph_box"}
+        else f"{base.context_layout.get('layout_mode', context_mode)}:{base.context_layout.get('placement', 'none')}"
+    )
     render_spec = {
         "canvas_width": int(render_params.canvas_width),
         "canvas_height": int(render_params.canvas_height),
@@ -748,10 +753,7 @@ def render_trace_sections(
         "context_text_layer": context_text_layer_metadata(
             final.context_elements,
             enabled=bool(base.context_layout.get("enabled", False)),
-            layout_mode=(
-                f"{base.context_layout.get('layout_mode', base.context_layout.get('mode', 'clean'))}:"
-                f"{base.context_layout.get('placement', 'none')}"
-            ),
+            layout_mode=str(context_layout_mode),
             layout_spec={
                 str(key): value
                 for key, value in dict(base.context_layout).items()

@@ -9,7 +9,7 @@ generation:
     category_threshold_points_per_category_min: 7
     category_threshold_points_per_category_max: 12
     axis_threshold_answer_min: 4
-    axis_threshold_answer_max: 18
+    axis_threshold_answer_max: 12
     category_threshold_answer_min: 2
     category_threshold_answer_max: 9
     threshold_values:

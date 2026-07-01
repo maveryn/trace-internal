@@ -5,9 +5,9 @@ from __future__ import annotations
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....shared.config_defaults import group_default, resolve_required_int_bounds
+from ...shared.balanced_sampling import balanced_int_from_support as _balanced_int
 from ...shared.label_assets import resolve_chart_entity_labels
-from ...shared.labeled_chart_common import resolve_chart_axis_variant_for_namespace
-from ...shared.sampling_defaults import balanced_int_from_support as _balanced_int
+from ...shared.labeled_chart_variants import resolve_chart_axis_variant_for_namespace
 from .defaults import (
     SCENE_NAMESPACE,
     GEN_DEFAULTS,

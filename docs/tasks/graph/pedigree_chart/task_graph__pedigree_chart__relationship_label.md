@@ -8,9 +8,15 @@
 5. Objective: select the rendered option letter that gives the family relationship of one labeled person to another.
 
 ## Program Contract
-- `select(option_label where option_value == relationship(person_a, person_b)); output=option_letter; annotation=bbox_set(person_symbol_witnesses); scene=pedigree_chart; scope=relationship_label`
-- Supported `query_id`: `single`
-- Internal prompt query key: `relationship_label_between_two_people`
+
+Program: `select(option_label where option_value == relationship(person_a, person_b)); output=option_letter; annotation=bbox_set(person_symbol_witnesses); scene=pedigree_chart; scope=relationship_label`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `relationship_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `option_label`, `where`, `option_value`, `relationship`, `person_a`, `person_b`, `person_symbol_witnesses`, `pedigree_chart`, `relationship_label`.
+Operation: evaluate `select` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. Answer type: `option_letter`.

@@ -9,7 +9,15 @@
 6. Annotation schema: `point_set_map`
 
 ## Program Contract
-`count(filter(prefix(route_cells, before=first(route_cell where contains_ghost=True)), contains_normal_pellet=True)); scene=pacman; scope=pellet_count_before_ghost`
+
+Program: `count(filter(prefix(route_cells, before=first(route_cell where contains_ghost=True)), contains_normal_pellet=True)); scene=pacman; scope=pellet_count_before_ghost`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `pellet_count_before_ghost` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `prefix`, `route_cells`, `before`, `first`, `route_cell`, `where`, `contains_ghost`, `True`, `contains_normal_pellet`, `pacman`, `pellet_count_before_ghost`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The highlighted route starts at the visible Pac-Man marker.

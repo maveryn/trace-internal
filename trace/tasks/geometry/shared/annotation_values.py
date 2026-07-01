@@ -30,6 +30,18 @@ def _bbox_center(bbox: Sequence[float]) -> List[float]:
     ]
 
 
+def bbox_annotation_artifacts(bbox: Sequence[float]) -> PixelAnnotationArtifacts:
+    """Build trace-facing scalar bbox annotation artifacts."""
+
+    value = _round_bbox(bbox)
+    projected = {
+        "type": "bbox",
+        "bbox": list(value),
+        "pixel_bbox": list(value),
+    }
+    return PixelAnnotationArtifacts(annotation_type="bbox", value=list(value), projected_annotation=projected)
+
+
 def keyed_point_annotation_artifacts(
     points: Mapping[str, Sequence[float]],
     *,

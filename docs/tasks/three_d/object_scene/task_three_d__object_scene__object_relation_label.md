@@ -10,7 +10,15 @@
 - Annotation schema: `bbox`
 
 ## Program Contract
-`select(label(candidate_objects, spatial_relation_to_reference = requested_relation)); scene=object_scene; scope=object_relation_label`
+
+Program: `select(label(candidate_objects, spatial_relation_to_reference = requested_relation)); scene=object_scene; scope=object_relation_label`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `object_relation_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `label`, `candidate_objects`, `spatial_relation_to_reference`, `requested_relation`, `object_scene`, `object_relation_label` plus the active `query_id` branch.
+Operation: evaluate `select` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `on_top_of_prop`, `under_prop`, `inside_prop`.
 
 ## Contract
 The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.

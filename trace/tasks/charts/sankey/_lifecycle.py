@@ -12,7 +12,7 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import PromptTraceArtifacts, build_prompt_query_spec
 
-from .shared.annotations import bbox_set_annotation
+from .shared.annotations import annotation_payload
 from .shared.output import render_map, render_spec, scene_records
 from .shared.prompts import build_prompt_artifacts, dynamic_slots
 from .shared.rendering import render_sankey_dataset
@@ -130,9 +130,10 @@ def materialize_sankey_plan(
     plan: SankeyTaskPlan,
 ) -> TaskOutput:
     rendered = render_sankey_dataset(dataset=plan.dataset, params=dict(params), instance_seed=int(instance_seed))
-    annotation = bbox_set_annotation(
+    annotation = annotation_payload(
         rendered=rendered,
         segment_refs=plan.dataset.question.annotation_segment_ids,
+        annotation_type=str(plan.dataset.question.annotation_type),
     )
     prompt_artifacts = build_prompt_artifacts(
         prompt_query_key=str(plan.prompt_key),

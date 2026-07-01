@@ -1,4 +1,4 @@
-"""Config regression tests for physics circuits defaults."""
+"""Config regression tests for physics circuit-equivalent defaults."""
 
 from __future__ import annotations
 
@@ -6,26 +6,21 @@ from trace.core.scene_config import get_scene_defaults
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
-def test_physics_circuits_equivalent_defaults_expose_scene_task_and_answer_support() -> None:
-    cfg = get_scene_defaults("physics", "circuits")
+def test_physics_circuit_equivalent_defaults_expose_scene_task_and_answer_support() -> None:
+    cfg = get_scene_defaults("physics", "circuit_equivalent")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="physics_circuits_equivalent_component_family",
+        task_id="task_physics__circuit_equivalent__total_resistance_value",
     )
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-    assert bool(generation["balanced_query_id_sampling"]) is True
     assert bool(generation["balanced_target_answer_sampling"]) is True
     assert bool(generation["balanced_accent_color_name_sampling"]) is True
     assert set(generation["scene_variant_weights"].keys()) == {
         "series_parallel",
     }
-    assert set(generation["query_id_weights"].keys()) == {
-        "total_resistance",
-        "total_capacitance",
-    }
-    assert float(generation["query_id_weights"]["total_resistance"]) == 1.0
-    assert float(generation["query_id_weights"]["total_capacitance"]) == 1.0
+    assert "query_id_weights" not in generation
+    assert "balanced_query_id_sampling" not in generation
     assert set(generation["accent_color_name_weights"].keys()) == {
         "red",
         "blue",
@@ -50,10 +45,12 @@ def test_physics_circuits_equivalent_defaults_expose_scene_task_and_answer_suppo
     assert int(rendering["wire_width_px"]) > 0
     assert bool(rendering["layout_jitter_enabled"]) is True
 
-    assert str(prompt["bundle_id"]) == "physics_circuits_v0"
-    assert str(prompt["scene_key"]) == "equivalent_circuit_diagram"
-    assert str(prompt["task_key"]) == "equivalent_component_query"
-    assert "one or two labeled parallel resistor blocks" in str(prompt["object_description_series_parallel_total_resistance"])
-    assert "one or two labeled parallel capacitor blocks" in str(prompt["object_description_series_parallel_total_capacitance"])
-    assert "object mapping each visible resistor label" in str(prompt["annotation_hint_total_resistance"])
-    assert "object mapping each visible capacitor label" in str(prompt["annotation_hint_total_capacitance"])
+    assert str(prompt["bundle_id"]) == "physics_circuit_equivalent_v1"
+    assert str(prompt["task_key"]) == "total_resistance_value_query"
+
+    _, _, capacitance_prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_physics__circuit_equivalent__total_capacitance_value",
+    )
+    assert str(capacitance_prompt["bundle_id"]) == "physics_circuit_equivalent_v1"
+    assert str(capacitance_prompt["task_key"]) == "total_capacitance_value_query"

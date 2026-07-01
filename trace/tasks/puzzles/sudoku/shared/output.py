@@ -14,6 +14,12 @@ from .rules import candidate_digits, coord_to_cell_id, unit_coords
 from .state import SCENE_ID, SudokuSample
 
 
+def _answer_value(answer: int | str) -> int | str:
+    """Return a JSON-stable Sudoku answer value."""
+
+    return int(answer) if isinstance(answer, int) else str(answer)
+
+
 def text_style_metadata(font_family: str) -> dict[str, Any]:
     """Return trace metadata for the active Sudoku digit font."""
 
@@ -67,6 +73,7 @@ def build_sudoku_trace_payload(
         if sample.marked_cell is not None
         else ()
     )
+    answer_value = _answer_value(sample.answer)
     return {
         "scene_ir": {
             "scene_kind": f"puzzle_sudoku_grid_{str(scene_variant)}",
@@ -76,9 +83,10 @@ def build_sudoku_trace_payload(
                 "unit_type": sample.highlighted_unit_type,
                 "unit_index": sample.highlighted_unit_index,
                 "style_variant": str(style_variant),
-                "target_answer": int(sample.answer),
+                "target_answer": answer_value,
                 "visible_count": int(sample.visible_count),
                 "annotation_entity_ids": annotation_entity_ids,
+                "correct_option_label": sample.correct_option_label,
             },
         },
         "query_spec": dict(prompt_spec_payload),
@@ -95,7 +103,7 @@ def build_sudoku_trace_payload(
         "execution_trace": {
             "scene_variant": str(scene_variant),
             "style_variant": str(style_variant),
-            "target_answer": int(sample.answer),
+            "target_answer": answer_value,
             "visible_count": int(sample.visible_count),
             "construction_mode": str(sample.construction_mode),
             "board_rows": [[int(cell) for cell in row] for row in sample.board],
@@ -115,6 +123,9 @@ def build_sudoku_trace_payload(
             "repeated_digit_values": [
                 int(value) for value in sample.repeated_digit_values
             ],
+            "target_digit": sample.target_digit,
+            "option_specs": [dict(spec) for spec in sample.option_specs],
+            "correct_option_label": sample.correct_option_label,
             "annotation_coords": [
                 [int(row), int(col)] for row, col in sample.annotation_coords
             ],

@@ -29,19 +29,12 @@
         "After applying contribution \"{target_step_label}\", what is the running total?",
         "Compute the waterfall total at the end of step \"{target_step_label}\"."
       ],
-      "first_total_at_least_threshold": [
-        "If no visible contribution step satisfies the threshold rule, answer exactly \"unanswerable\". Which contribution step is the first one after which the running total is {threshold_relation_phrase} {threshold_value}?",
-        "If no visible contribution step satisfies the threshold rule, answer exactly \"unanswerable\". Following the waterfall from left to right, what is the first contribution label whose resulting running total is {threshold_relation_phrase} {threshold_value}?",
-        "If no visible contribution step satisfies the threshold rule, answer exactly \"unanswerable\". Find the first step where the cumulative total after the step is {threshold_relation_phrase} {threshold_value}. What is that step label?",
-        "If no visible contribution step satisfies the threshold rule, answer exactly \"unanswerable\". Using the start value and signed contributions, which step first makes the running total {threshold_relation_phrase} {threshold_value}?",
-        "If no visible contribution step satisfies the threshold rule, answer exactly \"unanswerable\". What contribution label first reaches a running total {threshold_relation_phrase} {threshold_value}?"
-      ],
-      "first_total_at_most_threshold": [
-        "If no visible contribution step satisfies the threshold rule, answer exactly \"unanswerable\". Which contribution step is the first one after which the running total is {threshold_relation_phrase} {threshold_value}?",
-        "If no visible contribution step satisfies the threshold rule, answer exactly \"unanswerable\". Following the waterfall from left to right, what is the first contribution label whose resulting running total is {threshold_relation_phrase} {threshold_value}?",
-        "If no visible contribution step satisfies the threshold rule, answer exactly \"unanswerable\". Find the first step where the cumulative total after the step is {threshold_relation_phrase} {threshold_value}. What is that step label?",
-        "If no visible contribution step satisfies the threshold rule, answer exactly \"unanswerable\". Using the start value and signed contributions, which step first makes the running total {threshold_relation_phrase} {threshold_value}?",
-        "If no visible contribution step satisfies the threshold rule, answer exactly \"unanswerable\". What contribution label first reaches a running total {threshold_relation_phrase} {threshold_value}?"
+      "running_total_extremum_value": [
+        "Across the start bar and contribution bars, what is the {extremum_word} cumulative total reached?",
+        "Ignoring the summary final bar, scan the start and contribution bars. What is the {extremum_word} running total?",
+        "What is the {extremum_word} running total reached by the waterfall sequence before the final summary bar?",
+        "Use the start bar and signed contribution bars. What {extremum_word} cumulative total appears in the sequence?",
+        "Among the start and contribution bars, find the {extremum_word} cumulative total. What is its value?"
       ],
       "remove_step_final_total": [
         "If contribution \"{target_step_label}\" were {counterfactual_phrase}, what would the final total be?",
@@ -78,32 +71,26 @@
   "static_slots_by_key": {
     "query:running_total_after_step": {
       "answer_hint": "set \"answer\" to the requested running total as an integer",
-      "annotation_hint": "set \"annotation\" to an object mapping \"running_values\" to an array of [x0,y0,x1,y1] pixel boxes around the printed running values through the target step, and \"target_step_label\" to an array containing one [x0,y0,x1,y1] pixel box around the target step label",
-      "json_example": "{\"annotation\":{\"running_values\":[[94,382,128,406],[205,318,240,342],[316,284,350,308]],\"target_step_label\":[[300,680,365,704]]},\"answer\":57}",
+      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around the full waterfall bars from the start bar through the target contribution bar, including the target contribution bar",
+      "json_example": "{\"annotation\":[[72,420,132,610],[182,330,242,610],[292,330,366,512]],\"answer\":57}",
       "json_example_answer_only": "{\"answer\":57}"
     },
-    "query:first_total_at_least_threshold": {
-      "answer_hint": "set \"answer\" to the exact contribution-step label as a string, or \"unanswerable\" if no visible contribution step satisfies the threshold rule",
-      "annotation_hint": "set \"annotation\" to an object mapping \"running_values\" to an array of [x0,y0,x1,y1] pixel boxes around the printed running values checked through the answer step, and \"threshold_label\" to an array containing one [x0,y0,x1,y1] pixel box around the threshold label; if the answer is \"unanswerable\", use an empty object",
-      "json_example": "{\"annotation\":{\"running_values\":[[94,382,128,406],[205,318,240,342],[316,284,350,308]],\"threshold_label\":[[820,180,872,204]]},\"answer\":\"G8F2\"}",
-      "json_example_answer_only": "{\"answer\":\"G8F2\"}"
-    },
-    "query:first_total_at_most_threshold": {
-      "answer_hint": "set \"answer\" to the exact contribution-step label as a string, or \"unanswerable\" if no visible contribution step satisfies the threshold rule",
-      "annotation_hint": "set \"annotation\" to an object mapping \"running_values\" to an array of [x0,y0,x1,y1] pixel boxes around the printed running values checked through the answer step, and \"threshold_label\" to an array containing one [x0,y0,x1,y1] pixel box around the threshold label; if the answer is \"unanswerable\", use an empty object",
-      "json_example": "{\"annotation\":{\"running_values\":[[94,382,128,406],[205,318,240,342],[316,284,350,308]],\"threshold_label\":[[820,180,872,204]]},\"answer\":\"G8F2\"}",
-      "json_example_answer_only": "{\"answer\":\"G8F2\"}"
+    "query:running_total_extremum_value": {
+      "answer_hint": "set \"answer\" to the requested cumulative total as an integer",
+      "annotation_hint": "set \"annotation\" to one [x0,y0,x1,y1] pixel box around the full start or contribution bar where that cumulative total is reached",
+      "json_example": "{\"annotation\":[292,218,366,610],\"answer\":76}",
+      "json_example_answer_only": "{\"answer\":76}"
     },
     "query:remove_step_final_total": {
       "answer_hint": "set \"answer\" to the counterfactual final total as an integer",
-      "annotation_hint": "set \"annotation\" to an object mapping \"final_total_value\", \"target_contribution_value\", and \"target_step_label\" to [x0,y0,x1,y1] pixel boxes around those three visible witnesses",
-      "json_example": "{\"annotation\":{\"final_total_value\":[[980,210,1024,235]],\"target_contribution_value\":[[390,300,434,326]],\"target_step_label\":[[370,680,438,704]]},\"answer\":57}",
+      "annotation_hint": "set \"annotation\" to an object mapping \"final_total_bar\" and \"target_contribution_bar\" to [x0,y0,x1,y1] pixel boxes around the full waterfall bars",
+      "json_example": "{\"annotation\":{\"final_total_bar\":[960,210,1038,610],\"target_contribution_bar\":[370,318,438,512]},\"answer\":57}",
       "json_example_answer_only": "{\"answer\":57}"
     },
     "query:reverse_step_final_total": {
       "answer_hint": "set \"answer\" to the counterfactual final total as an integer",
-      "annotation_hint": "set \"annotation\" to an object mapping \"final_total_value\", \"target_contribution_value\", and \"target_step_label\" to [x0,y0,x1,y1] pixel boxes around those three visible witnesses",
-      "json_example": "{\"annotation\":{\"final_total_value\":[[980,210,1024,235]],\"target_contribution_value\":[[390,300,434,326]],\"target_step_label\":[[370,680,438,704]]},\"answer\":57}",
+      "annotation_hint": "set \"annotation\" to an object mapping \"final_total_bar\" and \"target_contribution_bar\" to [x0,y0,x1,y1] pixel boxes around the full waterfall bars",
+      "json_example": "{\"annotation\":{\"final_total_bar\":[960,210,1038,610],\"target_contribution_bar\":[370,318,438,512]},\"answer\":57}",
       "json_example_answer_only": "{\"answer\":57}"
     }
   },
@@ -111,27 +98,19 @@
     "counterfactual_phrase": {
       "type": "string"
     },
+    "extremum_word": {
+      "type": "string"
+    },
     "target_step_label": {
       "type": "string"
-    },
-    "threshold_relation_phrase": {
-      "type": "string"
-    },
-    "threshold_value": {
-      "type": "integer"
     }
   },
   "required_slots_by_key": {
     "query:running_total_after_step": [
       "target_step_label"
     ],
-    "query:first_total_at_least_threshold": [
-      "threshold_relation_phrase",
-      "threshold_value"
-    ],
-    "query:first_total_at_most_threshold": [
-      "threshold_relation_phrase",
-      "threshold_value"
+    "query:running_total_extremum_value": [
+      "extremum_word"
     ],
     "query:remove_step_final_total": [
       "target_step_label",

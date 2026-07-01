@@ -3,41 +3,52 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `collision`
-- Implementation scene: `mechanics`
-- Implementation source: `trace/tasks/physics/mechanics/sticky_collision.py`
+- Implementation scene: `collision`
+- Implementation source: `trace/tasks/physics/collision/sticky_collision_direction_choice.py`
 
 ## Task Contract
 Selects the final direction of two perpendicular pucks after a sticky collision using conserved momentum.
+
+## Program Contract
+
+Program: `option_letter(direction(momentum_sum(pucks_a_b), mode=final_sticky_velocity)); scene=collision; scope=sticky_collision_direction_choice`
+
+Candidate set: the visible puck states, motion arrows or trails, impact marker, labels, and candidate option cells inside the `sticky_collision_direction_choice` objective scope.
+Operands: `pucks_a_b` (semantic_role, allowed `visible_input_pucks_A_B`, source `program_schema_concrete`); `final_sticky_velocity` (semantic_role, allowed `velocity_after_sticky_collision`, source `program_schema_concrete`).
+Operation: evaluate `option_letter` over the candidate set using the visible quantities, relations, branch semantics, and formulas encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; The answer value is the selected visible option letter from `A`, `B`, `C`, or `D`.
+Annotation witnesses: `segment_set` witnesses from the finalized render. Annotation marks the two incoming velocity-arrow segments for puck A and puck B. The selected answer option remains answer context; it is not the public annotation witness.
+Query ids: `single`.
 
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `direction_choice` | `option_letter(direction(momentum_sum(pucks_a_b), mode=final_sticky_velocity)); scene=collision; scope=sticky_collision_direction_choice; query_branch=direction_choice` |
+| `single` | `option_letter(direction(momentum_sum(pucks_a_b), mode=final_sticky_velocity)); scene=collision; scope=sticky_collision_direction_choice` |
 
 ## Program Metadata
 - Program signatures: `physics.momentum_direction_choice`
 - Base program contract: `option_letter(direction(momentum_sum(pucks_a_b), mode=final_sticky_velocity)); scene=collision; scope=sticky_collision_direction_choice`
-- Parameter axes: `fixed_query`
+- Parameter axes: `correct_option_letter`, `scene_variant`, `accent_color_name`
 - Arguments:
-  - `final_sticky_velocity`: semantic_role; allowed `velocity_after_sticky_collision`; source `program_schema_concrete`
   - `pucks_a_b`: semantic_role; allowed `visible_input_pucks_A_B`; source `program_schema_concrete`
+  - `final_sticky_velocity`: semantic_role; allowed `velocity_after_sticky_collision`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `direction_choice`
+- Supported query ids: `single`
 
 ## Answer Contract
 - Answer schema: `option_letter`
 - Generator `answer_gt.type`: `option_letter`
-- The answer value is the selected visible option letter.
+- The answer value is the selected visible option letter from `A`, `B`, `C`, or `D`.
 
 ## Annotation Contract
-- Annotation schema: `keyed_point_map`
-- Generator `annotation_gt.type`: `keyed_point_map`
-- Annotation is keyed because point witnesses have distinct roles; each key maps to the final-image pixel point for that role.
-- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
-- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
+- Annotation schema: `segment_set`
+- Generator `annotation_gt.type`: `segment_set`
+- Annotation marks the two incoming velocity-arrow segments for puck A and puck B.
+- The selected answer option remains answer context; it is not the public annotation witness.
+- Annotation and answer are projected from the same generated execution trace.
 
 ## Prompt And Trace Requirements
-- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
-- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
-- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
+- Prompt text comes from `prompts/physics/collision/physics_collision_v1.json`.
+- Render randomness, sampled fonts/styles, visible masses and speeds, chosen option letter, and verifier payloads are explicit in the instance trace.
+- Diagrams must keep all quantities required for the momentum computation visible.

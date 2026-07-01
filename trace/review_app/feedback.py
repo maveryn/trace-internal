@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sqlite3
+import threading
 from typing import Any, Dict, Iterable, Mapping
 from uuid import uuid4
 
@@ -30,12 +31,38 @@ VALID_THREE_D_OBJECT_REVIEW_DECISIONS = {"approve", "remove", "improve"}
 VALID_ILLUSTRATION_OBJECT_REVIEW_DECISIONS = {"approve", "remove", "improve"}
 
 
+class _SerializedConnection(sqlite3.Connection):
+    """SQLite connection that releases a process-local lock on context exit."""
+
+    _trace_lock: threading.RLock | None = None
+
+    def __exit__(self, exc_type: object, exc: object, tb: object) -> bool:
+        try:
+            return bool(super().__exit__(exc_type, exc, tb))
+        finally:
+            self._release_trace_lock()
+
+    def close(self) -> None:
+        try:
+            super().close()
+        finally:
+            self._release_trace_lock()
+
+    def _release_trace_lock(self) -> None:
+        lock = self._trace_lock
+        if lock is None:
+            return
+        self._trace_lock = None
+        lock.release()
+
+
 class FeedbackStore:
     """Persist task-review comments keyed to stable sample identities."""
 
     def __init__(self, db_path: Path | str) -> None:
         self.db_path = Path(db_path).resolve()
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self._db_lock = threading.RLock()
         self._init_schema()
 
     def add_feedback(
@@ -853,8 +880,15 @@ class FeedbackStore:
         return counts
 
     def _connect(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self.db_path)
+        self._db_lock.acquire()
+        try:
+            conn = sqlite3.connect(self.db_path, timeout=30.0, factory=_SerializedConnection)
+        except Exception:
+            self._db_lock.release()
+            raise
+        conn._trace_lock = self._db_lock
         conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA busy_timeout=30000")
         conn.execute("PRAGMA journal_mode=WAL")
         conn.execute("PRAGMA foreign_keys=ON")
         return conn

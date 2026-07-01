@@ -1,1 +1,1 @@
-"""Symbolic abacus readout tasks."""
+"""Symbolic abacus scene package."""

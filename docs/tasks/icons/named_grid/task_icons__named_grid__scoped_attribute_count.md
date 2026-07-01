@@ -6,19 +6,15 @@
 - module: `trace/tasks/icons/named_grid/scoped_attribute_count.py`
 
 ## Program Contract
-`count.scoped_attribute(scene=named_grid, scope=numbered_row_or_column, attribute=shape, output=count)`
 
-1. The image shows one visible grid with numbered rows and numbered columns.
-2. Each grid cell contains one procedural named icon.
-3. The prompt names one target icon shape in quotes and addresses one row or
-   one column by number.
-4. The answer is the number of target-shape icons in the addressed row or
-   column.
-5. `answer_gt.type = integer`.
-6. `annotation_gt.type = bbox_set` over the bounding boxes of the counted
-   target-shape icons only. `projected_annotation` mirrors this as typed
-   bbox-set annotation with `bbox_set`, `pixel_bbox_set`, and derived
-   `pixel_point_set`.
+Program: `count.scoped_attribute(scene=named_grid, scope=numbered_row_or_column, attribute=shape, output=count)`
+
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `numbered_row_or_column` objective scope.
+Operands: visible scene state and prompt-bound operands named by `named_grid`, `numbered_row_or_column`, `attribute`, `shape`.
+Operation: evaluate `count.scoped_attribute` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query IDs
 - `row_shape_count`

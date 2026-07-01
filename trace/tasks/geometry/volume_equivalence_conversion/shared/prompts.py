@@ -18,8 +18,18 @@ from .annotations import example_bbox_for_key
 from .defaults import DOMAIN, SCENE_ID
 
 
-def make_prompt_examples(answer: int | str, annotation_keys: Sequence[str]) -> tuple[str, str]:
-    annotation = {str(key): example_bbox_for_key(str(key)) for key in annotation_keys}
+def make_prompt_examples(
+    answer: int | str,
+    annotation_keys: Sequence[str],
+    *,
+    annotation_schema: str = "bbox_map",
+) -> tuple[str, str]:
+    if str(annotation_schema) == "bbox":
+        if len(annotation_keys) != 1:
+            raise ValueError("bbox prompt examples require exactly one annotation key")
+        annotation = example_bbox_for_key(str(annotation_keys[0]))
+    else:
+        annotation = {str(key): example_bbox_for_key(str(key)) for key in annotation_keys}
     return dump_prompt_json_examples(annotation=annotation, answer=answer)
 
 
@@ -29,6 +39,7 @@ def volume_equivalence_prompt_artifacts(
     prompt_task_key: str,
     prompt_branch_key: str,
     annotation_keys: Sequence[str],
+    annotation_schema: str = "bbox_map",
     answer: int | str,
     instance_seed: int,
 ) -> tuple[dict[str, Any], PromptTraceArtifacts]:
@@ -42,6 +53,7 @@ def volume_equivalence_prompt_artifacts(
     json_example, json_example_answer_only = make_prompt_examples(
         answer=answer,
         annotation_keys=annotation_keys,
+        annotation_schema=str(annotation_schema),
     )
     prompt_selection = render_scene_prompt_variants(
         domain=DOMAIN,

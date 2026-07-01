@@ -1,7 +1,15 @@
 # `task_graph__node_link__mst_weight`
 
 ## Program Contract
-- `sum(weights(minimum_spanning_tree(graph))); scene=node_link; scope=mst_weight`
+
+Program: `sum(weights(minimum_spanning_tree(graph))); scene=node_link; scope=mst_weight`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `mst_weight` objective scope.
+Operands: visible scene state and prompt-bound operands named by `weights`, `minimum_spanning_tree`, `graph`, `node_link`, `mst_weight`.
+Operation: evaluate `sum` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; the sum of the weights on the unique minimum spanning tree,.
+Annotation witnesses: `annotation` uses the `segment_set` schema; the `segment_set` of endpoint-node-center segments for all MST edges.
+Query ids: `single`.
 
 ## 1) Identity
 1. Domain: `graph`
@@ -27,7 +35,7 @@
 6. Query contract:
    - the prompt defines a spanning tree as connecting every node without cycles and asks for the smallest total edge weight,
    - answer is the sum of the weights on the unique minimum spanning tree,
-     - annotation is the unordered set of MST edges, represented as endpoint-node-center pixel segments `[[x1, y1], [x2, y2]]`.
+     - annotation is the unordered set of MST edges, represented as endpoint-node-center pixel segments `[[x0, y0], [x1, y1]]`, with each endpoint as an `[x, y]` pixel point.
 7. Weight policy:
    - edge weights are distinct integers from `1..9`,
    - generation samples `1..2` non-tree edges,
@@ -61,7 +69,7 @@
 5. Modes: `answer_only`, `answer_and_annotation`
 6. Answer-only JSON shape: `{"answer":12}`
 7. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]],[[430,260],[520,340]]],"answer":12}`
-8. Prompt-facing annotation uses `segment_set`; each edge is one endpoint-node-center segment `[[x1, y1], [x2, y2]]`.
+8. Prompt-facing annotation uses `segment_set`; each edge is one endpoint-node-center segment `[[x0, y0], [x1, y1]]`, with each endpoint as an `[x, y]` pixel point.
 
 ## 4) Annotation + trace contract
 1. Prompt-facing annotation is the `segment_set` of endpoint-node-center segments for all MST edges.

@@ -1789,9 +1789,9 @@ prompt:
       json_output_contract_answer_only: Use a valid JSON object with key "answer"
         for the final answer.
       object_description_undirected: a labeled connected weighted graph
-      annotation_hint: set "annotation" to a list of segments. Each segment is [[x1,
-        y1], [x2, y2]], using the centers of the two endpoint nodes of one edge in
-        the minimum spanning tree
+      annotation_hint: set "annotation" to a list of segments. Each segment is [[x0,
+        y0], [x1, y1]], where each endpoint is an [x, y] pixel point at the center
+        of one endpoint node of an edge in the minimum spanning tree
       answer_hint: set "answer" to the total weight of that minimum spanning tree
         as an integer
       json_example: '{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]],[[430,260],[520,340]]],"answer":12}'
@@ -1888,9 +1888,9 @@ prompt:
       json_example: '{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       question_text_bridge_count: How many edges are bridges?
-      annotation_hint: set "annotation" to a list of segments. Each segment is [[x1,
-        y1], [x2, y2]], using the centers of the two endpoint nodes of one bridge
-        edge
+      annotation_hint: set "annotation" to a list of segments. Each segment is [[x0,
+        y0], [x1, y1]], where each endpoint is an [x, y] pixel point at the center
+        of one endpoint node of a bridge edge
     task_graph__node_link__common_related_node_count:
       bundle_id: graph_node_link_relation_v1
       scene_key: single_graph_relation
@@ -1944,13 +1944,14 @@ prompt:
       json_example: '{"annotation":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       annotation_hint_cross_color_edge_count: set "annotation" to a list of segments.
-        Each segment is [[x1, y1], [x2, y2]], using the centers of the two endpoint
-        nodes of one edge connecting a {source_color_label} node and a {target_color_label}
-        node; use [] when the answer is zero
+        Each segment is [[x0, y0], [x1, y1]], where each endpoint is an [x, y] pixel
+        point at the center of one endpoint node of an edge connecting a {source_color_label}
+        node and a {target_color_label} node; use [] when the answer is zero
       annotation_hint_directed_cross_color_edge_count: set "annotation" to a list
-        of segments. Each segment is [[x1, y1], [x2, y2]], using the source and target
-        node centers for one arrow from a {source_color_label} node to a {target_color_label}
-        node; use [] when the answer is zero
+        of segments. Each segment is [[x0, y0], [x1, y1]], where each endpoint is
+        an [x, y] pixel point at the source or target node center for one arrow from
+        a {source_color_label} node to a {target_color_label} node; use [] when the
+        answer is zero
     task_graph__node_link__degree_after_removal_filter_count:
       bundle_id: graph_node_link_counting_v1
       scene_key: single_graph_counting
@@ -2048,10 +2049,11 @@ prompt:
       answer_hint: set "answer" to the count of matching edges as an integer
       json_example: '{"annotation":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-      annotation_hint: set "annotation" to a list of segments. Each segment is [[x1,
-        y1], [x2, y2]], using the centers of the two endpoint nodes of one edge colored
-        {target_color_label}; for directed graphs, use the source and target node
-        centers; use [] when the answer is zero
+      annotation_hint: set "annotation" to a list of segments. Each segment is [[x0,
+        y0], [x1, y1]], where each endpoint is an [x, y] pixel point at the center
+        of one endpoint node of an edge colored {target_color_label}; for directed
+        graphs, use the source and target node centers; use [] when the answer is
+        zero
     task_graph__node_link__edge_text_count:
       bundle_id: graph_node_link_counting_v1
       scene_key: single_graph_counting
@@ -2212,18 +2214,21 @@ prompt:
       json_example: '{"annotation":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
       annotation_hint_named_node_degree_value: set "annotation" to a list of segments.
-        Each segment is [[x1, y1], [x2, y2]], using the centers of the two endpoint
-        nodes of one edge touching node {query_label}; use [] when the answer is zero
+        Each segment is [[x0, y0], [x1, y1]], where each endpoint is an [x, y] pixel
+        point at the center of one endpoint node of an edge touching node {query_label};
+        use [] when the answer is zero
       annotation_hint_named_node_in_degree_value: set "annotation" to a list of segments.
-        Each segment is [[x1, y1], [x2, y2]], using the source and target node centers
-        for one arrow pointing into node {query_label}; use [] when the answer is
-        zero
+        Each segment is [[x0, y0], [x1, y1]], where each endpoint is an [x, y] pixel
+        point at the source or target node center for one arrow pointing into node
+        {query_label}; use [] when the answer is zero
       annotation_hint_named_node_out_degree_value: set "annotation" to a list of segments.
-        Each segment is [[x1, y1], [x2, y2]], using the source and target node centers
-        for one arrow leaving node {query_label}; use [] when the answer is zero
+        Each segment is [[x0, y0], [x1, y1]], where each endpoint is an [x, y] pixel
+        point at the source or target node center for one arrow leaving node {query_label};
+        use [] when the answer is zero
       annotation_hint_named_node_total_degree_value: set "annotation" to a list of
-        segments. Each segment is [[x1, y1], [x2, y2]], using the endpoint node centers
-        of one arrow touching node {query_label}; use [] when the answer is zero
+        segments. Each segment is [[x0, y0], [x1, y1]], where each endpoint is an
+        [x, y] pixel point at the source or target node center of one arrow touching
+        node {query_label}; use [] when the answer is zero
     task_graph__node_link__node_color_count:
       bundle_id: graph_node_link_counting_v1
       scene_key: single_graph_counting

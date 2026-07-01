@@ -27,7 +27,7 @@ def test_icons_relation_mirror_symmetry_match_deterministic() -> None:
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert out_a.prompt == out_a.prompt_variants["answer_and_annotation"]
     assert out_a.answer_gt.type == "option_letter"
-    assert out_a.annotation_gt.type == "keyed_bbox_map"
+    assert out_a.annotation_gt.type == "bbox_map"
 
 
 def test_icons_relation_mirror_symmetry_match_build_smoke(tmp_path: Path) -> None:

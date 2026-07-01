@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from trace.core.scene_config import get_scene_defaults
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.base import TaskOutput
@@ -133,12 +135,8 @@ def _resolve_dimensions(*, instance_seed: int, params: Mapping[str, Any]) -> Cub
             raise ValueError("dimensions must contain length, width, and height")
         length, width, height = values
     else:
-        case_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.case",
-        )
-        length, width, height = _CUBOID_CASES[int(case_index) % len(_CUBOID_CASES)]
+        rng = spawn_rng(int(instance_seed), f"{TASK_ID}.case")
+        length, width, height = uniform_choice(rng, _CUBOID_CASES)
         length = int(params.get("length_units", length))
         width = int(params.get("width_units", width))
         height = int(params.get("height_units", height))

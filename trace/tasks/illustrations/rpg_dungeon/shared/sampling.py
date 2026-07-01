@@ -2,11 +2,64 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
-from trace.core.seed import hash64
+from trace.core.seed import spawn_rng
+from trace.core.sampling import support_probability_map, uniform_choice_with_probabilities
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+
+
+@dataclass(frozen=True)
+class HazardRenderCounts:
+    """Neutral chamber counts needed to render a reachable hazardous subset."""
+
+    reachable_total: int
+    hazard_total: int
+    reachable_hazard_total: int
+
+
+def choose_hazard_render_counts(
+    *,
+    instance_seed: int,
+    namespace: str,
+    total_chambers: int,
+    target_safe_total: int,
+    max_hazard_total: int,
+) -> HazardRenderCounts:
+    """Choose reachable and hazardous chamber counts for a requested safe subset."""
+
+    candidates: list[HazardRenderCounts] = []
+    for reachable_total in range(max(1, int(target_safe_total)), int(total_chambers)):
+        reachable_hazards = int(reachable_total) - int(target_safe_total)
+        if not 0 <= int(reachable_hazards) <= int(max_hazard_total):
+            continue
+        unreachable_slots = int(total_chambers) - int(reachable_total)
+        if int(reachable_hazards) == 0:
+            candidates.append(HazardRenderCounts(int(reachable_total), 1, 0))
+            continue
+        max_extra_unreachable = min(
+            int(max_hazard_total) - int(reachable_hazards),
+            int(unreachable_slots),
+        )
+        for extra_unreachable in range(max_extra_unreachable + 1):
+            candidates.append(
+                HazardRenderCounts(
+                    reachable_total=int(reachable_total),
+                    hazard_total=int(reachable_hazards) + int(extra_unreachable),
+                    reachable_hazard_total=int(reachable_hazards),
+                )
+            )
+    if not candidates:
+        raise ValueError(
+            "no RPG dungeon hazard-count plan for "
+            f"total={total_chambers}, target={target_safe_total}"
+        )
+    rng = spawn_rng(
+        int(instance_seed),
+        f"{namespace}:{int(total_chambers)}:{int(target_safe_total)}",
+    )
+    return rng.choice(candidates)
 
 
 def select_count_from_support(
@@ -36,17 +89,17 @@ def select_count_from_support(
         value = int(explicit)
         if value not in set(support):
             raise ValueError(f"{explicit_key} must be one of {support}")
-        return int(value), {str(value): 1.0}
+        return int(value), support_probability_map(support, selected=int(value), sort_keys=True)
+    sample_namespace = str(namespace)
     if params.get("_sample_cursor") is not None:
-        value = support[abs(int(params["_sample_cursor"])) % len(support)]
-    else:
-        index = resolve_selection_index(
-            params=params,
-            instance_seed=hash64(int(instance_seed), str(namespace)),
-            namespace=str(namespace),
-        )
-        value = support[int(index) % len(support)]
-    return int(value), dict(uniform_probability_map(support))
+        sample_namespace = f"{sample_namespace}:{int(params['_sample_cursor'])}"
+    rng = spawn_rng(int(instance_seed), sample_namespace)
+    value, probabilities = uniform_choice_with_probabilities(rng, support, sort_keys=True)
+    return int(value), dict(probabilities)
 
 
-__all__ = ["select_count_from_support"]
+__all__ = [
+    "HazardRenderCounts",
+    "choose_hazard_render_counts",
+    "select_count_from_support",
+]

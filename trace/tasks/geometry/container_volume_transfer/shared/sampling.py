@@ -5,7 +5,8 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any, Callable, Dict, Mapping, Sequence, Tuple
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 
 from .measurements import (
     case_probability_map,
@@ -310,11 +311,11 @@ def select_case_from_pool(
         if answer_key not in grouped:
             raise ValueError(f"target_answer={explicit_answer} is not supported")
     else:
-        answer_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{namespace}.answer") % len(answer_keys)
-        answer_key = answer_keys[int(answer_index)]
+        rng = spawn_rng(int(instance_seed), f"{namespace}.answer")
+        answer_key = str(uniform_choice(rng, answer_keys))
     candidates = tuple(grouped[str(answer_key)])
-    case_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{namespace}.case.{answer_key}") % len(candidates)
-    case = tuple(int(value) for value in candidates[int(case_index)])
+    rng = spawn_rng(int(instance_seed), f"{namespace}.case.{answer_key}")
+    case = tuple(int(value) for value in uniform_choice(rng, candidates))
     return case, {str(key_fn(case)): 1.0}
 
 

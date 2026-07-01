@@ -18,12 +18,8 @@ CONE_TASK_ID = "task_geometry__solid_revolution__revolution_cone_volume_value"
 CONE_QUERY_ID = "single"
 CONE_QUERY_IDS = (CONE_QUERY_ID,)
 CONE_ANNOTATION_KEYS = (
-    "generating_shape",
-    "rotation_axis",
-    "solid_preview",
-    "target_volume_cue",
-    "height_label",
-    "slant_height_label",
+    "source_diagram_bbox",
+    "resulting_solid_bbox",
 )
 
 

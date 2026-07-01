@@ -35,10 +35,10 @@ JSON_OUTPUT_CONTRACT = 'Use a valid JSON object with keys "annotation" and "answ
 JSON_OUTPUT_CONTRACT_ANSWER_ONLY = 'Use a valid JSON object with key "answer" for the final answer.'
 
 OBJECT_DESCRIPTIONS = {
-    "spreadsheet": "a spreadsheet-style table with one Name column, several data columns, full grid lines, and a shaded header row",
-    "zebra": "a zebra-striped table with one Name column, several data columns, alternating row shading, and a shaded header row",
-    "ledger": "a ledger-style table with one Name column, several data columns, strong horizontal rules, and minimal vertical separators",
-    "card_table": "a card-style table with one Name column, several data columns, a rounded outer frame, and a shaded header row",
+    "spreadsheet": "a table with one Name column and several data columns",
+    "zebra": "a table with one Name column and several data columns",
+    "ledger": "a table with one Name column and several data columns",
+    "card_table": "a table with one Name column and several data columns",
 }
 TEMPORAL_OBJECT_DESCRIPTIONS = {
     key: value.replace("several data columns", "several year columns in chronological order")
@@ -54,6 +54,7 @@ ANNOTATION_HINT_COLUMN_BOX = 'set "annotation" to one [x0,y0,x1,y1] box around t
 ANNOTATION_HINT_RANK_CELL = 'set "annotation" to one [x0,y0,x1,y1] box around the answer row cell in the queried column'
 ANNOTATION_HINT_FILTER_MAP = 'set "annotation" to an object with "filter_cells" and "target_cells", each mapping to arrays of [x0,y0,x1,y1] boxes for the selected rows'
 ANNOTATION_HINT_TEMPORAL = 'set "annotation" to an array of [x0,y0,x1,y1] boxes for the queried year cells from both named rows across the interval'
+ANNOTATION_HINT_TEMPORAL_ROW_SPAN_MAP = 'set "annotation" to an object mapping each queried row label to one [x0,y0,x1,y1] box surrounding that row span across the queried year interval'
 
 def object_description(scene_variant: str, *, temporal: bool = False) -> str:
     descriptions = TEMPORAL_OBJECT_DESCRIPTIONS if bool(temporal) else OBJECT_DESCRIPTIONS
@@ -101,6 +102,7 @@ __all__ = [
     "ANNOTATION_HINT_FILTER_MAP",
     "ANNOTATION_HINT_RANK_CELL",
     "ANNOTATION_HINT_TEMPORAL",
+    "ANNOTATION_HINT_TEMPORAL_ROW_SPAN_MAP",
     "ANSWER_HINT_COUNT",
     "ANSWER_HINT_INTEGER",
     "ANSWER_HINT_ROW_LABEL",

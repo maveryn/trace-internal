@@ -7,7 +7,8 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.pages.timeline.milestones import PagesTimelineEventDateGapValueTask, PagesTimelineIntervalMembershipCountTask
+from trace.tasks.pages.timeline.event_date_gap_value import PagesTimelineEventDateGapValueTask
+from trace.tasks.pages.timeline.interval_membership_count import PagesTimelineIntervalMembershipCountTask
 from tests.helpers import read_jsonl
 
 

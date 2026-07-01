@@ -16,6 +16,14 @@ from trace.tasks.geometry.coordinate_panels.quadrilateral_shape_match_label impo
     SHAPE_MATCH_QUERY_IDS,
     SHAPE_MATCH_TASK_ID,
 )
+from trace.tasks.geometry.coordinate_panels.point_set_transform_match_label import (
+    POINT_SET_TRANSFORM_QUERY_IDS,
+    POINT_SET_TRANSFORM_TASK_ID,
+)
+from trace.tasks.geometry.coordinate_panels.segment_relation_match_label import (
+    SEGMENT_RELATION_QUERY_IDS,
+    SEGMENT_RELATION_TASK_ID as PANEL_SEGMENT_RELATION_TASK_ID,
+)
 from trace.tasks.geometry.coordinate_panels.shared.construction import is_ambiguous_for_prompt as panel_is_ambiguous_for_prompt
 
 
@@ -79,11 +87,74 @@ def test_quadrilateral_panel_match_has_unique_panel_answer(query_id: str) -> Non
     assert panels["D"]["classified_kind"] == target_kind
 
 
+@pytest.mark.parametrize("query_id", SEGMENT_RELATION_QUERY_IDS)
+def test_segment_relation_panel_match_has_unique_panel_answer(query_id: str) -> None:
+    task = create_task(PANEL_SEGMENT_RELATION_TASK_ID)
+    out = task.generate(77431, params={"query_id": query_id, "winner_label": "E"}, max_attempts=50)
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    panels = execution["panels_by_label"]
+
+    assert out.scene_id == PANEL_SCENE_ID
+    assert out.query_id == query_id
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value == "E"
+    assert out.annotation_gt.type == "segment_set"
+    assert out.annotation_gt.value == panels["E"]["segments_px"]
+    assert trace["projected_annotation"]["segment_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_segment_set"] == out.annotation_gt.value
+    assert len(panels) == 6
+    assert all(len(panel["segments_graph"]) == 2 for panel in panels.values())
+    assert all(len(panel["segments_px"]) == 2 for panel in panels.values())
+
+    relation_kind = execution["relation_kind"]
+    matching_labels = [
+        label
+        for label, payload in panels.items()
+        if bool(payload["relation_flags"][relation_kind])
+    ]
+    assert matching_labels == ["E"]
+
+
+@pytest.mark.parametrize("query_id", POINT_SET_TRANSFORM_QUERY_IDS)
+def test_point_set_transform_panel_match_has_unique_panel_answer(query_id: str) -> None:
+    task = create_task(POINT_SET_TRANSFORM_TASK_ID)
+    out = task.generate(77441, params={"query_id": query_id, "winner_label": "F"}, max_attempts=50)
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    panels = execution["panels_by_label"]
+
+    assert out.scene_id == PANEL_SCENE_ID
+    assert out.query_id == query_id
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value == "F"
+    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.value == [
+        *panels["F"]["source_points_px"],
+        *panels["F"]["candidate_points_px"],
+    ]
+    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+    assert len(panels) == 6
+    assert all(len(panel["source_points_graph"]) == 3 for panel in panels.values())
+    assert all(len(panel["candidate_points_graph"]) == 3 for panel in panels.values())
+
+    transform_kind = execution["transform_kind"]
+    matching_labels = [
+        label
+        for label, payload in panels.items()
+        if bool(payload["transform_flags"][transform_kind])
+    ]
+    assert matching_labels == ["F"]
+
+
 @pytest.mark.parametrize(
     ("task_id", "params"),
     (
         (COMPLETION_TASK_ID, {"query_id": "square_completion_label", "winner_label": "B"}),
         (SHAPE_MATCH_TASK_ID, {"query_id": "rectangle_shape_match_label", "winner_label": "E"}),
+        (PANEL_SEGMENT_RELATION_TASK_ID, {"query_id": "parallel_segments_match_label", "winner_label": "E"}),
+        (POINT_SET_TRANSFORM_TASK_ID, {"query_id": "translation_match_label", "winner_label": "F"}),
     ),
 )
 def test_quadrilateral_coordinate_tasks_are_deterministic(task_id: str, params: dict[str, str]) -> None:

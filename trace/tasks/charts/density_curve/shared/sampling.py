@@ -2,17 +2,20 @@
 
 from __future__ import annotations
 
+from itertools import combinations
 from typing import Any, Mapping, Sequence
 
 from trace.core.sampling import normalize_positive_weights, weighted_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.charts.density_curve.shared.defaults import (
+    DEFAULT_DENSITY_CURVE_PAIRWISE_DELTA_E,
     GEN_DEFAULTS,
     RENDER_DEFAULTS,
     SCENE_NAMESPACE,
     SCENE_VARIANT,
     SUPPORTED_CURVE_LINE_STYLES,
     SUPPORTED_DENSITY_FAMILIES,
+    TRACE_SAFE_DENSITY_CURVE_PALETTE_RGB,
     gen_float,
     gen_int,
 )
@@ -32,7 +35,7 @@ from trace.tasks.charts.density_curve.shared.state import (
     RGB,
 )
 from trace.tasks.charts.shared.label_assets import resolve_chart_category_labels
-from trace.tasks.shared.color_distance import sample_color_palette_with_distance_constraints
+from trace.tasks.shared.color_distance import color_distance, sample_color_palette_with_distance_constraints
 from trace.tasks.shared.config_defaults import group_default
 
 
@@ -40,7 +43,7 @@ def resolve_curve_count(params: Mapping[str, Any], *, rng) -> tuple[int, dict[st
     """Sample the number of visible density curves."""
 
     count_min = max(2, gen_int(params, "density_curve_count_min", 4))
-    count_max = max(count_min, gen_int(params, "density_curve_count_max", 7))
+    count_max = max(count_min, gen_int(params, "density_curve_count_max", 6))
     raw_weights = params.get(
         "density_curve_count_weights",
         group_default(GEN_DEFAULTS, "density_curve_count_weights", {}),
@@ -80,13 +83,31 @@ def sample_palette(
     count: int,
     anchor_colors: Sequence[RGB],
 ) -> tuple[RGB, ...]:
-    """Sample visually separated curve colors."""
+    """Sample visually separated curve identity colors.
+
+    Scene role: density curves often overlap, so this helper owns the curve
+    color contract before objective binding. Key invariant: the default path
+    returns a deterministic subset of the shared TRACE visibility-safe palette
+    with pairwise Lab separation high enough for every visible curve.
+    """
 
     rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.palette")
     channel_min = int(params.get("density_curve_color_channel_min", group_default(RENDER_DEFAULTS, "mark_color_channel_min", 20)))
     channel_max = int(params.get("density_curve_color_channel_max", group_default(RENDER_DEFAULTS, "mark_color_channel_max", 210)))
-    min_distance = float(params.get("density_curve_color_min_distance", group_default(RENDER_DEFAULTS, "mark_color_min_distance", 38.0)))
+    min_distance = max(
+        float(DEFAULT_DENSITY_CURVE_PAIRWISE_DELTA_E),
+        float(params.get("density_curve_color_min_distance", group_default(RENDER_DEFAULTS, "mark_color_min_distance", DEFAULT_DENSITY_CURVE_PAIRWISE_DELTA_E))),
+    )
     distance_space = str(params.get("density_curve_color_distance_space", group_default(RENDER_DEFAULTS, "mark_color_distance_space", "lab")))
+    palette_mode = str(params.get("density_curve_palette_mode", group_default(RENDER_DEFAULTS, "density_curve_palette_mode", "safe_qualitative")))
+    if palette_mode == "safe_qualitative":
+        del anchor_colors
+        return _sample_trace_safe_curve_palette(
+            rng,
+            count=int(count),
+            min_pairwise_distance=float(min_distance),
+            distance_space=str(distance_space),
+        )
     return sample_color_palette_with_distance_constraints(
         rng,
         palette_size=int(count),
@@ -95,6 +116,53 @@ def sample_palette(
         anchor_colors=tuple(anchor_colors),
         min_distance=float(min_distance),
         distance_space=str(distance_space),
+    )
+
+
+def _sample_trace_safe_curve_palette(
+    rng,
+    *,
+    count: int,
+    min_pairwise_distance: float,
+    distance_space: str,
+) -> tuple[RGB, ...]:
+    """Choose one TRACE-safe color subset satisfying the curve separation floor."""
+
+    candidate_pool = tuple(tuple(int(channel) for channel in color) for color in TRACE_SAFE_DENSITY_CURVE_PALETTE_RGB)
+    size = int(count)
+    if size < 1:
+        return tuple()
+    if size > len(candidate_pool):
+        raise ValueError("density_curve_count exceeds shared TRACE safe color support")
+    threshold = float(min_pairwise_distance)
+    feasible: list[tuple[RGB, ...]] = []
+    best_combo: tuple[RGB, ...] | None = None
+    best_distance = -1.0
+    for combo in combinations(candidate_pool, size):
+        min_distance = _min_pairwise_color_distance(combo, distance_space=str(distance_space))
+        if float(min_distance) > float(best_distance):
+            best_distance = float(min_distance)
+            best_combo = tuple(combo)
+        if float(min_distance) >= float(threshold):
+            feasible.append(tuple(combo))
+    if not feasible:
+        raise ValueError(
+            f"no {size}-color TRACE safe density-curve subset reaches pairwise {threshold:.1f}; "
+            f"best={best_distance:.3f}"
+        )
+    selected = list(feasible[int(rng.randrange(len(feasible)))])
+    rng.shuffle(selected)
+    return tuple(tuple(int(channel) for channel in color) for color in selected)
+
+
+def _min_pairwise_color_distance(colors: Sequence[RGB], *, distance_space: str) -> float:
+    """Return the minimum pairwise distance in a color subset."""
+
+    if len(colors) < 2:
+        return float("inf")
+    return min(
+        float(color_distance(first, second, distance_space=str(distance_space)))
+        for first, second in combinations(tuple(colors), 2)
     )
 
 
@@ -186,7 +254,7 @@ def sample_density_curve_scene(
         interval_end=float(interval_end),
         reference_x=float(reference_x),
         label_resolution=labels_resolution,
-        curve_count_range=(gen_int(params, "density_curve_count_min", 4), gen_int(params, "density_curve_count_max", 7)),
+        curve_count_range=(gen_int(params, "density_curve_count_min", 4), gen_int(params, "density_curve_count_max", 6)),
         curve_count_probabilities=dict(curve_count_probabilities),
         density_family_probabilities=dict(family_probabilities or {}),
     )
@@ -234,6 +302,14 @@ def bind_density_curve_query(
         "families_by_label": {str(curve.label): str(curve.family) for curve in sample.curves},
         "component_count_by_label": {str(curve.label): int(curve.component_count) for curve in sample.curves},
         "line_style_by_label": {str(curve.label): str(curve.line_style) for curve in sample.curves},
+        "color_rgb_by_label": {
+            str(curve.label): [int(channel) for channel in curve.color_rgb]
+            for curve in sample.curves
+        },
+        "min_curve_pairwise_lab_distance": round(
+            float(_min_pairwise_color_distance(tuple(curve.color_rgb for curve in sample.curves), distance_space="lab")),
+            3,
+        ),
         "label_resolution": {
             key: list(value) if isinstance(value, tuple) else dict(value) if isinstance(value, Mapping) else value
             for key, value in dict(sample.label_resolution.__dict__).items()

@@ -10,7 +10,15 @@
 7. Program schema: `select(option where move_checkmates(opponent_king)); scene=chess; scope=checkmate_move_label`
 
 ## Program Contract
-- `select(option where move_checkmates(opponent_king)); scene=chess; scope=checkmate_move_label`
+
+Program: `select(option where move_checkmates(opponent_king)); scene=chess; scope=checkmate_move_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `checkmate_move_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `where`, `move_checkmates`, `opponent_king`, `chess`, `checkmate_move_label`.
+Operation: evaluate `select` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The board shows standard chess coordinates on the margins and a visible panel of candidate moves.

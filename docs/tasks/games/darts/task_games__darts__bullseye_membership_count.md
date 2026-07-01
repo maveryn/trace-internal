@@ -11,7 +11,15 @@
 8. Program schema: `count(filter(darts, bullseye_membership(dart)=inside|outside)); scene=darts; scope=bullseye_membership_count`
 
 ## Program Contract
-- `count(filter(darts, bullseye_membership(dart)=inside|outside)); scene=darts; scope=bullseye_membership_count`
+
+Program: `count(filter(darts, bullseye_membership(dart)=inside|outside)); scene=darts; scope=bullseye_membership_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `bullseye_membership_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `darts`, `bullseye_membership`, `dart`, `inside`, `outside`, `bullseye_membership_count` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `inside_bullseye_count`, `outside_bullseye_count`.
 
 ## Generation Notes
 1. The scene renders a simplified dartboard with 20 numbered sectors and one center bullseye.

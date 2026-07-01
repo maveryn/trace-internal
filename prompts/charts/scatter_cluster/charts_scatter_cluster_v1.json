@@ -36,20 +36,6 @@
         "Compare the cluster trends. Which cluster has the strongest downward pattern?",
         "Which cluster label has the clearest downward trend?"
       ],
-      "closest_to_reference_label": [
-        "Which cluster is closest to cluster \"{reference_cluster_label}\"?",
-        "Using cluster centers, find the cluster closest to cluster \"{reference_cluster_label}\".",
-        "Compare distances from cluster \"{reference_cluster_label}\". Which cluster is closest to it?",
-        "What cluster label is closest to the reference cluster \"{reference_cluster_label}\"?",
-        "From the labeled point clouds, which cluster is closest to cluster \"{reference_cluster_label}\"?"
-      ],
-      "farthest_from_reference_label": [
-        "Which cluster is farthest from cluster \"{reference_cluster_label}\"?",
-        "Using cluster centers, find the cluster farthest from cluster \"{reference_cluster_label}\".",
-        "Compare distances from cluster \"{reference_cluster_label}\". Which cluster is farthest from it?",
-        "What cluster label is farthest from the reference cluster \"{reference_cluster_label}\"?",
-        "From the labeled point clouds, which cluster is farthest from cluster \"{reference_cluster_label}\"?"
-      ],
       "largest_horizontal_spread_label": [
         "Which cluster has the largest horizontal spread?",
         "Find the labeled cluster with the largest horizontal dispersion.",
@@ -93,13 +79,6 @@
         "Which cluster has points with the smallest overall spread?"
       ],
       "largest_cluster_area_label": [
-        "Using the shaded cluster footprints, which cluster has the {area_rank_phrase} displayed area?",
-        "Compare the shaded footprints. What cluster label has the {area_rank_phrase} footprint area?",
-        "Which labeled cluster has the {area_rank_phrase} shaded footprint by area?",
-        "Using the displayed shaded cluster areas, which cluster is {area_rank_phrase}?",
-        "Which cluster's shaded footprint has the {area_rank_phrase} area?"
-      ],
-      "second_largest_cluster_area_label": [
         "Using the shaded cluster footprints, which cluster has the {area_rank_phrase} displayed area?",
         "Compare the shaded footprints. What cluster label has the {area_rank_phrase} footprint area?",
         "Which labeled cluster has the {area_rank_phrase} shaded footprint by area?",
@@ -151,18 +130,6 @@
       "json_example": "{\"annotation\":[220,360,340,455],\"answer\":\"Cobalt\"}",
       "json_example_answer_only": "{\"answer\":\"Cobalt\"}"
     },
-    "query:closest_to_reference_label": {
-      "answer_hint": "set \"answer\" to the requested cluster label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"reference_cluster\" and \"answer_cluster\" to [x0,y0,x1,y1] pixel boxes around those cluster hulls",
-      "json_example": "{\"annotation\":{\"reference_cluster\":[120,260,245,350],\"answer_cluster\":[220,360,340,455]},\"answer\":\"Cobalt\"}",
-      "json_example_answer_only": "{\"answer\":\"Cobalt\"}"
-    },
-    "query:farthest_from_reference_label": {
-      "answer_hint": "set \"answer\" to the requested cluster label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"reference_cluster\" and \"answer_cluster\" to [x0,y0,x1,y1] pixel boxes around those cluster hulls",
-      "json_example": "{\"annotation\":{\"reference_cluster\":[120,260,245,350],\"answer_cluster\":[220,360,340,455]},\"answer\":\"Cobalt\"}",
-      "json_example_answer_only": "{\"answer\":\"Cobalt\"}"
-    },
     "query:largest_horizontal_spread_label": {
       "answer_hint": "set \"answer\" to the requested cluster label as a string",
       "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] pixel box around the answer cluster hull",
@@ -205,12 +172,6 @@
       "json_example": "{\"annotation\":[145,255,276,344],\"answer\":\"Cobalt\"}",
       "json_example_answer_only": "{\"answer\":\"Cobalt\"}"
     },
-    "query:second_largest_cluster_area_label": {
-      "answer_hint": "set \"answer\" to the requested cluster label as a string",
-      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] pixel box around the answer cluster's shaded footprint",
-      "json_example": "{\"annotation\":[145,255,276,344],\"answer\":\"Cobalt\"}",
-      "json_example_answer_only": "{\"answer\":\"Cobalt\"}"
-    },
     "query:smallest_cluster_area_label": {
       "answer_hint": "set \"answer\" to the requested cluster label as a string",
       "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] pixel box around the answer cluster's shaded footprint",
@@ -219,16 +180,14 @@
     },
     "query:centroid_option_selection_label": {
       "answer_hint": "set \"answer\" to the selected option letter as a capital letter",
-      "annotation_hint": "set \"annotation\" to an object mapping \"target_cluster\" to the [x0,y0,x1,y1] pixel box around the named cluster hull and \"selected_option_marker\" to the [x0,y0,x1,y1] pixel box around the selected option marker",
-      "json_example": "{\"annotation\":{\"target_cluster\":[145,255,276,344],\"selected_option_marker\":[312,276,342,306]},\"answer\":\"D\"}",
+      "annotation_hint": "set \"annotation\" to the [x,y] pixel point at the center of the selected option marker",
+      "json_example": "{\"annotation\":[327,291],\"answer\":\"D\"}",
       "json_example_answer_only": "{\"answer\":\"D\"}"
     }
   },
   "dynamic_slots": {
     "object_description": {"type": "string"},
     "trend_direction_phrase": {"type": "string"},
-    "reference_cluster_label": {"type": "string"},
-    "separation_extremum_phrase": {"type": "string"},
     "spread_axis_phrase": {"type": "string"},
     "spread_extremum_phrase": {"type": "string"},
     "area_rank_phrase": {"type": "string"},

@@ -10,7 +10,15 @@
 Computes the fewest movement-point cost for the blue unit to reach one marked target tile after the best single conversion of one water, mountain, or forest tile into a road tile.
 
 ## Program Contract
-`value(min_shortest_movement_cost_after_unique_one_tile_to_road_conversion(unit, marked_tile, terrain_costs)); scene=rpg_tactical_map; scope=counterfactual_terrain_conversion_cost_value`
+
+Program: `value(min_shortest_movement_cost_after_unique_one_tile_to_road_conversion(unit, marked_tile, terrain_costs)); scene=rpg_tactical_map; scope=counterfactual_terrain_conversion_cost_value`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `counterfactual_terrain_conversion_cost_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `min_shortest_movement_cost_after_unique_one_tile_to_road_conversion`, `unit`, `marked_tile`, `terrain_costs`, `rpg_tactical_map`, `counterfactual_terrain_conversion_cost_value`.
+Operation: evaluate `value` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

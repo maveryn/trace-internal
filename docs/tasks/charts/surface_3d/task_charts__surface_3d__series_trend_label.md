@@ -16,16 +16,24 @@
 
 ## Annotation Contract
 1. Answer schema: `string_label`.
-2. Annotation schema: `bbox_map`.
-3. Annotation maps `start_point` and `end_point` to [x0,y0,x1,y1] pixel boxes around the answer series endpoints.
+2. Annotation schema: `segment`.
+3. Annotation is one segment connecting the first and last marker centers of the answer series.
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
 ## Program Contract
-`selection.extreme_label(difference(endpoint_value(series), start_value(series)), direction); scene=surface_3d; scope=series_trend_label`
+
+Program: `selection.extreme_label(difference(z_value(last_x_point(series)), z_value(first_x_point(series))), direction); scene=surface_3d; scope=series_trend_label`
+
+Candidate set: the visible 3D surface samples, grid lines, and axis labels inside the `series_trend_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `selection.extreme_label` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `segment` witnesses bound by `see_annotation_contract`. Annotation is one segment connecting the first and last marker centers of the answer series. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `increase`, `decrease`.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `increase` | `selection.extreme_label(difference(endpoint_value(series), start_value(series)), increase)` | `string_label` | `bbox_map` |
-| `decrease` | `selection.extreme_label(difference(endpoint_value(series), start_value(series)), decrease)` | `string_label` | `bbox_map` |
+| `increase` | `selection.extreme_label(difference(z_value(last_x_point(series)), z_value(first_x_point(series))), increase)` | `string_label` | `segment` |
+| `decrease` | `selection.extreme_label(difference(z_value(last_x_point(series)), z_value(first_x_point(series))), decrease)` | `string_label` | `segment` |

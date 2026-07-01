@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from ....core.query_ids import SINGLE_QUERY_ID
 from ._lifecycle import (
     MultiseriesTaskPlan,
     build_label_selection_plan,
@@ -25,11 +24,7 @@ from .shared.sampling import (
     balance_answer_label_for_indexed_probe,
     internal_change_variant,
     params_for_variant_family,
-    resolve_change_direction,
-    resolve_change_measure,
-    resolve_extremum_direction,
     resolve_scene_variant,
-    support_params_for_axis_cycle,
 )
 
 
@@ -43,52 +38,68 @@ TASK_PARAM_DEFAULTS: dict[str, Any] = {
     "delta_value_min": 1,
     "delta_value_max": 30,
     "rank_min": 1,
-    "rank_max": 3,
+    "rank_max": 1,
     "derived_score_min": 4,
     "derived_score_max": 24,
     "score_spread_extra_min": 0,
     "score_spread_extra_max": 4,
+}
+LARGEST_INCREASE_QUERY_ID = "largest_increase_label"
+LARGEST_DECREASE_QUERY_ID = "largest_decrease_label"
+LARGEST_ABSOLUTE_GAP_QUERY_ID = "largest_absolute_gap_label"
+SMALLEST_ABSOLUTE_GAP_QUERY_ID = "smallest_absolute_gap_label"
+RANKED_CHANGE_QUERY_IDS = (
+    LARGEST_INCREASE_QUERY_ID,
+    LARGEST_DECREASE_QUERY_ID,
+    LARGEST_ABSOLUTE_GAP_QUERY_ID,
+    SMALLEST_ABSOLUTE_GAP_QUERY_ID,
+)
+BRANCH_BY_QUERY_ID: dict[str, dict[str, str | None]] = {
+    LARGEST_INCREASE_QUERY_ID: {
+        "change_measure": "directional_change",
+        "change_direction": "increase",
+        "extremum_direction": None,
+        "prompt_query_key": "ranked_directional_change",
+    },
+    LARGEST_DECREASE_QUERY_ID: {
+        "change_measure": "directional_change",
+        "change_direction": "decrease",
+        "extremum_direction": None,
+        "prompt_query_key": "ranked_directional_change",
+    },
+    LARGEST_ABSOLUTE_GAP_QUERY_ID: {
+        "change_measure": "absolute_gap",
+        "change_direction": None,
+        "extremum_direction": "largest",
+        "prompt_query_key": "ranked_absolute_gap",
+    },
+    SMALLEST_ABSOLUTE_GAP_QUERY_ID: {
+        "change_measure": "absolute_gap",
+        "change_direction": None,
+        "extremum_direction": "smallest",
+        "prompt_query_key": "ranked_absolute_gap",
+    },
 }
 
 
 def _build_plan(instance_seed: int, params: Mapping[str, Any], selected_query_id: str) -> MultiseriesTaskPlan:
     """Bind the ranked change/gap objective before neutral rendering."""
 
-    change_measure, change_measure_probabilities = resolve_change_measure(params, instance_seed=int(instance_seed))
-    dataset_params = support_params_for_axis_cycle(
-        params,
-        probabilities=change_measure_probabilities,
-        supported_values=("directional_change", "absolute_gap"),
-        explicit_key="change_measure",
-        weights_key="change_measure_weights",
-        balance_flag_key="balanced_change_measure_sampling",
-    )
-    change_direction = None
-    change_direction_probabilities: dict[str, float] = {}
-    extremum_direction = None
-    extremum_direction_probabilities: dict[str, float] = {}
-    if str(change_measure) == "directional_change":
-        change_direction, change_direction_probabilities = resolve_change_direction(dataset_params, instance_seed=int(instance_seed))
-        dataset_params = support_params_for_axis_cycle(
-            dataset_params,
-            probabilities=change_direction_probabilities,
-            supported_values=("increase", "decrease"),
-            explicit_key="change_direction",
-            weights_key="change_direction_weights",
-            balance_flag_key="balanced_change_direction_sampling",
-        )
-        prompt_query_key = "ranked_directional_change"
-    else:
-        extremum_direction, extremum_direction_probabilities = resolve_extremum_direction(dataset_params, instance_seed=int(instance_seed))
-        dataset_params = support_params_for_axis_cycle(
-            dataset_params,
-            probabilities=extremum_direction_probabilities,
-            supported_values=("largest", "smallest"),
-            explicit_key="extremum_direction",
-            weights_key="extremum_direction_weights",
-            balance_flag_key="balanced_extremum_direction_sampling",
-        )
-        prompt_query_key = "ranked_absolute_gap"
+    branch = BRANCH_BY_QUERY_ID[str(selected_query_id)]
+    change_measure = str(branch["change_measure"])
+    change_direction = branch["change_direction"]
+    extremum_direction = branch["extremum_direction"]
+    prompt_query_key = str(branch["prompt_query_key"])
+    dataset_params = {
+        **dict(params),
+        "change_measure": str(change_measure),
+        "rank_min": 1,
+        "rank_max": 1,
+    }
+    if change_direction is not None:
+        dataset_params["change_direction"] = str(change_direction)
+    if extremum_direction is not None:
+        dataset_params["extremum_direction"] = str(extremum_direction)
     internal_query_id = internal_change_variant(
         change_measure=str(change_measure),
         change_direction=change_direction,
@@ -138,16 +149,13 @@ def _build_plan(instance_seed: int, params: Mapping[str, Any], selected_query_id
         ),
         extra={
             "change_measure": str(change_measure),
-            "change_measure_probabilities": dict(change_measure_probabilities),
             "scene_variant_probabilities": dict(scene_variant_probabilities),
         },
     )
     if change_direction is not None:
         optional_trace["change_direction"] = str(change_direction)
-        optional_trace["change_direction_probabilities"] = dict(change_direction_probabilities)
     if extremum_direction is not None:
         optional_trace["extremum_direction"] = str(extremum_direction)
-        optional_trace["extremum_direction_probabilities"] = dict(extremum_direction_probabilities)
     return build_label_selection_plan(
         values_by_category=values_by_category,
         trace_extras=trace_extras,
@@ -170,10 +178,10 @@ class ChartsMultiseriesRankedChangeExtremumTask:
     task_id = "task_charts__multiseries__ranked_change_extremum_label"
     domain = DOMAIN
     objective_contract = "ranked_change_extremum_label"
-    supported_query_ids = (SINGLE_QUERY_ID,)
+    supported_query_ids = RANKED_CHANGE_QUERY_IDS
     default_dataset_enabled = True
 
-    default_query_id = SINGLE_QUERY_ID
+    default_query_id = LARGEST_INCREASE_QUERY_ID
     task_param_defaults = TASK_PARAM_DEFAULTS
     _build_plan = staticmethod(_build_plan)
 
@@ -181,4 +189,11 @@ class ChartsMultiseriesRankedChangeExtremumTask:
         return run_configured_multiseries_task(self, int(instance_seed), dict(params), int(max_attempts))
 
 
-__all__ = ["ChartsMultiseriesRankedChangeExtremumTask"]
+__all__ = [
+    "LARGEST_ABSOLUTE_GAP_QUERY_ID",
+    "LARGEST_DECREASE_QUERY_ID",
+    "LARGEST_INCREASE_QUERY_ID",
+    "RANKED_CHANGE_QUERY_IDS",
+    "SMALLEST_ABSOLUTE_GAP_QUERY_ID",
+    "ChartsMultiseriesRankedChangeExtremumTask",
+]

@@ -7,7 +7,7 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.pages.schedule.day_planner import PagesScheduleMaximumNonOverlappingCountTask
+from trace.tasks.pages.schedule.maximum_non_overlapping_count import PagesScheduleMaximumNonOverlappingCountTask
 from tests.helpers import read_jsonl
 
 

@@ -83,7 +83,10 @@ def _floor_polygon_area_xy(polygon_xy: Sequence[Tuple[float, float]]) -> float:
     if len(polygon_xy) < 3:
         return 0.0
     for index, point_a in enumerate(polygon_xy):
-        point_b = polygon_xy[(index + 1) % len(polygon_xy)]
+        next_index = index + 1
+        if next_index >= len(polygon_xy):
+            next_index = 0
+        point_b = polygon_xy[next_index]
         area += float(point_a[0]) * float(point_b[1]) - float(point_b[0]) * float(point_a[1])
     return float(area * 0.5)
 
@@ -134,7 +137,10 @@ def _clip_polygon_to_convex_floor(
 
     output = _dedupe_polygon_points_xy(subject_polygon_xy)
     for index, edge_start in enumerate(clip_polygon_xy):
-        edge_end = clip_polygon_xy[(index + 1) % len(clip_polygon_xy)]
+        next_index = index + 1
+        if next_index >= len(clip_polygon_xy):
+            next_index = 0
+        edge_end = clip_polygon_xy[next_index]
         if not output:
             break
         input_points = list(output)

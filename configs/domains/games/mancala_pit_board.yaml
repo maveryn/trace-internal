@@ -48,6 +48,13 @@ generation:
       - 7
       - 8
       balanced_target_count_sampling: true
+    task_games__mancala_pit_board__max_post_sow_option_label:
+      answer_option_label_support:
+      - A
+      - B
+      - C
+      - D
+      balanced_answer_option_label_sampling: true
 rendering:
   shared:
     canvas_width: 980

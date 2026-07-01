@@ -5,8 +5,9 @@
 2. Scene id: `triangle_relations`
 3. Query id: `single`
 4. Answer schema: `number`
-5. Annotation schema: `point_map`
-6. Scalar annotation checked: true
+5. Answer precision: `one_decimal`
+6. Annotation schema: `point_map`
+7. Scalar annotation checked: true
 
 ## Program Contract
 - `solve_formula(shared_altitude_right_triangle_trig, unknown_role=target_side_length, formula_schema=shared_altitude_right_triangle_trig); scene=triangle_relations; scope=split_triangle_trig_side_length_value`

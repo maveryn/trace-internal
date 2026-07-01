@@ -4,15 +4,14 @@ Public taxonomy: `games -> ludo_board -> task_games__ludo_board__capture_roll_op
 
 ## Program Contract
 
-Program code: `select(option_label where clockwise_distance(mover_token, target_token) == option_roll_distance); scene=ludo_board; scope=capture_roll_option_label`.
+Program: `select(option_label where clockwise_distance(mover_token, target_token) == option_roll_distance); scene=ludo_board; scope=capture_roll_option_label`
 
-The scene renders a Ludo-style cross board with one visible token for each player color, twelve two-cell arrows showing clockwise flow, and visible roll-option cards. The task asks which displayed option moves the named token onto the named target token. A `6 then k` option means move six spaces, then k more spaces.
-
-Answer schema: `option_letter`.
-
-Annotation schema: `point_map` with `mover_token` and `target_token`.
-
-Supported `query_id`: `single`.
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `capture_roll_option_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `option_label`, `where`, `clockwise_distance`, `mover_token`, `target_token`, `option_roll_distance`, `ludo_board`, `capture_roll_option_label`.
+Operation: evaluate `select` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generator
 

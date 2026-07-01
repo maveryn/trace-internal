@@ -14,7 +14,6 @@ def _case(
     layout_style: str,
     answer_value: int,
     answer_support: Sequence[int],
-    rule_note: str,
     data: Mapping[str, Any],
 ) -> ArithmeticCase:
     return ArithmeticCase(
@@ -24,7 +23,6 @@ def _case(
         answer_support=tuple(int(value) for value in answer_support),
         answer_range=answer_range_from_support(answer_support),
         target_item_id="target",
-        rule_note=str(rule_note),
         data=dict(data),
     )
 
@@ -83,51 +81,12 @@ def build_equal_sum_case(
         layout_style="polygon_side_sum",
         answer_value=int(answer_value),
         answer_support=answer_support,
-        rule_note="Each side has the same total.",
         data={
             "side_count": side_count,
             "corner_values": corners,
             "middle_values": mids,
             "target_side": target_side,
             "side_total": side_total,
-        },
-    )
-
-
-def build_window_sum_case(
-    rng,
-    *,
-    answer_value: int,
-    answer_support: Sequence[int],
-    gen_defaults: Mapping[str, Any],
-    params: Mapping[str, Any],
-) -> ArithmeticCase:
-    """Build a sequence where each fixed-width window has the same sum."""
-
-    low, high = visible_value_bounds(params, gen_defaults)
-    length = int(rng.randint(6, 9))
-    window_size = int(rng.choice((3, 4)))
-    base = [int(rng.randint(low, high)) for _ in range(window_size)]
-    target_index = int(rng.randrange(length))
-    base[target_index % window_size] = int(answer_value)
-    values = [base[index % window_size] for index in range(length)]
-    window_total = sum(base)
-    visible = [
-        None if index == target_index else int(value)
-        for index, value in enumerate(values)
-    ]
-    return _case(
-        kind="window_sequence",
-        layout_style="equal_windows",
-        answer_value=int(answer_value),
-        answer_support=answer_support,
-        rule_note=f"Every {window_size} consecutive cells sum to {window_total}.",
-        data={
-            "sequence_values": values,
-            "visible_values": visible,
-            "window_size": window_size,
-            "window_total": window_total,
-            "target_index": target_index,
         },
     )
 
@@ -155,7 +114,6 @@ def build_vertical_arithmetic_case(
             ("addend", b_digits, None),
             ("result", [int(ch) for ch in str(result)], None),
         ]
-        note = "Add the two numbers."
     else:
         minuend = int(rng.randint(30, 900))
         subtrahend = int(rng.randint(10, max(10, minuend - 1)))
@@ -170,13 +128,11 @@ def build_vertical_arithmetic_case(
             ("minus", [int(ch) for ch in str(subtrahend).zfill(len(digits))], None),
             ("result", [int(ch) for ch in str(result).zfill(len(digits))], None),
         ]
-        note = "Subtract the second number from the first."
     return _case(
         kind=f"vertical_{operation}",
         layout_style="stacked_arithmetic",
         answer_value=int(answer_value),
         answer_support=answer_support,
-        rule_note=note,
         data={
             "operation": str(operation),
             "rows": rows,
@@ -207,7 +163,6 @@ def build_operation_table_case(
         layout_style="operator_grid",
         answer_value=int(answer_value),
         answer_support=answer_support,
-        rule_note=f"Each cell equals row header {operator} column header.",
         data={
             "operator": operator,
             "row_headers": row_headers,
@@ -240,7 +195,6 @@ def build_row_column_total_case(
         layout_style="sum_grid",
         answer_value=int(answer_value),
         answer_support=answer_support,
-        rule_note="Row and column totals are shown at the edges.",
         data={
             "values": values,
             "target_row": target_row,
@@ -399,17 +353,11 @@ def _place_upper_number_wall_answer(
 def build_number_wall_case(
     rng, *, answer_value: int, answer_support: Sequence[int], wall_kind: str
 ) -> ArithmeticCase:
-    """Build a number wall or multiplication pyramid with one hidden brick."""
+    """Build an addition number wall with one hidden brick."""
 
-    if str(wall_kind) == "addition":
-        note = "Each brick is the sum of the two bricks below."
-        operator = "sum"
-    elif str(wall_kind) == "difference":
-        note = "Each brick is the absolute difference of the two bricks below."
-        operator = "difference"
-    else:
-        note = "Each brick is the product of the two bricks below."
-        operator = "product"
+    if str(wall_kind) != "addition":
+        raise ValueError(f"unsupported number-wall kind: {wall_kind!r}")
+    operator = "sum"
 
     prefer_upper_target = float(rng.random()) < 0.75
     for attempt_index in range(800):
@@ -453,7 +401,6 @@ def build_number_wall_case(
         layout_style="stacked_wall",
         answer_value=int(answer_value),
         answer_support=answer_support,
-        rule_note=note,
         data={
             "levels": levels,
             "target_level": target_level,
@@ -469,5 +416,4 @@ __all__ = [
     "build_operation_table_case",
     "build_row_column_total_case",
     "build_vertical_arithmetic_case",
-    "build_window_sum_case",
 ]

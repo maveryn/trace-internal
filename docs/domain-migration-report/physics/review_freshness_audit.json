@@ -1,0 +1,533 @@
+{
+  "checked_at": "2026-07-01T06:14:54Z",
+  "domain": "physics",
+  "excluded_report_root": "docs/domain-migration-report/physics",
+  "freshness_marker": "scene_review_manifest.json",
+  "input_policy": [
+    "trace/tasks/physics/<scene_id>/",
+    "trace/tasks/physics/shared/",
+    "trace/tasks/shared/",
+    "prompts/physics/<scene_id>/",
+    "docs/tasks/physics/<scene_id>/",
+    "configs/domains/physics/base.yaml",
+    "configs/domains/physics/<scene_id>.yaml",
+    "docs/SCENE_PACKAGE_MIGRATION/PHYSICS_SHARED_BOUNDARY.md"
+  ],
+  "records": [
+    {
+      "input_count": 70,
+      "manifest_iso_mtime": "2026-07-01T05:32:08Z",
+      "manifest_mtime": 1782883928.0441592,
+      "manifest_path": "review/task-reviews/physics/analog_meter/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2070107,
+        "path": "docs/tasks/physics/analog_meter/task_physics__analog_meter__meter_readout_value.md"
+      },
+      "scene_id": "analog_meter",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 71,
+      "manifest_iso_mtime": "2026-07-01T05:32:11Z",
+      "manifest_mtime": 1782883931.0951993,
+      "manifest_path": "review/task-reviews/physics/bridge_circuit/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2070107,
+        "path": "docs/tasks/physics/bridge_circuit/task_physics__bridge_circuit__bridge_missing_resistance_value.md"
+      },
+      "scene_id": "bridge_circuit",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 71,
+      "manifest_iso_mtime": "2026-07-01T05:32:13Z",
+      "manifest_mtime": 1782883933.7842348,
+      "manifest_path": "review/task-reviews/physics/bulb_circuit/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2080107,
+        "path": "docs/tasks/physics/bulb_circuit/task_physics__bulb_circuit__brightness_extremum_label.md"
+      },
+      "scene_id": "bulb_circuit",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 71,
+      "manifest_iso_mtime": "2026-07-01T05:32:16Z",
+      "manifest_mtime": 1782883936.7912743,
+      "manifest_path": "review/task-reviews/physics/buoyancy_density/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2080107,
+        "path": "docs/tasks/physics/buoyancy_density/task_physics__buoyancy_density__object_density_value.md"
+      },
+      "scene_id": "buoyancy_density",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 74,
+      "manifest_iso_mtime": "2026-07-01T05:32:22Z",
+      "manifest_mtime": 1782883942.4803486,
+      "manifest_path": "review/task-reviews/physics/circuit_equivalent/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2090106,
+        "path": "docs/tasks/physics/circuit_equivalent/task_physics__circuit_equivalent__total_capacitance_value.md"
+      },
+      "scene_id": "circuit_equivalent",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 71,
+      "manifest_iso_mtime": "2026-07-01T05:32:26Z",
+      "manifest_mtime": 1782883946.0263948,
+      "manifest_path": "review/task-reviews/physics/circuit_state_change/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2090106,
+        "path": "docs/tasks/physics/circuit_state_change/task_physics__circuit_state_change__bulb_brightness_change_label.md"
+      },
+      "scene_id": "circuit_state_change",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 73,
+      "manifest_iso_mtime": "2026-07-01T05:32:31Z",
+      "manifest_mtime": 1782883951.5634665,
+      "manifest_path": "review/task-reviews/physics/collision/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2100108,
+        "path": "docs/tasks/physics/collision/task_physics__collision__sticky_collision_speed_value.md"
+      },
+      "scene_id": "collision",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 72,
+      "manifest_iso_mtime": "2026-07-01T05:32:34Z",
+      "manifest_mtime": 1782883954.9395103,
+      "manifest_path": "review/task-reviews/physics/electromagnetic_induction/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2100108,
+        "path": "docs/tasks/physics/electromagnetic_induction/task_physics__electromagnetic_induction__induced_current_direction_count.md"
+      },
+      "scene_id": "electromagnetic_induction",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 76,
+      "manifest_iso_mtime": "2026-07-01T05:32:44Z",
+      "manifest_mtime": 1782883964.25063,
+      "manifest_path": "review/task-reviews/physics/electrostatic_field/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2110107,
+        "path": "docs/tasks/physics/electrostatic_field/task_physics__electrostatic_field__potential_value.md"
+      },
+      "scene_id": "electrostatic_field",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 72,
+      "manifest_iso_mtime": "2026-07-01T05:32:46Z",
+      "manifest_mtime": 1782883966.8756635,
+      "manifest_path": "review/task-reviews/physics/fluid_flow/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2110107,
+        "path": "docs/tasks/physics/fluid_flow/task_physics__fluid_flow__continuity_speed_value.md"
+      },
+      "scene_id": "fluid_flow",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 72,
+      "manifest_iso_mtime": "2026-07-01T05:32:50Z",
+      "manifest_mtime": 1782883970.3747082,
+      "manifest_path": "review/task-reviews/physics/free_body_forces/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2120106,
+        "path": "docs/tasks/physics/free_body_forces/task_physics__free_body_forces__net_force_direction_choice.md"
+      },
+      "scene_id": "free_body_forces",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 75,
+      "manifest_iso_mtime": "2026-07-01T05:32:56Z",
+      "manifest_mtime": 1782883976.8427906,
+      "manifest_path": "review/task-reviews/physics/gear_train/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2120106,
+        "path": "docs/tasks/physics/gear_train/task_physics__gear_train__output_direction_label.md"
+      },
+      "scene_id": "gear_train",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 74,
+      "manifest_iso_mtime": "2026-07-01T05:33:03Z",
+      "manifest_mtime": 1782883983.8108788,
+      "manifest_path": "review/task-reviews/physics/graduated_cylinder/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2130108,
+        "path": "docs/tasks/physics/graduated_cylinder/task_physics__graduated_cylinder__displacement_volume_value.md"
+      },
+      "scene_id": "graduated_cylinder",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 66,
+      "manifest_iso_mtime": "2026-07-01T05:33:07Z",
+      "manifest_mtime": 1782883987.8219292,
+      "manifest_path": "review/task-reviews/physics/hydraulic/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2130108,
+        "path": "docs/tasks/physics/hydraulic/task_physics__hydraulic__hydraulic_missing_value.md"
+      },
+      "scene_id": "hydraulic",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 67,
+      "manifest_iso_mtime": "2026-07-01T05:33:11Z",
+      "manifest_mtime": 1782883991.454975,
+      "manifest_path": "review/task-reviews/physics/lens_optics/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2140107,
+        "path": "docs/tasks/physics/lens_optics/task_physics__lens_optics__image_property_choice.md"
+      },
+      "scene_id": "lens_optics",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 75,
+      "manifest_iso_mtime": "2026-07-01T05:33:16Z",
+      "manifest_mtime": 1782883996.5500386,
+      "manifest_path": "review/task-reviews/physics/lever/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2140107,
+        "path": "docs/tasks/physics/lever/task_physics__lever__side_torque_value.md"
+      },
+      "scene_id": "lever",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 64,
+      "manifest_iso_mtime": "2026-07-01T05:33:19Z",
+      "manifest_mtime": 1782883999.715078,
+      "manifest_path": "review/task-reviews/physics/magnetic_force/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2150106,
+        "path": "docs/tasks/physics/magnetic_force/task_physics__magnetic_force__force_direction_choice.md"
+      },
+      "scene_id": "magnetic_force",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 64,
+      "manifest_iso_mtime": "2026-07-01T05:33:22Z",
+      "manifest_mtime": 1782884002.7291155,
+      "manifest_path": "review/task-reviews/physics/manometer/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2150106,
+        "path": "docs/tasks/physics/manometer/task_physics__manometer__pressure_difference_value.md"
+      },
+      "scene_id": "manometer",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 76,
+      "manifest_iso_mtime": "2026-07-01T05:33:32Z",
+      "manifest_mtime": 1782884012.132232,
+      "manifest_path": "review/task-reviews/physics/motion_graph/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2160108,
+        "path": "docs/tasks/physics/motion_graph/task_physics__motion_graph__interval_displacement_value.md"
+      },
+      "scene_id": "motion_graph",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 74,
+      "manifest_iso_mtime": "2026-07-01T05:33:38Z",
+      "manifest_mtime": 1782884018.1603062,
+      "manifest_path": "review/task-reviews/physics/orbital_motion/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2170107,
+        "path": "docs/tasks/physics/orbital_motion/task_physics__orbital_motion__orbital_speed_extremum_label.md"
+      },
+      "scene_id": "orbital_motion",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 71,
+      "manifest_iso_mtime": "2026-07-01T05:33:41Z",
+      "manifest_mtime": 1782884021.315345,
+      "manifest_path": "review/task-reviews/physics/piston_cylinder/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2170107,
+        "path": "docs/tasks/physics/piston_cylinder/task_physics__piston_cylinder__boundary_work_value.md"
+      },
+      "scene_id": "piston_cylinder",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 71,
+      "manifest_iso_mtime": "2026-07-01T05:33:44Z",
+      "manifest_mtime": 1782884024.5323844,
+      "manifest_path": "review/task-reviews/physics/pulley/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2170107,
+        "path": "docs/tasks/physics/pulley/task_physics__pulley__pulley_mechanical_advantage.md"
+      },
+      "scene_id": "pulley",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 74,
+      "manifest_iso_mtime": "2026-07-01T05:33:52Z",
+      "manifest_mtime": 1782884032.6364832,
+      "manifest_path": "review/task-reviews/physics/pv_diagram/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2180107,
+        "path": "docs/tasks/physics/pv_diagram/task_physics__pv_diagram__pv_process_sign_choice.md"
+      },
+      "scene_id": "pv_diagram",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 75,
+      "manifest_iso_mtime": "2026-07-01T05:33:59Z",
+      "manifest_mtime": 1782884039.0165606,
+      "manifest_path": "review/task-reviews/physics/ray_optics/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2180107,
+        "path": "docs/tasks/physics/ray_optics/task_physics__ray_optics__ray_target_hit_count.md"
+      },
+      "scene_id": "ray_optics",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 71,
+      "manifest_iso_mtime": "2026-07-01T05:34:02Z",
+      "manifest_mtime": 1782884042.5366032,
+      "manifest_path": "review/task-reviews/physics/refraction_layers/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2190108,
+        "path": "docs/tasks/physics/refraction_layers/task_physics__refraction_layers__medium_speed_order_label.md"
+      },
+      "scene_id": "refraction_layers",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 70,
+      "manifest_iso_mtime": "2026-07-01T05:34:05Z",
+      "manifest_mtime": 1782884045.6976414,
+      "manifest_path": "review/task-reviews/physics/shadow_cause/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2190108,
+        "path": "docs/tasks/physics/shadow_cause/task_physics__shadow_cause__light_source_label.md"
+      },
+      "scene_id": "shadow_cause",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 71,
+      "manifest_iso_mtime": "2026-07-01T05:34:09Z",
+      "manifest_mtime": 1782884049.3186848,
+      "manifest_path": "review/task-reviews/physics/signal_transform/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2200108,
+        "path": "docs/tasks/physics/signal_transform/task_physics__signal_transform__periodic_harmonic_spectrum_match_label.md"
+      },
+      "scene_id": "signal_transform",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 76,
+      "manifest_iso_mtime": "2026-07-01T05:34:15Z",
+      "manifest_mtime": 1782884055.6117601,
+      "manifest_path": "review/task-reviews/physics/spring/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2200108,
+        "path": "docs/tasks/physics/spring/task_physics__spring__spring_missing_value.md"
+      },
+      "scene_id": "spring",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 71,
+      "manifest_iso_mtime": "2026-07-01T05:34:18Z",
+      "manifest_mtime": 1782884058.7637978,
+      "manifest_path": "review/task-reviews/physics/stack_stability/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2210107,
+        "path": "docs/tasks/physics/stack_stability/task_physics__stack_stability__stability_status_label.md"
+      },
+      "scene_id": "stack_stability",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 71,
+      "manifest_iso_mtime": "2026-07-01T05:34:21Z",
+      "manifest_mtime": 1782884061.636832,
+      "manifest_path": "review/task-reviews/physics/switch_circuit/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2210107,
+        "path": "docs/tasks/physics/switch_circuit/task_physics__switch_circuit__lit_bulb_count.md"
+      },
+      "scene_id": "switch_circuit",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 71,
+      "manifest_iso_mtime": "2026-07-01T05:34:24Z",
+      "manifest_mtime": 1782884064.4658659,
+      "manifest_path": "review/task-reviews/physics/thermal_mixing/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2210107,
+        "path": "docs/tasks/physics/thermal_mixing/task_physics__thermal_mixing__final_temperature_value.md"
+      },
+      "scene_id": "thermal_mixing",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 71,
+      "manifest_iso_mtime": "2026-07-01T05:34:27Z",
+      "manifest_mtime": 1782884067.679904,
+      "manifest_path": "review/task-reviews/physics/thermometer/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2220109,
+        "path": "docs/tasks/physics/thermometer/task_physics__thermometer__temperature_conversion_value.md"
+      },
+      "scene_id": "thermometer",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 70,
+      "manifest_iso_mtime": "2026-07-01T05:34:30Z",
+      "manifest_mtime": 1782884070.6179388,
+      "manifest_path": "review/task-reviews/physics/vernier_caliper/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2220109,
+        "path": "docs/tasks/physics/vernier_caliper/task_physics__vernier_caliper__length_readout_value.md"
+      },
+      "scene_id": "vernier_caliper",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 72,
+      "manifest_iso_mtime": "2026-07-01T05:34:40Z",
+      "manifest_mtime": 1782884080.139051,
+      "manifest_path": "review/task-reviews/physics/wave_interference/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2230108,
+        "path": "docs/tasks/physics/wave_interference/task_physics__wave_interference__path_difference_value.md"
+      },
+      "scene_id": "wave_interference",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 69,
+      "manifest_iso_mtime": "2026-07-01T05:34:44Z",
+      "manifest_mtime": 1782884084.0830972,
+      "manifest_path": "review/task-reviews/physics/waveform_panel/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2230108,
+        "path": "docs/tasks/physics/waveform_panel/task_physics__waveform_panel__wave_property_extremum_label.md"
+      },
+      "scene_id": "waveform_panel",
+      "stale": false,
+      "status": "fresh"
+    },
+    {
+      "input_count": 69,
+      "manifest_iso_mtime": "2026-07-01T05:34:46Z",
+      "manifest_mtime": 1782884086.9921312,
+      "manifest_path": "review/task-reviews/physics/wire_magnetism/scene_review_manifest.json",
+      "newest_input": {
+        "iso_mtime": "2026-07-01T05:21:54Z",
+        "mtime": 1782883314.2240107,
+        "path": "docs/tasks/physics/wire_magnetism/task_physics__wire_magnetism__wire_field_direction_choice.md"
+      },
+      "scene_id": "wire_magnetism",
+      "stale": false,
+      "status": "fresh"
+    }
+  ],
+  "review_root": "review/task-reviews",
+  "schema": "trace_physics_review_freshness_audit_v1",
+  "totals": {
+    "fresh_scene_count": 36,
+    "missing_manifest_count": 0,
+    "pass": true,
+    "scene_count": 36,
+    "scene_review_workbook_count": 36,
+    "stale_scene_count": 0,
+    "task_review_workbook_count": 50
+  }
+}

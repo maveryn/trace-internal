@@ -1,7 +1,15 @@
 # `task_graph__node_link__bridge_count`
 
 ## Program Contract
-- `count(filter(edges(graph), bridge=True)); scene=node_link; scope=bridge_count`
+
+Program: `count(filter(edges(graph), bridge=True)); scene=node_link; scope=bridge_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `bridge_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `edges`, `graph`, `bridge`, `True`, `node_link`, `bridge_count`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; the number of edges whose removal increases the number of connected components of the graph.
+Annotation witnesses: `annotation` uses the `segment_set` schema; the `segment_set` of endpoint-node-center segments for all bridge edges.
+Query ids: `single`.
 
 ## 1) Identity
 1. Domain: `graph`
@@ -57,11 +65,11 @@
 5. Modes: `answer_only`, `answer_and_annotation`
 6. Answer-only JSON shape: `{"answer":2}`
 7. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[310,180],[430,260]]],"answer":2}`
-8. Prompt-facing annotation uses a `segment_set` because each witness is a graph edge. Each segment is `[[x1, y1], [x2, y2]]` using endpoint node centers.
+8. Prompt-facing annotation uses a `segment_set` because each witness is a graph edge. Each segment is `[[x0, y0], [x1, y1]]`, where each endpoint is an `[x, y]` pixel point at an endpoint node center.
 
 ## 4) Annotation + trace contract
 1. Prompt-facing annotation is the `segment_set` of endpoint-node-center segments for all bridge edges.
-2. Each bridge witness is represented as an undirected segment `[[x1, y1], [x2, y2]]`; endpoint order is unordered semantically for reward matching, and the implementation keeps the corresponding endpoint labels in `witness_symbolic`.
+2. Each bridge witness is represented as an undirected segment `[[x0, y0], [x1, y1]]`, where each endpoint is an `[x, y]` pixel point; endpoint order is unordered semantically for reward matching, and the implementation keeps the corresponding endpoint labels in `witness_symbolic`.
 3. The list of bridge-edge pairs is unordered semantically as well; the implementation only canonicalizes the symbolic outer order internally for deterministic serialization.
 4. `answer_gt.value == len(annotation_gt.value)` by construction.
 5. `scene_ir.entities` stores:

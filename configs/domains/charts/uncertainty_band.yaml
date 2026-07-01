@@ -31,7 +31,7 @@ rendering:
     axis_min: 0
     axis_max: 100
     tick_step: 20
-    band_alpha: 86
+    band_alpha: 58
     layout_jitter_enabled: true
     layout_jitter_x_px_min: -18
     layout_jitter_x_px_max: 18

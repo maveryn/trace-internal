@@ -10,7 +10,15 @@
 - Annotation schema: `bbox_set`
 
 ## Program Contract
-`count(filter(candidate_objects, rendered_bbox_side_of_reference = requested_side)); scene=object_scene; scope=image_plane_lateral_relation_count`
+
+Program: `count(filter(candidate_objects, rendered_bbox_side_of_reference = requested_side)); scene=object_scene; scope=image_plane_lateral_relation_count`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `image_plane_lateral_relation_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `candidate_objects`, `rendered_bbox_side_of_reference`, `requested_side`, `object_scene`, `image_plane_lateral_relation_count` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `left_of_reference_in_view_count`, `right_of_reference_in_view_count`.
 
 ## Contract
 The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with projected objects, markers, references, or paired views depending on the task. The public task id defines the stable objective contract; query ids are used only for genuine semantic operations within that contract. Render style, camera, canvas preset, object placement, labels, colors, and prompt wording variants are generation metadata, not public task axes.

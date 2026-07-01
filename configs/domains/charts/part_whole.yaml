@@ -10,24 +10,12 @@ generation:
     contiguous_category_count_max: 8
     contiguous_span_count_min: 3
     contiguous_span_count_max: 5
-    positional_category_count_min: 4
-    positional_category_count_max: 8
     counterfactual_category_count_min: 4
     counterfactual_category_count_max: 8
     counterfactual_transfer_delta_min: 3
     counterfactual_transfer_delta_max: 10
     part_whole_category_count_min: 4
     part_whole_category_count_max: 8
-    part_whole_total_values:
-    - 600
-    - 800
-    - 1000
-    - 1200
-    - 1500
-    - 1800
-    - 2000
-    - 2400
-    - 3000
     part_whole_span_count_min: 3
     part_whole_span_count_max: 5
     part_whole_angle_span_count_min: 2

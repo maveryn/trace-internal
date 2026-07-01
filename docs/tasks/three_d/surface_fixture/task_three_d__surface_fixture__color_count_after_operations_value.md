@@ -10,7 +10,15 @@
 - Annotation schema: `bbox_set`
 
 ## Program Contract
-- `initial_count(filter(surface_fixture_elements, present=true, element_type=target_element_type, color_name=target_color_name)) + sum(signed_count(operation) for operation in operations if operation.color_name=target_color_name); scene=surface_fixture; scope=color_count_after_operations_value`
+
+Program: `initial_count(filter(surface_fixture_elements, present=true, element_type=target_element_type, color_name=target_color_name)) + sum(signed_count(operation) for operation in operations if operation.color_name=target_color_name); scene=surface_fixture; scope=color_count_after_operations_value`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `color_count_after_operations_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `surface_fixture_elements`, `present`, `true`, `element_type`, `target_element_type`, `color_name`, `target_color_name`, `sum`, `signed_count`, `operation`, `operations`.
+Operation: evaluate `initial_count` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Contract
 The image shows one projected fixture surface with repeated colored elements.

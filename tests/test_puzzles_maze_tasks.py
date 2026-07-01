@@ -8,8 +8,8 @@ from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.puzzles.maze.exit_reachability_label import (
     PuzzlesMazeExitReachabilityLabelTask,
 )
-from trace.tasks.puzzles.maze.reachable_exit_count import (
-    PuzzlesMazeReachableExitCountTask,
+from trace.tasks.puzzles.maze.nearest_exit_label import (
+    PuzzlesMazeNearestExitLabelTask,
 )
 from tests.helpers import extract_prompt_json_example
 
@@ -22,19 +22,19 @@ def test_puzzle_maze_tasks_contract_matches_maze_trace() -> None:
             PuzzlesMazeExitReachabilityLabelTask(),
             "exit_reachability_label",
             "reachable",
-            "bbox",
+            "point",
         ),
         (
             PuzzlesMazeExitReachabilityLabelTask(),
             "exit_reachability_label",
             "unreachable",
-            "bbox",
+            "point",
         ),
         (
-            PuzzlesMazeReachableExitCountTask(),
-            "reachable_exit_count",
+            PuzzlesMazeNearestExitLabelTask(),
+            "nearest_exit_label",
             None,
-            "bbox_set",
+            "point",
         ),
     )
     scene_variants = (
@@ -60,9 +60,7 @@ def test_puzzle_maze_tasks_contract_matches_maze_trace() -> None:
 
             assert str(out.query_id) == SINGLE_QUERY_ID
             assert str(out.scene_id) == "maze"
-            assert out.answer_gt.type == (
-                "integer" if str(prompt_query_key) == "reachable_exit_count" else "string"
-            )
+            assert out.answer_gt.type == "string"
             assert out.annotation_gt.type == annotation_type
             assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
             assert str(execution["scene_variant"]) == str(scene_variant)
@@ -85,22 +83,23 @@ def test_puzzle_maze_tasks_contract_matches_maze_trace() -> None:
             if str(prompt_query_key) == "exit_reachability_label":
                 assert int(execution["exit_count"]) == 4
             else:
-                assert 4 <= int(execution["exit_count"]) <= 6
+                assert int(execution["exit_count"]) == 4
             assert len(execution["exits"]) == int(execution["exit_count"])
             assert len(reachable_labels) == int(execution["reachable_exit_total"])
             assert len(reachable_labels) + len(unreachable_labels) == int(execution["exit_count"])
             assert str(render_map["annotation_source"]) == str(execution["supporting_annotation_source"])
 
-            if str(prompt_query_key) == "exit_reachability_label":
-                annotation_bboxes = [[float(value) for value in out.annotation_gt.value]]
-                assert trace["projected_annotation"]["bbox"] == annotation_bboxes[0]
-            else:
-                annotation_bboxes = [[float(value) for value in bbox] for bbox in out.annotation_gt.value]
-                assert trace["projected_annotation"]["bbox_set"] == annotation_bboxes
-            assert annotation_bboxes == [
-                [float(value) for value in render_map["item_bboxes_px"][str(item_id)]]
-                for item_id in supporting_ids
-            ]
+            if str(prompt_query_key) in {"exit_reachability_label", "nearest_exit_label"}:
+                annotation_point = [float(value) for value in out.annotation_gt.value]
+                assert trace["projected_annotation"]["point"] == annotation_point
+                assert trace["projected_annotation"]["pixel_point"] == annotation_point
+                assert annotation_point == [
+                    float(value)
+                    for value in render_map["item_points_px"][str(supporting_ids[0])]
+                ]
+                x, y = annotation_point
+                assert 0.0 <= x <= float(render["canvas_width"])
+                assert 0.0 <= y <= float(render["canvas_height"])
 
             if str(prompt_query_key) == "exit_reachability_label" and str(target_reachability) == "reachable":
                 assert len(reachable_labels) == 1
@@ -111,13 +110,28 @@ def test_puzzle_maze_tasks_contract_matches_maze_trace() -> None:
                 assert str(out.answer_gt.value) == str(unreachable_labels[0])
                 assert len(supporting_ids) == 1
             else:
-                assert int(out.answer_gt.value) == len(reachable_labels)
-                assert len(supporting_ids) == len(reachable_labels)
-
-            for bbox in annotation_bboxes:
-                x1, y1, x2, y2 = bbox
-                assert 0.0 <= x1 < x2 <= float(render["canvas_width"])
-                assert 0.0 <= y1 < y2 <= float(render["canvas_height"])
+                path_lengths = {
+                    str(label): int(length)
+                    for label, length in execution["exit_path_lengths_by_label"].items()
+                }
+                nearest_label = str(execution["nearest_exit_label"])
+                nearest_length = int(execution["nearest_exit_path_length_edges"])
+                assert len(path_lengths) == 4
+                assert set(path_lengths) == set(reachable_labels)
+                assert len(reachable_labels) == 4
+                assert str(out.answer_gt.value) == nearest_label
+                assert path_lengths[nearest_label] == nearest_length
+                sorted_lengths = sorted(path_lengths.values())
+                assert sorted_lengths[0] == nearest_length
+                assert sorted_lengths[1] - sorted_lengths[0] >= int(
+                    execution["nearest_exit_min_gap_edges"]
+                )
+                assert int(execution["nearest_exit_margin_edges"]) == (
+                    sorted_lengths[1] - sorted_lengths[0]
+                )
+                assert len(supporting_ids) == 1
+                assert supporting_ids[0] == str(execution["nearest_exit_item_id"])
+                assert execution["nearest_exit_path_cells"][0] == execution["start_cell"]
 
 
 def test_puzzle_maze_prompt_examples_match_selected_variants() -> None:
@@ -126,20 +140,16 @@ def test_puzzle_maze_prompt_examples_match_selected_variants() -> None:
     expected = {
         "exit_reachability_label": (
             PuzzlesMazeExitReachabilityLabelTask(),
-            {"annotation": [166, 91, 221, 146], "answer": "C"},
+            {"annotation": [194, 118], "answer": "C"},
             {"answer": "C"},
         ),
-        "reachable_exit_count": (
-            PuzzlesMazeReachableExitCountTask(),
+        "nearest_exit_label": (
+            PuzzlesMazeNearestExitLabelTask(),
             {
-                "annotation": [
-                    [166, 91, 221, 146],
-                    [472, 789, 527, 844],
-                    [979, 676, 1034, 731],
-                ],
-                "answer": 3,
+                "annotation": [194, 118],
+                "answer": "C",
             },
-            {"answer": 3},
+            {"answer": "C"},
         ),
     }
     for index, (_prompt_query_key, (task, expected_answer_and_annotation, expected_answer_only)) in enumerate(
@@ -154,10 +164,10 @@ def test_puzzle_maze_prompt_examples_match_selected_variants() -> None:
         assert answer_only == expected_answer_only
 
 
-def test_puzzle_maze_reachable_exit_count_task_is_deterministic() -> None:
+def test_puzzle_maze_nearest_exit_label_task_is_deterministic() -> None:
     """Generation should be deterministic for a fixed seed and parameters."""
 
-    task = PuzzlesMazeReachableExitCountTask()
+    task = PuzzlesMazeNearestExitLabelTask()
     params = {"scene_variant": "block_wall_maze"}
     out_a = task.generate(29280, params=params, max_attempts=10)
     out_b = task.generate(29280, params=params, max_attempts=10)
@@ -174,9 +184,10 @@ def test_puzzle_maze_sampling_decouples_visual_variant_and_operands() -> None:
     """Visual variants and task operands should be sampled independently."""
 
     label_task = PuzzlesMazeExitReachabilityLabelTask()
-    count_task = PuzzlesMazeReachableExitCountTask()
+    nearest_task = PuzzlesMazeNearestExitLabelTask()
     label_scene_combos = Counter()
-    count_scene_combos = Counter()
+    nearest_scene_combos = Counter()
+    nearest_label_combos = Counter()
     target_combos = Counter()
     exit_counts_by_task: dict[str, set[int]] = {}
 
@@ -190,18 +201,19 @@ def test_puzzle_maze_sampling_decouples_visual_variant_and_operands() -> None:
         exit_counts_by_task.setdefault("exit_reachability_label", set()).add(int(trace["exit_count"]))
 
     for sampling_index in range(120):
-        out = count_task.generate(29480 + sampling_index, params={}, max_attempts=10)
+        out = nearest_task.generate(29480 + sampling_index, params={}, max_attempts=10)
         trace = out.trace_payload["execution_trace"]
         assert str(trace["query_id"]) == SINGLE_QUERY_ID
-        assert str(trace["internal_query_id"]) == "reachable_exit_count"
-        count_scene_combos[str(trace["scene_variant"])] += 1
-        exit_counts_by_task.setdefault("reachable_exit_count", set()).add(int(trace["exit_count"]))
+        assert str(trace["internal_query_id"]) == "nearest_exit_label"
+        nearest_scene_combos[str(trace["scene_variant"])] += 1
+        nearest_label_combos[str(trace["nearest_exit_label"])] += 1
+        exit_counts_by_task.setdefault("nearest_exit_label", set()).add(int(trace["exit_count"]))
 
     expected_scene_support = {"classic_wall_maze", "paper_labyrinth_maze", "block_wall_maze"}
     assert set(label_scene_combos) == expected_scene_support
-    assert set(count_scene_combos) == expected_scene_support
+    assert set(nearest_scene_combos) == expected_scene_support
     assert min(label_scene_combos.values()) >= 10
-    assert min(count_scene_combos.values()) >= 10
+    assert min(nearest_scene_combos.values()) >= 10
     expected_target_support = {
         ("reachable", "classic_wall_maze"),
         ("reachable", "paper_labyrinth_maze"),
@@ -212,9 +224,9 @@ def test_puzzle_maze_sampling_decouples_visual_variant_and_operands() -> None:
     }
     assert set(target_combos) == expected_target_support
     assert min(target_combos.values()) >= 5
+    assert len(nearest_label_combos) >= 3
     assert exit_counts_by_task["exit_reachability_label"] == {4}
-    expected_exit_support = {4, 5, 6}
-    assert exit_counts_by_task["reachable_exit_count"] == expected_exit_support
+    assert exit_counts_by_task["nearest_exit_label"] == {4}
 
 
 def test_puzzle_maze_exit_reachability_label_samples_target_reachability() -> None:

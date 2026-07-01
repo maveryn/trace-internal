@@ -6,10 +6,8 @@ import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from ....core.sampling import normalize_positive_weights, weighted_choice
-from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.geometry_primitives import Point
 from .graph_rendering import graph_units_to_pixel
-from ...shared.variant_sampling import has_non_null_param, is_uniform_probability_map
 
 COMPARISON_QUERY_TYPES: Tuple[str, str] = ("largest", "smallest")
 COMPARISON_ANSWER_LABEL_POOL: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H", "I")
@@ -230,15 +228,6 @@ def resolve_comparison_winner_label(
     probabilities = normalize_positive_weights(weights, default_keys=normalized_pool)
     selected = str(weighted_choice(rng, probabilities, sort_keys=True)).upper()
 
-    enabled = bool(params.get("balanced_sampling", gen_defaults.get("balanced_sampling", True)))
-    overridden = any(has_non_null_param(params, key) for key in ("winner_label", "winner_label_weights"))
-    if bool(enabled) and (not overridden) and is_uniform_probability_map(probabilities):
-        sampling_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(selection_namespace),
-        )
-        selected = str(normalized_pool[int(sampling_index) % len(normalized_pool)])
     return selected, {
         str(key): float(value) for key, value in sorted(probabilities.items())
     }
@@ -254,26 +243,12 @@ def apply_balanced_comparison_axes(
     object_count_probabilities: Mapping[str, float],
     query_types: Sequence[str] = COMPARISON_QUERY_TYPES,
 ) -> Tuple[str, Dict[str, float], int, Dict[str, float]]:
-    """Apply deterministic balanced defaults over query type and object count."""
+    """Return already sampled comparison axes and probability metadata."""
 
-    enabled = bool(params.get("balanced_sampling", True))
     resolved_query = str(query_type)
     resolved_count = int(object_count)
     query_probs = {str(key): float(value) for key, value in query_type_probabilities.items()}
     count_probs = {str(key): float(value) for key, value in object_count_probabilities.items()}
-    if not bool(enabled):
-        return resolved_query, query_probs, resolved_count, count_probs
-
-    sampling_index = abs(int(instance_seed))
-    query_overridden = any(has_non_null_param(params, key) for key in ("query_type", "query_type_weights"))
-    if (not query_overridden) and is_uniform_probability_map(query_probs):
-        resolved_query = str(query_types[int(sampling_index) % len(tuple(query_types))])
-
-    count_overridden = any(has_non_null_param(params, key) for key in ("object_count", "object_count_weights"))
-    sorted_counts = [int(value) for value in sorted((int(key) for key in count_probs.keys()))]
-    if (not count_overridden) and is_uniform_probability_map(count_probs) and sorted_counts:
-        count_index = int(sampling_index // max(1, len(tuple(query_types)))) % len(sorted_counts)
-        resolved_count = int(sorted_counts[count_index])
 
     return resolved_query, query_probs, resolved_count, count_probs
 

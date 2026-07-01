@@ -16,8 +16,26 @@ from trace.tasks.shared.font_assets import (
 )
 from trace.tasks.shared.text_rendering import load_font
 
-from .rules import number_segments, number_text
-from .state import BBox, Color, NumberDataset, RenderParams, RenderedScene
+from .rules import (
+    DIGIT_SEGMENTS,
+    SEGMENT_POINTS,
+    equation_text,
+    lattice_edge_item_id,
+    lattice_edges,
+    lattice_square_item_id,
+    number_segments,
+    number_text,
+)
+from .state import (
+    BBox,
+    Color,
+    EquationRepairDataset,
+    NumberDataset,
+    RenderParams,
+    RenderedScene,
+    Segment,
+    SquareCompletionDataset,
+)
 
 
 def _to_int(value: Any, fallback: int) -> int:
@@ -42,7 +60,7 @@ def resolve_render_params(
             ),
         ),
         canvas_height=max(
-            760,
+            480,
             _to_int(
                 params.get("canvas_height", group_default(render_defaults, "canvas_height", 900)),
                 900,
@@ -410,6 +428,176 @@ def _draw_number(
         )
 
 
+def _digit_segment_specs(
+    digit: int,
+    *,
+    digit_index: int,
+) -> list[tuple[str, tuple[float, float], tuple[float, float]]]:
+    """Return drawable segment ids and normalized endpoints for one digit."""
+
+    specs: list[tuple[str, tuple[float, float], tuple[float, float]]] = []
+    for segment_key in sorted(DIGIT_SEGMENTS[int(digit)]):
+        start, end = SEGMENT_POINTS[str(segment_key)]
+        specs.append((f"digit{int(digit_index)}:{segment_key}", start, end))
+    return specs
+
+
+def _draw_equation_digit(
+    draw: ImageDraw.ImageDraw,
+    *,
+    digit: int,
+    digit_index: int,
+    origin: tuple[float, float],
+    scale: float,
+    width: int,
+    style: Mapping[str, Any],
+) -> Dict[str, Segment]:
+    """Draw one equation digit and return source-stick centerline segments."""
+
+    segments: Dict[str, Segment] = {}
+    origin_x, origin_y = float(origin[0]), float(origin[1])
+    for segment_id, start, end in _digit_segment_specs(
+        int(digit),
+        digit_index=int(digit_index),
+    ):
+        start_px = (origin_x + start[0] * scale, origin_y + start[1] * scale)
+        end_px = (origin_x + end[0] * scale, origin_y + end[1] * scale)
+        _draw_stick(
+            draw,
+            start=start_px,
+            end=end_px,
+            width=int(width),
+            style=style,
+            stick_id=f"equation:{segment_id}",
+        )
+        segments[str(segment_id)] = (
+            (float(start_px[0]), float(start_px[1])),
+            (float(end_px[0]), float(end_px[1])),
+        )
+    return segments
+
+
+def _draw_operator(
+    draw: ImageDraw.ImageDraw,
+    *,
+    operator: str,
+    center: tuple[float, float],
+    scale: float,
+    width: int,
+    style: Mapping[str, Any],
+) -> None:
+    """Draw matchstick-style arithmetic operators from fixed stick primitives."""
+
+    cx, cy = float(center[0]), float(center[1])
+    half = float(scale) * 0.28
+    if str(operator) == "+":
+        _draw_stick(
+            draw,
+            start=(cx - half, cy),
+            end=(cx + half, cy),
+            width=int(width),
+            style=style,
+            stick_id="operator:plus:h",
+        )
+        _draw_stick(
+            draw,
+            start=(cx, cy - half),
+            end=(cx, cy + half),
+            width=int(width),
+            style=style,
+            stick_id="operator:plus:v",
+        )
+        return
+    if str(operator) == "-":
+        _draw_stick(
+            draw,
+            start=(cx - half, cy),
+            end=(cx + half, cy),
+            width=int(width),
+            style=style,
+            stick_id="operator:minus:h",
+        )
+        return
+    if str(operator) == "=":
+        gap = float(scale) * 0.16
+        for offset, stick_id in ((-gap, "operator:eq:top"), (gap, "operator:eq:bottom")):
+            _draw_stick(
+                draw,
+                start=(cx - half, cy + offset),
+                end=(cx + half, cy + offset),
+                width=int(width),
+                style=style,
+                stick_id=stick_id,
+            )
+        return
+    raise ValueError(f"unsupported matchstick operator: {operator!r}")
+
+
+def _draw_stick_label(
+    draw: ImageDraw.ImageDraw,
+    *,
+    label: str,
+    segment: Segment,
+    render_params: RenderParams,
+    style: Mapping[str, Any],
+) -> None:
+    """Draw one option label beside a candidate stick."""
+
+    (sx, sy), (ex, ey) = segment
+    mid_x = (float(sx) + float(ex)) / 2.0
+    mid_y = (float(sy) + float(ey)) / 2.0
+    horizontal = abs(float(ex) - float(sx)) >= abs(float(ey) - float(sy))
+    radius = max(13, int(render_params.option_label_font_size_px * 0.55))
+    offset = max(22, int(radius + render_params.stick_width_px * 1.2))
+    center = (mid_x, mid_y - offset) if horizontal else (mid_x + offset, mid_y)
+    fill = tuple(int(value) for value in style["label_fill"])
+    outline = tuple(int(value) for value in style["panel_fill"])
+    draw.ellipse(
+        (
+            center[0] - radius,
+            center[1] - radius,
+            center[0] + radius,
+            center[1] + radius,
+        ),
+        fill=fill,
+        outline=outline,
+        width=2,
+    )
+    font = load_font(int(render_params.option_label_font_size_px), bold=True)
+    draw_centered_text(
+        draw,
+        text=str(label),
+        center=center,
+        font=font,
+        fill=tuple(style["label_text"]),
+        stroke_fill=fill,
+        stroke_width=0,
+    )
+
+
+def _equation_layout(
+    *,
+    panel_bbox: tuple[int, int, int, int],
+) -> tuple[float, float, float, list[float], list[float]]:
+    """Return scale, baseline origin, token starts, and token widths."""
+
+    token_widths = [1.0, 0.72, 1.0, 0.82, 1.0]
+    gap = 0.42
+    total_units = sum(token_widths) + gap * (len(token_widths) - 1)
+    usable_w = float(panel_bbox[2] - panel_bbox[0]) * 0.78
+    usable_h = float(panel_bbox[3] - panel_bbox[1]) * 0.56
+    scale = min(usable_w / total_units, usable_h / 2.0)
+    total_w = total_units * scale
+    start_x = (float(panel_bbox[0] + panel_bbox[2]) - total_w) / 2.0
+    origin_y = (float(panel_bbox[1] + panel_bbox[3]) - 2.0 * scale) / 2.0 + 14.0
+    starts: list[float] = []
+    cursor = start_x
+    for width in token_widths:
+        starts.append(float(cursor))
+        cursor += (float(width) + gap) * scale
+    return float(scale), float(origin_y), float(gap * scale), starts, token_widths
+
+
 def option_bboxes(
     render_params: RenderParams,
     option_count: int,
@@ -459,6 +647,8 @@ def _draw_panel(
     render_params: RenderParams,
     style: Mapping[str, Any],
 ) -> None:
+    """Draw a reusable content panel for matchstick scenes."""
+
     draw_rounded_rect(
         draw,
         bbox,
@@ -467,6 +657,78 @@ def _draw_panel(
         outline=tuple(style["panel_outline"]),
         width=int(render_params.panel_border_width_px),
     )
+
+
+def _lattice_layout(
+    *,
+    panel_bbox: tuple[int, int, int, int],
+    rows: int,
+    cols: int,
+    render_params: RenderParams,
+) -> tuple[float, float, float]:
+    """Return centered square-cell lattice origin and cell size."""
+
+    inner_margin = max(54, int(render_params.margin_px * 1.15))
+    usable_w = max(1, int(panel_bbox[2] - panel_bbox[0] - 2 * inner_margin))
+    usable_h = max(1, int(panel_bbox[3] - panel_bbox[1] - 2 * inner_margin))
+    cell_size = min(float(usable_w) / max(1, int(cols)), float(usable_h) / max(1, int(rows)))
+    grid_w = float(cols) * float(cell_size)
+    grid_h = float(rows) * float(cell_size)
+    origin_x = (float(panel_bbox[0]) + float(panel_bbox[2]) - grid_w) / 2.0
+    origin_y = (float(panel_bbox[1]) + float(panel_bbox[3]) - grid_h) / 2.0
+    return float(origin_x), float(origin_y), float(cell_size)
+
+
+def _lattice_edge_segment(
+    edge_id: str,
+    *,
+    origin_x: float,
+    origin_y: float,
+    cell_size: float,
+) -> Segment:
+    """Project one logical lattice edge into image-pixel centerline endpoints."""
+
+    axis, row, col = str(edge_id).split(":", 2)
+    row_i = int(row)
+    col_i = int(col)
+    if axis == "h":
+        return (
+            (origin_x + float(col_i) * cell_size, origin_y + float(row_i) * cell_size),
+            (origin_x + float(col_i + 1) * cell_size, origin_y + float(row_i) * cell_size),
+        )
+    if axis == "v":
+        return (
+            (origin_x + float(col_i) * cell_size, origin_y + float(row_i) * cell_size),
+            (origin_x + float(col_i) * cell_size, origin_y + float(row_i + 1) * cell_size),
+        )
+    raise ValueError(f"unsupported lattice edge id: {edge_id!r}")
+
+
+def _draw_lattice_nodes(
+    draw: ImageDraw.ImageDraw,
+    *,
+    rows: int,
+    cols: int,
+    origin_x: float,
+    origin_y: float,
+    cell_size: float,
+    style: Mapping[str, Any],
+) -> None:
+    """Draw small vertex dots so empty edge positions remain visually legible."""
+
+    outline = tuple(int(value) for value in style["panel_outline"])
+    fill = tuple(int(value) for value in style["panel_fill"])
+    radius = max(3, int(cell_size * 0.035))
+    for row in range(int(rows) + 1):
+        for col in range(int(cols) + 1):
+            cx = origin_x + float(col) * cell_size
+            cy = origin_y + float(row) * cell_size
+            draw.ellipse(
+                (cx - radius, cy - radius, cx + radius, cy + radius),
+                fill=fill,
+                outline=outline,
+                width=2,
+            )
 
 
 def make_scene_background(
@@ -572,11 +834,259 @@ def render_number_scene(
     )
 
 
+def render_equation_repair_scene(
+    *,
+    background: Image.Image,
+    dataset: EquationRepairDataset,
+    render_params: RenderParams,
+) -> RenderedScene:
+    """Render one false matchstick equation with labeled removable sticks."""
+
+    image = background.convert("RGB")
+    draw = ImageDraw.Draw(image)
+    style = style_for_variant(str(dataset.scene_variant))
+    panel_bbox = (
+        int(render_params.margin_px),
+        int(render_params.margin_px),
+        int(render_params.canvas_width - render_params.margin_px),
+        int(render_params.canvas_height - render_params.margin_px),
+    )
+    _draw_panel(draw, panel_bbox, render_params=render_params, style=style)
+    _draw_caption(
+        draw,
+        bbox=panel_bbox,
+        text="Equation",
+        font_size=int(render_params.source_caption_font_size_px),
+        style=style,
+    )
+    scale, origin_y, _gap_px, starts, widths = _equation_layout(panel_bbox=panel_bbox)
+    stick_width = max(6, int(render_params.stick_width_px * 1.12))
+    item_segment_map: Dict[str, Segment] = {}
+    equation_segments: Dict[str, Segment] = {}
+    digit_token_indices = (0, 2, 4)
+    for digit_index, token_index in enumerate(digit_token_indices):
+        equation_segments.update(
+            _draw_equation_digit(
+                draw,
+                digit=int(dataset.source_digits[int(digit_index)]),
+                digit_index=int(digit_index),
+                origin=(starts[int(token_index)], origin_y),
+                scale=float(scale),
+                width=int(stick_width),
+                style=style,
+            )
+        )
+    operator_y = origin_y + float(scale)
+    _draw_operator(
+        draw,
+        operator=str(dataset.operator),
+        center=(starts[1] + widths[1] * scale / 2.0, operator_y),
+        scale=float(scale),
+        width=int(stick_width),
+        style=style,
+    )
+    _draw_operator(
+        draw,
+        operator="=",
+        center=(starts[3] + widths[3] * scale / 2.0, operator_y),
+        scale=float(scale),
+        width=int(stick_width),
+        style=style,
+    )
+
+    entities: list[Dict[str, Any]] = [
+        {
+            "id": "equation_panel",
+            "type": "matchstick_equation_panel",
+            "bbox_px": [int(value) for value in panel_bbox],
+            "source_equation": equation_text(
+                tuple(int(value) for value in dataset.source_digits),
+                str(dataset.operator),
+            ),
+            "repaired_equation": equation_text(
+                tuple(int(value) for value in dataset.repaired_digits),
+                str(dataset.operator),
+            ),
+        }
+    ]
+    item_bbox_map: Dict[str, BBox] = {
+        "equation_panel": tuple(float(value) for value in panel_bbox)
+    }
+    for option in dataset.option_specs:
+        stick_id = str(option.value)
+        segment = equation_segments[str(stick_id)]
+        option_item_id = f"stick_{option.label}"
+        item_segment_map[str(option_item_id)] = segment
+        _draw_stick_label(
+            draw,
+            label=str(option.label),
+            segment=segment,
+            render_params=render_params,
+            style=style,
+        )
+        entities.append(
+            {
+                "id": str(option_item_id),
+                "type": "matchstick_labeled_digit_stick",
+                "label": str(option.label),
+                "source_stick_id": stick_id,
+                "segment_px": [
+                    [round(float(point[0]), 3), round(float(point[1]), 3)]
+                    for point in segment
+                ],
+                "is_correct": bool(option.is_correct),
+            }
+        )
+    scene_bbox = (
+        float(render_params.margin_px),
+        float(render_params.margin_px),
+        float(render_params.canvas_width - render_params.margin_px),
+        float(render_params.canvas_height - render_params.margin_px),
+    )
+    return RenderedScene(
+        image=image,
+        scene_bbox_px=scene_bbox,
+        item_bbox_map=item_bbox_map,
+        entities=tuple(entities),
+        item_segment_map=item_segment_map,
+    )
+
+
+def render_square_lattice_scene(
+    *,
+    background: Image.Image,
+    dataset: SquareCompletionDataset,
+    render_params: RenderParams,
+) -> RenderedScene:
+    """Render one incomplete matchstick lattice for square-completion reasoning."""
+
+    image = background.convert("RGB")
+    draw = ImageDraw.Draw(image)
+    style = style_for_variant(str(dataset.scene_variant))
+    panel_bbox = (
+        int(render_params.margin_px),
+        int(render_params.margin_px),
+        int(render_params.canvas_width - render_params.margin_px),
+        int(render_params.canvas_height - render_params.margin_px),
+    )
+    _draw_panel(draw, panel_bbox, render_params=render_params, style=style)
+    origin_x, origin_y, cell_size = _lattice_layout(
+        panel_bbox=panel_bbox,
+        rows=int(dataset.rows),
+        cols=int(dataset.cols),
+        render_params=render_params,
+    )
+    _draw_lattice_nodes(
+        draw,
+        rows=int(dataset.rows),
+        cols=int(dataset.cols),
+        origin_x=float(origin_x),
+        origin_y=float(origin_y),
+        cell_size=float(cell_size),
+        style=style,
+    )
+
+    item_bbox_map: Dict[str, BBox] = {
+        "lattice_panel": tuple(float(value) for value in panel_bbox)
+    }
+    item_segment_map: Dict[str, Segment] = {}
+    entities: list[Dict[str, Any]] = [
+        {
+            "id": "lattice_panel",
+            "type": "matchstick_square_lattice_panel",
+            "bbox_px": [int(value) for value in panel_bbox],
+            "rows": int(dataset.rows),
+            "cols": int(dataset.cols),
+        }
+    ]
+
+    for edge_id in lattice_edges(int(dataset.rows), int(dataset.cols)):
+        segment = _lattice_edge_segment(
+            str(edge_id),
+            origin_x=float(origin_x),
+            origin_y=float(origin_y),
+            cell_size=float(cell_size),
+        )
+        edge_item_id = lattice_edge_item_id(str(edge_id))
+        item_segment_map[str(edge_item_id)] = segment
+        if str(edge_id) not in set(dataset.present_edges):
+            entities.append(
+                {
+                    "id": str(edge_item_id),
+                    "type": "matchstick_empty_lattice_edge",
+                    "edge_id": str(edge_id),
+                    "segment_px": [
+                        [round(float(point[0]), 3), round(float(point[1]), 3)]
+                        for point in segment
+                    ],
+                }
+            )
+            continue
+        _draw_stick(
+            draw,
+            start=segment[0],
+            end=segment[1],
+            width=max(6, int(render_params.stick_width_px)),
+            style=style,
+            stick_id=f"lattice:{edge_id}",
+        )
+        entities.append(
+            {
+                "id": str(edge_item_id),
+                "type": "matchstick_present_lattice_edge",
+                "edge_id": str(edge_id),
+                "segment_px": [
+                    [round(float(point[0]), 3), round(float(point[1]), 3)]
+                    for point in segment
+                ],
+            }
+        )
+
+    for row in range(int(dataset.rows)):
+        for col in range(int(dataset.cols)):
+            square_logical_id = f"square:{int(row)}:{int(col)}"
+            square_item_id = lattice_square_item_id(square_logical_id)
+            x0 = origin_x + float(col) * cell_size
+            y0 = origin_y + float(row) * cell_size
+            x1 = origin_x + float(col + 1) * cell_size
+            y1 = origin_y + float(row + 1) * cell_size
+            bbox = (float(x0), float(y0), float(x1), float(y1))
+            item_bbox_map[str(square_item_id)] = bbox
+            entities.append(
+                {
+                    "id": str(square_item_id),
+                    "type": "matchstick_unit_square_cell",
+                    "square_id": square_logical_id,
+                    "bbox_px": [round(float(value), 3) for value in bbox],
+                    "initially_complete": square_logical_id
+                    in set(dataset.initial_completed_square_ids),
+                    "complete_after_optimal_additions": square_logical_id
+                    in set(dataset.completed_square_ids),
+                }
+            )
+
+    scene_bbox = (
+        float(render_params.margin_px),
+        float(render_params.margin_px),
+        float(render_params.canvas_width - render_params.margin_px),
+        float(render_params.canvas_height - render_params.margin_px),
+    )
+    return RenderedScene(
+        image=image,
+        scene_bbox_px=scene_bbox,
+        item_bbox_map=item_bbox_map,
+        entities=tuple(entities),
+        item_segment_map=item_segment_map,
+    )
+
+
 __all__ = [
     "font_trace_record",
     "make_scene_background",
     "matchstick_style_trace",
+    "render_equation_repair_scene",
     "render_number_scene",
+    "render_square_lattice_scene",
     "resolve_render_params",
     "sample_matchstick_font",
 ]

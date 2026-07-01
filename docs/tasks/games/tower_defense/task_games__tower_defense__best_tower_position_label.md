@@ -11,7 +11,14 @@
 
 ## Program Contract
 
-`argmax_label(candidate in candidates_A_to_D, count(path_enemy for path_enemy in path_enemies if path_enemy_center inside candidate_range_circle)); scene=tower_defense; scope=best_tower_position_label`
+Program: `argmax_label(candidate in candidates_A_to_D, count(path_enemy for path_enemy in path_enemies if path_enemy_center inside candidate_range_circle)); scene=tower_defense; scope=best_tower_position_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `best_tower_position_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `candidate`, `candidates_A_to_D`, `path_enemy`, `path_enemies`, `if`, `path_enemy_center`, `inside`, `candidate_range_circle`, `tower_defense`, `best_tower_position_label`.
+Operation: evaluate `argmax_label` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The path is drawn with small visible enemy markers along a winding or switchback route.

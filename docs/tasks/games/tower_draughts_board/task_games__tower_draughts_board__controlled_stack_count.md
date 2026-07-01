@@ -11,7 +11,14 @@
 
 ## Program Contract
 
-`count(stack for stack in visible_stacks if top_disk_color == target_player); scene=tower_draughts_board; scope=controlled_stack_count`
+Program: `count(stack for stack in visible_stacks if top_disk_color == target_player); scene=tower_draughts_board; scope=controlled_stack_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `controlled_stack_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `stack`, `visible_stacks`, `if`, `top_disk_color`, `target_player`, `tower_draughts_board`, `controlled_stack_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The board uses alternating playable squares with stacks of red and black disks.

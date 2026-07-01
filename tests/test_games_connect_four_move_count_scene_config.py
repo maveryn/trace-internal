@@ -21,6 +21,10 @@ def test_games_connect_four_move_count_defaults_expose_scene_query_and_answer_ax
         cfg,
         task_id="task_games__connect_four__winning_move_column_label",
     )
+    blocking_generation, _blocking_rendering, _blocking_prompt = split_scene_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_games__connect_four__blocking_move_column_label",
+    )
 
     assert bool(shared_generation["balanced_scene_variant_sampling"]) is True
     assert bool(shared_generation["balanced_board_size_variant_sampling"]) is True
@@ -46,6 +50,11 @@ def test_games_connect_four_move_count_defaults_expose_scene_query_and_answer_ax
     assert list(profile_generation["column_disc_profile_total_support"]) == [2, 3, 4, 5]
     assert bool(label_generation["balanced_winning_move_label_threat_kind_sampling"]) is True
     assert set(label_generation["winning_move_label_threat_kind_weights"].keys()) == {
+        "vertical_threat",
+        "horizontal_threat",
+    }
+    assert bool(blocking_generation["balanced_blocking_move_label_threat_kind_sampling"]) is True
+    assert set(blocking_generation["blocking_move_label_threat_kind_weights"].keys()) == {
         "vertical_threat",
         "horizontal_threat",
     }

@@ -308,12 +308,10 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
     if benchmark_key == "infovqa":
         tasks = existing_tasks(
             [
-                "task_pages__control_board__selected_enabled_controls_in_group_count",
-                "task_pages__control_board__disabled_controls_in_group_count",
+                "task_pages__control_board__control_state_condition_count",
                 "task_pages__paired_forms__total_amount_delta_value",
                 "task_pages__paired_forms__sum_absolute_quantity_differences_value",
-                "task_pages__form_section__sum_two_amounts_in_section_value",
-                "task_pages__form_section__difference_two_amounts_in_section_value",
+                "task_pages__form_section__two_amount_arithmetic_value",
                 "task_charts__table__threshold_count",
                 "task_charts__table__interval_value_count",
                 "task_charts__table__categorical_value_count",
@@ -328,7 +326,7 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
     if benchmark_key in {"mmmu_pro_vision", "mathvista_testmini", "mathvision"}:
         tasks = existing_tasks(
             [
-                "task_geometry__graph_paper__angle_value",
+                "task_geometry__graph_paper__angle_extremum_label",
                 "task_geometry__graph_paper__polygon_area_value",
                 "task_physics__circuit_equivalent__total_resistance_value",
                 "task_charts__curve_panels__curve_intersection_count",
@@ -346,9 +344,9 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
                 "task_three_d__object_scene__object_relation_label",
                 "task_three_d__object_scene__between_references_label",
                 "task_icons__reference_canvas__anchor_position_count",
-                "task_geometry__shape_gallery__reflection_match",
-                "task_geometry__shape_gallery__rotation_match",
-                "task_geometry__shape_gallery__translation_match",
+                "task_geometry__shape_reference__reflection_match",
+                "task_geometry__shape_reference__rotation_match",
+                "task_geometry__shape_reference__translation_match",
             ]
         )
         status = "partial" if intent in {"spatial_relation", "visual_spatial_reasoning"} else "gap"
@@ -365,7 +363,7 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
                 "task_games__space_shooter__safe_lane_count",
                 "task_games__crossing__moving_object_direction_count",
                 "task_puzzles__cell_board__reachable_region_size",
-                "task_puzzles__cell_board__reachable_target_count",
+                "task_puzzles__cell_board__largest_component_size",
                 "task_puzzles__cell_board__shortest_path_length_value",
             ]
         )
@@ -377,7 +375,7 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
     if benchmark_key == "countqa":
         tasks = existing_tasks(
             [
-                "task_icons__reference_canvas__reference_attribute_match_count",
+                "task_icons__reference_canvas__reference_type_color_rotation_match_count",
                 "task_icons__named_field__multi_attribute_and_count",
                 "task_illustrations__environment__feature_relation_object_count",
             ]
@@ -404,12 +402,11 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
     if benchmark_key == "screenspotpro":
         tasks = existing_tasks(
             [
-                "task_pages__web_action__click_target_label",
-                "task_pages__web_action__select_option_label",
-                "task_pages__web_action__type_field_label",
-                "task_pages__command_matrix__command_intent_target_label",
-                "task_pages__workspace__toolbar_palette_control_label",
-                "task_pages__workspace__property_panel_control_label",
+                "task_pages__web_action__action_target_label",
+                "task_pages__web_action__guide_code_target_count",
+                "task_pages__workspace__control_label",
+                "task_pages__workspace__context_control_count",
+                "task_pages__workspace__dual_guide_control_label",
                 "task_pages__schema__field_role_count",
             ]
         )

@@ -17,12 +17,6 @@
     "scene:paired_canvas_attribute_change": [
       "object_description"
     ],
-    "scene:paired_canvas_movement_direction": [
-      "object_description"
-    ],
-    "scene:paired_canvas_original_attribute": [
-      "object_description"
-    ],
     "task:paired_canvas_query": [
       "question_text"
     ],
@@ -63,20 +57,6 @@
       "The picture shows {object_description}."
     ],
     "paired_canvas_attribute_change": [
-      "The image shows {object_description}.",
-      "The figure shows {object_description}.",
-      "This image shows {object_description}.",
-      "The scene shows {object_description}.",
-      "The picture shows {object_description}."
-    ],
-    "paired_canvas_movement_direction": [
-      "The image shows {object_description}.",
-      "The figure shows {object_description}.",
-      "This image shows {object_description}.",
-      "The scene shows {object_description}.",
-      "The picture shows {object_description}."
-    ],
-    "paired_canvas_original_attribute": [
       "The image shows {object_description}.",
       "The figure shows {object_description}.",
       "This image shows {object_description}.",

@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `combo_mark`
 3. Source implementation domain/scene: `charts/combo_mark`
-4. Query id: `conditioned_line_extremum_label`
+4. Query ids: `max_line_where_primary_above_threshold`, `min_line_where_primary_above_threshold`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -15,13 +15,25 @@
 
 ## Annotation Contract
 1. Answer schema: `string_label`.
-2. Annotation schema: `keyed_point_map`.
+2. Annotation schema: `point_map`.
 3. Annotation uses fixed keys `primary_mark` and `line_mark` for the answer category; dynamic category-label keys are not used.
 4. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
 5. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Program Contract
+
+Program: `arg_extreme(x_label, value(line,x_label), filter=value(primary,x_label)>threshold, direction={max,min}); output=string_label; annotation=point_map(primary_mark, line_mark); scene=combo_mark; scope=conditioned_line_extremum_label`
+
+Candidate set: the visible primary marks, secondary-line marks, and shared category labels inside the `conditioned_line_extremum_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `arg_extreme` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `point_map` witnesses bound by `point_map(primary_mark, line_mark)`. Annotation uses fixed keys `primary_mark` and `line_mark` for the answer category; dynamic category-label keys are not used. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `max_line_where_primary_above_threshold`, `min_line_where_primary_above_threshold`.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `conditioned_line_extremum_label` | `selection.extreme_metric_label` | `string_label` | `keyed_point_map` |
+| `max_line_where_primary_above_threshold` | `selection.filtered_line_extremum_label` | `string_label` | `point_map` |
+| `min_line_where_primary_above_threshold` | `selection.filtered_line_extremum_label` | `string_label` | `point_map` |

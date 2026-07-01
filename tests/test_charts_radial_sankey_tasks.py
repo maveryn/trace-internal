@@ -84,21 +84,17 @@ def test_charts_radial_sankey_dominant_endpoint_matches_contract(query_id: str) 
     assert str(execution["query_id"]) == query_id
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
     assert out.answer_gt.type == "string"
-    assert out.annotation_gt.type == "bbox_set_map"
+    assert out.annotation_gt.type == "bbox"
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
     assert out.answer_gt.value == _expected_dominant_label(execution)
-    assert trace["projected_annotation"]["type"] == "bbox_set_map"
-    assert set(out.annotation_gt.value) == {"answer_endpoint", "compared_flow_values"}
-    link_refs = [str(value) for value in execution["annotation_link_ids"]]
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert not execution["annotation_link_ids"]
     node_refs = [str(value) for value in execution["annotation_node_ids"]]
     assert len(node_refs) == 1
-    expected_flow_boxes = [render_map["link_label_bboxes_px"][ref] for ref in link_refs]
-    expected_node_box = [render_map["node_bboxes_px"][node_refs[0]]]
-    assert out.annotation_gt.value["compared_flow_values"] == expected_flow_boxes
-    assert out.annotation_gt.value["answer_endpoint"] == expected_node_box
-    assert trace["projected_annotation"]["bbox_set_map"] == out.annotation_gt.value
-    for bbox in [*expected_flow_boxes, *expected_node_box]:
-        _assert_bbox_inside_canvas([float(value) for value in bbox], width=int(render["canvas_width"]), height=int(render["canvas_height"]))
+    expected_node_box = render_map["node_bboxes_px"][node_refs[0]]
+    assert out.annotation_gt.value == expected_node_box
+    _assert_bbox_inside_canvas([float(value) for value in expected_node_box], width=int(render["canvas_width"]), height=int(render["canvas_height"]))
     assert str(render["font_assets"]["font_asset_version"])
     assert str(render["font_assets"]["chart_font_family"])
 
@@ -113,9 +109,24 @@ def test_charts_radial_sankey_prompt_examples_match_contract() -> None:
     dominant = ChartsRadialSankeyDominantEndpointLabelTask().generate(136900, params={}, max_attempts=100)
     dominant_json = extract_prompt_json_example(dominant.prompt_variants["answer_and_annotation"])
     assert isinstance(dominant_json["answer"], str)
-    assert set(dominant_json["annotation"]) == {"answer_endpoint", "compared_flow_values"}
-    assert dominant_json["annotation"]["compared_flow_values"]
-    assert len(dominant_json["annotation"]["answer_endpoint"]) == 1
+    assert isinstance(dominant_json["annotation"], list)
+    assert len(dominant_json["annotation"]) == 4
+
+
+def test_charts_radial_sankey_light_theme_uses_subtle_node_fills() -> None:
+    params = {
+        "query_id": "largest_source_for_target",
+        "information_scene_treatments": ["poster_explainer"],
+        "information_scene_palettes": ["metro_bright"],
+        "information_scene_chrome_modes": ["none"],
+    }
+    out = ChartsRadialSankeyDominantEndpointLabelTask().generate(506287278820451, params=params, max_attempts=100)
+    render = out.trace_payload["render_spec"]
+    roles = render["information_scene_style"]["roles_rgb"]
+
+    assert render["source_node_fill_rgb"] == roles["surface_alt"]
+    assert render["target_node_fill_rgb"] == roles["panel_fill"]
+    assert render["source_node_fill_rgb"] != roles["header"]
 
 
 def test_charts_radial_sankey_is_deterministic() -> None:

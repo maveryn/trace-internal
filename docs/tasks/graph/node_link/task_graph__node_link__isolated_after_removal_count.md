@@ -1,7 +1,15 @@
 # `task_graph__node_link__isolated_after_removal_count`
 
 ## Program Contract
-- `count(filter(nodes(remove_node(graph, reference_node)), degree=0)); scene=node_link; scope=isolated_after_removal_count`
+
+Program: `count(filter(nodes(remove_node(graph, reference_node)), degree=0)); scene=node_link; scope=isolated_after_removal_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `isolated_after_removal_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `nodes`, `remove_node`, `graph`, `reference_node`, `degree`, `node_link`, `isolated_after_removal_count`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; the count of remaining isolated nodes.
+Annotation witnesses: `annotation` uses the `point_set` schema; the unordered `point_set` of pixel centers for all remaining nodes that would have total degree zero after the queried node is removed.
+Query ids: `single`.
 
 ## 1) Identity
 1. Domain: `graph`

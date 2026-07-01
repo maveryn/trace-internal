@@ -1,11 +1,15 @@
 # `task_puzzles__color_gradient__color_gradient_completion_label`
 
 ## Program Contract
-`complete_linear_gradient(visible_swatch_sequence, missing_position, option_swatches); scene=color_gradient; scope=color_gradient_completion_label`
 
-The scene shows a row of color swatches with one blank position and labeled
-color-option swatches. Exactly one option fits the missing position in the
-linear color gradient. The task returns that option's capital-letter label.
+Program: `complete_linear_gradient(visible_swatch_sequence, missing_position, option_swatches); scene=color_gradient; scope=color_gradient_completion_label`
+
+Candidate set: the visible swatch sequence or swatch grid, missing/violating swatches, and labeled options or cells inside the `color_gradient_completion_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `visible_swatch_sequence`, `missing_position`, `option_swatches`, `color_gradient`, `color_gradient_completion_label`.
+Operation: evaluate `complete_linear_gradient` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; the selected option label.
+Annotation witnesses: `annotation` uses the `bbox` schema; the image-pixel bounding box of the selected option swatch.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`

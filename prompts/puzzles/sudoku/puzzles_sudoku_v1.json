@@ -4,10 +4,7 @@
   "allow_empty_task_templates": true,
   "code_prompt_defaults": {
     "object_description_sparse_grid": "a partially filled Sudoku grid",
-    "object_description_filled_grid": "a more filled Sudoku grid",
-    "unit_scope_text_row": "the highlighted row",
-    "unit_scope_text_column": "the highlighted column",
-    "unit_scope_text_box": "the highlighted 3 by 3 box"
+    "object_description_filled_grid": "a more filled Sudoku grid"
   },
   "templates": {
     "scene": {
@@ -43,62 +40,49 @@
         "The red outlined empty cell is the marked cell. How many Sudoku digits could be placed there?",
         "Count the legal candidate digits for the marked empty Sudoku cell."
       ],
-      "unit_missing_digits_count": [
-        "The blue highlighted cells mark the unit to inspect. Looking only at {unit_scope_text}, how many different digits from 1 through 9 are missing?",
-        "The blue highlighted cells mark the unit to inspect. Count how many different digits are absent from {unit_scope_text}.",
-        "The highlighted unit is {unit_scope_text}. How many digit values from 1 through 9 do not appear there?",
-        "Looking only at {unit_scope_text}, how many different Sudoku digits are missing?",
-        "In {unit_scope_text}, how many different digits from 1 through 9 are absent?"
-      ],
-      "repeated_digit_count": [
-        "The blue highlighted cells mark the unit to inspect. Looking only at {unit_scope_text}, how many different digits appear more than once?",
-        "The highlighted unit is {unit_scope_text}. Count the different digit values that repeat there.",
-        "The blue highlighted cells mark the unit to inspect. How many digit values appear more than once in {unit_scope_text}?",
-        "Looking only at {unit_scope_text}, how many different repeated digits are present?",
-        "In {unit_scope_text}, how many digit values occur at least twice?"
+      "mistake_cell_label": [
+        "Rows, columns, and 3 by 3 boxes cannot repeat digits 1 through 9. One lettered filled cell has the wrong digit. Which lettered cell must be changed?",
+        "Using standard Sudoku rules, choose the lettered filled cell whose digit is wrong.",
+        "One of the lettered filled cells creates a Sudoku conflict. Which lettered cell is the mistake?",
+        "Which lettered filled Sudoku cell must be corrected?",
+        "The lettered filled cells are the options. Which option has the wrong digit?"
       ]
     },
     "output": {
       "answer_only": [
-        "Set answer to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nUse the answer-only JSON shape shown here.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nReturn the answer in JSON.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nUse this JSON shape for the final response.\nExample JSON:\n{json_example_answer_only}"
+        "Answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Use this answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}"
       ],
       "answer_and_annotation": [
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nReturn both fields in JSON.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse this JSON shape for the final response.\nExample JSON:\n{json_example}"
+        "Annotation format: {annotation_hint}\nAnswer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Required annotation format: {annotation_hint}\nRequired answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Format for the \"annotation\" field: {annotation_hint}\nFormat for the \"answer\" field: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Use this annotation format: {annotation_hint}\nUse this answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}\nFinal answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}"
       ]
     }
   },
   "static_slots_by_key": {
     "query:marked_cell_value": {
       "answer_instruction": "the digit that must go in the marked empty cell",
-      "annotation_hint": "Set annotation to an object with key \"marked_cell\" containing one image-pixel cell bounding box [x0,y0,x1,y1], and key \"constraint_cells\" containing image-pixel bounding boxes for the visible filled cells that constrain the marked cell.",
-      "json_example": "{\"annotation\":{\"marked_cell\":[[140,220,210,290]],\"constraint_cells\":[[210,220,280,290],[280,220,350,290]]},\"answer\":7}",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] for the red outlined marked cell.",
+      "json_example": "{\"annotation\":[140,220,210,290],\"answer\":7}",
       "json_example_answer_only": "{\"answer\":7}"
     },
     "query:marked_cell_candidate_count": {
       "answer_instruction": "the number of legal candidate digits for the marked empty cell",
-      "annotation_hint": "Set annotation to an object with key \"marked_cell\" containing one image-pixel cell bounding box [x0,y0,x1,y1], and key \"constraint_cells\" containing image-pixel bounding boxes for the visible filled cells that constrain the marked cell.",
-      "json_example": "{\"annotation\":{\"marked_cell\":[[140,220,210,290]],\"constraint_cells\":[[210,220,280,290],[280,220,350,290],[350,220,420,290]]},\"answer\":3}",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] for the red outlined marked cell.",
+      "json_example": "{\"annotation\":[140,220,210,290],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
-    "query:unit_missing_digits_count": {
-      "answer_instruction": "the number of different digit values missing from the highlighted unit",
-      "annotation_hint": "Set annotation to an array of image-pixel cell bounding boxes [x0,y0,x1,y1], one for each visible filled cell in the highlighted unit.",
-      "json_example": "{\"annotation\":[[120,160,190,230],[190,160,260,230],[260,160,330,230],[330,160,400,230],[400,160,470,230],[470,160,540,230]],\"answer\":3}",
-      "json_example_answer_only": "{\"answer\":3}"
-    },
-    "query:repeated_digit_count": {
-      "answer_instruction": "the number of different digit values that repeat in the highlighted unit",
-      "annotation_hint": "Set annotation to an array of image-pixel cell bounding boxes [x0,y0,x1,y1], one for each highlighted-unit cell whose digit value is repeated; use [] if no digit repeats.",
-      "json_example": "{\"annotation\":[[120,160,190,230],[260,160,330,230],[400,160,470,230],[540,160,610,230]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
+    "query:mistake_cell_label": {
+      "answer_instruction": "the option letter of the filled cell with the wrong digit",
+      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] for the selected lettered cell.",
+      "json_example": "{\"annotation\":[140,220,210,290],\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
     }
   },
   "dynamic_slots": {
@@ -107,17 +91,14 @@
     },
     "unit_scope_text": {
       "type": "string"
+    },
+    "target_digit": {
+      "type": "string"
     }
   },
   "required_slots_by_key": {
     "scene:visible_sudoku_grid": [
       "object_description"
-    ],
-    "query:unit_missing_digits_count": [
-      "unit_scope_text"
-    ],
-    "query:repeated_digit_count": [
-      "unit_scope_text"
     ]
   }
 }

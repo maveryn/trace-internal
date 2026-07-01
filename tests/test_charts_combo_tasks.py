@@ -39,18 +39,18 @@ def test_combo_tasks_generate_default_public_variant() -> None:
         assert output.scene_id == "combo_mark"
         assert output.query_id
         assert output.answer_gt.value is not None
-        assert output.annotation_gt.type in {"keyed_point_map", "point", "segment_set"}
+        assert output.annotation_gt.type in {"point_map", "point", "segment_set"}
         assert output.annotation_gt.value
         projected_annotation = output.trace_payload["projected_annotation"]
         assert projected_annotation["type"] == output.annotation_gt.type
         if output.annotation_gt.type == "point":
             assert projected_annotation["point"] == output.annotation_gt.value
-        elif output.annotation_gt.type == "keyed_point_map":
+        elif output.annotation_gt.type == "point_map":
             assert set(output.annotation_gt.value) in (
                 {"primary_mark", "line_mark"},
                 {"answer_mark"},
             )
-            assert projected_annotation["keyed_point_map"] == output.annotation_gt.value
+            assert projected_annotation["point_map"] == output.annotation_gt.value
         else:
             assert projected_annotation["segment_set"] == output.annotation_gt.value
             assert all(len(pair) == 2 for pair in output.annotation_gt.value)
@@ -74,9 +74,9 @@ def test_combo_label_answer_tasks_use_fixed_paired_mark_annotation() -> None:
             max_attempts=200,
         )
         assert output.answer_gt.type == "string"
-        assert output.annotation_gt.type == "keyed_point_map"
+        assert output.annotation_gt.type == "point_map"
         assert set(output.annotation_gt.value) == {"primary_mark", "line_mark"}
-        assert output.trace_payload["projected_annotation"]["keyed_point_map"] == output.annotation_gt.value
+        assert output.trace_payload["projected_annotation"]["point_map"] == output.annotation_gt.value
 
 
 def test_combo_cross_mark_difference_uses_calibrated_signed_queries() -> None:

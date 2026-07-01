@@ -1,1 +1,0 @@
-"""Magnetism physics tasks."""

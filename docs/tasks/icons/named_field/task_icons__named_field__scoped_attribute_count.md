@@ -8,7 +8,15 @@
 - prompt bundle: `prompts/icons/named_field/icons_named_field_v1.json`
 
 ## Program Contract
-`count.scoped_attribute(scene=named_field, scope=marked_region_or_band_or_quadrant_or_shelf, attribute=shape, output=count)`
+
+Program: `count.scoped_attribute(scene=named_field, scope=marked_region_or_band_or_quadrant_or_shelf, attribute=shape, output=count)`
+
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `marked_region_or_band_or_quadrant_or_shelf` objective scope.
+Operands: visible scene state and prompt-bound operands named by `named_field`, `marked_region_or_band_or_quadrant_or_shelf`, `attribute`, `shape`.
+Operation: evaluate `count.scoped_attribute` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `inside_shape_count`.
 
 ## Scene And Query
 The task renders one panel containing procedurally generated

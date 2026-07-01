@@ -7,13 +7,13 @@ import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from .....core.seed import spawn_rng
-from ....shared.deterministic_sampling import resolve_selection_index
 from ...shared.camera_projection import build_projection_frame
 from ...shared.object_resources import (
     ROOM_CAMERA_DISTANCE_CANDIDATE_WALL_OBJECT_TYPES,
     ROOM_CAMERA_DISTANCE_CONTEXT_WALL_OBJECT_TYPES,
 )
 from ...shared.object_scene import POINT_LABELS, bbox_intersection_area, object_reference_points
+from ...shared.task_support import shuffled_repeated_support
 from .state import (
     FLOOR_PROP_SHAPES,
     ROOM_FRONT_Y,
@@ -68,10 +68,7 @@ def _candidate_slots(*, candidate_count: int, instance_seed: int, namespace: str
     if int(candidate_count) > len(CANDIDATE_WALL_SLOTS):
         raise ValueError("room wall camera-distance task supports at most six candidates")
     slots = list(CANDIDATE_WALL_SLOTS[: int(candidate_count)])
-    front_side_index = abs(
-        int(resolve_selection_index(params={}, instance_seed=int(instance_seed), namespace=f"{namespace}.front_side_wall"))
-    ) % 2
-    if int(front_side_index) == 0:
+    if spawn_rng(int(instance_seed), f"{namespace}.front_side_wall").random() < 0.5:
         return slots
     mirrored: List[Tuple[str, float, float]] = []
     for wall, hpos, z in slots:
@@ -171,9 +168,9 @@ def _build_floor_context(*, rng, floor_context_count: int) -> List[Dict[str, Any
     prop_shapes = list(FLOOR_PROP_SHAPES)
     rng.shuffle(prop_shapes)
     floor_specs: List[Dict[str, Any]] = []
-    for index in range(int(floor_context_count)):
+    prop_shape_order = shuffled_repeated_support(rng, prop_shapes, int(floor_context_count))
+    for index, prop_shape in enumerate(prop_shape_order):
         xy = floor_slots.pop()
-        prop_shape = str(prop_shapes[index % len(prop_shapes)])
         floor_specs.append(
             _make_floor_prop(
                 rng=rng,
@@ -232,9 +229,9 @@ def build_room_wall_camera_distance_dataset(
         context_slots = list(CONTEXT_WALL_SLOTS)
         rng.shuffle(context_slots)
         context_wall_specs: List[Dict[str, Any]] = []
-        for index in range(int(context_wall_count)):
-            wall, hpos, z = context_slots[index % len(context_slots)]
-            object_type = str(context_types[index % len(context_types)])
+        context_slot_order = shuffled_repeated_support(rng, context_slots, int(context_wall_count))
+        context_type_order = shuffled_repeated_support(rng, context_types, int(context_wall_count))
+        for index, ((wall, hpos, z), object_type) in enumerate(zip(context_slot_order, context_type_order)):
             context_wall_specs.append(
                 _wall_spec_for_type(
                     rng=rng,
@@ -288,8 +285,8 @@ def build_room_wall_camera_distance_dataset(
         if len(room_depths) >= 2 and float(room_depths[1]) - float(room_depths[0]) < CAMERA_DISTANCE_MIN_ROOM_DEPTH_MARGIN:
             continue
         answer_object_id = str(sorted_by_distance[0]["object_id"])
-        answer_label_index = abs(int(resolve_selection_index(params={}, instance_seed=int(instance_seed), namespace=f"{namespace}.answer_label"))) % int(candidate_count)
-        answer_label = str(POINT_LABELS[int(answer_label_index)])
+        label_support = tuple(POINT_LABELS[: int(candidate_count)])
+        answer_label = str(spawn_rng(int(instance_seed), f"{namespace}.answer_label").choice(label_support))
         remaining_labels = [str(label) for label in POINT_LABELS[: int(candidate_count)] if str(label) != str(answer_label)]
         rng.shuffle(remaining_labels)
         relabeled_candidates: List[Dict[str, Any]] = []

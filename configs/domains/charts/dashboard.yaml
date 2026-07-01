@@ -3,7 +3,9 @@ generation:
     panel_count_min: 4
     panel_count_max: 9
     category_count_min: 4
-    category_count_max: 12
+    category_count_max: 10
+    category_label_min_chars: 2
+    category_label_max_chars: 6
     value_min: 12
     value_max: 92
     panel_kind_weights:
@@ -21,24 +23,72 @@ generation:
       - 3
       - 4
       - 5
-    top_k_support:
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-    top_k_overlap_count_support:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
     panel_condition_count_support:
       - 1
       - 2
       - 3
       - 4
       - 5
+    panel_value_range_support:
+      - 12
+      - 13
+      - 14
+      - 15
+      - 16
+      - 17
+      - 18
+      - 19
+      - 20
+      - 21
+      - 22
+      - 23
+      - 24
+      - 25
+      - 26
+      - 27
+      - 28
+      - 29
+      - 30
+      - 31
+      - 32
+      - 33
+      - 34
+      - 35
+      - 36
+      - 37
+      - 38
+      - 39
+      - 40
+      - 41
+      - 42
+      - 43
+      - 44
+      - 45
+      - 46
+      - 47
+      - 48
+      - 49
+      - 50
+      - 51
+      - 52
+      - 53
+      - 54
+      - 55
+      - 56
+      - 57
+      - 58
+      - 59
+      - 60
+      - 61
+      - 62
+      - 63
+      - 64
+      - 65
+      - 66
+      - 67
+      - 68
+      - 69
+      - 70
     statement_option_count_support:
       - 4
       - 6
@@ -71,6 +121,7 @@ rendering:
     value_font_size_px: 12
     tick_font_size_px: 11
     context_text_enabled: true
+    chart_context_profile: report_paragraph
     context_text_layout_mode: reserved_context
     context_text_top_reserved_px: 68
     context_text_bottom_reserved_px: 28
@@ -78,6 +129,10 @@ rendering:
     context_text_bottom_band_gap_px: 14
     context_text_box_count_min: 1
     context_text_box_count_max: 3
+    chart_context_mode_weights:
+      clean: 0.3
+      minimal: 0.4
+      paragraph_box: 0.3
     context_text_sidebar_width_min_px: 210
     context_text_sidebar_width_max_px: 280
     context_text_bottom_band_height_min_px: 118

@@ -3,9 +3,10 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `container_volume_transfer`
-5. Query ids: `cone_pours_to_cylinder_height`, `cylinder_pours_to_cuboid_height`
-6. Answer schema: `number_value`
-7. Annotation schema: `bbox_map`
+3. Query ids: `cone_pours_to_cylinder_height`, `cylinder_pours_to_cuboid_height`
+4. Answer schema: `number`
+5. Answer precision: `one_decimal`
+6. Annotation schema: `bbox_map`
 
 ## Program Contract
 - `solve_formula(visible_source_target_container_transfer, unknown_role=resulting_liquid_height, formula_schema=container_volume_transfer_resulting_height); scene=container_volume_transfer; scope=resulting_height_value`

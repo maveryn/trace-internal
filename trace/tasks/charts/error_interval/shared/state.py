@@ -10,6 +10,8 @@ from PIL import Image
 
 RGB = Tuple[int, int, int]
 BBox = List[float]
+Point = List[float]
+Segment = List[Point]
 
 
 @dataclass(frozen=True)
@@ -27,6 +29,7 @@ class _Query:
     prompt_key: str
     answer: int | str
     answer_type: str
+    annotation_type: str
     annotation_item_ids: Tuple[str, ...]
     params: Dict[str, Any]
 
@@ -90,12 +93,16 @@ class _Rendered:
     plot_bbox_px: BBox
     item_bboxes_px: Dict[str, BBox]
     interval_bboxes_px: Dict[str, BBox]
+    interval_center_points_px: Dict[str, List[float]]
+    interval_segments_px: Dict[str, Segment]
     render_meta: Dict[str, Any]
 
 
 __all__ = [
     "BBox",
+    "Point",
     "RGB",
+    "Segment",
     "_Dataset",
     "_IntervalItem",
     "_Query",

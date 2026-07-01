@@ -49,7 +49,7 @@ Annotation should mark the chart marks, cells, regions, intervals, panels, or
 flows that visually witness the answer. Do not annotate answer text or legends
 unless the legend/readout text itself is the visual object being queried.
 
-Use keyed annotation when roles matter, such as source vs target marks,
+Use map annotation when roles matter, such as source vs target marks,
 reference vs candidate marks, interval endpoints, source and destination nodes,
 or separate operands in an arithmetic comparison. Use unordered sets for
 homogeneous counted marks/regions/cells.
@@ -79,6 +79,23 @@ Keep non-answer context text as non-semantic. It may appear as headers,
 captions, notes, source lines, callouts, sidebars, or report/dashboard framing,
 but it must not cover marks, legends, labels, annotation targets, or answer
 readouts.
+
+Chart context sampling is profile-based. Dense scenes should use
+`dense_clean_minimal` (`clean: 0.7`, `minimal: 0.3`) and must not emit
+`paragraph_box`. Scenes reviewed as report-capable should use
+`report_paragraph` (`clean: 0.3`, `minimal: 0.4`, `paragraph_box: 0.3`) and
+must render a real paragraph/context box whenever `paragraph_box` is selected.
+In clean mode, chart scenes should not draw decorative titles, headers,
+captions, notes, or other non-answer context text. Required chart grammar such
+as axes, legends, panel labels, option labels, and task-relevant readouts
+should remain visible.
+
+Geographic map variants should sample only regions whose largest projected
+connected component is large enough to inspect. For `region_map`, selected
+geographic regions use a `400 px^2` minimum largest-component area and render
+only that largest component in the selected color; smaller disconnected
+components remain neutral. Annotation points for geographic regions should use
+the center of the rendered selected component.
 
 Semantic style, color, marker shape, line pattern, or size may be queried only
 when the verifier records the same predicate. Otherwise those axes must remain

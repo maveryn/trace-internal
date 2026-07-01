@@ -7,17 +7,17 @@ from itertools import combinations
 import pytest
 
 from trace.core.seed import hash64
-from trace.tasks.geometry.shape_gallery.reflection_match import GeometryShapeGalleryReflectionMatchTask
-from trace.tasks.geometry.shape_gallery.rotation_match import GeometryShapeGalleryRotationMatchTask
-from trace.tasks.geometry.shape_gallery.translation_match import GeometryShapeGalleryTranslationMatchTask
+from trace.tasks.geometry.shape_reference.reflection_match import GeometryShapeReferenceReflectionMatchTask
+from trace.tasks.geometry.shape_reference.rotation_match import GeometryShapeReferenceRotationMatchTask
+from trace.tasks.geometry.shape_reference.translation_match import GeometryShapeReferenceTranslationMatchTask
 
 
 @pytest.mark.parametrize(
     ("task_cls", "params", "expected_point_count", "expected_rule"),
     (
-        (GeometryShapeGalleryTranslationMatchTask, {"scene_variant": "triangle"}, 3, "translation"),
-        (GeometryShapeGalleryReflectionMatchTask, {"scene_variant": "quadrilateral"}, 4, "reflection"),
-        (GeometryShapeGalleryRotationMatchTask, {"scene_variant": "triangle"}, 3, "rotation"),
+        (GeometryShapeReferenceTranslationMatchTask, {"scene_variant": "triangle"}, 3, "translation"),
+        (GeometryShapeReferenceReflectionMatchTask, {"scene_variant": "quadrilateral"}, 4, "reflection"),
+        (GeometryShapeReferenceRotationMatchTask, {"scene_variant": "triangle"}, 3, "rotation"),
     ),
 )
 def test_geometry_transformation_match_emits_expected_contract(
@@ -43,7 +43,7 @@ def test_geometry_transformation_match_emits_expected_contract(
 
 def test_geometry_transformation_match_rejects_unsupported_scene_variant() -> None:
     with pytest.raises(ValueError):
-        GeometryShapeGalleryTranslationMatchTask().generate(
+        GeometryShapeReferenceTranslationMatchTask().generate(
             23111,
             params={"scene_variant": "circle"},
             max_attempts=20,
@@ -52,7 +52,7 @@ def test_geometry_transformation_match_rejects_unsupported_scene_variant() -> No
 
 def test_geometry_transformation_match_rejects_unsupported_query_id() -> None:
     with pytest.raises(ValueError):
-        GeometryShapeGalleryTranslationMatchTask().generate(
+        GeometryShapeReferenceTranslationMatchTask().generate(
             23112,
             params={"scene_variant": "triangle", "query_id": "largest_area"},
             max_attempts=20,
@@ -60,7 +60,7 @@ def test_geometry_transformation_match_rejects_unsupported_query_id() -> None:
 
 
 def test_geometry_transformation_match_keeps_candidate_polygons_separated() -> None:
-    task = GeometryShapeGalleryReflectionMatchTask()
+    task = GeometryShapeReferenceReflectionMatchTask()
 
     for index in range(30):
         out = task.generate(
@@ -90,7 +90,7 @@ def test_geometry_transformation_match_keeps_candidate_polygons_separated() -> N
 
 
 def test_geometry_transformation_match_translation_cue_is_above_reference_and_left_of_y_axis() -> None:
-    task = GeometryShapeGalleryTranslationMatchTask()
+    task = GeometryShapeReferenceTranslationMatchTask()
 
     for index in range(30):
         out = task.generate(

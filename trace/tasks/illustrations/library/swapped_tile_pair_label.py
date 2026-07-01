@@ -8,12 +8,12 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ....core.query_ids import SINGLE_QUERY_ID
 from ....core.scene_config import get_scene_defaults
 from ....core.seed import spawn_rng
+from ....core.sampling import uniform_choice_with_probabilities
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.annotation_artifacts import bbox_set_annotation_artifacts
 from ...shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ..shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS
 from ..shared.cutouts import (
@@ -101,13 +101,13 @@ def _sample_correct_index(*, params: Mapping[str, Any], instance_seed: int) -> T
         if value < 0 or value >= len(OPTION_LABELS):
             raise ValueError("correct_index outside option support")
         return int(value), {str(value): 1.0}
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}:correct_index",
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:correct_index")
+    selected, probabilities = uniform_choice_with_probabilities(
+        rng,
+        tuple(range(len(OPTION_LABELS))),
+        sort_keys=True,
     )
-    selected = int(index) % len(OPTION_LABELS)
-    return int(selected), dict(uniform_probability_map(tuple(range(len(OPTION_LABELS)))))
+    return int(selected), dict(probabilities)
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index: int) -> _SampleSpec:
@@ -158,14 +158,16 @@ def _select_swapped_pair(
         if pair not in set(candidates):
             raise ValueError("swapped_pair is outside visually usable candidate support")
         return (int(pair[0]), int(pair[1])), {_pair_key(pair): 1.0}
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}:swapped_pair:{attempt_index}",
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:swapped_pair", int(attempt_index))
+    selected, probabilities = uniform_choice_with_probabilities(
+        rng,
+        candidates,
+        sort_keys=True,
     )
-    selected = candidates[int(index) % len(candidates)]
-    probability = 1.0 / float(len(candidates))
-    return (int(selected[0]), int(selected[1])), {_pair_key(pair): float(probability) for pair in candidates}
+    return (int(selected[0]), int(selected[1])), {
+        _pair_key(pair): float(probabilities[str(pair)])
+        for pair in candidates
+    }
 
 
 def _option_pairs_by_label(option_pairs: Sequence[Sequence[int]]) -> Dict[str, list[int]]:

@@ -11,7 +11,7 @@ from PIL import Image
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.prompt_variants import PromptTraceArtifacts
 
-from .annotations import annotation_bbox_map
+from .annotations import annotation_bbox, annotation_bbox_map
 from .construction import solid_volume
 from .defaults import DOMAIN, POST_IMAGE_NOISE_DEFAULTS, SCENE_ID
 from .prompts import volume_equivalence_prompt_artifacts
@@ -25,7 +25,7 @@ class PreparedVolumeEquivalenceArtifacts:
 
     image: Image.Image
     rendered: RenderedScene
-    annotation_value: dict[str, list[float]]
+    annotation_value: Any
     prompt_artifacts: PromptTraceArtifacts
     noise_meta: dict[str, Any]
 
@@ -35,6 +35,7 @@ def prepare_volume_equivalence_artifacts(
     problem: ResolvedProblem,
     render_scene: Callable[..., RenderedScene],
     annotation_keys: Sequence[str],
+    annotation_schema: str = "bbox_map",
     prompt_task_key: str,
     prompt_branch_key: str,
     answer: int | str,
@@ -62,12 +63,18 @@ def prepare_volume_equivalence_artifacts(
         params=params,
         default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
-    annotation_value = annotation_bbox_map(rendered, annotation_keys)
+    if str(annotation_schema) == "bbox":
+        if len(annotation_keys) != 1:
+            raise ValueError("bbox annotations require exactly one annotation key")
+        annotation_value = annotation_bbox(rendered, str(annotation_keys[0]))
+    else:
+        annotation_value = annotation_bbox_map(rendered, annotation_keys)
     _prompt_defaults, prompt_artifacts = volume_equivalence_prompt_artifacts(
         prompt_defaults=prompt_defaults,
         prompt_task_key=str(prompt_task_key),
         prompt_branch_key=str(prompt_branch_key),
         annotation_keys=annotation_keys,
+        annotation_schema=str(annotation_schema),
         answer=answer,
         instance_seed=int(instance_seed),
     )

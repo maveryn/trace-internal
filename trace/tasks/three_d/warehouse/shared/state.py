@@ -24,6 +24,7 @@ from ...shared.object_resources import (
 )
 from ...shared.object_scene import _CameraSpec, _ProjectionFrame, _project_screen
 from ...shared.canvas import resolve_three_d_canvas_spec
+from ...shared.task_support import resolve_support_choice_for_namespace
 from ...shared.task_support import float_value as _float_value
 from ...shared.task_support import int_value as _int_value
 from ...shared.visual_styles import resolve_three_d_surface_tone
@@ -88,6 +89,12 @@ def _resolve_render_params(
     instance_seed: int = 0,
     namespace: str = "three_d.warehouse.canvas",
 ) -> _WarehouseRenderParams:
+    """Resolve warehouse canvas, surface tone, and projection styling together.
+
+    The returned params are shared by sampling and rendering, so projected
+    object visibility checks use the same margins and dimensions as the image.
+    """
+
     merged = dict(render_defaults)
     merged.update(dict(params))
     canvas = resolve_three_d_canvas_spec(
@@ -128,6 +135,50 @@ def _resolve_render_params(
         background_tone_id=str(tone.tone_id),
         background_tone_rgb=tuple(int(value) for value in tone.floor_rgb),
         surface_accent_rgb=tuple(int(value) for value in tone.surface_accent_rgb),
+    )
+
+
+def _resolve_camera_yaw_band(
+    params: Mapping[str, Any],
+    *,
+    instance_seed: int,
+    namespace: str,
+) -> Tuple[Tuple[float, float], Dict[str, float], int]:
+    """Resolve one supported warehouse camera-yaw band for task-owned sampling."""
+
+    support = tuple(range(len(WAREHOUSE_CAMERA_YAW_BANDS_DEGREES)))
+    explicit = params.get("camera_yaw_band_index")
+    locked = params.get("_locked_camera_yaw_band_index")
+    if explicit is not None:
+        selected = int(explicit)
+        probabilities = {
+            str(key): (1.0 if int(key) == int(selected) else 0.0)
+            for key in support
+        }
+    elif locked is not None:
+        selected = int(locked)
+        probabilities = {str(key): 1.0 / float(len(support)) for key in support}
+    else:
+        selected, raw_probabilities = resolve_support_choice_for_namespace(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=str(namespace),
+            support_values=support,
+            explicit_key="camera_yaw_band_index",
+            locked_key="_locked_camera_yaw_band_index",
+        )
+        probabilities = {
+            str(key): float(value) for key, value in raw_probabilities.items()
+        }
+    if int(selected) not in set(support):
+        raise ValueError(f"unsupported camera_yaw_band_index: {selected}")
+    return (
+        tuple(float(value) for value in WAREHOUSE_CAMERA_YAW_BANDS_DEGREES[int(selected)]),
+        {
+            str(key): float(value)
+            for key, value in sorted(probabilities.items(), key=lambda item: int(item[0]))
+        },
+        int(selected),
     )
 
 
@@ -365,7 +416,11 @@ def _sample_reference_and_objects(
     rng.shuffle(path_object_types)
     candidate_specs: List[Dict[str, Any]] = []
     for index, (slot_role, forward_s, lateral_l) in enumerate(candidate_local_slots[: int(candidate_count)]):
-        object_type = str(path_object_types.pop() if slot_role in {"first_path", "later_path"} and path_object_types else object_types[index % len(object_types)])
+        object_type = str(
+            path_object_types.pop()
+            if slot_role in {"first_path", "later_path"} and path_object_types
+            else rng.choice(object_types)
+        )
         xy = _local_to_world(forward_s=float(forward_s), lateral_l=float(lateral_l), origin_xy=origin_xy, forward_xy=forward_xy)
         scale = float(rng.uniform(0.90, 1.12))
         dimensions = _dimensions_for_object(str(object_type), orientation_axis=str(orientation_axis), scale=float(scale))
@@ -441,7 +496,7 @@ def _sample_reference_and_objects(
                     "w_frac": round(float(rng.uniform(0.12, 0.24)), 4),
                     "d_frac": round(float(rng.uniform(0.38, 0.66)), 4),
                     "h_frac": round(float(rng.uniform(0.10, 0.18)), 4),
-                    "color_index": int((index * 3 + load_index + rng.randrange(len(SHELF_LOAD_COLORS))) % len(SHELF_LOAD_COLORS)),
+                    "color_index": int(rng.randrange(len(SHELF_LOAD_COLORS))),
                 }
             )
         shelf_spec = _make_object_spec(
@@ -551,6 +606,7 @@ __all__ = [
     "MIN_CANDIDATE_CENTER_SEPARATION_PX",
     "MAX_CANDIDATE_BBOX_INTERSECTION_PX",
     "_WarehouseRenderParams",
+    "_resolve_camera_yaw_band",
     "_resolve_render_params",
     "_heading_vector",
     "_heading_axis",

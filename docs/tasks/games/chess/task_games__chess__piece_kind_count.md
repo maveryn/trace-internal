@@ -10,7 +10,15 @@
 7. Program schema: `count(filter(pieces, piece_kind=target_kind)); scene=chess; scope=piece_kind_count`
 
 ## Program Contract
-- `count(filter(pieces, piece_kind=target_kind)); scene=chess; scope=piece_kind_count`
+
+Program: `count(filter(pieces, piece_kind=target_kind)); scene=chess; scope=piece_kind_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `piece_kind_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `pieces`, `piece_kind`, `target_kind`, `chess`, `piece_kind_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.

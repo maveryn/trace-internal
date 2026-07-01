@@ -1,7 +1,15 @@
 # `task_graph__node_link__edge_color_count`
 
 ## Program Contract
-- `count(filter(edges(graph), edge_color=target_color)); scene=node_link; scope=edge_color_count`
+
+Program: `count(filter(edges(graph), edge_color=target_color)); scene=node_link; scope=edge_color_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `edge_color_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `edges`, `graph`, `edge_color`, `target_color`, `node_link`, `edge_color_count`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; the count of matching edges.
+Annotation witnesses: `annotation` uses the `segment_set` schema; the unordered `segment_set` of endpoint-center segments for all edges whose semantic stroke color matches the queried color.
+Query ids: `single`.
 
 ## 1) Identity
 1. Domain: `graph`
@@ -37,7 +45,7 @@
 5. Answer-only JSON shape: `{"answer":2}`
 6. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}`
 7. Prompt-facing color text uses `<color_name> [#RRGGBB]`, for example `green [#37B94B]`.
-8. Prompt-facing annotation uses a `segment_set`; each segment is `[[x1, y1], [x2, y2]]` using endpoint node centers for one matching edge.
+8. Prompt-facing annotation uses a `segment_set`; each segment is `[[x0, y0], [x1, y1]]`, where each endpoint is an `[x, y]` pixel point at an endpoint node center for one matching edge.
 
 ## 4) Annotation + trace contract
 1. Prompt-facing annotation is the unordered `segment_set` of endpoint-center segments for all edges whose semantic stroke color matches the queried color.

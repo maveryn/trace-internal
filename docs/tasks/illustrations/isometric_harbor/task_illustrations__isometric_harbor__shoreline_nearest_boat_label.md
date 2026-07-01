@@ -10,7 +10,15 @@
 Selects the lettered open-water boat whose bow is closest to the shoreline in an isometric harbor scene.
 
 ## Program Contract
-`argmin_label(boat, shoreline_distance(bow(boat), shoreline)); scene=isometric_harbor; scope=shoreline_nearest_boat_label`
+
+Program: `argmin_label(boat, shoreline_distance(bow(boat), shoreline)); scene=isometric_harbor; scope=shoreline_nearest_boat_label`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `shoreline_nearest_boat_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `boat`, `shoreline_distance`, `bow`, `shoreline`, `isometric_harbor`, `shoreline_nearest_boat_label`.
+Operation: evaluate `argmin_label` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

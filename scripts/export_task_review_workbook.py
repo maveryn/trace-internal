@@ -20,6 +20,7 @@ import pandas as pd
 import zstandard as zstd
 
 from trace.core.review_overlays import resolve_overlay_annotation
+from trace.core.query_ids import NO_BRANCH_QUERY_IDS, SINGLE_QUERY_ID
 from trace.core.taxonomy import resolve_task_query_id, resolve_task_taxonomy
 from trace.core.task_review_workbooks import write_inspection_excel as _write_inspection_excel
 
@@ -47,9 +48,9 @@ def _review_query_id_key(*, query_id: str) -> str:
     """Return the review grouping key for one exported task instance."""
 
     query_id_text = str(query_id).strip()
-    if query_id_text in {"", "default"} and query_id_text:
+    if query_id_text in NO_BRANCH_QUERY_IDS and query_id_text:
         return query_id_text
-    return query_id_text
+    return query_id_text or SINGLE_QUERY_ID
 
 
 def _ensure_link_or_copy(source: Path, destination: Path) -> None:
@@ -170,7 +171,7 @@ def main() -> int:
             or resolve_task_query_id(query_id=query_id, trace_payload=trace_record)
         )
         review_query_id = _review_query_id_key(query_id=query_id)
-        query_id_dir = review_query_id or "default"
+        query_id_dir = review_query_id or SINGLE_QUERY_ID
         query_id_index = int(per_query_id_counts[query_id_dir])
         per_query_id_counts[query_id_dir] += 1
 

@@ -30,17 +30,22 @@ def resolve_puzzle_unit_size_scale(
         raise ValueError(f"{key}_min must be <= {key}_max")
     if (high / low) < 2.0:
         raise ValueError(f"{key} range must span at least 2x")
-    scale = float(
-        resolve_render_float(
-            params,
-            defaults,
-            str(key),
-            1.0,
-            instance_seed=instance_seed,
-            namespace=str(namespace),
-            steps=1000,
+    if params.get(str(key)) is not None:
+        scale = float(params[str(key)])
+    elif defaults.get(str(key)) is not None:
+        scale = float(defaults[str(key)])
+    else:
+        scale = float(
+            resolve_render_float(
+                params,
+                defaults,
+                str(key),
+                1.0,
+                instance_seed=instance_seed,
+                namespace=str(namespace),
+                steps=1000,
+            )
         )
-    )
     return scale, {
         "enabled": True,
         "key": str(key),

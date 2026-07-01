@@ -6,8 +6,9 @@
 3. Task id: `task_geometry__regular_polygon_decomposition__marked_piece_area_value`
 4. Supported `query_id` values: `single`
 5. Answer schema: `number`
-6. Annotation schema: `point_map`
-7. Scalar annotation checked: `true` (not scalar-eligible; the task binds center and target wedge-boundary vertex roles)
+6. Answer precision: `one_decimal`
+7. Annotation schema: `point_map`
+8. Scalar annotation checked: `true` (not scalar-eligible; the task binds center and target wedge-boundary vertex roles)
 
 ## Program Contract
 - `solve_formula(regular_polygon_equal_wedge_decomposition, target=marked_wedge_group_area, formula_schema=total_area_divided_by_side_count_times_marked_wedge_count); scene=regular_polygon_decomposition; scope=marked_piece_area_value`

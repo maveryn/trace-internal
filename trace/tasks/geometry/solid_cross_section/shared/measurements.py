@@ -71,7 +71,7 @@ def cone_problem_from_case(
         base_radius=float(case.base_radius),
         solid_height=float(case.solid_height),
         slice_distance_from_apex=float(case.slice_distance_from_apex),
-        slice_radius=round1(radius),
+        slice_radius=float(radius),
         answer_support_probabilities=dict(answer_support_probabilities),
         construction_case_count_for_answer=int(construction_case_count_for_answer),
     )
@@ -97,8 +97,7 @@ def pyramid_problem_from_case(
         base_side=float(case.base_side),
         solid_height=float(case.solid_height),
         slice_distance_from_apex=float(case.slice_distance_from_apex),
-        slice_side=round1(side),
+        slice_side=float(side),
         answer_support_probabilities=dict(answer_support_probabilities),
         construction_case_count_for_answer=int(construction_case_count_for_answer),
     )
-

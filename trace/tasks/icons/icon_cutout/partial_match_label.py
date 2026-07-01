@@ -19,7 +19,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
-from ..shared.annotation import keyed_bbox_map_annotation
+from ..shared.annotation import bbox_map_annotation
 from .shared.annotations import fragment_option_annotation_boxes, matching_option_cell
 from .shared.defaults import IconCutoutDefaults
 from .shared.rendering import sample_and_render_icon_cutout_scene
@@ -133,7 +133,7 @@ class IconsIconCutoutPartialMatchLabelTask:
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
         matching_cell = matching_option_cell(scene_payload)
-        annotation_artifacts = keyed_bbox_map_annotation(
+        annotation_artifacts = bbox_map_annotation(
             fragment_option_annotation_boxes(scene_payload, matching_cell)
         )
         answer_gt = TypedValue(type="option_letter", value=str(scene_payload.answer_label))

@@ -14,6 +14,7 @@ def _dart_specs_for_trace(sample: DartsSampledScene) -> list[Dict[str, Any]]:
     return [
         {
             "dart_id": str(dart.dart_id),
+            "label": None if dart.label is None else str(dart.label),
             "area_kind": str(dart.area_kind),
             "sector_value": None if dart.sector_value is None else int(dart.sector_value),
             "score": int(dart.score),
@@ -50,7 +51,7 @@ def build_darts_trace_payload(
     rendered_context: RenderedDartsTaskContext,
     prompt_defaults: Mapping[str, Any],
     query_spec: Mapping[str, Any],
-    answer_value: int,
+    answer_value: Any,
     execution_extra: Mapping[str, Any] | None = None,
 ) -> Dict[str, Any]:
     """Assemble darts trace sections after task-specific answer binding."""
@@ -83,7 +84,7 @@ def build_darts_trace_payload(
         "execution_trace": {
             "scene_variant": str(axes.scene_variant),
             "style_variant": str(axes.style_variant),
-            "answer": int(answer_value),
+            "answer": answer_value,
             "dart_specs": _dart_specs_for_trace(sample),
             "dart_count": int(len(sample.darts)),
             "annotation_entity_ids": [str(entity_id) for entity_id in annotation_entity_ids],

@@ -1,4 +1,4 @@
-"""Public pipe-flow task for selecting the rotatable repair tile option."""
+"""Public pipe-flow task for selecting the as-drawn repair tile option."""
 
 from __future__ import annotations
 
@@ -6,7 +6,6 @@ from dataclasses import replace
 from typing import Any, Dict, Mapping
 
 from trace.core.query_ids import SINGLE_QUERY_ID
-from trace.core.sampling import support_probability_map, uniform_choice_with_probabilities
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.core.visual.noise import apply_post_image_noise
@@ -23,7 +22,9 @@ from trace.tasks.shared.output_metadata import default_task_versions
 
 from .shared.annotations import pipe_flow_repair_annotation
 from .shared.defaults import (
+    resolve_answer_label,
     resolve_candidate_count,
+    resolve_gap_size_variant,
     resolve_grid_size_variant,
     resolve_render_params,
     resolve_scene_variant,
@@ -32,7 +33,7 @@ from .shared.output import build_trace_payload
 from .shared.prompts import build_prompt
 from .shared.rendering import render_pipe_flow_scene
 from .shared.sampling import sample_pipe_flow_dataset
-from .shared.state import LABEL_POOL, SCENE_ID
+from .shared.state import SCENE_ID
 
 TASK_ID = "task_puzzles__pipe_flow__pipe_flow_repair_tile_label"
 SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
@@ -46,7 +47,7 @@ _NOISE_DEFAULTS = load_puzzle_noise_defaults(scene_id=SCENE_ID, apply_prob=0.0)
 
 @register_task
 class PuzzlesPipeFlowRepairTileLabelTask:
-    """Choose the repair option that reconnects start to finish under rotation."""
+    """Choose the repair option that reconnects start to finish as drawn."""
 
     task_id = TASK_ID
     domain = "puzzles"
@@ -100,6 +101,11 @@ def _generate_one(
         params=task_params,
         gen_defaults=_GEN_DEFAULTS,
     )
+    gap_size_variant, gap_size_variant_probabilities = resolve_gap_size_variant(
+        axes_rng,
+        params=task_params,
+        gen_defaults=_GEN_DEFAULTS,
+    )
     scene_variant, scene_variant_probabilities = resolve_scene_variant(
         axes_rng,
         params=task_params,
@@ -110,16 +116,27 @@ def _generate_one(
         params=task_params,
         gen_defaults=_GEN_DEFAULTS,
     )
-    answer_label, answer_label_probabilities = _resolve_answer_label(
+    answer_label, answer_label_probabilities = resolve_answer_label(
         params=task_params,
         instance_seed=int(instance_seed),
         candidate_count=int(candidate_count),
+        namespace=_NAMESPACE_BASE,
+    )
+    sampling_params = dict(task_params)
+    sampling_params.update(
+        {
+            "branch_count_min": 0,
+            "branch_count_max": 0,
+            "branch_length_min": 0,
+            "branch_length_max": 0,
+        }
     )
     dataset = sample_pipe_flow_dataset(
-        task_params,
+        sampling_params,
         gen_defaults=_GEN_DEFAULTS,
         instance_seed=int(instance_seed),
         grid_size_variant=str(grid_size_variant),
+        gap_size_variant=str(gap_size_variant),
         scene_variant=str(scene_variant),
         candidate_count=int(candidate_count),
         answer_label=str(answer_label),
@@ -181,16 +198,23 @@ def _generate_one(
         "scene_variant_probabilities": dict(scene_variant_probabilities),
         "grid_size_variant": str(dataset.grid_size_variant),
         "grid_size_variant_probabilities": dict(grid_size_variant_probabilities),
+        "gap_size_variant": str(dataset.gap_size_variant),
+        "gap_size_variant_probabilities": dict(gap_size_variant_probabilities),
+        "gap_size": int(dataset.gap_size),
         "candidate_count": int(dataset.candidate_count),
         "candidate_count_probabilities": dict(candidate_count_probabilities),
         "answer_label": str(dataset.answer_label),
         "answer_label_probabilities": dict(answer_label_probabilities),
         "rows": int(dataset.rows),
         "cols": int(dataset.cols),
+        "missing_cell_count": int(len(dataset.missing_cells)),
         "path_length": int(len(dataset.path_cells)),
         "branch_cell_count": int(len(dataset.branch_cells)),
         "branch_terminal_count": int(len(dataset.branch_terminal_cells)),
-        "rotation_allowed": True,
+        "branching_allowed": False,
+        "rotation_allowed": False,
+        "placement_rule": "place_option_as_drawn_no_rotation",
+        "distractor_policy": "visually_close_in_place_unsolvable_options",
         "max_attempts": int(max_attempts),
     }
     trace_payload = build_trace_payload(
@@ -228,26 +252,6 @@ def _generate_one(
     )
 
 
-def _resolve_answer_label(
-    *,
-    params: Mapping[str, Any],
-    instance_seed: int,
-    candidate_count: int,
-) -> tuple[str, dict[str, float]]:
-    """Resolve the correct option label as a task-owned semantic operand."""
-
-    labels = tuple(LABEL_POOL[index] for index in range(int(candidate_count)))
-    explicit = params.get("answer_label")
-    if explicit is not None:
-        selected = str(explicit).strip().upper()
-        if selected not in set(labels):
-            raise ValueError(f"answer_label {selected!r} outside candidate labels")
-        return selected, support_probability_map(labels, selected=selected)
-    rng = spawn_rng(int(instance_seed), f"{_NAMESPACE_BASE}.answer_label")
-    selected, probabilities = uniform_choice_with_probabilities(rng, labels)
-    return str(selected), dict(probabilities)
-
-
 def _validate_pipe_flow_dataset(dataset: Any) -> None:
     """Validate the sampled option set has exactly one labeled repair answer."""
 
@@ -259,9 +263,21 @@ def _validate_pipe_flow_dataset(dataset: Any) -> None:
         raise ValueError("pipe-flow answer label drifted from correct option")
     if str(correct_option.option_id) != str(dataset.correct_option_panel_id):
         raise ValueError("pipe-flow correct option id drifted from dataset")
+    if len(dataset.missing_cells) != int(dataset.gap_size) * int(dataset.gap_size):
+        raise ValueError("pipe-flow missing-cell count does not match gap size")
+    if dataset.branch_cells or dataset.branch_terminal_cells:
+        raise ValueError("pipe-flow repair task must not include branch offshoots")
+    in_place_options = [option for option in dataset.options if option.connects_in_place]
+    if len(in_place_options) != 1:
+        raise ValueError("pipe-flow dataset must contain exactly one in-place connecting option")
     for option in dataset.options:
-        if bool(option.is_correct) != bool(option.connects_after_rotation_turns):
-            raise ValueError("pipe-flow option solvability does not match correctness")
+        if bool(option.is_correct) != bool(option.connects_in_place):
+            raise ValueError("pipe-flow in-place solvability does not match correctness")
+        if len(option.local_openings) != int(dataset.gap_size) * int(dataset.gap_size):
+            raise ValueError("pipe-flow option footprint does not match gap size")
+        for _row, _col, openings in option.local_openings:
+            if len(openings) == 1:
+                raise ValueError("pipe-flow option contains a one-opening partial pipe cell")
 
 
 __all__ = [

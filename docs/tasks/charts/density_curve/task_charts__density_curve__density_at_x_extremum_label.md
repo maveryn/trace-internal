@@ -15,13 +15,24 @@
 
 ## Annotation Contract
 1. Answer schema: `string_label`.
-2. Annotation schema: `keyed_point_map`.
+2. Annotation schema: `point`.
 3. Annotation should mark the point where the answer curve intersects the marked x-value, not the legend label, title, axis text, or reference-line label.
 4. Renderer context such as legends, axes, interval guides, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Program Contract
+
+Program: `arg_extreme(curve_label, density(curve_label,x_ref), direction={highest,lowest}); output=string_label; annotation=point(answer_density_at_x); scene=density_curve; scope=density_at_x_extremum_label`
+
+Candidate set: the visible density curves, shaded regions, and axis labels inside the `density_at_x_extremum_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `arg_extreme` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `point` witnesses bound by `point(answer_density_at_x)`. Annotation should mark the point where the answer curve intersects the marked x-value, not the legend label, title, axis text, or reference-line label. Renderer context such as legends, axes, interval guides, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `highest_density_at_x_label`, `lowest_density_at_x_label`.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `highest_density_at_x_label` | `selection.density_at_x_extremum_label` | `string_label` | `keyed_point_map` |
-| `lowest_density_at_x_label` | `selection.density_at_x_extremum_label` | `string_label` | `keyed_point_map` |
+| `highest_density_at_x_label` | `selection.density_at_x_extremum_label` | `string_label` | `point` |
+| `lowest_density_at_x_label` | `selection.density_at_x_extremum_label` | `string_label` | `point` |

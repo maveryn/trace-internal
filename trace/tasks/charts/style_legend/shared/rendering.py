@@ -1,14 +1,25 @@
 """Rendering helpers for the style-legend chart scene."""
 
 from __future__ import annotations
-
-import math
 from collections.abc import Mapping, Sequence
 from typing import Any
 
 from PIL import ImageDraw, ImageFont
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.cartesian.axes import (
+    draw_axis_lines,
+    draw_horizontal_value_grid_ticks,
+    draw_plot_frame,
+)
+from trace.tasks.charts.shared.cartesian.geometry import project_index, project_linear_inverted, union_bboxes as cartesian_union_bboxes
+from trace.tasks.charts.shared.cartesian.lines import (
+    draw_styled_polyline as draw_cartesian_styled_polyline,
+    draw_styled_segment as draw_cartesian_styled_segment,
+    line_segments_for_style as cartesian_line_segments_for_style,
+)
+from trace.tasks.charts.shared.cartesian.markers import draw_marker as draw_cartesian_marker
+from trace.tasks.charts.shared.dense_text import dense_stroke_width
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.render_variation import apply_layout_jitter_to_margins
@@ -16,7 +27,6 @@ from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
 
 from .defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDER_DEFAULTS,
     gen_int,
@@ -126,16 +136,7 @@ def draw_centered(
 
 
 def line_segments_for_style(style: str, *, width: int) -> tuple[tuple[float, float], ...]:
-    resolved = str(style)
-    if resolved == "dotted":
-        return ((0.0, max(5.0, float(width) * 4.5)),)
-    if resolved == "dashdot":
-        return ((max(12.0, float(width) * 7.0), max(5.0, float(width) * 3.5)), (0.0, max(5.0, float(width) * 3.5)))
-    if resolved == "long_dash":
-        return ((max(20.0, float(width) * 11.0), max(8.0, float(width) * 5.0)),)
-    if resolved == "short_dash":
-        return ((max(8.0, float(width) * 4.5), max(5.0, float(width) * 3.0)),)
-    return ((max(14.0, float(width) * 8.0), max(6.0, float(width) * 4.0)),)
+    return cartesian_line_segments_for_style(str(style), width=int(width))
 
 
 def draw_styled_segment(
@@ -149,38 +150,14 @@ def draw_styled_segment(
 ) -> None:
     """Draw one visible line segment while preserving the sampled line pattern."""
 
-    if str(style) == "solid":
-        draw.line([p0, p1], fill=fill, width=max(1, int(width)))
-        return
-    x0, y0 = float(p0[0]), float(p0[1])
-    x1, y1 = float(p1[0]), float(p1[1])
-    dx = x1 - x0
-    dy = y1 - y0
-    length = math.hypot(dx, dy)
-    if length <= 0.0:
-        return
-    ux = dx / length
-    uy = dy / length
-    cursor = 0.0
-    pattern = line_segments_for_style(str(style), width=max(1, int(width)))
-    pattern_index = 0
-    while cursor <= length:
-        draw_len, gap_len = pattern[int(pattern_index) % len(pattern)]
-        if draw_len <= 0.0:
-            radius = max(1.0, float(width) * 0.8)
-            cx = x0 + ux * cursor
-            cy = y0 + uy * cursor
-            draw.ellipse([cx - radius, cy - radius, cx + radius, cy + radius], fill=fill)
-            cursor += float(gap_len)
-        else:
-            end = min(length, cursor + draw_len)
-            draw.line(
-                [(x0 + ux * cursor, y0 + uy * cursor), (x0 + ux * end, y0 + uy * end)],
-                fill=fill,
-                width=max(1, int(width)),
-            )
-            cursor = end + float(gap_len)
-        pattern_index += 1
+    draw_cartesian_styled_segment(
+        draw,
+        (float(p0[0]), float(p0[1])),
+        (float(p1[0]), float(p1[1])),
+        fill=fill,
+        width=int(width),
+        style=str(style),
+    )
 
 
 def draw_styled_polyline(
@@ -191,8 +168,13 @@ def draw_styled_polyline(
     width: int,
     style: str,
 ) -> None:
-    for p0, p1 in zip(points, points[1:]):
-        draw_styled_segment(draw, p0, p1, fill=fill, width=int(width), style=str(style))
+    draw_cartesian_styled_polyline(
+        draw,
+        [(float(point[0]), float(point[1])) for point in points],
+        fill=fill,
+        width=int(width),
+        style=str(style),
+    )
 
 
 def draw_marker(
@@ -206,44 +188,36 @@ def draw_marker(
     marker_fill: str,
     width: int = 2,
 ) -> BBox:
-    cx, cy = float(center[0]), float(center[1])
-    r = float(radius)
-    marker_bbox = [cx - r, cy - r, cx + r, cy + r]
-    resolved_fill = fill if str(marker_fill) == "filled" else (255, 255, 255)
-    if str(shape) == "square":
-        draw.rectangle(marker_bbox, fill=resolved_fill, outline=outline, width=max(1, int(width)))
-    elif str(shape) == "diamond":
-        draw.polygon([(cx, cy - r), (cx + r, cy), (cx, cy + r), (cx - r, cy)], fill=resolved_fill, outline=outline)
-        draw.line([(cx, cy - r), (cx + r, cy), (cx, cy + r), (cx - r, cy), (cx, cy - r)], fill=outline, width=max(1, int(width)))
-    elif str(shape) == "triangle":
-        draw.polygon([(cx, cy - r), (cx + r, cy + r), (cx - r, cy + r)], fill=resolved_fill, outline=outline)
-        draw.line([(cx, cy - r), (cx + r, cy + r), (cx - r, cy + r), (cx, cy - r)], fill=outline, width=max(1, int(width)))
-    elif str(shape) == "ring":
-        draw.ellipse(marker_bbox, fill=(255, 255, 255), outline=outline, width=max(2, int(width) + 1))
-    elif str(shape) == "cross":
-        draw.line([(cx - r, cy - r), (cx + r, cy + r)], fill=outline, width=max(2, int(width)))
-        draw.line([(cx - r, cy + r), (cx + r, cy - r)], fill=outline, width=max(2, int(width)))
-    else:
-        draw.ellipse(marker_bbox, fill=resolved_fill, outline=outline, width=max(1, int(width)))
-    return bbox(marker_bbox)
+    return draw_cartesian_marker(
+        draw,
+        center=(float(center[0]), float(center[1])),
+        radius=float(radius),
+        shape=str(shape),
+        fill=fill,
+        outline=outline,
+        marker_fill=str(marker_fill),
+        width=max(2, int(width) + 1) if str(shape) == "ring" else max(1, int(width)),
+        polygon_outline_width=max(1, int(width)) if str(shape) in {"diamond", "triangle"} else None,
+        cross_width=max(2, int(width)),
+    )
 
 
 def value_to_y(value: int, *, plot_top: float, plot_bottom: float, value_min: int, value_max: int) -> float:
-    span = max(1, int(value_max) - int(value_min))
-    return float(plot_bottom) - ((float(value) - float(value_min)) / float(span)) * float(plot_bottom - plot_top)
+    return project_linear_inverted(
+        float(value),
+        domain_min=float(value_min),
+        domain_max=float(value_max),
+        pixel_top=float(plot_top),
+        pixel_bottom=float(plot_bottom),
+    )
 
 
 def x_to_pixel(index: int, *, plot_left: float, plot_right: float, x_count: int) -> float:
-    if int(x_count) <= 1:
-        return 0.5 * float(plot_left + plot_right)
-    return float(plot_left) + (float(index) / float(int(x_count) - 1)) * float(plot_right - plot_left)
+    return project_index(int(index), pixel_min=float(plot_left), pixel_max=float(plot_right), count=int(x_count))
 
 
 def union_bboxes(boxes: Sequence[Sequence[float]]) -> BBox:
-    clean = [tuple(float(value) for value in box[:4]) for box in boxes if len(box) >= 4]
-    if not clean:
-        return []
-    return bbox([min(box[0] for box in clean), min(box[1] for box in clean), max(box[2] for box in clean), max(box[3] for box in clean)])
+    return cartesian_union_bboxes(boxes)
 
 
 def render_legend(
@@ -303,8 +277,8 @@ def render_legend(
             )
             label_x = float(swatch_x1 + 9.0)
             label_y = float(swatch_y - 0.5 * float(render_params.legend_font_size_px))
-            draw_text_traced(draw, (label_x, label_y), str(series.label), font=font, fill=render_params.text_rgb, stroke_fill=render_params.text_stroke_rgb, stroke_width=1, role="readout", required=False)
-            label_bbox = text_bbox(draw, (label_x, label_y), str(series.label), font, stroke_width=1)
+            draw_text_traced(draw, (label_x, label_y), str(series.label), font=font, fill=render_params.text_rgb, stroke_fill=render_params.text_stroke_rgb, stroke_width=dense_stroke_width(), role="readout", required=False)
+            label_bbox = text_bbox(draw, (label_x, label_y), str(series.label), font, stroke_width=dense_stroke_width())
             row_bbox = union_bboxes(([swatch_x0, swatch_y - swatch_height, swatch_x1, swatch_y + swatch_height], label_bbox))
             row_bboxes[str(series.series_id)] = row_bbox
             all_boxes.append(row_bbox)
@@ -339,8 +313,8 @@ def render_legend(
             )
             label_x = float(swatch_x1 + 12.0)
             label_y = float(swatch_y - 0.5 * float(render_params.legend_font_size_px))
-            draw_text_traced(draw, (label_x, label_y), str(series.label), font=font, fill=render_params.text_rgb, stroke_fill=render_params.text_stroke_rgb, stroke_width=1, role="readout", required=False)
-            label_bbox = text_bbox(draw, (label_x, label_y), str(series.label), font, stroke_width=1)
+            draw_text_traced(draw, (label_x, label_y), str(series.label), font=font, fill=render_params.text_rgb, stroke_fill=render_params.text_stroke_rgb, stroke_width=dense_stroke_width(), role="readout", required=False)
+            label_bbox = text_bbox(draw, (label_x, label_y), str(series.label), font, stroke_width=dense_stroke_width())
             row_bbox = union_bboxes(([swatch_x0, swatch_y - swatch_height, swatch_x1, swatch_y + swatch_height], label_bbox))
             row_bboxes[str(series.series_id)] = row_bbox
             all_boxes.append(row_bbox)
@@ -356,20 +330,20 @@ def render_dataset(
 ) -> RenderedStyleLegend:
     """Render a sampled style-legend dataset without owning any public objective."""
 
-    render_params = resolve_render_params(params, chart_font_family=str(chart_font_family))
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    resolved_params = resolve_render_params(params, chart_font_family=str(chart_font_family))
+    protected_colors = [tuple(int(channel) for channel in series.style.color_rgb) for series in dataset.series]
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
-        fallback_color=(247, 248, 250),
+        scene_id="style_legend",
+        render_params=resolved_params,
+        protected_colors=protected_colors,
     )
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
-    title_font = load_font(int(render_params.title_font_size_px), bold=True)
+    title_font = load_font(int(render_params.title_font_size_px), bold=False)
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
-    legend_font = load_font(int(render_params.legend_font_size_px), bold=True)
+    legend_font = load_font(int(render_params.legend_font_size_px), bold=False)
 
     plot_left = float(render_params.margin_left_px)
     plot_top = float(render_params.margin_top_px)
@@ -381,7 +355,7 @@ def render_dataset(
     if str(dataset.legend_position) == "inside_top_right":
         plot_right = float(render_params.canvas_width - 72)
     plot_bbox = bbox([plot_left, plot_top, plot_right, plot_bottom])
-    draw.rectangle(plot_bbox, fill=render_params.panel_fill_rgb, outline=render_params.panel_outline_rgb, width=1)
+    draw_plot_frame(draw, plot_bbox, fill=render_params.panel_fill_rgb, outline=render_params.panel_outline_rgb, width=1)
 
     title_options = params.get("style_legend_title_options", group_default(RENDER_DEFAULTS, "style_legend_title_options", ("Scientific Series Comparison",)))
     titles = tuple(str(value) for value in title_options) if isinstance(title_options, Sequence) and not isinstance(title_options, (str, bytes)) else ("Scientific Series Comparison",)
@@ -395,16 +369,27 @@ def render_dataset(
             font=title_font,
             fill=render_params.text_rgb,
             stroke_fill=render_params.text_stroke_rgb,
-            stroke_width=1,
+            stroke_width=dense_stroke_width(),
         )
 
     value_min = int(gen_int(params, "style_legend_value_min", 0))
     value_max = int(gen_int(params, "style_legend_value_max", 100))
     tick_step = int(gen_int(params, "style_legend_tick_step", 20))
-    for tick in range(int(value_min), int(value_max) + 1, max(1, int(tick_step))):
-        y = value_to_y(int(tick), plot_top=plot_top, plot_bottom=plot_bottom, value_min=int(value_min), value_max=int(value_max))
-        draw.line([(plot_left, y), (plot_right, y)], fill=render_params.grid_rgb, width=int(render_params.grid_line_width_px))
-        draw.line([(plot_left - 6, y), (plot_left, y)], fill=render_params.axis_rgb, width=int(render_params.axis_line_width_px))
+    y_tick_values = range(int(value_min), int(value_max) + 1, max(1, int(tick_step)))
+    y_tick_positions = draw_horizontal_value_grid_ticks(
+        draw,
+        plot_bbox,
+        tick_values=y_tick_values,
+        domain_min=int(value_min),
+        domain_max=int(value_max),
+        grid_rgb=render_params.grid_rgb,
+        axis_rgb=render_params.axis_rgb,
+        grid_width_px=int(render_params.grid_line_width_px),
+        tick_width_px=int(render_params.axis_line_width_px),
+        tick_length_px=6.0,
+    )
+    for tick in y_tick_values:
+        y = float(y_tick_positions[float(tick)])
         draw_centered(
             draw,
             center=(plot_left - 28.0, y),
@@ -412,10 +397,9 @@ def render_dataset(
             font=tick_font,
             fill=render_params.muted_text_rgb,
             stroke_fill=render_params.text_stroke_rgb,
-            stroke_width=1,
+            stroke_width=dense_stroke_width(),
         )
-    draw.line([(plot_left, plot_top), (plot_left, plot_bottom)], fill=render_params.axis_rgb, width=int(render_params.axis_line_width_px))
-    draw.line([(plot_left, plot_bottom), (plot_right, plot_bottom)], fill=render_params.axis_rgb, width=int(render_params.axis_line_width_px))
+    draw_axis_lines(draw, plot_bbox, axis_rgb=render_params.axis_rgb, axis_width_px=int(render_params.axis_line_width_px))
 
     x_points = [
         x_to_pixel(int(index), plot_left=plot_left, plot_right=plot_right, x_count=len(dataset.x_labels))
@@ -431,7 +415,7 @@ def render_dataset(
             font=tick_font,
             fill=render_params.text_rgb,
             stroke_fill=render_params.text_stroke_rgb,
-            stroke_width=1,
+            stroke_width=dense_stroke_width(),
         )
 
     threshold_bbox: BBox | None = None
@@ -439,8 +423,8 @@ def render_dataset(
         y = value_to_y(int(dataset.threshold_value), plot_top=plot_top, plot_bottom=plot_bottom, value_min=int(value_min), value_max=int(value_max))
         draw_styled_segment(draw, (plot_left, y), (plot_right, y), fill=render_params.threshold_rgb, width=2, style="dashed")
         label = f"T={int(dataset.threshold_value)}"
-        draw_text_traced(draw, (plot_right - 52.0, y - 20.0), label, font=tick_font, fill=render_params.threshold_rgb, stroke_fill=render_params.text_stroke_rgb, stroke_width=1, role="readout", required=False)
-        threshold_bbox = text_bbox(draw, (plot_right - 52.0, y - 20.0), label, tick_font, stroke_width=1)
+        draw_text_traced(draw, (plot_right - 52.0, y - 20.0), label, font=tick_font, fill=render_params.threshold_rgb, stroke_fill=render_params.text_stroke_rgb, stroke_width=dense_stroke_width(), role="readout", required=False)
+        threshold_bbox = text_bbox(draw, (plot_right - 52.0, y - 20.0), label, tick_font, stroke_width=dense_stroke_width())
 
     point_map: dict[str, dict[str, Point]] = {}
     point_bboxes: dict[str, BBox] = {}
@@ -508,7 +492,8 @@ def render_dataset(
         default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
     render_meta = {
-        "background_style": dict(background_meta),
+        "background_style": {**dict(background_meta), "information_scene_style": dict(information_style_meta)},
+        "information_scene_style": dict(information_style_meta),
         "post_image_noise": dict(noise_meta),
         "chart_font_family": str(chart_font_family),
         "style_palette_mode": str(dataset.palette_mode),

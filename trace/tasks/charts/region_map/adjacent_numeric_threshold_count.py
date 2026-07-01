@@ -45,6 +45,7 @@ class ChartsMapAdjacentNumericThresholdCountTask:
             relations={
                 "query_id": str(selected_query_id),
                 "reference_region_id": str(dataset["question_params"]["reference_region_id"]),
+                "reference_region_label": str(dataset["question_params"]["reference_region_label"]),
                 "threshold_direction": str(dataset["question_params"]["threshold_direction"]),
                 "threshold_value": int(dataset["question_params"]["threshold_value"]),
                 "adjacent_neighbor_region_ids": list(dataset["question_params"]["adjacent_neighbor_region_ids"]),
@@ -53,6 +54,7 @@ class ChartsMapAdjacentNumericThresholdCountTask:
             witness_symbolic={
                 "type": "region_map_adjacent_threshold_count_witness",
                 "reference_region_id": str(dataset["question_params"]["reference_region_id"]),
+                "reference_region_label": str(dataset["question_params"]["reference_region_label"]),
                 "candidate_region_ids": list(annotation.annotation_region_ids),
                 "answer_value": int(dataset["answer_value"]),
             },

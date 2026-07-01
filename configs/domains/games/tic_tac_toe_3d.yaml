@@ -28,6 +28,12 @@ generation:
     - 6
     option_count_support:
     - 4
+  task_overrides:
+    task_games__tic_tac_toe_3d__layer_piece_count:
+      target_player_weights:
+        X: 1.0
+        O: 1.0
+      balanced_target_player_sampling: true
 rendering:
   shared:
     canvas_width: 760

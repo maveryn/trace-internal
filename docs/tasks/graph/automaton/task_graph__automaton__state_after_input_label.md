@@ -25,7 +25,15 @@
    - the simulation path is deterministic by construction for the shown input.
 
 ## Program Contract
-- `state_label_after(simulate_dfa(transition_graph, input_string, stop_step)); output=string; annotation=point_sequence(visited_state_centers); scene=automaton; scope=state_after_input_label`
+
+Program: `state_label_after(simulate_dfa(transition_graph, input_string, stop_step)); output=string; annotation=point_sequence(visited_state_centers); scene=automaton; scope=state_after_input_label`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `state_after_input_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `simulate_dfa`, `transition_graph`, `input_string`, `stop_step`, `visited_state_centers`, `automaton`, `state_after_input_label` plus the active `query_id` branch.
+Operation: evaluate `state_label_after` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_sequence` schema; an ordered list of pixel-space state-center points, starting at the start state and ending at the answer state.
+Query ids: `final_state_label`, `transition_step_state_label`.
 
 ## 3) Prompt Contract
 1. Bundle: `automaton_v1`

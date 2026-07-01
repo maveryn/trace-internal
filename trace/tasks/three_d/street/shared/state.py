@@ -359,7 +359,7 @@ def _sample_context_specs(
             rng=rng,
             jitter=0.18,
         )
-        building_style = str(building_styles[index % len(building_styles)])
+        building_style = str(rng.choice(building_styles))
         width_factor, depth_factor, height_factor = (
             float(value)
             for value in BUILDING_STYLE_DIMENSION_FACTORS.get(str(building_style), (1.0, 1.0, 1.0))

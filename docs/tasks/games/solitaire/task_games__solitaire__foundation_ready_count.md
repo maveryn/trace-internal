@@ -11,7 +11,15 @@
 8. Scalar annotation checked: `true`
 
 ## Program Contract
-- `count(exposed_tableau_cards(can_move_to_foundation)); scene=solitaire; scope=foundation_ready_count`
+
+Program: `count(exposed_tableau_cards(can_move_to_foundation)); scene=solitaire; scope=foundation_ready_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `foundation_ready_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `exposed_tableau_cards`, `can_move_to_foundation`, `solitaire`, `foundation_ready_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. Count only exposed tableau cards, using the visible foundation suit and top-rank state.

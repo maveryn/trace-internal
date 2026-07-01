@@ -1,30 +1,49 @@
 # `task_symbolic__music_staff__duration_equivalence_label`
 
-## Public Taxonomy
+## 1) Identity
 1. Domain: `symbolic`
 2. Scene id: `music_staff`
-3. Scene: `notation`
-4. Task id: `task_symbolic__music_staff__duration_equivalence_label`
+3. Task id: `task_symbolic__music_staff__duration_equivalence_label`
+4. Objective contract: `duration_equivalence_label`
 
-## Query Contract
-1. Branch metadata: `query_id`
-2. `query_id`: `duration_equivalence_label`
-3. Prompts ask which image-visible option card has the same duration as the marked note.
-4. Internal variation includes eighth, quarter, dotted-quarter, half, dotted-half, and whole durations with `engraved_sheet|exam_scan|notebook_staff` scene variants.
+## Program Contract
+Program: `music_staff.duration_equivalence_label(scene=music_staff, scope=numbered_duration_excerpt_plus_visible_text_options, output=option_letter)`
 
-## Answer And Annotation
-1. `answer_gt.type = string`
-2. `answer_gt.value` is the single capital-letter option label rendered in the image.
-3. `annotation_gt.type = bbox_set`
-4. Annotation contains the target-duration note bbox and the selected option-card bbox.
+Candidate set: the visible text option cards for duration-equivalence labels.
+Operands: the target numbered note/rest duration glyph and the duration value represented by each option.
+Operation: read the target duration and select the unique option with the same duration value.
+Output binding: `answer` is the selected option letter.
+Annotation witnesses: the scalar bbox of the target numbered duration glyph.
+Query ids: `single`.
 
-## Trace Contract
-1. `execution_trace.notation_metadata` records the target duration and option durations.
-2. `execution_trace.annotation_item_ids` records the rendered notation item ids used for bbox projection.
-3. `render_map.item_bboxes_px` exposes staff-item and option-card bboxes after final layout.
+## 2) Scene + task contract
+1. Entities/relations: a rendered music-staff notation panel with marked notes, chords, measure ranges, option cards, or key signatures depending on the task objective.
+2. Supported `query_id` values: `single`
+3. `answer_gt.type`: `string`
+4. Default `annotation_gt.type`: `bbox`
+5. Annotation schema: scalar `bbox`
+6. Annotation witness policy: annotation marks only the target numbered note glyph whose duration is being read; visible text options, non-target notes, number-marker bboxes, staff lines, and decorative background are not prompt-facing annotation.
 
-## Prompt Contract
-1. Bundle: `symbolic_v0`
-2. Scene key: `music_staff`
-3. Task key: `music_notation_query`
-4. Query key: `duration_equivalence_label`
+| Query id | User-facing operation |
+|---|---|
+| `single` | The prompt asks the one stable objective contract for this task. |
+
+## 3) Prompt contract
+1. `prompt_bundle_id`: `symbolic_music_staff_v1`
+2. `scene_key`: `music_staff`
+3. `task_key`: `music_duration_equivalence_label`
+4. Query keys: internal branch key from the generated trace; public single-operation tasks expose `query_id=single` after registry normalization.
+5. Output modes: `answer_only`, `answer_and_annotation`
+
+## 4) Determinism + constraints
+1. Deterministic generation and rendering from `instance_seed`.
+2. Answer and annotation are bound from the same finalized notation scene and projected bboxes.
+3. Count tasks construct the requested answer count before rendering; label tasks construct a unique target label by scene state.
+4. No semantic constraints are auto-relaxed after sampling.
+
+## 5) Source files
+1. Task source: `trace/tasks/symbolic/music_staff/duration_equivalence_label.py`
+2. Scene shared package: `trace/tasks/symbolic/music_staff/shared/`
+3. Config: `configs/domains/symbolic/music_staff.yaml`
+4. Prompt asset: `prompts/symbolic/music_staff/symbolic_music_staff_v1.json`
+5. Focused tests: `tests/test_symbolic_notation_tasks.py`

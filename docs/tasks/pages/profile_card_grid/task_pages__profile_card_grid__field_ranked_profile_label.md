@@ -1,25 +1,27 @@
 # `task_pages__profile_card_grid__field_ranked_profile_label`
 
-## 1) Identity
+## Identity
 1. Domain: `pages`
-2. Scene: `document_lookup`
-3. Scene id: `profile_card_grid`
+2. Scene id: `profile_card_grid`
+3. Source scene: `profile_card_grid`
 4. Task id: `task_pages__profile_card_grid__field_ranked_profile_label`
-5. Objective: Find the profile name at a requested rank after sorting a named visible numeric field.
 
-## 2) Scene + Task Contract
-1. Supported `query_id` values: `nth_highest_field_profile_label`, `nth_lowest_field_profile_label`
-2. `answer_gt.type`: `string`
-3. `annotation_gt.type`: `keyed_bbox_map`
-4. Annotation witness policy: Role-keyed boxes for the target profile name, queried field label, and target numeric value.
-5. `query_id` is retained as internal replay metadata; this public task id is the sampling unit.
+## Contract
+1. Objective: identify the profile at a requested rank after sorting by a visible numeric field.
+2. Public task contract: `field_ranked_profile_label`
+3. Supported `query_id` values: `highest_field_profile_label`, `lowest_field_profile_label`, `nth_highest_field_profile_label`, `nth_lowest_field_profile_label`
+4. Answer type: `string`
+5. Annotation schema: `bbox`
+6. Annotation witness: scalar box around the selected profile card; target field/value boxes and ranked candidate values stay in trace metadata.
+7. Query argument axes: rank direction, rank position, target numeric field label, candidate profile values, card count, and scene variant. Highest/lowest queries bind `rank_position=1`; nth-rank queries sample a supported non-extremal rank position.
 
-## 3) Prompt Contract
-1. `prompt_bundle_id`: `pages_document_lookup_v0`
-2. Prompt templates come from `prompts/pages/document_lookup/`.
-3. Output modes: `answer_only` and `answer_and_annotation`.
+## Program Contract
+- `profile_card_grid_field_ranked_profile_label(field_label, rank_direction, rank_position); output=profile_name_string; annotation=bbox(selected_profile_card); scene=profile_card_grid; scope=one profile-card grid page`
 
-## 4) Determinism + Constraints
-1. Generation is deterministic for `instance_seed` plus params.
-2. Answers and annotation come from the same rendered trace payload.
-3. The generator constructs unique numeric values for the queried field and samples non-extremal ranks from the supported rank positions.
+## Prompt + Trace
+1. Prompt bundle: `pages_profile_card_grid_v1`
+2. Scene key: `profile_card_grid`
+3. Task key: `profile_attribute_lookup_query`
+4. Prompt query keys: `highest_field_profile_label`, `lowest_field_profile_label`, `nth_highest_field_profile_label`, `nth_lowest_field_profile_label`
+5. Trace records visible profile cards, numeric candidate values, selected rank direction/position, target profile payload, final text boxes, layout metadata, and prompt metadata.
+6. Generation is deterministic from `instance_seed`; answer and annotation come from the finalized render metadata.

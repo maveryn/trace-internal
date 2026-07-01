@@ -3,13 +3,20 @@
 ## Identity
 - domain: `icons`
 - scene_id: `named_field`
-- scene_id: `relation`
 - task: `named_reference_distance_rank_label`
 - module: `trace/tasks/icons/named_field/reference_distance_rank_label.py`
-- prompt bundle: `prompts/icons/relation/icons_relation_v0.json`
+- prompt bundle: `prompts/icons/named_field/icons_named_field_v1.json`
 
 ## Program Contract
-`selection.ranked_item(scene=named_field, scope=labeled_option_icons, metric=center_distance_to_reference, ranks=closest|second_closest|farthest, output=option_letter)`
+
+Program: `selection.ranked_item(scene=named_field, scope=labeled_option_icons, metric=center_distance_to_reference, ranks=closest|second_closest|farthest, output=option_letter)`
+
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `labeled_option_icons` objective scope.
+Operands: visible scene state and prompt-bound operands named by `named_field`, `labeled_option_icons`, `metric`, `center_distance_to_reference`, `ranks`, `closest`, `second_closest`, `farthest`.
+Operation: evaluate `selection.ranked_item` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `closest_to_named_reference_label`.
 
 ## Scene And Query
 The task renders one panel with exactly one unique named
@@ -32,7 +39,7 @@ included in the distance-rank candidate set.
   distance rank from the named reference icon
 
 ## Annotation Contract
-- `annotation_gt.type = keyed_bbox_map`
+- `annotation_gt.type = bbox_map`
 - annotation contains `reference_icon` for the named reference icon bbox and
   `selected_candidate` for the selected labeled candidate icon bbox
 - candidate distance ranks are separated from adjacent ranks by the configured
@@ -44,14 +51,14 @@ included in the distance-rank candidate set.
   `distance_rank`.
 - `execution_trace.sorted_candidate_labels_by_distance` records the verifier
   order used to derive the answer.
-- `projected_annotation.keyed_bbox_map` is derived from the same rendered
+- `projected_annotation.bbox_map` is derived from the same rendered
   reference and selected candidate bboxes.
 - `render_spec.style.text_legibility` records validated panel-header and
   candidate-label text roles for the visible `A`..`F` option labels.
 
 ## Prompt Contract
-- `scene_key = named_reference_distance_relation`
-- `task_key = relation_query`
+- `scene_key = single_scene_counting`
+- `task_key = counting_query`
 - prompts ask which labeled icon is closest, second closest, or farthest from
   the unique named reference icon
 - answer-only and answer+annotation modes both include contract-valid JSON

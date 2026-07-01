@@ -18,8 +18,8 @@ generation:
     balanced_scene_variant_sampling: true
 rendering:
   shared:
-    canvas_width: 1440
-    canvas_height: 1040
+    canvas_width: 1328
+    canvas_height: 960
     outer_margin_px: 36
     panel_padding_px: 28
     title_band_height_px: 62

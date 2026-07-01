@@ -5,6 +5,7 @@ from __future__ import annotations
 from itertools import product
 from typing import Any, Dict, Mapping, Sequence
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import (
@@ -282,7 +283,8 @@ def _build_weight_order_dataset(
 
         distractors = [order for order in possible_orders if order != correct_order]
         rng.shuffle(distractors)
-        correct_option_index = int(instance_seed) % len(OPTION_LABELS)
+        correct_option_label = str(uniform_choice(rng, OPTION_LABELS))
+        correct_option_index = OPTION_LABELS.index(correct_option_label)
         order_texts = list(distractors[: len(OPTION_LABELS) - 1])
         order_texts.insert(int(correct_option_index), correct_order)
         options = [
@@ -314,9 +316,9 @@ def _build_weight_order_dataset(
             "answer_labels": list(OPTION_LABELS),
             "answer_range": list(OPTION_LABELS),
             "target_answer_support": list(OPTION_LABELS),
-            "annotation_item_ids": ["scale_1", "scale_2", "scale_3"],
+            "annotation_item_id": f"option_{answer_label}",
             "supporting_role_item_ids": {
-                "comparison_scales": ["scale_1", "scale_2", "scale_3"]
+                "selected_option": f"option_{answer_label}",
             },
         }
     raise RuntimeError("failed to construct a uniquely ordered balance puzzle")

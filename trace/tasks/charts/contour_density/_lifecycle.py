@@ -65,9 +65,11 @@ def materialize_contour_plan(
     rendered, chart_font_family = render_dataset(plan.dataset, params=params, instance_seed=int(instance_seed))
     annotation = annotation_value(plan.dataset, rendered)
     annotation_type = str(plan.dataset.query.annotation_type)
-    if annotation_type == "bbox_set":
+    if annotation_type == "bbox":
+        annotation_gt = TypedValue(type=annotation_type, value=list(annotation))
+    elif annotation_type == "bbox_set":
         annotation_gt = TypedValue(type=annotation_type, value=[list(value) for value in annotation])
-    elif annotation_type == "keyed_bbox_map":
+    elif annotation_type in {"bbox_map", "point_map"}:
         annotation_gt = TypedValue(type=annotation_type, value={key: list(value) for key, value in annotation.items()})
     else:
         raise ValueError(f"unsupported annotation type: {annotation_type}")

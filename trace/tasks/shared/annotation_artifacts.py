@@ -71,6 +71,33 @@ def bbox_set_annotation_artifacts(
     )
 
 
+def bbox_map_annotation_artifacts(
+    keyed_bboxes: Mapping[str, Sequence[float]],
+    *,
+    ndigits: int = 3,
+) -> AnnotationArtifacts:
+    """Build public annotation artifacts for role-keyed bbox witnesses."""
+
+    value = {
+        str(key): _round_bbox(bbox, ndigits=int(ndigits))
+        for key, bbox in dict(keyed_bboxes).items()
+    }
+    projected_annotation = {
+        "type": "bbox_map",
+        "bbox_map": {str(key): list(bbox) for key, bbox in value.items()},
+        "pixel_bbox_map": {str(key): list(bbox) for key, bbox in value.items()},
+    }
+    return AnnotationArtifacts(
+        annotation_type="bbox_map",
+        value={str(key): list(bbox) for key, bbox in value.items()},
+        annotation_gt=TypedValue(
+            type="bbox_map",
+            value={str(key): list(bbox) for key, bbox in value.items()},
+        ),
+        projected_annotation=projected_annotation,
+    )
+
+
 def bbox_set_map_annotation_artifacts(
     keyed_bboxes: Mapping[str, Sequence[Sequence[float]]],
     *,
@@ -194,6 +221,7 @@ def segment_annotation_artifacts(
 __all__ = [
     "AnnotationArtifacts",
     "bbox_annotation_artifacts",
+    "bbox_map_annotation_artifacts",
     "bbox_set_annotation_artifacts",
     "bbox_set_map_annotation_artifacts",
     "point_annotation_artifacts",

@@ -16,12 +16,20 @@
 ## Annotation Contract
 1. Answer schema: `integer_count`.
 2. Annotation schema: `segment_set`.
-3. Annotation is a `segment_set`; each segment is `[[x1, y1], [x2, y2]]` and connects the primary-series mark point to the overlaid line mark point for one matching category.
+3. Annotation is a `segment_set`; each segment is two `[x, y]` pixel points formatted `[[x0, y0], [x1, y1]]` and connects the primary-series mark point to the overlaid line mark point for one matching category.
 4. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
 5. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
 ## Program Contract
-- `count(x_label where compare(value(primary,x_label), primary_threshold, primary_relation) and compare(value(line,x_label), line_threshold, line_relation)); output=integer_count; annotation=segment_set(matching_primary_line_marks); scene=combo_mark; scope=dual_threshold_condition_count`
+
+Program: `count(x_label where compare(value(primary,x_label), primary_threshold, primary_relation) and compare(value(line,x_label), line_threshold, line_relation)); output=integer_count; annotation=segment_set(matching_primary_line_marks); scene=combo_mark; scope=dual_threshold_condition_count`
+
+Candidate set: the visible primary marks, secondary-line marks, and shared category labels inside the `dual_threshold_condition_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_count` value bound by `integer_count`.
+Annotation witnesses: `segment_set` witnesses bound by `segment_set(matching_primary_line_marks)`. Annotation is a `segment_set`; each segment is two `[x, y]` pixel points formatted `[[x0, y0], [x1, y1]]` and connects the primary-series mark point to the overlaid line mark point for one matching category. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `primary_above_and_line_above`, `primary_above_and_line_below`, `primary_below_and_line_above`.
 
 ## Query Details
 

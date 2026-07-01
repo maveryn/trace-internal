@@ -13,13 +13,6 @@
       ]
     },
     "task": {
-      "diagonal_angle_value_query": [
-        "",
-        "",
-        "",
-        "",
-        ""
-      ],
       "algebraic_angle_value_query": [
         "",
         "",
@@ -36,27 +29,6 @@
       ]
     },
     "query": {
-      "rhombus_vertex_angle_bisected_by_diagonal": [
-        "Use the rhombus diagonal relationship shown in the diagram. What is the measure of \"{target_name}\"?",
-        "In the rhombus, use the marked diagonal and angle labels. What is the measure of \"{target_name}\"?",
-        "Find the missing angle from the rhombus diagonal construction. What is the measure of \"{target_name}\"?",
-        "Based on the visible rhombus marks, what is the measure of \"{target_name}\"?",
-        "Use the diagonal bisector relationship in the rhombus. What is the measure of \"{target_name}\"?"
-      ],
-      "kite_vertex_angle_bisected_by_symmetry_diagonal": [
-        "Use the kite symmetry diagonal shown in the diagram. What is the measure of \"{target_name}\"?",
-        "In the kite, use the marked symmetry diagonal and angle labels. What is the measure of \"{target_name}\"?",
-        "Find the missing angle from the kite diagonal construction. What is the measure of \"{target_name}\"?",
-        "Based on the visible kite marks, what is the measure of \"{target_name}\"?",
-        "Use the vertex-angle bisector relationship in the kite. What is the measure of \"{target_name}\"?"
-      ],
-      "rhombus_diagonal_perpendicular_complement": [
-        "Use the perpendicular diagonals in the rhombus. What is the measure of \"{target_name}\"?",
-        "In the rhombus, use the right-angle mark at the diagonal intersection. What is the measure of \"{target_name}\"?",
-        "Find the missing angle from the rhombus diagonal right triangle. What is the measure of \"{target_name}\"?",
-        "Based on the visible rhombus diagonals and angle label, what is the measure of \"{target_name}\"?",
-        "Use the perpendicular-diagonal relationship in the rhombus. What is the measure of \"{target_name}\"?"
-      ],
       "parallelogram_opposite_angle_expression": [
         "Use the algebraic angle expressions in the parallelogram. What is the measure of \"{target_name}\"?",
         "In the parallelogram, use the opposite-angle relationship and visible expressions. What is the measure of \"{target_name}\"?",
@@ -133,14 +105,11 @@
   },
   "static_slots_by_key": {
     "scene:special_quadrilateral_scene": {
-      "object_description": "a labeled special quadrilateral with visible construction marks and measurement labels"
+      "object_description": "a quadrilateral with construction marks and measurement labels"
     },
     "global": {
       "json_output_contract": "Return a JSON object with exactly two keys: \"annotation\" and \"answer\".",
       "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."
-    },
-    "task:diagonal_angle_value_query": {
-      "answer_hint": "set \"answer\" to the angle measure as an integer number of degrees"
     },
     "task:algebraic_angle_value_query": {
       "answer_hint": "set \"answer\" to the angle measure as an integer number of degrees"
@@ -166,15 +135,6 @@
   "required_slots_by_key": {
     "scene:special_quadrilateral_scene": [
       "object_description"
-    ],
-    "query:rhombus_vertex_angle_bisected_by_diagonal": [
-      "target_name"
-    ],
-    "query:kite_vertex_angle_bisected_by_symmetry_diagonal": [
-      "target_name"
-    ],
-    "query:rhombus_diagonal_perpendicular_complement": [
-      "target_name"
     ],
     "query:parallelogram_opposite_angle_expression": [
       "target_name"

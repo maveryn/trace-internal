@@ -51,11 +51,11 @@
         "Use endpoint labels \"{start_label}\" and \"{end_label}\" to compute the requested {endpoint_change_kind} change value."
       ],
       "interval_rate_value": [
-        "What is the average signed change per step from \"{start_label}\" through \"{end_label}\"?",
-        "Compute (value at \"{end_label}\" minus value at \"{start_label}\") divided by the number of steps from \"{start_label}\" to \"{end_label}\".",
-        "Find the average per-label-step change over the interval from \"{start_label}\" to \"{end_label}\".",
-        "Find the integer average rate of change from \"{start_label}\" to \"{end_label}\".",
-        "Using endpoint labels \"{start_label}\" and \"{end_label}\", compute the average signed change per step."
+        "What is the absolute average change per step from \"{start_label}\" through \"{end_label}\"?",
+        "Compute the nonnegative absolute change from \"{start_label}\" to \"{end_label}\" divided by the number of steps between them.",
+        "Find the absolute average per-label-step change over the interval from \"{start_label}\" to \"{end_label}\".",
+        "Find the nonnegative integer average rate of change from \"{start_label}\" to \"{end_label}\".",
+        "Using endpoint labels \"{start_label}\" and \"{end_label}\", compute the absolute average change per step."
       ],
       "first_crosses_above_threshold": [
         "Which label is the first one in displayed order with value greater than {threshold}?",
@@ -107,18 +107,18 @@
         "Find the change from \"{start_label}\" to \"{end_label}\", preserving sign."
       ],
       "percent_change_between_labels": [
-        "What is the integer percentage change from \"{start_label}\" to \"{end_label}\"? Use ((end-start)/start)*100 and omit the percent sign.",
-        "Compute the percent change from \"{start_label}\" to \"{end_label}\"; use the integer percentage without a percent sign.",
-        "Using \"{start_label}\" as the base, what is the integer percent change at \"{end_label}\"?",
-        "Find 100 times the signed change divided by the value at \"{start_label}\"; omit the percent sign.",
-        "Find the integer percentage change from \"{start_label}\" to \"{end_label}\"."
+        "What is the signed integer percentage change from \"{start_label}\" to \"{end_label}\"? Use ((end-start)/start)*100, keep negative values for decreases, and omit the percent sign.",
+        "Compute the signed percent change from \"{start_label}\" to \"{end_label}\"; use the integer percentage without a percent sign, negative if it decreased.",
+        "Using \"{start_label}\" as the base, what is the signed integer percent change at \"{end_label}\"? Use a negative value for a decrease.",
+        "Find 100 times the signed change divided by the value at \"{start_label}\"; keep the sign and omit the percent sign.",
+        "Find the signed integer percentage change from \"{start_label}\" to \"{end_label}\", using a negative answer for a decrease."
       ],
       "average_rate_over_interval": [
-        "What is the average signed change per step from \"{start_label}\" through \"{end_label}\"?",
-        "Compute (value at \"{end_label}\" minus value at \"{start_label}\") divided by the number of steps from \"{start_label}\" to \"{end_label}\".",
-        "Find the average per-label-step change over the interval from \"{start_label}\" to \"{end_label}\".",
-        "Find the integer average rate of change from \"{start_label}\" to \"{end_label}\".",
-        "Using endpoint labels \"{start_label}\" and \"{end_label}\", compute the average signed change per step."
+        "What is the absolute average change per step from \"{start_label}\" through \"{end_label}\"?",
+        "Compute the nonnegative absolute change from \"{start_label}\" to \"{end_label}\" divided by the number of steps between them.",
+        "Find the absolute average per-label-step change over the interval from \"{start_label}\" to \"{end_label}\".",
+        "Find the nonnegative integer average rate of change from \"{start_label}\" to \"{end_label}\".",
+        "Using endpoint labels \"{start_label}\" and \"{end_label}\", compute the absolute average change per step."
       ],
       "peak_turning_point_count": [
         "How many local {turning_point_plural} are present? A local {turning_point_type} has a value {turning_point_comparison} the immediately previous and next labels in displayed order.",
@@ -163,11 +163,11 @@
         "Find the change from \"{start_label}\" to \"{end_label}\", preserving sign."
       ],
       "percent_endpoint_change_value": [
-        "What is the integer percentage change from \"{start_label}\" to \"{end_label}\"? Use ((end-start)/start)*100 and omit the percent sign.",
-        "Compute the percent change from \"{start_label}\" to \"{end_label}\"; use the integer percentage without a percent sign.",
-        "Using \"{start_label}\" as the base, what is the integer percent change at \"{end_label}\"?",
-        "Find 100 times the signed change divided by the value at \"{start_label}\"; omit the percent sign.",
-        "Find the integer percentage change from \"{start_label}\" to \"{end_label}\"."
+        "What is the signed integer percentage change from \"{start_label}\" to \"{end_label}\"? Use ((end-start)/start)*100, keep negative values for decreases, and omit the percent sign.",
+        "Compute the signed percent change from \"{start_label}\" to \"{end_label}\"; use the integer percentage without a percent sign, negative if it decreased.",
+        "Using \"{start_label}\" as the base, what is the signed integer percent change at \"{end_label}\"? Use a negative value for a decrease.",
+        "Find 100 times the signed change divided by the value at \"{start_label}\"; keep the sign and omit the percent sign.",
+        "Find the signed integer percentage change from \"{start_label}\" to \"{end_label}\", using a negative answer for a decrease."
       ],
       "observed_above_threshold_crossing_label": [
         "Which label is the first one in displayed order with value greater than {threshold}?",
@@ -182,20 +182,6 @@
         "What is the first label where the chart value crosses below threshold {threshold}?",
         "Identify the earliest displayed label with value less than {threshold}.",
         "Starting from the first label, which label first goes below {threshold}?"
-      ],
-      "projected_above_threshold_crossing_label": [
-        "The plotted labels form one linear series, and the final labels are empty future slots. Continue the same step; which future label is first greater than {threshold}?",
-        "Use the repeated step in the plotted linear series to extend into the empty future labels. Which future label first rises above {threshold}?",
-        "Following the empty future labels, what is the first label whose extrapolated linear-series value is greater than {threshold}?",
-        "Extend the shown linear trend into the future labels. Which future label first exceeds {threshold}?",
-        "Among the empty future labels, identify the first one whose continued linear-series value crosses above {threshold}."
-      ],
-      "projected_below_threshold_crossing_label": [
-        "The plotted labels form one linear series, and the final labels are empty future slots. Continue the same step; which future label is first less than {threshold}?",
-        "Use the repeated step in the plotted linear series to extend into the empty future labels. Which future label first falls below {threshold}?",
-        "Following the empty future labels, what is the first label whose extrapolated linear-series value is less than {threshold}?",
-        "Extend the shown linear trend into the future labels. Which future label first goes below {threshold}?",
-        "Among the empty future labels, identify the first one whose continued linear-series value crosses below {threshold}."
       ]
     },
     "output": {
@@ -308,40 +294,28 @@
       "json_example_answer_only": "{\"answer\":20}"
     },
     "query:percent_endpoint_change_value": {
-      "answer_hint": "set \"answer\" to the requested endpoint-change value as an integer",
+      "answer_hint": "set \"answer\" to the requested signed integer percentage change, omitting the percent sign and using a negative value for a decrease",
       "annotation_hint": "set \"annotation\" to an object mapping \"start_mark\" and \"end_mark\" to [x,y] pixel points on the two endpoint marks",
       "json_example": "{\"annotation\":{\"start_mark\":[160,420],\"end_mark\":[460,220]},\"answer\":20}",
       "json_example_answer_only": "{\"answer\":20}"
     },
     "query:average_rate_over_interval": {
-      "answer_hint": "set \"answer\" to the requested average rate as an integer",
+      "answer_hint": "set \"answer\" to the requested nonnegative absolute average rate as an integer",
       "annotation_hint": "set \"annotation\" to an object mapping \"start_mark\" and \"end_mark\" to [x,y] pixel points on the two endpoint marks",
       "json_example": "{\"annotation\":{\"start_mark\":[200,420],\"end_mark\":[500,240]},\"answer\":6}",
       "json_example_answer_only": "{\"answer\":6}"
     },
     "query:observed_above_threshold_crossing_label": {
       "answer_hint": "set \"answer\" to the requested crossing label as a string",
-      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points on marks up to and including the first threshold-crossing mark",
-      "json_example": "{\"annotation\":[[160,420],[260,360],[360,240]],\"answer\":\"C4A7\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the first threshold-crossing mark",
+      "json_example": "{\"annotation\":[360,240],\"answer\":\"C4A7\"}",
       "json_example_answer_only": "{\"answer\":\"C4A7\"}"
     },
     "query:observed_below_threshold_crossing_label": {
       "answer_hint": "set \"answer\" to the requested crossing label as a string",
-      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points on marks up to and including the first threshold-crossing mark",
-      "json_example": "{\"annotation\":[[160,420],[260,360],[360,240]],\"answer\":\"C4A7\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the first threshold-crossing mark",
+      "json_example": "{\"annotation\":[360,240],\"answer\":\"C4A7\"}",
       "json_example_answer_only": "{\"answer\":\"C4A7\"}"
-    },
-    "query:projected_above_threshold_crossing_label": {
-      "answer_hint": "set \"answer\" to the requested future crossing label as a string",
-      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points on the last two plotted marks and the future label slots up to and including the crossing label",
-      "json_example": "{\"annotation\":[[300,320],[420,260],[540,180]],\"answer\":\"M6P4\"}",
-      "json_example_answer_only": "{\"answer\":\"M6P4\"}"
-    },
-    "query:projected_below_threshold_crossing_label": {
-      "answer_hint": "set \"answer\" to the requested future crossing label as a string",
-      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points on the last two plotted marks and the future label slots up to and including the crossing label",
-      "json_example": "{\"annotation\":[[300,320],[420,260],[540,180]],\"answer\":\"M6P4\"}",
-      "json_example_answer_only": "{\"answer\":\"M6P4\"}"
     }
   }
 }

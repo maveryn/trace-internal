@@ -12,6 +12,7 @@ from .rules import (
     compute_single_die_destinations,
     destination_for_player,
     opponent_for_player,
+    pip_count_contributions_for_player,
     point_matches_stack_state,
     target_destinations_for_status,
     target_points_for_stack_state,
@@ -383,9 +384,110 @@ def sample_point_state_count_scene(
     raise ValueError(f"could not construct Backgammon point-state sample for {color}/{state} answer {target}")
 
 
+def _point_for_pip_distance(distance: int, *, active_player: str) -> int:
+    """Return the board point whose checker has the requested pip distance."""
+
+    value = int(distance)
+    if value < 1 or value > 24:
+        raise ValueError(f"pip distance out of range: {distance}")
+    if str(active_player) == PLAYER_BLACK:
+        return int(value)
+    if str(active_player) == PLAYER_WHITE:
+        return int(25 - value)
+    raise ValueError(f"unsupported Backgammon player: {active_player!r}")
+
+
+def _pip_term_combinations(
+    target_answer: int,
+    *,
+    max_distance: int = 12,
+    min_points: int = 2,
+    max_points: int = 5,
+    max_stack_count: int = 3,
+) -> tuple[tuple[tuple[int, int], ...], ...]:
+    """Return unique sparse stack decompositions for one small pip count."""
+
+    target = int(target_answer)
+    combinations: list[tuple[tuple[int, int], ...]] = []
+
+    def visit(distance: int, remaining: int, chosen: tuple[tuple[int, int], ...]) -> None:
+        if remaining == 0:
+            if int(min_points) <= len(chosen) <= int(max_points):
+                combinations.append(tuple(chosen))
+            return
+        if distance > int(max_distance) or len(chosen) >= int(max_points):
+            return
+        if remaining < 0:
+            return
+        visit(distance + 1, remaining, chosen)
+        for count in range(1, int(max_stack_count) + 1):
+            contribution = int(distance) * int(count)
+            if contribution > remaining:
+                break
+            visit(distance + 1, remaining - contribution, (*chosen, (int(distance), int(count))))
+
+    visit(1, target, tuple())
+    return tuple(combinations)
+
+
+def sample_pip_count_scene(
+    rng: Any,
+    *,
+    axes: ResolvedBackgammonAxes,
+    target_answer: int,
+    opponent_distractor_min: int = 3,
+    opponent_distractor_max: int = 8,
+) -> BackgammonSample:
+    """Construct a sparse exact-answer Backgammon pip-count race position."""
+
+    active_player = str(axes.active_player)
+    opponent = opponent_for_player(active_player)
+    target = int(target_answer)
+    combinations = list(_pip_term_combinations(target))
+    if not combinations:
+        raise ValueError(f"unsupported Backgammon pip-count target: {target}")
+    terms = tuple(rng.choice(combinations))
+    points = empty_points()
+    active_points: list[int] = []
+    for distance, checker_count in terms:
+        point = _point_for_pip_distance(int(distance), active_player=active_player)
+        points[int(point)] = BackgammonPoint(owner=active_player, count=int(checker_count))
+        active_points.append(int(point))
+
+    available = [int(point) for point in POINT_IDS if int(point) not in set(active_points)]
+    rng.shuffle(available)
+    distractor_count = min(
+        len(available),
+        int(rng.randint(int(opponent_distractor_min), int(opponent_distractor_max))),
+    )
+    for point in available[:distractor_count]:
+        points[int(point)] = BackgammonPoint(owner=opponent, count=int(rng.randint(1, 4)))
+
+    dice = choose_backgammon_dice(rng)
+    outcome = compute_single_die_destinations(points, dice=dice, active_player=active_player)
+    target_points = tuple(sorted(active_points))
+    contributions = pip_count_contributions_for_player(points, active_player=active_player)
+    sample = BackgammonSample(
+        points=dict(points),
+        dice=(int(dice[0]), int(dice[1])),
+        active_player=active_player,
+        answer=int(target),
+        target_destinations=(),
+        outcome=outcome,
+        style_variant=str(axes.style_variant),
+        target_answer=int(target),
+        target_points=target_points,
+        pip_count_contributions=dict(contributions),
+        use_dice_for_moves=False,
+    )
+    validate_backgammon_sample(sample)
+    return sample
+
+
 __all__ = [
     "ResolvedBackgammonAxes",
     "resolve_backgammon_axes",
     "sample_destination_count_scene",
+    "sample_pip_count_scene",
     "sample_point_state_count_scene",
 ]

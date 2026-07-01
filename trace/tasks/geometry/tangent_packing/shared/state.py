@@ -46,11 +46,13 @@ class TangentPackingProblem:
     support_kind: str
     target_text: str
     support_text: str
-    answer: float
+    answer: float | int
     case: TangentPackingCase
     formula_family: str
     formula_text: str
     reasoning_steps: int
+    answer_type: str = "number"
+    answer_rounding: str = "one_decimal"
     radius_probabilities: Mapping[str, float] = field(default_factory=dict)
     answer_support_probabilities: Mapping[str, float] = field(default_factory=dict)
 
@@ -82,7 +84,7 @@ class RenderedTangentPackingScene:
     """Rendered diagram and projected witnesses before final output wrapping."""
 
     image: Image.Image
-    answer: float
+    answer: float | int
     annotation_bboxes: Mapping[str, BBox]
     annotation_roles: tuple[str, ...]
     label_bboxes: Mapping[str, BBox]

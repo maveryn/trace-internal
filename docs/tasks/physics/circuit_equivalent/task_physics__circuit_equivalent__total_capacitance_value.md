@@ -3,41 +3,53 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `circuit_equivalent`
-- Implementation scene: `circuits`
-- Implementation source: `trace/tasks/physics/circuits/equivalent_resistance.py`
+- Implementation scene: `circuit_equivalent`
+- Implementation source: `trace/tasks/physics/circuit_equivalent/total_capacitance_value.py`
 
 ## Task Contract
 Computes equivalent capacitance for a visible mixed series-parallel capacitor network between terminals A and B.
+
+## Program Contract
+
+Program: `integer(equivalent_capacitance(visible_capacitors_between_terminals, series_parallel_topology)); scene=circuit_equivalent; scope=total_capacitance_value`
+
+Candidate set: the visible components between terminals A and B, their values, and the series-parallel topology inside the `total_capacitance_value` objective scope.
+Operands: `visible_capacitors_between_terminals` (semantic_role, allowed `labeled_capacitors_between_A_B`, source `program_schema_concrete`); `series_parallel_topology` (semantic_role, allowed `mixed_series_parallel_topology`, source `program_schema_concrete`).
+Operation: evaluate `integer` over the candidate set using the visible quantities, relations, branch semantics, and formulas encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; The answer value is the exact equivalent capacitance in microfarads.
+Annotation witnesses: `bbox` witnesses from the finalized render. Annotation is one final-image pixel box around the full capacitor network between terminals `A` and `B`, including capacitor symbols, value labels, and connecting wires. Annotation must not mark decorative frame chrome, answer text, or inferred equivalent-capacitance calculations.
+Query ids: `single`.
 
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `total_capacitance` | `equivalent_capacitance(components=capacitor_components_between_terminals, topology=series_parallel_network); scene=circuit_equivalent; scope=total_capacitance_value; query_branch=total_capacitance` |
+| `single` | `integer(equivalent_capacitance(visible_capacitors_between_terminals, series_parallel_topology)); scene=circuit_equivalent; scope=total_capacitance_value` |
 
 ## Program Metadata
-- Program signatures: `physics.equivalent_circuit_value`
-- Base program contract: `equivalent_capacitance(components=capacitor_components_between_terminals, topology=series_parallel_network); scene=circuit_equivalent; scope=total_capacitance_value`
-- Parameter axes: `fixed_query`
+- Program signatures: `physics.equivalent_capacitance_value`
+- Base program contract: `integer(equivalent_capacitance(visible_capacitors_between_terminals, series_parallel_topology)); scene=circuit_equivalent; scope=total_capacitance_value`
+- Parameter axes: `scene_variant`, `target_answer`, `accent_color_name`
 - Arguments:
-  - `capacitor_components_between_terminals`: semantic_role; allowed `visible_capacitors_between_A_B`; source `program_schema_concrete`
-  - `series_parallel_network`: semantic_role; allowed `mixed_series_parallel_topology`; source `program_schema_concrete`
+  - `visible_capacitors_between_terminals`: semantic_role; allowed `labeled_capacitors_between_A_B`; source `program_schema_concrete`
+  - `series_parallel_topology`: semantic_role; allowed `mixed_series_parallel_topology`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `total_capacitance`
+- Supported `query_id`s: `single`
 
 ## Answer Contract
-- Answer schema: `integer_value`
+- Answer schema: `integer`
 - Generator `answer_gt.type`: `integer`
-- The answer value is an exact integer produced by the symbolic physics construction.
+- The answer value is the exact equivalent capacitance in microfarads.
 
 ## Annotation Contract
-- Annotation schema: `keyed_bbox_map`
-- Generator `annotation_gt.type`: `keyed_bbox_map`
-- Annotation is keyed because witness roles are distinct; each key maps to the minimal final-image pixel box for that role.
-- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation schema: `bbox`
+- Generator `annotation_gt.type`: `bbox`
+- Annotation is one final-image pixel box around the full capacitor network between terminals `A` and `B`, including capacitor symbols, value labels, and connecting wires.
+- Annotation must not mark decorative frame chrome, answer text, or inferred equivalent-capacitance calculations.
 - Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
+- Scalar annotation checked: `true`.
 
 ## Prompt And Trace Requirements
-- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
-- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
-- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
+- Prompt text must come from the physics circuit-equivalent v1 prompt bundle, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, component values, topology blocks, target answer, and verifier payloads must be explicit in the instance trace.
+- Diagrams must keep terminals A/B, all capacitor labels, capacitor values, and the mixed series-parallel topology visible.

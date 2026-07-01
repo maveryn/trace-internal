@@ -79,7 +79,7 @@ class ChartsErrorbarSeriesBoundExtremumXLabelTask:
                 make_series(
                     series_id=f"series_{series_index}",
                     label=str(base.series_labels[int(series_index)]),
-                    color_rgb=colors[int(series_index) % len(colors)],
+                    color_rgb=colors[int(series_index)],
                     triples=triples,
                 )
             )
@@ -118,7 +118,7 @@ class ChartsErrorbarSeriesBoundExtremumXLabelTask:
                 prompt_key=str(selected_query_id),
                 answer=str(answer_label),
                 answer_type="string",
-                annotation_kind="keyed_point_map",
+                annotation_kind="point",
                 annotation_item_keys=(str(annotation_key),),
                 params=dict(relation_params),
             ),

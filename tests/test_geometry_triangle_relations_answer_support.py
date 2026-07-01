@@ -27,10 +27,6 @@ CASE_BUILDER_NAMES = (
     "hypotenuse_from_angle_height_cases",
     "height_from_angle_hypotenuse_cases",
     "ground_from_angle_hypotenuse_cases",
-    "angle_from_opposite_adjacent_cases",
-    "angle_from_opposite_hypotenuse_cases",
-    "angle_from_adjacent_hypotenuse_cases",
-    "angle_of_elevation_cases",
     "angle_bisector_variable_cases",
     "split_triangle_angle_cases",
     "split_triangle_trig_side_cases",
@@ -38,8 +34,6 @@ CASE_BUILDER_NAMES = (
     "projection_from_altitude_cases",
     "leg_from_projection_cases",
     "projection_from_leg_cases",
-    "parallel_segment_expression_length_cases",
-    "parallel_segment_variable_cases",
 )
 
 

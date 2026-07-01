@@ -3,11 +3,22 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `circuit_state_change`
-- Implementation scene: `circuits`
-- Implementation source: `trace/tasks/physics/circuits/state_change_brightness.py`
+- Implementation scene: `circuit_state_change`
+- Implementation source: `trace/tasks/physics/circuit_state_change/bulb_brightness_change_label.py`
 
 ## Task Contract
 Selects the labeled bulb whose brightness changes in the requested way after a visible switch action.
+
+## Program Contract
+
+Program: `label(select(bulbs, brightness_change_after_switch_action(bulb)=target_change_class)); scene=circuit_state_change; scope=bulb_brightness_change_label`
+
+Candidate set: the visible switch action cue, bulb symbols, branch topology, and component labels inside the `bulb_brightness_change_label` objective scope.
+Operands: `bulbs` (semantic_role, allowed `visible_labeled_bulbs_b1_through_b5_with_resistance_labels`, source `program_schema_concrete`); `switch_action` (semantic_role, allowed `opens|closes`, source `program_schema_concrete`); `target_change_class` (query_operand, allowed `brightens|dims|turns_on|turns_off`, source `query_id`); `circuit_topology` (semantic_role, allowed `series_bulb_plus_switch_controlled_parallel_branch_with_unchanged_reference_branch`, source `program_schema_concrete`); active `query_id` branch when present.
+Operation: evaluate `label` over the candidate set using the visible quantities, relations, branch semantics, and formulas encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; The answer value is the selected visible bulb label, for example `B2`.
+Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation is keyed by `changed_switch` and visible bulb labels `B1` through `B5`. Annotation marks the switch-action cue and bulb symbols with their resistance labels. It does not mark wires, battery terminals, decorative parts, inferred current paths, or derived brightness values.
+Query ids: `brightens_after_switch_change`, `dims_after_switch_change`, `turns_on_after_switch_change`, `turns_off_after_switch_change`.
 
 ## Query Branches
 
@@ -37,14 +48,14 @@ Selects the labeled bulb whose brightness changes in the requested way after a v
 - Each generated instance must have exactly one bulb matching the queried change class.
 
 ## Annotation Contract
-- Annotation schema: `keyed_bbox_map`
-- Generator `annotation_gt.type`: `keyed_bbox_map`
+- Annotation schema: `bbox_map`
+- Generator `annotation_gt.type`: `bbox_map`
 - Annotation is keyed by `changed_switch` and visible bulb labels `B1` through `B5`.
-- Annotation must mark the switch-action cue and the bulb symbols with their resistance labels. Annotation must not mark wires, battery terminals, decorative chrome, inferred current paths, or derived brightness values.
-- Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
+- Annotation marks the switch-action cue and bulb symbols with their resistance labels. It does not mark wires, battery terminals, decorative parts, inferred current paths, or derived brightness values.
+- Annotation and answer are projected from the same generated execution trace.
 
 ## Prompt And Trace Requirements
-- Prompt text must come from the physics circuits prompt bundle, with scene and task/query layers selected deterministically and recorded in metadata.
-- Render randomness, sampled fonts/styles, switch action, visible resistance values, before/after power values, change classes, and verifier payloads must be explicit in the instance trace.
+- Prompt text comes from `prompts/physics/circuit_state_change/physics_circuit_state_change_v1.json`.
+- Render randomness, sampled fonts/styles, switch action, visible resistance values, before/after power values, change classes, and verifier payloads are explicit in the instance trace.
 - Bulbs must not visually glow or otherwise encode the answer; the selection comes from comparing the circuit before and after the switch action.
-- This task must remain separate from `task_physics__bulb_circuit__brightness_extremum_label`, which asks a static brightest/dimmest ranking.
+- This task remains separate from `task_physics__bulb_circuit__brightness_extremum_label`, which asks a static brightest/dimmest ranking.

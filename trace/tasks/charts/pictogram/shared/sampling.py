@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
+from .....core.sampling import uniform_choice
 from .....core.seed import spawn_rng
 from ....shared.config_defaults import group_default, resolve_required_int_bounds
 from ...shared.label_assets import resolve_chart_category_labels
@@ -59,6 +60,18 @@ def resolve_unit_scale(params: Mapping[str, object], *, instance_seed: int) -> t
 
 
 def category_palette(params: Mapping[str, object]) -> tuple[RGB, ...]:
+    default_palette: list[RGB] = [
+        (37, 99, 235),
+        (220, 84, 45),
+        (16, 132, 96),
+        (139, 92, 246),
+        (202, 138, 4),
+        (14, 116, 144),
+        (190, 58, 90),
+        (86, 105, 38),
+        (91, 76, 181),
+        (181, 94, 36),
+    ]
     raw = params.get("category_palette_rgb", group_default(RENDER_DEFAULTS, "category_palette_rgb", ()))
     palette = [
         (int(item[0]), int(item[1]), int(item[2]))
@@ -66,18 +79,12 @@ def category_palette(params: Mapping[str, object]) -> tuple[RGB, ...]:
         if isinstance(item, Sequence) and len(item) == 3
     ]
     if not palette:
-        palette = [
-            (37, 99, 235),
-            (220, 84, 45),
-            (16, 132, 96),
-            (139, 92, 246),
-            (202, 138, 4),
-            (14, 116, 144),
-            (190, 58, 90),
-            (86, 105, 38),
-            (91, 76, 181),
-            (181, 94, 36),
-        ]
+        palette = list(default_palette)
+    for fallback in default_palette:
+        if len(palette) >= len(default_palette):
+            break
+        if fallback not in palette:
+            palette.append(fallback)
     return tuple(palette)
 
 
@@ -101,7 +108,7 @@ def resolve_categories(
     palette = category_palette(params)
     categories: list[PictogramCategory] = []
     for index, mark_count in enumerate(mark_counts):
-        color = palette[index % len(palette)]
+        color = palette[index]
         categories.append(
             PictogramCategory(
                 category_id=f"cat_{index}",
@@ -115,6 +122,8 @@ def resolve_categories(
 
 
 def sample_base(params: Mapping[str, object], *, instance_seed: int) -> PictogramBaseSample:
+    """Sample task-neutral pictogram frame axes before objective binding."""
+
     scene_variant, scene_variant_probabilities = resolve_scene_variant(params, instance_seed=int(instance_seed))
     glyph, glyph_probabilities = resolve_glyph(params, instance_seed=int(instance_seed))
     category_min, category_max = resolve_required_int_bounds(
@@ -138,8 +147,11 @@ def sample_base(params: Mapping[str, object], *, instance_seed: int) -> Pictogra
     rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.base_counts")
     mark_counts = tuple(rng.randint(int(mark_min), int(mark_max)) for _ in range(int(category_count)))
     title_options = ("Unit Quantity Chart", "Category Unit Chart", "Pictogram Totals", "Repeated-Mark Summary")
-    title_index = abs(
-        int(resolve_chart_title_index(params=params, instance_seed=int(instance_seed), count=len(title_options)))
+    title = str(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.title"),
+            title_options,
+        )
     )
     return PictogramBaseSample(
         scene_variant=str(scene_variant),
@@ -151,22 +163,8 @@ def sample_base(params: Mapping[str, object], *, instance_seed: int) -> Pictogra
         category_count_range=(int(category_min), int(category_max)),
         mark_count_range=(int(mark_min), int(mark_max)),
         mark_counts=tuple(int(value) for value in mark_counts),
-        title=str(title_options[title_index % len(title_options)]),
+        title=str(title),
     )
-
-
-def resolve_chart_title_index(*, params: Mapping[str, object], instance_seed: int, count: int) -> int:
-    from ....shared.deterministic_sampling import resolve_selection_index
-
-    return abs(
-        int(
-            resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=f"{SCENE_NAMESPACE}.title",
-            )
-        )
-    ) % max(1, int(count))
 
 
 def categories_by_id(categories: Sequence[PictogramCategory]) -> dict[str, PictogramCategory]:

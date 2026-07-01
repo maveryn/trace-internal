@@ -7,22 +7,22 @@ from trace.tasks.registry import create_task
 
 THREE_D_BAR_TASKS = {
     "task_charts__bar_3d__series_category_scope_total_value": {"series_total_value", "series_interval_total_value"},
-    "task_charts__bar_3d__category_total_value": {"category_total_value"},
-    "task_charts__bar_3d__series_total_gap_value": {"series_total_gap_value"},
-    "task_charts__bar_3d__category_total_gap_value": {"category_total_gap_value"},
-    "task_charts__bar_3d__category_extremum_gap_value": {"category_extremum_gap_value"},
-    "task_charts__bar_3d__series_threshold_count": {"series_threshold_count"},
-    "task_charts__bar_3d__category_threshold_count": {"category_threshold_count"},
+    "task_charts__bar_3d__category_total_value": {"single"},
+    "task_charts__bar_3d__series_total_gap_value": {"single"},
+    "task_charts__bar_3d__category_total_gap_value": {"single"},
+    "task_charts__bar_3d__category_extremum_gap_value": {"single"},
+    "task_charts__bar_3d__series_threshold_count": {"single"},
+    "task_charts__bar_3d__category_threshold_count": {"single"},
     "task_charts__bar_3d__pairwise_comparison_count": {
-        "series_comparison_count",
+        "single",
     },
 }
 
 EXPECTED_ANNOTATION_TYPES = {
-    "task_charts__bar_3d__category_extremum_gap_value": "keyed_point_map",
-    "task_charts__bar_3d__category_total_gap_value": "keyed_point_set_map",
+    "task_charts__bar_3d__category_extremum_gap_value": "point_map",
+    "task_charts__bar_3d__category_total_gap_value": "point_set_map",
     "task_charts__bar_3d__pairwise_comparison_count": "segment_set",
-    "task_charts__bar_3d__series_total_gap_value": "keyed_point_set_map",
+    "task_charts__bar_3d__series_total_gap_value": "point_set_map",
 }
 
 
@@ -54,13 +54,13 @@ def test_three_d_bar_tasks_generate_default_query_outputs() -> None:
         elif expected_annotation_type == "segment_set":
             assert projected["segment_set"] == output.annotation_gt.value
             assert projected["pixel_segment_set"] == output.annotation_gt.value
-        elif expected_annotation_type == "keyed_point_map":
-            assert projected["keyed_point_map"] == output.annotation_gt.value
-            assert projected["pixel_keyed_point_map"] == output.annotation_gt.value
+        elif expected_annotation_type == "point_map":
+            assert projected["point_map"] == output.annotation_gt.value
+            assert projected["pixel_point_map"] == output.annotation_gt.value
         else:
-            assert expected_annotation_type == "keyed_point_set_map"
-            assert projected["keyed_point_set_map"] == output.annotation_gt.value
-            assert projected["pixel_keyed_point_set_map"] == output.annotation_gt.value
+            assert expected_annotation_type == "point_set_map"
+            assert projected["point_set_map"] == output.annotation_gt.value
+            assert projected["pixel_point_set_map"] == output.annotation_gt.value
         assert output.trace_payload["render_spec"]["font_assets"]["chart_font_family"]
         assert output.trace_payload["render_map"]["bar_traces"]
 
@@ -105,9 +105,9 @@ def test_three_d_bar_axis_aggregate_uses_calibrated_grid_size() -> None:
 
 def test_three_d_bar_condition_tasks_avoid_too_small_or_crowded_grids() -> None:
     for task_id, query_id, expected_category_range, expected_series_range in (
-        ("task_charts__bar_3d__series_threshold_count", "series_threshold_count", [6, 6], [3, 4]),
-        ("task_charts__bar_3d__category_threshold_count", "category_threshold_count", [3, 4], [6, 6]),
-        ("task_charts__bar_3d__pairwise_comparison_count", "series_comparison_count", [4, 6], [4, 6]),
+        ("task_charts__bar_3d__series_threshold_count", "single", [6, 6], [3, 4]),
+        ("task_charts__bar_3d__category_threshold_count", "single", [3, 4], [6, 6]),
+        ("task_charts__bar_3d__pairwise_comparison_count", "single", [4, 6], [4, 6]),
     ):
         output = create_task(task_id).generate(
             92_700,
@@ -121,13 +121,13 @@ def test_three_d_bar_condition_tasks_avoid_too_small_or_crowded_grids() -> None:
         assert int(expected_series_range[0]) <= int(execution["series_count"]) <= int(expected_series_range[1])
         assert int(execution["max_bar_count"]) == 24
         assert int(execution["category_count"]) * int(execution["series_count"]) <= 24
-        if query_id in {"series_threshold_count", "category_threshold_count"}:
+        if task_id in {"task_charts__bar_3d__series_threshold_count", "task_charts__bar_3d__category_threshold_count"}:
             assert int(execution["target_count"]) == int(output.answer_gt.value)
             assert output.annotation_gt.type == "point_set"
             assert len(output.annotation_gt.value) == int(output.answer_gt.value)
             assert len(execution["annotation_bar_ids"]) == int(output.answer_gt.value)
             assert execution["matched_bar_ids"] == execution["annotation_bar_ids"]
-        elif query_id == "series_comparison_count":
+        elif task_id == "task_charts__bar_3d__pairwise_comparison_count":
             assert int(execution["target_count"]) == int(output.answer_gt.value)
             assert output.annotation_gt.type == "segment_set"
             assert len(output.annotation_gt.value) == int(output.answer_gt.value)
@@ -137,11 +137,11 @@ def test_three_d_bar_condition_tasks_avoid_too_small_or_crowded_grids() -> None:
 def test_three_d_bar_gap_annotations_are_keyed_by_visible_operands() -> None:
     category_gap = create_task("task_charts__bar_3d__category_total_gap_value").generate(
         92_810,
-        params={"query_id": "category_total_gap_value"},
+        params={"query_id": "single"},
         max_attempts=100,
     )
     category_execution = category_gap.trace_payload["execution_trace"]
-    assert category_gap.annotation_gt.type == "keyed_point_set_map"
+    assert category_gap.annotation_gt.type == "point_set_map"
     assert set(category_gap.annotation_gt.value) == {
         category_execution["category_label_a"],
         category_execution["category_label_b"],
@@ -150,11 +150,11 @@ def test_three_d_bar_gap_annotations_are_keyed_by_visible_operands() -> None:
 
     series_gap = create_task("task_charts__bar_3d__series_total_gap_value").generate(
         92_811,
-        params={"query_id": "series_total_gap_value"},
+        params={"query_id": "single"},
         max_attempts=100,
     )
     series_execution = series_gap.trace_payload["execution_trace"]
-    assert series_gap.annotation_gt.type == "keyed_point_set_map"
+    assert series_gap.annotation_gt.type == "point_set_map"
     assert set(series_gap.annotation_gt.value) == {
         series_execution["series_label_a"],
         series_execution["series_label_b"],
@@ -165,11 +165,11 @@ def test_three_d_bar_gap_annotations_are_keyed_by_visible_operands() -> None:
 def test_three_d_bar_category_extremum_annotation_uses_highest_lowest_keys() -> None:
     output = create_task("task_charts__bar_3d__category_extremum_gap_value").generate(
         92_820,
-        params={"query_id": "category_extremum_gap_value"},
+        params={"query_id": "single"},
         max_attempts=100,
     )
     execution = output.trace_payload["execution_trace"]
-    assert output.annotation_gt.type == "keyed_point_map"
+    assert output.annotation_gt.type == "point_map"
     assert set(output.annotation_gt.value) == {"highest", "lowest"}
     assert set(execution["annotation_bar_id_groups"]) == {"highest", "lowest"}
     assert len(execution["annotation_bar_ids"]) == 2

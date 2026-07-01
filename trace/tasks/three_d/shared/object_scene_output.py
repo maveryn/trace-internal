@@ -18,6 +18,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
+from .annotation_geometry import normalize_annotation_bboxes
 from .object_scene import SCENE_ID, _RenderParams, render_object_scene_3d
 from .option_panel import apply_independent_prompt_colors_to_dataset, build_text_option_choices
 
@@ -99,9 +100,19 @@ def build_option_label_object_scene_output(
 
     answer_label = str(colored_dataset["answer_label"])
     answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-    annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.annotation_bboxes]
-    if len(annotation_bboxes) != 1:
+    raw_annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.annotation_bboxes]
+    if len(raw_annotation_bboxes) != 1:
         raise RuntimeError(f"{objective_name} expected exactly one annotation bbox")
+    annotation_bounds = [
+        0.0,
+        0.0,
+        float(image.width),
+        float(rendered_scene.option_panel_bbox_px[1]) if rendered_scene.option_panel_bbox_px else float(image.height),
+    ]
+    annotation_bboxes, annotation_bbox_normalization = normalize_annotation_bboxes(
+        raw_annotation_bboxes,
+        bounds_px=annotation_bounds,
+    )
     annotation_payload = bbox_annotation_artifacts(annotation_bboxes[0])
     solver_trace = dict(colored_dataset["solver_trace"])
 
@@ -193,6 +204,7 @@ def build_option_label_object_scene_output(
             "camera": dict(colored_dataset["camera"]),
             "projection_frame": dict(colored_dataset["projection_frame"]),
             "label_font_size_px": int(render_params.label_font_size_px),
+            "annotation_bbox_normalization": dict(annotation_bbox_normalization),
         },
         "render_map": {
             "image_id": "img0",
@@ -214,6 +226,10 @@ def build_option_label_object_scene_output(
             "context_object_centers_px": {
                 str(key): list(value) for key, value in rendered_scene.context_object_centers_px.items()
             },
+            "annotation_raw_bboxes_px": [list(bbox) for bbox in raw_annotation_bboxes],
+            "annotation_bboxes_px": [list(bbox) for bbox in annotation_bboxes],
+            "annotation_entity_ids": [str(item) for item in rendered_scene.annotation_entity_ids],
+            "annotation_bbox_normalization": dict(annotation_bbox_normalization),
         },
         "execution_trace": execution_trace,
         "witness_symbolic": {

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.tasks.charts.shared.label_assets import normalize_chart_label_for_collision
 from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
 
 
@@ -38,14 +39,27 @@ def test_sunburst_tasks_generate_default_query_outputs() -> None:
         assert output.query_id in allowed_query_ids
         assert output.trace_payload["query_spec"]["params"]["query_id"] == output.query_id
         assert output.answer_gt.type in {"integer", "string"}
-        assert output.annotation_gt.type == "bbox_set"
+        assert output.annotation_gt.type == "point_set"
         assert output.annotation_gt.value
         assert output.trace_payload["query_spec"]["params"]["program_code"]
-        assert output.trace_payload["projected_annotation"]["type"] == "bbox_set"
-        assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
+        assert output.trace_payload["projected_annotation"]["type"] == "point_set"
+        assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
         assert output.trace_payload["render_spec"]["not_to_scale"] is True
         assert output.trace_payload["render_spec"]["font_assets"]
         assert output.trace_payload["render_map"]["node_traces"]
+        node_traces = output.trace_payload["render_map"]["node_traces"]
+        visible_labels = [
+            str(node["label"])
+            for node in node_traces
+            if str(node["level"]) in {"parent", "subgroup", "leaf"}
+        ]
+        normalized_labels = [normalize_chart_label_for_collision(label) for label in visible_labels]
+        assert len(normalized_labels) == len(set(normalized_labels))
+        label_caps = output.trace_payload["execution_trace"]["label_max_chars"]
+        for node in node_traces:
+            level = str(node["level"])
+            if level in {"parent", "subgroup", "leaf"}:
+                assert len(str(node["label"])) <= int(label_caps[level])
 
 
 def test_sunburst_tasks_generate_each_query_branch() -> None:
@@ -68,8 +82,8 @@ def test_sunburst_tasks_generate_each_query_branch() -> None:
             assert output.annotation_gt.value
             if query_id in {"highest_parent_total_label", "lowest_parent_total_label"}:
                 execution = output.trace_payload["execution_trace"]
-                assert set(execution["annotation_node_ids"]) == set(execution["leaf_ids"])
-                assert set(execution["answer_leaf_ids"]).issubset(set(execution["annotation_node_ids"]))
+                assert set(execution["annotation_node_ids"]) == set(execution["answer_leaf_ids"])
+                assert set(execution["leaf_ids"]) == set(execution["answer_leaf_ids"])
                 totals = execution["parent_totals"]
                 expected = max(totals, key=totals.get) if query_id.startswith("highest") else min(totals, key=totals.get)
                 assert output.answer_gt.value == expected

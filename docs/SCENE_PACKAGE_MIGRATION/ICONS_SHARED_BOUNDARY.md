@@ -105,14 +105,13 @@ scene is migrated:
 |---|---|
 | `icon_pair_grid_scene.py` | `trace/tasks/icons/pair_grid/shared/{state,layout,rendering,annotations}.py` as needed. |
 | `icon_sequence_scene.py` | `trace/tasks/icons/sequence_strip/shared/{state,layout,rendering,annotations}.py` as needed. |
-| `icon_single_panel_labeled_grid_scene.py` | `trace/tasks/icons/pattern_grid/shared/{state,layout,rendering,annotations}.py` as needed. |
 | `procedural_named_icon_field_scene.py` | Mostly `trace/tasks/icons/named_field/shared/`; extract only small bbox/fill-style helpers if multiple named scenes truly need them. |
 
-Domain-shared modules that should be retired from migrated scenes:
+Domain-shared modules retired from migrated scenes:
 
 | Module | Reason |
 |---|---|
-| `public_query_task.py` | Output rewriting is legacy public-query plumbing. Migrated public task files should use repo-global query helpers directly and build the final output themselves. |
+| `public_query_task.py` | Retired. Output rewriting was legacy public-query plumbing; migrated public task files use repo-global query helpers directly or build final output/query metadata in task-owned code. |
 
 ## Scene Shared
 
@@ -203,16 +202,16 @@ and decompose any that construct final public outputs:
 - `trace/tasks/icons/paired_canvas/shared/panel_added_removed_count.py` and
   `panel_exact_match_count.py` define task-specific classes for one public task
   inside `shared/`.
-- Public task files that call `rewrite_icons_query_output(...)` should be
-  rewritten during scene migration so public output/query metadata is produced
-  directly by the task file or by a permitted private `_lifecycle.py`.
+- Public task files should not call retired icon-specific output rewriters;
+  public output/query metadata should be produced directly by the task file or
+  by a permitted private `_lifecycle.py`.
 
 ## Config And Prompt Migration
 
 Current icons configs should not introduce old reasoning-group files such as
 `relation.yaml`, `sequence.yaml`, or `pattern.yaml`.
 
-`named_strip`, `overlap_grid`, `pattern_grid`, and `wallpaper_panels` now have
+`named_strip`, `overlap_grid`, and `wallpaper_panels` now have
 scene-scoped config files.
 
 Scene-package migration should create or update one config per public scene:

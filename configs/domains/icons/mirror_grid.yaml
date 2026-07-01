@@ -4,6 +4,12 @@ generation:
     - 4
     - 6
     pool_manifest: non_symmetry.txt
+  task_overrides:
+    task_icons__mirror_grid__missing_mirror_cell_label:
+      option_count_choices:
+      - 4
+      - 6
+      pool_manifest: non_symmetry.txt
 rendering:
   shared:
     canvas_width: 1104
@@ -168,8 +174,21 @@ rendering:
     patch_inner_margin_px: 8
     patch_min_gap_px: 6
     patch_sampling_attempts: 160
+  task_overrides:
+    task_icons__mirror_grid__missing_mirror_cell_label:
+      reference_panel_width_px: 380
 prompt:
   shared:
     bundle_id: icons_mirror_grid_v1
     scene_key: reference_mirror_grid
     task_key: mirror_symmetry_match_label
+  task_overrides:
+    task_icons__mirror_grid__missing_mirror_cell_label:
+      scene_key: missing_mirror_grid
+      task_key: missing_mirror_cell_label
+      object_description: a mirror-symmetry icon grid with one question-mark cell and labeled option icons
+      question_text: Which labeled option should replace the question mark to complete the mirror symmetry?
+      annotation_hint: set "annotation" to one [x0, y0, x1, y1] box in image pixel coordinates for the correct option cell
+      answer_hint: set "answer" to the correct option letter
+      json_example: '{"annotation":[600,120,760,280],"answer":"C"}'
+      json_example_answer_only: '{"answer":"C"}'

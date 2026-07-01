@@ -6,7 +6,8 @@
 3. Task id: `task_geometry__graph_paper__line_slope_value`
 4. Supported `query_id`: `single`
 5. Answer schema: `number`
-6. Annotation schema: `segment`
+6. Answer precision: `one_decimal`
+7. Annotation schema: `segment`
 
 ## Program Contract
 - `compute_segment_slope_from_grid_rise_run(target=line_segment, output_role=slope_number); scene=graph_paper; scope=single_segment`

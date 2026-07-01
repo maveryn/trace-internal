@@ -65,6 +65,10 @@ def isometric_farmstead_render_spec(scene: IsoFarmsteadScene, *, scene_id: str) 
             "levels": list(scene.trace.get("levels", [])),
             "tile_count": int(scene.trace.get("tile_count", 0)),
             "entity_count": int(scene.trace.get("entity_count", 0)),
+            "background_rgb": list(scene.trace.get("background_rgb", [])),
+            "background_tone_id": str(scene.trace.get("background_tone_id", "")),
+            "background_tone_rgb": list(scene.trace.get("background_tone_rgb", [])),
+            "background_tone_family": str(scene.trace.get("background_tone_family", "")),
         },
     }
 

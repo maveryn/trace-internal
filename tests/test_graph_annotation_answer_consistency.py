@@ -19,6 +19,7 @@ LEN_EQ_ANSWER_TASKS = {
     "task_graph__automaton__nondeterministic_state_count",
     "task_graph__flow_network__min_cut_edge_count",
     "task_graph__metro__exact_distance_station_count",
+    "task_graph__metro__route_condition_station_count",
     "task_graph__metro__station_membership_count",
     "task_graph__node_link__articulation_point_count",
     "task_graph__node_link__bridge_count",
@@ -109,6 +110,10 @@ GRAPH_QUERY_IDS = {
     "task_graph__graph_options__contained_subgraph_label": ("single",),
     "task_graph__graph_options__same_structure_label": ("single",),
     "task_graph__metro__exact_distance_station_count": ("single",),
+    "task_graph__metro__route_condition_station_count": (
+        "metro_route_single_route_station_count",
+        "metro_route_transfer_station_count",
+    ),
     "task_graph__metro__shortest_path_length": ("single",),
     "task_graph__metro__station_membership_count": (
         "metro_single_route_station_count",

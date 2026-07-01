@@ -7,13 +7,6 @@ generation:
     palette_size_min: 3
     palette_size_max: 6
   task_overrides:
-    task_puzzles__cell_board__scoped_attribute_count:
-      rows_min: 5
-      rows_max: 10
-      cols_min: 5
-      cols_max: 10
-      target_answer_min: 0
-      target_answer_max: 10
     task_puzzles__cell_board__largest_component_size:
       rows_min: 6
       rows_max: 9

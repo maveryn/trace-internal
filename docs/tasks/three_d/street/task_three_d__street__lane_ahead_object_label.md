@@ -9,9 +9,15 @@
 - Annotation schema: `bbox`
 
 ## Program Contract
-`select(label(candidate_street_objects, predicate=same_lane_and_ahead_of_reference)); scene=street; scope=lane_ahead_object_label`
 
-The public query id is `single`; ahead-along-lane selection is the fixed objective contract.
+Program: `select(label(candidate_street_objects, predicate=same_lane_and_ahead_of_reference)); scene=street; scope=lane_ahead_object_label`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `lane_ahead_object_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `label`, `candidate_street_objects`, `predicate`, `same_lane_and_ahead_of_reference`, `street`, `lane_ahead_object_label`.
+Operation: evaluate `select` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Contract
 The image shows a synthetic perspective 3D street intersection or T intersection with roads, sidewalks, crosswalk markings, unlettered street context, one red-boxed reference street object with a red travel-direction arrow, unlettered street-object candidates, and a below-scene text option panel.

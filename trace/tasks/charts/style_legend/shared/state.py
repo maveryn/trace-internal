@@ -7,6 +7,8 @@ from typing import Any
 
 from PIL import Image
 
+from trace.tasks.charts.shared.cartesian.geometry import round_bbox, round_point
+
 
 DOMAIN = "charts"
 SCENE_ID = "style_legend"
@@ -100,8 +102,8 @@ def point_id(series_id: str, x_index: int) -> str:
 
 
 def bbox(values: tuple[float, float, float, float] | list[float]) -> BBox:
-    return [round(float(value), 3) for value in values]
+    return round_bbox(values)
 
 
 def point(x: float, y: float) -> Point:
-    return [round(float(x), 3), round(float(y), 3)]
+    return round_point(float(x), float(y))

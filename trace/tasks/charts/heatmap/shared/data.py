@@ -4,17 +4,17 @@ from __future__ import annotations
 
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
+from trace.tasks.charts.shared.balanced_sampling import balanced_int_from_support as _balanced_int
 from trace.tasks.charts.shared.label_assets import resolve_chart_entity_labels
-from trace.tasks.charts.shared.sampling_defaults import balanced_int_from_support as _balanced_int
-from trace.tasks.charts.shared.unanswerable import (
+from trace.tasks.shared.unanswerable import (
     UNANSWERABLE_ANSWER,
     absence_proof,
     choose_missing_label,
     should_use_unanswerable_branch,
 )
 from trace.tasks.shared.config_defaults import group_default, resolve_required_int_bounds
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from .defaults import (
     GEN_DEFAULTS,
@@ -326,12 +326,11 @@ def construct_colorbar_interval_sample(
         namespace=f"{SCENE_NAMESPACE}.interval.target_count",
     )
     bounds = _colorbar_interval_bounds(params)
-    bound_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{SCENE_NAMESPACE}.interval.bounds",
+    lower, upper = uniform_choice(
+        spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.interval.bounds"),
+        bounds,
+        sort_keys=True,
     )
-    lower, upper = bounds[int(bound_index) % len(bounds)]
     gap = max(4, int(params.get("colorbar_value_margin", group_default(GEN_DEFAULTS, "colorbar_value_margin", 6))))
     selected = set(positions[: int(target_count)])
     values: List[List[int]] = [[0 for _ in range(int(column_count))] for _ in range(int(row_count))]
@@ -512,13 +511,12 @@ def _axis_cell_candidate(
         column_values = [int(values[row_index][int(column_index)]) for row_index in range(int(row_count))]
         target = max(column_values) if str(extremum_direction) == "hottest" else min(column_values)
         row_index = int(column_values.index(int(target)))
-        annotation_cells = [by_pos[(row, int(column_index))] for row in range(int(row_count))]
         return {
             "answer_value": str(row_labels[row_index]),
             "answer_type": "string",
             "answer_row_index": int(row_index),
             "answer_column_index": int(column_index),
-            "annotation_cell_ids": _reading_order_cell_ids(annotation_cells),
+            "annotation_cell_ids": [str(by_pos[(int(row_index), int(column_index))]["cell_id"])],
             "question_params": {
                 "query_axis": str(query_axis),
                 "answer_axis": "row",
@@ -548,13 +546,12 @@ def _axis_cell_candidate(
         row_values = [int(values[int(row_index)][column_index]) for column_index in range(int(column_count))]
         target = max(row_values) if str(extremum_direction) == "hottest" else min(row_values)
         column_index = int(row_values.index(int(target)))
-        annotation_cells = [by_pos[(int(row_index), column)] for column in range(int(column_count))]
         return {
             "answer_value": str(column_labels[column_index]),
             "answer_type": "string",
             "answer_row_index": int(row_index),
             "answer_column_index": int(column_index),
-            "annotation_cell_ids": _reading_order_cell_ids(annotation_cells),
+            "annotation_cell_ids": [str(by_pos[(int(row_index), int(column_index))]["cell_id"])],
             "question_params": {
                 "query_axis": str(query_axis),
                 "answer_axis": "column",
@@ -712,12 +709,12 @@ def _missing_condition_candidate(
 
     missing_condition = choose_missing_label(
         visible_labels=(
-            "high-intensity",
-            "low-intensity",
-            "increase-colored",
-            "decrease-colored",
-            "high-activity",
-            "low-activity",
+            "the highest intensity level",
+            "the lowest intensity level",
+            "the strongest increase color",
+            "the strongest decrease color",
+            "the highest activity level",
+            "the lowest activity level",
         ),
         candidate_labels=_MISSING_CONDITION_PHRASES,
         fallback_prefix="missing condition ",
@@ -725,9 +722,14 @@ def _missing_condition_candidate(
         namespace=f"{SCENE_NAMESPACE}.missing_condition",
     )
     visible_conditions = (
-        ["high-activity", "low-activity"]
+        ["the highest activity level", "the lowest activity level"]
         if str(scene_variant) == "calendar_heatmap"
-        else ["high-intensity", "low-intensity", "increase-colored", "decrease-colored"]
+        else [
+            "the highest intensity level",
+            "the lowest intensity level",
+            "the strongest increase color",
+            "the strongest decrease color",
+        ]
     )
     return {
         "answer_value": UNANSWERABLE_ANSWER,

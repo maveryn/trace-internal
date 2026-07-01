@@ -19,18 +19,13 @@ from trace.tasks.charts.errorbar_series.same_x_interval_overlap_count import (
     ChartsErrorbarSeriesSameXIntervalOverlapCountTask,
 )
 from trace.tasks.charts.errorbar_series.shared.state import SUPPORTED_SCENE_VARIANTS
-from trace.tasks.charts.errorbar_series.threshold_support_count import (
-    ChartsErrorbarSeriesThresholdSupportCountTask,
-    QUERY_IDS as THRESHOLD_QUERY_IDS,
-)
 from trace.tasks.registry import TASK_REGISTRY
 
 
 OVERLAP_QUERY_IDS = (SINGLE_QUERY_ID,)
 TASK_CASES = (
-    (ChartsErrorbarSeriesThresholdSupportCountTask, THRESHOLD_QUERY_IDS, "integer", "bbox_set"),
-    (ChartsErrorbarSeriesBoundExtremumXLabelTask, BOUND_EXTREMUM_QUERY_IDS, "string", "keyed_point_map"),
-    (ChartsErrorbarSeriesSameXIntervalOverlapCountTask, OVERLAP_QUERY_IDS, "integer", "keyed_bbox_map"),
+    (ChartsErrorbarSeriesBoundExtremumXLabelTask, BOUND_EXTREMUM_QUERY_IDS, "string", "point"),
+    (ChartsErrorbarSeriesSameXIntervalOverlapCountTask, OVERLAP_QUERY_IDS, "integer", "segment_set"),
 )
 
 
@@ -48,6 +43,12 @@ def _assert_point_inside_canvas(point: list[float], *, width: int, height: int) 
     assert 0 <= y <= height
 
 
+def _assert_segment_inside_canvas(segment: list[list[float]], *, width: int, height: int) -> None:
+    assert len(segment) == 2
+    for point in segment:
+        _assert_point_inside_canvas(list(point), width=width, height=height)
+
+
 def _series_by_id(execution: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {str(series["series_id"]): dict(series) for series in execution["series"]}
 
@@ -62,19 +63,6 @@ def _semantic_query_id(execution: dict[str, Any], query_id: str) -> str:
 def _expected_answer(execution: dict[str, Any], query_id: str) -> int | str:
     semantic_query_id = _semantic_query_id(execution, query_id)
     target = _series_by_id(execution)[str(execution["target_series_id"])]
-    if semantic_query_id == "entirely_above_threshold_count":
-        threshold = int(execution["threshold_value"])
-        return sum(1 for lower in target["lower_values"] if int(lower) > threshold)
-    if semantic_query_id == "entirely_below_threshold_count":
-        threshold = int(execution["threshold_value"])
-        return sum(1 for upper in target["upper_values"] if int(upper) < threshold)
-    if semantic_query_id == "contains_threshold_count":
-        threshold = int(execution["threshold_value"])
-        return sum(
-            1
-            for lower, upper in zip(target["lower_values"], target["upper_values"])
-            if int(lower) <= threshold <= int(upper)
-        )
     if semantic_query_id == "highest_upper_bound_x_label":
         index = max(range(int(execution["x_count"])), key=lambda idx: int(target["upper_values"][idx]))
         return str(execution["x_labels"][int(index)])
@@ -126,14 +114,29 @@ def test_charts_errorbar_series_tasks_match_contract(
             assert len(out.annotation_gt.value) == int(out.answer_gt.value)
             for bbox in out.annotation_gt.value:
                 _assert_bbox_inside_canvas(bbox, width=width, height=height)
-        elif annotation_type == "keyed_point_map":
-            assert set(out.annotation_gt.value) == {"selected_bound_endpoint"}
-            _assert_point_inside_canvas(out.annotation_gt.value["selected_bound_endpoint"], width=width, height=height)
+            assert out.trace_payload["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+            assert out.trace_payload["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+        elif annotation_type == "point_set":
+            assert isinstance(out.annotation_gt.value, list)
+            assert len(out.annotation_gt.value) == int(out.answer_gt.value)
+            for point in out.annotation_gt.value:
+                _assert_point_inside_canvas(point, width=width, height=height)
+            assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
+            assert out.trace_payload["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
+        elif annotation_type == "segment_set":
+            assert isinstance(out.annotation_gt.value, list)
+            assert len(out.annotation_gt.value) == int(out.answer_gt.value)
+            for segment in out.annotation_gt.value:
+                _assert_segment_inside_canvas([list(point) for point in segment], width=width, height=height)
+            assert out.trace_payload["projected_annotation"]["segment_set"] == out.annotation_gt.value
+            assert out.trace_payload["projected_annotation"]["pixel_segment_set"] == out.annotation_gt.value
+        elif annotation_type == "point":
+            assert isinstance(out.annotation_gt.value, list)
+            _assert_point_inside_canvas(out.annotation_gt.value, width=width, height=height)
+            assert out.trace_payload["projected_annotation"]["point"] == out.annotation_gt.value
+            assert out.trace_payload["projected_annotation"]["pixel_point"] == out.annotation_gt.value
         else:
-            assert "target_errorbar" in out.annotation_gt.value
-            assert len(out.annotation_gt.value) == int(out.answer_gt.value) + 1
-            for bbox in out.annotation_gt.value.values():
-                _assert_bbox_inside_canvas(bbox, width=width, height=height)
+            raise AssertionError(f"unsupported annotation type in test: {annotation_type}")
 
 
 def test_charts_errorbar_series_prompt_examples_match_contract() -> None:
@@ -150,6 +153,20 @@ def test_charts_errorbar_series_prompt_examples_match_contract() -> None:
             assert len(answer_and_annotation["answer"]) > 1
         if annotation_type == "bbox_set":
             assert isinstance(answer_and_annotation["annotation"], list)
+        elif annotation_type == "point_set":
+            assert isinstance(answer_and_annotation["annotation"], list)
+            assert all(isinstance(point, list) and len(point) == 2 for point in answer_and_annotation["annotation"])
+        elif annotation_type == "segment_set":
+            assert isinstance(answer_and_annotation["annotation"], list)
+            assert all(
+                isinstance(segment, list)
+                and len(segment) == 2
+                and all(isinstance(point, list) and len(point) == 2 for point in segment)
+                for segment in answer_and_annotation["annotation"]
+            )
+        elif annotation_type == "point":
+            assert isinstance(answer_and_annotation["annotation"], list)
+            assert len(answer_and_annotation["annotation"]) == 2
         else:
             assert isinstance(answer_and_annotation["annotation"], dict)
 
@@ -157,7 +174,7 @@ def test_charts_errorbar_series_prompt_examples_match_contract() -> None:
 def test_charts_errorbar_series_balanced_sampling_covers_axes() -> None:
     query_counts: Counter[str] = Counter()
     scene_counts: Counter[str] = Counter()
-    task = ChartsErrorbarSeriesThresholdSupportCountTask()
+    task = ChartsErrorbarSeriesBoundExtremumXLabelTask()
     for index in range(72):
         out = task.generate(
             hash64(20260605, "charts_errorbar_series_axes", index),
@@ -166,7 +183,7 @@ def test_charts_errorbar_series_balanced_sampling_covers_axes() -> None:
         )
         query_counts[str(out.query_id)] += 1
         scene_counts[str(out.trace_payload["execution_trace"]["scene_variant"])] += 1
-    assert set(query_counts) == set(THRESHOLD_QUERY_IDS)
+    assert set(query_counts) == set(BOUND_EXTREMUM_QUERY_IDS)
     assert set(scene_counts) == set(SUPPORTED_SCENE_VARIANTS)
 
 
@@ -187,6 +204,5 @@ def test_charts_errorbar_series_registry_and_config_are_wired() -> None:
     assert str(prompt["bundle_id"]) == "charts_errorbar_series_v1"
     assert str(prompt["scene_key"]) == "errorbar_series_scene"
     assert str(prompt["task_key"]) == "errorbar_series_query"
-    assert ChartsErrorbarSeriesThresholdSupportCountTask.task_id in TASK_REGISTRY
     assert ChartsErrorbarSeriesBoundExtremumXLabelTask.task_id in TASK_REGISTRY
     assert ChartsErrorbarSeriesSameXIntervalOverlapCountTask.task_id in TASK_REGISTRY

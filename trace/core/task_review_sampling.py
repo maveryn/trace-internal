@@ -35,9 +35,10 @@ def extract_query_id_probability_keys(output: Any) -> List[str]:
             return []
         keys = [str(key) for key, value in probabilities.items() if float(value) > 0.0]
         review_key = resolve_review_query_id(output)
-        if str(review_key).strip() == "default":
-            return [key for key in keys if str(key).strip() == "default"]
-        non_default = [key for key in keys if str(key).strip() not in {"", "default"}]
+        if str(review_key).strip() in {LEGACY_DEFAULT_QUERY_ID, SINGLE_QUERY_ID}:
+            sentinel_keys = [key for key in keys if str(key).strip() in {LEGACY_DEFAULT_QUERY_ID, SINGLE_QUERY_ID}]
+            return sentinel_keys or [SINGLE_QUERY_ID]
+        non_default = [key for key in keys if str(key).strip() not in NO_BRANCH_QUERY_IDS]
         return non_default or keys
 
     trace_payload = getattr(output, "trace_payload", {})
@@ -73,7 +74,7 @@ def resolve_review_query_id(output: Any) -> str:
                 query_id = str(query_spec.get("query_id", "") or "")
             if not query_id and isinstance(execution_trace, Mapping):
                 query_id = str(execution_trace.get("query_id", "") or "")
-    return str(query_id)
+    return str(query_id or SINGLE_QUERY_ID)
 
 
 def _generate_single_output(job: tuple[str, int, int, Mapping[str, Any] | None, int]) -> Dict[str, Any]:
@@ -283,10 +284,10 @@ def collect_query_id_samples(
                 query_id = resolve_review_query_id(output)
                 probability_keys = extract_query_id_probability_keys(output)
                 non_default_probability_keys = [
-                    str(value) for value in probability_keys if str(value).strip() not in {"", "default"}
+                    str(value) for value in probability_keys if str(value).strip() not in NO_BRANCH_QUERY_IDS
                 ]
                 effective_probability_keys = non_default_probability_keys or [str(value) for value in probability_keys]
-                if str(query_id).strip() == "default" and len(effective_probability_keys) == 1:
+                if str(query_id).strip() in {LEGACY_DEFAULT_QUERY_ID, SINGLE_QUERY_ID} and len(effective_probability_keys) == 1:
                     query_id = str(effective_probability_keys[0])
                 generated_query_id_counts[query_id] = int(generated_query_id_counts.get(query_id, 0) + 1)
 
@@ -299,9 +300,11 @@ def collect_query_id_samples(
                     if len(effective_probability_keys) > 1:
                         known_from_probabilities = True
                     expected_query_ids.update(str(value) for value in effective_probability_keys)
-                    if any(str(value).strip() not in {"", "default"} for value in expected_query_ids):
-                        expected_query_ids.discard("default")
-                        samples_by_query_id.pop("default", None)
+                    if any(str(value).strip() not in NO_BRANCH_QUERY_IDS for value in expected_query_ids):
+                        expected_query_ids.discard(LEGACY_DEFAULT_QUERY_ID)
+                        expected_query_ids.discard(SINGLE_QUERY_ID)
+                        samples_by_query_id.pop(LEGACY_DEFAULT_QUERY_ID, None)
+                        samples_by_query_id.pop(SINGLE_QUERY_ID, None)
                 if len(expected_query_ids) > int(expected_before):
                     no_new_query_id_streak = 0
                 else:

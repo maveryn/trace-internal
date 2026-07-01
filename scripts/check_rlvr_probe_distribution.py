@@ -13,6 +13,7 @@ import pyarrow.parquet as pq
 
 from trace.core.answer_distribution import evaluate_answer_distribution
 from trace.core.json_io import write_json_file
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.trace_store import read_trace_shard
 
 
@@ -156,7 +157,7 @@ def _resolve_query_id_fields(
         if not isinstance(execution_trace, Mapping):
             execution_trace = {}
         query_id = str(execution_trace.get("query_id", "") or "").strip()
-        query_label = query_id or "default"
+        query_label = query_id or SINGLE_QUERY_ID
         probabilities = execution_trace.get("query_id_probabilities", {})
         if isinstance(probabilities, Mapping):
             expected_query_ids_by_task.setdefault(task_id, set()).update(
@@ -291,7 +292,7 @@ def main() -> int:
         print(f"[{status}] {task_id}: overall({_format_metrics(task_report['overall'])})")
         if task_report["per_query_id"]:
             for query_id, query_report in sorted(task_report["per_query_id"].items()):
-                label = str(query_id).strip() or "<default>"
+                label = str(query_id).strip() or f"<{SINGLE_QUERY_ID}>"
                 query_status = "PASS" if bool(query_report.get("pass")) else "FAIL"
                 print(f"    - [{query_status}] {label}: {_format_metrics(query_report)}")
         if task_report["missing_query_ids"]:

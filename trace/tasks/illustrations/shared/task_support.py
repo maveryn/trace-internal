@@ -5,8 +5,8 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
+from ....core.sampling import support_probability_map, uniform_choice
 from ...shared.config_defaults import group_default
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from .canvas_profiles import resolve_profile_render_params
 from .style_registry import resolve_art_style_weights
 
@@ -52,7 +52,7 @@ def sample_count(
     explicit_key: str,
     cycle_index: int | None = None,
 ) -> Tuple[int, Dict[str, float]]:
-    """Sample an integer count with deterministic seeded cycling."""
+    """Sample an integer count from explicit support with seeded RNG."""
 
     support = tuple(range(int(low), int(high) + 1))
     if not support:
@@ -62,11 +62,10 @@ def sample_count(
         value = int(explicit)
         if value not in set(support):
             raise ValueError(f"{explicit_key} is outside configured support")
-        return int(value), dict(uniform_probability_map(support, selected=int(value)))
-    if cycle_index is None:
-        cycle_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    value = int(support[int(cycle_index) % len(support)])
-    return int(value), dict(uniform_probability_map(support))
+        return int(value), support_probability_map(support, selected=int(value), sort_keys=True)
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    value = int(uniform_choice(rng, support, sort_keys=True))
+    return int(value), support_probability_map(support, sort_keys=True)
 
 
 def string_support(

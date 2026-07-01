@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from .....core.sampling import uniform_choice
 from .....core.seed import spawn_rng
 from ....shared.config_defaults import group_default, resolve_required_int_bounds
-from ....shared.deterministic_sampling import resolve_selection_index
 from ...shared.label_assets import (
     resolve_chart_entity_labels,
     resolve_chart_panel_labels,
@@ -29,8 +29,18 @@ class RadarSmallMultipleFrame:
     values: dict[str, dict[str, int]]
 
 
-def choice_index(params: Mapping[str, Any], *, instance_seed: int, namespace: str) -> int:
-    return int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)))
+def choose_index(count: int, params: Mapping[str, Any], *, instance_seed: int, namespace: str) -> int:
+    """Sample one zero-based index from a finite support."""
+
+    if int(count) <= 0:
+        raise ValueError(f"empty index support for {namespace}")
+    return int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), str(namespace)),
+            tuple(range(int(count))),
+            sort_keys=True,
+        )
+    )
 
 
 def without_sample_cursor(params: Mapping[str, Any]) -> dict[str, Any]:
@@ -43,8 +53,13 @@ def balanced_choice(values: Sequence[int], params: Mapping[str, Any], *, instanc
     support = [int(value) for value in values]
     if not support:
         raise ValueError(f"empty support for {namespace}")
-    index = choice_index(params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return int(support[int(index) % len(support)])
+    return int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), str(namespace)),
+            support,
+            sort_keys=True,
+        )
+    )
 
 
 def metric_count(params: Mapping[str, Any], *, min_required: int = 1, instance_seed: int, namespace: str) -> int:

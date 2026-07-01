@@ -8,9 +8,9 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 import networkx as nx
 
+from .....core.sampling import uniform_choice
 from .....core.seed import spawn_rng
 from ....shared.config_defaults import group_default
-from ....shared.deterministic_sampling import resolve_selection_index
 from ...shared.style import SUPPORTED_NODE_COLOR_NAMES
 from ...shared.task_support import resolve_graph_named_variant
 from .labels import state_labels
@@ -144,8 +144,12 @@ def resolve_acceptance_axes(
         if int(state_count) not in set(state_count_support):
             raise ValueError("state_count is outside feasible support")
     else:
-        state_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{context_key}:state_count"))
-        state_count = int(state_count_support[int(state_index % len(state_count_support))])
+        state_count = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{context_key}:state_count"),
+                state_count_support,
+            )
+        )
 
     input_length_min = int(params.get("input_length_min", group_default(gen_defaults, "input_length_min", defaults.input_length_min)))
     input_length_max = int(params.get("input_length_max", group_default(gen_defaults, "input_length_max", defaults.input_length_max)))
@@ -158,8 +162,12 @@ def resolve_acceptance_axes(
         if int(input_length) not in set(input_length_support):
             raise ValueError("input_length is outside feasible support")
     else:
-        length_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{context_key}:input_length"))
-        input_length = int(input_length_support[int(length_index % len(input_length_support))])
+        input_length = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{context_key}:input_length"),
+                input_length_support,
+            )
+        )
 
     candidate_count_support = _coerce_int_support(
         params.get(
@@ -177,10 +185,12 @@ def resolve_acceptance_axes(
         if int(candidate_count) not in set(candidate_count_support):
             raise ValueError("candidate_count is outside feasible support")
     else:
-        candidate_index = int(
-            resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{context_key}:candidate_count")
+        candidate_count = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{context_key}:candidate_count"),
+                candidate_count_support,
+            )
         )
-        candidate_count = int(candidate_count_support[int(candidate_index % len(candidate_count_support))])
 
     explicit_answer_option = str(params.get("answer_option", params.get("answer_option_label", ""))).strip().upper()
     if explicit_answer_option:
@@ -189,8 +199,10 @@ def resolve_acceptance_axes(
         answer_option_index = int(OPTION_LABELS.index(explicit_answer_option))
     else:
         answer_option_index = int(
-            resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{context_key}:answer_option")
-            % int(candidate_count)
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{context_key}:answer_option"),
+                tuple(range(int(candidate_count))),
+            )
         )
 
     layout_variant, layout_variant_probabilities = _resolve_named_variant(

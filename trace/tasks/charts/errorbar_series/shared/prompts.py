@@ -19,7 +19,6 @@ PROMPT_BUNDLE_ID = "charts_errorbar_series_v1"
 def dynamic_slots(
     dataset: ErrorbarDataset,
     *,
-    threshold_relation_phrase: str = "",
     bound_phrase: str = "",
     extremum_phrase: str = "",
 ) -> dict[str, Any]:
@@ -28,11 +27,9 @@ def dynamic_slots(
     return {
         "object_description": "a scientific chart with labeled series, ordered x-axis labels, central point markers, and vertical error bars",
         "target_series_label": str(dataset.query.params.get("target_series_label", "")),
-        "threshold_value": int(dataset.threshold_value or 0),
         "target_x_label": str(dataset.query.params.get("target_x_label", "")),
         "bound_phrase": str(bound_phrase),
         "extremum_phrase": str(extremum_phrase),
-        "threshold_relation_phrase": str(threshold_relation_phrase),
     }
 
 

@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import trace.tasks  # noqa: F401
-from trace.tasks.physics.thermodynamics.thermal_mixing import PhysicsThermalMixingFinalTemperatureValueTask
+from trace.tasks.physics.thermal_mixing.final_temperature_value import (
+    PhysicsThermalMixingFinalTemperatureValueTask,
+)
 
 
 def _assert_bbox_set_in_bounds(out) -> None:
@@ -27,7 +29,8 @@ def test_thermal_mixing_final_temperature_contract_for_supported_cup_counts() ->
         temperatures = [int(value) for value in execution["initial_temperatures_c"]]
 
         assert out.scene_id == "thermal_mixing"
-        assert out.query_id == "equal_amount_final_temperature"
+        assert out.query_id == "single"
+        assert execution["internal_query_id"] == "equal_amount_final_temperature"
         assert out.answer_gt.type == "integer"
         assert out.answer_gt.value == 45
         assert len(temperatures) == cup_count
@@ -36,8 +39,12 @@ def test_thermal_mixing_final_temperature_contract_for_supported_cup_counts() ->
         assert len(out.annotation_gt.value) == cup_count
         _assert_bbox_set_in_bounds(out)
         assert out.trace_payload["projected_annotation"]["bboxes"] == out.annotation_gt.value
+        assert out.trace_payload["render_map"]["annotation_source"] == "temperature_label_bboxes_px"
+        assert out.trace_payload["render_map"]["temperature_label_bboxes_px"] == out.annotation_gt.value
         assert out.prompt_variants["answer_only"]
         assert out.prompt_variants["answer_and_annotation"]
+        assert "temperature label" in out.prompt_variants["answer_and_annotation"]
+        assert "initial cups and their visible temperature labels" not in out.prompt_variants["answer_and_annotation"]
 
 
 def test_thermal_mixing_keeps_final_answer_hidden_in_image_metadata() -> None:

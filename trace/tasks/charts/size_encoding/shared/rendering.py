@@ -8,11 +8,19 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw, ImageFont
 
 from .....core.seed import spawn_rng
-from .....core.visual.background import make_background_canvas
 from .....core.visual.noise import apply_post_image_noise
+from trace.tasks.charts.shared.information_style import make_chart_information_background, resolve_chart_information_style
+from trace.tasks.charts.shared.dense_text import (
+    DENSE_TEXT_DARK_RGB,
+    dense_fit_bold,
+    dense_stroke_width,
+    dense_text_params,
+    dense_text_style_meta,
+)
 from ....shared.render_variation import apply_layout_jitter_to_margins
 from ....shared.text_legibility import (
     LARGE_TEXT_MIN_CONTRAST_RATIO,
+    READ_REQUIRED_TEXT_MIN_LAB_DISTANCE,
     READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
     draw_centered_readable_text,
     draw_readable_text,
@@ -22,12 +30,10 @@ from ....shared.text_legibility import (
 )
 from ....shared.text_rendering import fit_font_to_box, load_font, resolve_text_stroke_fill
 from .defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDER_DEFAULTS,
     category_palette,
     resolve_int,
-    resolve_rgb,
 )
 from .state import (
     BBox,
@@ -45,6 +51,24 @@ def _lighten(color: RGB, factor: float) -> RGB:
 def _darken(color: RGB, factor: float) -> RGB:
     factor = max(0.0, min(1.0, float(factor)))
     return tuple(int(round(int(channel) * factor)) for channel in color)  # type: ignore[return-value]
+
+def _category_text_candidates(color: RGB) -> Tuple[RGB, ...]:
+    """Return category-hued text candidates from raw swatch to dark readable tints."""
+
+    return (
+        tuple(int(channel) for channel in color),
+        _darken(color, 0.82),
+        _darken(color, 0.68),
+        _darken(color, 0.54),
+        _darken(color, 0.42),
+        _lighten(color, 0.14),
+        _lighten(color, 0.34),
+        _lighten(color, 0.54),
+        _lighten(color, 0.70),
+    )
+
+def _bubble_fill(color: RGB) -> RGB:
+    return _lighten(color, 0.55)
 
 def _text_bbox(draw: ImageDraw.ImageDraw, xy: Tuple[float, float], text: str, font: ImageFont.ImageFont, *, stroke_width: int = 0) -> BBox:
     try:
@@ -93,6 +117,71 @@ def _union_bboxes(boxes: Sequence[Sequence[float]]) -> List[float]:
 
 def _format_bbox(bbox: Sequence[float]) -> List[float]:
     return [round(float(value), 3) for value in bbox[:4]]
+
+def _expand_bbox_to_min_side(
+    bbox: Sequence[float],
+    *,
+    min_side_px: float,
+    clip_bbox: Sequence[float] | None = None,
+) -> List[float]:
+    """Return a centered bbox expanded to the annotation minimum side."""
+
+    x0, y0, x1, y1 = (float(value) for value in bbox[:4])
+    width = max(0.0, float(x1 - x0))
+    height = max(0.0, float(y1 - y0))
+    target_w = max(width, float(min_side_px))
+    target_h = max(height, float(min_side_px))
+    cx = float((x0 + x1) / 2.0)
+    cy = float((y0 + y1) / 2.0)
+
+    if clip_bbox is not None:
+        clip_x0, clip_y0, clip_x1, clip_y1 = (float(value) for value in clip_bbox[:4])
+        target_w = min(target_w, max(0.0, float(clip_x1 - clip_x0)))
+        target_h = min(target_h, max(0.0, float(clip_y1 - clip_y0)))
+    else:
+        clip_x0 = clip_y0 = float("-inf")
+        clip_x1 = clip_y1 = float("inf")
+
+    expanded = [
+        cx - (target_w / 2.0),
+        cy - (target_h / 2.0),
+        cx + (target_w / 2.0),
+        cy + (target_h / 2.0),
+    ]
+
+    if expanded[0] < clip_x0:
+        shift = clip_x0 - expanded[0]
+        expanded[0] += shift
+        expanded[2] += shift
+    if expanded[2] > clip_x1:
+        shift = expanded[2] - clip_x1
+        expanded[0] -= shift
+        expanded[2] -= shift
+    if expanded[1] < clip_y0:
+        shift = clip_y0 - expanded[1]
+        expanded[1] += shift
+        expanded[3] += shift
+    if expanded[3] > clip_y1:
+        shift = expanded[3] - clip_y1
+        expanded[1] -= shift
+        expanded[3] -= shift
+
+    return [
+        max(clip_x0, min(clip_x1, expanded[0])),
+        max(clip_y0, min(clip_y1, expanded[1])),
+        max(clip_x0, min(clip_x1, expanded[2])),
+        max(clip_y0, min(clip_y1, expanded[3])),
+    ]
+
+def _explicit_rgb(params: Mapping[str, Any], key: str, fallback: RGB) -> RGB:
+    raw = params.get(str(key))
+    if isinstance(raw, Sequence) and not isinstance(raw, (str, bytes)) and len(raw) >= 3:
+        return (
+            max(0, min(255, int(raw[0]))),
+            max(0, min(255, int(raw[1]))),
+            max(0, min(255, int(raw[2]))),
+        )
+    return tuple(int(channel) for channel in fallback)
 
 def _cell_centers(
     bbox: BBox,
@@ -173,7 +262,7 @@ def _draw_legend(
                 text=str(category),
                 font=font,
                 style=text_style,
-                stroke_width=1,
+                stroke_width=dense_stroke_width(),
                 extra_metadata={"category": str(category), "source": "size_encoding_legend"},
             )
         )
@@ -204,7 +293,7 @@ def _draw_word_cloud(
     params: Mapping[str, Any],
     instance_seed: int,
     circular: bool,
-    text_style,
+    text_styles: Mapping[str, Any],
 ) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]], List[Dict[str, Any]]]:
     """Render text-size encoded items and preserve each item bbox."""
 
@@ -232,7 +321,7 @@ def _draw_word_cloud(
             text=str(item.label),
             max_width=float(cell_w) * 0.78,
             max_height=float(cell_h) * 0.90,
-            bold=True,
+                bold=dense_fit_bold(),
             min_size_px=max(8, int(min_font) - 6),
             max_size_px=max(int(min_font), int(target_font)),
             fill_ratio=0.95,
@@ -263,27 +352,35 @@ def _draw_word_cloud(
             center=(float(text_center_x), float(cy)),
             text=str(item.label),
             font=font,
-            style=text_style,
-            stroke_width=stroke_width,
+            style=text_styles[str(item.category)],
+            stroke_width=dense_stroke_width(),
             extra_metadata={"item_id": str(item.item_id), "source": "size_encoding_word_item"},
         )
         text_records.append(text_record)
         bbox_px = _union_bboxes((marker_bbox, text_record["bbox_px"]))
-        padded = [bbox_px[0] - 3, bbox_px[1] - 3, bbox_px[2] + 3, bbox_px[3] + 3]
-        item_bboxes[str(item.item_id)] = _format_bbox(padded)
+        visual_bbox = [bbox_px[0] - 3, bbox_px[1] - 3, bbox_px[2] + 3, bbox_px[3] + 3]
+        annotation_min_side_px = 24.5
+        annotation_bbox = _expand_bbox_to_min_side(
+            visual_bbox,
+            min_side_px=annotation_min_side_px,
+            clip_bbox=bbox,
+        )
+        item_bboxes[str(item.item_id)] = _format_bbox(annotation_bbox)
         entities.append(
             {
                 "entity_id": str(item.item_id),
                 "entity_type": "chart_size_word_item",
-                "bbox_px": _format_bbox(padded),
+                "bbox_px": _format_bbox(annotation_bbox),
                 "attrs": {
                     "label": str(item.label),
                     "category": str(item.category),
                     "panel": str(item.panel),
                     "value": int(item.value),
                     "font_size_px": int(getattr(font, "size", target_font)),
+                    "visual_bbox_px": _format_bbox(visual_bbox),
+                    "annotation_bbox_min_side_px": annotation_min_side_px,
                     "category_marker_rgb": list(marker_color),
-                    "text_color_policy": "nonsemantic_readable_ink",
+                    "text_color_policy": "category_tinted_readable_ink",
                 },
             }
         )
@@ -298,14 +395,15 @@ def _draw_bubbles(
     params: Mapping[str, Any],
     instance_seed: int,
     text_styles: Mapping[str, Any],
+    value_scale: Tuple[int, int] | None = None,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, List[float]], List[Dict[str, Any]]]:
     """Render bubble-size encoded items and preserve each circle bbox."""
 
     item_bboxes: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = []
     text_records: List[Dict[str, Any]] = []
-    value_min, value_max = _value_scale(items)
-    stroke_width = resolve_int(params, "bubble_label_stroke_width_px", 1)
+    value_min, value_max = value_scale if value_scale is not None else _value_scale(items)
+    stroke_width = dense_stroke_width()
     cells = _cell_centers(
         bbox,
         count=len(items),
@@ -319,19 +417,19 @@ def _draw_bubbles(
         min_r = max(10.0, max_r * 0.42)
         radius = min_r + ((max_r - min_r) * math.sqrt(float(frac)))
         color = category_colors[str(item.category)]
-        fill = _lighten(color, 0.25)
+        fill = _bubble_fill(color)
         outline = _darken(color, 0.55)
         circle = [float(cx - radius), float(cy - radius), float(cx + radius), float(cy + radius)]
         draw.ellipse(circle, fill=fill, outline=outline, width=2)
         font = fit_font_to_box(
             draw,
             text=str(item.label),
-            max_width=float(radius) * 1.65,
-            max_height=float(radius) * 0.80,
-            bold=True,
-            min_size_px=9,
+            max_width=float(radius) * 1.78,
+            max_height=float(radius) * 0.90,
+            bold=dense_fit_bold(),
+            min_size_px=resolve_int(params, "bubble_label_min_font_size_px", 11),
             max_size_px=resolve_int(params, "bubble_label_font_size_px", 19),
-            fill_ratio=0.92,
+            fill_ratio=0.98,
         )
         text_records.append(
             draw_centered_readable_text(
@@ -340,7 +438,7 @@ def _draw_bubbles(
                 text=str(item.label),
                 font=font,
                 style=text_styles[str(item.category)],
-                stroke_width=stroke_width,
+                stroke_width=dense_stroke_width(),
                 extra_metadata={"item_id": str(item.item_id), "source": "size_encoding_bubble_item"},
             )
         )
@@ -387,15 +485,23 @@ def render_size_encoding_scene(
 ) -> RenderedSizeEncodingScene:
     """Render one size-encoding dataset without reading public task identity."""
 
-    params = {**dict(params), "_render_style_seed": int(instance_seed)}
+    params = dense_text_params({**dict(params), "_render_style_seed": int(instance_seed)})
     canvas_width = resolve_int(params, "canvas_width", 1320)
     canvas_height = resolve_int(params, "canvas_height", 900)
-    background, background_meta = make_background_canvas(
-        canvas_width=int(canvas_width),
-        canvas_height=int(canvas_height),
+    palette = category_palette(params, len(dataset.categories))
+    category_colors = {str(category): palette[index] for index, category in enumerate(dataset.categories)}
+    information_style, information_style_meta = resolve_chart_information_style(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="size_encoding",
+        protected_colors=tuple(palette),
+    )
+    background, background_meta = make_chart_information_background(
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
+        style=information_style,
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.information_scene_background",
     )
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
@@ -414,14 +520,12 @@ def render_size_encoding_scene(
     legend_height = resolve_int(params, "legend_height_px", 58)
     panel_gap = resolve_int(params, "panel_gap_px", 28)
     panel_padding = resolve_int(params, "panel_padding_px", 18)
-    title_rgb = resolve_rgb(params, "title_rgb", (42, 50, 66))
-    subtitle_rgb = resolve_rgb(params, "subtitle_rgb", (88, 96, 112))
-    panel_fill = resolve_rgb(params, "panel_fill_rgb", (255, 255, 255))
-    panel_border = resolve_rgb(params, "panel_border_rgb", (196, 204, 216))
-    palette = category_palette(params, len(dataset.categories))
-    category_colors = {str(category): palette[index] for index, category in enumerate(dataset.categories)}
+    title_rgb = _explicit_rgb(params, "title_rgb", information_style.text_rgb)
+    subtitle_rgb = _explicit_rgb(params, "subtitle_rgb", information_style.muted_text_rgb)
+    panel_fill = _explicit_rgb(params, "panel_fill_rgb", information_style.surface_rgb)
+    panel_border = _explicit_rgb(params, "panel_border_rgb", information_style.panel_border_rgb)
     background_rgb = tuple(int(channel) for channel in image.getpixel((0, 0))[:3])
-    word_text_surfaces: Tuple[RGB, ...] = (tuple(panel_fill), background_rgb)
+    word_text_surfaces: Tuple[RGB, ...] = (tuple(panel_fill),)
     title_text_style = resolve_readable_text_style(
         instance_seed=int(instance_seed),
         namespace=f"{SCENE_NAMESPACE}.title_text",
@@ -443,22 +547,38 @@ def render_size_encoding_scene(
     )
     word_text_style = resolve_readable_text_style(
         instance_seed=int(instance_seed),
-        namespace=f"{SCENE_NAMESPACE}.word_text",
+        namespace=f"{SCENE_NAMESPACE}.word_text.uniform",
         role="read_required_size_encoding_word_label",
         surface_rgbs=word_text_surfaces,
-        preferred_rgbs=((38, 44, 58), title_rgb),
+        preferred_rgbs=(DENSE_TEXT_DARK_RGB, title_rgb),
+        candidate_rgbs=(DENSE_TEXT_DARK_RGB, title_rgb, (246, 250, 255)),
         min_contrast_ratio=READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+        min_lab_distance=READ_REQUIRED_TEXT_MIN_LAB_DISTANCE,
         required=True,
     )
+    word_text_styles = {
+        str(category): resolve_readable_text_style(
+            instance_seed=int(instance_seed),
+            namespace=f"{SCENE_NAMESPACE}.word_text.{category}",
+            role="read_required_size_encoding_word_label",
+            surface_rgbs=word_text_surfaces,
+            preferred_rgbs=(word_text_style.fill_rgb,),
+            candidate_rgbs=(word_text_style.fill_rgb,),
+            min_contrast_ratio=READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+            min_lab_distance=READ_REQUIRED_TEXT_MIN_LAB_DISTANCE,
+            required=True,
+        )
+        for category, color in category_colors.items()
+    }
     bubble_text_styles = {
         str(category): resolve_readable_text_style(
             instance_seed=int(instance_seed),
             namespace=f"{SCENE_NAMESPACE}.bubble_text.{category}",
             role="read_required_size_encoding_bubble_label",
-            surface_rgbs=(_lighten(color, 0.25),),
+            surface_rgbs=(_bubble_fill(color),),
             preferred_rgbs=((38, 44, 58), title_rgb),
-            min_contrast_ratio=LARGE_TEXT_MIN_CONTRAST_RATIO,
-            min_lab_distance=28.0,
+            min_contrast_ratio=READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+            min_lab_distance=READ_REQUIRED_TEXT_MIN_LAB_DISTANCE,
             required=True,
         )
         for category, color in category_colors.items()
@@ -475,7 +595,7 @@ def render_size_encoding_scene(
     )
     text_records: List[Dict[str, Any]] = []
 
-    title_font = load_font(resolve_int(params, "title_font_size_px", 28), bold=True)
+    title_font = load_font(resolve_int(params, "title_font_size_px", 28), bold=False)
     subtitle_font = load_font(resolve_int(params, "subtitle_font_size_px", 18), bold=False)
     text_records.append(
         draw_readable_text(
@@ -484,7 +604,7 @@ def render_size_encoding_scene(
             text="Size-Encoded Category Chart",
             font=title_font,
             style=title_text_style,
-            stroke_width=1,
+            stroke_width=dense_stroke_width(),
             extra_metadata={"source": "size_encoding_title"},
         )
     )
@@ -495,7 +615,7 @@ def render_size_encoding_scene(
             text="Relative size shows value; marker colors show category.",
             font=subtitle_font,
             style=subtitle_text_style,
-            stroke_width=1,
+            stroke_width=dense_stroke_width(),
             extra_metadata={"source": "size_encoding_subtitle"},
         )
     )
@@ -521,7 +641,8 @@ def render_size_encoding_scene(
     item_bboxes: Dict[str, List[float]] = {}
     panel_title_bboxes: Dict[str, List[float]] = {}
     panel_bboxes = _panel_layout(tuple(plot_bbox), panel_count=len(dataset.panels), gap=float(panel_gap))
-    panel_title_font = load_font(resolve_int(params, "panel_title_font_size_px", 20), bold=True)
+    panel_title_font = load_font(resolve_int(params, "panel_title_font_size_px", 20), bold=False)
+    bubble_value_scale = _value_scale(dataset.items)
 
     for panel_index, (panel, panel_bbox) in enumerate(zip(dataset.panels, panel_bboxes)):
         px1, py1, px2, py2 = (float(value) for value in panel_bbox)
@@ -541,7 +662,7 @@ def render_size_encoding_scene(
                     text=str(panel),
                     font=panel_title_font,
                     style=secondary_text_style,
-                    stroke_width=1,
+                    stroke_width=dense_stroke_width(),
                     extra_metadata={"panel": str(panel), "source": "size_encoding_panel_title"},
                 )
             )
@@ -567,6 +688,7 @@ def render_size_encoding_scene(
                 params=params,
                 instance_seed=int(instance_seed) + int(panel_index),
                 text_styles=bubble_text_styles,
+                value_scale=bubble_value_scale,
             )
         else:
             rendered_entities, rendered_bboxes, rendered_text_records = _draw_word_cloud(
@@ -577,7 +699,7 @@ def render_size_encoding_scene(
                 params=params,
                 instance_seed=int(instance_seed) + int(panel_index),
                 circular=str(scene_variant) == "circle_word_cloud",
-                text_style=word_text_style,
+                text_styles=word_text_styles,
             )
         entities.extend(rendered_entities)
         item_bboxes.update(rendered_bboxes)
@@ -606,17 +728,21 @@ def render_size_encoding_scene(
         plot_bbox_px=_format_bbox(plot_bbox),
         render_meta={
             "background_style": dict(background_meta),
+            "information_scene_style": dict(information_style_meta),
             "post_image_noise": dict(post_noise_meta),
             "layout_jitter": dict(layout_jitter_meta),
             "category_colors_rgb": {str(key): list(value) for key, value in category_colors.items()},
-            "category_color_policy": "category is encoded by swatches, bubble fills, or word markers; glyph text color is nonsemantic",
+            "category_color_policy": "category is encoded by swatches, bubble fills, word markers, and contrast-adjusted category-tinted word text",
+            "size_encoding_text_color_policy": "word-cloud item text uses readable category-tinted color; bubble item text uses high-contrast readable ink over category-colored bubbles",
+            "size_value_scale_scope": "global",
+            "size_value_scale": [int(bubble_value_scale[0]), int(bubble_value_scale[1])],
             "text_legibility": {
                 **text_legibility_summary(
                     (
                         title_text_style,
                         subtitle_text_style,
                         secondary_text_style,
-                        word_text_style,
+                        *tuple(word_text_styles.values()),
                         *tuple(bubble_text_styles.values()),
                     )
                 ),

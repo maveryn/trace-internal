@@ -89,6 +89,7 @@ class ChartsComboDualThresholdConditionCountTask:
         PRIMARY_ABOVE_LINE_BELOW_QUERY_ID,
         PRIMARY_BELOW_LINE_ABOVE_QUERY_ID,
     )
+    default_dataset_enabled = True
     default_dual_count_dataset_enabled = True
 
     def _build_dual_threshold_plan(

@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
-from trace.tasks.physics.waves.waveform_panel import PhysicsWaveformPanelWavePropertyExtremumLabelTask
+from trace.tasks.physics.waveform_panel.wave_property_extremum_label import (
+    PhysicsWaveformPanelWavePropertyExtremumLabelTask,
+)
 
 
-def _assert_bbox_set_in_bounds(out) -> None:
+def _assert_bbox_in_bounds(out) -> None:
     width, height = out.image.size
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 1
-    for bbox in out.annotation_gt.value:
-        assert 0 <= bbox[0] < bbox[2] <= width
-        assert 0 <= bbox[1] < bbox[3] <= height
+    assert out.annotation_gt.type == "bbox"
+    bbox = out.annotation_gt.value
+    assert 0 <= bbox[0] < bbox[2] <= width
+    assert 0 <= bbox[1] < bbox[3] <= height
 
 
 def _panel_by_label(out, label: str) -> dict:
@@ -37,11 +38,11 @@ def test_physics_waveform_highest_amplitude_contract() -> None:
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
     assert int(selected["amplitude_rank"]) == max(int(panel["amplitude_rank"]) for panel in panels)
-    assert out.annotation_gt.value == [selected["bbox_px"]]
-    assert out.trace_payload["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.value == selected["bbox_px"]
+    assert out.trace_payload["projected_annotation"]["bbox"] == out.annotation_gt.value
     assert out.prompt_variants["answer_only"]
     assert out.prompt_variants["answer_and_annotation"]
-    _assert_bbox_set_in_bounds(out)
+    _assert_bbox_in_bounds(out)
 
 
 def test_physics_waveform_shortest_wavelength_uses_max_cycle_count() -> None:
@@ -63,7 +64,7 @@ def test_physics_waveform_shortest_wavelength_uses_max_cycle_count() -> None:
     assert float(selected["wavelength_relative"]) == min(float(panel["wavelength_relative"]) for panel in panels)
     assert out.trace_payload["execution_trace"]["query_property"] == "wavelength"
     assert out.trace_payload["execution_trace"]["query_extremum"] == "shortest"
-    _assert_bbox_set_in_bounds(out)
+    _assert_bbox_in_bounds(out)
 
 
 def test_physics_waveform_all_query_branches_have_unique_selected_extrema() -> None:

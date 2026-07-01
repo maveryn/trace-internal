@@ -7,7 +7,77 @@ from typing import Any, Mapping, Tuple
 from trace.core.sampling import integer_range_choice, uniform_choice
 from trace.tasks.shared.config_defaults import group_default
 
-from .state import VoxelRenderParams
+from .state import VoxelPalette, VoxelRenderParams
+
+
+_VOXEL_PALETTES: tuple[VoxelPalette, ...] = (
+    VoxelPalette(
+        palette_id="blue",
+        cube_top_rgb=(116, 178, 232),
+        cube_left_rgb=(76, 130, 188),
+        cube_right_rgb=(92, 153, 216),
+        cube_edge_rgb=(34, 64, 96),
+        projection_fill_rgb=(82, 142, 205),
+        projection_empty_rgb=(244, 248, 252),
+    ),
+    VoxelPalette(
+        palette_id="teal",
+        cube_top_rgb=(114, 205, 194),
+        cube_left_rgb=(58, 143, 137),
+        cube_right_rgb=(80, 174, 166),
+        cube_edge_rgb=(27, 78, 78),
+        projection_fill_rgb=(56, 154, 146),
+        projection_empty_rgb=(244, 249, 248),
+    ),
+    VoxelPalette(
+        palette_id="amber",
+        cube_top_rgb=(230, 178, 92),
+        cube_left_rgb=(166, 118, 47),
+        cube_right_rgb=(203, 142, 60),
+        cube_edge_rgb=(91, 62, 32),
+        projection_fill_rgb=(198, 137, 55),
+        projection_empty_rgb=(252, 248, 240),
+    ),
+    VoxelPalette(
+        palette_id="plum",
+        cube_top_rgb=(178, 143, 232),
+        cube_left_rgb=(112, 83, 168),
+        cube_right_rgb=(141, 101, 202),
+        cube_edge_rgb=(60, 45, 102),
+        projection_fill_rgb=(132, 89, 196),
+        projection_empty_rgb=(248, 246, 252),
+    ),
+    VoxelPalette(
+        palette_id="coral",
+        cube_top_rgb=(229, 133, 122),
+        cube_left_rgb=(163, 76, 72),
+        cube_right_rgb=(196, 93, 87),
+        cube_edge_rgb=(96, 44, 48),
+        projection_fill_rgb=(199, 87, 82),
+        projection_empty_rgb=(252, 246, 245),
+    ),
+    VoxelPalette(
+        palette_id="moss",
+        cube_top_rgb=(145, 199, 122),
+        cube_left_rgb=(83, 137, 78),
+        cube_right_rgb=(108, 166, 91),
+        cube_edge_rgb=(49, 80, 45),
+        projection_fill_rgb=(92, 151, 82),
+        projection_empty_rgb=(246, 250, 244),
+    ),
+)
+
+
+def default_voxel_palette() -> VoxelPalette:
+    """Return the stable fallback voxel palette."""
+
+    return _VOXEL_PALETTES[0]
+
+
+def sample_voxel_palette(rng) -> VoxelPalette:
+    """Sample one fixed non-semantic palette for a rendered voxel instance."""
+
+    return uniform_choice(rng, _VOXEL_PALETTES)
 
 
 def int_bounds(
@@ -135,4 +205,5 @@ def resolve_render_params(
                 group_default(rendering_defaults, "label_font_size_px", 24),
             )
         ),
+        palette=default_voxel_palette(),
     )

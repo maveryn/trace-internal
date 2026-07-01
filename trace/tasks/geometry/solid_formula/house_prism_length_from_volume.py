@@ -17,13 +17,6 @@ QUERY_ID = "single"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 DEFAULT_QUERY_ID = QUERY_ID
 PROMPT_KEY = QUERY_ID
-ANNOTATION_KEYS = (
-    "target_length_label",
-    "volume_label",
-    "triangle_base_label",
-    "wall_height_label",
-    "roof_height_label",
-)
 ANSWER_SUPPORT = decimal_support(2, 61, step=1)
 CONSTRUCTION_OPTIONS = (
     (6.0, 4.0, 3.0),
@@ -76,7 +69,6 @@ def _prepare_house_length_objective(
         prompt_key=PROMPT_KEY,
         problem=problem,
         render_scene=render_house_prism,
-        annotation_keys=ANNOTATION_KEYS,
         branch_probabilities=branch_probabilities,
         support_probabilities=support_probabilities,
     )
@@ -106,12 +98,11 @@ class GeometrySolidFormulaHousePrismLengthFromVolumeTask:
     def _emit_task_output(*, parts, plan, query_id: str) -> TaskOutput:
         """Build the verifier payload for the house-prism length public task."""
 
-        annotation_value = dict(parts.annotation_value)
         prompt_variants = dict(parts.prompt_variants)
         return TaskOutput(
             prompt=parts.prompt,
             answer_gt=TypedValue(type="number", value=float(plan.answer_value)),
-            annotation_gt=TypedValue(type="bbox_map", value=annotation_value),
+            annotation_gt=TypedValue(type="bbox", value=list(parts.annotation_value)),
             image=parts.image,
             image_id="img0",
             trace_payload=parts.trace_payload,

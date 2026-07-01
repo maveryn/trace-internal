@@ -1,7 +1,15 @@
 # `task_graph__node_link__shortest_path_length`
 
 ## Program Contract
-- `length(shortest_path(graph, source_node, goal_node)); scene=node_link; scope=shortest_path_length`
+
+Program: `length(shortest_path(graph, source_node, goal_node)); scene=node_link; scope=shortest_path_length`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `shortest_path_length` objective scope.
+Operands: visible scene state and prompt-bound operands named by `shortest_path`, `graph`, `source_node`, `goal_node`, `node_link`, `shortest_path_length` plus the active `query_id` branch.
+Operation: evaluate `length` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; the number of edges on that path,.
+Annotation witnesses: `annotation` uses the `point_sequence` schema; the `point_sequence` of node-center pixel points after the source node along the unique shortest path, ending at the goal node.
+Query ids: `undirected_shortest_path_length`, `directed_shortest_path_length`.
 
 ## 1) Identity
 1. Domain: `graph`

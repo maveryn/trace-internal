@@ -5,9 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from .....core.seed import hash64
+from .....core.seed import hash64, spawn_rng
+from .....core.sampling import support_probability_map, uniform_choice_with_probabilities
 from ....shared.config_defaults import group_default
-from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.rpg_tile_profiles import resolve_rpg_tile_render_params
 from ...shared.task_support import bounds, sample_count, uniform_string_probability_map
 from .rendering import PixelVillageEntity, PixelVillageScene, render_pixel_village_map
@@ -95,11 +95,15 @@ def sample_option_answer_index(
         value = int(labels.index(label))
         return int(value), {str(value): 1.0}
     if params.get("_sample_cursor") is not None:
-        value = abs(int(params["_sample_cursor"])) % len(labels)
-        return int(value), dict(uniform_probability_map(tuple(range(len(labels)))))
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{seed_scope}:answer")
-    selected = int(index) % len(labels)
-    return int(selected), dict(uniform_probability_map(tuple(range(len(labels)))))
+        rng = spawn_rng(int(instance_seed), f"{seed_scope}:answer:{int(params['_sample_cursor'])}")
+    else:
+        rng = spawn_rng(int(instance_seed), f"{seed_scope}:answer")
+    selected, probabilities = uniform_choice_with_probabilities(
+        rng,
+        tuple(range(len(labels))),
+        sort_keys=True,
+    )
+    return int(selected), dict(probabilities)
 
 TERRITORY_OBJECT_KEYS: Tuple[str, ...] = (
     "cemetery_grave_marker",
@@ -182,8 +186,11 @@ class _RiverSideObjectSample:
     river_side: str
     river_orientation: str
     river_relation: str
+    target_count: int
+    target_count_support: Tuple[int, ...]
     target_object_probabilities: Dict[str, float]
     river_side_probabilities: Dict[str, float]
+    target_count_probabilities: Dict[str, float]
 
 
 _DEFAULTS = _Defaults()
@@ -268,6 +275,27 @@ def _river_side_support(params: Mapping[str, Any], defaults: Mapping[str, Any]) 
     return support
 
 
+def _river_side_target_count_support(params: Mapping[str, Any], defaults: Mapping[str, Any]) -> Tuple[int, ...]:
+    answer_count_max = int(
+        params.get(
+            "target_answer_count_max",
+            group_default(defaults, "target_answer_count_max", _DEFAULTS.river_side_answer_count_max),
+        )
+    )
+    raw = params.get("target_count_support", group_default(defaults, "target_count_support", None))
+    if raw is None:
+        raw = tuple(range(1, int(answer_count_max) + 1))
+    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
+        raise ValueError("target_count_support must be a sequence")
+    support = tuple(dict.fromkeys(int(value) for value in raw))
+    invalid = [value for value in support if int(value) < 1 or int(value) > int(answer_count_max)]
+    if invalid:
+        raise ValueError(f"target_count_support values must be within 1..{answer_count_max}: {invalid}")
+    if not support:
+        raise ValueError("target_count_support must contain at least one supported count")
+    return support
+
+
 def _territory_object_support(params: Mapping[str, Any], defaults: Mapping[str, Any]) -> Tuple[str, ...]:
     raw = params.get(
         "territory_object_support",
@@ -300,8 +328,9 @@ def _resolve_target_object(
         if target not in set(support):
             raise ValueError("target_object is outside configured support")
         return str(target), uniform_string_probability_map(support, selected=str(target))
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{namespace}:target_object")
-    return str(support[int(index) % len(support)]), uniform_string_probability_map(support)
+    rng = spawn_rng(int(instance_seed), f"{namespace}:target_object")
+    target, probabilities = uniform_choice_with_probabilities(rng, support, sort_keys=False)
+    return str(target), dict(probabilities)
 
 
 def _resolve_river_side_target_object(
@@ -320,12 +349,9 @@ def _resolve_river_side_target_object(
         if target not in set(support):
             raise ValueError("target_object is outside configured river-side support")
         return str(target), uniform_string_probability_map(support, selected=str(target))
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}:target_object",
-    )
-    return str(support[int(index) % len(support)]), uniform_string_probability_map(support)
+    rng = spawn_rng(int(instance_seed), f"{namespace}:target_object")
+    target, probabilities = uniform_choice_with_probabilities(rng, support, sort_keys=False)
+    return str(target), dict(probabilities)
 
 
 def _resolve_river_side(
@@ -344,12 +370,32 @@ def _resolve_river_side(
         if side not in set(support):
             raise ValueError("river_side is outside configured support")
         return str(side), uniform_string_probability_map(support, selected=str(side))
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}:river_side",
-    )
-    return str(support[int(index) % len(support)]), uniform_string_probability_map(support)
+    rng = spawn_rng(int(instance_seed), f"{namespace}:river_side")
+    side, probabilities = uniform_choice_with_probabilities(rng, support, sort_keys=False)
+    return str(side), dict(probabilities)
+
+
+def _resolve_river_side_target_count(
+    *,
+    namespace: str,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    defaults: Mapping[str, Any],
+) -> tuple[int, Tuple[int, ...], Dict[str, float]]:
+    support = _river_side_target_count_support(params, defaults)
+    explicit = params.get("target_count")
+    if explicit is not None:
+        count = int(explicit)
+        if count not in set(support):
+            raise ValueError("target_count is outside configured support")
+        return int(count), support, support_probability_map(support, selected=int(count), sort_keys=True)
+    cursor = params.get("_sample_cursor")
+    if cursor is not None:
+        count = int(support[int(cursor) % len(support)])
+        return int(count), support, support_probability_map(support, sort_keys=True)
+    rng = spawn_rng(int(instance_seed), f"{namespace}:target_count")
+    count, probabilities = uniform_choice_with_probabilities(rng, support, sort_keys=True)
+    return int(count), support, dict(probabilities)
 
 
 def _resolve_territory_object(
@@ -368,12 +414,9 @@ def _resolve_territory_object(
         if target not in set(support):
             raise ValueError("territory_object is outside configured support")
         return str(target), uniform_string_probability_map(support, selected=str(target))
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}:territory_object",
-    )
-    return str(support[int(index) % len(support)]), uniform_string_probability_map(support)
+    rng = spawn_rng(int(instance_seed), f"{namespace}:territory_object")
+    target, probabilities = uniform_choice_with_probabilities(rng, support, sort_keys=False)
+    return str(target), dict(probabilities)
 
 
 def _scene_seed(namespace: str, instance_seed: int, attempt_index: int) -> int:
@@ -620,6 +663,12 @@ def _build_river_side_object_sample(*, instance_seed: int, params: Mapping[str, 
         params=params,
         defaults=defaults,
     )
+    target_count, target_count_support, target_count_probs = _resolve_river_side_target_count(
+        namespace=str(namespace),
+        instance_seed=int(instance_seed),
+        params=params,
+        defaults=defaults,
+    )
     return _RiverSideObjectSample(
         target_object=str(target_object),
         target_plural=str(TARGET_PROMPT_PLURAL[str(target_object)]),
@@ -628,8 +677,11 @@ def _build_river_side_object_sample(*, instance_seed: int, params: Mapping[str, 
         river_side=str(river_side),
         river_orientation=str(RIVER_SIDE_ORIENTATION[str(river_side)]),
         river_relation=str(RIVER_SIDE_PROMPT_RELATION[str(river_side)]),
+        target_count=int(target_count),
+        target_count_support=tuple(int(value) for value in target_count_support),
         target_object_probabilities=dict(target_probs),
         river_side_probabilities=dict(side_probs),
+        target_count_probabilities=dict(target_count_probs),
     )
 
 

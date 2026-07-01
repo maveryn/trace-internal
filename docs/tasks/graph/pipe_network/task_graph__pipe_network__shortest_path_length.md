@@ -19,7 +19,15 @@
 4. Target path length, node count, grid shape, label style, color, font, background, context text, and noise are generation/render metadata, not public query branches.
 
 ## Program Contract
-- `length(unique_shortest_open_pipe_path(source, goal)); output=integer; annotation=point_sequence(path_junction_centers_in_order); scene=pipe_network; scope=shortest_path_length`
+
+Program: `length(unique_shortest_open_pipe_path(source, goal)); output=integer; annotation=point_sequence(path_junction_centers_in_order); scene=pipe_network; scope=shortest_path_length`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `shortest_path_length` objective scope.
+Operands: visible scene state and prompt-bound operands named by `unique_shortest_open_pipe_path`, `source`, `goal`, `path_junction_centers_in_order`, `pipe_network`, `shortest_path_length`.
+Operation: evaluate `length` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_sequence` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. Answer type: `integer`.

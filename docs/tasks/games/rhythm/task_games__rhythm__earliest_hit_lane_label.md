@@ -1,14 +1,15 @@
 # `task_games__rhythm__earliest_hit_lane_label`
 
 ## Program Contract
-- Domain: `games`
-- Scene: `rhythm`
-- Public task id: `task_games__rhythm__earliest_hit_lane_label`
-- Supported `query_id` values: `single`
-- Answer schema: `integer_value`
-- Annotation schema: `bbox`
-- Program schema: `argmin(filter(notes, note_in_hit_window(note, beat_window)=true), metric=bottom_row_from_hit_line).lane_label; scene=rhythm; scope=earliest_hit_lane_label`
-- Program code: `argmin.rhythm.earliest_hit_lane`
+
+Program: `argmin(filter(notes, note_in_hit_window(note, beat_window)=true), metric=bottom_row_from_hit_line).lane_label; scene=rhythm; scope=earliest_hit_lane_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `earliest_hit_lane_label` objective scope.
+Operands: visible scene state and prompt-bound target operands named by the task contract.
+Operation: evaluate `argmin(filter(notes, note_in_hit_window(note, beat_window)=true), metric=bottom_row_from_hit_line).lane_label` over visible rhythm notes; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Notes
 - The sampled scene has one uniquely earliest hitting note by construction.

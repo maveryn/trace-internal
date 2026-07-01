@@ -13,12 +13,23 @@ workflow doc.
   annotation conventions, prompt constraints, and domain rendering rules.
 - `docs/resources/` — shared resource guidance for fonts, labels, context text,
   and generated rationale targets.
+- `docs/review/` — reviewer-facing task, scene, and domain audit procedures.
+  Review docs explain how to judge task quality; they do not define public
+  contracts or store generated review artifacts.
+- `docs/domain-finalization-review/` — post-migration release-readiness
+  checklists and domain finalization review reports for current training/release
+  surfaces.
+- `docs/domain-migration-report/` — read-only supporting post-migration audit
+  reports and machine outputs from earlier domain sweeps.
 - `docs/tasks/` — public task contracts at
   `docs/tasks/<domain>/<scene_id>/<task_id>.md`, plus the task-doc template and
   task-doc maintenance guide.
 - `docs/SCENE_PACKAGE_MIGRATION/` — active scene-package migration rules,
   checklists, receipts, and shared-boundary notes.
 - `docs/ACTIVE_TASK_INVENTORY.md` — generated active task inventory.
+- `docs/RLVR_TRAINING_STRATEGY.md` — current high-level TRACE RLVR training
+  strategy notes.
+- `docs/RLVR_TASK_SPLIT_PLAN.md` — planned TRACE RLVR train/test task split.
 - `docs/TODO.md` — current project backlog only.
 
 ## What Does Not Belong In Docs
@@ -40,8 +51,9 @@ Do not recreate these roots or link to them from active docs/skills:
 - `review/taxonomy-audit/`
 - `review/trace-extension/`
 
-The `review/` tree is for generated review artifacts and reviewer issue state,
-not source-of-truth documentation.
+The top-level `review/` tree is for generated review artifacts and reviewer
+issue state, not source-of-truth documentation. Do not confuse it with
+`docs/review/`, which contains tracked reviewer procedures.
 
 ## Update Rule
 If a change introduces a new documentation location or changes ownership of a

@@ -19,7 +19,15 @@
 4. Route count, station labels, route colors, style, font, background, and layout jitter are generation/render metadata, not public query branches.
 
 ## Program Contract
-- `count(station where route_membership(station) satisfies queried_predicate); output=integer; annotation=point_set(matching_station_centers); scene=metro; scope=station_membership_count`
+
+Program: `count(station where route_membership(station) satisfies queried_predicate); output=integer; annotation=point_set(matching_station_centers); scene=metro; scope=station_membership_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `station_membership_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `station`, `where`, `route_membership`, `satisfies`, `queried_predicate`, `matching_station_centers`, `metro`, `station_membership_count` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `metro_transfer_station_count`, `metro_single_route_station_count`, `single`.
 
 ## Answer And Annotation
 1. Answer type: `integer`.

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from string import ascii_uppercase
 from typing import Any, Mapping
 
 from trace.core.sampling import (
@@ -17,11 +16,9 @@ from trace.tasks.puzzles.shared.word_grid import (
     WordPlacement,
     cell_key,
     choose_words,
-    direction_code,
     fill_random_letters,
     place_word,
     scan_word,
-    word_chip_key,
 )
 
 from .defaults import get_int_range
@@ -132,60 +129,17 @@ def sample_location_dataset(
     raise RuntimeError("failed to build word-search location dataset")
 
 
-def sample_letter_count_dataset(
+def sample_present_word_option_dataset(
     *,
     params: Mapping[str, Any],
     generation_defaults: Mapping[str, Any],
     rng,
     scene_variant: str,
     scene_variant_probabilities: Mapping[str, float],
-    target_count: int,
+    option_count: int,
+    answer_label: str,
 ) -> WordSearchDataset:
-    """Build a target-letter counting dataset with exact support cells."""
-
-    rows, cols, size_range = resolve_grid_size(params, generation_defaults, rng)
-    target_letter = str(uniform_choice(rng, tuple(ascii_uppercase)))
-    all_cells = [(row, col) for row in range(rows) for col in range(cols)]
-    rng.shuffle(all_cells)
-    target_cells = tuple(
-        (int(row), int(col)) for row, col in all_cells[: int(target_count)]
-    )
-    grid = [["" for _ in range(cols)] for _ in range(rows)]
-    for row, col in target_cells:
-        grid[int(row)][int(col)] = target_letter
-    fill_random_letters(grid, rng, excluded_letters={target_letter})
-    return WordSearchDataset(
-        rows=int(rows),
-        cols=int(cols),
-        grid_size_range=tuple(size_range),
-        grid=tuple(tuple(str(value) for value in row) for row in grid),
-        scene_variant=str(scene_variant),
-        scene_variant_probabilities=dict(scene_variant_probabilities),
-        target_word="",
-        target_letter=str(target_letter),
-        answer_value=int(target_count),
-        answer_support=tuple(
-            range(1, int(generation_defaults.get("target_count_max", 8)) + 1)
-        ),
-        option_specs=tuple(),
-        word_bank=tuple(),
-        present_words=tuple(),
-        placements=tuple(),
-        target_cells=tuple(target_cells),
-    )
-
-
-def sample_present_word_count_dataset(
-    *,
-    params: Mapping[str, Any],
-    generation_defaults: Mapping[str, Any],
-    rng,
-    scene_variant: str,
-    scene_variant_probabilities: Mapping[str, float],
-    present_count: int,
-    bank_size: int,
-) -> WordSearchDataset:
-    """Build a word-bank dataset with exactly `present_count` placed words."""
+    """Build an option dataset with exactly one listed word present."""
 
     rows, cols, size_range = resolve_grid_size(params, generation_defaults, rng)
     word_min, word_max = get_int_range(
@@ -196,35 +150,42 @@ def sample_present_word_count_dataset(
         fallback_min=3,
         fallback_max=4,
     )
+    labels = tuple(OPTION_LABELS[: int(option_count)])
+    if str(answer_label) not in labels:
+        raise ValueError("answer_label must be one of the visible option labels")
+    answer_index = labels.index(str(answer_label))
     for _attempt in range(400):
-        word_bank = choose_words(
-            rng,
-            count=int(bank_size),
-            min_len=int(word_min),
-            max_len=int(word_max),
+        option_words = tuple(
+            choose_words(
+                rng,
+                count=int(option_count),
+                min_len=int(word_min),
+                max_len=int(word_max),
+            )
         )
-        present_words = tuple(str(word) for word in word_bank[: int(present_count)])
-        absent_words = tuple(str(word) for word in word_bank[int(present_count) :])
+        present_word = str(option_words[int(answer_index)])
+        absent_words = tuple(
+            str(word) for index, word in enumerate(option_words) if index != answer_index
+        )
         grid = [["" for _ in range(cols)] for _ in range(rows)]
-        placements: list[WordPlacement] = []
         try:
-            for word in present_words:
-                placements.append(place_word(grid, str(word), rng))
+            placement = place_word(grid, present_word, rng)
         except RuntimeError:
             continue
         fill_random_letters(grid, rng)
         if any(scan_word(grid, str(word)) for word in absent_words):
             continue
-        exact_placements: list[WordPlacement] = []
-        for word in present_words:
-            hits = scan_word(grid, str(word))
-            if len(hits) != 1:
-                break
-            exact_placements.append(hits[0])
-        if len(exact_placements) != int(present_count):
+        hits = scan_word(grid, present_word)
+        if len(hits) != 1:
             continue
-        target_cells = tuple(
-            cell for placement in exact_placements for cell in placement.cells
+        options = tuple(
+            WordSearchOption(
+                label=str(label),
+                display_text=str(word),
+                word=str(word),
+                is_correct=(str(label) == str(answer_label)),
+            )
+            for label, word in zip(labels, option_words, strict=True)
         )
         return WordSearchDataset(
             rows=int(rows),
@@ -233,29 +194,23 @@ def sample_present_word_count_dataset(
             grid=tuple(tuple(str(value) for value in row) for row in grid),
             scene_variant=str(scene_variant),
             scene_variant_probabilities=dict(scene_variant_probabilities),
-            target_word="",
+            target_word=str(present_word),
             target_letter="",
-            answer_value=int(present_count),
-            answer_support=tuple(range(1, int(bank_size) + 1)),
-            option_specs=tuple(),
-            word_bank=tuple(str(word) for word in word_bank),
-            present_words=tuple(present_words),
-            placements=tuple(exact_placements),
-            target_cells=tuple(target_cells),
+            answer_value=str(answer_label),
+            answer_support=tuple(labels),
+            option_specs=tuple(options),
+            word_bank=tuple(str(word) for word in option_words),
+            present_words=(present_word,),
+            placements=(hits[0],),
+            target_cells=tuple(hits[0].cells),
         )
-    raise RuntimeError("failed to build present-word-count dataset")
+    raise RuntimeError("failed to build present-word-option dataset")
 
 
 def cell_ids_for_target_cells(dataset: WordSearchDataset) -> tuple[str, ...]:
     """Return ordered render ids for the dataset's target cells."""
 
     return tuple(cell_key(cell) for cell in dataset.target_cells)
-
-
-def word_chip_ids_for_present_words(dataset: WordSearchDataset) -> tuple[str, ...]:
-    """Return word-chip ids for words that are present in the grid."""
-
-    return tuple(word_chip_key(word) for word in dataset.present_words)
 
 
 def present_word_segments(dataset: WordSearchDataset) -> tuple[tuple[Cell, Cell], ...]:
@@ -338,11 +293,15 @@ def _build_location_options(
 
 
 def option_text(spec: WordSearchOption) -> str:
-    """Return prompt-facing text for one word-location option card."""
+    """Return prompt-facing text for one visible option card."""
 
+    if spec.display_text:
+        return f"{spec.label}: {spec.display_text}"
+    if spec.row_1based is None or spec.col_1based is None or spec.direction is None:
+        raise ValueError("location option requires row, column, and direction")
     return (
         f"{spec.label}: row {int(spec.row_1based)}, "
-        f"col {int(spec.col_1based)}, {direction_code(spec.direction)}"
+        f"col {int(spec.col_1based)}, {spec.direction}"
     )
 
 
@@ -351,8 +310,6 @@ __all__ = [
     "option_text",
     "present_word_segments",
     "resolve_scene_variant",
-    "sample_letter_count_dataset",
     "sample_location_dataset",
-    "sample_present_word_count_dataset",
-    "word_chip_ids_for_present_words",
+    "sample_present_word_option_dataset",
 ]

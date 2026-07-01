@@ -8,7 +8,15 @@
 - Annotation type: `bbox_set`
 
 ## Program Contract
-- `count(filter(conveyor_objects, lane_key=target_lane_key, shape_type=target_shape_type)); scene=conveyor; scope=scoped_belt_object_type_count`
+
+Program: `count(filter(conveyor_objects, lane_key=target_lane_key, shape_type=target_shape_type)); scene=conveyor; scope=scoped_belt_object_type_count`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `scoped_belt_object_type_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `conveyor_objects`, `lane_key`, `target_lane_key`, `shape_type`, `target_shape_type`, `conveyor`, `scoped_belt_object_type_count`.
+Operation: evaluate `count` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Contract
 The scene has three straight conveyor lanes. The prompt selects one lane by position and one object type. Target object type is a sampled operand, not a query id.

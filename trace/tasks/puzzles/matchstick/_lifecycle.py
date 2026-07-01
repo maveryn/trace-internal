@@ -58,6 +58,7 @@ class BoundMatchstickOutput:
     """Task-owned answer, annotation, and trace fields after rendering."""
 
     prompt_query_key: str
+    prompt_dynamic_slots: Dict[str, Any]
     query_params: Dict[str, Any]
     answer_gt: TypedValue
     annotation_artifacts: AnnotationArtifacts
@@ -84,6 +85,7 @@ def build_bound_output(
     scene_extra: Mapping[str, Any],
     execution_extra: Mapping[str, Any],
     witness_symbolic: Mapping[str, Any],
+    prompt_dynamic_slots: Mapping[str, Any] | None = None,
 ) -> BoundMatchstickOutput:
     """Build common bound-output fields around task-specific trace extras."""
 
@@ -95,6 +97,7 @@ def build_bound_output(
     }
     return BoundMatchstickOutput(
         prompt_query_key=str(prompt_query_key),
+        prompt_dynamic_slots=dict(prompt_dynamic_slots or {}),
         query_params={
             "query_id_probabilities": dict(query_probabilities),
             "scene_id": SCENE_ID,
@@ -310,6 +313,7 @@ def run_matchstick_public_task(
         prompt_query_key=str(bound.prompt_query_key),
         query_id=str(query_id),
         query_params=bound.query_params,
+        prompt_dynamic_slots=bound.prompt_dynamic_slots,
         answer_gt=bound.answer_gt,
         annotation_artifacts=bound.annotation_artifacts,
         annotation_source=str(bound.annotation_source),
@@ -378,12 +382,14 @@ def finalize_matchstick_output(
     execution_trace: Mapping[str, Any],
     witness_symbolic: Mapping[str, Any],
     instance_seed: int,
+    prompt_dynamic_slots: Mapping[str, Any] | None = None,
 ) -> TaskOutput:
     """Assemble prompt, trace payload, and TaskOutput from task-owned bindings."""
 
     prompt_defaults, prompt_artifacts = build_matchstick_prompt_artifacts(
         task_prompt_key=str(task_prompt_key),
         prompt_query_key=str(prompt_query_key),
+        dynamic_slots=dict(prompt_dynamic_slots or {}),
         instance_seed=int(instance_seed),
     )
     query_spec = build_prompt_query_spec(

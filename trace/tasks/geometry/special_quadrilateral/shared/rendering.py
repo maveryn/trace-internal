@@ -18,9 +18,6 @@ from trace.tasks.shared.text_rendering import load_font
 
 from .state import BBox, Point, QuadrilateralCase, RenderContext, RenderedSpecialQuadrilateralScene, SCENE_ID, SpecialQuadrilateralProblem
 
-RENDER_RHOMBUS_VERTEX_BISECTOR = "rhombus_vertex_bisector"
-RENDER_KITE_SYMMETRY_BISECTOR = "kite_symmetry_bisector"
-RENDER_RHOMBUS_PERPENDICULAR_DIAGONALS = "rhombus_perpendicular_diagonals"
 RENDER_PARALLELOGRAM_OPPOSITE_ANGLES = "parallelogram_opposite_angles"
 RENDER_PARALLELOGRAM_CONSECUTIVE_ANGLES = "parallelogram_consecutive_angles"
 RENDER_RHOMBUS_HALF_ANGLE_EXPRESSION = "rhombus_half_angle_expression"
@@ -55,6 +52,12 @@ def create_render_context(
     line_width = int(params.get("line_width", render_defaults.get("line_width", 3)))
     font_size = int(params.get("label_font_size", render_defaults.get("label_font_size", 22)))
     small_font_size = int(params.get("small_label_font_size", render_defaults.get("small_label_font_size", 18)))
+    label_stroke_width = int(
+        params.get(
+            "label_stroke_width",
+            render_defaults.get("label_stroke_width", int(diagram_style.label_stroke_width_px)),
+        )
+    )
     return RenderContext(
         image=image,
         draw=draw,
@@ -68,7 +71,7 @@ def create_render_context(
         muted_color=tuple(int(value) for value in diagram_style.grid_major_rgb),
         fill_color=tuple(int(value) for value in diagram_style.panel_alt_fill_rgb),
         line_width=max(2, line_width),
-        label_stroke_width=max(1, int(diagram_style.label_stroke_width_px)),
+        label_stroke_width=max(0, int(label_stroke_width)),
         font=load_font(font_size),
         small_font=load_font(small_font_size),
         diagram_style_meta=dict(diagram_style_meta),
@@ -178,16 +181,6 @@ def _draw_tick(ctx: RenderContext, a: Point, b: Point, *, offset: float = 0.0, c
     return bbox_from_points(tick_points, width=ctx.width, height=ctx.height, pad=3.0)
 
 
-def _draw_right_angle_marker(ctx: RenderContext, center: Point, *, size: float = 18.0, ray_a: Point, ray_b: Point) -> BBox:
-    u = unit(sub(ray_a, center))
-    v = unit(sub(ray_b, center))
-    p1 = add_scaled(center, u, size)
-    p2 = add_scaled(p1, v, size)
-    p3 = add_scaled(center, v, size)
-    ctx.draw.line([p1, p2, p3], fill=ctx.accent_color, width=max(2, int(ctx.line_width) - 1))
-    return bbox_from_points([p1, p2, p3], width=ctx.width, height=ctx.height, pad=3.0)
-
-
 def _base_vertices(shape_kind: str, *, width: int, height: int, instance_seed: int) -> dict[str, Point]:
     rng = spawn_rng(int(instance_seed), f"{SCENE_ID}.{shape_kind}.layout")
     jitter_x = rng.uniform(-24.0, 24.0)
@@ -249,41 +242,6 @@ def _draw_base_shape(ctx: RenderContext, vertices: Mapping[str, Point], *, case:
         bboxes["tick_BC"] = _draw_tick(ctx, vertices["B"], vertices["C"], count=2)
         bboxes["tick_DA"] = _draw_tick(ctx, vertices["D"], vertices["A"], count=2)
     return bboxes
-
-
-def _draw_diagonal_relation(ctx: RenderContext, case: QuadrilateralCase, vertices: Mapping[str, Point]) -> tuple[dict[str, BBox], dict[str, BBox], dict[str, Point]]:
-    """Draw one diagonal-based angle theorem construction."""
-
-    construction_bboxes: dict[str, BBox] = {}
-    readout_bboxes: dict[str, BBox] = {}
-    extra_points: dict[str, Point] = {}
-    if case.render_kind == RENDER_RHOMBUS_VERTEX_BISECTOR:
-        ctx.draw.line((vertices["B"], vertices["D"]), fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
-        o = mid(vertices["B"], vertices["D"])
-        construction_bboxes["diagonal_BD"] = bbox_from_points((vertices["B"], vertices["D"]), width=ctx.width, height=ctx.height, pad=4.0)
-        readout_bboxes["point_label_O"] = _draw_text_centered(ctx, "O", add_scaled(o, (0.0, 1.0), 22.0), small=True)
-        _, readout_bboxes["support_angle_label"], _ = _draw_angle_marker(ctx, vertex=vertices["B"], ray_a=vertices["A"], ray_b=o, label=case.support_label)
-        _, readout_bboxes["target_angle_label"], _ = _draw_angle_marker(ctx, vertex=vertices["D"], ray_a=o, ray_b=vertices["A"], label="?")
-        extra_points["O"] = o
-    elif case.render_kind == RENDER_KITE_SYMMETRY_BISECTOR:
-        ctx.draw.line((vertices["A"], vertices["C"]), fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
-        construction_bboxes["symmetry_diagonal_AC"] = bbox_from_points((vertices["A"], vertices["C"]), width=ctx.width, height=ctx.height, pad=4.0)
-        _, readout_bboxes["support_angle_label"], _ = _draw_angle_marker(ctx, vertex=vertices["A"], ray_a=vertices["D"], ray_b=vertices["C"], label=case.support_label)
-        _, readout_bboxes["target_angle_label"], _ = _draw_angle_marker(ctx, vertex=vertices["A"], ray_a=vertices["C"], ray_b=vertices["B"], label="?")
-    elif case.render_kind == RENDER_RHOMBUS_PERPENDICULAR_DIAGONALS:
-        ctx.draw.line((vertices["A"], vertices["C"]), fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
-        ctx.draw.line((vertices["B"], vertices["D"]), fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
-        o = mid(vertices["A"], vertices["C"])
-        construction_bboxes["diagonal_AC"] = bbox_from_points((vertices["A"], vertices["C"]), width=ctx.width, height=ctx.height, pad=4.0)
-        construction_bboxes["diagonal_BD"] = bbox_from_points((vertices["B"], vertices["D"]), width=ctx.width, height=ctx.height, pad=4.0)
-        construction_bboxes["right_angle"] = _draw_right_angle_marker(ctx, o, ray_a=vertices["A"], ray_b=vertices["B"])
-        readout_bboxes["point_label_O"] = _draw_text_centered(ctx, "O", add_scaled(o, (0.0, 1.0), 22.0), small=True)
-        _, readout_bboxes["support_angle_label"], _ = _draw_angle_marker(ctx, vertex=vertices["A"], ray_a=vertices["B"], ray_b=vertices["C"], label=case.support_label)
-        _, readout_bboxes["target_angle_label"], _ = _draw_angle_marker(ctx, vertex=vertices["B"], ray_a=vertices["A"], ray_b=vertices["D"], label="?")
-        extra_points["O"] = o
-    else:
-        raise ValueError(f"unsupported special quadrilateral diagonal construction: {case.render_kind}")
-    return construction_bboxes, readout_bboxes, extra_points
 
 
 def _draw_algebraic_angle_relation(ctx: RenderContext, case: QuadrilateralCase, vertices: Mapping[str, Point]) -> tuple[dict[str, BBox], dict[str, BBox], dict[str, Point]]:
@@ -355,12 +313,6 @@ def draw_special_quadrilateral_scene(
     vertices = _transformed_base_vertices(ctx, case.shape_kind, instance_seed=problem.layout_seed)
     construction_bboxes = _draw_base_shape(ctx, vertices, case=case)
     if case.render_kind in {
-        RENDER_RHOMBUS_VERTEX_BISECTOR,
-        RENDER_KITE_SYMMETRY_BISECTOR,
-        RENDER_RHOMBUS_PERPENDICULAR_DIAGONALS,
-    }:
-        extra_construction, readout_bboxes, extra_points = _draw_diagonal_relation(ctx, case, vertices)
-    elif case.render_kind in {
         RENDER_PARALLELOGRAM_OPPOSITE_ANGLES,
         RENDER_PARALLELOGRAM_CONSECUTIVE_ANGLES,
         RENDER_RHOMBUS_HALF_ANGLE_EXPRESSION,
@@ -392,15 +344,12 @@ def draw_special_quadrilateral_scene(
 __all__ = [
     "RENDER_KITE_ADJACENT_SIDES",
     "RENDER_KITE_OPPOSITE_ANGLES",
-    "RENDER_KITE_SYMMETRY_BISECTOR",
     "RENDER_PARALLELOGRAM_BISECTED_DIAGONAL",
     "RENDER_PARALLELOGRAM_CONSECUTIVE_ANGLES",
     "RENDER_PARALLELOGRAM_OPPOSITE_ANGLES",
     "RENDER_PARALLELOGRAM_OPPOSITE_SIDES",
     "RENDER_RHOMBUS_ALL_SIDES",
     "RENDER_RHOMBUS_HALF_ANGLE_EXPRESSION",
-    "RENDER_RHOMBUS_PERPENDICULAR_DIAGONALS",
-    "RENDER_RHOMBUS_VERTEX_BISECTOR",
     "create_render_context",
     "draw_special_quadrilateral_scene",
 ]

@@ -46,18 +46,18 @@
     },
     "output": {
       "answer_only": [
-        "Set answer to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nUse the answer-only JSON shape shown here.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nReturn the answer in JSON.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nUse this JSON shape for the final response.\nExample JSON:\n{json_example_answer_only}"
+        "Answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Use this answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}"
       ],
       "answer_and_annotation": [
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nReturn both fields in JSON.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse this JSON shape for the final response.\nExample JSON:\n{json_example}"
+        "Annotation format: {annotation_hint}\nAnswer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Required annotation format: {annotation_hint}\nRequired answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Format for the \"annotation\" field: {annotation_hint}\nFormat for the \"answer\" field: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Use this annotation format: {annotation_hint}\nUse this answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}\nFinal answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}"
       ]
     }
   },

@@ -10,7 +10,15 @@
 - Annotation schema: `bbox_set`
 
 ## Program Contract
-`count(unique(filter(object_cluster_objects, shape_type = target_shape_type) union filter(object_cluster_objects, color_name = target_color_name))); scene=object_cluster; scope=multi_attribute_or_count`
+
+Program: `count(unique(filter(object_cluster_objects, shape_type = target_shape_type) union filter(object_cluster_objects, color_name = target_color_name))); scene=object_cluster; scope=multi_attribute_or_count`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `multi_attribute_or_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `unique`, `filter`, `object_cluster_objects`, `shape_type`, `target_shape_type`, `union`, `color_name`, `target_color_name`, `object_cluster`, `multi_attribute_or_count`.
+Operation: evaluate `count` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Contract
 The image shows many small synthetic perspective 3D colored objects arranged on a plain surface. The prompt asks how many objects match an inclusive OR predicate: the object is the named type or the object has the named color. Prompt-facing semantic colors include the canonical color hex label, for example `red [#E63232]`. Objects matching both conditions are counted once.

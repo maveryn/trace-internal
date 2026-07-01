@@ -10,11 +10,14 @@
 
 ## Program Contract
 
-- Program schema: `count(x_label where intersects(vertical_interval(series_a_band_at_x), vertical_interval(series_b_band_at_x))); output=integer_value; annotation=point_set(overlap_region_centers); scene=uncertainty_band; scope=band_overlap_count`.
-- Program: count visible x-axis positions where the two shaded uncertainty bands overlap in vertical range.
-- Answer: `integer`.
-- Annotation schema: `point_set`, one centered point inside each counted overlap region.
-- The answer and annotation are bound from the same sampled uncertainty-band execution trace.
+Program: `count(x_label where intersects(vertical_interval(series_a_band_at_x), vertical_interval(series_b_band_at_x))); output=integer_value; annotation=point_set(overlap_region_centers); scene=uncertainty_band; scope=band_overlap_count`
+
+Candidate set: the visible uncertainty bands, central series marks, and x labels inside the `band_overlap_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `unspecified` value bound by `integer_value`.
+Annotation witnesses: `unspecified` witnesses bound by `point_set(overlap_region_centers)`. The Annotation Contract below defines the prompt-facing witnesses.
+Query ids: `single`.
 
 ## Review Notes
 

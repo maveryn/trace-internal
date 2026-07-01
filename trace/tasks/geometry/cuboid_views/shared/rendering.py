@@ -7,6 +7,7 @@ from typing import Any, Dict, Mapping, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.diagram_style import (
     geometry_diagram_style_metadata,
@@ -18,7 +19,6 @@ from trace.tasks.geometry.shared.shape_style import (
     sample_geometry_shape_style,
 )
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.text_rendering import load_font
 
 from .state import BBox, Color, CuboidDimensions, RenderedCuboidViewsScene
@@ -117,12 +117,11 @@ def _make_render_context(
         render_defaults=render_defaults,
         anchor_colors=extract_background_anchor_colors(background_meta),
     )
-    palette_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace="cuboid_views.palette",
+    palette_rng = spawn_rng(int(instance_seed), "cuboid_views.palette")
+    fill_color, secondary_fill_color, _accent_color, muted_color = uniform_choice(
+        palette_rng,
+        _PALETTES,
     )
-    fill_color, secondary_fill_color, _accent_color, muted_color = _PALETTES[int(palette_index) % len(_PALETTES)]
     font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 22)))
     small_font_size = int(
         params.get("small_label_font_size", group_default(render_defaults, "small_label_font_size", 18))

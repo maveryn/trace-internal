@@ -6,7 +6,7 @@ from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.charts.surface_3d._lifecycle import Surface3DTaskPlan, run_surface_3d_lifecycle
-from trace.tasks.charts.surface_3d.shared.annotations import bbox_for_single_witness
+from trace.tasks.charts.surface_3d.shared.annotations import point_for_single_witness
 from trace.tasks.charts.surface_3d.shared.defaults import DOMAIN, SCATTER_VARIANT
 from trace.tasks.charts.surface_3d.shared.sampling import (
     PALETTE,
@@ -58,10 +58,10 @@ def _build_reference_dataset(params, instance_seed):
         if str(label) == answer_label:
             y_value = float(target_value + rng.choice([-2, -1, 1, 2]))
         else:
-            offset = int(rng.choice([-1, 1])) * int(rng.randint(8, 31))
+            offset = int(rng.choice([-1, 1])) * int(rng.randint(18, 38))
             y_value = float(max(5, min(95, int(target_value) + int(offset))))
-            if abs(y_value - float(target_value)) <= 5:
-                y_value = float(max(5, min(95, int(target_value) + (12 if offset >= 0 else -12))))
+            if abs(y_value - float(target_value)) <= 16:
+                y_value = float(max(5, min(95, int(target_value) + (18 if offset >= 0 else -18))))
         points.append(
             Point3D(
                 point_id=f"point_{label}",
@@ -78,15 +78,16 @@ def _build_reference_dataset(params, instance_seed):
         points=tuple(points),
         surface_cells=(),
         panels=(),
-        x_axis_label="Score",
-        y_axis_label="Distance",
-        z_axis_label="Volume",
+        x_axis_label="x-axis",
+        y_axis_label="y-axis",
+        z_axis_label="z-axis",
         x_range=(0.0, 100.0),
         y_range=(0.0, 100.0),
         z_range=(0.0, 100.0),
         x_labels=(),
         y_labels=(),
         title="3D Scatter Chart",
+        reference_y_value=float(target_value),
     )
     return dataset, answer_label, int(target_value), distances
 
@@ -100,7 +101,7 @@ def _build_plan(params, instance_seed, selected_branch, query_probabilities):
     answer_point_id = f"point_{answer_label}"
 
     def _bind_annotation(rendered):
-        return bbox_for_single_witness(rendered.point_bboxes_px[str(answer_point_id)])
+        return point_for_single_witness(rendered.point_bboxes_px[str(answer_point_id)])
 
     return Surface3DTaskPlan(
         dataset=dataset,
@@ -108,12 +109,12 @@ def _build_plan(params, instance_seed, selected_branch, query_probabilities):
         annotation_builder=_bind_annotation,
         prompt_query_key=PROMPT_QUERY_KEY,
         dynamic_slots={
-            "target_axis_label": "Distance",
+            "target_axis_label": "y-axis",
             "target_axis_value": int(target_value),
         },
         branch_params={
             "target_axis": "y",
-            "target_axis_label": "Distance",
+            "target_axis_label": "y-axis",
             "target_axis_value": int(target_value),
             "answer_point_id": str(answer_point_id),
             "answer_label": str(answer_label),

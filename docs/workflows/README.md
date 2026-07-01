@@ -13,6 +13,8 @@ Shared text/font/rationale resources live under `../resources/`.
 ## RLVR-specific workflows
 RLVR training/export/validation docs live under:
 - `../../rlvr/README.md` for the active Vero-derived RLVR port.
+- `../RLVR_TRAINING_STRATEGY.md` for tentative TRACE RLVR training,
+  reward-ablation, response-length, and evaluation-cadence strategy.
 - `TASK_REVIEW_WEB_APP.md` for the active task-review workspace.
 - `CALIBRATION_GUIDE.md` for the current per-task acceptance gates,
   model-specific response caps, and split vLLM server commands used by
@@ -20,9 +22,13 @@ RLVR training/export/validation docs live under:
 
 ## Review
 - `BUILD_VALIDATION.md` — build/test/review workflow.
+- `../review/README.md` — human/agent review procedures for task, scene, and
+  domain audits, including annotation review.
 - `../SCENE_PACKAGE_MIGRATION/README.md` — tracked scene-package migration
   workflow for retiring legacy scene packages, enforcing objective
   ownership, and validating domain/scene/task packages.
+- `../domain-finalization-review/DOMAIN_FINALIZATION_CHECKLIST.md` —
+  post-migration release-readiness review for final domain task surfaces.
 - `TASK_REVIEW_WEB_APP.md` — browser app workflow for inspecting active
   task-review sidecars and collecting sample-level reviewer issues.
 - `BENCHMARK_REVIEW_WEB_APP.md` — separate browser app workflow for inspecting

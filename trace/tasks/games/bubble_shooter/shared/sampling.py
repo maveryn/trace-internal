@@ -14,10 +14,19 @@ from trace.tasks.games.shared.layout import (
     resolve_games_unit_size_scale,
     scale_games_px,
 )
-from trace.tasks.shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.config_defaults import (
+    group_default,
+    load_scene_generation_rendering_prompt_defaults,
+)
 from trace.tasks.shared.font_assets import sample_font_family
-from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
-from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
+from trace.tasks.shared.support_sampling import (
+    resolve_integer_choice,
+    resolve_integer_support,
+)
+from trace.tasks.shared.variant_sampling import (
+    apply_balanced_variant_sampling,
+    resolve_variant,
+)
 
 from .state import (
     BUBBLE_COLOR_KEYS,
@@ -25,6 +34,7 @@ from .state import (
     SUPPORTED_BUBBLE_SHOOTER_SCENE_VARIANTS,
     SUPPORTED_BUBBLE_SHOOTER_STYLE_VARIANTS,
     Board,
+    BubbleShooterLandingOption,
     BubbleShooterOption,
     BubbleShooterState,
     Coord,
@@ -43,10 +53,11 @@ from .rules import (
 from .defaults import RENDER_FALLBACKS, SCENE_ID
 from .rendering import BubbleShooterRenderParams
 
-
-_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
-    "games",
-    SCENE_ID,
+_GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = (
+    load_scene_generation_rendering_prompt_defaults(
+        "games",
+        SCENE_ID,
+    )
 )
 
 
@@ -243,22 +254,54 @@ def resolve_bubble_shooter_render_params(
         ),
         unit_scale_meta,
     )
-    base_canvas_width = int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", RENDER_FALLBACKS.canvas_width)))
-    base_canvas_height = int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", RENDER_FALLBACKS.canvas_height)))
+    base_canvas_width = int(
+        params.get(
+            "canvas_width",
+            group_default(
+                _RENDER_DEFAULTS, "canvas_width", RENDER_FALLBACKS.canvas_width
+            ),
+        )
+    )
+    base_canvas_height = int(
+        params.get(
+            "canvas_height",
+            group_default(
+                _RENDER_DEFAULTS, "canvas_height", RENDER_FALLBACKS.canvas_height
+            ),
+        )
+    )
     playfield_width_px = scale_games_px(
-        params.get("playfield_width_px", group_default(_RENDER_DEFAULTS, "playfield_width_px", RENDER_FALLBACKS.playfield_width_px)),
+        params.get(
+            "playfield_width_px",
+            group_default(
+                _RENDER_DEFAULTS,
+                "playfield_width_px",
+                RENDER_FALLBACKS.playfield_width_px,
+            ),
+        ),
         unit_scale,
         min_px=430,
     )
     playfield_height_px = scale_games_px(
-        params.get("playfield_height_px", group_default(_RENDER_DEFAULTS, "playfield_height_px", RENDER_FALLBACKS.playfield_height_px)),
+        params.get(
+            "playfield_height_px",
+            group_default(
+                _RENDER_DEFAULTS,
+                "playfield_height_px",
+                RENDER_FALLBACKS.playfield_height_px,
+            ),
+        ),
         unit_scale,
         min_px=360,
     )
     dynamic_canvas_enabled = bool(
         params.get(
             "dynamic_canvas_size_enabled",
-            group_default(_RENDER_DEFAULTS, "dynamic_canvas_size_enabled", RENDER_FALLBACKS.dynamic_canvas_size_enabled),
+            group_default(
+                _RENDER_DEFAULTS,
+                "dynamic_canvas_size_enabled",
+                RENDER_FALLBACKS.dynamic_canvas_size_enabled,
+            ),
         )
     )
     canvas_width = base_canvas_width
@@ -267,11 +310,32 @@ def resolve_bubble_shooter_render_params(
         canvas_width = min(
             int(base_canvas_width),
             max(
-                int(params.get("canvas_min_width_px", group_default(_RENDER_DEFAULTS, "canvas_min_width_px", RENDER_FALLBACKS.canvas_min_width_px))),
+                int(
+                    params.get(
+                        "canvas_min_width_px",
+                        group_default(
+                            _RENDER_DEFAULTS,
+                            "canvas_min_width_px",
+                            RENDER_FALLBACKS.canvas_min_width_px,
+                        ),
+                    )
+                ),
                 int(
                     round(
                         float(playfield_width_px)
-                        + (2.0 * float(params.get("canvas_side_padding_px", group_default(_RENDER_DEFAULTS, "canvas_side_padding_px", RENDER_FALLBACKS.canvas_side_padding_px))))
+                        + (
+                            2.0
+                            * float(
+                                params.get(
+                                    "canvas_side_padding_px",
+                                    group_default(
+                                        _RENDER_DEFAULTS,
+                                        "canvas_side_padding_px",
+                                        RENDER_FALLBACKS.canvas_side_padding_px,
+                                    ),
+                                )
+                            )
+                        )
                     )
                 ),
             ),
@@ -280,11 +344,32 @@ def resolve_bubble_shooter_render_params(
         canvas_height = min(
             int(base_canvas_height),
             max(
-                int(params.get("canvas_min_height_px", group_default(_RENDER_DEFAULTS, "canvas_min_height_px", RENDER_FALLBACKS.canvas_min_height_px))),
+                int(
+                    params.get(
+                        "canvas_min_height_px",
+                        group_default(
+                            _RENDER_DEFAULTS,
+                            "canvas_min_height_px",
+                            RENDER_FALLBACKS.canvas_min_height_px,
+                        ),
+                    )
+                ),
                 int(
                     round(
                         float(playfield_height_px)
-                        + (2.0 * float(params.get("canvas_vertical_padding_px", group_default(_RENDER_DEFAULTS, "canvas_vertical_padding_px", RENDER_FALLBACKS.canvas_vertical_padding_px))))
+                        + (
+                            2.0
+                            * float(
+                                params.get(
+                                    "canvas_vertical_padding_px",
+                                    group_default(
+                                        _RENDER_DEFAULTS,
+                                        "canvas_vertical_padding_px",
+                                        RENDER_FALLBACKS.canvas_vertical_padding_px,
+                                    ),
+                                )
+                            )
+                        )
                     )
                 ),
             ),
@@ -292,17 +377,108 @@ def resolve_bubble_shooter_render_params(
     return BubbleShooterRenderParams(
         canvas_width=int(canvas_width),
         canvas_height=int(canvas_height),
-        panel_margin_px=int(params.get("panel_margin_px", group_default(_RENDER_DEFAULTS, "panel_margin_px", RENDER_FALLBACKS.panel_margin_px))),
+        panel_margin_px=int(
+            params.get(
+                "panel_margin_px",
+                group_default(
+                    _RENDER_DEFAULTS,
+                    "panel_margin_px",
+                    RENDER_FALLBACKS.panel_margin_px,
+                ),
+            )
+        ),
         playfield_width_px=int(playfield_width_px),
         playfield_height_px=int(playfield_height_px),
-        playfield_border_width_px=scale_games_px(params.get("playfield_border_width_px", group_default(_RENDER_DEFAULTS, "playfield_border_width_px", RENDER_FALLBACKS.playfield_border_width_px)), unit_scale, min_px=2),
-        board_top_px=scale_games_px(params.get("board_top_px", group_default(_RENDER_DEFAULTS, "board_top_px", RENDER_FALLBACKS.board_top_px)), unit_scale, min_px=19),
-        board_height_px=scale_games_px(params.get("board_height_px", group_default(_RENDER_DEFAULTS, "board_height_px", RENDER_FALLBACKS.board_height_px)), unit_scale, min_px=250),
-        bubble_gap_px=scale_games_px(params.get("bubble_gap_px", group_default(_RENDER_DEFAULTS, "bubble_gap_px", RENDER_FALLBACKS.bubble_gap_px)), unit_scale, min_px=1),
-        path_width_px=scale_games_px(params.get("path_width_px", group_default(_RENDER_DEFAULTS, "path_width_px", RENDER_FALLBACKS.path_width_px)), unit_scale, min_px=2),
-        shooter_radius_px=scale_games_px(params.get("shooter_radius_px", group_default(_RENDER_DEFAULTS, "shooter_radius_px", RENDER_FALLBACKS.shooter_radius_px)), unit_scale, min_px=11),
-        option_radius_px=scale_games_px(params.get("option_radius_px", group_default(_RENDER_DEFAULTS, "option_radius_px", RENDER_FALLBACKS.option_radius_px)), unit_scale, min_px=8),
-        option_label_font_size_px=scale_games_px(params.get("option_label_font_size_px", group_default(_RENDER_DEFAULTS, "option_label_font_size_px", RENDER_FALLBACKS.option_label_font_size_px)), unit_scale, min_px=11),
+        playfield_border_width_px=scale_games_px(
+            params.get(
+                "playfield_border_width_px",
+                group_default(
+                    _RENDER_DEFAULTS,
+                    "playfield_border_width_px",
+                    RENDER_FALLBACKS.playfield_border_width_px,
+                ),
+            ),
+            unit_scale,
+            min_px=2,
+        ),
+        board_top_px=scale_games_px(
+            params.get(
+                "board_top_px",
+                group_default(
+                    _RENDER_DEFAULTS, "board_top_px", RENDER_FALLBACKS.board_top_px
+                ),
+            ),
+            unit_scale,
+            min_px=19,
+        ),
+        board_height_px=scale_games_px(
+            params.get(
+                "board_height_px",
+                group_default(
+                    _RENDER_DEFAULTS,
+                    "board_height_px",
+                    RENDER_FALLBACKS.board_height_px,
+                ),
+            ),
+            unit_scale,
+            min_px=250,
+        ),
+        bubble_gap_px=scale_games_px(
+            params.get(
+                "bubble_gap_px",
+                group_default(
+                    _RENDER_DEFAULTS, "bubble_gap_px", RENDER_FALLBACKS.bubble_gap_px
+                ),
+            ),
+            unit_scale,
+            min_px=1,
+        ),
+        path_width_px=scale_games_px(
+            params.get(
+                "path_width_px",
+                group_default(
+                    _RENDER_DEFAULTS, "path_width_px", RENDER_FALLBACKS.path_width_px
+                ),
+            ),
+            unit_scale,
+            min_px=2,
+        ),
+        shooter_radius_px=scale_games_px(
+            params.get(
+                "shooter_radius_px",
+                group_default(
+                    _RENDER_DEFAULTS,
+                    "shooter_radius_px",
+                    RENDER_FALLBACKS.shooter_radius_px,
+                ),
+            ),
+            unit_scale,
+            min_px=11,
+        ),
+        option_radius_px=scale_games_px(
+            params.get(
+                "option_radius_px",
+                group_default(
+                    _RENDER_DEFAULTS,
+                    "option_radius_px",
+                    RENDER_FALLBACKS.option_radius_px,
+                ),
+            ),
+            unit_scale,
+            min_px=8,
+        ),
+        option_label_font_size_px=scale_games_px(
+            params.get(
+                "option_label_font_size_px",
+                group_default(
+                    _RENDER_DEFAULTS,
+                    "option_label_font_size_px",
+                    RENDER_FALLBACKS.option_label_font_size_px,
+                ),
+            ),
+            unit_scale,
+            min_px=11,
+        ),
         font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
     )
@@ -369,11 +545,16 @@ def _landing_candidates_for_shape(
         coord
         for coord in playable_landing_coords(board)
         if int(min_row) <= int(coord[0]) <= int(limit_row)
-        and any(neighbor in shape_set for neighbor in bubble_neighbors(coord, rows=rows, cols=cols))
+        and any(
+            neighbor in shape_set
+            for neighbor in bubble_neighbors(coord, rows=rows, cols=cols)
+        )
     )
 
 
-def _support_path_to_top(*, rng, rows: int, cols: int, start: Coord, blocked: set[Coord]) -> Tuple[Coord, ...]:
+def _support_path_to_top(
+    *, rng, rows: int, cols: int, start: Coord, blocked: set[Coord]
+) -> Tuple[Coord, ...]:
     current = tuple(start)
     path: list[Coord] = []
     guard = 0
@@ -408,7 +589,9 @@ def _add_top_clutter(
     colors = _colors_except(excluded_colors)
     fill_rows = 3 if str(scene_variant) == "dense_pack" else 2
     for row in range(min(int(rows), int(fill_rows))):
-        base_probability = 0.92 if row == 0 else 0.72 if str(scene_variant) == "dense_pack" else 0.52
+        base_probability = (
+            0.92 if row == 0 else 0.72 if str(scene_variant) == "dense_pack" else 0.52
+        )
         for col in range(int(cols)):
             coord = (int(row), int(col))
             if coord in protected or coord in values:
@@ -419,7 +602,9 @@ def _add_top_clutter(
 
 def _assert_top_supported(board: Board) -> None:
     if set(occupied_coords(board)) != set(top_connected_occupied(board)):
-        raise ValueError("bubble shooter board contains unsupported bubbles before the shot")
+        raise ValueError(
+            "bubble shooter board contains unsupported bubbles before the shot"
+        )
 
 
 def _make_no_pop_board(
@@ -451,7 +636,9 @@ def _make_no_pop_board(
         raise ValueError("no landing candidate for no-pop construction")
     rng.shuffle(candidates)
     for landing in candidates:
-        outcome = compute_shot_outcome(board, landing_coord=landing, color_key=str(color_key))
+        outcome = compute_shot_outcome(
+            board, landing_coord=landing, color_key=str(color_key)
+        )
         if not outcome.popped_coords and not outcome.dropped_coords:
             return board, tuple(landing)
     raise ValueError("constructed no-pop board unexpectedly changed state")
@@ -477,7 +664,10 @@ def _make_pop_board(
             color_key=str(color_key),
         )
 
-    start = (int(rng.randint(2, max(2, rows - 3))), int(rng.randint(2, max(2, cols - 3))))
+    start = (
+        int(rng.randint(2, max(2, rows - 3))),
+        int(rng.randint(2, max(2, cols - 3))),
+    )
     component = _make_connected_shape(
         rng=rng,
         rows=rows,
@@ -491,7 +681,9 @@ def _make_pop_board(
     protected = set(component)
     values: Dict[Coord, str] = {coord: str(color_key) for coord in component}
     support_blocked = set(protected)
-    support = _support_path_to_top(rng=rng, rows=rows, cols=cols, start=component[0], blocked=support_blocked)
+    support = _support_path_to_top(
+        rng=rng, rows=rows, cols=cols, start=component[0], blocked=support_blocked
+    )
     support_colors = _colors_except((str(color_key),))
     support_color_cycle = cycle(shuffled_support(rng, support_colors))
     for coord in support:
@@ -508,12 +700,16 @@ def _make_pop_board(
     )
     board = board_from_mapping(rows=rows, cols=cols, values=values)
     _assert_top_supported(board)
-    landing_candidates = list(_landing_candidates_for_shape(board=board, shape=component))
+    landing_candidates = list(
+        _landing_candidates_for_shape(board=board, shape=component)
+    )
     if not landing_candidates:
         raise ValueError("no exposed landing candidate for pop component")
     rng.shuffle(landing_candidates)
     for landing in landing_candidates:
-        outcome = compute_shot_outcome(board, landing_coord=landing, color_key=str(color_key))
+        outcome = compute_shot_outcome(
+            board, landing_coord=landing, color_key=str(color_key)
+        )
         if len(outcome.popped_coords) == int(target):
             return board, tuple(landing)
     raise ValueError("constructed pop board did not hit target pop count")
@@ -532,7 +728,10 @@ def _make_drop_board(
 
     if int(target) > max(1, (int(rows) - 4) * 2):
         raise ValueError("drop target is too large for this board")
-    start = (int(rng.randint(2, max(2, rows - 4))), int(rng.randint(2, max(2, cols - 3))))
+    start = (
+        int(rng.randint(2, max(2, rows - 4))),
+        int(rng.randint(2, max(2, cols - 3))),
+    )
     pop_component = _make_connected_shape(
         rng=rng,
         rows=rows,
@@ -572,7 +771,9 @@ def _make_drop_board(
         tail = tuple()
     protected = set(pop_component) | set(tail)
     support_blocked = set(protected)
-    support = _support_path_to_top(rng=rng, rows=rows, cols=cols, start=pop_component[0], blocked=support_blocked)
+    support = _support_path_to_top(
+        rng=rng, rows=rows, cols=cols, start=pop_component[0], blocked=support_blocked
+    )
     protected.update(support)
     values: Dict[Coord, str] = {coord: str(color_key) for coord in pop_component}
     non_shot_colors = _colors_except((str(color_key),))
@@ -593,13 +794,19 @@ def _make_drop_board(
     )
     board = board_from_mapping(rows=rows, cols=cols, values=values)
     _assert_top_supported(board)
-    landing_candidates = list(_landing_candidates_for_shape(board=board, shape=pop_component))
+    landing_candidates = list(
+        _landing_candidates_for_shape(board=board, shape=pop_component)
+    )
     if not landing_candidates:
         raise ValueError("no exposed landing candidate for drop component")
     rng.shuffle(landing_candidates)
     for landing in landing_candidates:
-        outcome = compute_shot_outcome(board, landing_coord=landing, color_key=str(color_key))
-        if len(outcome.popped_coords) == 2 and len(outcome.dropped_coords) == int(target):
+        outcome = compute_shot_outcome(
+            board, landing_coord=landing, color_key=str(color_key)
+        )
+        if len(outcome.popped_coords) == 2 and len(outcome.dropped_coords) == int(
+            target
+        ):
             return board, tuple(landing)
     raise ValueError("constructed drop board did not hit target drop count")
 
@@ -734,6 +941,84 @@ def sample_pop_color_state(
     return state
 
 
+def sample_pop_target_state(
+    *,
+    rng,
+    scene_axes: ResolvedBubbleShooterSceneAxes,
+    board_axes: ResolvedBubbleShooterBoardAxes,
+    target_option_label: str,
+    option_labels: Sequence[str],
+    target_pop_count: int | None = None,
+) -> BubbleShooterState:
+    """Construct a board with one displayed landing target that pops bubbles."""
+
+    labels = tuple(str(label) for label in option_labels)
+    if not labels:
+        raise ValueError("bubble shooter target-option labels must not be empty")
+    target_label = str(target_option_label)
+    if target_label not in labels:
+        raise ValueError("target landing-option label must be displayed")
+
+    color = str(rng.choice(BUBBLE_COLOR_KEYS))
+    pop_count = (
+        int(target_pop_count)
+        if target_pop_count is not None
+        else int(rng.choice((2, 3, 4, 5)))
+    )
+    board, answer_landing = _make_pop_board(
+        rng=rng,
+        scene_variant=str(scene_axes.scene_variant),
+        rows=int(board_axes.rows.value),
+        cols=int(board_axes.cols.value),
+        target=int(pop_count),
+        color_key=color,
+    )
+    negative_candidates = [
+        coord
+        for coord in playable_landing_coords(board)
+        if tuple(coord) != tuple(answer_landing)
+        and not compute_shot_outcome(
+            board,
+            landing_coord=tuple(coord),
+            color_key=color,
+        ).popped_coords
+    ]
+    if len(negative_candidates) < len(labels) - 1:
+        raise ValueError("not enough non-popping landing targets")
+    rng.shuffle(negative_candidates)
+    negative_iter = iter(negative_candidates)
+    landing_options: list[BubbleShooterLandingOption] = []
+    for label in labels:
+        is_answer = str(label) == target_label
+        coord = tuple(answer_landing) if is_answer else tuple(next(negative_iter))
+        landing_options.append(
+            BubbleShooterLandingOption(
+                label=str(label),
+                landing_coord=coord,
+                is_answer=bool(is_answer),
+            )
+        )
+
+    outcome = compute_shot_outcome(board, landing_coord=answer_landing, color_key=color)
+    if len(outcome.popped_coords) != int(pop_count):
+        raise ValueError("pop-target state target mismatch")
+    state = BubbleShooterState(
+        row_count=int(board_axes.rows.value),
+        col_count=int(board_axes.cols.value),
+        scene_variant=str(scene_axes.scene_variant),
+        style_variant=str(scene_axes.style_variant),
+        board=board,
+        landing_coord=tuple(answer_landing),
+        shooter_color_key=color,
+        option_specs=tuple(),
+        outcome=outcome,
+        construction_mode="one_displayed_landing_target_reaches_pop_threshold",
+        landing_option_specs=tuple(landing_options),
+    )
+    validate_bubble_shooter_state(state)
+    return state
+
+
 def bubble_entity_ids_for_coords(coords: Sequence[Coord]) -> Tuple[str, ...]:
     """Return board-bubble entity ids for coordinates."""
 
@@ -751,5 +1036,6 @@ __all__ = [
     "resolve_bubble_shooter_scene_axes",
     "sample_drop_state",
     "sample_pop_color_state",
+    "sample_pop_target_state",
     "sample_pop_state",
 ]

@@ -31,6 +31,7 @@ class RenderParams:
     axis_rgb: tuple[int, int, int]
     grid_rgb: tuple[int, int, int]
     text_rgb: tuple[int, int, int]
+    text_stroke_rgb: tuple[int, int, int]
     panel_rgb: tuple[int, int, int]
     layout_jitter_meta: Mapping[str, Any]
 

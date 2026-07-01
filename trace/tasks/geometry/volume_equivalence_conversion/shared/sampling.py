@@ -5,7 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 
 
 def case_key(branch_name: str, case: Sequence[int]) -> str:
@@ -35,12 +36,8 @@ def select_conversion_case(
             for key in dict.fromkeys(keys)
         }
 
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    case = tuple(cases[int(index) % len(cases)])
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    case = tuple(uniform_choice(rng, cases))
     probability = 1.0 / float(len(cases))
     return case, {
         case_key(str(branch_name), candidate): probability

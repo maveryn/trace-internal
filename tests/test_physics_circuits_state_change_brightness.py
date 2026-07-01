@@ -8,7 +8,9 @@ from pathlib import Path
 import pytest
 
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.physics.circuits.state_change_brightness import PhysicsCircuitStateChangeBulbBrightnessLabelTask
+from trace.tasks.physics.circuit_state_change.bulb_brightness_change_label import (
+    PhysicsCircuitStateChangeBulbBrightnessLabelTask,
+)
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
@@ -20,9 +22,9 @@ QUERY_TO_CHANGE_CLASS = {
 }
 
 
-def _assert_keyed_bbox_map_in_bounds(out) -> None:
+def _assert_bbox_map_in_bounds(out) -> None:
     width, height = out.image.size
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     for bbox in out.annotation_gt.value.values():
         assert 0 <= bbox[0] < bbox[2] <= width
         assert 0 <= bbox[1] < bbox[3] <= height
@@ -68,9 +70,9 @@ def test_physics_state_change_brightness_answer_matches_trace(query_id: str, swi
     assert execution["target_change_class"] == target_change
     assert execution["switch_action"] == switch_action
     assert set(out.annotation_gt.value) == {"changed_switch", "B1", "B2", "B3", "B4", "B5"}
-    _assert_keyed_bbox_map_in_bounds(out)
+    _assert_bbox_map_in_bounds(out)
     assert trace["render_map"]["correct_label"] == out.answer_gt.value
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
     assert trace["witness_symbolic"]["key_to_entity_id"] == {
         "changed_switch": "changed_switch",
         "B1": "B1",
@@ -124,20 +126,25 @@ def test_physics_state_change_brightness_is_deterministic() -> None:
 
 
 def test_physics_state_change_brightness_defaults_and_prompt_bundle() -> None:
-    cfg = get_scene_defaults("physics", "circuits")
+    cfg = get_scene_defaults("physics", "circuit_state_change")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="physics_circuits_state_change_bulb_brightness_family",
+        task_id="task_physics__circuit_state_change__bulb_brightness_change_label",
     )
-    bundle = json.loads(Path("prompts/physics/circuits/physics_circuits_v0.json").read_text(encoding="utf-8"))
+    bundle = json.loads(
+        Path("prompts/physics/circuit_state_change/physics_circuit_state_change_v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
 
-    assert set(generation["query_id_weights"]) == set(QUERY_TO_CHANGE_CLASS)
+    assert "query_id_weights" not in generation
+    assert "balanced_query_id_sampling" not in generation
     assert list(generation["resistance_options"]) == [2, 3, 4, 5, 6, 8, 10, 12]
     assert int(rendering["canvas_width"]) == 1280
-    assert str(prompt["scene_key"]) == "circuit_state_change_diagram"
-    assert str(prompt["task_key"]) == "state_change_brightness_query"
-    assert "B1 through B5" in str(prompt["annotation_hint_state_change_brightness"])
+    assert str(prompt["bundle_id"]) == "physics_circuit_state_change_v1"
+    assert str(prompt["task_key"]) == "bulb_brightness_change_query"
     assert "scene:circuit_state_change_diagram" in bundle["required_slots_by_key"]
     for query_id in QUERY_TO_CHANGE_CLASS:
-        assert query_id in bundle["query_templates"]
-        assert len(bundle["query_templates"][query_id]) == 5
+        assert query_id in bundle["templates"]["query"]
+        assert len(bundle["templates"]["query"][query_id]) == 5
+        assert "B1 through B5" in str(bundle["static_slots_by_key"][f"query:{query_id}"]["annotation_hint"])

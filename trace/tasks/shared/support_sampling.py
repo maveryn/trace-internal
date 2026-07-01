@@ -1,12 +1,14 @@
-"""Shared deterministic integer-support sampling helpers for task domains."""
+"""Shared integer-support sampling helpers for task domains."""
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Sequence, Tuple
+from typing import Any, Dict, Mapping, Sequence, Tuple, TypeVar
 
 from ...core.seed import spawn_rng
+from ...core.sampling import support_probability_map, uniform_choice_with_probabilities
 from .config_defaults import group_default
-from .deterministic_sampling import resolve_selection_index, uniform_probability_map
+
+T = TypeVar("T")
 
 
 def resolve_integer_support(
@@ -42,7 +44,7 @@ def resolve_integer_choice(
     use_instance_seed_cycle: bool = False,
     namespace_support_permutation: bool = False,
 ) -> Tuple[int, Dict[str, float]]:
-    """Resolve one integer choice from explicit support with deterministic sampling."""
+    """Resolve one integer choice from explicit support with seeded RNG sampling."""
 
     support = resolve_integer_support(
         params,
@@ -55,27 +57,67 @@ def resolve_integer_choice(
         selected = int(explicit)
         if int(selected) not in set(support):
             raise ValueError(f"unsupported {explicit_key}: {selected}")
-        return int(selected), uniform_probability_map(support, selected=int(selected))
+        return int(selected), support_probability_map(support, selected=int(selected), sort_keys=True)
 
-    balanced_enabled = bool(params.get(str(balanced_flag_key), group_default(gen_defaults, str(balanced_flag_key), True)))
-    if bool(balanced_enabled):
-        _ = bool(namespace_support_permutation)
-        if bool(use_instance_seed_cycle):
-            selection_index = abs(int(instance_seed))
-        else:
-            selection_index = resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=str(namespace),
-            )
-        selected = int(support[int(selection_index) % len(support)])
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    selected, probabilities = uniform_choice_with_probabilities(
+        rng,
+        support,
+        sort_keys=True,
+    )
+    return int(selected), dict(probabilities)
+
+
+def resolve_support_choice(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    support: Sequence[T],
+    explicit_key: str | Sequence[str] | None,
+    namespace: str,
+    sort_keys: bool = False,
+) -> Tuple[T, Dict[str, float]]:
+    """Resolve one finite-support value with explicit override validation.
+
+    This is the non-integer companion to ``resolve_integer_choice``. It samples
+    by seeded RNG over an explicit support, not by seed/hash modulo.
+    """
+
+    values = tuple(support)
+    if not values:
+        raise ValueError("support must contain at least one value")
+    keys = {str(value): value for value in values}
+    if len(keys) != len(values):
+        raise ValueError("support values must have unique string keys")
+
+    explicit_keys: tuple[str, ...]
+    if explicit_key is None:
+        explicit_keys = ()
+    elif isinstance(explicit_key, str):
+        explicit_keys = (str(explicit_key),)
     else:
-        rng = spawn_rng(int(instance_seed), str(namespace))
-        selected = int(support[int(rng.randrange(len(support)))])
-    return int(selected), uniform_probability_map(support)
+        explicit_keys = tuple(str(value) for value in explicit_key)
+    for key in explicit_keys:
+        raw_value = params.get(str(key))
+        if raw_value is None:
+            continue
+        selected_key = str(raw_value)
+        if selected_key not in keys:
+            raise ValueError(f"unsupported {key}: {raw_value}")
+        selected = keys[selected_key]
+        return selected, support_probability_map(values, selected=selected, sort_keys=sort_keys)
+
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    selected, probabilities = uniform_choice_with_probabilities(
+        rng,
+        values,
+        sort_keys=bool(sort_keys),
+    )
+    return selected, dict(probabilities)
 
 
 __all__ = [
     "resolve_integer_choice",
     "resolve_integer_support",
+    "resolve_support_choice",
 ]

@@ -100,50 +100,50 @@
     "query:highest_mean_label": {
       "answer_hint": "set \"answer\" to the exact visible density-curve label as a string",
       "json_example_answer_only": "{\"answer\":\"Orchid\"}",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_mean_marker\" to the [x1,y1,x2,y2] pixel bounding box around the answer curve mean marker",
-      "json_example": "{\"annotation\":{\"answer_mean_marker\":[220,514,235,529]},\"answer\":\"Orchid\"}"
+      "annotation_hint": "set \"annotation\" to the [x,y] pixel point at the center of the answer curve mean marker",
+      "json_example": "{\"annotation\":[228,522],\"answer\":\"Orchid\"}"
     },
     "query:lowest_mean_label": {
       "answer_hint": "set \"answer\" to the exact visible density-curve label as a string",
       "json_example_answer_only": "{\"answer\":\"Orchid\"}",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_mean_marker\" to the [x1,y1,x2,y2] pixel bounding box around the answer curve mean marker",
-      "json_example": "{\"annotation\":{\"answer_mean_marker\":[220,514,235,529]},\"answer\":\"Orchid\"}"
+      "annotation_hint": "set \"annotation\" to the [x,y] pixel point at the center of the answer curve mean marker",
+      "json_example": "{\"annotation\":[228,522],\"answer\":\"Orchid\"}"
     },
     "query:leftmost_mode_label": {
       "answer_hint": "set \"answer\" to the exact visible density-curve label as a string",
       "json_example_answer_only": "{\"answer\":\"Orchid\"}",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_mode_marker\" to the [x1,y1,x2,y2] pixel bounding box around the answer curve peak marker",
-      "json_example": "{\"annotation\":{\"answer_mode_marker\":[390,205,405,220]},\"answer\":\"Orchid\"}"
+      "annotation_hint": "set \"annotation\" to the [x,y] pixel point at the center of the answer curve peak marker",
+      "json_example": "{\"annotation\":[398,213],\"answer\":\"Orchid\"}"
     },
     "query:rightmost_mode_label": {
       "answer_hint": "set \"answer\" to the exact visible density-curve label as a string",
       "json_example_answer_only": "{\"answer\":\"Orchid\"}",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_mode_marker\" to the [x1,y1,x2,y2] pixel bounding box around the answer curve peak marker",
-      "json_example": "{\"annotation\":{\"answer_mode_marker\":[390,205,405,220]},\"answer\":\"Orchid\"}"
+      "annotation_hint": "set \"annotation\" to the [x,y] pixel point at the center of the answer curve peak marker",
+      "json_example": "{\"annotation\":[398,213],\"answer\":\"Orchid\"}"
     },
     "query:greatest_interval_mass_label": {
       "answer_hint": "set \"answer\" to the exact visible density-curve label as a string",
       "json_example_answer_only": "{\"answer\":\"Orchid\"}",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_interval_mass\" to the [x1,y1,x2,y2] pixel bounding box around the answer curve shaded interval area",
-      "json_example": "{\"annotation\":{\"answer_interval_mass\":[260,260,430,510]},\"answer\":\"Orchid\"}"
+      "annotation_hint": "set \"annotation\" to an [x,y] pixel point on the answer curve inside the marked interval",
+      "json_example": "{\"annotation\":[345,382],\"answer\":\"Orchid\"}"
     },
     "query:least_interval_mass_label": {
       "answer_hint": "set \"answer\" to the exact visible density-curve label as a string",
       "json_example_answer_only": "{\"answer\":\"Orchid\"}",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_interval_mass\" to the [x1,y1,x2,y2] pixel bounding box around the answer curve shaded interval area",
-      "json_example": "{\"annotation\":{\"answer_interval_mass\":[260,260,430,510]},\"answer\":\"Orchid\"}"
+      "annotation_hint": "set \"annotation\" to an [x,y] pixel point on the answer curve inside the marked interval",
+      "json_example": "{\"annotation\":[345,382],\"answer\":\"Orchid\"}"
     },
     "query:highest_density_at_x_label": {
       "answer_hint": "set \"answer\" to the exact visible density-curve label as a string",
       "json_example_answer_only": "{\"answer\":\"Orchid\"}",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_density_at_x\" to the [x,y] pixel point on the answer curve at the marked x-position",
-      "json_example": "{\"annotation\":{\"answer_density_at_x\":[420,245]},\"answer\":\"Orchid\"}"
+      "annotation_hint": "set \"annotation\" to the [x,y] pixel point on the answer curve at the marked x-position",
+      "json_example": "{\"annotation\":[420,245],\"answer\":\"Orchid\"}"
     },
     "query:lowest_density_at_x_label": {
       "answer_hint": "set \"answer\" to the exact visible density-curve label as a string",
       "json_example_answer_only": "{\"answer\":\"Orchid\"}",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_density_at_x\" to the [x,y] pixel point on the answer curve at the marked x-position",
-      "json_example": "{\"annotation\":{\"answer_density_at_x\":[420,245]},\"answer\":\"Orchid\"}"
+      "annotation_hint": "set \"annotation\" to the [x,y] pixel point on the answer curve at the marked x-position",
+      "json_example": "{\"annotation\":[420,245],\"answer\":\"Orchid\"}"
     }
   },
   "dynamic_slots": {

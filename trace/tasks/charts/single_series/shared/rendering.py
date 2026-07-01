@@ -5,17 +5,15 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence
 
 from trace.core.visual.noise import apply_post_image_noise
-from trace.tasks.charts.shared.chart_scene import (
-    ChartMarkSpec,
-    render_labeled_chart_scene,
-    value_axis_render_metadata,
-)
+from trace.tasks.charts.shared.chart_scene_labeled import render_labeled_chart_scene
+from trace.tasks.charts.shared.chart_scene_primitives import value_axis_render_metadata
+from trace.tasks.charts.shared.chart_scene_types import ChartMarkSpec
 from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
-from trace.tasks.charts.shared.labeled_chart_common import (
+from trace.tasks.charts.shared.labeled_chart_marks import (
     build_chart_mark_specs,
     resolve_chart_mark_colors,
-    resolve_chart_render_params_for_task,
 )
+from trace.tasks.charts.shared.labeled_chart_render_params import resolve_chart_render_params_for_task
 from trace.tasks.charts.shared.visual_defaults import chart_font_asset_metadata, sample_chart_font_family
 from trace.tasks.shared.text_rendering import temporary_default_font_family
 

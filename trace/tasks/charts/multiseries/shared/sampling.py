@@ -5,9 +5,10 @@ from __future__ import annotations
 import random
 from typing import Any, Dict, List, Mapping, Tuple
 
+from .....core.sampling import uniform_choice
 from .....core.seed import spawn_rng
 from ...shared.label_assets import resolve_chart_category_labels, resolve_chart_entity_labels
-from ...shared.labeled_chart_common import resolve_chart_axis_variant_for_namespace
+from ...shared.labeled_chart_variants import resolve_chart_axis_variant_for_namespace
 from .defaults import (
     FAMILY_RANGE_KEYS,
     GEN_DEFAULTS,
@@ -239,7 +240,12 @@ def _balanced_answer_label_target(
             allow_spaces=False,
         ).labels
     ]
-    return str(pool[int(sampling_index) % len(pool)])
+    return str(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{namespace}.answer_label.{abs(int(sampling_index))}"),
+            tuple(pool),
+        )
+    )
 
 
 def _remap_category_labels(value: Any, mapping: Mapping[str, str]) -> Any:

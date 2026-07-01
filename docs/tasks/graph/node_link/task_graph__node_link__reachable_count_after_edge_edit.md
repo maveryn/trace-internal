@@ -1,7 +1,15 @@
 # `task_graph__node_link__reachable_count_after_edge_edit`
 
 ## Program Contract
-- `count(reachable_nodes(apply_edge_edit(directed_graph, edit_edge), source_node, exclude_source=True)); scene=node_link; scope=reachable_count_after_edge_edit`
+
+Program: `count(reachable_nodes(apply_edge_edit(directed_graph, edit_edge), source_node, exclude_source=True)); scene=node_link; scope=reachable_count_after_edge_edit`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `reachable_count_after_edge_edit` objective scope.
+Operands: visible scene state and prompt-bound operands named by `reachable_nodes`, `apply_edge_edit`, `directed_graph`, `edit_edge`, `source_node`, `exclude_source`, `True`, `node_link`, `reachable_count_after_edge_edit`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Summary
 1. Domain: `graph`

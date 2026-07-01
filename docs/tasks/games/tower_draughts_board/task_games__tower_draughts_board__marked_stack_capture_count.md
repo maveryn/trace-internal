@@ -11,7 +11,14 @@
 
 ## Program Contract
 
-`count(adjacent_opponent_stack for diagonal_jump in legal_immediate_captures(x_marked_stack)); scene=tower_draughts_board; scope=marked_stack_capture_count`
+Program: `count(adjacent_opponent_stack for diagonal_jump in legal_immediate_captures(x_marked_stack)); scene=tower_draughts_board; scope=marked_stack_capture_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `marked_stack_capture_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `adjacent_opponent_stack`, `diagonal_jump`, `legal_immediate_captures`, `x_marked_stack`, `tower_draughts_board`, `marked_stack_capture_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The X-marked stack is controlled by the color of its top disk.

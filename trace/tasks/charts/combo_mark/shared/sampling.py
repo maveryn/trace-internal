@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
-from trace.core.sampling import normalize_positive_weights, weighted_choice
-from trace.core.seed import hash64, spawn_rng
+from trace.core.sampling import normalize_positive_weights, uniform_choice, weighted_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.charts.combo_mark.shared.defaults import (
     GENERATION_DEFAULTS,
     SCENE_NAMESPACE,
@@ -50,14 +50,9 @@ def choose_scene_variant(
         )
     else:
         probabilities = normalize_positive_weights({}, default_keys=support)
-    sample_cursor = params.get("_sample_cursor")
     positives = [key for key in support if float(probabilities.get(str(key), 0.0)) > 0.0]
-    if sample_cursor is not None and positives:
-        index = abs(int(sample_cursor)) // max(1, int(sampling_divisor))
-        selected = str(positives[int(index) % len(positives)])
-        next_params = dict(params)
-        next_params["_sample_cursor"] = abs(int(sample_cursor)) // max(1, int(sampling_divisor) * len(positives))
-        return selected, dict(probabilities), next_params
+    if not positives:
+        raise ValueError("scene_variant_weights must leave at least one positive variant")
     rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.scene_variant")
     return str(weighted_choice(rng, probabilities, sort_keys=True)), dict(probabilities), dict(params)
 
@@ -292,12 +287,14 @@ def balanced_count_from_bounds(
         raise ValueError("balanced count support is infeasible")
     support = tuple(range(int(low), int(high) + 1))
     probabilities = {int(value): 1.0 / float(len(support)) for value in support}
-    sampling_index = params.get("_sample_cursor")
-    if sampling_index is not None:
-        index = abs(int(sampling_index)) // max(1, int(sampling_divisor))
-    else:
-        index = int(hash64(instance_seed, str(namespace)))
-    return int(support[int(index) % len(support)]), probabilities, (int(low), int(high))
+    selected = int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), str(namespace)),
+            support,
+            sort_keys=True,
+        )
+    )
+    return int(selected), probabilities, (int(low), int(high))
 
 
 __all__ = [

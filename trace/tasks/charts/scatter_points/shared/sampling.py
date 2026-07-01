@@ -6,15 +6,14 @@ from typing import Any, Mapping, Sequence
 
 from trace.core.seed import spawn_rng
 from trace.tasks.charts.shared.label_assets import ResolvedChartLabels, resolve_chart_category_labels
+from trace.tasks.charts.shared.visual_defaults import coerce_rgb
 
 from .defaults import GEN_DEFAULTS, RENDER_DEFAULTS, gen_float, gen_int, gen_sequence, group_default
 from .state import Category, Dataset, MARKER_SHAPES, Point, Query, RGB, SCENE_NAMESPACE
 
 
 def as_rgb(value: Any, fallback: RGB) -> RGB:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)) or len(value) < 3:
-        return tuple(int(channel) for channel in fallback)
-    return tuple(max(0, min(255, int(channel))) for channel in value[:3])  # type: ignore[index]
+    return coerce_rgb(value, fallback)
 
 
 def sample_count(rng: Any, *, low: int, high: int) -> int:
@@ -220,8 +219,8 @@ def build_category_mean_dataset(
 
     for category_index, label in enumerate(labels):
         is_target = int(category_index) == int(target_index)
-        marker_shape = MARKER_SHAPES[int(category_index) % len(MARKER_SHAPES)]
-        color_rgb = colors[int(category_index) % len(colors)]
+        marker_shape = MARKER_SHAPES[int(category_index)]
+        color_rgb = colors[int(category_index)]
         point_ids: list[str] = []
         queried_center = target_center if is_target else float(rng.uniform(distractor_low, distractor_high))
         other_center = float(rng.uniform(18.0, 82.0))
@@ -316,8 +315,8 @@ def build_category_threshold_dataset(
     annotation_point_ids: list[str] = []
     match_counts_by_category: dict[str, int] = {}
     for category_index, label in enumerate(labels):
-        marker_shape = MARKER_SHAPES[int(category_index) % len(MARKER_SHAPES)]
-        color_rgb = colors[int(category_index) % len(colors)]
+        marker_shape = MARKER_SHAPES[int(category_index)]
+        color_rgb = colors[int(category_index)]
         point_ids: list[str] = []
         category_match_count = 0
         for point_index in range(int(points_per_category)):

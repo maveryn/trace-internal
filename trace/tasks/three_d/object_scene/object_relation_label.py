@@ -22,7 +22,6 @@ from ...shared.config_defaults import (
     required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
-from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -31,7 +30,11 @@ from ...shared.prompt_variants import (
 )
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ..shared.canvas import render_params_canvas_metadata
-from ..shared.task_support import normalize_unit as _normalize_unit
+from ..shared.annotation_geometry import normalize_annotation_bboxes
+from ..shared.task_support import (
+    normalize_unit as _normalize_unit,
+    shuffled_repeated_support,
+)
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
 from ..shared.object_resources import (
@@ -239,13 +242,13 @@ def _build_relation_scene_dataset(
         distractor_slots = list(_candidate_slots(str(query_id)))
         rng.shuffle(distractor_slots)
         candidate_specs = [answer_spec]
-        for index, label in enumerate(remaining_labels):
-            shape = str(shape_pool[index % len(shape_pool)])
-            slot_x, slot_y = distractor_slots[index % len(distractor_slots)]
+        distractor_shapes = shuffled_repeated_support(rng, shape_pool, len(remaining_labels))
+        distractor_positions = shuffled_repeated_support(rng, distractor_slots, len(remaining_labels))
+        for label, shape, (slot_x, slot_y) in zip(remaining_labels, distractor_shapes, distractor_positions):
             spec = _make_sampled_object(
                 rng=rng,
                 object_id=f"object_{label}",
-                shape_type=shape,
+                shape_type=str(shape),
                 object_role="candidate",
                 xy=(float(slot_x + rng.uniform(-0.10, 0.10)), float(slot_y + rng.uniform(-0.10, 0.10))),
                 label=str(label),
@@ -258,14 +261,15 @@ def _build_relation_scene_dataset(
         rng.shuffle(extra_context_shapes)
         extra_slots = [(-2.25, 1.18), (2.18, 1.25), (-2.18, -0.88), (2.18, -0.88)]
         rng.shuffle(extra_slots)
-        for index in range(max(0, int(context_object_count) - 1)):
-            shape = str(extra_context_shapes[index % len(extra_context_shapes)])
-            slot_x, slot_y = extra_slots[index % len(extra_slots)]
+        extra_count = max(0, int(context_object_count) - 1)
+        context_shapes = shuffled_repeated_support(rng, extra_context_shapes, extra_count)
+        context_positions = shuffled_repeated_support(rng, extra_slots, extra_count)
+        for index, (shape, (slot_x, slot_y)) in enumerate(zip(context_shapes, context_positions)):
             context_specs.append(
                 _make_sampled_object(
                     rng=rng,
                     object_id=f"context_{index}_{shape}",
-                    shape_type=shape,
+                    shape_type=str(shape),
                     object_role="context",
                     xy=(float(slot_x + rng.uniform(-0.08, 0.08)), float(slot_y + rng.uniform(-0.08, 0.08))),
                 )
@@ -549,9 +553,19 @@ class ThreeDSpatialObjectRelationLabelTask:
 
         answer_label = str(dataset["answer_label"])
         answer_gt = TypedValue(type="option_letter", value=str(answer_label))
-        annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.annotation_bboxes]
-        if len(annotation_bboxes) != 1:
+        raw_annotation_bboxes = [[round(float(value), 3) for value in bbox] for bbox in rendered_scene.annotation_bboxes]
+        if len(raw_annotation_bboxes) != 1:
             raise RuntimeError(f"{TASK_ID} expected exactly one annotation bbox")
+        annotation_bounds = [
+            0.0,
+            0.0,
+            float(image.width),
+            float(rendered_scene.option_panel_bbox_px[1]) if rendered_scene.option_panel_bbox_px else float(image.height),
+        ]
+        annotation_bboxes, annotation_bbox_normalization = normalize_annotation_bboxes(
+            raw_annotation_bboxes,
+            bounds_px=annotation_bounds,
+        )
         annotation_payload = bbox_annotation_artifacts(annotation_bboxes[0])
         annotation_gt = annotation_payload.annotation_gt
         solver_trace = dict(dataset["solver_trace"])
@@ -619,6 +633,7 @@ class ThreeDSpatialObjectRelationLabelTask:
                 "camera": dict(dataset["camera"]),
                 "projection_frame": dict(dataset["projection_frame"]),
                 "label_font_size_px": int(render_params.label_font_size_px),
+                "annotation_bbox_normalization": dict(annotation_bbox_normalization),
             },
             "render_map": {
                 "image_id": "img0",
@@ -636,6 +651,10 @@ class ThreeDSpatialObjectRelationLabelTask:
                 "object_centers_px": {str(key): list(value) for key, value in rendered_scene.object_centers_px.items()},
                 "context_object_bboxes_px": {str(key): list(value) for key, value in rendered_scene.context_object_bboxes_px.items()},
                 "context_object_centers_px": {str(key): list(value) for key, value in rendered_scene.context_object_centers_px.items()},
+                "annotation_raw_bboxes_px": [list(bbox) for bbox in raw_annotation_bboxes],
+                "annotation_bboxes_px": [list(bbox) for bbox in annotation_bboxes],
+                "annotation_entity_ids": [str(item) for item in rendered_scene.annotation_entity_ids],
+                "annotation_bbox_normalization": dict(annotation_bbox_normalization),
             },
             "execution_trace": {
                 "query_id": str(query_id),

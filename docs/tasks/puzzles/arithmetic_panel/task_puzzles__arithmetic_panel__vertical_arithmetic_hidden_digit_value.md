@@ -12,7 +12,15 @@
 9. Program schema: `solve_digit(vertical_arithmetic, operation=addition|subtraction, target=question_mark_digit); scene=arithmetic_panel; scope=vertical_arithmetic_hidden_digit_value`
 
 ## Program Contract
-`solve_digit(vertical_arithmetic, operation=addition|subtraction, target=question_mark_digit); scene=arithmetic_panel; scope=vertical_arithmetic_hidden_digit_value`
+
+Program: `solve_digit(vertical_arithmetic, operation=addition|subtraction, target=question_mark_digit); scene=arithmetic_panel; scope=vertical_arithmetic_hidden_digit_value`
+
+Candidate set: the visible arithmetic panels, numeric entries, operators, totals, and marked target cell/node/brick inside the `vertical_arithmetic_hidden_digit_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `vertical_arithmetic`, `operation`, `addition`, `subtraction`, `question_mark_digit`, `arithmetic_panel`, `vertical_arithmetic_hidden_digit_value` plus the active `query_id` branch.
+Operation: evaluate `solve_digit` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the scalar bbox is the pixel box around the single visible question-mark target cell, node, or brick. It is not a one-item set.
+Query ids: `hidden_addition_digit_value`, `hidden_subtraction_digit_value`.
 
 ## 2) Scene + task contract
 1. Entities/relations: A vertical arithmetic layout with one question-mark digit cell and a visible addition or subtraction operator.

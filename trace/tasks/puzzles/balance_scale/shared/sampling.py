@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from itertools import cycle
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import integer_range_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.puzzles.shared.common import get_int_param, get_int_range
 from trace.tasks.puzzles.shared.symbol_rendering import (
     PUZZLE_OBJECT_COLOR_BY_TYPE,
@@ -13,7 +16,6 @@ from trace.tasks.puzzles.shared.unit_size_jitter import (
     scale_puzzle_px,
 )
 from trace.tasks.puzzles.shared.common import resolve_puzzle_axis_variant
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from .state import (
     BalanceScaleRenderParams,
@@ -102,12 +104,13 @@ def resolve_integer_answer(
     support = [int(value) for value in range(int(low), int(high) + 1)]
     if not support:
         raise ValueError("balance-scale answer support cannot be empty")
-    selection = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.answer",
+    rng = spawn_rng(int(instance_seed), f"{namespace}.answer")
+    selected, _probabilities = integer_range_choice(
+        rng,
+        int(support[0]),
+        int(support[-1]),
     )
-    return int(support[int(selection % len(support))]), support
+    return int(selected), support
 
 
 def resolve_panel_count(
@@ -128,12 +131,13 @@ def resolve_panel_count(
         fallback_max=3,
     )
     support = [int(value) for value in range(int(low), int(high) + 1)]
-    selection = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.scale_panel_count",
+    rng = spawn_rng(int(instance_seed), f"{namespace}.scale_panel_count")
+    selected, _probabilities = integer_range_choice(
+        rng,
+        int(support[0]),
+        int(support[-1]),
     )
-    return int(support[int(selection % len(support))])
+    return int(selected)
 
 
 def resolve_render_params(
@@ -256,11 +260,16 @@ def object_specs_for_labels(
 
     specs: Dict[str, Dict[str, Any]] = {}
     object_types = tuple(str(item) for item in BALANCE_OBJECT_TYPES)
-    for index, label in enumerate(labels):
-        object_type = object_types[(int(offset) + int(index)) % len(object_types)]
+    offset_index = int(offset)
+    if offset_index < 0:
+        raise ValueError("balance object type offset must be non-negative")
+    while offset_index >= len(object_types):
+        offset_index -= len(object_types)
+    rotated_object_types = object_types[offset_index:] + object_types[:offset_index]
+    for label, object_type in zip(labels, cycle(rotated_object_types)):
         specs[str(label)] = {
             "object_label": str(label),
-            "object_type": object_type,
+            "object_type": str(object_type),
             "fill_rgb": list(PUZZLE_OBJECT_COLOR_BY_TYPE[object_type]),
         }
     return specs
@@ -268,6 +277,7 @@ def object_specs_for_labels(
 
 __all__ = [
     "object_specs_for_labels",
+    "BALANCE_OBJECT_TYPES",
     "resolve_integer_answer",
     "resolve_panel_count",
     "resolve_render_params",

@@ -29,10 +29,14 @@ _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_scene_generation_rende
 def dynamic_slots(dataset: Mapping[str, Any]) -> dict[str, Any]:
     question_params = dict(dataset.get("question_params", {}))
     scene_variant = str(dataset.get("scene_variant") or "")
-    if bool(dataset.get("show_region_value_labels")):
+    if "marker_render_variant" in dataset or "marker_region_ids" in question_params:
+        object_description = str(dataset.get("map_object_description") or "a map with marker bubbles")
+    elif bool(dataset.get("show_region_value_labels")):
         object_description = "a map with colored regions, visible region labels, visible integer values, and a legend"
         if str(scene_variant) == "geographic_region_map":
             object_description = "a world map with selected countries colored by value, visible integer values, and a legend"
+    elif bool(dataset.get("show_region_reference_labels")):
+        object_description = "a synthetic map with colored regions, short region labels, and a legend"
     elif str(scene_variant) == "geographic_region_map":
         object_description = str(dataset.get("map_object_description") or "a geographic map with selected colored regions and a legend")
         if bool(dataset.get("categorical")):
@@ -47,8 +51,10 @@ def dynamic_slots(dataset: Mapping[str, Any]) -> dict[str, Any]:
         "region_noun": str(dataset.get("map_region_noun") or ("countries" if str(scene_variant) == "geographic_region_map" else "regions")),
         "continent_label": str(question_params.get("continent_label", "")),
         "threshold_phrase": str(question_params.get("threshold_phrase", "")),
+        "extremum_word": str(question_params.get("extremum_word", "")),
         "interval_phrase": str(question_params.get("interval_phrase", "")),
         "category_label": str(question_params.get("category_label", "")),
+        "reference_region_label": str(question_params.get("reference_region_label", "")),
         "region_set_name": str(question_params.get("region_set_name", "")),
         "region_set_label_list": str(question_params.get("region_set_label_list", "")),
     }

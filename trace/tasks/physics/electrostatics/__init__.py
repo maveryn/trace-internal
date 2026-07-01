@@ -1,1 +1,0 @@
-"""Physics electrostatics task implementations."""

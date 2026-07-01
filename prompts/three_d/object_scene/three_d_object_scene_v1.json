@@ -327,9 +327,9 @@
     },
     "task:camera_distance_extremum_query": {
       "object_description": "a perspective 3D platform scene with several small objects and larger props",
-      "annotation_hint": "set \"annotation\" to an array containing one bounding box [x0, y0, x1, y1] around the selected small object in the scene",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] bounding box around the selected small object in the scene",
       "answer_hint": "set \"answer\" to the selected option letter",
-      "json_example": "{\"annotation\":[[318,260,366,308]],\"answer\":\"C\"}",
+      "json_example": "{\"annotation\":[318,260,366,308],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "task:marked_point_depth_extremum_query": {

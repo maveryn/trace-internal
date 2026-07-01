@@ -622,6 +622,26 @@ def resolve_winning_label_threat_kind(
     )
 
 
+def resolve_blocking_label_threat_kind(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+) -> tuple[str, dict[str, float]]:
+    """Resolve the opponent threat pattern for the blocking-column label task."""
+
+    return resolve_scene_axis(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=gen_defaults,
+        namespace="games.connect_four.blocking_move_column_label.threat_kind",
+        explicit_key="blocking_move_label_threat_kind",
+        weights_key="blocking_move_label_threat_kind_weights",
+        balance_flag_key="balanced_blocking_move_label_threat_kind_sampling",
+        supported_values=SUPPORTED_WINNING_MOVE_LABEL_THREAT_KINDS,
+    )
+
+
 def _target_column_for_label_task(*, rng, params: Mapping[str, Any], columns: int) -> tuple[int, str, tuple[str, ...]]:
     column_labels = column_labels_for_columns(int(columns))
     label_to_col = {str(label): int(index) for index, label in enumerate(column_labels)}
@@ -639,6 +659,80 @@ def _target_column_for_label_task(*, rng, params: Mapping[str, Any], columns: in
         return int(column), str(column_labels[int(column)]), tuple(column_labels)
     column = int(uniform_choice(rng, tuple(range(int(columns)))))
     return int(column), str(column_labels[int(column)]), tuple(column_labels)
+
+
+def sample_blocking_column_label_scene(
+    *,
+    rng,
+    axes: ConnectFourSceneAxes,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    gen_defaults: Mapping[str, Any],
+) -> ConnectFourLabelSample:
+    """Construct one scene with exactly one column that blocks the opponent's immediate win."""
+
+    current_player = resolve_current_player(rng, params=params)
+    opposing_player = int(opponent(int(current_player)))
+    threat_kind, threat_kind_probabilities = resolve_blocking_label_threat_kind(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=gen_defaults,
+    )
+    target_column, answer_label, column_labels = _target_column_for_label_task(rng=rng, params=params, columns=int(axes.board_columns))
+    base_board, construction_mode = _construct_winning_label_base(
+        rng=rng,
+        current_player=int(opposing_player),
+        target_column=int(target_column),
+        rows=int(axes.board_rows),
+        columns=int(axes.board_columns),
+        threat_kind=str(threat_kind),
+    )
+    board = _augment_board_density(
+        rng=rng,
+        board=base_board,
+        current_player=int(opposing_player),
+        count_mode="winning",
+        target_answer=1,
+        scene_variant=str(axes.scene_variant),
+    )
+    if winning_drop_map(board, int(current_player)):
+        raise ValueError("blocking scene should not give the current player an immediate win")
+    opponent_wins = winning_drop_map(board, int(opposing_player))
+    if set(opponent_wins.keys()) != {int(target_column)}:
+        raise ValueError("blocking scene must preserve exactly one opponent winning column")
+    opponent_landing_coord, completed_lines = opponent_wins[int(target_column)]
+    next_board, blocking_coord = drop_disc(board, int(current_player), int(target_column))
+    if tuple(blocking_coord) != tuple(opponent_landing_coord):
+        raise ValueError("blocking move must occupy the opponent's winning landing square")
+    if has_connect_four(next_board, int(current_player)):
+        raise ValueError("blocking move should not also be an immediate win")
+    if winning_drop_map(next_board, int(opposing_player)):
+        raise ValueError("blocking move must remove the opponent's immediate win")
+    evaluation = ConnectFourEvaluation(
+        answer=int(target_column),
+        annotation_coords=(tuple(blocking_coord),),
+        annotation_entity_ids=(coord_to_cell_id(tuple(blocking_coord)),),
+        winning_move_coords=tuple(),
+        safe_move_coords=tuple(),
+    )
+    return ConnectFourLabelSample(
+        board=board,
+        current_player=int(current_player),
+        evaluation=evaluation,
+        occupied_count=int(occupied_cell_count(board)),
+        construction_mode=f"opponent_{str(construction_mode)}",
+        scene_variant=str(axes.scene_variant),
+        board_size_variant=str(axes.board_size_variant),
+        board_rows=int(axes.board_rows),
+        board_columns=int(axes.board_columns),
+        style_variant=str(axes.style_variant),
+        threat_kind=str(threat_kind),
+        threat_kind_probabilities=dict(threat_kind_probabilities),
+        column_labels=tuple(str(label) for label in column_labels),
+        answer_label=str(answer_label),
+        answer_column=int(target_column),
+        winning_line_coords=tuple(tuple(coord) for coord in completed_lines[0]),
+    )
 
 
 def sample_winning_column_label_scene(
@@ -849,8 +943,10 @@ __all__ = [
     "resolve_current_player",
     "resolve_scene_axis",
     "resolve_target_answer",
+    "resolve_blocking_label_threat_kind",
     "resolve_winning_label_threat_kind",
     "safe_move_coords",
+    "sample_blocking_column_label_scene",
     "sample_column_disc_profile_label_scene",
     "sample_count_scene",
     "sample_winning_column_label_scene",

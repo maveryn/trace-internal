@@ -62,47 +62,6 @@ def remove_top_cubes(stack: CubeStack, removals: Iterable[GridCell]) -> CubeStac
     return result
 
 
-def exposed_face_counts(stack: CubeStack) -> dict[Cube, int]:
-    """Return exposed-face counts for every cube in the stack.
-
-    The model treats exterior painting as all faces exposed to air, including
-    bottom faces. This keeps the task a finite voxel-surface computation rather
-    than a hidden-physical-object convention.
-    """
-
-    occupied = set(cube_coordinates(stack))
-    deltas = (
-        (1, 0, 0),
-        (-1, 0, 0),
-        (0, 1, 0),
-        (0, -1, 0),
-        (0, 0, 1),
-        (0, 0, -1),
-    )
-    counts: dict[Cube, int] = {}
-    for cube in occupied:
-        exposed = 0
-        for dr, dc, dz in deltas:
-            neighbor = (cube[0] + dr, cube[1] + dc, cube[2] + dz)
-            if neighbor not in occupied:
-                exposed += 1
-        counts[cube] = int(exposed)
-    return counts
-
-
-def exterior_face_total(stack: CubeStack) -> int:
-    """Return the total number of exposed faces across the whole stack."""
-
-    return sum(exposed_face_counts(stack).values())
-
-
-def exact_exposed_face_cube_count(stack: CubeStack, exposed_faces: int) -> int:
-    """Return how many cubes have exactly the requested exposed-face count."""
-
-    target = int(exposed_faces)
-    return sum(1 for value in exposed_face_counts(stack).values() if value == target)
-
-
 def projection_grid(stack: CubeStack, direction: str) -> ProjectionGrid:
     """Project one voxel stack into a top/front/right occupied-cell grid."""
 

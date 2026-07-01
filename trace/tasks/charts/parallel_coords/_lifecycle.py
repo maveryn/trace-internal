@@ -13,10 +13,11 @@ from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PromptTraceArtifacts, build_prompt_query_spec
 from .shared.annotations import (
     crossing_point_set,
-    point_annotation,
     point_set_annotation,
-    profile_segment_midpoint,
-    profile_segment_point_set,
+    profile_segment,
+    profile_segment_set,
+    segment_annotation,
+    segment_set_annotation,
 )
 from .shared.defaults import SCENE_ID
 from .shared.output import build_trace_payload
@@ -80,7 +81,7 @@ def crossing_point_set_plan(
     )
 
 
-def profile_segment_point_set_plan(
+def profile_segment_set_plan(
     *,
     dataset: ParallelDataset,
     params: dict[str, Any],
@@ -88,15 +89,15 @@ def profile_segment_point_set_plan(
     prompt_branch_key: str,
     extra_trace_params: dict[str, Any],
 ) -> ParallelCoordsTaskPlan:
-    """Render and annotate count tasks with one midpoint per counted profile segment."""
+    """Render and annotate count tasks with one segment per counted profile line."""
 
     rendered = render_dataset(dataset=dataset, params=params, instance_seed=int(instance_seed))
-    points = profile_segment_point_set(
+    segments = profile_segment_set(
         dataset,
         rendered.rendered_scene,
         profile_ids=dataset.query.annotation_profile_ids,
     )
-    annotation_gt, witness_symbolic, projected_annotation = point_set_annotation(points)
+    annotation_gt, witness_symbolic, projected_annotation = segment_set_annotation(segments)
     prompt_artifacts = build_prompt_artifacts(
         prompt_query_key=str(prompt_branch_key),
         dynamic_slot_values=dynamic_slots(dataset),
@@ -115,7 +116,7 @@ def profile_segment_point_set_plan(
     )
 
 
-def profile_segment_point_plan(
+def profile_segment_plan(
     *,
     dataset: ParallelDataset,
     params: dict[str, Any],
@@ -123,12 +124,12 @@ def profile_segment_point_plan(
     prompt_branch_key: str,
     extra_trace_params: dict[str, Any],
 ) -> ParallelCoordsTaskPlan:
-    """Render and annotate one selected profile segment with a scalar point."""
+    """Render and annotate one selected profile segment."""
 
     rendered = render_dataset(dataset=dataset, params=params, instance_seed=int(instance_seed))
     target_profile_id = str(dataset.query.annotation_profile_ids[0])
-    point = profile_segment_midpoint(dataset, rendered.rendered_scene, profile_id=target_profile_id)
-    annotation_gt, witness_symbolic, projected_annotation = point_annotation(point)
+    segment = profile_segment(dataset, rendered.rendered_scene, profile_id=target_profile_id)
+    annotation_gt, witness_symbolic, projected_annotation = segment_annotation(segment)
     prompt_artifacts = build_prompt_artifacts(
         prompt_query_key=str(prompt_branch_key),
         dynamic_slot_values=dynamic_slots(dataset),
@@ -213,7 +214,7 @@ def run_parallel_coords_task(task: Any, instance_seed: int, params: dict[str, An
 __all__ = [
     "ParallelCoordsTaskPlan",
     "crossing_point_set_plan",
-    "profile_segment_point_plan",
-    "profile_segment_point_set_plan",
+    "profile_segment_plan",
+    "profile_segment_set_plan",
     "run_parallel_coords_task",
 ]

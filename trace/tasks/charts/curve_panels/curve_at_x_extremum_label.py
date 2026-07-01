@@ -30,8 +30,6 @@ from trace.tasks.charts.curve_panels.shared.sampling import (
 
 QUERY_ID = "curve_at_x_extremum_label"
 TASK_PARAM_DEFAULTS: dict[str, Any] = {
-    "panel_count_min": 6,
-    "panel_count_max": 8,
     "method_count_min": 6,
     "method_count_max": 6,
     "x_tick_count_min": 8,
@@ -169,6 +167,7 @@ class ChartsScientificCurveAtXExtremumLabelTask:
                 "x_value": str(query.x_value),
             },
             instance_seed=int(instance_seed),
+            annotation_type="point",
         )
 
     def generate(

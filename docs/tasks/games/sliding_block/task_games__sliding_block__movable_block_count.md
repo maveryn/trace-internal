@@ -11,7 +11,15 @@
 8. Scalar annotation checked: `true`
 
 ## Program Contract
-- `count(blocks_with_legal_one_cell_slide_along_orientation(board_state)); scene=sliding_block; scope=movable_block_count`
+
+Program: `count(blocks_with_legal_one_cell_slide_along_orientation(board_state)); scene=sliding_block; scope=movable_block_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `movable_block_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `blocks_with_legal_one_cell_slide_along_orientation`, `board_state`, `sliding_block`, `movable_block_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The board has no target block for this task.

@@ -7,6 +7,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
 from trace.tasks.three_d.shared.object_scene import ObjectSceneRenderParams
+from trace.tasks.three_d.shared.task_support import shuffled_repeated_support
 
 from .defaults import (
     CLUSTER_SCENE_VARIANTS,
@@ -301,10 +302,8 @@ def _add_to_counts(
     exact_keys = [key for key in _all_exact_property_keys() if _predicate_matches_key(predicate, key)]
     if not exact_keys:
         raise ValueError("counterfactual add predicate has no exact support")
-    rng.shuffle(exact_keys)
     added: Dict[str, int] = {}
-    for index in range(int(amount)):
-        key = exact_keys[int(index) % len(exact_keys)]
+    for key in shuffled_repeated_support(rng, exact_keys, int(amount)):
         current_counts[key] += 1
         added[f"{key[1]}_{key[0]}"] = int(added.get(f"{key[1]}_{key[0]}", 0)) + 1
     return dict(added)
@@ -732,10 +731,47 @@ def build_count_request(
     elif str(mode).startswith("arithmetic_"):
         operand_min = max(1, int(gen_defaults.get("operand_count_min", 1)))
         operand_max = max(int(operand_min), int(gen_defaults.get("operand_count_max", 7)))
-        left_count, left_probabilities = resolve_uniform_count(params=params, explicit_key="left_operand_count", minimum=int(operand_min), maximum=int(operand_max), instance_seed=int(instance_seed), namespace=f"{namespace}.left_operand_count")
-        right_count, right_probabilities = resolve_uniform_count(params=params, explicit_key="right_operand_count", minimum=int(operand_min), maximum=int(operand_max), instance_seed=int(instance_seed), namespace=f"{namespace}.right_operand_count")
         operation = "total" if str(mode).endswith("_total") else "absolute_difference"
-        answer_value = int(left_count) + int(right_count) if operation == "total" else abs(int(left_count) - int(right_count))
+        explicit_left = params.get("left_operand_count") is not None
+        explicit_right = params.get("right_operand_count") is not None
+        if bool(explicit_left) != bool(explicit_right):
+            raise ValueError("left_operand_count and right_operand_count must be provided together")
+        if str(operation) == "absolute_difference" and not bool(explicit_left):
+            difference_min = max(0, int(gen_defaults.get("difference_answer_min", 0)))
+            difference_max = max(
+                int(difference_min),
+                min(int(gen_defaults.get("difference_answer_max", int(operand_max) - int(operand_min))), int(operand_max) - int(operand_min)),
+            )
+            support = tuple(range(int(difference_min), int(difference_max) + 1))
+            explicit_answer = params.get("answer_value")
+            if explicit_answer is not None:
+                answer_value = int(explicit_answer)
+                if int(answer_value) not in set(support):
+                    raise ValueError(f"unsupported arithmetic answer_value: {answer_value}")
+            else:
+                answer_value, _answer_probabilities = resolve_uniform_count(
+                    params=params,
+                    explicit_key="answer_value",
+                    minimum=int(difference_min),
+                    maximum=int(difference_max),
+                    instance_seed=int(instance_seed),
+                    namespace=f"{namespace}.difference_answer_value",
+                )
+            count_pairs = [
+                (left, right)
+                for left in range(int(operand_min), int(operand_max) + 1)
+                for right in range(int(operand_min), int(operand_max) + 1)
+                if abs(int(left) - int(right)) == int(answer_value)
+            ]
+            if not count_pairs:
+                raise ValueError(f"no arithmetic operand counts for difference answer {answer_value}")
+            left_count, right_count = count_pairs[int(rng.randrange(len(count_pairs)))]
+            left_probabilities = {str(left_count): 1.0}
+            right_probabilities = {str(right_count): 1.0}
+        else:
+            left_count, left_probabilities = resolve_uniform_count(params=params, explicit_key="left_operand_count", minimum=int(operand_min), maximum=int(operand_max), instance_seed=int(instance_seed), namespace=f"{namespace}.left_operand_count")
+            right_count, right_probabilities = resolve_uniform_count(params=params, explicit_key="right_operand_count", minimum=int(operand_min), maximum=int(operand_max), instance_seed=int(instance_seed), namespace=f"{namespace}.right_operand_count")
+            answer_value = int(left_count) + int(right_count) if operation == "total" else abs(int(left_count) - int(right_count))
         operand_total = int(left_count) + int(right_count)
         object_minimum = max(int(gen_defaults.get("object_count_min", 16)), int(operand_total) + 4)
         object_count, object_probabilities = resolve_uniform_count(params=params, explicit_key="object_count", minimum=int(object_minimum), maximum=max(object_minimum, int(gen_defaults.get("object_count_max", 30))), instance_seed=int(instance_seed), namespace=f"{namespace}.object_count")

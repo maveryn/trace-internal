@@ -1,14 +1,15 @@
 # `task_games__rhythm__lane_note_count`
 
 ## Program Contract
-- Domain: `games`
-- Scene: `rhythm`
-- Public task id: `task_games__rhythm__lane_note_count`
-- Supported `query_id` values: `single`
-- Answer schema: `integer_count`
-- Annotation schema: `bbox_set`
-- Program schema: `count(filter(notes, lane=target_lane)); scene=rhythm; scope=lane_note_count`
-- Program code: `count.filter.rhythm_lane_notes`
+
+Program: `count(filter(notes, lane=target_lane)); scene=rhythm; scope=lane_note_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `lane_note_count` objective scope.
+Operands: visible scene state and prompt-bound target operands named by the task contract.
+Operation: evaluate `count(filter(notes, lane=target_lane))` over visible rhythm notes; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema for all note objects in the target lane.
+Query ids: `single`.
 
 ## Notes
 - `target_lane` is prompt-bound by lane number.

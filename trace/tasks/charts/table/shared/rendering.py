@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.tasks.charts.shared.dense_text import dense_fit_bold, dense_stroke_width
 from trace.core.seed import hash64
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
@@ -142,7 +143,7 @@ def _draw_text_in_cell(
         font=fitted_font,
         fill=tuple(int(value) for value in fill_rgb),
         stroke_fill=tuple(int(value) for value in stroke_rgb),
-        stroke_width=1,
+        stroke_width=dense_stroke_width(),
     )
     return _text_bbox_from_center(center=center, text=str(text), draw=draw, font=fitted_font)
 
@@ -254,9 +255,7 @@ def _style_fill_for_cell(
         return tuple(int(value) for value in params.header_fill_rgb)
     if str(scene_variant) == "zebra" and int(row_index) % 2 == 0:
         return tuple(int(value) for value in params.zebra_row_fill_rgb)
-    if str(scene_variant) == "card_table":
-        return tuple(int(value) for value in params.card_fill_rgb)
-    return (255, 255, 255)
+    return tuple(int(value) for value in params.card_fill_rgb)
 
 
 def render_table_scene(
@@ -280,7 +279,7 @@ def render_table_scene(
 
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
-    label_font = load_font(int(render_params.label_font_size_px), bold=True)
+    label_font = load_font(int(render_params.label_font_size_px), bold=dense_fit_bold())
     value_font = load_font(int(render_params.value_font_size_px), bold=False)
 
     table_left = float(render_params.table_margin_left_px)
@@ -334,7 +333,7 @@ def render_table_scene(
     else:
         draw.rectangle(
             table_bbox,
-            fill=(255, 255, 255),
+            fill=tuple(int(value) for value in render_params.card_fill_rgb),
             outline=tuple(int(value) for value in render_params.border_color_rgb),
             width=int(render_params.border_width_px),
         )
@@ -457,7 +456,7 @@ def render_table_scene(
             text=str(text),
             bbox=bbox,
             font=label_font if str(role) in {"header", "row_label"} else value_font,
-            bold=str(role) in {"header", "row_label"},
+            bold=dense_fit_bold() if str(role) in {"header", "row_label"} else False,
             fill_rgb=text_fill_rgb,
             stroke_rgb=render_params.text_stroke_rgb,
             align=str(text_align),

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Sequence, Tuple
+from typing import Sequence
 
 from .state import Point
 
@@ -28,19 +28,6 @@ def direction_endpoint(start: Point, bearing: int, length: float) -> Point:
     return (float(start[0]) + vx * float(length), float(start[1]) + vy * float(length))
 
 
-def polygon_area(points: Sequence[Tuple[int, int]]) -> int:
-    """Return integer shoelace area for an ordered coordinate traverse polygon."""
-
-    twice_area = 0
-    for idx, (x0, y0) in enumerate(points):
-        x1, y1 = points[(idx + 1) % len(points)]
-        twice_area += int(x0) * int(y1) - int(y0) * int(x1)
-    twice_area = abs(int(twice_area))
-    if twice_area % 2 != 0:
-        raise ValueError("survey coordinate traverse case must have integer area")
-    return int(twice_area // 2)
-
-
 def offset_area_from_chainages(chainages: Sequence[int], offsets: Sequence[int]) -> int:
     """Return area from baseline chainages and perpendicular offsets."""
 
@@ -62,5 +49,4 @@ __all__ = [
     "direction_endpoint",
     "normalize_bearing",
     "offset_area_from_chainages",
-    "polygon_area",
 ]

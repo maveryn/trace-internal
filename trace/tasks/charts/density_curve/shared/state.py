@@ -109,6 +109,7 @@ class DensityCurveRendered:
     mean_marker_bboxes_px: Dict[str, BBox]
     mode_marker_bboxes_px: Dict[str, BBox]
     interval_mass_bboxes_px: Dict[str, BBox]
+    interval_mass_points_px: Dict[str, List[float]]
     density_at_x_points_px: Dict[str, List[float]]
     title_bbox_px: BBox
     render_meta: Dict[str, Any]

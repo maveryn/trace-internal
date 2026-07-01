@@ -57,7 +57,7 @@ rendering:
     bar_width_fraction: 0.72
     mark_color_channel_min: 0
     mark_color_channel_max: 220
-    mark_color_min_distance: 40.0
+    mark_color_min_distance: 50.0
     mark_color_distance_space: lab
     guide_line_mode: variant
     guide_line_prob: 0.75

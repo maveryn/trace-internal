@@ -9,7 +9,7 @@ from typing import Any
 from trace.core.seed import hash64
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.charts.scatter_readout.shared.annotations import bbox_map_annotation_for_binding
+from trace.tasks.charts.scatter_readout.shared.annotations import annotation_for_binding
 from trace.tasks.charts.scatter_readout.shared.output import (
     answer_value,
     base_execution_record,
@@ -34,6 +34,7 @@ class ScatterReadoutTaskPlan:
     dynamic_slots: dict[str, Any]
     question_format: str
     program_code: str
+    annotation_kind: str
     query_params: dict[str, Any]
     reasoning_load: float
 
@@ -65,7 +66,11 @@ def materialize_scatter_readout_plan(
         params=dict(plan.params),
         instance_seed=int(instance_seed),
     )
-    annotation, witness_symbolic = bbox_map_annotation_for_binding(binding=binding, rendered=rendered)
+    annotation, witness_symbolic = annotation_for_binding(
+        binding=binding,
+        rendered=rendered,
+        annotation_kind=str(plan.annotation_kind),
+    )
     prompt_artifacts = build_prompt_artifacts(
         prompt_query_key=str(plan.prompt_query_key),
         dynamic_slot_values=dict(plan.dynamic_slots),
@@ -86,7 +91,8 @@ def materialize_scatter_readout_plan(
             dataset=dataset,
             binding=binding,
             rendered=rendered,
-            annotation_bbox_map=dict(annotation.value),
+            annotation_type=str(annotation.annotation_type),
+            annotation_value=annotation.value,
         ),
         "query_id": str(selected_query_id),
         "query_id_probabilities": dict(query_probabilities),
@@ -104,7 +110,7 @@ def materialize_scatter_readout_plan(
                 "query_id": str(selected_query_id),
                 "scene_variant": str(dataset.scene_variant),
                 "answer": resolved_answer,
-                "annotation_bbox_keys": list(dict(annotation.value).keys()),
+                "annotation_type": str(annotation.annotation_type),
             },
         },
         "query_spec": build_prompt_query_spec(
@@ -177,6 +183,75 @@ def two_point_readout_binding(
     )
 
 
+def single_point_readout_binding(
+    *,
+    answer: int | str,
+    answer_type: str,
+    target_series_label: str,
+    target_point_id: str,
+    target_x_label: str,
+    target_y_value: int | str,
+    operation: str = "",
+    extra_trace: Mapping[str, Any] | None = None,
+) -> QueryBinding:
+    """Build the common trace for objectives grounded by one visible point."""
+
+    trace: dict[str, Any] = {
+        "target_series_label": str(target_series_label),
+        "target_point_id": str(target_point_id),
+        "target_x_label": str(target_x_label),
+        "target_y_value": target_y_value,
+        "annotation_point_ids": [str(target_point_id)] if str(target_point_id) else [],
+        "annotation_x_label": str(target_x_label),
+        "answer": int(answer) if str(answer_type) == "integer" else str(answer),
+        "answer_type": str(answer_type),
+    }
+    if operation:
+        trace["operation"] = str(operation)
+    if extra_trace:
+        trace.update(dict(extra_trace))
+    return QueryBinding(
+        answer=int(answer) if str(answer_type) == "integer" else str(answer),
+        answer_type=str(answer_type),
+        target_series_label=str(target_series_label),
+        target_point_id=str(target_point_id),
+        annotation_point_ids=(str(target_point_id),) if str(target_point_id) else (),
+        annotation_x_label=str(target_x_label),
+        trace=trace,
+    )
+
+
+def single_point_readout_plan(
+    *,
+    dataset: SceneDataset,
+    binding: QueryBinding,
+    params: Mapping[str, Any],
+    prompt_query_key: str,
+    question_format: str,
+    program_code: str,
+    query_params: Mapping[str, Any],
+    reasoning_load: float,
+    include_unanswerable_instruction: bool = False,
+) -> ScatterReadoutTaskPlan:
+    """Build the common output plan for objectives grounded by one point."""
+
+    return ScatterReadoutTaskPlan(
+        dataset=dataset,
+        binding=binding,
+        params=dict(params),
+        prompt_query_key=str(prompt_query_key),
+        dynamic_slots=dynamic_slots(
+            binding=binding,
+            include_unanswerable_instruction=bool(include_unanswerable_instruction),
+        ),
+        question_format=str(question_format),
+        program_code=str(program_code),
+        annotation_kind="target_point",
+        query_params=dict(query_params),
+        reasoning_load=float(reasoning_load),
+    )
+
+
 def numeric_pair_readout_plan(
     *,
     params: Mapping[str, Any],
@@ -186,6 +261,7 @@ def numeric_pair_readout_plan(
     prompt_query_key: str,
     question_format: str,
     program_code: str,
+    annotation_kind: str,
     operation: str,
     reasoning_load: float,
     answer_fn: NumericPairAnswer,
@@ -218,6 +294,7 @@ def numeric_pair_readout_plan(
         dynamic_slots=dynamic_slots(binding=binding, include_unanswerable_instruction=False),
         question_format=str(question_format),
         program_code=str(program_code),
+        annotation_kind=str(annotation_kind),
         query_params={
             "operation": str(operation),
             "query_id_probabilities": dict(query_probabilities),
@@ -270,5 +347,7 @@ __all__ = [
     "numeric_pair_readout_plan",
     "run_scatter_readout_lifecycle",
     "scatter_readout_attempt_seed",
+    "single_point_readout_binding",
+    "single_point_readout_plan",
     "two_point_readout_binding",
 ]

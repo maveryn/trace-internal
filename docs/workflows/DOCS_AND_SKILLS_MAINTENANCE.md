@@ -47,7 +47,7 @@ Update docs and skills in the same patch when changing any of these surfaces:
 2. Architecture/module flow changes -> `docs/contracts/SYSTEM_ARCHITECTURE.md`.
 3. Prompt-system changes -> `docs/contracts/PROMPT_SYSTEM.md`.
 4. Public answer/annotation reward-contract changes ->
-   `docs/contracts/RLVR_REWARD_CONTRACTS.md`.
+   `docs/contracts/ANNOTATION_AND_REWARD_CONTRACTS.md`.
 5. Shared-helper placement/API changes -> `docs/contracts/SYSTEM_ARCHITECTURE.md`,
    the relevant domain setup doc, or the relevant
    `docs/SCENE_PACKAGE_MIGRATION/*_SHARED_BOUNDARY.md` file.

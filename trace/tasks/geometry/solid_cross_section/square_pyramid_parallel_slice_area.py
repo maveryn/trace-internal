@@ -8,7 +8,6 @@ from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
 
 from ._lifecycle import SolidCrossSectionObjectivePlan, prepare_solid_cross_section_task_parts
-from .shared.annotations import PYRAMID_ANNOTATION_KEYS
 from .shared.defaults import DOMAIN, SCENE_ID
 from .shared.measurements import pyramid_problem_from_case
 from .shared.rendering import render_square_pyramid_cross_section
@@ -54,9 +53,9 @@ def _prepare_pyramid_objective(
     }
     return SolidCrossSectionObjectivePlan(
         prompt_key=PROMPT_KEY,
+        object_description="a square pyramid cut by a plane parallel to its base, with the cross-section marked and dimensions labeled",
         problem=problem,
         render_scene=render_square_pyramid_cross_section,
-        annotation_keys=PYRAMID_ANNOTATION_KEYS,
         answer_value=float(problem.answer),
         query_params={
             "query_id_probabilities": dict(query_probabilities),
@@ -104,7 +103,7 @@ class GeometrySquarePyramidParallelSliceAreaTask:
         return TaskOutput(
             prompt=parts.prompt,
             answer_gt=TypedValue(type="number", value=float(plan.answer_value)),
-            annotation_gt=TypedValue(type="bbox_map", value=dict(parts.annotation_value)),
+            annotation_gt=TypedValue(type="bbox", value=list(parts.annotation_value)),
             image=parts.image,
             image_id="img0",
             trace_payload=parts.trace_payload,

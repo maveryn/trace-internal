@@ -9,13 +9,15 @@
 6. Annotation schema: `segment`
 
 ## Program Contract
-`label(select_option(shot_paths, option_rule=path_satisfies_target)); scene=minigolf; scope=shot_path_label`
 
-The rendered course shows one ball, a hole, obstacles, and numbered shot cues.
-Each cue defines the initial putt direction. The program traces each putt with
-mirror-like wall bounces, selects the only cue that reaches the hole before an
-obstacle, returns that cue label, and annotates the selected visible cue with one
-segment `[[x1, y1], [x2, y2]]`.
+Program: `label(select_option(shot_paths, option_rule=path_satisfies_target)); scene=minigolf; scope=shot_path_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `shot_path_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `select_option`, `shot_paths`, `option_rule`, `path_satisfies_target`, `minigolf`, `shot_path_label`.
+Operation: evaluate `label` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `segment` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. Query ids are internal replay/sampling keys and do not define public task units.

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Mapping, Sequence
+from collections.abc import Mapping, Sequence
 
 from trace.core.types import TypedValue
 from trace.tasks.geometry.shared.measurement_rendering import bbox_to_list
@@ -10,28 +10,27 @@ from trace.tasks.geometry.shared.measurement_rendering import bbox_to_list
 from .state import RenderedSolidFormulaScene
 
 
-def bbox_map_annotation(
-    rendered: RenderedSolidFormulaScene,
-    keys: Sequence[str],
-) -> tuple[TypedValue, dict[str, object]]:
-    """Build role-bound bbox annotation artifacts for one rendered scene."""
+def solid_bbox_annotation(rendered: RenderedSolidFormulaScene) -> tuple[TypedValue, dict[str, object]]:
+    """Build scalar bbox annotation artifacts around the rendered solid."""
 
-    bbox_map = {
-        str(key): bbox_to_list(rendered.annotation_bboxes[str(key)])
-        for key in tuple(str(value) for value in keys)
-    }
+    solid_bbox = rendered.render_map.get("solid", {}).get("bbox")
+    if not isinstance(solid_bbox, Sequence) or len(solid_bbox) != 4:
+        raise ValueError("rendered solid_formula scene is missing render_map.solid.bbox")
+    bbox = bbox_to_list(tuple(float(value) for value in solid_bbox))
     projected_annotation = {
-        "type": "bbox_map",
-        "bbox_map": dict(bbox_map),
-        "pixel_bbox_map": dict(bbox_map),
+        "type": "bbox",
+        "bbox": list(bbox),
+        "pixel_bbox": list(bbox),
     }
-    return TypedValue(type="bbox_map", value=dict(bbox_map)), projected_annotation
+    return TypedValue(type="bbox", value=list(bbox)), projected_annotation
 
 
-def annotation_roles_metadata(annotation_value: Mapping[str, object]) -> list[str]:
-    """Return annotation keys in prompt-facing order."""
+def annotation_roles_metadata(projected_annotation: Mapping[str, object]) -> list[str]:
+    """Return prompt-facing annotation roles for trace metadata."""
 
-    return [str(key) for key in annotation_value.keys()]
+    if projected_annotation.get("type") == "bbox":
+        return ["solid"]
+    return []
 
 
-__all__ = ["annotation_roles_metadata", "bbox_map_annotation"]
+__all__ = ["annotation_roles_metadata", "solid_bbox_annotation"]

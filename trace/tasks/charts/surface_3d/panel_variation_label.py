@@ -29,12 +29,18 @@ PROMPT_QUERY_KEY = "panel_variation_label"
 def _build_panel_dataset(params, instance_seed):
     """Sample small-multiple 3D panels with one panel having the unique largest vertical range."""
 
-    panel_count = balanced_int(
-        low=configured_count(params, "panel_count_min", 4),
-        high=configured_count(params, "panel_count_max", 6),
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.panel_count",
+    min_panel_count = configured_count(params, "panel_count_min", 4)
+    max_panel_count = configured_count(params, "panel_count_max", 6)
+    panel_count_support = tuple(count for count in (4, 6) if int(min_panel_count) <= count <= int(max_panel_count))
+    if not panel_count_support:
+        raise ValueError("panel variation panel-count support must include 4 or 6")
+    panel_count = int(
+        balanced_choice(
+            panel_count_support,
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.panel_count",
+        )
     )
     time_count = balanced_int(
         low=5,
@@ -47,7 +53,7 @@ def _build_panel_dataset(params, instance_seed):
         int(panel_count),
         params=params,
         instance_seed=int(instance_seed),
-        reserved_labels=("Step", "Band", "Value"),
+        reserved_labels=("x-axis", "y-axis", "z-axis"),
     )
     answer_label = str(
         balanced_choice(
@@ -91,9 +97,9 @@ def _build_panel_dataset(params, instance_seed):
         points=(),
         surface_cells=(),
         panels=tuple(panels),
-        x_axis_label="Step",
-        y_axis_label="Band",
-        z_axis_label="Value",
+        x_axis_label="x-axis",
+        y_axis_label="y-axis",
+        z_axis_label="z-axis",
         x_range=(0.0, float(max(1, int(time_count) - 1))),
         y_range=(0.0, 1.0),
         z_range=(0.0, 100.0),

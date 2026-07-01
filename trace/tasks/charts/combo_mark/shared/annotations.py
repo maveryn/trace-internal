@@ -78,14 +78,14 @@ def keyed_point_artifacts(points: Mapping[str, Sequence[float]]) -> AnnotationAr
         for key, point in points.items()
     }
     projected = {
-        "type": "keyed_point_map",
-        "keyed_point_map": dict(value),
-        "pixel_keyed_point_map": dict(value),
+        "type": "point_map",
+        "point_map": dict(value),
+        "pixel_point_map": dict(value),
     }
     return AnnotationArtifacts(
-        annotation_type="keyed_point_map",
+        annotation_type="point_map",
         value=dict(value),
-        annotation_gt=TypedValue(type="keyed_point_map", value=dict(value)),
+        annotation_gt=TypedValue(type="point_map", value=dict(value)),
         projected_annotation=projected,
     )
 

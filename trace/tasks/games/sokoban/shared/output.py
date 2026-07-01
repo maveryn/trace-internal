@@ -124,6 +124,7 @@ def build_sokoban_trace_payload(
             "coord_space": "pixel",
             "scene_id": SCENE_ID,
             "scene_variant": str(axes.scene_variant),
+            "panel_scene_style": dict(scene_style_meta),
             "background_style": dict(background_meta),
             "scene_style": dict(scene_style_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -158,6 +159,8 @@ def build_sokoban_trace_payload(
             public_query_probabilities=public_query_probabilities,
             trace_extra_params=trace_extra_params,
         ),
+        "background": dict(background_meta),
+        "post_image_noise": dict(post_noise_meta),
     }
 
 

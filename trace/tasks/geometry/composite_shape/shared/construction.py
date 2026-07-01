@@ -5,16 +5,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable, Mapping
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 
 from .measurements import (
     QUARTER_CUT_DIMENSION_CANDIDATES,
     RADIUS_SUPPORT,
     SECTOR_DIMENSION_CANDIDATES,
     SEMICIRCLE_DIMENSION_CANDIDATES,
-    dimension_values,
     round1,
-    sector_values,
     semicircle_arc_length,
     semicircle_area,
     semicircle_side_remainder_straight_boundary,
@@ -43,8 +42,11 @@ def resolve_semicircle_dimensions(
 ) -> tuple[int, int, int]:
     """Resolve rectangle width, height, and semicircle radius support values."""
 
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    width_units, height_units, radius_units = dimension_values(int(index))
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    width_units, height_units, radius_units = uniform_choice(
+        rng,
+        SEMICIRCLE_DIMENSION_CANDIDATES,
+    )
     width_units = int(params.get("width_units", width_units))
     height_units = int(params.get("height_units", height_units))
     radius_units = int(params.get("radius_units", max(3, int(height_units // 2))))
@@ -132,7 +134,7 @@ def resolve_semicircle_side_remainder_perimeter_case(
         answer_probabilities=dict(answer_probabilities),
         execution_fields={
             "perimeter_formula": "2*width + 2*height - 2*radius + pi*radius",
-            "answer_rounding": "nearest_tenth",
+            "answer_rounding": "one_decimal",
         },
     )
 
@@ -145,9 +147,11 @@ def resolve_quarter_cut_dimensions(
 ) -> tuple[int, int, int]:
     """Resolve rectangle and radius values for a quarter-sector cutout."""
 
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    width_units, height_units, _radius_hint = dimension_values(int(index))
-    radius_units = RADIUS_SUPPORT[int(index) % len(RADIUS_SUPPORT)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    width_units, height_units, radius_units = uniform_choice(
+        rng,
+        QUARTER_CUT_DIMENSION_CANDIDATES,
+    )
     radius_units = int(params.get("radius_units", radius_units))
     width_units = max(int(radius_units) + 4, int(params.get("width_units", width_units)))
     height_units = max(int(radius_units) + 3, int(params.get("height_units", height_units)))
@@ -199,8 +203,8 @@ def resolve_sector_dimensions(
 ) -> tuple[int, int]:
     """Resolve central angle and radius values for a circular sector."""
 
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    theta_degrees, radius_units = sector_values(int(index))
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    theta_degrees, radius_units = uniform_choice(rng, SECTOR_DIMENSION_CANDIDATES)
     theta_degrees = int(params.get("theta_degrees", theta_degrees))
     radius_units = int(params.get("radius_units", radius_units))
     return int(theta_degrees), int(radius_units)

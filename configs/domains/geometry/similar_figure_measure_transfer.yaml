@@ -23,10 +23,6 @@ prompt:
       bundle_id: geometry_similar_figure_measure_transfer_v0
       scene_key: similar_figure_measure_transfer_scene
       task_key: corresponding_side_value_query
-    scale_factor_value:
-      bundle_id: geometry_similar_figure_measure_transfer_v0
-      scene_key: similar_figure_measure_transfer_scene
-      task_key: scale_factor_value_query
     area_scale_side_length_value:
       bundle_id: geometry_similar_figure_measure_transfer_v0
       scene_key: similar_figure_measure_transfer_scene
@@ -35,7 +31,3 @@ prompt:
       bundle_id: geometry_geo3k_marked_equations_v0
       scene_key: geo3k_similar_figure_scene
       task_key: variable_value_query
-    side_length_from_expression_value:
-      bundle_id: geometry_geo3k_marked_equations_v0
-      scene_key: geo3k_similar_figure_scene
-      task_key: side_length_from_expression_value_query

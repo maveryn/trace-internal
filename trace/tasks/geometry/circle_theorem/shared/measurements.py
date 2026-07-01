@@ -40,7 +40,7 @@ class ChordLengthBinding:
 
 
 def round_tenth(value: float) -> float:
-    """Round geometry decimal answers to the nearest tenth."""
+    """Round geometry decimal answers to the one decimal place."""
 
     return float(round(float(value) + 1e-9, 1))
 
@@ -161,7 +161,7 @@ def chord_length_query_params(
         "angle_degrees": int(spec.angle_degrees),
         "angle_probabilities": dict(binding.angle_probabilities),
         "central_angle_degrees": int(spec.central_angle_degrees),
-        "answer_rounding": "nearest_tenth",
+        "answer_rounding": "one_decimal",
     }
 
 
@@ -250,7 +250,7 @@ def build_chord_length_payload(rng, *, spec: ChordLengthDiagramSpec) -> Dict[str
         "canonical_answer_segment": "AB",
         "answer_segment": str(chord_segment),
         "answer_value": float(spec.answer_value),
-        "answer_rounding": "nearest_tenth",
+        "answer_rounding": "one_decimal",
         "radius_value": int(spec.radius_value),
         "visible_radius_segment": str(radius_segment),
         "angle_degrees": int(spec.angle_degrees),

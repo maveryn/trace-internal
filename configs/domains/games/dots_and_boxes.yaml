@@ -30,6 +30,10 @@ generation:
       - F
     task_games__dots_and_boxes__owned_box_count:
       balanced_target_answer_sampling: true
+      target_owner_weights:
+        A: 1.0
+        B: 1.0
+      balanced_target_owner_sampling: true
       owned_box_count_support:
       - 0
       - 1

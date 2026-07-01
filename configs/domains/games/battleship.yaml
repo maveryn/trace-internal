@@ -59,6 +59,21 @@ generation:
       - 4
       - 5
       - 6
+    task_games__battleship__remaining_ship_shape_label:
+      balanced_target_ship_id_sampling: true
+      balanced_target_answer_sampling: true
+      target_ship_id_weights:
+        line5: 1.0
+        line4: 1.0
+        line3: 1.0
+        square4: 1.0
+        elbow3: 1.0
+      remaining_ship_shape_label_index_support:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
 rendering:
   shared:
     canvas_width: 1100

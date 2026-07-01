@@ -84,7 +84,7 @@
   },
   "static_slots_by_key": {
     "query:mutual_pair_count": {
-      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is [[x1, y1], [x2, y2]], using the centers of the two mirrored matrix cells for one counted mutual node pair; use [] when the answer is zero",
+      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is [[x0, y0], [x1, y1]], where each endpoint is an [x, y] pixel point at the center of one mirrored matrix cell for one counted mutual node pair; use [] when the answer is zero",
       "answer_hint": "set \"answer\" to the number of counted unordered node pairs as an integer",
       "json_example": "{\"annotation\":[[[303,207],[353,157]]],\"answer\":1}",
       "json_example_answer_only": "{\"answer\":1}"

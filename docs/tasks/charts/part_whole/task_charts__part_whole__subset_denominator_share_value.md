@@ -14,7 +14,15 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Program Contract
-`round(100 * value(target_category) / sum(value(category) for category in denominator_subset)); scene=part_whole; scope=subset_denominator_share_value`
+
+Program: `round(100 * value(target_category) / sum(value(category) for category in denominator_subset)); scene=part_whole; scope=subset_denominator_share_value`
+
+Candidate set: the visible part-whole segments, slices, and category labels inside the `subset_denominator_share_value` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `round` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `unspecified` value bound by `unspecified`.
+Annotation witnesses: `unspecified` witnesses bound by `see_annotation_contract`. The Annotation Contract below defines the prompt-facing witnesses.
+Query ids: `single`.
 
 ## Annotation Contract
 Annotation maps every denominator-subset category label to an `[x,y]` pixel point at the center of its chart segment.

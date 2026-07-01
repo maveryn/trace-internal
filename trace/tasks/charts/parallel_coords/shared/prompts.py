@@ -29,8 +29,6 @@ def dynamic_slots(dataset: Any) -> dict[str, Any]:
     }
     if dataset.query.threshold is not None:
         slots["threshold"] = int(dataset.query.threshold)
-    if str(dataset.query.reference_profile_id or ""):
-        slots["reference_profile"] = str(dataset.query.params.get("reference_profile_label", ""))
     return slots
 
 

@@ -7,18 +7,16 @@
 - prompt bundle: `icons_icon_field_v1`
 
 ## Program Contract
-`count.group_predicate(scene=icon_field, scope=single_panel_icon_types, groups=icon_type, predicate=unique_most_frequent, output=count)`
 
-Renders one panel with assorted icons and asks how many icons belong to the
-unique most frequent icon type.
+Program: `count.group_predicate(scene=icon_field, scope=single_panel_icon_types, groups=icon_type, predicate=unique_most_frequent, output=count)`
 
-Query ids:
-- `single`: fixed public query id; sampled generation axes are trace metadata.
-
-Answer schema: integer.
-Annotation schema: `bbox_set` over the bounding box of every counted icon
-instance.
-Answer support: `2..6`.
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `single_panel_icon_types` objective scope.
+Operands: visible scene state and prompt-bound operands named by `icon_field`, `single_panel_icon_types`, `groups`, `icon_type`, `predicate`, `unique_most_frequent`.
+Operation: evaluate `count.group_predicate` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation schema: `bbox_set`.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Notes
 The scene enforces exactly one most frequent icon type by construction. Other

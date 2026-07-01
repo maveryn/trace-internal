@@ -235,6 +235,9 @@ def render_spec_from_visual(
                 str(visual["font_family"]),
                 scope=str(label_scope),
             ),
+            "chip_fill_rgb": [255, 255, 255],
+            "chip_outline_rgb": [36, 42, 52],
+            "label_fill_rgb": [28, 32, 38],
         },
         "unit_size_jitter": dict(render_params.unit_size_jitter),
     }

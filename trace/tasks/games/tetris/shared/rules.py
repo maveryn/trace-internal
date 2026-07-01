@@ -218,14 +218,6 @@ def row_empty_count(row: Sequence[str]) -> int:
     return sum(1 for cell in row if str(cell) == EMPTY)
 
 
-def edge_occupied_row_index(board: Board, *, edge: str) -> int:
-    rows = range(len(board)) if str(edge) == "top" else range(len(board) - 1, -1, -1)
-    for row in rows:
-        if any(str(cell) != EMPTY for cell in board[int(row)]):
-            return int(row)
-    raise ValueError("Tetris board has no occupied row")
-
-
 def cell_ids_in_row_matching_status(board: Board, *, row_index: int, status: str, entity_prefix: str) -> Tuple[str, ...]:
     ids: List[str] = []
     for col, cell in enumerate(board[int(row_index)]):

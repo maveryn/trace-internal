@@ -4,14 +4,15 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 
-from ._lifecycle import TicTacToe3DObjectivePlan, run_tic_tac_toe_3d_lifecycle
+from ._lifecycle import (
+    prepare_option_move_objective_from_semantics,
+    run_tic_tac_toe_3d_lifecycle,
+)
 from .shared.prompts import format_json_examples
 from .shared.sampling import sample_winning_move_scene
 from .shared.state import OPTION_LABELS
-
 
 TASK_ID = "task_games__tic_tac_toe_3d__winning_move_cell_label"
 QUERY_X_WIN_MOVE = "x_winning_move_label"
@@ -30,38 +31,21 @@ JSON_EXAMPLE, JSON_EXAMPLE_ANSWER_ONLY = format_json_examples(
 def _prepare_winning_move_objective(
     _instance_seed: int,
     _params: Mapping[str, Any],
-    selected_branch: str,
-    branch_probabilities: Mapping[str, float],
-) -> TicTacToe3DObjectivePlan:
+    winning_branch: str,
+    winning_branch_weights: Mapping[str, float],
+):
     """Bind the target player and answer option for the winning-move task."""
 
-    if str(selected_branch) not in TARGET_PLAYER_BY_QUERY:
-        raise ValueError(f"unsupported 3D Tic-Tac-Toe winning-move branch: {selected_branch}")
-    target_player = str(TARGET_PLAYER_BY_QUERY[str(selected_branch)])
-
-    def construct_attempt(rng, axes):
-        return sample_winning_move_scene(
-            rng=rng,
-            target_player=target_player,
-            option_count=int(axes.option_count),
-            answer_option_index=int(axes.answer_option_index),
-        )
-
-    return TicTacToe3DObjectivePlan(
-        attempt_namespace=f"games.tic_tac_toe_3d.winning_move.{target_player}",
-        prompt_query_key=str(selected_branch),
-        answer_hint_key=f"answer_hint_{selected_branch}",
-        annotation_hint_key=f"annotation_hint_{selected_branch}",
-        annotation_kind="cell_bbox_set",
+    return prepare_option_move_objective_from_semantics(
+        selected_branch=str(winning_branch),
+        branch_probabilities=winning_branch_weights,
+        target_player_by_branch=TARGET_PLAYER_BY_QUERY,
+        sample_scene=sample_winning_move_scene,
+        attempt_prefix="winning_move",
+        branch_trace_key="winning_move_branch",
         json_example=JSON_EXAMPLE,
         json_example_answer_only=JSON_EXAMPLE_ANSWER_ONLY,
-        construct_attempt=construct_attempt,
-        trace_params={
-            "target_player": target_player,
-            "winning_move_branch": str(selected_branch),
-            "winning_move_branch_probabilities": dict(branch_probabilities),
-            "available_option_labels": list(OPTION_LABELS),
-        },
+        option_labels=OPTION_LABELS,
     )
 
 
@@ -74,16 +58,18 @@ class GamesTicTacToe3DWinningMoveCellLabelTask:
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
-    def generate(self, instance_seed: int, *, params: dict[str, Any] | None = None, max_attempts: int = 100) -> TaskOutput:
-        return run_tic_tac_toe_3d_lifecycle(
+    def generate(self, instance_seed, *, params=None, max_attempts=100):
+        task_params = dict(params or {})
+        output = run_tic_tac_toe_3d_lifecycle(
             task_id=TASK_ID,
             supported_query_ids=SUPPORTED_QUERY_IDS,
             default_query_id=QUERY_X_WIN_MOVE,
             instance_seed=int(instance_seed),
-            params=dict(params or {}),
+            params=task_params,
             max_attempts=int(max_attempts),
             prepare_objective=_prepare_winning_move_objective,
         )
+        return output
 
 
 __all__ = ["GamesTicTacToe3DWinningMoveCellLabelTask", "TASK_ID"]

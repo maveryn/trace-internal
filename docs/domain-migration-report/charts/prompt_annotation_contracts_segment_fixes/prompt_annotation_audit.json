@@ -1,0 +1,1327 @@
+{
+  "config": {
+    "default_only": true,
+    "max_attempts": 200,
+    "max_total_samples_per_task": 1024,
+    "samples_per_query_id": 1,
+    "seed": 20260504,
+    "task_timeout_seconds": 60,
+    "tasks": [
+      "task_charts__bar_3d__pairwise_comparison_count",
+      "task_charts__candlestick__range_extremum_label",
+      "task_charts__combo_mark__dual_threshold_condition_count",
+      "task_charts__combo_mark__interval_threshold_condition_count",
+      "task_charts__dumbbell__absolute_gap_threshold_count",
+      "task_charts__dumbbell__gap_rank_row_label",
+      "task_charts__dumbbell__side_winner_count",
+      "task_charts__radar__profile_advantage_count"
+    ],
+    "workers": 1
+  },
+  "coverage": [
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_charts__bar_3d__pairwise_comparison_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "largest_body_range_label": 1,
+        "largest_wick_range_label": 1,
+        "smallest_body_range_label": 1,
+        "smallest_wick_range_label": 1
+      },
+      "expected_query_ids": [
+        "largest_body_range_label",
+        "largest_wick_range_label",
+        "smallest_body_range_label",
+        "smallest_wick_range_label"
+      ],
+      "generated_query_id_counts": {
+        "largest_body_range_label": 1,
+        "largest_wick_range_label": 1,
+        "smallest_body_range_label": 1,
+        "smallest_wick_range_label": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_charts__candlestick__range_extremum_label",
+      "total_generated": 4
+    },
+    {
+      "collected_query_id_counts": {
+        "primary_above_and_line_above": 1,
+        "primary_above_and_line_below": 1,
+        "primary_below_and_line_above": 1
+      },
+      "expected_query_ids": [
+        "primary_above_and_line_above",
+        "primary_above_and_line_below",
+        "primary_below_and_line_above"
+      ],
+      "generated_query_id_counts": {
+        "primary_above_and_line_above": 1,
+        "primary_above_and_line_below": 1,
+        "primary_below_and_line_above": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_charts__combo_mark__dual_threshold_condition_count",
+      "total_generated": 3
+    },
+    {
+      "collected_query_id_counts": {
+        "line_between_and_primary_above": 1,
+        "primary_between_and_line_above": 1
+      },
+      "expected_query_ids": [
+        "line_between_and_primary_above",
+        "primary_between_and_line_above"
+      ],
+      "generated_query_id_counts": {
+        "line_between_and_primary_above": 1,
+        "primary_between_and_line_above": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_charts__combo_mark__interval_threshold_condition_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "absolute_gap_at_least_threshold_count": 1,
+        "absolute_gap_at_most_threshold_count": 1
+      },
+      "expected_query_ids": [
+        "absolute_gap_at_least_threshold_count",
+        "absolute_gap_at_most_threshold_count"
+      ],
+      "generated_query_id_counts": {
+        "absolute_gap_at_least_threshold_count": 1,
+        "absolute_gap_at_most_threshold_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_charts__dumbbell__absolute_gap_threshold_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "largest_gap_rank_row_label": 1,
+        "smallest_gap_rank_row_label": 1
+      },
+      "expected_query_ids": [
+        "largest_gap_rank_row_label",
+        "smallest_gap_rank_row_label"
+      ],
+      "generated_query_id_counts": {
+        "largest_gap_rank_row_label": 1,
+        "smallest_gap_rank_row_label": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_charts__dumbbell__gap_rank_row_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "series_a_greater_threshold_count": 1,
+        "series_b_greater_threshold_count": 1
+      },
+      "expected_query_ids": [
+        "series_a_greater_threshold_count",
+        "series_b_greater_threshold_count"
+      ],
+      "generated_query_id_counts": {
+        "series_a_greater_threshold_count": 1,
+        "series_b_greater_threshold_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_charts__dumbbell__side_winner_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_charts__radar__profile_advantage_count",
+      "total_generated": 2
+    }
+  ],
+  "issues": [],
+  "records": [
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          1120,
+          760
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              564.1,
+              226.5
+            ],
+            [
+              593.1,
+              226.5
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8944460099881673,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 36,
+          "mode": "answer_and_annotation",
+          "prompt": "The panel shows one perspective 3D bar chart with category labels on the front axis, colored series labels in the legend, and integer value labels on the bars. How many category positions show \"Foege\" above \"Gonen\"?\nRequired annotation format: set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the top-center point on the first series bar and the top-center point on the second series bar for one counted category; use [] if no categories match.\nRequired answer format: set \"answer\" to the requested integer count.\nExample JSON:\n{\"annotation\":[[[210,360],[210,260]],[[320,330],[320,240]],[[430,300],[430,220]]],\"answer\":3}",
+          "word_count": 113
+        },
+        {
+          "body_word_count": 36,
+          "mode": "answer_only",
+          "prompt": "The panel shows one perspective 3D bar chart with category labels on the front axis, colored series labels in the legend, and integer value labels on the bars. How many category positions show \"Foege\" above \"Gonen\"?\nFinal answer format: set \"answer\" to the requested integer count.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 50
+        }
+      ],
+      "query_id": "single",
+      "task": "task_charts__bar_3d__pairwise_comparison_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment",
+        "annotation_value_count": 2,
+        "image_size": [
+          1440,
+          820
+        ],
+        "overlay_annotation_type": "segment",
+        "overlay_annotation_value": [
+          [
+            485.75,
+            429.8
+          ],
+          [
+            485.75,
+            555.8
+          ]
+        ],
+        "projected_type": "segment"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3033472132467891,
+      "issues": [],
+      "observed_query_id": "largest_body_range_label",
+      "prompts": [
+        {
+          "body_word_count": 42,
+          "mode": "answer_and_annotation",
+          "prompt": "The chart shows a candlestick OHLC chart with labeled periods. Each candle has printed O, H, L, and C values for open, high, low, and close. Compare the absolute close-open body sizes for all candles. Which label has the largest body size?\nAnnotation format: set \"annotation\" to one segment: two [x, y] pixel points formatted [[x0, y0], [x1, y1]], running vertically through the answer candle's open-close body.\nAnswer field: set \"answer\" to the exact period label as a string.\nExample JSON:\n{\"annotation\":[[542,238],[542,314]],\"answer\":\"K4\"}",
+          "word_count": 88
+        },
+        {
+          "body_word_count": 42,
+          "mode": "answer_only",
+          "prompt": "The chart shows a candlestick OHLC chart with labeled periods. Each candle has printed O, H, L, and C values for open, high, low, and close. Compare the absolute close-open body sizes for all candles. Which label has the largest body size?\nRequired answer format: set \"answer\" to the exact period label as a string.\nExample JSON:\n{\"answer\":\"K4\"}",
+          "word_count": 59
+        }
+      ],
+      "query_id": "largest_body_range_label",
+      "task": "task_charts__candlestick__range_extremum_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment",
+        "annotation_value_count": 2,
+        "image_size": [
+          1440,
+          820
+        ],
+        "overlay_annotation_type": "segment",
+        "overlay_annotation_value": [
+          [
+            981.25,
+            294.5
+          ],
+          [
+            981.25,
+            470.9
+          ]
+        ],
+        "projected_type": "segment"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2726738483184238,
+      "issues": [],
+      "observed_query_id": "largest_wick_range_label",
+      "prompts": [
+        {
+          "body_word_count": 34,
+          "mode": "answer_and_annotation",
+          "prompt": "The panel shows a candlestick OHLC chart with labeled periods. Each candle has printed O, H, L, and C values for open, high, low, and close. Which period has the largest high-low wick range?\nAnnotation format: set \"annotation\" to one segment: two [x, y] pixel points formatted [[x0, y0], [x1, y1]], running along the answer candle's high-low wick line.\nAnswer field: set \"answer\" to the exact period label as a string.\nExample JSON:\n{\"annotation\":[[542,210],[542,342]],\"answer\":\"K4\"}",
+          "word_count": 80
+        },
+        {
+          "body_word_count": 34,
+          "mode": "answer_only",
+          "prompt": "The panel shows a candlestick OHLC chart with labeled periods. Each candle has printed O, H, L, and C values for open, high, low, and close. Which period has the largest high-low wick range?\nFinal answer format: set \"answer\" to the exact period label as a string.\nExample JSON:\n{\"answer\":\"K4\"}",
+          "word_count": 51
+        }
+      ],
+      "query_id": "largest_wick_range_label",
+      "task": "task_charts__candlestick__range_extremum_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment",
+        "annotation_value_count": 2,
+        "image_size": [
+          1440,
+          820
+        ],
+        "overlay_annotation_type": "segment",
+        "overlay_annotation_value": [
+          [
+            1015.556,
+            566.8
+          ],
+          [
+            1015.556,
+            598.3
+          ]
+        ],
+        "projected_type": "segment"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6064918087149571,
+      "issues": [],
+      "observed_query_id": "smallest_body_range_label",
+      "prompts": [
+        {
+          "body_word_count": 42,
+          "mode": "answer_and_annotation",
+          "prompt": "The panel shows a candlestick OHLC chart with labeled periods. Each candle has printed O, H, L, and C values for open, high, low, and close. Compare the absolute close-open body sizes for all candles. Which label has the smallest body size?\nFormat for the \"annotation\" field: set \"annotation\" to one segment: two [x, y] pixel points formatted [[x0, y0], [x1, y1]], running vertically through the answer candle's open-close body.\nFormat for the \"answer\" field: set \"answer\" to the exact period label as a string.\nExample JSON:\n{\"annotation\":[[542,238],[542,314]],\"answer\":\"K4\"}",
+          "word_count": 94
+        },
+        {
+          "body_word_count": 42,
+          "mode": "answer_only",
+          "prompt": "The panel shows a candlestick OHLC chart with labeled periods. Each candle has printed O, H, L, and C values for open, high, low, and close. Compare the absolute close-open body sizes for all candles. Which label has the smallest body size?\nFormat for the \"answer\" field: set \"answer\" to the exact period label as a string.\nExample JSON:\n{\"answer\":\"K4\"}",
+          "word_count": 61
+        }
+      ],
+      "query_id": "smallest_body_range_label",
+      "task": "task_charts__candlestick__range_extremum_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment",
+        "annotation_value_count": 2,
+        "image_size": [
+          1780,
+          820
+        ],
+        "overlay_annotation_type": "segment",
+        "overlay_annotation_value": [
+          [
+            948.25,
+            241.8
+          ],
+          [
+            948.25,
+            304.8
+          ]
+        ],
+        "projected_type": "segment"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8560885538697100,
+      "issues": [],
+      "observed_query_id": "smallest_wick_range_label",
+      "prompts": [
+        {
+          "body_word_count": 39,
+          "mode": "answer_and_annotation",
+          "prompt": "The chart shows a candlestick OHLC chart with labeled periods. Each candle has printed O, H, L, and C values for open, high, low, and close. Compare high minus low for all candles. Which label has the smallest range?\nAnnotation format: set \"annotation\" to one segment: two [x, y] pixel points formatted [[x0, y0], [x1, y1]], running along the answer candle's high-low wick line.\nAnswer format: set \"answer\" to the exact period label as a string.\nExample JSON:\n{\"annotation\":[[542,210],[542,342]],\"answer\":\"K4\"}",
+          "word_count": 85
+        },
+        {
+          "body_word_count": 39,
+          "mode": "answer_only",
+          "prompt": "The chart shows a candlestick OHLC chart with labeled periods. Each candle has printed O, H, L, and C values for open, high, low, and close. Compare high minus low for all candles. Which label has the smallest range?\nFinal answer format: set \"answer\" to the exact period label as a string.\nExample JSON:\n{\"answer\":\"K4\"}",
+          "word_count": 56
+        }
+      ],
+      "query_id": "smallest_wick_range_label",
+      "task": "task_charts__candlestick__range_extremum_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 4,
+        "image_size": [
+          1080,
+          660
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              108.444,
+              287.2
+            ],
+            [
+              108.444,
+              185.2
+            ]
+          ],
+          [
+            [
+              199.333,
+              246.4
+            ],
+            [
+              199.333,
+              287.2
+            ]
+          ],
+          [
+            [
+              290.222,
+              246.4
+            ],
+            [
+              290.222,
+              226.0
+            ]
+          ],
+          [
+            [
+              653.778,
+              261.7
+            ],
+            [
+              653.778,
+              343.3
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7968908168896472,
+      "issues": [],
+      "observed_query_id": "primary_above_and_line_above",
+      "prompts": [
+        {
+          "body_word_count": 37,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a combo chart where the filled area shows \"Finance\", and the overlaid line shows \"Devices\". Each category has printed values for both series. How many categories have \"Finance\" above 30 and \"Devices\" above 13?\nAnnotation format: set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the primary-series mark point and the overlaid line mark point for one matching category; use [] if no categories match.\nAnswer format: set \"answer\" to the number of matching categories as an integer.\nExample JSON:\n{\"annotation\":[[[180,260],[180,190]],[[360,220],[360,170]]],\"answer\":2}",
+          "word_count": 105
+        },
+        {
+          "body_word_count": 37,
+          "mode": "answer_only",
+          "prompt": "The image shows a combo chart where the filled area shows \"Finance\", and the overlaid line shows \"Devices\". Each category has printed values for both series. How many categories have \"Finance\" above 30 and \"Devices\" above 13?\nAnswer format: set \"answer\" to the number of matching categories as an integer.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 54
+        }
+      ],
+      "query_id": "primary_above_and_line_above",
+      "task": "task_charts__combo_mark__dual_threshold_condition_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          1372,
+          660
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              253.286,
+              114.333
+            ],
+            [
+              253.286,
+              273.0
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1281600185348486,
+      "issues": [],
+      "observed_query_id": "primary_above_and_line_below",
+      "prompts": [
+        {
+          "body_word_count": 37,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a combo chart where the filled area shows \"Kitchen\", and the overlaid line shows \"Dining\". Each category has printed values for both series. How many categories have \"Kitchen\" above 77 and \"Dining\" below 62?\nAnnotation format: set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the primary-series mark point and the overlaid line mark point for one matching category; use [] if no categories match.\nAnswer format: set \"answer\" to the number of matching categories as an integer.\nExample JSON:\n{\"annotation\":[[[180,260],[180,190]],[[360,220],[360,170]]],\"answer\":2}",
+          "word_count": 105
+        },
+        {
+          "body_word_count": 37,
+          "mode": "answer_only",
+          "prompt": "The image shows a combo chart where the filled area shows \"Kitchen\", and the overlaid line shows \"Dining\". Each category has printed values for both series. How many categories have \"Kitchen\" above 77 and \"Dining\" below 62?\nAnswer format: set \"answer\" to the number of matching categories as an integer.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 54
+        }
+      ],
+      "query_id": "primary_above_and_line_below",
+      "task": "task_charts__combo_mark__dual_threshold_condition_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          1372,
+          660
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              321.222,
+              455.0
+            ],
+            [
+              321.222,
+              166.0
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7531618857539477,
+      "issues": [],
+      "observed_query_id": "primary_below_and_line_above",
+      "prompts": [
+        {
+          "body_word_count": 44,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a combo chart where vertical bars show \"Grove\" on the left axis and the overlaid line shows \"Birch\" on the right axis. Each category has printed values for both series. How many categories have \"Grove\" below 25 and \"Birch\" above 47?\nAnnotation format: set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the primary-series mark point and the overlaid line mark point for one matching category; use [] if no categories match.\nAnswer format: set \"answer\" to the number of matching categories as an integer.\nExample JSON:\n{\"annotation\":[[[180,260],[180,190]],[[360,220],[360,170]]],\"answer\":2}",
+          "word_count": 112
+        },
+        {
+          "body_word_count": 44,
+          "mode": "answer_only",
+          "prompt": "The image shows a combo chart where vertical bars show \"Grove\" on the left axis and the overlaid line shows \"Birch\" on the right axis. Each category has printed values for both series. How many categories have \"Grove\" below 25 and \"Birch\" above 47?\nAnswer format: set \"answer\" to the number of matching categories as an integer.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 61
+        }
+      ],
+      "query_id": "primary_below_and_line_above",
+      "task": "task_charts__combo_mark__dual_threshold_condition_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 5,
+        "image_size": [
+          1080,
+          660
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              148.429,
+              477.0
+            ],
+            [
+              148.429,
+              247.5
+            ]
+          ],
+          [
+            [
+              265.286,
+              145.5
+            ],
+            [
+              265.286,
+              196.5
+            ]
+          ],
+          [
+            [
+              382.143,
+              502.5
+            ],
+            [
+              382.143,
+              349.5
+            ]
+          ],
+          [
+            [
+              615.857,
+              364.8
+            ],
+            [
+              615.857,
+              324.0
+            ]
+          ],
+          [
+            [
+              732.714,
+              145.5
+            ],
+            [
+              732.714,
+              160.8
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8109793357540306,
+      "issues": [],
+      "observed_query_id": "line_between_and_primary_above",
+      "prompts": [
+        {
+          "body_word_count": 43,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a combo chart where each stacked bar's printed total shows \"Telecom\", and the overlaid line shows \"Software\". Each category has printed values for both series. How many categories have \"Software\" between 14 and 82, inclusive, while \"Telecom\" is above 14?\nAnnotation format: set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the primary-series mark point and the overlaid line mark point for one matching category; use [] if no categories match.\nAnswer format: set \"answer\" to the number of matching categories as an integer.\nExample JSON:\n{\"annotation\":[[[180,260],[180,190]],[[360,220],[360,170]]],\"answer\":2}",
+          "word_count": 111
+        },
+        {
+          "body_word_count": 43,
+          "mode": "answer_only",
+          "prompt": "The image shows a combo chart where each stacked bar's printed total shows \"Telecom\", and the overlaid line shows \"Software\". Each category has printed values for both series. How many categories have \"Software\" between 14 and 82, inclusive, while \"Telecom\" is above 14?\nAnswer format: set \"answer\" to the number of matching categories as an integer.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 60
+        }
+      ],
+      "query_id": "line_between_and_primary_above",
+      "task": "task_charts__combo_mark__interval_threshold_condition_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          1372,
+          660
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              663.375,
+              158.7
+            ],
+            [
+              663.375,
+              357.6
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6027437234683740,
+      "issues": [],
+      "observed_query_id": "primary_between_and_line_above",
+      "prompts": [
+        {
+          "body_word_count": 43,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a combo chart where each stacked bar's printed total shows \"Birch\", and the overlaid line shows \"Indigo\". Each category has printed values for both series. How many categories have \"Birch\" between 81 and 88, inclusive, while \"Indigo\" is above 43?\nAnnotation format: set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the primary-series mark point and the overlaid line mark point for one matching category; use [] if no categories match.\nAnswer format: set \"answer\" to the number of matching categories as an integer.\nExample JSON:\n{\"annotation\":[[[180,260],[180,190]],[[360,220],[360,170]]],\"answer\":2}",
+          "word_count": 111
+        },
+        {
+          "body_word_count": 43,
+          "mode": "answer_only",
+          "prompt": "The image shows a combo chart where each stacked bar's printed total shows \"Birch\", and the overlaid line shows \"Indigo\". Each category has printed values for both series. How many categories have \"Birch\" between 81 and 88, inclusive, while \"Indigo\" is above 43?\nAnswer format: set \"answer\" to the number of matching categories as an integer.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 60
+        }
+      ],
+      "query_id": "primary_between_and_line_above",
+      "task": "task_charts__combo_mark__interval_threshold_condition_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 10,
+        "image_size": [
+          1620,
+          900
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              649.92,
+              181.333
+            ],
+            [
+              901.6,
+              181.333
+            ]
+          ],
+          [
+            [
+              485.36,
+              224.667
+            ],
+            [
+              950.0,
+              224.667
+            ]
+          ],
+          [
+            [
+              349.84,
+              311.333
+            ],
+            [
+              737.04,
+              311.333
+            ]
+          ],
+          [
+            [
+              514.4,
+              441.333
+            ],
+            [
+              824.16,
+              441.333
+            ]
+          ],
+          [
+            [
+              766.08,
+              484.667
+            ],
+            [
+              466.0,
+              484.667
+            ]
+          ],
+          [
+            [
+              678.96,
+              528.0
+            ],
+            [
+              1056.48,
+              528.0
+            ]
+          ],
+          [
+            [
+              1172.64,
+              571.333
+            ],
+            [
+              669.28,
+              571.333
+            ]
+          ],
+          [
+            [
+              224.0,
+              614.667
+            ],
+            [
+              746.72,
+              614.667
+            ]
+          ],
+          [
+            [
+              543.44,
+              658.0
+            ],
+            [
+              988.72,
+              658.0
+            ]
+          ],
+          [
+            [
+              1133.92,
+              701.333
+            ],
+            [
+              669.28,
+              701.333
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8052022859256877,
+      "issues": [],
+      "observed_query_id": "absolute_gap_at_least_threshold_count",
+      "prompts": [
+        {
+          "body_word_count": 56,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a horizontal dumbbell chart. Each row is a category label, and the two colored dots on that row give the values for the two legend series on the shared horizontal numeric axis. The gray connector shows the gap between the two dots. How many dumbbell rows have an absolute difference at least 20?\nRequired annotation format: set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the two colored dot centers for one row that satisfies the condition; use [] if no rows match.\nRequired answer format: set \"answer\" to the requested integer count.\nExample JSON:\n{\"annotation\":[[[276,231],[1032,231]],[[318,355],[1032,355]],[[284,541],[1032,541]]],\"answer\":3}",
+          "word_count": 124
+        },
+        {
+          "body_word_count": 65,
+          "mode": "answer_only",
+          "prompt": "The image shows a horizontal dumbbell chart. Each row is a category label, and the two colored dots on that row give the values for the two legend series on the shared horizontal numeric axis. The gray connector shows the gap between the two dots. How many dumbbell rows have an absolute difference at least 20?\nAnswer field: set \"answer\" to the requested integer count.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 69
+        }
+      ],
+      "query_id": "absolute_gap_at_least_threshold_count",
+      "task": "task_charts__dumbbell__absolute_gap_threshold_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 8,
+        "image_size": [
+          1280,
+          900
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              746.72,
+              138.0
+            ],
+            [
+              688.64,
+              138.0
+            ]
+          ],
+          [
+            [
+              746.72,
+              192.167
+            ],
+            [
+              630.56,
+              192.167
+            ]
+          ],
+          [
+            [
+              727.36,
+              246.333
+            ],
+            [
+              814.48,
+              246.333
+            ]
+          ],
+          [
+            [
+              524.08,
+              408.833
+            ],
+            [
+              620.88,
+              408.833
+            ]
+          ],
+          [
+            [
+              901.6,
+              517.167
+            ],
+            [
+              795.12,
+              517.167
+            ]
+          ],
+          [
+            [
+              1143.6,
+              679.667
+            ],
+            [
+              1104.88,
+              679.667
+            ]
+          ],
+          [
+            [
+              862.88,
+              733.833
+            ],
+            [
+              804.8,
+              733.833
+            ]
+          ],
+          [
+            [
+              640.24,
+              788.0
+            ],
+            [
+              688.64,
+              788.0
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4603678542897154,
+      "issues": [],
+      "observed_query_id": "absolute_gap_at_most_threshold_count",
+      "prompts": [
+        {
+          "body_word_count": 60,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a horizontal dumbbell chart. Each row is a category label, and the two colored dots on that row give the values for the two legend series on the shared horizontal numeric axis. The gray connector shows the gap between the two dots. Using the shared horizontal axis, how many rows have a dot-to-dot separation at most 16?\nRequired annotation format: set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the two colored dot centers for one row that satisfies the condition; use [] if no rows match.\nRequired answer format: set \"answer\" to the requested integer count.\nExample JSON:\n{\"annotation\":[[[276,231],[1032,231]],[[318,355],[1032,355]],[[284,541],[1032,541]]],\"answer\":3}",
+          "word_count": 128
+        },
+        {
+          "body_word_count": 60,
+          "mode": "answer_only",
+          "prompt": "The image shows a horizontal dumbbell chart. Each row is a category label, and the two colored dots on that row give the values for the two legend series on the shared horizontal numeric axis. The gray connector shows the gap between the two dots. Using the shared horizontal axis, how many rows have a dot-to-dot separation at most 16?\nRequired answer format: set \"answer\" to the requested integer count.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 74
+        }
+      ],
+      "query_id": "absolute_gap_at_most_threshold_count",
+      "task": "task_charts__dumbbell__absolute_gap_threshold_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment",
+        "annotation_value_count": 2,
+        "image_size": [
+          1280,
+          900
+        ],
+        "overlay_annotation_type": "segment",
+        "overlay_annotation_value": [
+          [
+            533.76,
+            282.444
+          ],
+          [
+            1046.8,
+            282.444
+          ]
+        ],
+        "projected_type": "segment"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1715505070300776,
+      "issues": [],
+      "observed_query_id": "largest_gap_rank_row_label",
+      "prompts": [
+        {
+          "body_word_count": 63,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a horizontal dumbbell chart. Each row is a category label, and the two colored dots on that row give the values for the two legend series on the shared horizontal numeric axis. The gray connector shows the gap between the two dots. Sort the rows by absolute dot-to-dot gap, ignoring which color is larger. Which row has the largest gap?\nAnnotation format: set \"annotation\" to one segment: two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the two colored dot centers for the supporting row.\nFinal answer format: set \"answer\" to the exact visible row label as a string.\nExample JSON:\n{\"annotation\":[[276,231],[1032,231]],\"answer\":\"Harbor\"}",
+          "word_count": 113
+        },
+        {
+          "body_word_count": 63,
+          "mode": "answer_only",
+          "prompt": "The image shows a horizontal dumbbell chart. Each row is a category label, and the two colored dots on that row give the values for the two legend series on the shared horizontal numeric axis. The gray connector shows the gap between the two dots. Sort the rows by absolute dot-to-dot gap, ignoring which color is larger. Which row has the largest gap?\nFinal answer format: set \"answer\" to the exact visible row label as a string.\nExample JSON:\n{\"answer\":\"Harbor\"}",
+          "word_count": 81
+        }
+      ],
+      "query_id": "largest_gap_rank_row_label",
+      "task": "task_charts__dumbbell__gap_rank_row_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment",
+        "annotation_value_count": 2,
+        "image_size": [
+          1620,
+          900
+        ],
+        "overlay_annotation_type": "segment",
+        "overlay_annotation_value": [
+          [
+            620.88,
+            138.0
+          ],
+          [
+            833.84,
+            138.0
+          ]
+        ],
+        "projected_type": "segment"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8388964060388894,
+      "issues": [],
+      "observed_query_id": "smallest_gap_rank_row_label",
+      "prompts": [
+        {
+          "body_word_count": 57,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a horizontal dumbbell chart. Each row is a category label, and the two colored dots on that row give the values for the two legend series on the shared horizontal numeric axis. The gray connector shows the gap between the two dots. What row label has the smallest absolute separation between its two dots?\nFormat for the \"annotation\" field: set \"annotation\" to one segment: two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the two colored dot centers for the supporting row.\nFormat for the \"answer\" field: set \"answer\" to the exact visible row label as a string.\nExample JSON:\n{\"annotation\":[[276,231],[1032,231]],\"answer\":\"Harbor\"}",
+          "word_count": 112
+        },
+        {
+          "body_word_count": 70,
+          "mode": "answer_only",
+          "prompt": "The image shows a horizontal dumbbell chart. Each row is a category label, and the two colored dots on that row give the values for the two legend series on the shared horizontal numeric axis. The gray connector shows the gap between the two dots. What row label has the smallest absolute separation between its two dots?\nAnswer field: set \"answer\" to the exact visible row label as a string.\nExample JSON:\n{\"answer\":\"Harbor\"}",
+          "word_count": 74
+        }
+      ],
+      "query_id": "smallest_gap_rank_row_label",
+      "task": "task_charts__dumbbell__gap_rank_row_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 7,
+        "image_size": [
+          1280,
+          900
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              1153.28,
+              138.0
+            ],
+            [
+              853.2,
+              138.0
+            ]
+          ],
+          [
+            [
+              882.24,
+              197.091
+            ],
+            [
+              727.36,
+              197.091
+            ]
+          ],
+          [
+            [
+              1066.16,
+              256.182
+            ],
+            [
+              785.44,
+              256.182
+            ]
+          ],
+          [
+            [
+              1114.56,
+              374.364
+            ],
+            [
+              853.2,
+              374.364
+            ]
+          ],
+          [
+            [
+              649.92,
+              433.455
+            ],
+            [
+              485.36,
+              433.455
+            ]
+          ],
+          [
+            [
+              756.4,
+              610.727
+            ],
+            [
+              427.28,
+              610.727
+            ]
+          ],
+          [
+            [
+              485.36,
+              728.909
+            ],
+            [
+              253.04,
+              728.909
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 83137860635491,
+      "issues": [],
+      "observed_query_id": "series_a_greater_threshold_count",
+      "prompts": [
+        {
+          "body_word_count": 56,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a horizontal dumbbell chart. Each row is a category label, and the two colored dots on that row give the values for the two legend series on the shared horizontal numeric axis. The gray connector shows the gap between the two dots. How many categories satisfy: \"Guinea\" minus \"Vanuatu\" is at least 14?\nFormat for the \"annotation\" field: set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the two colored dot centers for one row that satisfies the condition; use [] if no rows match.\nFormat for the \"answer\" field: set \"answer\" to the requested integer count.\nExample JSON:\n{\"annotation\":[[[276,231],[1032,231]],[[318,355],[1032,355]],[[284,541],[1032,541]]],\"answer\":3}",
+          "word_count": 128
+        },
+        {
+          "body_word_count": 65,
+          "mode": "answer_only",
+          "prompt": "The image shows a horizontal dumbbell chart. Each row is a category label, and the two colored dots on that row give the values for the two legend series on the shared horizontal numeric axis. The gray connector shows the gap between the two dots. How many categories satisfy: \"Guinea\" minus \"Vanuatu\" is at least 14?\nAnswer field: set \"answer\" to the requested integer count.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 69
+        }
+      ],
+      "query_id": "series_a_greater_threshold_count",
+      "task": "task_charts__dumbbell__side_winner_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 3,
+        "image_size": [
+          1280,
+          900
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              398.24,
+              354.667
+            ],
+            [
+              620.88,
+              354.667
+            ]
+          ],
+          [
+            [
+              727.36,
+              426.889
+            ],
+            [
+              1027.44,
+              426.889
+            ]
+          ],
+          [
+            [
+              727.36,
+              499.111
+            ],
+            [
+              979.04,
+              499.111
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3511105857658665,
+      "issues": [],
+      "observed_query_id": "series_b_greater_threshold_count",
+      "prompts": [
+        {
+          "body_word_count": 56,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a horizontal dumbbell chart. Each row is a category label, and the two colored dots on that row give the values for the two legend series on the shared horizontal numeric axis. The gray connector shows the gap between the two dots. How many categories satisfy: \"Outdoor\" minus \"Taxable\" is at least 16?\nAnnotation format: set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the two colored dot centers for one row that satisfies the condition; use [] if no rows match.\nAnswer format: set \"answer\" to the requested integer count.\nExample JSON:\n{\"annotation\":[[[276,231],[1032,231]],[[318,355],[1032,355]],[[284,541],[1032,541]]],\"answer\":3}",
+          "word_count": 122
+        },
+        {
+          "body_word_count": 56,
+          "mode": "answer_only",
+          "prompt": "The image shows a horizontal dumbbell chart. Each row is a category label, and the two colored dots on that row give the values for the two legend series on the shared horizontal numeric axis. The gray connector shows the gap between the two dots. How many categories satisfy: \"Outdoor\" minus \"Taxable\" is at least 16?\nFormat for the \"answer\" field: set \"answer\" to the requested integer count.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 72
+        }
+      ],
+      "query_id": "series_b_greater_threshold_count",
+      "task": "task_charts__dumbbell__side_winner_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 5,
+        "image_size": [
+          1424,
+          888
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              706.0,
+              343.8
+            ],
+            [
+              706.0,
+              373.6
+            ]
+          ],
+          [
+            [
+              869.09,
+              332.94
+            ],
+            [
+              729.3,
+              444.42
+            ]
+          ],
+          [
+            [
+              851.26,
+              496.16
+            ],
+            [
+              735.05,
+              469.63
+            ]
+          ],
+          [
+            [
+              770.65,
+              597.24
+            ],
+            [
+              744.79,
+              543.55
+            ]
+          ],
+          [
+            [
+              641.35,
+              597.24
+            ],
+            [
+              680.14,
+              516.7
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 895102429211124,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 32,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows one radar chart with the same metric spokes for two colored profile polygons. The legend names the two profiles. How many metrics have profile \"BVS\" greater than profile \"LDOS\"?\nAnnotation format: set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the two named profile points for one counted metric; use [] if no metrics match.\nFinal answer format: set \"answer\" to the count as an integer.\nExample JSON:\n{\"annotation\":[[[650,244],[622,270]],[[744,430],[708,408]]],\"answer\":2}",
+          "word_count": 93
+        },
+        {
+          "body_word_count": 32,
+          "mode": "answer_only",
+          "prompt": "The image shows one radar chart with the same metric spokes for two colored profile polygons. The legend names the two profiles. How many metrics have profile \"BVS\" greater than profile \"LDOS\"?\nFormat for the \"answer\" field: set \"answer\" to the count as an integer.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 49
+        }
+      ],
+      "query_id": "single",
+      "task": "task_charts__radar__profile_advantage_count"
+    }
+  ],
+  "summary": {
+    "expected_public_query_id_count": 17,
+    "issue_count": 0,
+    "issue_counts_by_category": {},
+    "issue_counts_by_severity": {},
+    "sampled_instance_count": 17,
+    "sampled_query_id_count": 17,
+    "task_count": 8
+  }
+}

@@ -464,13 +464,8 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
         "task_charts__table__sum_absolute_differences_between_rows_over_year_interval",
     }
     active_cell_board_tasks = {
-        "task_puzzles__cell_board__single_attribute_membership_count",
-        "task_puzzles__cell_board__scoped_attribute_count",
-        "task_puzzles__cell_board__color_component_count",
         "task_puzzles__cell_board__largest_component_size",
         "task_puzzles__cell_board__reachable_region_size",
-        "task_puzzles__cell_board__reachable_target_count",
-        "task_puzzles__cell_board__minimum_color_set_distance_value",
         "task_puzzles__cell_board__shortest_path_length_value",
         "task_puzzles__cell_board__symmetry_violation_count",
     }
@@ -483,9 +478,15 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
         "task_pages__timeline__interval_membership_count",
     }
     active_puzzle_clock_tasks = {
-        "task_symbolic__clock_collection__compare",
-        "task_symbolic__clock_match_panel__equivalent_time_label",
-        "task_symbolic__analog_clock__offset_readout",
+        "task_symbolic__clock__alarm_wait_time_value",
+        "task_symbolic__clock__elapsed_time_value",
+        "task_symbolic__clock__equivalent_time_label",
+        "task_symbolic__clock__full_time_readout",
+        "task_symbolic__clock__hand_angle_value",
+        "task_symbolic__clock__offset_readout",
+        "task_symbolic__clock__sequence_completion_label",
+        "task_symbolic__clock__time_order_label",
+        "task_symbolic__clock__time_extremum_label",
     }
     active_brick_breaker_tasks = {
         "task_games__brick_breaker__hit_row_remaining_count",
@@ -522,9 +523,10 @@ def test_equal_split_all_tasks_build_preset_uses_default_enabled_tasks() -> None
     }
     assert resolve_task_taxonomy("task_charts__table__column_rank_label").domain == "charts"
     assert resolve_task_taxonomy("task_puzzles__cell_board__shortest_path_length_value").domain == "puzzles"
-    assert resolve_task_taxonomy("task_pages__control_board__disabled_controls_in_group_count").domain == "pages"
+    assert resolve_task_taxonomy("task_pages__control_board__control_state_condition_count").domain == "pages"
     assert resolve_task_taxonomy("task_pages__calendar__marked_day_class_count").domain == "pages"
-    assert resolve_task_taxonomy("task_symbolic__clock_collection__compare").domain == "symbolic"
+    assert resolve_task_taxonomy("task_symbolic__clock__time_extremum_label").domain == "symbolic"
+    assert resolve_task_taxonomy("task_symbolic__clock__time_order_label").scene_id == "clock"
 
     taxonomy = resolve_task_taxonomy("task_puzzles__cell_board__shortest_path_length_value")
     injected = inject_taxonomy_metadata(

@@ -24,6 +24,15 @@ from .projected_object_geometry import object_screen_bbox
 from .room_wall_rendering_geometry import _draw_screen_scenery, _inset_bbox, _points_bbox, _project_points
 
 
+def _wrap_color_index(index: int, color_count: int) -> int:
+    wrapped = int(index)
+    while wrapped < 0:
+        wrapped += int(color_count)
+    while wrapped >= int(color_count):
+        wrapped -= int(color_count)
+    return int(wrapped)
+
+
 def _room_floor_base_z(spec: Mapping[str, Any]) -> float:
     raw_base = spec.get("base_xyz", (0.0, 0.0, 0.0))
     if isinstance(raw_base, Sequence) and len(raw_base) >= 3:
@@ -405,7 +414,7 @@ def _draw_room_standing_shelf_object(
                         offset_xyz=(x_offset, -depth * 0.18, height * z_frac),
                         dimensions_xyz=(book_w, depth * 0.20, book_h),
                     ),
-                    book_colors[(book_index + shelf_index) % len(book_colors)],
+                    book_colors[_wrap_color_index(book_index + shelf_index, len(book_colors))],
                 )
             )
     return _draw_room_box_parts(draw, parts, camera=camera, frame=frame)
@@ -661,16 +670,20 @@ def _draw_floor_object(
     frame,
 ) -> List[float]:
     color_role = str(spec.get("color_role", "furniture"))
+    default_color_index = _wrap_color_index(
+        sum(ord(char) for char in str(spec["object_id"])),
+        len(CONTEXT_OBJECT_COLORS),
+    )
     color = {
-        "sofa": (107, 126, 153),
-        "armchair": (130, 102, 145),
-        "wood": (137, 111, 82),
-        "bed": (139, 126, 166),
-        "tv_floor": (38, 43, 52),
-        "clock_floor": (232, 217, 160),
-        "picture_frame_floor": (166, 110, 78),
-        "mirror_floor": (128, 158, 170),
-        "shelf_floor": (126, 105, 88),
+        "sofa": (163, 112, 92),
+        "table": (142, 94, 55),
+        "cabinet": (127, 102, 73),
+        "chair": (125, 86, 59),
+        "floor_barrel": (129, 84, 45),
+        "picture_frame_floor": (190, 147, 89),
+        "speaker": (58, 62, 70),
+        "side_table": (156, 106, 64),
+        "plant_stand": (98, 128, 78),
         "fan_floor": (174, 187, 193),
         "ac_floor": (205, 216, 218),
         "coat_floor": (116, 80, 145),
@@ -678,7 +691,7 @@ def _draw_floor_object(
         "lamp": (218, 184, 93),
         "box": (185, 128, 60),
         "toy": (91, 154, 200),
-    }.get(color_role, CONTEXT_OBJECT_COLORS[sum(ord(char) for char in str(spec["object_id"])) % len(CONTEXT_OBJECT_COLORS)])
+    }.get(color_role, CONTEXT_OBJECT_COLORS[default_color_index])
     object_type = str(spec.get("object_type"))
     if object_type == "sofa":
         return _draw_room_sofa_object(draw, spec, camera=camera, frame=frame, fill=color)

@@ -6,6 +6,11 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 from trace.tasks.puzzles.shared.common import resolve_puzzle_axis_variant
+from trace.core.seed import spawn_rng
+from trace.core.sampling import (
+    support_probability_map,
+    uniform_choice_with_probabilities,
+)
 from trace.tasks.puzzles.shared.layout import resolve_puzzle_layout_jitter
 from trace.tasks.puzzles.shared.unit_size_jitter import (
     resolve_puzzle_unit_size_scale,
@@ -39,8 +44,7 @@ class SudokuDefaults:
 
     marked_cell_value_support: tuple[int, ...] = tuple(DIGITS)
     marked_cell_candidate_count_support: tuple[int, ...] = (1, 2, 3, 4, 5)
-    unit_missing_digits_count_support: tuple[int, ...] = (2, 3, 4, 5, 6)
-    repeated_digit_count_support: tuple[int, ...] = (0, 1, 2, 3, 4)
+    option_label_support: tuple[str, ...] = ("A", "B", "C", "D")
     sparse_min_visible_count: int = 18
     sparse_max_visible_count: int = 26
     filled_min_visible_count: int = 28
@@ -326,7 +330,7 @@ def make_sudoku_sample(
     *,
     board: Board,
     solution: Board,
-    answer: int,
+    answer: int | str,
     annotation_coords: Sequence[Coord],
     construction_mode: str,
     marked_cell: Coord | None = None,
@@ -334,13 +338,16 @@ def make_sudoku_sample(
     highlighted_unit_index: int | None = None,
     repeated_digit_values: Sequence[int] = (),
     missing_digit_values: Sequence[int] = (),
+    option_specs: Sequence[Mapping[str, Any]] = (),
+    correct_option_label: str | None = None,
+    target_digit: int | None = None,
 ) -> SudokuSample:
     """Build the canonical scene sample record from task-owned witnesses."""
 
     return SudokuSample(
         board=board,
         solution=solution,
-        answer=int(answer),
+        answer=int(answer) if isinstance(answer, int) else str(answer),
         annotation_coords=tuple(annotation_coords),
         marked_cell=marked_cell,
         highlighted_unit_type=(
@@ -351,6 +358,11 @@ def make_sudoku_sample(
         ),
         repeated_digit_values=tuple(int(value) for value in repeated_digit_values),
         missing_digit_values=tuple(int(value) for value in missing_digit_values),
+        option_specs=tuple(dict(spec) for spec in option_specs),
+        correct_option_label=(
+            str(correct_option_label) if correct_option_label is not None else None
+        ),
+        target_digit=int(target_digit) if target_digit is not None else None,
         visible_count=int(visible_cell_count(board)),
         construction_mode=str(construction_mode),
     )
@@ -451,6 +463,90 @@ def resolve_sudoku_target_answer(
         fallback=fallback_support,
     )
     return int(answer), tuple(int(value) for value in support), dict(probabilities)
+
+
+def resolve_sudoku_target_digit(
+    params: Mapping[str, Any],
+    *,
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    namespace_root: str,
+    support_key: str,
+    fallback_support: Sequence[int],
+) -> tuple[int, tuple[int, ...], dict[str, float]]:
+    """Resolve one target digit for an option-letter Sudoku task."""
+
+    digit, probabilities = resolve_integer_choice(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=gen_defaults,
+        support_key=str(support_key),
+        explicit_key="target_digit",
+        fallback_support=fallback_support,
+        namespace=f"{namespace_root}.target_digit",
+        balanced_flag_key="balanced_target_digit_sampling",
+        namespace_support_permutation=True,
+    )
+    support = resolve_integer_support(
+        params,
+        gen_defaults=gen_defaults,
+        key=str(support_key),
+        fallback=fallback_support,
+    )
+    return int(digit), tuple(int(value) for value in support), dict(probabilities)
+
+
+def resolve_sudoku_option_label_support(
+    params: Mapping[str, Any],
+    *,
+    gen_defaults: Mapping[str, Any],
+    fallback: Sequence[str],
+) -> tuple[str, ...]:
+    """Resolve the explicit option-label support for Sudoku option tasks."""
+
+    raw_support = params.get(
+        "option_label_support",
+        group_default(
+            gen_defaults,
+            "option_label_support",
+            tuple(str(value) for value in fallback),
+        ),
+    )
+    support: list[str] = []
+    for raw_value in raw_support:
+        value = str(raw_value).strip()
+        if value and value not in support:
+            support.append(value)
+    if len(support) != 4:
+        raise ValueError("Sudoku option tasks require exactly four option labels")
+    return tuple(support)
+
+
+def resolve_sudoku_answer_label(
+    params: Mapping[str, Any],
+    *,
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    namespace_root: str,
+    fallback: Sequence[str],
+) -> tuple[str, tuple[str, ...], dict[str, float]]:
+    """Resolve the correct option letter for Sudoku option tasks."""
+
+    support = resolve_sudoku_option_label_support(
+        params,
+        gen_defaults=gen_defaults,
+        fallback=fallback,
+    )
+    explicit = params.get("answer_label", params.get("target_answer"))
+    if explicit is not None:
+        selected = str(explicit).strip()
+        if selected not in set(support):
+            raise ValueError(f"unsupported Sudoku answer_label: {selected}")
+        return selected, support, support_probability_map(support, selected=selected)
+
+    rng = spawn_rng(int(instance_seed), f"{namespace_root}.answer_label")
+    selected, probabilities = uniform_choice_with_probabilities(rng, support)
+    return str(selected), support, dict(probabilities)
 
 
 def resolve_sudoku_axes(
@@ -698,8 +794,15 @@ __all__ = [
     "mutable_empty_board",
     "populate_unit_with_missing_digits",
     "populate_unit_with_repeated_digits",
+    "resolve_sudoku_answer_label",
     "resolve_sudoku_axes",
+    "resolve_sudoku_option_label_support",
     "resolve_sudoku_render_params",
+    "resolve_sudoku_scene_variant",
+    "resolve_sudoku_style_variant",
+    "resolve_sudoku_target_answer",
+    "resolve_sudoku_target_digit",
+    "resolve_sudoku_unit_type",
     "target_visible_count",
     "visible_cell_count",
     "visible_count_bounds",

@@ -10,7 +10,15 @@
 Counts the visible top-surface terrain tiles that make up the highest elevation layer in an isometric quarry scene.
 
 ## Program Contract
-`count(tile where level(tile)=max(levels)); scene=isometric_quarry; scope=highest_terrain_tile_count`
+
+Program: `count(tile where level(tile)=max(levels)); scene=isometric_quarry; scope=highest_terrain_tile_count`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `highest_terrain_tile_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `tile`, `where`, `level`, `max`, `levels`, `isometric_quarry`, `highest_terrain_tile_count`.
+Operation: evaluate `count` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

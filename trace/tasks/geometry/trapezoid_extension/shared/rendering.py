@@ -7,6 +7,7 @@ from typing import Any, Mapping, Sequence
 
 from PIL import ImageDraw
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.diagram_style import (
     geometry_diagram_style_metadata,
@@ -25,7 +26,6 @@ from trace.tasks.geometry.shared.shape_style import (
     sample_geometry_shape_style,
 )
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.text_rendering import load_font
 
 from .state import SCENE_ID
@@ -38,6 +38,17 @@ from .state import (
     RenderedTrapezoidExtensionScene,
     TrapezoidExtensionProblem,
 )
+
+
+_LAYOUT_CENTER: Point = (390.0, 280.0)
+_LAYOUT_SCALE = 0.88
+_LAYOUT_SHIFT: Point = (22.0, 0.0)
+_HEIGHT_LABEL_OFFSET = 40.0
+_HEIGHT_LABEL_HALF_WIDTH_GUARD = 44.0
+_HEIGHT_LABEL_HALF_HEIGHT_GUARD = 18.0
+_SIDE_LABEL_OFFSET = 58.0
+_SIDE_LABEL_HALF_WIDTH_GUARD = 48.0
+_SIDE_LABEL_HALF_HEIGHT_GUARD = 20.0
 
 
 def _union_bboxes(bboxes: Sequence[BBox], *, width: int, height: int, pad: float = 0.0) -> BBox:
@@ -84,7 +95,7 @@ def _draw_dashed_line(
         distance += dash + gap
 
 
-def _draw_height_marker(ctx: RenderContext, top: Point, bottom: Point, label: str, label_center: Point) -> BBox:
+def _draw_height_marker(ctx: RenderContext, top: Point, bottom: Point, label: str) -> BBox:
     tick = 11.0 * float(ctx.scene_transform.transform.scale)
     dx = float(bottom[0]) - float(top[0])
     dy = float(bottom[1]) - float(top[1])
@@ -105,6 +116,11 @@ def _draw_height_marker(ctx: RenderContext, top: Point, bottom: Point, label: st
         fill=ctx.accent_color,
         width=max(2, ctx.line_width - 1),
     )
+    midpoint = ((float(top[0]) + float(bottom[0])) / 2.0, (float(top[1]) + float(bottom[1])) / 2.0)
+    label_offset = float(_HEIGHT_LABEL_OFFSET) * float(ctx.scene_transform.transform.scale)
+    left_candidate = (midpoint[0] + nx * label_offset, midpoint[1] + ny * label_offset)
+    right_candidate = (midpoint[0] - nx * label_offset, midpoint[1] - ny * label_offset)
+    label_center = left_candidate if float(left_candidate[0]) <= float(right_candidate[0]) else right_candidate
     label_bbox = draw_label(ctx, label, label_center, small=True)
     marker_bbox = bbox_from_points(
         (
@@ -118,6 +134,107 @@ def _draw_height_marker(ctx: RenderContext, top: Point, bottom: Point, label: st
         pad=5.0,
     )
     return _union_bboxes((marker_bbox, label_bbox), width=ctx.width, height=ctx.height)
+
+
+def _compact_layout_point(point: Point) -> Point:
+    """Shrink the canonical construction to leave room for external labels."""
+
+    return (
+        float(_LAYOUT_CENTER[0])
+        + ((float(point[0]) - float(_LAYOUT_CENTER[0])) * float(_LAYOUT_SCALE))
+        + float(_LAYOUT_SHIFT[0]),
+        float(_LAYOUT_CENTER[1])
+        + ((float(point[1]) - float(_LAYOUT_CENTER[1])) * float(_LAYOUT_SCALE))
+        + float(_LAYOUT_SHIFT[1]),
+    )
+
+
+def _compact_layout_points(points: Mapping[str, Point]) -> dict[str, Point]:
+    return {str(key): _compact_layout_point(point) for key, point in points.items()}
+
+
+def _height_label_fit_points(top: Point, bottom: Point) -> tuple[Point, ...]:
+    """Return invisible fit witnesses for the externally placed height label."""
+
+    dx = float(bottom[0]) - float(top[0])
+    dy = float(bottom[1]) - float(top[1])
+    length = max(1e-9, math.hypot(dx, dy))
+    tx = dx / length
+    ty = dy / length
+    nx = -dy / length
+    ny = dx / length
+    midpoint = ((float(top[0]) + float(bottom[0])) / 2.0, (float(top[1]) + float(bottom[1])) / 2.0)
+    fit_points: list[Point] = []
+    for side in (-1.0, 1.0):
+        label_center = (
+            midpoint[0] + (nx * float(_HEIGHT_LABEL_OFFSET) * side),
+            midpoint[1] + (ny * float(_HEIGHT_LABEL_OFFSET) * side),
+        )
+        for normal_sign in (-1.0, 1.0):
+            for tangent_sign in (-1.0, 1.0):
+                fit_points.append(
+                    (
+                        label_center[0]
+                        + (nx * float(_HEIGHT_LABEL_HALF_WIDTH_GUARD) * normal_sign)
+                        + (tx * float(_HEIGHT_LABEL_HALF_HEIGHT_GUARD) * tangent_sign),
+                        label_center[1]
+                        + (ny * float(_HEIGHT_LABEL_HALF_WIDTH_GUARD) * normal_sign)
+                        + (ty * float(_HEIGHT_LABEL_HALF_HEIGHT_GUARD) * tangent_sign),
+                    )
+                )
+    return tuple(fit_points)
+
+
+def _side_label_point(start: Point, end: Point) -> Point:
+    """Place the AD side label beside the side edge instead of on top of it."""
+
+    dx = float(end[0]) - float(start[0])
+    dy = float(end[1]) - float(start[1])
+    length = max(1e-9, math.hypot(dx, dy))
+    nx = -dy / length
+    ny = dx / length
+    midpoint = ((float(start[0]) + float(end[0])) / 2.0, (float(start[1]) + float(end[1])) / 2.0)
+    candidate_a = (
+        midpoint[0] + (nx * float(_SIDE_LABEL_OFFSET)),
+        midpoint[1] + (ny * float(_SIDE_LABEL_OFFSET)),
+    )
+    candidate_b = (
+        midpoint[0] - (nx * float(_SIDE_LABEL_OFFSET)),
+        midpoint[1] - (ny * float(_SIDE_LABEL_OFFSET)),
+    )
+    return candidate_a if float(candidate_a[0]) >= float(candidate_b[0]) else candidate_b
+
+
+def _axis_aligned_label_fit_points(center: Point, *, half_width: float, half_height: float) -> tuple[Point, ...]:
+    cx, cy = float(center[0]), float(center[1])
+    return (
+        (cx - float(half_width), cy - float(half_height)),
+        (cx + float(half_width), cy - float(half_height)),
+        (cx - float(half_width), cy + float(half_height)),
+        (cx + float(half_width), cy + float(half_height)),
+    )
+
+
+def _draw_vertex_markers(ctx: RenderContext, vertices: Mapping[str, Point]) -> dict[str, BBox]:
+    """Draw visible vertex dots and letter labels for named construction points."""
+
+    label_offsets: dict[str, Point] = {
+        "A": (-22.0, -25.0),
+        "B": (0.0, -27.0),
+        "C": (24.0, 23.0),
+        "D": (-24.0, 23.0),
+        "E": (23.0, -25.0),
+    }
+    radius = max(4.0, 5.0 * float(ctx.scene_transform.transform.scale))
+    bboxes: dict[str, BBox] = {}
+    for label, point in vertices.items():
+        px, py = float(point[0]), float(point[1])
+        dot_bbox = (px - radius, py - radius, px + radius, py + radius)
+        ctx.draw.ellipse(dot_bbox, fill=(255, 255, 255), outline=ctx.line_color, width=max(2, ctx.line_width - 1))
+        offset = label_offsets[str(label)]
+        text_bbox = draw_label(ctx, str(label), (px + float(offset[0]), py + float(offset[1])), small=True)
+        bboxes[f"point_{label}"] = _union_bboxes((dot_bbox, text_bbox), width=ctx.width, height=ctx.height, pad=2.0)
+    return bboxes
 
 
 def create_render_context(
@@ -152,12 +269,11 @@ def create_render_context(
         ((248, 238, 252), (226, 242, 255), (123, 95, 190), (143, 154, 172)),
         ((255, 244, 224), (226, 240, 255), (196, 102, 44), (132, 146, 160)),
     )
-    palette_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.palette",
+    palette_rng = spawn_rng(int(instance_seed), f"{namespace}.palette")
+    fill_color, extension_fill_color, accent_color, muted_color = uniform_choice(
+        palette_rng,
+        palettes,
     )
-    fill_color, extension_fill_color, accent_color, muted_color = palettes[int(palette_index) % len(palettes)]
     font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 22)))
     small_font_size = int(params.get("small_label_font_size", group_default(render_defaults, "small_label_font_size", 18)))
     line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 4)))
@@ -207,26 +323,42 @@ def render_trapezoid_extension_scene(
     """Draw one resolved trapezoid-completion construction and projected witnesses."""
 
     case = problem.case
-    a = (135.0, 170.0)
-    b = (355.0, 170.0)
-    e = (685.0, 170.0)
-    d = (95.0, 420.0)
-    c = (645.0, 420.0)
+    raw_vertices = {
+        "A": (135.0, 170.0),
+        "B": (355.0, 170.0),
+        "E": (685.0, 170.0),
+        "D": (95.0, 420.0),
+        "C": (645.0, 420.0),
+    }
     raw_label_points = {
         "top_base": (245.0, 132.0),
         "height_top": (56.0, 170.0),
         "height_bottom": (56.0, 420.0),
-        "height_label": (98.0, 295.0),
         "parallelogram_area": (520.0, 84.0),
         "parallelogram_perimeter": (520.0, 84.0),
-        "side": (94.0, 288.0),
         "extension": (520.0, 132.0),
         "bottom_base": (370.0, 458.0),
         "target_extension": (520.0, 202.0),
         "target_area": (520.0, 505.0),
     }
-    ctx.scene_transform.resolve((a, b, e, d, c, *raw_label_points.values()))
-    a, b, e, d, c = ctx.scene_transform.points((a, b, e, d, c))
+    layout_vertices = _compact_layout_points(raw_vertices)
+    raw_label_points = _compact_layout_points(raw_label_points)
+    raw_label_points["side"] = _side_label_point(layout_vertices["A"], layout_vertices["D"])
+    height_fit_points = _height_label_fit_points(raw_label_points["height_top"], raw_label_points["height_bottom"])
+    side_fit_points = _axis_aligned_label_fit_points(
+        raw_label_points["side"],
+        half_width=_SIDE_LABEL_HALF_WIDTH_GUARD,
+        half_height=_SIDE_LABEL_HALF_HEIGHT_GUARD,
+    )
+    ctx.scene_transform.resolve(
+        (*layout_vertices.values(), *raw_label_points.values(), *height_fit_points, *side_fit_points)
+    )
+    vertex_points = ctx.scene_transform.keyed_points(layout_vertices)
+    a = vertex_points["A"]
+    b = vertex_points["B"]
+    e = vertex_points["E"]
+    d = vertex_points["D"]
+    c = vertex_points["C"]
     label_points = ctx.scene_transform.keyed_points(raw_label_points)
 
     trapezoid_points = (a, b, c, d)
@@ -240,13 +372,13 @@ def render_trapezoid_extension_scene(
     ctx.draw.line([d, c], fill=ctx.line_color, width=ctx.line_width)
 
     label_bboxes: dict[str, BBox] = {}
+    label_bboxes.update(_draw_vertex_markers(ctx, {"A": a, "B": b, "C": c, "D": d, "E": e}))
     label_bboxes["top_base"] = draw_label(ctx, f"AB={case.top_base}", label_points["top_base"], small=True)
     label_bboxes["height"] = _draw_height_marker(
         ctx,
         label_points["height_top"],
         label_points["height_bottom"],
         f"h={case.height}",
-        label_points["height_label"],
     )
     for label in problem.support_labels:
         label_bboxes[str(label.role)] = draw_label(
@@ -271,12 +403,16 @@ def render_trapezoid_extension_scene(
     completed_bbox = bbox_from_points(parallelogram_points, width=ctx.width, height=ctx.height, pad=10.0)
     supporting_bbox = _union_bboxes(tuple(support_bboxes), width=ctx.width, height=ctx.height, pad=4.0)
 
-    annotation_bboxes = {
-        "target_cue": label_bboxes["target"],
-        "original_trapezoid": original_bbox,
-        "dashed_parallelogram_completion": dashed_completion_bbox,
-        "supporting_visible_labels": supporting_bbox,
-    }
+    if str(problem.annotation_mode) == "extension_segment":
+        annotation_bboxes = {"BE": bbox_from_points((b, e), width=ctx.width, height=ctx.height, pad=8.0)}
+        annotation_roles = ("BE",)
+        annotation_segment = (b, e)
+        annotation_bbox = None
+    else:
+        annotation_bboxes = {"original_trapezoid": original_bbox}
+        annotation_roles = ("original_trapezoid",)
+        annotation_segment = None
+        annotation_bbox = original_bbox
     scene_entities = (
         {
             "entity_id": "original_trapezoid",
@@ -308,7 +444,7 @@ def render_trapezoid_extension_scene(
         image=ctx.image,
         answer=float(problem.answer),
         annotation_bboxes=dict(annotation_bboxes),
-        annotation_roles=tuple(annotation_bboxes.keys()),
+        annotation_roles=annotation_roles,
         label_bboxes=dict(label_bboxes),
         scene_entities=scene_entities,
         render_map={
@@ -322,8 +458,19 @@ def render_trapezoid_extension_scene(
                 "bbox": bbox_to_list(dashed_completion_bbox),
             },
             "label_bboxes": {key: bbox_to_list(value) for key, value in label_bboxes.items()},
+            "supporting_visible_labels_bbox": bbox_to_list(supporting_bbox),
+            "target_cue_bbox": bbox_to_list(label_bboxes["target"]),
+            "dashed_parallelogram_completion_bbox": bbox_to_list(dashed_completion_bbox),
+            "completed_parallelogram_bbox": bbox_to_list(completed_bbox),
+            "vertex_points": {
+                key: [round(float(point[0]), 3), round(float(point[1]), 3)]
+                for key, point in {"A": a, "B": b, "C": c, "D": d, "E": e}.items()
+            },
         },
         witness=witness,
+        annotation_mode=str(problem.annotation_mode),
+        annotation_segment=annotation_segment,
+        annotation_bbox=annotation_bbox,
     )
 
 

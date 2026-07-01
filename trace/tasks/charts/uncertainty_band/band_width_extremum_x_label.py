@@ -228,10 +228,12 @@ class ChartsUncertaintyBandWidthExtremumXLabelTask:
                 "x_labels": [str(label) for label in dataset.x_labels],
                 "series_labels": [str(series.label) for series in dataset.series],
                 "render_meta": dict(artifacts.rendered.render_meta),
+                "information_scene_style": dict(artifacts.rendered.render_meta.get("information_style", {})),
                 "post_image_noise": dict(artifacts.post_image_noise),
             },
             "render_map": {
                 "plot_bbox_px": list(artifacts.rendered.plot_bbox_px),
+                "panel_bbox_px": list(artifacts.rendered.render_meta.get("panel_bbox_px", [])),
                 "series_band_bboxes_px": dict(artifacts.rendered.series_band_bboxes_px),
                 "point_map_px": dict(artifacts.rendered.point_map_px),
                 "overlap_points_px": dict(artifacts.rendered.overlap_points_px),

@@ -74,6 +74,12 @@ Style and background variation must remain non-semantic unless queried. Dense
 scenes should cap foreground object counts to preserve readable object and part
 bboxes.
 
+Isometric illustration scenes should use the shared 25-tone neutral background
+pool through the illustrations isometric visual-style adapter. The tone may
+control canvas, terrain edge/shadow, and label colors, but semantic terrain
+colors such as grass, water, dock, rock, crop, and soil must remain recognizable.
+Record the actual `background_tone_id` and RGB role metadata in the trace.
+
 ## Shared Code
 Reusable object catalogs, scene grammars, environment layout, part metadata, and
 renderer/style helpers belong under `trace/tasks/illustrations/shared/`.

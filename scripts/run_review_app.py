@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import os
 from pathlib import Path
 import sys
@@ -76,16 +77,46 @@ def main() -> int:
 
     from trace.review_app.server import create_app
 
+    from trace.review_app.locks import ReviewFileLock, ReviewLockError, review_app_lock_path
+
+    review_root = Path(args.review_root).resolve()
     feedback_db = Path(args.feedback_db).resolve() if str(args.feedback_db).strip() else None
-    app = create_app(
-        review_root=Path(args.review_root).resolve(),
-        repo_root=repo_root,
-        feedback_db=feedback_db,
-        token=token,
-        base_url=_resolve_base_url(args.base_url, port=int(args.port)),
-        defer_initial_index=True,
-    )
-    uvicorn.run(app, host=str(args.host), port=int(args.port), reload=bool(args.reload))
+    resolved_feedback_db = feedback_db if feedback_db is not None else repo_root / "review" / "feedback" / "review_feedback.sqlite"
+    base_url = _resolve_base_url(args.base_url, port=int(args.port))
+    lock_path = review_app_lock_path(review_root=review_root, feedback_db=resolved_feedback_db)
+    lock_metadata = {
+        "kind": "trace_review_app",
+        "review_root": str(review_root),
+        "feedback_db": str(resolved_feedback_db),
+        "host_arg": str(args.host),
+        "port": int(args.port),
+        "base_url": str(base_url),
+        "started_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    }
+    try:
+        with ReviewFileLock(lock_path, metadata=lock_metadata, blocking=False):
+            app = create_app(
+                review_root=review_root,
+                repo_root=repo_root,
+                feedback_db=feedback_db,
+                token=token,
+                base_url=base_url,
+                defer_initial_index=True,
+            )
+            uvicorn.run(app, host=str(args.host), port=int(args.port), reload=bool(args.reload))
+    except ReviewLockError as exc:
+        metadata = exc.metadata
+        owner = ", ".join(
+            f"{key}={metadata[key]}"
+            for key in ("pid", "host", "port", "base_url", "review_root")
+            if key in metadata
+        )
+        print(
+            "Refusing to start a second TRACE review app for the same review root and feedback DB. "
+            f"Lock: {lock_path}. Current owner: {owner or 'unknown'}.",
+            file=sys.stderr,
+        )
+        return 3
     return 0
 
 

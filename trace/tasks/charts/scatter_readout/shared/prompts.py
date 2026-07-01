@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from trace.tasks.charts.shared.unanswerable import UNANSWERABLE_ANSWER
+from trace.tasks.shared.unanswerable import UNANSWERABLE_ANSWER
 from trace.tasks.shared.prompt_variants import (
     PromptTraceArtifacts,
     build_prompt_trace_artifacts,

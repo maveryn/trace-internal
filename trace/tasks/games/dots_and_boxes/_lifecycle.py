@@ -14,7 +14,10 @@ from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
 from .shared.annotations import dots_and_boxes_annotation_artifacts
 from .shared.defaults import SCENE_ID
-from .shared.output import build_dots_and_boxes_common_trace_params, build_dots_and_boxes_trace_payload
+from .shared.output import (
+    build_dots_and_boxes_common_trace_params,
+    build_dots_and_boxes_trace_payload,
+)
 from .shared.prompts import build_dots_and_boxes_prompt_artifacts
 from .shared.rendering import render_dots_and_boxes_task_context
 from .shared.sampling import (
@@ -22,9 +25,12 @@ from .shared.sampling import (
     resolve_dots_and_boxes_render_params,
     resolve_dots_and_boxes_scene_axes,
 )
-from .shared.state import DotsAndBoxesBoardShapeAxis, DotsAndBoxesBoardState, DotsAndBoxesIntegerAxis
+from .shared.state import (
+    DotsAndBoxesBoardShapeAxis,
+    DotsAndBoxesBoardState,
+    DotsAndBoxesIntegerAxis,
+)
 from .shared.rules import build_dots_and_boxes_count_board_state
-
 
 AttemptBuilder = Callable[[Any], "DotsAndBoxesAttemptResult"]
 ObjectivePreparer = Callable[
@@ -54,6 +60,7 @@ class DotsAndBoxesObjectivePlan:
     attempt_namespace: str
     construct_attempt: AttemptBuilder
     candidate_edge_count_axis: DotsAndBoxesIntegerAxis | None = None
+    prompt_dynamic_slots: Mapping[str, Any] | None = None
 
 
 def make_count_objective_plan(
@@ -69,6 +76,7 @@ def make_count_objective_plan(
     candidate_edge_count_axis: DotsAndBoxesIntegerAxis | None = None,
     owner: str = "",
     query_params_extra: Mapping[str, Any] | None = None,
+    prompt_dynamic_slots: Mapping[str, Any] | None = None,
 ) -> DotsAndBoxesObjectivePlan:
     """Build a lifecycle objective from task-owned semantic count arguments."""
 
@@ -80,12 +88,19 @@ def make_count_objective_plan(
             target_answer=int(target_axis.value),
             box_rows=int(board_shape.box_rows),
             box_cols=int(board_shape.box_cols),
-            candidate_edge_count=0 if candidate_edge_count_axis is None else int(candidate_edge_count_axis.value),
+            candidate_edge_count=(
+                0
+                if candidate_edge_count_axis is None
+                else int(candidate_edge_count_axis.value)
+            ),
         )
         return DotsAndBoxesAttemptResult(
             board_state=board_state,
             annotation_kind=str(annotation_kind),
-            annotation_entity_ids=tuple(str(entity_id) for entity_id in getattr(board_state, str(annotation_entity_attr))),
+            annotation_entity_ids=tuple(
+                str(entity_id)
+                for entity_id in getattr(board_state, str(annotation_entity_attr))
+            ),
         )
 
     return DotsAndBoxesObjectivePlan(
@@ -101,6 +116,7 @@ def make_count_objective_plan(
         attempt_namespace=str(attempt_namespace),
         construct_attempt=construct_attempt,
         candidate_edge_count_axis=candidate_edge_count_axis,
+        prompt_dynamic_slots=dict(prompt_dynamic_slots or {}),
     )
 
 
@@ -170,7 +186,9 @@ def run_dots_and_boxes_lifecycle(
         )
         annotation_artifacts = dots_and_boxes_annotation_artifacts(
             annotation_kind=str(attempt.annotation_kind),
-            annotation_entity_ids=tuple(str(entity_id) for entity_id in attempt.annotation_entity_ids),
+            annotation_entity_ids=tuple(
+                str(entity_id) for entity_id in attempt.annotation_entity_ids
+            ),
             render_map=rendered_context.rendered_scene.render_map,
         )
         prompt_defaults, prompt_artifacts = build_dots_and_boxes_prompt_artifacts(
@@ -179,6 +197,7 @@ def run_dots_and_boxes_lifecycle(
             prompt_query_key=str(objective.prompt_query_key),
             annotation_example_shape=str(objective.annotation_example_shape),
             answer_example=objective.answer_gt.value,
+            dynamic_slots=dict(objective.prompt_dynamic_slots or {}),
             instance_seed=int(instance_seed),
         )
         common_query_params = build_dots_and_boxes_common_trace_params(
@@ -186,7 +205,9 @@ def run_dots_and_boxes_lifecycle(
             board_shape=board_shape,
             candidate_edge_count_axis=objective.candidate_edge_count_axis,
             extra_params={
-                "query_id_probabilities": {str(key): float(value) for key, value in query_probabilities.items()},
+                "query_id_probabilities": {
+                    str(key): float(value) for key, value in query_probabilities.items()
+                },
                 **dict(objective.query_params),
             },
         )
@@ -197,7 +218,9 @@ def run_dots_and_boxes_lifecycle(
         )
         trace_payload = build_dots_and_boxes_trace_payload(
             annotation_artifacts=annotation_artifacts,
-            annotation_entity_ids=tuple(str(entity_id) for entity_id in attempt.annotation_entity_ids),
+            annotation_entity_ids=tuple(
+                str(entity_id) for entity_id in attempt.annotation_entity_ids
+            ),
             scene_axes=scene_axes,
             board_shape=board_shape,
             board_state=attempt.board_state,
@@ -217,7 +240,10 @@ def run_dots_and_boxes_lifecycle(
             prompt=str(prompt_artifacts.prompt),
             prompt_variants=dict(prompt_artifacts.prompt_variants),
             answer_gt=objective.answer_gt,
-            annotation_gt=TypedValue(type=str(annotation_artifacts.annotation_type), value=annotation_artifacts.value),
+            annotation_gt=TypedValue(
+                type=str(annotation_artifacts.annotation_type),
+                value=annotation_artifacts.value,
+            ),
             image=rendered_context.image,
             image_id="img0",
             trace_payload=dict(trace_payload),
@@ -226,7 +252,9 @@ def run_dots_and_boxes_lifecycle(
             scene_id=SCENE_ID,
         )
 
-    raise RuntimeError(f"{task_id} failed to generate a valid dots-and-boxes scene after {max_attempts} attempts")
+    raise RuntimeError(
+        f"{task_id} failed to generate a valid dots-and-boxes scene after {max_attempts} attempts"
+    )
 
 
 __all__ = [

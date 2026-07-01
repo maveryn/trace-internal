@@ -11,7 +11,15 @@
 8. Scalar annotation checked: `true`
 
 ## Program Contract
-- `count(visible_cards_in_requested_tableau_column); scene=solitaire; scope=column_card_count_value`
+
+Program: `count(visible_cards_in_requested_tableau_column); scene=solitaire; scope=column_card_count_value`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `column_card_count_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `visible_cards_in_requested_tableau_column`, `solitaire`, `column_card_count_value`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The prompt names a visible tableau column by its 1-based column number.

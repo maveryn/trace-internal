@@ -3,9 +3,10 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `composite_shape`
-5. Query id: `cap_area`, `cutout_area`
-6. Answer schema: `decimal_value_1dp`
-7. Annotation schema: `point_map`
+3. Query id: `cap_area`, `cutout_area`
+4. Answer schema: `number`
+5. Answer precision: `one_decimal`
+6. Annotation schema: `point_map`
 
 ## Program Contract
 - `solve_formula(visible_composite_shape_measurements, unknown_role=area_measure, formula_schema=rectangle_semicircle_area); scene=composite_shape; scope=rectangle_semicircle_area`

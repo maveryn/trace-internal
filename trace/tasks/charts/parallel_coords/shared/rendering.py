@@ -6,14 +6,14 @@ from typing import Any
 
 from PIL import Image, ImageDraw
 
-from .....core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.dense_text import dense_fit_bold, dense_stroke_width
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from .....core.visual.noise import apply_post_image_noise
 from ....shared.bbox_projection import bbox_union, round_bbox
 from ....shared.font_assets import font_asset_version
 from ....shared.text_legibility import draw_text_traced
 from ....shared.text_rendering import load_font, temporary_default_font_family
 from .defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     resolve_render_params,
     sample_chart_font_family,
@@ -89,9 +89,10 @@ def _render_parallel_chart(
     )
     draw.rectangle([left, top, right, bottom], fill=render_params.plot_fill_rgb)
 
-    label_font = load_font(render_params.label_font_size_px, bold=True)
+    label_font = load_font(render_params.label_font_size_px, bold=False)
+    endpoint_label_font = load_font(max(12, int(render_params.label_font_size_px) - 3), bold=dense_fit_bold())
     tick_font = load_font(render_params.tick_font_size_px, bold=False)
-    threshold_font = load_font(render_params.threshold_font_size_px, bold=True)
+    threshold_font = load_font(render_params.threshold_font_size_px, bold=False)
 
     def y_px(value: float) -> float:
         ratio = (float(value) - float(dataset.value_min)) / max(1.0, float(dataset.value_max) - float(dataset.value_min))
@@ -118,7 +119,7 @@ def _render_parallel_chart(
             font=tick_font,
             fill=render_params.muted_text_rgb,
             stroke_fill=render_params.text_stroke_rgb,
-            stroke_width=1,
+            stroke_width=dense_stroke_width(),
             role="readout",
             required=False,
         )
@@ -138,7 +139,7 @@ def _render_parallel_chart(
             label_font,
             fill=render_params.text_rgb,
             stroke_fill=render_params.text_stroke_rgb,
-            stroke_width=1,
+            stroke_width=dense_stroke_width(),
         )
         for tick in tick_values:
             y = y_px(float(tick))
@@ -146,7 +147,7 @@ def _render_parallel_chart(
         if dataset.query.threshold is not None and selected:
             y = y_px(float(dataset.query.threshold))
             draw.line([x - 22, y, x + 22, y], fill=render_params.threshold_rgb, width=3)
-            text_bbox = _text_bbox(draw, (x + 26, y - 9), str(dataset.query.threshold), threshold_font, stroke_width=1)
+            text_bbox = _text_bbox(draw, (x + 26, y - 9), str(dataset.query.threshold), threshold_font, stroke_width=dense_stroke_width())
             draw_text_traced(
                 draw,
                 (x + 26, y - 9),
@@ -154,7 +155,7 @@ def _render_parallel_chart(
                 font=threshold_font,
                 fill=render_params.threshold_rgb,
                 stroke_fill=render_params.text_stroke_rgb,
-                stroke_width=1,
+                stroke_width=dense_stroke_width(),
                 role="readout",
                 required=False,
             )
@@ -184,20 +185,25 @@ def _render_parallel_chart(
             padded = bbox_union([seg_box], padding=8)
             segment_bboxes[f"{profile.profile_id}:axis_{axis_index}_{axis_index + 1}"] = padded
             profile_segment_boxes.append(padded)
+        endpoint_box = draw.textbbox((0, 0), str(profile.label), font=endpoint_label_font, stroke_width=dense_stroke_width())
+        endpoint_width = float(endpoint_box[2] - endpoint_box[0])
+        endpoint_height = float(endpoint_box[3] - endpoint_box[1])
+        left_label_right = float(left) - 58.0
+        right_label_left = float(right) + 58.0
         label_positions = (
-            ("left", (left - 74, points[0][1] - 10)),
-            ("right", (right + 48, points[-1][1] - 10)),
+            ("left", (max(panel_margin + 6.0, left_label_right - endpoint_width), points[0][1] - endpoint_height / 2.0)),
+            ("right", (right_label_left, points[-1][1] - endpoint_height / 2.0)),
         )
         for suffix, xy in label_positions:
-            box = _text_bbox(draw, xy, profile.label, label_font, stroke_width=2)
+            box = _text_bbox(draw, xy, profile.label, endpoint_label_font, stroke_width=dense_stroke_width())
             draw_text_traced(
                 draw,
                 xy,
                 profile.label,
-                font=label_font,
+                font=endpoint_label_font,
                 fill=line_rgb,
                 stroke_fill=render_params.text_stroke_rgb,
-                stroke_width=2,
+                stroke_width=dense_stroke_width(),
                 role="readout",
                 required=False,
             )
@@ -235,13 +241,14 @@ def _render_parallel_chart(
 def render_dataset(*, dataset: ParallelDataset, params: dict[str, Any], instance_seed: int) -> ParallelRenderResult:
     """Render the dataset on a sampled chart background."""
 
-    render_params = resolve_render_params({**dict(params), "_render_style_seed": int(instance_seed)})
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    resolved_params = resolve_render_params({**dict(params), "_render_style_seed": int(instance_seed)})
+    protected_colors = [tuple(int(channel) for channel in profile.color_rgb) for profile in dataset.profiles]
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="parallel_coords",
+        render_params=resolved_params,
+        protected_colors=protected_colors,
     )
     chart_font_family = sample_chart_font_family(int(instance_seed), params)
     with temporary_default_font_family(str(chart_font_family)):
@@ -256,7 +263,7 @@ def render_dataset(*, dataset: ParallelDataset, params: dict[str, Any], instance
         image=image,
         rendered_scene=rendered,
         render_params=render_params,
-        background_meta=dict(background_meta),
+        background_meta={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         post_noise_meta=dict(post_noise_meta),
         chart_font_family=str(chart_font_family),
     )
@@ -280,6 +287,7 @@ def render_spec_payload(result: ParallelRenderResult, dataset: ParallelDataset) 
             "chart_font_family": str(result.chart_font_family),
         },
         "background_style": dict(result.background_meta),
+        "information_scene_style": dict(result.background_meta.get("information_scene_style", {})),
         "post_image_noise": dict(result.post_noise_meta),
     }
 

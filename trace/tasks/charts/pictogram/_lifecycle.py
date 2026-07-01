@@ -49,15 +49,17 @@ def build_pictogram_plan(
 def make_pictogram_query(
     *,
     selected: str,
-    answer: int,
+    answer: Any,
     annotation_type: str,
     annotation_category_ids: tuple[str, ...],
     params: Mapping[str, Any],
+    answer_type: str = "integer",
 ) -> PictogramQuery:
+    typed_answer: Any = str(answer) if str(answer_type) == "string" else int(answer)
     return PictogramQuery(
         branch_id=str(selected),
-        answer=int(answer),
-        answer_type="integer",
+        answer=typed_answer,
+        answer_type=str(answer_type),
         annotation_type=str(annotation_type),
         annotation_category_ids=tuple(str(value) for value in annotation_category_ids),
         params=dict(params),
@@ -141,6 +143,7 @@ def _build_trace_payload(
     category_id_to_label = dict(annotation["category_id_to_label"])
     totals_by_category = {category.label: int(category.total) for category in dataset.categories}
     mark_counts_by_category = {category.label: int(category.mark_count) for category in dataset.categories}
+    answer_value: Any = str(dataset.query.answer) if str(dataset.query.answer_type) == "string" else int(dataset.query.answer)
     query_params = {
         "query_id": str(dataset.branch_id),
         "query_id_probabilities": dict(dataset.branch_probabilities),
@@ -151,7 +154,7 @@ def _build_trace_payload(
         "unit_scale": int(dataset.unit_scale),
         "unit_scale_probabilities": dict(dataset.unit_scale_probabilities),
         "category_count": int(len(dataset.categories)),
-        "answer_value": int(dataset.query.answer),
+        "answer_value": answer_value,
         **dict(qparams),
         **dict(trace_params),
     }
@@ -163,7 +166,7 @@ def _build_trace_payload(
                 "query_id": str(dataset.branch_id),
                 "scene_variant": str(dataset.scene_variant),
                 "unit_scale": int(dataset.unit_scale),
-                "answer_value": int(dataset.query.answer),
+                "answer_value": answer_value,
                 "annotation_category_ids": list(annotation["category_ids"]),
             },
         },
@@ -181,6 +184,7 @@ def _build_trace_payload(
             "category_labels": [str(category.label) for category in dataset.categories],
             "font_assets": font_assets_payload(chart_font_family=rendered.chart_font_family),
             "background_style": dict(rendered.background_meta),
+            "information_scene_style": dict(rendered.background_meta.get("information_scene_style", {})),
             "render_meta": dict(rendered.rendered_scene.render_meta),
             "post_image_noise": dict(rendered.post_noise_meta),
         },
@@ -200,7 +204,7 @@ def _build_trace_payload(
             "category_id_to_label": dict(category_id_to_label),
             "mark_counts_by_category": dict(mark_counts_by_category),
             "totals_by_category": dict(totals_by_category),
-            "answer_value": int(dataset.query.answer),
+            "answer_value": answer_value,
             "answer_type": str(dataset.query.answer_type),
             "annotation_type": str(dataset.query.annotation_type),
             "annotation_category_ids": list(annotation["category_ids"]),
@@ -210,7 +214,7 @@ def _build_trace_payload(
         },
         "witness_symbolic": {
             "type": "pictogram_quantity_witness",
-            "answer_value": int(dataset.query.answer),
+            "answer_value": answer_value,
             "annotation_type": str(dataset.query.annotation_type),
             "annotation_category_ids": list(annotation["category_ids"]),
         },
@@ -244,7 +248,10 @@ def materialize_pictogram_plan(
     return TaskOutput(
         prompt=str(prompt_artifacts.prompt),
         prompt_variants=dict(prompt_artifacts.prompt_variants),
-        answer_gt=TypedValue(type=str(plan.dataset.query.answer_type), value=int(plan.dataset.query.answer)),
+        answer_gt=TypedValue(
+            type=str(plan.dataset.query.answer_type),
+            value=(str(plan.dataset.query.answer) if str(plan.dataset.query.answer_type) == "string" else int(plan.dataset.query.answer)),
+        ),
         annotation_gt=TypedValue(type=str(annotation["type"]), value=annotation["value"]),
         image=rendered.image,
         image_id="img0",

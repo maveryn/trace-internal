@@ -20,8 +20,6 @@ from trace.tasks.geometry.volume_equivalence_conversion.missing_dimension_value 
     TASK_ID_MISSING_DIMENSION,
     GeometryVolumeEquivalenceConversionMissingDimensionValueTask,
 )
-from trace.tasks.geometry.volume_equivalence_conversion.shared.annotations import OPTION_ANNOTATION_KEYS
-
 
 def _generate(seed: int, *, task_id: str = TASK_ID_MISSING_DIMENSION, **params):
     task = create_task(task_id)
@@ -92,13 +90,14 @@ def test_equal_volume_option_formula_and_annotation() -> None:
     assert execution["selected_option_label"] == out.answer_gt.value
     assert execution["formula_family"] == "volume_equivalence_option_match"
 
+    assert out.annotation_gt.type == "bbox"
     annotation = out.annotation_gt.value
-    assert tuple(annotation.keys()) == OPTION_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["bbox_map"] == annotation
+    assert trace["projected_annotation"]["bbox"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox"] == annotation
     assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_volume_equivalence_conversion_v1"
     assert trace["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
     assert "task_variant" not in json.dumps(trace)
-    _assert_bbox_map_inside_image(annotation, out.image.size, keys=OPTION_ANNOTATION_KEYS)
+    _assert_bbox_inside_image(annotation, out.image.size)
 
 
 def test_volume_equivalence_conversion_generation_is_deterministic() -> None:
@@ -146,3 +145,15 @@ def _assert_bbox_map_inside_image(
         x0, y0, x1, y1 = [float(value) for value in bbox]
         assert 0.0 <= x0 < x1 <= float(width)
         assert 0.0 <= y0 < y1 <= float(height)
+
+
+def _assert_bbox_inside_image(
+    bbox: list[float],
+    image_size: tuple[int, int],
+) -> None:
+    width, height = image_size
+    assert isinstance(bbox, list)
+    assert len(bbox) == 4
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    assert 0.0 <= x0 < x1 <= float(width)
+    assert 0.0 <= y0 < y1 <= float(height)

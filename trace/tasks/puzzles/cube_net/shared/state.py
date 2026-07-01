@@ -35,12 +35,6 @@ SIDE_OFFSETS = {
     "bottom": (0, 1),
     "left": (-1, 0),
 }
-ROLL_OFFSETS = {
-    "N": (-1, 0),
-    "E": (0, 1),
-    "S": (1, 0),
-    "W": (0, -1),
-}
 FACE_LABEL_POOL: Tuple[str, ...] = tuple("JKLMNPQRSTUVWXYZ23456789")
 
 
@@ -50,17 +44,9 @@ class CubeNetDefaults:
 
     canvas_width: int = 1100
     face_relation_canvas_height: int = 760
-    rolling_canvas_height: int = 820
+    equivalent_net_canvas_height: int = 860
     option_count: int = 4
     net_cell_size_px: int = 86
-    rolling_grid_rows_min: int = 5
-    rolling_grid_rows_max: int = 6
-    rolling_grid_cols_min: int = 5
-    rolling_grid_cols_max: int = 6
-    rolling_path_length_min: int = 4
-    rolling_path_length_max: int = 7
-    surface_path_step_count_min: int = 3
-    surface_path_step_count_max: int = 5
     line_width_px: int = 3
     title_font_size_px: int = 22
     face_font_size_px: int = 31
@@ -80,15 +66,6 @@ class FaceOption:
 
 
 @dataclass(frozen=True)
-class PathSequenceOption:
-    """One labeled answer option for a folded surface path sequence."""
-
-    option_label: str
-    face_ids: Tuple[str, ...]
-    face_labels: Tuple[str, ...]
-
-
-@dataclass(frozen=True)
 class FaceRelationDataset:
     """Concrete cube-net relation case sampled before task answer binding."""
 
@@ -102,35 +79,23 @@ class FaceRelationDataset:
 
 
 @dataclass(frozen=True)
-class RollingDataset:
-    """Concrete cube rolling case sampled before task answer binding."""
+class NetEquivalenceOption:
+    """One candidate colored net for whole-cube equivalence matching."""
 
-    target_slot: str
-    face_labels: Dict[str, str]
-    start_orientation: Dict[str, str]
-    final_orientation: Dict[str, str]
-    grid_rows: int
-    grid_cols: int
-    path_cells: Tuple[Tuple[int, int], ...]
-    path_directions: Tuple[str, ...]
-    correct_face: str
-    options: Tuple[FaceOption, ...]
-    correct_option_label: str
+    option_label: str
+    face_color_names: Dict[str, str]
+    equivalence_kind: str
+    canonical_signature: Tuple[str, ...]
 
 
 @dataclass(frozen=True)
-class SurfacePathDataset:
-    """Concrete folded-surface path case with endpoint and sequence options."""
+class NetEquivalenceDataset:
+    """Concrete colored-net equivalence case with exactly one matching option."""
 
-    face_labels: Dict[str, str]
-    start_face: str
-    path_sides: Tuple[str, ...]
-    face_sequence: Tuple[str, ...]
-    endpoint_face: str
-    endpoint_options: Tuple[FaceOption, ...]
-    sequence_options: Tuple[PathSequenceOption, ...]
-    endpoint_correct_option_label: str
-    sequence_correct_option_label: str
+    reference_face_color_names: Dict[str, str]
+    reference_signature: Tuple[str, ...]
+    options: Tuple[NetEquivalenceOption, ...]
+    correct_option_label: str
 
 
 __all__ = [
@@ -141,14 +106,12 @@ __all__ = [
     "FACE_LABEL_POOL",
     "FaceOption",
     "FaceRelationDataset",
+    "NetEquivalenceDataset",
+    "NetEquivalenceOption",
     "NET_COORDS",
     "NORMAL_BY_FACE",
     "OPPOSITE_FACE",
-    "PathSequenceOption",
-    "ROLL_OFFSETS",
     "SCENE_ID",
     "SCENE_VARIANTS",
     "SIDE_OFFSETS",
-    "SurfacePathDataset",
-    "RollingDataset",
 ]

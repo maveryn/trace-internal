@@ -76,8 +76,9 @@ Approved domain-shared categories:
 - reusable vector and pixel object renderers that are used by unrelated scenes;
 - reusable person rendering primitives and render-only person appearance
   helpers;
-- art-style registry, palette/style resolution, and scene-neutral visual
-  defaults;
+- art-style registry, palette/style resolution, scene-neutral visual defaults,
+  and adapters from repo-shared tone pools into illustrations-specific renderer
+  roles;
 - renderer-neutral object dispatch and serialization helpers;
 - low-level geometry helpers such as bbox, point, and placement math;
 - small annotation artifact adapters reused by multiple illustration scenes,
@@ -125,14 +126,14 @@ same profile-aware source grids while keeping the answer options fixed at
 lettered arrangement choices such as `A` through `D`.
 
 Profile support must include foreground bounds safety. Any object, region, or
-mark that can be counted, named in a prompt, used as evidence, or used as a
-candidate must have its bbox fully inside the active source canvas and final
-review image. Scene backgrounds may use full-bleed context features such as
-roads, rivers, walking paths, skyline strips, or floor/wall fills only when the
-feature is explicitly treated as context and not used as a minimal evidence
-witness. If a full-bleed context feature is serialized with a bbox for generic
-scene inspection, prefer the visible canvas-clipped bbox unless downstream
-logic specifically needs the off-canvas extent.
+mark that can be counted, named in a prompt, used as an annotation witness, or
+used as a candidate must have its bbox fully inside the active source canvas
+and final review image. Scene backgrounds may use full-bleed context features
+such as roads, rivers, walking paths, skyline strips, or floor/wall fills only
+when the feature is explicitly treated as context and not used as a minimal
+answer-verification witness. If a full-bleed context feature is serialized with
+a bbox for generic scene inspection, prefer the visible canvas-clipped bbox
+unless downstream logic specifically needs the off-canvas extent.
 
 Domain-shared modules that should move to scene-local shared when their owning
 scene is migrated:

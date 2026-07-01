@@ -22,13 +22,6 @@
       ]
     },
     "query": {
-      "path_pellet_count": [
-        "How many normal pellets lie on the highlighted route?",
-        "Count the normal pellets that are on the highlighted route.",
-        "Following the highlighted route from Pac-Man, how many normal pellets are on that route?",
-        "Determine the number of normal pellets placed on the highlighted route.",
-        "Report the count of normal pellets that lie directly on the highlighted route."
-      ],
       "next_item_label": [
         "Follow the highlighted route from Pac-Man. Which labeled bonus item is reached first?",
         "Which labeled bonus item comes first along the highlighted route from Pac-Man?",
@@ -72,7 +65,6 @@
     "scene:visible_pacman_maze": [
       "object_description"
     ],
-    "query:path_pellet_count": [],
     "query:next_item_label": [],
     "query:pellet_count_before_ghost": [],
     "query:route_score_value": [
@@ -119,8 +111,6 @@
   "code_prompt_defaults": {
     "object_description_compact_maze": "a Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, bonus items, and a highlighted route",
     "object_description_wide_maze": "a wider Pac-Man style maze with a visible Pac-Man marker, ghosts, normal pellets, bonus items, and a highlighted route",
-    "annotation_hint_path_pellet_count": "set \"annotation\" to [x, y] pixel points at the centers of every normal pellet that lies on the highlighted route",
-    "answer_hint_path_pellet_count": "set \"answer\" to the number of normal pellets on the highlighted route",
     "annotation_hint_next_item_label": "set \"annotation\" to one [x, y] point coordinate at the center of the first labeled bonus item reached along the highlighted route",
     "answer_hint_next_item_label": "set \"answer\" to the single option letter of the first labeled bonus item reached along the highlighted route",
     "annotation_hint_pellet_count_before_ghost": "set \"annotation\" to {\"counted_pellets\":[[x, y], ...], \"first_ghost\":[[x, y]]}, using center points for pellets before the ghost and the first route ghost",

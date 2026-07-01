@@ -32,6 +32,8 @@ def render_spec_payload(
         "value_max": int(dataset["value_max"]),
         "layout_jitter": dict(render_params.layout_jitter_meta),
         "font_assets": font_assets_payload(render_params),
+        "background_style": dict(rendered.background_meta),
+        "information_scene_style": dict(rendered.background_meta["information_scene_style"]),
         "post_image_noise": dict(rendered.post_noise_meta),
     }
 

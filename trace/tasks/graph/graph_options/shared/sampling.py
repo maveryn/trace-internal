@@ -5,9 +5,10 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from .....core.sampling import integer_range_choice, uniform_choice
 from .....core.seed import spawn_rng
 from ....shared.config_defaults import group_default
-from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ....shared.deterministic_sampling import uniform_probability_map
 from ....shared.mcq import option_label_for_index
 from ....shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from .state import (
@@ -299,9 +300,12 @@ def resolve_int_range(
         if not int(lower) <= value <= int(upper):
             raise ValueError(f"{explicit_key} must fall in [{lower}, {upper}]")
         return int(value), (int(lower), int(upper)), dict(uniform_probability_map(tuple(range(lower, upper + 1)), selected=value))
-    selection = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)))
-    value = int(lower + (selection % (int(upper) - int(lower) + 1)))
-    return int(value), (int(lower), int(upper)), dict(uniform_probability_map(tuple(range(lower, upper + 1))))
+    value, probabilities = integer_range_choice(
+        spawn_rng(int(instance_seed), str(namespace)),
+        int(lower),
+        int(upper),
+    )
+    return int(value), (int(lower), int(upper)), dict(probabilities)
 
 
 def resolve_scene_variant(
@@ -383,14 +387,14 @@ def resolve_correct_option_index(
         if not 0 <= int(index) < int(option_count):
             raise ValueError("correct_option_index must fall inside option count")
         return int(index)
-    selection = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}.correct_option_index",
+    if int(option_count) <= 0:
+        raise ValueError("option_count must be positive")
+    return int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{namespace}.correct_option_index"),
+            tuple(range(int(option_count))),
         )
     )
-    return int(selection % int(option_count))
 
 
 def build_options(

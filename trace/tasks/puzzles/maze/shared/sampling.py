@@ -15,6 +15,7 @@ from .topology import (
     exit_clockwise_sort_key,
     generate_spanning_tree,
     reachable_cells_from_start,
+    shortest_path_between,
 )
 
 def resolve_int_bounds(
@@ -69,77 +70,7 @@ def sample_exit_target_index(*, params: Mapping[str, Any], rng, exit_count: int,
         return int(value)
     _ = offset
     return int(rng.choice(support))
-def sample_reachable_count(*, params: Mapping[str, Any], defaults: Mapping[str, Any], rng, exit_count: int) -> Tuple[int, Tuple[int, int]]:
-    lower, upper = resolve_int_bounds(
-        params,
-        defaults,
-        min_key="reachable_exit_count_min",
-        max_key="reachable_exit_count_max",
-        fallback_min=1,
-        fallback_max=5,
-    )
-    active_lower = max(1, min(int(lower), int(exit_count) - 1))
-    active_upper = max(int(active_lower), min(int(upper), int(exit_count) - 1))
-    support = list(range(int(active_lower), int(active_upper) + 1))
-    if "reachable_exit_total" in params:
-        value = to_int(params["reachable_exit_total"], int(active_lower))
-        if int(value) not in support:
-            raise ValueError("reachable_exit_total must be within the active exit-count support")
-        return int(value), (int(lower), int(upper))
-    return int(rng.choice(support)), (int(lower), int(upper))
-def sample_reachable_count_for_exit_range(
-    *,
-    params: Mapping[str, Any],
-    defaults: Mapping[str, Any],
-    rng,
-    exit_count_range: Tuple[int, int],
-) -> Tuple[int, Tuple[int, int]]:
-    lower, upper = resolve_int_bounds(
-        params,
-        defaults,
-        min_key="reachable_exit_count_min",
-        max_key="reachable_exit_count_max",
-        fallback_min=1,
-        fallback_max=5,
-    )
-    active_lower = max(1, min(int(lower), int(exit_count_range[1]) - 1))
-    active_upper = max(int(active_lower), min(int(upper), int(exit_count_range[1]) - 1))
-    support = list(range(int(active_lower), int(active_upper) + 1))
-    if "reachable_exit_total" in params:
-        value = to_int(params["reachable_exit_total"], int(active_lower))
-        if int(value) not in support:
-            raise ValueError("reachable_exit_total must be within the active exit-count support")
-        return int(value), (int(lower), int(upper))
-    return int(rng.choice(support)), (int(lower), int(upper))
-def sample_exit_count_for_reachable_count(
-    *,
-    params: Mapping[str, Any],
-    defaults: Mapping[str, Any],
-    rng,
-    reachable_count: int,
-) -> Tuple[int, Tuple[int, int]]:
-    lower, upper = resolve_int_bounds(
-        params,
-        defaults,
-        min_key="exit_count_min",
-        max_key="exit_count_max",
-        fallback_min=5,
-        fallback_max=8,
-    )
-    if int(upper) > len(EXIT_LABEL_POOL):
-        raise ValueError("exit_count cannot exceed the available exit-label pool")
-    active_lower = max(int(lower), int(reachable_count) + 1)
-    if int(active_lower) > int(upper):
-        raise ValueError("reachable_exit_total requires more exits than exit_count_max allows")
-    support = list(range(int(active_lower), int(upper) + 1))
-    if "exit_count" in params:
-        value = to_int(params["exit_count"], int(active_lower))
-        if not (int(lower) <= int(value) <= int(upper)):
-            raise ValueError(f"exit_count must be within [{lower}, {upper}]")
-        if int(value) <= int(reachable_count):
-            raise ValueError("exit_count must be greater than reachable_exit_total")
-        return int(value), (int(lower), int(upper))
-    return int(rng.choice(support)), (int(lower), int(upper))
+
 
 def build_maze_exit_dataset(
     *,
@@ -154,12 +85,13 @@ def build_maze_exit_dataset(
     """Build a maze instance without any public task identity branching.
 
     ``request_kind`` selects the neutral construction shape: either a single
-    target exit with a requested reachability, or a reachable-exit count with a
-    sampled count support. Public task files bind those constructions to task
-    ids, prompts, answers, and annotations.
+    target exit with requested reachability or a nearest-exit request. Public
+    task files bind those constructions to task ids, prompts, answers, and
+    annotations.
     """
 
     is_label_request = str(request_kind) == "exit_label"
+    is_nearest_request = str(request_kind) == "nearest_exit"
     if bool(is_label_request):
         if str(target_reachability) not in set(TARGET_REACHABILITY_VALUES):
             raise ValueError("target_reachability must be reachable or unreachable for exit_reachability_label")
@@ -189,42 +121,17 @@ def build_maze_exit_dataset(
         fallback_max=13,
         sampling_offset=3,
     )
-    sampled_reachable_count: int | None = None
-    reachable_count_range: Tuple[int, int] | None = None
-
-    if str(request_kind) == "reachable_count" and "exit_count" not in params:
-        exit_count_bounds = resolve_int_bounds(
-            params,
-            generation_defaults,
-            min_key="exit_count_min",
-            max_key="exit_count_max",
-            fallback_min=5,
-            fallback_max=8,
-        )
-        sampled_reachable_count, reachable_count_range = sample_reachable_count_for_exit_range(
-            params=params,
-            defaults=generation_defaults,
-            rng=rng,
-            exit_count_range=exit_count_bounds,
-        )
-        exit_count, exit_count_range = sample_exit_count_for_reachable_count(
-            params=params,
-            defaults=generation_defaults,
-            rng=rng,
-            reachable_count=int(sampled_reachable_count),
-        )
-    else:
-        exit_count, exit_count_range = sample_int(
-            rng=rng,
-            params=params,
-            defaults=generation_defaults,
-            key="exit_count",
-            min_key="exit_count_min",
-            max_key="exit_count_max",
-            fallback_min=5,
-            fallback_max=8,
-            sampling_offset=11,
-        )
+    exit_count, exit_count_range = sample_int(
+        rng=rng,
+        params=params,
+        defaults=generation_defaults,
+        key="exit_count",
+        min_key="exit_count_min",
+        max_key="exit_count_max",
+        fallback_min=5,
+        fallback_max=8,
+        sampling_offset=11,
+    )
     if int(exit_count) > len(EXIT_LABEL_POOL):
         raise ValueError("exit_count cannot exceed the available exit-label pool")
 
@@ -248,8 +155,6 @@ def build_maze_exit_dataset(
         if len(candidate_cells) < int(exit_count):
             continue
         exit_cells = [tuple(cell) for cell in candidate_cells[: int(exit_count)]]
-        labels = list(EXIT_LABEL_POOL)
-        tree_rng.shuffle(labels)
         exits: List[Dict[str, Any]] = []
         for index, cell in enumerate(exit_cells):
             sides = list(boundary_sides(cell, rows=int(rows), cols=int(cols)))
@@ -257,29 +162,25 @@ def build_maze_exit_dataset(
             exits.append(
                 {
                     "item_id": f"exit_{index + 1}",
-                    "label": str(labels[index]),
+                    "label": "",
                     "cell": [int(cell[0]), int(cell[1])],
                     "side": str(side),
                 }
             )
         exits = sorted(exits, key=lambda item: exit_clockwise_sort_key(item, rows=int(rows), cols=int(cols)))
+        for index, exit_spec in enumerate(exits):
+            exit_spec["item_id"] = f"exit_{index + 1}"
+            exit_spec["label"] = str(EXIT_LABEL_POOL[index])
 
         target_index = sample_exit_target_index(params=params, rng=tree_rng, exit_count=int(exit_count), offset=17)
         if bool(is_label_request) and str(resolved_target_reachability) == "reachable":
             reachable_indices = {int(target_index)}
         elif bool(is_label_request) and str(resolved_target_reachability) == "unreachable":
             reachable_indices = {index for index in range(int(exit_count)) if index != int(target_index)}
+        elif bool(is_nearest_request):
+            reachable_indices = set(range(int(exit_count)))
         else:
-            if sampled_reachable_count is None:
-                sampled_reachable_count, reachable_count_range = sample_reachable_count(
-                    params=params,
-                    defaults=generation_defaults,
-                    rng=tree_rng,
-                    exit_count=int(exit_count),
-                )
-            shuffled_indices = list(range(int(exit_count)))
-            tree_rng.shuffle(shuffled_indices)
-            reachable_indices = set(shuffled_indices[: int(sampled_reachable_count)])
+            raise ValueError(f"unsupported maze request_kind: {request_kind}")
 
         blocked_exit_cells = {
             tuple(int(value) for value in exit_spec["cell"])
@@ -324,20 +225,81 @@ def build_maze_exit_dataset(
             answer_exit = reachable_exits[0]
             answer_value: str | int = str(answer_exit["label"])
             supporting_item_ids = [str(answer_exit["item_id"])]
-            annotation_policy = "single_reachable_exit_bbox"
+            annotation_policy = "single_reachable_exit_point"
             query_details: Dict[str, Any] = {"target_reachability": str(resolved_target_reachability)}
         elif bool(is_label_request) and str(resolved_target_reachability) == "unreachable":
             answer_exit = unreachable_exits[0]
             answer_value = str(answer_exit["label"])
             supporting_item_ids = [str(answer_exit["item_id"])]
-            annotation_policy = "single_unreachable_exit_bbox"
+            annotation_policy = "single_unreachable_exit_point"
             query_details = {"target_reachability": str(resolved_target_reachability)}
+        elif bool(is_nearest_request):
+            min_gap_edges = to_int(
+                params.get(
+                    "nearest_exit_min_gap_edges",
+                    group_default(generation_defaults, "nearest_exit_min_gap_edges", 2),
+                ),
+                2,
+            )
+            path_records: List[Dict[str, Any]] = []
+            for exit_spec in reachable_exits:
+                path_cells = shortest_path_between(
+                    start=tuple(start),
+                    goal=tuple(int(value) for value in exit_spec["cell"]),
+                    rows=int(rows),
+                    cols=int(cols),
+                    edges=tuple(open_edges),
+                )
+                if len(path_cells) < 2:
+                    continue
+                path_records.append(
+                    {
+                        "label": str(exit_spec["label"]),
+                        "item_id": str(exit_spec["item_id"]),
+                        "cell": [int(value) for value in exit_spec["cell"]],
+                        "path_cells": [
+                            [int(cell[0]), int(cell[1])] for cell in path_cells
+                        ],
+                        "path_length_edges": max(0, len(path_cells) - 1),
+                    }
+                )
+            if len(path_records) != int(exit_count):
+                continue
+            path_records = sorted(
+                path_records,
+                key=lambda item: (int(item["path_length_edges"]), str(item["label"])),
+            )
+            nearest_record = path_records[0]
+            if len(path_records) > 1:
+                nearest_gap = int(path_records[1]["path_length_edges"]) - int(
+                    nearest_record["path_length_edges"]
+                )
+            else:
+                nearest_gap = 0
+            if int(nearest_gap) < int(min_gap_edges):
+                continue
+            answer_value = str(nearest_record["label"])
+            supporting_item_ids = [str(nearest_record["item_id"])]
+            annotation_policy = "nearest_exit_point"
+            query_details = {
+                "nearest_label": str(nearest_record["label"]),
+                "nearest_exit_item_id": str(nearest_record["item_id"]),
+                "nearest_exit_cell": list(nearest_record["cell"]),
+                "nearest_exit_path_cells": list(nearest_record["path_cells"]),
+                "nearest_exit_path_length_edges": int(nearest_record["path_length_edges"]),
+                "nearest_exit_margin_edges": int(nearest_gap),
+                "nearest_exit_min_gap_edges": int(min_gap_edges),
+                "exit_path_lengths_by_label": {
+                    str(record["label"]): int(record["path_length_edges"])
+                    for record in path_records
+                },
+                "exit_paths_by_label": {
+                    str(record["label"]): [list(cell) for cell in record["path_cells"]]
+                    for record in path_records
+                },
+            }
         else:
-            answer_value = int(len(reachable_exits))
-            supporting_item_ids = [str(exit_spec["item_id"]) for exit_spec in sorted(reachable_exits, key=lambda item: str(item["label"]))]
-            annotation_policy = "reachable_exit_bboxes_by_label"
-            query_details = {"reachable_exit_total": int(answer_value)}
-            reachable_count_range = locals().get("reachable_count_range", [1, 5])
+            raise ValueError(f"unsupported maze request_kind: {request_kind}")
 
         return {
             "target_reachability": str(resolved_target_reachability) if resolved_target_reachability is not None else None,
@@ -358,13 +320,14 @@ def build_maze_exit_dataset(
             "exit_count": int(exit_count),
             "exit_count_range": [int(exit_count_range[0]), int(exit_count_range[1])],
             "reachable_exit_total": int(len(reachable_exits)),
-            "reachable_exit_total_range": list(reachable_count_range) if str(request_kind) == "reachable_count" else [1, max(1, int(exit_count) - 1)],
+            "reachable_exit_total_range": [int(len(reachable_exits)), int(len(reachable_exits))],
             "reachable_exit_labels": list(reachable_labels),
             "unreachable_exit_labels": list(unreachable_labels),
             "answer_value": answer_value,
             "supporting_item_ids": list(supporting_item_ids),
             "annotation_policy": str(annotation_policy),
             "query_details": dict(query_details),
+            **dict(query_details),
             "solver_trace": {
                 "start_cell": [int(start[0]), int(start[1])],
                 "reachable_exit_labels": list(reachable_labels),
@@ -402,7 +365,7 @@ def sample_exit_label_maze(
     )
 
 
-def sample_reachable_exit_count_maze(
+def sample_nearest_exit_maze(
     *,
     scene_variant: str,
     params: Mapping[str, Any],
@@ -410,10 +373,10 @@ def sample_reachable_exit_count_maze(
     generation_defaults: Mapping[str, Any],
     max_attempts: int,
 ) -> Dict[str, Any]:
-    """Build a maze with a sampled number of reachable boundary exits."""
+    """Build a maze with four reachable exits and one unique nearest exit."""
 
     return build_maze_exit_dataset(
-        request_kind="reachable_count",
+        request_kind="nearest_exit",
         target_reachability=None,
         scene_variant=str(scene_variant),
         params=params,
@@ -425,5 +388,5 @@ def sample_reachable_exit_count_maze(
 
 __all__ = [
     "sample_exit_label_maze",
-    "sample_reachable_exit_count_maze",
+    "sample_nearest_exit_maze",
 ]

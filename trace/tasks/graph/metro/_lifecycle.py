@@ -6,10 +6,11 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image
 
+from ....core.sampling import uniform_choice
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
 from ..shared.task_support import format_graph_prompt_label, resolve_graph_named_variant, resolve_graph_render_params
@@ -91,12 +92,13 @@ def select_support_value(
         if int(explicit_value) not in support_tuple:
             raise ValueError("requested metro value is outside configured support")
         return int(explicit_value), dict(uniform_probability_map(support_tuple, selected=int(explicit_value)))
-    if bool(balanced):
-        namespace_offset = int(resolve_selection_index(params={}, instance_seed=0, namespace=f"{owner_id}:{namespace_suffix}:offset"))
-        selection_index = int(instance_seed) + int(namespace_offset)
-    else:
-        selection_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{owner_id}:{namespace_suffix}"))
-    selected = int(support_tuple[int(selection_index) % len(support_tuple)])
+    rng_namespace = f"{owner_id}:{namespace_suffix}:balanced" if bool(balanced) else f"{owner_id}:{namespace_suffix}"
+    selected = int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), rng_namespace),
+            support_tuple,
+        )
+    )
     return int(selected), dict(uniform_probability_map(support_tuple))
 
 

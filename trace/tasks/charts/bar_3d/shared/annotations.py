@@ -62,7 +62,7 @@ def annotation_point_pairs_for_bar_pairs(
     return pairs
 
 
-def keyed_point_set_map_annotation_artifacts(
+def point_set_map_annotation_artifacts(
     keyed_points: Mapping[str, Sequence[Sequence[float]]],
 ) -> AnnotationArtifacts:
     """Build public keyed point-set map artifacts for role-bound bar groups."""
@@ -72,37 +72,37 @@ def keyed_point_set_map_annotation_artifacts(
         for key, points in keyed_points.items()
     }
     projected_annotation = {
-        "type": "keyed_point_set_map",
-        "keyed_point_set_map": {key: [list(point) for point in points] for key, points in value.items()},
-        "pixel_keyed_point_set_map": {key: [list(point) for point in points] for key, points in value.items()},
+        "type": "point_set_map",
+        "point_set_map": {key: [list(point) for point in points] for key, points in value.items()},
+        "pixel_point_set_map": {key: [list(point) for point in points] for key, points in value.items()},
     }
     return AnnotationArtifacts(
-        annotation_type="keyed_point_set_map",
+        annotation_type="point_set_map",
         value={key: [list(point) for point in points] for key, points in value.items()},
         annotation_gt=TypedValue(
-            type="keyed_point_set_map",
+            type="point_set_map",
             value={key: [list(point) for point in points] for key, points in value.items()},
         ),
         projected_annotation=projected_annotation,
     )
 
 
-def keyed_point_map_annotation_artifacts(
+def point_map_annotation_artifacts(
     keyed_points: Mapping[str, Sequence[float]],
 ) -> AnnotationArtifacts:
     """Build public keyed point-map artifacts for role-bound bar points."""
 
     value = {str(key): _round_point(point) for key, point in keyed_points.items()}
     projected_annotation = {
-        "type": "keyed_point_map",
-        "keyed_point_map": {key: list(point) for key, point in value.items()},
-        "pixel_keyed_point_map": {key: list(point) for key, point in value.items()},
+        "type": "point_map",
+        "point_map": {key: list(point) for key, point in value.items()},
+        "pixel_point_map": {key: list(point) for key, point in value.items()},
     }
     return AnnotationArtifacts(
-        annotation_type="keyed_point_map",
+        annotation_type="point_map",
         value={key: list(point) for key, point in value.items()},
         annotation_gt=TypedValue(
-            type="keyed_point_map",
+            type="point_map",
             value={key: list(point) for key, point in value.items()},
         ),
         projected_annotation=projected_annotation,
@@ -130,7 +130,7 @@ def annotation_artifacts_for_selection(
             ],
         }
 
-    if str(selection.annotation_kind) == "keyed_point_map":
+    if str(selection.annotation_kind) == "point_map":
         trace_by_id = _trace_by_bar_id(rendered)
         keyed_points: dict[str, list[float]] = {}
         for key, bar_ids in (selection.annotation_bar_id_groups or {}).items():
@@ -140,9 +140,9 @@ def annotation_artifacts_for_selection(
             if bar_id not in trace_by_id:
                 continue
             keyed_points[str(key)] = _round_point(trace_by_id[bar_id]["top_center_px"])
-        annotation = keyed_point_map_annotation_artifacts(keyed_points)
+        annotation = point_map_annotation_artifacts(keyed_points)
         return annotation, {
-            "type": "keyed_point_map",
+            "type": "point_map",
             "keys": {
                 str(key): str(bar_ids[0])
                 for key, bar_ids in (selection.annotation_bar_id_groups or {}).items()
@@ -150,7 +150,7 @@ def annotation_artifacts_for_selection(
             },
         }
 
-    if str(selection.annotation_kind) == "keyed_point_set_map":
+    if str(selection.annotation_kind) == "point_set_map":
         trace_by_id = _trace_by_bar_id(rendered)
         keyed_points = {
             str(key): [
@@ -160,9 +160,9 @@ def annotation_artifacts_for_selection(
             ]
             for key, bar_ids in (selection.annotation_bar_id_groups or {}).items()
         }
-        annotation = keyed_point_set_map_annotation_artifacts(keyed_points)
+        annotation = point_set_map_annotation_artifacts(keyed_points)
         return annotation, {
-            "type": "keyed_point_set_map",
+            "type": "point_set_map",
             "keys": {
                 str(key): [str(bar_id) for bar_id in bar_ids]
                 for key, bar_ids in (selection.annotation_bar_id_groups or {}).items()
@@ -184,6 +184,6 @@ __all__ = [
     "annotation_artifacts_for_selection",
     "annotation_point_pairs_for_bar_pairs",
     "annotation_points_for_bars",
-    "keyed_point_map_annotation_artifacts",
-    "keyed_point_set_map_annotation_artifacts",
+    "point_map_annotation_artifacts",
+    "point_set_map_annotation_artifacts",
 ]

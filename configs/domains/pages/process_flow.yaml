@@ -1,48 +1,26 @@
 generation:
   shared:
     node_count_min: 10
-    node_count_max: 12
+    node_count_max: 10
     lane_count_min: 3
-    lane_count_max: 5
-    balanced_query_sampling: true
-    balanced_context_sampling: true
-    balanced_layout_sampling: true
-    balanced_style_sampling: true
-    query_weights:
-      shape_node_count: 1.0
-      status_node_count: 1.0
-      role_node_count: 1.0
-      condition_path_endpoint_label: 1.0
-      all_cross_lane_handoff_count: 1.0
-      lane_outgoing_handoff_count: 1.0
-      lane_involved_handoff_count: 1.0
-    context_weights:
+    lane_count_max: 3
+    balanced_scene_variant_sampling: true
+    balanced_layout_variant_sampling: true
+    balanced_style_variant_sampling: true
+    scene_variant_weights:
       incident_response: 1.0
       editorial_review: 1.0
       order_fulfillment: 1.0
       model_release: 1.0
       lab_sample: 1.0
       support_ticket: 1.0
-    layout_weights:
-      vertical_swimlane: 1.0
+    layout_variant_weights:
       horizontal_swimlane: 1.0
-      staggered_columns: 1.0
-      compact_rows: 1.0
-    style_weights:
+    style_variant_weights:
       blueprint: 1.0
       pastel_cards: 1.0
       graphite: 1.0
       warm_memo: 1.0
-  task_overrides:
-    task_pages__process_flow__filtered_node_count:
-      node_count_min: 11
-      node_count_max: 14
-    task_pages__process_flow__all_cross_lane_handoff_count:
-      node_count_min: 11
-      node_count_max: 14
-    task_pages__process_flow__lane_filtered_handoff_count:
-      node_count_min: 11
-      node_count_max: 14
 rendering:
   shared:
     canvas_width: 1200
@@ -56,7 +34,7 @@ rendering:
     node_height_px: 64
     node_corner_radius_px: 16
     node_border_width_px: 3
-    edge_width_px: 4
+    edge_width_px: 3
     arrow_head_length_px: 15
     arrow_head_width_px: 13
     title_font_size_px: 30
@@ -65,51 +43,14 @@ rendering:
     badge_font_size_px: 12
     edge_label_font_size_px: 15
     layout_jitter_enabled: true
-    layout_jitter_x_px_min: -24
-    layout_jitter_x_px_max: 24
-    layout_jitter_y_px_min: -18
-    layout_jitter_y_px_max: 18
+    layout_jitter_x_px_min: -10
+    layout_jitter_x_px_max: 10
+    layout_jitter_y_px_min: -8
+    layout_jitter_y_px_max: 8
     layout_jitter_min_margin_px: 18
 prompt:
   shared:
-    bundle_id: pages_process_flow_v0
-    scene_key: process_flow_diagram
-    object_description: a labeled process-flow diagram with lanes, step boxes, status
-      badges, and arrows
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
-      in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
-      the final answer.
-    integer_answer_hint: set "answer" to the requested integer count
-    label_answer_hint: set "answer" to the exact visible step label as a string
-    annotation_hint_node_count: set "annotation" to an array of [x0,y0,x1,y1] pixel
-      bounding boxes for the counted step boxes
-    annotation_hint_path_endpoint: set "annotation" to an object mapping start_step,
-      first_decision_label, intermediate_step, second_decision_label, and endpoint_step
-      to [x0,y0,x1,y1] pixel bounding boxes for the named path witnesses
-    annotation_hint_handoff_count: set "annotation" to a list of segments. Each
-      segment is [[x1, y1], [x2, y2]], using the endpoints of one counted handoff
-      arrow; use [] when the answer is zero
-  task_overrides:
-    task_pages__process_flow__filtered_node_count:
-      integer_answer_hint: set "answer" to the requested integer count
-      annotation_hint_node_count: set "annotation" to an array of [x0,y0,x1,y1] pixel
-        bounding boxes for the counted step boxes
-    task_pages__process_flow__condition_path_endpoint_label:
-      label_answer_hint: set "answer" to the exact visible step label as a string
-      annotation_hint_path_endpoint: set "annotation" to an object mapping start_step,
-        first_decision_label, intermediate_step, second_decision_label, and endpoint_step
-        to [x0,y0,x1,y1] pixel bounding boxes for the named path witnesses
-    task_pages__process_flow__all_cross_lane_handoff_count:
-      integer_answer_hint: set "answer" to the requested integer count
-      annotation_hint_handoff_count: set "annotation" to a list of segments. Each
-        segment is [[x1, y1], [x2, y2]], using the endpoints of one counted handoff
-        arrow; use [] when the answer is zero
-    task_pages__process_flow__lane_filtered_handoff_count:
-      integer_answer_hint: set "answer" to the requested integer count
-      annotation_hint_handoff_count: set "annotation" to a list of segments. Each
-        segment is [[x1, y1], [x2, y2]], using the endpoints of one counted handoff
-        arrow; use [] when the answer is zero
+    bundle_id: pages_process_flow_v1
 visual:
   background:
     enabled: true

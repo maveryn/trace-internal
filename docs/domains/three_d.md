@@ -29,9 +29,14 @@ distance/rank selection, relation, occlusion order, height extremum, multi-view
 matching, fixture count, route/lane relation, or warehouse path reasoning.
 
 Valid `query_id` axes include closest/farthest, left/right, in-front/behind,
-same/different support, target attribute choice, or bounded relation direction
-inside one stable program. Object profile, camera pose, room style, and surface
-style are metadata/style axes unless directly queried.
+same/different support, arithmetic operator over the same operand roles, or
+bounded relation direction inside one stable program. Literal target values
+inside one visual channel, such as one object type or one semantic color, are
+sampled operands. Switching visual reasoning channels or predicate arity, such
+as object-type match vs color match or single-attribute match vs color+type
+binding, is a public task split when it changes how the model must scan the
+image. Object profile, camera pose, room style, and surface style are
+metadata/style axes unless directly queried.
 
 ## Annotation Policy
 Prompt-facing annotation should mark projected visible objects, fixtures,
@@ -55,8 +60,8 @@ sampled preset is render metadata, not a query axis or task split. If a task
 composes multiple panels/options, each source panel should use the same sampled
 canonical preset unless the task has a documented reason to override it; the
 final composed image may expand or downscale to stay under the `1,280,000`
-pixel domain cap while projecting all answer/evidence coordinates after final
-placement.
+pixel domain cap while projecting all answer and annotation coordinates after
+final placement.
 
 Prompt-facing named colors must use the repo-wide canonical 10-color palette
 from `trace.tasks.shared.named_colors` and should be rendered in prompts as

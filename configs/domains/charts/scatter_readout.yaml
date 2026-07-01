@@ -9,6 +9,11 @@ generation:
     readout_min_series_gap_at_x: 4
 rendering:
   shared:
+    chart_context_profile: report_paragraph
+    chart_context_mode_weights:
+      clean: 0.3
+      minimal: 0.4
+      paragraph_box: 0.3
     readout_canvas_width: 1440
     readout_canvas_height: 820
     readout_plot_margin_left_px: 112

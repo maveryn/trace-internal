@@ -11,31 +11,64 @@ from trace.tasks.geometry.trapezoid_extension.extension_from_parallelogram_area 
 from trace.tasks.geometry.trapezoid_extension.extension_from_parallelogram_perimeter import (
     GeometryTrapezoidExtensionFromParallelogramPerimeterTask,
 )
-from trace.tasks.geometry.trapezoid_extension.trapezoid_area_from_bases_and_height import (
-    GeometryTrapezoidAreaFromBasesAndHeightTask,
-)
 from trace.tasks.geometry.trapezoid_extension.trapezoid_area_from_extension_and_height import (
     GeometryTrapezoidAreaFromExtensionAndHeightTask,
 )
 from trace.tasks.geometry.trapezoid_extension.trapezoid_area_from_parallelogram_area import (
     GeometryTrapezoidAreaFromParallelogramAreaTask,
 )
+from trace.tasks.geometry.trapezoid_extension.trapezoid_area_from_parallelogram_perimeter import (
+    GeometryTrapezoidAreaFromParallelogramPerimeterTask,
+)
 from trace.tasks.geometry.trapezoid_extension.shared.state import SCENE_ID
 
 TASK_CLASSES = (
     GeometryTrapezoidExtensionFromParallelogramAreaTask,
     GeometryTrapezoidExtensionFromParallelogramPerimeterTask,
-    GeometryTrapezoidAreaFromBasesAndHeightTask,
     GeometryTrapezoidAreaFromExtensionAndHeightTask,
     GeometryTrapezoidAreaFromParallelogramAreaTask,
+    GeometryTrapezoidAreaFromParallelogramPerimeterTask,
 )
 
-ANNOTATION_KEYS = {
-    "target_cue",
-    "original_trapezoid",
-    "dashed_parallelogram_completion",
-    "supporting_visible_labels",
-}
+EXTENSION_TASKS = (
+    GeometryTrapezoidExtensionFromParallelogramAreaTask,
+    GeometryTrapezoidExtensionFromParallelogramPerimeterTask,
+)
+
+
+def _point_in_bbox(point: tuple[float, float], bbox: list[float]) -> bool:
+    x, y = float(point[0]), float(point[1])
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    return x0 <= x <= x1 and y0 <= y <= y1
+
+
+def _orientation(a: tuple[float, float], b: tuple[float, float], c: tuple[float, float]) -> float:
+    return (float(b[0]) - float(a[0])) * (float(c[1]) - float(a[1])) - (
+        float(b[1]) - float(a[1])
+    ) * (float(c[0]) - float(a[0]))
+
+
+def _segments_intersect(
+    a: tuple[float, float],
+    b: tuple[float, float],
+    c: tuple[float, float],
+    d: tuple[float, float],
+) -> bool:
+    o1 = _orientation(a, b, c)
+    o2 = _orientation(a, b, d)
+    o3 = _orientation(c, d, a)
+    o4 = _orientation(c, d, b)
+    return (o1 <= 0.0 <= o2 or o2 <= 0.0 <= o1) and (o3 <= 0.0 <= o4 or o4 <= 0.0 <= o3)
+
+
+def _segment_intersects_bbox(segment: tuple[tuple[float, float], tuple[float, float]], bbox: list[float]) -> bool:
+    start, end = segment
+    if _point_in_bbox(start, bbox) or _point_in_bbox(end, bbox):
+        return True
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    corners = ((x0, y0), (x1, y0), (x1, y1), (x0, y1))
+    edges = tuple(zip(corners, (*corners[1:], corners[0])))
+    return any(_segments_intersect(start, end, edge_start, edge_end) for edge_start, edge_end in edges)
 
 
 @pytest.mark.parametrize("task_cls", TASK_CLASSES)
@@ -46,8 +79,8 @@ def test_trapezoid_extension_tasks_emit_public_contract(task_cls) -> None:
     assert out.scene_id == SCENE_ID
     assert out.query_id == SINGLE_QUERY_ID
     assert out.answer_gt.type == "number"
-    assert out.annotation_gt.type == "bbox_map"
-    assert set(out.annotation_gt.value) == ANNOTATION_KEYS
+    expected_annotation_type = "segment" if task_cls in EXTENSION_TASKS else "bbox"
+    assert out.annotation_gt.type == expected_annotation_type
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
@@ -57,8 +90,11 @@ def test_trapezoid_extension_tasks_emit_public_contract(task_cls) -> None:
     assert trace["witness_symbolic"]["scene_id"] == SCENE_ID
     assert trace["query_spec"]["query_id"] == SINGLE_QUERY_ID
     assert trace["execution_trace"]["query_id"] == SINGLE_QUERY_ID
-    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["type"] == expected_annotation_type
+    assert trace["witness_symbolic"]["source_witness_type"] == expected_annotation_type
     assert trace["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
+    assert set(trace["render_map"]["vertex_points"]) == {"A", "B", "C", "D", "E"}
+    assert {f"point_{label}" for label in "ABCDE"}.issubset(trace["render_map"]["label_bboxes"])
 
     top_base = int(trace["execution_trace"]["top_base"])
     extension = int(trace["execution_trace"]["extension"])
@@ -77,6 +113,9 @@ def test_trapezoid_extension_tasks_emit_public_contract(task_cls) -> None:
         assert out.answer_gt.value == pytest.approx(parallelogram_area / height - top_base)
     elif task_cls is GeometryTrapezoidExtensionFromParallelogramPerimeterTask:
         assert out.answer_gt.value == pytest.approx(parallelogram_perimeter / 2.0 - side - top_base)
+    elif task_cls is GeometryTrapezoidAreaFromParallelogramPerimeterTask:
+        derived_bottom_base = parallelogram_perimeter / 2.0 - side
+        assert out.answer_gt.value == pytest.approx(height * (top_base + derived_bottom_base) / 2.0)
     else:
         assert out.answer_gt.value == pytest.approx(trapezoid_area)
 
@@ -114,11 +153,39 @@ def test_trapezoid_extension_annotation_stays_inside_canvas(task_cls) -> None:
     task = task_cls()
     out = task.generate(64061, params={"query_id": SINGLE_QUERY_ID}, max_attempts=20)
     width, height = out.image.size
-    for x0, y0, x1, y1 in out.annotation_gt.value.values():
+    if out.annotation_gt.type == "segment":
+        for x, y in out.annotation_gt.value:
+            assert 0.0 <= float(x) <= float(width)
+            assert 0.0 <= float(y) <= float(height)
+        (x0, y0), (x1, y1) = out.annotation_gt.value
+        assert abs(float(x1) - float(x0)) > 8.0 or abs(float(y1) - float(y0)) > 8.0
+        return
+    assert out.annotation_gt.type == "bbox"
+    x0, y0, x1, y1 = out.annotation_gt.value
+    for x0, y0, x1, y1 in (out.annotation_gt.value,):
         assert 0.0 <= x0 < x1 <= float(width)
         assert 0.0 <= y0 < y1 <= float(height)
         assert (x1 - x0) > 8.0
         assert (y1 - y0) > 8.0
+
+
+@pytest.mark.parametrize("task_cls", TASK_CLASSES)
+def test_trapezoid_extension_labels_stay_inside_canvas(task_cls) -> None:
+    task = task_cls()
+    for seed in range(64070, 64090):
+        out = task.generate(seed, params={"query_id": SINGLE_QUERY_ID}, max_attempts=20)
+        width, height = out.image.size
+        for role, bbox in out.trace_payload["render_map"]["label_bboxes"].items():
+            x0, y0, x1, y1 = [float(value) for value in bbox]
+            assert x0 > 2.0, (seed, role, bbox)
+            assert y0 > 2.0, (seed, role, bbox)
+            assert x1 < float(width) - 2.0, (seed, role, bbox)
+            assert y1 < float(height) - 2.0, (seed, role, bbox)
+        side_bbox = out.trace_payload["render_map"]["label_bboxes"].get("side")
+        if side_bbox is not None:
+            trapezoid_points = out.trace_payload["render_map"]["original_trapezoid"]["points"]
+            ad_segment = (tuple(trapezoid_points[0]), tuple(trapezoid_points[3]))
+            assert not _segment_intersects_bbox(ad_segment, side_bbox), (seed, side_bbox, ad_segment)
 
 
 def test_trapezoid_extension_tasks_reject_unknown_query_id() -> None:

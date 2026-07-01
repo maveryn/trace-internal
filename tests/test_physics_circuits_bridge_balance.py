@@ -8,16 +8,18 @@ from pathlib import Path
 import pytest
 
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.physics.circuits.bridge_balance import PhysicsBridgeCircuitMissingResistanceValueTask
+from trace.tasks.physics.bridge_circuit.bridge_missing_resistance_value import (
+    PhysicsBridgeCircuitMissingResistanceValueTask,
+)
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
-def _assert_keyed_bbox_map_in_bounds(out) -> None:
+def _assert_bbox_in_bounds(out) -> None:
     width, height = out.image.size
-    assert out.annotation_gt.type == "keyed_bbox_map"
-    for bbox in out.annotation_gt.value.values():
-        assert 0 <= bbox[0] < bbox[2] <= width
-        assert 0 <= bbox[1] < bbox[3] <= height
+    assert out.annotation_gt.type == "bbox"
+    bbox = out.annotation_gt.value
+    assert 0 <= bbox[0] < bbox[2] <= width
+    assert 0 <= bbox[1] < bbox[3] <= height
 
 
 @pytest.mark.parametrize("missing_resistor", ("R1", "R2", "R3", "R4"))
@@ -33,19 +35,17 @@ def test_physics_bridge_missing_resistance_answer_matches_balance(missing_resist
     )
     execution = out.trace_payload["execution_trace"]
     values = {str(key): int(value) for key, value in execution["resistor_values"].items()}
-    known_labels = set(values) - {missing_resistor}
 
     assert out.scene_id == "bridge_circuit"
-    assert out.query_id == "missing_bridge_resistance"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == values[missing_resistor] == 8
     assert values["R1"] * values["R4"] == values["R2"] * values["R3"]
     assert execution["bridge_balance_product_left"] == execution["bridge_balance_product_right"]
     assert execution["zero_meter_reading"] == 0
-    assert set(out.annotation_gt.value) == known_labels | {"target_resistor", "zero_meter"}
-    assert missing_resistor not in out.annotation_gt.value
-    _assert_keyed_bbox_map_in_bounds(out)
-    assert out.trace_payload["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert out.annotation_gt.value == out.trace_payload["render_map"]["annotation_bbox_map"]["target_resistor"]
+    _assert_bbox_in_bounds(out)
+    assert out.trace_payload["projected_annotation"]["bbox"] == out.annotation_gt.value
 
 
 def test_physics_bridge_missing_resistance_accepts_explicit_balanced_values() -> None:
@@ -61,7 +61,7 @@ def test_physics_bridge_missing_resistance_accepts_explicit_balanced_values() ->
 
     assert out.answer_gt.value == 12
     assert out.trace_payload["execution_trace"]["resistor_values"] == {"R1": 6, "R2": 10, "R3": 12, "R4": 20}
-    assert "target_resistor" in out.annotation_gt.value
+    assert out.annotation_gt.value == out.trace_payload["render_map"]["annotation_bbox_map"]["target_resistor"]
 
 
 def test_physics_bridge_missing_resistance_rejects_unbalanced_explicit_values() -> None:
@@ -73,6 +73,15 @@ def test_physics_bridge_missing_resistance_rejects_unbalanced_explicit_values() 
                 "target_answer": 5,
                 "resistor_values": {"R1": 2, "R2": 3, "R3": 4, "R4": 5},
             },
+            max_attempts=20,
+        )
+
+
+def test_physics_bridge_missing_resistance_rejects_legacy_query_id() -> None:
+    with pytest.raises(ValueError, match="unsupported query_id"):
+        PhysicsBridgeCircuitMissingResistanceValueTask().generate(
+            28025,
+            params={"query_id": "missing_bridge_resistance"},
             max_attempts=20,
         )
 
@@ -96,20 +105,24 @@ def test_physics_bridge_missing_resistance_task_is_deterministic() -> None:
 
 
 def test_physics_bridge_missing_resistance_defaults_and_prompt_bundle() -> None:
-    cfg = get_scene_defaults("physics", "circuits")
+    cfg = get_scene_defaults("physics", "bridge_circuit")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="physics_circuits_bridge_missing_resistance_family",
+        task_id="task_physics__bridge_circuit__bridge_missing_resistance_value",
     )
-    bundle = json.loads(Path("prompts/physics/circuits/physics_circuits_v0.json").read_text(encoding="utf-8"))
+    bundle = json.loads(
+        Path("prompts/physics/bridge_circuit/physics_bridge_circuit_v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
 
-    assert set(generation["query_id_weights"]) == {"missing_bridge_resistance"}
-    assert set(generation["scene_variant_weights"]) == {"rectangular_bridge"}
+    assert "query_id_weights" not in generation
+    assert "balanced_query_id_sampling" not in generation
     assert set(generation["missing_resistor_weights"]) == {"R1", "R2", "R3", "R4"}
     assert list(generation["target_answer_support"]) == list(range(1, 21))
     assert int(rendering["component_label_font_size_px"]) == 20
-    assert str(prompt["scene_key"]) == "bridge_circuit_diagram"
+    assert str(prompt["bundle_id"]) == "physics_bridge_circuit_v1"
     assert str(prompt["task_key"]) == "bridge_missing_resistance_query"
-    assert "bridge_circuit_diagram" in bundle["scene_templates"]
-    assert "missing_bridge_resistance" in bundle["query_templates"]
-    assert len(bundle["query_templates"]["missing_bridge_resistance"]) == 5
+    assert "bridge_circuit_diagram" in bundle["templates"]["scene"]
+    assert "single" in bundle["templates"]["query"]
+    assert len(bundle["templates"]["query"]["single"]) == 5

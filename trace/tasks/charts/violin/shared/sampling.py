@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from trace.tasks.charts.shared.distribution_chart_common import build_density_dataset_for_variant
+from trace.tasks.charts.shared.distribution.density import build_density_dataset_for_variant
 from trace.tasks.charts.violin.shared.defaults import (
     DATASET_NAMESPACE,
     DISTRIBUTION_DEFAULTS,

@@ -1,26 +1,23 @@
 # `task_pages__infographic__section_icon_extremum_label`
 
-## 1) Identity
+## Identity
 1. Domain: `pages`
-2. Scene: `infographic`
-3. Scene id: `infographic`
+2. Scene id: `infographic`
+3. Source path: `trace/tasks/pages/infographic/section_icon_extremum_label.py`
 4. Task id: `task_pages__infographic__section_icon_extremum_label`
-5. Objective: Identify the section with an extrema value for a visible icon-filtered aggregate.
 
-## 2) Scene + Task Contract
-1. Supported `query_id` values: `section_icon_extremum_label`
-2. `answer_gt.type`: `string`
-3. `annotation_gt.type`: `keyed_bbox_map`
-4. Annotation witness policy: Answer-section metric-card boxes keyed by visible metric-card labels.
-5. `query_id` is retained as internal replay metadata; this public task id is the sampling unit.
+## Program Contract
+1. Program schema: `selection.extreme_metric_label(candidate_set=sections, metric=sum_cards_with_resolved_icon, rank_direction=highest|lowest); scene=infographic; scope=one multi-section metric-card infographic`
+2. Contract: for each section, sum cards with the requested icon, then return the unique section with the highest or lowest filtered total.
+3. Public query id: `single`
+4. Answer schema: `string`
+5. Annotation schema: scalar `bbox` around the answer section panel.
+6. Query argument axes: icon filter and extremum direction.
+7. scalar_annotation_checked=true
 
-## 3) Prompt Contract
-1. `prompt_bundle_id`: `pages_infographic_v0`
-2. Prompt templates come from `prompts/pages/infographic/` and are rendered with the scene layer plus task/query layer.
-3. Output modes: `answer_only` and `answer_and_annotation`.
-4. Annotation examples must match the role names and annotation type above.
-
-## 4) Determinism + Constraints
-1. Generation is deterministic for `instance_seed` plus params.
-2. Answers and annotation come from the same rendered trace payload.
-3. The generator constructs unique final answers and rejects invalid samples instead of semantically relaxing constraints.
+## Prompt + Trace
+1. Prompt bundle: `pages_infographic_v1`
+2. Scene key: `infographic_metric_arithmetic`
+3. Task key: `metric_arithmetic_query`
+4. Prompt query key: `section_icon_extremum_label`
+5. Trace records filtered section totals, icon kind/label, rank direction, answer section, and answer-section panel bbox.

@@ -10,11 +10,14 @@
 
 ## Program Contract
 
-- Program schema: `aggregate(value(child_label across parents), operation=sum_or_average); output=integer_value; annotation=bbox_set(repeated_child_value_boxes); scene=treemap; scope=repeated_leaf_aggregate_value`.
-- Program: find every occurrence of the requested child label across parent rectangles, then compute either the sum or the average of those printed values.
-- Answer: `integer`.
-- Annotation schema: `bbox_set` over every matching child value label across parent rectangles.
-- The answer and annotation are bound from the same sampled treemap execution trace.
+Program: `aggregate(value(child_label across parents), operation=sum_or_average); output=integer_value; annotation=bbox_set(repeated_child_rectangles); scene=treemap; scope=repeated_leaf_aggregate_value`
+
+Candidate set: the visible treemap rectangles and hierarchy labels inside the `repeated_leaf_aggregate_value` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `aggregate` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `unspecified` value bound by `integer_value`.
+Annotation witnesses: `unspecified` witnesses bound by `bbox_set(repeated_child_rectangles)`. The Annotation Contract below defines the prompt-facing witnesses.
+Query ids: `treemap_repeated_leaf_sum_value`, `treemap_repeated_leaf_average_value`.
 
 ## Review Notes
 

@@ -110,6 +110,8 @@ def sample_and_render_single_transform_scene(
     pool_manifest: str,
     transform_check_size_px: int,
     render_params: Mapping[str, Any],
+    reference_transform_id: str = IDENTITY_TRANSFORM_ID,
+    option_transform_ids: Sequence[str] | None = None,
 ) -> Tuple[SingleTransformOptionsScenePayload, Image.Image]:
     """Sample and render one transform-result option scene."""
 
@@ -120,13 +122,18 @@ def sample_and_render_single_transform_scene(
         pool_manifest=str(pool_manifest),
         transform_check_size_px=int(transform_check_size_px),
     )
-    option_transform_ids = option_transforms_for_answer(
-        answer_index=int(answer_index),
-        target_transform_id=str(target_transform_id),
-    )
+    if option_transform_ids is None:
+        resolved_option_transform_ids = option_transforms_for_answer(
+            answer_index=int(answer_index),
+            target_transform_id=str(target_transform_id),
+        )
+    else:
+        resolved_option_transform_ids = tuple(str(value) for value in option_transform_ids)
+        if len(resolved_option_transform_ids) != int(option_count):
+            raise ValueError("explicit option_transform_ids length must match option_count")
     validate_option_transform_signatures(
         icon_id=str(icon_id),
-        transform_ids=option_transform_ids,
+        transform_ids=resolved_option_transform_ids,
         check_size_px=int(transform_check_size_px),
     )
 
@@ -186,7 +193,7 @@ def sample_and_render_single_transform_scene(
         icon_id=str(icon_id),
         size_px=int(render_params["reference_icon_size_px"]),
         tint_rgb=tuple(int(v) for v in tint_rgb),
-        transform_id=IDENTITY_TRANSFORM_ID,
+        transform_id=str(reference_transform_id),
         noise_edits=tuple(reference_noise_edits),
         noise_seed=int(reference_noise_seed),
     )
@@ -202,7 +209,7 @@ def sample_and_render_single_transform_scene(
     )
 
     scene_cells: list[Dict[str, Any]] = []
-    for index, (cell, option_transform_id) in enumerate(zip(prepared.scene_cells, option_transform_ids)):
+    for index, (cell, option_transform_id) in enumerate(zip(prepared.scene_cells, resolved_option_transform_ids)):
         option_noise_edits, option_noise_seed = sample_icon_instance_noise(
             instance_seed=int(instance_seed),
             namespace=f"icons.single_transform_options.option_{int(index)}",
@@ -245,7 +252,7 @@ def sample_and_render_single_transform_scene(
         "icon_bbox_xyxy": [int(value) for value in reference_icon_bbox],
         "operation_cue_bbox_xyxy": [int(value) for value in cue_bbox],
         "icon_id": str(icon_id),
-        "transform_id": IDENTITY_TRANSFORM_ID,
+        "transform_id": str(reference_transform_id),
         "operation_cue": str(operation_cue),
         "target_transform_id": str(target_transform_id),
         "tint_rgb": [int(value) for value in tint_rgb],
@@ -261,7 +268,7 @@ def sample_and_render_single_transform_scene(
             operation_cue=str(operation_cue),
             answer_label=str(answer_label),
             icon_id=str(icon_id),
-            option_transform_ids=tuple(str(value) for value in option_transform_ids),
+            option_transform_ids=tuple(str(value) for value in resolved_option_transform_ids),
             tint_rgb=tuple(int(value) for value in tint_rgb),
             sampled_palette_rgb=tuple(sampled_palette_rgb),
             panel_geometry=panel_geometry_to_trace(prepared.layout),

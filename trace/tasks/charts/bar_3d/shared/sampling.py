@@ -5,12 +5,12 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
 
+from .....core.sampling import uniform_choice_with_probabilities
 from .....core.seed import spawn_rng
 from ....shared.color_distance import sample_color_palette_with_distance_constraints
 from ....shared.config_defaults import group_default, resolve_required_int_bounds
-from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.label_assets import resolve_chart_entity_labels
-from ...shared.labeled_chart_common import sample_chart_labels
+from ...shared.label_assets import sample_chart_labels
 from .defaults import _DEFAULT_PALETTE, _GEN_DEFAULTS, _RENDER_DEFAULTS, _as_rgb
 from .state import (
     SCENE_NAMESPACE,
@@ -150,9 +150,12 @@ def sample_condition_target_count(
     )
     if not support:
         raise ValueError("condition count answer support has no nontrivial values for the selected axis")
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)) % len(support)
-    selected = int(support[int(index)])
-    return selected, uniform_probability_map(support, selected=selected)
+    selected, probabilities = uniform_choice_with_probabilities(
+        spawn_rng(int(instance_seed), str(namespace)),
+        support,
+        sort_keys=True,
+    )
+    return int(selected), dict(probabilities)
 
 
 def pairwise_target_max_category_count(params: Mapping[str, Any]) -> int:
@@ -421,7 +424,7 @@ def select_axis_total_gap(
     return _Selection(
         answer=abs(int(totals[left_index]) - int(totals[right_index])),
         annotation_bar_ids=annotation_ids,
-        annotation_kind="keyed_point_set_map",
+        annotation_kind="point_set_map",
         annotation_bar_id_groups=annotation_groups,
         trace={
             f"{trace_key}_label_a": _axis_label(axis=str(axis), x_labels=x_labels, series_labels=series_labels, index=int(left_index)),
@@ -464,7 +467,7 @@ def select_category_extremum_gap(
     return _Selection(
         answer=int(max_value - min_value),
         annotation_bar_ids=(max_bar_id, min_bar_id),
-        annotation_kind="keyed_point_map",
+        annotation_kind="point_map",
         annotation_bar_id_groups={
             "highest": (max_bar_id,),
             "lowest": (min_bar_id,),

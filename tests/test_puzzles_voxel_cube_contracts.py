@@ -7,10 +7,8 @@ from trace.tasks import create_task
 TASK_IDS = (
     "task_puzzles__voxel_cube__cube_count",
     "task_puzzles__voxel_cube__cube_structure_change_count",
-    "task_puzzles__voxel_cube__cube_painted_face_count",
     "task_puzzles__voxel_cube__cube_visible_projection_count",
     "task_puzzles__voxel_cube__cube_projection_match_label",
-    "task_puzzles__voxel_cube__cube_projection_consistency_label",
 )
 
 
@@ -31,10 +29,8 @@ def test_voxel_cube_annotation_schemas_match_public_contracts() -> None:
     expected = {
         "task_puzzles__voxel_cube__cube_count": "bbox",
         "task_puzzles__voxel_cube__cube_structure_change_count": "bbox_set",
-        "task_puzzles__voxel_cube__cube_painted_face_count": "bbox",
         "task_puzzles__voxel_cube__cube_visible_projection_count": "bbox_set",
         "task_puzzles__voxel_cube__cube_projection_match_label": "bbox",
-        "task_puzzles__voxel_cube__cube_projection_consistency_label": "bbox",
     }
     for index, task_id in enumerate(TASK_IDS):
         output = create_task(task_id).generate(
@@ -62,16 +58,6 @@ def test_voxel_cube_semantic_axes_can_be_pinned() -> None:
             "removed",
         ),
         (
-            "task_puzzles__voxel_cube__cube_painted_face_count",
-            {"painted_query": "exterior_face_total"},
-            "exterior_face_total",
-        ),
-        (
-            "task_puzzles__voxel_cube__cube_painted_face_count",
-            {"painted_query": "exact_k_faces_cube_count"},
-            "exact_k_faces_cube_count",
-        ),
-        (
             "task_puzzles__voxel_cube__cube_visible_projection_count",
             {"view_direction": "top"},
             "top",
@@ -92,3 +78,29 @@ def test_voxel_cube_semantic_axes_can_be_pinned() -> None:
         assert expected_value in {
             str(value) for key, value in execution.items() if key in params
         }
+
+
+def test_voxel_cube_projection_scenes_keep_reference_stack_separate_and_vary_palette() -> None:
+    """Projection-option scenes should not overlap the reference stack and options."""
+
+    projection_tasks = (
+        "task_puzzles__voxel_cube__cube_projection_match_label",
+    )
+    palette_ids: set[str] = set()
+    for index, task_id in enumerate(projection_tasks * 20):
+        output = create_task(task_id).generate(
+            51400 + index,
+            params={},
+            max_attempts=80,
+        )
+        render_map = output.trace_payload["render_map"]
+        stack_bbox = [float(value) for value in render_map["stack_bbox_px"]]
+        option_bboxes = [
+            [float(value) for value in bbox]
+            for bbox in render_map["option_panel_bboxes_px"].values()
+        ]
+        assert stack_bbox[2] + 14.0 < min(bbox[0] for bbox in option_bboxes)
+        palette_ids.add(
+            str(output.trace_payload["render_spec"]["voxel_palette"]["palette_id"])
+        )
+    assert len(palette_ids) >= 2

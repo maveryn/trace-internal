@@ -7,19 +7,19 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.physics.optics.shadow_cause import (
+from trace.tasks.physics.shadow_cause.light_source_label import (
     OPPOSITE_DIRECTION,
     PhysicsShadowCauseLightSourceLabelTask,
 )
 from tests.helpers import read_jsonl
 
 
-def _assert_keyed_bbox_map_in_bounds(out) -> None:
+def _assert_bbox_in_bounds(out) -> None:
     width, height = out.image.size
-    assert out.annotation_gt.type == "keyed_bbox_map"
-    for bbox in out.annotation_gt.value.values():
-        assert 0 <= bbox[0] < bbox[2] <= width
-        assert 0 <= bbox[1] < bbox[3] <= height
+    assert out.annotation_gt.type == "bbox"
+    bbox = out.annotation_gt.value
+    assert 0 <= bbox[0] < bbox[2] <= width
+    assert 0 <= bbox[1] < bbox[3] <= height
 
 
 def test_physics_shadow_cause_contract_and_direction_logic() -> None:
@@ -38,17 +38,19 @@ def test_physics_shadow_cause_contract_and_direction_logic() -> None:
         execution = out.trace_payload["execution_trace"]
 
         assert out.scene_id == "shadow_cause"
-        assert out.query_id == "source_from_shadow_label"
+        assert out.query_id == "single"
         assert out.answer_gt.type == "option_letter"
         assert out.answer_gt.value == "D"
-        assert set(out.annotation_gt.value) == {"object", "shadow"}
-        _assert_keyed_bbox_map_in_bounds(out)
+        _assert_bbox_in_bounds(out)
+        assert execution["query_id"] == "single"
+        assert execution["internal_query_id"] == "source_from_shadow_label"
         assert execution["shadow_direction"] == shadow_direction
         assert execution["source_direction"] == OPPOSITE_DIRECTION[shadow_direction]
         assert execution["candidate_directions"]["D"] == execution["source_direction"]
         assert render_map["candidate_directions"]["D"] == render_map["source_direction"]
         assert list(render_map["candidate_directions"].values()).count(render_map["source_direction"]) == 1
-        assert render_map["annotation_keyed_bboxes_px"] == out.annotation_gt.value
+        assert out.annotation_gt.value == render_map["candidate_light_sources"]["D"]["option_bbox_px"]
+        assert out.trace_payload["projected_annotation"]["bbox"] == out.annotation_gt.value
 
 
 def test_physics_shadow_cause_is_deterministic() -> None:
@@ -69,12 +71,12 @@ def test_physics_shadow_cause_is_deterministic() -> None:
 
 
 def test_physics_shadow_cause_prompt_bundle_supports_variants() -> None:
-    bundle = json.loads(Path("prompts/physics/optics/physics_optics_v0.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/physics/shadow_cause/physics_shadow_cause_v1.json").read_text(encoding="utf-8"))
 
-    assert "shadow_cause_query" in bundle["task_templates"]
-    assert len(bundle["scene_templates"]["shadow_cause_diagram"]) == 5
-    assert len(bundle["query_templates"]["source_from_shadow_label"]) == 5
-    assert "scene:shadow_cause_diagram" in bundle["required_slots_by_key"]
+    assert "shadow_cause_query" in bundle["templates"]["task"]
+    assert len(bundle["templates"]["scene"]["shadow_cause_diagram"]) == 5
+    assert len(bundle["templates"]["query"]["single"]) == 5
+    assert "query:single" in bundle["static_slots_by_key"]
 
 
 def test_physics_shadow_cause_build_smoke(tmp_path: Path) -> None:
@@ -100,9 +102,9 @@ def test_physics_shadow_cause_build_smoke(tmp_path: Path) -> None:
 
     assert len(train_records) == 2
     assert all(record["domain"] == "physics" for record in train_records)
-    assert all(record["scene_id"] == "optics" for record in train_records)
+    assert all(record["scene_id"] == "shadow_cause" for record in train_records)
     assert {record["task"] for record in train_records} == {"task_physics__shadow_cause__light_source_label"}
-    assert {record["query_id"] for record in train_records} == {"source_from_shadow_label"}
+    assert {record["query_id"] for record in train_records} == {"single"}
 
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

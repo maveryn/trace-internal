@@ -12,7 +12,7 @@ from .shared.sampling import (
     axis_metric_count,
     axis_panel_count,
     balanced_choice,
-    choice_index,
+    choose_index,
     force_panel_threshold_by_metric,
     make_single_profile_panels,
     sample_small_multiple_frame,
@@ -63,11 +63,12 @@ def _build_plan(params: dict[str, Any], instance_seed: int, selected: str, proba
     metrics = frame.metrics
     panel_labels = frame.panel_labels
     values = frame.values
-    metric_index = choice_index(
+    metric_index = choose_index(
+        len(metrics),
         non_answer_params,
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}.highlight_metric",
-    ) % len(metrics)
+    )
     metric_label = str(metrics[int(metric_index)])
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.values")
     annotation_panel_labels = shuffled_subset(panel_labels, int(target_count), rng)

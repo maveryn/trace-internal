@@ -74,6 +74,7 @@ class RenderedRavenScene:
     scene_bbox_px: list[float]
     matrix_cell_bbox_map: dict[str, list[float]]
     option_panel_bbox_map: dict[str, list[float]]
+    option_cell_bbox_map: dict[str, list[float]]
 
 
 __all__ = [

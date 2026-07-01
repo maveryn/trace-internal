@@ -258,26 +258,6 @@ def _sample_sequence_in_range(
     return sample_move_sequence(rng, length=int(rng.randint(int(low), int(high))))
 
 
-def build_static_sticker_sample(
-    *,
-    rng,
-    params: Mapping[str, Any],
-    gen_defaults: Mapping[str, Any],
-    option_count: int,
-    answer_option_index: int,
-) -> dict[str, Any]:
-    """Construct a visible-state sticker color option-label sample."""
-
-    return build_sticker_sample(
-        rng=rng,
-        params=params,
-        gen_defaults=gen_defaults,
-        move_sequence=[],
-        option_count=int(option_count),
-        answer_option_index=int(answer_option_index),
-    )
-
-
 def build_post_move_sticker_sample(
     *,
     rng,
@@ -316,7 +296,7 @@ def build_sticker_sample(
     option_count: int,
     answer_option_index: int,
 ) -> dict[str, Any]:
-    """Construct the shared sticker-color record used by static and moved tasks."""
+    """Construct a sticker-color record after a sampled move sequence."""
 
     start_state, color_map, scramble_sequence, face_color_names = _sample_base_state(
         rng=rng,
@@ -361,26 +341,6 @@ def build_sticker_sample(
     }
 
 
-def build_static_face_count_sample(
-    *,
-    rng,
-    params: Mapping[str, Any],
-    gen_defaults: Mapping[str, Any],
-    option_count: int,
-    answer_option_index: int,
-) -> dict[str, Any]:
-    """Construct a visible-state face color-count option-label sample."""
-
-    return build_face_count_sample(
-        rng=rng,
-        params=params,
-        gen_defaults=gen_defaults,
-        move_sequence=[],
-        option_count=int(option_count),
-        answer_option_index=int(answer_option_index),
-    )
-
-
 def build_post_move_face_count_sample(
     *,
     rng,
@@ -419,7 +379,7 @@ def build_face_count_sample(
     option_count: int,
     answer_option_index: int,
 ) -> dict[str, Any]:
-    """Construct the shared color-count record used by static and moved tasks."""
+    """Construct a color-count record after a sampled move sequence."""
 
     count_min, count_max = _as_range(
         params,
@@ -601,6 +561,4 @@ __all__ = [
     "build_post_move_face_count_sample",
     "build_post_move_sticker_sample",
     "build_result_sample",
-    "build_static_face_count_sample",
-    "build_static_sticker_sample",
 ]

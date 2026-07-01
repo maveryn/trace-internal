@@ -42,6 +42,13 @@
         "What is the number of darts outside the bullseye circle?",
         "How many visible darts are not inside the bullseye?",
         "Find the count of darts outside the center bullseye."
+      ],
+      "highest_scoring_dart_label": [
+        "{scoring_rule_text} Which labeled dart A-D scores the most points?",
+        "{scoring_rule_text} Among the labeled darts A-D, which one has the highest score?",
+        "Compare the scores of labeled darts A-D. {scoring_rule_text} Which dart scores highest?",
+        "Using the simplified dartboard scoring rule, which labeled dart has the greatest score? {scoring_rule_text}",
+        "{scoring_rule_text} Select the label of the dart with the largest score."
       ]
     },
     "output": {
@@ -70,6 +77,9 @@
     ],
     "query:inside_bullseye_count": [],
     "query:outside_bullseye_count": [],
+    "query:highest_scoring_dart_label": [
+      "scoring_rule_text"
+    ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -87,6 +97,9 @@
       "object_description": "a simplified labeled dartboard with visible dart markers"
     },
     "query:dart_score_value": {
+      "scoring_rule_text": "A dart in a numbered sector scores that number; a dart in the center bullseye scores 50."
+    },
+    "query:highest_scoring_dart_label": {
       "scoring_rule_text": "A dart in a numbered sector scores that number; a dart in the center bullseye scores 50."
     }
   },
@@ -114,10 +127,12 @@
     "object_description_single_board": "a simplified labeled dartboard with visible dart markers",
     "scoring_rule_text": "A dart in a numbered sector scores that number; a dart in the center bullseye scores 50.",
     "annotation_hint_dart_score_value": "set \"annotation\" to one pixel point [x, y] at the center of the dart",
-    "annotation_hint_inside_bullseye_count": "set \"annotation\" to a JSON array of pixel-space dart boxes [x1, y1, x2, y2] for every dart inside the bullseye",
-    "annotation_hint_outside_bullseye_count": "set \"annotation\" to a JSON array of pixel-space dart boxes [x1, y1, x2, y2] for every dart outside the bullseye",
+    "annotation_hint_inside_bullseye_count": "set \"annotation\" to a JSON array of pixel-space dart boxes [x0, y0, x1, y1] for every dart inside the bullseye",
+    "annotation_hint_outside_bullseye_count": "set \"annotation\" to a JSON array of pixel-space dart boxes [x0, y0, x1, y1] for every dart outside the bullseye",
+    "annotation_hint_highest_scoring_dart_label": "set \"annotation\" to one pixel point [x, y] at the center of the highest-scoring labeled dart",
     "answer_hint_dart_score_value": "set \"answer\" to the integer score of the dart",
     "answer_hint_inside_bullseye_count": "set \"answer\" to the number of darts inside the bullseye",
-    "answer_hint_outside_bullseye_count": "set \"answer\" to the number of darts outside the bullseye"
+    "answer_hint_outside_bullseye_count": "set \"answer\" to the number of darts outside the bullseye",
+    "answer_hint_highest_scoring_dart_label": "set \"answer\" to the single letter A, B, C, or D printed next to the highest-scoring dart"
   }
 }

@@ -10,21 +10,21 @@ from PIL import Image
 
 from trace.core.seed import hash64
 from trace.core.types import TypedValue
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import make_chart_information_background, resolve_chart_information_style
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.base import TaskOutput
 from trace.tasks.charts.treemap.shared.annotations import (
     annotation_value_from_projection,
     bbox_set_projection,
-    leaf_value_boxes,
+    leaf_cell_boxes,
 )
 from trace.tasks.charts.treemap.shared.defaults import (
-    BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     chart_font_asset_metadata,
     select_chart_font_family,
 )
 from trace.tasks.charts.treemap.shared.rendering import (
+    apply_treemap_information_style,
     render_treemap_scene,
     resolve_treemap_render_params,
     treemap_render_style_spec,
@@ -40,7 +40,7 @@ from trace.tasks.shared.text_rendering import temporary_default_font_family
 class TreemapTaskPlan:
     dataset: TreemapDataset
     answer_gt: TypedValue
-    answer_value: int
+    answer_value: Any
     annotation_leaf_ids: Sequence[str]
     prompt_artifacts: PromptTraceArtifacts
     relations: Mapping[str, Any]
@@ -99,13 +99,25 @@ def materialize_treemap_plan(
     """Render one task-owned treemap plan and assemble common trace payload."""
 
     render_params = resolve_treemap_render_params(params, instance_seed=int(instance_seed))
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    protected_colors = tuple(parent.color_rgb for parent in plan.dataset.parents) + tuple(
+        leaf.color_rgb for leaf in plan.dataset.leaves
+    )
+    information_style, information_style_meta = resolve_chart_information_style(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=BACKGROUND_DEFAULTS,
+        scene_id=SCENE_ID,
+        protected_colors=protected_colors,
     )
+    render_params = apply_treemap_information_style(render_params, information_style)
+    background, background_meta = make_chart_information_background(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        style=information_style,
+        instance_seed=int(instance_seed),
+        namespace=f"charts.{SCENE_ID}.information_scene_background",
+    )
+    background_meta = dict(background_meta)
+    background_meta["information_scene_style"] = dict(information_style_meta)
     chart_font_family = select_chart_font_family(instance_seed=int(instance_seed), params=params)
     with temporary_default_font_family(str(chart_font_family)):
         rendered = render_treemap_scene(
@@ -113,6 +125,7 @@ def materialize_treemap_plan(
             dataset=plan.dataset,
             params=params,
             instance_seed=int(instance_seed),
+            render_params=render_params,
         )
     image, post_noise_meta = apply_post_image_noise(
         rendered.image,
@@ -120,7 +133,7 @@ def materialize_treemap_plan(
         params=params,
         default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
-    annotation_boxes = leaf_value_boxes(rendered, plan.annotation_leaf_ids)
+    annotation_boxes = leaf_cell_boxes(rendered, plan.annotation_leaf_ids)
     if not annotation_boxes:
         raise ValueError("treemap plan produced no projected annotation")
     projected_annotation = bbox_set_projection(annotation_boxes)
@@ -128,7 +141,7 @@ def materialize_treemap_plan(
     relation_fields = {
         "query_id": str(selected_branch),
         "query_id_probabilities": dict(branch_probabilities),
-        "answer_value": int(plan.answer_value),
+        "answer_value": plan.answer_value,
         "annotation_leaf_ids": [str(leaf_id) for leaf_id in plan.annotation_leaf_ids],
         "parent_count": int(len(plan.dataset.parents)),
         "leaf_count_per_parent": int(len(plan.dataset.parents[0].leaf_ids)) if plan.dataset.parents else 0,
@@ -154,6 +167,7 @@ def materialize_treemap_plan(
             "coord_space": "pixel",
             "scene_variant": "treemap_composition",
             "background_style": dict(background_meta),
+            "information_scene_style": dict(information_style_meta),
             "post_image_noise": dict(post_noise_meta),
             "font_assets": chart_font_asset_metadata(str(chart_font_family)),
             "chart_bbox_px": list(rendered.chart_bbox_px),
@@ -172,8 +186,8 @@ def materialize_treemap_plan(
         },
         "execution_trace": {
             "query_id": str(selected_branch),
-            "answer_value": int(plan.answer_value),
-            "question_format": "numeric_open",
+            "answer_value": plan.answer_value,
+            "question_format": "numeric_open" if str(plan.answer_gt.type) == "integer" else "string_label",
             "parents": _parent_rows(plan.dataset),
             "leaves": _leaf_rows(plan.dataset),
             "annotation_leaf_ids": [str(leaf_id) for leaf_id in plan.annotation_leaf_ids],
@@ -185,7 +199,7 @@ def materialize_treemap_plan(
         },
         "witness_symbolic": {
             "type": str(plan.witness_type),
-            "answer_value": int(plan.answer_value),
+            "answer_value": plan.answer_value,
             "annotation_leaf_ids": [str(leaf_id) for leaf_id in plan.annotation_leaf_ids],
             "calculation": dict(plan.witness_calculation),
         },

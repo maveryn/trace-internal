@@ -4,9 +4,13 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
+from trace.core.sampling import support_probability_map
 from trace.tasks.games.shared.sampling import resolve_games_named_axis
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.support_sampling import resolve_integer_choice
+from trace.tasks.shared.support_sampling import (
+    resolve_integer_choice,
+    resolve_integer_support,
+)
 
 from .defaults import DEFAULTS, GEN_DEFAULTS
 from .rules import (
@@ -21,7 +25,15 @@ from .rules import (
     opponent,
     WINNING_LINES,
 )
-from .state import LAYERS, LAYOUT_VARIANTS, OPTION_LABELS, STYLE_VARIANTS, Coord, TicTacToe3DAxes, TicTacToe3DSample
+from .state import (
+    LAYERS,
+    LAYOUT_VARIANTS,
+    OPTION_LABELS,
+    STYLE_VARIANTS,
+    Coord,
+    TicTacToe3DAxes,
+    TicTacToe3DSample,
+)
 
 
 def _resolve_named_axis(
@@ -61,13 +73,33 @@ def _resolve_integer_axis(
 ) -> tuple[int, dict[str, float]]:
     """Resolve one integer axis with a scene-local namespace."""
 
+    support = resolve_integer_support(
+        params,
+        gen_defaults=GEN_DEFAULTS,
+        key=str(support_key),
+        fallback=tuple(int(value) for value in fallback_support),
+    )
+    explicit = params.get(str(explicit_key))
+    if explicit is not None:
+        selected = int(explicit)
+        if selected not in set(support):
+            raise ValueError(f"unsupported {explicit_key}: {selected}")
+        return int(selected), support_probability_map(
+            support,
+            selected=int(selected),
+            sort_keys=True,
+        )
+    if bool(use_instance_seed_cycle) and params.get("_sample_cursor") is not None:
+        selected = support[abs(int(params["_sample_cursor"])) % len(support)]
+        return int(selected), support_probability_map(support, sort_keys=True)
+
     value, probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
         params=params,
         gen_defaults=GEN_DEFAULTS,
         support_key=str(support_key),
         explicit_key=str(explicit_key),
-        fallback_support=tuple(int(value) for value in fallback_support),
+        fallback_support=tuple(int(value) for value in support),
         namespace=str(namespace),
         balanced_flag_key=str(balanced_flag_key),
         use_instance_seed_cycle=bool(use_instance_seed_cycle),
@@ -155,21 +187,29 @@ def resolve_tic_tac_toe_3d_axes(
     )
 
 
-def axis_support_metadata(params: Mapping[str, Any], axes: TicTacToe3DAxes) -> dict[str, Any]:
+def axis_support_metadata(
+    params: Mapping[str, Any], axes: TicTacToe3DAxes
+) -> dict[str, Any]:
     """Return support metadata for trace query parameters."""
 
     option_support = tuple(
         int(value)
         for value in params.get(
             "option_count_support",
-            group_default(GEN_DEFAULTS, "option_count_support", DEFAULTS.option_count_support),
+            group_default(
+                GEN_DEFAULTS, "option_count_support", DEFAULTS.option_count_support
+            ),
         )
     )
     target_support = tuple(
         int(value)
         for value in params.get(
             "layer_piece_count_support",
-            group_default(GEN_DEFAULTS, "layer_piece_count_support", DEFAULTS.layer_piece_count_support),
+            group_default(
+                GEN_DEFAULTS,
+                "layer_piece_count_support",
+                DEFAULTS.layer_piece_count_support,
+            ),
         )
     )
     return {
@@ -182,7 +222,9 @@ def axis_support_metadata(params: Mapping[str, Any], axes: TicTacToe3DAxes) -> d
         "option_count_probabilities": dict(axes.option_count_probabilities),
         "answer_option": int(axes.answer_option_index),
         "answer_option_index": int(axes.answer_option_index),
-        "answer_option_index_support": [int(value) for value in range(int(axes.option_count))],
+        "answer_option_index_support": [
+            int(value) for value in range(int(axes.option_count))
+        ],
         "answer_option_probabilities": dict(axes.answer_option_probabilities),
         "target_layer": str(axes.target_layer),
         "target_layer_probabilities": dict(axes.target_layer_probabilities),
@@ -192,11 +234,17 @@ def axis_support_metadata(params: Mapping[str, Any], axes: TicTacToe3DAxes) -> d
     }
 
 
-def _random_empty_coords(board: Sequence[Sequence[Sequence[str]]], *, exclude: set[Coord] | None = None) -> list[Coord]:
+def _random_empty_coords(
+    board: Sequence[Sequence[Sequence[str]]], *, exclude: set[Coord] | None = None
+) -> list[Coord]:
     """Return empty cells while respecting an optional exclusion set."""
 
     excluded = set(exclude or set())
-    return [coord for coord in all_coords() if coord not in excluded and board_get(board, coord) == ""]
+    return [
+        coord
+        for coord in all_coords()
+        if coord not in excluded and board_get(board, coord) == ""
+    ]
 
 
 def sample_winning_move_scene(
@@ -220,7 +268,9 @@ def sample_winning_move_scene(
     candidate_coords = _random_empty_coords(board, exclude={answer_cell})
     rng.shuffle(candidate_coords)
     for coord in candidate_coords:
-        occupied_count = sum(1 for placed in all_coords() if board_get(board, placed) != "")
+        occupied_count = sum(
+            1 for placed in all_coords() if board_get(board, placed) != ""
+        )
         if occupied_count >= filler_target + len(support_cells):
             break
         mark = str(target_player) if rng.random() < 0.45 else str(other_player)
@@ -232,7 +282,11 @@ def sample_winning_move_scene(
     winning_cells = set(immediate_winning_cells(frozen, str(target_player)))
     if answer_cell not in winning_cells:
         raise ValueError("constructed winning move no longer completes a line")
-    distractors = [coord for coord in _random_empty_coords(frozen, exclude={answer_cell}) if coord not in winning_cells]
+    distractors = [
+        coord
+        for coord in _random_empty_coords(frozen, exclude={answer_cell})
+        if coord not in winning_cells
+    ]
     if len(distractors) < int(option_count) - 1:
         raise ValueError("not enough non-winning distractor cells")
     rng.shuffle(distractors)
@@ -240,7 +294,11 @@ def sample_winning_move_scene(
     insert_at = min(max(0, int(answer_option_index)), int(option_count) - 1)
     option_cells.insert(insert_at, answer_cell)
     label = OPTION_LABELS[insert_at]
-    correct_options = [OPTION_LABELS[index] for index, coord in enumerate(option_cells) if coord in winning_cells]
+    correct_options = [
+        OPTION_LABELS[index]
+        for index, coord in enumerate(option_cells)
+        if coord in winning_cells
+    ]
     if tuple(correct_options) != (label,):
         raise ValueError("winning-move options are not unique")
     return TicTacToe3DSample(
@@ -255,7 +313,101 @@ def sample_winning_move_scene(
         annotation_coords=(answer_cell, *support_cells),
         metadata={
             "winning_line": [[int(c[0]), int(c[1]), int(c[2])] for c in line],
-            "winning_cells": [[int(c[0]), int(c[1]), int(c[2])] for c in sorted(winning_cells)],
+            "winning_cells": [
+                [int(c[0]), int(c[1]), int(c[2])] for c in sorted(winning_cells)
+            ],
+            "correct_option_labels": list(correct_options),
+        },
+    )
+
+
+def sample_blocking_move_scene(
+    *,
+    rng: Any,
+    target_player: str,
+    option_count: int,
+    answer_option_index: int,
+) -> TicTacToe3DSample:
+    """Construct a board with exactly one labeled move blocking the opponent."""
+
+    threat_player = opponent(str(target_player))
+    line = tuple(rng.choice(tuple(WINNING_LINES)))
+    answer_cell = tuple(rng.choice(line))
+    support_cells = tuple(coord for coord in line if coord != answer_cell)
+    board = empty_board()
+    for coord in support_cells:
+        board_set(board, coord, str(threat_player))
+
+    filler_target = int(rng.randint(4, 10))
+    candidate_coords = _random_empty_coords(board, exclude={answer_cell})
+    rng.shuffle(candidate_coords)
+    for coord in candidate_coords:
+        occupied_count = sum(
+            1 for placed in all_coords() if board_get(board, placed) != ""
+        )
+        if occupied_count >= filler_target + len(support_cells):
+            break
+        mark = str(target_player) if rng.random() < 0.52 else str(threat_player)
+        board_set(board, coord, mark)
+        threat_cells = set(immediate_winning_cells(board, str(threat_player)))
+        target_wins = set(immediate_winning_cells(board, str(target_player)))
+        if (
+            completed_lines(board, "X")
+            or completed_lines(board, "O")
+            or threat_cells != {answer_cell}
+            or target_wins
+        ):
+            board_set(board, coord, "")
+
+    frozen = freeze_board(board)
+    threat_cells = set(immediate_winning_cells(frozen, str(threat_player)))
+    target_wins = set(immediate_winning_cells(frozen, str(target_player)))
+    if threat_cells != {answer_cell}:
+        raise ValueError(
+            "constructed blocking position must have exactly one opponent threat"
+        )
+    if target_wins:
+        raise ValueError(
+            "blocking position should not also contain a target-player win"
+        )
+    distractors = [
+        coord
+        for coord in _random_empty_coords(frozen, exclude={answer_cell})
+        if coord not in threat_cells
+    ]
+    if len(distractors) < int(option_count) - 1:
+        raise ValueError("not enough non-blocking distractor cells")
+    rng.shuffle(distractors)
+    option_cells = list(distractors[: int(option_count) - 1])
+    insert_at = min(max(0, int(answer_option_index)), int(option_count) - 1)
+    option_cells.insert(insert_at, answer_cell)
+    label = OPTION_LABELS[insert_at]
+    correct_options = [
+        OPTION_LABELS[index]
+        for index, coord in enumerate(option_cells)
+        if coord in threat_cells
+    ]
+    if tuple(correct_options) != (label,):
+        raise ValueError("blocking-move options are not unique")
+    return TicTacToe3DSample(
+        board=frozen,
+        answer=str(label),
+        answer_type="string",
+        target_player=str(target_player),
+        target_layer="",
+        option_cells=tuple(option_cells),
+        answer_cell=answer_cell,
+        support_cells=tuple(support_cells),
+        annotation_coords=(answer_cell, *support_cells),
+        metadata={
+            "threat_player": str(threat_player),
+            "threat_line": [[int(c[0]), int(c[1]), int(c[2])] for c in line],
+            "opponent_threat_cells": [
+                [int(c[0]), int(c[1]), int(c[2])] for c in sorted(threat_cells)
+            ],
+            "target_player_winning_cells": [
+                [int(c[0]), int(c[1]), int(c[2])] for c in sorted(target_wins)
+            ],
             "correct_option_labels": list(correct_options),
         },
     )
@@ -273,26 +425,38 @@ def sample_layer_piece_count_scene(
     other_player = opponent(str(target_player))
     target_layer_index = layer_index(str(target_layer))
     board = empty_board()
-    layer_coords = [(target_layer_index, row, col) for row in range(3) for col in range(3)]
+    layer_coords = [
+        (target_layer_index, row, col) for row in range(3) for col in range(3)
+    ]
     rng.shuffle(layer_coords)
     target_cells = tuple(layer_coords[: int(target_answer)])
     for coord in target_cells:
         board_set(board, coord, str(target_player))
 
-    remaining_layer = [coord for coord in layer_coords if coord not in set(target_cells)]
+    remaining_layer = [
+        coord for coord in layer_coords if coord not in set(target_cells)
+    ]
     rng.shuffle(remaining_layer)
     opponent_in_layer = int(rng.randint(0, min(3, len(remaining_layer))))
     for coord in remaining_layer[:opponent_in_layer]:
         board_set(board, coord, other_player)
 
-    outside_coords = [coord for coord in all_coords() if int(coord[0]) != int(target_layer_index)]
+    outside_coords = [
+        coord for coord in all_coords() if int(coord[0]) != int(target_layer_index)
+    ]
     rng.shuffle(outside_coords)
     outside_piece_count = int(rng.randint(5, min(14, len(outside_coords))))
     for coord in outside_coords[:outside_piece_count]:
-        board_set(board, coord, str(target_player) if rng.random() < 0.5 else other_player)
+        board_set(
+            board, coord, str(target_player) if rng.random() < 0.5 else other_player
+        )
 
     frozen = freeze_board(board)
-    annotation_coords = tuple(coord for coord in layer_coords if board_get(frozen, coord) == str(target_player))
+    annotation_coords = tuple(
+        coord
+        for coord in layer_coords
+        if board_get(frozen, coord) == str(target_player)
+    )
     if len(annotation_coords) != int(target_answer):
         raise ValueError("layer piece-count construction mismatch")
     return TicTacToe3DSample(
@@ -302,13 +466,17 @@ def sample_layer_piece_count_scene(
         target_player=str(target_player),
         target_layer=str(target_layer),
         annotation_coords=tuple(annotation_coords),
-        metadata={"target_layer_index": int(target_layer_index), "target_layer_name": str(target_layer)},
+        metadata={
+            "target_layer_index": int(target_layer_index),
+            "target_layer_name": str(target_layer),
+        },
     )
 
 
 __all__ = [
     "axis_support_metadata",
     "resolve_tic_tac_toe_3d_axes",
+    "sample_blocking_move_scene",
     "sample_layer_piece_count_scene",
     "sample_winning_move_scene",
 ]

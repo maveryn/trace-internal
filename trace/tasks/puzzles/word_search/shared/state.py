@@ -20,13 +20,15 @@ OPTION_LABELS: tuple[str, ...] = tuple("ABCDEFGH")
 
 @dataclass(frozen=True)
 class WordSearchOption:
-    """One start-cell and direction option for a target word."""
+    """One visible answer option for a word-search task."""
 
     label: str
-    row_1based: int
-    col_1based: int
-    direction: str
-    is_correct: bool
+    row_1based: int | None = None
+    col_1based: int | None = None
+    direction: str | None = None
+    display_text: str = ""
+    word: str = ""
+    is_correct: bool = False
 
 
 @dataclass(frozen=True)
@@ -44,8 +46,6 @@ class WordSearchRenderParams:
     option_panel_height_px: int
     option_gap_px: int
     option_font_size_px: int
-    word_chip_height_px: int
-    word_chip_gap_px: int
     letter_font_size_px: int
     index_font_size_px: int
     panel_fill_rgb: tuple[int, int, int]
@@ -56,8 +56,7 @@ class WordSearchRenderParams:
     text_stroke_rgb: tuple[int, int, int]
     option_fill_rgb: tuple[int, int, int]
     option_border_rgb: tuple[int, int, int]
-    chip_fill_rgb: tuple[int, int, int]
-    chip_border_rgb: tuple[int, int, int]
+    option_text_rgb: tuple[int, int, int]
     unit_size_jitter: dict[str, Any]
 
 

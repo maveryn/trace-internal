@@ -22,6 +22,7 @@ from trace.tasks.shared.config_defaults import (
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
+from trace.tasks.shared.text_legibility import contrast_ratio
 
 from .shared.defaults import resize_canvas_to_content, resolve_render_params
 from .shared.output import build_trace_payload, json_ready
@@ -176,12 +177,16 @@ def prepare_word_search_visual_case(
         grid_fill_rgb=tuple(int(value) for value in scene_style.option_fill_rgb),
         header_fill_rgb=tuple(int(value) for value in scene_style.panel_fill_rgb),
         grid_line_rgb=tuple(int(value) for value in scene_style.grid_rgb),
-        text_rgb=tuple(int(value) for value in scene_style.text_rgb),
+        text_rgb=_contrast_text_rgb(
+            scene_style.option_fill_rgb,
+            scene_style.panel_fill_rgb,
+        ),
         text_stroke_rgb=tuple(int(value) for value in scene_style.text_stroke_rgb),
         option_fill_rgb=tuple(int(value) for value in scene_style.step_fill_rgb),
         option_border_rgb=tuple(int(value) for value in scene_style.mark_rgb),
-        chip_fill_rgb=tuple(int(value) for value in scene_style.step_fill_rgb),
-        chip_border_rgb=tuple(int(value) for value in scene_style.agent_rgb),
+        option_text_rgb=_contrast_text_rgb(
+            scene_style.step_fill_rgb,
+        ),
     )
     background, background_meta = make_puzzle_scene_background(
         canvas_width=int(render_params.canvas_width),
@@ -350,6 +355,19 @@ def _placement_record(placement) -> dict[str, Any]:
         "direction": str(placement.direction),
         "cells": [[int(row), int(col)] for row, col in placement.cells],
     }
+
+
+def _contrast_text_rgb(*surface_rgbs) -> tuple[int, int, int]:
+    """Choose black or white text against the relevant visible surfaces."""
+
+    surfaces = [tuple(int(value) for value in surface[:3]) for surface in surface_rgbs]
+    candidates = ((12, 16, 24), (246, 248, 252))
+    return max(
+        candidates,
+        key=lambda color: min(contrast_ratio(color, surface) for surface in surfaces)
+        if surfaces
+        else 1.0,
+    )
 
 
 __all__ = ["WordSearchBinding", "run_word_search_single_query_case"]

@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from trace.core.sampling import normalize_positive_weights, weighted_choice
-from trace.core.seed import hash64
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import normalize_positive_weights, uniform_choice, weighted_choice
+from trace.core.seed import spawn_rng
 
 from .defaults import generation_default
 from .state import (
@@ -67,28 +66,6 @@ def condition_count_support(params: Mapping[str, Any], category_count: int) -> T
     return tuple(values)
 
 
-def top_k_support(params: Mapping[str, Any], category_count: int) -> Tuple[int, ...]:
-    raw = params.get("top_k_support", generation_default("top_k_support", [2, 3, 4, 5, 6]))
-    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
-        raise ValueError("top_k_support must be a sequence")
-    values = sorted({int(value) for value in raw if 1 <= int(value) <= int(category_count)})
-    if not values:
-        raise ValueError("top_k_support has no feasible values for category count")
-    return tuple(values)
-
-
-def top_k_overlap_count_support(params: Mapping[str, Any], *, category_count: int, top_k: int) -> Tuple[int, ...]:
-    raw = params.get("top_k_overlap_count_support", generation_default("top_k_overlap_count_support", [1, 2, 3, 4, 5]))
-    if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
-        raise ValueError("top_k_overlap_count_support must be a sequence")
-    min_overlap = max(0, int(top_k) * 2 - int(category_count))
-    max_overlap = int(top_k)
-    values = sorted({int(value) for value in raw if int(min_overlap) <= int(value) <= int(max_overlap)})
-    if not values:
-        raise ValueError("top_k_overlap_count_support has no feasible values for category count/top_k")
-    return tuple(values)
-
-
 def panel_condition_count_support(params: Mapping[str, Any], panel_count: int) -> Tuple[int, ...]:
     raw = params.get("panel_condition_count_support", generation_default("panel_condition_count_support", [1, 2, 3, 4, 5]))
     if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
@@ -99,13 +76,117 @@ def panel_condition_count_support(params: Mapping[str, Any], panel_count: int) -
     return tuple(values)
 
 
+def panel_value_range_support(
+    params: Mapping[str, Any],
+    *,
+    value_min: int,
+    value_max: int,
+    explicit_keys: Sequence[str] = ("target_answer", "range_value"),
+) -> Tuple[int, ...]:
+    explicit = None
+    for key in explicit_keys:
+        if str(key) in params:
+            explicit = params[str(key)]
+            break
+    raw_support = params.get("panel_value_range_support", generation_default("panel_value_range_support", tuple(range(12, 71))))
+    if isinstance(raw_support, Sequence) and not isinstance(raw_support, (str, bytes)):
+        support = tuple(sorted({int(value) for value in raw_support if 2 <= int(value) <= int(value_max) - int(value_min)}))
+    else:
+        support = tuple(value for value in range(12, 71) if int(value) <= int(value_max) - int(value_min))
+    if explicit is not None:
+        value = int(explicit)
+        if value not in set(support):
+            raise ValueError("target range value is outside configured panel_value_range_support")
+        return (int(value),)
+    if not support:
+        raise ValueError("panel_value_range_support has no feasible values for configured value range")
+    return support
+
+
 def balanced_support_choice(params: Mapping[str, Any], *, instance_seed: int, namespace: str, support: Sequence[int]) -> int:
     values = tuple(int(value) for value in support)
     if not values:
         raise ValueError("support must contain at least one value")
-    base_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    salt = abs(int(hash64(0, str(namespace), 0)))
-    return int(values[(int(base_index) + int(salt)) % len(values)])
+    return int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), str(namespace)),
+            values,
+            sort_keys=True,
+        )
+    )
+
+
+def bounded_integer_partition(
+    rng,
+    *,
+    count: int,
+    total: int,
+    value_min: int,
+    value_max: int,
+) -> Tuple[int, ...]:
+    """Return ``count`` shuffled integers in bounds whose sum is ``total``."""
+
+    count = int(count)
+    value_min = int(value_min)
+    value_max = int(value_max)
+    total = int(total)
+    if count <= 0:
+        raise ValueError("count must be positive")
+    if value_min > value_max:
+        raise ValueError("value_min must be <= value_max")
+    min_total = int(count * value_min)
+    max_total = int(count * value_max)
+    if total < min_total or total > max_total:
+        raise ValueError("total is outside feasible bounded partition range")
+    remaining = int(total - min_total)
+    capacity = int(value_max - value_min)
+    values = [int(value_min) for _ in range(count)]
+    remaining_capacities = [int(capacity) for _ in range(count)]
+    for index in range(count - 1):
+        future_capacity = int(sum(remaining_capacities[index + 1 :]))
+        min_take = max(0, int(remaining) - int(future_capacity))
+        max_take = min(int(remaining_capacities[index]), int(remaining))
+        take = int(rng.randint(int(min_take), int(max_take)))
+        values[index] += int(take)
+        remaining -= int(take)
+    values[-1] += int(remaining)
+    rng.shuffle(values)
+    return tuple(int(value) for value in values)
+
+
+def assign_unique_totals(
+    rng,
+    *,
+    item_ids: Sequence[str],
+    total_min: int,
+    total_max: int,
+    answer_item_id: str,
+    direction: str,
+) -> Dict[str, int]:
+    """Assign unique totals so ``answer_item_id`` is the requested extremum."""
+
+    ids = tuple(str(item_id) for item_id in item_ids)
+    if not ids:
+        raise ValueError("item_ids must not be empty")
+    if str(answer_item_id) not in set(ids):
+        raise ValueError("answer_item_id must be one of item_ids")
+    if str(direction) not in {"largest", "smallest"}:
+        raise ValueError("direction must be largest or smallest")
+    support = range(int(total_min), int(total_max) + 1)
+    if len(support) < len(ids):
+        raise ValueError("total range must contain enough unique values")
+    sampled = sorted(int(value) for value in rng.sample(list(support), len(ids)))
+    answer_total = int(sampled[-1] if str(direction) == "largest" else sampled[0])
+    other_totals = list(sampled[:-1] if str(direction) == "largest" else sampled[1:])
+    rng.shuffle(other_totals)
+    assigned: Dict[str, int] = {str(answer_item_id): int(answer_total)}
+    other_index = 0
+    for item_id in ids:
+        if str(item_id) == str(answer_item_id):
+            continue
+        assigned[str(item_id)] = int(other_totals[other_index])
+        other_index += 1
+    return dict(assigned)
 
 
 def join_labels(values: Sequence[str]) -> str:
@@ -182,14 +263,6 @@ def rank_positions_by_category_id(*, categories: Sequence[Category], panel: Pane
     reverse = str(direction) == "largest"
     ordered = sorted(categories, key=lambda category: int(panel.values_by_category_id[str(category.category_id)]), reverse=bool(reverse))
     return {str(category.category_id): int(index + 1) for index, category in enumerate(ordered)}
-
-
-def top_k_category_ids(*, categories: Sequence[Category], panel: Panel, direction: str, top_k: int) -> Tuple[str, ...]:
-    reverse = str(direction) == "largest"
-    ordered = sorted(categories, key=lambda category: int(panel.values_by_category_id[str(category.category_id)]), reverse=bool(reverse))
-    if int(top_k) < 1 or int(top_k) > len(ordered):
-        raise ValueError("top_k is outside category support")
-    return tuple(str(category.category_id) for category in ordered[: int(top_k)])
 
 
 def compare_condition(value: int, comparison: str, threshold: int) -> bool:
@@ -328,7 +401,9 @@ def statement_option_candidates(*, rng, categories: Sequence[Category], panels: 
 
 
 __all__ = [
+    "assign_unique_totals",
     "balanced_support_choice",
+    "bounded_integer_partition",
     "category_by_id",
     "choose_distinct_rank_params",
     "choose_rank_params",
@@ -339,6 +414,7 @@ __all__ = [
     "join_labels",
     "join_quoted_labels",
     "option_count_support",
+    "panel_value_range_support",
     "panel_by_id",
     "panel_condition_count_support",
     "rank_phrase",
@@ -346,8 +422,5 @@ __all__ = [
     "rank_support",
     "ranked_category_id",
     "statement_option_candidates",
-    "top_k_category_ids",
-    "top_k_overlap_count_support",
-    "top_k_support",
     "weighted_choice_from_defaults",
 ]

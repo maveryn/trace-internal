@@ -1,7 +1,15 @@
 # `task_graph__node_link__largest_chordless_cycle_size`
 
 ## Program Contract
-- `length(argmax(chordless_cycles(graph), metric=cycle_size)); scene=node_link; scope=largest_chordless_cycle_size`
+
+Program: `length(argmax(chordless_cycles(graph), metric=cycle_size)); scene=node_link; scope=largest_chordless_cycle_size`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `largest_chordless_cycle_size` objective scope.
+Operands: visible scene state and prompt-bound operands named by `argmax`, `chordless_cycles`, `graph`, `metric`, `cycle_size`, `node_link`, `largest_chordless_cycle_size`.
+Operation: evaluate `length` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Summary
 1. Domain: `graph`

@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence
 
+from trace.core.sampling import uniform_choice
 from trace.core.scene_config import get_scene_defaults
+from trace.core.seed import spawn_rng
 from trace.tasks.charts.errorbar_series.shared.state import DOMAIN, RGB, SCENE_ID, SCENE_NAMESPACE
 from trace.tasks.charts.shared.visual_defaults import (
+    coerce_rgb,
     load_chart_scene_background_defaults,
     load_chart_scene_noise_defaults,
 )
@@ -15,7 +18,6 @@ from trace.tasks.shared.config_defaults import (
     resolve_required_int_bounds,
     split_scene_generation_rendering_prompt_defaults,
 )
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 
 SCENE_DEFAULTS = get_scene_defaults(DOMAIN, SCENE_ID)
@@ -38,9 +40,7 @@ POST_IMAGE_NOISE_DEFAULTS = load_chart_scene_noise_defaults(scene_id=SCENE_ID, a
 def as_rgb(value: Any, fallback: RGB) -> RGB:
     """Resolve one RGB-like sequence while keeping a valid fallback."""
 
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)) or len(value) < 3:
-        return tuple(int(channel) for channel in fallback)
-    return tuple(max(0, min(255, int(channel))) for channel in value[:3])  # type: ignore[index]
+    return coerce_rgb(value, fallback)
 
 
 def support_probability_map(values: Sequence[int | str]) -> Dict[str, float]:
@@ -53,15 +53,6 @@ def support_probability_map(values: Sequence[int | str]) -> Dict[str, float]:
     return {str(value): float(weight) for value in support}
 
 
-def selection_index(params: Mapping[str, Any], *, instance_seed: int, namespace: str) -> int:
-    """Resolve the deterministic sampling cursor for one scene-owned axis."""
-
-    sample_cursor = params.get("_sample_cursor")
-    if sample_cursor is not None:
-        return abs(int(sample_cursor))
-    return abs(int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))))
-
-
 def choose_from_values(
     params: Mapping[str, Any],
     *,
@@ -69,13 +60,16 @@ def choose_from_values(
     instance_seed: int,
     namespace: str,
 ) -> int | str:
-    """Choose one value from a finite support with review-cursor awareness."""
+    """Choose one value from a finite support with seeded uniform sampling."""
 
     candidates = tuple(values)
     if not candidates:
         raise ValueError(f"empty support for {namespace}")
-    index = selection_index(params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return candidates[int(index) % len(candidates)]
+    return uniform_choice(
+        spawn_rng(int(instance_seed), str(namespace)),
+        candidates,
+        sort_keys=True,
+    )
 
 
 def resolve_count(
@@ -134,6 +128,5 @@ __all__ = [
     "group_generation_default",
     "group_render_default",
     "resolve_count",
-    "selection_index",
     "support_probability_map",
 ]

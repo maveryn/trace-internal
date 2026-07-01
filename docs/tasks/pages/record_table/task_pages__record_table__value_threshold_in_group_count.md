@@ -1,26 +1,27 @@
 # `task_pages__record_table__value_threshold_in_group_count`
 
-## 1) Identity
+## Identity
 1. Domain: `pages`
-2. Scene: `counting`
-3. Scene id: `record_table`
+2. Scene id: `record_table`
+3. Source scene: `record_table`
 4. Task id: `task_pages__record_table__value_threshold_in_group_count`
-5. Objective: Count record-table rows in a named group whose visible numeric value crosses the stated threshold.
 
-## 2) Scene + Task Contract
-1. Supported `query_id` values: `value_threshold_in_group_count`
-2. `answer_gt.type`: `integer`
-3. `annotation_gt.type`: `bbox_set`
-4. Annotation witness policy: Full table-row boxes for every row satisfying the threshold condition.
-5. `query_id` is retained as internal replay metadata; this public task id is the sampling unit.
+## Contract
+1. Objective: count visible rows in the requested table section whose Size is at least the requested threshold.
+2. Public task contract: `value_threshold_in_group_count`
+3. Supported `query_id` values: `single`
+4. Answer type: `integer`
+5. Annotation schema: `bbox_set`
+6. Annotation witness: full row boxes for every counted row in the requested section meeting the threshold.
+7. Query argument axes: target section name, size threshold, answer-count support, scene variant, and style variant.
 
-## 3) Prompt Contract
-1. `prompt_bundle_id`: `pages_counting_v0`
-2. Prompt templates come from `prompts/pages/counting/` and are rendered with the scene layer plus task/query layer.
-3. Output modes: `answer_only` and `answer_and_annotation`.
-4. Annotation examples must match the role names and annotation type above.
+## Program Contract
+- `record_table_value_threshold_in_group_count(section_name, size_threshold_mb); output=integer_value; annotation=bbox_set(counted_rows); scene=record_table; scope=one sectioned record-table page`
 
-## 4) Determinism + Constraints
-1. Generation is deterministic for `instance_seed` plus params.
-2. Answers and annotation come from the same rendered trace payload.
-3. The generator constructs unique final answers and rejects invalid samples instead of semantically relaxing constraints.
+## Prompt + Trace
+1. Prompt bundle: `pages_record_table_v1`
+2. Scene key: `record_table`
+3. Task key: `record_table_count_query`
+4. Prompt query key: `value_threshold_in_group_count`
+5. Trace records section membership, row Size values, final row bboxes, sampled scene/style metadata, and selected target metadata.
+6. Generation is deterministic from `instance_seed`; answers and annotation come from the finalized record-table render metadata.

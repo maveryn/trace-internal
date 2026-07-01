@@ -6,7 +6,6 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from trace.core.seed import spawn_rng
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from .sampling import support_probabilities
 from .state import OptionSpec, ResolvedProblem, SolidSpec
@@ -153,13 +152,8 @@ def _rotated_option_specs(
     rng = spawn_rng(int(instance_seed), str(shuffle_namespace))
     rng.shuffle(candidates[1:])
     candidates = [candidates[0], *candidates[1 : max(1, int(option_count))]]
-    offset = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(label_namespace),
-        )
-    ) % len(candidates)
+    rng = spawn_rng(int(instance_seed), str(label_namespace))
+    offset = int(rng.randrange(len(candidates)))
     rotated = candidates[-offset:] + candidates[:-offset] if offset else candidates
     option_specs = tuple(
         OptionSpec(label=str(label), solid=solid, volume=solid_volume(solid))

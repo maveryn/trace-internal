@@ -29,6 +29,7 @@ def test_puzzles_sudoku_grid_defaults_present() -> None:
         SUPPORTED_SUDOKU_STYLE_VARIANTS
     )
     assert list(generation["marked_cell_value_support"]) == [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    assert list(generation["option_label_support"]) == ["A", "B", "C", "D"]
     assert int(rendering["max_board_size_px"]) > 0
     assert int(rendering["marked_cell_outline_width_px"]) > 0
     assert str(prompt["bundle_id"]) == "puzzles_sudoku_v1"

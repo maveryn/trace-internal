@@ -25,4 +25,29 @@ def annotation_boxes_and_points(
     return annotation_boxes, annotation_points
 
 
-__all__ = ["annotation_boxes_and_points"]
+def _vertical_segment_for_bbox(bbox: BBox) -> list[Point]:
+    x_center, _y_center = bbox_center(bbox)
+    return [
+        [round(float(x_center), 3), round(float(bbox[1]), 3)],
+        [round(float(x_center), 3), round(float(bbox[3]), 3)],
+    ]
+
+
+def annotation_segments(
+    *,
+    rendered: Rendered,
+    selection: Selection,
+) -> list[list[Point]]:
+    """Project selected candle roles to vertical wick/body segment annotations."""
+
+    annotation_segments_px: list[list[Point]] = []
+    for role, candle_id in zip(selection.annotation_roles, selection.annotation_candle_ids):
+        if str(role).endswith("_wick"):
+            annotation_box = list(rendered.wick_bboxes_px[str(candle_id)])
+        else:
+            annotation_box = list(rendered.body_bboxes_px[str(candle_id)])
+        annotation_segments_px.append(_vertical_segment_for_bbox(annotation_box))
+    return annotation_segments_px
+
+
+__all__ = ["annotation_boxes_and_points", "annotation_segments"]

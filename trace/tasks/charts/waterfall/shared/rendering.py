@@ -2,15 +2,21 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any, Mapping
 
 from PIL import Image, ImageDraw
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.cartesian.axes import draw_axis_lines, draw_horizontal_value_grid_ticks
+from trace.tasks.charts.shared.cartesian.geometry import project_linear_inverted
+from trace.tasks.charts.shared.information_style import (
+    make_chart_information_background,
+    resolve_chart_information_style,
+)
+from trace.tasks.charts.shared.dense_text import dense_fit_bold, dense_stroke_width, dense_text_style_meta
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.charts.shared.visual_defaults import sample_chart_font_family
 from trace.tasks.charts.waterfall.shared.defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDERING_DEFAULTS,
     SCENE_NAMESPACE,
@@ -122,6 +128,22 @@ def resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> W
     )
 
 
+def _apply_information_style(render_params: WaterfallRenderParams, style: Any) -> WaterfallRenderParams:
+    """Apply non-semantic chart style roles without changing waterfall bar meanings."""
+
+    return replace(
+        render_params,
+        axis_color_rgb=tuple(int(value) for value in style.axis_rgb),
+        grid_color_rgb=tuple(int(value) for value in style.grid_rgb),
+        plot_fill_rgb=tuple(int(value) for value in style.surface_rgb),
+        text_color_rgb=tuple(int(value) for value in style.text_rgb),
+        muted_text_rgb=tuple(int(value) for value in style.muted_text_rgb),
+        text_stroke_rgb=tuple(int(value) for value in style.text_stroke_rgb),
+        connector_rgb=tuple(int(value) for value in style.connector_rgb),
+        threshold_rgb=tuple(int(value) for value in style.highlight_rgb),
+    )
+
+
 def _draw_waterfall(
     base_image: Image.Image,
     *,
@@ -143,15 +165,15 @@ def _draw_waterfall(
         [left, top, right, bottom],
         radius=8,
         fill=tuple(render_params.plot_fill_rgb),
-        outline=(202, 208, 218),
+        outline=tuple(render_params.axis_color_rgb),
         width=1,
     )
 
-    title_font = load_font(int(render_params.title_font_size_px), bold=True)
+    title_font = load_font(int(render_params.title_font_size_px), bold=False)
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
-    label_font = load_font(int(render_params.label_font_size_px), bold=True)
-    value_font = load_font(int(render_params.value_font_size_px), bold=True)
-    threshold_font = load_font(int(render_params.threshold_font_size_px), bold=True)
+    label_font = load_font(int(render_params.label_font_size_px), bold=dense_fit_bold())
+    value_font = load_font(int(render_params.value_font_size_px), bold=dense_fit_bold())
+    threshold_font = load_font(int(render_params.threshold_font_size_px), bold=dense_fit_bold())
 
     draw_text_traced(
         draw,
@@ -165,17 +187,33 @@ def _draw_waterfall(
 
     y_axis_max = int(group_default(RENDERING_DEFAULTS, "y_axis_max", 100))
     y_axis_max = int(max(80, y_axis_max))
-    plot_h = float(bottom - top)
     plot_w = float(right - left)
 
     def y_for(value: int | float) -> float:
-        return float(bottom) - (float(value) / float(y_axis_max)) * plot_h
+        return project_linear_inverted(
+            float(value),
+            domain_min=0.0,
+            domain_max=float(y_axis_max),
+            pixel_top=float(top),
+            pixel_bottom=float(bottom),
+        )
 
     tick_step = int(group_default(RENDERING_DEFAULTS, "y_tick_step", 20))
-    for tick in range(0, int(y_axis_max) + 1, int(tick_step)):
-        y = y_for(int(tick))
-        draw.line([left, y, right, y], fill=tuple(render_params.grid_color_rgb), width=int(render_params.grid_line_width_px))
-        draw.line([left - int(render_params.tick_length_px), y, left, y], fill=tuple(render_params.axis_color_rgb), width=1)
+    y_tick_values = range(0, int(y_axis_max) + 1, int(tick_step))
+    y_tick_positions = draw_horizontal_value_grid_ticks(
+        draw,
+        plot_bbox,
+        tick_values=y_tick_values,
+        domain_min=0,
+        domain_max=int(y_axis_max),
+        grid_rgb=render_params.grid_color_rgb,
+        axis_rgb=render_params.axis_color_rgb,
+        grid_width_px=int(render_params.grid_line_width_px),
+        tick_width_px=1,
+        tick_length_px=float(render_params.tick_length_px),
+    )
+    for tick in y_tick_values:
+        y = float(y_tick_positions[float(tick)])
         text = str(tick)
         bbox = draw.textbbox((0, 0), text, font=tick_font)
         draw_text_traced(
@@ -187,8 +225,7 @@ def _draw_waterfall(
             role="readout",
             required=False,
         )
-    draw.line([left, bottom, right, bottom], fill=tuple(render_params.axis_color_rgb), width=int(render_params.axis_line_width_px))
-    draw.line([left, top, left, bottom], fill=tuple(render_params.axis_color_rgb), width=int(render_params.axis_line_width_px))
+    draw_axis_lines(draw, plot_bbox, axis_rgb=render_params.axis_color_rgb, axis_width_px=int(render_params.axis_line_width_px))
 
     items: list[tuple[str, str, int, int, int, RGB]] = [
         ("start", "Start", int(dataset.start_value), 0, int(dataset.start_value), tuple(render_params.start_fill_rgb)),
@@ -221,13 +258,13 @@ def _draw_waterfall(
             y_bottom = max(y_for(int(before)), y_for(int(after)))
             value_text = f"{int(raw_value):+d}"
         box = _bbox([cx - bar_w / 2.0, y_top, cx + bar_w / 2.0, y_bottom])
-        draw.rectangle(box, fill=fill, outline=(48, 54, 64), width=int(render_params.bar_outline_width_px))
+        draw.rectangle(box, fill=fill, outline=tuple(render_params.axis_color_rgb), width=int(render_params.bar_outline_width_px))
         bar_bboxes[str(bar_id)] = box
 
         value_center = (float(cx), float(y_top) - 14.0)
         if y_bottom - y_top >= 30.0:
             value_center = (float(cx), float(y_top + y_bottom) / 2.0)
-        value_box = _text_bbox_at(draw, text=value_text, center=value_center, font=value_font, stroke_width=2)
+        value_box = _text_bbox_at(draw, text=value_text, center=value_center, font=value_font, stroke_width=dense_stroke_width())
         draw_text_centered(
             draw,
             text=value_text,
@@ -235,12 +272,12 @@ def _draw_waterfall(
             font=value_font,
             fill=tuple(render_params.text_color_rgb),
             stroke_fill=tuple(render_params.text_stroke_rgb),
-            stroke_width=2,
+            stroke_width=dense_stroke_width(),
         )
         value_label_bboxes[str(bar_id)] = value_box
 
         x_center = (float(cx), float(bottom) + 26.0)
-        x_box = _text_bbox_at(draw, text=str(label), center=x_center, font=label_font, stroke_width=1)
+        x_box = _text_bbox_at(draw, text=str(label), center=x_center, font=label_font, stroke_width=dense_stroke_width())
         draw_text_centered(
             draw,
             text=str(label),
@@ -248,7 +285,7 @@ def _draw_waterfall(
             font=label_font,
             fill=tuple(render_params.text_color_rgb),
             stroke_fill=tuple(render_params.text_stroke_rgb),
-            stroke_width=1,
+            stroke_width=dense_stroke_width(),
         )
         x_label_bboxes[str(bar_id)] = x_box
         entities.append(
@@ -294,7 +331,7 @@ def _draw_waterfall(
             x += dash * 1.8
         threshold_text = f"T={threshold_int}"
         center = (float(right) - 34.0, threshold_y - 14.0)
-        threshold_box = _text_bbox_at(draw, text=threshold_text, center=center, font=threshold_font, stroke_width=2)
+        threshold_box = _text_bbox_at(draw, text=threshold_text, center=center, font=threshold_font, stroke_width=dense_stroke_width())
         draw_text_centered(
             draw,
             text=threshold_text,
@@ -302,7 +339,7 @@ def _draw_waterfall(
             font=threshold_font,
             fill=tuple(render_params.threshold_rgb),
             stroke_fill=tuple(render_params.text_stroke_rgb),
-            stroke_width=2,
+            stroke_width=dense_stroke_width(),
         )
         extra_bboxes["threshold_line"] = _bbox([left, threshold_y - 3, right, threshold_y + 3])
         extra_bboxes["threshold_label"] = threshold_box
@@ -331,13 +368,29 @@ def render_waterfall_dataset(
     """Render a sampled waterfall scene and return traceable artifacts."""
 
     render_params = resolve_render_params(params, instance_seed=int(instance_seed))
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    protected_colors = (
+        tuple(int(value) for value in render_params.start_fill_rgb),
+        tuple(int(value) for value in render_params.final_fill_rgb),
+        tuple(int(value) for value in render_params.positive_fill_rgb),
+        tuple(int(value) for value in render_params.negative_fill_rgb),
+        tuple(int(value) for value in render_params.threshold_rgb),
+    )
+    information_style, information_style_meta = resolve_chart_information_style(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="waterfall",
+        protected_colors=protected_colors,
     )
+    render_params = _apply_information_style(render_params, information_style)
+    background, background_meta = make_chart_information_background(
+        canvas_width=int(render_params.canvas_width),
+        canvas_height=int(render_params.canvas_height),
+        style=information_style,
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.information_scene_background",
+    )
+    background_meta = dict(background_meta)
+    background_meta["information_scene_style"] = dict(information_style_meta)
     chart_font_family = sample_chart_font_family(
         instance_seed=int(instance_seed),
         namespace=f"{SCENE_NAMESPACE}.chart_font",

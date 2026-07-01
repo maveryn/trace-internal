@@ -7,14 +7,19 @@ from typing import Any, Callable, Mapping, Sequence
 
 from PIL import Image
 
+from trace.core.types import TypedValue
 from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.base import TaskOutput
 from trace.tasks.shared.output_metadata import default_task_versions
+from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
 from .shared.annotations import annotation_roles_metadata, bbox_map_annotation
 from .shared.defaults import DOMAIN, POST_IMAGE_NOISE_DEFAULTS, SCENE_ID, SCENE_KIND, load_solid_revolution_defaults
+from .shared.measurements import answer_support_probability_map, round_volume, volume_cylinder
 from .shared.prompts import solid_revolution_prompt_artifacts
-from .shared.rendering import create_render_context
+from .shared.rendering import create_render_context, render_cylinder_revolution
+from .shared.sampling import cylinder_diagonal_case_pool, select_case_from_pool, support_from_cases
 from .shared.state import RenderContext, RenderedSolidRevolutionScene, SolidRevolutionProblem
 
 RenderBuilder = Callable[[RenderContext, SolidRevolutionProblem], RenderedSolidRevolutionScene]
@@ -246,9 +251,83 @@ def prepare_solid_revolution_task_parts(
     )
 
 
+def _run_cylinder_diagonal(
+    *,
+    task_id: str,
+    query_id: str,
+    supported_query_ids: Sequence[str],
+    annotation_keys: Sequence[str],
+    instance_seed: int,
+    params: dict[str, Any],
+    max_attempts: int,
+) -> TaskOutput:
+    """Run the diagonal-derived cylinder objective without duplicating a public body."""
+
+    selected_query, query_probabilities, task_params = select_task_query_id(
+        instance_seed=int(instance_seed),
+        params=params,
+        supported_query_ids=tuple(str(value) for value in supported_query_ids),
+        default_query_id=str(query_id),
+        task_id=str(task_id),
+        namespace=f"{task_id}.query",
+    )
+    cases = cylinder_diagonal_case_pool()
+    case = select_case_from_pool(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        namespace=f"{task_id}.{selected_query}.case",
+        cases=cases,
+    )
+    support_probabilities = answer_support_probability_map(support_from_cases(cases), case.answer)
+    problem = SolidRevolutionProblem(
+        solid_kind="cylinder",
+        generating_shape="rectangle",
+        answer=round_volume(volume_cylinder(diameter=case.diameter, height=case.height)),
+        formula_family="cylinder_volume_from_diagonal_rectangle",
+        formula="d^2 = q^2 - h^2, then V = pi (d/2)^2 h",
+        radius=float(case.diameter) / 2.0,
+        diameter=float(case.diameter),
+        radial_input_kind="diagonal",
+        height=float(case.height),
+        diagonal=float(case.diagonal or 0),
+        answer_support_probabilities=support_probabilities,
+        construction_case_count_for_answer=1,
+    )
+    plan = build_solid_revolution_plan(
+        prompt_key=str(query_id),
+        problem=problem,
+        render_scene=render_cylinder_revolution,
+        annotation_keys=tuple(str(key) for key in annotation_keys),
+        branch_probabilities=query_probabilities,
+        support_probabilities=support_probabilities,
+    )
+    parts = prepare_solid_revolution_task_parts(
+        task_id=str(task_id),
+        selected_query=str(selected_query),
+        branch_probabilities=query_probabilities,
+        params=task_params,
+        plan=plan,
+        instance_seed=int(instance_seed),
+        max_attempts=int(max_attempts),
+    )
+    return TaskOutput(
+        prompt=parts.prompt,
+        answer_gt=TypedValue(type="number", value=float(plan.answer_value)),
+        annotation_gt=TypedValue(type="bbox_map", value=dict(parts.annotation_value)),
+        image=parts.image,
+        image_id="img0",
+        trace_payload=parts.trace_payload,
+        task_versions=parts.task_versions,
+        scene_id=SCENE_ID,
+        query_id=str(selected_query),
+        prompt_variants=dict(parts.prompt_variants),
+    )
+
+
 __all__ = [
     "SolidRevolutionObjectivePlan",
     "SolidRevolutionTaskParts",
     "build_solid_revolution_plan",
     "prepare_solid_revolution_task_parts",
+    "_run_cylinder_diagonal",
 ]

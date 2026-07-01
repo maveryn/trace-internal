@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import hashlib
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageDraw, ImageOps
 
+from ....shared.text_rendering import load_font
+from ....shared.text_legibility import draw_text_traced
 from ...shared.icon_assets import render_icon_rgba, resolve_icon_pool
+from ...shared.icon_grid_scene import centered_square_bbox, resolve_fixed_grid_cell_slots
 from ...shared.icon_labeled_grid_scene import prepare_two_panel_labeled_grid_scene
 from ...shared.icon_noise import serialize_icon_noise_edits
 from ...shared.icon_scene import panel_geometry_to_trace
@@ -19,7 +23,7 @@ from .sampling import (
     sample_distractor_symmetry_kinds,
     sample_matching_indices,
 )
-from .state import MirrorGridScenePayload
+from .state import MirrorGridCompletionScenePayload, MirrorGridScenePayload
 from .styles import sample_mirror_grid_palette
 
 
@@ -828,6 +832,400 @@ def _render_patch_for_kind(
     raise ValueError(f"unsupported symmetry kind: {symmetry_kind}")
 
 
+def _completion_mirror_cell(row: int, col: int, *, mirror_axis: str) -> Tuple[int, int]:
+    """Return the paired 4x4 grid cell for one vertical or horizontal mirror axis."""
+
+    if str(mirror_axis) == "vertical":
+        return int(row), int(3 - int(col))
+    if str(mirror_axis) == "horizontal":
+        return int(3 - int(row)), int(col)
+    raise ValueError(f"unsupported completion mirror axis: {mirror_axis}")
+
+
+def _reflect_completion_sprite(sprite: Image.Image, *, mirror_axis: str) -> Image.Image:
+    """Return the reflected icon image needed for the paired completion cell."""
+
+    if str(mirror_axis) == "vertical":
+        return ImageOps.mirror(sprite)
+    if str(mirror_axis) == "horizontal":
+        return ImageOps.flip(sprite)
+    raise ValueError(f"unsupported completion mirror axis: {mirror_axis}")
+
+
+def _sprite_digest(sprite: Image.Image) -> str:
+    """Return a stable digest for one rendered option sprite."""
+
+    rgba = sprite.convert("RGBA")
+    payload = f"{rgba.size[0]}x{rgba.size[1]}:".encode("ascii") + rgba.tobytes()
+    return hashlib.md5(payload).hexdigest()
+
+
+def _center_paste_rgba(image: Image.Image, sprite: Image.Image, bbox_xyxy: Sequence[int]) -> Tuple[int, int, int, int]:
+    """Paste an RGBA sprite centered in a target box and return its image bbox."""
+
+    x0, y0, x1, y1 = [int(value) for value in bbox_xyxy]
+    paste_x = int(round(float(x0 + x1 - int(sprite.size[0])) / 2.0))
+    paste_y = int(round(float(y0 + y1 - int(sprite.size[1])) / 2.0))
+    image.alpha_composite(sprite, (int(paste_x), int(paste_y)))
+    return (
+        int(paste_x),
+        int(paste_y),
+        int(paste_x + int(sprite.size[0])),
+        int(paste_y + int(sprite.size[1])),
+    )
+
+
+def _draw_completion_missing_mark(
+    draw: ImageDraw.ImageDraw,
+    *,
+    bbox_xyxy: Sequence[int],
+    render_params: Mapping[str, Any],
+) -> None:
+    """Draw a centered question mark inside the missing grid cell."""
+
+    x0, y0, x1, y1 = [int(value) for value in bbox_xyxy]
+    side = max(1, min(int(x1 - x0), int(y1 - y0)))
+    font_size = max(24, int(round(float(side) * 0.56)))
+    font = load_font(int(font_size), bold=True)
+    text = "?"
+    text_bbox = draw.textbbox((0, 0), text, font=font, stroke_width=1)
+    text_w = int(text_bbox[2] - text_bbox[0])
+    text_h = int(text_bbox[3] - text_bbox[1])
+    draw_text_traced(
+        draw,
+        (
+            int(round(float(x0 + x1 - text_w) / 2.0)),
+            int(round(float(y0 + y1 - text_h) / 2.0)) - 2,
+        ),
+        text,
+        font=font,
+        fill=tuple(int(v) for v in render_params["header_text_rgb"]),
+        stroke_fill=tuple(int(v) for v in render_params["panel_fill_rgb"]),
+        stroke_width=1,
+        role="missing_mirror_grid_cell_text",
+        required=False,
+    )
+
+
+def _sample_completion_sprite(
+    rng,
+    *,
+    instance_seed: int,
+    noise_namespace: str,
+    icon_size_px: int,
+    pool: Sequence[str],
+    palette: Sequence[Tuple[int, int, int]],
+    rotation_candidates: Sequence[int],
+    render_params: Mapping[str, Any],
+) -> Tuple[Image.Image, Dict[str, Any]]:
+    """Sample and render one icon sprite for a completion grid cell or option."""
+
+    icon_id = str(rng.choice(pool))
+    tint_rgb = tuple(int(value) for value in rng.choice(palette))
+    rotation_degrees = int(rng.choice(rotation_candidates))
+    noise_edits, noise_seed = sample_icon_instance_noise(
+        instance_seed=int(instance_seed),
+        namespace=str(noise_namespace),
+        render_params=render_params,
+    )
+    sprite = render_icon_rgba(
+        icon_id=str(icon_id),
+        size_px=int(icon_size_px),
+        tint_rgb=tuple(int(value) for value in tint_rgb),
+        rotation_degrees=int(rotation_degrees),
+        mirror_x=False,
+        noise_edits=tuple(noise_edits),
+        noise_seed=int(noise_seed),
+    )
+    return sprite, {
+        "icon_id": str(icon_id),
+        "tint_rgb": [int(value) for value in tint_rgb],
+        "rotation_degrees": int(rotation_degrees) % 360,
+        "noise_edits": [dict(edit) for edit in serialize_icon_noise_edits(tuple(noise_edits))],
+        "noise_seed": int(noise_seed),
+    }
+
+
+def sample_and_render_missing_mirror_cell_scene(
+    rng,
+    *,
+    instance_seed: int,
+    mirror_axis: str,
+    option_count: int,
+    answer_index: int,
+    render_params: Mapping[str, Any],
+    pool_manifest: str,
+    noise_namespace: str,
+) -> Tuple[MirrorGridCompletionScenePayload, Image.Image]:
+    """Sample and render a 4x4 mirror grid with one missing icon cell."""
+
+    axis = str(mirror_axis)
+    if axis not in {"vertical", "horizontal"}:
+        raise ValueError(f"unsupported mirror_axis: {axis}")
+    if int(option_count) not in {4, 6}:
+        raise ValueError("missing mirror-cell options must use 4 or 6 choices")
+    if int(answer_index) < 0 or int(answer_index) >= int(option_count):
+        raise ValueError("answer_index outside visible option range")
+
+    pool = tuple(str(icon_id) for icon_id in resolve_icon_pool(str(pool_manifest)))
+    if not pool:
+        raise ValueError("mirror-grid completion scene resolved an empty icon pool")
+    sampled_palette_rgb = sample_mirror_grid_palette(rng, render_params)
+    option_labels = fixed_grid_labels(int(option_count))
+
+    prepared = prepare_two_panel_labeled_grid_scene(
+        scene_labels=option_labels,
+        canvas_width=int(render_params["canvas_width"]),
+        canvas_height=int(render_params["canvas_height"]),
+        reference_panel_width_px=int(render_params["reference_panel_width_px"]),
+        outer_margin_px=int(render_params["outer_margin_px"]),
+        panel_gap_px=int(render_params["panel_gap_px"]),
+        panel_padding_px=int(render_params["panel_padding_px"]),
+        panel_corner_radius_px=int(render_params["panel_corner_radius_px"]),
+        panel_title_font_size_px=int(render_params["panel_title_font_size_px"]),
+        background_rgb=tuple(int(v) for v in render_params["background_color_rgb"]),
+        panel_fill_rgb=tuple(int(v) for v in render_params["panel_fill_rgb"]),
+        panel_border_rgb=tuple(int(v) for v in render_params["panel_border_rgb"]),
+        title_color_rgb=tuple(int(v) for v in render_params["header_text_rgb"]),
+        cell_padding_px=int(render_params["cell_padding_px"]),
+        cell_border_rgb=tuple(int(v) for v in render_params["cell_border_rgb"]),
+        cell_label_color_rgb=tuple(int(v) for v in render_params["cell_label_color_rgb"]),
+        cell_label_stroke_rgb=tuple(int(v) for v in render_params["cell_label_stroke_rgb"]),
+        cell_label_stroke_width_px=1,
+        cell_label_font_size_px=int(render_params["cell_label_font_size_px"]),
+        reference_square_cell=True,
+        scene_square_cells=True,
+        reference_title="Grid",
+        scene_title="Options",
+        icon_canvas_style=render_params.get("_icon_canvas_style_object"),
+    )
+    image = prepared.image
+    draw = ImageDraw.Draw(image)
+    grid_bbox = centered_square_bbox(tuple(int(value) for value in prepared.reference_cell.content_bbox_xyxy))
+    cell_slots = resolve_fixed_grid_cell_slots(
+        grid_bbox,
+        rows=4,
+        cols=4,
+        cell_padding_px=max(2, int(render_params["cell_padding_px"]) // 2),
+    )
+    if len(cell_slots) != 16:
+        raise RuntimeError("mirror-grid completion expected 16 grid cells")
+    icon_size_px = max(
+        24,
+        int(
+            round(
+                min(
+                    min(int(slot[2] - slot[0]), int(slot[3] - slot[1])) for slot in cell_slots
+                )
+                * 0.66
+            )
+        ),
+    )
+
+    eligible_missing = [
+        int(index)
+        for index in range(16)
+        if _completion_mirror_cell(int(index // 4), int(index % 4), mirror_axis=axis)
+        != (int(index // 4), int(index % 4))
+    ]
+    missing_index = int(rng.choice(eligible_missing))
+    missing_row, missing_col = int(missing_index // 4), int(missing_index % 4)
+    counterpart_row, counterpart_col = _completion_mirror_cell(
+        int(missing_row),
+        int(missing_col),
+        mirror_axis=axis,
+    )
+    counterpart_index = int(counterpart_row) * 4 + int(counterpart_col)
+
+    answer_sprite, answer_meta = _sample_completion_sprite(
+        rng,
+        instance_seed=int(instance_seed),
+        noise_namespace=f"{noise_namespace}:answer",
+        icon_size_px=int(icon_size_px),
+        pool=pool,
+        palette=sampled_palette_rgb,
+        rotation_candidates=render_params["rotation_candidates_degrees"],
+        render_params=render_params,
+    )
+    counterpart_sprite = _reflect_completion_sprite(answer_sprite, mirror_axis=axis)
+    pair_sprites: Dict[Tuple[int, int], Tuple[Image.Image, Image.Image, Dict[str, Any]]] = {}
+    grid_cells: List[Dict[str, Any]] = []
+
+    for index, slot in enumerate(cell_slots):
+        row, col = int(index // 4), int(index % 4)
+        slot_bbox = tuple(int(value) for value in slot)
+        draw.rounded_rectangle(
+            slot_bbox,
+            radius=8,
+            outline=tuple(int(v) for v in render_params["cell_border_rgb"]),
+            width=2,
+            fill=tuple(int(v) for v in render_params["panel_fill_rgb"]),
+        )
+        content_bbox = (
+            int(slot_bbox[0] + 4),
+            int(slot_bbox[1] + 4),
+            int(slot_bbox[2] - 4),
+            int(slot_bbox[3] - 4),
+        )
+        cell_payload: Dict[str, Any] = {
+            "panel": "grid",
+            "row": int(row),
+            "col": int(col),
+            "cell_index": int(index),
+            "cell_bbox_xyxy": list(slot_bbox),
+            "content_bbox_xyxy": list(content_bbox),
+            "is_missing": bool(index == missing_index),
+            "is_counterpart": bool(index == counterpart_index),
+        }
+        if int(index) == int(missing_index):
+            _draw_completion_missing_mark(draw, bbox_xyxy=slot_bbox, render_params=render_params)
+            cell_payload["icon_bbox_xyxy"] = None
+            cell_payload["placements"] = []
+            grid_cells.append(cell_payload)
+            continue
+
+        if int(index) == int(counterpart_index):
+            sprite = counterpart_sprite
+            meta = {
+                **dict(answer_meta),
+                "relation_to_missing": "mirror_counterpart",
+                "reflection_applied": "horizontal_flip" if axis == "vertical" else "vertical_flip",
+            }
+        else:
+            mirror_row, mirror_col = _completion_mirror_cell(row, col, mirror_axis=axis)
+            mirror_index = int(mirror_row) * 4 + int(mirror_col)
+            pair_key = tuple(sorted((int(index), int(mirror_index))))
+            if pair_key not in pair_sprites:
+                base_sprite, base_meta = _sample_completion_sprite(
+                    rng,
+                    instance_seed=int(instance_seed),
+                    noise_namespace=f"{noise_namespace}:pair_{pair_key[0]}_{pair_key[1]}",
+                    icon_size_px=int(icon_size_px),
+                    pool=pool,
+                    palette=sampled_palette_rgb,
+                    rotation_candidates=render_params["rotation_candidates_degrees"],
+                    render_params=render_params,
+                )
+                pair_sprites[pair_key] = (
+                    base_sprite,
+                    _reflect_completion_sprite(base_sprite, mirror_axis=axis),
+                    dict(base_meta),
+                )
+            base_sprite, reflected_sprite, base_meta = pair_sprites[pair_key]
+            sprite = base_sprite if int(index) == int(pair_key[0]) else reflected_sprite
+            meta = {
+                **dict(base_meta),
+                "relation_to_missing": "context_pair",
+                "reflection_applied": "none" if int(index) == int(pair_key[0]) else (
+                    "horizontal_flip" if axis == "vertical" else "vertical_flip"
+                ),
+            }
+        icon_bbox = _center_paste_rgba(image, sprite, content_bbox)
+        cell_payload["icon_bbox_xyxy"] = list(icon_bbox)
+        cell_payload["placements"] = [
+            _sprite_record(
+                icon_id=str(meta["icon_id"]),
+                tint_rgb=tuple(int(v) for v in meta["tint_rgb"]),
+                rotation_degrees=int(meta["rotation_degrees"]),
+                noise_edits=tuple(dict(edit) for edit in meta["noise_edits"]),
+                noise_seed=int(meta["noise_seed"]),
+                bbox_xyxy=tuple(int(value) for value in icon_bbox),
+                relation_to_pair=str(meta["relation_to_missing"]),
+                mirrored_from_index=None,
+                reflection_applied=str(meta["reflection_applied"]),
+            )
+        ]
+        grid_cells.append(cell_payload)
+
+    axis_color = tuple(int(value) for value in render_params["header_text_rgb"])
+    if axis == "vertical":
+        x = int(round(float(grid_bbox[0] + grid_bbox[2]) / 2.0))
+        draw.line((x, int(grid_bbox[1]) + 2, x, int(grid_bbox[3]) - 2), fill=axis_color, width=4)
+    else:
+        y = int(round(float(grid_bbox[1] + grid_bbox[3]) / 2.0))
+        draw.line((int(grid_bbox[0]) + 2, y, int(grid_bbox[2]) - 2, y), fill=axis_color, width=4)
+
+    answer_label = str(option_labels[int(answer_index)])
+    option_sprites: List[Tuple[Image.Image, Dict[str, Any], bool]] = []
+    used_digests = {_sprite_digest(answer_sprite)}
+    for option_index, _label in enumerate(option_labels):
+        if int(option_index) == int(answer_index):
+            option_sprites.append((answer_sprite, dict(answer_meta), True))
+            continue
+        for attempt in range(80):
+            candidate_sprite, candidate_meta = _sample_completion_sprite(
+                rng,
+                instance_seed=int(instance_seed),
+                noise_namespace=f"{noise_namespace}:option_{option_index}_{attempt}",
+                icon_size_px=int(icon_size_px),
+                pool=pool,
+                palette=sampled_palette_rgb,
+                rotation_candidates=render_params["rotation_candidates_degrees"],
+                render_params=render_params,
+            )
+            digest = _sprite_digest(candidate_sprite)
+            if digest in used_digests:
+                continue
+            used_digests.add(str(digest))
+            option_sprites.append((candidate_sprite, dict(candidate_meta), False))
+            break
+        else:
+            raise ValueError("failed to sample unique mirror-grid completion distractor option")
+
+    option_cells: List[Dict[str, Any]] = []
+    for prepared_cell, (sprite, meta, is_answer) in zip(prepared.scene_cells, option_sprites):
+        icon_bbox = _center_paste_rgba(image, sprite, prepared_cell.content_bbox_xyxy)
+        option_cells.append(
+            {
+                "panel": "options",
+                "label": str(prepared_cell.label),
+                "cell_bbox_xyxy": [int(value) for value in prepared_cell.cell_bbox_xyxy],
+                "content_bbox_xyxy": [int(value) for value in prepared_cell.content_bbox_xyxy],
+                "icon_bbox_xyxy": [int(value) for value in icon_bbox],
+                "is_answer": bool(is_answer),
+                "placements": [
+                    _sprite_record(
+                        icon_id=str(meta["icon_id"]),
+                        tint_rgb=tuple(int(v) for v in meta["tint_rgb"]),
+                        rotation_degrees=int(meta["rotation_degrees"]),
+                        noise_edits=tuple(dict(edit) for edit in meta["noise_edits"]),
+                        noise_seed=int(meta["noise_seed"]),
+                        bbox_xyxy=tuple(int(value) for value in icon_bbox),
+                        relation_to_pair="answer_option" if bool(is_answer) else "distractor_option",
+                        mirrored_from_index=None,
+                        reflection_applied="none",
+                    )
+                ],
+            }
+        )
+
+    return (
+        MirrorGridCompletionScenePayload(
+            object_count=16,
+            option_count=int(option_count),
+            mirror_axis=str(axis),
+            missing_row=int(missing_row),
+            missing_col=int(missing_col),
+            counterpart_row=int(counterpart_row),
+            counterpart_col=int(counterpart_col),
+            answer_label=str(answer_label),
+            cell_labels=tuple(str(index) for index in range(16)),
+            option_labels=tuple(str(value) for value in option_labels),
+            sampled_palette_rgb=tuple(sampled_palette_rgb),
+            panel_geometry=panel_geometry_to_trace(prepared.layout),
+            grid_panel={
+                "panel": "grid",
+                "cell_bbox_xyxy": [int(value) for value in prepared.reference_cell.cell_bbox_xyxy],
+                "content_bbox_xyxy": [int(value) for value in prepared.reference_cell.content_bbox_xyxy],
+                "grid_bbox_xyxy": [int(value) for value in grid_bbox],
+            },
+            grid_cells=tuple(dict(item) for item in grid_cells),
+            option_cells=tuple(dict(item) for item in option_cells),
+        ),
+        image.convert("RGB"),
+    )
+
+
 def sample_and_render_mirror_grid_scene(
     rng,
     *,
@@ -1000,4 +1398,7 @@ def sample_and_render_mirror_grid_scene(
     )
 
 
-__all__ = ["sample_and_render_mirror_grid_scene"]
+__all__ = [
+    "sample_and_render_mirror_grid_scene",
+    "sample_and_render_missing_mirror_cell_scene",
+]

@@ -23,8 +23,6 @@ LARGEST_QUERY_ID = "largest_panel_spread_label"
 SMALLEST_QUERY_ID = "smallest_panel_spread_label"
 QUERY_DIRECTIONS = {LARGEST_QUERY_ID: "largest", SMALLEST_QUERY_ID: "smallest"}
 TASK_PARAM_DEFAULTS: dict[str, Any] = {
-    "panel_count_min": 4,
-    "panel_count_max": 8,
     "method_count_min": 3,
     "method_count_max": 5,
     "x_tick_count_min": 5,
@@ -189,7 +187,7 @@ class ChartsScientificPanelSpreadExtremumLabelTask:
             query=query,
             dynamic_slots={},
             instance_seed=int(instance_seed),
-            annotation_type="keyed_point_map",
+            annotation_type="point_map",
         )
 
     def generate(

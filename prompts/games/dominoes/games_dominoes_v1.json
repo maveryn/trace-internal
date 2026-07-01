@@ -179,7 +179,7 @@
     "double_rule_text": "A double has the same number of pips on both halves.",
     "annotation_hint_matching_end_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every loose domino that matches the `REF` tile's open right end",
     "annotation_hint_longest_chain_length_value": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for the loose dominoes in the unique longest chain from `REF`",
-    "annotation_hint_invalid_join_label": "set \"annotation\" to one segment [[x1, y1], [x2, y2]], using the centers of the two touching domino halves at the invalid join",
+    "annotation_hint_invalid_join_label": "set \"annotation\" to one segment using two pixel-point endpoints [x, y] in [[x0, y0], [x1, y1]] form, at the centers of the two touching domino halves at the invalid join",
     "annotation_hint_higher_sum_than_reference_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every non-reference domino with a larger pip sum than `REF`",
     "annotation_hint_sum_to_target_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every shown domino with the target pip sum",
     "annotation_hint_double_count": "set \"annotation\" to a JSON array of bounding boxes [x0, y0, x1, y1] for every shown domino that is a double",

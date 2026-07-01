@@ -57,33 +57,12 @@
         "{current_player_name} to move. {capture_rule_text} {king_chain_rule_text} Determine the maximum capture-chain length for the marked king.",
         "{current_player_name} moves next. {capture_rule_text} {king_chain_rule_text} What is the largest number of pieces that the marked king can capture before the chain stops?"
       ],
-      "red_piece_count": [
-        "How many red pieces are on the board?",
-        "Count all red pieces shown on the checkers board.",
-        "What is the number of red pieces in the position?",
-        "How many visible checkers pieces are red?",
-        "Count the red checkers pieces on the board."
-      ],
-      "black_piece_count": [
-        "How many black pieces are on the board?",
-        "Count all black pieces shown on the checkers board.",
-        "What is the number of black pieces in the position?",
-        "How many visible checkers pieces are black?",
-        "Count the black checkers pieces on the board."
-      ],
-      "red_edge_piece_count": [
-        "How many red pieces are on the outer edge of the board?",
-        "Count the red pieces that sit on an edge square of the checkers board.",
-        "What is the number of red pieces touching the board edge?",
-        "How many red checkers pieces are on perimeter squares?",
-        "Count the red pieces positioned along the board edge."
-      ],
-      "black_edge_piece_count": [
-        "How many black pieces are on the outer edge of the board?",
-        "Count the black pieces that sit on an edge square of the checkers board.",
-        "What is the number of black pieces touching the board edge?",
-        "How many black checkers pieces are on perimeter squares?",
-        "Count the black pieces positioned along the board edge."
+      "piece_state_count": [
+        "How many {target_player_name} pieces {piece_state_scope_phrase}?",
+        "Count the {target_player_name} pieces that {piece_state_scope_phrase}.",
+        "What is the number of {target_player_name} pieces that {piece_state_scope_phrase}?",
+        "How many visible {target_player_name} checkers pieces {piece_state_scope_phrase}?",
+        "Determine the count of {target_player_name} pieces that {piece_state_scope_phrase}."
       ]
     },
     "output": {
@@ -108,7 +87,7 @@
       "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty square beyond.",
       "single_jump_rule_text": "Count only one jump per move; ignore follow-up jumps.",
       "legal_move_rule_text": "Include simple diagonal steps and capture jumps.",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space square boxes [x1, y1, x2, y2] for every legal landing square; use an empty array if none are available",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space square boxes [x0, y0, x1, y1] for every legal landing square; use an empty array if none are available",
       "answer_hint": "set \"answer\" to the count of legal landing squares",
       "json_example": "{\"annotation\":[[132,188,196,252],[204,188,268,252],[276,188,340,252]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
@@ -116,7 +95,7 @@
     "query:capture_move_count": {
       "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty square beyond.",
       "single_jump_rule_text": "Count only one jump per move; ignore follow-up jumps.",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space square boxes [x1, y1, x2, y2] for every capture landing square; use an empty array if none are available",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space square boxes [x0, y0, x1, y1] for every capture landing square; use an empty array if none are available",
       "answer_hint": "set \"answer\" to the count of capture landing squares",
       "json_example": "{\"annotation\":[[132,188,196,252],[204,188,268,252]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
@@ -125,7 +104,7 @@
       "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty square beyond.",
       "single_jump_rule_text": "Count only one jump per move; ignore follow-up jumps.",
       "legal_move_rule_text": "Include simple diagonal steps and capture jumps.",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every current-player piece with at least one legal move; use an empty array if none are available",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x0, y0, x1, y1] for every current-player piece with at least one legal move; use an empty array if none are available",
       "answer_hint": "set \"answer\" to the number of current-player pieces with at least one legal move",
       "json_example": "{\"annotation\":[[144,200,184,240],[216,272,256,312],[288,344,328,384]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
@@ -133,7 +112,7 @@
     "query:piece_with_capture_move_count": {
       "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty square beyond.",
       "single_jump_rule_text": "Count only one jump per move; ignore follow-up jumps.",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every current-player piece with at least one capture jump; use an empty array if none are available",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x0, y0, x1, y1] for every current-player piece with at least one capture jump; use an empty array if none are available",
       "answer_hint": "set \"answer\" to the number of current-player pieces with at least one capture jump",
       "json_example": "{\"annotation\":[[144,200,184,240],[216,272,256,312]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
@@ -141,34 +120,16 @@
     "query:max_capture_chain_length": {
       "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty square beyond.",
       "king_chain_rule_text": "The outlined checker is a king; it may capture diagonally in any direction, remove the jumped piece, and continue jumping from each landing square while another capture is available.",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for the opponent pieces captured along the longest chain",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x0, y0, x1, y1] for the opponent pieces captured along the longest chain",
       "answer_hint": "set \"answer\" to the maximum number of opponent pieces the marked king can capture in one continuous jump chain",
       "json_example": "{\"annotation\":[[144,200,184,240],[216,272,256,312],[288,344,328,384],[360,416,400,456]],\"answer\":4}",
       "json_example_answer_only": "{\"answer\":4}"
     },
-    "query:red_piece_count": {
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every red piece; use an empty array if none are present",
-      "answer_hint": "set \"answer\" to the number of red pieces",
+    "query:piece_state_count": {
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x0, y0, x1, y1] for every piece requested in the question; use an empty array if none are present",
+      "answer_hint": "set \"answer\" to the number of pieces requested in the question",
       "json_example": "{\"annotation\":[[144,200,184,240],[216,272,256,312],[288,344,328,384]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
-    },
-    "query:black_piece_count": {
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every black piece; use an empty array if none are present",
-      "answer_hint": "set \"answer\" to the number of black pieces",
-      "json_example": "{\"annotation\":[[144,200,184,240],[216,272,256,312],[288,344,328,384]],\"answer\":3}",
-      "json_example_answer_only": "{\"answer\":3}"
-    },
-    "query:red_edge_piece_count": {
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every red piece on the board edge; use an empty array if none are present",
-      "answer_hint": "set \"answer\" to the number of red pieces on the board edge",
-      "json_example": "{\"annotation\":[[144,200,184,240],[216,272,256,312]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
-    },
-    "query:black_edge_piece_count": {
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every black piece on the board edge; use an empty array if none are present",
-      "answer_hint": "set \"answer\" to the number of black pieces on the board edge",
-      "json_example": "{\"annotation\":[[144,200,184,240],[216,272,256,312]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
     }
   },
   "dynamic_slots": {
@@ -183,6 +144,12 @@
     "movement_rule_text": {
       "type": "string",
       "description": "Prompt-facing direction convention for ordinary Checkers pieces."
+    },
+    "target_player_name": {
+      "type": "string"
+    },
+    "piece_state_scope_phrase": {
+      "type": "string"
     }
   },
   "required_slots_by_key": {
@@ -207,6 +174,10 @@
     ],
     "query:max_capture_chain_length": [
       "current_player_name"
+    ],
+    "query:piece_state_count": [
+      "target_player_name",
+      "piece_state_scope_phrase"
     ]
   }
 }

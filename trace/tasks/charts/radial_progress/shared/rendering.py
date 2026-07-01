@@ -4,18 +4,20 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping, Sequence
+from dataclasses import replace
 from typing import Any
 
 from PIL import Image, ImageDraw
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.dense_text import dense_fit_bold, dense_stroke_width
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.charts.shared.panel.grid_layout import layout_panel_grid
 from trace.tasks.shared.drawing import draw_centered_text, draw_rounded_rect
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font, temporary_default_font_family
 
 from .defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     font_assets_payload,
     render_int,
@@ -68,6 +70,62 @@ def resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> R
     )
 
 
+def _rgb_luminance(rgb: Sequence[int]) -> float:
+    """Return perceptual luminance for simple light/dark style decisions."""
+
+    red, green, blue = (float(int(channel)) for channel in rgb[:3])
+    return (0.2126 * red) + (0.7152 * green) + (0.0722 * blue)
+
+
+def _blend_rgb(source: Sequence[int], target: Sequence[int], target_weight: float) -> RGB:
+    weight = min(1.0, max(0.0, float(target_weight)))
+    return tuple(
+        max(0, min(255, int(round((float(source[index]) * (1.0 - weight)) + (float(target[index]) * weight)))))
+        for index in range(3)
+    )
+
+
+def _style_role_rgb(information_style_meta: Mapping[str, Any], role: str, fallback: RGB) -> RGB:
+    raw_roles = information_style_meta.get("roles_rgb", {})
+    if not isinstance(raw_roles, Mapping):
+        return tuple(int(channel) for channel in fallback)
+    raw_value = raw_roles.get(str(role))
+    if not isinstance(raw_value, Sequence) or len(raw_value) < 3:
+        return tuple(int(channel) for channel in fallback)
+    return tuple(int(raw_value[index]) for index in range(3))
+
+
+def _is_dark_information_style(render_params: RenderParams, information_style_meta: Mapping[str, Any]) -> bool:
+    style_text = " ".join(
+        str(information_style_meta.get(key, ""))
+        for key in ("treatment", "palette_id", "style_pack")
+    ).casefold()
+    return "dark" in style_text or _rgb_luminance(render_params.card_fill_rgb) < 96.0
+
+
+def _with_radial_progress_track_contrast(
+    render_params: RenderParams,
+    *,
+    information_style_meta: Mapping[str, Any],
+) -> tuple[RenderParams, dict[str, Any]]:
+    """Make inactive progress tracks visually subordinate on dark themes."""
+
+    if not _is_dark_information_style(render_params, information_style_meta):
+        return render_params, {
+            "progress_track_policy": "style_track",
+            "track_rgb": list(render_params.track_rgb),
+        }
+    shadow_rgb = _style_role_rgb(information_style_meta, "shadow", render_params.text_stroke_rgb)
+    track_rgb = _blend_rgb(render_params.card_fill_rgb, shadow_rgb, 0.52)
+    return replace(render_params, track_rgb=track_rgb), {
+        "progress_track_policy": "dark_inactive_track",
+        "track_rgb": list(track_rgb),
+        "base_track_rgb": list(render_params.track_rgb),
+        "track_source_rgb": list(render_params.card_fill_rgb),
+        "track_shadow_rgb": list(shadow_rgb),
+    }
+
+
 def point(cx: float, cy: float, radius: float, degrees: float) -> tuple[float, float]:
     radians = math.radians(float(degrees))
     return float(cx + (radius * math.cos(radians))), float(cy + (radius * math.sin(radians)))
@@ -82,7 +140,7 @@ def draw_readout_text(
     fill: RGB,
     stroke_fill: RGB,
     anchor: str = "mm",
-    stroke_width: int = 1,
+    stroke_width: int = 0,
 ) -> BBox:
     draw_text_traced(
         draw,
@@ -117,7 +175,7 @@ def draw_ticks(
     p: RenderParams,
     label_values: Sequence[int],
 ) -> None:
-    tick_font = load_font(p.tick_font_size_px, bold=True)
+    tick_font = load_font(p.tick_font_size_px, bold=False)
     label_set = {int(value) for value in label_values}
     cx, cy = float(center[0]), float(center[1])
     for value in values:
@@ -138,7 +196,7 @@ def draw_ticks(
                 fill=p.muted_text_rgb,
                 stroke_fill=p.text_stroke_rgb,
                 anchor="mm",
-                stroke_width=1,
+                stroke_width=dense_stroke_width(),
             )
 
 
@@ -317,17 +375,18 @@ def render_chart(
     dataset: ProgressDataset,
     params: Mapping[str, Any],
     instance_seed: int,
+    render_params: RenderParams | None = None,
 ) -> RenderedProgressScene:
     """Render the grid of cards and preserve per-item boxes for annotation projection."""
 
-    p = resolve_render_params(params, instance_seed=int(instance_seed))
+    p = render_params or resolve_render_params(params, instance_seed=int(instance_seed))
     image = background.convert("RGB")
     if image.size != (int(p.canvas_width), int(p.canvas_height)):
         image = image.resize((int(p.canvas_width), int(p.canvas_height)))
     draw = ImageDraw.Draw(image)
 
-    title_font = load_font(p.title_font_size_px, bold=True)
-    label_font = load_font(p.label_font_size_px, bold=True)
+    title_font = load_font(p.title_font_size_px, bold=False)
+    label_font = load_font(p.label_font_size_px, bold=dense_fit_bold())
     margin = float(p.outer_margin_px)
     draw_centered_text(
         draw,
@@ -336,7 +395,7 @@ def render_chart(
         font=title_font,
         fill=p.text_rgb,
         stroke_fill=p.text_stroke_rgb,
-        stroke_width=1,
+        stroke_width=dense_stroke_width(),
     )
     plot_left = margin
     plot_top = margin + float(p.title_band_height_px)
@@ -344,23 +403,18 @@ def render_chart(
     plot_bottom = float(p.canvas_height) - margin
     plot_bbox = bbox([plot_left, plot_top, plot_right, plot_bottom])
 
-    item_count = len(dataset.items)
-    columns = 4 if item_count <= 8 else 5
-    rows = int(math.ceil(float(item_count) / float(columns)))
     gap = float(p.card_gap_px)
-    card_w = float((plot_right - plot_left - ((columns - 1) * gap)) / float(columns))
-    card_h = float((plot_bottom - plot_top - ((rows - 1) * gap)) / float(rows))
+    card_boxes = layout_panel_grid(plot_bbox, panel_count=len(dataset.items), gap_x=float(gap), gap_y=float(gap))
+    row_tops = sorted({round(float(box[1]), 6) for box in card_boxes})
     item_bboxes: dict[str, BBox] = {}
     progress_bboxes: dict[str, BBox] = {}
     entities: list[dict[str, Any]] = []
 
-    for index, item in enumerate(dataset.items):
-        row = int(index // columns)
-        col = int(index % columns)
-        x0 = float(plot_left + col * (card_w + gap))
-        y0 = float(plot_top + row * (card_h + gap))
-        x1 = float(x0 + card_w)
-        y1 = float(y0 + card_h)
+    for index, (item, card_box) in enumerate(zip(dataset.items, card_boxes)):
+        x0, y0, x1, y1 = (float(value) for value in card_box)
+        card_w = float(x1 - x0)
+        card_h = float(y1 - y0)
+        row = int(row_tops.index(round(float(y0), 6)))
         card_fill = p.card_fill_rgb if (index + row) % 2 == 0 else p.card_alt_fill_rgb
         draw_rounded_rect(
             draw,
@@ -378,7 +432,7 @@ def render_chart(
             fill=p.text_rgb,
             stroke_fill=p.text_stroke_rgb,
             anchor="mm",
-            stroke_width=1,
+            stroke_width=dense_stroke_width(),
         )
         center_x = float((x0 + x1) / 2.0)
         if dataset.scene_variant == SEMICIRCLE_GAUGES:
@@ -429,12 +483,18 @@ def render_radial_progress_dataset(
 ) -> RadialProgressRenderResult:
     """Render the full scene using the sampled font/background/noise contracts."""
 
-    background, background_meta = make_background_canvas(
-        canvas_width=render_int(params, "canvas_width", 1320),
-        canvas_height=render_int(params, "canvas_height", 900),
+    resolved_params = resolve_render_params(params, instance_seed=int(instance_seed))
+    protected_colors = [tuple(int(channel) for channel in item.color_rgb) for item in dataset.items]
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="radial_progress",
+        render_params=resolved_params,
+        protected_colors=protected_colors,
+    )
+    render_params, track_style_meta = _with_radial_progress_track_contrast(
+        render_params,
+        information_style_meta=information_style_meta,
     )
     chart_font_family = sample_chart_font_family(int(instance_seed), params)
     with temporary_default_font_family(str(chart_font_family)):
@@ -443,6 +503,7 @@ def render_radial_progress_dataset(
             dataset=dataset,
             params=params,
             instance_seed=int(instance_seed),
+            render_params=render_params,
         )
     image, post_noise_meta = apply_post_image_noise(
         rendered_scene.image,
@@ -456,11 +517,17 @@ def render_radial_progress_dataset(
         plot_bbox_px=list(rendered_scene.plot_bbox_px),
         item_bboxes_px=dict(rendered_scene.item_bboxes_px),
         progress_bboxes_px=dict(rendered_scene.progress_bboxes_px),
-        render_meta=dict(rendered_scene.render_meta),
+        render_meta={
+            **dict(rendered_scene.render_meta),
+            "background_style": {**dict(background_meta), "information_scene_style": dict(information_style_meta)},
+            "information_scene_style": dict(information_style_meta),
+            "progress_track_style": dict(track_style_meta),
+            "post_image_noise": dict(post_noise_meta),
+        },
     )
     return RadialProgressRenderResult(
         rendered_scene=final_scene,
-        background_meta=dict(background_meta),
+        background_meta={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         post_noise_meta=dict(post_noise_meta),
         chart_font_family=str(chart_font_family),
     )

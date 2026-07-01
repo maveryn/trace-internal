@@ -24,8 +24,6 @@ MAX_QUERY_ID = "overall_maximum_value_panel_label"
 MIN_QUERY_ID = "overall_minimum_value_panel_label"
 QUERY_DIRECTIONS = {MAX_QUERY_ID: "maximum", MIN_QUERY_ID: "minimum"}
 TASK_PARAM_DEFAULTS: dict[str, Any] = {
-    "panel_count_min": 4,
-    "panel_count_max": 8,
     "method_count_min": 3,
     "method_count_max": 5,
     "x_tick_count_min": 5,
@@ -146,6 +144,7 @@ class ChartsScientificGlobalValueExtremumPanelLabelTask:
             query=query,
             dynamic_slots={},
             instance_seed=int(instance_seed),
+            annotation_type="point",
         )
 
     def generate(

@@ -7,6 +7,7 @@ from typing import Any
 
 from PIL import ImageDraw
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.diagram_style import prepare_geometry_diagram_style_and_background
 from trace.tasks.geometry.shared.measurement_rendering import (
@@ -14,7 +15,6 @@ from trace.tasks.geometry.shared.measurement_rendering import (
     bbox_union_from_bboxes,
     pad_bbox,
 )
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
 
@@ -49,34 +49,41 @@ def make_render_context(
         allow_dark=False,
         require_grid=False,
     )
-    color_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.palette",
-    ) % len(_PALETTES)
-    source_fill, target_fill, option_fill, accent = _PALETTES[int(color_index)]
+    palette_rng = spawn_rng(int(instance_seed), f"{namespace}.palette")
+    source_fill, target_fill, option_fill, accent = uniform_choice(
+        palette_rng,
+        _PALETTES,
+    )
     line_width = max(2, int(params.get("line_width", render_defaults.get("line_width", 3))))
     font_size = int(params.get("label_font_size", render_defaults.get("label_font_size", 22)))
-    small_font_size = int(params.get("small_label_font_size", render_defaults.get("small_label_font_size", 17)))
+    small_font_size = min(17, int(params.get("small_label_font_size", render_defaults.get("small_label_font_size", 17))))
+    diagram_style_meta = dict(diagram_style_meta)
+    diagram_style_meta["volume_equivalence_text"] = {
+        "label_stroke_width_px": 0,
+        "label_rgb": [10, 14, 22],
+        "line_rgb": [35, 48, 62],
+        "small_font_bold": True,
+        "small_font_size_px": int(small_font_size),
+    }
     return RenderContext(
         image=image,
         draw=ImageDraw.Draw(image),
         width=width,
         height=height,
-        line_color=tuple(int(value) for value in diagram_style.stroke_rgb),
-        secondary_color=tuple(int(value) for value in diagram_style.secondary_stroke_rgb),
-        label_color=tuple(int(value) for value in diagram_style.label_rgb),
-        label_stroke_color=tuple(int(value) for value in diagram_style.label_stroke_rgb),
+        line_color=(35, 48, 62),
+        secondary_color=(96, 110, 124),
+        label_color=(10, 14, 22),
+        label_stroke_color=(255, 255, 255),
         source_fill=source_fill,
         target_fill=target_fill,
         option_fill=option_fill,
         accent_color=accent,
         muted_color=tuple(int(value) for value in diagram_style.panel_border_rgb),
         line_width=max(2, line_width),
-        label_stroke_width=max(1, int(diagram_style.label_stroke_width_px)),
+        label_stroke_width=0,
         font=load_font(max(12, font_size), bold=True),
         small_font=load_font(max(10, small_font_size), bold=True),
-        diagram_style_meta=dict(diagram_style_meta),
+        diagram_style_meta=diagram_style_meta,
         background_meta=dict(background_meta),
     )
 
@@ -86,8 +93,8 @@ def _draw_text(ctx: RenderContext, text: str, center: Point, *, small: bool = Fa
     bbox = ctx.draw.textbbox((0, 0), str(text), font=font, stroke_width=ctx.label_stroke_width)
     text_width = float(bbox[2] - bbox[0])
     text_height = float(bbox[3] - bbox[1])
-    x = float(center[0]) - text_width / 2.0
-    y = float(center[1]) - text_height / 2.0
+    x = float(center[0]) - (float(bbox[0]) + float(bbox[2])) / 2.0
+    y = float(center[1]) - (float(bbox[1]) + float(bbox[3])) / 2.0
     draw_text_traced(
         ctx.draw,
         (x, y),
@@ -99,7 +106,13 @@ def _draw_text(ctx: RenderContext, text: str, center: Point, *, small: bool = Fa
         role="readout",
         required=False,
     )
-    return pad_bbox((x, y, x + text_width, y + text_height), 4.0, width=ctx.width, height=ctx.height)
+    actual_bbox = (
+        x + float(bbox[0]),
+        y + float(bbox[1]),
+        x + float(bbox[2]),
+        y + float(bbox[3]),
+    )
+    return pad_bbox(actual_bbox, 4.0, width=ctx.width, height=ctx.height)
 
 
 def _draw_value_box(ctx: RenderContext, text: str, center: Point, *, small: bool = False) -> BBox:
@@ -112,9 +125,11 @@ def _draw_value_box(ctx: RenderContext, text: str, center: Point, *, small: bool
     x1 = x0 + text_width + 20.0
     y1 = y0 + text_height + 12.0
     ctx.draw.rounded_rectangle((x0, y0, x1, y1), radius=6, fill=(255, 255, 255), outline=ctx.muted_color, width=1)
+    text_x = x0 + 10.0 - float(bbox[0])
+    text_y = y0 + 6.0 - float(bbox[1])
     draw_text_traced(
         ctx.draw,
-        (x0 + 10.0, y0 + 6.0),
+        (text_x, text_y),
         str(text),
         font=font,
         fill=ctx.label_color,
@@ -182,12 +197,25 @@ def _dimension_labels(spec: SolidSpec, *, unknown_role: str = "") -> tuple[str, 
         height = "H=?" if unknown_role == "cuboid_height" else f"H={spec.height}"
         return (f"L={spec.length}", f"W={spec.width}", height)
     if spec.shape == "cylinder":
-        height = "length=?" if unknown_role == "cylinder_length" else f"length={spec.height}"
-        return (f"base area={spec.base_area}", height)
+        height = "len=?" if unknown_role == "cylinder_length" else f"len={spec.height}"
+        return (f"base={spec.base_area}", height)
     if spec.shape == "cone":
         height = "H=?" if unknown_role == "cone_height" else f"H={spec.height}"
-        return (f"base area={spec.base_area}", height)
+        return (f"base={spec.base_area}", height)
     return ()
+
+
+def _draw_option_dimension_band(ctx: RenderContext, labels: tuple[str, ...], card: BBox) -> BBox:
+    """Draw compact option measurements in a reserved high-contrast band."""
+
+    band_height = max(36.0, 17.0 * float(len(labels)) + 10.0)
+    band = (card[0] + 7.0, card[3] - band_height - 7.0, card[2] - 7.0, card[3] - 7.0)
+    ctx.draw.rounded_rectangle(band, radius=5, fill=(255, 255, 255), outline=ctx.muted_color, width=1)
+    line_gap = band_height / float(len(labels) + 1)
+    label_boxes = []
+    for index, text in enumerate(labels):
+        label_boxes.append(_draw_text(ctx, text, ((band[0] + band[2]) / 2.0, band[1] + line_gap * float(index + 1)), small=True))
+    return bbox_union_from_bboxes(label_boxes, width=ctx.width, height=ctx.height, pad=3.0)
 
 
 def _draw_arrow(ctx: RenderContext, start: Point, end: Point) -> BBox:
@@ -301,6 +329,7 @@ def render_missing_dimension_scene(
         for index, text in enumerate(_dimension_labels(problem.source))
     ]
     target_label_boxes: list[BBox] = []
+    target_known_label_boxes: list[BBox] = []
     unknown_label_boxes: list[BBox] = []
     for index, text in enumerate(_dimension_labels(problem.target, unknown_role=problem.target_unknown_role)):
         bbox = _draw_value_box(
@@ -312,19 +341,25 @@ def render_missing_dimension_scene(
         target_label_boxes.append(bbox)
         if "?" in text:
             unknown_label_boxes.append(bbox)
+        else:
+            target_known_label_boxes.append(bbox)
     arrow_bbox = _draw_arrow(ctx, (source_bbox[2] + 42.0, 300.0), (target_bbox[0] - 42.0, 300.0))
     label_bboxes["equal_volume"] = _draw_text(ctx, "same volume", (ctx.width / 2.0, 260.0), small=True)
     annotation_bboxes = {
         "source_solid_bbox": pad_bbox(source_bbox, 8.0, width=ctx.width, height=ctx.height),
         "target_solid_bbox": pad_bbox(target_bbox, 8.0, width=ctx.width, height=ctx.height),
-        "source_dimension_region_bbox": bbox_union_from_bboxes(source_label_boxes, width=ctx.width, height=ctx.height, pad=4.0),
-        "target_dimension_region_bbox": bbox_union_from_bboxes(target_label_boxes, width=ctx.width, height=ctx.height, pad=4.0),
-        "target_unknown_region_bbox": bbox_union_from_bboxes(unknown_label_boxes, width=ctx.width, height=ctx.height, pad=4.0),
     }
+    source_inputs_bbox = bbox_union_from_bboxes(source_label_boxes, width=ctx.width, height=ctx.height, pad=4.0)
+    target_inputs_bbox = bbox_union_from_bboxes(target_known_label_boxes, width=ctx.width, height=ctx.height, pad=4.0)
     render_map = {
         "coord_space": "pixel",
         "source_solid_bbox": bbox_to_list(annotation_bboxes["source_solid_bbox"]),
         "target_solid_bbox": bbox_to_list(annotation_bboxes["target_solid_bbox"]),
+        "source_inputs_bbox": bbox_to_list(source_inputs_bbox),
+        "target_inputs_bbox": bbox_to_list(target_inputs_bbox),
+        "source_dimension_region_bbox": bbox_to_list(source_inputs_bbox),
+        "target_dimension_region_bbox": bbox_to_list(bbox_union_from_bboxes(target_label_boxes, width=ctx.width, height=ctx.height, pad=4.0)),
+        "target_unknown_region_bbox": bbox_to_list(bbox_union_from_bboxes(unknown_label_boxes, width=ctx.width, height=ctx.height, pad=4.0)),
         "conversion_arrow_bbox": bbox_to_list(arrow_bbox),
         "annotation_bboxes": {key: bbox_to_list(value) for key, value in annotation_bboxes.items()},
     }
@@ -370,18 +405,17 @@ def render_option_scene(
     ]
     option_bboxes: dict[str, BBox] = {}
     option_dimension_bboxes: dict[str, BBox] = {}
-    for option, center in zip(problem.option_specs, _option_positions(len(problem.option_specs))):
-        card = (center[0] - 82.0, center[1] - 80.0, center[0] + 82.0, center[1] + 70.0)
+    option_count = len(problem.option_specs)
+    card_half_width = 90.0 if option_count == 6 else 102.0
+    for option, center in zip(problem.option_specs, _option_positions(option_count)):
+        card = (center[0] - card_half_width, center[1] - 80.0, center[0] + card_half_width, center[1] + 72.0)
         ctx.draw.rounded_rectangle(card, radius=8, fill=(250, 252, 255), outline=ctx.muted_color, width=1)
         label_bboxes[f"option_{option.label}_label"] = _draw_text(ctx, option.label, (card[0] + 22.0, card[1] + 20.0), small=False)
-        solid_bbox = (center[0] - 46.0, center[1] - 56.0, center[0] + 52.0, center[1] + 34.0)
+        solid_bbox = (center[0] - 44.0, card[1] + 22.0, center[0] + 50.0, card[1] + 94.0)
         _draw_solid(ctx, option.solid, solid_bbox, fill=ctx.option_fill)
-        dimension_boxes = [
-            _draw_text(ctx, text, (center[0], card[3] - 30.0 + index * 19.0), small=True)
-            for index, text in enumerate(_dimension_labels(option.solid))
-        ]
+        dimension_bbox = _draw_option_dimension_band(ctx, _dimension_labels(option.solid), card)
         option_bboxes[str(option.label)] = pad_bbox(card, 4.0, width=ctx.width, height=ctx.height)
-        option_dimension_bboxes[str(option.label)] = bbox_union_from_bboxes(dimension_boxes, width=ctx.width, height=ctx.height, pad=3.0)
+        option_dimension_bboxes[str(option.label)] = dimension_bbox
     selected = str(problem.selected_option_label)
     annotation_bboxes = {
         "source_solid_bbox": pad_bbox(source_bbox, 8.0, width=ctx.width, height=ctx.height),

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import List
+from typing import List, Mapping, Sequence
 
 from .state import RenderedSizeEncodingScene
 
@@ -33,3 +33,11 @@ def reference_answer_bbox_map(
         "reference_item": item_bbox(rendered, str(reference_item_id)),
         "answer_item": item_bbox(rendered, str(answer_item_id)),
     }
+
+
+def item_bbox_set_map(
+    rendered: RenderedSizeEncodingScene,
+    groups: Mapping[str, Sequence[str]],
+) -> tuple[str, dict[str, list[list[float]]], dict[str, object]]:
+    value = {str(key): item_bbox_set(rendered, tuple(str(item_id) for item_id in item_ids)) for key, item_ids in groups.items()}
+    return "bbox_set_map", value, {"type": "bbox_set_map", "bbox_set_map": value, "pixel_bbox_set_map": value}

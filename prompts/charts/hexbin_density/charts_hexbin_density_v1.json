@@ -57,14 +57,14 @@
   "static_slots_by_key": {
     "query:above_threshold_bin_count": {
       "answer_hint": "set \"answer\" to the requested count as an integer",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] boxes around every visible hex bin matching the density-level threshold",
-      "json_example": "{\"annotation\":[[216,188,252,220],[306,248,342,280]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points at the center of every visible hex bin matching the density-level threshold",
+      "json_example": "{\"annotation\":[[234,204],[324,264]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:below_threshold_bin_count": {
       "answer_hint": "set \"answer\" to the requested count as an integer",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] boxes around every visible hex bin matching the density-level threshold",
-      "json_example": "{\"annotation\":[[216,188,252,220],[306,248,342,280]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points at the center of every visible hex bin matching the density-level threshold",
+      "json_example": "{\"annotation\":[[234,204],[324,264]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     }
   },

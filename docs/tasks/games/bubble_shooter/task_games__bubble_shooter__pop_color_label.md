@@ -10,7 +10,15 @@
 7. Program schema: `label(color(inserted_group(marked_shot))); scene=bubble_shooter; scope=pop_color_label`
 
 ## Program Contract
-- `label(color(inserted_group(marked_shot))); scene=bubble_shooter; scope=pop_color_label`
+
+Program: `label(color(inserted_group(marked_shot))); scene=bubble_shooter; scope=pop_color_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `pop_color_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `color`, `inserted_group`, `marked_shot`, `bubble_shooter`, `pop_color_label`.
+Operation: evaluate `label` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. This task is owned by the scene-package public file `trace/tasks/games/bubble_shooter/pop_color_label.py`.

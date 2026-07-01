@@ -13,7 +13,6 @@ from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.annotation_artifacts import bbox_annotation_artifacts
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.fixed_query import probability_map, select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
@@ -56,16 +55,7 @@ def _resolve_answer_label(params: Mapping[str, Any], *, instance_seed: int) -> T
         if label not in set(OPTION_LABELS):
             raise ValueError(f"unsupported answer_label for {TASK_ID}: {label}")
         return str(label), one_hot_probability_map(OPTION_LABELS, label)
-    sample_cursor = params.get("_sample_cursor")
-    if sample_cursor is not None:
-        label = OPTION_LABELS[int(abs(int(sample_cursor))) % len(OPTION_LABELS)]
-    else:
-        index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.answer_label",
-        )
-        label = OPTION_LABELS[int(index) % len(OPTION_LABELS)]
+    label = str(spawn_rng(int(instance_seed), f"{TASK_ID}.answer_label").choice(OPTION_LABELS))
     return str(label), probability_map(OPTION_LABELS)
 
 

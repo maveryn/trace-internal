@@ -10,7 +10,15 @@
 7. Program schema: `count(disconnected_bubbles_after_pop(marked_shot)); scene=bubble_shooter; scope=drop_count`
 
 ## Program Contract
-- `count(disconnected_bubbles_after_pop(marked_shot)); scene=bubble_shooter; scope=drop_count`
+
+Program: `count(disconnected_bubbles_after_pop(marked_shot)); scene=bubble_shooter; scope=drop_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `drop_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `disconnected_bubbles_after_pop`, `marked_shot`, `bubble_shooter`, `drop_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. This task is owned by the scene-package public file `trace/tasks/games/bubble_shooter/drop_count.py`.

@@ -71,7 +71,7 @@ async function pollReloadStatus() {
       setReloadButtons("Reload failed", false);
       return;
     }
-    setReloadButtons("Reload Index", false);
+    setReloadButtons("Reload", false);
   } catch (error) {
     setReloadButtons("Reload status failed", false);
     console.error(error);
@@ -85,9 +85,12 @@ document.addEventListener("click", async (event) => {
   }
   event.preventDefault();
   setReloadButtons("Starting reload...", true);
-  const base = window.TRACE_REVIEW_BASE || "";
+  const reloadUrl = button.getAttribute("data-reload-url");
   try {
-    const response = await fetch(`${base}/api/reload`, { method: "POST" });
+    if (!reloadUrl) {
+      throw new Error("reload target missing");
+    }
+    const response = await fetch(reloadUrl, { method: "POST" });
     if (!response.ok) {
       throw new Error(`reload failed: ${response.status}`);
     }

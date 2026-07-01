@@ -56,7 +56,7 @@ def _sample_marked_cell_value(
         board=construction.board,
         solution=solution,
         answer=int(target_digit),
-        annotation_coords=tuple([marked_cell] + list(construction.visible_peer_coords)),
+        annotation_coords=(marked_cell,),
         marked_cell=marked_cell,
         construction_mode="unique_marked_cell",
     )

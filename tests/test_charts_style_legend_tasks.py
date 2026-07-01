@@ -9,10 +9,9 @@ from typing import Any
 import pytest
 
 from tests.helpers import extract_prompt_json_example
-from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.seed import hash64
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.charts.style_legend.pairwise_gap_value import ChartsStyleLegendPairwiseGapValueTask
+from trace.tasks.charts.style_legend.series_extremum_x_label import ChartsStyleLegendSeriesExtremumXLabelTask
 from trace.tasks.charts.style_legend.shared.state import SUPPORTED_LEGEND_POSITIONS, SUPPORTED_STYLE_PALETTE_MODES
 from trace.tasks.charts.style_legend.threshold_series_count import ChartsStyleLegendThresholdSeriesCountTask
 from trace.tasks.charts.style_legend.x_position_extremum_series_label import ChartsStyleLegendXPositionExtremumSeriesLabelTask
@@ -20,7 +19,12 @@ from trace.tasks.registry import list_default_task_ids
 
 
 TASK_CASES = (
-    (ChartsStyleLegendPairwiseGapValueTask, (SINGLE_QUERY_ID,), "integer", "point_set"),
+    (
+        ChartsStyleLegendSeriesExtremumXLabelTask,
+        ("series_highest_x_label", "series_lowest_x_label"),
+        "string",
+        "point",
+    ),
     (
         ChartsStyleLegendThresholdSeriesCountTask,
         ("above_threshold_series_count", "below_threshold_series_count"),
@@ -43,10 +47,6 @@ def _assert_point_inside_canvas(point: Sequence[float], *, width: int, height: i
     assert 0 <= y <= height
 
 
-def _series_by_id(execution: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    return {str(series["series_id"]): dict(series) for series in execution["series"]}
-
-
 def _expected_answer(task_id: str, execution: dict[str, Any]) -> int | str:
     target_x = int(execution["target_x_index"])
     series = list(execution["series"])
@@ -59,10 +59,18 @@ def _expected_answer(task_id: str, execution: dict[str, Any]) -> int | str:
         else:
             raise AssertionError(f"unsupported extremum direction: {direction}")
         return str(winner["label"])
-    if task_id == ChartsStyleLegendPairwiseGapValueTask.task_id:
-        left_id, right_id = [str(value) for value in execution["pair_series_ids"]]
-        by_id = _series_by_id(execution)
-        return abs(int(by_id[left_id]["values"][target_x]) - int(by_id[right_id]["values"][target_x]))
+    if task_id == ChartsStyleLegendSeriesExtremumXLabelTask.task_id:
+        direction = str(execution["extremum_direction"])
+        target_series_id = str(execution["target_series_id"])
+        target_series = next(item for item in series if str(item["series_id"]) == target_series_id)
+        values = [int(value) for value in target_series["values"]]
+        if direction == "highest":
+            winner_index = max(range(len(values)), key=lambda index: values[int(index)])
+        elif direction == "lowest":
+            winner_index = min(range(len(values)), key=lambda index: values[int(index)])
+        else:
+            raise AssertionError(f"unsupported extremum direction: {direction}")
+        return str(execution["x_labels"][int(winner_index)])
     if task_id == ChartsStyleLegendThresholdSeriesCountTask.task_id:
         threshold = int(execution["threshold_value"])
         comparator = str(execution["threshold_comparator"])
@@ -170,9 +178,9 @@ def test_charts_style_legend_render_trace_records_series_styles() -> None:
 
 
 def test_charts_style_legend_is_deterministic() -> None:
-    params = {"query_id": "single", "style_palette_mode": "grayscale", "legend_position": "right"}
-    out_a = ChartsStyleLegendPairwiseGapValueTask().generate(2026060501, params=params, max_attempts=80)
-    out_b = ChartsStyleLegendPairwiseGapValueTask().generate(2026060501, params=params, max_attempts=80)
+    params = {"query_id": "series_highest_x_label", "style_palette_mode": "grayscale", "legend_position": "right"}
+    out_a = ChartsStyleLegendSeriesExtremumXLabelTask().generate(2026060501, params=params, max_attempts=80)
+    out_b = ChartsStyleLegendSeriesExtremumXLabelTask().generate(2026060501, params=params, max_attempts=80)
     assert out_a.prompt == out_b.prompt
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
     assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
@@ -184,5 +192,5 @@ def test_charts_style_legend_registry_and_config_are_wired() -> None:
     prompt = defaults["prompt"]["shared"]
     assert str(prompt["bundle_id"]) == "charts_style_legend_v1"
     assert ChartsStyleLegendXPositionExtremumSeriesLabelTask.task_id in list_default_task_ids()
-    assert ChartsStyleLegendPairwiseGapValueTask.task_id in list_default_task_ids()
+    assert ChartsStyleLegendSeriesExtremumXLabelTask.task_id in list_default_task_ids()
     assert ChartsStyleLegendThresholdSeriesCountTask.task_id in list_default_task_ids()

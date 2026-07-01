@@ -7,7 +7,7 @@ from typing import Any
 from trace.core.seed import hash64
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.charts.candlestick.shared.annotations import annotation_boxes_and_points
+from trace.tasks.charts.candlestick.shared.annotations import annotation_segments
 from trace.tasks.charts.candlestick.shared.defaults import (
     DOMAIN,
     SCENE_ID,
@@ -18,7 +18,7 @@ from trace.tasks.charts.candlestick.shared.rendering import render_dataset
 from trace.tasks.charts.candlestick.shared.sampling import sample_candles
 from trace.tasks.charts.candlestick.shared.state import Dataset, Selection
 from trace.tasks.registry import register_task
-from trace.tasks.shared.annotation_artifacts import point_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import segment_annotation_artifacts
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
@@ -125,11 +125,13 @@ class ChartsCandlestickRangeExtremumLabelTask:
             extremum=str(extremum),
         )
         artifacts = render_dataset(dataset=dataset, params=branch_params, instance_seed=int(instance_seed))
-        _boxes, annotation_points = annotation_boxes_and_points(
+        annotation_segments_px = annotation_segments(
             rendered=artifacts.rendered,
             selection=dataset.selection,
         )
-        annotation = point_set_annotation_artifacts(annotation_points)
+        if len(annotation_segments_px) != 1:
+            raise RuntimeError("candlestick range annotation must contain exactly one segment")
+        annotation = segment_annotation_artifacts(annotation_segments_px[0])
         prompt_artifacts = build_prompt_artifacts(
             prompt_query_key=str(selected_query_id),
             dynamic_slots={

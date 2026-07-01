@@ -64,6 +64,7 @@ class Surface3DDataset:
     y_labels: tuple[str, ...]
     title: str
     connect_points_by_label: bool = False
+    reference_y_value: float | None = None
 
 
 @dataclass(frozen=True)

@@ -25,6 +25,7 @@ from trace.tasks.three_d.shared.semantic_colors import sample_readout_palette as
 from trace.tasks.three_d.shared.task_support import (
     resolve_axis_variant_for_namespace,
     resolve_count_for_namespace,
+    shuffled_repeated_support,
 )
 
 from .state import (
@@ -318,22 +319,17 @@ def _resolve_between_items_count(
     instance_seed: int,
     namespace: str,
 ) -> tuple[int, Dict[str, float]]:
-    del namespace
-    min_count = int(params.get("target_count_min", group_default(gen_defaults, "target_count_min", 1)))
-    max_count = int(params.get("target_count_max", group_default(gen_defaults, "target_count_max", 5)))
-    min_count = max(1, min(5, int(min_count)))
-    max_count = max(min_count, min(5, int(max_count)))
-    support = tuple(range(int(min_count), int(max_count) + 1))
-    explicit = params.get("target_count")
-    if explicit is not None:
-        count = int(explicit)
-        if count not in set(support):
-            raise ValueError(f"unsupported target_count: {count}")
-        return int(count), {str(value): (1.0 if int(value) == int(count) else 0.0) for value in support}
-    balanced_seed = int(params.get("_balanced_answer_seed", int(instance_seed)))
-    count = int(support[abs(int(balanced_seed)) % len(support)])
-    probability = 1.0 / float(len(support))
-    return int(count), {str(value): float(probability) for value in support}
+    return resolve_count_for_namespace(
+        params,
+        namespace=str(namespace),
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        key="target_count",
+        default_min=int(params.get("target_count_min", group_default(gen_defaults, "target_count_min", 1))),
+        default_max=int(params.get("target_count_max", group_default(gen_defaults, "target_count_max", 5))),
+        lower=1,
+        upper=5,
+    )
 
 
 def _belt_max_object_count(belt_key: str) -> int:
@@ -391,8 +387,17 @@ def _resolve_arithmetic_operand_counts(
             raise ValueError(f"unsupported carousel arithmetic answer_value: {answer_value}")
         answer_probabilities = {str(answer_value): 1.0}
     else:
-        balanced_seed = int(params.get("_balanced_answer_seed", int(instance_seed)))
-        answer_value = int(answer_support[abs(int(balanced_seed)) % len(answer_support)])
+        answer_value, answer_probabilities = resolve_count_for_namespace(
+            params,
+            namespace=f"{namespace}.{operation}.answer_value",
+            gen_defaults=gen_defaults,
+            instance_seed=int(instance_seed),
+            key="answer_value",
+            default_min=int(answer_min),
+            default_max=int(answer_max),
+            lower=int(lower),
+            upper=int(upper),
+        )
         answer_probabilities = {str(value): 1.0 / float(len(answer_support)) for value in answer_support}
     explicit_first = params.get("first_scope_count")
     explicit_second = params.get("second_scope_count")
@@ -503,15 +508,18 @@ def _ordered_pair_symbol_sequence(
     if not fillers and total_count > 2 * pair_count:
         raise ValueError("ordered pair sequence needs filler symbols")
     units: list[tuple[str, ...]] = [(str(first_symbol), str(second_symbol)) for _ in range(pair_count)]
-    for index in range(total_count - 2 * pair_count):
-        units.append((str(fillers[index % len(fillers)]),))
+    for filler in shuffled_repeated_support(rng, fillers, total_count - 2 * pair_count):
+        units.append((str(filler),))
     rng.shuffle(units)
     sequence = tuple(symbol for unit in units for symbol in unit)
     observed = 0
     for index, symbol in enumerate(sequence):
         if not circular and index == len(sequence) - 1:
             continue
-        next_symbol = sequence[(index + 1) % len(sequence)]
+        next_index = index + 1
+        if next_index >= len(sequence):
+            next_index = 0
+        next_symbol = sequence[next_index]
         if str(symbol) == str(first_symbol) and str(next_symbol) == str(second_symbol):
             observed += 1
     if int(observed) != int(pair_count):
@@ -821,7 +829,7 @@ def build_belt_count_dataset(
                     rng=rng,
                     object_id=object_id,
                     shape_type=str(target_shape),
-                    color_name=str(color_names[index % len(color_names)]),
+                    color_name=str(rng.choice(color_names)),
                     slot=slot,
                     belt_key=target_belt_key,
                     matches_query=True,
@@ -841,7 +849,7 @@ def build_belt_count_dataset(
                     rng=rng,
                     object_id=f"obj_{len(object_specs):03d}",
                     shape_type=str(target_shape),
-                    color_name=str(color_names[(index + int(target_count)) % len(color_names)]),
+                    color_name=str(rng.choice(color_names)),
                     slot=slot,
                     belt_key=other_belt_key,
                     matches_query=False,
@@ -879,7 +887,7 @@ def build_belt_count_dataset(
                 belt_key=target_belt_key,
                 min_angle_gap_degrees=float(min_angle_gap_degrees),
             )
-            color_name = str(color_names[index % len(color_names)])
+            color_name = str(rng.choice(color_names))
             object_id = f"obj_{len(object_specs):03d}"
             target_object_ids.append(object_id)
             object_specs.append(
@@ -907,7 +915,7 @@ def build_belt_count_dataset(
                     rng=rng,
                     object_id=f"obj_{len(object_specs):03d}",
                     shape_type=str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))]),
-                    color_name=str(color_names[(index + int(target_count)) % len(color_names)]),
+                    color_name=str(rng.choice(color_names)),
                     slot=slot,
                     belt_key=target_belt_key,
                     matches_query=False,
@@ -931,7 +939,7 @@ def build_belt_count_dataset(
                         rng=rng,
                         object_id=f"obj_{len(object_specs):03d}",
                         shape_type=str(shape_type),
-                        color_name=str(color_names[(index + len(object_specs)) % len(color_names)]),
+                        color_name=str(rng.choice(color_names)),
                         slot=slot,
                         belt_key=str(belt_key),
                         matches_query=False,
@@ -990,7 +998,7 @@ def build_belt_count_dataset(
                     rng=rng,
                     object_id=f"obj_{len(object_specs):03d}",
                     shape_type=str(target_shape),
-                    color_name=str(wrong_colors[index % len(wrong_colors)]),
+                    color_name=str(rng.choice(wrong_colors)),
                     slot=slot,
                     belt_key=target_belt_key,
                     matches_query=False,
@@ -1008,7 +1016,7 @@ def build_belt_count_dataset(
                     belt_key=str(belt_key),
                     min_angle_gap_degrees=float(min_angle_gap_degrees),
                 )
-                color_name = str(target_color_name) if rng.random() < 0.35 else str(wrong_colors[index % len(wrong_colors)])
+                color_name = str(target_color_name) if rng.random() < 0.35 else str(rng.choice(wrong_colors))
                 object_specs.append(
                     _make_object_spec(
                         rng=rng,
@@ -1084,11 +1092,11 @@ def build_belt_count_dataset(
                 count_role = "same_belt_same_color_wrong_type"
             elif pattern == 1:
                 shape_type = str(target_shape)
-                color_name = str(wrong_colors[index % len(wrong_colors)])
+                color_name = str(rng.choice(wrong_colors))
                 count_role = "same_belt_same_type_wrong_color"
             else:
                 shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
-                color_name = str(wrong_colors[index % len(wrong_colors)])
+                color_name = str(rng.choice(wrong_colors))
                 count_role = "same_belt_wrong_type_wrong_color"
             object_specs.append(
                 _make_object_spec(
@@ -1123,11 +1131,11 @@ def build_belt_count_dataset(
                     count_role = "other_belt_same_color_wrong_type"
                 elif int(index) % 3 == 2:
                     shape_type = str(target_shape)
-                    color_name = str(wrong_colors[index % len(wrong_colors)])
+                    color_name = str(rng.choice(wrong_colors))
                     count_role = "other_belt_same_type_wrong_color"
                 else:
                     shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
-                    color_name = str(wrong_colors[index % len(wrong_colors)])
+                    color_name = str(rng.choice(wrong_colors))
                     count_role = "other_belt_wrong_type_wrong_color"
                 object_specs.append(
                     _make_object_spec(
@@ -1297,7 +1305,7 @@ def build_belt_count_arithmetic_dataset(
                     rng=rng,
                     object_id=str(object_id),
                     shape_type=str(target_shape),
-                    color_name=str(color_names[len(object_specs) % len(color_names)]),
+                    color_name=str(rng.choice(color_names)),
                     slot=slot,
                     belt_key=str(belt_key),
                     matches_query=True,
@@ -1313,7 +1321,7 @@ def build_belt_count_arithmetic_dataset(
                 min_angle_gap_degrees=float(min_angle_gap_degrees),
             )
             shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
-            color_name = str(color_names[(index + len(object_specs)) % len(color_names)])
+            color_name = str(rng.choice(color_names))
             object_specs.append(
                 _make_object_spec(
                     rng=rng,
@@ -1501,30 +1509,30 @@ def build_transfer_count_dataset(
             object_id = f"obj_{len(object_specs):03d}"
             if str(belt_key) == str(source_belt_key) and int(index) < int(moved_count):
                 if str(predicate_kind) == PREDICATE_COLOR_TRANSFER:
-                    shape_type = str(target_shape if index % 2 == 0 else distractor_shapes[index % len(distractor_shapes)])
+                    shape_type = str(target_shape if index % 2 == 0 else rng.choice(distractor_shapes))
                     color_name = str(target_color_name)
                 else:
                     shape_type = str(target_shape)
-                    color_name = str(color_names[index % len(color_names)])
+                    color_name = str(rng.choice(color_names))
                 matches_query = True
                 count_role = "source_moved_object"
                 source_moved_ids.append(str(object_id))
             elif str(belt_key) == str(source_belt_key):
                 if str(predicate_kind) == PREDICATE_COLOR_TRANSFER:
-                    shape_type = str(distractor_shapes[index % len(distractor_shapes)])
-                    color_name = str(wrong_colors[index % len(wrong_colors)])
+                    shape_type = str(rng.choice(distractor_shapes))
+                    color_name = str(rng.choice(wrong_colors))
                 else:
-                    shape_type = str(distractor_shapes[index % len(distractor_shapes)])
-                    color_name = str(color_names[index % len(color_names)])
+                    shape_type = str(rng.choice(distractor_shapes))
+                    color_name = str(rng.choice(color_names))
                 matches_query = False
                 count_role = "source_non_moved_distractor"
             else:
                 if str(predicate_kind) == PREDICATE_COLOR_TRANSFER:
-                    shape_type = str(target_shape if index % 3 == 0 else distractor_shapes[index % len(distractor_shapes)])
-                    color_name = str(color_names[index % len(color_names)])
+                    shape_type = str(target_shape if index % 3 == 0 else rng.choice(distractor_shapes))
+                    color_name = str(rng.choice(color_names))
                 else:
-                    shape_type = str(target_shape if index % 3 == 0 else distractor_shapes[index % len(distractor_shapes)])
-                    color_name = str(color_names[index % len(color_names)])
+                    shape_type = str(target_shape if index % 3 == 0 else rng.choice(distractor_shapes))
+                    color_name = str(rng.choice(color_names))
                 matches_query = True
                 count_role = "destination_existing_object"
                 destination_existing_ids.append(str(object_id))
@@ -1776,7 +1784,7 @@ def build_ordered_pair_count_dataset(
                 color_name = str(sequence[index])
             else:
                 shape_type = str(sequence[index])
-                color_name = str(palette[(index + len(object_specs)) % len(palette)])
+                color_name = str(rng.choice(palette))
             object_specs.append(
                 _make_object_spec(
                     rng=rng,
@@ -1793,7 +1801,9 @@ def build_ordered_pair_count_dataset(
         object_sequences_by_belt[str(belt_key)] = list(belt_object_ids)
         if str(belt_key) == str(target_belt_key):
             for index, symbol in enumerate(sequence):
-                next_index = (index + 1) % len(sequence)
+                next_index = index + 1
+                if next_index >= len(sequence):
+                    next_index = 0
                 if str(symbol) == str(first_symbol) and str(sequence[next_index]) == str(second_symbol):
                     pair = [str(belt_object_ids[index]), str(belt_object_ids[next_index])]
                     target_pair_object_id_pairs.append(pair)
@@ -1963,7 +1973,7 @@ def build_between_marked_items_count_dataset(
         elif int(index) == int(end_index):
             target_sequence.append(str(target_shape_pair[1]))
         else:
-            target_sequence.append(str(filler_symbols[(index + rng.randrange(len(filler_symbols))) % len(filler_symbols)]))
+            target_sequence.append(str(rng.choice(filler_symbols)))
 
     belt_records = [
         {
@@ -1996,7 +2006,7 @@ def build_between_marked_items_count_dataset(
             object_id = f"obj_{len(object_specs):03d}"
             belt_object_ids.append(str(object_id))
             shape_type = str(sequence[index])
-            color_name = str(color_palette[(index + len(object_specs)) % len(color_palette)])
+            color_name = str(rng.choice(color_palette))
 
             is_start_anchor = str(belt_key) == str(target_belt_key) and int(index) == int(start_index)
             is_end_anchor = str(belt_key) == str(target_belt_key) and int(index) == int(end_index)

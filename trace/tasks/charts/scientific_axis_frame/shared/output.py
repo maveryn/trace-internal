@@ -30,6 +30,7 @@ def render_map(rendered: AxisFrameRenderResult) -> dict[str, Any]:
         "image_id": "img0",
         "plot_bbox_px": list(scene.plot_bbox_px),
         "tick_label_bboxes_px": dict(scene.tick_label_bboxes_px),
+        "tick_points_px": dict(scene.tick_points_px),
         "axis_label_bboxes_px": dict(scene.axis_label_bboxes_px),
     }
 
@@ -37,7 +38,7 @@ def render_map(rendered: AxisFrameRenderResult) -> dict[str, Any]:
 def base_execution_record(
     *,
     dataset: AxisFrameDataset,
-    annotation_bbox_map: dict[str, list[float]],
+    annotation_segment: list[list[float]],
 ) -> dict[str, Any]:
     return {
         "scene_id": SCENE_ID,
@@ -47,11 +48,13 @@ def base_execution_record(
         "y_tick_values": [int(value) for value in dataset.y_axis.values],
         "x_tick_step": int(dataset.x_axis.step),
         "y_tick_step": int(dataset.y_axis.step),
+        "x_tick_deltas": [int(value) for value in dataset.x_axis.deltas],
+        "y_tick_deltas": [int(value) for value in dataset.y_axis.deltas],
         "x_axis_span": int(dataset.x_axis.values[-1] - dataset.x_axis.values[0]),
         "y_axis_span": int(dataset.y_axis.values[-1] - dataset.y_axis.values[0]),
         "series_points": [[round(float(x), 3), round(float(y), 3)] for x, y in dataset.series_points],
         "annotation_tick_keys": [str(value) for value in dataset.binding.annotation_roles.values()],
-        "annotation_bbox_map": dict(annotation_bbox_map),
+        "annotation_segment": [list(point) for point in annotation_segment],
         **dict(dataset.binding.trace),
     }
 

@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
-import colorsys
 from collections.abc import Mapping
 from typing import Any
 
 from trace.core.seed import spawn_rng
+from trace.tasks.charts.shared.composition.palette import (
+    composition_hsv_color,
+    darken_rgb as darken,
+    lighten_rgb as lighten,
+)
 
 from .defaults import generation_range
 from .state import RGB, TreemapDataset, TreemapLeaf, TreemapParent
@@ -58,25 +62,17 @@ _THEMES: tuple[dict[str, Any], ...] = (
 )
 
 
-def lighten(color: RGB, amount: float) -> RGB:
-    return tuple(
-        max(0, min(255, int(round(float(channel) + (255.0 - float(channel)) * float(amount)))))
-        for channel in color
-    )
-
-
-def darken(color: RGB, amount: float) -> RGB:
-    return tuple(max(0, min(255, int(round(float(channel) * (1.0 - float(amount)))))) for channel in color)
-
-
 def _theme_color(index: int, count: int, *, instance_seed: int) -> RGB:
-    rng = spawn_rng(int(instance_seed), "charts.treemap.palette")
-    offset = rng.random()
-    hue = (float(offset) + float(index) / max(1.0, float(count))) % 1.0
-    sat = 0.45 + 0.18 * rng.random()
-    val = 0.74 + 0.12 * rng.random()
-    red, green, blue = colorsys.hsv_to_rgb(float(hue), float(sat), float(val))
-    return int(red * 255), int(green * 255), int(blue * 255)
+    return composition_hsv_color(
+        int(index),
+        int(count),
+        instance_seed=int(instance_seed),
+        namespace="charts.treemap.palette",
+        saturation_base=0.45,
+        saturation_jitter=0.18,
+        value_base=0.74,
+        value_jitter=0.12,
+    )
 
 
 def _build_values(

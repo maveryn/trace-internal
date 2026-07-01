@@ -19,6 +19,13 @@
         "",
         "",
         ""
+      ],
+      "shape_run_count": [
+        "",
+        "",
+        "",
+        "",
+        ""
       ]
     },
     "query": {
@@ -35,6 +42,13 @@
         "How many icons are in the shortest uninterrupted run of \"{target_shape_name}\" icons?",
         "Count the icons in the shortest consecutive block of \"{target_shape_name}\" icons.",
         "What is the minimum length of a consecutive \"{target_shape_name}\" icon run?"
+      ],
+      "shape_run_count": [
+        "How many separate runs of \"{target_shape_name}\" icons are in the row?",
+        "Count the separate consecutive blocks of \"{target_shape_name}\" icons in the row.",
+        "How many distinct uninterrupted runs of \"{target_shape_name}\" icons appear in the row?",
+        "Find the number of separate \"{target_shape_name}\" icon runs in the row.",
+        "What is the count of separate consecutive \"{target_shape_name}\" icon runs?"
       ]
     },
     "output": {
@@ -60,6 +74,12 @@
       "answer_hint": "set \"answer\" to the run length as an integer",
       "json_example": "{\"annotation\":[[220,132,270,182],[292,132,342,182],[364,132,414,182]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
+    },
+    "task:shape_run_count": {
+      "annotation_hint": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates for the first icon in each counted run",
+      "answer_hint": "set \"answer\" to the number of separate runs as an integer",
+      "json_example": "{\"annotation\":[[116,132,166,182],[364,132,414,182],[580,132,630,182]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
     }
   },
   "dynamic_slots": {
@@ -70,6 +90,9 @@
       "target_shape_name"
     ],
     "query:shortest_shape_run_length": [
+      "target_shape_name"
+    ],
+    "query:shape_run_count": [
       "target_shape_name"
     ],
     "output:answer_only": [

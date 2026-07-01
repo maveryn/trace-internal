@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from .....core.seed import spawn_rng
+from .....core.sampling import support_probability_map, uniform_choice_with_probabilities
 from ....shared.config_defaults import group_default
-from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.object_library import STYLE_IDS
 from ...shared.canvas_profiles import resolve_profile_render_params
 from ...shared.style_registry import resolve_art_style_weights
@@ -168,7 +169,8 @@ def sample_count_support(
     params: Mapping[str, Any],
     support: Sequence[int],
     explicit_key: str,
-    cycle_index: int,
+    instance_seed: int,
+    namespace: str,
 ) -> tuple[int, Dict[str, float]]:
     """Sample one count from a configured support range."""
 
@@ -180,9 +182,10 @@ def sample_count_support(
         value = int(explicit)
         if value not in set(values):
             raise ValueError(f"{explicit_key} is outside configured support")
-        return int(value), dict(uniform_probability_map(values, selected=int(value)))
-    value = int(values[int(cycle_index) % len(values)])
-    return int(value), dict(uniform_probability_map(values))
+        return int(value), dict(support_probability_map(values, selected=int(value), sort_keys=True))
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    value, probabilities = uniform_choice_with_probabilities(rng, values, sort_keys=True)
+    return int(value), dict(probabilities)
 
 
 def sample_object_count(
@@ -204,7 +207,8 @@ def sample_object_count(
         params=params,
         support=tuple(range(int(low), int(high) + 1)),
         explicit_key="object_count",
-        cycle_index=resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)),
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
     )
 
 
@@ -231,7 +235,7 @@ def sample_scene_object_count(
 
 def sample_target_count_by_keys(
     params: Mapping[str, Any],
-    _instance_seed: int,
+    instance_seed: int,
     choice: EnvironmentChoice,
     generation_defaults: Mapping[str, Any],
     *,
@@ -253,7 +257,8 @@ def sample_target_count_by_keys(
         params=params,
         support=tuple(range(int(low), int(high) + 1)),
         explicit_key="target_count",
-        cycle_index=int(choice.branch_index),
+        instance_seed=int(instance_seed),
+        namespace=f"{choice.theme_id}:{low_key}:{high_key}:target_count",
     )
 
 
@@ -280,7 +285,7 @@ def resolve_feature_choice(
     """Resolve the sampled theme, road/river feature, and optional side relation."""
 
     themes = theme_support(params, generation_defaults)
-    branch_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{public_id}:cycle")
+    branch_index = int(spawn_rng(int(instance_seed), f"{public_id}:cycle").randrange(1 << 30))
     explicit_theme = params.get("theme_id")
     if explicit_theme is not None:
         theme_id = str(explicit_theme)
@@ -288,8 +293,9 @@ def resolve_feature_choice(
             raise ValueError(f"theme_id must be one of {themes}")
         theme_probabilities = uniform_string_probability_map(themes, selected=theme_id)
     else:
-        theme_id = str(themes[int(branch_index) % len(themes)])
-        theme_probabilities = uniform_string_probability_map(themes)
+        rng = spawn_rng(int(instance_seed), f"{public_id}:theme")
+        theme_id, theme_probabilities = uniform_choice_with_probabilities(rng, themes, sort_keys=False)
+        theme_id = str(theme_id)
 
     feature_values = FEATURE_TYPES_BY_THEME[str(theme_id)]
     explicit_feature = params.get("feature_type")
@@ -299,7 +305,13 @@ def resolve_feature_choice(
             raise ValueError(f"feature_type {feature_type!r} is not available for theme {theme_id!r}")
         feature_probabilities = global_feature_type_probabilities(themes, selected=feature_type)
     else:
-        feature_type = str(feature_values[int(branch_index // max(1, len(themes))) % len(feature_values)])
+        rng = spawn_rng(int(instance_seed), f"{public_id}:feature_type")
+        feature_type, _feature_local_probabilities = uniform_choice_with_probabilities(
+            rng,
+            feature_values,
+            sort_keys=False,
+        )
+        feature_type = str(feature_type)
         feature_probabilities = global_feature_type_probabilities(themes)
 
     relation = None
@@ -313,8 +325,13 @@ def resolve_feature_choice(
                 raise ValueError(f"relation must be one of {relations}")
             relation_probabilities = uniform_string_probability_map(relations, selected=relation)
         else:
-            relation = str(relations[int(branch_index // max(1, len(themes) * len(feature_values))) % len(relations)])
-            relation_probabilities = uniform_string_probability_map(relations)
+            rng = spawn_rng(int(instance_seed), f"{public_id}:relation")
+            relation, relation_probabilities = uniform_choice_with_probabilities(
+                rng,
+                relations,
+                sort_keys=False,
+            )
+            relation = str(relation)
 
     return EnvironmentChoice(
         branch_index=int(branch_index),
@@ -352,7 +369,7 @@ def resolve_crossing_choice(
     """Resolve the crossing type and compatible environment theme."""
 
     crossing_values = crossing_support(params, generation_defaults)
-    branch_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{public_id}:cycle")
+    branch_index = int(spawn_rng(int(instance_seed), f"{public_id}:cycle").randrange(1 << 30))
     explicit_crossing = params.get("crossing_type")
     if explicit_crossing is not None:
         crossing_type = str(explicit_crossing)
@@ -360,8 +377,13 @@ def resolve_crossing_choice(
             raise ValueError(f"crossing_type must be one of {crossing_values}")
         crossing_probabilities = uniform_string_probability_map(crossing_values, selected=crossing_type)
     else:
-        crossing_type = str(crossing_values[int(branch_index) % len(crossing_values)])
-        crossing_probabilities = uniform_string_probability_map(crossing_values)
+        rng = spawn_rng(int(instance_seed), f"{public_id}:crossing_type")
+        crossing_type, crossing_probabilities = uniform_choice_with_probabilities(
+            rng,
+            crossing_values,
+            sort_keys=False,
+        )
+        crossing_type = str(crossing_type)
 
     theme_options = CROSSING_THEME_SUPPORT[str(crossing_type)]
     explicit_theme = params.get("theme_id")
@@ -371,7 +393,13 @@ def resolve_crossing_choice(
             raise ValueError(f"theme_id must be one of {theme_options} for crossing_type {crossing_type!r}")
         theme_probabilities = {theme_id: 1.0}
     else:
-        theme_id = str(theme_options[int(branch_index // max(1, len(crossing_values))) % len(theme_options)])
+        rng = spawn_rng(int(instance_seed), f"{public_id}:theme")
+        theme_id, _theme_local_probabilities = uniform_choice_with_probabilities(
+            rng,
+            theme_options,
+            sort_keys=False,
+        )
+        theme_id = str(theme_id)
         theme_probabilities: Dict[str, float] = {}
         for crossing in crossing_values:
             crossing_probability = 1.0 / float(len(crossing_values))
@@ -415,7 +443,7 @@ def resolve_window_choice(
     if not themes:
         raise ValueError("lit-window count requires canal_city or skyline_street theme support")
     modes = window_mode_support(params, generation_defaults)
-    branch_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{public_id}:cycle")
+    branch_index = int(spawn_rng(int(instance_seed), f"{public_id}:cycle").randrange(1 << 30))
 
     explicit_theme = params.get("theme_id")
     if explicit_theme is not None:
@@ -424,8 +452,9 @@ def resolve_window_choice(
             raise ValueError(f"theme_id must be one of {themes}")
         theme_probabilities = uniform_string_probability_map(themes, selected=theme_id)
     else:
-        theme_id = str(themes[int(branch_index) % len(themes)])
-        theme_probabilities = uniform_string_probability_map(themes)
+        rng = spawn_rng(int(instance_seed), f"{public_id}:theme")
+        theme_id, theme_probabilities = uniform_choice_with_probabilities(rng, themes, sort_keys=False)
+        theme_id = str(theme_id)
 
     explicit_mode = params.get("window_mode")
     if explicit_mode is not None:
@@ -434,8 +463,13 @@ def resolve_window_choice(
             raise ValueError(f"window_mode must be one of {modes}")
         window_mode_probabilities = uniform_string_probability_map(modes, selected=window_mode)
     else:
-        window_mode = str(modes[int(branch_index // max(1, len(themes))) % len(modes)])
-        window_mode_probabilities = uniform_string_probability_map(modes)
+        rng = spawn_rng(int(instance_seed), f"{public_id}:window_mode")
+        window_mode, window_mode_probabilities = uniform_choice_with_probabilities(
+            rng,
+            modes,
+            sort_keys=False,
+        )
+        window_mode = str(window_mode)
 
     return EnvironmentChoice(
         branch_index=int(branch_index),

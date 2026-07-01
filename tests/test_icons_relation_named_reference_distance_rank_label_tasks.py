@@ -21,7 +21,7 @@ def test_icons_relation_named_reference_distance_rank_contract_matches_scene() -
     distractors = [entity for entity in entities if str(entity.get('role')) == 'distractor']
     assert out.answer_gt.type == 'option_letter'
     assert out.answer_gt.value == 'D'
-    assert out.annotation_gt.type == 'keyed_bbox_map'
+    assert out.annotation_gt.type == 'bbox_map'
     assert len(out.annotation_gt.value) == 2
     assert out.scene_id == 'named_field'
     assert out.query_id == 'second_closest_to_named_reference_label'
@@ -43,9 +43,9 @@ def test_icons_relation_named_reference_distance_rank_contract_matches_scene() -
         'selected_candidate': answer_entity['bbox_xyxy'],
     }
     assert out.annotation_gt.value == expected_annotation
-    assert trace['projected_annotation']['type'] == 'keyed_bbox_map'
-    assert trace['projected_annotation']['keyed_bbox_map'] == expected_annotation
-    assert trace['projected_annotation']['pixel_keyed_bbox_map'] == expected_annotation
+    assert trace['projected_annotation']['type'] == 'bbox_map'
+    assert trace['projected_annotation']['bbox_map'] == expected_annotation
+    assert trace['projected_annotation']['pixel_bbox_map'] == expected_annotation
     assert trace['render_spec']['style']['text_legibility']['required_role_count'] >= 2
     assert trace['render_spec']['style']['text_legibility']['failure_count'] == 0
     assert 'candidate_label_stroke_rgb' in trace['render_spec']['style']

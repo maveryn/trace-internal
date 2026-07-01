@@ -9,7 +9,15 @@
 6. Annotation schema: `point`
 
 ## Program Contract
-`difference(clue_value(marked_clue), adjacent_flag_count(marked_clue)); scene=minesweeper; scope=marked_clue_remaining_mine_count`
+
+Program: `difference(clue_value(marked_clue), adjacent_flag_count(marked_clue)); scene=minesweeper; scope=marked_clue_remaining_mine_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `marked_clue_remaining_mine_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `clue_value`, `marked_clue`, `adjacent_flag_count`, `minesweeper`, `marked_clue_remaining_mine_count`.
+Operation: evaluate `difference` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The scene marks exactly one opened clue cell.

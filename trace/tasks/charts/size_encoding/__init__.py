@@ -1,11 +1,13 @@
 """Chart scene package tasks."""
 
-from .category_total_extremum_label import ChartsSizeEncodingCategoryTotalExtremumLabelTask
+from .category_relative_size_count import ChartsSizeEncodingCategoryRelativeSizeCountTask
 from .filtered_item_extremum_label import ChartsSizeEncodingFilteredItemExtremumLabelTask
-from .reference_size_neighbor_label import ChartsSizeEncodingReferenceSizeNeighborLabelTask
+from .global_item_extremum_category_label import ChartsSizeEncodingGlobalItemExtremumCategoryLabelTask
+from .panel_category_extremum_panel_label import ChartsSizeEncodingPanelCategoryExtremumPanelLabelTask
 
 __all__ = [
-    "ChartsSizeEncodingCategoryTotalExtremumLabelTask",
+    "ChartsSizeEncodingCategoryRelativeSizeCountTask",
     "ChartsSizeEncodingFilteredItemExtremumLabelTask",
-    "ChartsSizeEncodingReferenceSizeNeighborLabelTask",
+    "ChartsSizeEncodingGlobalItemExtremumCategoryLabelTask",
+    "ChartsSizeEncodingPanelCategoryExtremumPanelLabelTask",
 ]

@@ -10,7 +10,15 @@
 7. Program schema: `label(select(candidate_cards, completes_pattern(partial_hand, candidate_card, target_pattern))); scene=cards; scope=missing_card_to_complete_hand_label`
 
 ## Program Contract
-- `label(select(candidate_cards, completes_pattern(partial_hand, candidate_card, target_pattern))); scene=cards; scope=missing_card_to_complete_hand_label`
+
+Program: `label(select(candidate_cards, completes_pattern(partial_hand, candidate_card, target_pattern))); scene=cards; scope=missing_card_to_complete_hand_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `missing_card_to_complete_hand_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `select`, `candidate_cards`, `completes_pattern`, `partial_hand`, `candidate_card`, `target_pattern`, `cards`, `missing_card_to_complete_hand_label` plus the active `query_id` branch.
+Operation: evaluate `label` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `missing_flush_card_label`, `missing_straight_card_label`, `missing_full_house_card_label`, `missing_three_of_kind_card_label`.
 
 ## Generation Notes
 2. Query ids are internal pattern branches inside the same public task contract.

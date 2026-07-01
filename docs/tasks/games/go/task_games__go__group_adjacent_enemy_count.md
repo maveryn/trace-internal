@@ -11,7 +11,15 @@
 7. Program schema: `count(filter(stones, adjacent_to_group(stone, marked_group) and stone_color=opponent_color)); scene=go; scope=group_adjacent_enemy_count`
 
 ## Program Contract
-- `count(filter(stones, adjacent_to_group(stone, marked_group) and stone_color=opponent_color)); scene=go; scope=group_adjacent_enemy_count`
+
+Program: `count(filter(stones, adjacent_to_group(stone, marked_group) and stone_color=opponent_color)); scene=go; scope=group_adjacent_enemy_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `group_adjacent_enemy_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `stones`, `adjacent_to_group`, `stone`, `marked_group`, `stone_color`, `opponent_color`, `go`, `group_adjacent_enemy_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The task samples a marked black or white connected group and asks for opponent stones touching it orthogonally.

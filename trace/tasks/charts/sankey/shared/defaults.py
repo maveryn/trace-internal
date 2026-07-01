@@ -12,8 +12,8 @@ from trace.tasks.charts.shared.visual_defaults import (
     load_chart_scene_noise_defaults,
     sample_chart_font_family,
 )
+from trace.tasks.charts.shared.flow import resolve_flow_required_int_bounds
 from trace.tasks.shared.config_defaults import (
-    resolve_required_int_bounds,
     split_scene_generation_rendering_prompt_defaults,
 )
 from trace.tasks.shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
@@ -91,7 +91,7 @@ def required_int_bounds(
     fallback_max: int,
     context: str,
 ) -> tuple[int, int]:
-    return resolve_required_int_bounds(
+    return resolve_flow_required_int_bounds(
         params,
         GEN_DEFAULTS,
         min_key=str(min_key),

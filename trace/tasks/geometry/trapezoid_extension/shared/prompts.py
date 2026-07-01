@@ -14,7 +14,7 @@ from trace.tasks.shared.prompt_variants import (
 from .state import DOMAIN, PROMPT_BUNDLE_ID, SCENE_ID, SCENE_PROMPT_KEY
 
 
-def _bbox_prompt_json_examples(annotation_keys: Sequence[str], answer: Any) -> tuple[str, str]:
+def _bbox_map_prompt_json_examples(annotation_keys: Sequence[str], answer: Any) -> tuple[str, str]:
     annotation: dict[str, list[int]] = {}
     for index, key in enumerate(annotation_keys):
         row = int(index) // 2
@@ -25,12 +25,21 @@ def _bbox_prompt_json_examples(annotation_keys: Sequence[str], answer: Any) -> t
     return dump_prompt_json_examples(annotation=annotation, answer=answer)
 
 
+def _scalar_prompt_json_examples(annotation_type: str, answer: Any) -> tuple[str, str]:
+    if str(annotation_type) == "segment":
+        return dump_prompt_json_examples(annotation=[[320, 180], [520, 180]], answer=answer)
+    if str(annotation_type) == "bbox":
+        return dump_prompt_json_examples(annotation=[120, 180, 620, 430], answer=answer)
+    raise ValueError(f"unsupported trapezoid-extension annotation type: {annotation_type}")
+
+
 def build_trapezoid_extension_prompt_artifacts(
     *,
     prompt_defaults: Mapping[str, Any],
     task_prompt_key: str,
     prompt_branch_key: str,
     annotation_roles: Sequence[str],
+    annotation_type: str,
     answer_value: float,
     instance_seed: int,
 ):
@@ -38,14 +47,24 @@ def build_trapezoid_extension_prompt_artifacts(
 
     annotation_keys = tuple(str(role) for role in annotation_roles)
     annotation_key_list = ", ".join(f'"{key}"' for key in annotation_keys)
-    json_example, json_example_answer_only = _bbox_prompt_json_examples(
-        annotation_keys,
-        round(float(answer_value), 1),
-    )
-    annotation_instruction = (
-        "set \"annotation\" to a JSON object with exactly these visible region keys: "
-        f"{annotation_key_list}; each value must be the pixel bounding box [x0,y0,x1,y1] around that region"
-    )
+    if str(annotation_type) in {"bbox", "segment"}:
+        json_example, json_example_answer_only = _scalar_prompt_json_examples(
+            str(annotation_type),
+            round(float(answer_value), 1),
+        )
+        if str(annotation_type) == "segment":
+            annotation_instruction = 'set "annotation" to [[x0,y0],[x1,y1]] for segment BE'
+        else:
+            annotation_instruction = 'set "annotation" to [x0,y0,x1,y1] around the original trapezoid'
+    else:
+        json_example, json_example_answer_only = _bbox_map_prompt_json_examples(
+            annotation_keys,
+            round(float(answer_value), 1),
+        )
+        annotation_instruction = (
+            "set \"annotation\" to a JSON object with exactly these visible region keys: "
+            f"{annotation_key_list}; each value must be the pixel bounding box [x0,y0,x1,y1] around that region"
+        )
     prompt_selection = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,

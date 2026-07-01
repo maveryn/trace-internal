@@ -41,7 +41,7 @@ def point_set_from_ids(
     return points
 
 
-def keyed_point_map_from_ids(
+def point_map_from_ids(
     *,
     rendered: RenderedCurvePanels,
     keyed_point_ids: Mapping[str, str],
@@ -87,19 +87,30 @@ def projected_annotation_payload(
             "pixel_bbox_set": list(bbox_set),
             "panel_labels": list(dataset.query.annotation_panel_labels),
         }
-    if str(annotation_type) == "keyed_point_map":
-        keyed_point_map = {
+    if str(annotation_type) == "point_map":
+        point_map = {
             str(key): list(point) for key, point in dict(annotation).items()
         }
         return {
-            "type": "keyed_point_map",
-            "keyed_point_map": dict(keyed_point_map),
-            "pixel_keyed_point_map": dict(keyed_point_map),
+            "type": "point_map",
+            "point_map": dict(point_map),
+            "pixel_point_map": dict(point_map),
             "panel_labels": list(dataset.query.annotation_panel_labels),
             "keyed_point_ids": dict(dataset.query.annotation_keyed_point_ids),
             "point_ids": list(dataset.query.annotation_keyed_point_ids.values()),
             "intersection_ids": [],
             "threshold_crossing_ids": [],
+        }
+    if str(annotation_type) == "point":
+        point = list(annotation)
+        return {
+            "type": "point",
+            "point": list(point),
+            "pixel_point": list(point),
+            "panel_labels": list(dataset.query.annotation_panel_labels),
+            "point_ids": list(dataset.query.annotation_point_ids),
+            "intersection_ids": list(dataset.query.annotation_intersection_ids),
+            "threshold_crossing_ids": list(dataset.query.annotation_threshold_crossing_ids),
         }
     point_set = [list(point) for point in list(annotation)]
     return {
@@ -116,7 +127,7 @@ def projected_annotation_payload(
 __all__ = [
     "bbox_center",
     "bbox_set_from_panel_labels",
-    "keyed_point_map_from_ids",
+    "point_map_from_ids",
     "point_set_from_ids",
     "projected_annotation_payload",
 ]

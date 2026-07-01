@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Sequence, Tuple
+from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
@@ -20,7 +20,12 @@ from trace.tasks.puzzles.shared.scene_style import (
     puzzle_scene_style_metadata,
     resolve_puzzle_scene_style,
 )
-from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.shared.bbox_projection import bbox_union
+from trace.tasks.shared.text_legibility import (
+    draw_centered_readable_text,
+    draw_text_traced,
+    resolve_readable_text_style,
+)
 from trace.tasks.shared.text_rendering import fit_font_to_box
 
 from .rules import coord_to_cell_id, unit_coords
@@ -124,6 +129,80 @@ def _draw_digit(
     )
 
 
+def _draw_option_label(
+    draw: ImageDraw.ImageDraw,
+    *,
+    bbox_px: Tuple[float, float, float, float],
+    label: str,
+    theme: SudokuTheme,
+    font_family: str = "",
+    filled_cell: bool,
+    instance_seed: int,
+) -> Tuple[float, float, float, float]:
+    """Draw an in-cell option label badge and return its bbox."""
+
+    left, top, right, bottom = bbox_px
+    width = float(right - left)
+    height = float(bottom - top)
+    badge_size = float(min(width, height) * (0.34 if bool(filled_cell) else 0.54))
+    pad = float(min(width, height) * 0.08)
+    if bool(filled_cell):
+        badge_left = float(left + pad)
+        badge_top = float(top + pad)
+    else:
+        badge_left = float(left + (0.5 * (width - badge_size)))
+        badge_top = float(top + (0.5 * (height - badge_size)))
+    badge_bbox = (
+        badge_left,
+        badge_top,
+        float(badge_left + badge_size),
+        float(badge_top + badge_size),
+    )
+    badge_fill_rgb = (250, 252, 255)
+    badge_fill = (*badge_fill_rgb, 255)
+    badge_outline = tuple(int(v) for v in theme.box_line_rgb) + (255,)
+    draw.rounded_rectangle(
+        badge_bbox,
+        radius=max(4, int(round(badge_size * 0.22))),
+        fill=badge_fill,
+        outline=badge_outline,
+        width=max(1, int(round(badge_size * 0.06))),
+    )
+    text = str(label)
+    font = fit_font_to_box(
+        draw,
+        text=text,
+        max_width=float(badge_size * 0.72),
+        max_height=float(badge_size * 0.72),
+        bold=True,
+        min_size_px=12,
+        max_size_px=max(14, int(round(badge_size * 0.62))),
+        fill_ratio=0.86,
+        font_family=str(font_family) or None,
+    )
+    style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"puzzles.sudoku.option_label.{str(label)}",
+        role="option_label",
+        surface_rgbs=(badge_fill_rgb,),
+        preferred_rgbs=((10, 14, 22), (24, 31, 44)),
+        required=True,
+    )
+    draw_centered_readable_text(
+        draw,
+        center=(
+            float(badge_bbox[0] + (0.5 * badge_size)),
+            float(badge_bbox[1] + (0.5 * badge_size)),
+        ),
+        text=text,
+        font=font,
+        style=style,
+        stroke_width=max(1, int(round(badge_size * 0.045))),
+        extra_metadata={"option_label": str(label), "badge_bbox_px": list(badge_bbox)},
+    )
+    return tuple(round(float(value), 3) for value in badge_bbox)
+
+
 def render_sudoku_grid_scene(
     *,
     board: Board,
@@ -134,6 +213,7 @@ def render_sudoku_grid_scene(
     highlighted_unit_index: int | None = None,
     marked_cell: Coord | None = None,
     conflict_coords: Sequence[Coord] = (),
+    option_specs: Sequence[Mapping[str, Any]] = (),
     panel_style: PuzzleSceneStyle | None = None,
 ) -> RenderedSudokuScene:
     """Render one Sudoku grid with optional highlighted unit and marked cell."""
@@ -209,6 +289,22 @@ def render_sudoku_grid_scene(
         highlighted_coords = set(
             unit_coords(str(highlighted_unit_type), int(highlighted_unit_index))
         )
+    highlighted_cell_ids = [
+        coord_to_cell_id(coord) for coord in sorted(highlighted_coords)
+    ]
+    highlighted_unit_bboxes = [
+        _cell_bbox(
+            board_left=board_left,
+            board_top=board_top,
+            cell_size=cell_size,
+            row=row,
+            col=col,
+        )
+        for row, col in sorted(highlighted_coords)
+    ]
+    highlighted_unit_bbox_px = (
+        bbox_union(highlighted_unit_bboxes) if highlighted_unit_bboxes else None
+    )
     for row, col in sorted(highlighted_coords):
         draw.rectangle(
             _cell_bbox(
@@ -237,6 +333,14 @@ def render_sudoku_grid_scene(
     scene_entities: list[Dict[str, Any]] = []
     cell_specs: list[SudokuCellSpec] = []
     conflict_set = {(int(row), int(col)) for row, col in conflict_coords}
+    option_label_by_coord = {
+        (int(spec["row"]), int(spec["col"])): str(spec["label"])
+        for spec in option_specs
+    }
+    option_cell_ids_by_label = {
+        str(spec["label"]): coord_to_cell_id((int(spec["row"]), int(spec["col"])))
+        for spec in option_specs
+    }
     for row in range(SIZE):
         for col in range(SIZE):
             cell_id = coord_to_cell_id((row, col))
@@ -269,6 +373,7 @@ def render_sudoku_grid_scene(
                     "value": int(value),
                     "filled": bool(value != 0),
                     "highlighted": bool((row, col) in highlighted_coords),
+                    "option_label": option_label_by_coord.get((row, col)),
                     "marked": bool(
                         marked_cell is not None
                         and (row, col) == (int(marked_cell[0]), int(marked_cell[1]))
@@ -341,12 +446,33 @@ def render_sudoku_grid_scene(
             extra_metadata={"cell_id": coord_to_cell_id((mark_row, mark_col))},
         )
 
+    option_badge_bboxes_px: Dict[str, list[float]] = {}
+    for spec in option_specs:
+        label = str(spec["label"])
+        row, col = int(spec["row"]), int(spec["col"])
+        cell_id = coord_to_cell_id((row, col))
+        badge_bbox = _draw_option_label(
+            draw,
+            bbox_px=tuple(float(value) for value in cell_bboxes_px[cell_id]),
+            label=label,
+            theme=theme,
+            font_family=str(params.font_family),
+            filled_cell=bool(int(board[row][col]) != 0),
+            instance_seed=int(params.instance_seed),
+        )
+        option_badge_bboxes_px[label] = list(badge_bbox)
+
     render_map = {
         "board_bbox_px": list(board_bbox),
         "cell_bboxes_px": dict(cell_bboxes_px),
-        "highlighted_cell_ids": [
-            coord_to_cell_id(coord) for coord in sorted(highlighted_coords)
-        ],
+        "option_cell_ids_by_label": dict(option_cell_ids_by_label),
+        "option_cell_bboxes_px": {
+            str(label): list(cell_bboxes_px[str(cell_id)])
+            for label, cell_id in option_cell_ids_by_label.items()
+        },
+        "option_badge_bboxes_px": dict(option_badge_bboxes_px),
+        "highlighted_cell_ids": list(highlighted_cell_ids),
+        "highlighted_unit_bbox_px": highlighted_unit_bbox_px,
         "marked_cell_id": (
             coord_to_cell_id(marked_cell) if marked_cell is not None else None
         ),
@@ -366,6 +492,24 @@ def render_sudoku_grid_scene(
         cell_specs=tuple(cell_specs),
         scene_entities=tuple(scene_entities),
         render_map=render_map,
+    )
+
+
+def _repeated_digit_conflict_coords(sample: SudokuSample) -> tuple[Coord, ...]:
+    """Return highlighted-unit cells whose visible digit is one of the repeats."""
+
+    if sample.highlighted_unit_type is None or sample.highlighted_unit_index is None:
+        return ()
+    repeated = {int(value) for value in sample.repeated_digit_values}
+    if not repeated:
+        return ()
+    return tuple(
+        coord
+        for coord in unit_coords(
+            str(sample.highlighted_unit_type),
+            int(sample.highlighted_unit_index),
+        )
+        if int(sample.board[int(coord[0])][int(coord[1])]) in repeated
     )
 
 
@@ -398,10 +542,11 @@ def render_sudoku_visual_artifacts(
         highlighted_unit_index=sample.highlighted_unit_index,
         marked_cell=sample.marked_cell,
         conflict_coords=(
-            sample.annotation_coords
+            _repeated_digit_conflict_coords(sample)
             if sample.construction_mode == "highlighted_unit_repeats"
             else ()
         ),
+        option_specs=sample.option_specs,
         panel_style=panel_style,
     )
     image, post_noise_meta = apply_post_image_noise(

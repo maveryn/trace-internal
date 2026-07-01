@@ -117,7 +117,7 @@ def projected_symbolic_keyed_bbox_annotation(
     bbox_map: Mapping[str, Sequence[float]],
     role_item_ids: Mapping[str, str],
 ) -> Dict[str, Any]:
-    """Project role-bound symbolic item ids into prompt-facing `keyed_bbox_map` annotation."""
+    """Project role-bound symbolic item ids into prompt-facing `bbox_map` annotation."""
 
     keyed_bboxes: Dict[str, list[float]] = {}
     for role, item_id in role_item_ids.items():
@@ -126,8 +126,8 @@ def projected_symbolic_keyed_bbox_annotation(
             raise RuntimeError(f"missing bbox annotation for role {role!r}: item id {key!r}")
         keyed_bboxes[str(role)] = list(bbox_map[key])
     return {
-        "keyed_bbox_map": {str(role): list(bbox) for role, bbox in keyed_bboxes.items()},
-        "pixel_keyed_bbox_map": {str(role): list(bbox) for role, bbox in keyed_bboxes.items()},
+        "bbox_map": {str(role): list(bbox) for role, bbox in keyed_bboxes.items()},
+        "pixel_bbox_map": {str(role): list(bbox) for role, bbox in keyed_bboxes.items()},
     }
 
 

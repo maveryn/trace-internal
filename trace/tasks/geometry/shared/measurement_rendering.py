@@ -11,6 +11,7 @@ from ...shared.text_legibility import (
     contrast_ratio,
     draw_text_traced,
 )
+from ...shared.text_rendering import symbol_safe_font_for_text
 
 from .vector2d import add, mid, mul, perp, sub, unit
 
@@ -160,8 +161,9 @@ def draw_label_backplate(
 def draw_label(ctx: Any, text: str, center: Point, *, small: bool = False) -> BBox:
     """Draw centered measurement text using the task render context contract."""
 
-    font = ctx.small_font if bool(small) else ctx.font
-    bbox = ctx.draw.textbbox((0, 0), str(text), font=font, stroke_width=1)
+    font = symbol_safe_font_for_text(str(text), ctx.small_font if bool(small) else ctx.font)
+    stroke_width = max(0, int(getattr(ctx, "label_stroke_width", 1)))
+    bbox = ctx.draw.textbbox((0, 0), str(text), font=font, stroke_width=stroke_width)
     text_w = float(bbox[2] - bbox[0])
     text_h = float(bbox[3] - bbox[1])
     left = float(center[0]) - (text_w / 2.0)
@@ -171,7 +173,7 @@ def draw_label(ctx: Any, text: str, center: Point, *, small: bool = False) -> BB
         str(text),
         font=font,
         fill=ctx.label_color,
-        stroke_width=1,
+        stroke_width=stroke_width,
         stroke_fill=ctx.label_stroke_color,
      role="readout", required=False,)
     return pad_bbox((left, top, left + text_w, top + text_h), 4.0, width=ctx.width, height=ctx.height)
@@ -189,7 +191,7 @@ def draw_readout_centered(
 ) -> BBox:
     """Draw centered readout text, with label backing only when explicitly requested."""
 
-    font = ctx.small_font if bool(small) else ctx.font
+    font = symbol_safe_font_for_text(str(text), ctx.small_font if bool(small) else ctx.font)
     stroke_width = max(0, int(getattr(ctx, "label_stroke_width", 0)))
     bbox = ctx.draw.textbbox(
         (float(center[0]), float(center[1])),

@@ -5,7 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping
 
-from trace.core.sampling import integer_range_choice, support_probability_map, weighted_support_choice
+from trace.core.sampling import (
+    integer_range_choice,
+    support_probability_map,
+    uniform_choice_with_probabilities,
+    weighted_support_choice,
+)
 from trace.core.seed import spawn_rng
 from trace.tasks.puzzles.shared.unit_size_jitter import (
     resolve_puzzle_unit_size_scale,
@@ -14,6 +19,7 @@ from trace.tasks.puzzles.shared.unit_size_jitter import (
 from trace.tasks.shared.config_defaults import group_default
 
 from .state import (
+    GAP_SIZE_VARIANTS,
     GRID_SIZE_VARIANTS,
     LABEL_POOL,
     SCENE_VARIANTS,
@@ -26,27 +32,29 @@ from .state import (
 class PipeFlowDefaults:
     """Fallback defaults for the pipe-flow scene."""
 
-    grid_size_min: int = 6
-    grid_size_max: int = 10
-    path_length_min: int = 10
-    path_length_max: int = 24
+    grid_size_min: int = 5
+    grid_size_max: int = 7
+    path_length_min: int = 8
+    path_length_max: int = 16
     candidate_count_min: int = 4
     candidate_count_max: int = 4
-    branch_count_min: int = 2
-    branch_count_max: int = 5
-    branch_length_min: int = 2
-    branch_length_max: int = 4
-    canvas_width: int = 1120
-    canvas_height: int = 900
-    scene_margin_px: int = 72
-    panel_padding_px: int = 24
+    branch_count_min: int = 0
+    branch_count_max: int = 0
+    branch_length_min: int = 0
+    branch_length_max: int = 0
+    canvas_width: int = 760
+    canvas_height: int = 720
+    scene_margin_px: int = 48
+    panel_padding_px: int = 18
     panel_corner_radius_px: int = 22
     panel_border_width_px: int = 3
     cell_gap_px: int = 3
+    cell_size_min_px: int = 24
+    cell_size_max_px: int = 34
     cell_border_width_px: int = 2
-    pipe_width_px: int = 12
+    pipe_width_px: int = 10
     source_dest_font_size_px: int = 15
-    tile_label_font_size_px: int = 18
+    tile_label_font_size_px: int = 16
     panel_fill_rgb: Color = (248, 250, 252)
     cell_fill_rgb: Color = (255, 255, 255)
     grid_line_rgb: Color = (196, 203, 215)
@@ -126,6 +134,27 @@ def resolve_render_params(
         raw = to_int(params.get(key, group_default(render_defaults, key, fallback)), fallback)
         return scale_puzzle_px(raw, unit_scale, min_px=int(min_px))
 
+    cell_size_min_px = max(
+        1,
+        to_int(
+            params.get(
+                "cell_size_min_px",
+                group_default(render_defaults, "cell_size_min_px", DEFAULTS.cell_size_min_px),
+            ),
+            DEFAULTS.cell_size_min_px,
+        ),
+    )
+    cell_size_max_px = max(
+        cell_size_min_px,
+        to_int(
+            params.get(
+                "cell_size_max_px",
+                group_default(render_defaults, "cell_size_max_px", DEFAULTS.cell_size_max_px),
+            ),
+            DEFAULTS.cell_size_max_px,
+        ),
+    )
+
     return RenderParams(
         canvas_width=max(
             760,
@@ -158,6 +187,8 @@ def resolve_render_params(
             scaled_int("panel_border_width_px", DEFAULTS.panel_border_width_px, min_px=1),
         ),
         cell_gap_px=max(0, scaled_int("cell_gap_px", DEFAULTS.cell_gap_px, min_px=2)),
+        cell_size_min_px=int(cell_size_min_px),
+        cell_size_max_px=int(cell_size_max_px),
         cell_border_width_px=max(
             1,
             scaled_int("cell_border_width_px", DEFAULTS.cell_border_width_px, min_px=1),
@@ -319,6 +350,24 @@ def resolve_grid_size_variant(
     )
 
 
+def resolve_gap_size_variant(
+    rng,
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+) -> tuple[str, dict[str, float]]:
+    """Resolve the missing-region size variant for one pipe-flow sample."""
+
+    return resolve_axis_choice(
+        rng,
+        params=params,
+        gen_defaults=gen_defaults,
+        supported_values=GAP_SIZE_VARIANTS,
+        explicit_key="gap_size_variant",
+        weights_key="gap_size_variant_weights",
+    )
+
+
 def resolve_scene_variant(
     rng,
     *,
@@ -372,3 +421,24 @@ def resolve_candidate_count(
         ),
     )
     return integer_range_choice(rng, int(low), int(high))
+
+
+def resolve_answer_label(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    candidate_count: int,
+    namespace: str,
+) -> tuple[str, dict[str, float]]:
+    """Resolve the correct candidate label as a task-owned semantic operand."""
+
+    labels = tuple(LABEL_POOL[index] for index in range(int(candidate_count)))
+    explicit = params.get("answer_label")
+    if explicit is not None:
+        selected = str(explicit).strip().upper()
+        if selected not in set(labels):
+            raise ValueError(f"answer_label {selected!r} outside candidate labels")
+        return selected, support_probability_map(labels, selected=selected)
+    rng = spawn_rng(int(instance_seed), f"{namespace}.answer_label")
+    selected, probabilities = uniform_choice_with_probabilities(rng, labels)
+    return str(selected), dict(probabilities)

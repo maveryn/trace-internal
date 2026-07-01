@@ -42,16 +42,16 @@ def resolve_option_count(
     params: Mapping[str, Any],
     generation_defaults: Mapping[str, Any],
 ) -> int:
-    """Resolve Rubik option count; this scene currently renders six choices."""
+    """Resolve Rubik option count; this scene currently renders four choices."""
 
     value = int(
         params.get(
             "option_count",
-            group_default(generation_defaults, "option_count", 6),
+            group_default(generation_defaults, "option_count", 4),
         )
     )
-    if int(value) != 6:
-        raise ValueError("Rubik cube-net tasks require exactly 6 options")
+    if int(value) != 4:
+        raise ValueError("Rubik cube-net tasks require exactly 4 options")
     return int(value)
 
 
@@ -168,15 +168,6 @@ def resolve_render_params(
             _int_value(merged, "main_cell_size_px", defaults.main_cell_size_px),
             unit_scale,
             min_px=18,
-        ),
-        candidate_cell_size_px=scale_puzzle_px(
-            _int_value(
-                merged,
-                "candidate_cell_size_px",
-                defaults.candidate_cell_size_px,
-            ),
-            unit_scale,
-            min_px=7,
         ),
         face_gap_px=_int_value(merged, "face_gap_px", defaults.face_gap_px),
         net_panel_padding_px=scale_puzzle_px(

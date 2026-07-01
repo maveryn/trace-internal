@@ -14,13 +14,28 @@ from trace.tasks.shared.prompt_variants import (
 from .state import DOMAIN, PROMPT_BUNDLE_ID, SCENE_ID, SCENE_PROMPT_KEY
 
 
-def _bbox_prompt_json_examples(annotation_keys: Sequence[str], answer: Any) -> tuple[str, str]:
-    annotation: dict[str, list[int]] = {}
-    for index, key in enumerate(annotation_keys):
-        x0 = int(88 + int(index) * 136)
-        y0 = int(96 + int(index % 2) * 82)
-        annotation[str(key)] = [x0, y0, x0 + 86, y0 + 56]
-    return dump_prompt_json_examples(annotation=annotation, answer=answer)
+def _example_answer_value(answer_value: Any, answer_type: str) -> Any:
+    if str(answer_type) == "integer":
+        return int(round(float(answer_value)))
+    return round(float(answer_value), 1)
+
+
+def _bbox_prompt_json_examples(answer: Any) -> tuple[str, str]:
+    return dump_prompt_json_examples(annotation=[88, 96, 430, 360], answer=answer)
+
+
+def tangent_packing_object_description(construction_kind: str) -> str:
+    """Return prompt-facing scene wording for the selected construction."""
+
+    descriptions = {
+        "circle_in_square": "a circle tangent inside a square with visible measurements and one marked target value",
+        "square_in_circle": "a square tangent inside a circle with visible measurements and one marked target value",
+        "two_circles_in_rectangle": "two equal circles tangent inside a rectangle with visible measurements and one marked target value",
+    }
+    return descriptions.get(
+        str(construction_kind),
+        "a tangent-packing diagram with visible measurements and one marked target value",
+    )
 
 
 def build_tangent_packing_prompt_artifacts(
@@ -29,17 +44,20 @@ def build_tangent_packing_prompt_artifacts(
     task_prompt_key: str,
     prompt_query_key: str,
     annotation_roles: Sequence[str],
-    answer_value: float,
+    answer_value: float | int,
+    answer_type: str,
+    object_description: str,
     instance_seed: int,
 ):
     """Render v1 prompt variants for one tangent-packing public objective."""
 
-    annotation_keys = tuple(str(role) for role in annotation_roles)
-    annotation_key_list = ", ".join(f'"{key}"' for key in annotation_keys)
-    json_example, json_example_answer_only = _bbox_prompt_json_examples(annotation_keys, round(float(answer_value), 1))
+    _ = tuple(str(role) for role in annotation_roles)
+    json_example, json_example_answer_only = _bbox_prompt_json_examples(
+        _example_answer_value(answer_value, answer_type)
+    )
     annotation_instruction = (
-        "set \"annotation\" to a JSON object with exactly these visible region keys: "
-        f"{annotation_key_list}; each value must be the pixel bounding box [x0,y0,x1,y1] around that region"
+        "set \"annotation\" to the pixel bounding box [x0,y0,x1,y1] around the marked target geometric "
+        "region or shape, excluding numeric labels and measurement text"
     )
     prompt_selection = render_scene_prompt_variants(
         domain=DOMAIN,
@@ -50,8 +68,9 @@ def build_tangent_packing_prompt_artifacts(
         query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         dynamic_slots={
+            "object_description": str(object_description),
             "annotation_instruction": str(annotation_instruction),
-            "annotation_key_list": str(annotation_key_list),
+            "annotation_key_list": "diagram",
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
         },
@@ -60,4 +79,4 @@ def build_tangent_packing_prompt_artifacts(
     return build_prompt_trace_artifacts(prompt_selection)
 
 
-__all__ = ["build_tangent_packing_prompt_artifacts"]
+__all__ = ["build_tangent_packing_prompt_artifacts", "tangent_packing_object_description"]

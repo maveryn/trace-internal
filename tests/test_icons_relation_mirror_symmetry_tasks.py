@@ -35,7 +35,7 @@ def test_icons_relation_mirror_symmetry_match_contract_matches_scene() -> None:
     assert len(matching_entities) == 1
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "C"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     assert sorted(out.annotation_gt.value) == ["matching_option_cell", "reference_cell"]
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert trace["query_spec"]["prompt_variant_active_key"] == "answer_and_annotation"
@@ -57,8 +57,8 @@ def test_icons_relation_mirror_symmetry_match_contract_matches_scene() -> None:
     matching_cell = matching_entities[0]
     assert str(matching_cell["label"]) == "C"
     assert out.annotation_gt.value["matching_option_cell"] == list(matching_cell["cell_bbox_xyxy"])
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
 
     assert str(reference_cell["symmetry_id"]) == "mirror_diagonal_main"
     assert bool(reference_cell["has_vertical_symmetry"]) is False

@@ -24,10 +24,15 @@ of the extremum predicate. The selected option is determined only by total
 visible element count.
 
 ## Program Contract
-- `label(select_panel(candidate_surface_fixture_panels, extremum(total_visible_element_count, highest|lowest))); scene=surface_fixture; scope=element_count_extremum_label`
 
-The `highest_element_count` query binds `extremum_kind=highest`; the
-`lowest_element_count` query binds `extremum_kind=lowest`.
+Program: `label(select_panel(candidate_surface_fixture_panels, extremum(total_visible_element_count, highest|lowest))); scene=surface_fixture; scope=element_count_extremum_label`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `element_count_extremum_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `select_panel`, `candidate_surface_fixture_panels`, `extremum`, `total_visible_element_count`, `highest`, `lowest`, `surface_fixture`, `element_count_extremum_label` plus the active `query_id` branch.
+Operation: evaluate `label` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `highest_element_count`, `lowest_element_count`.
 
 ## Annotation Contract
 Annotation is the pixel box around the selected option panel. Individual

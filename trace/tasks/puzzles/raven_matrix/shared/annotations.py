@@ -11,15 +11,15 @@ from trace.tasks.shared.annotation_artifacts import (
 
 
 def selected_option_bbox_annotation(
-    option_panel_bbox_map: Mapping[str, Sequence[float]],
+    option_cell_bbox_map: Mapping[str, Sequence[float]],
     option_panel_id: str,
 ) -> AnnotationArtifacts:
-    """Project the selected option panel as a scalar bbox annotation."""
+    """Project the selected option cell as a scalar bbox annotation."""
 
     key = str(option_panel_id)
-    if key not in option_panel_bbox_map:
-        raise RuntimeError(f"missing Raven option panel bbox: {key!r}")
-    return bbox_annotation_artifacts(option_panel_bbox_map[key])
+    if key not in option_cell_bbox_map:
+        raise RuntimeError(f"missing Raven option cell bbox: {key!r}")
+    return bbox_annotation_artifacts(option_cell_bbox_map[key])
 
 
 __all__ = ["selected_option_bbox_annotation"]

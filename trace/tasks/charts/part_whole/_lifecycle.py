@@ -206,6 +206,7 @@ def _build_trace_payload(
             "scene_id": SCENE_ID,
             "scene_variant": str(scene_variant),
             "background_style": dict(rendered.background_meta),
+            "information_scene_style": dict(rendered.background_meta.get("information_scene_style", {})),
             "post_image_noise": dict(rendered.post_noise_meta),
             "font_assets": dict(rendered.font_assets),
             "layout_jitter": dict(rendered_scene.layout_jitter_meta),

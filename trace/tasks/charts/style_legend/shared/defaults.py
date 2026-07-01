@@ -5,19 +5,21 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from trace.core.sampling import uniform_choice
 from trace.core.scene_config import get_scene_defaults
 from trace.core.seed import spawn_rng
 from trace.tasks.charts.shared.visual_defaults import (
     load_chart_scene_background_defaults,
     load_chart_scene_noise_defaults,
+    render_style_seed,
+    resolve_chart_render_int,
+    resolve_chart_render_rgb,
 )
 from trace.tasks.shared.config_defaults import (
     group_default,
     resolve_required_int_bounds,
     split_scene_generation_rendering_prompt_defaults,
 )
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
-from trace.tasks.shared.render_variation import resolve_render_int, resolve_render_rgb
 
 from .state import RGB, SCENE_ID, SCENE_NAMESPACE, SUPPORTED_LEGEND_POSITIONS, SUPPORTED_STYLE_PALETTE_MODES
 
@@ -35,47 +37,23 @@ def gen_int(params: Mapping[str, Any], key: str, fallback: int) -> int:
     return int(params.get(str(key), group_default(GEN_DEFAULTS, str(key), int(fallback))))
 
 
-def render_style_seed(params: Mapping[str, Any]) -> int:
-    try:
-        return int(params.get("_render_style_seed", params.get("_sample_cursor", 0)) or 0)
-    except Exception:
-        return 0
-
-
 def resolve_int(params: Mapping[str, Any], key: str, fallback: int) -> int:
-    return int(
-        resolve_render_int(
-            params,
-            RENDER_DEFAULTS,
-            str(key),
-            int(fallback),
-            instance_seed=render_style_seed(params),
-            namespace=SCENE_NAMESPACE,
-        )
-    )
+    return resolve_chart_render_int(params, RENDER_DEFAULTS, str(key), int(fallback), namespace=SCENE_NAMESPACE)
 
 
 def resolve_rgb(params: Mapping[str, Any], key: str, fallback: RGB) -> RGB:
-    return resolve_render_rgb(
-        params,
-        RENDER_DEFAULTS,
-        str(key),
-        fallback,
-        instance_seed=render_style_seed(params),
-        namespace=SCENE_NAMESPACE,
-    )
-
-
-def selection_index(params: Mapping[str, Any], *, instance_seed: int, namespace: str) -> int:
-    return abs(int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))))
+    return resolve_chart_render_rgb(params, RENDER_DEFAULTS, str(key), fallback, namespace=SCENE_NAMESPACE)
 
 
 def balanced_choice(values: Sequence[Any], params: Mapping[str, Any], *, instance_seed: int, namespace: str) -> Any:
+    """Sample uniformly from one explicit semantic support."""
+
+    del params
     support = tuple(values)
     if not support:
         raise ValueError(f"empty support for {namespace}")
-    index = selection_index(params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return support[int(index) % len(support)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    return uniform_choice(rng, support)
 
 
 def normalize_weights(raw: Mapping[str, float]) -> dict[str, float]:

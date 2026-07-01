@@ -14,6 +14,17 @@ def _bbox_center(bbox: Sequence[float]) -> tuple[float, float]:
     )
 
 
+def _bbox_min_side(bbox: Sequence[float]) -> float:
+    return min(float(bbox[2]) - float(bbox[0]), float(bbox[3]) - float(bbox[1]))
+
+
+def _bbox_contains_point(bbox: Sequence[float], point: Sequence[float]) -> bool:
+    return (
+        float(bbox[0]) <= float(point[0]) <= float(bbox[2])
+        and float(bbox[1]) <= float(point[1]) <= float(bbox[3])
+    )
+
+
 def assert_option_panel_matches_candidates(
     output: Any,
     candidate_specs: Sequence[Mapping[str, Any]],
@@ -78,7 +89,19 @@ def assert_option_panel_matches_candidates(
         assert abs(float(text_center[0]) - float(badge_center[0])) <= 1.25
         assert abs(float(text_center[1]) - float(badge_center[1])) <= 1.25
 
-    assert annotation_bboxes == [render_map["object_bboxes_px"][str(answer_object_id)]]
+    raw_answer_bbox = [round(float(value), 3) for value in render_map["object_bboxes_px"][str(answer_object_id)]]
+    if "annotation_bboxes_px" in render_map:
+        normalized_answer_bbox = [round(float(value), 3) for value in render_map["annotation_bboxes_px"][0]]
+        assert [[round(float(value), 3) for value in bbox] for bbox in render_map["annotation_raw_bboxes_px"]] == [
+            raw_answer_bbox
+        ]
+    else:
+        normalized_answer_bbox = list(raw_answer_bbox)
+    assert annotation_bboxes == [normalized_answer_bbox]
+    assert _bbox_min_side(normalized_answer_bbox) >= 24.0
+    assert _bbox_contains_point(normalized_answer_bbox, _bbox_center(raw_answer_bbox))
+    if output.annotation_gt.type == "bbox":
+        assert output.trace_payload["projected_annotation"]["bbox"] == normalized_answer_bbox
     assert str(answer_label) in option_bboxes
     assert annotation_bbox[3] <= panel_bbox[1]
     assert annotation_bboxes[0] != option_bboxes[str(answer_label)]

@@ -1,26 +1,27 @@
 # `task_pages__form_section__sum_minus_amount_in_section_value`
 
-## 1) Identity
+## Identity
 1. Domain: `pages`
-2. Scene: `arithmetic`
-3. Scene id: `form_section`
+2. Scene id: `form_section`
+3. Source scene: `form_section`
 4. Task id: `task_pages__form_section__sum_minus_amount_in_section_value`
-5. Objective: Compute a visible two-term sum minus a third visible amount in one named document section.
 
-## 2) Scene + Task Contract
-1. Supported `query_id` values: `sum_minus_amount_in_section`
-2. `answer_gt.type`: `string`
-3. `annotation_gt.type`: `keyed_bbox_map`
-4. Annotation witness policy: Operand value boxes keyed as first_operand, second_operand, and third_operand.
-5. `query_id` is retained as internal replay metadata; this public task id is the sampling unit.
+## Contract
+1. Objective: compute one visible amount plus a second visible amount minus a third visible amount in one named document section.
+2. Public task contract: `sum_minus_amount_in_section_value`
+3. Supported `query_id` values: `single`
+4. Answer type: `string`
+5. Annotation schema: `bbox_map`
+6. Annotation witness: full operand field boxes, including label and value, keyed as `first_operand`, `second_operand`, and `third_operand`.
+7. Query argument axes: scene variant, section label, first addend label, second addend label, and subtrahend label.
 
-## 3) Prompt Contract
-1. `prompt_bundle_id`: `pages_arithmetic_v0`
-2. Prompt templates come from `prompts/pages/arithmetic/` and are rendered with the scene layer plus task/query layer.
-3. Output modes: `answer_only` and `answer_and_annotation`.
-4. Annotation examples must match the role names and annotation type above.
+## Program Contract
+- `section_arithmetic_value(section=resolved_section, operands=[first_amount, second_amount, third_amount], operators=[add, subtract]); output=currency_string; annotation=bbox_map(first_operand_field, second_operand_field, third_operand_field); scene=form_section; scope=one structured document page`
 
-## 4) Determinism + Constraints
-1. Generation is deterministic for `instance_seed` plus params.
-2. Answers and annotation come from the same rendered trace payload.
-3. The generator constructs unique final answers and rejects invalid samples instead of semantically relaxing constraints.
+## Prompt + Trace
+1. Prompt bundle: `pages_form_section_v1`
+2. Scene key: `structured_document_sections`
+3. Task key: `section_expression_query`
+4. Prompt query key: `sum_minus_amount_in_section_value`
+5. Trace records the scene variant, target section, operand field ids/labels/values, operator sequence, result cents/value, rendered field boxes and value text boxes, and sampled visual metadata.
+6. Generation is deterministic from `instance_seed`; answer comes from the finalized rendered operand values and annotation comes from the finalized rendered operand field boxes.

@@ -37,6 +37,51 @@ def bbox_map_artifacts(
     )
 
 
+def bbox_artifacts(
+    value: Sequence[float],
+    *,
+    ndigits: int = 3,
+) -> AnnotationArtifacts:
+    """Build a scalar bbox annotation artifact for one visual witness."""
+
+    rounded = _round_bbox(value, ndigits=int(ndigits))
+    projected = {
+        "type": "bbox",
+        "bbox": list(rounded),
+        "pixel_bbox": list(rounded),
+    }
+    return AnnotationArtifacts(
+        annotation_type="bbox",
+        value=list(rounded),
+        annotation_gt=TypedValue(type="bbox", value=list(rounded)),
+        projected_annotation=dict(projected),
+    )
+
+
+def bbox_set_artifacts(
+    values: Sequence[Sequence[float]],
+    *,
+    ndigits: int = 3,
+) -> AnnotationArtifacts:
+    """Build unordered bbox-set annotation artifacts."""
+
+    rounded = [_round_bbox(bbox, ndigits=int(ndigits)) for bbox in values]
+    projected = {
+        "type": "bbox_set",
+        "bbox_set": [list(value) for value in rounded],
+        "pixel_bbox_set": [list(value) for value in rounded],
+    }
+    return AnnotationArtifacts(
+        annotation_type="bbox_set",
+        value=[list(value) for value in rounded],
+        annotation_gt=TypedValue(
+            type="bbox_set",
+            value=[list(value) for value in rounded],
+        ),
+        projected_annotation=dict(projected),
+    )
+
+
 def bbox_set_map_artifacts(
     values: Mapping[str, Sequence[Sequence[float]]],
     *,
@@ -81,4 +126,9 @@ def bbox_set_map_artifacts(
     )
 
 
-__all__ = ["bbox_map_artifacts", "bbox_set_map_artifacts"]
+__all__ = [
+    "bbox_artifacts",
+    "bbox_map_artifacts",
+    "bbox_set_artifacts",
+    "bbox_set_map_artifacts",
+]

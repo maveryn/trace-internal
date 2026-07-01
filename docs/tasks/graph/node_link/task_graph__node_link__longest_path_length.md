@@ -1,7 +1,15 @@
 # `task_graph__node_link__longest_path_length`
 
 ## Program Contract
-- `length(longest_path(directed_acyclic_graph)); scene=node_link; scope=longest_path_length`
+
+Program: `length(longest_path(directed_acyclic_graph)); scene=node_link; scope=longest_path_length`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `longest_path_length` objective scope.
+Operands: visible scene state and prompt-bound operands named by `longest_path`, `directed_acyclic_graph`, `node_link`, `longest_path_length`.
+Operation: evaluate `length` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; the number of directed edges in that unique longest path.
+Annotation witnesses: `annotation` uses the `point_sequence` schema; the ordered `point_sequence` of node-center pixel points along the unique longest directed path.
+Query ids: `single`.
 
 ## 1) Identity
 1. Domain: `graph`

@@ -77,6 +77,48 @@
         "Using the two bar values in each row, how many age groups satisfy: {metric_phrase} {threshold_relation_phrase} {threshold_value}?",
         "For how many visible age groups is {metric_phrase} {threshold_relation_phrase} {threshold_value}?",
         "How many rows meet the condition {metric_phrase} {threshold_relation_phrase} {threshold_value}?"
+      ],
+      "left_side_largest_value_label": [
+        "Which age group has the {extremum_phrase} \"{side_series_label}\" value?",
+        "Using only the \"{side_series_label}\" bars, which age-group label has the {extremum_phrase} value?",
+        "Find the age group where \"{side_series_label}\" is {extremum_phrase}.",
+        "Which visible row label corresponds to the {extremum_phrase} \"{side_series_label}\" bar?",
+        "Among the \"{side_series_label}\" values, which age group is {extremum_phrase}?"
+      ],
+      "left_side_smallest_value_label": [
+        "Which age group has the {extremum_phrase} \"{side_series_label}\" value?",
+        "Using only the \"{side_series_label}\" bars, which age-group label has the {extremum_phrase} value?",
+        "Find the age group where \"{side_series_label}\" is {extremum_phrase}.",
+        "Which visible row label corresponds to the {extremum_phrase} \"{side_series_label}\" bar?",
+        "Among the \"{side_series_label}\" values, which age group is {extremum_phrase}?"
+      ],
+      "right_side_largest_value_label": [
+        "Which age group has the {extremum_phrase} \"{side_series_label}\" value?",
+        "Using only the \"{side_series_label}\" bars, which age-group label has the {extremum_phrase} value?",
+        "Find the age group where \"{side_series_label}\" is {extremum_phrase}.",
+        "Which visible row label corresponds to the {extremum_phrase} \"{side_series_label}\" bar?",
+        "Among the \"{side_series_label}\" values, which age group is {extremum_phrase}?"
+      ],
+      "right_side_smallest_value_label": [
+        "Which age group has the {extremum_phrase} \"{side_series_label}\" value?",
+        "Using only the \"{side_series_label}\" bars, which age-group label has the {extremum_phrase} value?",
+        "Find the age group where \"{side_series_label}\" is {extremum_phrase}.",
+        "Which visible row label corresponds to the {extremum_phrase} \"{side_series_label}\" bar?",
+        "Among the \"{side_series_label}\" values, which age group is {extremum_phrase}?"
+      ],
+      "left_side_greater_count": [
+        "How many age groups have \"{side_series_label}\" greater than \"{other_series_label}\"?",
+        "Count the rows where the \"{side_series_label}\" bar is longer than the \"{other_series_label}\" bar.",
+        "For how many visible age groups does \"{side_series_label}\" exceed \"{other_series_label}\"?",
+        "How many age-group rows show a larger \"{side_series_label}\" value than \"{other_series_label}\"?",
+        "Count the age groups where \"{side_series_label}\" is bigger than \"{other_series_label}\"."
+      ],
+      "right_side_greater_count": [
+        "How many age groups have \"{side_series_label}\" greater than \"{other_series_label}\"?",
+        "Count the rows where the \"{side_series_label}\" bar is longer than the \"{other_series_label}\" bar.",
+        "For how many visible age groups does \"{side_series_label}\" exceed \"{other_series_label}\"?",
+        "How many age-group rows show a larger \"{side_series_label}\" value than \"{other_series_label}\"?",
+        "Count the age groups where \"{side_series_label}\" is bigger than \"{other_series_label}\"."
       ]
     },
     "output": {
@@ -144,12 +186,51 @@
       "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes, one around the two bars for each counted age-group row",
       "json_example": "{\"annotation\":[[278,214,1038,246],[278,338,1038,370],[278,524,1038,556]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:left_side_largest_value_label": {
+      "answer_hint": "set \"answer\" to the exact visible age-group label as a string",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] pixel box around the selected side bar",
+      "json_example": "{\"annotation\":[278,312,482,344],\"answer\":\"40-44\"}",
+      "json_example_answer_only": "{\"answer\":\"40-44\"}"
+    },
+    "query:left_side_smallest_value_label": {
+      "answer_hint": "set \"answer\" to the exact visible age-group label as a string",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] pixel box around the selected side bar",
+      "json_example": "{\"annotation\":[278,312,482,344],\"answer\":\"40-44\"}",
+      "json_example_answer_only": "{\"answer\":\"40-44\"}"
+    },
+    "query:right_side_largest_value_label": {
+      "answer_hint": "set \"answer\" to the exact visible age-group label as a string",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] pixel box around the selected side bar",
+      "json_example": "{\"annotation\":[654,312,1038,344],\"answer\":\"40-44\"}",
+      "json_example_answer_only": "{\"answer\":\"40-44\"}"
+    },
+    "query:right_side_smallest_value_label": {
+      "answer_hint": "set \"answer\" to the exact visible age-group label as a string",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] pixel box around the selected side bar",
+      "json_example": "{\"annotation\":[654,312,1038,344],\"answer\":\"40-44\"}",
+      "json_example_answer_only": "{\"answer\":\"40-44\"}"
+    },
+    "query:left_side_greater_count": {
+      "answer_hint": "set \"answer\" to the requested integer count",
+      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes, one around the two bars for each counted age-group row",
+      "json_example": "{\"annotation\":[[278,214,1038,246],[278,338,1038,370],[278,524,1038,556]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
+    },
+    "query:right_side_greater_count": {
+      "answer_hint": "set \"answer\" to the requested integer count",
+      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes, one around the two bars for each counted age-group row",
+      "json_example": "{\"annotation\":[[278,214,1038,246],[278,338,1038,370],[278,524,1038,556]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
     }
   },
   "dynamic_slots": {
     "object_description": {"type": "string"},
     "rank_phrase": {"type": "string"},
     "metric_phrase": {"type": "string"},
+    "side_series_label": {"type": "string"},
+    "other_series_label": {"type": "string"},
+    "extremum_phrase": {"type": "string"},
     "threshold_relation_phrase": {"type": "string"},
     "threshold_value": {"type": "integer"}
   }

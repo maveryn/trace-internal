@@ -13,20 +13,15 @@ from ...shared.icon_scene import RenderedIconInstance, serialize_rendered_icon_i
 from ...shared.icon_style import sample_single_icon_tint
 from ...shared.icon_task_rendering import sample_icon_instance_noise
 from ...shared.scene_style import draw_icon_panel_chrome, make_icon_canvas_background
+from ....shared.visual_style.panel import PANEL_SCENE_TREATMENTS
 
 from .defaults import LATTICE_COLS, LATTICE_ROWS, OPTION_LABELS, REFERENCE_LABEL, WALLPAPER_GROUP_IDS
 from .layout import draw_panel_label, option_panel_geometry, reference_panel_geometry
 from .state import WallpaperScenePayload
 
 
-SAFE_WALLPAPER_CANVAS_TREATMENTS: Tuple[str, ...] = (
-    "bare_canvas",
-    "plain_sheet",
-    "matte_sheet",
-    "thin_frame",
-    "soft_panel",
-)
-WALLPAPER_PANEL_CHROME_POLICY = "quiet_canvas_no_ruled_motif_area"
+WALLPAPER_CANVAS_TREATMENTS: Tuple[str, ...] = tuple(PANEL_SCENE_TREATMENTS)
+WALLPAPER_PANEL_CHROME_POLICY = "shared_panel_canvas_all_treatments"
 
 
 @dataclass(frozen=True)
@@ -66,15 +61,15 @@ def resolve_wallpaper_group_support(raw: Any, *, fallback: Sequence[str] = WALLP
     return support
 
 
-def wallpaper_safe_canvas_params(params: Mapping[str, Any]) -> Dict[str, Any]:
-    """Return params constrained to wallpaper-safe non-ruled canvas treatments."""
+def wallpaper_canvas_params(params: Mapping[str, Any]) -> Dict[str, Any]:
+    """Return params with wallpaper panels opted into all shared canvas treatments."""
 
     resolved = dict(params)
-    safe_set = set(SAFE_WALLPAPER_CANVAS_TREATMENTS)
+    allowed = set(WALLPAPER_CANVAS_TREATMENTS)
     explicit_treatment = str(resolved.get("icon_canvas_treatment", "")).strip()
-    if explicit_treatment and explicit_treatment not in safe_set:
+    if explicit_treatment and explicit_treatment not in allowed:
         raise ValueError(
-            "wallpaper panel tasks only support quiet canvas treatments; "
+            "wallpaper panel tasks only support shared icon canvas treatments; "
             f"got icon_canvas_treatment={explicit_treatment!r}"
         )
     explicit_treatments = resolved.get("icon_canvas_treatments")
@@ -82,15 +77,15 @@ def wallpaper_safe_canvas_params(params: Mapping[str, Any]) -> Dict[str, Any]:
         if isinstance(explicit_treatments, (str, bytes)) or not isinstance(explicit_treatments, Sequence):
             raise ValueError("icon_canvas_treatments must be a sequence for wallpaper panel tasks")
         requested = tuple(str(value).strip() for value in explicit_treatments if str(value).strip())
-        unsupported = tuple(value for value in requested if value not in safe_set)
+        unsupported = tuple(value for value in requested if value not in allowed)
         if unsupported:
             raise ValueError(
-                "wallpaper panel tasks only support quiet canvas treatments; "
+                "wallpaper panel tasks only support shared icon canvas treatments; "
                 f"got icon_canvas_treatments={list(unsupported)!r}"
             )
-    resolved["icon_canvas_treatments"] = list(SAFE_WALLPAPER_CANVAS_TREATMENTS)
+    resolved["icon_canvas_treatments"] = list(WALLPAPER_CANVAS_TREATMENTS)
     resolved["icon_canvas_treatment_weights"] = {
-        str(treatment): 1.0 for treatment in SAFE_WALLPAPER_CANVAS_TREATMENTS
+        str(treatment): 1.0 for treatment in WALLPAPER_CANVAS_TREATMENTS
     }
     return resolved
 
@@ -100,7 +95,7 @@ def wallpaper_chrome_policy_trace() -> Dict[str, Any]:
 
     return {
         "wallpaper_panel_chrome_policy": WALLPAPER_PANEL_CHROME_POLICY,
-        "safe_canvas_treatments": list(SAFE_WALLPAPER_CANVAS_TREATMENTS),
+        "available_canvas_treatments": list(WALLPAPER_CANVAS_TREATMENTS),
     }
 
 
@@ -520,7 +515,7 @@ __all__ = [
     "LATTICE_COLS",
     "LATTICE_ROWS",
     "OPTION_LABELS",
-    "SAFE_WALLPAPER_CANVAS_TREATMENTS",
+    "WALLPAPER_CANVAS_TREATMENTS",
     "WALLPAPER_PANEL_CHROME_POLICY",
     "WALLPAPER_GROUP_IDS",
     "WallpaperElementSpec",
@@ -536,5 +531,5 @@ __all__ = [
     "select_distinct_icon_ids",
     "uniform_str_probability_map",
     "wallpaper_chrome_policy_trace",
-    "wallpaper_safe_canvas_params",
+    "wallpaper_canvas_params",
 ]

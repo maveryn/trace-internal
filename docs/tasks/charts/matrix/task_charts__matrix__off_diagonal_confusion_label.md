@@ -20,7 +20,15 @@
 4. Matrix headers, diagonal cells, legends, titles, and distractor text are context unless the task explicitly asks for them as annotation.
 
 ## Program Contract
-- `select_label(argmax(filter(row_cells(actual_label), column_label != actual_label), value(cell))); output=string_label; annotation=bbox_set(off_diagonal_candidate_cells); scene=matrix; scope=off_diagonal_confusion_label`
+
+Program: `select_label(argmax(filter(row_cells(actual_label), column_label != actual_label), value(cell))); output=string_label; annotation=bbox_set(off_diagonal_candidate_cells); scene=matrix; scope=off_diagonal_confusion_label`
+
+Candidate set: the visible matrix cells with row and column labels inside the `off_diagonal_confusion_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `select_label` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(off_diagonal_candidate_cells)`. Annotation marks the off-diagonal candidate cells in the selected actual-class row. Matrix headers, diagonal cells, legends, titles, and distractor text are context unless the task explicitly asks for them as annotation.
+Query ids: `single`.
 
 ## Query Details
 

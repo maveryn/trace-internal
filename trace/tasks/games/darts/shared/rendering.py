@@ -61,6 +61,7 @@ class RenderedDartSpec:
     """One rendered dart marker with trace-friendly metadata."""
 
     dart_id: str
+    label: str | None
     area_kind: str
     sector_value: int | None
     score: int
@@ -414,6 +415,66 @@ def _draw_dart(
     return bbox
 
 
+def _draw_dart_label(
+    draw: ImageDraw.ImageDraw,
+    *,
+    dart: DartInstance,
+    params: DartboardRenderParams,
+    style_variant: str,
+) -> Tuple[float, float, float, float] | None:
+    """Draw an optional letter badge next to one dart marker."""
+
+    if dart.label is None:
+        return None
+    palette = _palette(str(style_variant))
+    x = float(dart.x_px)
+    y = float(dart.y_px)
+    dx = x - float(params.board_center_x_px)
+    dy = y - float(params.board_center_y_px)
+    distance = math.hypot(dx, dy)
+    if distance < 1.0:
+        ux, uy = 0.72, -0.72
+    else:
+        ux, uy = dx / distance, dy / distance
+    offset = max(30.0, float(params.marker_radius_px) * 2.3)
+    badge_radius = max(13.0, float(params.marker_radius_px) * 0.95)
+    cx = min(
+        float(params.canvas_width) - badge_radius - 8.0,
+        max(badge_radius + 8.0, x + (ux * offset)),
+    )
+    cy = min(
+        float(params.canvas_height) - badge_radius - 8.0,
+        max(badge_radius + 8.0, y + (uy * offset)),
+    )
+    outline = tuple(int(v) for v in palette["dart_outline"])
+    draw.line([(x, y), (cx, cy)], fill=outline, width=2)
+    bbox = (
+        round(cx - badge_radius, 3),
+        round(cy - badge_radius, 3),
+        round(cx + badge_radius, 3),
+        round(cy + badge_radius, 3),
+    )
+    draw.ellipse(bbox, fill=(255, 250, 232), outline=outline, width=2)
+    font = load_font(
+        max(12, int(round(badge_radius * 1.25))),
+        bold=True,
+        font_family=str(params.font_family) or None,
+    )
+    text_bbox = draw.textbbox((0, 0), str(dart.label), font=font)
+    text_w = float(text_bbox[2] - text_bbox[0])
+    text_h = float(text_bbox[3] - text_bbox[1])
+    draw_text_traced(
+        draw,
+        (float(cx - (0.5 * text_w) - float(text_bbox[0])), float(cy - (0.5 * text_h) - float(text_bbox[1]))),
+        str(dart.label),
+        font=font,
+        fill=(24, 28, 34),
+        role="option_label",
+        required=True,
+    )
+    return bbox
+
+
 def _panel_bbox(*, params: DartboardRenderParams) -> Tuple[int, int, int, int]:
     """Return a backing panel bbox that follows the jittered dartboard."""
 
@@ -456,6 +517,7 @@ def render_darts_scene(
     scene_entities: List[Dict[str, Any]] = []
     dart_bboxes: Dict[str, List[float]] = {}
     dart_centers: Dict[str, List[float]] = {}
+    dart_label_bboxes: Dict[str, List[float]] = {}
     for dart in darts:
         bbox = _draw_dart(
             draw,
@@ -470,6 +532,7 @@ def render_darts_scene(
         dart_specs.append(
             RenderedDartSpec(
                 dart_id=str(dart.dart_id),
+                label=None if dart.label is None else str(dart.label),
                 area_kind=str(dart.area_kind),
                 sector_value=None if dart.sector_value is None else int(dart.sector_value),
                 score=int(dart.score),
@@ -484,6 +547,7 @@ def render_darts_scene(
                 "entity_type": "dart",
                 "bbox_px": [float(v) for v in bbox],
                 "attrs": {
+                    "label": None if dart.label is None else str(dart.label),
                     "area_kind": str(dart.area_kind),
                     "sector_value": None if dart.sector_value is None else int(dart.sector_value),
                     "score": int(dart.score),
@@ -491,6 +555,15 @@ def render_darts_scene(
                 },
             }
         )
+    for dart in darts:
+        label_bbox = _draw_dart_label(
+            draw,
+            dart=dart,
+            params=params,
+            style_variant=str(style_variant),
+        )
+        if label_bbox is not None:
+            dart_label_bboxes[str(dart.dart_id)] = [float(value) for value in label_bbox]
 
     return RenderedDartsScene(
         image=image,
@@ -500,6 +573,7 @@ def render_darts_scene(
             "board": dict(board_meta),
             "dart_bboxes_px": dict(dart_bboxes),
             "dart_centers_px": dict(dart_centers),
+            "dart_label_bboxes_px": dict(dart_label_bboxes),
             "dart_fill_color": None if dart_fill_color is None else [int(v) for v in dart_fill_color],
             "dart_fill_min_lab_distance": None
             if dart_fill_min_lab_distance is None

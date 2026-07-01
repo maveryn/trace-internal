@@ -11,7 +11,15 @@
 8. Scalar annotation checked: `true`
 
 ## Program Contract
-- `select_option(legal_solitaire_move); scene=solitaire; scope=move_legality_label`
+
+Program: `select_option(legal_solitaire_move); scene=solitaire; scope=move_legality_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `move_legality_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `legal_solitaire_move`, `solitaire`, `move_legality_label`.
+Operation: evaluate `select_option` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The scene shows tableau columns, four foundation piles, and move options.

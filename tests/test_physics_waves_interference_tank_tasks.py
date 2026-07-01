@@ -7,8 +7,10 @@ from collections import Counter
 from pathlib import Path
 
 from trace.core.task_review_distribution import extract_sampling_axes
-from trace.tasks.physics.waves.interference_tank import (
+from trace.tasks.physics.wave_interference.interference_point_choice import (
     PhysicsWavesInterferencePointChoiceTask,
+)
+from trace.tasks.physics.wave_interference.path_difference_value import (
     PhysicsWavesPathDifferenceValueTask,
 )
 
@@ -17,9 +19,9 @@ def test_physics_waves_interference_point_choice_contract() -> None:
     out = PhysicsWavesInterferencePointChoiceTask().generate(
         99001,
         params={
+            "query_id": "constructive_interference_point_choice",
             "scene_variant": "clean_tank",
             "phase_relation": "in_phase",
-            "target_condition": "constructive",
             "correct_option_letter": "D",
             "accent_color_name": "blue",
         },
@@ -40,14 +42,12 @@ def test_physics_waves_interference_point_choice_contract() -> None:
 
     assert out.answer_gt.value == "D"
 
-    assert out.annotation_gt.type == "point_set"
-
-    assert len(out.annotation_gt.value) == 1
+    assert out.annotation_gt.type == "point"
 
     assert out.scene_id == "wave_interference"
 
-    assert out.query_id == "interference_point_choice"
-    assert trace["query_spec"]["query_id"] == "interference_point_choice"
+    assert out.query_id == "constructive_interference_point_choice"
+    assert trace["query_spec"]["query_id"] == "constructive_interference_point_choice"
 
     assert trace["query_spec"]["params"]["internal_query_id"] == "interference_point_choice"
 
@@ -67,14 +67,47 @@ def test_physics_waves_interference_point_choice_contract() -> None:
 
     assert execution["annotation_entity_ids"] == ["candidate_D"]
 
-    assert trace["projected_annotation"]["type"] == "point_set"
-    assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_point_set"] == out.annotation_gt.value
-    assert trace["render_map"]["annotation_point_set_px"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "point"
+    assert trace["projected_annotation"]["point"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_point"] == out.annotation_gt.value
+    assert trace["render_map"]["annotation_point_px"] == out.annotation_gt.value
     assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
     assert trace["render_spec"]["layout_placement"]["mode"] == "whole_wave_tank_offset"
 
-    assert "candidate points A-E" in out.prompt
+    assert "labeled point A-E" in out.prompt
+
+
+def test_physics_waves_interference_point_choice_query_ids_bind_conditions() -> None:
+    task = PhysicsWavesInterferencePointChoiceTask()
+
+    constructive = task.generate(
+        99011,
+        params={
+            "query_id": "constructive_interference_point_choice",
+            "phase_relation": "opposite_phase",
+            "correct_option_letter": "B",
+        },
+        max_attempts=30,
+    )
+    destructive = task.generate(
+        99012,
+        params={
+            "query_id": "destructive_interference_point_choice",
+            "phase_relation": "opposite_phase",
+            "correct_option_letter": "C",
+        },
+        max_attempts=30,
+    )
+
+    assert constructive.trace_payload["execution_trace"]["target_condition"] == "constructive"
+    assert constructive.trace_payload["execution_trace"]["choice_scenario"]["target_condition"] == "constructive"
+    assert constructive.query_id == "constructive_interference_point_choice"
+    assert "constructive interference" in constructive.prompt
+
+    assert destructive.trace_payload["execution_trace"]["target_condition"] == "destructive"
+    assert destructive.trace_payload["execution_trace"]["choice_scenario"]["target_condition"] == "destructive"
+    assert destructive.query_id == "destructive_interference_point_choice"
+    assert "destructive interference" in destructive.prompt
 
 
 def test_physics_waves_path_difference_value_contract() -> None:
@@ -97,17 +130,18 @@ def test_physics_waves_path_difference_value_contract() -> None:
 
     assert out.scene_id == "wave_interference"
 
-    assert out.query_id == "path_difference_value"
+    assert out.query_id == "single"
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "segment_set"
 
-    assert set(out.annotation_gt.value) == {"S1P", "S2P"}
+    assert len(out.annotation_gt.value) == 2
 
-    assert out.trace_payload["query_spec"]["query_id"] == "path_difference_value"
-    assert out.trace_payload["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert out.trace_payload["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-    assert out.trace_payload["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
-    assert out.trace_payload["render_map"]["annotation_bbox_map_px"] == out.annotation_gt.value
+    assert out.trace_payload["query_spec"]["query_id"] == "single"
+    assert out.trace_payload["query_spec"]["params"]["internal_query_id"] == "path_difference_value"
+    assert out.trace_payload["projected_annotation"]["type"] == "segment_set"
+    assert out.trace_payload["projected_annotation"]["segment_set"] == out.annotation_gt.value
+    assert out.trace_payload["projected_annotation"]["pixel_segment_set"] == out.annotation_gt.value
+    assert out.trace_payload["render_map"]["annotation_segment_set_px"] == out.annotation_gt.value
     assert out.trace_payload["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
     assert out.trace_payload["render_spec"]["layout_placement"]["mode"] == "whole_wave_tank_offset"
 
@@ -124,12 +158,7 @@ def test_physics_waves_path_difference_value_contract() -> None:
 
     assert out.trace_payload["execution_trace"]["annotation_entity_ids"] == ["path_S1P", "path_S2P"]
 
-    assert out.trace_payload["execution_trace"]["annotation_key_by_entity_id"] == {
-        "path_S1P": "S1P",
-        "path_S2P": "S2P",
-    }
-
-    assert "labeled dashed source-to-P path guides" in out.prompt
+    assert "lambda/2 steps" in out.prompt
     render_map = out.trace_payload["render_map"]
 
     assert "path_s1_label_bbox_px" in render_map
@@ -167,6 +196,7 @@ def test_physics_waves_tasks_are_deterministic() -> None:
 def test_physics_waves_sampling_covers_internal_axes_and_answers() -> None:
     phase_relations: Counter[str] = Counter()
     target_conditions: Counter[str] = Counter()
+    choice_query_ids: Counter[str] = Counter()
     option_letters: Counter[str] = Counter()
     path_answers: set[int] = set()
 
@@ -183,6 +213,7 @@ def test_physics_waves_sampling_covers_internal_axes_and_answers() -> None:
         )
         choice_execution = choice.trace_payload["execution_trace"]
         value_execution = value.trace_payload["execution_trace"]
+        choice_query_ids[str(choice.query_id)] += 1
         phase_relations[str(choice_execution["phase_relation"])] += 1
         phase_relations[str(value_execution["phase_relation"])] += 1
         target_conditions[str(choice_execution["target_condition"])] += 1
@@ -194,38 +225,55 @@ def test_physics_waves_sampling_covers_internal_axes_and_answers() -> None:
 
     assert set(target_conditions) == {"constructive", "destructive"}
 
+    assert set(choice_query_ids) == {
+        "constructive_interference_point_choice",
+        "destructive_interference_point_choice",
+    }
+
     assert set(option_letters) == {"A", "B", "C", "D", "E"}
 
     assert path_answers == {1, 2, 3, 4, 5}
 
 
 def test_physics_waves_prompt_bundle_supports_variants() -> None:
-    bundle = json.loads(Path("prompts/physics/waves/physics_waves_v0.json").read_text(encoding="utf-8"))
+    wave_bundle = json.loads(
+        Path("prompts/physics/wave_interference/physics_wave_interference_v1.json").read_text(encoding="utf-8")
+    )
+    waveform_bundle = json.loads(
+        Path("prompts/physics/waveform_panel/physics_waveform_panel_v1.json").read_text(encoding="utf-8")
+    )
 
-    assert len(bundle["scene_templates"]["wave_interference_tank"]) == 5
+    assert wave_bundle["bundle_id"] == "physics_wave_interference_v1"
+    assert len(wave_bundle["templates"]["scene"]["wave_interference_tank"]) == 5
+    assert set(wave_bundle["templates"]["task"]) == {
+        "interference_point_choice_query",
+        "path_difference_value_query",
+    }
+    assert len(wave_bundle["templates"]["task"]["interference_point_choice_query"]) == 5
+    assert len(wave_bundle["templates"]["task"]["path_difference_value_query"]) == 5
+    assert all(str(template).strip() for template in wave_bundle["templates"]["query"]["constructive_interference_point_choice"])
+    assert all(str(template).strip() for template in wave_bundle["templates"]["query"]["destructive_interference_point_choice"])
+    assert all(str(template).strip() for template in wave_bundle["templates"]["query"]["single"])
+    assert wave_bundle["static_slots_by_key"]["task:interference_point_choice_query"]["annotation_hint"].startswith(
+        "set \"annotation\" to one pixel point"
+    )
+    assert "source-to-P pixel segments" in wave_bundle["static_slots_by_key"]["task:path_difference_value_query"]["annotation_hint"]
 
-    assert set(bundle["query_templates"]) == {
-        "interference_point_choice",
-        "path_difference_value",
+    assert waveform_bundle["bundle_id"] == "physics_waveform_panel_v1"
+    assert len(waveform_bundle["templates"]["scene"]["waveform_panel_diagram"]) == 5
+
+    assert set(waveform_bundle["templates"]["query"]) == {
         "highest_amplitude_label",
         "lowest_amplitude_label",
         "highest_frequency_label",
         "lowest_frequency_label",
         "longest_wavelength_label",
         "shortest_wavelength_label",
-        "sinusoid_component_spectrum",
-        "periodic_wave_harmonic_spectrum",
-        "pulse_width_spectrum",
     }
 
-    assert len(bundle["query_templates"]["interference_point_choice"]) == 5
+    assert len(waveform_bundle["templates"]["query"]["highest_amplitude_label"]) == 5
 
-    assert len(bundle["query_templates"]["path_difference_value"]) == 5
+    assert len(waveform_bundle["templates"]["query"]["shortest_wavelength_label"]) == 5
 
-    assert len(bundle["scene_templates"]["waveform_panel_diagram"]) == 5
-
-    assert len(bundle["query_templates"]["highest_amplitude_label"]) == 5
-
-    assert len(bundle["query_templates"]["shortest_wavelength_label"]) == 5
-
-    assert len(set(bundle["answer_or_annotation_templates"]["answer_and_annotation"])) == 5
+    assert len(set(waveform_bundle["templates"]["output"]["answer_and_annotation"])) == 5
+    assert "one pixel bounding box" in waveform_bundle["static_slots_by_key"]["task:wave_property_extremum_label_query"]["annotation_hint"]

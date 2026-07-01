@@ -9,6 +9,10 @@ TREEMAP_TASKS = {
     "task_charts__treemap__group_total_value": {
         "single",
     },
+    "task_charts__treemap__parent_total_extremum_label": {
+        "largest_parent_total",
+        "smallest_parent_total",
+    },
     "task_charts__treemap__repeated_leaf_aggregate_value": {
         "treemap_repeated_leaf_sum_value",
         "treemap_repeated_leaf_average_value",
@@ -33,7 +37,10 @@ def test_treemap_tasks_generate_default_query_outputs() -> None:
         assert output.query_id in allowed_query_ids
         assert output.scene_id == "treemap"
         assert output.trace_payload["query_spec"]["params"]["query_id"] == output.query_id
-        assert output.answer_gt.type == "integer"
+        if task_id.endswith("__parent_total_extremum_label"):
+            assert output.answer_gt.type == "string"
+        else:
+            assert output.answer_gt.type == "integer"
         assert output.annotation_gt.type == "bbox_set"
         assert output.annotation_gt.value
         assert output.trace_payload["projected_annotation"]["type"] == "bbox_set"
@@ -59,4 +66,42 @@ def test_treemap_tasks_generate_each_query_branch() -> None:
             assert output.trace_payload["query_spec"]["params"]["query_id"] == query_id
             assert output.annotation_gt.value
             assert output.trace_payload["projected_annotation"]["type"] == "bbox_set"
+            execution = output.trace_payload["execution_trace"]
+            if task_id.endswith("__group_total_value"):
+                parent_id = str(execution["parent_id"])
+                parents = {
+                    str(parent["parent_id"]): dict(parent)
+                    for parent in execution["parents"]
+                }
+                assert output.answer_gt.type == "integer"
+                assert output.answer_gt.value == int(parents[parent_id]["value"])
+                assert output.annotation_gt.value == [
+                    output.trace_payload["render_map"]["annotation_bbox_by_leaf_id"][leaf_id]
+                    for leaf_id in parents[parent_id]["leaf_ids"]
+                ]
+            elif task_id.endswith("__parent_total_extremum_label"):
+                totals = {
+                    str(parent["parent_label"]): int(parent["parent_total"])
+                    for parent in execution["parent_totals"]
+                }
+                expected = (
+                    max(totals, key=totals.get)
+                    if str(query_id) == "largest_parent_total"
+                    else min(totals, key=totals.get)
+                )
+                assert output.answer_gt.type == "string"
+                assert output.answer_gt.value == str(expected)
+                assert execution["answer_parent_label"] == str(expected)
+                assert execution["answer_parent_total"] == int(totals[str(expected)])
+                assert output.annotation_gt.value == [
+                    output.trace_payload["render_map"]["annotation_bbox_by_leaf_id"][leaf_id]
+                    for leaf_id in execution["leaf_ids"]
+                ]
+            elif task_id.endswith("__repeated_leaf_aggregate_value"):
+                values = [int(value) for value in execution["leaf_values"]]
+                expected = sum(values)
+                if str(query_id) == "treemap_repeated_leaf_average_value":
+                    expected = expected // len(values)
+                assert output.answer_gt.type == "integer"
+                assert output.answer_gt.value == int(expected)
             seed_index += 1

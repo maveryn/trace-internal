@@ -202,11 +202,25 @@ def color_board_from_components(
         raise ValueError("filler colors must not be empty")
     for row in range(int(rows)):
         for col in range(int(cols)):
-            board[(row, col)] = fillers[(row + col) % len(fillers)]
+            board[(row, col)] = cycled_named_color(fillers, offset=int(row) + int(col))
     for component in components:
         for coord in component:
             board[(int(coord[0]), int(coord[1]))] = target_color
     return board
+
+
+def cycled_named_color(colors: Sequence[NamedColor], *, offset: int) -> NamedColor:
+    """Return a deterministic cyclic color from an already-sampled palette."""
+
+    palette = tuple(colors)
+    if not palette:
+        raise ValueError("cycled color palette must not be empty")
+    offset_index = int(offset)
+    if offset_index < 0:
+        raise ValueError("cycled color offset must be non-negative")
+    while offset_index >= len(palette):
+        offset_index -= len(palette)
+    return palette[offset_index]
 
 
 def target_color_cells(
@@ -294,6 +308,7 @@ __all__ = [
     "color_board_from_components",
     "ComponentBoardSample",
     "component_cells_for_color",
+    "cycled_named_color",
     "grow_connected_region",
     "sample_answer",
     "sample_dimensions",

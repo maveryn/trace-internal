@@ -52,3 +52,7 @@ include = ["trace*"]
 [tool.pytest.ini_options]
 testpaths = ["tests", "rlvr/tests"]
 pythonpath = [".", "rlvr"]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]

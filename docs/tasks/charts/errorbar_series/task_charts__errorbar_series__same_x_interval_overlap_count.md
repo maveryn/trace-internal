@@ -15,15 +15,23 @@
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
-2. Annotation schema: `keyed_bbox_map`.
-3. Annotation maps `target_errorbar` to the target error-bar box and each counted series label to its overlapping error-bar box at the same x-axis label.
+2. Annotation schema: `segment_set`.
+3. Annotation is an unordered array of lower-to-upper error-bar interval segments for the counted overlapping marks at the named x-axis label.
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
 ## Program Contract
-- `count(filter(series != target_series, overlaps(interval(errorbar(series,target_x)), interval(errorbar(target_series,target_x))))); output=integer_count; annotation=keyed_bbox_map(target_errorbar,matching_errorbar_marks_by_series); scene=errorbar_series; scope=same_x_interval_overlap_count`
+
+Program: `count(filter(series != target_series, overlaps(interval(errorbar(series,target_x)), interval(errorbar(target_series,target_x))))); output=integer_count; annotation=segment_set(matching_errorbar_interval_spans); scene=errorbar_series; scope=same_x_interval_overlap_count`
+
+Candidate set: the visible error bars, series markers, and category labels inside the `same_x_interval_overlap_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_count` value bound by `integer_count`.
+Annotation witnesses: `segment_set` witnesses bound by `segment_set(matching_errorbar_interval_spans)`. Annotation is an unordered array of lower-to-upper error-bar interval segments for the counted overlapping marks at the named x-axis label. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `single`.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `single` | `count(series where series != target_series and overlaps(interval(errorbar(series, target_x)), interval(errorbar(target_series, target_x))))` | `integer_count` | `keyed_bbox_map` |
+| `single` | `count(series where series != target_series and overlaps(interval(errorbar(series, target_x)), interval(errorbar(target_series, target_x))))` | `integer_count` | `segment_set` |

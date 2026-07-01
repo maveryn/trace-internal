@@ -56,6 +56,12 @@ class _RenderedRoomScene:
 
 
 def _draw_room_shell(draw: ImageDraw.ImageDraw, *, camera, frame, render_params: ObjectSceneRenderParams, scene_variant: str) -> Tuple[List[float], List[Dict[str, Any]]]:
+    """Draw room floor/walls while preserving projected wall bounding boxes.
+
+    The returned boxes define render-map anchors for later object placement and
+    must stay consistent with the same camera/projection used for furniture.
+    """
+
     floor_rgb = tuple(int(value) for value in render_params.floor_rgb)
     back_rgb = tint_rgb((202, 210, 216), 0.30)
     side_rgb = shade_rgb(back_rgb, 0.94)
@@ -172,6 +178,12 @@ def render_room_scene_3d(
     render_params: ObjectSceneRenderParams,
     option_choices: Sequence[Mapping[str, Any]] = (),
 ) -> _RenderedRoomScene:
+    """Render the full 3D room scene and collect object/option projections.
+
+    The renderer is the single source for visible bboxes, so task annotations
+    and option panels must use the maps produced by this function.
+    """
+
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
     camera_spec = dataset["camera"]

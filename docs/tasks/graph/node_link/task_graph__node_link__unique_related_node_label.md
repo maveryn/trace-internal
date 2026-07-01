@@ -1,7 +1,15 @@
 # `task_graph__node_link__unique_related_node_label`
 
 ## Program Contract
-- `label(unique(related_nodes(reference_node, relation))); scene=node_link; scope=unique_related_node_label`
+
+Program: `label(unique(related_nodes(reference_node, relation))); scene=node_link; scope=unique_related_node_label`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `unique_related_node_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `unique`, `related_nodes`, `reference_node`, `relation`, `node_link`, `unique_related_node_label`.
+Operation: evaluate `label` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Summary
 1. Domain: `graph`

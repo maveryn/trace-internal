@@ -42,6 +42,7 @@ rendering:
     panel_title_font_size_px: 18
     metric_font_size_px: 14
     tick_font_size_px: 12
+    tick_label_spoke_gap_px: 10
     legend_font_size_px: 16
     query_spoke_rgb:
     - 70

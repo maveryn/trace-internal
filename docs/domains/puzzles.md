@@ -15,8 +15,8 @@ attribute counting or matching.
 
 ## Scene Boundary
 A puzzle scene is the stable visual grammar and rule family: cell board,
-nonogram, maze, pipe flow, word search, automaton, counterfactual board,
-Rubik-like net, voxel cube, jigsaw/cutout puzzle, or option grid. Style, unit
+nonogram, maze, pipe flow, word search, automaton, Rubik-like net, voxel cube,
+jigsaw/cutout puzzle, or option grid. Style, unit
 size, palette, font, clue labels, and puzzle dimensions may vary when the
 verifier contract remains stable.
 

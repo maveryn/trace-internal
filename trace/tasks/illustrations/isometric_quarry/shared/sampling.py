@@ -5,9 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from trace.core.seed import spawn_rng
+from trace.core.sampling import support_probability_map, uniform_choice_with_probabilities
 from trace.tasks.illustrations.shared.canvas_profiles import resolve_canvas_profile
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from trace.tasks.shared.fixed_query import select_task_query_id
 
 
@@ -61,10 +62,10 @@ def select_count(
         value = int(explicit)
         if value not in set(support):
             raise ValueError(f"{explicit_key} must be one of {support}")
-        return value, {str(value): 1.0}
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    value = int(support[int(index) % len(support)])
-    return value, dict(uniform_probability_map(support))
+        return value, support_probability_map(support, selected=value, sort_keys=True)
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    value, probabilities = uniform_choice_with_probabilities(rng, support, sort_keys=True)
+    return int(value), dict(probabilities)
 
 
 def sample_label_task_spec(

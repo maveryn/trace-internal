@@ -56,6 +56,7 @@ def _build_category_mean_plan(
             "query_id_probabilities": dict(query_probabilities),
         },
         reasoning_load=REASONING_LOAD,
+        annotation_kind="bbox",
     )
 
 

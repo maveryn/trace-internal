@@ -13,13 +13,6 @@
       ]
     },
     "task": {
-      "cell_board_count_query": [
-        "",
-        "",
-        "",
-        "",
-        ""
-      ],
       "cell_board_topology_query": [
         "Use side-adjacent cells for movement or connectedness; diagonal touching does not connect cells.",
         "For any path, reachability, or component question, use only up, down, left, and right steps.",
@@ -36,27 +29,6 @@
       ]
     },
     "query": {
-      "row_color_cell_count": [
-        "How many {query_color} cells are in row {query_row}?",
-        "Count the {query_color} cells in row {query_row}.",
-        "What is the number of {query_color} cells in row {query_row}?",
-        "In row {query_row}, how many cells are {query_color}?",
-        "Find how many {query_color} cells appear in row {query_row}."
-      ],
-      "column_color_cell_count": [
-        "How many {query_color} cells are in column {query_col}?",
-        "Count the {query_color} cells in column {query_col}.",
-        "What is the number of {query_color} cells in column {query_col}?",
-        "In column {query_col}, how many cells are {query_color}?",
-        "Find how many {query_color} cells appear in column {query_col}."
-      ],
-      "edge_color_cell_count": [
-        "How many {query_color} cells are on the outside edge of the board?",
-        "Count the {query_color} cells on the border of the board.",
-        "What is the number of {query_color} cells on the board edge?",
-        "How many border cells are {query_color}?",
-        "Find how many {query_color} cells lie on the outer edge."
-      ],
       "largest_component_size": [
         "Among the connected {query_color} groups, how many cells are in the largest group?",
         "Find the size of the largest side-connected {query_color} component.",
@@ -88,77 +60,65 @@
     },
     "output": {
       "answer_only": [
-        "{answer_hint}\nReturn JSON like {json_example_answer_only}.",
-        "{answer_hint}\nUse the answer-only JSON shape shown here: {json_example_answer_only}.",
-        "{answer_hint}\nWrite only a JSON object like {json_example_answer_only}.",
-        "{answer_hint}\nReturn the integer answer in JSON: {json_example_answer_only}.",
-        "{answer_hint}\nUse this JSON shape for the final response: {json_example_answer_only}."
+        "Answer format: {answer_hint}\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: {answer_hint}\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: {answer_hint}\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: {answer_hint}\nExample JSON:\n{json_example_answer_only}",
+        "Use this answer format: {answer_hint}\nExample JSON:\n{json_example_answer_only}"
       ],
       "answer_and_annotation": [
-        "{answer_hint}\n{annotation_hint}\nReturn JSON like {json_example}.",
-        "{answer_hint}\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here: {json_example}.",
-        "{answer_hint}\n{annotation_hint}\nWrite only a JSON object like {json_example}.",
-        "{answer_hint}\n{annotation_hint}\nReturn both fields in JSON: {json_example}.",
-        "{answer_hint}\n{annotation_hint}\nUse this JSON shape for the final response: {json_example}."
+        "Annotation format: {annotation_hint}\nAnswer format: {answer_hint}\nExample JSON:\n{json_example}",
+        "Required annotation format: {annotation_hint}\nRequired answer format: {answer_hint}\nExample JSON:\n{json_example}",
+        "Format for the \"annotation\" field: {annotation_hint}\nFormat for the \"answer\" field: {answer_hint}\nExample JSON:\n{json_example}",
+        "Use this annotation format: {annotation_hint}\nUse this answer format: {answer_hint}\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}\nFinal answer format: {answer_hint}\nExample JSON:\n{json_example}"
       ]
     }
   },
   "static_slots_by_key": {
-    "query:row_color_cell_count": {
-      "answer_hint": "Set answer to the requested row color count as an integer.",
-      "annotation_hint": "Set annotation to a bbox_set: one image-pixel cell box [x0,y0,x1,y1] for each counted cell in the row; use [] if no cells match.",
-      "json_example": "{\"annotation\":[[100,100,136,136],[148,100,184,136]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
-    },
-    "query:column_color_cell_count": {
-      "answer_hint": "Set answer to the requested column color count as an integer.",
-      "annotation_hint": "Set annotation to a bbox_set: one image-pixel cell box [x0,y0,x1,y1] for each counted cell in the column; use [] if no cells match.",
-      "json_example": "{\"annotation\":[[100,100,136,136],[100,148,136,184]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
-    },
-    "query:edge_color_cell_count": {
-      "answer_hint": "Set answer to the requested border-cell color count as an integer.",
-      "annotation_hint": "Set annotation to a bbox_set: one image-pixel cell box [x0,y0,x1,y1] for each counted border cell; use [] if no cells match.",
-      "json_example": "{\"annotation\":[[100,100,136,136],[196,100,232,136]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
-    },
     "query:largest_component_size": {
       "answer_hint": "Set answer to the number of cells in the largest target-color component.",
-      "annotation_hint": "Set annotation to a bbox_set containing the image-pixel cell boxes in that largest connected component.",
+      "annotation_hint": "Set annotation to a bbox_set containing image-pixel cell boxes [x0, y0, x1, y1] for the largest connected component.",
       "json_example": "{\"annotation\":[[100,100,136,136],[148,100,184,136],[148,148,184,184]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:reachable_region_size": {
       "answer_hint": "Set answer to the number of light passable cells reachable from S by side-adjacent moves, including S.",
-      "annotation_hint": "Set annotation to a bbox_set containing the image-pixel cell boxes for all reachable passable cells, including S.",
+      "annotation_hint": "Set annotation to a bbox_set containing image-pixel cell boxes [x0, y0, x1, y1] for all reachable passable cells, including S.",
       "json_example": "{\"annotation\":[[100,100,136,136],[148,100,184,136],[148,148,184,184]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:shortest_path_length_value": {
       "answer_hint": "Set answer to the shortest path length in orthogonal cell steps.",
-      "annotation_hint": "Set annotation to a segment_set: one image-pixel segment [[x1,y1],[x2,y2]] for each adjacent step along a shortest S-to-G path.",
+      "annotation_hint": "Set annotation to a segment_set: one image-pixel segment [[x0, y0], [x1, y1]] for each adjacent step along a shortest S-to-G path.",
       "json_example": "{\"annotation\":[[[100,100],[136,100]],[[136,100],[136,136]],[[136,136],[172,136]],[[172,136],[172,172]]],\"answer\":4}",
       "json_example_answer_only": "{\"answer\":4}"
     },
     "query:symmetry_violation_count": {
       "answer_hint": "Set answer to the number of counted-side cells that fail the mirror check.",
-      "annotation_hint": "Set annotation to a segment_set: one image-pixel segment [[x1,y1],[x2,y2]] from each counted-side violating cell center to its mirror-cell center.",
+      "annotation_hint": "Set annotation to a segment_set: one image-pixel segment [[x0, y0], [x1, y1]] from each counted-side violating cell center to its mirror-cell center.",
       "json_example": "{\"annotation\":[[[118,118],[214,118]],[[118,166],[214,166]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     }
   },
   "dynamic_slots": {
-    "query_color": {"type": "string"},
-    "query_row": {"type": "integer"},
-    "query_col": {"type": "integer"},
-    "mirror_axis": {"type": "string"},
-    "counted_side": {"type": "string"}
+    "query_color": {
+      "type": "string"
+    },
+    "mirror_axis": {
+      "type": "string"
+    },
+    "counted_side": {
+      "type": "string"
+    }
   },
   "required_slots_by_key": {
-    "query:row_color_cell_count": ["query_color", "query_row"],
-    "query:column_color_cell_count": ["query_color", "query_col"],
-    "query:edge_color_cell_count": ["query_color"],
-    "query:largest_component_size": ["query_color"],
-    "query:symmetry_violation_count": ["mirror_axis", "counted_side"]
+    "query:largest_component_size": [
+      "query_color"
+    ],
+    "query:symmetry_violation_count": [
+      "mirror_axis",
+      "counted_side"
+    ]
   }
 }

@@ -5,7 +5,10 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from trace.tasks.registry import register_task
-from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.config_defaults import (
+    load_scene_generation_rendering_prompt_defaults,
+)
+from trace.tasks.games.shared.sampling import resolve_games_named_axis
 
 from ._lifecycle import (
     CheckersObjectivePlan,
@@ -17,25 +20,27 @@ from .shared.rules import BLACK, RED
 from .shared.sampling import sample_piece_state_scene, scene_object_description
 from .shared.state import SCENE_ID, SampledCheckersScene
 
-
 TASK_ID = "task_games__checkers__piece_state_count"
-SUPPORTED_QUERY_IDS = (
-    "red_piece_count",
-    "black_piece_count",
-    "red_edge_piece_count",
-    "black_edge_piece_count",
-)
-QUERY_SETTINGS: Mapping[str, Mapping[str, Any]] = {
-    "red_piece_count": {"player": RED, "edge_only": False},
-    "black_piece_count": {"player": BLACK, "edge_only": False},
-    "red_edge_piece_count": {"player": RED, "edge_only": True},
-    "black_edge_piece_count": {"player": BLACK, "edge_only": True},
+QUERY_ID = "single"
+SUPPORTED_QUERY_IDS = (QUERY_ID,)
+PLAYER_BY_NAME = {"red": RED, "black": BLACK}
+PIECE_STATE_KIND_SETTINGS: Mapping[str, Mapping[str, Any]] = {
+    "all": {
+        "edge_only": False,
+        "scope_phrase": "are on the board",
+    },
+    "edge": {
+        "edge_only": True,
+        "scope_phrase": "are on the outer edge of the board",
+    },
 }
 PIECE_STATE_COUNT_SUPPORT = (0, 1, 2, 3, 4, 5, 6)
-_GEN_DEFAULTS, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
-    "games",
-    SCENE_ID,
-    task_id=TASK_ID,
+_GEN_DEFAULTS, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS_UNUSED = (
+    load_scene_generation_rendering_prompt_defaults(
+        "games",
+        SCENE_ID,
+        task_id=TASK_ID,
+    )
 )
 
 
@@ -47,8 +52,30 @@ def _prepare_piece_state_objective(
 ) -> CheckersObjectivePlan:
     """Bind the selected color/perimeter piece-state query to exact-count sampling."""
 
-    settings = QUERY_SETTINGS[str(query_id)]
-    player = int(settings["player"])
+    if str(query_id) != QUERY_ID:
+        raise ValueError(f"unsupported Checkers piece-state query: {query_id}")
+    target_player_name, target_player_probabilities = resolve_games_named_axis(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        gen_defaults=_GEN_DEFAULTS,
+        namespace=f"{TASK_ID}.target_player",
+        explicit_key="target_player",
+        weights_key="target_player_weights",
+        balance_flag_key="balanced_target_player_sampling",
+        supported_variants=tuple(PLAYER_BY_NAME),
+    )
+    piece_state_kind, piece_state_kind_probabilities = resolve_games_named_axis(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        gen_defaults=_GEN_DEFAULTS,
+        namespace=f"{TASK_ID}.piece_state_kind",
+        explicit_key="piece_state_kind",
+        weights_key="piece_state_kind_weights",
+        balance_flag_key="balanced_piece_state_kind_sampling",
+        supported_variants=tuple(PIECE_STATE_KIND_SETTINGS),
+    )
+    settings = PIECE_STATE_KIND_SETTINGS[str(piece_state_kind)]
+    player = int(PLAYER_BY_NAME[str(target_player_name)])
     edge_only = bool(settings["edge_only"])
     target = resolve_checkers_task_target(
         instance_seed=int(instance_seed),
@@ -56,7 +83,7 @@ def _prepare_piece_state_objective(
         gen_defaults=_GEN_DEFAULTS,
         support_key="piece_state_count_support",
         fallback_support=PIECE_STATE_COUNT_SUPPORT,
-        namespace=f"{TASK_ID}.target_answer.{str(query_id)}",
+        namespace=f"{TASK_ID}.target_answer",
     )
 
     def construct_attempt(rng, axes):
@@ -70,20 +97,30 @@ def _prepare_piece_state_objective(
         )
 
     def prompt_slots(sample: SampledCheckersScene) -> dict[str, str]:
-        return {"object_description": scene_object_description(str(sample.scene_variant))}
+        return {
+            "object_description": scene_object_description(str(sample.scene_variant))
+        }
 
     target_player = "red" if int(player) == int(RED) else "black"
     return CheckersObjectivePlan(
-        attempt_namespace=f"games.checkers.piece_state_count.{str(query_id)}",
-        prompt_query_key=str(query_id),
+        attempt_namespace=f"games.checkers.piece_state_count.{target_player}.{str(piece_state_kind)}",
+        prompt_query_key="piece_state_count",
         target=target,
         query_params={
             **checkers_target_trace_params(target),
             "target_player": str(target_player),
+            "target_player_probabilities": dict(target_player_probabilities),
+            "piece_state_kind": str(piece_state_kind),
+            "piece_state_kind_probabilities": dict(piece_state_kind_probabilities),
             "edge_only": bool(edge_only),
+        },
+        prompt_dynamic_slots={
+            "target_player_name": str(target_player),
+            "piece_state_scope_phrase": str(settings["scope_phrase"]),
         },
         execution_extra={
             "target_player": str(target_player),
+            "piece_state_kind": str(piece_state_kind),
             "edge_only": bool(edge_only),
         },
         construct_attempt=construct_attempt,

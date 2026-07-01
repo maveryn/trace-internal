@@ -104,9 +104,9 @@
     "object_description": "a toy slot machine with three reels, three visible rows, and simple symbol icons",
     "json_output_contract": "Return JSON with exactly two keys: \"annotation\" and \"answer\".",
     "json_output_contract_answer_only": "Return JSON with exactly one key: \"answer\".",
-    "annotation_hint_winning_payline_count": "set \"annotation\" to a JSON array of image-pixel segments [[x1, y1], [x2, y2]], one segment along each winning row or diagonal payline; use [] if no payline wins",
+    "annotation_hint_winning_payline_count": "set \"annotation\" to a JSON array of image-pixel segments, each using two endpoint points [x, y] in [[x0, y0], [x1, y1]] form; include one segment along each winning row or diagonal payline; use [] if no payline wins",
     "answer_hint_winning_payline_count": "set \"answer\" to the integer count of winning paylines",
-    "annotation_hint_paytable_score_value": "set \"annotation\" to a JSON array of image-pixel segments [[x1, y1], [x2, y2]], one segment along each winning row or diagonal payline that contributes to the score",
+    "annotation_hint_paytable_score_value": "set \"annotation\" to a JSON array of image-pixel segments, each using two endpoint points [x, y] in [[x0, y0], [x1, y1]] form; include one segment along each winning row or diagonal payline that contributes to the score",
     "answer_hint_paytable_score_value": "set \"answer\" to the integer total score from the side paytable",
     "annotation_hint_reel_completion_label": "set \"annotation\" to the image-pixel bounding box [x0, y0, x1, y1] around the selected third-reel option",
     "answer_hint_reel_completion_label": "set \"answer\" to the selected option letter"

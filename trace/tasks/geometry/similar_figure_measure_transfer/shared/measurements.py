@@ -45,80 +45,6 @@ def corresponding_side_case(
     )
 
 
-def scale_factor_from_side_case(
-    *,
-    shape_kind: str,
-    scale_factor: int,
-    source_side: int,
-    layout_kind: str,
-) -> SimilarMeasureCase:
-    """Build a scale-factor case based on one marked side pair."""
-
-    labels = _labels_for_sides(str(shape_kind), (0, 1), (0, 1))
-    return SimilarMeasureCase(
-        construction_family="side_pair_scale",
-        shape_kind=str(shape_kind),
-        layout_kind=str(layout_kind),
-        answer=int(scale_factor),
-        target_name="the scale factor from the first figure to the second figure",
-        relation="scale_factor_from_corresponding_side_lengths",
-        scale_factor=int(scale_factor),
-        support_source_side_value=int(source_side),
-        support_target_side_value=int(scale_factor) * int(source_side),
-        target_side=(0, 1),
-        support_side=(0, 1),
-        annotation_labels=labels,
-    )
-
-
-def scale_factor_from_perimeter_case(
-    *,
-    shape_kind: str,
-    scale_factor: int,
-    source_perimeter: int,
-    layout_kind: str,
-) -> SimilarMeasureCase:
-    """Build a scale-factor case based on two perimeter labels."""
-
-    labels = _all_labels(str(shape_kind))
-    return SimilarMeasureCase(
-        construction_family="perimeter_scale",
-        shape_kind=str(shape_kind),
-        layout_kind=str(layout_kind),
-        answer=int(scale_factor),
-        target_name="the scale factor from the first figure to the second figure",
-        relation="scale_factor_from_perimeters",
-        scale_factor=int(scale_factor),
-        source_perimeter=int(source_perimeter),
-        target_perimeter=int(scale_factor) * int(source_perimeter),
-        annotation_labels=labels,
-    )
-
-
-def scale_factor_from_area_case(
-    *,
-    shape_kind: str,
-    scale_factor: int,
-    source_area: int,
-    layout_kind: str,
-) -> SimilarMeasureCase:
-    """Build a scale-factor case based on two area labels."""
-
-    labels = _all_labels(str(shape_kind))
-    return SimilarMeasureCase(
-        construction_family="area_scale",
-        shape_kind=str(shape_kind),
-        layout_kind=str(layout_kind),
-        answer=int(scale_factor),
-        target_name="the scale factor from the first figure to the second figure",
-        relation="linear_scale_factor_from_area_scale",
-        scale_factor=int(scale_factor),
-        source_area=int(source_area),
-        target_area=int(source_area) * int(scale_factor) * int(scale_factor),
-        annotation_labels=labels,
-    )
-
-
 def side_length_from_area_case(
     *,
     construction_family: str,
@@ -177,8 +103,3 @@ def _labels_for_sides(shape_kind: str, target_side: Side, support_side: Side) ->
             if prime not in selected:
                 selected.append(prime)
     return tuple(selected)
-
-
-def _all_labels(shape_kind: str) -> tuple[str, ...]:
-    base = _base_labels(str(shape_kind))
-    return tuple((*base, *(f"{label}'" for label in base)))

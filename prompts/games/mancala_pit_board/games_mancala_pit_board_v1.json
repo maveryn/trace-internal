@@ -35,6 +35,13 @@
         "{sowing_rule_text} Count the seeds in the target-marked pit after the move.",
         "{sowing_rule_text} After sowing, how many seeds does the target-marked pit contain?",
         "{sowing_rule_text} What is the final seed count for the target-marked pit?"
+      ],
+      "max_post_sow_option_label": [
+        "{sowing_rule_text} After the move, which marked option pit has the most seeds?",
+        "{sowing_rule_text} Which option letter marks the pit with the largest seed count after the move?",
+        "{sowing_rule_text} Select the option whose marked pit contains the most seeds after sowing.",
+        "{sowing_rule_text} After sowing, which marked option pit has the greatest number of seeds?",
+        "{sowing_rule_text} Which option marks the highest-count pit after the move?"
       ]
     },
     "output": {
@@ -62,6 +69,9 @@
       "sowing_rule_text"
     ],
     "query:post_sow_pit_count_value": [
+      "sowing_rule_text"
+    ],
+    "query:max_post_sow_option_label": [
       "sowing_rule_text"
     ],
     "answer_or_annotation:answer_only": [
@@ -110,6 +120,8 @@
     "annotation_hint_sowing_landing_option_label": "set \"annotation\" to one bounding box [x0,y0,x1,y1] around the selected landing pit",
     "answer_hint_sowing_landing_option_label": "set \"answer\" to the option letter marking the final landing pit",
     "annotation_hint_post_sow_pit_count_value": "set \"annotation\" to an object with keys \"source_pit\" and \"target_pit\", each mapped to that pit bounding box as [x0,y0,x1,y1] in pixels",
-    "answer_hint_post_sow_pit_count_value": "set \"answer\" to the integer number of seeds in the target-marked pit after the move"
+    "answer_hint_post_sow_pit_count_value": "set \"answer\" to the integer number of seeds in the target-marked pit after the move",
+    "annotation_hint_max_post_sow_option_label": "set \"annotation\" to one bounding box [x0,y0,x1,y1] around the winning marked option pit",
+    "answer_hint_max_post_sow_option_label": "set \"answer\" to the option letter marking the pit with the most seeds after the move"
   }
 }

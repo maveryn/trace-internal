@@ -158,7 +158,7 @@ def _trace_payload(
             "query_id_probabilities": dict(query_probabilities),
             "answer_type": "number",
             "answer_value": float(rendered.answer),
-            "answer_rounding": "nearest_tenth_degree",
+            "answer_rounding": "one_decimal",
             "annotation_roles": list(annotation_roles),
             "reasoning_steps": int(rendered.reasoning_steps),
             **dict(rendered.witness),

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Sequence
+from typing import Any, Dict, Sequence
 
 from trace.core.types import TypedValue
 
@@ -13,29 +13,26 @@ def round_annotation_bbox(bbox: Sequence[float]) -> list[float]:
     return [round(float(value), 3) for value in bbox]
 
 
-def bbox_map_typed_value(annotation: Mapping[str, Sequence[float]]) -> TypedValue:
-    """Build a typed bbox_map annotation from keyed semantic witnesses."""
+def bbox_typed_value(bbox: Sequence[float]) -> TypedValue:
+    """Build a typed scalar bbox annotation from one visual witness."""
 
-    value = {
-        str(key): round_annotation_bbox(bbox)
-        for key, bbox in annotation.items()
-    }
-    return TypedValue(type="bbox_map", value=dict(value))
+    return TypedValue(type="bbox", value=round_annotation_bbox(bbox))
 
 
-def projected_bbox_map(annotation: Mapping[str, Sequence[float]]) -> Dict[str, Any]:
-    """Build the projected-annotation payload for reward/review code."""
+def projected_bbox(bbox: Sequence[float]) -> Dict[str, Any]:
+    """Build the projected-annotation payload for one bbox witness."""
 
-    value = {
-        str(key): round_annotation_bbox(bbox)
-        for key, bbox in annotation.items()
-    }
+    value = round_annotation_bbox(bbox)
     return {
-        "type": "bbox_map",
-        "bbox_map": dict(value),
-        "pixel_bbox_map": dict(value),
-        "value": dict(value),
+        "type": "bbox",
+        "bbox": list(value),
+        "pixel_bbox": list(value),
+        "value": list(value),
     }
 
 
-__all__ = ["bbox_map_typed_value", "projected_bbox_map", "round_annotation_bbox"]
+__all__ = [
+    "bbox_typed_value",
+    "projected_bbox",
+    "round_annotation_bbox",
+]

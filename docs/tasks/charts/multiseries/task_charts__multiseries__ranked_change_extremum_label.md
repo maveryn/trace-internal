@@ -3,13 +3,21 @@
 ## Contract
 - Domain: `charts`
 - Scene id: `multiseries`
-- Query id: `single`
+- Query ids: `largest_increase_label`, `largest_decrease_label`, `largest_absolute_gap_label`, `smallest_absolute_gap_label`
 - Answer schema: `string_label`
 - Annotation schema: `point_map`
-- Program contract: `select_ranked(categories, change(value(series_a), value(series_b), change_measure), direction, rank)`
+- Program contract: `arg_extreme(categories, change(value(series_a), value(series_b), change_measure), direction)`
 
 ## Program Contract
-- `select_label(arg_ranked_extreme(categories, change(value(category, series_a), value(category, series_b), measure), direction, rank)); output=string_label; annotation=point_map(mark_center(answer_category, {series_a,series_b})); scene=multiseries; scope=ranked_change_extremum_label`
+
+Program: `select_label(arg_extreme(categories, change(value(category, series_a), value(category, series_b), measure), direction)); output=string_label; annotation=point_map(mark_center(answer_category, {series_a,series_b})); scene=multiseries; scope=ranked_change_extremum_label`
+
+Candidate set: the visible series marks across shared x/category labels inside the `ranked_change_extremum_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `select_label` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `unspecified` value bound by `string_label`.
+Annotation witnesses: `unspecified` witnesses bound by `point_map(mark_center(answer_category, {series_a,series_b}))`. The Annotation Contract below defines the prompt-facing witnesses.
+Query ids: `largest_increase_label`, `largest_decrease_label`, `largest_absolute_gap_label`, `smallest_absolute_gap_label`.
 
 ## Implementation
 - Source: `trace/tasks/charts/multiseries/ranked_change_extremum_label.py`

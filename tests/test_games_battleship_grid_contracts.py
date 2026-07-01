@@ -5,6 +5,7 @@ from __future__ import annotations
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.battleship.last_ship_cell_label import GamesBattleshipLastShipCellLabelTask
+from trace.tasks.games.battleship.remaining_ship_shape_label import GamesBattleshipRemainingShipShapeLabelTask
 from trace.tasks.games.battleship.ship_cell_status_count import GamesBattleshipShipCellStatusCountTask, SHIP_CELL_STATUS_COUNT_QUERY_IDS
 from trace.tasks.games.battleship.ship_status_count import GamesBattleshipShipStatusCountTask
 from trace.tasks.games.battleship.shared.rules import (
@@ -78,6 +79,18 @@ def _assert_point_annotation_matches_cell(trace: dict, annotation: list[float]) 
     assert execution["annotation_entity_ids"] == execution["annotation_cell_ids"]
 
 
+def _assert_bbox_annotation_matches_shape_option(trace: dict, answer: str, annotation: list[float]) -> None:
+    """Assert scalar bbox annotation marks the selected panel answer choice."""
+
+    execution = trace["execution_trace"]
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox"] == annotation
+    assert trace["render_map"]["shape_option_bboxes_px"][str(answer)] == annotation
+    assert execution["annotation_cell_ids"] == []
+    assert execution["annotation_entity_ids"] == [f"shape_option_{str(answer)}"]
+
+
 def test_games_battleship_fleet_uses_five_ship_scene() -> None:
     assert [shape.shape_id for shape in FLEET_SHAPES] == [
         "line5",
@@ -112,8 +125,7 @@ def test_games_battleship_sunk_ship_count_emits_expected_contract() -> None:
     assert trace["render_spec"]["text_style"]["font_family"]
     assert trace["render_map"]["font_family"] == trace["render_spec"]["text_style"]["font_family"]
     _assert_hit_marker_bbox_map_annotation(trace, out.annotation_gt.value)
-    for shape in FLEET_SHAPES:
-        assert str(shape.display_name) in out.prompt
+    assert "Battleship tracking grid" in out.prompt
 
 
 def test_games_battleship_sunk_ship_count_places_each_ship_once_and_counts_sunk_ships() -> None:
@@ -284,6 +296,7 @@ def test_games_battleship_grid_query_cycle_covers_answer_board_and_style_support
         GamesBattleshipShipStatusCountTask(),
         GamesBattleshipShipCellStatusCountTask(),
         GamesBattleshipLastShipCellLabelTask(),
+        GamesBattleshipRemainingShipShapeLabelTask(),
     )
     query_ids: set[str] = set()
     boards: set[int] = set()
@@ -306,7 +319,7 @@ def test_games_battleship_grid_query_cycle_covers_answer_board_and_style_support
         "sunk_ship_count",
         "named_ship_hit_cell_count",
         "named_ship_unhit_cell_count",
-            "single",
+        "single",
     }
     assert boards == {8, 9, 10}
     assert styles == set(SUPPORTED_BATTLESHIP_STYLE_VARIANTS)
@@ -466,6 +479,50 @@ def test_games_battleship_last_ship_cell_label_emits_expected_contract() -> None
     assert valid_labels == [answer]
 
 
+def test_games_battleship_remaining_ship_shape_label_emits_expected_contract() -> None:
+    out = GamesBattleshipRemainingShipShapeLabelTask().generate(
+        74951,
+        params={"target_ship_id": "square4", "target_answer": 2, "board_size": 9, "style_variant": "paper"},
+        max_attempts=256,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    answer = str(out.answer_gt.value)
+    options = execution["shape_options"]
+    answer_option = next(option for option in options if bool(option["is_answer"]))
+    ships = execution["ship_placements"]
+    untouched_ships = [ship for ship in ships if not bool(ship["hit_coords"])]
+    sunk_ships = [ship for ship in ships if bool(ship["is_sunk"])]
+
+    assert out.answer_gt.type == "string"
+    assert answer in {"A", "B", "C", "D", "E"}
+    assert out.annotation_gt.type == "bbox"
+    assert out.query_id == "single"
+    assert out.scene_id == "battleship"
+    assert trace["query_spec"]["query_id"] == "single"
+    assert execution["query_id"] == "single"
+    assert trace["render_map"]["show_ship_bodies"] is False
+    assert trace["render_map"]["candidate_label_cell_ids"] == {}
+    assert set(trace["render_map"]["shape_option_bboxes_px"].keys()) == {"A", "B", "C", "D", "E"}
+    assert len(options) == 5
+    assert [option["label"] for option in options] == ["A", "B", "C", "D", "E"]
+    assert answer_option["label"] == answer
+    assert answer_option["shape_id"] == "square4"
+    assert execution["target_ship_id"] == "square4"
+    assert execution["target_ship_display_name"] == "Square 2x2"
+    assert execution["target_cell_status"] == "untouched"
+    assert execution["target_answer"] == 2
+    assert len(untouched_ships) == 1
+    assert untouched_ships[0]["ship_id"] == "square4"
+    assert len(sunk_ships) == len(FLEET_SHAPES) - 1
+    assert execution["fleet_sunk_total"] == len(FLEET_SHAPES) - 1
+    assert execution["fleet_partial_total"] == 0
+    assert execution["fleet_untouched_total"] == 1
+    assert set(execution["target_ship_cell_ids"]) == {f"r{row}_c{col}" for row, col in _coords(untouched_ships[0]["coords"])}
+    assert execution["annotation_ship_ids"] == ["square4"]
+    _assert_bbox_annotation_matches_shape_option(trace, answer, out.annotation_gt.value)
+
+
 def test_games_battleship_grid_build_dataset_smoke(tmp_path) -> None:
     output_root = tmp_path / "task_games__battleship__ship_status_count"
     cfg = BuildConfig(
@@ -488,7 +545,7 @@ def test_games_battleship_grid_build_dataset_smoke(tmp_path) -> None:
 
     assert len(rows) == 2
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row.get("scene_id") == "battleship" for row in rows)
+    assert all(row["task"] == "task_games__battleship__ship_status_count" for row in rows)
     assert all(row["answer_gt"]["type"] == "integer" for row in rows)
     assert all(row["annotation_gt"]["type"] == "bbox_set_map" for row in rows)
 
@@ -515,6 +572,6 @@ def test_games_battleship_named_cell_status_build_dataset_smoke(tmp_path) -> Non
 
     assert len(rows) == 2
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row.get("scene_id") == "battleship" for row in rows)
+    assert all(row["task"] == "task_games__battleship__ship_cell_status_count" for row in rows)
     assert all(row["answer_gt"]["type"] == "integer" for row in rows)
     assert all(row["annotation_gt"]["type"] == "bbox_set" for row in rows)

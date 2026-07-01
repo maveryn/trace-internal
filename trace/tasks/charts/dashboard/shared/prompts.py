@@ -18,29 +18,15 @@ DOMAIN = "charts"
 PROMPT_BUNDLE_ID = "charts_dashboard_v1"
 _DYNAMIC_SLOT_NAMES = {
     "condition_category_label",
-    "first_condition_panel_name",
-    "first_condition_phrase",
-    "first_gap_panel_name",
-    "first_rank_gap_panel_name",
-    "first_rank_phrase",
-    "first_source_panel_name",
-    "first_topk_panel_name",
-    "gap_extremum_phrase",
     "object_description",
     "panel_condition_phrase",
-    "rank_direction_phrase",
     "rank_phrase",
     "requested_truth_phrase",
-    "second_condition_panel_name",
-    "second_condition_phrase",
-    "second_gap_panel_name",
-    "second_rank_gap_panel_name",
-    "second_rank_phrase",
-    "second_source_panel_name",
-    "second_topk_panel_name",
+    "selected_panel_name",
     "source_panel_name",
+    "target_category_label",
     "target_panel_name",
-    "top_k_phrase",
+    "unanswerable_instruction",
 }
 
 
@@ -48,9 +34,8 @@ def _object_description(dataset: DashboardDataset) -> str:
     return (
         f"a dashboard with {int(len(dataset.panels))} titled panels named "
         f"{join_quoted_labels([str(panel.name) for panel in dataset.panels])}. "
-        f"Styles may be bar, line, donut, or radar, and a style may repeat. "
-        f"All panels share the same {int(len(dataset.categories))} category labels and colors, "
-        "with exact integer values shown"
+        f"It uses a shared category/color key with {int(len(dataset.categories))} possible category labels, "
+        "and exact integer values are shown for each plotted category mark"
     )
 
 

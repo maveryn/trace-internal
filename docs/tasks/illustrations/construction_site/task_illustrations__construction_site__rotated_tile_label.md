@@ -10,7 +10,15 @@
 Renders a construction-site source illustration as a profile-aware grid of lettered square tiles, with exactly one tile rotated. The model selects the letter of the rotated tile.
 
 ## Program Contract
-`select_label(find_rotated_tile(tile_grid, labels=visible_letters)); scene=construction_site; scope=rotated_tile_label`
+
+Program: `select_label(find_rotated_tile(tile_grid, labels=visible_letters)); scene=construction_site; scope=rotated_tile_label`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `rotated_tile_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `find_rotated_tile`, `tile_grid`, `labels`, `visible_letters`, `construction_site`, `rotated_tile_label`.
+Operation: evaluate `select_label` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; one of the visible tile letters.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

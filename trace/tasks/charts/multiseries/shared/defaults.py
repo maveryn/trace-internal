@@ -6,8 +6,11 @@ from typing import Any, Dict, Mapping, Tuple
 
 from .....core.scene_config import get_scene_defaults
 from ....shared.config_defaults import resolve_required_int_bounds, split_scene_generation_rendering_prompt_defaults
-from ....shared.font_assets import sample_font_family
-from ...shared.visual_defaults import load_chart_scene_background_defaults, load_chart_scene_noise_defaults
+from ...shared.visual_defaults import (
+    load_chart_scene_background_defaults,
+    load_chart_scene_noise_defaults,
+    sample_chart_font_family as sample_shared_chart_font_family,
+)
 from .state import MultiseriesChartDefaults
 
 
@@ -50,16 +53,10 @@ FAMILY_RANGE_KEYS: Tuple[str, ...] = (
 def sample_chart_font_family(instance_seed: int, params: Mapping[str, Any]) -> str:
     """Sample the shared chart text font for this multiseries render."""
 
-    return str(
-        sample_font_family(
-            role="readout",
-            instance_seed=int(instance_seed),
-            namespace=f"{SCENE_NAMESPACE}.chart_font",
-            params=params,
-            exclude_tags=("display",),
-            explicit_key="chart_font_family",
-            weights_key="chart_font_family_weights",
-        )
+    return sample_shared_chart_font_family(
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.chart_font",
+        params=params,
     )
 
 

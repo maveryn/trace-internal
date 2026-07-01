@@ -7,12 +7,12 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from ....core.seed import spawn_rng
 from ....core.scene_config import get_scene_defaults
+from ....core.sampling import uniform_choice_with_probabilities
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.annotation_artifacts import bbox_set_annotation_artifacts
 from ...shared.config_defaults import required_group_defaults, split_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import build_prompt_query_spec
 from ..shared.task_support import sample_count as _shared_sample_count
@@ -150,8 +150,9 @@ def _choose_furniture_relation(
     if explicit_furniture is not None and explicit_relation is not None:
         furniture_type, relation = str(explicit_furniture), str(explicit_relation)
     else:
-        index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:furniture_relation")
-        furniture_type, relation = pairs[int(index) % len(pairs)]
+        rng = spawn_rng(int(instance_seed), f"{TASK_ID}:furniture_relation")
+        pair, _probabilities = uniform_choice_with_probabilities(rng, pairs, sort_keys=True)
+        furniture_type, relation = str(pair[0]), str(pair[1])
 
     furniture_probabilities: Dict[str, float] = {}
     relation_probabilities: Dict[str, float] = {}

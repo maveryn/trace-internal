@@ -9,7 +9,7 @@ do and where to verify it.
 2. `docs/contracts/TASK_UNIT_POLICY.md`
 3. `docs/contracts/PROGRAM_SCHEMA_CATALOG.md`
 4. `docs/contracts/PROMPT_SYSTEM.md`
-5. `docs/contracts/RLVR_REWARD_CONTRACTS.md`
+5. `docs/contracts/ANNOTATION_AND_REWARD_CONTRACTS.md`
 6. The matching domain contract in `docs/domains/`
 7. `docs/SCENE_PACKAGE_MIGRATION/README.md` for scene-package migrations
 
@@ -20,6 +20,8 @@ do and where to verify it.
 3. Decide which branches are valid internal `query_id` values. Split the public
    task if a branch changes the answer type, annotation type, witness roles,
    program skeleton, or visible task scaffold.
+   Use `query_id="single"` for tasks with no semantic query branch; never use
+   the task id, objective name, or `default` as a single-query placeholder.
 4. Check `docs/ACTIVE_TASK_INVENTORY.md` and nearby
    `docs/tasks/<domain>/<scene_id>/<task_id>.md` files before adding a new one.
 5. Search for reusable helpers before writing new logic:
@@ -38,16 +40,28 @@ do and where to verify it.
 4. Resolve and validate `query_id` in the public task file. Pass semantic
    arguments to shared helpers; do not route shared code by task id, query id,
    or objective name.
-5. Build the final output from one execution trace:
+5. Treat literal operands as parameters, not query ids. Split public tasks when
+   changing the visual reasoning channel or predicate arity changes how the
+   model must scan the image, for example color pattern vs size pattern,
+   type-match vs color-match, or shape-only lookup vs color+shape lookup.
+6. Build the final output from one execution trace:
    typed `answer_gt`, typed `annotation_gt`, prompt slots, render/projection
    data, witness records, and `TaskOutput`.
-6. Keep randomness explicit, deterministic from seed/spec/version inputs, and
+7. Keep randomness explicit, deterministic from seed/spec/version inputs, and
    recorded when it affects prompts, layout, rendering, answer, or annotation.
-7. Enforce unique final answers by construction. Use bounded resampling and do
+8. For semantic random axes, define an explicit support or bounded range plus
+   optional weights, then sample with a seeded RNG draw. Uniform sampling means
+   every support item has weight `1`. Do not implement sampling by `seed % n`,
+   hash-index modulo, cursor cycling, or other deterministic enumeration inside
+   a task. Use `trace.core.sampling.uniform_choice`,
+   `uniform_choice_with_probabilities`, `weighted_support_choice`, or
+   `integer_range_choice`; put exact stratification in the review/dataset
+   sampler if exact strata are required.
+9. Enforce unique final answers by construction. Use bounded resampling and do
    not silently relax semantic constraints.
-8. Do not emit scalar difficulty fields or hand-authored reward contracts from
+10. Do not emit scalar difficulty fields or hand-authored reward contracts from
    task code.
-9. Remove retired task ids, wrapper aliases, disabled registry entries, stale
+11. Remove retired task ids, wrapper aliases, disabled registry entries, stale
    configs, stale prompt branches, and stale review paths in the same change.
 
 ## Prompt Checklist
@@ -62,19 +76,49 @@ do and where to verify it.
    multi-character too; one-letter examples are for option/panel-letter tasks.
 6. Keep scene wording visual, query wording operational, and output-mode wording
    limited to field hints and examples.
-7. Use `annotation` terminology in prompt-facing text.
+7. Do not put internal taxonomy/source/scaffold adjectives in user-facing
+   prompts unless they are necessary visible operands or rules. Avoid wording
+   like "special", "synthetic", "procedural", "unlettered", or internal scene
+   family names when the concrete visible object, label, mark, or shape name is
+   enough.
+8. Use `annotation` terminology in prompt-facing text.
+9. Do not include method hints or shortcut cues that tell the model how to
+   solve the task when the visual/task contract already implies the needed
+   reasoning. Include explicit rules only when the rule is part of the problem
+   statement, such as game movement rules or a domain convention that would
+   otherwise be unavailable from the image. Avoid phrases such as "using the
+   slope," "using the Sun-focus distance," or "look for the only non-center
+   point on the major axis" unless that method is itself the requested task.
 
 ## Annotation Checklist
-1. Annotation marks minimal visual witnesses, not answer labels, unless the
-   task is a true visual option-image task.
+1. Annotation marks minimal visual answer-verification witnesses for the task
+   family, not the full reasoning proof. Direct visible-answer tasks usually
+   annotate selected/countable answer objects; derived value tasks annotate the
+   minimal visible operands needed to verify the computation; diagram tasks
+   annotate canonical visual primitives. Put full derivation context, reference
+   objects, intermediate operands, and debug witnesses in trace metadata unless
+   they are part of the task's answer-verification witness.
 2. Use the global annotation types in
-   `docs/contracts/RLVR_REWARD_CONTRACTS.md`.
-3. Prefer keyed annotation when role binding matters or an unordered set would
+   `docs/contracts/ANNOTATION_AND_REWARD_CONTRACTS.md`.
+3. Choose annotation geometry by visual primitive: area-like targets such as
+   cells, tiles, cards, GUI controls, text boxes, bars, and page regions default
+   to `bbox`; localized features or compact object centers default to `point`;
+   line-like witnesses such as edges, paths, spans, sides, and vectors default
+   to `segment`.
+4. Similar scenes inside a domain should use the same annotation geometry for
+   the same visual primitive unless the task doc explains a task-specific
+   exception.
+5. Prefer map annotation when role binding matters or an unordered set would
    be ambiguous.
-4. Use unordered sets only for homogeneous witness collections where order and
+6. Use unordered sets only for homogeneous witness collections where order and
    identity do not matter.
-5. Avoid mixed point/box annotation; revise the task contract before adding a
+7. Avoid mixed point/box annotation; revise the task contract before adding a
    new public annotation type.
+8. For scoped selection tasks, annotate the selected answer object/card/tile,
+   not the enclosing scope region, unless the scope region is needed to verify
+   the answer contract.
+9. For MCQ or visual-option tasks, annotate the selected visual option when
+   that option is the answer-verification witness.
 
 ## Config And Sampling Checklist
 1. Use precedence: domain defaults, scene defaults, task/params.
@@ -82,12 +126,16 @@ do and where to verify it.
    public objective dispatch, task coverage, query weights, or retired
    difficulty gates in config.
 3. Query sampling happens inside the selected task and is uniform by default.
-4. Keep visual-representation axes such as style, chart type, board skin, font,
+4. Uniform means an RNG draw from an explicit support or bounded range with
+   weight `1` for every item, not seed modulo or deterministic cycling. A fixed
+   seed should reproduce the random draw; it should not be the sampling
+   algorithm.
+5. Keep visual-representation axes such as style, chart type, board skin, font,
    and layout jitter in metadata such as `scene_variant`, not public task ids,
    unless the visible scaffold changes the objective contract.
-5. Answer supports should be constructively feasible and contiguous unless task
+6. Answer supports should be constructively feasible and contiguous unless task
    semantics make interior values impossible.
-6. Use the same seeded sampler for review, calibration, and dataset generation.
+7. Use the same seeded sampler for review, calibration, and dataset generation.
 
 ## Visual And Resource Checklist
 1. Use shared font, label, context-text, marker-legibility, and text-legibility
@@ -97,10 +145,19 @@ do and where to verify it.
    - `docs/resources/SHARED_CONTEXT_TEXT_ASSETS.md`
 2. Sample non-semantic visual variety before projection so annotation
    coordinates remain valid.
-3. Use only coordinate-preserving post-image noise.
-4. Record meaningful style, font, palette, marker, and layout choices in render
+3. When assigning visual attributes such as colors, styles, shapes, fonts,
+   icons, symbols, or option appearances from a larger pool, first sample or
+   shuffle the candidate set with seeded RNG from an explicit support, using
+   `sample_without_replacement` or `shuffled_support` when that shape fits.
+   Then assign the selected candidates deterministically by object/order.
+4. Do not use seed/hash/cursor modulo as the random visual candidate selector.
+   Use modulo cycling only when repeated assignment is intentional, such as
+   cycling through an already-selected palette because there are more rendered
+   objects than available distinct colors.
+5. Use only coordinate-preserving post-image noise.
+6. Record meaningful style, font, palette, marker, and layout choices in render
    metadata.
-5. Semantic visual attributes must not accidentally correlate with answer value,
+7. Semantic visual attributes must not accidentally correlate with answer value,
    query id, correct option, or construction order.
 
 ## Docs And Review Checklist

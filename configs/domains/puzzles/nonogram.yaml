@@ -1,9 +1,9 @@
 generation:
   shared:
-    grid_rows_min: 6
-    grid_rows_max: 9
-    grid_cols_min: 6
-    grid_cols_max: 9
+    grid_rows_min: 3
+    grid_rows_max: 5
+    grid_cols_min: 3
+    grid_cols_max: 5
     option_count_choices:
     - 4
     balanced_scene_variant_sampling: true
@@ -14,7 +14,7 @@ generation:
 rendering:
   shared:
     canvas_width: 980
-    canvas_height: 700
+    canvas_height: 600
     margin_top_px: 38
     left_clue_width_px: 156
     top_clue_height_px: 108

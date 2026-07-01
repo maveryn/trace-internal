@@ -14,27 +14,44 @@ from trace.tasks import create_task
 from trace.tasks.charts.scatter_readout.series_pair_value_gap_at_x import (
     ChartsScatterSeriesPairValueGapAtXTask,
 )
+from trace.tasks.charts.scatter_readout.series_value_at_x_value import (
+    ChartsScatterSeriesValueAtXValueTask,
+)
 from trace.tasks.charts.scatter_readout.series_x_extremum_label import (
     ChartsScatterSeriesExtremumXLabelTask,
 )
 from trace.tasks.charts.scatter_readout.series_y_anchor_other_series_value import (
     ChartsScatterSeriesYAnchorOtherSeriesValueTask,
 )
-
-
-CASES = (
-    (ChartsScatterSeriesExtremumXLabelTask, "series_highest_x_label", "string"),
-    (ChartsScatterSeriesExtremumXLabelTask, "series_lowest_x_label", "string"),
-    (ChartsScatterSeriesPairValueGapAtXTask, SINGLE_QUERY_ID, "integer"),
-    (ChartsScatterSeriesYAnchorOtherSeriesValueTask, SINGLE_QUERY_ID, "integer"),
+from trace.tasks.charts.scatter_readout.x_value_rank_series_label import (
+    ChartsScatterXValueRankSeriesLabelTask,
 )
 
 
-def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
+CASES = (
+    (ChartsScatterSeriesExtremumXLabelTask, "series_highest_x_label", "string", "point"),
+    (ChartsScatterSeriesExtremumXLabelTask, "series_lowest_x_label", "string", "point"),
+    (ChartsScatterSeriesPairValueGapAtXTask, SINGLE_QUERY_ID, "integer", "segment"),
+    (ChartsScatterSeriesValueAtXValueTask, SINGLE_QUERY_ID, "integer", "point"),
+    (ChartsScatterSeriesYAnchorOtherSeriesValueTask, SINGLE_QUERY_ID, "integer", "point"),
+    (ChartsScatterXValueRankSeriesLabelTask, "x_highest_series_label", "string", "point"),
+    (ChartsScatterXValueRankSeriesLabelTask, "x_lowest_series_label", "string", "point"),
+)
+
+
+def _bbox_center(bbox: list[float]) -> list[float]:
     assert len(bbox) == 4
-    x0, y0, x1, y1 = [float(value) for value in bbox]
-    assert 0 <= x0 < x1 <= width
-    assert 0 <= y0 < y1 <= height
+    return [
+        (float(bbox[0]) + float(bbox[2])) / 2.0,
+        (float(bbox[1]) + float(bbox[3])) / 2.0,
+    ]
+
+
+def _assert_point_inside_canvas(point: list[float], *, width: int, height: int) -> None:
+    assert len(point) == 2
+    x, y = [float(value) for value in point]
+    assert 0 <= x <= width
+    assert 0 <= y <= height
 
 
 def _series_points(execution: dict, label: str) -> list[dict]:
@@ -43,33 +60,61 @@ def _series_points(execution: dict, label: str) -> list[dict]:
     return [dict(point) for point in points]
 
 
+def _point_at_x(execution: dict, label: str, x_label: str) -> dict:
+    matches = [point for point in _series_points(execution, label) if str(point["x_label"]) == str(x_label)]
+    assert len(matches) == 1
+    return dict(matches[0])
+
+
 def _expected_answer(execution: dict, answer_type: str) -> int | str:
     if str(execution.get("answerability", "answerable")) == "unanswerable":
         return "unanswerable"
 
     target_series = str(execution["target_series_label"])
+    target_x = str(execution["target_x_label"])
+    operation = str(execution.get("operation", ""))
+
+    if operation == "direct_value_readout":
+        return int(_point_at_x(execution, target_series, target_x)["y_value"])
+
+    if operation == "x_value_rank_selection":
+        candidates = [
+            {
+                "series_label": str(label),
+                "y_value": int(_point_at_x(execution, str(label), target_x)["y_value"]),
+            }
+            for label in execution["values_by_series"]
+        ]
+        if str(execution["extremum"]) == "highest":
+            return str(max(candidates, key=lambda item: (int(item["y_value"]), str(item["series_label"])))["series_label"])
+        return str(min(candidates, key=lambda item: (int(item["y_value"]), str(item["series_label"])))["series_label"])
+
     points = _series_points(execution, target_series)
     if str(answer_type) == "string":
         if str(execution["extremum"]) == "highest":
             return str(max(points, key=lambda point: (int(point["y_value"]), str(point["x_label"])))["x_label"])
         return str(min(points, key=lambda point: (int(point["y_value"]), str(point["x_label"])))["x_label"])
 
-    target_x = str(execution["target_x_label"])
     comparison_series = str(execution["comparison_series_label"])
-    source = [point for point in points if str(point["x_label"]) == target_x]
-    comparison = [point for point in _series_points(execution, comparison_series) if str(point["x_label"]) == target_x]
-    assert len(source) == 1
-    assert len(comparison) == 1
-    if str(execution["operation"]) == "absolute_difference":
-        return abs(int(source[0]["y_value"]) - int(comparison[0]["y_value"]))
-    return int(comparison[0]["y_value"])
+    source = _point_at_x(execution, target_series, target_x)
+    comparison = _point_at_x(execution, comparison_series, target_x)
+    if operation == "absolute_difference":
+        return abs(int(source["y_value"]) - int(comparison["y_value"]))
+    if operation == "same_x_transfer_value":
+        return int(comparison["y_value"])
+    raise AssertionError(f"unsupported scatter-readout operation: {operation!r}")
 
 
-@pytest.mark.parametrize(("task_cls", "query_id", "answer_type"), CASES)
-def test_chart_scatter_series_readout_queries_match_contract(task_cls, query_id: str, answer_type: str) -> None:
+@pytest.mark.parametrize(("task_cls", "query_id", "answer_type", "annotation_type"), CASES)
+def test_chart_scatter_series_readout_queries_match_contract(
+    task_cls,
+    query_id: str,
+    answer_type: str,
+    annotation_type: str,
+) -> None:
     task = task_cls()
     out = task.generate(
-        93100 + CASES.index((task_cls, query_id, answer_type)),
+        93100 + CASES.index((task_cls, query_id, answer_type, annotation_type)),
         params={"query_id": query_id, "_enable_unanswerable": False},
         max_attempts=80,
     )
@@ -80,7 +125,7 @@ def test_chart_scatter_series_readout_queries_match_contract(task_cls, query_id:
     assert out.query_id == query_id
     assert out.scene_id == "scatter_readout"
     assert out.answer_gt.type == answer_type
-    assert out.annotation_gt.type == "bbox_map"
+    assert out.annotation_gt.type == annotation_type
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["question_format"]) == "scatter_series_readout_query"
     assert str(execution["scene_variant"]) == "marker_scatter"
@@ -91,34 +136,45 @@ def test_chart_scatter_series_readout_queries_match_contract(task_cls, query_id:
     expected_answer = _expected_answer(execution, answer_type)
     assert out.answer_gt.value == expected_answer
     assert execution["answer"] == expected_answer
-    assert trace["projected_annotation"]["type"] == "bbox_map"
-    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_bbox_map"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["bbox_set"] == list(out.annotation_gt.value.values())
-    for bbox in out.annotation_gt.value.values():
-        _assert_bbox_inside_canvas(
-            [float(value) for value in bbox],
+    assert trace["projected_annotation"]["type"] == annotation_type
+    target_point_id = str(execution["target_point_id"])
+    if annotation_type == "point":
+        expected_point_id = (
+            str(execution["comparison_point_id"])
+            if str(execution.get("operation", "")) == "same_x_transfer_value"
+            else target_point_id
+        )
+        expected_point = _bbox_center(render_map["point_bboxes_px"][expected_point_id])
+        _assert_point_inside_canvas(
+            [float(value) for value in out.annotation_gt.value],
             width=int(render["canvas_width"]),
             height=int(render["canvas_height"]),
         )
-    annotation_point_ids = [str(point_id) for point_id in execution["annotation_point_ids"]]
-    target_point_id = str(execution["target_point_id"])
-    assert trace["projected_annotation"]["point_id"] == target_point_id
-    assert trace["projected_annotation"]["point_ids"] == annotation_point_ids
-    assert out.annotation_gt.value["target_point_readout"] == render_map["point_annotation_bboxes_px"][target_point_id]
-    if answer_type == "string":
-        assert set(out.annotation_gt.value) == {"target_point_readout", "x_axis_label"}
-        assert out.annotation_gt.value["x_axis_label"] == render_map["x_label_bboxes_px"][str(execution["target_x_label"])]
+        assert out.annotation_gt.value == pytest.approx(expected_point)
+        assert trace["projected_annotation"]["point"] == pytest.approx(expected_point)
+        assert trace["projected_annotation"]["pixel_point"] == pytest.approx(expected_point)
     else:
-        assert set(out.annotation_gt.value) == {"target_point_readout", "comparison_point_readout", "x_axis_label"}
-        assert out.annotation_gt.value["comparison_point_readout"] == render_map["point_annotation_bboxes_px"][
-            str(execution["comparison_point_id"])
+        assert annotation_type == "segment"
+        expected_segment = [
+            _bbox_center(render_map["point_bboxes_px"][target_point_id]),
+            _bbox_center(render_map["point_bboxes_px"][str(execution["comparison_point_id"])]),
         ]
-        assert out.annotation_gt.value["x_axis_label"] == render_map["x_label_bboxes_px"][str(execution["target_x_label"])]
+        assert len(out.annotation_gt.value) == 2
+        for actual_point, expected_point in zip(out.annotation_gt.value, expected_segment):
+            _assert_point_inside_canvas(
+                [float(value) for value in actual_point],
+                width=int(render["canvas_width"]),
+                height=int(render["canvas_height"]),
+            )
+            assert actual_point == pytest.approx(expected_point)
+        for actual_point, expected_point in zip(trace["projected_annotation"]["segment"], expected_segment):
+            assert actual_point == pytest.approx(expected_point)
+        for actual_point, expected_point in zip(trace["projected_annotation"]["pixel_segment"], expected_segment):
+            assert actual_point == pytest.approx(expected_point)
 
 
 def test_chart_scatter_series_readout_prompt_examples_match_contract() -> None:
-    for index, (task_cls, query_id, answer_type) in enumerate(CASES, start=93200):
+    for index, (task_cls, query_id, answer_type, annotation_type) in enumerate(CASES, start=93200):
         out = task_cls().generate(index, params={"query_id": query_id, "_enable_unanswerable": False}, max_attempts=80)
         answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
@@ -128,7 +184,14 @@ def test_chart_scatter_series_readout_prompt_examples_match_contract() -> None:
         else:
             assert isinstance(answer_and_annotation["answer"], str)
             assert isinstance(answer_only["answer"], str)
-        assert isinstance(answer_and_annotation["annotation"], dict)
+        annotation = answer_and_annotation["annotation"]
+        if annotation_type == "segment":
+            assert isinstance(annotation, list)
+            assert len(annotation) == 2
+            assert all(isinstance(point, list) and len(point) == 2 for point in annotation)
+        else:
+            assert isinstance(annotation, list)
+            assert len(annotation) == 2
         assert "multi-series scatter plot" in out.prompt
         assert "Annotation" in out.prompt or "annotation" in out.prompt
 
@@ -136,16 +199,18 @@ def test_chart_scatter_series_readout_prompt_examples_match_contract() -> None:
 def test_chart_scatter_series_readout_balanced_sampling_covers_queries() -> None:
     counts: Counter[str] = Counter()
     answer_types: Counter[str] = Counter()
-    for index in range(80):
-        task_cls, _query_id, _answer_type = CASES[int(index) % len(CASES)]
+    for index in range(140):
+        task_cls, _query_id, _answer_type, _annotation_type = CASES[int(index) % len(CASES)]
         task = task_cls()
         out = task.generate(hash64(93300, "charts_scatter_series", index), params={}, max_attempts=120)
         counts[str(out.query_id)] += 1
         answer_types[str(out.answer_gt.type)] += 1
-    assert set(counts) == {query_id for _cls, query_id, _answer_type in CASES}
-    assert counts[SINGLE_QUERY_ID] >= 35
+    assert set(counts) == {query_id for _cls, query_id, _answer_type, _annotation_type in CASES}
+    assert counts[SINGLE_QUERY_ID] >= 55
     assert counts["series_highest_x_label"] >= 15
     assert counts["series_lowest_x_label"] >= 15
+    assert counts["x_highest_series_label"] >= 15
+    assert counts["x_lowest_series_label"] >= 15
     assert answer_types["string"] > 0
     assert answer_types["integer"] > 0
 
@@ -160,8 +225,16 @@ def test_chart_scatter_series_readout_registered_and_scene_config_loaded() -> No
         == "task_charts__scatter_readout__series_pair_value_gap_at_x"
     )
     assert (
+        create_task("task_charts__scatter_readout__series_value_at_x_value").task_id
+        == "task_charts__scatter_readout__series_value_at_x_value"
+    )
+    assert (
         create_task("task_charts__scatter_readout__series_y_anchor_other_series_value").task_id
         == "task_charts__scatter_readout__series_y_anchor_other_series_value"
+    )
+    assert (
+        create_task("task_charts__scatter_readout__x_value_rank_series_label").task_id
+        == "task_charts__scatter_readout__x_value_rank_series_label"
     )
     cfg = get_scene_defaults("charts", "scatter_readout")
     assert isinstance(cfg.get("generation"), dict)

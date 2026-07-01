@@ -36,26 +36,47 @@
         "Filter to category \"{category_label}\". Which item has the {extremum_phrase} displayed value?",
         "For category \"{category_label}\", name the item with the {extremum_phrase} visible size."
       ],
-      "reference_size_neighbor_label": [
-        "Among other items in category \"{category_label}\", which item is closest in size to \"{reference_label}\"?",
-        "Within category \"{category_label}\", which other item is closest in size to \"{reference_label}\"?",
-        "Which other \"{category_label}\" item is nearest in displayed size to \"{reference_label}\"?",
-        "Compare \"{reference_label}\" with the other items in category \"{category_label}\". Which one is closest in size?",
-        "In category \"{category_label}\", find the item whose visible size most closely matches \"{reference_label}\"."
+      "largest_overall_size_category_label": [
+        "Across all visible items, which category contains the item with the {extremum_phrase} displayed size?",
+        "Find the single item with the {extremum_phrase} size. What category does it belong to?",
+        "Which category contains the globally {extremum_phrase} size-encoded item?",
+        "Across the whole chart, identify the item with the {extremum_phrase} visible size. Which category is it in?",
+        "Name the category of the item that has the {extremum_phrase} displayed size overall."
       ],
-      "largest_category_total_label": [
-        "Which category has the {extremum_phrase} total displayed size across all its items?",
-        "By combining the visible item sizes within each category, which category is {extremum_phrase} overall?",
-        "Compare the categories by their total displayed size. Which category is {extremum_phrase}?",
-        "Across all items, which category has the {extremum_phrase} combined size?",
-        "Using all items in each category, name the category with the {extremum_phrase} total size."
+      "smallest_overall_size_category_label": [
+        "Across all visible items, which category contains the item with the {extremum_phrase} displayed size?",
+        "Find the single item with the {extremum_phrase} size. What category does it belong to?",
+        "Which category contains the globally {extremum_phrase} size-encoded item?",
+        "Across the whole chart, identify the item with the {extremum_phrase} visible size. Which category is it in?",
+        "Name the category of the item that has the {extremum_phrase} displayed size overall."
       ],
-      "smallest_category_total_label": [
-        "Which category has the {extremum_phrase} total displayed size across all its items?",
-        "By combining the visible item sizes within each category, which category is {extremum_phrase} overall?",
-        "Compare the categories by their total displayed size. Which category is {extremum_phrase}?",
-        "Across all items, which category has the {extremum_phrase} combined size?",
-        "Using all items in each category, name the category with the {extremum_phrase} total size."
+      "largest_category_item_panel_label": [
+        "For category \"{category_label}\", which panel contains the item with the {extremum_phrase} size?",
+        "Looking only at category \"{category_label}\", name the panel that contains the {extremum_phrase} item.",
+        "Among the \"{category_label}\" bubbles, which panel has the {extremum_phrase} size-encoded item?",
+        "Filter to category \"{category_label}\". Which panel contains its {extremum_phrase} visible item?",
+        "Which panel contains the globally {extremum_phrase} item within category \"{category_label}\"?"
+      ],
+      "smallest_category_item_panel_label": [
+        "For category \"{category_label}\", which panel contains the item with the {extremum_phrase} size?",
+        "Looking only at category \"{category_label}\", name the panel that contains the {extremum_phrase} item.",
+        "Among the \"{category_label}\" bubbles, which panel has the {extremum_phrase} size-encoded item?",
+        "Filter to category \"{category_label}\". Which panel contains its {extremum_phrase} visible item?",
+        "Which panel contains the globally {extremum_phrase} item within category \"{category_label}\"?"
+      ],
+      "larger_than_reference_in_category_count": [
+        "Within category \"{category_label}\", how many items are larger than item \"{reference_label}\"?",
+        "Looking only at category \"{category_label}\", count the items with a larger visible size than \"{reference_label}\".",
+        "For category \"{category_label}\", how many labels are size-encoded larger than \"{reference_label}\"?",
+        "Filter to category \"{category_label}\". How many items are visibly larger than item \"{reference_label}\"?",
+        "Among the \"{category_label}\" items, count those larger than \"{reference_label}\"."
+      ],
+      "smaller_than_reference_in_category_count": [
+        "Within category \"{category_label}\", how many items are smaller than item \"{reference_label}\"?",
+        "Looking only at category \"{category_label}\", count the items with a smaller visible size than \"{reference_label}\".",
+        "For category \"{category_label}\", how many labels are size-encoded smaller than \"{reference_label}\"?",
+        "Filter to category \"{category_label}\". How many items are visibly smaller than item \"{reference_label}\"?",
+        "Among the \"{category_label}\" items, count those smaller than \"{reference_label}\"."
       ]
     },
     "output": {
@@ -122,15 +143,27 @@
       "category_label",
       "extremum_phrase"
     ],
-    "query:reference_size_neighbor_label": [
+    "query:largest_overall_size_category_label": [
+      "extremum_phrase"
+    ],
+    "query:smallest_overall_size_category_label": [
+      "extremum_phrase"
+    ],
+    "query:largest_category_item_panel_label": [
+      "category_label",
+      "extremum_phrase"
+    ],
+    "query:smallest_category_item_panel_label": [
+      "category_label",
+      "extremum_phrase"
+    ],
+    "query:larger_than_reference_in_category_count": [
       "category_label",
       "reference_label"
     ],
-    "query:largest_category_total_label": [
-      "extremum_phrase"
-    ],
-    "query:smallest_category_total_label": [
-      "extremum_phrase"
+    "query:smaller_than_reference_in_category_count": [
+      "category_label",
+      "reference_label"
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",

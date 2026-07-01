@@ -1,11 +1,15 @@
 # `task_puzzles__word_search__search_location_label`
 
 ## Program Contract
-`select_label(location_option, rule=target_word_start_cell_and_direction); scene=word_search; scope=search_location_label`
 
-The scene shows a labeled word-search grid and option cards. The prompt names a
-target word. The task finds the unique word placement and returns the option
-letter whose start row, start column, and direction code match that placement.
+Program: `select_label(location_option, rule=target_word_start_cell_and_direction); scene=word_search; scope=search_location_label`
+
+Candidate set: the visible letter grid, target or option words, candidate location/direction labels, and highlighted word path inside the `search_location_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `location_option`, `target_word_start_cell_and_direction`, `word_search`, `search_location_label`.
+Operation: evaluate `select_label` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; the correct option label.
+Annotation witnesses: `annotation` uses the `bbox_sequence` schema; the ordered sequence of grid-cell bounding boxes for the found.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`
@@ -20,8 +24,7 @@ letter whose start row, start column, and direction code match that placement.
 ## Query Contract
 1. Public `query_id`: `single`
 2. Option labels are visible answer candidates, not public query branches.
-3. Internal variation covers word, direction, option count, grid size, and scene
-   styling only.
+3. Internal variation covers word, direction, grid size, and scene styling only.
 
 ## Prompt Contract
 1. Bundle: `puzzles_word_search_v1`

@@ -12,7 +12,15 @@
 2. Query ids are internal replay metadata; public sampling is at the task-id level.
 
 ## Program Contract
-- `select(candidate_label for candidate_string in options if accepts(nfa_transition_graph, candidate_string)); output=string; annotation=point_sequence(accepted_state_path); scene=automaton; scope=nfa_accepted_string_label`
+
+Program: `select(candidate_label for candidate_string in options if accepts(nfa_transition_graph, candidate_string)); output=string; annotation=point_sequence(accepted_state_path); scene=automaton; scope=nfa_accepted_string_label`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `nfa_accepted_string_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `candidate_label`, `candidate_string`, `if`, `accepts`, `nfa_transition_graph`, `accepted_state_path`, `automaton`, `nfa_accepted_string_label`.
+Operation: evaluate `select` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_sequence` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. Answer type: `string`.

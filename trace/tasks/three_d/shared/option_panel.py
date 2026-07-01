@@ -83,7 +83,10 @@ def assign_independent_prompt_colors(
     rng.shuffle(color_items)
     label_order = sorted(range(len(specs)), key=lambda index: (_candidate_label(specs[index]), str(index)))
     for color_index, spec_index in enumerate(label_order):
-        color_name, color_rgb = color_items[int(color_index) % len(color_items)]
+        wrapped_color_index = int(color_index)
+        while wrapped_color_index >= len(color_items):
+            wrapped_color_index -= len(color_items)
+        color_name, color_rgb = color_items[wrapped_color_index]
         specs[spec_index]["fill_rgb"] = [int(channel) for channel in color_rgb]
         specs[spec_index]["option_color_name"] = str(color_name)
         specs[spec_index]["option_color_rgb"] = [int(channel) for channel in color_rgb]

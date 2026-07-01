@@ -7,12 +7,12 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
 from ....core.seed import spawn_rng
+from ....core.sampling import uniform_choice_with_probabilities
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.annotation_artifacts import bbox_set_annotation_artifacts
 from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
 from .shared.annotations import (
     construction_equipment_bbox_map,
@@ -98,7 +98,6 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
     """Build equipment specs with a unique target-zone count answer."""
 
     rng = spawned_task_rng(int(instance_seed), TASK_ID, int(attempt_index))
-    base_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:cycle")
     query_values = query_support(params, _GEN_DEFAULTS, QUERY_IDS)
     zones = zone_support(params, _GEN_DEFAULTS)
     equipment_values = equipment_support(params, _GEN_DEFAULTS)
@@ -111,23 +110,31 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         query_id = str(explicit_query)
         if query_id not in set(query_values):
             raise ValueError("query_id is outside configured support")
-        query_index = int(query_values.index(query_id))
         query_probabilities = uniform_string_probability_map(query_values, selected=query_id)
     else:
-        query_index = int(base_index) % len(query_values)
-        query_id = str(query_values[query_index])
-        query_probabilities = uniform_string_probability_map(query_values)
+        query_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:query")
+        query_id, query_probabilities = uniform_choice_with_probabilities(
+            query_rng,
+            query_values,
+            sort_keys=False,
+        )
+        query_id = str(query_id)
     explicit_zone = params.get("target_zone_id")
     if explicit_zone is not None:
         target_zone = str(explicit_zone)
         if target_zone not in set(zones):
             raise ValueError("target_zone_id is outside configured zone_support")
+        zone_probabilities = uniform_string_probability_map(zones, selected=target_zone)
     else:
-        zone_index = int(base_index // max(1, len(query_values))) % len(zones)
-        target_zone = str(zones[zone_index])
+        zone_rng = spawn_rng(int(instance_seed), f"{TASK_ID}:target_zone")
+        target_zone, zone_probabilities = uniform_choice_with_probabilities(
+            zone_rng,
+            zones,
+            sort_keys=False,
+        )
+        target_zone = str(target_zone)
     if target_zone not in set(zones):
         raise ValueError("target_zone_id is outside configured zone_support")
-    zone_probabilities = uniform_string_probability_map(zones, selected=target_zone)
 
     target_min, target_max = bounds(
         params,
@@ -144,7 +151,6 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         low=int(target_min),
         high=int(target_max),
         explicit_key="target_count",
-        cycle_index=int(base_index // max(1, len(query_values) * len(zones))) + int(query_index),
     )
     equipment_min, equipment_max = bounds(
         params,
@@ -162,7 +168,6 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any], attempt_index
         low=int(equipment_low),
         high=int(equipment_max),
         explicit_key="equipment_count",
-        cycle_index=int(base_index // max(1, len(query_values) * int(target_max - target_min + 1))),
     )
     other_zones = [str(zone) for zone in zones if str(zone) != str(target_zone)]
     if not other_zones:

@@ -41,8 +41,12 @@ _SYMBOL_SAFE_CODEPOINTS = frozenset(
         "−",
         "≤",
         "≥",
+        "♭",
+        "♯",
+        "♮",
     )
 )
+_MUSIC_ACCIDENTAL_CODEPOINTS = frozenset(ord(char) for char in ("♭", "♯", "♮"))
 
 
 @contextmanager
@@ -123,7 +127,9 @@ def symbol_safe_font_for_text(text: str, font: ImageFont.ImageFont) -> ImageFont
     if not text_needs_symbol_safe_font(str(text)):
         return font
     size = int(getattr(font, "size", 14))
-    return _load_font_cached(int(size), bold=_font_is_bold(font), font_family="")
+    if any(ord(char) in _MUSIC_ACCIDENTAL_CODEPOINTS for char in str(text)):
+        return _load_font_cached(int(size), bold=_font_is_bold(font), font_family="")
+    return _load_font_cached(int(size), bold=_font_is_bold(font), font_family="vollkorn")
 
 
 def resolve_label_font_size_px(

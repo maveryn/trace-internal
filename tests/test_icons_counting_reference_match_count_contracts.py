@@ -9,24 +9,25 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.icons.reference_canvas.reference_attribute_match_count import (
-    IconsReferenceCanvasReferenceAttributeMatchCountTask,
-)
+from trace.tasks.icons.reference_canvas.reference_color_match_count import IconsReferenceCanvasReferenceColorMatchCountTask
+from trace.tasks.icons.reference_canvas.reference_rotation_match_count import IconsReferenceCanvasReferenceRotationMatchCountTask
+from trace.tasks.icons.reference_canvas.reference_type_color_rotation_match_count import IconsReferenceCanvasReferenceTypeColorRotationMatchCountTask
+from trace.tasks.icons.reference_canvas.reference_type_match_count import IconsReferenceCanvasReferenceTypeMatchCountTask
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "query_id"),
+    ("task_cls", "internal_query_id"),
     (
-        (IconsReferenceCanvasReferenceAttributeMatchCountTask, "match_type"),
-        (IconsReferenceCanvasReferenceAttributeMatchCountTask, "match_color"),
-        (IconsReferenceCanvasReferenceAttributeMatchCountTask, "match_rotation"),
-        (IconsReferenceCanvasReferenceAttributeMatchCountTask, "match_type_color_rotation"),
+        (IconsReferenceCanvasReferenceTypeMatchCountTask, "match_type"),
+        (IconsReferenceCanvasReferenceColorMatchCountTask, "match_color"),
+        (IconsReferenceCanvasReferenceRotationMatchCountTask, "match_rotation"),
+        (IconsReferenceCanvasReferenceTypeColorRotationMatchCountTask, "match_type_color_rotation"),
     ),
 )
-def test_icons_counting_attribute_match_count_is_deterministic(task_cls, query_id: str) -> None:
+def test_icons_counting_attribute_match_count_is_deterministic(task_cls, internal_query_id: str) -> None:
     task = task_cls()
-    params = {"query_id": query_id, "object_count": 8, "target_count": 3}
+    params = {"object_count": 8, "target_count": 3}
     out_a = task.generate(24020, params=params, max_attempts=200)
     out_b = task.generate(24020, params=params, max_attempts=200)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
@@ -34,13 +35,19 @@ def test_icons_counting_attribute_match_count_is_deterministic(task_cls, query_i
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert out_a.query_id == query_id
+    assert out_a.query_id == "single"
+    assert out_a.trace_payload["execution_trace"]["internal_query_id"] == internal_query_id
     assert sorted(out_a.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
 
 
 @pytest.mark.parametrize(
     "task_id",
-    ("task_icons__reference_canvas__reference_attribute_match_count",),
+    (
+        "task_icons__reference_canvas__reference_type_match_count",
+        "task_icons__reference_canvas__reference_color_match_count",
+        "task_icons__reference_canvas__reference_rotation_match_count",
+        "task_icons__reference_canvas__reference_type_color_rotation_match_count",
+    ),
 )
 def test_icons_counting_attribute_match_count_build_smoke(tmp_path: Path, task_id: str) -> None:
     output_root = tmp_path / task_id

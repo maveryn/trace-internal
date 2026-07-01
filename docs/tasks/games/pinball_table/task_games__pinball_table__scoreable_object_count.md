@@ -10,7 +10,15 @@
 7. Annotation schema: `bbox_set`
 
 ## Program Contract
-`count(object for object in pinball_objects if object.has_numeric_score_label); scene=pinball_table; scope=scoreable_object_count`
+
+Program: `count(object for object in pinball_objects if object.has_numeric_score_label); scene=pinball_table; scope=scoreable_object_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `scoreable_object_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `object`, `pinball_objects`, `if`, `has_numeric_score_label`, `pinball_table`, `scoreable_object_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The scene renders a tilted pinball playfield with one ball, decorative table elements, and 5 to 8 visible table objects.

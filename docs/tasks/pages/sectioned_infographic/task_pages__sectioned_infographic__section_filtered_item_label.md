@@ -3,21 +3,24 @@
 ## Identity
 1. Domain: `pages`
 2. Scene id: `sectioned_infographic`
-3. Source scene: `infographic`
+3. Source scene: `sectioned_infographic`
 4. Task id: `task_pages__sectioned_infographic__section_filtered_item_label`
 
-## Contract
-1. Objective: find the unique listed item in a named section that has the requested visible marker shape.
-2. Branch metadata: `query_id`
-3. `query_id`: `section_filtered_item_label`
-4. Answer type: `string`
-5. Annotation type: `keyed_bbox_map` with `section_title`, `filter_marker`, and `target_item` boxes.
-6. Query knobs: target section, target marker, section count, item-count support, and scene layout variant.
+## Program Contract
+1. Program schema: `sectioned_infographic_section_filtered_item_label(section_title, marker_label) -> item_label; scene=sectioned_infographic; scope=section_filtered_item_label`
+2. Scene: `sectioned_infographic`
+3. Scope: one rendered sectioned infographic with named sections, visible marker shapes, and visible item rows.
+4. Supported `query_id`: `single`
+5. Answer schema: `string`
+6. Annotation schema: `bbox`
+7. Annotation witness: one box around the matching item row.
+8. Query arguments: resolved target section title and unique marker label within that section.
+9. Render arguments: section count, per-section item-count support, target marker, scene layout variant, visual style, and post-render noise.
 
 ## Prompt + Trace
-1. Prompt bundle: `pages_infographic_v0`
+1. Prompt bundle: `pages_sectioned_infographic_v1`
 2. Scene key: `sectioned_infographic`
 3. Task key: `sectioned_infographic_query`
-4. Internal prompt variant key: `section_filtered_item_label`
-5. Trace records section titles, item labels, marker types, marker bboxes, item-row bboxes, sampled style metadata, and layout geometry.
-6. Generation is deterministic from `instance_seed`; answers and annotation come from the finalized sectioned-infographic render metadata.
+4. Prompt query key: `section_filtered_item_label`
+5. Trace records `query_id=single`, `prompt_query_key=section_filtered_item_label`, section titles, item labels, marker labels, marker bboxes, item-row bboxes, trace-only reasoning bboxes for section title/filter marker/target item, sampled style metadata, and layout geometry.
+6. Generation is deterministic from `instance_seed`; answer and annotation come from the finalized render metadata.

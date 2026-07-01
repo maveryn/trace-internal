@@ -59,6 +59,9 @@ LANE_WIDTH_FOR_HIT = 760.0
 LANE_HEIGHT_FOR_HIT = 660.0
 PIN_HIT_RADIUS_PX = 27.0
 PIN_VISUAL_CLEARANCE_RADIUS_PX = 44.0
+PATH_HIT_CORE_RADIUS_PX = 12.0
+PATH_NON_HIT_CLEARANCE_PX = 58.0
+PATH_HIT_MIN_SEPARATION_PX = 44.0
 
 
 def pin_row_col(rack_index: int) -> Tuple[int, int]:
@@ -210,6 +213,98 @@ def non_target_path_clearance_px(
         distance = math.hypot(px - closest_x, py - closest_y)
         nearest = float(distance) if nearest is None else min(float(nearest), float(distance))
     return nearest
+
+
+def _path_metric_for_point(
+    *,
+    point_x_norm: float,
+    point_y_norm: float,
+    ball_x_norm: float,
+    aim_x_norm: float,
+    aim_y_norm: float,
+) -> tuple[float, float] | None:
+    """Return ray parameter and lane-pixel distance from one point to a path."""
+
+    sx = float(ball_x_norm) * LANE_WIDTH_FOR_HIT
+    sy = BALL_Y_NORM * LANE_HEIGHT_FOR_HIT
+    ex = float(aim_x_norm) * LANE_WIDTH_FOR_HIT
+    ey = float(aim_y_norm) * LANE_HEIGHT_FOR_HIT
+    px = float(point_x_norm) * LANE_WIDTH_FOR_HIT
+    py = float(point_y_norm) * LANE_HEIGHT_FOR_HIT
+    dx = ex - sx
+    dy = ey - sy
+    length_sq = (dx * dx) + (dy * dy)
+    if length_sq <= 1e-6:
+        return None
+    t = (((px - sx) * dx) + ((py - sy) * dy)) / length_sq
+    closest_x = sx + (t * dx)
+    closest_y = sy + (t * dy)
+    return float(t), float(math.hypot(px - closest_x, py - closest_y))
+
+
+def pin_distance_to_path_px(
+    pin: BowlingPin,
+    *,
+    ball_x_norm: float,
+    aim_x_norm: float,
+    aim_y_norm: float,
+) -> float | None:
+    """Return one standing pin center's lane-pixel distance to a straight path."""
+
+    if not bool(pin.standing) or pin.x_norm is None or pin.y_norm is None:
+        return None
+    metric = _path_metric_for_point(
+        point_x_norm=float(pin.x_norm),
+        point_y_norm=float(pin.y_norm),
+        ball_x_norm=float(ball_x_norm),
+        aim_x_norm=float(aim_x_norm),
+        aim_y_norm=float(aim_y_norm),
+    )
+    return None if metric is None else float(metric[1])
+
+
+def path_intersected_pin_ids(
+    *,
+    pins: Sequence[BowlingPin],
+    ball_x_norm: float,
+    aim_x_norm: float,
+    aim_y_norm: float,
+    hit_radius_px: float = PIN_HIT_RADIUS_PX,
+    max_t: float = 1.0,
+) -> Tuple[str, ...]:
+    """Return standing pins whose body is intersected by the ball path segment."""
+
+    hits: list[tuple[float, str]] = []
+    for pin in pins:
+        if not bool(pin.standing) or pin.x_norm is None or pin.y_norm is None:
+            continue
+        metric = _path_metric_for_point(
+            point_x_norm=float(pin.x_norm),
+            point_y_norm=float(pin.y_norm),
+            ball_x_norm=float(ball_x_norm),
+            aim_x_norm=float(aim_x_norm),
+            aim_y_norm=float(aim_y_norm),
+        )
+        if metric is None:
+            continue
+        t, distance = metric
+        if float(t) < 0.0 or float(t) > float(max_t):
+            continue
+        if float(distance) <= float(hit_radius_px):
+            hits.append((float(t), str(pin.pin_id)))
+    return tuple(pin_id for _t, pin_id in sorted(hits))
+
+
+def _center_distance_px(left: tuple[float, float], right: tuple[float, float]) -> float:
+    return math.hypot(
+        (float(left[0]) - float(right[0])) * LANE_WIDTH_FOR_HIT,
+        (float(left[1]) - float(right[1])) * LANE_HEIGHT_FOR_HIT,
+    )
+
+
+def _line_x_at_y_norm(*, ball_x_norm: float, aim_x_norm: float, y_norm: float) -> float:
+    t = (float(y_norm) - BALL_Y_NORM) / (PATH_AIM_Y_NORM - BALL_Y_NORM)
+    return float(ball_x_norm) + (float(t) * (float(aim_x_norm) - float(ball_x_norm)))
 
 
 def make_path_options(*, rng: Any, option_count: int, target_index: int, target_aim_x: float) -> Tuple[BowlingPathOption, ...]:
@@ -397,12 +492,174 @@ def sample_spare_path_scene(
     return sample
 
 
+def sample_path_hit_count_scene(
+    *,
+    rng: Any,
+    scene_variant: str,
+    style_variant: str,
+    target_hit_count: int,
+    distractor_count_min: int = 3,
+    distractor_count_max: int = 5,
+) -> BowlingSample:
+    """Construct a Bowling scene where a straight path clearly intersects N pins."""
+
+    target = int(target_hit_count)
+    if target < 1 or target > 5:
+        raise ValueError("Bowling path-hit count support is 1..5")
+
+    hit_y_values = (0.135, 0.200, 0.265, 0.330, 0.395)[:target]
+    candidate_non_hit_positions = [
+        (x, y)
+        for y in (0.155, 0.215, 0.275, 0.335, 0.395, 0.455)
+        for x in (0.345, 0.395, 0.445, 0.555, 0.605, 0.655)
+    ]
+
+    for _attempt in range(384):
+        ball_x = float(rng.uniform(0.39, 0.61))
+        aim_x = float(rng.uniform(0.36, 0.64))
+        if abs(float(aim_x) - float(ball_x)) < 0.035:
+            aim_x = max(0.36, min(0.64, float(aim_x + (0.07 if aim_x <= ball_x else -0.07))))
+
+        hit_positions = tuple(
+            (_line_x_at_y_norm(ball_x_norm=ball_x, aim_x_norm=aim_x, y_norm=y_norm), float(y_norm))
+            for y_norm in hit_y_values
+        )
+        if any(float(x) < 0.34 or float(x) > 0.66 for x, _y in hit_positions):
+            continue
+        if any(
+            _center_distance_px(left, right) < PATH_HIT_MIN_SEPARATION_PX
+            for index, left in enumerate(hit_positions)
+            for right in hit_positions[index + 1 :]
+        ):
+            continue
+
+        rack_indices = list(range(10))
+        rng.shuffle(rack_indices)
+        hit_indices = tuple(int(value) for value in rack_indices[:target])
+        positions: dict[int, tuple[float, float]] = {
+            int(rack_index): (float(position[0]), float(position[1]))
+            for rack_index, position in zip(hit_indices, hit_positions)
+        }
+
+        top_hit_index = int(hit_indices[0])
+        top_hit_x, top_hit_y = positions[top_hit_index]
+        non_hit_indices = [int(value) for value in rack_indices[target:]]
+        rng.shuffle(non_hit_indices)
+        candidate_positions = list(candidate_non_hit_positions)
+        rng.shuffle(candidate_positions)
+        selected_non_hits: list[int] = []
+        occupied_positions = [tuple(position) for position in hit_positions]
+        max_distractors = min(int(distractor_count_max), len(non_hit_indices))
+        desired_distractors = int(rng.randint(int(distractor_count_min), max_distractors))
+
+        for candidate_x, candidate_y in candidate_positions:
+            if len(selected_non_hits) >= desired_distractors:
+                break
+            jittered = (
+                max(0.335, min(0.665, float(candidate_x + rng.uniform(-0.007, 0.007)))),
+                max(0.145, min(0.465, float(candidate_y + rng.uniform(-0.007, 0.007)))),
+            )
+            metric = _path_metric_for_point(
+                point_x_norm=float(jittered[0]),
+                point_y_norm=float(jittered[1]),
+                ball_x_norm=float(ball_x),
+                aim_x_norm=float(top_hit_x),
+                aim_y_norm=float(top_hit_y),
+            )
+            if metric is None:
+                continue
+            t, distance = metric
+            if 0.0 <= float(t) <= 1.06 and float(distance) < PATH_NON_HIT_CLEARANCE_PX:
+                continue
+            if any(_center_distance_px(jittered, existing) < 54.0 for existing in occupied_positions):
+                continue
+            rack_index = int(non_hit_indices[len(selected_non_hits)])
+            positions[rack_index] = (float(jittered[0]), float(jittered[1]))
+            occupied_positions.append(jittered)
+            selected_non_hits.append(rack_index)
+
+        if len(selected_non_hits) < desired_distractors:
+            continue
+
+        labels = list(PIN_LABELS)
+        rng.shuffle(labels)
+        visible_indices = set(hit_indices) | set(selected_non_hits)
+        pins = make_pins(
+            standing_ids=visible_indices,
+            include_ids=visible_indices,
+            positions_norm=positions,
+            labels=labels,
+        )
+        hit_ids = path_intersected_pin_ids(
+            pins=pins,
+            ball_x_norm=float(ball_x),
+            aim_x_norm=float(top_hit_x),
+            aim_y_norm=float(top_hit_y),
+            hit_radius_px=PIN_HIT_RADIUS_PX,
+        )
+        core_hit_ids = path_intersected_pin_ids(
+            pins=pins,
+            ball_x_norm=float(ball_x),
+            aim_x_norm=float(top_hit_x),
+            aim_y_norm=float(top_hit_y),
+            hit_radius_px=PATH_HIT_CORE_RADIUS_PX,
+        )
+        expected_hit_ids = {pin_entity_id(index) for index in hit_indices}
+        if set(hit_ids) != expected_hit_ids or set(core_hit_ids) != expected_hit_ids or len(hit_ids) != target:
+            continue
+
+        non_hit_clearances = [
+            pin_distance_to_path_px(
+                pin,
+                ball_x_norm=float(ball_x),
+                aim_x_norm=float(top_hit_x),
+                aim_y_norm=float(top_hit_y),
+            )
+            for pin in pins
+            if str(pin.pin_id) not in expected_hit_ids
+        ]
+        min_non_hit_clearance = min(
+            float(value)
+            for value in non_hit_clearances
+            if value is not None
+        )
+        if float(min_non_hit_clearance) < PATH_NON_HIT_CLEARANCE_PX:
+            continue
+
+        anchor_pin = next(pin for pin in pins if str(pin.pin_id) == pin_entity_id(top_hit_index))
+        sample = BowlingSample(
+            scene_variant=str(scene_variant),
+            style_variant=str(style_variant),
+            pins=pins,
+            path_options=tuple(),
+            ball_x_norm=float(ball_x),
+            target_pin_id=str(anchor_pin.pin_id),
+            target_pin_label=str(anchor_pin.label),
+            target_path_id=None,
+            target_path_label=None,
+            remaining_pin_ids=tuple(pin.pin_id for pin in pins if bool(pin.standing)),
+            annotation_entity_ids=tuple(str(pin_id) for pin_id in hit_ids),
+            construction_mode="exact_path_hit_count_with_clearance",
+            path_visible_fraction=None,
+            path_clearance_px=float(min_non_hit_clearance),
+        )
+        validate_bowling_scene_state(sample)
+        return sample
+    raise ValueError(f"failed to construct Bowling path-hit count sample for answer {target}")
+
+
 __all__ = [
     "PIN_LABELS",
+    "PATH_HIT_CORE_RADIUS_PX",
+    "PATH_HIT_MIN_SEPARATION_PX",
+    "PATH_NON_HIT_CLEARANCE_PX",
     "first_intersected_pin_id",
     "make_path_options",
     "make_pins",
+    "path_intersected_pin_ids",
     "path_target_aim_x_range",
+    "pin_distance_to_path_px",
     "sample_first_pin_hit_scene",
+    "sample_path_hit_count_scene",
     "sample_spare_path_scene",
 ]

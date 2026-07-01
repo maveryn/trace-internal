@@ -8,20 +8,20 @@
 5. Annotation schema: `bbox`
 
 ## Program Contract
-`select_label(nonogram.row_strip, rule=row_clue_matches_and_visible_cells_match); scene=nonogram; scope=marked_row_strip_satisfying_row_clue_and_visible_cells`
 
-1. Program code: `selection.option_match`
-2. Scene: `nonogram`
-3. Scope: `marked_row_strip_satisfying_row_clue_and_visible_cells`
-4. Candidate set: visual row-strip option panels labeled `A`..`D` or `A`..`F`.
-5. Selection rule: the selected strip must satisfy the marked row clue and match the visible cells in the marked row.
-6. Answer binding: the selected option letter.
-7. Annotation binding: one image-pixel `bbox` around the selected option panel.
+Program: `select_label(nonogram.row_strip, rule=row_clue_matches_and_visible_cells_match); scene=nonogram; scope=marked_row_strip_satisfying_row_clue_and_visible_cells`
+
+Candidate set: the visible nonogram clues, row or grid cells, filled/empty states, and labeled candidate strips or grids inside the `marked_row_strip_satisfying_row_clue_and_visible_cells` objective scope.
+Operands: visible scene state and prompt-bound operands named by `nonogram`, `row_strip`, `row_clue_matches_and_visible_cells_match`, `marked_row_strip_satisfying_row_clue_and_visible_cells`.
+Operation: evaluate `select_label` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation
 1. Query id: `single`
-2. Grid size: `6x6..9x9`
-3. Option count: `{4, 6}`
+2. Grid size: `3x3..5x5`
+3. Option count: `{4}`
 4. Scene variants: `nonogram_classic|nonogram_card|nonogram_blueprint`
 
 ## Review Notes

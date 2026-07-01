@@ -10,7 +10,7 @@ from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.font_assets import get_font_family_record
 
-from ....shared.drawing import draw_arrow, draw_dashed_line
+from ....shared.drawing import draw_dashed_line
 from ....shared.color_distance import min_color_distance_to_anchors, resolve_contrasting_palette
 from ....shared.text_rendering import fit_font_to_box
 from ...shared.text import draw_game_text_traced as draw_text_traced
@@ -470,9 +470,13 @@ def render_bowling_scene(
             raise ValueError("first-pin path render requires target_pin_id")
         target_pin = next(pin for pin in pins if str(pin.pin_id) == str(target_pin_id))
         target_center = pin_centers[int(target_pin.rack_index)]
+        visible_fraction = max(
+            0.34,
+            min(1.0, float(path_visible_fraction if path_visible_fraction is not None else 0.62)),
+        )
         visible_end = (
-            float(ball_center[0] + (0.62 * (target_center[0] - ball_center[0]))),
-            float(ball_center[1] + (0.62 * (target_center[1] - ball_center[1]))),
+            float(ball_center[0] + (visible_fraction * (target_center[0] - ball_center[0]))),
+            float(ball_center[1] + (visible_fraction * (target_center[1] - ball_center[1]))),
         )
         draw_dashed_line(
             draw,
@@ -483,20 +487,12 @@ def render_bowling_scene(
             dash_px=18,
             gap_px=10,
         )
-        draw_arrow(
-            draw,
-            start=(ball_center[0] + (0.42 * (visible_end[0] - ball_center[0])), ball_center[1] + (0.42 * (visible_end[1] - ball_center[1]))),
-            end=visible_end,
-            fill=tuple(int(v) for v in path_palette_rgb[0]),
-            width=int(params.path_width_px),
-            head_length_px=22,
-            head_width_px=18,
-        )
         rendered_paths = {
             "shown_path": {
                 "start": [round(float(ball_center[0]), 3), round(float(ball_center[1]), 3)],
                 "end": [round(float(target_center[0]), 3), round(float(target_center[1]), 3)],
                 "visible_end": [round(float(visible_end[0]), 3), round(float(visible_end[1]), 3)],
+                "visible_fraction": round(float(visible_fraction), 3),
             }
         }
     elif mode == "path_options":

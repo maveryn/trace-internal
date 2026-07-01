@@ -10,7 +10,15 @@
 7. Annotation schema: `bbox_map`
 
 ## Program Contract
-`max(cleared_row_count(simulate_drop(board, rotate_translate(next_piece, placement)))) over legal placements; scene=tetris; scope=line_clear_count`
+
+Program: `max(cleared_row_count(simulate_drop(board, rotate_translate(next_piece, placement)))) over legal placements; scene=tetris; scope=line_clear_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `line_clear_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `cleared_row_count`, `simulate_drop`, `board`, `rotate_translate`, `next_piece`, `placement`, `tetris`, `line_clear_count`.
+Operation: evaluate `max` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. `single` is the only public query id; the task-specific prompt key is trace metadata.

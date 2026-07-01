@@ -8,7 +8,15 @@
 5. Objective: count terminal taxa descending from the marked clade.
 
 ## Program Contract
-count(leaves(descendant_of(marked_clade))); output=integer; annotation=point_set(descendant_leaf_terminal_centers); scene=phylogeny_tree; scope=clade_leaf_count
+
+Program: `count(leaves(descendant_of(marked_clade))); output=integer; annotation=point_set(descendant_leaf_terminal_centers); scene=phylogeny_tree; scope=clade_leaf_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `clade_leaf_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `leaves`, `descendant_of`, `marked_clade`, `descendant_leaf_terminal_centers`, `phylogeny_tree`, `clade_leaf_count`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query IDs
 1. Supported `query_id`: `single`.

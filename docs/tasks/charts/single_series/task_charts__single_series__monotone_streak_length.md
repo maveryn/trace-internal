@@ -15,7 +15,15 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Program Contract
-`length(unique_longest_monotone_run(sequence(values), direction)); output=integer_value; annotation=point_set(run_marks); scene=single_series; scope=monotone_streak_length`
+
+Program: `length(unique_longest_monotone_run(sequence(values), direction)); output=integer_value; annotation=point_set(run_marks); scene=single_series; scope=monotone_streak_length`
+
+Candidate set: the visible marks in the ordered single-series chart inside the `monotone_streak_length` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `length` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `point_set` witnesses bound by `point_set(run_marks)`. Annotation marks every visible mark in the unique longest monotone run. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
+Query ids: `longest_increasing_streak_length`, `longest_decreasing_streak_length`.
 
 ## Annotation Contract
 1. Answer schema: `integer_value`.

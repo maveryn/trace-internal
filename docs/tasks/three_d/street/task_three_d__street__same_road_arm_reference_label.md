@@ -9,9 +9,15 @@
 - Annotation schema: `bbox`
 
 ## Program Contract
-`select(label(candidate_street_objects, predicate=road_arm(candidate)==road_arm(reference_object))); scene=street; scope=same_road_arm_reference_label`
 
-The public query id is `single`; same-road-arm selection is the fixed objective contract.
+Program: `select(label(candidate_street_objects, predicate=road_arm(candidate)==road_arm(reference_object))); scene=street; scope=same_road_arm_reference_label`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `same_road_arm_reference_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `label`, `candidate_street_objects`, `predicate`, `road_arm`, `candidate`, `reference_object`, `street`, `same_road_arm_reference_label`.
+Operation: evaluate `select` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Contract
 The image shows a synthetic perspective 3D street intersection or T intersection with roads, sidewalks, crosswalk markings, unlettered street context, one red-boxed reference street object, unlettered street-object candidates, and a below-scene text option panel.

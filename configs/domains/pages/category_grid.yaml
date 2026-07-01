@@ -1,6 +1,5 @@
 generation:
   shared:
-    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     category_count_support:
     - 3
@@ -18,13 +17,6 @@ generation:
       card_grid: 1.0
       column_groups: 1.0
       compact_index: 1.0
-  task_overrides:
-    task_pages__category_grid__category_slot_item_label:
-      query_id_weights:
-        category_slot_item_label: 1.0
-    task_pages__category_grid__category_item_count:
-      query_id_weights:
-        category_item_count: 1.0
 rendering:
   shared:
     canvas_width: 1120
@@ -41,20 +33,7 @@ rendering:
     item_font_size_px: 14
 prompt:
   shared:
-    bundle_id: pages_category_grid_v0
-    scene_key: category_grid
-    task_key: category_grid_lookup_query
-    object_description: a category grid page with category headers, subcategory headers,
-      and short item rows
-  task_overrides:
-    task_pages__category_grid__category_slot_item_label:
-      annotation_hint: set "annotation" to an object mapping category_header, subcategory_header,
-        and target_item to [x0,y0,x1,y1] pixel bounding boxes for the requested item
-      answer_hint: set "answer" to the exact visible item label requested by the question
-    task_pages__category_grid__category_item_count:
-      annotation_hint: set "annotation" to an array of [x0,y0,x1,y1] pixel bounding
-        boxes for the counted item rows
-      answer_hint: set "answer" to the integer count requested by the question
+    bundle_id: pages_category_grid_v1
 visual:
   noise:
     apply_prob: 0.4

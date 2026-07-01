@@ -5,16 +5,19 @@
 1. Domain: `charts`
 2. Scene: `table`
 3. Source file: `trace/tasks/charts/table/column_rank_label.py`
-4. Prompt assets: `prompts/charts/table/*_v1.json`
+4. Prompt assets: `prompts/charts/table/charts_table_counting_v1.json`, `prompts/charts/table/charts_table_ranking_v1.json`, `prompts/charts/table/charts_table_statistics_v1.json`, and `prompts/charts/table/charts_table_temporal_v1.json`
 5. Query ids: `highest_rank_in_column`, `lowest_rank_in_column`
 
 ## Program Contract
 
-- Program schema: `rank(rows by value(column), direction, rank_k); output=row_label; annotation=bbox(answer_value_cell); scene=table; scope=column_rank_label`.
-- Program: rank rows by one column and return the row label at the sampled rank.
-- Answer: `string` row label.
-- Annotation schema: `bbox` for the answer row cell in the queried column.
-- The answer and annotation are bound from the same sampled table execution trace.
+Program: `rank(rows by value(column), direction, rank_k); output=row_label; annotation=bbox(answer_value_cell); scene=table; scope=column_rank_label`
+
+Candidate set: the visible table cells with row and column labels inside the `column_rank_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `rank` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `unspecified` value bound by `row_label`.
+Annotation witnesses: `unspecified` witnesses bound by `bbox(answer_value_cell)`. The Annotation Contract below defines the prompt-facing witnesses.
+Query ids: `highest_rank_in_column`, `lowest_rank_in_column`.
 
 ## Review Notes
 

@@ -10,7 +10,7 @@ Use this when creating or changing prompt bundles or prompt-facing contract word
 ## Read first
 1. `docs/contracts/PROMPT_SYSTEM.md`
 2. `docs/workflows/TASK_AUTHORING.md`
-3. `docs/contracts/RLVR_REWARD_CONTRACTS.md` when output-mode examples include annotation
+3. `docs/contracts/ANNOTATION_AND_REWARD_CONTRACTS.md` when output-mode examples include annotation
 
 ## Prompt workflow
 1. Keep bundle structure aligned to TRACE's composition layers:

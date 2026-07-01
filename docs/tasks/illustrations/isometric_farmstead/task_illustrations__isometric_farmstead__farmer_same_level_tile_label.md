@@ -10,7 +10,15 @@
 Selects the lettered terrain tile that is at the same terrain elevation level as an unlettered farmer reference object.
 
 ## Program Contract
-`select(label, level(candidate_tile)=level(base_tile(reference_farmer)), candidate_tile in lettered_ground_tiles); scene=isometric_farmstead; scope=farmer_same_level_tile_label`
+
+Program: `select(label, level(candidate_tile)=level(base_tile(reference_farmer)), candidate_tile in lettered_ground_tiles); scene=isometric_farmstead; scope=farmer_same_level_tile_label`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `farmer_same_level_tile_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `label`, `level`, `candidate_tile`, `base_tile`, `reference_farmer`, `lettered_ground_tiles`, `isometric_farmstead`, `farmer_same_level_tile_label`.
+Operation: evaluate `select` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

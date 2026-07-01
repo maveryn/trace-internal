@@ -10,6 +10,7 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.annotation_artifacts import (
     AnnotationArtifacts,
+    bbox_set_annotation_artifacts,
     point_annotation_artifacts,
     segment_annotation_artifacts,
 )
@@ -173,6 +174,33 @@ def path_segment_label_attempt(
     )
 
 
+def pin_bbox_set_count_attempt(
+    *,
+    sample: BowlingSample,
+    answer_value: int,
+    execution_extra: Mapping[str, Any] | None = None,
+) -> BowlingAttemptResult:
+    """Package a pin-count answer whose annotation is the counted pin bboxes."""
+
+    annotation_entity_ids = tuple(str(entity_id) for entity_id in sample.annotation_entity_ids)
+    if int(answer_value) != len(annotation_entity_ids):
+        raise ValueError("Bowling bbox-set count answer must match target pin count")
+
+    def build_annotation(rendered_context: RenderedBowlingTaskContext) -> AnnotationArtifacts:
+        bboxes_by_id = rendered_context.rendered_scene.render_map["entity_bboxes_px"]
+        return bbox_set_annotation_artifacts(
+            [bboxes_by_id[str(entity_id)] for entity_id in annotation_entity_ids]
+        )
+
+    return BowlingAttemptResult(
+        sample=sample,
+        answer_gt=TypedValue(type="integer", value=int(answer_value)),
+        annotation_entity_ids=annotation_entity_ids,
+        build_annotation=build_annotation,
+        execution_extra=dict(execution_extra or {}),
+    )
+
+
 def run_bowling_lifecycle(
     *,
     task_id: str,
@@ -277,6 +305,7 @@ __all__ = [
     "BowlingObjectivePlan",
     "bowling_integer_axis_spec",
     "path_segment_label_attempt",
+    "pin_bbox_set_count_attempt",
     "pin_point_label_attempt",
     "resolve_bowling_integer_axis_specs",
     "run_bowling_lifecycle",

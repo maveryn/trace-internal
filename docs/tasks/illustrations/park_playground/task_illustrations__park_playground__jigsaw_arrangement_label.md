@@ -10,7 +10,15 @@
 Renders a park/playground source illustration, cuts it into a profile-aware tile grid, and shows four lettered complete arrangements of those tiles. Exactly one option preserves the original row-major tile order. The model selects the option letter for the correct arrangement.
 
 ## Program Contract
-`select_option(match_jigsaw_arrangement(tile_set, arrangement_options, correct_order=row_major)); scene=park_playground; scope=jigsaw_arrangement_label`
+
+Program: `select_option(match_jigsaw_arrangement(tile_set, arrangement_options, correct_order=row_major)); scene=park_playground; scope=jigsaw_arrangement_label`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `jigsaw_arrangement_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `match_jigsaw_arrangement`, `tile_set`, `arrangement_options`, `correct_order`, `row_major`, `park_playground`, `jigsaw_arrangement_label`.
+Operation: evaluate `select_option` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; one of the visible option letters `A` through `D`.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

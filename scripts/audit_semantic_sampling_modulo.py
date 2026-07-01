@@ -79,6 +79,11 @@ ALLOWED_PATH_PARTS = (
 
 ALLOWED_SOURCE_RULES: tuple[tuple[str, str, str], ...] = (
     (
+        "trace/tasks/charts/shared/cartesian/lines.py",
+        r"pattern\[int\(pattern_index\)\s*%\s*len\(pattern\)\]",
+        "dash/gap line rendering cycles through a selected stroke pattern",
+    ),
+    (
         "trace/tasks/charts/part_whole/shared/sampling.py",
         r"%\s*len\(categories\)",
         "circular part-whole category traversal, not random sampling",
@@ -102,6 +107,21 @@ ALLOWED_SOURCE_RULES: tuple[tuple[str, str, str], ...] = (
         "trace/tasks/games/mancala_pit_board/sowing_landing_option_label.py",
         r"source_index\s*=\s*\(int\(target_index\)\s*-\s*int\(source_seed_count\)\)\s*%\s*len\(LABELS\)",
         "Mancala reverse sowing uses circular pit topology",
+    ),
+    (
+        "trace/tasks/graph/adjacency/shared/sampling.py",
+        r"target\s*=\s*nodes\[\(index\s*\+\s*1\)\s*%\s*len\(nodes\)\]",
+        "directed graph component construction wraps the final node to the first node",
+    ),
+    (
+        "trace/tasks/graph/shared/graph_path_order_sampling.py",
+        r"frozenset\(\(int\(ordered\[index\]\),\s*int\(ordered\[\(index\s*\+\s*1\)\s*%\s*len\(ordered\)\]\)\)\)",
+        "cycle edge set construction wraps the final node to the first node",
+    ),
+    (
+        "trace/tasks/graph/shared/graph_path_order_sampling.py",
+        r"target\s*=\s*int\(ordered\[\(index\s*\+\s*1\)\s*%\s*len\(ordered\)\]\)",
+        "cycle edge validation wraps the final node to the first node",
     ),
 )
 

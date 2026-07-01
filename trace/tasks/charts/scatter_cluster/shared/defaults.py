@@ -6,18 +6,21 @@ from typing import Any, Mapping, Sequence
 
 from trace.core.scene_config import get_scene_defaults
 from trace.tasks.charts.shared.visual_defaults import (
+    chart_font_asset_metadata,
+    coerce_rgb,
     load_chart_scene_background_defaults,
     load_chart_scene_noise_defaults,
+    render_style_seed,
+    sample_chart_font_family as sample_shared_chart_font_family,
+    resolve_chart_render_int,
+    resolve_chart_render_rgb,
 )
 from trace.tasks.shared.config_defaults import (
     group_default,
     split_scene_generation_rendering_prompt_defaults,
 )
-from trace.tasks.shared.font_assets import font_asset_version, sample_font_family
 from trace.tasks.shared.render_variation import (
     apply_layout_jitter_to_margins,
-    resolve_render_int,
-    resolve_render_rgb,
 )
 
 from .state import PROMPT_BUNDLE_ID, SCENE_ID, SCENE_NAMESPACE, RGB, ScatterClusterRenderParams
@@ -32,41 +35,16 @@ POST_IMAGE_BACKGROUND_DEFAULTS = load_chart_scene_background_defaults(scene_id=S
 POST_IMAGE_NOISE_DEFAULTS = load_chart_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.0)
 
 
-def render_style_seed(params: Mapping[str, Any]) -> int:
-    try:
-        return int(params.get("_render_style_seed", params.get("_sample_cursor", 0)) or 0)
-    except Exception:
-        return 0
-
-
 def as_rgb(value: Any, fallback: RGB) -> RGB:
-    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)) or len(value) < 3:
-        return tuple(int(channel) for channel in fallback)
-    return tuple(max(0, min(255, int(channel))) for channel in value[:3])  # type: ignore[index]
+    return coerce_rgb(value, fallback)
 
 
 def resolve_int(params: Mapping[str, Any], key: str, fallback: int) -> int:
-    return int(
-        resolve_render_int(
-            params,
-            RENDER_DEFAULTS,
-            str(key),
-            int(fallback),
-            instance_seed=render_style_seed(params),
-            namespace=SCENE_NAMESPACE,
-        )
-    )
+    return resolve_chart_render_int(params, RENDER_DEFAULTS, str(key), int(fallback), namespace=SCENE_NAMESPACE)
 
 
 def resolve_rgb(params: Mapping[str, Any], key: str, fallback: RGB) -> RGB:
-    return resolve_render_rgb(
-        params,
-        RENDER_DEFAULTS,
-        str(key),
-        fallback,
-        instance_seed=render_style_seed(params),
-        namespace=SCENE_NAMESPACE,
-    )
+    return resolve_chart_render_rgb(params, RENDER_DEFAULTS, str(key), fallback, namespace=SCENE_NAMESPACE)
 
 
 def gen_int(params: Mapping[str, Any], key: str, fallback: int) -> int:
@@ -78,24 +56,15 @@ def gen_float(params: Mapping[str, Any], key: str, fallback: float) -> float:
 
 
 def sample_chart_font_family(instance_seed: int, params: Mapping[str, Any]) -> str:
-    return str(
-        sample_font_family(
-            role="readout",
-            instance_seed=int(instance_seed),
-            namespace=f"{SCENE_NAMESPACE}.chart_font",
-            params=params,
-            exclude_tags=("display",),
-            explicit_key="chart_font_family",
-            weights_key="chart_font_family_weights",
-        )
+    return sample_shared_chart_font_family(
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.chart_font",
+        params=params,
     )
 
 
 def font_assets_payload(*, chart_font_family: str) -> dict[str, str]:
-    return {
-        "font_asset_version": font_asset_version(),
-        "chart_font_family": str(chart_font_family),
-    }
+    return chart_font_asset_metadata(str(chart_font_family))
 
 
 def palette(params: Mapping[str, Any]) -> tuple[RGB, ...]:

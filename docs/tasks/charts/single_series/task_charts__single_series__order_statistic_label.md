@@ -15,7 +15,15 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Program Contract
-`label(select_ranked_mark(marks, statistic_kind)); output=string_label; annotation=point(selected_mark); scene=single_series; scope=order_statistic_label`
+
+Program: `label(select_ranked_mark(marks, statistic_kind)); output=string_label; annotation=point(selected_mark); scene=single_series; scope=order_statistic_label`
+
+Candidate set: the visible marks in the ordered single-series chart inside the `order_statistic_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `label` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `point` witnesses bound by `point(selected_mark)`. Annotation marks the selected ranked-statistic mark point only. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
+Query ids: `median_order_statistic_label`, `nth_highest_order_statistic_label`, `nth_lowest_order_statistic_label`.
 
 ## Annotation Contract
 1. Answer schema: `string_label`.

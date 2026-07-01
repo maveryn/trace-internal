@@ -22,6 +22,13 @@
       ]
     },
     "query": {
+      "closure_match_direction_label": [
+        "{marble_chain_rule_text} Which labeled arrow removes marbles and leaves two same-color marbles touching after the chain closes?",
+        "{marble_chain_rule_text} Choose the arrow letter whose pop makes the closing chain connect two marbles of the same color.",
+        "{marble_chain_rule_text} Among the labeled shot arrows, which one pops marbles and leaves a same-color pair at the closure gap?",
+        "{marble_chain_rule_text} Report the shot-arrow label that creates a same-color match when the popped gap closes.",
+        "{marble_chain_rule_text} Which arrow removes an existing run and causes the two boundary marbles to touch with matching colors?"
+      ],
       "max_pop_direction_label": [
         "{marble_chain_rule_text} Which labeled arrow removes the most existing chain marbles?",
         "{marble_chain_rule_text} Choose the arrow letter that makes the largest number of existing marbles pop.",
@@ -57,6 +64,9 @@
   "required_slots_by_key": {
     "scene:marble_chain_board": [
       "object_description"
+    ],
+    "query:closure_match_direction_label": [
+      "marble_chain_rule_text"
     ],
     "query:max_pop_direction_label": [
       "marble_chain_rule_text"
@@ -105,6 +115,8 @@
   "code_prompt_defaults": {
     "object_description_marble_chain_board": "a Zuma-like marble-chain board with a central shooter, a colored shooter marble, arrow shot options, and colored marbles on a curved track",
     "marble_chain_rule_text": "Fire the shooter marble straight along the chosen arrow. It inserts at the chain gap indicated by that arrow. If the inserted marble's same-color contiguous run has at least three marbles, the existing marbles in that run are removed and the chain closes once. Do not apply any later cascade.",
+    "annotation_hint_closure_match_direction_label": "set \"annotation\" to one pixel-space point [x, y] at the insertion gap indicated by the selected arrow",
+    "answer_hint_closure_match_direction_label": "set \"answer\" to only the selected shot-arrow letter",
     "annotation_hint_max_pop_direction_label": "set \"annotation\" to one pixel-space point [x, y] at the insertion gap indicated by the selected arrow",
     "answer_hint_max_pop_direction_label": "set \"answer\" to only the selected shot-arrow letter",
     "annotation_hint_pop_count_after_marked_shot": "set \"annotation\" to bounding boxes [x0, y0, x1, y1], one for each existing chain marble that would pop; use an empty array if none pop",

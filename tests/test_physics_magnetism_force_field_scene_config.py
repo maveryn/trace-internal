@@ -1,4 +1,4 @@
-"""Config regression tests for physics magnetism force-field defaults."""
+"""Config regression tests for magnetic-force scene defaults."""
 
 from __future__ import annotations
 
@@ -6,17 +6,15 @@ from trace.core.scene_config import get_scene_defaults
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
-def test_physics_magnetism_defaults_expose_scene_query_axes_and_supports() -> None:
-    cfg = get_scene_defaults("physics", "magnetism")
+def test_physics_magnetic_force_defaults_expose_scene_axes_and_supports() -> None:
+    cfg = get_scene_defaults("physics", "magnetic_force")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="physics_magnetism_force_field_family",
+        task_id="task_physics__magnetic_force__force_direction_choice",
     )
 
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-
-    assert bool(generation["balanced_query_id_sampling"]) is True
 
     assert bool(generation["balanced_field_orientation_sampling"]) is True
 
@@ -27,8 +25,6 @@ def test_physics_magnetism_defaults_expose_scene_query_axes_and_supports() -> No
     assert bool(generation["balanced_direction_option_letter_sampling"]) is True
 
     assert set(generation["scene_variant_weights"].keys()) == {"field_grid"}
-
-    assert set(generation["query_id_weights"].keys()) == {"force_direction_choice"}
 
     assert set(generation["field_orientation_weights"].keys()) == {"out_of_page", "into_page"}
 
@@ -62,19 +58,17 @@ def test_physics_magnetism_defaults_expose_scene_query_axes_and_supports() -> No
 
     assert int(rendering["option_arrow_width_px"]) == 8
 
+    assert int(rendering["option_arrow_head_length_px"]) == 20
+
+    assert int(rendering["option_arrow_head_width_px"]) == 18
+
     assert int(rendering["particle_font_size_px"]) == 31
 
     assert bool(rendering["layout_jitter_enabled"]) is True
 
 
-    assert str(prompt["bundle_id"]) == "physics_magnetism_v0"
+    assert str(prompt["bundle_id"]) == "physics_magnetic_force_v1"
 
-    assert str(prompt["scene_key"]) == "magnetic_force_field"
+    assert str(prompt["task_key"]) == "force_direction_choice_query"
 
-    assert str(prompt["task_key"]) == "magnetic_force_field_query"
-
-    assert "magnetic-field panel" in str(prompt["object_description_clean_panel"])
-
-    assert "field_orientation" in str(prompt["annotation_hint_force_direction_choice"])
-
-    assert "charged particle" in str(prompt["annotation_hint_force_direction_choice"])
+    assert "query_id_weights" not in generation

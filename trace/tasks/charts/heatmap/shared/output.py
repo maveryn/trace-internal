@@ -5,16 +5,15 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Any, Dict, Mapping
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.charts.heatmap.shared.annotations import annotation_refs
 from trace.tasks.charts.heatmap.shared.defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     SCENE_ID,
     _condition_support,
 )
-from trace.tasks.charts.heatmap.shared.rendering import _render_heatmap, _resolve_render_params
+from trace.tasks.charts.heatmap.shared.rendering import _render_heatmap, _resolve_render_params, _value_palette
 from trace.tasks.shared.font_assets import font_asset_version
 
 
@@ -28,12 +27,12 @@ def render_dataset(
 
     render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
     render_params = _resolve_render_params(render_style_params)
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id=SCENE_ID,
+        render_params=render_params,
+        protected_colors=_value_palette(str(dataset["scene_variant"])),
     )
     rendered_scene = _render_heatmap(
         background,
@@ -68,9 +67,11 @@ def render_dataset(
             "asset_version": font_asset_version(),
             "chart_font_family": str(render_params.font_family),
         },
+        "background_style": dict(background_meta),
+        "information_scene_style": dict(information_style_meta),
         "post_image_noise": dict(post_noise_meta),
     }
-    return rendered_scene, dict(render_meta), dict(background_meta), dict(post_noise_meta)
+    return rendered_scene, dict(render_meta), {**dict(background_meta), "information_scene_style": dict(information_style_meta)}, dict(post_noise_meta)
 
 
 def build_trace_scaffold(
@@ -81,7 +82,7 @@ def build_trace_scaffold(
     background_meta: Mapping[str, Any],
     post_noise_meta: Mapping[str, Any],
     projected_annotation: Mapping[str, Any],
-    annotation_value: list[list[float]],
+    annotation_value: Any,
     answer_value: int | str,
 ) -> Dict[str, Any]:
     """Assemble scene-neutral trace sections before task relation params are added."""
@@ -156,7 +157,8 @@ def build_trace_scaffold(
         "projected_annotation": dict(projected_annotation),
         "annotation_refs": annotation_refs(
             annotation_cell_ids=list(annotation_cell_ids),
-            annotation_value=list(annotation_value),
+            annotation_value=annotation_value,
+            annotation_type=str(projected_annotation["type"]),
         ),
         "background": dict(background_meta),
         "post_image_noise": dict(post_noise_meta),

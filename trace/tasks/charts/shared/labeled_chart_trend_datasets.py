@@ -5,20 +5,19 @@ from __future__ import annotations
 from itertools import product
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from ....core.seed import hash64, spawn_rng
+from ....core.seed import spawn_rng
+from ....core.sampling import uniform_choice
 from ...shared.config_defaults import group_default
-from ...shared.deterministic_sampling import resolve_selection_index
-from .labeled_chart_core import (
-    LabeledChartDefaults,
-    PIE_LIKE_SCENE_VARIANTS,
-    SceneVariant,
+from .label_assets import sample_chart_labels
+from .labeled_chart_defaults import LabeledChartDefaults
+from .labeled_chart_values import (
     balanced_choice_from_values,
     resolve_mark_count_bounds,
     resolve_value_bounds,
-    sample_chart_labels,
     sorted_labels,
 )
-from .labeled_chart_dataset_core import (
+from .labeled_chart_variants import PIE_LIKE_SCENE_VARIANTS, SceneVariant
+from .labeled_chart_sampling import (
     _sample_values_from_pool,
     choose_mark_count,
 )
@@ -236,28 +235,14 @@ def build_trend_structure_dataset_for_variant(
     ]
     if not answer_candidates:
         raise ValueError("no feasible target answers for requested trend answer range")
-    if "_sample_cursor" in params:
-        target_answer = balanced_choice_from_values(
-            answer_candidates,
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{task_id}.target_answer:{str(trend_variant)}",
-        )
-    else:
-        # Review collection does not pass `_sample_cursor`, so use a second
-        # decorrelated deterministic hash stream for answer selection instead
-        # of coupling the answer too tightly to the semantic-variant seed path.
-        selection_index = abs(int(hash64(int(instance_seed), "trend-target", 16)))
-        target_answer = int(answer_candidates[int(selection_index) % len(answer_candidates)])
+    target_rng = spawn_rng(int(instance_seed), f"{task_id}.target_answer:{str(trend_variant)}")
+    target_answer = int(uniform_choice(target_rng, answer_candidates, sort_keys=True))
     candidate_sequences = list(feasible_by_answer[int(target_answer)])
-    selection_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{task_id}.sequence:{str(trend_variant)}:{int(target_answer)}",
+    sequence_rng = spawn_rng(
+        int(instance_seed),
+        f"{task_id}.sequence:{str(trend_variant)}:{int(target_answer)}",
     )
-    mark_count, sign_sequence, annotation_indices, metric_extras = candidate_sequences[
-        int(selection_index) % len(candidate_sequences)
-    ]
+    mark_count, sign_sequence, annotation_indices, metric_extras = sequence_rng.choice(candidate_sequences)
 
     values = _build_values_from_trend_signs(
         signs=sign_sequence,
@@ -435,26 +420,20 @@ def _decouple_sample_cursor_after_query_id(
     decoupled["_sample_cursor"] = abs(int(explicit_index)) // int(variant_count)
     return decoupled
 
-def _seed_cycled_choice_from_values(
+def _seeded_choice_from_values(
     values: Sequence[int],
     *,
     params: Mapping[str, Any],
     instance_seed: int,
     namespace: str,
 ) -> int:
-    """Select support values with a compact seed cycle when no sample cursor exists."""
+    """Select one feasible support value using seeded RNG."""
 
     ordered = [int(value) for value in values]
     if not ordered:
         raise ValueError(f"no feasible values for {namespace}")
-    if params.get("_sample_cursor") is not None:
-        return balanced_choice_from_values(
-            ordered,
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(namespace),
-        )
-    return int(ordered[abs(int(instance_seed)) % len(ordered)])
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    return int(uniform_choice(rng, ordered, sort_keys=True))
 
 def _build_projected_threshold_crossing_values(
     *,
@@ -631,7 +610,7 @@ def build_trend_threshold_crossing_dataset_for_variant(
         gen_defaults=gen_defaults,
     )
     support_params = _decouple_sample_cursor_after_query_id(params, gen_defaults=gen_defaults)
-    observed_count = _seed_cycled_choice_from_values(
+    observed_count = _seeded_choice_from_values(
         [int(value) for value in range(int(observed_min), int(observed_max) + 1)],
         params=support_params,
         instance_seed=int(instance_seed),
@@ -884,12 +863,11 @@ def build_trend_interval_change_dataset_for_variant(
             instance_seed=int(instance_seed),
             namespace=f"{task_id}.percent_change",
         )
-        transition_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{task_id}.percent_transition:{int(percent)}",
+        transition_rng = spawn_rng(
+            int(instance_seed),
+            f"{task_id}.percent_transition:{int(percent)}",
         )
-        start_value, end_value = percent_support[int(percent)][int(transition_index) % len(percent_support[int(percent)])]
+        start_value, end_value = transition_rng.choice(percent_support[int(percent)])
         delta = int(end_value) - int(start_value)
         start_candidates = [int(start_value)]
         answer_value = int(percent)

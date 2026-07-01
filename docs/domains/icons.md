@@ -33,10 +33,14 @@ Counting task contracts should distinguish:
 - arithmetic over counts;
 - hypothetical/counterfactual count after visible/textual edits.
 
-Icon type, color, shape, size, rotation, or named icon category can be a
-parameter inside one of those count contracts when the program schema is the
-same. Split when conjunction, union, exclusion, arithmetic, relation scope, or
-counterfactual editing changes the program.
+Literal icon type, color, shape, size, rotation, or named category values can
+be sampled parameters inside one task when the visual scan/reasoning channel
+stays the same. Split public tasks when the channel or predicate arity changes:
+type match vs color match, color change vs rotation change, color-pattern
+violation vs size-pattern violation, and shape-only lookup vs color+shape
+lookup are separate objective contracts. Arithmetic operators such as
+`total_count` and `difference_count` may remain query ids when the operand roles
+and annotation witnesses are otherwise unchanged.
 
 ## Annotation Policy
 Prompt-facing annotation should mark icon instances, cells, reference pairs,

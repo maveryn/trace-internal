@@ -4,7 +4,7 @@
 1. Domain: `charts`
 2. Scene id: `boxplot`
 3. Source implementation scene package: `charts/boxplot`
-4. Query id: sampled from `largest_iqr_label`, `smallest_iqr_label`
+4. Query ids: `largest_iqr_label`, `smallest_iqr_label`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
@@ -15,13 +15,24 @@
 
 ## Annotation Contract
 1. Answer schema: `string_label`.
-2. Annotation schema: `keyed_point_map`.
+2. Annotation schema: `bbox`.
 3. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy.
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+
+## Program Contract
+
+Program: `arg_extreme(group_label, q3(group_label)-q1(group_label), direction={largest,smallest}); output=string_label; annotation=bbox(answer_iqr_box); scene=boxplot; scope=iqr_extremum_label`
+
+Candidate set: the visible boxplot glyphs and their group labels inside the `iqr_extremum_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `arg_extreme` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `bbox` witnesses bound by `bbox(answer_iqr_box)`. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `largest_iqr_label`, `smallest_iqr_label`.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `largest_iqr_label` | `selection.extreme_metric_label` | `string_label` | `keyed_point_map` |
-| `smallest_iqr_label` | `selection.extreme_metric_label` | `string_label` | `keyed_point_map` |
+| `largest_iqr_label` | `selection.boxplot_iqr_extremum_label` | `string_label` | `bbox` |
+| `smallest_iqr_label` | `selection.boxplot_iqr_extremum_label` | `string_label` | `bbox` |

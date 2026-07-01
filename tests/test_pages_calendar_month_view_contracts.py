@@ -7,7 +7,8 @@ from pathlib import Path
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.pages.calendar.month_view import PagesCalendarMarkedDayClassCountTask, PagesCalendarWorkdayOffsetDateTask
+from trace.tasks.pages.calendar.marked_day_class_count import PagesCalendarMarkedDayClassCountTask
+from trace.tasks.pages.calendar.workday_offset_date import PagesCalendarWorkdayOffsetDateTask
 from tests.helpers import read_jsonl
 
 
@@ -16,8 +17,7 @@ def test_pages_calendar_month_view_deterministic() -> None:
     params = {
         "marked_day_class": "weekend",
         "scene_variant": "minimal",
-        "style_variant": "accented",
-        "accent_color_name": "purple",
+        "information_scene_treatments": ["dark_report_card"],
     }
     out_a = task.generate(21920, params=params, max_attempts=20)
     out_b = task.generate(21920, params=params, max_attempts=20)
@@ -33,8 +33,7 @@ def test_pages_calendar_workday_offset_date_deterministic() -> None:
     params = {
         "query_id": "workday_after_offset_date",
         "scene_variant": "classic",
-        "style_variant": "marker",
-        "accent_color_name": "cyan",
+        "information_scene_treatments": ["poster_explainer"],
     }
     out_a = task.generate(21924, params=params, max_attempts=20)
     out_b = task.generate(21924, params=params, max_attempts=20)

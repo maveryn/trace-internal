@@ -7,7 +7,15 @@
 4. Query ids encode the axis and threshold direction because both change prompt wording and program arguments.
 
 ## Program Contract
-- `count(point, category(point)=target_category and compare(coord(point, axis), threshold, direction)); output=integer_count; annotation=point_set(counted_category_point_centers); scene=scatter_points; scope=category_threshold_point_count`
+
+Program: `count(point, category(point)=target_category and compare(coord(point, axis), threshold, direction)); output=integer_count; annotation=point_set(counted_category_point_centers); scene=scatter_points; scope=category_threshold_point_count`
+
+Candidate set: the visible scatter points and axis/value labels inside the `category_threshold_point_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_count` value bound by `integer_count`.
+Annotation witnesses: `point_set` witnesses bound by `point_set(counted_category_point_centers)`. Annotation marks the centers of the counted points in the named category only. Axes, legends, threshold guides, titles, and distractor text are not annotation targets.
+Query ids: `category_x_above_threshold_count`, `category_x_below_threshold_count`, `category_y_above_threshold_count`, `category_y_below_threshold_count`.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.scatter_points.category_threshold_point_count.ChartsScatterPointsCategoryThresholdPointCountTask`

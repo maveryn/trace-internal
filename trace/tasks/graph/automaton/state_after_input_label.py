@@ -4,14 +4,15 @@ import random
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 import networkx as nx
-from ....core.seed import hash64, spawn_rng
+from ....core.sampling import uniform_choice
+from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.fixed_query import select_task_query_id
 from ...shared.output_metadata import default_task_versions
 from ..shared.graph_sample_types import GraphTopologySample
@@ -127,8 +128,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         if int(state_count) not in set(state_count_support):
             raise ValueError('state_count is outside feasible support')
     else:
-        state_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f'{TASK_ID}:state_count'))
-        state_count = int(state_count_support[int(state_index % len(state_count_support))])
+        state_count = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f'{TASK_ID}:state_count'),
+                state_count_support,
+            )
+        )
     input_length_min = int(params.get('input_length_min', group_default(_GEN_DEFAULTS, 'input_length_min', _DEFAULTS.input_length_min)))
     input_length_max = int(params.get('input_length_max', group_default(_GEN_DEFAULTS, 'input_length_max', _DEFAULTS.input_length_max)))
     input_length_support = tuple((int(value) for value in range(max(1, int(input_length_min)), int(input_length_max) + 1)))
@@ -140,8 +145,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         if int(input_length) not in set(input_length_support):
             raise ValueError('input_length is outside feasible support')
     else:
-        length_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f'{TASK_ID}:input_length'))
-        input_length = int(input_length_support[int(length_index % len(input_length_support))])
+        input_length = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f'{TASK_ID}:input_length'),
+                input_length_support,
+            )
+        )
     transition_step_count: int | None = None
     transition_step_probabilities: Dict[str, float] = {}
     if str(query_id) == STEP_STATE_QUERY_ID:
@@ -156,8 +165,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
             if int(transition_step_count) not in set(step_support):
                 raise ValueError('transition_step_count is outside feasible support')
         else:
-            step_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f'{TASK_ID}:transition_step'))
-            transition_step_count = int(step_support[int(step_index % len(step_support))])
+            transition_step_count = int(
+                uniform_choice(
+                    spawn_rng(int(instance_seed), f'{TASK_ID}:transition_step'),
+                    step_support,
+                )
+            )
         transition_step_probabilities = _uniform_probability(tuple((int(value) for value in step_support)), selected=int(transition_step_count) if explicit_step is not None else None)
     target_support = tuple((int(value) for value in range(int(state_count))))
     explicit_target = params.get('target_state_index')
@@ -166,9 +179,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         if int(target_state_index) not in set(target_support):
             raise ValueError('target_state_index is outside feasible support')
     else:
-        target_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f'{TASK_ID}:target_state_index'))
-        query_offset = SUPPORTED_AUTOMATON_QUERY_IDS.index(str(query_id))
-        target_state_index = int((int(target_index) + int(query_offset)) % int(state_count))
+        target_state_index = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f'{TASK_ID}:target_state_index:{str(query_id)}'),
+                target_support,
+            )
+        )
     distractor_min = int(params.get('distractor_edge_min', group_default(_GEN_DEFAULTS, 'distractor_edge_min', _DEFAULTS.distractor_edge_min)))
     distractor_max = int(params.get('distractor_edge_max', group_default(_GEN_DEFAULTS, 'distractor_edge_max', _DEFAULTS.distractor_edge_max)))
     distractor_support = tuple((int(value) for value in range(max(0, int(distractor_min)), max(int(distractor_min), int(distractor_max)) + 1)))
@@ -178,8 +194,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         if int(distractor_edge_count) not in set(distractor_support):
             raise ValueError('distractor_edge_count is outside feasible support')
     else:
-        distractor_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f'{TASK_ID}:distractor_edge_count'))
-        distractor_edge_count = int(distractor_support[int(distractor_index % len(distractor_support))])
+        distractor_edge_count = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f'{TASK_ID}:distractor_edge_count'),
+                distractor_support,
+            )
+        )
     layout_variant, layout_variant_probabilities = _resolve_named_variant(int(instance_seed), params=params, explicit_key='layout_variant', weights_key='layout_variant_weights', balance_flag_key='balanced_layout_variant_sampling', supported=SUPPORTED_AUTOMATON_LAYOUT_VARIANTS, namespace='layout_variant')
     layout_transform_variant, layout_transform_variant_probabilities = _resolve_named_variant(int(instance_seed), params=params, explicit_key='layout_transform_variant', weights_key='layout_transform_variant_weights', balance_flag_key='balanced_layout_transform_variant_sampling', supported=('identity', 'mirror_left_right', 'mirror_up_down'), namespace='layout_transform_variant')
     edge_routing_variant, edge_routing_variant_probabilities = _resolve_named_variant(int(instance_seed), params=params, explicit_key='edge_routing_variant', weights_key='edge_routing_variant_weights', balance_flag_key='balanced_edge_routing_variant_sampling', supported=('straight', 'mixed_arc'), namespace='edge_routing_variant')

@@ -23,18 +23,18 @@
     },
     "query": {
       "source_to_targets_total": [
-        "From source node \"{source_label}\", add the flows sent to target nodes {target_labels}. What is the total?",
         "What total flow leaves \"{source_label}\" for target nodes {target_labels}?",
-        "Using only the curved bands from \"{source_label}\" to {target_labels}, sum the printed values.",
-        "For source \"{source_label}\", what is the combined flow into targets {target_labels}?",
-        "Add the radial Sankey values from \"{source_label}\" to {target_labels}."
+        "What is the combined flow from source node \"{source_label}\" to target nodes {target_labels}?",
+        "For source node \"{source_label}\", what total flow goes to target nodes {target_labels}?",
+        "What total value is sent from \"{source_label}\" to target nodes {target_labels}?",
+        "From \"{source_label}\" to target nodes {target_labels}, what is the total flow?"
       ],
       "sources_to_target_total": [
-        "Add the flows from source nodes {source_labels} into target node \"{target_label}\". What is the total?",
         "What total flow enters \"{target_label}\" from source nodes {source_labels}?",
-        "Using only the curved bands from {source_labels} to \"{target_label}\", sum the printed values.",
-        "For target \"{target_label}\", what is the combined incoming flow from {source_labels}?",
-        "Add the radial Sankey values from {source_labels} into \"{target_label}\"."
+        "What is the combined flow from source nodes {source_labels} into target node \"{target_label}\"?",
+        "For target node \"{target_label}\", what total flow comes from source nodes {source_labels}?",
+        "What total value is sent from source nodes {source_labels} to \"{target_label}\"?",
+        "From source nodes {source_labels} to \"{target_label}\", what is the total flow?"
       ],
       "largest_target_for_source": [
         "For source node \"{source_label}\", which target receives the largest flow?",
@@ -83,14 +83,14 @@
     },
     "query:largest_target_for_source": {
       "answer_hint": "set \"answer\" to the exact visible target label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"compared_flow_values\" to [x0,y0,x1,y1] pixel boxes around the compared printed flow-value labels and \"answer_endpoint\" to one [x0,y0,x1,y1] pixel box around the selected target node",
-      "json_example": "{\"annotation\":{\"compared_flow_values\":[[420,330,458,358],[560,394,598,422]],\"answer_endpoint\":[[930,470,954,498]]},\"answer\":\"Y4M8\"}",
+      "annotation_hint": "set \"annotation\" to one [x0,y0,x1,y1] pixel box around the selected target node",
+      "json_example": "{\"annotation\":[930,470,954,498],\"answer\":\"Y4M8\"}",
       "json_example_answer_only": "{\"answer\":\"Y4M8\"}"
     },
     "query:largest_source_for_target": {
       "answer_hint": "set \"answer\" to the exact visible source label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"compared_flow_values\" to [x0,y0,x1,y1] pixel boxes around the compared printed flow-value labels and \"answer_endpoint\" to one [x0,y0,x1,y1] pixel box around the selected source node",
-      "json_example": "{\"annotation\":{\"compared_flow_values\":[[690,318,728,346],[612,430,650,458]],\"answer_endpoint\":[[240,466,264,494]]},\"answer\":\"B7P2\"}",
+      "annotation_hint": "set \"annotation\" to one [x0,y0,x1,y1] pixel box around the selected source node",
+      "json_example": "{\"annotation\":[240,466,264,494],\"answer\":\"B7P2\"}",
       "json_example_answer_only": "{\"answer\":\"B7P2\"}"
     }
   },

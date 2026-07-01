@@ -10,7 +10,15 @@
 Counts treasure chests that are reachable from the player through unblocked dungeon paths and are not located in a chamber containing a monster.
 
 ## Program Contract
-`count(chest, reachable(chest_tile, player_tile, passable_tile=open_floor) and not exists(monster in chest.chamber)); scene=rpg_dungeon; scope=safe_reachable_chest_count`
+
+Program: `count(chest, reachable(chest_tile, player_tile, passable_tile=open_floor) and not exists(monster in chest.chamber)); scene=rpg_dungeon; scope=safe_reachable_chest_count`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `safe_reachable_chest_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `chest`, `reachable`, `chest_tile`, `player_tile`, `passable_tile`, `open_floor`, `exists`, `monster`, `chamber`, `rpg_dungeon`, `safe_reachable_chest_count`.
+Operation: evaluate `count` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

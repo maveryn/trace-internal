@@ -3,15 +3,22 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from functools import lru_cache
 from typing import Any, Mapping, Sequence
 
+from ....core.scene_config import get_scene_defaults
+from ...shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 from ...shared.visual_style.information_scene import (
     Color,
+    INFORMATION_SCENE_TREATMENT_IDS,
     InformationSceneStyle,
     make_information_scene_background,
-    resolve_information_scene_style,
+    resolve_information_scene_style_from_request,
 )
-from .document_common import DocumentRenderParams
+from ...shared.visual_style.request import (
+    build_visual_style_request,
+    resolve_style_bool,
+)
 
 
 PagesInformationStyle = InformationSceneStyle
@@ -49,29 +56,67 @@ def _suppress_information_scene_shadows(
     return adjusted, adjusted_meta
 
 
+@lru_cache(maxsize=64)
+def _pages_scene_render_defaults(scene_id: str) -> dict[str, Any]:
+    """Return shared Pages rendering defaults for scene-style resolution."""
+
+    try:
+        defaults = get_scene_defaults("pages", str(scene_id))
+    except Exception:
+        return {}
+    if not isinstance(defaults, Mapping):
+        return {}
+    _gen, rendering, _prompt = split_scene_generation_rendering_prompt_defaults(
+        defaults,
+        task_id=f"pages_{str(scene_id)}_style_defaults",
+    )
+    return dict(rendering)
+
+
 def resolve_pages_information_style(
     *,
     instance_seed: int,
     params: Mapping[str, Any] | None,
     scene_id: str,
     protected_colors: Sequence[Color] | None = None,
-    allow_dark: bool = False,
+    allow_dark: bool | None = None,
+    allow_colored_surface: bool | None = None,
 ) -> tuple[PagesInformationStyle, dict[str, Any]]:
     """Resolve one pages presentation style without changing visible values."""
 
-    resolved_params = params or {}
-    route_id = str(scene_id) if scene_id is not None else str(scene_id)
-    style, metadata = resolve_information_scene_style(
+    route_id = str(scene_id)
+    default_params = _pages_scene_render_defaults(str(scene_id))
+    resolved_params = {**default_params, **dict(params or {})}
+    resolved_allow_dark = (
+        resolve_style_bool(resolved_params, "information_scene_allow_dark", False)
+        if allow_dark is None
+        else bool(allow_dark)
+    )
+    resolved_allow_colored_surface = (
+        resolve_style_bool(resolved_params, "information_scene_allow_colored_surface", True)
+        if allow_colored_surface is None
+        else bool(allow_colored_surface)
+    )
+    request = build_visual_style_request(
+        domain="pages",
+        scene_id=str(scene_id),
+        routing_key=str(route_id),
         instance_seed=int(instance_seed),
-        namespace=f"pages.{route_id}.{str(scene_id)}.information_scene_style",
+        params=resolved_params,
+        style_family="information_scene",
+        allow_dark=bool(resolved_allow_dark),
+        allow_colored_surface=bool(resolved_allow_colored_surface),
+        protected_colors=protected_colors or (),
+        required_text_roles=("page_title", "page_label", "page_value"),
+    )
+    style, metadata = resolve_information_scene_style_from_request(
+        request,
         treatments=resolved_params.get("information_scene_treatments"),
         treatment_weights=resolved_params.get("information_scene_treatment_weights", {}),
         palettes=resolved_params.get("information_scene_palettes"),
         palette_weights=resolved_params.get("information_scene_palette_weights", {}),
         chrome_modes=resolved_params.get("information_scene_chrome_modes"),
         chrome_mode_weights=resolved_params.get("information_scene_chrome_mode_weights", {}),
-        allow_dark=bool(allow_dark),
-        protected_colors=protected_colors or (),
     )
     if not _information_scene_shadows_enabled(resolved_params):
         return _suppress_information_scene_shadows(style, metadata)
@@ -82,66 +127,30 @@ def resolve_pages_information_style(
     return style, metadata
 
 
-def apply_document_information_style(
-    render_params: DocumentRenderParams,
+def make_pages_information_background(
+    *,
+    canvas_width: int,
+    canvas_height: int,
     style: PagesInformationStyle,
-    *,
-    suppress_shadows: bool = False,
-) -> DocumentRenderParams:
-    """Map shared style roles into structured-document chrome."""
-
-    return replace(
-        render_params,
-        page_shadow_offset_px=0 if bool(suppress_shadows) else int(render_params.page_shadow_offset_px),
-        page_fill_rgb=tuple(int(value) for value in style.surface_rgb),
-        page_outline_rgb=tuple(int(value) for value in style.panel_border_rgb),
-        page_shadow_rgb=tuple(int(value) for value in style.shadow_rgb),
-        field_fill_rgb=tuple(int(value) for value in style.panel_fill_rgb),
-        field_outline_rgb=tuple(int(value) for value in style.panel_border_rgb),
-        label_fill_rgb=tuple(int(value) for value in style.muted_text_rgb),
-        label_stroke_rgb=tuple(int(value) for value in style.text_stroke_rgb),
-        value_fill_rgb=tuple(int(value) for value in style.text_rgb),
-        divider_rgb=tuple(int(value) for value in style.guide_rgb),
-    )
-
-
-def prepare_document_information_scene(
-    *,
     instance_seed: int,
-    params: Mapping[str, Any],
-    scene_id: str,
-    render_params: DocumentRenderParams,
-    protected_colors: Sequence[Color] | None = None,
-    allow_dark: bool = False,
-) -> tuple[DocumentRenderParams, Any, dict[str, Any], dict[str, Any]]:
-    """Resolve pages information style, apply it, and create the background."""
+    namespace: str,
+) -> tuple[Any, dict[str, Any]]:
+    """Create a Pages-domain background from the shared information style."""
 
-    style, style_meta = resolve_pages_information_style(
-        instance_seed=int(instance_seed),
-        params=params,
-        scene_id=str(scene_id),
-        protected_colors=protected_colors or (),
-        allow_dark=bool(allow_dark),
-    )
-    suppress_shadows = not _information_scene_shadows_enabled(params)
-    styled_render_params = apply_document_information_style(
-        render_params,
-        style,
-        suppress_shadows=bool(suppress_shadows),
-    )
-    background, background_meta = make_information_scene_background(
-        canvas_width=int(styled_render_params.canvas_width),
-        canvas_height=int(styled_render_params.canvas_height),
+    image, metadata = make_information_scene_background(
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
         style=style,
         instance_seed=int(instance_seed),
-        namespace=f"pages.{str(scene_id)}.{str(scene_id)}.information_scene_background",
+        namespace=str(namespace),
     )
-    return styled_render_params, background, background_meta, style_meta
+    out = dict(metadata)
+    out.setdefault("available_styles", [f"information_scene_style:{item}" for item in INFORMATION_SCENE_TREATMENT_IDS])
+    return image, out
 
 
 __all__ = [
+    "make_pages_information_background",
     "PagesInformationStyle",
-    "apply_document_information_style",
-    "prepare_document_information_scene",
     "resolve_pages_information_style",
 ]

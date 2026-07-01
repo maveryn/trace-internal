@@ -254,7 +254,10 @@ def _outline_wall_shape(
 ) -> None:
     projected = _project_points(points, camera, frame)
     for index in range(len(projected)):
-        draw_line(draw, projected[index], projected[(index + 1) % len(projected)], fill=outline, width=int(width))
+        next_index = index + 1
+        if next_index >= len(projected):
+            next_index = 0
+        draw_line(draw, projected[index], projected[next_index], fill=outline, width=int(width))
 
 
 def _draw_wall_disc(
@@ -281,7 +284,10 @@ def _draw_wall_disc(
     projected = _project_points(points, camera, frame)
     draw.polygon(projected, fill=fill)
     for index in range(len(projected)):
-        draw_line(draw, projected[index], projected[(index + 1) % len(projected)], fill=outline, width=2)
+        next_index = index + 1
+        if next_index >= len(projected):
+            next_index = 0
+        draw_line(draw, projected[index], projected[next_index], fill=outline, width=2)
     return _points_bbox(projected)
 
 
@@ -347,7 +353,10 @@ def _draw_wall_fan_object(
         ]
         projected_ring = _project_points(ring_points, camera, frame)
         for index in range(len(projected_ring)):
-            draw_line(draw, projected_ring[index], projected_ring[(index + 1) % len(projected_ring)], fill=color, width=2)
+            next_index = index + 1
+            if next_index >= len(projected_ring):
+                next_index = 0
+            draw_line(draw, projected_ring[index], projected_ring[next_index], fill=color, width=2)
         bboxes.append(_points_bbox(projected_ring))
     mount = _project_points(
         [

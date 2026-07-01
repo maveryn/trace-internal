@@ -10,7 +10,15 @@
 Counts the treasure chambers that contain a visible monster in a top-down RPG dungeon.
 
 ## Program Contract
-`count(chamber, exists(monster in chamber) and chamber.layout_role=chest_room); scene=rpg_dungeon; scope=monster_chamber_count`
+
+Program: `count(chamber, exists(monster in chamber) and chamber.layout_role=chest_room); scene=rpg_dungeon; scope=monster_chamber_count`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `monster_chamber_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `chamber`, `exists`, `monster`, `layout_role`, `chest_room`, `rpg_dungeon`, `monster_chamber_count`.
+Operation: evaluate `count` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

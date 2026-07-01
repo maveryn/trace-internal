@@ -28,7 +28,7 @@ from .state import RavenAxes, RavenRenderParams, SUPPORTED_SCENE_VARIANTS
 class RavenDefaults:
     """Stable fallback defaults for Raven-matrix scene construction."""
 
-    option_count: int = 6
+    option_count: int = 4
     count_min: int = 1
     count_max: int = 8
 
@@ -46,11 +46,11 @@ class RavenRenderDefaults:
     cell_size_px: int = 126
     cell_gap_px: int = 14
     board_panel_padding_px: int = 22
-    board_to_options_gap_px: int = 50
+    board_to_options_gap_px: int = 76
     option_panel_width_px: int = 144
-    option_panel_height_px: int = 172
+    option_panel_height_px: int = 180
     option_gap_px: int = 20
-    option_symbol_box_size_px: int = 92
+    option_symbol_box_size_px: int = 118
     option_label_gap_px: int = 16
     slot_corner_radius_px: int = 18
     border_width_px: int = 3
@@ -67,7 +67,7 @@ def resolve_option_count(
     params: Mapping[str, Any],
     generation_defaults: Mapping[str, Any],
 ) -> int:
-    """Resolve the fixed six-option Raven answer panel count."""
+    """Resolve the fixed four-option Raven answer panel count."""
 
     value = int(
         params.get(
@@ -79,8 +79,8 @@ def resolve_option_count(
             ),
         )
     )
-    if int(value) != 6:
-        raise ValueError("Raven-matrix tasks require exactly 6 options")
+    if int(value) != 4:
+        raise ValueError("Raven-matrix tasks require exactly 4 options")
     return int(value)
 
 

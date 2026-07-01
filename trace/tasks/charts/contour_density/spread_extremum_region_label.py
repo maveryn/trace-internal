@@ -131,9 +131,9 @@ class ChartsContourDensitySpreadExtremumRegionLabelTask:
             prompt_key=str(selected_query_id),
             answer=str(answer_label),
             answer_type="string",
-            annotation_type="keyed_bbox_map",
-            annotation_roles={"answer_region": str(answer_region.region_id)},
-            annotation_region_ids=(),
+            annotation_type="bbox",
+            annotation_roles={},
+            annotation_region_ids=(str(answer_region.region_id),),
             trace={
                 "spread_extremum": str(spread_extremum),
                 "spread_extremum_phrase": str(phrase),

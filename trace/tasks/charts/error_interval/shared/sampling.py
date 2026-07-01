@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from itertools import cycle, islice
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from trace.core.sampling import integer_range_choice, shuffled_support, uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.charts.error_interval.shared.defaults import (
     SCENE_NAMESPACE,
@@ -14,9 +16,8 @@ from trace.tasks.charts.error_interval.shared.defaults import (
 )
 from trace.tasks.charts.error_interval.shared.state import RGB, _IntervalItem
 from trace.tasks.charts.shared.label_assets import resolve_chart_entity_labels
-from trace.tasks.charts.shared.labeled_chart_common import resolve_chart_axis_variant
+from trace.tasks.charts.shared.labeled_chart_variants import resolve_chart_axis_variant
 from trace.tasks.shared.config_defaults import group_default, resolve_required_int_bounds
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 
 REFERENCE_PREDICATES: tuple[str, ...] = ("contains", "above", "below")
@@ -61,8 +62,12 @@ def sample_int_range(
         context=f"generation defaults for {SCENE_NAMESPACE}",
     )
     support = list(range(int(low), int(high) + 1))
-    index = abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)))
-    return int(support[int(index % len(support))]), support_probability_map(support)
+    selected, _probabilities = integer_range_choice(
+        spawn_rng(int(instance_seed), str(namespace)),
+        int(low),
+        int(high),
+    )
+    return int(selected), support_probability_map(support)
 
 
 def sample_category_count(params: Mapping[str, Any], *, instance_seed: int) -> tuple[int, dict[str, float]]:
@@ -112,8 +117,11 @@ def palette(params: Mapping[str, Any], *, count: int, instance_seed: int) -> Lis
             (14, 116, 144),
             (190, 58, 90),
         ]
-    offset = abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace="charts.error_interval.palette")) % len(resolved)
-    return [resolved[(index + int(offset)) % len(resolved)] for index in range(int(count))]
+    shuffled = shuffled_support(
+        spawn_rng(int(instance_seed), "charts.error_interval.palette"),
+        tuple(resolved),
+    )
+    return list(islice(cycle(shuffled), int(count)))
 
 
 def sample_title(params: Mapping[str, Any], *, instance_seed: int) -> str:
@@ -126,8 +134,12 @@ def sample_title(params: Mapping[str, Any], *, instance_seed: int) -> str:
             group_default(_RENDER_DEFAULTS, "title_options", ["Estimate Intervals"]),
         )
     ] or ["Estimate Intervals"]
-    title_index = abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace="charts.error_interval.title")) % len(title_options)
-    return str(title_options[int(title_index)])
+    return str(
+        uniform_choice(
+            spawn_rng(int(instance_seed), "charts.error_interval.title"),
+            tuple(title_options),
+        )
+    )
 
 
 def sample_reference_value(params: Mapping[str, Any], *, instance_seed: int, namespace: str) -> int:
@@ -142,8 +154,12 @@ def sample_reference_value(params: Mapping[str, Any], *, instance_seed: int, nam
         fallback_max=62,
         context=f"generation defaults for {SCENE_NAMESPACE}",
     )
-    offset = abs(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)))
-    return int(ref_min) + int(offset % (int(ref_max) - int(ref_min) + 1))
+    selected, _probabilities = integer_range_choice(
+        spawn_rng(int(instance_seed), str(namespace)),
+        int(ref_min),
+        int(ref_max),
+    )
+    return int(selected)
 
 
 def clamp_interval(lower: int, midpoint: int, upper: int) -> Tuple[int, int, int]:
@@ -282,7 +298,16 @@ def construct_width_rank_intervals(
     if rank_text not in WIDTH_RANK_KEYS:
         raise ValueError(f"unsupported width rank: {rank_text}")
     rng = spawn_rng(int(instance_seed), f"charts.error_interval.relation.{rank_text}")
-    winner_index = abs(resolve_selection_index(params={}, instance_seed=int(instance_seed), namespace=f"charts.error_interval.winner.{rank_text}")) % int(category_count)
+    winner_index = int(
+        uniform_choice(
+            spawn_rng(
+                int(instance_seed),
+                f"charts.error_interval.winner.{rank_text}",
+            ),
+            tuple(range(int(category_count))),
+            sort_keys=True,
+        )
+    )
     width_low = int(rng.randint(6, 13))
     width_high = min(34, int(width_low) + int(rng.randint(int(category_count) + 5, int(category_count) + 10)))
     width_pool = list(range(int(width_low), int(width_high) + 1))

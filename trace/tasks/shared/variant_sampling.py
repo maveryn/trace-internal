@@ -1,12 +1,16 @@
-"""Shared deterministic query-id and scene/query-axis sampling helpers."""
+"""Shared query-id and scene/query-axis sampling helpers."""
 
 from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
-from ...core.sampling import normalize_positive_weights, weighted_choice
+from ...core.seed import spawn_rng
+from ...core.sampling import (
+    normalize_positive_weights,
+    uniform_choice_with_probabilities,
+    weighted_choice,
+)
 from .config_defaults import group_default
-from .deterministic_sampling import resolve_selection_index
 
 
 def is_uniform_probability_map(probabilities: Mapping[str, float], *, tol: float = 1e-9) -> bool:
@@ -73,7 +77,7 @@ def apply_balanced_variant_sampling(
     weights_key: str = "variant_weights",
     sampling_namespace: str | None = None,
 ) -> str:
-    """Apply deterministic cycling over variants when configuration is uniform."""
+    """Sample a variant from uniform positive support when balancing is enabled."""
 
     enabled = bool(params.get(str(balance_flag_key), group_default(gen_defaults, str(balance_flag_key), True)))
     if not bool(enabled):
@@ -90,12 +94,13 @@ def apply_balanced_variant_sampling(
     if not values:
         return str(selected_variant)
     namespace = str(sampling_namespace) if sampling_namespace is not None else "variant"
-    sampling_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=namespace,
+    rng = spawn_rng(int(instance_seed), namespace)
+    selected, _probabilities = uniform_choice_with_probabilities(
+        rng,
+        values,
+        sort_keys=False,
     )
-    return str(values[abs(int(sampling_index)) % len(values)])
+    return str(selected)
 
 
 def _full_probability_map(supported: Sequence[str], probabilities: Mapping[str, float]) -> Dict[str, float]:
@@ -218,7 +223,6 @@ def resolve_compatible_scene_query_ids(
         scene for scene in scene_supported
         if str(selected_query) in set(compatibility_map.get(scene, ()))
     ]
-    _ = bool(decouple_scene_sampling)
     scene_params = params
     selected_scene, restricted_scene_probs = resolve_variant(
         rng,

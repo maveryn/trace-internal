@@ -22,7 +22,7 @@ from trace.tasks.charts.errorbar_series.shared.state import (
     ErrorbarSeries,
 )
 from trace.tasks.charts.shared.label_assets import resolve_chart_axis_labels, resolve_chart_entity_labels
-from trace.tasks.charts.shared.labeled_chart_common import resolve_chart_axis_variant
+from trace.tasks.charts.shared.labeled_chart_variants import resolve_chart_axis_variant
 
 
 @dataclass(frozen=True)
@@ -178,18 +178,27 @@ def sample_base_scene(
 def palette(params: Mapping[str, Any]) -> Tuple[RGB, ...]:
     """Resolve the scene palette used for all series."""
 
+    default_colors: tuple[RGB, ...] = (
+        (47, 111, 196),
+        (216, 104, 62),
+        (42, 147, 112),
+        (126, 93, 190),
+        (202, 138, 4),
+    )
     raw_palette = params.get("series_palette_rgb", group_render_default("series_palette_rgb", ()))
     colors: List[RGB] = []
     if isinstance(raw_palette, Sequence) and not isinstance(raw_palette, (str, bytes)):
         for item in raw_palette:
             if isinstance(item, Sequence) and not isinstance(item, (str, bytes)) and len(item) >= 3:
                 colors.append(as_rgb(item, (0, 0, 0)))
-    return tuple(colors) if colors else (
-        (47, 111, 196),
-        (216, 104, 62),
-        (42, 147, 112),
-        (126, 93, 190),
-    )
+    if not colors:
+        colors = list(default_colors)
+    for fallback in default_colors:
+        if len(colors) >= len(default_colors):
+            break
+        if fallback not in colors:
+            colors.append(fallback)
+    return tuple(colors)
 
 
 def random_interval(rng: Any, *, low_min: int = 10, high_max: int = 90) -> tuple[int, int, int]:

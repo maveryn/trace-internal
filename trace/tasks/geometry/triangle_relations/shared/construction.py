@@ -770,51 +770,6 @@ def ground_from_angle_hypotenuse_cases() -> tuple[TriangleRelationsCase, ...]:
 
 
 @cache
-def angle_from_opposite_adjacent_cases() -> tuple[TriangleRelationsCase, ...]:
-    return _angle_cases("angle_from_tangent", ("opposite", "adjacent"), "theta = arctan(height / ground)")
-
-
-@cache
-def angle_from_opposite_hypotenuse_cases() -> tuple[TriangleRelationsCase, ...]:
-    return _angle_cases("angle_from_sine", ("opposite", "hypotenuse"), "theta = arcsin(height / hypotenuse)")
-
-
-@cache
-def angle_from_adjacent_hypotenuse_cases() -> tuple[TriangleRelationsCase, ...]:
-    return _angle_cases("angle_from_cosine", ("adjacent", "hypotenuse"), "theta = arccos(ground / hypotenuse)")
-
-
-@cache
-def angle_of_elevation_cases() -> tuple[TriangleRelationsCase, ...]:
-    return _angle_cases("angle_of_elevation", ("opposite", "adjacent"), "theta = arctan(height / distance)", context="flagpole")
-
-
-def _angle_cases(family: str, visible: tuple[str, ...], formula: str, *, context: str = "triangle") -> tuple[TriangleRelationsCase, ...]:
-    cases: list[TriangleRelationsCase] = []
-    for adjacent in range(7, 91):
-        for opposite in range(7, 91):
-            theta = math.degrees(math.atan2(float(opposite), float(adjacent)))
-            if not 12.0 <= theta <= 78.0:
-                continue
-            cases.append(
-                _right_triangle_case(
-                    case_kind=family,
-                    adjacent=float(adjacent),
-                    opposite=float(opposite),
-                    hypotenuse=math.hypot(float(adjacent), float(opposite)),
-                    theta=theta,
-                    visible_sides=visible,
-                    target_side=None,
-                    formula_family=family,
-                    formula_text=formula,
-                    answer=round1(theta),
-                    context=context,
-                )
-            )
-    return _trim_answer_variants(cases, max_answers=260, max_variants_per_answer=2)
-
-
-@cache
 def angle_bisector_variable_cases() -> tuple[TriangleRelationsCase, ...]:
     """Build angle-bisector equation cases while keeping A/B/C/D witnesses stable."""
 
@@ -1300,98 +1255,6 @@ def projection_from_leg_cases() -> tuple[TriangleRelationsCase, ...]:
     return _right_triangle_altitude_cases("projection_leg_relation")
 
 
-@cache
-def parallel_segment_expression_length_cases() -> tuple[TriangleRelationsCase, ...]:
-    """Build target-length proportion cases for the triangle side-splitter scaffold."""
-
-    cases: list[TriangleRelationsCase] = []
-    for answer in range(6, 181):
-        for variant_index in range(8):
-            offset = 1 + (variant_index % 6)
-            ratio = 2 + (variant_index % 2)
-            left_top = 4 + (variant_index % 8)
-            split_ratio = left_top / float(left_top + ratio * left_top)
-            cases.append(
-                _case(
-                    case_kind="triangle_side_splitter_segment_length_expression",
-                    answer=int(answer),
-                    answer_type="integer",
-                    answer_rounding="integer",
-                    formula_family="parallel_segment_ratio_target_length",
-                    formula_text="AD / DB = AE / EC, solve x, then AE = x + offset",
-                    reasoning_steps=3,
-                    vertices=_triangle_scale_points(split_ratio),
-                    edges=(("A", "B"), ("A", "C"), ("B", "C"), ("D", "E")),
-                    polygons=(("A", "B", "C"),),
-                    segment_labels=(
-                        SegmentLabel(("A", "D"), str(left_top), -30.0, "AD"),
-                        SegmentLabel(("D", "B"), str(ratio * left_top), -30.0, "DB"),
-                        SegmentLabel(("A", "E"), f"x+{offset}", 30.0, "AE"),
-                        SegmentLabel(("E", "C"), str(ratio * answer), 30.0, "EC"),
-                    ),
-                    target_segment=("A", "E"),
-                    point_annotation_labels=("A", "B", "C", "D", "E"),
-                    tick_groups=(TickGroup((("D", "E"), ("B", "C")), kind="parallel"),),
-                    trace_values={
-                        "construction_family": "triangle_side_splitter",
-                        "answer_value": int(answer),
-                        "expression_offset": int(offset),
-                        "ratio": int(ratio),
-                        "left_top_value": int(left_top),
-                        "solved_variable_value": int(answer - offset),
-                        "target_name": "AE",
-                    },
-                )
-            )
-    return _trim_answer_variants(cases, max_answers=220, max_variants_per_answer=3)
-
-
-@cache
-def parallel_segment_variable_cases() -> tuple[TriangleRelationsCase, ...]:
-    """Build variable-solving proportion cases for the triangle side-splitter scaffold."""
-
-    cases: list[TriangleRelationsCase] = []
-    for answer in range(3, 181):
-        for variant_index in range(8):
-            offset = 1 + (variant_index % 5)
-            ratio = 2 + (variant_index % 2)
-            split_fraction = (0.25, 0.33, 0.4, 0.5)[variant_index % 4]
-            left_top = max(4, round((answer + offset) * split_fraction / (1.0 - split_fraction)))
-            split_ratio = left_top / float(left_top + answer + offset)
-            cases.append(
-                _case(
-                    case_kind="triangle_side_splitter_proportion_expression",
-                    answer=int(answer),
-                    answer_type="integer",
-                    answer_rounding="integer",
-                    formula_family="parallel_segment_ratio_variable",
-                    formula_text="AD / DB = AE / EC, solve for x",
-                    reasoning_steps=3,
-                    vertices=_triangle_scale_points(split_ratio),
-                    edges=(("A", "B"), ("A", "C"), ("B", "C"), ("D", "E")),
-                    polygons=(("A", "B", "C"),),
-                    segment_labels=(
-                        SegmentLabel(("A", "D"), str(left_top), -30.0, "AD"),
-                        SegmentLabel(("D", "B"), f"x+{offset}", -30.0, "DB"),
-                        SegmentLabel(("A", "E"), str(ratio * left_top), 30.0, "AE"),
-                        SegmentLabel(("E", "C"), str(ratio * (answer + offset)), 30.0, "EC"),
-                    ),
-                    point_annotation_labels=("A", "B", "C", "D", "E"),
-                    tick_groups=(TickGroup((("D", "E"), ("B", "C")), kind="parallel"),),
-                    trace_values={
-                        "construction_family": "triangle_side_splitter",
-                        "answer_value": int(answer),
-                        "expression_offset": int(offset),
-                        "ratio": int(ratio),
-                        "left_top_value": int(left_top),
-                        "solved_variable_value": int(answer),
-                        "target_name": "x",
-                    },
-                )
-            )
-    return _trim_answer_variants(cases, max_answers=220, max_variants_per_answer=3)
-
-
 def case_trace_values(case: TriangleRelationsCase) -> dict[str, Any]:
     """Return JSON-safe trace values for one resolved construction case."""
 
@@ -1408,10 +1271,6 @@ __all__ = [
     "angle_bisector_base_cases",
     "angle_bisector_split_cases",
     "angle_bisector_variable_cases",
-    "angle_from_adjacent_hypotenuse_cases",
-    "angle_from_opposite_adjacent_cases",
-    "angle_from_opposite_hypotenuse_cases",
-    "angle_of_elevation_cases",
     "altitude_from_two_projections_cases",
     "case_trace_values",
     "centroid_vertex_cases",
@@ -1425,8 +1284,6 @@ __all__ = [
     "leg_from_projection_cases",
     "parallel_section_base_cases",
     "parallel_section_cross_cases",
-    "parallel_segment_expression_length_cases",
-    "parallel_segment_variable_cases",
     "rectangle_triangle_shared_height_cases",
     "projection_from_altitude_cases",
     "projection_from_leg_cases",

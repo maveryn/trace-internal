@@ -1,4 +1,4 @@
-"""Config regression tests for physics mechanics lever-balance defaults."""
+"""Config regression tests for physics lever-balance defaults."""
 
 from __future__ import annotations
 
@@ -6,17 +6,15 @@ from trace.core.scene_config import get_scene_defaults
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
-def test_physics_mechanics_lever_defaults_expose_scene_query_and_answer_support() -> None:
-    cfg = get_scene_defaults("physics", "mechanics")
+def test_physics_lever_defaults_expose_scene_axes_and_answer_support() -> None:
+    cfg = get_scene_defaults("physics", "lever")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="physics_mechanics_lever_balance_family",
+        task_id="task_physics__lever__side_torque_value",
     )
 
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-
-    assert bool(generation["balanced_query_id_sampling"]) is True
 
     assert bool(generation["balanced_target_answer_sampling"]) is True
 
@@ -41,8 +39,6 @@ def test_physics_mechanics_lever_defaults_expose_scene_query_and_answer_support(
         "maroon",
     }
 
-    assert set(generation["query_id_weights"].keys()) == {"side_torque", "missing_weight_to_balance"}
-
     assert set(generation["torque_side_weights"].keys()) == {"left", "right"}
 
     assert list(generation["distance_support"]) == list(range(1, 9))
@@ -64,12 +60,20 @@ def test_physics_mechanics_lever_defaults_expose_scene_query_and_answer_support(
     assert int(rendering["weight_box_width_px"]) > 0
     assert bool(rendering["layout_jitter_enabled"]) is True
 
-    assert str(prompt["bundle_id"]) == "physics_mechanics_v0"
+    assert str(prompt["bundle_id"]) == "physics_lever_v1"
 
-    assert "textured lever beam" in str(prompt["object_description_textured_beam"])
+    assert str(prompt["task_key"]) == "side_torque_value_query"
 
-    assert "queried side" in str(prompt["annotation_hint_torque"])
 
-    assert "known weight blocks" in str(prompt["annotation_hint_missing_weight"])
+def test_physics_lever_missing_weight_prompt_override() -> None:
+    cfg = get_scene_defaults("physics", "lever")
+    generation, _rendering, prompt = split_generation_rendering_prompt_defaults(
+        cfg,
+        task_id="task_physics__lever__missing_weight_balance_value",
+    )
 
-    assert "marked `?` weight" in str(prompt["annotation_hint_missing_weight"])
+    assert set(generation["missing_weight_scene_variant_weights"].keys()) == {"textured_beam"}
+
+    assert str(prompt["bundle_id"]) == "physics_lever_v1"
+
+    assert str(prompt["task_key"]) == "missing_weight_balance_value_query"

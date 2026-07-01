@@ -1,7 +1,15 @@
 # `task_puzzles__balance_scale__query_side_relation_label`
 
 ## Program Contract
-`select_option(balance_query_relation, target=left|right|balanced|not_determined, unknowns=A|B|C, panels=3); scene=balance_scale; scope=query_side_relation_label`
+
+Program: `select_option(balance_query_relation, target=left|right|balanced|not_determined, unknowns=A|B|C, panels=3); scene=balance_scale; scope=query_side_relation_label`
+
+Candidate set: the visible balance-scale panels, object symbols, object counts, side relations, and query markers inside the `query_side_relation_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `balance_query_relation`, `left`, `right`, `balanced`, `not_determined`, `unknowns`, `A`, `B`, `C`, `panels`, `balance_scale`, `query_side_relation_label`.
+Operation: evaluate `select_option` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; scalar bbox marks the selected relation option.
+Query ids: `single`.
 
 ## 2) Scene + task contract
 1. Entities/relations: Three balanced pan-scale reference panels over three unknown object labels, plus a query row comparing two symbolic pan expressions and four visual relation options. The internal `not_determined` relation is displayed to users as `Cannot determine`.
@@ -9,8 +17,8 @@
 3. `answer_gt.type`: `string`
 4. Annotation schema: `bbox`
 5. Alternate annotation forms: none
-6. Annotation witness policy: scalar bbox marks the query comparison expression area, not the selected option.
-7. Overlap/touch policy: query-comparison bbox may cover both sides of the query expression and the `vs` marker; do not annotate option labels.
+6. Annotation witness policy: scalar bbox marks the selected relation option.
+7. Overlap/touch policy: option bbox covers the selected option card, including its option label and relation text.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `puzzles_balance_scale_v1`
@@ -20,7 +28,7 @@
 5. Required slots:
    - answer-only mode: `answer_hint`, `json_example_answer_only`
    - answer+annotation mode: `annotation_hint`, `answer_hint`, `json_example`
-6. JSON example validity rule: the example must use one scalar query-comparison bbox and one option-label answer.
+6. JSON example validity rule: the example must use one selected-option bbox and one option-label answer.
 7. Variant counts: 5 scene templates, 5 query templates, and 5 output templates per output mode.
 8. Output modes: `answer_only`, `answer_and_annotation`
 

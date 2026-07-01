@@ -6,14 +6,9 @@ generation:
     child_count_max: 8
     marked_count_min: 1
     marked_count_max: 5
-    balanced_query_sampling: true
     balanced_context_sampling: true
     balanced_layout_sampling: true
     balanced_style_sampling: true
-    query_weights:
-      branch_child_count: 1.0
-      nth_child_label: 1.0
-      marked_child_count: 1.0
     context_weights:
       travel_plans: 1.0
       career_options: 1.0
@@ -30,43 +25,29 @@ generation:
       ink_outline: 1.0
       soft_cards: 1.0
       technical_pastel: 1.0
-  task_overrides:
-    task_pages__concept_map__branch_child_count:
-      query_weights:
-        branch_child_count: 1.0
-    task_pages__concept_map__marked_child_count:
-      query_weights:
-        marked_child_count: 1.0
-    task_pages__concept_map__ordered_child_label:
-      branch_count_min: 6
-      branch_count_max: 8
-      child_count_min: 5
-      child_count_max: 8
-      query_weights:
-        nth_child_label: 1.0
 rendering:
   shared:
-    canvas_width: 1500
-    canvas_height: 1050
-    outer_margin_px: 46
-    panel_padding_px: 26
-    panel_corner_radius_px: 24
-    title_band_height_px: 64
-    central_node_width_px: 190
-    central_node_height_px: 88
-    central_circle_diameter_px: 170
-    branch_node_width_px: 168
-    branch_node_height_px: 48
-    branch_circle_diameter_px: 96
-    child_node_width_px: 142
-    child_node_height_px: 38
-    node_corner_radius_px: 14
+    canvas_width: 1344
+    canvas_height: 944
+    outer_margin_px: 41
+    panel_padding_px: 23
+    panel_corner_radius_px: 22
+    title_band_height_px: 58
+    central_node_width_px: 171
+    central_node_height_px: 79
+    central_circle_diameter_px: 153
+    branch_node_width_px: 151
+    branch_node_height_px: 43
+    branch_circle_diameter_px: 86
+    child_node_width_px: 128
+    child_node_height_px: 34
+    node_corner_radius_px: 13
     node_border_width_px: 2
-    connector_width_px: 3
-    title_font_size_px: 30
-    central_font_size_px: 20
-    branch_font_size_px: 16
-    child_font_size_px: 13
+    connector_width_px: 2
+    title_font_size_px: 27
+    central_font_size_px: 18
+    branch_font_size_px: 14
+    child_font_size_px: 12
     layout_jitter_enabled: true
     layout_jitter_x_px_min: -20
     layout_jitter_x_px_max: 20
@@ -75,20 +56,7 @@ rendering:
     layout_jitter_min_margin_px: 18
 prompt:
   shared:
-    bundle_id: pages_concept_map_v0
-    scene_key: concept_map_diagram
-    object_description: a concept map with a central topic, labeled branches, and
-      child items
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
-      in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
-      the final answer.
-    integer_answer_hint: set "answer" to the requested integer count
-    label_answer_hint: set "answer" to the exact visible child-item label as a string
-    annotation_hint_count: set "annotation" to an array of [x0,y0,x1,y1] pixel bounding
-      boxes for the counted child-item nodes
-    annotation_hint_label: set "annotation" to an object mapping parent_branch and
-      answer_child to [x0,y0,x1,y1] pixel bounding boxes
+    bundle_id: pages_concept_map_v1
 visual:
   background:
     enabled: true

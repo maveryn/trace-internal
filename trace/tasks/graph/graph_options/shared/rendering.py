@@ -7,12 +7,12 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from .....core.sampling import uniform_choice
 from .....core.seed import hash64, spawn_rng
 from .....core.visual.background import make_background_canvas
 from .....core.visual.noise import apply_post_image_noise
 from ....shared.bbox_projection import round_bbox as _round_bbox
 from ....shared.config_defaults import group_default
-from ....shared.deterministic_sampling import resolve_selection_index
 from ....shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from ....shared.render_variation import resolve_render_int, resolve_render_rgb
 from ....shared.text_legibility import contrast_ratio, draw_centered_readable_text, resolve_readable_text_style
@@ -534,25 +534,19 @@ def render_graph_options_scene(
         namespace=str(namespace),
     )
     color_names = ("blue", "green", "orange", "purple", "cyan", "magenta", "maroon")
-    color_selection = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}.node_color_name",
+    node_color_name = str(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{namespace}.node_color_name"),
+            color_names,
         )
     )
-    node_color_name = color_names[color_selection % len(color_names)]
     panel_style_variants = ("default", "cool", "warm", "mint", "paper")
-    panel_style = panel_style_variants[
-        int(
-            resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=f"{namespace}.panel_style_variant",
-            )
+    panel_style = str(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{namespace}.panel_style_variant"),
+            panel_style_variants,
         )
-        % len(panel_style_variants)
-    ]
+    )
     graph_theme = apply_graph_panel_style(
         build_graph_named_color_theme(str(node_color_name)),
         panel_style_variant=str(panel_style),

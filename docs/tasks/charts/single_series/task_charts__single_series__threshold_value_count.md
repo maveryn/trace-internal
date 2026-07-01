@@ -15,7 +15,15 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Program Contract
-`count(filter(marks, value(mark) comparison threshold)); output=integer_count; annotation=point_set(matching_marks); scene=single_series; scope=threshold_value_count`
+
+Program: `count(filter(marks, value(mark) comparison threshold)); output=integer_count; annotation=point_set(matching_marks); scene=single_series; scope=threshold_value_count`
+
+Candidate set: the visible marks in the ordered single-series chart inside the `threshold_value_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_count` value bound by `integer_count`.
+Annotation witnesses: `point_set` witnesses bound by `point_set(matching_marks)`. Annotation marks every visible mark satisfying the strict threshold predicate. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
+Query ids: `above_threshold_count`, `below_threshold_count`.
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.

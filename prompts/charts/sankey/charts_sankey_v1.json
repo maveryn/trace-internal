@@ -36,13 +36,6 @@
         "Follow \"{source_label}\" through \"{middle_label}\" to \"{target_label}\". What is the minimum of the two shown flow values?",
         "On the two-band path \"{source_label}\" -> \"{middle_label}\" -> \"{target_label}\", what is the bottleneck integer?"
       ],
-      "path_flow_difference": [
-        "Along the route \"{source_label}\" -> \"{middle_label}\" -> \"{target_label}\", what is the absolute difference between the two band values?",
-        "For the path \"{source_label}\" -> \"{middle_label}\" -> \"{target_label}\", subtract the smaller band value from the larger one.",
-        "What is the absolute difference of the printed values on route \"{source_label}\" -> \"{middle_label}\" -> \"{target_label}\"?",
-        "Follow \"{source_label}\" through \"{middle_label}\" to \"{target_label}\". What is the difference between its two shown flow values?",
-        "On the two-band path \"{source_label}\" -> \"{middle_label}\" -> \"{target_label}\", what is the absolute gap between the band values?"
-      ],
       "source_outgoing_total_flow": [
         "What is the total flow leaving source node \"{source_label}\"?",
         "Add the values on all bands that start at source node \"{source_label}\". What is the total?",
@@ -78,32 +71,26 @@
   "static_slots_by_key": {
     "query:source_to_target_total_flow": {
       "answer_hint": "set \"answer\" to the requested integer",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around the printed flow-value labels used in the calculation",
-      "json_example": "{\"annotation\":[[260,168,520,226],[670,174,930,232],[252,280,516,338],[670,270,930,328]],\"answer\":27}",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points at all selected route bottleneck value labels used in the sum",
+      "json_example": "{\"annotation\":[[390,197],[800,299]],\"answer\":27}",
       "json_example_answer_only": "{\"answer\":27}"
     },
     "query:path_bottleneck_value": {
       "answer_hint": "set \"answer\" to the requested integer",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around the printed flow-value labels used in the calculation",
-      "json_example": "{\"annotation\":[[260,206,520,264],[670,220,930,278]],\"answer\":12}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point at the printed value label for the bottleneck band",
+      "json_example": "{\"annotation\":[390,235],\"answer\":12}",
       "json_example_answer_only": "{\"answer\":12}"
-    },
-    "query:path_flow_difference": {
-      "answer_hint": "set \"answer\" to the requested integer",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around the printed flow-value labels used in the calculation",
-      "json_example": "{\"annotation\":[[260,226,520,284],[670,238,930,296]],\"answer\":9}",
-      "json_example_answer_only": "{\"answer\":9}"
     },
     "query:source_outgoing_total_flow": {
       "answer_hint": "set \"answer\" to the requested integer",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around the printed flow-value labels used in the calculation",
-      "json_example": "{\"annotation\":[[260,168,520,226],[252,280,516,338]],\"answer\":31}",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points at every printed outgoing flow-value label used in the sum",
+      "json_example": "{\"annotation\":[[390,197],[384,309]],\"answer\":31}",
       "json_example_answer_only": "{\"answer\":31}"
     },
     "query:target_incoming_total_flow": {
       "answer_hint": "set \"answer\" to the requested integer",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around the printed flow-value labels used in the calculation",
-      "json_example": "{\"annotation\":[[670,174,930,232],[670,270,930,328]],\"answer\":34}",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points at every printed incoming flow-value label used in the sum",
+      "json_example": "{\"annotation\":[[800,203],[800,299]],\"answer\":34}",
       "json_example_answer_only": "{\"answer\":34}"
     }
   },

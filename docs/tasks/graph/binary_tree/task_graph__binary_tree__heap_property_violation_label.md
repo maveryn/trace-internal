@@ -1,7 +1,15 @@
 # `task_graph__binary_tree__heap_property_violation_label`
 
 ## Program Contract
-- `label(child_node(heap_property_violation(binary_tree))); scene=binary_tree; scope=heap_property_violation_label`
+
+Program: `label(child_node(heap_property_violation(binary_tree))); scene=binary_tree; scope=heap_property_violation_label`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `heap_property_violation_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `child_node`, `heap_property_violation`, `binary_tree`, `heap_property_violation_label`.
+Operation: evaluate `label` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Summary
 1. Domain: `graph`

@@ -5,11 +5,11 @@ from __future__ import annotations
 from itertools import combinations
 from typing import Any, Mapping, Sequence
 
+from .....core.sampling import support_probability_map, uniform_choice
 from .....core.seed import spawn_rng
 from ....shared.config_defaults import resolve_required_int_bounds
-from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from ...shared.label_assets import resolve_chart_entity_labels
-from ...shared.labeled_chart_common import resolve_chart_axis_variant_for_namespace
+from ...shared.labeled_chart_variants import resolve_chart_axis_variant_for_namespace
 from .defaults import (
     GENERATION_DEFAULTS,
     PROFILE_PALETTE,
@@ -31,8 +31,12 @@ def _balanced_int(
     values = tuple(int(value) for value in range(int(low), int(high) + 1))
     if not values:
         raise ValueError(f"empty integer support for {namespace}")
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return int(values[int(index) % len(values)]), uniform_probability_map(values)
+    selected = uniform_choice(
+        spawn_rng(int(instance_seed), str(namespace)),
+        values,
+        sort_keys=True,
+    )
+    return int(selected), support_probability_map(values)
 
 
 def _resolve_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> tuple[str, dict[str, float]]:
@@ -63,8 +67,13 @@ def _choose_axis_pair(
     )
     if not pairs:
         raise ValueError("axis_count must allow at least one axis pair")
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return tuple(pairs[int(index) % len(pairs)])  # type: ignore[return-value]
+    return tuple(
+        uniform_choice(
+            spawn_rng(int(instance_seed), str(namespace)),
+            tuple(pairs),
+            sort_keys=True,
+        )
+    )  # type: ignore[return-value]
 
 
 def _inversion_count(values: Sequence[int]) -> int:
@@ -234,7 +243,6 @@ def _finish_dataset(
     axis_i: int,
     axis_j: int,
     threshold: int | None,
-    reference_profile_id: str | None,
     annotation_profile_ids: Sequence[str],
     crossing_pairs: Sequence[tuple[str, str]],
     trace_params: Mapping[str, Any],
@@ -246,7 +254,7 @@ def _finish_dataset(
             profile_id=f"profile_{index}",
             label=str(label),
             values=tuple(int(value) for value in values[int(index)]),
-            color_rgb=tuple(int(channel) for channel in PROFILE_PALETTE[int(index) % len(PROFILE_PALETTE)]),
+            color_rgb=tuple(int(channel) for channel in PROFILE_PALETTE[int(index)]),
         )
         for index, label in enumerate(profile_labels)
     )
@@ -273,7 +281,6 @@ def _finish_dataset(
             axis_i=int(axis_i),
             axis_j=int(axis_j),
             threshold=threshold,
-            reference_profile_id=reference_profile_id,
             annotation_profile_ids=tuple(str(value) for value in annotation_profile_ids),
             crossing_pairs=tuple((str(first), str(second)) for first, second in crossing_pairs),
             params=dict(params),
@@ -334,7 +341,7 @@ def sample_axis_condition_dataset(
         params,
         instance_seed=int(instance_seed),
         axis_count=int(axis_count),
-        adjacent_only=False,
+        adjacent_only=True,
         namespace=f"{namespace}.axis_pair",
     )
     annotation_indices = set(rng.sample(list(range(int(profile_count))), int(target_count)))
@@ -394,7 +401,6 @@ def sample_axis_condition_dataset(
         axis_i=int(axis_i),
         axis_j=int(axis_j),
         threshold=int(threshold),
-        reference_profile_id=None,
         annotation_profile_ids=annotation_profile_ids,
         crossing_pairs=(),
         trace_params=trace_params,
@@ -436,14 +442,16 @@ def sample_axis_delta_dataset(
         params,
         instance_seed=int(instance_seed),
         axis_count=int(axis_count),
-        adjacent_only=False,
+        adjacent_only=True,
         namespace=f"{namespace}.axis_pair",
     )
-    target_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.target_profile",
-    ) % int(profile_count)
+    target_index = int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{namespace}.target_profile"),
+            tuple(range(int(profile_count))),
+            sort_keys=True,
+        )
+    )
     deltas = list(range(1, min(12, int(value_max) - int(value_min)) + 1))
     rng.shuffle(deltas)
     if len(deltas) < int(profile_count):
@@ -487,7 +495,6 @@ def sample_axis_delta_dataset(
         axis_i=int(axis_i),
         axis_j=int(axis_j),
         threshold=None,
-        reference_profile_id=None,
         annotation_profile_ids=(f"profile_{target_index}",),
         crossing_pairs=(),
         trace_params=trace_params,
@@ -572,95 +579,7 @@ def sample_all_crossings_dataset(
         axis_i=int(axis_i),
         axis_j=int(axis_j),
         threshold=None,
-        reference_profile_id=None,
         annotation_profile_ids=tuple(profile_ids),
-        crossing_pairs=crossing_pairs,
-        trace_params=trace_params,
-    )
-
-
-def sample_profile_crossings_dataset(
-    *,
-    params: Mapping[str, Any],
-    instance_seed: int,
-    namespace: str,
-) -> ParallelDataset:
-    """Sample one reference profile and count its adjacent-axis crossings."""
-
-    (
-        scene_variant,
-        metrics,
-        profile_labels,
-        profile_count,
-        axis_count,
-        value_min,
-        value_max,
-        trace_params,
-    ) = _sample_base(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-        use_crossing_bounds=True,
-    )
-    rng = spawn_rng(int(instance_seed), f"{namespace}.values")
-    axis_i, axis_j = _choose_axis_pair(
-        params,
-        instance_seed=int(instance_seed),
-        axis_count=int(axis_count),
-        adjacent_only=True,
-        namespace=f"{namespace}.axis_pair",
-    )
-    max_cross = min(generation_int(params, "profile_crossing_answer_count_max", 5), int(profile_count) - 1)
-    min_cross = min(generation_int(params, "profile_crossing_answer_count_min", 1), int(max_cross))
-    target_count, target_count_probs = _balanced_int(
-        params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.answer",
-        low=int(min_cross),
-        high=int(max_cross),
-    )
-    target_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.target_profile",
-    ) % int(profile_count)
-    values: list[list[int]] = [
-        [int(rng.randint(int(value_min), int(value_max))) for _ in range(int(axis_count))]
-        for _ in range(int(profile_count))
-    ]
-    others = [index for index in range(int(profile_count)) if int(index) != int(target_index)]
-    order_a = [int(target_index)] + others
-    order_b = others[: int(target_count)] + [int(target_index)] + others[int(target_count) :]
-    rank_values_a = _rank_values(order_a, value_min=int(value_min), value_max=int(value_max))
-    rank_values_b = _rank_values(order_b, value_min=int(value_min), value_max=int(value_max))
-    for profile_index in range(int(profile_count)):
-        values[profile_index][axis_i] = int(rank_values_a[int(profile_index)])
-        values[profile_index][axis_j] = int(rank_values_b[int(profile_index)])
-    reference_profile_id = f"profile_{target_index}"
-    crossing_pairs = tuple((reference_profile_id, f"profile_{index}") for index in others[: int(target_count)])
-    annotation_profile_ids = (reference_profile_id,) + tuple(f"profile_{index}" for index in others[: int(target_count)])
-    trace_params.update(
-        {
-            "target_count": int(target_count),
-            "target_count_probabilities": dict(target_count_probs),
-            "reference_profile_id": str(reference_profile_id),
-            "reference_profile_label": str(profile_labels[int(target_index)]),
-        }
-    )
-    return _finish_dataset(
-        scene_variant=scene_variant,
-        metrics=metrics,
-        profile_labels=profile_labels,
-        values=values,
-        value_min=value_min,
-        value_max=value_max,
-        answer=int(target_count),
-        answer_type="integer",
-        axis_i=int(axis_i),
-        axis_j=int(axis_j),
-        threshold=None,
-        reference_profile_id=str(reference_profile_id),
-        annotation_profile_ids=annotation_profile_ids,
         crossing_pairs=crossing_pairs,
         trace_params=trace_params,
     )
@@ -670,5 +589,4 @@ __all__ = [
     "sample_all_crossings_dataset",
     "sample_axis_condition_dataset",
     "sample_axis_delta_dataset",
-    "sample_profile_crossings_dataset",
 ]

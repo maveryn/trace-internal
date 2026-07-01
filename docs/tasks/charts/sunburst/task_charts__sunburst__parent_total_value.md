@@ -14,15 +14,23 @@
 
 ## Annotation Contract
 1. Answer schema: `integer_value`.
-2. Annotation schema: `bbox_set`.
-3. Annotation marks the printed outer leaf value labels under the requested parent category.
+2. Annotation schema: `point_set`.
+3. Annotation marks the centers of the printed outer leaf value labels under the requested parent category.
 4. Renderer context such as decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
 ## Program Contract
-`sum(value(leaf) for leaf under parent); output=integer_value; annotation=bbox_set(leaf_value_labels); scene=sunburst; scope=parent_total_value`
+
+Program: `sum(value(leaf) for leaf under parent); output=integer_value; annotation=point_set(leaf_value_labels); scene=sunburst; scope=parent_total_value`
+
+Candidate set: the visible hierarchy wedges, rings, and node labels inside the `parent_total_value` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `sum` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `point_set` witnesses bound by `point_set(leaf_value_labels)`. Annotation marks the centers of the printed outer leaf value labels under the requested parent category. Renderer context such as decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `single`.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `single` | `sum(value(leaf) for leaf under parent)` | `integer_value` | `bbox_set` |
+| `single` | `sum(value(leaf) for leaf under parent)` | `integer_value` | `point_set` |

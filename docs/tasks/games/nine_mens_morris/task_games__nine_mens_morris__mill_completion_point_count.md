@@ -9,13 +9,15 @@
 6. Annotation schema: `point_set`
 
 ## Program Contract
-`count(filter(empty_board_points, completes_mill(point, queried_color)=true)); scene=nine_mens_morris; scope=mill_completion_point_count`
 
-The rendered board shows light and dark pieces on Nine Men's Morris
-intersections. A mill is three same-color pieces on one straight board line.
-For the queried color, the program counts empty board points where placing one
-piece of that color would complete at least one mill, and annotates the center
-point of every counted empty point.
+Program: `count(filter(empty_board_points, completes_mill(point, queried_color)=true)); scene=nine_mens_morris; scope=mill_completion_point_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `mill_completion_point_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `empty_board_points`, `completes_mill`, `queried_color`, `true`, `nine_mens_morris`, `mill_completion_point_count` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `white_mill_completion_point_count`, `black_mill_completion_point_count`.
 
 ## Generation Notes
 1. Query ids are internal replay/sampling keys and do not define public task units.

@@ -5,6 +5,7 @@ from __future__ import annotations
 from itertools import combinations
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.puzzles.shared.symbol_rendering import PUZZLE_OBJECT_TYPES
 from trace.tasks.shared.color_distance import color_distance
@@ -12,7 +13,11 @@ from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.render_variation import resolve_render_int, resolve_render_rgb
 from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
-from .rules import invalid_candidate_sequences, rotate_token_sequence
+from .rules import (
+    invalid_candidate_sequences,
+    rotate_token_sequence,
+    token_sequences_are_rotation_equivalent,
+)
 from .state import (
     DEFAULTS,
     LOOP_PATH_STYLES,
@@ -210,16 +215,16 @@ def resolve_render_params(
         reference_loop_height_px=int(_int("reference_loop_height_px", 170)),
         reference_label_font_size_px=int(_int("reference_label_font_size_px", 28)),
         reference_to_options_gap_px=int(_int("reference_to_options_gap_px", 54)),
-        option_image_width_px=int(_int("option_image_width_px", 172)),
-        option_image_height_px=int(_int("option_image_height_px", 154)),
+        option_image_width_px=int(_int("option_image_width_px", 230)),
+        option_image_height_px=int(_int("option_image_height_px", 180)),
         option_gap_px=int(_int("option_gap_px", 28)),
         option_row_gap_px=int(_int("option_row_gap_px", 38)),
         option_label_gap_px=int(_int("option_label_gap_px", 16)),
-        option_label_font_size_px=int(_int("option_label_font_size_px", 28)),
+        option_label_font_size_px=int(_int("option_label_font_size_px", 34)),
         panel_corner_radius_px=int(_int("panel_corner_radius_px", 28)),
         border_width_px=int(_int("border_width_px", 3)),
         loop_stroke_width_px=int(_int("loop_stroke_width_px", 5)),
-        bead_size_px=int(_int("bead_size_px", 30)),
+        bead_size_px=int(_int("bead_size_px", 45)),
         shape_bead_inset_px=int(_int("shape_bead_inset_px", 2)),
         panel_fill_rgb=_rgb("panel_fill_rgb", (248, 249, 252)),
         instruction_fill_rgb=_rgb("instruction_fill_rgb", (240, 244, 250)),
@@ -257,6 +262,17 @@ def _token_count_bounds(
         max_count = min(int(max_count), int(defaults.shape_bead_count_max))
     min_count = min(int(min_count), int(max_count))
     return int(min_count), int(max_count)
+
+
+def _swap_positions(tokens: Sequence[str], first_index: int, second_index: int) -> Tuple[str, ...]:
+    """Return a copy of tokens with two zero-based positions exchanged."""
+
+    swapped = [str(token) for token in tokens]
+    swapped[int(first_index)], swapped[int(second_index)] = (
+        swapped[int(second_index)],
+        swapped[int(first_index)],
+    )
+    return tuple(swapped)
 
 
 def _sample_distinct_color_specs(
@@ -517,8 +533,359 @@ def build_cyclic_order_dataset(
     }
 
 
+def build_swap_repair_dataset(
+    *,
+    token_render_style: str,
+    loop_path_style: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    generation_defaults: Mapping[str, Any],
+    defaults: CyclicOrderDefaults = DEFAULTS,
+    namespace_base: str = "cyclic_order",
+) -> Dict[str, Any]:
+    """Build a broken loop where exactly one visible swap repairs the order."""
+
+    selected_token_style = str(token_render_style)
+    if selected_token_style not in set(TOKEN_RENDER_STYLES):
+        raise ValueError(f"unsupported cyclic-order token_render_style: {token_render_style}")
+    selected_loop_path_style = str(loop_path_style)
+    if selected_loop_path_style not in set(LOOP_PATH_STYLES):
+        raise ValueError(f"unsupported cyclic-order loop_path_style: {loop_path_style}")
+
+    option_count_min = _int_bound(
+        params,
+        generation_defaults,
+        "option_count_min",
+        int(defaults.option_count_min),
+    )
+    option_count_max = _int_bound(
+        params,
+        generation_defaults,
+        "option_count_max",
+        int(defaults.option_count_max),
+    )
+    if int(option_count_min) != 4 or int(option_count_max) != 4:
+        raise ValueError("cyclic-order swap repair currently uses exactly four options")
+
+    rng = spawn_rng(int(instance_seed), f"{str(namespace_base)}.swap_repair_dataset")
+    option_count = 4
+    labels = [chr(ord("A") + index) for index in range(int(option_count))]
+    answer_label, answer_label_probabilities = resolve_answer_option_label(
+        params=params,
+        generation_defaults=generation_defaults,
+        instance_seed=int(instance_seed),
+        labels=labels,
+        namespace_base=f"{str(namespace_base)}.swap_repair",
+    )
+    answer_position = labels.index(str(answer_label))
+
+    bead_count_min, bead_count_max = _token_count_bounds(
+        selected_token_style,
+        params=params,
+        generation_defaults=generation_defaults,
+        defaults=defaults,
+    )
+    if int(bead_count_min) > int(bead_count_max):
+        raise ValueError("bead_count_min must be <= bead_count_max")
+    bead_count = int(rng.randint(int(bead_count_min), int(bead_count_max)))
+    all_pairs = tuple(combinations(range(int(bead_count)), 2))
+    if len(all_pairs) < int(option_count):
+        raise ValueError("cyclic-order swap repair needs at least four position pairs")
+
+    min_color_distance = float(
+        params.get(
+            "min_color_distance",
+            group_default(generation_defaults, "min_color_distance", float(defaults.min_color_distance)),
+        )
+    )
+    color_distance_space = str(
+        params.get(
+            "color_distance_space",
+            group_default(generation_defaults, "color_distance_space", str(defaults.color_distance_space)),
+        )
+    ).strip().lower()
+
+    token_catalog = _token_catalog_for_style(
+        selected_token_style,
+        token_count=int(bead_count),
+        min_color_distance=float(min_color_distance),
+        color_distance_space=str(color_distance_space),
+        rng=rng,
+    )
+    reference_tokens = tuple(str(token) for token in rng.sample(list(token_catalog.keys()), int(bead_count)))
+    solved_offset = int(rng.choice(list(range(int(bead_count)))))
+    solved_sequence = rotate_token_sequence(reference_tokens, int(solved_offset))
+    correct_pair = tuple(int(index) for index in uniform_choice(rng, all_pairs))
+    broken_sequence = _swap_positions(solved_sequence, int(correct_pair[0]), int(correct_pair[1]))
+
+    distractor_pairs: list[Tuple[int, int]] = []
+    shuffled_pairs = [tuple(int(index) for index in pair) for pair in all_pairs if tuple(pair) != correct_pair]
+    rng.shuffle(shuffled_pairs)
+    for pair in shuffled_pairs:
+        repaired = _swap_positions(broken_sequence, int(pair[0]), int(pair[1]))
+        if token_sequences_are_rotation_equivalent(reference_tokens, repaired):
+            continue
+        distractor_pairs.append(tuple(pair))
+        if len(distractor_pairs) == int(option_count - 1):
+            break
+    if len(distractor_pairs) != int(option_count - 1):
+        raise ValueError("insufficient non-repairing swap distractors")
+
+    option_records = [
+        {
+            "is_valid": False,
+            "swap_pair": tuple(pair),
+            "repaired_token_sequence": list(_swap_positions(broken_sequence, int(pair[0]), int(pair[1]))),
+        }
+        for pair in distractor_pairs
+    ]
+    option_records.insert(
+        int(answer_position),
+        {
+            "is_valid": True,
+            "swap_pair": tuple(correct_pair),
+            "repaired_token_sequence": list(solved_sequence),
+        },
+    )
+
+    option_specs: list[dict[str, Any]] = []
+    valid_option_choice_ids: list[str] = []
+    valid_option_labels: list[str] = []
+    for option_index, (option_label, option_record) in enumerate(zip(labels, option_records), start=1):
+        first_index, second_index = tuple(option_record["swap_pair"])
+        option_choice_id = f"option_{int(option_index)}"
+        spec = {
+            "option_index": int(option_index - 1),
+            "option_label": str(option_label),
+            "option_choice_id": str(option_choice_id),
+            "is_valid": bool(option_record["is_valid"]),
+            "first_position": int(first_index + 1),
+            "second_position": int(second_index + 1),
+            "swap_pair_zero_based": [int(first_index), int(second_index)],
+            "repaired_token_sequence": [str(value) for value in option_record["repaired_token_sequence"]],
+        }
+        option_specs.append(spec)
+        if bool(spec["is_valid"]):
+            valid_option_choice_ids.append(str(option_choice_id))
+            valid_option_labels.append(str(option_label))
+
+    reference_bead_specs = [dict(token_catalog[str(token_label)]) for token_label in reference_tokens]
+    broken_bead_specs = [dict(token_catalog[str(token_label)]) for token_label in broken_sequence]
+    return {
+        "reference_token_sequence": [str(token) for token in reference_tokens],
+        "reference_bead_specs": reference_bead_specs,
+        "reference_loop_shape_variant": str(rng.choice(list(LOOP_SHAPE_VARIANTS))),
+        "reference_loop_path_style": str(selected_loop_path_style),
+        "reference_start_angle_deg": int(-90),
+        "solved_token_sequence": [str(token) for token in solved_sequence],
+        "solved_rotation_offset": int(solved_offset),
+        "broken_token_sequence": [str(token) for token in broken_sequence],
+        "broken_bead_specs": broken_bead_specs,
+        "broken_loop_shape_variant": str(rng.choice(list(LOOP_SHAPE_VARIANTS))),
+        "broken_loop_path_style": str(selected_loop_path_style),
+        "broken_start_angle_deg": int(-90),
+        "option_specs": option_specs,
+        "option_count": int(option_count),
+        "option_count_range": [int(option_count_min), int(option_count_max)],
+        "valid_option_count": 1,
+        "valid_option_choice_ids": [str(value) for value in valid_option_choice_ids],
+        "valid_option_labels": [str(value) for value in valid_option_labels],
+        "answer_option_choice_id": str(valid_option_choice_ids[0]),
+        "answer_option_label": str(valid_option_labels[0]),
+        "answer_option_label_probabilities": dict(answer_label_probabilities),
+        "bead_count": int(bead_count),
+        "bead_count_range": [int(bead_count_min), int(bead_count_max)],
+        "token_render_style": str(selected_token_style),
+        "bead_token_mode": str(TOKEN_STYLE_SOURCE_MODE[str(selected_token_style)]),
+        "loop_path_style": str(selected_loop_path_style),
+        "equivalence_rule": "repair_broken_loop_by_one_position_swap_then_rotation_allowed",
+        "color_distance_space": str(color_distance_space),
+        "min_color_distance": float(min_color_distance),
+        "question_format": "swap_repair_option",
+        "view_family": "loop_swap_repair",
+        "solver_trace": {
+            "token_render_style": str(selected_token_style),
+            "bead_token_mode": str(TOKEN_STYLE_SOURCE_MODE[str(selected_token_style)]),
+            "loop_path_style": str(selected_loop_path_style),
+            "reference_token_sequence": [str(token) for token in reference_tokens],
+            "solved_token_sequence": [str(token) for token in solved_sequence],
+            "broken_token_sequence": [str(token) for token in broken_sequence],
+            "correct_swap_positions": [int(correct_pair[0] + 1), int(correct_pair[1] + 1)],
+            "valid_option_labels": [str(value) for value in valid_option_labels],
+            "valid_option_choice_ids": [str(value) for value in valid_option_choice_ids],
+            "answer_option_choice_id": str(valid_option_choice_ids[0]),
+            "answer_option_label": str(valid_option_labels[0]),
+            "equivalence_rule": "repair_broken_loop_by_one_position_swap_then_rotation_allowed",
+            "color_distance_space": str(color_distance_space),
+            "min_color_distance": float(min_color_distance),
+            "rotation_allowed": True,
+            "reflection_allowed": False,
+        },
+    }
+
+
+def build_insertion_position_dataset(
+    *,
+    token_render_style: str,
+    loop_path_style: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    generation_defaults: Mapping[str, Any],
+    defaults: CyclicOrderDefaults = DEFAULTS,
+    namespace_base: str = "cyclic_order",
+) -> Dict[str, Any]:
+    """Build a partial loop where one loose token belongs in exactly one gap."""
+
+    selected_token_style = str(token_render_style)
+    if selected_token_style not in set(TOKEN_RENDER_STYLES):
+        raise ValueError(f"unsupported cyclic-order token_render_style: {token_render_style}")
+    selected_loop_path_style = str(loop_path_style)
+    if selected_loop_path_style not in set(LOOP_PATH_STYLES):
+        raise ValueError(f"unsupported cyclic-order loop_path_style: {loop_path_style}")
+
+    rng = spawn_rng(int(instance_seed), f"{str(namespace_base)}.insertion_position_dataset")
+    option_count = 4
+    bead_count = 5
+    labels = [chr(ord("A") + index) for index in range(int(option_count))]
+    answer_label, answer_label_probabilities = resolve_answer_option_label(
+        params=params,
+        generation_defaults=generation_defaults,
+        instance_seed=int(instance_seed),
+        labels=labels,
+        namespace_base=f"{str(namespace_base)}.insertion_position",
+    )
+    answer_position = labels.index(str(answer_label))
+
+    min_color_distance = float(
+        params.get(
+            "min_color_distance",
+            group_default(generation_defaults, "min_color_distance", float(defaults.min_color_distance)),
+        )
+    )
+    color_distance_space = str(
+        params.get(
+            "color_distance_space",
+            group_default(generation_defaults, "color_distance_space", str(defaults.color_distance_space)),
+        )
+    ).strip().lower()
+
+    token_catalog = _token_catalog_for_style(
+        selected_token_style,
+        token_count=int(bead_count),
+        min_color_distance=float(min_color_distance),
+        color_distance_space=str(color_distance_space),
+        rng=rng,
+    )
+    reference_tokens = tuple(str(token) for token in rng.sample(list(token_catalog.keys()), int(bead_count)))
+    solved_offset = int(rng.choice(list(range(int(bead_count)))))
+    solved_sequence = rotate_token_sequence(reference_tokens, int(solved_offset))
+
+    # With five solved tokens and four displayed gaps, removing token g+1 makes
+    # gap g the unique insertion point after the preceding displayed token.
+    missing_index = int(answer_position + 1)
+    missing_token = str(solved_sequence[int(missing_index)])
+    partial_sequence = tuple(
+        str(token)
+        for token_index, token in enumerate(solved_sequence)
+        if int(token_index) != int(missing_index)
+    )
+
+    option_specs: list[dict[str, Any]] = []
+    valid_option_choice_ids: list[str] = []
+    valid_option_labels: list[str] = []
+    for option_index, option_label in enumerate(labels, start=1):
+        gap_index = int(option_index - 1)
+        insertion_index = int(gap_index + 1)
+        inserted_sequence = (
+            tuple(partial_sequence[:insertion_index])
+            + (str(missing_token),)
+            + tuple(partial_sequence[insertion_index:])
+        )
+        is_valid = token_sequences_are_rotation_equivalent(reference_tokens, inserted_sequence)
+        option_choice_id = f"option_{int(option_index)}"
+        spec = {
+            "option_index": int(option_index - 1),
+            "option_label": str(option_label),
+            "option_choice_id": str(option_choice_id),
+            "is_valid": bool(is_valid),
+            "gap_label": str(option_label),
+            "gap_number": int(gap_index + 1),
+            "insert_after_position": int(gap_index + 1),
+            "inserted_token_sequence": [str(value) for value in inserted_sequence],
+        }
+        option_specs.append(spec)
+        if bool(spec["is_valid"]):
+            valid_option_choice_ids.append(str(option_choice_id))
+            valid_option_labels.append(str(option_label))
+
+    if valid_option_labels != [str(answer_label)]:
+        raise ValueError("cyclic-order insertion task must have exactly one valid insertion option")
+
+    reference_bead_specs = [dict(token_catalog[str(token_label)]) for token_label in reference_tokens]
+    partial_bead_specs = [dict(token_catalog[str(token_label)]) for token_label in partial_sequence]
+    missing_bead_spec = dict(token_catalog[str(missing_token)])
+    return {
+        "reference_token_sequence": [str(token) for token in reference_tokens],
+        "reference_bead_specs": reference_bead_specs,
+        "reference_loop_shape_variant": str(rng.choice(list(LOOP_SHAPE_VARIANTS))),
+        "reference_loop_path_style": str(selected_loop_path_style),
+        "reference_start_angle_deg": int(-90),
+        "solved_token_sequence": [str(token) for token in solved_sequence],
+        "solved_rotation_offset": int(solved_offset),
+        "partial_token_sequence": [str(token) for token in partial_sequence],
+        "partial_bead_specs": partial_bead_specs,
+        "partial_loop_shape_variant": str(rng.choice(list(LOOP_SHAPE_VARIANTS))),
+        "partial_loop_path_style": str(selected_loop_path_style),
+        "partial_start_angle_deg": int(-90),
+        "partial_gap_labels": [str(label) for label in labels],
+        "missing_token": str(missing_token),
+        "missing_token_spec": missing_bead_spec,
+        "missing_token_position_in_solved": int(missing_index + 1),
+        "option_specs": option_specs,
+        "option_count": int(option_count),
+        "option_count_range": [int(option_count), int(option_count)],
+        "valid_option_count": 1,
+        "valid_option_choice_ids": [str(value) for value in valid_option_choice_ids],
+        "valid_option_labels": [str(value) for value in valid_option_labels],
+        "answer_option_choice_id": str(valid_option_choice_ids[0]),
+        "answer_option_label": str(valid_option_labels[0]),
+        "answer_option_label_probabilities": dict(answer_label_probabilities),
+        "bead_count": int(bead_count),
+        "bead_count_range": [int(bead_count), int(bead_count)],
+        "token_render_style": str(selected_token_style),
+        "bead_token_mode": str(TOKEN_STYLE_SOURCE_MODE[str(selected_token_style)]),
+        "loop_path_style": str(selected_loop_path_style),
+        "equivalence_rule": "insert_loose_token_then_rotation_allowed",
+        "color_distance_space": str(color_distance_space),
+        "min_color_distance": float(min_color_distance),
+        "question_format": "insertion_position_option",
+        "view_family": "loop_insertion_position",
+        "solver_trace": {
+            "token_render_style": str(selected_token_style),
+            "bead_token_mode": str(TOKEN_STYLE_SOURCE_MODE[str(selected_token_style)]),
+            "loop_path_style": str(selected_loop_path_style),
+            "reference_token_sequence": [str(token) for token in reference_tokens],
+            "solved_token_sequence": [str(token) for token in solved_sequence],
+            "partial_token_sequence": [str(token) for token in partial_sequence],
+            "missing_token": str(missing_token),
+            "correct_gap_number": int(answer_position + 1),
+            "valid_option_labels": [str(value) for value in valid_option_labels],
+            "valid_option_choice_ids": [str(value) for value in valid_option_choice_ids],
+            "answer_option_choice_id": str(valid_option_choice_ids[0]),
+            "answer_option_label": str(valid_option_labels[0]),
+            "equivalence_rule": "insert_loose_token_then_rotation_allowed",
+            "color_distance_space": str(color_distance_space),
+            "min_color_distance": float(min_color_distance),
+            "rotation_allowed": True,
+            "reflection_allowed": False,
+        },
+    }
+
+
 __all__ = [
     "build_cyclic_order_dataset",
+    "build_insertion_position_dataset",
+    "build_swap_repair_dataset",
     "resolve_loop_path_style",
     "resolve_render_params",
     "resolve_scene_variant",

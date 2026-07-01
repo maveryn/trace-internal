@@ -17,11 +17,17 @@ from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
 from .shared.annotations import tangent_packing_annotation
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS, load_tangent_packing_defaults
-from .shared.prompts import build_tangent_packing_prompt_artifacts
+from .shared.prompts import build_tangent_packing_prompt_artifacts, tangent_packing_object_description
 from .shared.rendering import create_render_context
 from .shared.state import SCENE_ID, SCENE_KIND, RenderContext, RenderedTangentPackingScene, TangentPackingProblem
 
 RenderBuilder = Callable[[RenderContext, TangentPackingProblem], RenderedTangentPackingScene]
+
+
+def _public_answer_value(answer_value: float | int, answer_type: str) -> float | int:
+    if str(answer_type) == "integer":
+        return int(round(float(answer_value)))
+    return float(answer_value)
 
 
 @dataclass(frozen=True)
@@ -85,7 +91,9 @@ def build_tangent_packing_trace_payload(
     branch_probabilities: Mapping[str, float],
     prompt_artifacts: Any,
     attempt: TangentPackingRenderedAttempt,
-    answer_value: float,
+    answer_value: float | int,
+    answer_type: str,
+    answer_rounding: str,
     reasoning_steps: int,
     query_params_extra: Mapping[str, Any],
     trace_values: Mapping[str, Any],
@@ -105,6 +113,7 @@ def build_tangent_packing_trace_payload(
     query_spec["task_id"] = str(task_identity)
     query_spec["scene_id"] = SCENE_ID
     rendered = attempt.rendered
+    public_answer = _public_answer_value(answer_value, answer_type)
     return {
         "scene_ir": {
             "scene_kind": SCENE_KIND,
@@ -114,7 +123,7 @@ def build_tangent_packing_trace_payload(
             "entities": [dict(entity) for entity in rendered.scene_entities],
             "relations": {
                 "query_id": str(selected_query),
-                "answer_value": float(answer_value),
+                "answer_value": public_answer,
                 "annotation_roles": list(rendered.annotation_roles),
             },
         },
@@ -139,21 +148,21 @@ def build_tangent_packing_trace_payload(
             "task_id": str(task_identity),
             "scene_id": SCENE_ID,
             "query_id": str(selected_query),
-            "answer_type": "number",
-            "answer_value": float(answer_value),
-            "answer_rounding": "one_decimal",
+            **dict(trace_values),
+            "answer_type": str(answer_type),
+            "answer_value": public_answer,
+            "answer_rounding": str(answer_rounding),
             "annotation_roles": list(rendered.annotation_roles),
             "reasoning_steps": int(reasoning_steps),
-            **dict(trace_values),
         },
         "witness_symbolic": {
             "task_id": str(task_identity),
             "scene_id": SCENE_ID,
             "query_id": str(selected_query),
             "type": "circle_square_tangent_packing_formula",
-            "source_witness_type": "bbox_map",
-            "answer_value": float(answer_value),
+            "source_witness_type": "bbox",
             **dict(trace_values),
+            "answer_value": public_answer,
         },
         "projected_annotation": dict(attempt.annotation_artifacts.projected_annotation),
     }
@@ -208,12 +217,15 @@ def run_tangent_packing_public_entry(
         task_prompt_key=str(task.task_prompt_key),
         prompt_query_key=str(selected_query),
         annotation_roles=attempt.rendered.annotation_roles,
-        answer_value=float(answer_value),
+        answer_value=_public_answer_value(answer_value, str(problem.answer_type)),
+        answer_type=str(problem.answer_type),
+        object_description=tangent_packing_object_description(problem.construction_kind),
         instance_seed=int(instance_seed),
     )
+    public_answer = _public_answer_value(answer_value, str(problem.answer_type))
     return TaskOutput(
         prompt=str(prompt_artifacts.prompt),
-        answer_gt=TypedValue(type="number", value=float(answer_value)),
+        answer_gt=TypedValue(type=str(problem.answer_type), value=public_answer),
         annotation_gt=TypedValue(
             type=str(attempt.annotation_artifacts.annotation_type),
             value=attempt.annotation_artifacts.value,
@@ -226,7 +238,9 @@ def run_tangent_packing_public_entry(
             branch_probabilities=branch_probabilities,
             prompt_artifacts=prompt_artifacts,
             attempt=attempt,
-            answer_value=float(answer_value),
+            answer_value=public_answer,
+            answer_type=str(problem.answer_type),
+            answer_rounding=str(problem.answer_rounding),
             reasoning_steps=int(problem.reasoning_steps),
             query_params_extra=trace_values,
             trace_values=trace_values,

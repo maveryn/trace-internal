@@ -8,7 +8,15 @@
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Program Contract
-`difference(max_visible_tick(axis), min_visible_tick(axis)); output=integer_value; annotation=bbox_map(min_tick,max_tick); scene=scientific_axis_frame; scope=axis_span_value`
+
+Program: `difference(max_visible_tick(axis), min_visible_tick(axis)); output=integer_value; annotation=segment(axis_visible_span); scene=scientific_axis_frame; scope=axis_span_value`
+
+Candidate set: the visible scientific-axis ticks, marked points, and scale labels inside the `axis_span_value` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `difference` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `segment` witnesses bound by `segment(axis_visible_span)`. Annotation is the segment from the smallest visible tick mark to the largest visible tick mark on the requested axis. Decorative plotted data, axis labels, and distractor text are metadata unless explicitly queried. Annotation marks the visible span on the requested axis as one segment between the minimum and maximum tick marks.
+Query ids: `x_axis_span_value`, `y_axis_span_value`.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.scientific_axis_frame.axis_span_value.ChartsScientificAxisFrameAxisSpanValueTask`
@@ -18,14 +26,14 @@
 
 ## Annotation Contract
 1. Answer schema: `integer_value`.
-2. Annotation schema: `bbox_map`.
-3. Annotation maps `min_tick` and `max_tick` to the smallest and largest visible tick labels on the requested axis.
+2. Annotation schema: `segment`.
+3. Annotation is the segment from the smallest visible tick mark to the largest visible tick mark on the requested axis.
 4. Decorative plotted data, axis labels, and distractor text are metadata unless explicitly queried.
-5. Scalar annotation conversion is not applicable because this task has two role-bound tick-label witnesses.
+5. Annotation marks the visible span on the requested axis as one segment between the minimum and maximum tick marks.
 
 ## Query Details
 
 | Query id | Program arguments | Answer schema | Annotation schema |
 |---|---|---|---|
-| `x_axis_span_value` | `axis=x` | `integer_value` | `bbox_map` |
-| `y_axis_span_value` | `axis=y` | `integer_value` | `bbox_map` |
+| `x_axis_span_value` | `axis=x` | `integer_value` | `segment` |
+| `y_axis_span_value` | `axis=y` | `integer_value` | `segment` |

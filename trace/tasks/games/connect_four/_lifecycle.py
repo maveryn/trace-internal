@@ -21,10 +21,11 @@ from .shared.prompts import (
     connect_four_object_description,
     connect_four_output_slots,
     connect_four_rule_slots,
+    json_examples_for_label_answer,
     json_examples_for_integer_answer,
 )
 from .shared.rendering import render_connect_four_sample
-from .shared.rules import Coord
+from .shared.rules import Coord, opponent, player_name
 from .shared.sampling import resolve_connect_four_scene_axes, resolve_target_answer, sample_count_scene
 from .shared.state import ConnectFourColumnProfileSample, ConnectFourCountSample, ConnectFourLabelSample, ConnectFourSceneAxes
 
@@ -146,6 +147,108 @@ def prepare_count_objective_from_spec(
         render_column_labels=lambda _sample: None,
         query_spec_params=query_spec_params,
         execution_updates=lambda _sample: {"target_answer": int(target_answer)},
+    )
+
+
+def prepare_column_label_objective_from_semantics(
+    *,
+    task_id: str,
+    prompt_query_key: str,
+    gen_defaults: Mapping[str, Any],
+    sample_scene: Callable[..., ConnectFourLabelSample],
+    instance_seed: int,
+    task_params: Mapping[str, Any],
+    selected_query_id: str,
+    include_opponent_player: bool,
+    line_trace_key: str,
+    coord_trace_key: str,
+) -> ConnectFourObjectivePlan:
+    """Build a column-label objective from task-owned label semantics."""
+
+    axes = resolve_connect_four_scene_axes(
+        int(instance_seed),
+        params=task_params,
+        gen_defaults=gen_defaults,
+        namespace_suffix=str(selected_query_id),
+    )
+
+    def construct_attempt(rng):
+        return sample_scene(
+            rng=rng,
+            axes=axes,
+            params=task_params,
+            instance_seed=int(instance_seed),
+            gen_defaults=gen_defaults,
+        )
+
+    def prompt_slots(sample) -> dict[str, Any]:
+        json_example, json_example_answer_only = json_examples_for_label_answer(
+            scalar_annotation=True
+        )
+        slots = {
+            "object_description": connect_four_object_description(
+                str(sample.scene_variant)
+            ),
+            **connect_four_rule_slots(current_player=int(sample.current_player)),
+            **connect_four_output_slots(
+                prompt_query_key=str(prompt_query_key),
+                json_example=json_example,
+                json_example_answer_only=json_example_answer_only,
+            ),
+        }
+        if bool(include_opponent_player):
+            slots["opponent_player_name"] = player_name(
+                opponent(int(sample.current_player))
+            )
+        return slots
+
+    def query_spec_params(sample) -> dict[str, Any]:
+        params = {
+            "answer_label": str(sample.answer_label),
+            "answer_column": int(sample.answer_column),
+            "answer_support": [str(label) for label in sample.column_labels],
+            "threat_kind": str(sample.threat_kind),
+            "threat_kind_probabilities": dict(sample.threat_kind_probabilities),
+        }
+        if bool(include_opponent_player):
+            params["opponent_player"] = player_name(
+                opponent(int(sample.current_player))
+            ).lower()
+        return params
+
+    def execution_updates(sample) -> dict[str, Any]:
+        updates = {
+            "answer_label": str(sample.answer_label),
+            "answer_column": int(sample.answer_column),
+            "answer_support": [str(label) for label in sample.column_labels],
+            "column_labels": [str(label) for label in sample.column_labels],
+            str(coord_trace_key): [
+                [int(row), int(col)] for row, col in sample.evaluation.annotation_coords
+            ],
+            str(line_trace_key): [
+                [int(row), int(col)] for row, col in sample.winning_line_coords
+            ],
+            "threat_kind": str(sample.threat_kind),
+        }
+        if bool(include_opponent_player):
+            updates["opponent_player"] = player_name(
+                opponent(int(sample.current_player))
+            ).lower()
+        return updates
+
+    return ConnectFourObjectivePlan(
+        axes=axes,
+        attempt_namespace=str(task_id),
+        construct_attempt=construct_attempt,
+        prompt_query_key=str(prompt_query_key),
+        prompt_dynamic_slots=prompt_slots,
+        answer_gt=lambda sample: TypedValue(type="string", value=str(sample.answer_label)),
+        annotation_coords=lambda sample: sample.evaluation.annotation_coords,
+        annotation_type="point",
+        render_marked_square=lambda _sample: None,
+        render_column_labels=lambda sample: sample.column_labels,
+        query_spec_params=query_spec_params,
+        execution_updates=execution_updates,
     )
 
 

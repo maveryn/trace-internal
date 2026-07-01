@@ -11,7 +11,15 @@
 8. Scalar annotation checked: `true`
 
 ## Program Contract
-- `selection.option_value_match(simulate_snake_move_sequence, visible_result_options); scene=snake; scope=path_outcome_option_label`
+
+Program: `selection.option_value_match(simulate_snake_move_sequence, visible_result_options); scene=snake; scope=path_outcome_option_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `path_outcome_option_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `simulate_snake_move_sequence`, `visible_result_options`, `snake`, `path_outcome_option_label`.
+Operation: evaluate `selection.option_value_match` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. Simulate the listed moves in order. The answer is the visible option label for the final head cell or `GAME OVER`.

@@ -81,7 +81,7 @@
     },
     "query:completed_column_label": {
       "answer_hint": "set \"answer\" to the completed column label as B, I, N, G, or O",
-      "annotation_hint": "set \"annotation\" to one segment [[x1, y1], [x2, y2]], using the centers of the top and bottom cells in the completed column",
+      "annotation_hint": "set \"annotation\" to one segment using two pixel-point endpoints [x, y] in [[x0, y0], [x1, y1]] form, at the centers of the top and bottom cells in the completed column",
       "json_example": "{\"annotation\":[[180,90],[180,330]],\"answer\":\"I\"}",
       "json_example_answer_only": "{\"answer\":\"I\"}"
     },
@@ -108,7 +108,7 @@
     "query:called_number_match_count": {
       "called_number_match_rule_text": "Some CALLED-list numbers may not appear on the card.",
       "answer_hint": "set \"answer\" to the number of CALLED-list numbers that appear on the card",
-      "annotation_hint": "set \"annotation\" to an array of pixel-space cell boxes [x1, y1, x2, y2] for the card cells whose printed numbers are in the CALLED list",
+      "annotation_hint": "set \"annotation\" to an array of pixel-space cell boxes [x0, y0, x1, y1] for the card cells whose printed numbers are in the CALLED list",
       "json_example": "{\"annotation\":[[100,80,150,130],[220,240,270,290]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     }

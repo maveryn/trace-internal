@@ -15,17 +15,25 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Program Contract
-`first_label(filter_prefix(sequence(values), value(label) comparison threshold)); output=string_label; annotation=point_set(prefix_through_crossing); scene=single_series; scope=observed_threshold_crossing_label`
+
+Program: `first_label(filter_prefix(sequence(values), value(label) comparison threshold)); output=string_label; annotation=point(crossing_mark); scene=single_series; scope=observed_threshold_crossing_label`
+
+Candidate set: the visible marks in the ordered single-series chart inside the `observed_threshold_crossing_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `first_label` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `point` witnesses bound by `point(crossing_mark)`. Annotation marks the first observed threshold-crossing mark. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
+Query ids: `observed_above_threshold_crossing_label`, `observed_below_threshold_crossing_label`.
 
 ## Annotation Contract
 1. Answer schema: `string_label`.
-2. Annotation schema: `point_set`.
-3. Annotation marks the visible prefix through the first observed threshold crossing.
+2. Annotation schema: `point`.
+3. Annotation marks the first observed threshold-crossing mark.
 4. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `observed_above_threshold_crossing_label` | `first_label.observed_crosses_above_threshold` | `string_label` | `point_set` |
-| `observed_below_threshold_crossing_label` | `first_label.observed_crosses_below_threshold` | `string_label` | `point_set` |
+| `observed_above_threshold_crossing_label` | `first_label.observed_crosses_above_threshold` | `string_label` | `point` |
+| `observed_below_threshold_crossing_label` | `first_label.observed_crosses_below_threshold` | `string_label` | `point` |

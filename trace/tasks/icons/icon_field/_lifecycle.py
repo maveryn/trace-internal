@@ -16,7 +16,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_scene_prompt_variants,
 )
-from ..shared.annotation import bbox_set_annotation
+from ..shared.annotation import icon_bbox_set_annotation
 
 from .shared.defaults import IconFieldDefaults
 from .shared.rendering import sample_and_render_icon_field_scene
@@ -58,6 +58,8 @@ def build_frequency_binding_payload(
     target_count: int,
     winner_icon_id: str | None,
     winner_frequency: int | None,
+    counted_color_keys: tuple[str, ...] = (),
+    representative_rule: str = "",
 ) -> tuple[int, Mapping[str, Any]]:
     """Build common trace binding fields for icon-field frequency counts."""
 
@@ -65,10 +67,12 @@ def build_frequency_binding_payload(
         "counting_rule": str(counting_rule),
         "question_format": str(question_format),
         "counted_icon_ids": list(counted_icon_ids),
+        "counted_color_keys": list(counted_color_keys),
         "annotation_indices": list(annotation_indices),
         "annotation_bboxes": list(annotation_bboxes),
         "target_count": int(target_count),
         "singleton_count": int(scene_payload.singleton_count),
+        "representative_rule": str(representative_rule),
         "winner_icon_id": winner_icon_id,
         "winner_frequency": winner_frequency,
         "object_count_probabilities": dict(frequency_spec.object_count_probabilities),
@@ -164,7 +168,10 @@ class IconFieldFrequencyTaskLifecycle:
 
         annotation_bboxes = [list(bbox) for bbox in binding["annotation_bboxes"]]
         annotation_indices = [int(index) for index in binding["annotation_indices"]]
-        annotation_payload = bbox_set_annotation(annotation_bboxes)
+        annotation_payload = icon_bbox_set_annotation(
+            annotation_bboxes,
+            clip_bbox=scene_payload.panel_geometry["scene_content_xyxy"],
+        )
         answer_gt = TypedValue(type="integer", value=int(answer_value))
         annotation_gt = TypedValue(
             type=str(annotation_payload["annotation_type"]),
@@ -183,8 +190,11 @@ class IconFieldFrequencyTaskLifecycle:
                     "singleton_icon_ids": list(scene_payload.singleton_icon_ids),
                     "repeated_icon_ids": list(scene_payload.repeated_icon_ids),
                     "type_frequencies": dict(scene_payload.type_frequencies),
+                    "color_frequencies": dict(scene_payload.color_frequencies),
                     "singleton_indices": list(scene_payload.singleton_indices),
                     "repeated_indices": list(scene_payload.repeated_indices),
+                    "counted_color_keys": list(binding.get("counted_color_keys", [])),
+                    "representative_rule": str(binding.get("representative_rule", "")),
                     "winner_icon_id": binding["winner_icon_id"],
                     "winner_frequency": binding["winner_frequency"],
                 },
@@ -212,7 +222,9 @@ class IconFieldFrequencyTaskLifecycle:
                     "repeated_icon_count": int(scene_payload.object_count) - int(scene_payload.singleton_count),
                     "repeated_type_count": int(scene_payload.repeated_type_count),
                     "repeated_type_multiplicities": list(scene_payload.repeated_type_multiplicities),
-                    "distinct_type_count": int(scene_payload.distinct_type_count),
+                    "unique_type_total": int(scene_payload.distinct_type_count),
+                    "unique_color_total": int(scene_payload.distinct_color_count),
+                    "placement_mode": str(scene_payload.placement_mode),
                     "object_count_probabilities": dict(binding["object_count_probabilities"]),
                     "target_count_probabilities": dict(binding["target_count_probabilities"]),
                     "pool_manifest": str(pool_manifest),
@@ -252,26 +264,37 @@ class IconFieldFrequencyTaskLifecycle:
                 "repeated_icon_count": int(scene_payload.object_count) - int(scene_payload.singleton_count),
                 "repeated_type_count": int(scene_payload.repeated_type_count),
                 "repeated_type_multiplicities": list(scene_payload.repeated_type_multiplicities),
-                "distinct_type_count": int(scene_payload.distinct_type_count),
+                "unique_type_total": int(scene_payload.distinct_type_count),
+                "unique_color_total": int(scene_payload.distinct_color_count),
+                "placement_mode": str(scene_payload.placement_mode),
                 "scene_icon_ids": list(scene_payload.scene_icon_ids),
                 "scene_rotations_degrees": list(scene_payload.scene_rotations_degrees),
+                "scene_color_keys": list(scene_payload.scene_color_keys),
+                "scene_tint_rgbs": [list(color) for color in scene_payload.scene_tint_rgbs],
+                "color_group_indices": list(scene_payload.color_group_indices),
                 "type_frequencies": dict(scene_payload.type_frequencies),
+                "color_frequencies": dict(scene_payload.color_frequencies),
                 "singleton_indices": list(scene_payload.singleton_indices),
                 "repeated_indices": list(scene_payload.repeated_indices),
                 "annotation_indices": list(annotation_indices),
                 "annotation_bboxes": list(annotation_bboxes),
+                "counted_color_keys": list(binding.get("counted_color_keys", [])),
+                "representative_rule": str(binding.get("representative_rule", "")),
                 "winner_icon_id": binding["winner_icon_id"],
                 "winner_frequency": binding["winner_frequency"],
             },
             "witness_symbolic": {
                 "counted_icon_ids": list(binding["counted_icon_ids"]),
+                "counted_color_keys": list(binding.get("counted_color_keys", [])),
                 "singleton_icon_ids": list(scene_payload.singleton_icon_ids),
                 "repeated_icon_ids": list(scene_payload.repeated_icon_ids),
                 "type_frequencies": dict(scene_payload.type_frequencies),
+                "color_frequencies": dict(scene_payload.color_frequencies),
                 "singleton_indices": list(scene_payload.singleton_indices),
                 "repeated_indices": list(scene_payload.repeated_indices),
                 "annotation_indices": list(annotation_indices),
                 "annotation_bboxes": list(annotation_bboxes),
+                "representative_rule": str(binding.get("representative_rule", "")),
                 "winner_icon_id": binding["winner_icon_id"],
                 "winner_frequency": binding["winner_frequency"],
             },

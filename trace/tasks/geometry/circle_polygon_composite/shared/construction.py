@@ -7,7 +7,8 @@ from collections import defaultdict
 from functools import lru_cache
 from typing import Any, Dict, Mapping, Sequence
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.shared.fixed_query import geometry_selected_probability_map
 from trace.tasks.geometry.shared.vector2d import mul as _mul
 
@@ -41,12 +42,8 @@ def select_missing_side(
         if missing_side not in SIDE_KEYS:
             raise ValueError(f"unsupported missing_side: {missing_side}")
         return missing_side, geometry_selected_probability_map(SIDE_KEYS, selected=missing_side)
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    missing_side = str(SIDE_KEYS[int(index) % len(SIDE_KEYS)])
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    missing_side = str(uniform_choice(rng, SIDE_KEYS))
     return missing_side, geometry_selected_probability_map(SIDE_KEYS)
 
 
@@ -125,19 +122,11 @@ def select_tangent_case(
         if answer_key not in answer_cases:
             raise ValueError(f"target_answer={explicit_answer} is not supported for side {missing_side}")
     else:
-        answer_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}.answer",
-        ) % len(answer_keys)
-        answer_key = answer_keys[int(answer_index)]
+        rng = spawn_rng(int(instance_seed), f"{namespace}.answer")
+        answer_key = str(uniform_choice(rng, answer_keys))
     cases = tuple(answer_cases[str(answer_key)])
-    case_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.case.{answer_key}",
-    ) % len(cases)
-    case = tuple(int(value) for value in cases[int(case_index)])
+    rng = spawn_rng(int(instance_seed), f"{namespace}.case.{answer_key}")
+    case = tuple(int(value) for value in uniform_choice(rng, cases))
     return case, {case_key(case): 1.0}, answer_probabilities
 
 
@@ -177,12 +166,8 @@ def select_angle_degrees(
         if answer not in ANGLE_SUPPORT:
             raise ValueError(f"target_angle must be one of {ANGLE_SUPPORT}")
         return answer, geometry_selected_probability_map(ANGLE_SUPPORT, selected=answer)
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    answer = int(ANGLE_SUPPORT[int(index) % len(ANGLE_SUPPORT)])
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    answer = int(uniform_choice(rng, ANGLE_SUPPORT))
     return answer, geometry_selected_probability_map(ANGLE_SUPPORT)
 
 
@@ -200,12 +185,8 @@ def select_side_sign(
         if side_sign not in SIDE_SIGN_SUPPORT:
             raise ValueError("side_sign must be -1 or 1")
         return side_sign, geometry_selected_probability_map(SIDE_SIGN_SUPPORT, selected=side_sign)
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    side_sign = -1 if int(index) % 2 == 0 else 1
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    side_sign = int(uniform_choice(rng, SIDE_SIGN_SUPPORT))
     return side_sign, geometry_selected_probability_map(SIDE_SIGN_SUPPORT)
 
 
@@ -221,12 +202,8 @@ def select_construction_kind(
     if explicit is not None:
         construction_kind = validate_construction_kind(str(explicit))
         return construction_kind, geometry_selected_probability_map(CONSTRUCTION_KINDS, selected=construction_kind)
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    construction_kind = str(CONSTRUCTION_KINDS[int(index) % len(CONSTRUCTION_KINDS)])
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    construction_kind = str(uniform_choice(rng, CONSTRUCTION_KINDS))
     return construction_kind, geometry_selected_probability_map(CONSTRUCTION_KINDS)
 
 

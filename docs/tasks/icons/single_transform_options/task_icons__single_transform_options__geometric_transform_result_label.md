@@ -2,7 +2,14 @@
 
 ## Program Contract
 
-`selection.geometric_transform_result_label(scene=single_transform_options, scope=labeled_option_cells, source=reference_icon, operation=rotate_90_clockwise|rotate_90_counterclockwise|rotate_180|flip_horizontal|flip_vertical, output=option_letter)`
+Program: `selection.geometric_transform_result_label(scene=single_transform_options, scope=labeled_option_cells, source=reference_icon, operation=rotate_90_clockwise|rotate_90_counterclockwise|rotate_180|flip_horizontal|flip_vertical, output=option_letter)`
+
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `labeled_option_cells` objective scope.
+Operands: visible scene state and prompt-bound operands named by `single_transform_options`, `labeled_option_cells`, `source`, `reference_icon`, `operation`, `rotate_90_clockwise`, `rotate_90_counterclockwise`, `rotate_180`, `flip_horizontal`, `flip_vertical` plus the active `query_id` branch.
+Operation: evaluate `selection.geometric_transform_result_label` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `selected_option` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `rotate_90_clockwise_result_label`, `rotate_90_counterclockwise_result_label`, `rotate_180_result_label`, `flip_horizontal_result_label`, `flip_vertical_result_label`.
 
 ## Identity
 

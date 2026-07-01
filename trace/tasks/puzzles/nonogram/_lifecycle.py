@@ -86,14 +86,14 @@ def object_description_for_scene(scene_variant: str, mode: str) -> str:
     """Return concise scene wording for one nonogram visual treatment."""
 
     if str(mode) == "line_completion":
-        base = "a nonogram clue grid with one marked row and labeled row-strip options"
+        base = "nonogram clue grid with one marked row and labeled row-strip options"
     else:
-        base = "a nonogram clue grid with labeled filled-grid options"
+        base = "nonogram clue grid with labeled filled-grid options"
     if str(scene_variant) == "nonogram_card":
         return f"a card-style {base}"
     if str(scene_variant) == "nonogram_blueprint":
         return f"a blueprint-style {base}"
-    return base
+    return f"a {base}"
 
 
 def prepare_nonogram_visual_case(

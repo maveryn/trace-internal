@@ -7,21 +7,22 @@
 4. Task id: `task_pages__mixed_infographic_page__module_field_ranked_item_label`
 
 ## Contract
-1. Objective: find the item label at a requested rank, such as second-highest or third-lowest, for a visible numeric field inside one titled module on a dense mixed infographic page.
-2. Branch metadata: `query_id`
-3. `query_id`: `module_field_ranked_item_label`
+1. Objective: find the item at a requested rank for one visible numeric field inside one titled module.
+2. Public task contract: `module_field_ranked_item_label`
+3. Supported `query_id` values: `single`
 4. Answer type: `string`
-5. Annotation type: `keyed_bbox_map` with `module_title`, `field_label`, `ranked_item`, `ranked_value`, and `candidate_N` compared-value boxes.
-6. Query knobs: target module, target numeric field, rank direction, rank position, module count, per-module item/field counts, and scene layout variant.
+5. Annotation schema: `bbox`
+6. Annotation witness: the visible item row/card/container holding the selected answer item label; rank/value comparison boxes and the text-label box are retained in trace diagnostics.
+7. Query argument axes: target module, numeric field, rank direction, rank position, module count, item/field supports, scene variant, and native layout mode.
+
+## Program Contract
+- `module_field_ranked_item(module_title, field_label, rank_direction, rank_position); output=string_visible_item_label; annotation=bbox(ranked_item_container); scene=mixed_infographic_page; scope=one titled module within one dense mixed infographic page`
 
 ## Prompt + Trace
-1. Prompt bundle: `pages_mixed_infographic_page_v0`
+1. Prompt bundle: `pages_mixed_infographic_page_v1`
 2. Scene key: `mixed_infographic_page`
 3. Task key: `mixed_infographic_lookup_query`
-4. Internal prompt variant key: `module_field_ranked_item_label`
-5. Trace records the candidate item values, parsed numeric values, rank direction, rank position, selected item, sampled style metadata, final bboxes, and layout geometry.
-6. Generation requires enough unique numeric values for the requested rank by construction.
-
-## Rendering Notes
-1. This task reuses the mixed-infographic renderer, native text blocks, page visual assets, and font profile.
-2. Native context text and decorative assets are not answer annotation.
+4. Prompt query key: `module_field_ranked_item_label`
+5. Trace records candidate values, parsed numeric values, rank direction, rank position, selected item, final bboxes, style metadata, and layout geometry.
+6. Generation requires unique numeric values for the requested rank.
+7. `rank_position` supports 1, 2, and 3; rank 1 covers the retired module-local extremum task contract.

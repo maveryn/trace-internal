@@ -13,6 +13,12 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
 - `docs/resources/README.md` — shared fonts, labels, context text, and
   rationale-target resources.
 - `docs/domains/README.md` — domain-specific contract docs.
+- `docs/review/README.md` — reviewer-facing task, scene, and domain audit
+  procedures.
+- `docs/domain-finalization-review/README.md` — post-migration
+  release-readiness checklist and domain finalization review reports.
+- `docs/domain-migration-report/README.md` — read-only post-migration domain
+  audit reports and supporting outputs.
 - `docs/tasks/README.md` — task-level docs and template.
 - `docs/ACTIVE_TASK_INVENTORY.md` — generated active public task inventory by domain and scene.
 
@@ -22,9 +28,13 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
    and `docs/contracts/PROGRAM_SCHEMA_CATALOG.md`, then the relevant active domain
    setup doc listed in `docs/domains/README.md`. For scene-package migrations
    that retire legacy routing, use `docs/SCENE_PACKAGE_MIGRATION/README.md`.
-3. Contracts: `docs/contracts/RLVR_REWARD_CONTRACTS.md` and `docs/contracts/PROMPT_SYSTEM.md`.
+3. Contracts: `docs/contracts/ANNOTATION_AND_REWARD_CONTRACTS.md` and `docs/contracts/PROMPT_SYSTEM.md`.
 4. Export/eval:
    - active Vero-derived RLVR port lives under `../rlvr/README.md`
+   - tentative TRACE RLVR training strategy lives in
+     `docs/RLVR_TRAINING_STRATEGY.md`
+   - planned TRACE RLVR train/test task split lives in
+     `docs/RLVR_TASK_SPLIT_PLAN.md`
    - generated task-review artifacts live under `../review/task-reviews/`
    - sampled external benchmark failure analysis lives in
      `docs/workflows/EXTERNAL_BENCHMARK_EVAL.md`
@@ -36,6 +46,10 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
    `docs/resources/TEMPLATED_RATIONALE_TARGETS.md`.
 6. Review workflow: `docs/workflows/BUILD_VALIDATION.md`,
    `docs/contracts/VALIDATION_ERROR_CODES.md`,
+   `docs/review/ANNOTATION_REVIEW.md`,
+   `docs/review/PROMPT_REVIEW.md`,
+   `docs/review/RENDERER_REVIEW.md`,
+   `docs/domain-finalization-review/DOMAIN_FINALIZATION_CHECKLIST.md`,
    `docs/workflows/TASK_REVIEW_WEB_APP.md`,
    `docs/workflows/BENCHMARK_REVIEW_WEB_APP.md`, and
    `docs/workflows/DOCS_AND_SKILLS_MAINTENANCE.md`.

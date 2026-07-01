@@ -6,10 +6,16 @@ from typing import Any, Mapping, Sequence
 
 from PIL import ImageDraw, ImageFont
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.cartesian.axes import (
+    draw_horizontal_value_grid_ticks,
+    draw_plot_frame,
+    draw_vertical_value_grid_ticks,
+)
+from trace.tasks.charts.shared.cartesian.frame import plot_bbox_from_margins
+from trace.tasks.charts.shared.cartesian.geometry import project_linear, project_linear_inverted
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.charts.scientific_axis_frame.shared.defaults import (
-    BACKGROUND_DEFAULTS,
     NOISE_DEFAULTS,
     resolve_render_params,
 )
@@ -65,38 +71,52 @@ def _render_dataset(
 ) -> AxisFrameRenderResult:
     """Render the numeric plot frame and project tick-label geometry.
 
-    Invariant: highlighted ticks are supplied as semantic tick keys by the
-    public task; the renderer only draws the requested keys and never infers
+    Invariant: optional tick highlights are supplied as semantic tick keys by
+    the public task; the renderer only draws requested keys and never infers
     objective behavior.
     """
 
-    render_params = resolve_render_params(params, chart_font_family=str(chart_font_family))
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    resolved_params = resolve_render_params(params, chart_font_family=str(chart_font_family))
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=BACKGROUND_DEFAULTS,
-        fallback_color=(247, 248, 250),
+        scene_id="scientific_axis_frame",
+        render_params=resolved_params,
+        protected_colors=(resolved_params.series_rgb, resolved_params.marker_rgb),
     )
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
     axis_label_font = load_font(int(render_params.axis_label_font_size_px), bold=True)
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
 
-    plot_left = float(render_params.margin_left_px)
-    plot_top = float(render_params.margin_top_px)
-    plot_right = float(render_params.canvas_width - render_params.margin_right_px)
-    plot_bottom = float(render_params.canvas_height - render_params.margin_bottom_px)
-    plot_bbox = bbox([plot_left, plot_top, plot_right, plot_bottom])
-    draw.rectangle(plot_bbox, fill=render_params.panel_fill_rgb, outline=render_params.panel_outline_rgb, width=1)
+    plot_bbox = plot_bbox_from_margins(
+        canvas_width=float(render_params.canvas_width),
+        canvas_height=float(render_params.canvas_height),
+        margin_left_px=float(render_params.margin_left_px),
+        margin_right_px=float(render_params.margin_right_px),
+        margin_top_px=float(render_params.margin_top_px),
+        margin_bottom_px=float(render_params.margin_bottom_px),
+    )
+    plot_left, plot_top, plot_right, plot_bottom = [float(value) for value in plot_bbox]
+    draw_plot_frame(draw, plot_bbox, fill=render_params.panel_fill_rgb, outline=render_params.panel_outline_rgb, width=1)
 
     tick_bboxes: dict[str, BBox] = {}
+    tick_points: dict[str, list[float]] = {}
     entities: list[dict[str, Any]] = []
+    y_tick_positions = draw_horizontal_value_grid_ticks(
+        draw,
+        plot_bbox,
+        tick_values=dataset.y_axis.values,
+        domain_min=float(dataset.y_axis.values[0]),
+        domain_max=float(dataset.y_axis.values[-1]),
+        grid_rgb=render_params.grid_rgb,
+        axis_rgb=render_params.axis_rgb,
+        grid_width_px=int(render_params.grid_line_width_px),
+        tick_width_px=int(render_params.axis_line_width_px),
+        tick_length_px=7.0,
+    )
     for value in dataset.y_axis.values:
-        y = _scale_y(float(value), y_axis=dataset.y_axis, plot_top=plot_top, plot_bottom=plot_bottom)
-        draw.line([(plot_left, y), (plot_right, y)], fill=render_params.grid_rgb, width=int(render_params.grid_line_width_px))
-        draw.line([(plot_left - 7.0, y), (plot_left, y)], fill=render_params.axis_rgb, width=int(render_params.axis_line_width_px))
+        y = float(y_tick_positions[float(value)])
         tick_bbox = _draw_centered(
             draw,
             center=(plot_left - 34.0, y),
@@ -108,12 +128,23 @@ def _render_dataset(
         )
         key = f"y:{int(value)}"
         tick_bboxes[key] = tick_bbox
+        tick_points[key] = [round(float(plot_left), 3), round(float(y), 3)]
         entities.append({"entity_id": key, "entity_type": "axis_tick_label", "bbox_px": list(tick_bbox), "attrs": {"axis": "y", "value": int(value)}})
 
+    x_tick_positions = draw_vertical_value_grid_ticks(
+        draw,
+        plot_bbox,
+        tick_values=dataset.x_axis.values,
+        domain_min=float(dataset.x_axis.values[0]),
+        domain_max=float(dataset.x_axis.values[-1]),
+        grid_rgb=render_params.grid_rgb,
+        axis_rgb=render_params.axis_rgb,
+        grid_width_px=int(render_params.grid_line_width_px),
+        tick_width_px=int(render_params.axis_line_width_px),
+        tick_length_px=7.0,
+    )
     for value in dataset.x_axis.values:
-        x = _scale_x(float(value), x_axis=dataset.x_axis, plot_left=plot_left, plot_right=plot_right)
-        draw.line([(x, plot_top), (x, plot_bottom)], fill=render_params.grid_rgb, width=int(render_params.grid_line_width_px))
-        draw.line([(x, plot_bottom), (x, plot_bottom + 7.0)], fill=render_params.axis_rgb, width=int(render_params.axis_line_width_px))
+        x = float(x_tick_positions[float(value)])
         tick_bbox = _draw_centered(
             draw,
             center=(x, plot_bottom + 28.0),
@@ -125,6 +156,7 @@ def _render_dataset(
         )
         key = f"x:{int(value)}"
         tick_bboxes[key] = tick_bbox
+        tick_points[key] = [round(float(x), 3), round(float(plot_bottom), 3)]
         entities.append({"entity_id": key, "entity_type": "axis_tick_label", "bbox_px": list(tick_bbox), "attrs": {"axis": "x", "value": int(value)}})
 
     draw.line([(plot_left, plot_top), (plot_left, plot_bottom)], fill=render_params.axis_rgb, width=int(render_params.axis_line_width_px))
@@ -173,7 +205,8 @@ def _render_dataset(
         default_config=NOISE_DEFAULTS,
     )
     render_meta = {
-        "background_style": dict(background_meta),
+        "background_style": {**dict(background_meta), "information_scene_style": dict(information_style_meta)},
+        "information_scene_style": dict(information_style_meta),
         "post_image_noise": dict(noise_meta),
         "chart_font_family": str(chart_font_family),
         "layout_jitter": dict(render_params.layout_jitter_meta),
@@ -187,6 +220,7 @@ def _render_dataset(
         entities=tuple(dict(entity) for entity in entities),
         plot_bbox_px=list(plot_bbox),
         tick_label_bboxes_px=dict(tick_bboxes),
+        tick_points_px=dict(tick_points),
         axis_label_bboxes_px={"x": list(x_axis_label_bbox), "y": list(y_axis_label_bbox)},
         render_meta=dict(render_meta),
     )
@@ -195,19 +229,29 @@ def _render_dataset(
         rendered_scene=rendered_scene,
         chart_font_family=str(chart_font_family),
         render_params=render_params,
-        background_meta=dict(background_meta),
+        background_meta={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         post_noise_meta=dict(noise_meta),
     )
 
 
 def _scale_x(value: float, *, x_axis: AxisSpec, plot_left: float, plot_right: float) -> float:
-    span = max(1.0, float(x_axis.values[-1]) - float(x_axis.values[0]))
-    return float(plot_left) + ((float(value) - float(x_axis.values[0])) / span) * float(plot_right - plot_left)
+    return project_linear(
+        float(value),
+        domain_min=float(x_axis.values[0]),
+        domain_max=float(x_axis.values[-1]),
+        pixel_min=float(plot_left),
+        pixel_max=float(plot_right),
+    )
 
 
 def _scale_y(value: float, *, y_axis: AxisSpec, plot_top: float, plot_bottom: float) -> float:
-    span = max(1.0, float(y_axis.values[-1]) - float(y_axis.values[0]))
-    return float(plot_bottom) - ((float(value) - float(y_axis.values[0])) / span) * float(plot_bottom - plot_top)
+    return project_linear_inverted(
+        float(value),
+        domain_min=float(y_axis.values[0]),
+        domain_max=float(y_axis.values[-1]),
+        pixel_top=float(plot_top),
+        pixel_bottom=float(plot_bottom),
+    )
 
 
 def _text_bbox(

@@ -180,6 +180,12 @@ def _floor_spec(
     support_surface_type: str | None = None,
     draw_order: int = 10,
 ) -> Dict[str, Any]:
+    """Create a floor-mounted room object spec with normalized render metadata.
+
+    Every returned spec uses the same footprint/support fields so layout,
+    rendering, and annotation projection can treat room objects uniformly.
+    """
+
     spec = make_object_spec(
         object_id=str(object_id),
         shape_type="rectangular_prism",

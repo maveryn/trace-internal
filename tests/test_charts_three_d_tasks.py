@@ -15,15 +15,11 @@ from trace.tasks import create_task
 PUBLIC_TASKS = {
     "task_charts__surface_3d__reference_nearest_label": {
         "queries": ("single",),
-        "annotation": "bbox",
-    },
-    "task_charts__surface_3d__surface_extremum_label": {
-        "queries": ("highest", "lowest"),
-        "annotation": "bbox",
+        "annotation": "point",
     },
     "task_charts__surface_3d__series_trend_label": {
         "queries": ("increase", "decrease"),
-        "annotation": "bbox_map",
+        "annotation": "segment",
     },
     "task_charts__surface_3d__panel_variation_label": {
         "queries": ("single",),
@@ -37,6 +33,13 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
     x0, y0, x1, y1 = [float(value) for value in bbox]
     assert 0 <= x0 < x1 <= width
     assert 0 <= y0 < y1 <= height
+
+
+def _assert_point_inside_canvas(point: list[float], *, width: int, height: int) -> None:
+    assert len(point) == 2
+    x, y = [float(value) for value in point]
+    assert 0 <= x <= width
+    assert 0 <= y <= height
 
 
 def _expected_answer(execution: dict) -> str:
@@ -58,11 +61,6 @@ def _expected_answer(execution: dict) -> str:
                 label,
             ),
         )
-    if question_format == "surface_3d_surface_extremum_label":
-        row_values = {str(label): int(value) for label, value in execution["row_values_by_x"].items()}
-        if branch == "highest":
-            return max(row_values, key=lambda label: (row_values[label], label))
-        return min(row_values, key=lambda label: (row_values[label], label))
     if question_format == "surface_3d_series_trend_label":
         deltas = {str(label): int(value) for label, value in execution["deltas_by_series"].items()}
         if branch == "increase":
@@ -74,19 +72,25 @@ def _expected_answer(execution: dict) -> str:
     raise AssertionError(f"unsupported question format: {question_format}")
 
 
-def _expected_annotation(trace_payload: dict) -> list[float] | dict[str, list[float]]:
+def _bbox_center(bbox: list[float]) -> list[float]:
+    return [
+        round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
+        round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
+    ]
+
+
+def _expected_annotation(trace_payload: dict) -> list[float] | list[list[float]]:
     execution = trace_payload["execution_trace"]
     render_map = trace_payload["render_map"]
     question_format = str(execution["question_format"])
     if question_format == "surface_3d_reference_nearest_label":
-        return render_map["point_bboxes_px"][str(execution["answer_point_id"])]
-    if question_format == "surface_3d_surface_extremum_label":
-        return render_map["surface_cell_bboxes_px"][str(execution["answer_cell_id"])]
+        bbox = render_map["point_bboxes_px"][str(execution["answer_point_id"])]
+        return _bbox_center(bbox)
     if question_format == "surface_3d_series_trend_label":
-        return {
-            "start_point": render_map["point_bboxes_px"][str(execution["start_point_id"])],
-            "end_point": render_map["point_bboxes_px"][str(execution["end_point_id"])],
-        }
+        return [
+            _bbox_center(render_map["point_bboxes_px"][str(execution["start_point_id"])]),
+            _bbox_center(render_map["point_bboxes_px"][str(execution["end_point_id"])]),
+        ]
     if question_format == "surface_3d_panel_variation_label":
         return render_map["panel_bboxes_px"][str(execution["answer_panel_label"])]
     raise AssertionError(f"unsupported question format: {question_format}")
@@ -125,6 +129,19 @@ def test_chart_three_d_public_task_queries_match_contract(task_id: str, contract
                 width=int(render["canvas_width"]),
                 height=int(render["canvas_height"]),
             )
+        elif out.annotation_gt.type == "point":
+            _assert_point_inside_canvas(
+                [float(value) for value in out.annotation_gt.value],
+                width=int(render["canvas_width"]),
+                height=int(render["canvas_height"]),
+            )
+        elif out.annotation_gt.type == "segment":
+            for point in out.annotation_gt.value:
+                _assert_point_inside_canvas(
+                    [float(value) for value in point],
+                    width=int(render["canvas_width"]),
+                    height=int(render["canvas_height"]),
+                )
         else:
             for bbox in out.annotation_gt.value.values():
                 _assert_bbox_inside_canvas(
@@ -152,20 +169,21 @@ def test_chart_three_d_prompt_examples_match_annotation_contracts() -> None:
             if contract["annotation"] == "bbox":
                 assert isinstance(answer_and_annotation["annotation"], list)
                 assert len(answer_and_annotation["annotation"]) == 4
+            elif contract["annotation"] == "point":
+                assert isinstance(answer_and_annotation["annotation"], list)
+                assert len(answer_and_annotation["annotation"]) == 2
+            elif contract["annotation"] == "segment":
+                assert isinstance(answer_and_annotation["annotation"], list)
+                assert len(answer_and_annotation["annotation"]) == 2
+                assert all(isinstance(point, list) and len(point) == 2 for point in answer_and_annotation["annotation"])
             else:
                 assert sorted(answer_and_annotation["annotation"]) == ["end_point", "start_point"]
 
 
 def test_chart_three_d_sampling_covers_branches_and_sizes() -> None:
     variants: Counter[str] = Counter()
-    surface_x_counts: Counter[int] = Counter()
     panel_counts: Counter[int] = Counter()
     for index in range(80):
-        surface_out = create_task("task_charts__surface_3d__surface_extremum_label").generate(
-            hash64(98500, "surface_3d_surface", index),
-            params={},
-            max_attempts=120,
-        )
         trend_out = create_task("task_charts__surface_3d__series_trend_label").generate(
             hash64(98500, "surface_3d_trend", index),
             params={},
@@ -176,16 +194,13 @@ def test_chart_three_d_sampling_covers_branches_and_sizes() -> None:
             params={},
             max_attempts=120,
         )
-        variants[str(surface_out.query_id)] += 1
         variants[str(trend_out.query_id)] += 1
-        surface_x_counts[int(surface_out.trace_payload["execution_trace"]["x_count"])] += 1
         panel_counts[int(panel_out.trace_payload["execution_trace"]["panel_count"])] += 1
 
-    assert {"highest", "lowest", "increase", "decrease"}.issubset(set(variants))
-    assert min(surface_x_counts) >= 5
-    assert max(surface_x_counts) <= 7
+    assert {"increase", "decrease"}.issubset(set(variants))
     assert min(panel_counts) >= 4
     assert max(panel_counts) <= 6
+    assert set(panel_counts).issubset({4, 6})
 
 
 def test_chart_three_d_config_is_scene_package_ready() -> None:

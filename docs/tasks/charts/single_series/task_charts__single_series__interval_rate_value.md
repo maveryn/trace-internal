@@ -15,7 +15,15 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Program Contract
-`quotient(value(end_mark)-value(start_mark), step_count(start_mark,end_mark)); output=integer_value; annotation=point_map(start_mark,end_mark); scene=single_series; scope=interval_rate_value`
+
+Program: `abs(quotient(value(end_mark)-value(start_mark), step_count(start_mark,end_mark))); output=integer_value; annotation=point_map(start_mark,end_mark); scene=single_series; scope=interval_rate_value`
+
+Candidate set: the visible marks in the ordered single-series chart inside the `interval_rate_value` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `abs` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `point_map` witnesses bound by `point_map(start_mark,end_mark)`. Annotation maps `start_mark` and `end_mark` to the two endpoint mark points named by the prompt. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
+Query ids: `single`.
 
 ## Annotation Contract
 1. Answer schema: `integer_value`.
@@ -27,4 +35,4 @@
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `single` | `quotient.endpoint_delta_by_step_count` | `integer_value` | `point_map` |
+| `single` | `absolute_quotient.endpoint_delta_by_step_count` | `integer_value` | `point_map` |

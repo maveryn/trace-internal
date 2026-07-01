@@ -2,26 +2,74 @@
 
 from __future__ import annotations
 
-from ...registry import register_task
-from .shared.runtime import (
-    MODULE_FIELD_VALUE_QUERY_ID as QUERY_ID,
-    MIXED_INFOGRAPHIC_MODULE_FIELD_VALUE_TASK_ID as TASK_ID,
-    NATIVE_LAYOUT_MODES,
-    PagesMixedInfographicModuleFieldValueLabelTask as _RuntimeTask,
-    SCENE_VARIANTS,
+from typing import Any, Dict, Mapping
+
+from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.tasks.registry import register_task
+
+from ._lifecycle import (
+    DOMAIN,
+    module_field_value_payload,
+    run_bound_task,
+    task_generation_defaults,
+    task_render_defaults,
 )
+from .shared.metrics import _select_target
+
+
+TASK_ID = "task_pages__mixed_infographic_page__module_field_value_label"
+QUERY_ID = SINGLE_QUERY_ID
+SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
+PROMPT_QUERY_KEY = "module_field_value_label"
+GEN_DEFAULTS = task_generation_defaults(
+    module_count_support=(7, 8, 9),
+    item_count_support=(2, 3, 4),
+    field_count_support=(2, 3),
+)
+RENDER_DEFAULTS = task_render_defaults()
+
+
+def _bind_target(ctx: Any, task_params: Mapping[str, Any], instance_seed: int) -> Any:
+    """Bind the requested module/item/field intersection."""
+
+    module, item, field, module_probs, item_probs, field_probs = _select_target(
+        sampling_namespace=TASK_ID,
+        spec=ctx.spec,
+        params=task_params,
+        instance_seed=int(instance_seed),
+    )
+    return module_field_value_payload(
+        ctx=ctx,
+        target_module=module,
+        target_item=item,
+        target_field=field,
+        module_probs=module_probs,
+        item_probs=item_probs,
+        field_probs=field_probs,
+        prompt_key=PROMPT_QUERY_KEY,
+    )
 
 
 @register_task
-class PagesMixedInfographicModuleFieldValueLabelTask(_RuntimeTask):
+class PagesMixedInfographicModuleFieldValueLabelTask:
     """Read a visible value from one module on a dense mixed infographic page."""
 
+    task_id = TASK_ID
+    domain = DOMAIN
+    supported_query_ids = SUPPORTED_QUERY_IDS
+    default_dataset_enabled = True
 
-__all__ = [
-    "NATIVE_LAYOUT_MODES",
-    "QUERY_ID",
-    "SCENE_VARIANTS",
-    "TASK_ID",
-    "PagesMixedInfographicModuleFieldValueLabelTask",
-]
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int):
+        """Generate one module-field value lookup instance."""
 
+        return run_bound_task(
+            instance_seed=int(instance_seed),
+            params=params,
+            public_task=TASK_ID,
+            supported_branches=SUPPORTED_QUERY_IDS,
+            prompt_key=PROMPT_QUERY_KEY,
+            gen_defaults=GEN_DEFAULTS,
+            render_defaults=RENDER_DEFAULTS,
+            bind_target=_bind_target,
+            max_attempts=int(max_attempts),
+        )

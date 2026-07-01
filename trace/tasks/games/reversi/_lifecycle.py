@@ -9,7 +9,10 @@ from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.base import TaskOutput
-from trace.tasks.games.shared.scene_style import make_panel_scene_background, resolve_game_panel_scene_style
+from trace.tasks.games.shared.scene_style import (
+    make_panel_scene_background,
+    resolve_game_panel_scene_style,
+)
 from trace.tasks.games.shared.visual_defaults import load_games_scene_noise_defaults
 from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts
 from trace.tasks.shared.fixed_query import select_task_query_id
@@ -17,20 +20,37 @@ from trace.tasks.shared.font_assets import get_font_family_record, sample_font_f
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import reversi_cell_bbox_set_annotation, reversi_disc_point_set_annotation
+from .shared.annotations import (
+    reversi_cell_bbox_set_annotation,
+    reversi_disc_point_set_annotation,
+)
 from .shared.prompts import build_reversi_prompt_artifacts
 from .shared.rendering import ReversiRenderParams, render_reversi_board_scene
 from .shared.rules import coord_to_cell_id, player_name
 from .shared.sampling import resolve_reversi_visual_axes
-from .shared.state import SCENE_ID, SCENE_NAMESPACE, ReversiTargetAxis, ReversiVisualAxes, SampledReversiScene
+from .shared.state import (
+    SCENE_ID,
+    SCENE_NAMESPACE,
+    ReversiTargetAxis,
+    ReversiVisualAxes,
+    SampledReversiScene,
+)
 from .shared.defaults import DEFAULTS
-from trace.tasks.games.shared.layout import attach_games_unit_size_jitter, resolve_games_layout_jitter, resolve_games_unit_size_scale, scale_games_px
+from trace.tasks.games.shared.layout import (
+    attach_games_unit_size_jitter,
+    resolve_games_layout_jitter,
+    resolve_games_unit_size_scale,
+    scale_games_px,
+)
 from trace.tasks.shared.config_defaults import group_default
 
-
 AttemptBuilder = Callable[[Any, ReversiVisualAxes], SampledReversiScene]
-ObjectivePreparer = Callable[[int, Mapping[str, Any], Mapping[str, float], str], "ObjectiveReversiPlan"]
-POST_IMAGE_NOISE_DEFAULTS = load_games_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.0)
+ObjectivePreparer = Callable[
+    [int, Mapping[str, Any], Mapping[str, float], str], "ObjectiveReversiPlan"
+]
+POST_IMAGE_NOISE_DEFAULTS = load_games_scene_noise_defaults(
+    scene_id=SCENE_ID, apply_prob=0.0
+)
 
 
 @dataclass(frozen=True)
@@ -75,47 +95,125 @@ def _resolve_render_params(
         unit_scale_meta,
     )
     return ReversiRenderParams(
-        canvas_width=int(params.get("canvas_width", group_default(render_defaults, "canvas_width", DEFAULTS.canvas_width))),
-        canvas_height=int(params.get("canvas_height", group_default(render_defaults, "canvas_height", DEFAULTS.canvas_height))),
-        panel_margin_px=int(params.get("panel_margin_px", group_default(render_defaults, "panel_margin_px", DEFAULTS.panel_margin_px))),
+        canvas_width=int(
+            params.get(
+                "canvas_width",
+                group_default(render_defaults, "canvas_width", DEFAULTS.canvas_width),
+            )
+        ),
+        canvas_height=int(
+            params.get(
+                "canvas_height",
+                group_default(render_defaults, "canvas_height", DEFAULTS.canvas_height),
+            )
+        ),
+        panel_margin_px=int(
+            params.get(
+                "panel_margin_px",
+                group_default(
+                    render_defaults, "panel_margin_px", DEFAULTS.panel_margin_px
+                ),
+            )
+        ),
         player_badge_height_px=int(
-            params.get("player_badge_height_px", group_default(render_defaults, "player_badge_height_px", DEFAULTS.player_badge_height_px))
+            params.get(
+                "player_badge_height_px",
+                group_default(
+                    render_defaults,
+                    "player_badge_height_px",
+                    DEFAULTS.player_badge_height_px,
+                ),
+            )
         ),
         player_badge_width_px=int(
-            params.get("player_badge_width_px", group_default(render_defaults, "player_badge_width_px", DEFAULTS.player_badge_width_px))
+            params.get(
+                "player_badge_width_px",
+                group_default(
+                    render_defaults,
+                    "player_badge_width_px",
+                    DEFAULTS.player_badge_width_px,
+                ),
+            )
         ),
-        header_gap_px=int(params.get("header_gap_px", group_default(render_defaults, "header_gap_px", DEFAULTS.header_gap_px))),
+        header_gap_px=int(
+            params.get(
+                "header_gap_px",
+                group_default(render_defaults, "header_gap_px", DEFAULTS.header_gap_px),
+            )
+        ),
         max_board_size_px=scale_games_px(
-            params.get("max_board_size_px", group_default(render_defaults, "max_board_size_px", DEFAULTS.max_board_size_px)),
+            params.get(
+                "max_board_size_px",
+                group_default(
+                    render_defaults, "max_board_size_px", DEFAULTS.max_board_size_px
+                ),
+            ),
             unit_scale,
             min_px=360,
         ),
         board_corner_radius_px=scale_games_px(
-            params.get("board_corner_radius_px", group_default(render_defaults, "board_corner_radius_px", DEFAULTS.board_corner_radius_px)),
+            params.get(
+                "board_corner_radius_px",
+                group_default(
+                    render_defaults,
+                    "board_corner_radius_px",
+                    DEFAULTS.board_corner_radius_px,
+                ),
+            ),
             unit_scale,
             min_px=10,
         ),
         board_frame_width_px=scale_games_px(
-            params.get("board_frame_width_px", group_default(render_defaults, "board_frame_width_px", DEFAULTS.board_frame_width_px)),
+            params.get(
+                "board_frame_width_px",
+                group_default(
+                    render_defaults,
+                    "board_frame_width_px",
+                    DEFAULTS.board_frame_width_px,
+                ),
+            ),
             unit_scale,
             min_px=7,
         ),
         cell_line_width_px=scale_games_px(
-            params.get("cell_line_width_px", group_default(render_defaults, "cell_line_width_px", DEFAULTS.cell_line_width_px)),
+            params.get(
+                "cell_line_width_px",
+                group_default(
+                    render_defaults, "cell_line_width_px", DEFAULTS.cell_line_width_px
+                ),
+            ),
             unit_scale,
             min_px=1,
         ),
         marked_square_outline_width_px=scale_games_px(
             params.get(
                 "marked_square_outline_width_px",
-                group_default(render_defaults, "marked_square_outline_width_px", DEFAULTS.marked_square_outline_width_px),
+                group_default(
+                    render_defaults,
+                    "marked_square_outline_width_px",
+                    DEFAULTS.marked_square_outline_width_px,
+                ),
             ),
             unit_scale,
             min_px=3,
         ),
-        disc_inset_fraction=float(params.get("disc_inset_fraction", group_default(render_defaults, "disc_inset_fraction", DEFAULTS.disc_inset_fraction))),
+        disc_inset_fraction=float(
+            params.get(
+                "disc_inset_fraction",
+                group_default(
+                    render_defaults, "disc_inset_fraction", DEFAULTS.disc_inset_fraction
+                ),
+            )
+        ),
         player_badge_font_size_px=int(
-            params.get("player_badge_font_size_px", group_default(render_defaults, "player_badge_font_size_px", DEFAULTS.player_badge_font_size_px))
+            params.get(
+                "player_badge_font_size_px",
+                group_default(
+                    render_defaults,
+                    "player_badge_font_size_px",
+                    DEFAULTS.player_badge_font_size_px,
+                ),
+            )
         ),
         font_family=str(font_family),
         layout_jitter_meta=layout_jitter,
@@ -156,7 +254,9 @@ def _common_query_params(
         "query_id_probabilities": dict(branch_probabilities),
         "prompt_query_key": str(prompt_query_key),
         "target_answer": int(target_axis.target_answer),
-        "target_answer_support": [int(value) for value in target_axis.target_answer_support],
+        "target_answer_support": [
+            int(value) for value in target_axis.target_answer_support
+        ],
         "target_answer_probabilities": dict(target_axis.target_answer_probabilities),
     }
 
@@ -187,7 +287,9 @@ def _build_trace_payload(
         }
         for coord, flips in sorted(sample.legal_moves.items())
     ]
-    annotation_entity_ids = tuple(str(entity_id) for entity_id in sample.annotation_entity_ids)
+    annotation_entity_ids = tuple(
+        str(entity_id) for entity_id in sample.annotation_entity_ids
+    )
     return {
         "scene_ir": {
             "scene_kind": f"games_reversi_board_{str(axes.scene_variant)}",
@@ -202,9 +304,11 @@ def _build_trace_payload(
                 "current_player": str(current_player_name),
                 "target_answer": int(sample.answer),
                 "annotation_entity_ids": list(annotation_entity_ids),
-                "marked_move_cell_id": None
-                if sample.marked_move is None
-                else str(coord_to_cell_id(sample.marked_move)),
+                "marked_move_cell_id": (
+                    None
+                    if sample.marked_move is None
+                    else str(coord_to_cell_id(sample.marked_move))
+                ),
             },
         },
         "query_spec": dict(prompt_query_spec),
@@ -214,7 +318,9 @@ def _build_trace_payload(
             "canvas_width": int(image_size[0]),
             "canvas_height": int(image_size[1]),
             "layout_jitter": dict(rendered_scene.render_map.get("layout_jitter", {})),
-            "panel_scene_style": dict(rendered_scene.render_map.get("panel_scene_style", {})),
+            "panel_scene_style": dict(
+                rendered_scene.render_map.get("panel_scene_style", {})
+            ),
             "text_style": dict(rendered_scene.render_map.get("text_style", {})),
         },
         "render_map": dict(rendered_scene.render_map),
@@ -226,19 +332,29 @@ def _build_trace_payload(
             "board_size": int(axes.board_size),
             "current_player": str(current_player_name),
             "target_answer": int(sample.answer),
-            "target_answer_support": [int(value) for value in query_params.get("target_answer_support", [])],
+            "target_answer_support": [
+                int(value) for value in query_params.get("target_answer_support", [])
+            ],
             "board_rows": [[int(cell) for cell in row] for row in sample.board],
             "construction_mode": str(sample.construction_mode),
             "legal_destination_total": int(len(sample.legal_moves)),
             "legal_move_specs": legal_move_specs,
-            "marked_move": None
-            if sample.marked_move is None
-            else [int(sample.marked_move[0]), int(sample.marked_move[1])],
-            "marked_move_cell_id": None
-            if sample.marked_move is None
-            else str(coord_to_cell_id(sample.marked_move)),
-            "marked_move_flip_coords": [[int(coord[0]), int(coord[1])] for coord in sample.marked_move_flips],
-            "annotation_coords": [[int(coord[0]), int(coord[1])] for coord in sample.annotation_coords],
+            "marked_move": (
+                None
+                if sample.marked_move is None
+                else [int(sample.marked_move[0]), int(sample.marked_move[1])]
+            ),
+            "marked_move_cell_id": (
+                None
+                if sample.marked_move is None
+                else str(coord_to_cell_id(sample.marked_move))
+            ),
+            "marked_move_flip_coords": [
+                [int(coord[0]), int(coord[1])] for coord in sample.marked_move_flips
+            ],
+            "annotation_coords": [
+                [int(coord[0]), int(coord[1])] for coord in sample.annotation_coords
+            ],
             "annotation_entity_ids": list(annotation_entity_ids),
             **dict(query_params),
         },
@@ -287,7 +403,9 @@ def run_reversi_lifecycle(
         gen_defaults=gen_defaults,
         namespace_root=f"{SCENE_NAMESPACE}.visual",
     )
-    objective = prepare_objective(int(instance_seed), task_params, query_probabilities, str(query_id))
+    objective = prepare_objective(
+        int(instance_seed), task_params, query_probabilities, str(query_id)
+    )
     render_params = _resolve_render_params(
         task_params,
         render_defaults=render_defaults,
@@ -296,7 +414,10 @@ def run_reversi_lifecycle(
 
     sample = None
     for attempt_index in range(max(1, int(max_attempts))):
-        rng = spawn_rng(int(instance_seed), f"{objective.attempt_namespace}.attempt.{int(attempt_index)}")
+        rng = spawn_rng(
+            int(instance_seed),
+            f"{objective.attempt_namespace}.attempt.{int(attempt_index)}",
+        )
         try:
             sample = objective.construct_attempt(rng, visual_axes)
         except ValueError:
@@ -305,13 +426,21 @@ def run_reversi_lifecycle(
             break
         sample = None
     if sample is None:
-        raise RuntimeError(f"{task_id} failed to generate a valid scene after {max_attempts} attempts")
+        raise RuntimeError(
+            f"{task_id} failed to generate a valid scene after {max_attempts} attempts"
+        )
 
     panel_style, panel_style_meta = resolve_game_panel_scene_style(
         instance_seed=int(instance_seed),
         namespace=f"{SCENE_NAMESPACE}.panel_scene_style",
-        treatment_weights=task_params.get("panel_scene_treatment_weights", group_default(render_defaults, "panel_scene_treatment_weights", None)),
-        palette_weights=task_params.get("panel_scene_palette_weights", group_default(render_defaults, "panel_scene_palette_weights", None)),
+        treatment_weights=task_params.get(
+            "panel_scene_treatment_weights",
+            group_default(render_defaults, "panel_scene_treatment_weights", None),
+        ),
+        palette_weights=task_params.get(
+            "panel_scene_palette_weights",
+            group_default(render_defaults, "panel_scene_palette_weights", None),
+        ),
     )
     background, background_meta = make_panel_scene_background(
         canvas_width=int(render_params.canvas_width),
@@ -344,6 +473,7 @@ def run_reversi_lifecycle(
         scene_variant=str(visual_axes.scene_variant),
         prompt_query_key=str(objective.prompt_query_key),
         current_player_name=player_name(int(sample.current_player)),
+        query_player_name=str(objective.query_params.get("query_player", "")),
         annotation_type=str(annotation_artifacts.annotation_type),
         prompt_defaults=prompt_defaults,
         instance_seed=int(instance_seed),

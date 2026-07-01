@@ -6,7 +6,8 @@ from math import gcd, sqrt
 from random import Random
 from typing import Mapping, Sequence
 
-from trace.core.seed import hash64, spawn_rng
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 
 from .defaults import int_default
 from .state import LABEL_POOL, Point
@@ -23,10 +24,8 @@ def choose_from_seed(values: Sequence[str], *, instance_seed: int, salt: str) ->
 
     if not values:
         raise ValueError("cannot sample from an empty value list")
-    index = abs(
-        int(hash64(int(instance_seed), f"geometry.graph_paper.{salt}", 0))
-    ) % len(values)
-    return str(values[int(index)])
+    rng = rng_for(int(instance_seed), str(salt))
+    return str(uniform_choice(rng, tuple(values)))
 
 
 def resolve_count(
@@ -88,10 +87,8 @@ def count_target(
     support = list(range(low, high + 1))
     if not support:
         return 0
-    index = abs(
-        int(hash64(int(instance_seed), f"geometry.graph_paper.{salt}.target_count", 0))
-    ) % len(support)
-    return int(support[int(index)])
+    rng = rng_for(int(instance_seed), f"{salt}.target_count")
+    return int(uniform_choice(rng, tuple(support)))
 
 
 def make_class_sequence(
@@ -109,8 +106,8 @@ def make_class_sequence(
     if not distractor_classes and int(target_count) < int(object_count):
         raise ValueError("distractor_classes required when not all objects match")
     classes = [str(target_class)] * int(target_count)
-    for index in range(int(object_count) - int(target_count)):
-        classes.append(str(distractor_classes[int(index) % len(distractor_classes)]))
+    for _index in range(int(object_count) - int(target_count)):
+        classes.append(str(rng.choice(tuple(distractor_classes))))
     rng.shuffle(classes)
     return classes
 

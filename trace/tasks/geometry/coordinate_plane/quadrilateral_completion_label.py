@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from ....core.sampling import uniform_choice
 from ....core.seed import spawn_rng
 from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
@@ -186,12 +187,8 @@ def _select_winner_label(
         if label not in set(labels):
             raise ValueError(f"winner_label={label!r} is not in label pool {labels!r}")
         return label, {label: 1.0}
-    selection_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{task_id}.winner_label",
-    )
-    return str(labels[int(selection_index) % len(labels)]), _probability_map(labels)
+    rng = spawn_rng(int(instance_seed), f"{task_id}.winner_label")
+    return str(uniform_choice(rng, labels)), _probability_map(labels)
 
 
 def _resolve_query(
@@ -257,7 +254,10 @@ def _transform_vector(vector: GraphPoint, transform_index: int) -> GraphPoint:
         (y, -x),
         (-y, -x),
     )
-    return tuple(int(value) for value in variants[int(transform_index) % len(variants)])  # type: ignore[return-value]
+    selected_index = int(transform_index)
+    if selected_index < 0 or selected_index >= len(variants):
+        raise ValueError("transform_index is outside quadrilateral transform support")
+    return tuple(int(value) for value in variants[selected_index])  # type: ignore[return-value]
 
 
 def _vector_pair_for_kind(kind: str, rng) -> Tuple[GraphPoint, GraphPoint]:

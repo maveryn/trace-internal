@@ -22,7 +22,7 @@ def test_icons_relation_partial_match_contract_matches_scene() -> None:
     assert len(scene_entities) == 6
     assert out.answer_gt.type == 'option_letter'
     assert out.answer_gt.value == 'C'
-    assert out.annotation_gt.type == 'keyed_bbox_map'
+    assert out.annotation_gt.type == 'bbox_map'
     assert sorted(out.annotation_gt.value.keys()) == ['selected_option', 'source_fragment']
     assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
     assert out.query_id == 'single'
@@ -44,8 +44,8 @@ def test_icons_relation_partial_match_contract_matches_scene() -> None:
     assert str(execution['option_icon_ids_by_label'][answer_label]) == str(execution['correct_icon_id'])
     assert len({str(entity['icon_id']) for entity in scene_entities}) == 6
     assert out.annotation_gt.value == {'source_fragment': list(reference['fragment_bbox_xyxy']), 'selected_option': list(matching[0]['cell_bbox_xyxy'])}
-    assert trace['projected_annotation']['type'] == 'keyed_bbox_map'
-    assert trace['projected_annotation']['keyed_bbox_map'] == out.annotation_gt.value
+    assert trace['projected_annotation']['type'] == 'bbox_map'
+    assert trace['projected_annotation']['bbox_map'] == out.annotation_gt.value
     assert trace['witness_symbolic']['selected_option_label'] == answer_label
     assert render_style['text_legibility']['required_role_count'] >= 2
     assert render_style['text_legibility']['failure_count'] == 0

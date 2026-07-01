@@ -8,12 +8,15 @@
 5. Annotation schema: `bbox`
 
 ## Program Contract
-`select_unique(label(path) where no_hazard_collision(path, hazards)); scene=lane_runner; scope=safe_path_label`
 
-1. The scene shows labeled candidate path cards.
-2. Each card contains a two-lane track with hazard cells and one candidate path, using the same lane-grid scale as the shown-path lane-runner task.
-3. Each path advances one row per step toward the finish.
-4. The task asks which labeled path reaches the finish without entering any hazard cell.
+Program: `select_unique(label(path) where no_hazard_collision(path, hazards)); scene=lane_runner; scope=safe_path_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `safe_path_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `label`, `path`, `where`, `no_hazard_collision`, `hazards`, `lane_runner`, `safe_path_label`.
+Operation: evaluate `select_unique` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. `answer_gt.type`: `option_letter`.

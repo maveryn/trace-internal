@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from typing import Any, List, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.charts.shared.label_assets import resolve_chart_entity_labels
-from trace.tasks.charts.shared.unanswerable import choose_missing_label
+from trace.tasks.shared.unanswerable import choose_missing_label
 
 from .defaults import gen_int, render_sequence
 from .state import (
@@ -136,8 +137,8 @@ def build_base_dataset(*, params: Mapping[str, Any], instance_seed: int) -> Scen
         series_items.append(
             Series(
                 label=str(label),
-                color_rgb=tuple(colors[int(series_index) % len(colors)]),
-                marker_shape=str(MARKER_SHAPES[int(series_index) % len(MARKER_SHAPES)]),
+                color_rgb=tuple(colors[int(series_index)]),
+                marker_shape=str(MARKER_SHAPES[int(series_index)]),
                 points=points,
             )
         )
@@ -166,6 +167,64 @@ def matching_x_point(series: Series, x_label: str) -> Point:
     return matches[0]
 
 
+def select_series_point(
+    *,
+    dataset: SceneDataset,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> tuple[Series, Point]:
+    """Choose one visible series point from a scatter-readout dataset."""
+
+    target_series = uniform_choice(
+        spawn_rng(int(instance_seed), f"{namespace}.series"),
+        tuple(dataset.series),
+    )
+    target_point = uniform_choice(
+        spawn_rng(int(instance_seed), f"{namespace}.point"),
+        tuple(target_series.points),
+    )
+    return target_series, target_point
+
+
+def select_x_index(
+    *,
+    dataset: SceneDataset,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> int:
+    """Choose one visible x-axis position from a scatter-readout dataset."""
+
+    return int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), str(namespace)),
+            tuple(range(len(dataset.x_labels))),
+            sort_keys=True,
+        )
+    )
+
+
+def select_x_extreme_point(
+    *,
+    dataset: SceneDataset,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+    extremum: str,
+) -> tuple[str, Point]:
+    """Choose one x-axis position and the highest/lowest point in that column."""
+
+    x_index = select_x_index(dataset=dataset, params=params, instance_seed=int(instance_seed), namespace=str(namespace))
+    x_label = str(dataset.x_labels[x_index])
+    points = [series_item.points[x_index] for series_item in dataset.series]
+    if str(extremum) == "highest":
+        return x_label, max(points, key=lambda point: (int(point.y_value), str(point.series_label)))
+    if str(extremum) == "lowest":
+        return x_label, min(points, key=lambda point: (int(point.y_value), str(point.series_label)))
+    raise ValueError(f"unsupported x-column extremum: {extremum}")
+
+
 def select_series_point_pair(
     *,
     dataset: SceneDataset,
@@ -175,19 +234,19 @@ def select_series_point_pair(
 ) -> tuple[Series, Point, Series, Point]:
     """Choose an anchor point and same-x comparison point for two-series readout objectives."""
 
-    from trace.tasks.shared.deterministic_sampling import resolve_selection_index
-
-    selection = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
+    target_series = uniform_choice(
+        spawn_rng(int(instance_seed), f"{namespace}.series"),
+        tuple(dataset.series),
     )
-    target_series = dataset.series[int(selection) % len(dataset.series)]
-    target_point = target_series.points[int(selection // max(1, len(dataset.series))) % len(target_series.points)]
+    target_point = uniform_choice(
+        spawn_rng(int(instance_seed), f"{namespace}.point"),
+        tuple(target_series.points),
+    )
     comparison_candidates = [series for series in dataset.series if str(series.label) != str(target_series.label)]
-    comparison_series = comparison_candidates[
-        int(selection // max(1, len(dataset.series) * len(target_series.points))) % len(comparison_candidates)
-    ]
+    comparison_series = uniform_choice(
+        spawn_rng(int(instance_seed), f"{namespace}.comparison_series"),
+        tuple(comparison_candidates),
+    )
     comparison_point = matching_x_point(comparison_series, str(target_point.x_label))
     return target_series, target_point, comparison_series, comparison_point
 
@@ -219,6 +278,9 @@ __all__ = [
     "point_by_id",
     "sample_series_labels",
     "sample_x_axis",
+    "select_series_point",
     "select_series_point_pair",
+    "select_x_extreme_point",
+    "select_x_index",
     "sample_y_matrix",
 ]

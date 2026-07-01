@@ -10,9 +10,11 @@ from pathlib import Path
 import re
 from typing import Any, Dict, Iterable, Mapping
 
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.scene_package_migration import is_scene_package_review_target_scene
 from trace.core.taxonomy import ACTIVE_DOMAINS
 
+from .locks import review_file_lock_active, scene_publish_lock_path
 from .models import DomainRecord, ReviewIndex, SampleRecord, SceneRecord, SolveStats, TaskRecord
 
 
@@ -29,6 +31,7 @@ MODEL_RESPONSE_CAP_THRESHOLDS = {
     "qwen3vl4b": 0.25,
 }
 DIFFICULTY_TAIL_THRESHOLD = 0.50
+PUBLISH_IN_PROGRESS_ERROR = "review artifact publish in progress"
 
 
 def build_review_index(
@@ -142,6 +145,32 @@ def merge_review_scene_index(current: ReviewIndex, scene_index: ReviewIndex, *, 
     return merged
 
 
+def preserve_locked_scenes(current: ReviewIndex, fresh: ReviewIndex) -> ReviewIndex:
+    """Return ``fresh`` with locked scenes copied from ``current``.
+
+    Reloads should not blank a browser-visible scene while another process is
+    atomically replacing that scene's review artifacts.
+    """
+
+    preserved = copy.deepcopy(fresh)
+    changed = False
+    for scene_key, scene in current.scenes.items():
+        if not _scene_publish_lock_active(root=preserved.root, domain=scene.domain, scene_id=scene.scene_id):
+            continue
+        _copy_scene_into_index(source=current, target=preserved, domain=scene.domain, scene_id=scene.scene_id)
+        message = (
+            f"{scene.domain}/{scene.scene_id}: {PUBLISH_IN_PROGRESS_ERROR}; "
+            "serving previous indexed scene"
+        )
+        if message not in preserved.errors:
+            preserved.errors.append(message)
+        changed = True
+    if changed:
+        _reset_counts(preserved)
+        _finalize_counts(preserved)
+    return preserved
+
+
 def load_sample_payload(index: ReviewIndex, sample: SampleRecord) -> Dict[str, Any]:
     """Load one sample JSON payload from the review root."""
 
@@ -159,6 +188,10 @@ def _infer_repo_root(review_root: Path) -> Path:
 
 
 def _scan_scene(*, index: ReviewIndex, domain: str, scene_id: str, scene_dir: Path) -> None:
+    if _scene_publish_lock_active(root=index.root, domain=domain, scene_id=scene_id):
+        index.errors.append(f"{domain}/{scene_id}: {PUBLISH_IN_PROGRESS_ERROR}; retry after publish finishes")
+        return
+
     scene_key = ReviewIndex.scene_key(domain, scene_id)
     scene_manifest_path = scene_dir / "scene_review_manifest.json"
     scene_manifest = _load_json_safe(scene_manifest_path, index.errors)
@@ -213,6 +246,11 @@ def _scan_scene(*, index: ReviewIndex, domain: str, scene_id: str, scene_dir: Pa
         scene_record.tasks.append(task_record.task_id)
         if not scene_record.preview_uid and task_record.preview_uid:
             scene_record.preview_uid = task_record.preview_uid
+    _enforce_taxonomy_program_contracts(
+        index=index,
+        scene=scene_record,
+        taxonomy_review_status=taxonomy_review_status,
+    )
 
 
 def _migration_test_summary(status: Any) -> Dict[str, Any]:
@@ -286,6 +324,89 @@ def _taxonomy_review_summary(status: Any) -> Dict[str, Any]:
         "task_ids": [str(item) for item in task_ids if str(item).strip()],
         "checklist": {str(key): bool(value) for key, value in checklist.items()},
     }
+
+
+def _enforce_taxonomy_program_contracts(
+    *,
+    index: ReviewIndex,
+    scene: SceneRecord,
+    taxonomy_review_status: Any,
+) -> None:
+    """Invalidate a passed taxonomy audit if app-visible program codes are absent."""
+
+    if not isinstance(taxonomy_review_status, Mapping) or not bool(taxonomy_review_status.get("passed")):
+        return
+
+    status_task_ids = taxonomy_review_status.get("task_ids", [])
+    if isinstance(status_task_ids, str):
+        status_task_ids = [status_task_ids]
+    elif not isinstance(status_task_ids, Iterable):
+        status_task_ids = []
+    task_ids = _dedupe_preserve_order([*scene.tasks, *(str(item) for item in status_task_ids if str(item).strip())])
+    missing = [
+        task_id
+        for task_id in task_ids
+        if not _task_has_concrete_program_contract(
+            index=index,
+            domain=scene.domain,
+            scene_id=scene.scene_id,
+            task_id=task_id,
+        )
+    ]
+    if not missing:
+        return
+
+    scene.taxonomy_review_pass = False
+    scene.taxonomy_review_summary["passed"] = False
+    scene.taxonomy_review_summary["status"] = "failed"
+    scene.taxonomy_review_summary["program_contract_task_ids_missing"] = list(missing)
+    checklist = dict(scene.taxonomy_review_summary.get("checklist", {}))
+    checklist["program_codes_concrete"] = False
+    scene.taxonomy_review_summary["checklist"] = checklist
+    failure = (
+        f"{scene.domain}/{scene.scene_id}: taxonomy_review_status.json claims passed, "
+        "but these tasks lack a concrete ## Program Contract in docs/tasks: "
+        + ", ".join(missing)
+    )
+    index.errors.append(failure)
+
+
+def _dedupe_preserve_order(values: Iterable[str]) -> list[str]:
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for value in values:
+        text = str(value).strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        ordered.append(text)
+    return ordered
+
+
+def _task_has_concrete_program_contract(
+    *,
+    index: ReviewIndex,
+    domain: str,
+    scene_id: str,
+    task_id: str,
+) -> bool:
+    task_key = ReviewIndex.task_key(domain, scene_id, task_id)
+    task = index.tasks.get(task_key)
+    if task is not None:
+        contract = str(task.taxonomy_summary.get("program_contract", ""))
+    else:
+        doc_path = index.repo_root / "docs" / "tasks" / domain / scene_id / f"{task_id}.md"
+        contract = str(_parse_task_doc_taxonomy(doc_path).get("program_contract", ""))
+    return _is_concrete_program_contract(contract)
+
+
+def _is_concrete_program_contract(contract: str) -> bool:
+    text = _clean_markdown_value(str(contract)).strip()
+    if not text:
+        return False
+    if text.lower() in {"todo", "tbd", "n/a", "none"}:
+        return False
+    return "(" in text and ")" in text and "scene=" in text and "scope=" in text
 
 
 def _scan_task(*, index: ReviewIndex, domain: str, scene_id: str, task_dir: Path) -> TaskRecord | None:
@@ -510,9 +631,9 @@ def _sample_from_payload(
         prompt_variants = {}
 
     data_rel_path = _rel_or_empty(data_path, index.root)
-    query_id = str(payload.get("query_id", "") or data_path.parent.name or "default")
+    query_id = str(payload.get("query_id", "") or data_path.parent.name or SINGLE_QUERY_ID)
     if not query_id:
-        query_id = "default"
+        query_id = SINGLE_QUERY_ID
     image_rel_path = str(image_payload.get("path", ""))
     if not image_rel_path:
         image_rel_path = _derive_image_rel_path(data_rel_path)
@@ -807,6 +928,48 @@ def _remove_scene_from_index(index: ReviewIndex, *, domain: str, scene_id: str) 
         domain_record.scenes = [name for name in domain_record.scenes if name != str(scene_id)]
         if not domain_record.scenes:
             index.domains.pop(str(domain), None)
+
+
+def _copy_scene_into_index(*, source: ReviewIndex, target: ReviewIndex, domain: str, scene_id: str) -> None:
+    """Copy one scene and all dependent records from source to target."""
+
+    domain_name = str(domain)
+    scene_name = str(scene_id)
+    scene_key = ReviewIndex.scene_key(domain_name, scene_name)
+    scene = source.scenes.get(scene_key)
+    if scene is None:
+        return
+    _remove_scene_from_index(target, domain=domain_name, scene_id=scene_name)
+    target.scenes[scene_key] = copy.deepcopy(scene)
+    domain_record = target.domains.setdefault(domain_name, DomainRecord(domain=domain_name))
+    if scene_name not in domain_record.scenes:
+        domain_record.scenes.append(scene_name)
+    for task_id in scene.tasks:
+        task_key = ReviewIndex.task_key(domain_name, scene_name, task_id)
+        task = source.tasks.get(task_key)
+        if task is not None:
+            target.tasks[task_key] = copy.deepcopy(task)
+        sample_uids = list(source.samples_by_task.get(task_key, []))
+        if sample_uids:
+            target.samples_by_task[task_key] = sample_uids
+        for sample_uid in sample_uids:
+            sample = source.samples.get(sample_uid)
+            if sample is None:
+                continue
+            target.samples[sample_uid] = copy.deepcopy(sample)
+            if sample.media_id:
+                media_path = source.media.get(sample.media_id)
+                if media_path is not None:
+                    target.media[sample.media_id] = media_path
+    for query_key, sample_uids in source.samples_by_query.items():
+        if not query_key.startswith(f"{domain_name}/{scene_name}/"):
+            continue
+        target.samples_by_query[query_key] = list(sample_uids)
+
+
+def _scene_publish_lock_active(*, root: Path, domain: str, scene_id: str) -> bool:
+    lock_path = scene_publish_lock_path(review_root=root, domain=str(domain), scene_id=str(scene_id))
+    return review_file_lock_active(lock_path)
 
 
 def _reset_counts(index: ReviewIndex) -> None:

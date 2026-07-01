@@ -42,9 +42,16 @@ def _resolve_physics_technical_profile(
         if normalized in {"analytical", "analytical_diagram"}:
             return TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL
         raise ValueError(f"unknown physics technical diagram style profile: {requested!r}")
-    if require_grid is True:
-        return TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER
     return TECHNICAL_DIAGRAM_PROFILE_ANALYTICAL
+
+
+def _resolve_physics_profile_require_grid(*, technical_profile: str, require_grid: bool | None) -> bool:
+    """Translate physics scene style profile into shared resolver grid eligibility."""
+
+    _ = require_grid
+    if str(technical_profile) == TECHNICAL_DIAGRAM_PROFILE_GRAPH_PAPER:
+        return True
+    return False
 
 
 def resolve_physics_diagram_style(
@@ -54,16 +61,26 @@ def resolve_physics_diagram_style(
     scene_id: str,
     treatments: Sequence[str] | None = None,
     protected_colors: Sequence[Color] | None = None,
-    allow_dark: bool = False,
+    allow_dark: bool = True,
     require_grid: bool | None = None,
     style_profile: str | None = None,
+    min_protected_lab_distance: float | None = None,
 ) -> tuple[PhysicsDiagramStyle, dict[str, Any]]:
     """Resolve the shared technical style for one physics scene."""
 
     resolved_params = params or {}
+    resolved_min_protected_lab_distance = (
+        float(min_protected_lab_distance)
+        if min_protected_lab_distance is not None
+        else float(resolved_params.get("technical_diagram_min_protected_lab_distance", 18.0))
+    )
     technical_profile = _resolve_physics_technical_profile(
         params=resolved_params,
         style_profile=style_profile,
+        require_grid=require_grid,
+    )
+    resolved_require_grid = _resolve_physics_profile_require_grid(
+        technical_profile=str(technical_profile),
         require_grid=require_grid,
     )
     return resolve_technical_diagram_style(
@@ -79,8 +96,9 @@ def resolve_physics_diagram_style(
         frame_modes=resolved_params.get("technical_diagram_frame_modes"),
         frame_mode_weights=resolved_params.get("technical_diagram_frame_mode_weights", {}),
         allow_dark=bool(allow_dark),
-        require_grid=require_grid,
+        require_grid=resolved_require_grid,
         protected_colors=protected_colors or (),
+        min_protected_lab_distance=float(resolved_min_protected_lab_distance),
     )
 
 
@@ -111,11 +129,12 @@ def prepare_physics_diagram_style_and_background(
     canvas_width: int,
     canvas_height: int,
     protected_colors: Sequence[Color] | None = None,
-    allow_dark: bool = False,
+    allow_dark: bool = True,
     require_grid: bool | None = None,
     treatments: Sequence[str] | None = None,
     style_profile: str | None = None,
     namespace_suffix: str = "technical_diagram_background",
+    min_protected_lab_distance: float | None = None,
 ) -> tuple[Any, dict[str, Any], PhysicsDiagramStyle, dict[str, Any]]:
     """Resolve one physics technical style and create its background before rendering."""
 
@@ -128,6 +147,7 @@ def prepare_physics_diagram_style_and_background(
         allow_dark=bool(allow_dark),
         require_grid=require_grid,
         style_profile=style_profile,
+        min_protected_lab_distance=min_protected_lab_distance,
     )
     background, background_meta = make_physics_diagram_background(
         canvas_width=int(canvas_width),

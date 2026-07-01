@@ -17,12 +17,6 @@ QUERY_ID = "single"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 DEFAULT_QUERY_ID = QUERY_ID
 PROMPT_KEY = QUERY_ID
-ANNOTATION_KEYS = (
-    "target_radius_label",
-    "volume_label",
-    "total_height_label",
-    "cone_height_label",
-)
 ANSWER_SUPPORT = decimal_support(2, 61, step=1)
 CONSTRUCTION_OPTIONS = (
     (6.0, 3.0),
@@ -86,7 +80,6 @@ class GeometrySolidFormulaCylinderConeRadiusFromVolumeHeightsTask:
             prompt_key=PROMPT_KEY,
             problem=problem,
             render_scene=render_cylinder_cone_radius,
-            annotation_keys=ANNOTATION_KEYS,
             branch_probabilities=query_distribution,
             support_probabilities=answer_distribution,
         )
@@ -102,7 +95,7 @@ class GeometrySolidFormulaCylinderConeRadiusFromVolumeHeightsTask:
         output_fields = {
             "prompt": parts.prompt,
             "answer_gt": TypedValue(type="number", value=float(plan.answer_value)),
-            "annotation_gt": TypedValue(type="bbox_map", value=dict(parts.annotation_value)),
+            "annotation_gt": TypedValue(type="bbox", value=list(parts.annotation_value)),
             "image": parts.image,
             "image_id": "img0",
             "trace_payload": parts.trace_payload,

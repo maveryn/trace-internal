@@ -12,7 +12,7 @@ GEN_DEFAULTS, RENDER_DEFAULTS, PROMPT_DEFAULTS = load_scene_generation_rendering
     DOMAIN,
     SCENE_ID,
 )
-POST_IMAGE_NOISE_DEFAULTS = load_games_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.0)
+POST_IMAGE_NOISE_DEFAULTS = load_games_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.5)
 
 PROMPT_WIRING_KEYS = (
     "bundle_id",

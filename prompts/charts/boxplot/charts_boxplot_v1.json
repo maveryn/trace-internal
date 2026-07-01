@@ -142,14 +142,14 @@
     },
     "query:largest_iqr_label": {
       "answer_hint": "set \"answer\" to the exact visible boxplot label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_boxplot\" to an [x,y] pixel point at the center of the winning boxplot",
-      "json_example": "{\"annotation\":{\"answer_boxplot\":[430,250]},\"answer\":\"Ivory\"}",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] pixel box around the winning boxplot's interquartile-range rectangle",
+      "json_example": "{\"annotation\":[394,210,466,290],\"answer\":\"Ivory\"}",
       "json_example_answer_only": "{\"answer\":\"Ivory\"}"
     },
     "query:smallest_iqr_label": {
       "answer_hint": "set \"answer\" to the exact visible boxplot label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"answer_boxplot\" to an [x,y] pixel point at the center of the winning boxplot",
-      "json_example": "{\"annotation\":{\"answer_boxplot\":[430,250]},\"answer\":\"Ivory\"}",
+      "annotation_hint": "set \"annotation\" to the [x0,y0,x1,y1] pixel box around the winning boxplot's interquartile-range rectangle",
+      "json_example": "{\"annotation\":[394,210,466,290],\"answer\":\"Ivory\"}",
       "json_example_answer_only": "{\"answer\":\"Ivory\"}"
     }
   },

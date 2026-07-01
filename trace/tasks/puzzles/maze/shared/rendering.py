@@ -214,6 +214,7 @@ def render_maze_exit_scene(
 
     entities: List[Dict[str, Any]] = []
     item_bbox_map: Dict[str, BBox] = {}
+    item_point_map: Dict[str, Tuple[float, float]] = {}
 
     start_cell = tuple(int(value) for value in dataset["start_cell"])
     start_center = cell_center(left=left, top=top, cell_size=cell_size, cell=start_cell)
@@ -307,6 +308,10 @@ def render_maze_exit_scene(
             float(max(marker_bbox[3], text_bbox[3], door_bbox[3])),
         )
         item_bbox_map[str(exit_spec["item_id"])] = item_bbox
+        item_point_map[str(exit_spec["item_id"])] = (
+            round(float(marker_center[0]), 3),
+            round(float(marker_center[1]), 3),
+        )
         entities.append(
             {
                 "entity_id": str(exit_spec["item_id"]),
@@ -316,6 +321,7 @@ def render_maze_exit_scene(
                 "side": str(side),
                 "reachable": bool(exit_spec["reachable"]),
                 "bbox_px": list(item_bbox),
+                "point_px": list(item_point_map[str(exit_spec["item_id"])]),
             }
         )
 
@@ -330,6 +336,7 @@ def render_maze_exit_scene(
         entities=tuple(entities),
         scene_bbox_px=scene_bbox,
         item_bbox_map=dict(item_bbox_map),
+        item_point_map=dict(item_point_map),
         cell_bbox_map=dict(cell_bbox_map),
     )
 

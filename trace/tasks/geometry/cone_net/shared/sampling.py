@@ -5,7 +5,8 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Any, Callable, Mapping
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 
 from .measurements import base_radius_from_sector, height_from_sector
 from .state import ConeNetCase
@@ -53,7 +54,9 @@ def resolve_cone_net_case(
 
     explicit_case = params.get("case_index")
     if explicit_case is not None:
-        case_index = int(explicit_case) % len(CONE_NET_CASES)
+        case_index = int(explicit_case)
+        if case_index < 0 or case_index >= len(CONE_NET_CASES):
+            raise ValueError(f"case_index must be in [0, {len(CONE_NET_CASES) - 1}]")
         selected = CONE_NET_CASES[int(case_index)]
     else:
         answer_cases = _cases_by_answer(str(target_measure))
@@ -64,19 +67,11 @@ def resolve_cone_net_case(
             if answer_key not in answer_cases:
                 raise ValueError(f"target_answer={explicit_answer} is not supported for {target_measure}")
         else:
-            answer_index = resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=f"{namespace}.answer",
-            ) % len(answer_keys)
-            answer_key = answer_keys[int(answer_index)]
+            rng = spawn_rng(int(instance_seed), f"{namespace}.answer")
+            answer_key = str(uniform_choice(rng, answer_keys))
         cases = tuple(answer_cases[str(answer_key)])
-        local_case_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}.case.{answer_key}",
-        ) % len(cases)
-        selected = cases[int(local_case_index)]
+        rng = spawn_rng(int(instance_seed), f"{namespace}.case.{answer_key}")
+        selected = uniform_choice(rng, cases)
         case_index = CONE_NET_CASES.index(selected)
     slant_height = int(params.get("slant_height", selected.slant_height))
     theta_degrees = int(params.get("theta_degrees", selected.theta_degrees))

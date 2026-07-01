@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 import shutil
 from typing import Any, Dict, List, Mapping, Sequence
+from uuid import uuid4
 
 from trace.core.annotation_sanitization import sanitize_trace_payload_for_public_annotation
 from trace.core.json_io import write_json_file
@@ -34,10 +35,19 @@ from trace.core.task_review_workbooks import (
     write_inspection_excel as _write_inspection_excel,
     write_scene_inspection_excel as _write_scene_inspection_excel,
 )
+from trace.review_app.locks import ReviewFileLock, scene_publish_lock_path
 from trace.tasks import TASK_REGISTRY, create_task
+from scripts.inventory_scalar_annotations import scalar_annotation_review_failures_for_tasks
 
 
 _SCENE_PREVIEW_ROWS_PER_TASK = 100
+_REQUIRED_MIGRATION_TEST_FILES = frozenset(
+    {
+        "tests/test_review_app.py",
+        "tests/test_run_task_review.py",
+        "tests/test_scene_package_migration_contracts.py",
+    }
+)
 
 
 def _registered_scene_id(task_id: str, task: Any) -> str | None:
@@ -76,8 +86,11 @@ def _validate_tasks_may_write_review_artifacts(*, task_ids: Sequence[str], out_r
 
     failures: list[str] = []
     manual_audit_failures: list[str] = []
+    taxonomy_audit_failures: list[str] = []
+    migration_test_failures: list[str] = []
     structural_audit_failures: list[str] = []
     checked_scenes: set[tuple[str, str]] = set()
+    requested_by_scene: dict[tuple[str, str], list[str]] = {}
     for task_id in task_ids:
         task = create_task(str(task_id))
         taxonomy = resolve_task_taxonomy(
@@ -91,16 +104,31 @@ def _validate_tasks_may_write_review_artifacts(*, task_ids: Sequence[str], out_r
             failures.append(f"{task_id} -> {taxonomy.domain}/{taxonomy.scene_id}")
             continue
         scene_key = (domain, scene_id)
+        requested_by_scene.setdefault(scene_key, []).append(str(task_id))
         if scene_key in checked_scenes:
             continue
         checked_scenes.add(scene_key)
-        audit_path = out_root / domain / scene_id / "manual_code_audit_status.json"
-        try:
-            audit_status = json.loads(audit_path.read_text(encoding="utf-8"))
-        except Exception:
-            audit_status = None
+        audit_path = _scene_status_path(out_root, domain, scene_id, "manual_code_audit_status.json")
+        audit_status = _load_status_file(audit_path)
         if not isinstance(audit_status, Mapping) or not bool(audit_status.get("passed")):
             manual_audit_failures.append(f"{domain}/{scene_id} -> {audit_path.relative_to(out_root)}")
+            continue
+        taxonomy_path = _scene_status_path(out_root, domain, scene_id, "taxonomy_review_status.json")
+        taxonomy_status = _load_status_file(taxonomy_path)
+        if not isinstance(taxonomy_status, Mapping) or not bool(taxonomy_status.get("passed")):
+            taxonomy_audit_failures.append(f"{domain}/{scene_id} -> {taxonomy_path.relative_to(out_root)}")
+            continue
+        migration_path = _scene_status_path(out_root, domain, scene_id, "migration_test_status.json")
+        migration_status = _load_status_file(migration_path)
+        if not isinstance(migration_status, Mapping) or not bool(migration_status.get("passed")):
+            migration_test_failures.append(f"{domain}/{scene_id} -> {migration_path.relative_to(out_root)}")
+            continue
+        missing_migration_tests = _missing_required_migration_tests(migration_status)
+        if missing_migration_tests:
+            migration_test_failures.append(
+                f"{domain}/{scene_id} -> {migration_path.relative_to(out_root)} missing tests: "
+                + ", ".join(sorted(missing_migration_tests))
+            )
             continue
         structural_audit = audit_scene_package_review_candidate(domain, scene_id)
         if not bool(structural_audit.get("passed")):
@@ -108,6 +136,21 @@ def _validate_tasks_may_write_review_artifacts(*, task_ids: Sequence[str], out_r
             if not isinstance(scene_failures, list):
                 scene_failures = ["unknown structural audit failure"]
             structural_audit_failures.extend(f"{domain}/{scene_id}: {failure}" for failure in scene_failures)
+    for (domain, scene_id), requested_task_ids in sorted(requested_by_scene.items()):
+        taxonomy_path = _scene_status_path(out_root, domain, scene_id, "taxonomy_review_status.json")
+        taxonomy_status = _load_status_file(taxonomy_path)
+        if not isinstance(taxonomy_status, Mapping) or not bool(taxonomy_status.get("passed")):
+            continue
+        taxonomy_audit_failures.extend(
+            _taxonomy_status_contract_failures(
+                out_root=out_root,
+                domain=domain,
+                scene_id=scene_id,
+                status_path=taxonomy_path,
+                taxonomy_status=taxonomy_status,
+                requested_task_ids=requested_task_ids,
+            )
+        )
     if failures:
         raise ValueError(
             "refusing to write review/task-reviews artifacts for scenes that are not "
@@ -121,12 +164,254 @@ def _validate_tasks_may_write_review_artifacts(*, task_ids: Sequence[str], out_r
             "manual_code_audit_status.json with passed: true after a real scene source audit:\n  "
             + "\n  ".join(sorted(manual_audit_failures))
         )
+    if taxonomy_audit_failures:
+        raise ValueError(
+            "refusing to write review/task-reviews artifacts before taxonomy review passes "
+            "for the scene. Create review/task-reviews/<domain>/<scene_id>/"
+            "taxonomy_review_status.json with passed: true after verifying task docs, "
+            "program contracts, query ids, prompts, and annotation schemas:\n  "
+            + "\n  ".join(sorted(taxonomy_audit_failures))
+        )
+    if migration_test_failures:
+        raise ValueError(
+            "refusing to write review/task-reviews artifacts before scene-scoped migration "
+            "tests pass. Create review/task-reviews/<domain>/<scene_id>/"
+            "migration_test_status.json with passed: true after running the required "
+            "scene-scoped tests:\n  "
+            + "\n  ".join(sorted(migration_test_failures))
+        )
     if structural_audit_failures:
         raise ValueError(
             "refusing to write review/task-reviews artifacts because automated scene-package "
             "source audit failed:\n  "
             + "\n  ".join(sorted(structural_audit_failures))
         )
+
+
+def _scene_status_path(out_root: Path, domain: str, scene_id: str, filename: str) -> Path:
+    """Return the scene-level review status path for one migration gate."""
+
+    return out_root / str(domain) / str(scene_id) / str(filename)
+
+
+def _load_status_file(path: Path) -> Mapping[str, Any] | None:
+    """Load one scene-level status file if it is valid JSON object data."""
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    if not isinstance(payload, Mapping):
+        return None
+    return payload
+
+
+def _task_stage_dir(*, out_root: Path, final_task_dir: Path, task_id: str) -> Path:
+    """Return an isolated staging directory for one task review publish."""
+
+    try:
+        relative = final_task_dir.relative_to(out_root)
+    except ValueError:
+        relative = Path(str(task_id))
+    token = uuid4().hex
+    return out_root / ".staging" / "task_review" / f"{os.getpid()}_{token}" / relative
+
+
+def _prepare_staged_task_dir(final_task_dir: Path, stage_task_dir: Path) -> None:
+    """Seed staging with the current task directory so partial-mode runs preserve prior artifacts."""
+
+    if stage_task_dir.exists():
+        shutil.rmtree(stage_task_dir)
+    stage_task_dir.parent.mkdir(parents=True, exist_ok=True)
+    if final_task_dir.exists():
+        shutil.copytree(final_task_dir, stage_task_dir)
+    else:
+        stage_task_dir.mkdir(parents=True, exist_ok=True)
+
+
+def _publish_staged_task_dir(
+    *,
+    out_root: Path,
+    final_task_dir: Path,
+    stage_task_dir: Path,
+    domain: str,
+    scene_id: str,
+) -> None:
+    """Publish a validated staged task directory with a short scene-level lock."""
+
+    lock_path = scene_publish_lock_path(review_root=out_root, domain=domain, scene_id=scene_id)
+    backup_dir = out_root / ".staging" / "task_review_backups" / f"{os.getpid()}_{uuid4().hex}" / final_task_dir.name
+    metadata = {
+        "kind": "trace_review_artifact_publish",
+        "review_root": str(out_root),
+        "domain": str(domain),
+        "scene_id": str(scene_id),
+        "task_dir": str(final_task_dir),
+    }
+    with ReviewFileLock(lock_path, metadata=metadata, blocking=True):
+        final_task_dir.parent.mkdir(parents=True, exist_ok=True)
+        backup_dir.parent.mkdir(parents=True, exist_ok=True)
+        moved_existing = False
+        try:
+            if final_task_dir.exists():
+                final_task_dir.rename(backup_dir)
+                moved_existing = True
+            stage_task_dir.rename(final_task_dir)
+        except Exception:
+            if moved_existing and not final_task_dir.exists() and backup_dir.exists():
+                backup_dir.rename(final_task_dir)
+            raise
+        finally:
+            if backup_dir.exists():
+                shutil.rmtree(backup_dir, ignore_errors=True)
+            _cleanup_empty_staging_parents(stage_task_dir, stop_at=out_root / ".staging")
+            _cleanup_empty_staging_parents(backup_dir, stop_at=out_root / ".staging")
+
+
+def _cleanup_empty_staging_parents(path: Path, *, stop_at: Path) -> None:
+    """Remove empty staging parents without crossing the staging root."""
+
+    stop = stop_at.resolve()
+    current = path.parent
+    while True:
+        try:
+            resolved = current.resolve()
+        except FileNotFoundError:
+            resolved = current.parent.resolve()
+        if resolved == stop or stop not in resolved.parents:
+            break
+        try:
+            current.rmdir()
+        except OSError:
+            break
+        current = current.parent
+
+
+def _validate_staged_task_artifacts(
+    *,
+    out_root: Path,
+    final_task_dir: Path,
+    stage_task_dir: Path,
+    task_id: str,
+    require_random: bool,
+    require_distribution: bool,
+    require_inspection: bool,
+) -> None:
+    """Validate staged artifacts before they replace the live task directory."""
+
+    if require_random:
+        _load_json_object_or_raise(stage_task_dir / "random_review_100.json")
+    if require_distribution:
+        _load_json_object_or_raise(stage_task_dir / "distribution_review.json")
+    if not require_inspection:
+        return
+
+    manifest = _load_json_object_or_raise(stage_task_dir / "manifest.json")
+    if str(manifest.get("task_id", "")) != str(task_id):
+        raise ValueError(f"staged manifest task_id mismatch for {task_id}")
+    data_paths = sorted((stage_task_dir / "data").rglob("*.json"))
+    if not data_paths:
+        raise ValueError(f"staged inspection data is empty for {task_id}")
+    for data_path in data_paths:
+        payload = _load_json_object_or_raise(data_path)
+        image_payload = payload.get("image", {})
+        if not isinstance(image_payload, Mapping):
+            raise ValueError(f"staged sample lacks image payload: {data_path}")
+        image_rel = str(image_payload.get("path", ""))
+        if not image_rel:
+            raise ValueError(f"staged sample lacks image path: {data_path}")
+        final_image_path = (out_root / image_rel).resolve()
+        try:
+            image_suffix = final_image_path.relative_to(final_task_dir.resolve())
+        except ValueError as exc:
+            raise ValueError(f"staged sample image path escapes final task dir: {data_path}") from exc
+        if not (stage_task_dir / image_suffix).exists():
+            raise ValueError(f"staged sample image missing: {stage_task_dir / image_suffix}")
+
+
+def _load_json_object_or_raise(path: Path) -> Mapping[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise ValueError(f"invalid JSON artifact: {path}: {exc}") from exc
+    if not isinstance(payload, Mapping):
+        raise ValueError(f"expected JSON object artifact: {path}")
+    return payload
+
+
+def _missing_required_migration_tests(migration_status: Mapping[str, Any]) -> set[str]:
+    """Return required migration test files absent from the status payload."""
+
+    test_files = migration_status.get("test_files", [])
+    if isinstance(test_files, str):
+        observed = {test_files}
+    elif isinstance(test_files, Sequence) and not isinstance(test_files, (str, bytes)):
+        observed = {str(item) for item in test_files if str(item).strip()}
+    else:
+        observed = set()
+    return set(_REQUIRED_MIGRATION_TEST_FILES - observed)
+
+
+def _taxonomy_status_contract_failures(
+    *,
+    out_root: Path,
+    domain: str,
+    scene_id: str,
+    status_path: Path,
+    taxonomy_status: Mapping[str, Any],
+    requested_task_ids: Sequence[str],
+) -> list[str]:
+    """Return taxonomy-status failures that would make review artifacts stale."""
+
+    failures: list[str] = []
+    checklist = taxonomy_status.get("checklist", {})
+    if not isinstance(checklist, Mapping) or not bool(checklist.get("scalar_annotation_checked")):
+        failures.append(
+            f"{domain}/{scene_id} -> {status_path.relative_to(out_root)} missing checklist.scalar_annotation_checked=true"
+        )
+    status_task_ids = taxonomy_status.get("task_ids", [])
+    if isinstance(status_task_ids, str):
+        status_task_ids = [status_task_ids]
+    elif not isinstance(status_task_ids, Sequence):
+        status_task_ids = []
+    normalized_status_task_ids = {str(task_id) for task_id in status_task_ids if str(task_id).strip()}
+    requested = {str(task_id) for task_id in requested_task_ids if str(task_id).strip()}
+    missing_requested = sorted(requested - normalized_status_task_ids)
+    if missing_requested:
+        failures.append(
+            f"{domain}/{scene_id} -> {status_path.relative_to(out_root)} missing requested task ids: "
+            + ", ".join(missing_requested)
+        )
+    for task_id in sorted(normalized_status_task_ids | requested):
+        doc_path = Path("docs") / "tasks" / str(domain) / str(scene_id) / f"{task_id}.md"
+        if not _task_doc_has_concrete_program_contract(doc_path):
+            failures.append(f"{domain}/{scene_id} -> {doc_path.as_posix()} lacks concrete ## Program Contract")
+    failures.extend(
+        scalar_annotation_review_failures_for_tasks(
+            domain=str(domain),
+            scene_id=str(scene_id),
+            task_ids=sorted(requested),
+        )
+    )
+    return failures
+
+
+def _task_doc_has_concrete_program_contract(path: Path) -> bool:
+    """Return whether one task doc exposes a concrete app-visible program contract."""
+
+    if not path.exists():
+        return False
+    text = path.read_text(encoding="utf-8")
+    match = re.search(r"^## Program Contract\s*(.*?)(?:^## |\Z)", text, re.MULTILINE | re.DOTALL)
+    if match is None:
+        return False
+    body = match.group(1).strip()
+    if not body:
+        return False
+    lowered = body.lower()
+    if lowered in {"todo", "tbd", "n/a", "none"}:
+        return False
+    return "(" in body and ")" in body and "scene=" in body and "scope=" in body
 
 
 def _parse_cli() -> argparse.Namespace:
@@ -414,7 +699,15 @@ def build_scene_review_workbooks(*, out_root: Path, scene_keys: Sequence[tuple[s
 
     scene_manifests: Dict[str, Any] = {}
     for domain, scene_id in sorted({(str(domain), str(scene_id)) for domain, scene_id in scene_keys}):
-        manifest = build_scene_review_workbook(out_root=root, domain=str(domain), scene_id=str(scene_id))
+        lock_path = scene_publish_lock_path(review_root=root, domain=str(domain), scene_id=str(scene_id))
+        metadata = {
+            "kind": "trace_review_scene_workbook_publish",
+            "review_root": str(root.resolve()),
+            "domain": str(domain),
+            "scene_id": str(scene_id),
+        }
+        with ReviewFileLock(lock_path, metadata=metadata, blocking=True):
+            manifest = build_scene_review_workbook(out_root=root, domain=str(domain), scene_id=str(scene_id))
         if int(manifest.get("task_count", 0)) <= 0:
             continue
         scene_key = f"{domain}/{scene_id}"
@@ -439,11 +732,13 @@ def _build_inspection_rows(
     task_id: str,
     out_root: Path,
     task_dir: Path,
+    published_task_dir: Path | None = None,
     seed_rows_by_query_id: Mapping[str, Sequence[Mapping[str, Any]]],
     max_attempts_per_instance: int,
 ) -> Dict[str, Any]:
     """Generate inspection artifacts (images/json/workbook rows) for one task."""
     rows_by_query_id: Dict[str, List[Dict[str, Any]]] = {}
+    published_dir = Path(published_task_dir) if published_task_dir is not None else task_dir
     task = create_task(str(task_id))
     taxonomy = resolve_task_taxonomy(
         str(task_id),
@@ -528,8 +823,9 @@ def _build_inspection_rows(
                 ) from last_error
 
             image_path = image_dir / f"{index:04d}.png"
+            published_image_path = published_dir / "images" / query_id_dir / f"{index:04d}.png"
             output.image.save(image_path, format="PNG")
-            rel_image_path = image_path.relative_to(out_root).as_posix()
+            rel_image_path = published_image_path.relative_to(out_root).as_posix()
 
             prompt_variants = dict(getattr(output, "prompt_variants", {}) or {})
             prompt_answer = str(prompt_variants.get("answer_only", output.prompt))
@@ -572,8 +868,9 @@ def _build_inspection_rows(
                 "versions": dict(output.task_versions),
             }
             data_path = data_dir / f"{index:04d}.json"
+            published_data_path = published_dir / "data" / query_id_dir / f"{index:04d}.json"
             write_json_file(data_path, data_payload)
-            rel_data_path = data_path.relative_to(out_root).as_posix()
+            rel_data_path = published_data_path.relative_to(out_root).as_posix()
 
             overlay_annotation_type, overlay_annotation_value = resolve_overlay_annotation(
                 annotation_type=str(output.annotation_gt.type),
@@ -628,6 +925,7 @@ def _build_inspection_rows(
         inspection_total += int(len(rows_by_query_id[str(query_id)]))
 
     workbook_path = task_dir / f"{task_id}.xlsx"
+    published_workbook_path = published_dir / f"{task_id}.xlsx"
     workbook_sheets = _write_inspection_excel(rows_by_query_id, workbook_path, out_root=out_root)
 
     manifest = {
@@ -638,7 +936,7 @@ def _build_inspection_rows(
             str(variant): int(len(seed_rows_by_query_id.get(str(variant), [])))
             for variant in sorted(seed_rows_by_query_id.keys())
         },
-        "workbook": str(workbook_path.relative_to(out_root).as_posix()),
+        "workbook": str(published_workbook_path.relative_to(out_root).as_posix()),
         "workbook_sheets": dict(workbook_sheets),
     }
     write_json_file(task_dir / "manifest.json", manifest)
@@ -708,8 +1006,10 @@ def main() -> int:
             source_domain=str(getattr(task, "domain", "")),
             source_scene_id=str(_registered_scene_id(str(task_id), task) or ""),
         )
-        task_dir = _resolve_task_review_dir(out_root=out_root, task_id=str(task_id), task_obj=task)
-        task_dir.mkdir(parents=True, exist_ok=True)
+        final_task_dir = _resolve_task_review_dir(out_root=out_root, task_id=str(task_id), task_obj=task)
+        stage_task_dir = _task_stage_dir(out_root=out_root, final_task_dir=final_task_dir, task_id=str(task_id))
+        _prepare_staged_task_dir(final_task_dir, stage_task_dir)
+        task_dir = stage_task_dir
 
         task_summary: Dict[str, Any] = {
             "task_id": str(task_id),
@@ -739,7 +1039,9 @@ def main() -> int:
             random_report = _build_random_review_report(task_id=str(task_id), rows=random_rows)
             random_path = task_dir / "random_review_100.json"
             write_json_file(random_path, random_report)
-            task_summary["reports"]["random_review"] = str(random_path.relative_to(out_root).as_posix())
+            task_summary["reports"]["random_review"] = str(
+                (final_task_dir / "random_review_100.json").relative_to(out_root).as_posix()
+            )
 
             has_query_ids = bool(random_report["query_id_distribution"]["has_query_ids"])
             query_id_rows: Dict[str, List[Dict[str, Any]]] | None = None
@@ -783,7 +1085,9 @@ def main() -> int:
             )
             dist_path = task_dir / "distribution_review.json"
             write_json_file(dist_path, distribution_report)
-            task_summary["reports"]["distribution_review"] = str(dist_path.relative_to(out_root).as_posix())
+            task_summary["reports"]["distribution_review"] = str(
+                (final_task_dir / "distribution_review.json").relative_to(out_root).as_posix()
+            )
             task_summary["distribution_pass"] = bool(distribution_report.get("pass", False))
             if not bool(distribution_report.get("pass", False)):
                 failed_distribution_tasks.append(str(task_id))
@@ -871,11 +1175,12 @@ def main() -> int:
                 task_id=str(task_id),
                 out_root=out_root,
                 task_dir=task_dir,
+                published_task_dir=final_task_dir,
                 seed_rows_by_query_id=seed_rows_by_query_id,
                 max_attempts_per_instance=int(args.max_attempts_per_instance),
             )
             task_summary["reports"]["inspection_manifest"] = str(
-                (task_dir / "manifest.json").relative_to(out_root).as_posix()
+                (final_task_dir / "manifest.json").relative_to(out_root).as_posix()
             )
             task_summary["inspection_count"] = int(inspection_manifest.get("inspection_count", 0))
             task_summary["inspection_workbook"] = str(inspection_manifest.get("workbook", ""))
@@ -886,6 +1191,22 @@ def main() -> int:
                 f"[done] {task_id} inspection workbook: {workbook_hint} (sheets={sheet_count})"
             )
 
+        _validate_staged_task_artifacts(
+            out_root=out_root,
+            final_task_dir=final_task_dir,
+            stage_task_dir=stage_task_dir,
+            task_id=str(task_id),
+            require_random=str(args.mode) in {"full", "distribution"},
+            require_distribution=str(args.mode) in {"full", "distribution"},
+            require_inspection=str(args.mode) in {"full", "inspection"},
+        )
+        _publish_staged_task_dir(
+            out_root=out_root,
+            final_task_dir=final_task_dir,
+            stage_task_dir=stage_task_dir,
+            domain=str(taxonomy.domain),
+            scene_id=str(taxonomy.scene_id),
+        )
         summary["tasks"].append(task_summary)
 
     summary["summary"] = {

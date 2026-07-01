@@ -12,6 +12,7 @@ generation:
       bar_with_error: 1.0
 rendering:
   shared:
+    chart_context_profile: dense_clean_minimal
     canvas_width: 1320
     canvas_height: 900
     outer_margin_px: 54

@@ -10,7 +10,15 @@
 Counts a queried class of farm context objects whose base terrain tile is on the requested elevation extremum. Supported object classes are farm animals and trees.
 
 ## Program Contract
-`count(filter(scene_entities, object_type(entity)=target_object_type and level(base_tile(entity))=extremum(level(tile), mode=highest|lowest))); scene=isometric_farmstead; scope=terrain_level_object_count`
+
+Program: `count(filter(scene_entities, object_type(entity)=target_object_type and level(base_tile(entity))=extremum(level(tile), mode=highest|lowest))); scene=isometric_farmstead; scope=terrain_level_object_count`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `terrain_level_object_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `scene_entities`, `object_type`, `entity`, `target_object_type`, `level`, `base_tile`, `extremum`, `tile`, `mode`, `highest`, `lowest` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `highest_terrain_object_count`, `lowest_terrain_object_count`.
 
 ## Query Branches
 

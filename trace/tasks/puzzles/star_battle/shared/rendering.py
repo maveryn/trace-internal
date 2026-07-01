@@ -83,26 +83,6 @@ def bbox_union(boxes: Sequence[Sequence[float]]) -> BBox:
     )
 
 
-def blend_rgb(
-    base: Tuple[int, int, int],
-    overlay: Tuple[int, int, int],
-    alpha: float,
-) -> Tuple[int, int, int]:
-    """Blend two RGB colors with a clamped overlay alpha."""
-
-    weight = max(0.0, min(1.0, float(alpha)))
-    return tuple(
-        max(
-            0,
-            min(
-                255,
-                int(round((float(base[index]) * (1.0 - weight)) + (float(overlay[index]) * weight))),
-            ),
-        )
-        for index in range(3)
-    )
-
-
 def resolve_render_params(
     params: Mapping[str, Any],
     rendering_defaults: Mapping[str, Any],
@@ -329,12 +309,6 @@ def render_star_battle_scene(
                 grid_y0 + (row + 1) * cell_size,
             )
             fill = palette[region_index % len(palette)]
-            if dataset.marked_region_index is not None and int(dataset.marked_region_index) == int(region_index):
-                fill = blend_rgb(fill, highlight_fill, 0.44)
-            if dataset.marked_row_index is not None and int(dataset.marked_row_index) == int(row):
-                fill = blend_rgb(fill, highlight_fill, 0.52)
-            if dataset.marked_col_index is not None and int(dataset.marked_col_index) == int(col):
-                fill = blend_rgb(fill, highlight_fill, 0.52)
             draw.rectangle(
                 bbox,
                 fill=fill,
@@ -395,14 +369,15 @@ def render_star_battle_scene(
                 "cell_count": len(cells),
             }
         )
-    _draw_marked_region_cells(
+    _draw_marked_region_outline(
         draw=draw,
         dataset=dataset,
-        cell_bbox_map=cell_bbox_map,
+        grid_x0=grid_x0,
+        grid_y0=grid_y0,
         accent=accent,
         accent_backdrop=accent_backdrop,
         cell_size=cell_size,
-        line_width=int(render_params.grid_line_width_px),
+        heavy_width=int(render_params.heavy_line_width_px),
     )
     _draw_visible_stars(
         draw=draw,
@@ -479,6 +454,8 @@ def _draw_marked_scope_outlines(
 ) -> None:
     """Draw row or column scope outlines when a task marks one."""
 
+    backdrop_width = max(10, int(heavy_width) + 6)
+    accent_width = max(7, int(heavy_width) + 3)
     if dataset.marked_row_index is not None:
         bbox = (
             grid_x0,
@@ -486,8 +463,8 @@ def _draw_marked_scope_outlines(
             grid_x0 + grid_w,
             grid_y0 + (int(dataset.marked_row_index) + 1) * cell_size,
         )
-        draw.rectangle(bbox, outline=accent_backdrop, width=max(8, heavy_width + 5))
-        draw.rectangle(bbox, outline=accent, width=max(5, heavy_width + 2))
+        draw.rectangle(bbox, outline=accent_backdrop, width=backdrop_width)
+        draw.rectangle(bbox, outline=accent, width=accent_width)
     if dataset.marked_col_index is not None:
         bbox = (
             grid_x0 + int(dataset.marked_col_index) * cell_size,
@@ -495,30 +472,49 @@ def _draw_marked_scope_outlines(
             grid_x0 + (int(dataset.marked_col_index) + 1) * cell_size,
             grid_y0 + grid_w,
         )
-        draw.rectangle(bbox, outline=accent_backdrop, width=max(8, heavy_width + 5))
-        draw.rectangle(bbox, outline=accent, width=max(5, heavy_width + 2))
+        draw.rectangle(bbox, outline=accent_backdrop, width=backdrop_width)
+        draw.rectangle(bbox, outline=accent, width=accent_width)
 
 
-def _draw_marked_region_cells(
+def _draw_marked_region_outline(
     *,
     draw: ImageDraw.ImageDraw,
     dataset: StarBattleDataset,
-    cell_bbox_map: Mapping[str, Sequence[float]],
+    grid_x0: int,
+    grid_y0: int,
     accent: Tuple[int, int, int],
     accent_backdrop: Tuple[int, int, int],
     cell_size: int,
-    line_width: int,
+    heavy_width: int,
 ) -> None:
-    """Draw per-cell outlines for a marked colored region."""
+    """Draw a boundary outline for a marked colored region without changing cell fills."""
 
     if dataset.marked_region_index is None:
         return
-    for cell in dataset.regions[str(int(dataset.marked_region_index))]:
-        bbox = cell_bbox_map[cell_key(tuple(cell))]
-        inset = max(3, int(cell_size * 0.08))
-        inner = (bbox[0] + inset, bbox[1] + inset, bbox[2] - inset, bbox[3] - inset)
-        draw.rectangle(inner, outline=accent_backdrop, width=max(5, line_width + 3))
-        draw.rectangle(inner, outline=accent, width=max(3, line_width + 1))
+
+    selected_region = int(dataset.marked_region_index)
+    size = int(dataset.size)
+
+    def draw_external_edges(*, fill: Tuple[int, int, int], width: int) -> None:
+        for row in range(size):
+            for col in range(size):
+                if int(dataset.region_grid[row][col]) != selected_region:
+                    continue
+                x0 = grid_x0 + col * cell_size
+                y0 = grid_y0 + row * cell_size
+                x1 = x0 + cell_size
+                y1 = y0 + cell_size
+                if row == 0 or int(dataset.region_grid[row - 1][col]) != selected_region:
+                    draw.line((x0, y0, x1, y0), fill=fill, width=width)
+                if row == size - 1 or int(dataset.region_grid[row + 1][col]) != selected_region:
+                    draw.line((x0, y1, x1, y1), fill=fill, width=width)
+                if col == 0 or int(dataset.region_grid[row][col - 1]) != selected_region:
+                    draw.line((x0, y0, x0, y1), fill=fill, width=width)
+                if col == size - 1 or int(dataset.region_grid[row][col + 1]) != selected_region:
+                    draw.line((x1, y0, x1, y1), fill=fill, width=width)
+
+    draw_external_edges(fill=accent_backdrop, width=max(4, int(heavy_width) + 1))
+    draw_external_edges(fill=accent, width=max(2, int(heavy_width) - 1))
 
 
 def _draw_visible_stars(

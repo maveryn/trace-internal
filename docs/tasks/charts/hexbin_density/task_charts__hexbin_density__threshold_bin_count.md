@@ -15,16 +15,24 @@
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
-2. Annotation schema: `bbox_set`.
-3. Annotation should mark every visible hex bin matching the discrete density-level threshold.
+2. Annotation schema: `point_set`.
+3. Annotation should mark the center point of every visible hex bin matching the discrete density-level threshold.
 4. Renderer context such as axes, legends, titles, and background treatments is metadata unless the task explicitly asks for it as annotation.
 
 ## Program Contract
-- `count(hex_bin where compare(density_level(hex_bin), threshold_level, relation={at_least,below})); output=integer_count; annotation=bbox_set(matching_bins); scene=hexbin_density; scope=threshold_bin_count`
+
+Program: `count(hex_bin where compare(density_level(hex_bin), threshold_level, relation={at_least,below})); output=integer_count; annotation=point_set(center(matching_bins)); scene=hexbin_density; scope=threshold_bin_count`
+
+Candidate set: the visible hexagonal bins and density/value labels inside the `threshold_bin_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_count` value bound by `integer_count`.
+Annotation witnesses: `point_set` witnesses bound by `point_set(center(matching_bins))`. Annotation should mark the center point of every visible hex bin matching the discrete density-level threshold. Renderer context such as axes, legends, titles, and background treatments is metadata unless the task explicitly asks for it as annotation.
+Query ids: `above_threshold_bin_count`, `below_threshold_bin_count`.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `above_threshold_bin_count` | `count.one_bound_threshold` | `integer_count` | `bbox_set` |
-| `below_threshold_bin_count` | `count.one_bound_threshold` | `integer_count` | `bbox_set` |
+| `above_threshold_bin_count` | `count.one_bound_threshold` | `integer_count` | `point_set` |
+| `below_threshold_bin_count` | `count.one_bound_threshold` | `integer_count` | `point_set` |

@@ -1,11 +1,15 @@
 # `task_puzzles__color_gradient__color_gradient_violation_cell_label`
 
 ## Program Contract
-`find_gradient_violation(swatch_grid, row_column_progression_rule); scene=color_gradient; scope=color_gradient_violation_cell_label`
 
-The scene shows a labeled grid of color swatches. Exactly one visible swatch
-breaks the smooth row/column color progression. The task returns the capital
-letter printed on that swatch.
+Program: `find_gradient_violation(swatch_grid, row_column_progression_rule); scene=color_gradient; scope=color_gradient_violation_cell_label`
+
+Candidate set: the visible swatch sequence or swatch grid, missing/violating swatches, and labeled options or cells inside the `color_gradient_violation_cell_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `swatch_grid`, `row_column_progression_rule`, `color_gradient`, `color_gradient_violation_cell_label`.
+Operation: evaluate `find_gradient_violation` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; the violating swatch label.
+Annotation witnesses: `annotation` uses the `bbox` schema; the image-pixel bounding box of the violating swatch cell.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`

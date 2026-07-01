@@ -1,7 +1,15 @@
 # `task_puzzles__balance_scale__equivalent_object_count_value`
 
 ## Program Contract
-`solve_count(direct_and_compound_balance_equations, target=source_object_equivalent_repeated_objects, unknowns=A|B|C, panels=3); scene=balance_scale; scope=equivalent_object_count_value`
+
+Program: `solve_count(direct_and_compound_balance_equations, target=source_object_equivalent_repeated_objects, unknowns=A|B|C, panels=3); scene=balance_scale; scope=equivalent_object_count_value`
+
+Candidate set: the visible balance-scale panels, object symbols, object counts, side relations, and query markers inside the `equivalent_object_count_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `direct_and_compound_balance_equations`, `source_object_equivalent_repeated_objects`, `unknowns`, `A`, `B`, `C`, `panels`, `balance_scale`, `equivalent_object_count_value`.
+Operation: evaluate `solve_count` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the scalar bbox marks the question-mark count box in the query row.
+Query ids: `single`.
 
 ## 2) Scene + task contract
 1. Entities/relations: Three balanced pan-scale panels with three labeled unknown object tokens, numbered weights, direct single-object value panels for the source and repeated objects, at least one compound/context panel, and a query row asking how many repeated objects equal one source object.

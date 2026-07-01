@@ -29,8 +29,8 @@ class NamedPathDefaults:
     panel_padding_px: int = ICON_SHARED_DEFAULTS.panel_padding_px
     panel_corner_radius_px: int = ICON_SHARED_DEFAULTS.panel_corner_radius_px
     panel_title_font_size_px: int = ICON_SHARED_DEFAULTS.panel_title_font_size_px
-    scene_icon_size_min_px: int = 48
-    scene_icon_size_max_px: int = 72
+    scene_icon_size_min_px: int = 52
+    scene_icon_size_max_px: int = 78
     reference_panel_width_px: int = ICON_SHARED_DEFAULTS.reference_panel_width_px
     reference_icon_size_px: int = ICON_SHARED_DEFAULTS.reference_icon_size_px
     reference_icon_size_min_px: int = ICON_SHARED_DEFAULTS.reference_icon_size_px
@@ -57,6 +57,7 @@ class NamedPathDefaults:
     )
     named_icon_fill_style_support: Tuple[str, ...] = PROCEDURAL_NAMED_ICON_FILL_STYLES
     path_stroke_width_px: int = 7
+    path_line_alpha: int = 145
     path_stop_radius_px: int = 6
     path_horizontal_margin_px: int = 72
     path_vertical_margin_px: int = 92

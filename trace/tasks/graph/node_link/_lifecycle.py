@@ -11,13 +11,13 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
-from trace.core.seed import hash64, spawn_rng
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.graph.shared.task_support import format_graph_prompt_label, graph_edge_label_entries, resolve_graph_named_variant, resolve_graph_render_params
 from trace.tasks.shared.color_format import format_named_color_with_hex
 from trace.tasks.shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
@@ -123,17 +123,12 @@ def _resolve_int_axis(
     if upper < lower:
         raise ValueError(f"{key} support is empty")
     support = tuple(range(lower, upper + 1))
-    sample_cursor = params.get("_sample_cursor")
-    if sample_cursor is not None:
-        offset = abs(int(hash64(0, f"{task_id}:{key}:axis_offset", 0))) % len(support)
-        cursor = abs(int(sample_cursor)) + int(offset)
-    else:
-        cursor = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{task_id}:{key}",
+    value = int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{task_id}:{key}"),
+            support,
         )
-    value = int(support[int(cursor) % len(support)])
+    )
     return value, {str(item): 1.0 / float(len(support)) for item in support}
 
 
@@ -205,14 +200,12 @@ def _resolve_axes(
             raise ValueError(f"unsupported query_id for {plan.public_id}: {selected_query}")
         query_probabilities = {str(selected_query): 1.0}
     else:
-        query_index = int(
-            resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=f"{plan.public_id}:query_id",
+        selected_query = str(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{plan.public_id}:query_id"),
+                supported_queries,
             )
         )
-        selected_query = str(supported_queries[int(query_index % len(supported_queries))])
         probability = 1.0 / float(len(supported_queries))
         query_probabilities = {str(query_id): float(probability) for query_id in supported_queries}
     node_count, node_probabilities = _resolve_int_axis(
@@ -575,9 +568,50 @@ def run_node_link_plan(
         "target_edge_label",
         "answer_label",
         "goal_label",
+        "removed_node_label",
+        "graph_directionality",
+        "topology_profile",
     ):
         if hasattr(sample, key):
             realized_execution_values[str(key)] = str(getattr(sample, key))
+    for key in ("adjacency_by_label", "successors_by_label", "predecessors_by_label"):
+        if hasattr(sample, key):
+            realized_execution_values[str(key)] = {
+                str(item_key): [str(value) for value in values]
+                for item_key, values in getattr(sample, key).items()
+            }
+    for key in (
+        "pre_removal_adjacency_by_label",
+        "post_removal_adjacency_by_label",
+        "pre_removal_successors_by_label",
+        "post_removal_successors_by_label",
+        "pre_removal_predecessors_by_label",
+        "post_removal_predecessors_by_label",
+    ):
+        if hasattr(sample, key):
+            realized_execution_values[str(key)] = {
+                str(item_key): [str(value) for value in values]
+                for item_key, values in getattr(sample, key).items()
+            }
+    for key in (
+        "pre_removal_degrees_by_label",
+        "post_removal_degrees_by_label",
+        "pre_removal_in_degrees_by_label",
+        "post_removal_in_degrees_by_label",
+        "pre_removal_out_degrees_by_label",
+        "post_removal_out_degrees_by_label",
+    ):
+        if hasattr(sample, key):
+            realized_execution_values[str(key)] = {
+                str(item_key): int(value)
+                for item_key, value in getattr(sample, key).items()
+            }
+    for key in ("post_removal_edge_labels",):
+        if hasattr(sample, key):
+            realized_execution_values[str(key)] = [
+                [str(left), str(right)]
+                for left, right in getattr(sample, key)
+            ]
     for key in ("queried_degrees_by_label", "node_color_names_by_label"):
         if hasattr(sample, key):
             realized_execution_values[str(key)] = {
@@ -638,20 +672,23 @@ def run_node_link_plan(
             str(key): float(value)
             for key, value in getattr(sample, "edge_label_bucket_probabilities").items()
         }
+    realized_node_count = len(tuple(getattr(sample, "node_labels", ()))) or int(axes.node_count)
     query_params = {
         "query_id": str(axes.query_id),
         "graph_directionality": str(directionality),
-        "node_count": int(axes.node_count),
+        "node_count": int(realized_node_count),
         "edge_count": int(getattr(sample, "edge_count", 0)),
         **{str(key): value for key, value in axes.values.items()},
         **realized_query_values,
         **dict(axes.probabilities),
     }
+    if int(realized_node_count) != int(axes.node_count):
+        query_params["requested_node_count"] = int(axes.node_count)
     trace_payload = {
         "scene_ir": {
             "scene_kind": str(plan.scene_kind),
             "scene_id": scene_id,
-            "entities": [*node_entities(rendered_scene), *edge_entities(rendered_scene, sample)],
+            "entities": [*node_entities(rendered_scene, sample), *edge_entities(rendered_scene, sample)],
             "relations": {
                 "graph_directionality": str(directionality),
                 "adjacency_by_label": {str(key): list(values) for key, values in getattr(sample, "adjacency_by_label", {}).items()},
@@ -682,6 +719,9 @@ def run_node_link_plan(
                 "edge_routing_variant": str(rendered_scene.edge_routing_variant),
                 "theme_tone": str(render_params.theme_tone),
                 "panel_style_variant": str(render_params.panel_style_variant),
+                "node_fill_rgb": list(render_params.node_fill_rgb),
+                "node_border_rgb": list(render_params.node_border_rgb),
+                "edge_color_rgb": list(render_params.edge_color_rgb),
                 "label_font_size_px": int(render_params.label_font_size_px),
                 "edge_text_label_font_size_px": (
                     int(edge_text_label_font_size_px)
@@ -699,11 +739,14 @@ def run_node_link_plan(
             "scene_id": scene_id,
             "question_format": resolve_prompt_slot(plan.question_format, axes) or str(axes.query_id),
             "graph_directionality": str(directionality),
-            "node_count": int(axes.node_count),
+            "node_count": int(realized_node_count),
             "edge_count": int(getattr(sample, "edge_count", 0)),
             "layout_variant_used": str(rendered_scene.layout_variant),
+            "layout_variant_requested": str(axes.layout_variant),
             "layout_transform_variant": str(rendered_scene.layout_transform_variant),
             "edge_routing_variant": str(rendered_scene.edge_routing_variant),
+            "node_shape_variant": str(axes.node_shape_variant),
+            "node_color_name": str(axes.node_color_name),
             "label_variant": str(getattr(sample, "label_variant", axes.label_variant)),
             "matching_labels": list(getattr(sample, "annotation_labels", ()) or getattr(sample, "target_labels", ())),
             "matching_edges": [list(edge) for edge in getattr(sample, "target_edges", ())],

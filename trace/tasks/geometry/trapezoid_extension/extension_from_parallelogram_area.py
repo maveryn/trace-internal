@@ -63,6 +63,7 @@ def _prepare_extension_from_area(
             LabelSpec("parallelogram_area", f"parallelogram area={fmt_measure(case.parallelogram_area)}", "parallelogram_area"),
         ),
         target_support_probabilities=dict(answer_probabilities),
+        annotation_mode="extension_segment",
     )
     return problem, float(answer), trace_values
 

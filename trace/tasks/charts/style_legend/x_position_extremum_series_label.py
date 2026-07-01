@@ -7,21 +7,17 @@ from typing import Any
 
 from trace.core.seed import spawn_rng
 from trace.tasks.charts.style_legend._lifecycle import (
-    package_style_legend_plan,
+    package_point_label_plan,
     run_style_legend_lifecycle,
 )
 from trace.tasks.charts.style_legend.shared.defaults import balanced_choice, gen_int
 from trace.tasks.charts.style_legend.shared.prompts import (
     ANSWER_HINT_LABEL,
-    ANSWER_ONLY_EXAMPLES,
-    JSON_EXAMPLES,
-    POINT_HINT,
 )
 from trace.tasks.charts.style_legend.shared.sampling import (
-    base_series,
-    common_setup,
-    package_dataset,
+    dataset_from_context,
     replace_series_value,
+    sample_context,
 )
 from trace.tasks.charts.style_legend.shared.state import DOMAIN, point_id
 from trace.tasks.registry import register_task
@@ -49,26 +45,10 @@ def _build_plan(params: Mapping[str, Any], seed: int, selected: str, probabiliti
     """Sample one extremal marker objective and bind the selected point."""
 
     task_params = {**TASK_PARAM_DEFAULTS, **dict(params)}
-    (
-        x_count,
-        series_count,
-        labels_x,
-        meta_x,
-        labels_series,
-        meta_series,
-        palette_mode,
-        palette_probs,
-        legend_position,
-        legend_probs,
-        styles,
-    ) = common_setup(task_params, instance_seed=int(seed))
-    value_min = int(gen_int(task_params, "style_legend_value_min", 0))
-    value_max = int(gen_int(task_params, "style_legend_value_max", 100))
-    if int(value_min) >= int(value_max):
-        raise ValueError("style_legend_value_min must be lower than style_legend_value_max")
+    context = sample_context(task_params, instance_seed=int(seed))
     x_index = int(
         balanced_choice(
-            tuple(range(1, max(2, int(x_count) - 1))),
+            tuple(range(1, max(2, int(context.x_count) - 1))),
             task_params,
             instance_seed=int(seed),
             namespace=f"{TASK_ID}.x_index",
@@ -76,19 +56,11 @@ def _build_plan(params: Mapping[str, Any], seed: int, selected: str, probabiliti
     )
     answer_index = int(
         balanced_choice(
-            tuple(range(int(series_count))),
+            tuple(range(int(context.series_count))),
             task_params,
             instance_seed=int(seed),
             namespace=f"{TASK_ID}.answer_series",
         )
-    )
-    series = base_series(
-        labels=labels_series,
-        x_count=int(x_count),
-        styles=styles,
-        instance_seed=int(seed),
-        value_min=int(value_min),
-        value_max=int(value_max),
     )
     rng = spawn_rng(int(seed), f"{TASK_ID}.force")
     direction = _direction(str(selected))
@@ -96,51 +68,36 @@ def _build_plan(params: Mapping[str, Any], seed: int, selected: str, probabiliti
     gap_min = max(3, int(gen_int(task_params, "style_legend_extremum_gap_min", 8)))
     gap_max = max(int(gap_min), int(gen_int(task_params, "style_legend_extremum_gap_max", 26)))
     updated = []
-    for index, item in enumerate(series):
+    for index, item in enumerate(context.series):
         if int(index) == int(answer_index):
             value = int(target_value)
         elif direction == "highest":
-            value = max(int(value_min) + 3, int(target_value) - int(rng.randint(int(gap_min), int(gap_max))))
+            value = max(int(context.value_min) + 3, int(target_value) - int(rng.randint(int(gap_min), int(gap_max))))
         else:
-            value = min(int(value_max) - 3, int(target_value) + int(rng.randint(int(gap_min), int(gap_max))))
+            value = min(int(context.value_max) - 3, int(target_value) + int(rng.randint(int(gap_min), int(gap_max))))
         updated.append(replace_series_value(item, x_index=int(x_index), value=int(value)))
     answer_series = updated[int(answer_index)]
-    dataset = package_dataset(
-        x_labels_value=labels_x,
-        x_label_meta=meta_x,
-        series=updated,
-        series_label_meta=meta_series,
-        target_x_index=int(x_index),
-        threshold_value=None,
-        palette_mode=str(palette_mode),
-        palette_mode_probabilities=palette_probs,
-        legend_position=str(legend_position),
-        legend_position_probabilities=legend_probs,
-    )
-    return package_style_legend_plan(
+    dataset = dataset_from_context(context, series=updated, target_x_index=int(x_index))
+    return package_point_label_plan(
         dataset=dataset,
         params=task_params,
         answer_value=str(answer_series.label),
-        answer_type="string",
-        annotation_type="point",
-        annotation_marker_ids=(point_id(str(answer_series.series_id), int(x_index)),),
+        annotation_marker_id=point_id(str(answer_series.series_id), int(x_index)),
         prompt_key=str(selected),
         prompt_slots={
-            "x_label": str(labels_x[int(x_index)]),
+            "x_label": str(context.labels_x[int(x_index)]),
             "extremum_direction": str(direction),
         },
         answer_hint=ANSWER_HINT_LABEL,
-        annotation_hint=POINT_HINT,
-        json_example=str(JSON_EXAMPLES["extremum_label"]),
-        json_example_answer_only=str(ANSWER_ONLY_EXAMPLES["extremum_label"]),
+        json_example_key="extremum_label",
         program_code=PROGRAM_CODE,
         reasoning_load=0.58,
         objective_trace={
-            "x_label": str(labels_x[int(x_index)]),
+            "x_label": str(context.labels_x[int(x_index)]),
             "extremum_direction": str(direction),
             "answer_series_id": str(answer_series.series_id),
             "answer_series_label": str(answer_series.label),
-            "answer_support": [str(label) for label in labels_series],
+            "answer_support": [str(label) for label in context.labels_series],
             "query_id_probabilities": dict(probabilities),
         },
     )

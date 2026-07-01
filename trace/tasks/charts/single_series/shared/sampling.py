@@ -4,24 +4,26 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
-from trace.tasks.charts.shared.labeled_chart_common import (
-    apply_scene_variant_mark_count_cap,
-    balanced_choice_from_values,
-    build_summary_statistics_dataset_for_variant,
+from trace.tasks.charts.shared.label_assets import sample_chart_labels
+from trace.tasks.charts.shared.labeled_chart_count_datasets import build_value_count_dataset_for_variant
+from trace.tasks.charts.shared.labeled_chart_composition import sample_composition_with_sum
+from trace.tasks.charts.shared.labeled_chart_sampling import choose_mark_count
+from trace.tasks.charts.shared.labeled_chart_summary_datasets import build_summary_statistics_dataset_for_variant
+from trace.tasks.charts.shared.labeled_chart_trend_datasets import (
     build_trend_interval_change_dataset_for_variant,
     build_trend_structure_dataset_for_variant,
     build_trend_threshold_crossing_dataset_for_variant,
-    build_value_count_dataset_for_variant,
-    choose_mark_count,
+)
+from trace.tasks.charts.shared.labeled_chart_values import (
+    balanced_choice_from_values,
     resolve_mark_count_bounds,
     resolve_value_bounds,
-    sample_chart_labels,
-    sample_composition_with_sum,
     sorted_labels,
 )
+from trace.tasks.charts.shared.labeled_chart_variants import apply_scene_variant_mark_count_cap
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from .defaults import DEFAULTS, GEN_DEFAULTS
 from .state import SingleSeriesDataset, as_int_values, as_label_tuple
@@ -223,15 +225,6 @@ def counterfactual_dataset(
         )
     elif str(operation) == "target_share":
         dataset = _target_share_after_removal(
-            labels=labels,
-            params=params,
-            instance_seed=int(instance_seed),
-            value_min=int(value_min),
-            value_max=int(value_max),
-            namespace=str(namespace),
-        )
-    elif str(operation) == "aggregate_baseline":
-        dataset = _baseline_from_aggregate_percent_change(
             labels=labels,
             params=params,
             instance_seed=int(instance_seed),
@@ -501,12 +494,12 @@ def _target_share_after_removal(
         instance_seed=int(instance_seed),
         namespace=f"{namespace}.labels.target_share",
     )
-    target_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.target_label.target_share",
+    target_label = str(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{namespace}.target_label.target_share"),
+            tuple(str(label) for label in retained_labels),
+        )
     )
-    target_label = str(retained_labels[int(target_index) % len(retained_labels)])
     other_retained = [str(label) for label in retained_labels if str(label) != str(target_label)]
     share_options = _resolve_int_list(params, "share_percent_values", (10, 15, 20, 25, 30, 40, 50, 60))
     feasible: list[tuple[int, int, int, int]] = []
@@ -527,12 +520,10 @@ def _target_share_after_removal(
         namespace=f"{namespace}.answer.target_share",
     )
     choices = [item for item in feasible if int(item[0]) == int(answer_value)]
-    choice_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.target_share.choice.{answer_value}",
+    _, target_value, remaining_total, other_sum = uniform_choice(
+        spawn_rng(int(instance_seed), f"{namespace}.target_share.choice.{answer_value}"),
+        tuple(choices),
     )
-    _, target_value, remaining_total, other_sum = choices[int(choice_index) % len(choices)]
     other_values = _compose_values_with_sum(
         total=int(other_sum),
         count=len(other_retained),
@@ -566,93 +557,6 @@ def _target_share_after_removal(
             "remaining_total": int(remaining_total),
             "percent_value": int(answer_value),
             "counterfactual_operation": "remove_labels_then_target_share_percent",
-        },
-    )
-
-
-def _baseline_from_aggregate_percent_change(
-    *,
-    labels: Sequence[str],
-    params: Mapping[str, Any],
-    instance_seed: int,
-    value_min: int,
-    value_max: int,
-    namespace: str,
-) -> _CounterfactualSample:
-    """Construct aggregate values that imply an integer percent-change baseline."""
-
-    aggregate_count = _choose_count(
-        params,
-        explicit_key="aggregate_count",
-        min_key="aggregate_count_min",
-        max_key="aggregate_count_max",
-        fallback_min=2,
-        fallback_max=4,
-        max_allowed=len(labels) - 1,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.aggregate_count.baseline",
-    )
-    aggregate_labels, other_labels = _split_labels(
-        labels,
-        selected_count=int(aggregate_count),
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.labels.baseline",
-    )
-    percent_options = _resolve_int_list(params, "baseline_percent_values", (25, 50, 75, 100))
-    feasible: list[tuple[int, int, int]] = []
-    for percent in percent_options:
-        for baseline in range(int(value_min), int(value_max) * int(aggregate_count) + 1):
-            aggregate_sum_numerator = int(baseline) * (100 + int(percent))
-            if int(aggregate_sum_numerator) % 100 != 0:
-                continue
-            aggregate_sum = int(aggregate_sum_numerator // 100)
-            if int(aggregate_count) * int(value_min) <= int(aggregate_sum) <= int(aggregate_count) * int(value_max):
-                feasible.append((int(percent), int(baseline), int(aggregate_sum)))
-    if not feasible:
-        raise ValueError("no feasible aggregate baseline support")
-    answer_value = balanced_choice_from_values(
-        sorted(set(item[1] for item in feasible)),
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.answer.baseline",
-    )
-    choices = [item for item in feasible if int(item[1]) == int(answer_value)]
-    choice_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.baseline.choice.{answer_value}",
-    )
-    percent_value, _, aggregate_sum = choices[int(choice_index) % len(choices)]
-    aggregate_values = _compose_values_with_sum(
-        total=int(aggregate_sum),
-        count=int(aggregate_count),
-        value_min=int(value_min),
-        value_max=int(value_max),
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.values.baseline.aggregate",
-    )
-    other_values = _random_values(
-        count=len(other_labels),
-        value_min=int(value_min),
-        value_max=int(value_max),
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.values.baseline.other",
-    )
-    values_by_label = {
-        **{str(label): int(value) for label, value in zip(aggregate_labels, aggregate_values)},
-        **{str(label): int(value) for label, value in zip(other_labels, other_values)},
-    }
-    return _CounterfactualSample(
-        labels=labels,
-        values=_values_from_label_map(labels, values_by_label),
-        answer_value=int(answer_value),
-        annotation_labels=sorted_labels(aggregate_labels),
-        trace={
-            "aggregate_labels": list(sorted_labels(aggregate_labels)),
-            "aggregate_count": int(aggregate_count),
-            "aggregate_sum": int(aggregate_sum),
-            "percent_value": int(percent_value),
-            "counterfactual_operation": "aggregate_percent_higher_than_baseline",
         },
     )
 

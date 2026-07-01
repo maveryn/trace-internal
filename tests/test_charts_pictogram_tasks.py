@@ -8,9 +8,16 @@ import pytest
 
 from tests.helpers import extract_prompt_json_example
 from trace.core.seed import hash64
+from trace.tasks.charts.pictogram.category_total_extremum_label import (
+    CATEGORY_TOTAL_EXTREMUM_QUERY_IDS,
+    LARGEST_TOTAL_QUERY_ID,
+    SMALLEST_TOTAL_QUERY_ID,
+    ChartsPictogramCategoryTotalExtremumLabelTask,
+)
 from trace.tasks.charts.pictogram.category_total_value import ChartsPictogramCategoryTotalValueTask
 from trace.tasks.charts.pictogram.group_difference_value import ChartsPictogramGroupDifferenceValueTask
 from trace.tasks.charts.pictogram.shared.state import SUPPORTED_GLYPHS, SUPPORTED_SCENE_VARIANTS
+from trace.tasks.charts.pictogram.target_value_nearest_category_label import ChartsPictogramTargetValueNearestCategoryLabelTask
 from trace.tasks.charts.pictogram.threshold_count import (
     GREATER_THAN_QUERY_ID,
     LESS_THAN_QUERY_ID,
@@ -20,10 +27,13 @@ from trace.tasks.registry import create_task
 
 
 TASK_CASES = (
-    (ChartsPictogramCategoryTotalValueTask, "single", "bbox"),
-    (ChartsPictogramGroupDifferenceValueTask, "single", "bbox_map"),
-    (ChartsPictogramThresholdCountTask, GREATER_THAN_QUERY_ID, "bbox_set"),
-    (ChartsPictogramThresholdCountTask, LESS_THAN_QUERY_ID, "bbox_set"),
+    (ChartsPictogramCategoryTotalExtremumLabelTask, LARGEST_TOTAL_QUERY_ID, "bbox", "string"),
+    (ChartsPictogramCategoryTotalExtremumLabelTask, SMALLEST_TOTAL_QUERY_ID, "bbox", "string"),
+    (ChartsPictogramCategoryTotalValueTask, "single", "bbox", "integer"),
+    (ChartsPictogramGroupDifferenceValueTask, "single", "bbox_map", "integer"),
+    (ChartsPictogramTargetValueNearestCategoryLabelTask, "single", "bbox", "string"),
+    (ChartsPictogramThresholdCountTask, GREATER_THAN_QUERY_ID, "bbox_set", "integer"),
+    (ChartsPictogramThresholdCountTask, LESS_THAN_QUERY_ID, "bbox_set", "integer"),
 )
 
 
@@ -34,8 +44,20 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
     assert 0 <= y0 < y1 <= height
 
 
-def _expected_answer(execution: dict, query_params: dict, query_id: str) -> int:
+def _expected_answer(execution: dict, query_params: dict, query_id: str) -> int | str:
     totals_by_category = {str(label): int(value) for label, value in execution["totals_by_category"].items()}
+    if query_id in CATEGORY_TOTAL_EXTREMUM_QUERY_IDS:
+        target_total = max(totals_by_category.values()) if query_id == LARGEST_TOTAL_QUERY_ID else min(totals_by_category.values())
+        winners = [label for label, value in totals_by_category.items() if int(value) == int(target_total)]
+        assert winners == [str(query_params["answer_category_label"])]
+        return str(query_params["answer_category_label"])
+    if "answer_category_label" in query_params:
+        target_value = int(query_params["target_value"])
+        distances = {label: abs(int(value) - target_value) for label, value in totals_by_category.items()}
+        best_distance = min(distances.values())
+        winners = [label for label, distance in distances.items() if int(distance) == int(best_distance)]
+        assert winners == [str(query_params["answer_category_label"])]
+        return str(query_params["answer_category_label"])
     if query_id == "single" and "target_category_label" in query_params:
         return int(totals_by_category[str(query_params["target_category_label"])])
     if query_id == "single":
@@ -48,11 +70,12 @@ def _expected_answer(execution: dict, query_params: dict, query_id: str) -> int:
     return sum(1 for value in totals_by_category.values() if int(value) < threshold)
 
 
-@pytest.mark.parametrize(("task_cls", "query_id", "expected_annotation_type"), TASK_CASES)
+@pytest.mark.parametrize(("task_cls", "query_id", "expected_annotation_type", "expected_answer_type"), TASK_CASES)
 def test_charts_pictogram_tasks_match_contract(
     task_cls: type,
     query_id: str,
     expected_annotation_type: str,
+    expected_answer_type: str,
 ) -> None:
     task = task_cls()
     out = task.generate(91200 + len(task_cls.task_id) + len(query_id), params={"query_id": query_id}, max_attempts=60)
@@ -67,19 +90,20 @@ def test_charts_pictogram_tasks_match_contract(
     assert out.query_id == query_id
     assert str(execution["query_id"]) == query_id
     assert str(query_params["query_id"]) == query_id
-    assert out.answer_gt.type == "integer"
+    assert out.answer_gt.type == expected_answer_type
     assert out.annotation_gt.type == expected_annotation_type
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["question_format"]) == "pictogram_quantity"
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
     assert str(render["glyph_name"]) in SUPPORTED_GLYPHS
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
+    assert int(render["canvas_width"]) * int(render["canvas_height"]) <= 1_280_000
     assert 6 <= int(execution["category_count"]) <= 10
     assert 1 <= int(execution["unit_scale"]) <= 5
 
     expected = _expected_answer(execution, query_params, query_id)
-    assert int(out.answer_gt.value) == int(expected)
-    assert int(execution["answer_value"]) == int(expected)
+    assert out.answer_gt.value == expected
+    assert execution["answer_value"] == expected
     assert trace["projected_annotation"]["type"] == expected_annotation_type
 
     annotation_category_ids = [str(value) for value in trace["projected_annotation"]["category_ids"]]
@@ -109,7 +133,11 @@ def test_charts_pictogram_tasks_match_contract(
     ]
     for bbox in boxes_to_check:
         _assert_bbox_inside_canvas([float(value) for value in bbox], width=int(render["canvas_width"]), height=int(render["canvas_height"]))
-    if task_cls is ChartsPictogramCategoryTotalValueTask:
+    if task_cls in {
+        ChartsPictogramCategoryTotalExtremumLabelTask,
+        ChartsPictogramCategoryTotalValueTask,
+        ChartsPictogramTargetValueNearestCategoryLabelTask,
+    }:
         assert len(boxes_to_check) == 1
     elif task_cls is ChartsPictogramGroupDifferenceValueTask:
         assert len(boxes_to_check) == 2
@@ -119,7 +147,7 @@ def test_charts_pictogram_tasks_match_contract(
 
 
 def test_charts_pictogram_prompt_examples_match_contract() -> None:
-    for task_cls, query_id, expected_annotation_type in TASK_CASES:
+    for task_cls, query_id, expected_annotation_type, expected_answer_type in TASK_CASES:
         out = task_cls().generate(
             91300 + len(task_cls.task_id) + len(query_id),
             params={"query_id": query_id},
@@ -127,7 +155,7 @@ def test_charts_pictogram_prompt_examples_match_contract() -> None:
         )
         answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
-        assert isinstance(answer_and_annotation["answer"], int)
+        assert isinstance(answer_and_annotation["answer"], str if expected_answer_type == "string" else int)
         if expected_annotation_type == "bbox":
             assert isinstance(answer_and_annotation["annotation"], list)
             assert len(answer_and_annotation["annotation"]) == 4
@@ -136,7 +164,7 @@ def test_charts_pictogram_prompt_examples_match_contract() -> None:
         else:
             assert isinstance(answer_and_annotation["annotation"], list)
             assert all(isinstance(item, list) and len(item) == 4 for item in answer_and_annotation["annotation"])
-        assert isinstance(answer_only["answer"], int)
+        assert isinstance(answer_only["answer"], str if expected_answer_type == "string" else int)
 
 
 def test_charts_pictogram_balanced_sampling_covers_scene_and_glyph_axes() -> None:

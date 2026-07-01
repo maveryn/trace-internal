@@ -1,12 +1,11 @@
 generation:
   shared:
     density_curve_count_min: 4
-    density_curve_count_max: 7
+    density_curve_count_max: 6
     density_curve_count_weights:
       "4": 1.0
-      "5": 1.2
+      "5": 1.0
       "6": 1.0
-      "7": 0.6
     density_curve_x_min: 0.0
     density_curve_x_max: 100.0
     density_curve_x_grid_size: 161
@@ -14,7 +13,7 @@ generation:
     density_curve_interval_width_max: 34.0
     density_curve_mean_winner_gap_min: 5.5
     density_curve_mode_winner_gap_min: 5.0
-    density_curve_interval_mass_winner_gap_min: 0.045
+    density_curve_interval_mass_winner_gap_min: 0.08
     density_curve_at_x_winner_gap_min: 0.006
     density_curve_label_min_chars: 3
     density_curve_label_max_chars: 10
@@ -33,6 +32,7 @@ generation:
       dot: 0.45
 rendering:
   shared:
+    chart_context_profile: dense_clean_minimal
     canvas_width: 980
     canvas_height: 660
     plot_margin_left_px: 92
@@ -50,8 +50,9 @@ rendering:
     guide_line_width_px: 2
     mark_color_channel_min: 18
     mark_color_channel_max: 205
-    mark_color_min_distance: 34.0
+    mark_color_min_distance: 50.0
     mark_color_distance_space: lab
+    density_curve_palette_mode: safe_qualitative
 prompt:
   shared:
     bundle_id: charts_density_curve_v1

@@ -19,7 +19,15 @@
 4. Edge direction, node count, correct option slot, style, font, background, and layout jitter are generation/render metadata, not public query branches.
 
 ## Program Contract
-- `select(option_graph where labeled_structure(option_graph) == labeled_structure(reference_graph)); output=option_letter; annotation=bbox(selected_option_panel); scene=graph_options; scope=same_structure_label`
+
+Program: `select(option_graph where labeled_structure(option_graph) == labeled_structure(reference_graph)); output=option_letter; annotation=bbox(selected_option_panel); scene=graph_options; scope=same_structure_label`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `same_structure_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `option_graph`, `where`, `labeled_structure`, `reference_graph`, `selected_option_panel`, `graph_options`, `same_structure_label`.
+Operation: evaluate `select` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. Answer type: `option_letter`.

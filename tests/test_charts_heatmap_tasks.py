@@ -38,15 +38,14 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
 
 
 def _condition_matches(value: int, *, condition_kind: str, bin_count: int) -> bool:
-    midpoint = int(bin_count) // 2
     if condition_kind == "hot":
-        return int(value) >= max(0, int(bin_count) - 2)
+        return int(value) == max(0, int(bin_count) - 1)
     if condition_kind == "cool":
-        return int(value) <= 1
+        return int(value) == 0
     if condition_kind == "increase":
-        return int(value) > int(midpoint)
+        return int(value) == max(0, int(bin_count) - 1)
     if condition_kind == "decrease":
-        return int(value) < int(midpoint)
+        return int(value) == 0
     raise AssertionError(f"unsupported condition_kind: {condition_kind}")
 
 
@@ -150,7 +149,8 @@ def test_chart_heatmap_task_queries_match_contract(task_cls: type, query_id: str
     assert out.query_id == query_id
     expected_answer_type = "integer" if str(prompt_key).startswith("colorbar_") else "string"
     assert out.answer_gt.type == expected_answer_type
-    assert out.annotation_gt.type == "bbox_set"
+    expected_annotation_type = "bbox" if str(prompt_key) == "axis_cell_extremum_label" else "bbox_set"
+    assert out.annotation_gt.type == expected_annotation_type
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["question_format"]) == "heatmap_query"
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
@@ -174,12 +174,25 @@ def test_chart_heatmap_task_queries_match_contract(task_cls: type, query_id: str
     expected_answer = _expected_answer(execution)
     assert out.answer_gt.value == expected_answer
     assert execution["answer_value"] == expected_answer
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     annotation_cell_ids = [str(cell_id) for cell_id in execution["annotation_cell_ids"]]
     expected_bboxes = [render_map["cell_bboxes_px"][cell_id] for cell_id in annotation_cell_ids]
-    assert out.annotation_gt.value == expected_bboxes
     assert trace["projected_annotation"]["cell_ids"] == annotation_cell_ids
     assert annotation_cell_ids
+    if expected_annotation_type == "bbox":
+        assert len(annotation_cell_ids) == 1
+        assert out.annotation_gt.value == expected_bboxes[0]
+        assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["cell_id"] == annotation_cell_ids[0]
+        _assert_bbox_inside_canvas(
+            [float(value) for value in out.annotation_gt.value],
+            width=int(render["canvas_width"]),
+            height=int(render["canvas_height"]),
+        )
+        return
+    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value
+    assert out.annotation_gt.value == expected_bboxes
     if str(prompt_key).startswith("colorbar_"):
         assert len(annotation_cell_ids) == int(out.answer_gt.value)
     for bbox in out.annotation_gt.value:
@@ -205,6 +218,69 @@ def test_chart_heatmap_prompt_examples_match_contract() -> None:
         assert answer_and_annotation["answer"] == answer
         assert answer_only == {"answer": answer}
         assert isinstance(answer_and_annotation["annotation"], list)
+        if cls is ChartsHeatmapAxisCellExtremumLabelTask:
+            assert len(answer_and_annotation["annotation"]) == 4
+        else:
+            assert all(isinstance(bbox, list) and len(bbox) == 4 for bbox in answer_and_annotation["annotation"])
+
+
+@pytest.mark.parametrize("query_id", ChartsHeatmapAxisConditionExtremumLabelTask.supported_query_ids)
+def test_chart_heatmap_axis_condition_does_not_use_unanswerable_branch(query_id: str) -> None:
+    task = ChartsHeatmapAxisConditionExtremumLabelTask()
+    assert task.supports_unanswerable is False
+
+    for seed in range(80600, 80605):
+        out = task.generate(
+            seed,
+            params={"query_id": query_id, "unanswerable_probability": 1.0},
+            max_attempts=512,
+        )
+        trace = out.trace_payload
+        execution = trace["execution_trace"]
+        scene_relations = trace["scene_ir"]["relations"]
+        witness = trace["witness_symbolic"]
+
+        assert out.answer_gt.value != "unanswerable"
+        assert execution["answerability"] == "answerable"
+        assert scene_relations["answerability"] == "answerable"
+        assert witness["answerability"] == "answerable"
+        assert "absence_proof" not in execution
+        assert "absence_proof" not in scene_relations
+        assert "absence_proof" not in witness
+        assert "unanswerable" not in out.prompt.lower()
+        for prompt in out.prompt_variants.values():
+            assert "unanswerable" not in str(prompt).lower()
+
+
+@pytest.mark.parametrize("query_id", ChartsHeatmapAxisCellExtremumLabelTask.supported_query_ids)
+def test_chart_heatmap_axis_cell_extremum_does_not_use_unanswerable_branch(query_id: str) -> None:
+    task = ChartsHeatmapAxisCellExtremumLabelTask()
+    assert task.supports_unanswerable is False
+
+    for seed in range(80700, 80705):
+        out = task.generate(
+            seed,
+            params={"query_id": query_id, "unanswerable_probability": 1.0},
+            max_attempts=512,
+        )
+        trace = out.trace_payload
+        execution = trace["execution_trace"]
+        scene_relations = trace["scene_ir"]["relations"]
+        witness = trace["witness_symbolic"]
+
+        assert out.answer_gt.value != "unanswerable"
+        assert out.annotation_gt.type == "bbox"
+        assert isinstance(out.annotation_gt.value, list)
+        assert len(out.annotation_gt.value) == 4
+        assert execution["answerability"] == "answerable"
+        assert scene_relations["answerability"] == "answerable"
+        assert witness["answerability"] == "answerable"
+        assert "absence_proof" not in execution
+        assert "absence_proof" not in scene_relations
+        assert "absence_proof" not in witness
+        assert "unanswerable" not in out.prompt.lower()
+        for prompt in out.prompt_variants.values():
+            assert "unanswerable" not in str(prompt).lower()
 
 
 def test_chart_heatmap_balanced_sampling_covers_scene_axes() -> None:

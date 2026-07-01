@@ -115,6 +115,7 @@ class ChartsComboIntervalThresholdConditionCountTask:
     domain = DOMAIN
     objective_contract = "interval_threshold_condition_count"
     supported_query_ids = (PRIMARY_INTERVAL_LINE_ABOVE_QUERY_ID, LINE_INTERVAL_PRIMARY_ABOVE_QUERY_ID)
+    default_dataset_enabled = True
     default_interval_count_dataset_enabled = True
 
     def _build_interval_threshold_plan(

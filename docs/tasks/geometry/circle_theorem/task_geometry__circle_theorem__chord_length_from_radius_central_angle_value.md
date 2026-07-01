@@ -3,8 +3,9 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `circle_theorem`
-4. Query id: `single`
-5. Answer schema: `decimal_value_1dp`
+3. Query id: `single`
+4. Answer schema: `number`
+5. Answer precision: `one_decimal`
 6. Annotation schema: `point_map`
 
 ## Program Contract

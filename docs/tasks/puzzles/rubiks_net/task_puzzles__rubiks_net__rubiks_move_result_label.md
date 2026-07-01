@@ -14,7 +14,15 @@
 5. Internal variation: direct sequence length, move tokens, option order, scene treatment, and style are generation/render metadata.
 
 ## Program Contract
-`select_label(candidate_net_option, rule=apply_direct_or_inverse_move_sequence_to_cube_net); scene=rubiks_net; scope=rubiks_move_result_label`
+
+Program: `select_label(candidate_net_option, rule=apply_direct_or_inverse_move_sequence_to_cube_net); scene=rubiks_net; scope=rubiks_move_result_label`
+
+Candidate set: the visible cube-net stickers, face labels, move sequence, target face/sticker cues, and labeled options inside the `rubiks_move_result_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `candidate_net_option`, `apply_direct_or_inverse_move_sequence_to_cube_net`, `rubiks_net`, `rubiks_move_result_label` plus the active `query_id` branch.
+Operation: evaluate `select_label` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; the capital-letter label on the correct candidate-net panel.
+Annotation witnesses: `annotation` uses the `bbox` schema; one bbox around the selected candidate-net option panel.
+Query ids: `direct_sequence_result_label`, `inverse_sequence_result_label`.
 
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`

@@ -109,7 +109,7 @@ class ChartsContourDensityReferenceDistanceExtremumLabelTask:
             prompt_key=str(selected_query_id),
             answer=str(answer_label),
             answer_type="string",
-            annotation_type="bbox_set",
+            annotation_type="bbox",
             annotation_roles={},
             annotation_region_ids=(str(answer_region.region_id),),
             trace={

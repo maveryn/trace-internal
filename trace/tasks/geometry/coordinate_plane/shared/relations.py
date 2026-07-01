@@ -245,12 +245,6 @@ def _resolve_count_target(
     probabilities = normalize_positive_weights(weights, default_keys=[str(value) for value in support])
     selected = int(weighted_choice(rng, probabilities, sort_keys=True))
 
-    balanced_enabled = bool(params.get("balanced_sampling", group_default(_GEN_DEFAULTS, "balanced_sampling", True)))
-    overridden = any(has_non_null_param(params, key) for key in ("target_count", "target_count_weights"))
-    if bool(balanced_enabled) and (not overridden) and is_uniform_probability_map(probabilities):
-        ordered_support = [int(value) for value in support]
-        selection_index = abs(int(instance_seed))
-        selected = int(ordered_support[int(selection_index) % len(ordered_support)])
     return int(selected), {
         str(key): float(value)
         for key, value in sorted(probabilities.items(), key=lambda item: int(item[0]))

@@ -102,11 +102,13 @@ def _build_trace_payload(
             "right_color_rgb": [int(channel) for channel in dataset.right_color_rgb],
             "plot_bbox_px": list(rendered.rendered_scene.plot_bbox_px),
             "render_meta": dict(rendered.rendered_scene.render_meta),
+            "information_scene_style": dict(rendered.rendered_scene.render_meta.get("information_style", {})),
             "post_image_noise": dict(rendered.post_noise_meta),
         },
         "render_map": {
             "image_id": "img0",
             "plot_bbox_px": list(rendered.rendered_scene.plot_bbox_px),
+            "panel_bbox_px": list(rendered.rendered_scene.render_meta.get("panel_bbox_px", [])),
             "row_bar_bboxes_px": dict(rendered.rendered_scene.row_bar_bboxes_px),
             "left_bar_bboxes_px": dict(rendered.rendered_scene.left_bar_bboxes_px),
             "right_bar_bboxes_px": dict(rendered.rendered_scene.right_bar_bboxes_px),

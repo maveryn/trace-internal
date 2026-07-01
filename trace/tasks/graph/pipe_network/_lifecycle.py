@@ -5,13 +5,14 @@ from __future__ import annotations
 from typing import Any, Callable, Dict, Mapping, Sequence, Tuple
 
 from ....core.scene_config import get_scene_defaults
+from ....core.sampling import uniform_choice
 from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.fixed_query import force_query_id_params, select_task_query_id
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
@@ -113,8 +114,12 @@ def select_support_value(
         if int(explicit_value) not in support_tuple:
             raise ValueError("requested pipe value is outside configured support")
         return int(explicit_value), dict(uniform_probability_map(support_tuple, selected=int(explicit_value)))
-    selection_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{owner_id}:{namespace_suffix}"))
-    selected = int(support_tuple[int(selection_index) % len(support_tuple)])
+    selected = int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{owner_id}:{namespace_suffix}"),
+            support_tuple,
+        )
+    )
     return int(selected), dict(uniform_probability_map(support_tuple))
 
 

@@ -9,7 +9,7 @@ import pytest
 import yaml
 
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.physics.mechanics.free_body_forces import (
+from trace.tasks.physics.free_body_forces.net_force_direction_choice import (
     DIRECTION_NAMES,
     OPTION_LETTERS,
     PhysicsFreeBodyForcesNetForceDirectionChoiceTask,
@@ -46,7 +46,7 @@ def test_free_body_forces_contract_and_trace() -> None:
     execution = trace["execution_trace"]
 
     assert out.scene_id == "free_body_forces"
-    assert out.query_id == "net_force_direction_choice"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "option_letter"
     assert out.answer_gt.value == "D"
     assert out.annotation_gt.type == "bbox_set"
@@ -113,22 +113,22 @@ def test_free_body_forces_sampling_covers_letters_and_directions() -> None:
 
 
 def test_free_body_forces_defaults_and_prompt_bundle() -> None:
-    mechanics = get_scene_defaults("physics", "mechanics")
+    free_body_forces = get_scene_defaults("physics", "free_body_forces")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
-        mechanics,
-        task_id="physics_mechanics_free_body_forces_family",
+        free_body_forces,
+        task_id="task_physics__free_body_forces__net_force_direction_choice",
     )
 
-    assert set(generation["query_id_weights"]) == {"net_force_direction_choice"}
+    assert "query_id_weights" not in generation
     assert set(generation["scene_variant_weights"]) == {"clean_table", "gridded_table", "lab_card"}
     assert set(generation["net_force_direction_weights"]) == set(DIRECTION_NAMES)
     assert set(generation["correct_option_letter_weights"]) == set(OPTION_LETTERS)
     assert int(rendering["canvas_width"]) == 1180
-    assert str(prompt["scene_key"]) == "free_body_force_diagram"
-    assert "applied force arrow" in str(prompt["annotation_hint_net_force_direction_choice"])
+    assert str(prompt["bundle_id"]) == "physics_free_body_forces_v1"
+    assert str(prompt["task_key"]) == "net_force_direction_choice_query"
 
-    with open("configs/domains/physics/mechanics.yaml", "r", encoding="utf-8") as handle:
+    with open("configs/domains/physics/free_body_forces.yaml", "r", encoding="utf-8") as handle:
         yaml.safe_load(handle)
-    with open("prompts/physics/mechanics/physics_mechanics_v0.json", "r", encoding="utf-8") as handle:
+    with open("prompts/physics/free_body_forces/physics_free_body_forces_v1.json", "r", encoding="utf-8") as handle:
         prompt_bundle = json.load(handle)
-    assert "net_force_direction_choice" in prompt_bundle["query_templates"]
+    assert "single" in prompt_bundle["templates"]["query"]

@@ -10,7 +10,13 @@ from trace.tasks.shared.config_defaults import (
 from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 
 from ._lifecycle import run_single_query_cell_board_task
-from .shared.sampling import all_coords, sample_answer, sample_dimensions, sample_palette
+from .shared.sampling import (
+    all_coords,
+    cycled_named_color,
+    sample_answer,
+    sample_dimensions,
+    sample_palette,
+)
 from .shared.state import CellBoardCase, SCENE_ID
 from .shared.topology import sort_coords
 
@@ -69,7 +75,10 @@ def _build_symmetry_case(*, instance_seed: int, params) -> CellBoardCase:
         raise ValueError("not enough mirror pairs for requested violations")
     board = {}
     for coord in all_coords(rows=rows, cols=cols):
-        board[coord] = palette[(coord[0] + coord[1]) % len(palette)]
+        board[coord] = cycled_named_color(
+            palette,
+            offset=int(coord[0]) + int(coord[1]),
+        )
     for coord in counted_side_coords:
         mirror = _mirror(coord, rows=rows, cols=cols, axis=axis)
         color = palette[rng.randrange(len(palette))]

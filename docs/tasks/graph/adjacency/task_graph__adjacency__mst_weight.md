@@ -17,7 +17,15 @@
 3. Node labels, node count, extra edge count, sampled edge-weight range, font, style, and layout are generation/render metadata, not public query branches.
 
 ## Program Contract
-- `sum(edge_weight(edge) for edge in minimum_spanning_tree(weighted_undirected_adjacency_graph)); output=integer; annotation=bbox_set(mst_edge_matrix_cells); scene=adjacency; scope=mst_weight`
+
+Program: `sum(edge_weight(edge) for edge in minimum_spanning_tree(weighted_undirected_adjacency_graph)); output=integer; annotation=bbox_set(mst_edge_matrix_cells); scene=adjacency; scope=mst_weight`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `mst_weight` objective scope.
+Operands: visible scene state and prompt-bound operands named by `edge_weight`, `edge`, `minimum_spanning_tree`, `weighted_undirected_adjacency_graph`, `mst_edge_matrix_cells`, `adjacency`, `mst_weight`.
+Operation: evaluate `sum` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Annotation
 1. Answer type: `integer`.

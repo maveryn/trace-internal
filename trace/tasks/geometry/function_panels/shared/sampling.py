@@ -4,14 +4,13 @@ from __future__ import annotations
 
 import math
 from dataclasses import replace
+from itertools import cycle
 from typing import Any, Mapping, Sequence
 
 from trace.core.sampling import normalize_positive_weights, weighted_choice
 from trace.core.seed import spawn_rng
-from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
-from trace.tasks.shared.variant_sampling import has_non_null_param, is_uniform_probability_map
 from trace.tasks.geometry.shared.option_count import resolve_geometry_option_count
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from .defaults import label_pool
 from .state import (
@@ -151,11 +150,6 @@ def _resolve_selected_label(
     rng = spawn_rng(int(instance_seed), str(namespace))
     selected = str(weighted_choice(rng, probabilities, sort_keys=True)).upper()
 
-    enabled = bool(params.get("balanced_sampling", group_default(gen_defaults, "balanced_sampling", True)))
-    overridden = any(has_non_null_param(params, key) for key in ("winner_label", "answer_label", "winner_label_weights"))
-    if bool(enabled) and (not overridden) and is_uniform_probability_map(probabilities):
-        index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-        selected = str(label_set[int(index) % len(label_set)])
     return selected, {str(key): float(value) for key, value in sorted(probabilities.items())}
 
 
@@ -372,8 +366,18 @@ def _sample_function_winner(rng, template_index: int) -> RelationSpec:
         ((-4.0, 3.3), (-2.0, 1.5), (0.0, 0.0), (2.0, -1.6), (4.0, -3.4)),
         ((-4.0, 0.0), (-2.0, 2.0), (0.0, 0.0), (2.0, -2.0), (4.0, 0.0)),
     )
-    points = tuple((float(x), float(y + rng.choice((-0.4, 0.0, 0.4)))) for x, y in endpoints[int(template_index) % len(endpoints)])
-    return _polyline("target_function_relation", points, is_function=True, is_one_to_one=int(template_index) in {0, 1, 4, 5})
+    if int(template_index) < 0 or int(template_index) >= len(endpoints):
+        template_index = int(rng.randrange(len(endpoints)))
+    points = tuple(
+        (float(x), float(y + rng.choice((-0.4, 0.0, 0.4))))
+        for x, y in endpoints[int(template_index)]
+    )
+    return _polyline(
+        "target_function_relation",
+        points,
+        is_function=True,
+        is_one_to_one=int(template_index) in {0, 1, 4, 5},
+    )
 
 
 def _sample_one_to_one_winner(rng, template_index: int) -> RelationSpec:
@@ -446,7 +450,9 @@ def _sample_x_axis_symmetry_winner(rng, template_index: int) -> RelationSpec:
         lambda: _mirrored_zigzag("target_x_axis_mirrored_zigzag", ((-3.8, 2.7), (-2.0, 1.0), (-0.2, 2.4), (1.6, 1.1), (3.8, 2.9))),
         lambda: _mirrored_zigzag("target_x_axis_angular_curve", ((-3.5, 1.4), (-2.1, 3.0), (-0.2, 1.0), (1.7, 2.5), (3.6, 1.5))),
     )
-    return templates[int(template_index) % len(templates)]()
+    if int(template_index) < 0 or int(template_index) >= len(templates):
+        template_index = int(rng.randrange(len(templates)))
+    return templates[int(template_index)]()
 
 
 def _sample_x_axis_symmetry_distractors(rng) -> list[RelationSpec]:
@@ -601,13 +607,12 @@ def _assign_panels(selection: IntersectionSelection, *, winner: IntersectionPane
     distractor_list = tuple(distractors)
     if not distractor_list:
         raise ValueError("at least one intersection distractor is required")
-    distractor_index = 0
+    distractors_by_label = cycle(distractor_list)
     for label in selection.label_pool:
         if str(label) == str(selection.selected_label):
             result[str(label)] = winner
             continue
-        result[str(label)] = distractor_list[distractor_index % len(distractor_list)]
-        distractor_index += 1
+        result[str(label)] = next(distractors_by_label)
     return result
 
 

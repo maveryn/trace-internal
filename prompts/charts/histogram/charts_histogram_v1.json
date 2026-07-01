@@ -29,13 +29,6 @@
         "How many items fall {interval_relation_phrase} the interval \"{query_interval_label}\"?",
         "Find the total count for bars {interval_relation_phrase} \"{query_interval_label}\"."
       ],
-      "bin_count_between_values": [
-        "How many histogram bars lie inside the value interval \"{query_interval_label}\"?",
-        "Count the histogram bars covered by the value interval \"{query_interval_label}\".",
-        "Determine how many x-axis values fall inside \"{query_interval_label}\".",
-        "What is the count of bars in the value interval \"{query_interval_label}\"?",
-        "Find how many histogram bars fall inside \"{query_interval_label}\"."
-      ],
       "rank_item_bin_label": [
         "If the histogram counts are expanded from left to right, which x-axis value contains item number {target_rank}?",
         "Number the counted items from left to right across the histogram. Which x-axis value contains item {target_rank}?",
@@ -67,12 +60,6 @@
       "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] boxes around the histogram bars included in the total",
       "json_example": "{\"annotation\":[[210,320,246,520],[252,280,288,520]],\"answer\":17}",
       "json_example_answer_only": "{\"answer\":17}"
-    },
-    "query:bin_count_between_values": {
-      "answer_hint": "set \"answer\" to the requested number of bars as an integer",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] boxes around the histogram bars inside the interval",
-      "json_example": "{\"annotation\":[[210,320,246,520],[252,280,288,520]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
     },
     "query:rank_item_bin_label": {
       "answer_hint": "set \"answer\" to the x-axis value containing the requested item rank, as an integer",

@@ -39,6 +39,12 @@ generation:
     - 8
     - 9
     - 10
+  task_overrides:
+    task_games__reversi__frontier_disc_count:
+      target_player_weights:
+        black: 1.0
+        white: 1.0
+      balanced_target_player_sampling: true
 rendering:
   shared:
     canvas_width: 900

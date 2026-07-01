@@ -7,7 +7,7 @@ from typing import Any, Dict, Tuple
 
 from PIL import Image
 
-from ...shared.labeled_chart_common import LabeledChartDefaults
+from ...shared.labeled_chart_defaults import LabeledChartDefaults
 
 
 SUPPORTED_MULTISERIES_CHART_SCENE_VARIANTS: Tuple[str, ...] = (

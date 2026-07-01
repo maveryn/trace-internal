@@ -10,7 +10,15 @@
 7. Annotation schema: `bbox`
 
 ## Program Contract
-`unique_label(option for option in third_reel_options if count(payline for payline in rows_plus_long_diagonals if all_symbols_match(first_two_reels + option)) == 1); scene=slot_machine; scope=reel_completion_label`
+
+Program: `unique_label(option for option in third_reel_options if count(payline for payline in rows_plus_long_diagonals if all_symbols_match(first_two_reels + option)) == 1); scene=slot_machine; scope=reel_completion_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `reel_completion_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `third_reel_options`, `if`, `payline`, `rows_plus_long_diagonals`, `all_symbols_match`, `first_two_reels`, `slot_machine`, `reel_completion_label`.
+Operation: evaluate `unique_label` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The scene renders the first two visible reels of a 3x3 slot machine and four labeled candidate third reels.

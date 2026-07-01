@@ -6,6 +6,8 @@ generation:
     longest_run_length_max: 6
     shortest_run_length_min: 1
     shortest_run_length_max: 5
+    run_count_min: 1
+    run_count_max: 4
     named_icon_fill_style_support:
     - solid
     - striped
@@ -14,7 +16,10 @@ generation:
       solid: 0.55
       striped: 0.15
       dotted: 0.15
-  task_overrides: {}
+  task_overrides:
+    task_icons__named_strip__shape_run_count:
+      run_count_min: 1
+      run_count_max: 4
 rendering:
   shared:
     outer_margin_px: 24
@@ -182,4 +187,6 @@ prompt:
     bundle_id: icons_named_strip_v1
     scene_key: named_strip_run_length
     task_key: shape_run_length
-  task_overrides: {}
+  task_overrides:
+    task_icons__named_strip__shape_run_count:
+      task_key: shape_run_count

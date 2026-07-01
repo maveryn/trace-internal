@@ -40,9 +40,9 @@ CATEGORY_THRESHOLD_QUERY_IDS = (
     "category_y_below_threshold_count",
 )
 CASES = (
-    *((ChartsScatterPointsAxisThresholdPointCountTask, query_id, "integer") for query_id in AXIS_THRESHOLD_QUERY_IDS),
-    *((ChartsScatterPointsCategoryAxisMeanExtremumLabelTask, query_id, "string") for query_id in MEAN_EXTREMUM_QUERY_IDS),
-    *((ChartsScatterPointsCategoryThresholdPointCountTask, query_id, "integer") for query_id in CATEGORY_THRESHOLD_QUERY_IDS),
+    *((ChartsScatterPointsAxisThresholdPointCountTask, query_id, "integer", "point_set") for query_id in AXIS_THRESHOLD_QUERY_IDS),
+    *((ChartsScatterPointsCategoryAxisMeanExtremumLabelTask, query_id, "string", "bbox") for query_id in MEAN_EXTREMUM_QUERY_IDS),
+    *((ChartsScatterPointsCategoryThresholdPointCountTask, query_id, "integer", "point_set") for query_id in CATEGORY_THRESHOLD_QUERY_IDS),
 )
 
 
@@ -113,10 +113,19 @@ def _expected_annotation_point_ids(execution: dict) -> list[str]:
     raise AssertionError(f"unsupported question format: {question_format}")
 
 
-@pytest.mark.parametrize(("task_cls", "query_id", "answer_type"), CASES)
-def test_chart_scatter_points_queries_match_contract(task_cls, query_id: str, answer_type: str) -> None:
+def _bbox_union(boxes: list[list[float]]) -> list[float]:
+    return [
+        round(min(float(box[0]) for box in boxes), 3),
+        round(min(float(box[1]) for box in boxes), 3),
+        round(max(float(box[2]) for box in boxes), 3),
+        round(max(float(box[3]) for box in boxes), 3),
+    ]
+
+
+@pytest.mark.parametrize(("task_cls", "query_id", "answer_type", "annotation_type"), CASES)
+def test_chart_scatter_points_queries_match_contract(task_cls, query_id: str, answer_type: str, annotation_type: str) -> None:
     task = task_cls()
-    out = task.generate(142100 + CASES.index((task_cls, query_id, answer_type)), params={"query_id": query_id}, max_attempts=80)
+    out = task.generate(142100 + CASES.index((task_cls, query_id, answer_type, annotation_type)), params={"query_id": query_id}, max_attempts=80)
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render = trace["render_spec"]
@@ -124,7 +133,7 @@ def test_chart_scatter_points_queries_match_contract(task_cls, query_id: str, an
     assert out.scene_id == "scatter_points"
     assert out.query_id == query_id
     assert out.answer_gt.type == answer_type
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == annotation_type
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["question_format"]).startswith("scatter_points_")
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
@@ -137,19 +146,28 @@ def test_chart_scatter_points_queries_match_contract(task_cls, query_id: str, an
     expected_point_ids = _expected_annotation_point_ids(execution)
     assert execution["annotation_point_ids"] == expected_point_ids
     expected_points = [render_map["point_centers_px"][point_id] for point_id in expected_point_ids]
-    assert out.annotation_gt.value == expected_points
-    assert trace["projected_annotation"]["type"] == "point_set"
-    assert trace["projected_annotation"]["point_set"] == expected_points
-    assert trace["projected_annotation"]["pixel_point_set"] == expected_points
+    assert trace["projected_annotation"]["type"] == annotation_type
     assert trace["projected_annotation"]["point_ids"] == expected_point_ids
-    for point in out.annotation_gt.value:
-        assert len(point) == 2
-        x, y = [float(value) for value in point]
-        assert 0 <= x <= int(render["canvas_width"])
-        assert 0 <= y <= int(render["canvas_height"])
+    if annotation_type == "point_set":
+        assert out.annotation_gt.value == expected_points
+        assert trace["projected_annotation"]["point_set"] == expected_points
+        assert trace["projected_annotation"]["pixel_point_set"] == expected_points
+        for point in out.annotation_gt.value:
+            assert len(point) == 2
+            x, y = [float(value) for value in point]
+            assert 0 <= x <= int(render["canvas_width"])
+            assert 0 <= y <= int(render["canvas_height"])
+    else:
+        expected_bbox = _bbox_union([render_map["point_bboxes_px"][point_id] for point_id in expected_point_ids])
+        assert out.annotation_gt.value == expected_bbox
+        assert trace["projected_annotation"]["bbox"] == expected_bbox
+        assert trace["projected_annotation"]["pixel_bbox"] == expected_bbox
+        x0, y0, x1, y1 = [float(value) for value in out.annotation_gt.value]
+        assert 0 <= x0 < x1 <= int(render["canvas_width"])
+        assert 0 <= y0 < y1 <= int(render["canvas_height"])
     if str(execution["question_format"]) == "scatter_points_threshold_count":
         assert 28 <= int(execution["point_count"]) <= 54
-        assert 4 <= int(out.answer_gt.value) <= 18
+        assert 4 <= int(out.answer_gt.value) <= 12
         assert not execution["categories"]
         assert render_map["threshold_guide_bbox_px"]
     elif str(execution["question_format"]) == "scatter_points_category_mean_extremum":
@@ -166,12 +184,16 @@ def test_chart_scatter_points_queries_match_contract(task_cls, query_id: str, an
 
 
 def test_chart_scatter_points_prompt_examples_match_contract() -> None:
-    for index, (task_cls, query_id, answer_type) in enumerate(CASES, start=142200):
+    for index, (task_cls, query_id, answer_type, annotation_type) in enumerate(CASES, start=142200):
         out = task_cls().generate(index, params={"query_id": query_id}, max_attempts=80)
         answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert isinstance(answer_and_annotation["annotation"], list)
-        assert all(isinstance(point, list) and len(point) == 2 for point in answer_and_annotation["annotation"])
+        if annotation_type == "bbox":
+            assert len(answer_and_annotation["annotation"]) == 4
+            assert all(isinstance(value, int | float) for value in answer_and_annotation["annotation"])
+        else:
+            assert all(isinstance(point, list) and len(point) == 2 for point in answer_and_annotation["annotation"])
         if answer_type == "integer":
             assert isinstance(answer_and_annotation["answer"], int)
             assert isinstance(answer_only["answer"], int)
@@ -201,6 +223,7 @@ def test_chart_scatter_points_balanced_sampling_covers_query_ids() -> None:
         axis_answers[int(out.answer_gt.value)] += 1
         assert execution["threshold_axis"] in {"x", "y"}
         assert execution["threshold_direction"] in {"above", "below"}
+        assert int(out.answer_gt.value) <= 12
 
         out = mean_task.generate(hash64(142400, "scatter_points_mean", index), params={}, max_attempts=80)
         execution = out.trace_payload["execution_trace"]
@@ -244,5 +267,6 @@ def test_chart_scatter_points_registered_and_scene_config_loaded() -> None:
     generation = cfg["generation"]["shared"]
     assert int(generation["scatter_points_count_min"]) == 28
     assert int(generation["scatter_points_count_max"]) == 54
+    assert int(generation["axis_threshold_answer_max"]) == 12
     prompt = cfg["prompt"]["shared"]
     assert str(prompt["bundle_id"]) == "charts_scatter_points_v1"

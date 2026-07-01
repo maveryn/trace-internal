@@ -8,7 +8,15 @@
 5. Supported `query_id` values: `source_to_targets_total`, `sources_to_target_total`
 
 ## Program Contract
-`sum(value(flow) for flow in grouped_flows sharing one endpoint); scene=radial_sankey; scope=transfer_total_value`
+
+Program: `sum(value(flow) for flow in grouped_flows sharing one endpoint); scene=radial_sankey; scope=transfer_total_value`
+
+Candidate set: the visible radial flow nodes, links, and labels inside the `transfer_total_value` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `sum` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `bbox_set` witnesses bound by `see_annotation_contract`. Annotation marks the printed value-label boxes for every flow included in the sum. Source/target node boxes, unselected flow labels, the flow curves, title, panel frame, and ring are context unless explicitly referenced by the task.
+Query ids: `source_to_targets_total`, `sources_to_target_total`.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.radial_sankey.transfer_total_value.ChartsRadialSankeyTransferTotalValueTask`

@@ -108,7 +108,7 @@ def _sample_marked_cell_candidate_count(
         board=construction.board,
         solution=solution,
         answer=int(target_count),
-        annotation_coords=tuple([marked_cell] + list(construction.filled_peer_coords)),
+        annotation_coords=(marked_cell,),
         marked_cell=marked_cell,
         construction_mode="marked_cell_candidate_count",
     )

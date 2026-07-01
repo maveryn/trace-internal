@@ -6,18 +6,21 @@
 3. Source scene: `timeline`
 4. Task id: `task_pages__timeline__event_date_gap_value`
 
-## Contract
-1. Objective: compute the nonnegative calendar-day gap between two named milestone events on one timeline.
-2. Branch metadata: `query_id`
-3. `query_id`: `event_date_gap_value`
-4. Answer type: `integer`
-5. Annotation type: `keyed_bbox_map` over the two endpoint event cards, keyed as `earlier_event` and `later_event`.
-6. Query variation: endpoint prompt order and sampled day-gap value vary within the same date-arithmetic program contract.
+## Program Contract
+1. Program schema: `timeline_event_date_gap_value(endpoint_event_pair) -> calendar_day_gap; scene=timeline; scope=event_date_gap_value`
+2. Scene: `timeline`
+3. Scope: one rendered milestone timeline with dated event cards and two highlighted endpoint events.
+4. Supported `query_id`: `single`
+5. Answer schema: `integer`
+6. Annotation schema: `bbox_map`
+7. Annotation roles: `earlier_event`, `later_event`.
+8. Query arguments: endpoint prompt order varies, but the reasoning program remains the same calendar-day difference.
+9. Render arguments: month/year, event count, scene variant, style variant, accent color, render dimensions, and post-render noise.
 
 ## Prompt + Trace
-1. Prompt bundle: `pages_timeline_v0`
+1. Prompt bundle: `pages_timeline_v1`
 2. Scene key: `milestone_timeline`
 3. Task key: `timeline_milestone_query`
-4. Internal prompt variant key: `event_date_gap_value`
-5. Trace records event order, dates, endpoint event ids, prompt endpoint order, answer day gap, and event-card bboxes.
-6. Generation is deterministic from `instance_seed`; answers and annotation come from the finalized timeline metadata.
+4. Prompt query key: `event_date_gap_value`
+5. Trace records `query_id=single`, `source_query_id=event_date_gap_value`, endpoint event ids, prompt endpoint order, event dates, endpoint event-card bboxes, style metadata, and role-keyed projected annotation.
+6. Generation is deterministic from `instance_seed`; answer and annotation come from the finalized render metadata.

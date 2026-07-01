@@ -1,25 +1,27 @@
 # `task_pages__process_flow__lane_filtered_handoff_count`
 
-## 1) Identity
+## Identity
 1. Domain: `pages`
-2. Scene: `process_flow`
-3. Scene id: `process_flow`
+2. Scene id: `process_flow`
+3. Source scene: `process_flow`
 4. Task id: `task_pages__process_flow__lane_filtered_handoff_count`
-5. Objective: Count visible handoff arrows filtered by a named lane's involvement or outgoing direction.
 
-## 2) Scene + Task Contract
-1. Supported `query_id` values: `single`, `lane_involved_handoff_count`
-2. `answer_gt.type`: `integer`
-3. `annotation_gt.type`: `segment_set`
-4. Annotation witness policy: one `segment_set`; each segment is `[[x1, y1], [x2, y2]]` using the endpoints of one counted handoff arrow.
-5. `query_id` is retained as internal replay metadata; this public task id is the sampling unit.
+## Contract
+1. Objective: count visible cross-lane handoff arrows for one named lane.
+2. Public task contract: `lane_filtered_handoff_count`
+3. Supported `query_id` values: `lane_outgoing_handoff_count`, `lane_involved_handoff_count`
+4. Answer type: `integer`
+5. Annotation schema: `segment_set`
+6. Annotation witness: one segment per counted handoff arrow, using the rendered source-to-destination arrow endpoints.
+7. Query argument axes: lane relation mode, target lane, process context, lane count, node count, layout variant, and style variant.
 
-## 3) Prompt Contract
-1. `prompt_bundle_id`: `pages_process_flow_v0`
-2. Prompt templates come from `prompts/pages/process_flow/`.
-3. Output modes: `answer_only` and `answer_and_annotation`.
+## Program Contract
+- `process_flow_lane_filtered_handoff_count(lane_name, relation_mode); output=integer_value; annotation=segment_set(matching_handoff_arrows); scene=process_flow; scope=one process-flow diagram`
 
-## 4) Determinism + Constraints
-1. Generation is deterministic for `instance_seed` plus params.
-2. Answers and annotation come from the same rendered trace payload.
-3. The generator constructs unique final answers and rejects invalid samples instead of semantically relaxing constraints.
+## Prompt + Trace
+1. Prompt bundle: `pages_process_flow_v1`
+2. Scene key: `process_flow_diagram`
+3. Task key: `process_flow_diagram_query`
+4. Prompt query keys: `lane_outgoing_handoff_count`, `lane_involved_handoff_count`
+5. Trace records lane membership for each node, all edge specs, selected lane filter payload, final arrow segments, layout geometry, and prompt metadata.
+6. Generation is deterministic from `instance_seed`; answers and annotation come from the finalized process-flow render metadata.

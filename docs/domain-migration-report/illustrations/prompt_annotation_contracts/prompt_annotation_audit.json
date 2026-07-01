@@ -1,0 +1,4982 @@
+{
+  "config": {
+    "default_only": true,
+    "max_attempts": 200,
+    "max_total_samples_per_task": 1024,
+    "samples_per_query_id": 1,
+    "seed": 20260504,
+    "task_timeout_seconds": 240,
+    "tasks": [
+      "task_illustrations__construction_site__equipment_zone_count",
+      "task_illustrations__construction_site__missing_patch_label",
+      "task_illustrations__construction_site__rotated_tile_label",
+      "task_illustrations__construction_site__worker_attribute_count",
+      "task_illustrations__environment__crossing_feature_count",
+      "task_illustrations__environment__feature_relation_object_count",
+      "task_illustrations__environment__lit_window_count",
+      "task_illustrations__environment__missing_patch_label",
+      "task_illustrations__environment__rotated_tile_label",
+      "task_illustrations__indoor_room__furniture_side_count",
+      "task_illustrations__indoor_room__missing_patch_label",
+      "task_illustrations__indoor_room__rotated_tile_label",
+      "task_illustrations__indoor_room__surface_object_count",
+      "task_illustrations__indoor_room__swapped_tile_pair_label",
+      "task_illustrations__isometric_farmstead__farmer_same_level_tile_label",
+      "task_illustrations__isometric_farmstead__highest_terrain_tile_count",
+      "task_illustrations__isometric_farmstead__terrain_elevation_extremum_label",
+      "task_illustrations__isometric_farmstead__terrain_level_object_count",
+      "task_illustrations__isometric_harbor__boat_heading_status_count",
+      "task_illustrations__isometric_harbor__boat_mooring_status_count",
+      "task_illustrations__isometric_harbor__boat_side_count",
+      "task_illustrations__isometric_harbor__shoreline_nearest_boat_label",
+      "task_illustrations__isometric_quarry__highest_terrain_tile_count",
+      "task_illustrations__isometric_quarry__terrain_elevation_extremum_label",
+      "task_illustrations__isometric_quarry__terrain_level_object_count",
+      "task_illustrations__isometric_quarry__worker_same_level_tile_label",
+      "task_illustrations__library__books_in_section_count",
+      "task_illustrations__library__filtered_book_in_section_count",
+      "task_illustrations__library__missing_patch_label",
+      "task_illustrations__library__rotated_tile_label",
+      "task_illustrations__library__swapped_tile_pair_label",
+      "task_illustrations__park_playground__jigsaw_arrangement_label",
+      "task_illustrations__park_playground__missing_patch_label",
+      "task_illustrations__park_playground__person_count",
+      "task_illustrations__park_playground__playground_equipment_count",
+      "task_illustrations__park_playground__rotated_tile_label",
+      "task_illustrations__park_playground__swapped_tile_pair_label",
+      "task_illustrations__pixel_village__missing_patch_label",
+      "task_illustrations__pixel_village__object_type_count",
+      "task_illustrations__pixel_village__person_path_count",
+      "task_illustrations__pixel_village__river_side_object_count",
+      "task_illustrations__pixel_village__rotated_tile_label",
+      "task_illustrations__pixel_village__swapped_tile_pair_label",
+      "task_illustrations__pixel_village__territory_object_count",
+      "task_illustrations__rpg_dungeon__missing_patch_label",
+      "task_illustrations__rpg_dungeon__monster_chamber_count",
+      "task_illustrations__rpg_dungeon__reachable_chest_count",
+      "task_illustrations__rpg_dungeon__safe_reachable_chest_count",
+      "task_illustrations__rpg_house__door_state_count",
+      "task_illustrations__rpg_house__missing_patch_label",
+      "task_illustrations__rpg_house__reachable_room_count",
+      "task_illustrations__rpg_house__room_count",
+      "task_illustrations__rpg_house__swapped_tile_pair_label",
+      "task_illustrations__rpg_tactical_map__counterfactual_terrain_conversion_cost_value",
+      "task_illustrations__rpg_tactical_map__movement_cost_value",
+      "task_illustrations__rpg_tactical_map__movement_reachable_tile_count",
+      "task_illustrations__rpg_tactical_map__movement_reachable_tile_label",
+      "task_illustrations__rpg_tactical_map__movement_sequence_endpoint_label",
+      "task_illustrations__rpg_tactical_map__terrain_type_tile_count",
+      "task_illustrations__rpg_tactical_map__water_barrier_unreachable_tile_label"
+    ],
+    "workers": 4
+  },
+  "coverage": [
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__construction_site__equipment_zone_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__construction_site__missing_patch_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__construction_site__rotated_tile_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "hard_hat_color_worker_count": 1,
+        "vest_color_worker_count": 1
+      },
+      "expected_query_ids": [
+        "hard_hat_color_worker_count",
+        "vest_color_worker_count"
+      ],
+      "generated_query_id_counts": {
+        "hard_hat_color_worker_count": 1,
+        "vest_color_worker_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__construction_site__worker_attribute_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__environment__crossing_feature_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "above_feature": 1,
+        "below_feature": 1,
+        "on_feature": 1
+      },
+      "expected_query_ids": [
+        "above_feature",
+        "below_feature",
+        "on_feature"
+      ],
+      "generated_query_id_counts": {
+        "above_feature": 1,
+        "below_feature": 1,
+        "on_feature": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__environment__feature_relation_object_count",
+      "total_generated": 3
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__environment__lit_window_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__environment__missing_patch_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__environment__rotated_tile_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "left_side": 1,
+        "right_side": 1
+      },
+      "expected_query_ids": [
+        "left_side",
+        "right_side"
+      ],
+      "generated_query_id_counts": {
+        "left_side": 1,
+        "right_side": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__indoor_room__furniture_side_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__indoor_room__missing_patch_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__indoor_room__rotated_tile_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__indoor_room__surface_object_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__indoor_room__swapped_tile_pair_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__isometric_farmstead__farmer_same_level_tile_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__isometric_farmstead__highest_terrain_tile_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "highest_terrain_tile": 1,
+        "lowest_terrain_tile": 1
+      },
+      "expected_query_ids": [
+        "highest_terrain_tile",
+        "lowest_terrain_tile"
+      ],
+      "generated_query_id_counts": {
+        "highest_terrain_tile": 1,
+        "lowest_terrain_tile": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__isometric_farmstead__terrain_elevation_extremum_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "highest_terrain_object_count": 1,
+        "lowest_terrain_object_count": 1
+      },
+      "expected_query_ids": [
+        "highest_terrain_object_count",
+        "lowest_terrain_object_count"
+      ],
+      "generated_query_id_counts": {
+        "highest_terrain_object_count": 1,
+        "lowest_terrain_object_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__isometric_farmstead__terrain_level_object_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "away_from_shoreline_boat_count": 1,
+        "toward_shoreline_boat_count": 1
+      },
+      "expected_query_ids": [
+        "away_from_shoreline_boat_count",
+        "toward_shoreline_boat_count"
+      ],
+      "generated_query_id_counts": {
+        "away_from_shoreline_boat_count": 1,
+        "toward_shoreline_boat_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__isometric_harbor__boat_heading_status_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "moored_boat_count": 1,
+        "open_water_boat_count": 1
+      },
+      "expected_query_ids": [
+        "moored_boat_count",
+        "open_water_boat_count"
+      ],
+      "generated_query_id_counts": {
+        "moored_boat_count": 1,
+        "open_water_boat_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__isometric_harbor__boat_mooring_status_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "left_side_boat_count": 1,
+        "right_side_boat_count": 1
+      },
+      "expected_query_ids": [
+        "left_side_boat_count",
+        "right_side_boat_count"
+      ],
+      "generated_query_id_counts": {
+        "left_side_boat_count": 1,
+        "right_side_boat_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__isometric_harbor__boat_side_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__isometric_harbor__shoreline_nearest_boat_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__isometric_quarry__highest_terrain_tile_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "highest_terrain_tile": 1,
+        "lowest_terrain_tile": 1
+      },
+      "expected_query_ids": [
+        "highest_terrain_tile",
+        "lowest_terrain_tile"
+      ],
+      "generated_query_id_counts": {
+        "highest_terrain_tile": 1,
+        "lowest_terrain_tile": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__isometric_quarry__terrain_elevation_extremum_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "highest_terrain_object_count": 1,
+        "lowest_terrain_object_count": 1
+      },
+      "expected_query_ids": [
+        "highest_terrain_object_count",
+        "lowest_terrain_object_count"
+      ],
+      "generated_query_id_counts": {
+        "highest_terrain_object_count": 1,
+        "lowest_terrain_object_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__isometric_quarry__terrain_level_object_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__isometric_quarry__worker_same_level_tile_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__library__books_in_section_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "book_color_in_section_count": 1,
+        "horizontal_book_in_section_count": 1,
+        "upright_book_in_section_count": 1
+      },
+      "expected_query_ids": [
+        "book_color_in_section_count",
+        "horizontal_book_in_section_count",
+        "upright_book_in_section_count"
+      ],
+      "generated_query_id_counts": {
+        "book_color_in_section_count": 1,
+        "horizontal_book_in_section_count": 1,
+        "upright_book_in_section_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__library__filtered_book_in_section_count",
+      "total_generated": 3
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__library__missing_patch_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__library__rotated_tile_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__library__swapped_tile_pair_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__park_playground__jigsaw_arrangement_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__park_playground__missing_patch_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__park_playground__person_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__park_playground__playground_equipment_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__park_playground__rotated_tile_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__park_playground__swapped_tile_pair_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__pixel_village__missing_patch_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__pixel_village__object_type_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__pixel_village__person_path_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__pixel_village__river_side_object_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__pixel_village__rotated_tile_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__pixel_village__swapped_tile_pair_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__pixel_village__territory_object_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_dungeon__missing_patch_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_dungeon__monster_chamber_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_dungeon__reachable_chest_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_dungeon__safe_reachable_chest_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "closed_door_count": 1,
+        "open_door_count": 1
+      },
+      "expected_query_ids": [
+        "closed_door_count",
+        "open_door_count"
+      ],
+      "generated_query_id_counts": {
+        "closed_door_count": 1,
+        "open_door_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_house__door_state_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_house__missing_patch_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_house__reachable_room_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_house__room_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_house__swapped_tile_pair_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_tactical_map__counterfactual_terrain_conversion_cost_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_tactical_map__movement_cost_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_tactical_map__movement_reachable_tile_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_tactical_map__movement_reachable_tile_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_tactical_map__movement_sequence_endpoint_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_tactical_map__terrain_type_tile_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_illustrations__rpg_tactical_map__water_barrier_unreachable_tile_label",
+      "total_generated": 2
+    }
+  ],
+  "issues": [],
+  "records": [
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          800,
+          1200
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            83.709,
+            688.569,
+            249.384,
+            818.644
+          ],
+          [
+            545.308,
+            707.686,
+            718.198,
+            828.489
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8701648046563089,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 30,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a construction site with 4 workers, labeled work zones, materials, and equipment. How many construction vehicles are in the Loading Zone? If none are there, answer 0.\nFormat for the \"annotation\" field: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted construction vehicle in the Loading Zone; use [] if none match.\nFormat for the \"answer\" field: set \"answer\" to the count of construction vehicles in the Loading Zone as an integer, using 0 if none match.\nExample JSON:\n{\"annotation\":[[326,432,458,540],[474,449,614,557]],\"answer\":2}",
+          "word_count": 102
+        },
+        {
+          "body_word_count": 30,
+          "mode": "answer_only",
+          "prompt": "The image shows a construction site with 4 workers, labeled work zones, materials, and equipment. How many construction vehicles are in the Loading Zone? If none are there, answer 0.\nAnswer format: set \"answer\" to the count of construction vehicles in the Loading Zone as an integer, using 0 if none match.\nExample JSON:\n{\"answer\":0}",
+          "word_count": 56
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__construction_site__equipment_zone_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          782,
+          1635
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "missing_region": [
+            223.688,
+            282.806,
+            347.353,
+            446.488
+          ],
+          "selected_option": [
+            256.423,
+            1427.67,
+            380.088,
+            1591.352
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 54875158464100,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 22,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows a construction-site source panel with one missing region and lettered patch options. Which option exactly fills the missing region?\nRequired annotation format: set \"annotation\" to a JSON object with keys \"missing_region\" and \"selected_option\", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates.\nRequired answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"annotation\":{\"missing_region\":[214,128,374,252],\"selected_option\":[562,676,722,800]},\"answer\":\"C\"}",
+          "word_count": 77
+        },
+        {
+          "body_word_count": 22,
+          "mode": "answer_only",
+          "prompt": "The scene shows a construction-site source panel with one missing region and lettered patch options. Which option exactly fills the missing region?\nRequired answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 39
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__construction_site__missing_patch_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          0.0,
+          320.0,
+          320.0,
+          640.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3559056112037823,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 29,
+          "mode": "answer_and_annotation",
+          "prompt": "This illustration shows a construction-site image divided into lettered tiles. One of the lettered tiles is rotated relative to the rest of the construction-site image. Which tile is it?\nFormat for the \"annotation\" field: set \"annotation\" to one [x0, y0, x1, y1] box around the rotated tile in image pixel coordinates.\nFormat for the \"answer\" field: set \"answer\" to the letter of the rotated tile.\nExample JSON:\n{\"annotation\":[350,42,670,362],\"answer\":\"B\"}",
+          "word_count": 74
+        },
+        {
+          "body_word_count": 40,
+          "mode": "answer_only",
+          "prompt": "This illustration shows a construction-site image divided into lettered tiles. One of the lettered tiles is rotated relative to the rest of the construction-site image. Which tile is it?\nAnswer field: set \"answer\" to the letter of the rotated tile.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 44
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__construction_site__rotated_tile_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 0,
+        "image_size": [
+          800,
+          1200
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8307290732092989,
+      "issues": [],
+      "observed_query_id": "hard_hat_color_worker_count",
+      "prompts": [
+        {
+          "body_word_count": 30,
+          "mode": "answer_and_annotation",
+          "prompt": "The canvas contains a construction site with 12 workers, labeled work zones, materials, and equipment. How many workers are wearing blue [#3F76B7] hard hats? If none are there, answer 0.\nFormat for the \"annotation\" field: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted worker; use [] if none match.\nFormat for the \"answer\" field: set \"answer\" to the count of workers wearing blue [#3F76B7] hard hats as an integer, using 0 if none match.\nExample JSON:\n{\"annotation\":[[584,386,640,492],[676,460,732,566]],\"answer\":2}",
+          "word_count": 97
+        },
+        {
+          "body_word_count": 30,
+          "mode": "answer_only",
+          "prompt": "The canvas contains a construction site with 12 workers, labeled work zones, materials, and equipment. How many workers are wearing blue [#3F76B7] hard hats? If none are there, answer 0.\nAnswer format: set \"answer\" to the count of workers wearing blue [#3F76B7] hard hats as an integer, using 0 if none match.\nExample JSON:\n{\"answer\":0}",
+          "word_count": 56
+        }
+      ],
+      "query_id": "hard_hat_color_worker_count",
+      "task": "task_illustrations__construction_site__worker_attribute_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          800,
+          1200
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            375.849,
+            711.686,
+            426.627,
+            823.696
+          ],
+          [
+            80.473,
+            735.871,
+            133.766,
+            835.475
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 416238333387614,
+      "issues": [],
+      "observed_query_id": "vest_color_worker_count",
+      "prompts": [
+        {
+          "body_word_count": 30,
+          "mode": "answer_and_annotation",
+          "prompt": "This illustration shows a construction site with 14 workers, labeled work zones, materials, and equipment. How many workers are wearing blue [#3F76B7] safety vests? If none are there, answer 0.\nFormat for the \"annotation\" field: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted worker; use [] if none match.\nFormat for the \"answer\" field: set \"answer\" to the count of workers wearing blue [#3F76B7] safety vests as an integer, using 0 if none match.\nExample JSON:\n{\"annotation\":[[584,386,640,492],[676,460,732,566]],\"answer\":2}",
+          "word_count": 97
+        },
+        {
+          "body_word_count": 30,
+          "mode": "answer_only",
+          "prompt": "This illustration shows a construction site with 14 workers, labeled work zones, materials, and equipment. How many workers are wearing blue [#3F76B7] safety vests? If none are there, answer 0.\nFinal answer format: set \"answer\" to the count of workers wearing blue [#3F76B7] safety vests as an integer, using 0 if none match.\nExample JSON:\n{\"answer\":0}",
+          "word_count": 57
+        }
+      ],
+      "query_id": "vest_color_worker_count",
+      "task": "task_illustrations__construction_site__worker_attribute_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 4,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            122.245,
+            516.5,
+            170.245,
+            647.806
+          ],
+          [
+            383.721,
+            536.402,
+            431.721,
+            667.708
+          ],
+          [
+            531.833,
+            543.958,
+            579.833,
+            675.264
+          ],
+          [
+            719.809,
+            564.376,
+            767.809,
+            695.682
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4336512106562142,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 31,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows an outdoor setting with both a road and a river with foreground objects and environmental features. How many bridges cross the river? If none are there, answer 0.\nFormat for the \"annotation\" field: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted bridges; use [] if none match.\nFormat for the \"answer\" field: set \"answer\" to the count of bridges crossing the river as an integer, using 0 if none match.\nExample JSON:\n{\"annotation\":[[334,420,470,472],[644,412,776,464]],\"answer\":2}",
+          "word_count": 96
+        },
+        {
+          "body_word_count": 31,
+          "mode": "answer_only",
+          "prompt": "The picture shows an outdoor setting with both a road and a river with foreground objects and environmental features. How many bridges cross the river? If none are there, answer 0.\nFormat for the \"answer\" field: set \"answer\" to the count of bridges crossing the river as an integer, using 0 if none match.\nExample JSON:\n{\"answer\":0}",
+          "word_count": 58
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__environment__crossing_feature_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 7,
+        "image_size": [
+          800,
+          1200
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            56.011,
+            695.412,
+            103.901,
+            747.292
+          ],
+          [
+            701.168,
+            706.454,
+            737.216,
+            777.334
+          ],
+          [
+            652.53,
+            708.859,
+            685.202,
+            760.219
+          ],
+          [
+            369.033,
+            709.52,
+            452.833,
+            746.58
+          ],
+          [
+            245.475,
+            711.182,
+            307.425,
+            751.782
+          ],
+          [
+            599.243,
+            718.556,
+            628.331,
+            763.996
+          ],
+          [
+            133.142,
+            721.322,
+            175.67,
+            788.962
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7256290437488353,
+      "issues": [],
+      "observed_query_id": "above_feature",
+      "prompts": [
+        {
+          "body_word_count": 27,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows a city canal setting with foreground objects and environmental features. How many foreground objects are above the river? If none are there, answer 0.\nRequired annotation format: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted foreground object above the river; use [] if none match.\nRequired answer format: set \"answer\" to the count of foreground objects above the river as an integer, using 0 if none match.\nExample JSON:\n{\"annotation\":[[238,390,322,474],[468,460,560,556]],\"answer\":2}",
+          "word_count": 93
+        },
+        {
+          "body_word_count": 27,
+          "mode": "answer_only",
+          "prompt": "The picture shows a city canal setting with foreground objects and environmental features. How many foreground objects are above the river? If none are there, answer 0.\nAnswer format: set \"answer\" to the count of foreground objects above the river as an integer, using 0 if none match.\nExample JSON:\n{\"answer\":0}",
+          "word_count": 52
+        }
+      ],
+      "query_id": "above_feature",
+      "task": "task_illustrations__environment__feature_relation_object_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 12,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            836.196,
+            735.541,
+            860.656,
+            813.941
+          ],
+          [
+            183.428,
+            755.295,
+            221.22,
+            810.775
+          ],
+          [
+            94.057,
+            775.022,
+            146.697,
+            827.662
+          ],
+          [
+            305.738,
+            778.666,
+            330.438,
+            836.426
+          ],
+          [
+            360.639,
+            834.307,
+            401.588,
+            905.187
+          ],
+          [
+            701.416,
+            834.764,
+            766.216,
+            877.164
+          ],
+          [
+            646.951,
+            836.73,
+            671.651,
+            894.49
+          ],
+          [
+            445.161,
+            837.484,
+            491.249,
+            894.024
+          ],
+          [
+            508.247,
+            840.711,
+            549.196,
+            911.591
+          ],
+          [
+            570.077,
+            847.396,
+            602.749,
+            898.756
+          ],
+          [
+            71.996,
+            856.304,
+            112.86,
+            905.104
+          ],
+          [
+            152.334,
+            869.92,
+            245.934,
+            911.04
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 375069125260303,
+      "issues": [],
+      "observed_query_id": "below_feature",
+      "prompts": [
+        {
+          "body_word_count": 29,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a park road setting with illustrated foreground objects and visible environmental features. How many foreground objects are below the road? If none are there, answer 0.\nAnnotation format: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted foreground object below the road; use [] if none match.\nAnswer format: set \"answer\" to the count of foreground objects below the road as an integer, using 0 if none match.\nExample JSON:\n{\"annotation\":[[238,390,322,474],[468,460,560,556]],\"answer\":2}",
+          "word_count": 93
+        },
+        {
+          "body_word_count": 50,
+          "mode": "answer_only",
+          "prompt": "The image shows a park road setting with illustrated foreground objects and visible environmental features. How many foreground objects are below the road? If none are there, answer 0.\nAnswer field: set \"answer\" to the count of foreground objects below the road as an integer, using 0 if none match.\nExample JSON:\n{\"answer\":0}",
+          "word_count": 54
+        }
+      ],
+      "query_id": "below_feature",
+      "task": "task_illustrations__environment__feature_relation_object_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 3,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            496.869,
+            564.314,
+            609.445,
+            627.474
+          ],
+          [
+            414.122,
+            586.228,
+            476.122,
+            629.088
+          ],
+          [
+            196.479,
+            624.5,
+            297.919,
+            681.9
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1121903915615738,
+      "issues": [],
+      "observed_query_id": "on_feature",
+      "prompts": [
+        {
+          "body_word_count": 30,
+          "mode": "answer_and_annotation",
+          "prompt": "The canvas contains a meadow river setting with illustrated foreground objects and scene features. How many foreground objects are in or on the river? If none are there, answer 0.\nFinal answer format: set \"answer\" to the count of foreground objects in or on the river as an integer, using 0 if none match.\nAnnotation format: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted foreground object in or on the river; use [] if none match.\nExample JSON:\n{\"annotation\":[[238,390,322,474],[468,460,560,556]],\"answer\":2}",
+          "word_count": 99
+        },
+        {
+          "body_word_count": 53,
+          "mode": "answer_only",
+          "prompt": "The canvas contains a meadow river setting with illustrated foreground objects and scene features. How many foreground objects are in or on the river? If none are there, answer 0.\nAnswer field: set \"answer\" to the count of foreground objects in or on the river as an integer, using 0 if none match.\nExample JSON:\n{\"answer\":0}",
+          "word_count": 57
+        }
+      ],
+      "query_id": "on_feature",
+      "task": "task_illustrations__environment__feature_relation_object_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 3,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            416.599,
+            376.646,
+            448.599,
+            406.646
+          ],
+          [
+            176.157,
+            407.284,
+            202.157,
+            437.284
+          ],
+          [
+            498.105,
+            421.029,
+            526.105,
+            455.029
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2176891362363356,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 33,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows a city street setting with foreground objects placed around visible roads, rivers, buildings, or crossings. How many lit windows are shown on the buildings? If none are there, answer 0.\nFinal answer format: set \"answer\" to the count of lit windows on the buildings as an integer, using 0 if none match.\nAnnotation format: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted lit windows; use [] if none match.\nExample JSON:\n{\"annotation\":[[444,162,468,186],[486,162,510,186],[444,210,468,234]],\"answer\":3}",
+          "word_count": 99
+        },
+        {
+          "body_word_count": 54,
+          "mode": "answer_only",
+          "prompt": "The scene shows a city street setting with foreground objects placed around visible roads, rivers, buildings, or crossings. How many lit windows are shown on the buildings? If none are there, answer 0.\nAnswer field: set \"answer\" to the count of lit windows on the buildings as an integer, using 0 if none match.\nExample JSON:\n{\"answer\":0}",
+          "word_count": 58
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__environment__lit_window_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1077,
+          1188
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "missing_region": [
+            75.219,
+            305.119,
+            347.033,
+            455.542
+          ],
+          "selected_option": [
+            256.429,
+            805.105,
+            528.243,
+            955.528
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3701572462372986,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 21,
+          "mode": "answer_and_annotation",
+          "prompt": "This illustration shows a meadow river setting with foreground objects and visible environment features. Which option exactly fills the missing region?\nFinal answer format: set \"answer\" to the selected option letter as a string.\nAnnotation format: set \"annotation\" to a JSON object with keys \"missing_region\" and \"selected_option\", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates.\nExample JSON:\n{\"annotation\":{\"missing_region\":[214,128,374,252],\"selected_option\":[562,676,722,800]},\"answer\":\"C\"}",
+          "word_count": 75
+        },
+        {
+          "body_word_count": 21,
+          "mode": "answer_only",
+          "prompt": "This illustration shows a meadow river setting with foreground objects and visible environment features. Which option exactly fills the missing region?\nAnswer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 37
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__environment__missing_patch_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          800,
+          1200
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          400.0,
+          800.0,
+          800.0,
+          1200.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7142628417557589,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 32,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows a meadow river setting with foreground objects and environmental features. One of the lettered tiles is rotated relative to the rest of the environment image. Which tile is it?\nAnnotation format: set \"annotation\" to one [x0, y0, x1, y1] box around the rotated tile in image pixel coordinates.\nAnswer format: set \"answer\" to the letter of the rotated tile.\nExample JSON:\n{\"annotation\":[350,42,670,362],\"answer\":\"B\"}",
+          "word_count": 71
+        },
+        {
+          "body_word_count": 32,
+          "mode": "answer_only",
+          "prompt": "The picture shows a meadow river setting with foreground objects and environmental features. One of the lettered tiles is rotated relative to the rest of the environment image. Which tile is it?\nAnswer format: set \"answer\" to the letter of the rotated tile.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 47
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__environment__rotated_tile_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          800,
+          1200
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            68.278,
+            866.652,
+            129.614,
+            899.212
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3484293140934155,
+      "issues": [],
+      "observed_query_id": "left_side",
+      "prompts": [
+        {
+          "body_word_count": 18,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a study. Find every spoon to the left of the table. What is the count?\nFormat for the \"annotation\" field: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted spoon object to the left of the table.\nFormat for the \"answer\" field: set \"answer\" to the count of spoon objects to the left of the table as an integer.\nExample JSON:\n{\"annotation\":[[147,461,207,521],[254,504,314,564],[331,431,391,491]],\"answer\":3}",
+          "word_count": 89
+        },
+        {
+          "body_word_count": 37,
+          "mode": "answer_only",
+          "prompt": "The image shows a study. Find every spoon to the left of the table. What is the count?\nAnswer field: set \"answer\" to the count of spoon objects to the left of the table as an integer.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 41
+        }
+      ],
+      "query_id": "left_side",
+      "task": "task_illustrations__indoor_room__furniture_side_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 3,
+        "image_size": [
+          1200,
+          800
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            1051.729,
+            343.166,
+            1118.282,
+            386.674
+          ],
+          [
+            855.292,
+            351.746,
+            921.845,
+            395.253
+          ],
+          [
+            966.188,
+            583.855,
+            1032.742,
+            627.362
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 149454237316976,
+      "issues": [],
+      "observed_query_id": "right_side",
+      "prompts": [
+        {
+          "body_word_count": 22,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows a living room with small objects. What is the number of camera objects to the right of the table?\nFinal answer format: set \"answer\" to the count of camera objects to the right of the table as an integer.\nAnnotation format: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted camera object to the right of the table.\nExample JSON:\n{\"annotation\":[[147,461,207,521],[254,504,314,564],[331,431,391,491]],\"answer\":3}",
+          "word_count": 88
+        },
+        {
+          "body_word_count": 22,
+          "mode": "answer_only",
+          "prompt": "The picture shows a living room with small objects. What is the number of camera objects to the right of the table?\nRequired answer format: set \"answer\" to the count of camera objects to the right of the table as an integer.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 46
+        }
+      ],
+      "query_id": "right_side",
+      "task": "task_illustrations__indoor_room__furniture_side_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          755,
+          1693
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "missing_region": [
+            68.477,
+            347.732,
+            277.419,
+            562.87
+          ],
+          "selected_option": [
+            43.017,
+            1178.426,
+            251.959,
+            1393.564
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8922734275316537,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 19,
+          "mode": "answer_and_annotation",
+          "prompt": "The canvas shows a study. One region is missing from the room scene. Which lettered option matches it exactly?\nAnnotation format: set \"annotation\" to a JSON object with keys \"missing_region\" and \"selected_option\", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates.\nAnswer field: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"annotation\":{\"missing_region\":[214,128,374,252],\"selected_option\":[562,676,722,800]},\"answer\":\"C\"}",
+          "word_count": 72
+        },
+        {
+          "body_word_count": 19,
+          "mode": "answer_only",
+          "prompt": "The canvas shows a study. One region is missing from the room scene. Which lettered option matches it exactly?\nFinal answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 36
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__indoor_room__missing_patch_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          800,
+          1200
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          400.0,
+          0.0,
+          800.0,
+          400.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 372009002756852,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 23,
+          "mode": "answer_and_annotation",
+          "prompt": "The canvas shows a kitchen. One of the lettered tiles is rotated relative to the rest of the room. Which tile is it?\nFormat for the \"annotation\" field: set \"annotation\" to one [x0, y0, x1, y1] box around the rotated tile in image pixel coordinates.\nFormat for the \"answer\" field: set \"answer\" to the letter of the rotated tile.\nExample JSON:\n{\"annotation\":[350,42,670,362],\"answer\":\"B\"}",
+          "word_count": 68
+        },
+        {
+          "body_word_count": 23,
+          "mode": "answer_only",
+          "prompt": "The canvas shows a kitchen. One of the lettered tiles is rotated relative to the rest of the room. Which tile is it?\nFormat for the \"answer\" field: set \"answer\" to the letter of the rotated tile.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 41
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__indoor_room__rotated_tile_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 4,
+        "image_size": [
+          800,
+          1200
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            347.568,
+            596.064,
+            392.04,
+            636.184
+          ],
+          [
+            296.86,
+            597.016,
+            341.423,
+            637.136
+          ],
+          [
+            296.993,
+            618.081,
+            343.549,
+            658.201
+          ],
+          [
+            340.551,
+            619.319,
+            387.224,
+            659.439
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7940064047672100,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 16,
+          "mode": "answer_and_annotation",
+          "prompt": "This indoor illustration shows a kitchen. Find every pencil on the table. What is the count?\nAnnotation format: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted pencil object on the table.\nAnswer field: set \"answer\" to the count of pencil objects on the table as an integer.\nExample JSON:\n{\"annotation\":[[462,347,522,407],[596,344,660,404]],\"answer\":2}",
+          "word_count": 71
+        },
+        {
+          "body_word_count": 16,
+          "mode": "answer_only",
+          "prompt": "This indoor illustration shows a kitchen. Find every pencil on the table. What is the count?\nRequired answer format: set \"answer\" to the count of pencil objects on the table as an integer.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 37
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__indoor_room__surface_object_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          1200,
+          1000
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            0.0,
+            0.0,
+            400.0,
+            266.0
+          ],
+          [
+            400.0,
+            0.0,
+            800.0,
+            266.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5646527913163461,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 23,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a bedroom. Exactly two numbered cells in the indoor room grid were swapped. Select the option naming those two cells.\nFinal answer format: set \"answer\" to the selected option letter.\nAnnotation format: set \"annotation\" to a JSON array containing two [x0, y0, x1, y1] boxes around the two swapped numbered cells.\nExample JSON:\n{\"annotation\":[[0,0,400,266],[800,532,1200,798]],\"answer\":\"C\"}",
+          "word_count": 67
+        },
+        {
+          "body_word_count": 23,
+          "mode": "answer_only",
+          "prompt": "The image shows a bedroom. Exactly two numbered cells in the indoor room grid were swapped. Select the option naming those two cells.\nAnswer format: set \"answer\" to the selected option letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 36
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__indoor_room__swapped_tile_pair_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          800
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          780.0,
+          385.3,
+          840.0,
+          415.3
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2353025546074639,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 39,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows an isometric farmstead made of raised terrain tiles, one unlettered farmer, and several lettered ground tiles. Which lettered ground tile is at the same terrain level as the farmer?\nReturn JSON with keys \"annotation\" and \"answer\".\nFinal answer format: set \"answer\" to the selected ground-tile letter.\nAnnotation format: set \"annotation\" to one [x0, y0, x1, y1] pixel bounding box around the selected terrain tile.\nExample JSON:\n{\"annotation\":[420,260,486,294],\"answer\":\"B\"}",
+          "word_count": 76
+        },
+        {
+          "body_word_count": 37,
+          "mode": "answer_only",
+          "prompt": "The image shows an isometric farmstead made of raised terrain tiles, one unlettered farmer, and several lettered ground tiles. Which lettered ground tile is at the same terrain level as the farmer?\nReturn JSON with key \"answer\".\nFinal answer format: set \"answer\" to the selected ground-tile letter.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 51
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__isometric_farmstead__farmer_same_level_tile_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          387.429,
+          356.743,
+          665.143,
+          480.171
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3155189434662835,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 34,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows an isometric farmstead where terrain tiles form raised layers with visible tile borders. Count the top-surface terrain tiles that make up the highest terrace.\nReturn JSON with keys \"annotation\" and \"answer\".\nRequired annotation format: set \"annotation\" to one [x0, y0, x1, y1] pixel bounding box around the whole highest-elevation top layer.\nRequired answer format: set \"answer\" to the number of visible top-surface terrain tiles on the highest elevation layer.\nExample JSON:\n{\"annotation\":[380,180,640,330],\"answer\":12}",
+          "word_count": 81
+        },
+        {
+          "body_word_count": 32,
+          "mode": "answer_only",
+          "prompt": "The picture shows an isometric farmstead where terrain tiles form raised layers with visible tile borders. Count the top-surface terrain tiles that make up the highest terrace.\nReturn JSON with key \"answer\".\nFinal answer format: set \"answer\" to the number of visible top-surface terrain tiles on the highest elevation layer.\nExample JSON:\n{\"answer\":12}",
+          "word_count": 54
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__isometric_farmstead__highest_terrain_tile_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          418.286,
+          511.029,
+          480.0,
+          541.886
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7410927392251898,
+      "issues": [],
+      "observed_query_id": "highest_terrain_tile",
+      "prompts": [
+        {
+          "body_word_count": 43,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows an isometric farmstead made of raised terrain tiles with visible side faces, farm animals or trees, and several lettered ground tiles. Among the lettered ground tiles, which one is at the highest elevation?\nReturn JSON with keys \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to one [x0, y0, x1, y1] pixel bounding box around the selected terrain tile.\nAnswer field: set \"answer\" to the selected ground-tile letter.\nExample JSON:\n{\"annotation\":[420,260,486,294],\"answer\":\"D\"}",
+          "word_count": 79
+        },
+        {
+          "body_word_count": 41,
+          "mode": "answer_only",
+          "prompt": "The image shows an isometric farmstead made of raised terrain tiles with visible side faces, farm animals or trees, and several lettered ground tiles. Among the lettered ground tiles, which one is at the highest elevation?\nReturn JSON with key \"answer\".\nFormat for the \"answer\" field: set \"answer\" to the selected ground-tile letter.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 57
+        }
+      ],
+      "query_id": "highest_terrain_tile",
+      "task": "task_illustrations__isometric_farmstead__terrain_elevation_extremum_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          800
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          750.0,
+          430.3,
+          810.0,
+          460.3
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5154711535500673,
+      "issues": [],
+      "observed_query_id": "lowest_terrain_tile",
+      "prompts": [
+        {
+          "body_word_count": 38,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows an isometric farmstead where terrain tiles sit at different elevations and some ground tiles are labeled with letters. Which lettered ground tile is on the lowest terrain level?\nReturn JSON with keys \"annotation\" and \"answer\".\nRequired annotation format: set \"annotation\" to one [x0, y0, x1, y1] pixel bounding box around the selected terrain tile.\nRequired answer format: set \"answer\" to the selected ground-tile letter.\nExample JSON:\n{\"annotation\":[420,260,486,294],\"answer\":\"D\"}",
+          "word_count": 76
+        },
+        {
+          "body_word_count": 36,
+          "mode": "answer_only",
+          "prompt": "The picture shows an isometric farmstead where terrain tiles sit at different elevations and some ground tiles are labeled with letters. Which lettered ground tile is on the lowest terrain level?\nReturn JSON with key \"answer\".\nAnswer format: set \"answer\" to the selected ground-tile letter.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 49
+        }
+      ],
+      "query_id": "lowest_terrain_tile",
+      "task": "task_illustrations__isometric_farmstead__terrain_elevation_extremum_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 3,
+        "image_size": [
+          1200,
+          800
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            761.4,
+            303.7,
+            798.6,
+            374.5
+          ],
+          [
+            431.4,
+            318.7,
+            468.6,
+            389.5
+          ],
+          [
+            821.4,
+            363.7,
+            858.6,
+            434.5
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3058022040795479,
+      "issues": [],
+      "observed_query_id": "highest_terrain_object_count",
+      "prompts": [
+        {
+          "body_word_count": 34,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows a pixel-art isometric farm with varied terrain levels, connected farm patches, farm animals, and trees. How many trees are on the highest terrain level?\nReturn JSON with keys \"annotation\" and \"answer\".\nRequired annotation format: set \"annotation\" to a list of [x0, y0, x1, y1] pixel bounding boxes around each counted object; use [] when the count is 0.\nRequired answer format: set \"answer\" to the number of matching trees.\nExample JSON:\n{\"annotation\":[[236,420,282,470],[520,300,560,352]],\"answer\":2}",
+          "word_count": 84
+        },
+        {
+          "body_word_count": 32,
+          "mode": "answer_only",
+          "prompt": "The scene shows a pixel-art isometric farm with varied terrain levels, connected farm patches, farm animals, and trees. How many trees are on the highest terrain level?\nReturn JSON with key \"answer\".\nFormat for the \"answer\" field: set \"answer\" to the number of matching trees.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 49
+        }
+      ],
+      "query_id": "highest_terrain_object_count",
+      "task": "task_illustrations__isometric_farmstead__terrain_level_object_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            404.091,
+            463.052,
+            432.48,
+            488.972
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4988326883484552,
+      "issues": [],
+      "observed_query_id": "lowest_terrain_object_count",
+      "prompts": [
+        {
+          "body_word_count": 38,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows an isometric farmstead made of raised terrain tiles with visible side faces, farm animals, and trees. What is the number of farm animals on the lowest ground level?\nReturn JSON with keys \"annotation\" and \"answer\".\nFinal answer format: set \"answer\" to the number of matching farm animals.\nAnnotation format: set \"annotation\" to a list of [x0, y0, x1, y1] pixel bounding boxes around each counted object; use [] when the count is 0.\nExample JSON:\n{\"annotation\":[[236,420,282,470],[520,300,560,352]],\"answer\":2}",
+          "word_count": 88
+        },
+        {
+          "body_word_count": 36,
+          "mode": "answer_only",
+          "prompt": "The image shows an isometric farmstead made of raised terrain tiles with visible side faces, farm animals, and trees. What is the number of farm animals on the lowest ground level?\nReturn JSON with key \"answer\".\nFormat for the \"answer\" field: set \"answer\" to the number of matching farm animals.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 54
+        }
+      ],
+      "query_id": "lowest_terrain_object_count",
+      "task": "task_illustrations__isometric_farmstead__terrain_level_object_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 4,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            327.422,
+            239.635,
+            399.33,
+            280.589
+          ],
+          [
+            327.422,
+            267.475,
+            399.33,
+            308.429
+          ],
+          [
+            126.742,
+            338.815,
+            198.65,
+            379.769
+          ],
+          [
+            501.422,
+            413.635,
+            573.33,
+            454.589
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6916456122635335,
+      "issues": [],
+      "observed_query_id": "away_from_shoreline_boat_count",
+      "prompts": [
+        {
+          "body_word_count": 30,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows an isometric harbor with a shoreline, blue water tiles, a connected wooden main dock, and boats in open water. How many boats point away from the shoreline?\nFinal answer format: set \"answer\" to the number of boats facing away from the shoreline.\nAnnotation format: set \"annotation\" to a list of [x0, y0, x1, y1] pixel bounding boxes around each counted boat.\nExample JSON:\n{\"annotation\":[[188,408,252,452],[514,275,580,320]],\"answer\":2}",
+          "word_count": 77
+        },
+        {
+          "body_word_count": 30,
+          "mode": "answer_only",
+          "prompt": "The image shows an isometric harbor with a shoreline, blue water tiles, a connected wooden main dock, and boats in open water. How many boats point away from the shoreline?\nFinal answer format: set \"answer\" to the number of boats facing away from the shoreline.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 49
+        }
+      ],
+      "query_id": "away_from_shoreline_boat_count",
+      "task": "task_illustrations__isometric_harbor__boat_heading_status_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 3,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            295.03,
+            254.671,
+            366.938,
+            295.625
+          ],
+          [
+            355.35,
+            456.511,
+            427.258,
+            497.465
+          ],
+          [
+            471.35,
+            458.831,
+            543.258,
+            499.785
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4456079288140173,
+      "issues": [],
+      "observed_query_id": "toward_shoreline_boat_count",
+      "prompts": [
+        {
+          "body_word_count": 31,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows an isometric harbor with a shoreline, blue water tiles, a connected wooden main dock, and boats in open water. Count the boats whose bows point toward the shore.\nAnnotation format: set \"annotation\" to a list of [x0, y0, x1, y1] pixel bounding boxes around each counted boat.\nAnswer format: set \"answer\" to the number of boats facing toward the shoreline.\nExample JSON:\n{\"annotation\":[[188,408,252,452],[514,275,580,320]],\"answer\":2}",
+          "word_count": 76
+        },
+        {
+          "body_word_count": 31,
+          "mode": "answer_only",
+          "prompt": "The image shows an isometric harbor with a shoreline, blue water tiles, a connected wooden main dock, and boats in open water. Count the boats whose bows point toward the shore.\nRequired answer format: set \"answer\" to the number of boats facing toward the shoreline.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 49
+        }
+      ],
+      "query_id": "toward_shoreline_boat_count",
+      "task": "task_illustrations__isometric_harbor__boat_heading_status_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 5,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            450.466,
+            262.894,
+            537.252,
+            311.287
+          ],
+          [
+            549.762,
+            295.616,
+            624.928,
+            338.199
+          ],
+          [
+            334.466,
+            320.894,
+            421.252,
+            369.287
+          ],
+          [
+            491.762,
+            324.616,
+            566.928,
+            367.199
+          ],
+          [
+            371.586,
+            378.894,
+            458.372,
+            427.287
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2022180736364534,
+      "issues": [],
+      "observed_query_id": "moored_boat_count",
+      "prompts": [
+        {
+          "body_word_count": 33,
+          "mode": "answer_and_annotation",
+          "prompt": "This illustration shows a harbor drawn on isometric tiles, with a main dock running from the shore into the water and boats beside it. Count the boats moored beside the wooden main dock.\nAnnotation format: set \"annotation\" to a list of [x0, y0, x1, y1] pixel bounding boxes around each counted boat; use [] when the count is 0.\nAnswer format: set \"answer\" to the number of boats tied along the main dock.\nExample JSON:\n{\"annotation\":[[188,408,252,452],[514,275,580,320]],\"answer\":2}",
+          "word_count": 85
+        },
+        {
+          "body_word_count": 33,
+          "mode": "answer_only",
+          "prompt": "This illustration shows a harbor drawn on isometric tiles, with a main dock running from the shore into the water and boats beside it. Count the boats moored beside the wooden main dock.\nFormat for the \"answer\" field: set \"answer\" to the number of boats tied along the main dock.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 54
+        }
+      ],
+      "query_id": "moored_boat_count",
+      "task": "task_illustrations__isometric_harbor__boat_mooring_status_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 3,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            295.893,
+            262.496,
+            366.367,
+            286.104
+          ],
+          [
+            174.697,
+            303.008,
+            256.876,
+            349.098
+          ],
+          [
+            558.694,
+            446.287,
+            629.95,
+            486.915
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6314432184135331,
+      "issues": [],
+      "observed_query_id": "open_water_boat_count",
+      "prompts": [
+        {
+          "body_word_count": 31,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows an isometric dockyard with shoreline tiles, water tiles, a wooden pier, dock objects, and boats tied along the dock. Count the boats floating away from the main dock.\nFinal answer format: set \"answer\" to the number of boats in open water that are not tied to the dock.\nAnnotation format: set \"annotation\" to a list of [x0, y0, x1, y1] pixel bounding boxes around each counted boat; use [] when the count is 0.\nExample JSON:\n{\"annotation\":[[188,408,252,452],[514,275,580,320]],\"answer\":2}",
+          "word_count": 89
+        },
+        {
+          "body_word_count": 50,
+          "mode": "answer_only",
+          "prompt": "The picture shows an isometric dockyard with shoreline tiles, water tiles, a wooden pier, dock objects, and boats tied along the dock. Count the boats floating away from the main dock.\nAnswer field: set \"answer\" to the number of boats in open water that are not tied to the dock.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 54
+        }
+      ],
+      "query_id": "open_water_boat_count",
+      "task": "task_illustrations__isometric_harbor__boat_mooring_status_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            309.642,
+            368.116,
+            384.808,
+            410.699
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5521839464382256,
+      "issues": [],
+      "observed_query_id": "left_side_boat_count",
+      "prompts": [
+        {
+          "body_word_count": 36,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows an isometric harbor with a shoreline, blue water tiles, a connected wooden main dock, dock posts, cargo objects, and small boats. Count the boats moored along the image-left side of the main dock.\nAnnotation format: set \"annotation\" to a list of [x0, y0, x1, y1] pixel bounding boxes around each counted boat; use [] when the count is 0.\nAnswer format: set \"answer\" to the number of boats docked on the image-left side of the main dock.\nExample JSON:\n{\"annotation\":[[236,420,282,470],[520,300,560,352]],\"answer\":2}",
+          "word_count": 92
+        },
+        {
+          "body_word_count": 36,
+          "mode": "answer_only",
+          "prompt": "The image shows an isometric harbor with a shoreline, blue water tiles, a connected wooden main dock, dock posts, cargo objects, and small boats. Count the boats moored along the image-left side of the main dock.\nAnswer format: set \"answer\" to the number of boats docked on the image-left side of the main dock.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 58
+        }
+      ],
+      "query_id": "left_side_boat_count",
+      "task": "task_illustrations__isometric_harbor__boat_side_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 4,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            574.586,
+            306.394,
+            661.372,
+            354.787
+          ],
+          [
+            462.762,
+            368.116,
+            537.928,
+            410.699
+          ],
+          [
+            404.762,
+            397.116,
+            479.928,
+            439.699
+          ],
+          [
+            346.762,
+            426.116,
+            421.928,
+            468.699
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6716407291409083,
+      "issues": [],
+      "observed_query_id": "right_side_boat_count",
+      "prompts": [
+        {
+          "body_word_count": 33,
+          "mode": "answer_and_annotation",
+          "prompt": "The canvas contains an isometric harbor scene with a wooden dock connected to land and boats on either side. What is the number of boats touching the image-right side of the main dock?\nAnnotation format: set \"annotation\" to a list of [x0, y0, x1, y1] pixel bounding boxes around each counted boat; use [] when the count is 0.\nAnswer format: set \"answer\" to the number of boats docked on the image-right side of the main dock.\nExample JSON:\n{\"annotation\":[[236,420,282,470],[520,300,560,352]],\"answer\":2}",
+          "word_count": 89
+        },
+        {
+          "body_word_count": 51,
+          "mode": "answer_only",
+          "prompt": "The canvas contains an isometric harbor scene with a wooden dock connected to land and boats on either side. What is the number of boats touching the image-right side of the main dock?\nAnswer field: set \"answer\" to the number of boats docked on the image-right side of the main dock.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 55
+        }
+      ],
+      "query_id": "right_side_boat_count",
+      "task": "task_illustrations__isometric_harbor__boat_side_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          698.71,
+          343.991,
+          770.618,
+          384.945
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 181913703827994,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 30,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows an isometric harbor scene where boats are placed in open water near a shoreline and dock. Select the letter for the boat closest to the land edge.\nAnnotation format: set \"annotation\" to [x0, y0, x1, y1] pixel bounding box around the selected boat.\nAnswer format: set \"answer\" to the selected boat letter.\nExample JSON:\n{\"annotation\":[188,408,252,452],\"answer\":\"C\"}",
+          "word_count": 64
+        },
+        {
+          "body_word_count": 39,
+          "mode": "answer_only",
+          "prompt": "The picture shows an isometric harbor scene where boats are placed in open water near a shoreline and dock. Select the letter for the boat closest to the land edge.\nAnswer field: set \"answer\" to the selected boat letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 43
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__isometric_harbor__shoreline_nearest_boat_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          800
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          450.0,
+          356.5,
+          660.0,
+          446.5
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8355605921361629,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 35,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows a pixel-art isometric quarry with a clean highest terrace and lower surrounding rock terrain. How many visible terrain tiles are on the highest elevation layer?\nReturn JSON with keys \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to one [x0, y0, x1, y1] pixel bounding box around the whole highest-elevation top layer.\nAnswer format: set \"answer\" to the number of visible top-surface terrain tiles on the highest elevation layer.\nExample JSON:\n{\"annotation\":[380,180,640,330],\"answer\":12}",
+          "word_count": 80
+        },
+        {
+          "body_word_count": 33,
+          "mode": "answer_only",
+          "prompt": "The scene shows a pixel-art isometric quarry with a clean highest terrace and lower surrounding rock terrain. How many visible terrain tiles are on the highest elevation layer?\nReturn JSON with key \"answer\".\nFinal answer format: set \"answer\" to the number of visible top-surface terrain tiles on the highest elevation layer.\nExample JSON:\n{\"answer\":12}",
+          "word_count": 55
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__isometric_quarry__highest_terrain_tile_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          800
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          600.0,
+          288.4,
+          660.0,
+          318.4
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8544656055634522,
+      "issues": [],
+      "observed_query_id": "highest_terrain_tile",
+      "prompts": [
+        {
+          "body_word_count": 37,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows an isometric excavation quarry where terrain tiles sit at different elevations and some ground tiles are labeled with letters. Which candidate letter marks the highest terrain tile?\nReturn JSON with keys \"annotation\" and \"answer\".\nFormat for the \"annotation\" field: set \"annotation\" to one [x0, y0, x1, y1] pixel bounding box around the selected terrain tile.\nFormat for the \"answer\" field: set \"answer\" to the selected ground-tile letter.\nExample JSON:\n{\"annotation\":[420,260,486,294],\"answer\":\"D\"}",
+          "word_count": 79
+        },
+        {
+          "body_word_count": 35,
+          "mode": "answer_only",
+          "prompt": "The picture shows an isometric excavation quarry where terrain tiles sit at different elevations and some ground tiles are labeled with letters. Which candidate letter marks the highest terrain tile?\nReturn JSON with key \"answer\".\nAnswer format: set \"answer\" to the selected ground-tile letter.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 48
+        }
+      ],
+      "query_id": "highest_terrain_tile",
+      "task": "task_illustrations__isometric_quarry__terrain_elevation_extremum_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          800
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          270.0,
+          435.7,
+          330.0,
+          465.7
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7590413306746543,
+      "issues": [],
+      "observed_query_id": "lowest_terrain_tile",
+      "prompts": [
+        {
+          "body_word_count": 37,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows an isometric excavation quarry where terrain tiles sit at different elevations and some ground tiles are labeled with letters. Which candidate letter marks the lowest terrain tile?\nReturn JSON with keys \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to one [x0, y0, x1, y1] pixel bounding box around the selected terrain tile.\nAnswer field: set \"answer\" to the selected ground-tile letter.\nExample JSON:\n{\"annotation\":[420,260,486,294],\"answer\":\"D\"}",
+          "word_count": 73
+        },
+        {
+          "body_word_count": 44,
+          "mode": "answer_only",
+          "prompt": "The picture shows an isometric excavation quarry where terrain tiles sit at different elevations and some ground tiles are labeled with letters. Which candidate letter marks the lowest terrain tile?\nReturn JSON with key \"answer\".\nAnswer field: set \"answer\" to the selected ground-tile letter.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 48
+        }
+      ],
+      "query_id": "lowest_terrain_tile",
+      "task": "task_illustrations__isometric_quarry__terrain_elevation_extremum_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          1200,
+          800
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            464.4,
+            291.916,
+            495.6,
+            320.14
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 649465239047612,
+      "issues": [],
+      "observed_query_id": "highest_terrain_object_count",
+      "prompts": [
+        {
+          "body_word_count": 37,
+          "mode": "answer_and_annotation",
+          "prompt": "This illustration shows a quarry drawn on isometric tiles, with stepped rock levels, ore veins, and mine carts. What is the number of ore veins on the highest ground level?\nReturn JSON with keys \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to a list of [x0, y0, x1, y1] pixel bounding boxes around each counted object; use [] when the count is 0.\nAnswer format: set \"answer\" to the number of matching ore veins.\nExample JSON:\n{\"annotation\":[[236,420,282,470],[520,300,560,352]],\"answer\":2}",
+          "word_count": 86
+        },
+        {
+          "body_word_count": 35,
+          "mode": "answer_only",
+          "prompt": "This illustration shows a quarry drawn on isometric tiles, with stepped rock levels, ore veins, and mine carts. What is the number of ore veins on the highest ground level?\nReturn JSON with key \"answer\".\nFinal answer format: set \"answer\" to the number of matching ore veins.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 51
+        }
+      ],
+      "query_id": "highest_terrain_object_count",
+      "task": "task_illustrations__isometric_quarry__terrain_level_object_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 3,
+        "image_size": [
+          1200,
+          800
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            271.2,
+            411.784,
+            328.8,
+            442.36
+          ],
+          [
+            871.2,
+            501.784,
+            928.8,
+            532.36
+          ],
+          [
+            661.2,
+            606.784,
+            718.8,
+            637.36
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5747995227745917,
+      "issues": [],
+      "observed_query_id": "lowest_terrain_object_count",
+      "prompts": [
+        {
+          "body_word_count": 35,
+          "mode": "answer_and_annotation",
+          "prompt": "This illustration shows a quarry drawn on isometric tiles, with stepped rock levels, ore veins, and mine carts. How many mine carts are on the lowest terrain level?\nReturn JSON with keys \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to a list of [x0, y0, x1, y1] pixel bounding boxes around each counted object; use [] when the count is 0.\nAnswer format: set \"answer\" to the number of matching mine carts.\nExample JSON:\n{\"annotation\":[[236,420,282,470],[520,300,560,352]],\"answer\":2}",
+          "word_count": 84
+        },
+        {
+          "body_word_count": 33,
+          "mode": "answer_only",
+          "prompt": "This illustration shows a quarry drawn on isometric tiles, with stepped rock levels, ore veins, and mine carts. How many mine carts are on the lowest terrain level?\nReturn JSON with key \"answer\".\nFinal answer format: set \"answer\" to the number of matching mine carts.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 49
+        }
+      ],
+      "query_id": "lowest_terrain_object_count",
+      "task": "task_illustrations__isometric_quarry__terrain_level_object_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          665.143,
+          480.171,
+          726.857,
+          511.029
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2436640332553572,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 38,
+          "mode": "answer_and_annotation",
+          "prompt": "This illustration shows a quarry drawn on isometric tiles, with a worker and lettered candidate ground tiles. Choose the letter of the ground tile that sits at the worker's elevation level.\nReturn JSON with keys \"annotation\" and \"answer\".\nFormat for the \"annotation\" field: set \"annotation\" to one [x0, y0, x1, y1] pixel bounding box around the selected terrain tile.\nFormat for the \"answer\" field: set \"answer\" to the selected ground-tile letter.\nExample JSON:\n{\"annotation\":[420,260,486,294],\"answer\":\"B\"}",
+          "word_count": 80
+        },
+        {
+          "body_word_count": 36,
+          "mode": "answer_only",
+          "prompt": "This illustration shows a quarry drawn on isometric tiles, with a worker and lettered candidate ground tiles. Choose the letter of the ground tile that sits at the worker's elevation level.\nReturn JSON with key \"answer\".\nAnswer format: set \"answer\" to the selected ground-tile letter.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 49
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__isometric_quarry__worker_same_level_tile_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "point_set",
+        "annotation_value_count": 5,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "point_set",
+        "overlay_annotation_value": [
+          [
+            191.835,
+            498.804
+          ],
+          [
+            262.41,
+            504.302
+          ],
+          [
+            116.328,
+            507.574
+          ],
+          [
+            229.824,
+            602.284
+          ],
+          [
+            137.563,
+            604.634
+          ]
+        ],
+        "projected_type": "point_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3114770237338431,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 21,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows a library room containing 6 labeled book sections. What is the number of books in the Science section?\nFormat for the \"annotation\" field: set \"annotation\" to a JSON array of [x, y] center points in image pixel coordinates for every counted book in the Science section.\nFormat for the \"answer\" field: set \"answer\" to the count of books in the Science section as an integer.\nExample JSON:\n{\"annotation\":[[101,222],[124,225],[148,217],[188,212]],\"answer\":4}",
+          "word_count": 81
+        },
+        {
+          "body_word_count": 21,
+          "mode": "answer_only",
+          "prompt": "The scene shows a library room containing 6 labeled book sections. What is the number of books in the Science section?\nFinal answer format: set \"answer\" to the count of books in the Science section as an integer.\nExample JSON:\n{\"answer\":4}",
+          "word_count": 42
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__library__books_in_section_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "point_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "point_set",
+        "overlay_annotation_value": [
+          [
+            206.614,
+            349.04
+          ]
+        ],
+        "projected_type": "point_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8673068480110699,
+      "issues": [],
+      "observed_query_id": "book_color_in_section_count",
+      "prompts": [
+        {
+          "body_word_count": 18,
+          "mode": "answer_and_annotation",
+          "prompt": "This library scene contains 4 labeled book sections. How many blue [#2D75E6] books are in the Math section?\nAnnotation format: set \"annotation\" to a JSON array of [x, y] center points in image pixel coordinates for every counted blue [#2D75E6] book in the Math section.\nAnswer field: set \"answer\" to the count of blue [#2D75E6] books in the Math section as an integer.\nExample JSON:\n{\"annotation\":[[253,220],[297,222],[361,216]],\"answer\":3}",
+          "word_count": 74
+        },
+        {
+          "body_word_count": 18,
+          "mode": "answer_only",
+          "prompt": "This library scene contains 4 labeled book sections. How many blue [#2D75E6] books are in the Math section?\nFormat for the \"answer\" field: set \"answer\" to the count of blue [#2D75E6] books in the Math section as an integer.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 43
+        }
+      ],
+      "query_id": "book_color_in_section_count",
+      "task": "task_illustrations__library__filtered_book_in_section_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "point_set",
+        "annotation_value_count": 5,
+        "image_size": [
+          800,
+          1200
+        ],
+        "overlay_annotation_type": "point_set",
+        "overlay_annotation_value": [
+          [
+            715.572,
+            603.354
+          ],
+          [
+            604.686,
+            604.54
+          ],
+          [
+            661.45,
+            685.203
+          ],
+          [
+            669.946,
+            766.973
+          ],
+          [
+            710.79,
+            767.267
+          ]
+        ],
+        "projected_type": "point_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7516752792457154,
+      "issues": [],
+      "observed_query_id": "horizontal_book_in_section_count",
+      "prompts": [
+        {
+          "body_word_count": 17,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows 6 labeled library shelf sections. How many horizontal books are in the Nature section?\nAnnotation format: set \"annotation\" to a JSON array of [x, y] center points in image pixel coordinates for every counted horizontal book in the Nature section.\nAnswer format: set \"answer\" to the count of horizontal books in the Nature section as an integer.\nExample JSON:\n{\"annotation\":[[491,224],[535,218],[637,214]],\"answer\":3}",
+          "word_count": 71
+        },
+        {
+          "body_word_count": 17,
+          "mode": "answer_only",
+          "prompt": "The picture shows 6 labeled library shelf sections. How many horizontal books are in the Nature section?\nFinal answer format: set \"answer\" to the count of horizontal books in the Nature section as an integer.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 39
+        }
+      ],
+      "query_id": "horizontal_book_in_section_count",
+      "task": "task_illustrations__library__filtered_book_in_section_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "point_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          1200,
+          800
+        ],
+        "overlay_annotation_type": "point_set",
+        "overlay_annotation_value": [
+          [
+            657.568,
+            451.428
+          ]
+        ],
+        "projected_type": "point_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5762793868503041,
+      "issues": [],
+      "observed_query_id": "upright_book_in_section_count",
+      "prompts": [
+        {
+          "body_word_count": 20,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows 5 labeled library shelf sections. Find every upright book in the Fiction section. What is the count?\nAnnotation format: set \"annotation\" to a JSON array of [x, y] center points in image pixel coordinates for every counted upright book in the Fiction section.\nAnswer format: set \"answer\" to the count of upright books in the Fiction section as an integer.\nExample JSON:\n{\"annotation\":[[491,224],[535,218],[637,214]],\"answer\":3}",
+          "word_count": 74
+        },
+        {
+          "body_word_count": 20,
+          "mode": "answer_only",
+          "prompt": "The picture shows 5 labeled library shelf sections. Find every upright book in the Fiction section. What is the count?\nAnswer format: set \"answer\" to the count of upright books in the Fiction section as an integer.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 41
+        }
+      ],
+      "query_id": "upright_book_in_section_count",
+      "task": "task_illustrations__library__filtered_book_in_section_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          775,
+          1650
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "missing_region": [
+            251.424,
+            542.787,
+            372.18,
+            719.508
+          ],
+          "selected_option": [
+            184.738,
+            1430.0,
+            305.494,
+            1606.721
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8659501613588447,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 20,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows 6 labeled library shelf sections. Select the option that restores the missing part of the library image.\nFormat for the \"annotation\" field: set \"annotation\" to a JSON object with keys \"missing_region\" and \"selected_option\", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates.\nFormat for the \"answer\" field: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"annotation\":{\"missing_region\":[214,128,374,252],\"selected_option\":[562,676,722,800]},\"answer\":\"C\"}",
+          "word_count": 79
+        },
+        {
+          "body_word_count": 32,
+          "mode": "answer_only",
+          "prompt": "The picture shows 6 labeled library shelf sections. Select the option that restores the missing part of the library image.\nAnswer field: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 36
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__library__missing_patch_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          0.0,
+          0.0,
+          320.0,
+          320.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6456593291535242,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 24,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows an illustrated library with 4 labeled shelf sections. The lettered tile grid contains one rotated library fragment. Which tile is it?\nFormat for the \"annotation\" field: set \"annotation\" to one [x0, y0, x1, y1] box around the rotated tile in image pixel coordinates.\nFormat for the \"answer\" field: set \"answer\" to the letter of the rotated tile.\nExample JSON:\n{\"annotation\":[350,42,670,362],\"answer\":\"B\"}",
+          "word_count": 69
+        },
+        {
+          "body_word_count": 24,
+          "mode": "answer_only",
+          "prompt": "The image shows an illustrated library with 4 labeled shelf sections. The lettered tile grid contains one rotated library fragment. Which tile is it?\nFinal answer format: set \"answer\" to the letter of the rotated tile.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 40
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__library__rotated_tile_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          798,
+          1402
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            0.0,
+            800.0,
+            266.0,
+            1200.0
+          ],
+          [
+            266.0,
+            800.0,
+            532.0,
+            1200.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1587490462470263,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 29,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows 5 labeled library shelf sections. The library image is divided into numbered cells, and exactly two cells have been swapped. Which option names the swapped pair?\nAnnotation format: set \"annotation\" to a JSON array containing exactly two [x0, y0, x1, y1] boxes around the swapped cells in image pixel coordinates.\nAnswer field: set \"answer\" to the option letter naming the two swapped cells.\nExample JSON:\n{\"annotation\":[[0,0,400,266],[800,532,1200,798]],\"answer\":\"C\"}",
+          "word_count": 79
+        },
+        {
+          "body_word_count": 29,
+          "mode": "answer_only",
+          "prompt": "The picture shows 5 labeled library shelf sections. The library image is divided into numbered cells, and exactly two cells have been swapped. Which option names the swapped pair?\nFormat for the \"answer\" field: set \"answer\" to the option letter naming the two swapped cells.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 49
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__library__swapped_tile_pair_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          920,
+          1389
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          467.594,
+          35.81,
+          901.557,
+          686.904
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3572520606479146,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 17,
+          "mode": "answer_and_annotation",
+          "prompt": "This is a park playground scene. Find the option whose tiles form the correct park playground image.\nAnnotation format: set \"annotation\" to one [x0, y0, x1, y1] box around the selected option image in pixel coordinates.\nAnswer field: set \"answer\" to the selected option letter.\nExample JSON:\n{\"annotation\":[594,478,1114,844],\"answer\":\"C\"}",
+          "word_count": 54
+        },
+        {
+          "body_word_count": 17,
+          "mode": "answer_only",
+          "prompt": "This is a park playground scene. Find the option whose tiles form the correct park playground image.\nRequired answer format: set \"answer\" to the selected option letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 31
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__park_playground__jigsaw_arrangement_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          926,
+          1381
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "missing_region": [
+            157.057,
+            422.477,
+            289.602,
+            568.754
+          ],
+          "selected_option": [
+            242.394,
+            1191.112,
+            374.939,
+            1337.389
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7216306110807167,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 14,
+          "mode": "answer_and_annotation",
+          "prompt": "This is a park playground scene. Which lettered patch belongs in the blank region?\nRequired annotation format: set \"annotation\" to a JSON object with \"missing_region\" and \"selected_option\" keys, each mapped to a [x0, y0, x1, y1] pixel box.\nRequired answer format: set \"answer\" to the selected option letter.\nExample JSON:\n{\"annotation\":{\"missing_region\":[152,188,356,330],\"selected_option\":[708,612,912,754]},\"answer\":\"C\"}",
+          "word_count": 63
+        },
+        {
+          "body_word_count": 23,
+          "mode": "answer_only",
+          "prompt": "This is a park playground scene. Which lettered patch belongs in the blank region?\nAnswer field: set \"answer\" to the selected option letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 27
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__park_playground__missing_patch_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 6,
+        "image_size": [
+          1200,
+          800
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            848.107,
+            415.593,
+            908.527,
+            526.779
+          ],
+          [
+            309.298,
+            462.011,
+            365.636,
+            570.353
+          ],
+          [
+            534.671,
+            535.584,
+            581.829,
+            623.79
+          ],
+          [
+            826.195,
+            620.685,
+            890.43,
+            706.238
+          ],
+          [
+            387.04,
+            636.559,
+            442.129,
+            742.975
+          ],
+          [
+            1109.407,
+            645.37,
+            1170.0,
+            755.415
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7027923228648537,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 15,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows a synthetic park playground. Count all visible people in the park playground.\nRequired annotation format: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each visible person.\nRequired answer format: set \"answer\" to the total count of visible people as an integer.\nExample JSON:\n{\"annotation\":[[176,511,236,611],[486,593,546,693],[824,455,884,555]],\"answer\":3}",
+          "word_count": 70
+        },
+        {
+          "body_word_count": 15,
+          "mode": "answer_only",
+          "prompt": "The picture shows a synthetic park playground. Count all visible people in the park playground.\nFormat for the \"answer\" field: set \"answer\" to the total count of visible people as an integer.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 36
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__park_playground__person_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 5,
+        "image_size": [
+          1200,
+          800
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            312.762,
+            364.858,
+            413.862,
+            434.858
+          ],
+          [
+            173.569,
+            369.524,
+            294.468,
+            439.524
+          ],
+          [
+            457.852,
+            371.854,
+            578.751,
+            441.854
+          ],
+          [
+            179.117,
+            447.344,
+            300.017,
+            517.344
+          ],
+          [
+            324.138,
+            453.05,
+            433.164,
+            523.05
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5901911095061545,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 13,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows a park playground illustration. How many climbing frames are shown?\nFinal answer format: set \"answer\" to the count of climbing frames as an integer.\nAnnotation format: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted climbing frames.\nExample JSON:\n{\"annotation\":[[162,315,282,435],[430,335,558,455],[700,309,836,429]],\"answer\":3}",
+          "word_count": 67
+        },
+        {
+          "body_word_count": 13,
+          "mode": "answer_only",
+          "prompt": "The scene shows a park playground illustration. How many climbing frames are shown?\nRequired answer format: set \"answer\" to the count of climbing frames as an integer.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 31
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__park_playground__playground_equipment_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          960,
+          960
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          640.0,
+          640.0,
+          960.0,
+          960.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1168394112866000,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 21,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows a synthetic park playground. Select the tile that is rotated relative to the rest of the park image.\nAnnotation format: set \"annotation\" to one [x0, y0, x1, y1] box around the rotated tile in pixel coordinates.\nAnswer field: set \"answer\" to the selected tile letter.\nExample JSON:\n{\"annotation\":[438,168,756,436],\"answer\":\"B\"}",
+          "word_count": 57
+        },
+        {
+          "body_word_count": 30,
+          "mode": "answer_only",
+          "prompt": "The picture shows a synthetic park playground. Select the tile that is rotated relative to the rest of the park image.\nAnswer field: set \"answer\" to the selected tile letter.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 34
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__park_playground__rotated_tile_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          960,
+          1162
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            640.0,
+            320.0,
+            960.0,
+            640.0
+          ],
+          [
+            0.0,
+            640.0,
+            320.0,
+            960.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4769839732618300,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 18,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows a synthetic park playground. Which lettered option identifies the two numbered cells that changed places?\nAnnotation format: set \"annotation\" to a JSON array containing two [x0, y0, x1, y1] boxes around the two swapped numbered cells.\nAnswer format: set \"answer\" to the selected option letter.\nExample JSON:\n{\"annotation\":[[0,0,400,266],[800,532,1200,798]],\"answer\":\"C\"}",
+          "word_count": 61
+        },
+        {
+          "body_word_count": 18,
+          "mode": "answer_only",
+          "prompt": "The picture shows a synthetic park playground. Which lettered option identifies the two numbered cells that changed places?\nFinal answer format: set \"answer\" to the selected option letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 32
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__park_playground__swapped_tile_pair_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          945,
+          1354
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "missing_region": [
+            476.25,
+            33.756,
+            739.688,
+            185.659
+          ],
+          "selected_option": [
+            616.875,
+            1185.219,
+            880.312,
+            1337.122
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3069623756032354,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 15,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows a pixel village map. Which lettered patch belongs in the blank region?\nRequired annotation format: set \"annotation\" to a JSON object with \"missing_region\" and \"selected_option\" keys, each mapped to a [x0, y0, x1, y1] pixel box.\nRequired answer format: set \"answer\" to the selected option letter.\nExample JSON:\n{\"annotation\":{\"missing_region\":[152,188,356,330],\"selected_option\":[708,612,912,754]},\"answer\":\"C\"}",
+          "word_count": 64
+        },
+        {
+          "body_word_count": 15,
+          "mode": "answer_only",
+          "prompt": "The picture shows a pixel village map. Which lettered patch belongs in the blank region?\nFormat for the \"answer\" field: set \"answer\" to the selected option letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 31
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__pixel_village__missing_patch_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 3,
+        "image_size": [
+          1296,
+          864
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            960.0,
+            240.0,
+            1008.0,
+            336.0
+          ],
+          [
+            816.0,
+            240.0,
+            864.0,
+            336.0
+          ],
+          [
+            1056.0,
+            192.0,
+            1104.0,
+            288.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1210303323935784,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 15,
+          "mode": "answer_and_annotation",
+          "prompt": "This illustration shows a pixel village from above. How many lamp posts can be seen?\nAnnotation format: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted lamp post.\nAnswer format: set \"answer\" to the count of visible lamp posts as an integer.\nExample JSON:\n{\"annotation\":[[160,240,224,304],[416,208,480,272],[672,368,736,432]],\"answer\":3}",
+          "word_count": 69
+        },
+        {
+          "body_word_count": 15,
+          "mode": "answer_only",
+          "prompt": "This illustration shows a pixel village from above. How many lamp posts can be seen?\nFinal answer format: set \"answer\" to the count of visible lamp posts as an integer.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 34
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__pixel_village__object_type_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 4,
+        "image_size": [
+          1296,
+          864
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            576.0,
+            480.0,
+            624.0,
+            528.0
+          ],
+          [
+            336.0,
+            336.0,
+            384.0,
+            384.0
+          ],
+          [
+            528.0,
+            336.0,
+            576.0,
+            384.0
+          ],
+          [
+            576.0,
+            384.0,
+            624.0,
+            432.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8849002933955058,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 13,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a top-down pixel village. Count the people on the paths.\nRequired annotation format: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted person on a path.\nRequired answer format: set \"answer\" to the count of people on the paths as an integer.\nExample JSON:\n{\"annotation\":[[288,320,352,384],[448,256,512,320],[576,384,640,448]],\"answer\":3}",
+          "word_count": 72
+        },
+        {
+          "body_word_count": 13,
+          "mode": "answer_only",
+          "prompt": "The image shows a top-down pixel village. Count the people on the paths.\nFormat for the \"answer\" field: set \"answer\" to the count of people on the paths as an integer.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 35
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__pixel_village__person_path_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 4,
+        "image_size": [
+          864,
+          1296
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            768.0,
+            912.0,
+            816.0,
+            1008.0
+          ],
+          [
+            528.0,
+            1056.0,
+            576.0,
+            1152.0
+          ],
+          [
+            768.0,
+            624.0,
+            816.0,
+            720.0
+          ],
+          [
+            768.0,
+            336.0,
+            816.0,
+            432.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4105983108228238,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 16,
+          "mode": "answer_and_annotation",
+          "prompt": "The canvas contains a top-down pixel village scene. How many trees are right of the river?\nAnnotation format: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted tree right of the river.\nAnswer format: set \"answer\" to the count of visible trees right of the river as an integer.\nExample JSON:\n{\"annotation\":[[160,240,224,304],[416,208,480,272],[672,368,736,432]],\"answer\":3}",
+          "word_count": 76
+        },
+        {
+          "body_word_count": 16,
+          "mode": "answer_only",
+          "prompt": "The canvas contains a top-down pixel village scene. How many trees are right of the river?\nFormat for the \"answer\" field: set \"answer\" to the count of visible trees right of the river as an integer.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 40
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__pixel_village__river_side_object_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1008,
+          1008
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          0.0,
+          0.0,
+          336.0,
+          336.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6850324221275364,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 23,
+          "mode": "answer_and_annotation",
+          "prompt": "The canvas contains a top-down pixel village scene. Select the tile that is rotated relative to the rest of the pixel village image.\nAnnotation format: set \"annotation\" to the [x0, y0, x1, y1] box around the rotated tile in pixel coordinates.\nAnswer field: set \"answer\" to the selected tile letter.\nExample JSON:\n{\"annotation\":[438,168,758,488],\"answer\":\"B\"}",
+          "word_count": 59
+        },
+        {
+          "body_word_count": 23,
+          "mode": "answer_only",
+          "prompt": "The canvas contains a top-down pixel village scene. Select the tile that is rotated relative to the rest of the pixel village image.\nFinal answer format: set \"answer\" to the selected tile letter.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 37
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__pixel_village__rotated_tile_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          859,
+          1489
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            572.667,
+            0.0,
+            859.0,
+            429.405
+          ],
+          [
+            0.0,
+            429.405,
+            286.333,
+            858.809
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3076563372395797,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 21,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a top-down pixel village. Select the option naming the two tile numbers that are in each other's positions.\nAnnotation format: set \"annotation\" to a JSON array containing two [x0, y0, x1, y1] boxes around the two swapped numbered cells.\nAnswer format: set \"answer\" to the selected option letter.\nExample JSON:\n{\"annotation\":[[0,0,400,280],[800,560,1200,840]],\"answer\":\"C\"}",
+          "word_count": 64
+        },
+        {
+          "body_word_count": 21,
+          "mode": "answer_only",
+          "prompt": "The image shows a top-down pixel village. Select the option naming the two tile numbers that are in each other's positions.\nFinal answer format: set \"answer\" to the selected option letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 35
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__pixel_village__swapped_tile_pair_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 6,
+        "image_size": [
+          864,
+          1296
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            528.0,
+            192.0,
+            576.0,
+            240.0
+          ],
+          [
+            480.0,
+            192.0,
+            528.0,
+            240.0
+          ],
+          [
+            576.0,
+            240.0,
+            624.0,
+            288.0
+          ],
+          [
+            672.0,
+            144.0,
+            720.0,
+            192.0
+          ],
+          [
+            480.0,
+            240.0,
+            528.0,
+            288.0
+          ],
+          [
+            672.0,
+            240.0,
+            720.0,
+            288.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1282953794178183,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 16,
+          "mode": "answer_and_annotation",
+          "prompt": "This illustration shows a pixel village from above. How many grave markers are in the cemetery?\nFormat for the \"annotation\" field: set \"annotation\" to a JSON array of [x0, y0, x1, y1] boxes in image pixel coordinates around each counted grave marker in the cemetery.\nFormat for the \"answer\" field: set \"answer\" to the count of grave markers in the cemetery as an integer.\nExample JSON:\n{\"annotation\":[[112,208,176,272],[176,208,240,272],[240,208,304,272]],\"answer\":3}",
+          "word_count": 81
+        },
+        {
+          "body_word_count": 16,
+          "mode": "answer_only",
+          "prompt": "This illustration shows a pixel village from above. How many grave markers are in the cemetery?\nRequired answer format: set \"answer\" to the count of grave markers in the cemetery as an integer.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 37
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__pixel_village__territory_object_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1053,
+          1215
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "missing_region": [
+            359.125,
+            487.299,
+            576.875,
+            659.479
+          ],
+          "selected_option": [
+            536.25,
+            817.039,
+            754.0,
+            989.218
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2224889778899903,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 39,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows an RPG-style dungeon map from above with a missing rectangular patch and several lettered candidate patches. Select the lettered patch that completes the missing area of the dungeon map.\nReturn JSON with keys \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to an object with keys \"missing_region\" and \"selected_option\"; each value is one [x0, y0, x1, y1] pixel bounding box.\nAnswer format: set \"answer\" to the selected patch option letter.\nExample JSON:\n{\"annotation\":{\"missing_region\":[220,150,420,310],\"selected_option\":[580,760,780,920]},\"answer\":\"C\"}",
+          "word_count": 87
+        },
+        {
+          "body_word_count": 37,
+          "mode": "answer_only",
+          "prompt": "The scene shows an RPG-style dungeon map from above with a missing rectangular patch and several lettered candidate patches. Select the lettered patch that completes the missing area of the dungeon map.\nReturn JSON with key \"answer\".\nRequired answer format: set \"answer\" to the selected patch option letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 52
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_dungeon__missing_patch_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          1296,
+          864
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            144.0,
+            144.0,
+            192.0,
+            192.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6114102792645787,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 40,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a top-down pixel RPG dungeon with stone chambers, corridors, a player, treasure chests, and small monsters in some chambers. Looking across the treasure chambers, how many contain a visible monster?\nReturn JSON with keys \"annotation\" and \"answer\".\nFormat for the \"annotation\" field: set \"annotation\" to a list containing one [x0, y0, x1, y1] bounding box around each counted monster.\nFormat for the \"answer\" field: set \"answer\" to the number of treasure chambers that contain a monster.\nExample JSON:\n{\"annotation\":[[236,156,284,204],[596,156,644,204]],\"answer\":2}",
+          "word_count": 92
+        },
+        {
+          "body_word_count": 38,
+          "mode": "answer_only",
+          "prompt": "The image shows a top-down pixel RPG dungeon with stone chambers, corridors, a player, treasure chests, and small monsters in some chambers. Looking across the treasure chambers, how many contain a visible monster?\nReturn JSON with key \"answer\".\nFinal answer format: set \"answer\" to the number of treasure chambers that contain a monster.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 57
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_dungeon__monster_chamber_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 6,
+        "image_size": [
+          1008,
+          1008
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            96.0,
+            144.0,
+            192.0,
+            192.0
+          ],
+          [
+            96.0,
+            432.0,
+            192.0,
+            480.0
+          ],
+          [
+            96.0,
+            816.0,
+            192.0,
+            864.0
+          ],
+          [
+            768.0,
+            144.0,
+            864.0,
+            192.0
+          ],
+          [
+            768.0,
+            432.0,
+            864.0,
+            480.0
+          ],
+          [
+            768.0,
+            816.0,
+            864.0,
+            864.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4563515862176470,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 42,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows a top-down RPG-style dungeon map with walkable floor, boulder-blocked passages, a player, and treasure chests. How many treasure chests can the player reach without passing through a corridor blocked by a boulder?\nReturn JSON with keys \"annotation\" and \"answer\".\nFinal answer format: set \"answer\" to the number of treasure chests reachable from the player.\nAnnotation format: set \"annotation\" to a list containing one [x0, y0, x1, y1] bounding box around each counted reachable chest; use an empty list when the answer is 0.\nExample JSON:\n{\"annotation\":[[236,156,284,204],[596,156,644,204]],\"answer\":2}",
+          "word_count": 99
+        },
+        {
+          "body_word_count": 40,
+          "mode": "answer_only",
+          "prompt": "The scene shows a top-down RPG-style dungeon map with walkable floor, boulder-blocked passages, a player, and treasure chests. How many treasure chests can the player reach without passing through a corridor blocked by a boulder?\nReturn JSON with key \"answer\".\nRequired answer format: set \"answer\" to the number of treasure chests reachable from the player.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 59
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_dungeon__reachable_chest_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          1008,
+          1008
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            96.0,
+            768.0,
+            192.0,
+            816.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2626093608260726,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 42,
+          "mode": "answer_and_annotation",
+          "prompt": "This illustration shows an RPG dungeon map from above with walkable passages, boulder-blocked passages, treasure chests, and monsters. Follow only unblocked dungeon paths from the player. How many reachable chests are not inside monster chambers?\nReturn JSON with keys \"annotation\" and \"answer\".\nFormat for the \"annotation\" field: set \"annotation\" to a list containing one [x0, y0, x1, y1] bounding box around each counted chest; use an empty list when the answer is 0.\nFormat for the \"answer\" field: set \"answer\" to the number of reachable treasure chests after excluding chests in monster chambers.\nExample JSON:\n{\"annotation\":[[236,156,284,204],[596,156,644,204]],\"answer\":2}",
+          "word_count": 106
+        },
+        {
+          "body_word_count": 40,
+          "mode": "answer_only",
+          "prompt": "This illustration shows an RPG dungeon map from above with walkable passages, boulder-blocked passages, treasure chests, and monsters. Follow only unblocked dungeon paths from the player. How many reachable chests are not inside monster chambers?\nReturn JSON with key \"answer\".\nRequired answer format: set \"answer\" to the number of reachable treasure chests after excluding chests in monster chambers.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 62
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_dungeon__safe_reachable_chest_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "point_set",
+        "annotation_value_count": 7,
+        "image_size": [
+          1296,
+          864
+        ],
+        "overlay_annotation_type": "point_set",
+        "overlay_annotation_value": [
+          [
+            1056.0,
+            312.0
+          ],
+          [
+            720.0,
+            336.0
+          ],
+          [
+            384.0,
+            240.0
+          ],
+          [
+            504.0,
+            672.0
+          ],
+          [
+            384.0,
+            480.0
+          ],
+          [
+            720.0,
+            768.0
+          ],
+          [
+            240.0,
+            672.0
+          ]
+        ],
+        "projected_type": "point_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8312550772793733,
+      "issues": [],
+      "observed_query_id": "closed_door_count",
+      "prompts": [
+        {
+          "body_word_count": 30,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows a pixel-art house interior from above, including rooms, walls, and doors. Count each closed door once. What is the total?\nReturn JSON with keys \"annotation\" and \"answer\".\nFormat for the \"annotation\" field: set \"annotation\" to one [x, y] point on each counted door in image pixel coordinates.\nFormat for the \"answer\" field: set \"answer\" to the number of doors in the requested state.\nExample JSON:\n{\"annotation\":[[320,246],[480,486],[640,246]],\"answer\":3}",
+          "word_count": 77
+        },
+        {
+          "body_word_count": 41,
+          "mode": "answer_only",
+          "prompt": "The picture shows a pixel-art house interior from above, including rooms, walls, and doors. Count each closed door once. What is the total?\nReturn JSON with key \"answer\".\nAnswer field: set \"answer\" to the number of doors in the requested state.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 45
+        }
+      ],
+      "query_id": "closed_door_count",
+      "task": "task_illustrations__rpg_house__door_state_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "point_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          1008,
+          1008
+        ],
+        "overlay_annotation_type": "point_set",
+        "overlay_annotation_value": [
+          [
+            336.0,
+            864.0
+          ]
+        ],
+        "projected_type": "point_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 9006056490025889,
+      "issues": [],
+      "observed_query_id": "open_door_count",
+      "prompts": [
+        {
+          "body_word_count": 30,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows a pixel-art house interior from above, including rooms, walls, and doors. Count each open doorway once. What is the total?\nReturn JSON with keys \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to one [x, y] point on each counted door in image pixel coordinates.\nAnswer field: set \"answer\" to the number of doors in the requested state.\nExample JSON:\n{\"annotation\":[[320,246],[480,486],[640,246]],\"answer\":3}",
+          "word_count": 71
+        },
+        {
+          "body_word_count": 28,
+          "mode": "answer_only",
+          "prompt": "The picture shows a pixel-art house interior from above, including rooms, walls, and doors. Count each open doorway once. What is the total?\nReturn JSON with key \"answer\".\nAnswer format: set \"answer\" to the number of doors in the requested state.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 45
+        }
+      ],
+      "query_id": "open_door_count",
+      "task": "task_illustrations__rpg_house__door_state_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1094,
+          1169
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "missing_region": [
+            673.62,
+            469.627,
+            866.927,
+            601.393
+          ],
+          "selected_option": [
+            663.491,
+            849.721,
+            856.798,
+            981.487
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5951353012439063,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 32,
+          "mode": "answer_and_annotation",
+          "prompt": "This illustration shows an RPG-style indoor house layout from above. Select the lettered patch that belongs in the missing rectangle of the RPG house image.\nReturn JSON with keys \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to an object with keys \"missing_region\" and \"selected_option\"; each value is a [x0, y0, x1, y1] pixel box.\nAnswer field: set \"answer\" to the selected patch option letter.\nExample JSON:\n{\"annotation\":{\"missing_region\":[120,80,300,220],\"selected_option\":[430,720,610,860]},\"answer\":\"C\"}",
+          "word_count": 79
+        },
+        {
+          "body_word_count": 30,
+          "mode": "answer_only",
+          "prompt": "This illustration shows an RPG-style indoor house layout from above. Select the lettered patch that belongs in the missing rectangle of the RPG house image.\nReturn JSON with key \"answer\".\nFinal answer format: set \"answer\" to the selected patch option letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 45
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_house__missing_patch_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "point_set_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1296,
+          864
+        ],
+        "overlay_annotation_type": "point_set_map",
+        "overlay_annotation_value": {
+          "player": [
+            [
+              120.0,
+              408.0
+            ]
+          ],
+          "reachable_rooms": [
+            [
+              528.0,
+              360.0
+            ],
+            [
+              936.0,
+              432.0
+            ],
+            [
+              528.0,
+              792.0
+            ],
+            [
+              1200.0,
+              432.0
+            ]
+          ]
+        },
+        "projected_type": "point_set_map"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5682971827295295,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 36,
+          "mode": "answer_and_annotation",
+          "prompt": "The picture shows a pixel-art house interior from above, including rooms, walls, and doors. Follow paths through open doors from the player. How many other rooms can be reached?\nReturn JSON with keys \"annotation\" and \"answer\".\nRequired annotation format: set \"annotation\" to an object with keys \"player\" and \"reachable_rooms\"; \"player\" contains one [x, y] point on the player, and \"reachable_rooms\" contains one [x, y] point near the center of each counted room.\nRequired answer format: set \"answer\" to the number of other rooms reachable from the player's room.\nExample JSON:\n{\"annotation\":{\"player\":[[420,360]],\"reachable_rooms\":[[260,180],[620,180]]},\"answer\":2}",
+          "word_count": 101
+        },
+        {
+          "body_word_count": 49,
+          "mode": "answer_only",
+          "prompt": "The picture shows a pixel-art house interior from above, including rooms, walls, and doors. Follow paths through open doors from the player. How many other rooms can be reached?\nReturn JSON with key \"answer\".\nAnswer field: set \"answer\" to the number of other rooms reachable from the player's room.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 53
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_house__reachable_room_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "point_set",
+        "annotation_value_count": 7,
+        "image_size": [
+          864,
+          1296
+        ],
+        "overlay_annotation_type": "point_set",
+        "overlay_annotation_value": [
+          [
+            216.0,
+            96.0
+          ],
+          [
+            648.0,
+            216.0
+          ],
+          [
+            216.0,
+            432.0
+          ],
+          [
+            648.0,
+            552.0
+          ],
+          [
+            144.0,
+            840.0
+          ],
+          [
+            576.0,
+            840.0
+          ],
+          [
+            432.0,
+            1152.0
+          ]
+        ],
+        "projected_type": "point_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2184447063680580,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 32,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows a top-down RPG-style house layout with rooms connected by doorways. Count each enclosed room once. What is the total number of rooms?\nReturn JSON with keys \"annotation\" and \"answer\".\nRequired annotation format: set \"annotation\" to one [x, y] point near the center of each counted room in image pixel coordinates.\nRequired answer format: set \"answer\" to the total number of enclosed rooms.\nExample JSON:\n{\"annotation\":[[168,148],[456,148],[744,148],[312,492],[648,492]],\"answer\":5}",
+          "word_count": 80
+        },
+        {
+          "body_word_count": 41,
+          "mode": "answer_only",
+          "prompt": "The scene shows a top-down RPG-style house layout with rooms connected by doorways. Count each enclosed room once. What is the total number of rooms?\nReturn JSON with key \"answer\".\nAnswer field: set \"answer\" to the total number of enclosed rooms.\nExample JSON:\n{\"answer\":5}",
+          "word_count": 45
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_house__room_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          1008,
+          1210
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            0.0,
+            336.0,
+            336.0,
+            672.0
+          ],
+          [
+            336.0,
+            336.0,
+            672.0,
+            672.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2411592351267140,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 34,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a top-down pixel RPG house floor plan with multiple rooms and doors. Which option lists the two tiles that need to be swapped back?\nReturn JSON with keys \"annotation\" and \"answer\".\nFormat for the \"annotation\" field: set \"annotation\" to two [x0, y0, x1, y1] pixel boxes around the swapped numbered tiles.\nFormat for the \"answer\" field: set \"answer\" to the option letter naming the two swapped numbered tiles.\nExample JSON:\n{\"annotation\":[[0,0,400,266],[800,532,1200,798]],\"answer\":\"D\"}",
+          "word_count": 84
+        },
+        {
+          "body_word_count": 32,
+          "mode": "answer_only",
+          "prompt": "The image shows a top-down pixel RPG house floor plan with multiple rooms and doors. Which option lists the two tiles that need to be swapped back?\nReturn JSON with key \"answer\".\nRequired answer format: set \"answer\" to the option letter naming the two swapped numbered tiles.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 51
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_house__swapped_tile_pair_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 3,
+        "image_size": [
+          640,
+          960
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "changed_cell": [
+            240.0,
+            560.0,
+            320.0,
+            640.0
+          ],
+          "player_cell": [
+            80.0,
+            560.0,
+            160.0,
+            640.0
+          ],
+          "target_cell": [
+            320.0,
+            560.0,
+            400.0,
+            640.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8374596161841639,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 91,
+          "mode": "answer_and_annotation",
+          "prompt": "The canvas contains a top-down RPG battle map with grass, roads, forests, water, bridges, mountains, one blue unit, and one marked target tile. Grass, roads, and bridges cost 1 movement point; forests cost 2; mountains cost 3; water cannot be entered. Moves are only up, down, left, or right. Before moving, exactly one water, mountain, or forest tile may be changed into a road tile. Count the minimum total movement cost from the blue unit to the marked target tile after the best conversion.\nReturn JSON with keys \"annotation\" and \"answer\".\nFormat for the \"annotation\" field: set \"annotation\" to an object with keys \"player_cell\", \"target_cell\", and \"changed_cell\", each mapping to one [x0, y0, x1, y1] pixel bounding box around that tile.\nFormat for the \"answer\" field: set \"answer\" to the fewest number of movement points needed after the best single terrain-to-road conversion.\nExample JSON:\n{\"annotation\":{\"player_cell\":[160,320,240,400],\"target_cell\":[320,320,400,400],\"changed_cell\":[240,320,320,400]},\"answer\":5}",
+          "word_count": 162
+        },
+        {
+          "body_word_count": 89,
+          "mode": "answer_only",
+          "prompt": "The canvas contains a top-down RPG battle map with grass, roads, forests, water, bridges, mountains, one blue unit, and one marked target tile. Grass, roads, and bridges cost 1 movement point; forests cost 2; mountains cost 3; water cannot be entered. Moves are only up, down, left, or right. Before moving, exactly one water, mountain, or forest tile may be changed into a road tile. Count the minimum total movement cost from the blue unit to the marked target tile after the best conversion.\nReturn JSON with key \"answer\".\nFormat for the \"answer\" field: set \"answer\" to the fewest number of movement points needed after the best single terrain-to-road conversion.\nExample JSON:\n{\"answer\":5}",
+          "word_count": 114
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_tactical_map__counterfactual_terrain_conversion_cost_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          640,
+          960
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "player_cell": [
+            80.0,
+            160.0,
+            160.0,
+            240.0
+          ],
+          "target_cell": [
+            480.0,
+            0.0,
+            560.0,
+            80.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7465700393666030,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 72,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows a grid-based tactical map from above, with a blue unit, varied terrain, and one marked destination tile. Using the terrain costs, find the minimum movement-point cost for the blue unit to reach the marked target tile. Grass, roads, and bridges cost 1 movement point; forests cost 2; mountains cost 3; water cannot be entered. Moves are only up, down, left, or right.\nReturn JSON with keys \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to an object with keys \"player_cell\" and \"target_cell\", each mapping to one [x0, y0, x1, y1] pixel bounding box around that tile.\nAnswer format: set \"answer\" to the fewest number of movement points needed to reach the marked target tile.\nExample JSON:\n{\"annotation\":{\"player_cell\":[160,320,240,400],\"target_cell\":[320,320,400,400]},\"answer\":7}",
+          "word_count": 131
+        },
+        {
+          "body_word_count": 70,
+          "mode": "answer_only",
+          "prompt": "The scene shows a grid-based tactical map from above, with a blue unit, varied terrain, and one marked destination tile. Using the terrain costs, find the minimum movement-point cost for the blue unit to reach the marked target tile. Grass, roads, and bridges cost 1 movement point; forests cost 2; mountains cost 3; water cannot be entered. Moves are only up, down, left, or right.\nReturn JSON with key \"answer\".\nRequired answer format: set \"answer\" to the fewest number of movement points needed to reach the marked target tile.\nExample JSON:\n{\"answer\":7}",
+          "word_count": 93
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_tactical_map__movement_cost_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 9,
+        "image_size": [
+          800,
+          800
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            480.0,
+            0.0,
+            560.0,
+            80.0
+          ],
+          [
+            400.0,
+            80.0,
+            480.0,
+            160.0
+          ],
+          [
+            480.0,
+            80.0,
+            560.0,
+            160.0
+          ],
+          [
+            560.0,
+            80.0,
+            640.0,
+            160.0
+          ],
+          [
+            320.0,
+            160.0,
+            400.0,
+            240.0
+          ],
+          [
+            400.0,
+            160.0,
+            480.0,
+            240.0
+          ],
+          [
+            480.0,
+            160.0,
+            560.0,
+            240.0
+          ],
+          [
+            560.0,
+            160.0,
+            640.0,
+            240.0
+          ],
+          [
+            640.0,
+            160.0,
+            720.0,
+            240.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8365839985900274,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 66,
+          "mode": "answer_and_annotation",
+          "prompt": "The canvas contains a top-down RPG battle map with grass, roads, forests, water, bridges, mountains, and one blue unit. Grass, roads, and bridges cost 1 movement point; forests cost 2; mountains cost 3; water cannot be entered. Moves are only up, down, left, or right. How many non-starting tiles are reachable by the blue unit within 3 movement points?\nReturn JSON with keys \"annotation\" and \"answer\".\nRequired annotation format: set \"annotation\" to a list of [x0, y0, x1, y1] pixel bounding boxes around each counted reachable tile.\nRequired answer format: set \"answer\" to the number of reachable tiles, excluding the blue unit's starting tile.\nExample JSON:\n{\"annotation\":[[240,160,320,240],[320,160,400,240],[240,240,320,320]],\"answer\":3}",
+          "word_count": 121
+        },
+        {
+          "body_word_count": 64,
+          "mode": "answer_only",
+          "prompt": "The canvas contains a top-down RPG battle map with grass, roads, forests, water, bridges, mountains, and one blue unit. Grass, roads, and bridges cost 1 movement point; forests cost 2; mountains cost 3; water cannot be entered. Moves are only up, down, left, or right. How many non-starting tiles are reachable by the blue unit within 3 movement points?\nReturn JSON with key \"answer\".\nRequired answer format: set \"answer\" to the number of reachable tiles, excluding the blue unit's starting tile.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 85
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_tactical_map__movement_reachable_tile_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          640,
+          960
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          320.0,
+          160.0,
+          400.0,
+          240.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4818858126238841,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 65,
+          "mode": "answer_and_annotation",
+          "prompt": "This illustration shows a tactical RPG grid map where a blue unit can move across terrain toward lettered tiles. Using 5 movement points, choose the lettered tile the blue unit can reach. Grass, roads, and bridges cost 1 movement point; forests cost 2; mountains cost 3; water cannot be entered. Moves are only up, down, left, or right.\nReturn JSON with keys \"annotation\" and \"answer\".\nFinal answer format: set \"answer\" to the letter of the reachable tile.\nAnnotation format: set \"annotation\" to one [x0, y0, x1, y1] pixel bounding box around the selected tile.\nExample JSON:\n{\"annotation\":[320,160,400,240],\"answer\":\"C\"}",
+          "word_count": 103
+        },
+        {
+          "body_word_count": 63,
+          "mode": "answer_only",
+          "prompt": "This illustration shows a tactical RPG grid map where a blue unit can move across terrain toward lettered tiles. Using 5 movement points, choose the lettered tile the blue unit can reach. Grass, roads, and bridges cost 1 movement point; forests cost 2; mountains cost 3; water cannot be entered. Moves are only up, down, left, or right.\nReturn JSON with key \"answer\".\nFormat for the \"answer\" field: set \"answer\" to the letter of the reachable tile.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 81
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_tactical_map__movement_reachable_tile_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          800,
+          800
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          80.0,
+          480.0,
+          160.0,
+          560.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8173229940039284,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 50,
+          "mode": "answer_and_annotation",
+          "prompt": "The canvas contains a top-down RPG battle map with grass, roads, forests, water, bridges, mountains, one blue unit, and lettered tiles. Move the blue unit one tile per step using this sequence: down, left, left, up, up, right. Which letter marks the endpoint?\nReturn JSON with keys \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to one [x0, y0, x1, y1] pixel bounding box around the selected ending tile.\nAnswer field: set \"answer\" to the letter of the tile where the blue unit ends.\nExample JSON:\n{\"annotation\":[320,160,400,240],\"answer\":\"C\"}",
+          "word_count": 92
+        },
+        {
+          "body_word_count": 48,
+          "mode": "answer_only",
+          "prompt": "The canvas contains a top-down RPG battle map with grass, roads, forests, water, bridges, mountains, one blue unit, and lettered tiles. Move the blue unit one tile per step using this sequence: down, left, left, up, up, right. Which letter marks the endpoint?\nReturn JSON with key \"answer\".\nAnswer format: set \"answer\" to the letter of the tile where the blue unit ends.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 67
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_tactical_map__movement_sequence_endpoint_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 13,
+        "image_size": [
+          800,
+          800
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            480.0,
+            0.0,
+            560.0,
+            80.0
+          ],
+          [
+            560.0,
+            0.0,
+            640.0,
+            80.0
+          ],
+          [
+            560.0,
+            80.0,
+            640.0,
+            160.0
+          ],
+          [
+            400.0,
+            160.0,
+            480.0,
+            240.0
+          ],
+          [
+            720.0,
+            320.0,
+            800.0,
+            400.0
+          ],
+          [
+            640.0,
+            400.0,
+            720.0,
+            480.0
+          ],
+          [
+            720.0,
+            400.0,
+            800.0,
+            480.0
+          ],
+          [
+            480.0,
+            480.0,
+            560.0,
+            560.0
+          ],
+          [
+            560.0,
+            480.0,
+            640.0,
+            560.0
+          ],
+          [
+            640.0,
+            480.0,
+            720.0,
+            560.0
+          ],
+          [
+            720.0,
+            480.0,
+            800.0,
+            560.0
+          ],
+          [
+            560.0,
+            560.0,
+            640.0,
+            640.0
+          ],
+          [
+            640.0,
+            560.0,
+            720.0,
+            640.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 931270294326507,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 32,
+          "mode": "answer_and_annotation",
+          "prompt": "This illustration shows a tactical RPG grid map where a blue unit can move across terrain. How many visible forest tiles are in the map?\nReturn JSON with keys \"annotation\" and \"answer\".\nFormat for the \"annotation\" field: set \"annotation\" to a list of [x0, y0, x1, y1] pixel bounding boxes around each counted {terrain_label} tile.\nFormat for the \"answer\" field: set \"answer\" to the number of visible {terrain_label} tiles.\nExample JSON:\n{\"annotation\":[[80,160,160,240],[160,160,240,240],[160,240,240,320]],\"answer\":3}",
+          "word_count": 86
+        },
+        {
+          "body_word_count": 30,
+          "mode": "answer_only",
+          "prompt": "This illustration shows a tactical RPG grid map where a blue unit can move across terrain. How many visible forest tiles are in the map?\nReturn JSON with key \"answer\".\nAnswer format: set \"answer\" to the number of visible {terrain_label} tiles.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 45
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_tactical_map__terrain_type_tile_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          800,
+          800
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          720.0,
+          560.0,
+          800.0,
+          640.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2436284176401995,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 64,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows a grid-based tactical map from above, with a blue unit, one water barrier crossing the map, and lettered target tiles. The blue unit starts on its current tile. Water tiles cannot be crossed; all non-water tiles can be crossed. Moves are only up, down, left, or right. Select the lettered tile that is unreachable.\nReturn JSON with keys \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to one [x0, y0, x1, y1] pixel bounding box around the selected unreachable tile.\nAnswer field: set \"answer\" to the letter of the unreachable tile.\nExample JSON:\n{\"annotation\":[480,160,560,240],\"answer\":\"D\"}",
+          "word_count": 102
+        },
+        {
+          "body_word_count": 62,
+          "mode": "answer_only",
+          "prompt": "The scene shows a grid-based tactical map from above, with a blue unit, one water barrier crossing the map, and lettered target tiles. The blue unit starts on its current tile. Water tiles cannot be crossed; all non-water tiles can be crossed. Moves are only up, down, left, or right. Select the lettered tile that is unreachable.\nReturn JSON with key \"answer\".\nFormat for the \"answer\" field: set \"answer\" to the letter of the unreachable tile.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 80
+        }
+      ],
+      "query_id": "single",
+      "task": "task_illustrations__rpg_tactical_map__water_barrier_unreachable_tile_label"
+    }
+  ],
+  "summary": {
+    "expected_public_query_id_count": 74,
+    "issue_count": 0,
+    "issue_counts_by_category": {},
+    "issue_counts_by_severity": {},
+    "sampled_instance_count": 74,
+    "sampled_query_id_count": 74,
+    "task_count": 60
+  }
+}

@@ -12,14 +12,15 @@
 3. Internal variation: `change_type` is recorded as trace metadata and rendered through the selected prompt query key.
 
 ## Program Contract
-`count(cube_difference(reference_stack, changed_stack)); scene=voxel_cube; scope=cube_structure_change_count`
 
-1. Program code: `voxel_cube.stack_difference_count`
-2. Scene: `voxel_cube`
-3. Scope: `cube_structure_change_count`
-4. Candidate set: unit cubes present in one sampled height grid but not the other.
-5. Answer binding: integer cube-difference count.
-6. Annotation binding: a `bbox_set` containing the two compared structures.
+Program: `count(cube_difference(reference_stack, changed_stack)); scene=voxel_cube; scope=cube_structure_change_count`
+
+Candidate set: the visible voxel stack, unit cubes, projections, changed/reference stacks, and labeled candidate views inside the `cube_structure_change_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `cube_difference`, `reference_stack`, `changed_stack`, `voxel_cube`, `cube_structure_change_count`.
+Operation: evaluate `count` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the reference structure and the changed structure.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. `answer_gt.type = integer`

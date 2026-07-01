@@ -32,7 +32,6 @@ class ParallelQueryState:
     axis_i: int
     axis_j: int
     threshold: int | None
-    reference_profile_id: str | None
     annotation_profile_ids: tuple[str, ...]
     crossing_pairs: tuple[tuple[str, str], ...]
     params: dict[str, Any]

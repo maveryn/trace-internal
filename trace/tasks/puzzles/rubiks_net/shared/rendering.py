@@ -18,6 +18,7 @@ from .state import (
     RGB,
     RenderedRubiksScene,
     RubiksRenderParams,
+    SUPPORTED_SCENE_VARIANTS,
     StickerKey,
 )
 
@@ -177,7 +178,7 @@ def _draw_color_or_number_options(
     params: RubiksRenderParams,
     top_left: tuple[float, float],
 ) -> dict[str, list[float]]:
-    """Draw six scalar option panels, either swatches or numeric counts."""
+    """Draw scalar option panels, either swatches or numeric counts."""
 
     label_font = load_font(int(params.option_label_font_size_px), bold=True)
     number_font = load_font(int(params.number_font_size_px), bold=True)
@@ -268,19 +269,20 @@ def _draw_target_swatch(
         radius=params.panel_corner_radius_px,
         width=params.border_width_px,
     )
-    label_font = load_font(int(params.small_label_font_size_px), bold=True)
+    label_font = load_font(int(params.small_label_font_size_px) + 6, bold=True)
+    label_rgb = (26, 31, 38)
     draw_centered_text(
         draw,
-        text="Target",
-        center=(float((bbox[0] + bbox[2]) / 2.0), float(bbox[1] + 24.0)),
+        text="TARGET",
+        center=(float((bbox[0] + bbox[2]) / 2.0), float(bbox[1] + 28.0)),
         font=label_font,
-        fill=params.text_color_rgb,
-        stroke_fill=params.text_stroke_rgb,
-        stroke_width=1,
+        fill=label_rgb,
+        stroke_fill=label_rgb,
+        stroke_width=0,
     )
     half = float(params.swatch_size_px / 2.0)
     cx = float((bbox[0] + bbox[2]) / 2.0)
-    cy = float(bbox[1] + 86.0)
+    cy = float(bbox[1] + 100.0)
     swatch_bbox = [cx - half, cy - half, cx + half, cy + half]
     _draw_panel(
         draw,
@@ -300,6 +302,8 @@ def _draw_result_options(
     params: RubiksRenderParams,
     color_map: Mapping[str, Mapping[str, Any]],
     top_left: tuple[float, float],
+    cell_size_px: float,
+    sticker_gap_px: float,
 ) -> tuple[dict[str, list[float]], dict[str, list[float]]]:
     """Draw candidate cube-net option panels for move-result prompts."""
 
@@ -308,31 +312,26 @@ def _draw_result_options(
     option_panel_map: dict[str, list[float]] = {}
     candidate_net_map: dict[str, list[float]] = {}
     start_x, start_y = float(top_left[0]), float(top_left[1])
+    cell = float(cell_size_px)
+    option_columns = 2 if len(dataset["option_specs"]) == 4 else 3
+    net_width = float(12.0 * cell)
+    net_height = float(9.0 * cell)
+    panel_width = float(net_width + 36.0)
+    panel_height = float(net_height + 64.0)
     for index, option in enumerate(dataset["option_specs"]):
-        row = int(index) // 3
-        col = int(index) % 3
+        row = int(index) // int(option_columns)
+        col = int(index) % int(option_columns)
         x0 = float(
-            start_x
-            + (
-                col
-                * (params.result_option_panel_width_px + params.result_option_gap_px)
-            )
+            start_x + (col * (panel_width + float(params.result_option_gap_px)))
         )
         y0 = float(
-            start_y
-            + (
-                row
-                * (
-                    params.result_option_panel_height_px
-                    + params.result_option_row_gap_px
-                )
-            )
+            start_y + (row * (panel_height + float(params.result_option_row_gap_px)))
         )
         panel_bbox = [
             x0,
             y0,
-            float(x0 + params.result_option_panel_width_px),
-            float(y0 + params.result_option_panel_height_px),
+            float(x0 + panel_width),
+            float(y0 + panel_height),
         ]
         _draw_panel(
             draw,
@@ -347,7 +346,7 @@ def _draw_result_options(
             draw,
             text=label,
             center=(
-                float(x0 + (params.result_option_panel_width_px / 2.0)),
+                float(x0 + (panel_width / 2.0)),
                 float(y0 + 24),
             ),
             font=label_font,
@@ -355,14 +354,17 @@ def _draw_result_options(
             stroke_fill=params.text_stroke_rgb,
             stroke_width=1,
         )
-        net_origin = (float(x0 + 9), float(y0 + 44))
+        net_origin = (
+            float(x0 + (0.5 * (panel_width - net_width))),
+            float(y0 + 50.0),
+        )
         _stickers, net_bbox = _draw_cube_net(
             draw,
             state=option["state"],
             color_map=color_map,
             origin=net_origin,
-            cell_size_px=float(params.candidate_cell_size_px),
-            sticker_gap_px=0.8,
+            cell_size_px=float(cell),
+            sticker_gap_px=float(sticker_gap_px),
             outline_rgb=params.sticker_outline_rgb,
             face_label_font=face_font,
             text_rgb=params.text_color_rgb,
@@ -374,6 +376,20 @@ def _draw_result_options(
     return option_panel_map, candidate_net_map
 
 
+def _variant_sticker_gaps(
+    scene_variant: str,
+    *,
+    main_gap_px: float,
+) -> tuple[float, float, int]:
+    """Return scene-variant line treatment for main and candidate cube nets."""
+
+    if str(scene_variant) == "paper_net":
+        return float(main_gap_px + 1.0), 1.2, -1
+    if str(scene_variant) == "cool_net":
+        return float(max(0.0, main_gap_px - 0.5)), 0.4, 1
+    return float(main_gap_px), 0.8, 0
+
+
 def render_rubiks_scene(
     image: Image.Image,
     *,
@@ -381,13 +397,21 @@ def render_rubiks_scene(
     scene_variant: str,
     render_params: RubiksRenderParams,
 ) -> RenderedRubiksScene:
-    """Render the Rubik net, coordinate inset, and task-neutral option panels."""
+    """Render the Rubik net and task-neutral option panels."""
 
-    del scene_variant
+    selected_variant = str(scene_variant)
+    if selected_variant not in set(SUPPORTED_SCENE_VARIANTS):
+        raise ValueError(f"unsupported Rubik scene_variant: {scene_variant}")
     params = render_params
     draw = ImageDraw.Draw(image)
     entities: list[dict[str, Any]] = []
     scene_bbox = [0.0, 0.0, float(params.canvas_width), float(params.canvas_height)]
+    main_sticker_gap, candidate_sticker_gap, border_delta = _variant_sticker_gaps(
+        selected_variant,
+        main_gap_px=float(params.sticker_gap_px),
+    )
+    result_cell_size = min(float(params.main_cell_size_px), 28.0)
+    panel_border_width = max(1, int(params.border_width_px + int(border_delta)))
 
     label_font = load_font(int(params.face_label_font_size_px), bold=True)
     small_font = load_font(int(params.small_label_font_size_px), bold=True)
@@ -398,13 +422,17 @@ def render_rubiks_scene(
     option_panel_bbox_map: dict[str, list[float]] = {}
 
     if str(dataset["render_mode"]) == "candidate_nets":
+        net_width = float(12.0 * result_cell_size)
+        net_height = float(9.0 * result_cell_size)
         net_left = float(params.scene_margin_left_px + 42)
-        net_top = float(params.scene_margin_top_px + 42)
+        net_top = float(params.scene_margin_top_px + 64)
+        source_panel_width = float(max(580.0, net_width + 92.0))
+        source_panel_height = float(max(430.0, net_height + 156.0))
         net_panel_bbox = [
             float(params.scene_margin_left_px),
             float(params.scene_margin_top_px),
-            float(params.scene_margin_left_px + 650),
-            float(params.scene_margin_top_px + 450),
+            float(params.scene_margin_left_px + source_panel_width),
+            float(params.scene_margin_top_px + source_panel_height),
         ]
         _draw_panel(
             draw,
@@ -412,7 +440,7 @@ def render_rubiks_scene(
             fill=params.net_panel_fill_rgb,
             outline=params.border_color_rgb,
             radius=params.panel_corner_radius_px,
-            width=params.border_width_px,
+            width=panel_border_width,
         )
         draw_centered_text(
             draw,
@@ -428,29 +456,24 @@ def render_rubiks_scene(
             state=dataset["start_state"],
             color_map=color_map,
             origin=(net_left, net_top),
-            cell_size_px=float(params.main_cell_size_px),
-            sticker_gap_px=float(params.sticker_gap_px),
+            cell_size_px=float(result_cell_size),
+            sticker_gap_px=float(main_sticker_gap),
             outline_rgb=params.sticker_outline_rgb,
             face_label_font=label_font,
             text_rgb=params.text_color_rgb,
             text_stroke_rgb=params.text_stroke_rgb,
             include_face_labels=True,
         )
-        coord_bbox = [
-            float(net_panel_bbox[2] - 220),
-            float(net_panel_bbox[1] + 266),
-            float(net_panel_bbox[2] - 34),
-            float(net_panel_bbox[1] + 410),
-        ]
-        _draw_coordinate_reference(draw, bbox=coord_bbox, params=params)
         option_panel_bbox_map, candidate_net_bbox_map = _draw_result_options(
             draw,
             dataset=dataset,
             params=params,
             color_map=color_map,
+            cell_size_px=float(result_cell_size),
+            sticker_gap_px=float(candidate_sticker_gap),
             top_left=(
-                float(params.scene_margin_left_px + 18),
-                float(params.scene_margin_top_px + 484),
+                float(net_panel_bbox[2] + 30.0),
+                float(params.scene_margin_top_px),
             ),
         )
     else:
@@ -466,7 +489,7 @@ def render_rubiks_scene(
             fill=params.net_panel_fill_rgb,
             outline=params.border_color_rgb,
             radius=params.panel_corner_radius_px,
-            width=params.border_width_px,
+            width=panel_border_width,
         )
         sticker_bbox_map, net_bbox = _draw_cube_net(
             draw,
@@ -477,20 +500,13 @@ def render_rubiks_scene(
                 float(params.scene_margin_top_px + 58),
             ),
             cell_size_px=float(params.main_cell_size_px),
-            sticker_gap_px=float(params.sticker_gap_px),
+            sticker_gap_px=float(main_sticker_gap),
             outline_rgb=params.sticker_outline_rgb,
             face_label_font=label_font,
             text_rgb=params.text_color_rgb,
             text_stroke_rgb=params.text_stroke_rgb,
             include_face_labels=True,
         )
-        coord_bbox = [
-            float(net_panel_bbox[2] - 224),
-            float(net_panel_bbox[1] + 330),
-            float(net_panel_bbox[2] - 38),
-            float(net_panel_bbox[1] + 476),
-        ]
-        _draw_coordinate_reference(draw, bbox=coord_bbox, params=params)
         if str(dataset["render_mode"]) == "count_options":
             target_swatch_bbox = _draw_target_swatch(
                 draw,
@@ -508,6 +524,13 @@ def render_rubiks_scene(
                 float(params.scene_margin_top_px + 216),
             )
         else:
+            coord_bbox = [
+                float(net_panel_bbox[2] - 224),
+                float(net_panel_bbox[1] + 330),
+                float(net_panel_bbox[2] - 38),
+                float(net_panel_bbox[1] + 476),
+            ]
+            _draw_coordinate_reference(draw, bbox=coord_bbox, params=params)
             options_top_left = (
                 float(params.scene_margin_left_px + 742),
                 float(params.scene_margin_top_px + 74),

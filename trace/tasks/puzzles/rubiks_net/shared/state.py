@@ -64,7 +64,6 @@ class RubiksRenderParams:
     scene_margin_left_px: int = 58
     scene_margin_top_px: int = 52
     main_cell_size_px: int = 44
-    candidate_cell_size_px: int = 15
     face_gap_px: int = 0
     net_panel_padding_px: int = 22
     panel_corner_radius_px: int = 26

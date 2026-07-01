@@ -22,6 +22,7 @@ class ChartsComboConditionedLineExtremumLabelTask:
     domain = DOMAIN
     objective_contract = "conditioned_line_extremum_label"
     supported_query_ids = (MAX_QUERY_ID, MIN_QUERY_ID)
+    default_dataset_enabled = True
 
     def _build_line_after_primary_filter_plan(self, instance_seed, params, selected_query_id):
         line_filter_dataset, line_filter_trace = sample_base_dataset(

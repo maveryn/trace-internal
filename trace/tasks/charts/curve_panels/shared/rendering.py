@@ -7,13 +7,18 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw, ImageFont
 
-from .....core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.cartesian.geometry import project_linear, project_linear_inverted, round_bbox
+from trace.tasks.charts.shared.cartesian.lines import draw_dashed_line as draw_cartesian_dashed_line
+from trace.tasks.charts.shared.panel.grid_layout import layout_panel_grid_list
+from trace.tasks.charts.shared.information_style import (
+    make_chart_information_background,
+    resolve_chart_information_style,
+)
 from .....core.visual.noise import apply_post_image_noise
 from ....shared.render_variation import apply_layout_jitter_to_margins
 from ....shared.text_legibility import draw_text_traced
 from ....shared.text_rendering import load_font
 from .defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     SCENE_NAMESPACE,
     RENDER_DEFAULTS,
@@ -31,7 +36,7 @@ from .state import (
 
 
 def _bbox(values: Sequence[float]) -> List[float]:
-    return [round(float(value), 3) for value in values]
+    return round_bbox(values)
 
 
 def _text_bbox(
@@ -107,19 +112,12 @@ def _center_text(
 
 
 def _panel_layout(plot_bbox: BBox, panel_count: int, gap: float) -> List[BBox]:
-    x1, y1, x2, y2 = (float(value) for value in plot_bbox)
-    cols = 3 if int(panel_count) <= 6 else 4
-    rows = int(math.ceil(float(panel_count) / float(cols)))
-    width = (x2 - x1 - (float(cols - 1) * float(gap))) / float(cols)
-    height = (y2 - y1 - (float(rows - 1) * float(gap))) / float(rows)
-    boxes: List[BBox] = []
-    for index in range(int(panel_count)):
-        row = int(index) // int(cols)
-        col = int(index) % int(cols)
-        px1 = x1 + (float(col) * (width + float(gap)))
-        py1 = y1 + (float(row) * (height + float(gap)))
-        boxes.append((px1, py1, px1 + width, py1 + height))
-    return boxes
+    return layout_panel_grid_list(
+        plot_bbox,
+        panel_count=int(panel_count),
+        gap_x=float(gap),
+        gap_y=float(gap),
+    )
 
 
 def _scale_point(
@@ -134,15 +132,21 @@ def _scale_point(
     x1, y1, x2, y2 = (float(value) for value in plot_bbox)
     x_min = float(min(x_values))
     x_max = float(max(x_values))
-    x_fraction = 0.0 if x_max == x_min else (float(x_value) - x_min) / (x_max - x_min)
-    y_fraction = (
-        0.0
-        if int(y_max) == int(y_min)
-        else (float(y_value) - float(y_min)) / (float(y_max) - float(y_min))
-    )
     return (
-        float(x1) + (x_fraction * (float(x2) - float(x1))),
-        float(y2) - (y_fraction * (float(y2) - float(y1))),
+        project_linear(
+            float(x_value),
+            domain_min=float(x_min),
+            domain_max=float(x_max),
+            pixel_min=float(x1),
+            pixel_max=float(x2),
+        ),
+        project_linear_inverted(
+            float(y_value),
+            domain_min=float(y_min),
+            domain_max=float(y_max),
+            pixel_top=float(y1),
+            pixel_bottom=float(y2),
+        ),
     )
 
 
@@ -156,22 +160,15 @@ def _draw_dashed_line(
     dash_px: float = 8.0,
     gap_px: float = 6.0,
 ) -> None:
-    x0, y0 = float(xy0[0]), float(xy0[1])
-    x1, y1 = float(xy1[0]), float(xy1[1])
-    length = math.hypot(x1 - x0, y1 - y0)
-    if length <= 0:
-        return
-    dx = (x1 - x0) / length
-    dy = (y1 - y0) / length
-    pos = 0.0
-    while pos < length:
-        end = min(length, pos + float(dash_px))
-        draw.line(
-            [(x0 + dx * pos, y0 + dy * pos), (x0 + dx * end, y0 + dy * end)],
-            fill=fill,
-            width=max(1, int(width)),
-        )
-        pos = end + float(gap_px)
+    draw_cartesian_dashed_line(
+        draw,
+        (float(xy0[0]), float(xy0[1])),
+        (float(xy1[0]), float(xy1[1])),
+        fill=fill,
+        width=int(width),
+        dash_px=float(dash_px),
+        gap_px=float(gap_px),
+    )
 
 
 def _draw_legend(
@@ -407,14 +404,36 @@ def _render_dataset(
     """Render the full small-multiple chart without adding objective semantics."""
 
     params = {**dict(params), "_render_style_seed": int(instance_seed)}
-    canvas_width = resolve_int(params, "canvas_width", 1600)
-    canvas_height = resolve_int(params, "canvas_height", 1000)
-    background, background_meta = make_background_canvas(
-        canvas_width=int(canvas_width),
-        canvas_height=int(canvas_height),
+    protected_colors = tuple(
+        tuple(int(channel) for channel in curve.color_rgb)
+        for panel in dataset.panels
+        for curve in panel.curves
+    )
+    information_style, information_style_meta = resolve_chart_information_style(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="curve_panels",
+        protected_colors=protected_colors,
+    )
+    params = {
+        **params,
+        "axis_color_rgb": tuple(information_style.axis_rgb),
+        "grid_color_rgb": tuple(information_style.grid_rgb),
+        "panel_fill_rgb": tuple(information_style.panel_fill_rgb),
+        "panel_border_rgb": tuple(information_style.panel_border_rgb),
+        "text_color_rgb": tuple(information_style.text_rgb),
+        "muted_text_rgb": tuple(information_style.muted_text_rgb),
+        "text_stroke_rgb": tuple(information_style.text_stroke_rgb),
+        "threshold_rgb": tuple(information_style.highlight_rgb),
+    }
+    canvas_width = resolve_int(params, "canvas_width", 1200)
+    canvas_height = resolve_int(params, "canvas_height", 1000)
+    background, background_meta = make_chart_information_background(
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
+        style=information_style,
+        instance_seed=int(instance_seed),
+        namespace=f"charts.curve_panels.information_scene_background",
     )
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
@@ -435,29 +454,6 @@ def _render_dataset(
     panel_gap = resolve_int(params, "panel_gap_px", 24)
     text_rgb = resolve_rgb(params, "text_color_rgb", (36, 42, 54))
     muted_rgb = resolve_rgb(params, "muted_text_rgb", (91, 102, 120))
-    title_font = load_font(resolve_int(params, "title_font_size_px", 30), bold=True)
-    subtitle_font = load_font(
-        resolve_int(params, "subtitle_font_size_px", 18), bold=False
-    )
-
-    draw_text_traced(
-        draw,
-        (float(margin_left), 22.0 + float(layout_jitter_meta.get("dy_px", 0))),
-        "Scientific Multi-Panel Figure",
-        font=title_font,
-        fill=text_rgb,
-        role="readout",
-        required=False,
-    )
-    draw_text_traced(
-        draw,
-        (float(margin_left), 58.0 + float(layout_jitter_meta.get("dy_px", 0))),
-        "Synthetic method curves arranged as labeled scientific subplots.",
-        font=subtitle_font,
-        fill=muted_rgb,
-        role="readout",
-        required=False,
-    )
     method_labels = tuple(curve.method_label for curve in dataset.panels[0].curves)
     legend_bboxes = _draw_legend(
         draw,
@@ -604,6 +600,7 @@ def _render_dataset(
         legend_bboxes=dict(legend_bboxes),
         render_meta={
             "background_style": dict(background_meta),
+            "information_scene_style": dict(information_style_meta),
             "post_image_noise": dict(post_noise_meta),
             "layout_jitter": dict(layout_jitter_meta),
             "x_values": list(dataset.x_values),

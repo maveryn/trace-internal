@@ -2,17 +2,27 @@
 
 Public taxonomy: `games -> mancala_pit_board -> task_games__mancala_pit_board__sowing_landing_option_label`.
 
+## Contract
+
+1. Domain: `games`
+2. Scene package: `trace/tasks/games/mancala_pit_board/`
+3. Scene id: `mancala_pit_board`
+4. Public task id: `task_games__mancala_pit_board__sowing_landing_option_label`
+5. Supported `query_id` values: `single`
+6. Answer schema: `option_letter`
+7. Annotation schema: `bbox`
+8. Program schema: `select(option_label where option_pit == last(sow_all_seeds_from(source_pit))); scene=mancala_pit_board; scope=sowing_landing_option_label`
+
 ## Program Contract
 
-Program code: `select(option_label where option_pit == last(sow_all_seeds_from(source_pit))); scene=mancala_pit_board; scope=sowing_landing_option_label`.
+Program: `select(option_label where option_pit == last(sow_all_seeds_from(source_pit))); scene=mancala_pit_board; scope=sowing_landing_option_label`
 
-The scene renders a simplified two-row pit board with 10 unlabeled pits, visible seeds, a sowing direction arrow, one X-marked source pit, and four option-marked candidate pits. The task asks which option marks the pit that receives the last seed after picking up all seeds from the source pit and sowing one seed at a time in the arrow direction. No stores, captures, extra turns, or strategy rules are used.
-
-Answer schema: `option_letter`.
-
-Annotation schema: `bbox` for the final landing pit.
-
-Supported `query_id`: `single`.
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `sowing_landing_option_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `option_label`, `where`, `option_pit`, `last`, `sow_all_seeds_from`, `source_pit`, `mancala_pit_board`, `sowing_landing_option_label`.
+Operation: evaluate `select` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generator
 

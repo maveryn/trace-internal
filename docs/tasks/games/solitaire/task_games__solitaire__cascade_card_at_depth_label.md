@@ -11,7 +11,15 @@
 8. Scalar annotation checked: `true`
 
 ## Program Contract
-- `select_option(card_at_visible_depth(column, depth)); scene=solitaire; scope=cascade_card_at_depth_label`
+
+Program: `select_option(card_at_visible_depth(column, depth)); scene=solitaire; scope=cascade_card_at_depth_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `cascade_card_at_depth_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `card_at_visible_depth`, `column`, `depth`, `solitaire`, `cascade_card_at_depth_label`.
+Operation: evaluate `select_option` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The prompt names a 1-based tableau column and a visible depth counted from the top of that column.

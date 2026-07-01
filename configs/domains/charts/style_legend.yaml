@@ -9,8 +9,6 @@ generation:
     style_legend_tick_step: 20
     style_legend_extremum_gap_min: 8
     style_legend_extremum_gap_max: 26
-    style_legend_gap_answer_min: 8
-    style_legend_gap_answer_max: 36
     style_legend_threshold_answer_min: 0
     style_legend_threshold_answer_max: 5
     style_legend_threshold_values:

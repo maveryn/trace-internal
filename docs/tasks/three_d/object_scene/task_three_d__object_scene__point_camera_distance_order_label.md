@@ -10,7 +10,15 @@
 - Annotation schema: `point_map`
 
 ## Program Contract
-`select(option_label(permutation(marked_points), order_by(camera_distance, near_to_far))); scene=object_scene; scope=point_camera_distance_order_label`
+
+Program: `select(option_label(permutation(marked_points), order_by(camera_distance, near_to_far))); scene=object_scene; scope=point_camera_distance_order_label`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `point_camera_distance_order_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `option_label`, `permutation`, `marked_points`, `order_by`, `camera_distance`, `near_to_far`, `object_scene`, `point_camera_distance_order_label`.
+Operation: evaluate `select` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Contract
 The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with context objects and exactly three marked floor points. The image includes a visual option panel with all six possible orders of the three point labels.

@@ -19,6 +19,12 @@ from trace.tasks.geometry.solid_revolution.revolution_cylinder_volume_value impo
     SCENE_ID,
     GeometrySolidRevolutionCylinderVolumeValueTask,
 )
+from trace.tasks.geometry.solid_revolution.revolution_cylinder_volume_from_diagonal_value import (
+    ANNOTATION_KEYS as CYLINDER_DIAGONAL_ANNOTATION_KEYS,
+)
+from trace.tasks.geometry.solid_revolution.revolution_cylinder_volume_from_diagonal_value import (
+    GeometrySolidRevolutionCylinderVolumeFromDiagonalValueTask,
+)
 from trace.tasks.geometry.solid_revolution.revolution_double_cone_volume_value import (
     ANNOTATION_KEYS as DOUBLE_CONE_ANNOTATION_KEYS,
 )
@@ -34,6 +40,7 @@ from trace.tasks.geometry.solid_revolution.revolution_frustum_volume_value impor
 
 TASK_CLASSES = (
     GeometrySolidRevolutionCylinderVolumeValueTask,
+    GeometrySolidRevolutionCylinderVolumeFromDiagonalValueTask,
     GeometrySolidRevolutionConeVolumeValueTask,
     GeometrySolidRevolutionDoubleConeVolumeValueTask,
     GeometrySolidRevolutionFrustumVolumeValueTask,
@@ -41,6 +48,7 @@ TASK_CLASSES = (
 
 ANNOTATION_KEYS_BY_TASK = {
     GeometrySolidRevolutionCylinderVolumeValueTask: set(CYLINDER_ANNOTATION_KEYS),
+    GeometrySolidRevolutionCylinderVolumeFromDiagonalValueTask: set(CYLINDER_DIAGONAL_ANNOTATION_KEYS),
     GeometrySolidRevolutionConeVolumeValueTask: set(CONE_ANNOTATION_KEYS),
     GeometrySolidRevolutionDoubleConeVolumeValueTask: set(DOUBLE_CONE_ANNOTATION_KEYS),
     GeometrySolidRevolutionFrustumVolumeValueTask: set(FRUSTUM_ANNOTATION_KEYS),
@@ -102,9 +110,15 @@ def test_solid_revolution_tasks_support_single_query(task_cls) -> None:
     if task_cls is GeometrySolidRevolutionCylinderVolumeValueTask:
         diameter = float(trace["diameter"])
         height = float(trace["height"])
-        if trace["radial_input_kind"] == "diagonal":
-            diagonal = float(trace["diagonal"])
-            assert diameter**2 + height**2 == pytest.approx(diagonal**2)
+        assert trace["radial_input_kind"] == "diameter"
+        assert trace["diagonal"] is None
+        answer = math.pi * (diameter / 2.0) ** 2 * height
+    elif task_cls is GeometrySolidRevolutionCylinderVolumeFromDiagonalValueTask:
+        diameter = float(trace["diameter"])
+        height = float(trace["height"])
+        diagonal = float(trace["diagonal"])
+        assert trace["radial_input_kind"] == "diagonal"
+        assert diameter**2 + height**2 == pytest.approx(diagonal**2)
         answer = math.pi * (diameter / 2.0) ** 2 * height
     elif task_cls is GeometrySolidRevolutionConeVolumeValueTask:
         radius = float(trace["radius"])

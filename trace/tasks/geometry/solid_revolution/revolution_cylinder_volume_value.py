@@ -11,19 +11,15 @@ from ._lifecycle import build_solid_revolution_plan, prepare_solid_revolution_ta
 from .shared.defaults import DOMAIN, SCENE_ID
 from .shared.measurements import answer_support_probability_map, round_volume, volume_cylinder
 from .shared.rendering import render_cylinder_revolution
-from .shared.sampling import cylinder_case_pool, select_case_from_pool, support_from_cases
+from .shared.sampling import cylinder_direct_case_pool, select_case_from_pool, support_from_cases
 from .shared.state import SolidRevolutionProblem
 
 CYLINDER_TASK_ID = "task_geometry__solid_revolution__revolution_cylinder_volume_value"
 CYLINDER_QUERY_ID = "single"
 CYLINDER_QUERY_IDS = (CYLINDER_QUERY_ID,)
 CYLINDER_ANNOTATION_KEYS = (
-    "generating_shape",
-    "rotation_axis",
-    "solid_preview",
-    "target_volume_cue",
-    "height_label",
-    "radial_input_label",
+    "source_diagram_bbox",
+    "resulting_solid_bbox",
 )
 
 
@@ -46,7 +42,7 @@ class GeometrySolidRevolutionCylinderVolumeValueTask:
             task_id=CYLINDER_TASK_ID,
             namespace=f"{CYLINDER_TASK_ID}.query",
         )
-        cylinder_cases = cylinder_case_pool()
+        cylinder_cases = cylinder_direct_case_pool()
         cylinder_case = select_case_from_pool(
             instance_seed=int(instance_seed),
             params=resolved_params,
@@ -55,12 +51,6 @@ class GeometrySolidRevolutionCylinderVolumeValueTask:
         )
         cylinder_support = support_from_cases(cylinder_cases)
         support_distribution = answer_support_probability_map(cylinder_support, cylinder_case.answer)
-        radial_source = str(cylinder_case.radial_input_kind)
-        formula_text = (
-            "d^2 = q^2 - h^2, then V = pi (d/2)^2 h"
-            if radial_source == "diagonal"
-            else "V = pi (d/2)^2 h"
-        )
         cylinder_problem = SolidRevolutionProblem(
             solid_kind="cylinder",
             generating_shape="rectangle",
@@ -68,12 +58,12 @@ class GeometrySolidRevolutionCylinderVolumeValueTask:
                 volume_cylinder(diameter=cylinder_case.diameter, height=cylinder_case.height)
             ),
             formula_family="cylinder_volume_from_rectangle",
-            formula=formula_text,
+            formula="V = pi (d/2)^2 h",
             radius=float(cylinder_case.diameter) / 2.0,
             diameter=float(cylinder_case.diameter),
-            radial_input_kind=radial_source,
+            radial_input_kind="diameter",
             height=float(cylinder_case.height),
-            diagonal=None if cylinder_case.diagonal is None else float(cylinder_case.diagonal),
+            diagonal=None,
             answer_support_probabilities=support_distribution,
             construction_case_count_for_answer=1,
         )

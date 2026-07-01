@@ -36,48 +36,6 @@
         "Read the contiguous chart segment from \"{start_category}\" to \"{end_category}\" while moving counterclockwise. What is the sum of those shares?",
         "What is the combined percentage for the counterclockwise run beginning with \"{start_category}\" and ending with \"{end_category}\"?"
       ],
-      "clockwise_offset_pair": [
-        "{positional_instruction} What is the combined share of the target segments?",
-        "Use the circular segment positions. {positional_instruction} Add the target segment shares.",
-        "Follow the positional instruction around the chart: {positional_instruction} What total share do those target segments have?",
-        "From the pie or donut layout, identify the requested segments. {positional_instruction} What is their combined percentage?",
-        "Use the chart order, then read exact values from the table. {positional_instruction} What is the total share?"
-      ],
-      "counterclockwise_offset_pair": [
-        "{positional_instruction} What is the combined share of the target segments?",
-        "Use the circular segment positions. {positional_instruction} Add the target segment shares.",
-        "Follow the positional instruction around the chart: {positional_instruction} What total share do those target segments have?",
-        "From the pie or donut layout, identify the requested segments. {positional_instruction} What is their combined percentage?",
-        "Use the chart order, then read exact values from the table. {positional_instruction} What is the total share?"
-      ],
-      "clockwise_opposite_pair": [
-        "{positional_instruction} What is the combined share of the target segments?",
-        "Use the circular segment positions. {positional_instruction} Add the target segment shares.",
-        "Follow the positional instruction around the chart: {positional_instruction} What total share do those target segments have?",
-        "From the pie or donut layout, identify the requested segments. {positional_instruction} What is their combined percentage?",
-        "Use the chart order, then read exact values from the table. {positional_instruction} What is the total share?"
-      ],
-      "counterclockwise_opposite_pair": [
-        "{positional_instruction} What is the combined share of the target segments?",
-        "Use the circular segment positions. {positional_instruction} Add the target segment shares.",
-        "Follow the positional instruction around the chart: {positional_instruction} What total share do those target segments have?",
-        "From the pie or donut layout, identify the requested segments. {positional_instruction} What is their combined percentage?",
-        "Use the chart order, then read exact values from the table. {positional_instruction} What is the total share?"
-      ],
-      "clockwise_share_to_count": [
-        "Moving clockwise around the chart, what count is represented by the categories from \"{start_category}\" through \"{end_category}\", inclusive?",
-        "Use the clockwise chart order. Convert the combined share from \"{start_category}\" through \"{end_category}\", including both endpoints, into a count.",
-        "Starting at \"{start_category}\" and moving clockwise through \"{end_category}\", how many items do those categories represent together?",
-        "Find the contiguous chart segment from \"{start_category}\" to \"{end_category}\" while moving clockwise. Using the displayed total count, what count does it represent?",
-        "What count corresponds to the clockwise run beginning with \"{start_category}\" and ending with \"{end_category}\"?"
-      ],
-      "counterclockwise_share_to_count": [
-        "Moving counterclockwise around the chart, what count is represented by the categories from \"{start_category}\" through \"{end_category}\", inclusive?",
-        "Use the counterclockwise chart order. Convert the combined share from \"{start_category}\" through \"{end_category}\", including both endpoints, into a count.",
-        "Starting at \"{start_category}\" and moving counterclockwise through \"{end_category}\", how many items do those categories represent together?",
-        "Find the contiguous chart segment from \"{start_category}\" to \"{end_category}\" while moving counterclockwise. Using the displayed total count, what count does it represent?",
-        "What count corresponds to the counterclockwise run beginning with \"{start_category}\" and ending with \"{end_category}\"?"
-      ],
       "single": [
         "Within the subset of categories {subset_category_list_text}, what percentage of that subset total is category \"{target_category}\"?",
         "Use only categories {subset_category_list_text} as the denominator. What percent of that subset is category \"{target_category}\"?",
@@ -144,42 +102,6 @@
       "json_example": "{\"annotation\":{\"Aster\":[565,236],\"Birch\":[716,314],\"Cedar\":[680,472],\"Dune\":[518,436]},\"answer\":42}",
       "json_example_answer_only": "{\"answer\":42}"
     },
-    "query:clockwise_offset_pair": {
-      "answer_hint": "set \"answer\" to the requested integer share value; omit the percent sign",
-      "annotation_hint": "set \"annotation\" to an object mapping the anchor category label and each target category label to [x,y] pixel points at the centers of their chart segments",
-      "json_example": "{\"annotation\":{\"Teal\":[620,235],\"Birch\":[735,365],\"Valley\":[548,500]},\"answer\":31}",
-      "json_example_answer_only": "{\"answer\":31}"
-    },
-    "query:counterclockwise_offset_pair": {
-      "answer_hint": "set \"answer\" to the requested integer share value; omit the percent sign",
-      "annotation_hint": "set \"annotation\" to an object mapping the anchor category label and each target category label to [x,y] pixel points at the centers of their chart segments",
-      "json_example": "{\"annotation\":{\"Teal\":[620,235],\"Birch\":[735,365],\"Valley\":[548,500]},\"answer\":31}",
-      "json_example_answer_only": "{\"answer\":31}"
-    },
-    "query:clockwise_opposite_pair": {
-      "answer_hint": "set \"answer\" to the requested integer share value; omit the percent sign",
-      "annotation_hint": "set \"annotation\" to an object mapping the anchor category label and each target category label to [x,y] pixel points at the centers of their chart segments",
-      "json_example": "{\"annotation\":{\"Teal\":[620,235],\"Birch\":[735,365],\"Valley\":[548,500]},\"answer\":31}",
-      "json_example_answer_only": "{\"answer\":31}"
-    },
-    "query:counterclockwise_opposite_pair": {
-      "answer_hint": "set \"answer\" to the requested integer share value; omit the percent sign",
-      "annotation_hint": "set \"annotation\" to an object mapping the anchor category label and each target category label to [x,y] pixel points at the centers of their chart segments",
-      "json_example": "{\"annotation\":{\"Teal\":[620,235],\"Birch\":[735,365],\"Valley\":[548,500]},\"answer\":31}",
-      "json_example_answer_only": "{\"answer\":31}"
-    },
-    "query:clockwise_share_to_count": {
-      "answer_hint": "set \"answer\" to the requested count as an integer",
-      "annotation_hint": "set \"annotation\" to an object mapping each included category label to the [x,y] pixel point at the center of its chart segment and \"total_count\" to the [x,y] pixel point on the displayed total count",
-      "json_example": "{\"annotation\":{\"Aster\":[565,236],\"Birch\":[716,314],\"Cedar\":[680,472],\"total_count\":[138,72]},\"answer\":600}",
-      "json_example_answer_only": "{\"answer\":600}"
-    },
-    "query:counterclockwise_share_to_count": {
-      "answer_hint": "set \"answer\" to the requested count as an integer",
-      "annotation_hint": "set \"annotation\" to an object mapping each included category label to the [x,y] pixel point at the center of its chart segment and \"total_count\" to the [x,y] pixel point on the displayed total count",
-      "json_example": "{\"annotation\":{\"Aster\":[565,236],\"Birch\":[716,314],\"Cedar\":[680,472],\"total_count\":[138,72]},\"answer\":600}",
-      "json_example_answer_only": "{\"answer\":600}"
-    },
     "query:single": {
       "answer_hint": "set \"answer\" to the requested integer percentage; omit the percent sign",
       "annotation_hint": "set \"annotation\" to an object mapping each denominator-subset category label to the [x,y] pixel point at the center of its chart segment",
@@ -212,15 +134,32 @@
     }
   },
   "dynamic_slots": {
-    "object_description": {"type": "string"},
-    "chart_order_phrase": {"type": "string"},
-    "start_category": {"type": "string"},
-    "end_category": {"type": "string"},
-    "positional_instruction": {"type": "string"},
-    "subset_category_list_text": {"type": "string"},
-    "target_category": {"type": "string"},
-    "source_category": {"type": "string"},
-    "source_order_direction": {"type": "string"},
-    "transfer_delta": {"type": "integer"}
+    "object_description": {
+      "type": "string"
+    },
+    "chart_order_phrase": {
+      "type": "string"
+    },
+    "start_category": {
+      "type": "string"
+    },
+    "end_category": {
+      "type": "string"
+    },
+    "subset_category_list_text": {
+      "type": "string"
+    },
+    "target_category": {
+      "type": "string"
+    },
+    "source_category": {
+      "type": "string"
+    },
+    "source_order_direction": {
+      "type": "string"
+    },
+    "transfer_delta": {
+      "type": "integer"
+    }
   }
 }

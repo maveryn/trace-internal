@@ -1,6 +1,7 @@
 """Behavior tests for mixed-dashboard chart tasks."""
 from __future__ import annotations
 
+import re
 from collections import Counter
 from typing import Any
 
@@ -10,54 +11,73 @@ from tests.helpers import extract_prompt_json_example
 from trace.core.seed import hash64
 from trace.core.scene_config import get_scene_defaults
 from trace.tasks import create_task
+from trace.tasks.charts.dashboard.category_extremum_panel_label import ChartsDashboardCategoryExtremumPanelLabelTask
 from trace.tasks.charts.dashboard.category_panel_condition_count import ChartsDashboardCategoryPanelConditionCountTask
-from trace.tasks.charts.dashboard.dual_condition_count import ChartsDashboardDualConditionCountTask
-from trace.tasks.charts.dashboard.dual_source_target_sum_value import ChartsDashboardDualSourceTargetSumValueTask
-from trace.tasks.charts.dashboard.panel_gap_extremum_category_label import ChartsDashboardPanelGapExtremumCategoryLabelTask
+from trace.tasks.charts.dashboard.category_total_extremum_label import ChartsDashboardCategoryTotalExtremumLabelTask
+from trace.tasks.charts.dashboard.global_value_extremum_category_label import ChartsDashboardGlobalValueExtremumCategoryLabelTask
+from trace.tasks.charts.dashboard.panel_total_extremum_label import ChartsDashboardPanelTotalExtremumLabelTask
+from trace.tasks.charts.dashboard.panel_value_range_extremum_label import ChartsDashboardPanelValueRangeExtremumLabelTask
+from trace.tasks.charts.dashboard.panel_value_range_value import ChartsDashboardPanelValueRangeValueTask
 from trace.tasks.charts.dashboard.shared.state import SUPPORTED_PANEL_KINDS, SUPPORTED_SCENE_VARIANTS
-from trace.tasks.charts.dashboard.shared_label_rank_gap_extremum import ChartsDashboardSharedLabelRankGapExtremumTask
-from trace.tasks.charts.dashboard.source_rank_difference_value import ChartsDashboardSourceRankDifferenceValueTask
 from trace.tasks.charts.dashboard.source_rank_target_value import ChartsDashboardSourceRankTargetValueTask
 from trace.tasks.charts.dashboard.statement_option_selection_label import ChartsDashboardStatementOptionSelectionLabelTask
-from trace.tasks.charts.dashboard.top_k_overlap_count import ChartsDashboardTopKOverlapCountTask
 
 TASK_CASES = (
+    ("task_charts__dashboard__category_extremum_panel_label", ChartsDashboardCategoryExtremumPanelLabelTask, "largest_category_panel_label", "string", "point"),
     ("task_charts__dashboard__category_panel_condition_count", ChartsDashboardCategoryPanelConditionCountTask, "category_panel_greater_than_threshold_count", "integer", "point_set"),
-    ("task_charts__dashboard__dual_condition_count", ChartsDashboardDualConditionCountTask, "first_greater_second_greater_condition_count", "integer", "point_set"),
-    ("task_charts__dashboard__dual_source_target_sum_value", ChartsDashboardDualSourceTargetSumValueTask, "first_largest_second_smallest_target_sum_value", "integer", "keyed_point_map"),
-    ("task_charts__dashboard__panel_gap_extremum_category_label", ChartsDashboardPanelGapExtremumCategoryLabelTask, "largest_panel_gap_category_label", "string", "keyed_point_map"),
-    ("task_charts__dashboard__shared_label_rank_gap_extremum", ChartsDashboardSharedLabelRankGapExtremumTask, "high_to_low_largest_rank_gap_label", "string", "keyed_point_map"),
-    ("task_charts__dashboard__source_rank_difference_value", ChartsDashboardSourceRankDifferenceValueTask, "largest_source_rank_difference_value", "integer", "keyed_point_map"),
-    ("task_charts__dashboard__source_rank_target_value", ChartsDashboardSourceRankTargetValueTask, "largest_source_rank_target_value", "integer", "keyed_point_map"),
-    ("task_charts__dashboard__statement_option_selection_label", ChartsDashboardStatementOptionSelectionLabelTask, "statement_option_selection_label", "option_letter", "keyed_point_map"),
-    ("task_charts__dashboard__top_k_overlap_count", ChartsDashboardTopKOverlapCountTask, "highest_top_k_overlap_count", "integer", "point_set"),
+    ("task_charts__dashboard__category_total_extremum_label", ChartsDashboardCategoryTotalExtremumLabelTask, "largest_category_total_label", "string", "point_set"),
+    ("task_charts__dashboard__global_value_extremum_category_label", ChartsDashboardGlobalValueExtremumCategoryLabelTask, "global_maximum_value_category_label", "string", "point"),
+    ("task_charts__dashboard__panel_total_extremum_label", ChartsDashboardPanelTotalExtremumLabelTask, "largest_panel_total_label", "string", "point_set"),
+    ("task_charts__dashboard__panel_value_range_extremum_label", ChartsDashboardPanelValueRangeExtremumLabelTask, "largest_panel_value_range_label", "string", "point_map"),
+    ("task_charts__dashboard__panel_value_range_value", ChartsDashboardPanelValueRangeValueTask, "single", "integer", "point_map"),
+    ("task_charts__dashboard__source_rank_target_value", ChartsDashboardSourceRankTargetValueTask, "largest_source_rank_target_value", "integer", "point_map"),
+    ("task_charts__dashboard__statement_option_selection_label", ChartsDashboardStatementOptionSelectionLabelTask, "statement_option_selection_label", "option_letter", "point_set"),
 )
 TASK_IDS = tuple(case[0] for case in TASK_CASES)
-QUERY_IDS = tuple(case[2] for case in TASK_CASES)
 SOURCE_RANK_TARGET_QUERY_IDS = {"largest_source_rank_target_value", "smallest_source_rank_target_value"}
-SOURCE_RANK_DIFFERENCE_QUERY_IDS = {"largest_source_rank_difference_value", "smallest_source_rank_difference_value"}
-DUAL_SOURCE_TARGET_QUERY_IDS = {
-    "first_largest_second_smallest_target_sum_value",
-    "first_smallest_second_largest_target_sum_value",
-}
-DUAL_CONDITION_QUERY_IDS = {
-    "first_greater_second_greater_condition_count",
-    "first_greater_second_less_condition_count",
-    "first_less_second_greater_condition_count",
-    "first_less_second_less_condition_count",
-}
-PANEL_GAP_QUERY_IDS = {"largest_panel_gap_category_label", "smallest_panel_gap_category_label"}
-SHARED_RANK_GAP_QUERY_IDS = {
-    "high_to_low_largest_rank_gap_label",
-    "high_to_low_smallest_rank_gap_label",
-    "low_to_high_largest_rank_gap_label",
-    "low_to_high_smallest_rank_gap_label",
-}
 CATEGORY_PANEL_CONDITION_QUERY_IDS = {
     "category_panel_greater_than_threshold_count",
     "category_panel_less_than_threshold_count",
 }
-TOP_K_OVERLAP_QUERY_IDS = {"highest_top_k_overlap_count", "lowest_top_k_overlap_count"}
+CATEGORY_TOTAL_EXTREMUM_QUERY_IDS = {
+    "largest_category_total_label",
+    "smallest_category_total_label",
+}
+CATEGORY_EXTREMUM_PANEL_QUERY_IDS = {
+    "largest_category_panel_label",
+    "smallest_category_panel_label",
+}
+PANEL_TOTAL_EXTREMUM_QUERY_IDS = {
+    "largest_panel_total_label",
+    "smallest_panel_total_label",
+}
+PANEL_VALUE_RANGE_EXTREMUM_QUERY_IDS = {
+    "largest_panel_value_range_label",
+    "smallest_panel_value_range_label",
+}
+GLOBAL_VALUE_EXTREMUM_CATEGORY_QUERY_IDS = {
+    "global_maximum_value_category_label",
+    "global_minimum_value_category_label",
+}
+PANEL_TITLE_WORD_RE = re.compile(r"\bpanel\b", flags=re.IGNORECASE)
+
+
+def _annotation_format_index(prompt: str) -> int:
+    for marker in ('Annotation format:', 'Required annotation format:', 'Format for the "annotation" field'):
+        if marker in prompt:
+            return int(prompt.index(marker))
+    raise AssertionError("prompt is missing an annotation format line")
+
+
+def _task_params_for_query(task: Any, query_id: str) -> dict[str, str]:
+    supported = set(str(value) for value in getattr(task, "supported_query_ids", ()))
+    if str(query_id) in supported:
+        return {"query_id": str(query_id)}
+    return {}
+
+
+def _semantic_variant(execution: dict[str, Any]) -> str:
+    return str(execution.get("internal_query_id") or execution["query_id"])
 
 
 def _assert_point_inside_canvas(point: list[float], *, width: int, height: int) -> None:
@@ -71,62 +91,94 @@ def _value(execution: dict[str, Any], panel_id: str, category_id: str) -> int:
     return int(execution["values_by_panel"][str(panel_id)]["values_by_category_id"][str(category_id)])
 
 
-def _rank_positions(execution: dict[str, Any], panel_id: str, direction: str) -> dict[str, int]:
-    reverse = str(direction) == "largest"
-    ordered = sorted(execution["categories"], key=lambda category: _value(execution, str(panel_id), str(category["category_id"])), reverse=reverse)
-    return {str(category["category_id"]): int(index + 1) for index, category in enumerate(ordered)}
-
-
 def _expected_answer(execution: dict[str, Any]) -> int | str:
-    variant = str(execution["query_id"])
+    if str(execution.get("answerability", "answerable")) == "unanswerable":
+        return "unanswerable"
+    variant = _semantic_variant(execution)
     if variant in SOURCE_RANK_TARGET_QUERY_IDS:
         return _value(execution, execution["target_panel_id"], execution["selected_category_id"])
-    if variant in SOURCE_RANK_DIFFERENCE_QUERY_IDS:
-        category_id = str(execution["selected_category_id"])
-        return abs(_value(execution, execution["source_panel_id"], category_id) - _value(execution, execution["target_panel_id"], category_id))
-    if variant in DUAL_SOURCE_TARGET_QUERY_IDS:
-        return _value(execution, execution["target_panel_id"], execution["first_category_id"]) + _value(execution, execution["target_panel_id"], execution["second_category_id"])
-    if variant in DUAL_CONDITION_QUERY_IDS:
-        first_panel_id = str(execution["first_condition_panel_id"])
-        second_panel_id = str(execution["second_condition_panel_id"])
-        first_threshold = int(execution["first_threshold"])
-        second_threshold = int(execution["second_threshold"])
-        first_comparison = str(execution["first_condition_comparison"])
-        second_comparison = str(execution["second_condition_comparison"])
-        total = 0
-        for category in execution["categories"]:
-            category_id = str(category["category_id"])
-            first_value = _value(execution, first_panel_id, category_id)
-            second_value = _value(execution, second_panel_id, category_id)
-            first_match = first_value > first_threshold if first_comparison == "greater_than" else first_value < first_threshold
-            second_match = second_value > second_threshold if second_comparison == "greater_than" else second_value < second_threshold
-            total += int(bool(first_match and second_match))
-        return int(total)
-    if variant in PANEL_GAP_QUERY_IDS:
-        if str(execution.get("answerability", "answerable")) == "unanswerable":
-            return "unanswerable"
-        first_panel_id = str(execution["first_gap_panel_id"])
-        second_panel_id = str(execution["second_gap_panel_id"])
-        reverse = str(execution["gap_extremum_direction"]) == "largest"
-        gaps = {str(category["category_id"]): abs(_value(execution, first_panel_id, str(category["category_id"])) - _value(execution, second_panel_id, str(category["category_id"]))) for category in execution["categories"]}
-        answer_category_id = sorted(gaps, key=lambda category_id: gaps[category_id], reverse=reverse)[0]
+    if variant in CATEGORY_EXTREMUM_PANEL_QUERY_IDS:
+        category_id = str(execution["target_category_id"])
+        direction = str(execution["extremum_direction"])
+        panel_values = {str(panel["panel_id"]): _value(execution, str(panel["panel_id"]), category_id) for panel in execution["panels"]}
+        target_value = max(panel_values.values()) if direction == "largest" else min(panel_values.values())
+        assert sum(1 for value in panel_values.values() if int(value) == int(target_value)) == 1
+        answer_panel_id = next(panel_id for panel_id, value in panel_values.items() if int(value) == int(target_value))
+        assert str(execution["answer_panel_id"]) == str(answer_panel_id)
+        assert int(execution["answer_value"]) == int(target_value)
+        panel_names = {str(panel["panel_id"]): str(panel["panel_name"]) for panel in execution["panels"]}
+        return panel_names[str(answer_panel_id)]
+    if variant in CATEGORY_TOTAL_EXTREMUM_QUERY_IDS:
+        direction = str(execution["category_total_extremum_direction"])
+        category_totals = {
+            str(category["category_id"]): sum(
+                _value(execution, str(panel["panel_id"]), str(category["category_id"]))
+                for panel in execution["panels"]
+            )
+            for category in execution["categories"]
+        }
+        target_total = max(category_totals.values()) if direction == "largest" else min(category_totals.values())
+        assert sum(1 for value in category_totals.values() if int(value) == int(target_total)) == 1
+        answer_category_id = next(category_id for category_id, value in category_totals.items() if int(value) == int(target_total))
+        assert str(execution["answer_category_id"]) == str(answer_category_id)
+        assert int(execution["answer_category_total"]) == int(target_total)
         labels = {str(category["category_id"]): str(category["label"]) for category in execution["categories"]}
-        return labels[answer_category_id]
-    if variant in SHARED_RANK_GAP_QUERY_IDS:
-        first_panel_id = str(execution["first_rank_gap_panel_id"])
-        second_panel_id = str(execution["second_rank_gap_panel_id"])
-        first_ranks = _rank_positions(execution, first_panel_id, str(execution["rank_direction"]))
-        second_ranks = _rank_positions(execution, second_panel_id, str(execution["rank_direction"]))
-        gaps = {str(category["category_id"]): abs(int(first_ranks[str(category["category_id"])]) - int(second_ranks[str(category["category_id"])])) for category in execution["categories"]}
-        reverse = str(execution["gap_extremum_direction"]) == "largest"
-        target_gap = max(gaps.values()) if reverse else min(gaps.values())
-        assert sum(1 for gap in gaps.values() if int(gap) == int(target_gap)) == 1
-        answer_category_id = sorted(gaps, key=lambda category_id: gaps[category_id], reverse=reverse)[0]
+        return labels[str(answer_category_id)]
+    if variant in PANEL_TOTAL_EXTREMUM_QUERY_IDS:
+        direction = str(execution["panel_total_extremum_direction"])
+        panel_totals = {
+            str(panel["panel_id"]): sum(
+                _value(execution, str(panel["panel_id"]), str(category["category_id"]))
+                for category in execution["categories"]
+            )
+            for panel in execution["panels"]
+        }
+        target_total = max(panel_totals.values()) if direction == "largest" else min(panel_totals.values())
+        assert sum(1 for value in panel_totals.values() if int(value) == int(target_total)) == 1
+        answer_panel_id = next(panel_id for panel_id, value in panel_totals.items() if int(value) == int(target_total))
+        assert str(execution["answer_panel_id"]) == str(answer_panel_id)
+        assert int(execution["answer_panel_total"]) == int(target_total)
+        panel_names = {str(panel["panel_id"]): str(panel["panel_name"]) for panel in execution["panels"]}
+        return panel_names[str(answer_panel_id)]
+    if variant in PANEL_VALUE_RANGE_EXTREMUM_QUERY_IDS:
+        direction = str(execution["range_extremum_direction"])
+        ranges = {
+            str(panel["panel_id"]): max(_value(execution, str(panel["panel_id"]), str(category["category_id"])) for category in execution["categories"])
+            - min(_value(execution, str(panel["panel_id"]), str(category["category_id"])) for category in execution["categories"])
+            for panel in execution["panels"]
+        }
+        target_range = max(ranges.values()) if direction == "largest" else min(ranges.values())
+        assert sum(1 for value in ranges.values() if int(value) == int(target_range)) == 1
+        answer_panel_id = next(panel_id for panel_id, value in ranges.items() if int(value) == int(target_range))
+        assert str(execution["answer_panel_id"]) == str(answer_panel_id)
+        assert int(execution["answer_range_value"]) == int(target_range)
+        panel_names = {str(panel["panel_id"]): str(panel["panel_name"]) for panel in execution["panels"]}
+        return panel_names[str(answer_panel_id)]
+    if variant == "single" and str(execution.get("range_operation")) == "panel_max_minus_min":
+        panel_id = str(execution["selected_panel_id"])
+        largest_category_id = str(execution["largest_category_id"])
+        smallest_category_id = str(execution["smallest_category_id"])
+        largest_value = _value(execution, panel_id, largest_category_id)
+        smallest_value = _value(execution, panel_id, smallest_category_id)
+        assert int(execution["largest_value"]) == int(largest_value)
+        assert int(execution["smallest_value"]) == int(smallest_value)
+        assert int(execution["range_value"]) == int(largest_value) - int(smallest_value)
+        return int(execution["range_value"])
+    if variant in GLOBAL_VALUE_EXTREMUM_CATEGORY_QUERY_IDS:
+        direction = str(execution["global_extremum_direction"])
+        values = {
+            (str(panel["panel_id"]), str(category["category_id"])): _value(execution, str(panel["panel_id"]), str(category["category_id"]))
+            for panel in execution["panels"]
+            for category in execution["categories"]
+        }
+        target_value = max(values.values()) if direction == "maximum" else min(values.values())
+        assert sum(1 for value in values.values() if int(value) == int(target_value)) == 1
+        answer_panel_id, answer_category_id = next(ref for ref, value in values.items() if int(value) == int(target_value))
+        assert str(execution["answer_panel_id"]) == str(answer_panel_id)
+        assert str(execution["answer_category_id"]) == str(answer_category_id)
+        assert int(execution["answer_value"]) == int(target_value)
         labels = {str(category["category_id"]): str(category["label"]) for category in execution["categories"]}
-        assert int(execution["answer_rank_gap"]) == int(target_gap)
-        assert int(execution["first_rank_position"]) == int(first_ranks[answer_category_id])
-        assert int(execution["second_rank_position"]) == int(second_ranks[answer_category_id])
-        return labels[answer_category_id]
+        return labels[str(answer_category_id)]
     if variant == "statement_option_selection_label":
         requested_truth = str(execution["requested_truth"]) == "true"
         matching_options: list[dict[str, Any]] = []
@@ -147,8 +199,6 @@ def _expected_answer(execution: dict[str, Any]) -> int | str:
         assert selected == execution["selected_statement"]
         assert str(selected["option_label"]) == str(execution["answer_option_label"])
         return str(selected["option_label"])
-    if variant in TOP_K_OVERLAP_QUERY_IDS:
-        return len(execution["overlap_category_ids"])
     if variant in CATEGORY_PANEL_CONDITION_QUERY_IDS:
         category_id = str(execution["condition_category_id"])
         threshold = int(execution["panel_threshold"])
@@ -167,23 +217,34 @@ def _expected_answer(execution: dict[str, Any]) -> int | str:
 def test_chart_dashboard_tasks_match_contract(case_index: int, case: tuple[str, type, str, str, str]) -> None:
     task_id, task_cls, query_id, answer_type, annotation_type = case
     task = task_cls()
-    out = task.generate(hash64(20260503, "charts_dashboard", case_index), params={"query_id": query_id}, max_attempts=120)
+    out = task.generate(
+        hash64(20260503, "charts_dashboard", case_index),
+        params=_task_params_for_query(task, query_id),
+        max_attempts=120,
+    )
     trace = out.trace_payload
     execution = trace["execution_trace"]
     render = trace["render_spec"]
     assert task.task_id == task_id
-    assert out.query_id == query_id
+    if str(query_id) in set(str(value) for value in task.supported_query_ids):
+        assert out.query_id == query_id
+    else:
+        assert out.query_id == "single"
+    assert _semantic_variant(execution) == query_id
     assert str(execution["scene_variant"]) in SUPPORTED_SCENE_VARIANTS
     assert str(execution["question_format"]) == "dashboard_cross_panel_query"
     assert out.annotation_gt.type == annotation_type
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+    assert "Styles may be" not in out.prompt
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
-    assert 4 <= int(execution["category_count"]) <= 12
+    assert 4 <= int(execution["category_count"]) <= 10
+    assert all(len(str(category["label"])) <= 6 for category in execution["categories"])
     assert 4 <= int(execution["panel_count"]) <= 9
     assert len(execution["panel_order"]) == int(execution["panel_count"])
     assert len({str(item) for item in execution["panel_order"]}) == int(execution["panel_count"])
     assert all(str(kind) in SUPPORTED_PANEL_KINDS for kind in execution["panel_kinds"])
     assert len(execution["panels"]) == int(execution["panel_count"])
+    assert all(PANEL_TITLE_WORD_RE.search(str(panel["panel_name"])) is None for panel in execution["panels"])
     expected_answer = _expected_answer(execution)
     assert out.answer_gt.type == answer_type
     assert out.answer_gt.value == expected_answer
@@ -191,31 +252,38 @@ def test_chart_dashboard_tasks_match_contract(case_index: int, case: tuple[str, 
     expected_points = [list(trace["render_map"]["support_points_px"][str(panel_id)][str(category_id)]) for panel_id, category_id in execution["annotation_refs"]]
     assert trace["projected_annotation"]["type"] == out.annotation_gt.type
     assert len(trace["projected_annotation"]["annotation_refs"]) == len(expected_points)
-    if out.annotation_gt.type == "point_set":
+    if out.annotation_gt.type == "point":
+        assert out.annotation_gt.value == expected_points[0]
+        assert trace["projected_annotation"]["point"] == out.annotation_gt.value
+        _assert_point_inside_canvas([float(value) for value in out.annotation_gt.value], width=int(render["canvas_width"]), height=int(render["canvas_height"]))
+    elif out.annotation_gt.type == "point_set":
         assert out.annotation_gt.value == expected_points
         assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
         for point in out.annotation_gt.value:
             _assert_point_inside_canvas([float(value) for value in point], width=int(render["canvas_width"]), height=int(render["canvas_height"]))
     else:
-        assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["point_map"] == out.annotation_gt.value
         for point in out.annotation_gt.value.values():
             _assert_point_inside_canvas([float(value) for value in point], width=int(render["canvas_width"]), height=int(render["canvas_height"]))
-        if query_id in SOURCE_RANK_TARGET_QUERY_IDS | SOURCE_RANK_DIFFERENCE_QUERY_IDS:
+        if query_id in SOURCE_RANK_TARGET_QUERY_IDS:
             assert out.annotation_gt.value == {"source_panel": expected_points[0], "target_panel": expected_points[1]}
-        if query_id in DUAL_SOURCE_TARGET_QUERY_IDS:
-            assert out.annotation_gt.value == {"first_source_panel": expected_points[0], "second_source_panel": expected_points[1], "target_first_category": expected_points[2], "target_second_category": expected_points[3]}
-        if query_id in PANEL_GAP_QUERY_IDS | SHARED_RANK_GAP_QUERY_IDS and expected_points:
-            assert out.annotation_gt.value == {"first_panel": expected_points[0], "second_panel": expected_points[1]}
-        if query_id == "statement_option_selection_label":
-            assert out.annotation_gt.value == {"first_mark": expected_points[0], "second_mark": expected_points[1]}
-    if query_id in DUAL_CONDITION_QUERY_IDS:
-        assert len(out.annotation_gt.value) == int(out.answer_gt.value) * 2
-    if query_id in TOP_K_OVERLAP_QUERY_IDS:
-        assert len(out.annotation_gt.value) == int(out.answer_gt.value) * 2
+        if query_id in PANEL_VALUE_RANGE_EXTREMUM_QUERY_IDS:
+            assert out.annotation_gt.value == {"largest_value": expected_points[0], "smallest_value": expected_points[1]}
+            answer_panel_id = str(execution["answer_panel_id"])
+            selected_values = execution["values_by_panel"][answer_panel_id]["values_by_category_id"]
+            assert int(execution["largest_value"]) == max(int(value) for value in selected_values.values())
+            assert int(execution["smallest_value"]) == min(int(value) for value in selected_values.values())
+        if query_id == "single" and str(execution.get("range_operation")) == "panel_max_minus_min":
+            assert out.annotation_gt.value == {"largest_value": expected_points[0], "smallest_value": expected_points[1]}
+            selected_values = execution["values_by_panel"][str(execution["selected_panel_id"])]["values_by_category_id"]
+            assert int(execution["largest_value"]) == max(int(value) for value in selected_values.values())
+            assert int(execution["smallest_value"]) == min(int(value) for value in selected_values.values())
     if query_id in CATEGORY_PANEL_CONDITION_QUERY_IDS:
         assert len(out.annotation_gt.value) == int(out.answer_gt.value)
-    if query_id in PANEL_GAP_QUERY_IDS and str(execution.get("answerability")) == "unanswerable":
-        assert out.annotation_gt.value == {}
+    if query_id in CATEGORY_TOTAL_EXTREMUM_QUERY_IDS:
+        assert len(out.annotation_gt.value) == int(execution["panel_count"])
+    if query_id in PANEL_TOTAL_EXTREMUM_QUERY_IDS:
+        assert len(out.annotation_gt.value) == int(execution["category_count"])
     if query_id == "statement_option_selection_label":
         assert int(execution["option_count"]) in {4, 6}
         assert len(execution["statement_options"]) == int(execution["option_count"])
@@ -247,10 +315,10 @@ def test_chart_dashboard_statement_option_selection_contract(option_count: int, 
     out = task.generate(hash64(20260604, "charts_dashboard_statement_option", option_count, requested_truth), params={"option_count": option_count, "requested_truth": requested_truth}, max_attempts=160)
     trace = out.trace_payload
     execution = trace["execution_trace"]
-    assert out.query_id == "statement_option_selection_label"
+    assert out.query_id == "single"
+    assert _semantic_variant(execution) == "statement_option_selection_label"
     assert out.answer_gt.type == "option_letter"
-    assert out.annotation_gt.type == "keyed_point_map"
-    assert set(out.annotation_gt.value) == {"first_mark", "second_mark"}
+    assert out.annotation_gt.type == "point_set"
     assert int(execution["option_count"]) == int(option_count)
     assert str(execution["requested_truth"]) == str(requested_truth)
     assert len(execution["statement_options"]) == int(option_count)
@@ -261,16 +329,202 @@ def test_chart_dashboard_statement_option_selection_contract(option_count: int, 
     expected_refs = [[str(selected["first_panel_id"]), str(selected["first_category_id"])], [str(selected["second_panel_id"]), str(selected["second_category_id"])]]
     assert execution["annotation_refs"] == expected_refs
     expected_points = [list(trace["render_map"]["support_points_px"][panel_id][category_id]) for panel_id, category_id in expected_refs]
-    assert out.annotation_gt.value == {"first_mark": expected_points[0], "second_mark": expected_points[1]}
+    assert out.annotation_gt.value == expected_points
     for option in execution["statement_options"]:
         assert str(option["text"]) not in out.prompt
 
 
+def test_chart_dashboard_panel_value_range_contract() -> None:
+    task = ChartsDashboardPanelValueRangeValueTask()
+    out = task.generate(hash64(20260615, "charts_dashboard_panel_value_range"), params={"target_answer": 37}, max_attempts=160)
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    assert out.query_id == "single"
+    assert _semantic_variant(execution) == "single"
+    assert out.answer_gt.type == "integer"
+    assert out.answer_gt.value == 37
+    assert out.annotation_gt.type == "point_map"
+    assert set(out.annotation_gt.value) == {"largest_value", "smallest_value"}
+    selected_panel_id = str(execution["selected_panel_id"])
+    values = execution["values_by_panel"][selected_panel_id]["values_by_category_id"]
+    assert int(execution["largest_value"]) == max(int(value) for value in values.values())
+    assert int(execution["smallest_value"]) == min(int(value) for value in values.values())
+    assert int(execution["largest_value"]) - int(execution["smallest_value"]) == 37
+    refs = execution["annotation_refs"]
+    expected_points = [list(trace["render_map"]["support_points_px"][panel_id][category_id]) for panel_id, category_id in refs]
+    assert out.annotation_gt.value == {"largest_value": expected_points[0], "smallest_value": expected_points[1]}
+
+
+@pytest.mark.parametrize("query_index,query_id,direction", [(0, "largest_panel_value_range_label", "largest"), (1, "smallest_panel_value_range_label", "smallest")])
+def test_chart_dashboard_panel_value_range_extremum_contract(query_index: int, query_id: str, direction: str) -> None:
+    task = ChartsDashboardPanelValueRangeExtremumLabelTask()
+    out = task.generate(hash64(20260615, "charts_dashboard_panel_value_range_extremum", query_index), params={"query_id": query_id}, max_attempts=160)
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    assert out.query_id == query_id
+    assert _semantic_variant(execution) == query_id
+    assert str(execution["range_extremum_direction"]) == str(direction)
+    assert out.answer_gt.type == "string"
+    assert out.annotation_gt.type == "point_map"
+    assert out.answer_gt.value == _expected_answer(execution)
+    answer_panel_id = str(execution["answer_panel_id"])
+    values = execution["values_by_panel"][answer_panel_id]["values_by_category_id"]
+    assert int(execution["largest_value"]) == max(int(value) for value in values.values())
+    assert int(execution["smallest_value"]) == min(int(value) for value in values.values())
+    assert int(execution["answer_range_value"]) == int(execution["largest_value"]) - int(execution["smallest_value"])
+    refs = execution["annotation_refs"]
+    expected_points = [list(trace["render_map"]["support_points_px"][panel_id][category_id]) for panel_id, category_id in refs]
+    assert out.annotation_gt.value == {"largest_value": expected_points[0], "smallest_value": expected_points[1]}
+
+
+@pytest.mark.parametrize("query_index,query_id,direction", [(0, "largest_category_total_label", "largest"), (1, "smallest_category_total_label", "smallest")])
+def test_chart_dashboard_category_total_extremum_contract(query_index: int, query_id: str, direction: str) -> None:
+    task = ChartsDashboardCategoryTotalExtremumLabelTask()
+    out = task.generate(hash64(20260615, "charts_dashboard_category_total_extremum", query_index), params={"query_id": query_id}, max_attempts=160)
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    assert out.query_id == query_id
+    assert _semantic_variant(execution) == query_id
+    assert str(execution["category_total_extremum_direction"]) == str(direction)
+    assert out.answer_gt.type == "string"
+    assert out.annotation_gt.type == "point_set"
+    assert out.answer_gt.value == _expected_answer(execution)
+    category_id = str(execution["answer_category_id"])
+    expected_refs = [[str(panel["panel_id"]), category_id] for panel in execution["panels"]]
+    assert execution["annotation_refs"] == expected_refs
+    expected_points = [list(trace["render_map"]["support_points_px"][panel_id][category_id]) for panel_id, category_id in expected_refs]
+    assert out.annotation_gt.value == expected_points
+    assert int(execution["answer_category_total"]) == sum(
+        _value(execution, str(panel["panel_id"]), category_id)
+        for panel in execution["panels"]
+    )
+
+
+@pytest.mark.parametrize("query_id,direction", [("largest_category_total_label", "largest"), ("smallest_category_total_label", "smallest")])
+def test_chart_dashboard_category_total_extremum_supports_unanswerable_missing_category(query_id: str, direction: str) -> None:
+    task = ChartsDashboardCategoryTotalExtremumLabelTask()
+    query_index = 0 if str(query_id) == "largest_category_total_label" else 1
+    out = task.generate(
+        hash64(20260616, "charts_dashboard_category_total_unanswerable", query_index),
+        params={"query_id": query_id, "force_unanswerable": True},
+        max_attempts=160,
+    )
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    scene_relations = trace["scene_ir"]["relations"]
+    witness = trace["witness_symbolic"]
+    projected = trace["projected_annotation"]
+
+    assert out.query_id == query_id
+    assert _semantic_variant(execution) == query_id
+    assert str(execution["category_total_extremum_direction"]) == str(direction)
+    assert out.answer_gt.type == "string"
+    assert out.answer_gt.value == "unanswerable"
+    assert execution["answer"] == "unanswerable"
+    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.value == []
+    assert execution["annotation_refs"] == []
+    assert projected["type"] == "point_set"
+    assert projected["point_set"] == []
+    assert projected["pixel_point_set"] == []
+    assert projected["annotation_refs"] == []
+    assert execution["answerability"] == "unanswerable"
+    assert scene_relations["answerability"] == "unanswerable"
+    assert witness["answerability"] == "unanswerable"
+
+    missing_category_id = str(execution["missing_category_id"])
+    missing_category_label = str(execution["missing_category_label"])
+    missing_panel_id = str(execution["missing_category_panel_id"])
+    assert missing_category_label in {str(category["label"]) for category in execution["categories"]}
+    assert missing_category_id not in execution["values_by_panel"][missing_panel_id]["values_by_category_id"]
+    assert missing_category_id not in trace["render_map"]["support_points_px"][missing_panel_id]
+    for panel in execution["panels"]:
+        panel_id = str(panel["panel_id"])
+        presence = bool(execution["category_presence_by_panel_id"][panel_id])
+        assert presence is (panel_id != missing_panel_id)
+        if panel_id != missing_panel_id:
+            assert missing_category_id in execution["values_by_panel"][panel_id]["values_by_category_id"]
+            assert missing_category_id in trace["render_map"]["support_points_px"][panel_id]
+    assert execution["absence_proof"]["requested_item"] == (
+        f"{missing_category_label} in every dashboard panel"
+    )
+    assert "unanswerable" in out.prompt.lower()
+    assert "not shown in every dashboard panel" in out.prompt.lower()
+    assert out.prompt.index("not shown in every dashboard panel") < _annotation_format_index(out.prompt)
+    assert "All panels share the same" not in out.prompt
+
+
+@pytest.mark.parametrize("query_index,query_id,direction", [(0, "largest_panel_total_label", "largest"), (1, "smallest_panel_total_label", "smallest")])
+def test_chart_dashboard_panel_total_extremum_contract(query_index: int, query_id: str, direction: str) -> None:
+    task = ChartsDashboardPanelTotalExtremumLabelTask()
+    out = task.generate(hash64(20260615, "charts_dashboard_panel_total_extremum", query_index), params={"query_id": query_id}, max_attempts=160)
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    assert out.query_id == query_id
+    assert _semantic_variant(execution) == query_id
+    assert str(execution["panel_total_extremum_direction"]) == str(direction)
+    assert out.answer_gt.type == "string"
+    assert out.annotation_gt.type == "point_set"
+    assert out.answer_gt.value == _expected_answer(execution)
+    panel_id = str(execution["answer_panel_id"])
+    expected_refs = [[panel_id, str(category["category_id"])] for category in execution["categories"]]
+    assert execution["annotation_refs"] == expected_refs
+    expected_points = [list(trace["render_map"]["support_points_px"][panel_id][category_id]) for panel_id, category_id in expected_refs]
+    assert out.annotation_gt.value == expected_points
+    assert int(execution["answer_panel_total"]) == sum(
+        _value(execution, panel_id, str(category["category_id"]))
+        for category in execution["categories"]
+    )
+
+
+@pytest.mark.parametrize("query_index,query_id,direction", [(0, "global_maximum_value_category_label", "maximum"), (1, "global_minimum_value_category_label", "minimum")])
+def test_chart_dashboard_global_value_extremum_category_contract(query_index: int, query_id: str, direction: str) -> None:
+    task = ChartsDashboardGlobalValueExtremumCategoryLabelTask()
+    out = task.generate(hash64(20260615, "charts_dashboard_global_value_extremum_category", query_index), params={"query_id": query_id}, max_attempts=160)
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    assert out.query_id == query_id
+    assert _semantic_variant(execution) == query_id
+    assert str(execution["global_extremum_direction"]) == str(direction)
+    assert out.answer_gt.type == "string"
+    assert out.annotation_gt.type == "point"
+    assert out.answer_gt.value == _expected_answer(execution)
+    expected_point = list(trace["render_map"]["support_points_px"][str(execution["answer_panel_id"])][str(execution["answer_category_id"])])
+    assert out.annotation_gt.value == expected_point
+    assert trace["projected_annotation"]["point"] == expected_point
+
+
+@pytest.mark.parametrize("query_index,query_id,direction", [(0, "largest_category_panel_label", "largest"), (1, "smallest_category_panel_label", "smallest")])
+def test_chart_dashboard_category_extremum_panel_contract(query_index: int, query_id: str, direction: str) -> None:
+    task = ChartsDashboardCategoryExtremumPanelLabelTask()
+    out = task.generate(hash64(20260615, "charts_dashboard_category_extremum_panel", query_index), params={"query_id": query_id}, max_attempts=160)
+    trace = out.trace_payload
+    execution = trace["execution_trace"]
+    assert out.query_id == query_id
+    assert _semantic_variant(execution) == query_id
+    assert str(execution["extremum_direction"]) == str(direction)
+    assert out.answer_gt.type == "string"
+    assert out.annotation_gt.type == "point"
+    assert out.answer_gt.value == _expected_answer(execution)
+    category_id = str(execution["target_category_id"])
+    values = {
+        str(panel["panel_id"]): _value(execution, str(panel["panel_id"]), category_id)
+        for panel in execution["panels"]
+    }
+    target_value = max(values.values()) if str(direction) == "largest" else min(values.values())
+    assert int(execution["answer_value"]) == int(target_value)
+    assert sum(1 for value in values.values() if int(value) == int(target_value)) == 1
+    expected_point = list(trace["render_map"]["support_points_px"][str(execution["answer_panel_id"])][category_id])
+    assert out.annotation_gt.value == expected_point
+    assert trace["projected_annotation"]["point"] == expected_point
+
+
 def test_chart_dashboard_all_tasks_are_deterministic() -> None:
     for task_index, (_task_id, task_cls, query_id, _answer_type, _annotation_type) in enumerate(TASK_CASES):
-        params = {"query_id": query_id}
-        out_a = task_cls().generate(hash64(93300, task_index), params=params, max_attempts=120)
-        out_b = task_cls().generate(hash64(93300, task_index), params=params, max_attempts=120)
+        task = task_cls()
+        params = _task_params_for_query(task, query_id)
+        out_a = task.generate(hash64(93300, task_index), params=params, max_attempts=120)
+        out_b = task.generate(hash64(93300, task_index), params=params, max_attempts=120)
         assert out_a.prompt == out_b.prompt
         assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
         assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
@@ -307,7 +561,9 @@ def test_chart_dashboard_registered_and_scene_config_loaded() -> None:
     assert int(generation["panel_count_min"]) == 4
     assert int(generation["panel_count_max"]) == 9
     assert int(generation["category_count_min"]) == 4
-    assert int(generation["category_count_max"]) == 12
+    assert int(generation["category_count_max"]) == 10
+    assert int(generation["category_label_min_chars"]) == 2
+    assert int(generation["category_label_max_chars"]) == 6
     assert sorted(generation["panel_kind_weights"].keys()) == sorted(SUPPORTED_PANEL_KINDS)
     prompt = cfg["prompt"]["shared"]
     assert str(prompt["bundle_id"]) == "charts_dashboard_v1"
@@ -320,12 +576,17 @@ def test_chart_dashboard_sampling_covers_scene_ranges() -> None:
     panel_counts: Counter[int] = Counter()
     answer_types: Counter[str] = Counter()
     for task_index, (_task_id, task_cls, query_id, _answer_type, _annotation_type) in enumerate(TASK_CASES):
+        task = task_cls()
         for sample_index in range(16):
-            out = task_cls().generate(hash64(93200, task_index, sample_index), params={"query_id": query_id}, max_attempts=160)
+            out = task.generate(
+                hash64(93200, task_index, sample_index),
+                params=_task_params_for_query(task, query_id),
+                max_attempts=160,
+            )
             execution = out.trace_payload["execution_trace"]
             category_counts[int(execution["category_count"])] += 1
             panel_counts[int(execution["panel_count"])] += 1
             answer_types[str(out.answer_gt.type)] += 1
-    assert set(category_counts).issubset({4, 5, 6, 7, 8, 9, 10, 11, 12})
+    assert set(category_counts).issubset({4, 5, 6, 7, 8, 9, 10})
     assert set(panel_counts).issubset({4, 5, 6, 7, 8, 9})
-    assert {"integer", "option_letter", "string"}.issubset(set(answer_types))
+    assert {"integer", "option_letter"}.issubset(set(answer_types))

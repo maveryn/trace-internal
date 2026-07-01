@@ -9,7 +9,15 @@
 6. Annotation schema: `bbox_set`
 
 ## Program Contract
-`count(filter(hidden_cells, forced_status in {mine,safe})); scene=minesweeper; scope=forced_cell_count`
+
+Program: `count(filter(hidden_cells, forced_status in {mine,safe})); scene=minesweeper; scope=forced_cell_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `forced_cell_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `hidden_cells`, `forced_status`, `mine`, `safe`, `minesweeper`, `forced_cell_count` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `forced_mine_count`, `forced_safe_count`.
 
 ## Generation Notes
 1. The scene shows a visible Minesweeper board with opened number cells, hidden cells, and flags.

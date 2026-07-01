@@ -600,6 +600,12 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "charts", "waterfall", "charts", "waterfall"
     ),
     # Pages: structured page, diagram-like, map, schedule, and static UI scenes.
+    "task_pages__calendar__date_range_day_class_count": _entry(
+        "pages", "calendar", "pages", "calendar"
+    ),
+    "task_pages__calendar__date_weekday_label": _entry(
+        "pages", "calendar", "pages", "calendar"
+    ),
     "task_pages__calendar__marked_day_class_count": _entry(
         "pages", "calendar", "pages", "calendar"
     ),
@@ -612,17 +618,14 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__calendar_event_grid__category_slot_day_count": _entry(
         "pages", "calendar_event_grid", "pages", "calendar_event_grid"
     ),
+    "task_pages__calendar_event_grid__date_filled_slot_count": _entry(
+        "pages", "calendar_event_grid", "pages", "calendar_event_grid"
+    ),
     "task_pages__calendar_event_grid__date_for_category_slot_label": _entry(
         "pages", "calendar_event_grid", "pages", "calendar_event_grid"
     ),
     "task_pages__calendar_event_grid__date_slot_category_label": _entry(
         "pages", "calendar_event_grid", "pages", "calendar_event_grid"
-    ),
-    "task_pages__command_matrix__command_intent_target_label": _entry(
-        "pages", "command_matrix", "pages", "command_matrix"
-    ),
-    "task_pages__command_matrix__dual_guide_command_label": _entry(
-        "pages", "command_matrix", "pages", "command_matrix"
     ),
     "task_pages__category_grid__category_item_count": _entry(
         "pages", "category_grid", "pages", "category_grid"
@@ -694,9 +697,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__mixed_infographic_page__module_field_value_label": _entry(
         "pages", "mixed_infographic_page", "pages", "mixed_infographic_page"
     ),
-    "task_pages__mixed_infographic_page__module_field_extremum_item_label": _entry(
-        "pages", "mixed_infographic_page", "pages", "mixed_infographic_page"
-    ),
     "task_pages__mixed_infographic_page__module_field_ranked_item_label": _entry(
         "pages", "mixed_infographic_page", "pages", "mixed_infographic_page"
     ),
@@ -736,13 +736,10 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__map__landmark_after_route_step_label": _entry(
         "pages", "map", "pages", "map"
     ),
-    "task_pages__navigation_flow__menu_path_target_label": _entry(
+    "task_pages__navigation_flow__navigation_path_target_label": _entry(
         "pages", "navigation_flow", "pages", "navigation_flow"
     ),
-    "task_pages__navigation_flow__ribbon_group_command_label": _entry(
-        "pages", "navigation_flow", "pages", "navigation_flow"
-    ),
-    "task_pages__navigation_flow__sidebar_tree_target_label": _entry(
+    "task_pages__navigation_flow__same_group_target_label": _entry(
         "pages", "navigation_flow", "pages", "navigation_flow"
     ),
     "task_pages__paired_forms__shortfall_minus_overage_value": _entry(
@@ -754,9 +751,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__paired_forms__total_amount_delta_value": _entry(
         "pages", "paired_forms", "pages", "paired_forms"
     ),
-    "task_pages__process_flow__all_cross_lane_handoff_count": _entry(
-        "pages", "process_flow", "pages", "process_flow"
-    ),
     "task_pages__process_flow__condition_path_endpoint_label": _entry(
         "pages", "process_flow", "pages", "process_flow"
     ),
@@ -766,9 +760,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__process_flow__lane_filtered_handoff_count": _entry(
         "pages", "process_flow", "pages", "process_flow"
     ),
-    "task_pages__profile_card_grid__field_extremum_profile_label": _entry(
-        "pages", "profile_card_grid", "pages", "profile_card_grid"
-    ),
     "task_pages__profile_card_grid__field_ranked_profile_label": _entry(
         "pages", "profile_card_grid", "pages", "profile_card_grid"
     ),
@@ -777,12 +768,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     ),
     "task_pages__profile_card_grid__value_for_named_profile_field": _entry(
         "pages", "profile_card_grid", "pages", "profile_card_grid"
-    ),
-    "task_pages__ranked_list__entry_after_named_entry_label": _entry(
-        "pages", "ranked_list", "pages", "ranked_list"
-    ),
-    "task_pages__ranked_list__ordinal_entry_label": _entry(
-        "pages", "ranked_list", "pages", "ranked_list"
     ),
     "task_pages__record_table__enabled_action_for_type_count": _entry(
         "pages", "record_table", "pages", "record_table"
@@ -805,6 +790,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__schema__field_role_count": _entry(
         "pages", "schema", "pages", "schema"
     ),
+    "task_pages__schema__join_path_length_value": _entry(
+        "pages", "schema", "pages", "schema"
+    ),
     "task_pages__schema__relationship_cardinality_label": _entry(
         "pages", "schema", "pages", "schema"
     ),
@@ -820,10 +808,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__instruction_panel__step_for_control_pair_label": _entry(
         "pages", "instruction_panel", "pages", "instruction_panel"
     ),
-    "task_pages__step_list__nth_step_detail_label": _entry(
-        "pages", "step_list", "pages", "step_list"
-    ),
-    "task_pages__step_list__nth_step_title_label": _entry(
+    "task_pages__step_list__nth_step_field_label": _entry(
         "pages", "step_list", "pages", "step_list"
     ),
     "task_pages__step_list__step_after_named_step_label": _entry(
@@ -838,28 +823,19 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__timeline__interval_membership_count": _entry(
         "pages", "timeline", "pages", "timeline"
     ),
-    "task_pages__web_action__click_target_label": _entry(
+    "task_pages__web_action__action_target_label": _entry(
         "pages", "web_action", "pages", "web_action"
     ),
-    "task_pages__web_action__select_option_label": _entry(
+    "task_pages__web_action__guide_code_target_count": _entry(
         "pages", "web_action", "pages", "web_action"
     ),
-    "task_pages__web_action__type_field_label": _entry(
-        "pages", "web_action", "pages", "web_action"
-    ),
-    "task_pages__workspace__canvas_workspace_control_label": _entry(
+    "task_pages__workspace__context_control_count": _entry(
         "pages", "workspace", "pages", "workspace"
     ),
-    "task_pages__workspace__code_workspace_control_label": _entry(
+    "task_pages__workspace__control_label": _entry(
         "pages", "workspace", "pages", "workspace"
     ),
-    "task_pages__workspace__file_dialog_control_label": _entry(
-        "pages", "workspace", "pages", "workspace"
-    ),
-    "task_pages__workspace__property_panel_control_label": _entry(
-        "pages", "workspace", "pages", "workspace"
-    ),
-    "task_pages__workspace__toolbar_palette_control_label": _entry(
+    "task_pages__workspace__dual_guide_control_label": _entry(
         "pages", "workspace", "pages", "workspace"
     ),
     # Games.
@@ -871,10 +847,16 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__backgammon__destination_count": _entry(
         "games", "backgammon", "games", "backgammon"
     ),
+    "task_games__backgammon__pip_count_value": _entry(
+        "games", "backgammon", "games", "backgammon"
+    ),
     "task_games__backgammon__point_state_count": _entry(
         "games", "backgammon", "games", "backgammon"
     ),
     "task_games__battleship__last_ship_cell_label": _entry(
+        "games", "battleship", "games", "battleship"
+    ),
+    "task_games__battleship__remaining_ship_shape_label": _entry(
         "games", "battleship", "games", "battleship"
     ),
     "task_games__battleship__ship_cell_status_count": _entry(
@@ -898,6 +880,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__bowling__first_pin_hit_label": _entry(
         "games", "bowling", "games", "bowling"
     ),
+    "task_games__bowling__path_hit_count": _entry(
+        "games", "bowling", "games", "bowling"
+    ),
     "task_games__bowling__spare_path_label": _entry(
         "games", "bowling", "games", "bowling"
     ),
@@ -917,6 +902,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "games", "bubble_shooter", "games", "bubble_shooter"
     ),
     "task_games__bubble_shooter__pop_count": _entry(
+        "games", "bubble_shooter", "games", "bubble_shooter"
+    ),
+    "task_games__bubble_shooter__pop_target_label": _entry(
         "games", "bubble_shooter", "games", "bubble_shooter"
     ),
     "task_games__cards__blackjack_best_hand_label": _entry(
@@ -994,11 +982,20 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__connect_four__column_disc_profile_label": _entry(
         "games", "connect_four", "games", "connect_four"
     ),
+    "task_games__connect_four__blocking_move_column_label": _entry(
+        "games", "connect_four", "games", "connect_four"
+    ),
     "task_games__connect_four__winning_move_column_label": _entry(
         "games", "connect_four", "games", "connect_four"
     ),
     "task_games__connect_four__winning_move_count": _entry(
         "games", "connect_four", "games", "connect_four"
+    ),
+    "task_games__counterfactual_board__board_dimension_count": _entry(
+        "games", "counterfactual_board", "games", "counterfactual_board"
+    ),
+    "task_games__counterfactual_board__board_line_count": _entry(
+        "games", "counterfactual_board", "games", "counterfactual_board"
     ),
     "task_games__crossing__first_exit_object_label": _entry(
         "games", "crossing", "games", "crossing"
@@ -1013,6 +1010,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "games", "darts", "games", "darts"
     ),
     "task_games__darts__dart_score_value": _entry("games", "darts", "games", "darts"),
+    "task_games__darts__highest_scoring_dart_label": _entry(
+        "games", "darts", "games", "darts"
+    ),
     "task_games__dominoes__invalid_join_label": _entry(
         "games", "dominoes", "games", "dominoes"
     ),
@@ -1061,6 +1061,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__ludo_board__winning_roll_value": _entry(
         "games", "ludo_board", "games", "ludo_board"
     ),
+    "task_games__marble_chain__closure_match_direction_label": _entry(
+        "games", "marble_chain", "games", "marble_chain"
+    ),
     "task_games__marble_chain__max_pop_direction_label": _entry(
         "games", "marble_chain", "games", "marble_chain"
     ),
@@ -1070,10 +1073,16 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__mancala_pit_board__post_sow_pit_count_value": _entry(
         "games", "mancala_pit_board", "games", "mancala_pit_board"
     ),
+    "task_games__mancala_pit_board__max_post_sow_option_label": _entry(
+        "games", "mancala_pit_board", "games", "mancala_pit_board"
+    ),
     "task_games__mancala_pit_board__sowing_landing_option_label": _entry(
         "games", "mancala_pit_board", "games", "mancala_pit_board"
     ),
     "task_games__match3__max_clear_swap_label": _entry(
+        "games", "match3", "games", "match3"
+    ),
+    "task_games__match3__swap_clear_count": _entry(
         "games", "match3", "games", "match3"
     ),
     "task_games__match3__gem_count": _entry("games", "match3", "games", "match3"),
@@ -1108,9 +1117,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "games", "nine_mens_morris", "games", "nine_mens_morris"
     ),
     "task_games__pacman__next_item_label": _entry("games", "pacman", "games", "pacman"),
-    "task_games__pacman__path_pellet_count": _entry(
-        "games", "pacman", "games", "pacman"
-    ),
     "task_games__pacman__pellet_count_before_ghost": _entry(
         "games", "pacman", "games", "pacman"
     ),
@@ -1268,9 +1274,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__tetris__drop_result_label": _entry(
         "games", "tetris", "games", "tetris"
     ),
-    "task_games__tetris__edge_occupied_row_cell_count": _entry(
-        "games", "tetris", "games", "tetris"
-    ),
     "task_games__tetris__line_clear_count": _entry(
         "games", "tetris", "games", "tetris"
     ),
@@ -1278,6 +1281,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "games", "tetris", "games", "tetris"
     ),
     "task_games__tic_tac_toe_3d__layer_piece_count": _entry(
+        "games", "tic_tac_toe_3d", "games", "tic_tac_toe_3d"
+    ),
+    "task_games__tic_tac_toe_3d__blocking_move_cell_label": _entry(
         "games", "tic_tac_toe_3d", "games", "tic_tac_toe_3d"
     ),
     "task_games__tic_tac_toe_3d__winning_move_cell_label": _entry(
@@ -1332,9 +1338,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__bearing_route__final_bearing_value": _entry(
         "geometry", "bearing_route", "geometry", "measurement"
     ),
-    "task_geometry__survey_traverse__forward_bearing_from_back_bearing_value": _entry(
-        "geometry", "survey_traverse", "geometry", "survey_traverse"
-    ),
     "task_geometry__survey_traverse__outgoing_bearing_from_turn_value": _entry(
         "geometry", "survey_traverse", "geometry", "survey_traverse"
     ),
@@ -1383,7 +1386,10 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__circle_theorem__tangent_chord_angle_value_tangent_chord_angle_from_inscribed": _entry(
         "geometry", "circle_theorem", "geometry", "circle"
     ),
-    "task_geometry__circle_theorem__tangent_radius_right_triangle_length_value": _entry(
+    "task_geometry__circle_theorem__radius_from_external_distance_and_angle_value": _entry(
+        "geometry", "circle_theorem", "geometry", "circle"
+    ),
+    "task_geometry__circle_theorem__tangent_length_from_radius_and_external_distance_value": _entry(
         "geometry", "circle_theorem", "geometry", "circle"
     ),
     "task_geometry__circle_theorem__tangent_secant_length_value": _entry(
@@ -1455,10 +1461,22 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__container_volume_transfer__transferred_volume_value": _entry(
         "geometry", "container_volume_transfer", "geometry", "measurement"
     ),
+    "task_geometry__coordinate_composite__boundary_point_match_label": _entry(
+        "geometry", "coordinate_composite", "geometry", "coordinate"
+    ),
     "task_geometry__coordinate_composite__intersection_point_count": _entry(
         "geometry", "coordinate_composite", "geometry", "coordinate"
     ),
+    "task_geometry__coordinate_composite__region_membership_label": _entry(
+        "geometry", "coordinate_composite", "geometry", "coordinate"
+    ),
+    "task_geometry__coordinate_panels__point_set_transform_match_label": _entry(
+        "geometry", "coordinate_panels", "geometry", "coordinate"
+    ),
     "task_geometry__coordinate_panels__quadrilateral_shape_match_label": _entry(
+        "geometry", "coordinate_panels", "geometry", "coordinate"
+    ),
+    "task_geometry__coordinate_panels__segment_relation_match_label": _entry(
         "geometry", "coordinate_panels", "geometry", "coordinate"
     ),
     "task_geometry__coordinate_plane__collinear_point_count": _entry(
@@ -1641,6 +1659,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__regular_polygon_decomposition__central_angle_value": _entry(
         "geometry", "regular_polygon_decomposition", "geometry", "measurement"
     ),
+    "task_geometry__regular_polygon_decomposition__marked_piece_area_value": _entry(
+        "geometry", "regular_polygon_decomposition", "geometry", "measurement"
+    ),
     "task_geometry__regular_polygon_decomposition__perimeter_value": _entry(
         "geometry", "regular_polygon_decomposition", "geometry", "measurement"
     ),
@@ -1650,32 +1671,38 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__regular_polygon_decomposition__side_length_value": _entry(
         "geometry", "regular_polygon_decomposition", "geometry", "measurement"
     ),
-    "task_geometry__sector__arc_length_value": _entry(
+    "task_geometry__regular_polygon_decomposition__wedge_area_from_side_apothem_value": _entry(
+        "geometry", "regular_polygon_decomposition", "geometry", "measurement"
+    ),
+    "task_geometry__sector__arc_length_from_sector_area_value": _entry(
         "geometry", "sector", "geometry", "measurement"
     ),
-    "task_geometry__sector__related_angle_value": _entry(
+    "task_geometry__sector__arc_length_from_supplement_angle_value": _entry(
         "geometry", "sector", "geometry", "measurement"
     ),
-    "task_geometry__sector__sector_angle_value": _entry(
+    "task_geometry__sector__central_angle_from_sector_measure_value": _entry(
         "geometry", "sector", "geometry", "measurement"
     ),
-    "task_geometry__sector__sector_area_value": _entry(
+    "task_geometry__sector__sector_area_from_complement_angle_value": _entry(
         "geometry", "sector", "geometry", "measurement"
     ),
-    "task_geometry__shape_gallery__congruent_count": _entry(
-        "geometry", "shape_gallery", "geometry", "similarity"
+    "task_geometry__sector__related_angle_from_sector_measure_value": _entry(
+        "geometry", "sector", "geometry", "measurement"
     ),
-    "task_geometry__shape_gallery__reflection_match": _entry(
-        "geometry", "shape_gallery", "geometry", "transformation"
+    "task_geometry__shape_reference__congruent_match": _entry(
+        "geometry", "shape_reference", "geometry", "similarity"
     ),
-    "task_geometry__shape_gallery__rotation_match": _entry(
-        "geometry", "shape_gallery", "geometry", "transformation"
+    "task_geometry__shape_reference__reflection_match": _entry(
+        "geometry", "shape_reference", "geometry", "transformation"
     ),
-    "task_geometry__shape_gallery__similar_count": _entry(
-        "geometry", "shape_gallery", "geometry", "similarity"
+    "task_geometry__shape_reference__rotation_match": _entry(
+        "geometry", "shape_reference", "geometry", "transformation"
     ),
-    "task_geometry__shape_gallery__translation_match": _entry(
-        "geometry", "shape_gallery", "geometry", "transformation"
+    "task_geometry__shape_reference__similar_match": _entry(
+        "geometry", "shape_reference", "geometry", "similarity"
+    ),
+    "task_geometry__shape_reference__translation_match": _entry(
+        "geometry", "shape_reference", "geometry", "transformation"
     ),
     "task_geometry__solid_cross_section__cone_parallel_slice_area": _entry(
         "geometry", "solid_cross_section", "geometry", "measurement"
@@ -1701,12 +1728,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__similar_figure_measure_transfer__corresponding_side_value": _entry(
         "geometry", "similar_figure_measure_transfer", "geometry", "measurement"
     ),
-    "task_geometry__similar_figure_measure_transfer__scale_factor_value": _entry(
-        "geometry", "similar_figure_measure_transfer", "geometry", "measurement"
-    ),
-    "task_geometry__similar_figure_measure_transfer__side_length_from_expression_value": _entry(
-        "geometry", "similar_figure_measure_transfer", "geometry", "measurement"
-    ),
     "task_geometry__similar_figure_measure_transfer__variable_value": _entry(
         "geometry", "similar_figure_measure_transfer", "geometry", "measurement"
     ),
@@ -1716,6 +1737,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__solid_revolution__revolution_cylinder_volume_value": _entry(
         "geometry", "solid_revolution", "geometry", "solid_revolution"
     ),
+    "task_geometry__solid_revolution__revolution_cylinder_volume_from_diagonal_value": _entry(
+        "geometry", "solid_revolution", "geometry", "solid_revolution"
+    ),
     "task_geometry__solid_revolution__revolution_double_cone_volume_value": _entry(
         "geometry", "solid_revolution", "geometry", "solid_revolution"
     ),
@@ -1723,9 +1747,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "geometry", "solid_revolution", "geometry", "solid_revolution"
     ),
     "task_geometry__special_quadrilateral__algebraic_angle_value": _entry(
-        "geometry", "special_quadrilateral", "geometry", "special_quadrilateral"
-    ),
-    "task_geometry__special_quadrilateral__diagonal_angle_value": _entry(
         "geometry", "special_quadrilateral", "geometry", "special_quadrilateral"
     ),
     "task_geometry__special_quadrilateral__segment_length_value": _entry(
@@ -1749,22 +1770,10 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__tangent_packing__two_circles_in_rectangle_radius_from_gap_area": _entry(
         "geometry", "tangent_packing", "geometry", "measurement"
     ),
-    "task_geometry__triangle_congruence_correspondence__algebraic_side_value": _entry(
-        "geometry", "triangle_congruence_correspondence", "geometry", "measurement"
-    ),
-    "task_geometry__triangle_congruence_correspondence__corresponding_angle_value": _entry(
-        "geometry", "triangle_congruence_correspondence", "geometry", "measurement"
-    ),
-    "task_geometry__triangle_congruence_correspondence__corresponding_side_value": _entry(
-        "geometry", "triangle_congruence_correspondence", "geometry", "measurement"
-    ),
     "task_geometry__trapezoid_extension__extension_from_parallelogram_area": _entry(
         "geometry", "trapezoid_extension", "geometry", "measurement"
     ),
     "task_geometry__trapezoid_extension__extension_from_parallelogram_perimeter": _entry(
-        "geometry", "trapezoid_extension", "geometry", "measurement"
-    ),
-    "task_geometry__trapezoid_extension__trapezoid_area_from_bases_and_height": _entry(
         "geometry", "trapezoid_extension", "geometry", "measurement"
     ),
     "task_geometry__trapezoid_extension__trapezoid_area_from_extension_and_height": _entry(
@@ -1773,49 +1782,28 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__trapezoid_extension__trapezoid_area_from_parallelogram_area": _entry(
         "geometry", "trapezoid_extension", "geometry", "measurement"
     ),
+    "task_geometry__trapezoid_extension__trapezoid_area_from_parallelogram_perimeter": _entry(
+        "geometry", "trapezoid_extension", "geometry", "measurement"
+    ),
     "task_geometry__volume_equivalence_conversion__equal_volume_option_label": _entry(
         "geometry", "volume_equivalence_conversion", "geometry", "measurement"
     ),
     "task_geometry__volume_equivalence_conversion__missing_dimension_value": _entry(
         "geometry", "volume_equivalence_conversion", "geometry", "measurement"
     ),
-    "task_geometry__wire_shape_conversion__frame_edge_length_value": _entry(
-        "geometry", "wire_shape_conversion", "geometry", "measurement"
-    ),
-    "task_geometry__wire_shape_conversion__missing_dimension_value": _entry(
-        "geometry", "wire_shape_conversion", "geometry", "measurement"
-    ),
-    "task_geometry__triangle_relations__angle_bisector_segment_value_angle_bisector_base_length": _entry(
-        "geometry", "triangle_relations", "geometry", "measurement"
-    ),
-    "task_geometry__triangle_relations__angle_bisector_segment_value_angle_bisector_split_length": _entry(
+    "task_geometry__triangle_relations__angle_bisector_segment_value": _entry(
         "geometry", "triangle_relations", "geometry", "measurement"
     ),
     "task_geometry__triangle_relations__angle_bisector_variable_value": _entry(
         "geometry", "triangle_relations", "geometry", "measurement"
     ),
-    "task_geometry__triangle_relations__angle_of_elevation_value": _entry(
-        "geometry", "triangle_relations", "geometry", "measurement"
-    ),
     "task_geometry__triangle_relations__altitude_to_hypotenuse_value": _entry(
         "geometry", "triangle_relations", "geometry", "measurement"
     ),
-    "task_geometry__triangle_relations__centroid_median_segment_value_centroid_vertex_segment_length": _entry(
+    "task_geometry__triangle_relations__centroid_median_segment_value": _entry(
         "geometry", "triangle_relations", "geometry", "measurement"
     ),
-    "task_geometry__triangle_relations__centroid_median_segment_value_centroid_whole_median_length": _entry(
-        "geometry", "triangle_relations", "geometry", "measurement"
-    ),
-    "task_geometry__triangle_relations__parallel_section_base_length": _entry(
-        "geometry", "triangle_relations", "geometry", "measurement"
-    ),
-    "task_geometry__triangle_relations__parallel_section_cross_length": _entry(
-        "geometry", "triangle_relations", "geometry", "measurement"
-    ),
-    "task_geometry__triangle_relations__parallel_segment_expression_length_value": _entry(
-        "geometry", "triangle_relations", "geometry", "measurement"
-    ),
-    "task_geometry__triangle_relations__parallel_segment_variable_value": _entry(
+    "task_geometry__triangle_relations__parallel_section_segment_value": _entry(
         "geometry", "triangle_relations", "geometry", "measurement"
     ),
     "task_geometry__triangle_relations__pythagorean_length_value_chained_rectangle_diagonal_length": _entry(
@@ -1824,31 +1812,10 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__triangle_relations__pythagorean_length_value_rectangle_triangle_shared_height_length": _entry(
         "geometry", "triangle_relations", "geometry", "measurement"
     ),
-    "task_geometry__triangle_relations__right_triangle_inverse_trig_angle_angle_from_adjacent_hypotenuse": _entry(
-        "geometry", "triangle_relations", "geometry", "measurement"
-    ),
-    "task_geometry__triangle_relations__right_triangle_inverse_trig_angle_angle_from_opposite_adjacent": _entry(
-        "geometry", "triangle_relations", "geometry", "measurement"
-    ),
-    "task_geometry__triangle_relations__right_triangle_inverse_trig_angle_angle_from_opposite_hypotenuse": _entry(
-        "geometry", "triangle_relations", "geometry", "measurement"
-    ),
     "task_geometry__triangle_relations__leg_projection_length_value": _entry(
         "geometry", "triangle_relations", "geometry", "measurement"
     ),
-    "task_geometry__triangle_relations__right_triangle_missing_side_value_ground_from_angle_and_height": _entry(
-        "geometry", "triangle_relations", "geometry", "measurement"
-    ),
-    "task_geometry__triangle_relations__right_triangle_missing_side_value_ground_from_angle_and_hypotenuse": _entry(
-        "geometry", "triangle_relations", "geometry", "measurement"
-    ),
-    "task_geometry__triangle_relations__right_triangle_missing_side_value_height_from_angle_and_ground": _entry(
-        "geometry", "triangle_relations", "geometry", "measurement"
-    ),
-    "task_geometry__triangle_relations__right_triangle_missing_side_value_height_from_angle_and_hypotenuse": _entry(
-        "geometry", "triangle_relations", "geometry", "measurement"
-    ),
-    "task_geometry__triangle_relations__right_triangle_missing_side_value_hypotenuse_from_angle_and_height": _entry(
+    "task_geometry__triangle_relations__right_triangle_missing_side_value": _entry(
         "geometry", "triangle_relations", "geometry", "measurement"
     ),
     "task_geometry__triangle_relations__similar_triangles_side_length": _entry(
@@ -2048,6 +2015,15 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_icons__icon_field__most_frequent_type_count": _entry(
         "icons", "icon_field", "icons", "icon_field"
     ),
+    "task_icons__icon_field__frequency_extreme_type_label": _entry(
+        "icons", "icon_field", "icons", "icon_field"
+    ),
+    "task_icons__icon_grid__distinct_color_count": _entry(
+        "icons", "icon_grid", "icons", "icon_grid"
+    ),
+    "task_icons__icon_grid__distinct_type_count": _entry(
+        "icons", "icon_grid", "icons", "icon_grid"
+    ),
     "task_icons__icon_cutout__partial_match_label": _entry(
         "icons", "icon_cutout", "icons", "icon_cutout"
     ),
@@ -2105,6 +2081,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_icons__named_grid__group_predicate_count": _entry(
         "icons", "named_grid", "icons", "named_grid"
     ),
+    "task_icons__named_grid__line_adjacency_pair_count": _entry(
+        "icons", "named_grid", "icons", "named_grid"
+    ),
     "task_icons__named_grid__scoped_attribute_count": _entry(
         "icons", "named_grid", "icons", "named_grid"
     ),
@@ -2114,7 +2093,13 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_icons__named_ring__scoped_attribute_count": _entry(
         "icons", "named_ring", "icons", "named_ring"
     ),
+    "task_icons__named_ring__nearest_marker_target_count": _entry(
+        "icons", "named_ring", "icons", "named_ring"
+    ),
     "task_icons__named_path__path_neighbor_label": _entry(
+        "icons", "named_path", "icons", "named_path"
+    ),
+    "task_icons__named_path__path_distance_value": _entry(
         "icons", "named_path", "icons", "named_path"
     ),
     "task_icons__venn_field__scoped_attribute_count": _entry(
@@ -2132,16 +2117,22 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_icons__paired_canvas__rotation_change_count": _entry(
         "icons", "paired_canvas", "icons", "paired_canvas"
     ),
-    "task_icons__pair_grid__attribute_delta_pair_count": _entry(
+    "task_icons__pair_grid__reference_color_pair_match_label": _entry(
         "icons", "pair_grid", "icons", "pair_grid"
     ),
-    "task_icons__pair_grid__reference_transform_match_count": _entry(
+    "task_icons__pair_grid__reference_transform_match_label": _entry(
         "icons", "pair_grid", "icons", "pair_grid"
     ),
     "task_icons__single_transform_options__geometric_transform_result_label": _entry(
         "icons", "single_transform_options", "icons", "single_transform_options"
     ),
+    "task_icons__single_transform_options__inverse_geometric_transform_source_label": _entry(
+        "icons", "single_transform_options", "icons", "single_transform_options"
+    ),
     "task_icons__mirror_grid__mirror_symmetry_match_label": _entry(
+        "icons", "mirror_grid", "icons", "mirror_grid"
+    ),
+    "task_icons__mirror_grid__missing_mirror_cell_label": _entry(
         "icons", "mirror_grid", "icons", "mirror_grid"
     ),
     "task_icons__overlap_grid__occlusion_order_count": _entry(
@@ -2163,6 +2154,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "icons", "wallpaper_panels", "icons", "wallpaper_panels"
     ),
     "task_icons__named_strip__shape_run_length": _entry(
+        "icons", "named_strip", "icons", "named_strip"
+    ),
+    "task_icons__named_strip__shape_run_count": _entry(
         "icons", "named_strip", "icons", "named_strip"
     ),
     # Illustrations.
@@ -2497,12 +2491,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_physics__signal_transform__periodic_harmonic_spectrum_match_label": _entry(
         "physics", "signal_transform", "physics", "signal_transform"
     ),
-    "task_physics__signal_transform__pulse_width_spectrum_match_label": _entry(
-        "physics", "signal_transform", "physics", "signal_transform"
-    ),
-    "task_physics__signal_transform__sinusoid_component_spectrum_match_label": _entry(
-        "physics", "signal_transform", "physics", "signal_transform"
-    ),
     # Synthetic 3D scenes.
     "task_three_d__object_scene__between_references_label": _entry(
         "three_d", "object_scene", "three_d", "object_scene"
@@ -2691,6 +2679,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_symbolic__abacus__displayed_value_readout": _entry(
         "symbolic", "abacus", "symbolic", "abacus"
     ),
+    "task_symbolic__abacus__place_digit_readout": _entry(
+        "symbolic", "abacus", "symbolic", "abacus"
+    ),
     "task_symbolic__abacus__target_value_match_label": _entry(
         "symbolic", "abacus", "symbolic", "abacus"
     ),
@@ -2709,6 +2700,12 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_symbolic__clock__hand_angle_value": _entry(
         "symbolic", "clock", "symbolic", "clock"
     ),
+    "task_symbolic__clock__full_time_readout": _entry(
+        "symbolic", "clock", "symbolic", "clock"
+    ),
+    "task_symbolic__clock__alarm_wait_time_value": _entry(
+        "symbolic", "clock", "symbolic", "clock"
+    ),
     "task_symbolic__braille_cell__braille_word_read_label": _entry(
         "symbolic", "braille_cell", "symbolic", "braille_cell"
     ),
@@ -2717,6 +2714,12 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     ),
     "task_symbolic__braille_cell__word_braille_match_label": _entry(
         "symbolic", "braille_cell", "symbolic", "braille_cell"
+    ),
+    "task_symbolic__chemical_equation__balanced_option_label": _entry(
+        "symbolic", "chemical_equation", "symbolic", "chemical_equation"
+    ),
+    "task_symbolic__chemical_equation__missing_coefficient_value": _entry(
+        "symbolic", "chemical_equation", "symbolic", "chemical_equation"
     ),
     "task_symbolic__logic_gate_circuit__gate_type_count": _entry(
         "symbolic", "logic_gate_circuit", "symbolic", "logic_gate_circuit"
@@ -2739,11 +2742,20 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_symbolic__radial_code_wheel__code_output_label": _entry(
         "symbolic", "radial_code_wheel", "symbolic", "radial_code_wheel"
     ),
+    "task_symbolic__radial_code_wheel__missing_code_symbol_label": _entry(
+        "symbolic", "radial_code_wheel", "symbolic", "radial_code_wheel"
+    ),
     "task_symbolic__radial_code_wheel__output_code_match_label": _entry(
         "symbolic", "radial_code_wheel", "symbolic", "radial_code_wheel"
     ),
-    "task_puzzles__arithmetic_panel__consecutive_window_sum_value": _entry(
-        "puzzles", "arithmetic_panel", "puzzles", "arithmetic_panel"
+    "task_symbolic__truth_table__satisfying_row_count": _entry(
+        "symbolic", "truth_table", "symbolic", "truth_table"
+    ),
+    "task_symbolic__truth_table__truth_pattern_label": _entry(
+        "symbolic", "truth_table", "symbolic", "truth_table"
+    ),
+    "task_symbolic__truth_table__expression_from_rows_label": _entry(
+        "symbolic", "truth_table", "symbolic", "truth_table"
     ),
     "task_puzzles__arithmetic_panel__equal_sum_line_constraint_value": _entry(
         "puzzles", "arithmetic_panel", "puzzles", "arithmetic_panel"
@@ -2778,9 +2790,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_puzzles__cell_board__reachable_region_size": _entry(
         "puzzles", "cell_board", "puzzles", "cell_board"
     ),
-    "task_puzzles__cell_board__scoped_attribute_count": _entry(
-        "puzzles", "cell_board", "puzzles", "cell_board"
-    ),
     "task_puzzles__cell_board__shortest_path_length_value": _entry(
         "puzzles", "cell_board", "puzzles", "cell_board"
     ),
@@ -2793,6 +2802,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_symbolic__clock__sequence_completion_label": _entry(
         "symbolic", "clock", "symbolic", "clock"
     ),
+    "task_symbolic__clock__time_order_label": _entry(
+        "symbolic", "clock", "symbolic", "clock"
+    ),
     "task_symbolic__clock__time_extremum_label": _entry(
         "symbolic", "clock", "symbolic", "clock"
     ),
@@ -2802,25 +2814,22 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_puzzles__color_gradient__color_gradient_violation_cell_label": _entry(
         "puzzles", "color_gradient", "puzzles", "color_gradient"
     ),
-    "task_puzzles__counterfactual_board__board_dimension_count": _entry(
-        "puzzles", "counterfactual_board", "puzzles", "counterfactual_board"
-    ),
-    "task_puzzles__counterfactual_board__board_line_count": _entry(
-        "puzzles", "counterfactual_board", "puzzles", "counterfactual_board"
-    ),
-    "task_puzzles__cube_net__cube_net_face_relation_label": _entry(
+    "task_puzzles__cube_net__marked_edge_neighbor_face_label": _entry(
         "puzzles", "cube_net", "puzzles", "cube_net"
     ),
-    "task_puzzles__cube_net__cube_rolling_result_label": _entry(
+    "task_puzzles__cube_net__opposite_face_label": _entry(
         "puzzles", "cube_net", "puzzles", "cube_net"
     ),
-    "task_puzzles__cube_net__folded_path_endpoint_label": _entry(
-        "puzzles", "cube_net", "puzzles", "cube_net"
-    ),
-    "task_puzzles__cube_net__folded_path_face_sequence_label": _entry(
+    "task_puzzles__cube_net__equivalent_net_label": _entry(
         "puzzles", "cube_net", "puzzles", "cube_net"
     ),
     "task_puzzles__cyclic_order__cyclic_order_equivalent_label": _entry(
+        "puzzles", "cyclic_order", "puzzles", "cyclic_order"
+    ),
+    "task_puzzles__cyclic_order__insertion_position_label": _entry(
+        "puzzles", "cyclic_order", "puzzles", "cyclic_order"
+    ),
+    "task_puzzles__cyclic_order__swap_repair_label": _entry(
         "puzzles", "cyclic_order", "puzzles", "cyclic_order"
     ),
     "task_symbolic__dice__dice_conditional_event_value": _entry(
@@ -2850,19 +2859,19 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_symbolic__life_automaton__one_step_cell_state_count": _entry(
         "symbolic", "life_automaton", "symbolic", "life_automaton"
     ),
-    "task_puzzles__logic_grid__grid_king_non_touch_label": _entry(
-        "puzzles", "logic_grid", "puzzles", "logic_grid"
-    ),
-    "task_puzzles__logic_grid__grid_uniqueness_completion_label": _entry(
-        "puzzles", "logic_grid", "puzzles", "logic_grid"
+    "task_puzzles__matchstick__equation_repair_stick_label": _entry(
+        "puzzles", "matchstick", "puzzles", "matchstick"
     ),
     "task_puzzles__matchstick__matchstick_number_transform_label": _entry(
+        "puzzles", "matchstick", "puzzles", "matchstick"
+    ),
+    "task_puzzles__matchstick__max_square_count_after_additions_value": _entry(
         "puzzles", "matchstick", "puzzles", "matchstick"
     ),
     "task_puzzles__maze__exit_reachability_label": _entry(
         "puzzles", "maze", "puzzles", "maze"
     ),
-    "task_puzzles__maze__reachable_exit_count": _entry(
+    "task_puzzles__maze__nearest_exit_label": _entry(
         "puzzles", "maze", "puzzles", "maze"
     ),
     "task_symbolic__music_staff__articulation_symbol_label": _entry(
@@ -2913,25 +2922,28 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_puzzles__nonogram__line_completion_label": _entry(
         "puzzles", "nonogram", "puzzles", "nonogram"
     ),
-    "task_puzzles__overlay__overlay_result_label": _entry(
-        "puzzles", "overlay", "puzzles", "overlay"
-    ),
-    "task_puzzles__paper_fold__paper_fold_result_label": _entry(
-        "puzzles", "paper_fold", "puzzles", "paper_fold"
-    ),
-    "task_puzzles__paper_fold_cut__paper_fold_cut_result_label": _entry(
-        "puzzles", "paper_fold_cut", "puzzles", "paper_fold_cut"
-    ),
     "task_puzzles__pipe_flow__pipe_flow_repair_tile_label": _entry(
         "puzzles", "pipe_flow", "puzzles", "pipe_flow"
     ),
-    "task_puzzles__polyomino_missing__rectangle_complement_piece": _entry(
-        "puzzles", "polyomino_missing", "puzzles", "polyomino_missing"
+    "task_puzzles__pipe_flow__misrotated_tile_label": _entry(
+        "puzzles", "pipe_flow", "puzzles", "pipe_flow"
+    ),
+    "task_puzzles__polyomino_assembly__composition_result_label": _entry(
+        "puzzles", "polyomino_assembly", "puzzles", "polyomino_assembly"
+    ),
+    "task_puzzles__polyomino_assembly__decomposition_pair_label": _entry(
+        "puzzles", "polyomino_assembly", "puzzles", "polyomino_assembly"
+    ),
+    "task_puzzles__polyomino_assembly__hole_fill_piece_label": _entry(
+        "puzzles", "polyomino_assembly", "puzzles", "polyomino_assembly"
     ),
     "task_puzzles__raven_matrix__raven_analogical_transform_label": _entry(
         "puzzles", "raven_matrix", "puzzles", "raven_matrix"
     ),
     "task_puzzles__raven_matrix__raven_count_progression_label": _entry(
+        "puzzles", "raven_matrix", "puzzles", "raven_matrix"
+    ),
+    "task_puzzles__raven_matrix__raven_feature_binding_label": _entry(
         "puzzles", "raven_matrix", "puzzles", "raven_matrix"
     ),
     "task_puzzles__raven_matrix__raven_position_progression_label": _entry(
@@ -2952,11 +2964,14 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_puzzles__rubiks_net__rubiks_move_result_label": _entry(
         "puzzles", "rubiks_net", "puzzles", "rubiks_net"
     ),
-    "task_puzzles__rubiks_net__static_face_color_count_label": _entry(
-        "puzzles", "rubiks_net", "puzzles", "rubiks_net"
+    "task_puzzles__sheet_transform__fold_cut_result_label": _entry(
+        "puzzles", "sheet_transform", "puzzles", "sheet_transform"
     ),
-    "task_puzzles__rubiks_net__static_sticker_color_label": _entry(
-        "puzzles", "rubiks_net", "puzzles", "rubiks_net"
+    "task_puzzles__sheet_transform__fold_projection_result_label": _entry(
+        "puzzles", "sheet_transform", "puzzles", "sheet_transform"
+    ),
+    "task_puzzles__sheet_transform__overlay_union_result_label": _entry(
+        "puzzles", "sheet_transform", "puzzles", "sheet_transform"
     ),
     "task_symbolic__spinner__multi_attribute_and_probability": _entry(
         "symbolic", "spinner", "symbolic", "spinner"
@@ -2973,9 +2988,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_puzzles__star_battle__remaining_valid_cell_count": _entry(
         "puzzles", "star_battle", "puzzles", "star_battle"
     ),
-    "task_puzzles__star_battle__scoped_valid_cell_label": _entry(
-        "puzzles", "star_battle", "puzzles", "star_battle"
-    ),
     "task_puzzles__star_battle__valid_cell_anywhere_label": _entry(
         "puzzles", "star_battle", "puzzles", "star_battle"
     ),
@@ -2985,25 +2997,13 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_puzzles__sudoku__marked_cell_value": _entry(
         "puzzles", "sudoku", "puzzles", "sudoku"
     ),
-    "task_puzzles__sudoku__repeated_digit_count": _entry(
+    "task_puzzles__sudoku__mistake_cell_label": _entry(
         "puzzles", "sudoku", "puzzles", "sudoku"
-    ),
-    "task_puzzles__sudoku__unit_missing_digits_count": _entry(
-        "puzzles", "sudoku", "puzzles", "sudoku"
-    ),
-    "task_puzzles__string_topology__string_component_count": _entry(
-        "puzzles", "string_topology", "puzzles", "string_topology"
-    ),
-    "task_puzzles__tangram__contact_count": _entry(
-        "puzzles", "tangram", "puzzles", "tangram"
-    ),
-    "task_puzzles__tangram__missing_piece_label": _entry(
-        "puzzles", "tangram", "puzzles", "tangram"
     ),
     "task_puzzles__tents__missing_tent_cell_label": _entry(
         "puzzles", "tents", "puzzles", "tents"
     ),
-    "task_puzzles__tents__valid_candidate_count": _entry(
+    "task_puzzles__tents__violating_tent_label": _entry(
         "puzzles", "tents", "puzzles", "tents"
     ),
     "task_puzzles__toggle_grid__toggle_repair_switch_label": _entry(
@@ -3021,12 +3021,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_puzzles__voxel_cube__cube_count": _entry(
         "puzzles", "voxel_cube", "puzzles", "voxel_cube"
     ),
-    "task_puzzles__voxel_cube__cube_painted_face_count": _entry(
-        "puzzles", "voxel_cube", "puzzles", "voxel_cube"
-    ),
-    "task_puzzles__voxel_cube__cube_projection_consistency_label": _entry(
-        "puzzles", "voxel_cube", "puzzles", "voxel_cube"
-    ),
     "task_puzzles__voxel_cube__cube_projection_match_label": _entry(
         "puzzles", "voxel_cube", "puzzles", "voxel_cube"
     ),
@@ -3036,25 +3030,10 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_puzzles__voxel_cube__cube_visible_projection_count": _entry(
         "puzzles", "voxel_cube", "puzzles", "voxel_cube"
     ),
-    "task_puzzles__voxel_ladder__checkpoint_sequence_label": _entry(
-        "puzzles", "voxel_ladder", "puzzles", "voxel_ladder"
-    ),
-    "task_puzzles__voxel_ladder__reachable_checkpoint_count": _entry(
-        "puzzles", "voxel_ladder", "puzzles", "voxel_ladder"
-    ),
-    "task_puzzles__voxel_ladder__unreachable_checkpoint_label": _entry(
-        "puzzles", "voxel_ladder", "puzzles", "voxel_ladder"
-    ),
-    "task_puzzles__code_grid__decoded_word_label": _entry(
-        "puzzles", "code_grid", "puzzles", "code_grid"
-    ),
-    "task_puzzles__word_search__search_letter_count_value": _entry(
-        "puzzles", "word_search", "puzzles", "word_search"
-    ),
     "task_puzzles__word_search__search_location_label": _entry(
         "puzzles", "word_search", "puzzles", "word_search"
     ),
-    "task_puzzles__word_search__search_present_word_count": _entry(
+    "task_puzzles__word_search__present_word_option_label": _entry(
         "puzzles", "word_search", "puzzles", "word_search"
     ),
 }
@@ -3256,9 +3235,7 @@ def inject_taxonomy_metadata(
         "task_id": public_task_id,
         "domain": registered_domain_text,
     }
-    if migrated_domain:
-        registered_metadata["scene_id"] = taxonomy.scene_id
-    else:
+    if not migrated_domain:
         registered_metadata["scene_id"] = registered_scene_id_text
     source_metadata = {
         "implementation_task_id": source_task_id,
@@ -3266,15 +3243,7 @@ def inject_taxonomy_metadata(
         "config_domain": registered_domain_text,
         "prompt_domain": prompt_domain,
     }
-    if migrated_domain:
-        source_metadata.update(
-            {
-                "implementation_scene_id": taxonomy.scene_id,
-                "config_scene_id": taxonomy.scene_id,
-                "prompt_scene_id": taxonomy.scene_id,
-            }
-        )
-    else:
+    if not migrated_domain:
         source_metadata.update(
             {
                 "implementation_scene_id": source_scene_id,

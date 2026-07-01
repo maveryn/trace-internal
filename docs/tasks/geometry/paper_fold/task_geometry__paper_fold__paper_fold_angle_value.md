@@ -6,7 +6,8 @@
 3. Task id: `task_geometry__paper_fold__paper_fold_angle_value`
 4. Query id: `single`
 5. Answer schema: `number`
-6. Annotation schema: `bbox_map`
+6. Answer precision: `one_decimal`
+7. Annotation schema: `bbox_map`
 
 ## Program Contract
 - `solve_formula(visible_paper_fold_angle_labels, unknown_role=half_angle_x, formula_schema=fold_bisector_with_straight_angle, output=angle_degrees_1dp); scene=paper_fold; scope=paper_fold_angle_value`

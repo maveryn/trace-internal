@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Tuple
 
-
 SUPPORTED_BUBBLE_SHOOTER_SCENE_VARIANTS: Tuple[str, ...] = (
     "open_pack",
     "dense_pack",
@@ -41,6 +40,15 @@ class BubbleShooterOption:
 
 
 @dataclass(frozen=True)
+class BubbleShooterLandingOption:
+    """One labeled landing target option."""
+
+    label: str
+    landing_coord: Coord
+    is_answer: bool
+
+
+@dataclass(frozen=True)
 class BubbleShotOutcome:
     """Computed effect of shooting one bubble to one landing slot."""
 
@@ -65,6 +73,7 @@ class BubbleShooterState:
     option_specs: Tuple[BubbleShooterOption, ...]
     outcome: BubbleShotOutcome
     construction_mode: str
+    landing_option_specs: Tuple[BubbleShooterLandingOption, ...] = tuple()
 
 
 def bubble_entity_id(coord: Coord) -> str:
@@ -92,18 +101,26 @@ def option_entity_id(label: str) -> str:
     return f"option_{str(label)}"
 
 
+def landing_option_entity_id(label: str) -> str:
+    """Return the stable entity id for one labeled landing target option."""
+
+    return f"landing_option_{str(label)}"
+
+
 __all__ = [
     "BUBBLE_COLOR_KEYS",
     "BUBBLE_OPTION_LABELS",
     "SUPPORTED_BUBBLE_SHOOTER_SCENE_VARIANTS",
     "SUPPORTED_BUBBLE_SHOOTER_STYLE_VARIANTS",
     "Board",
+    "BubbleShooterLandingOption",
     "BubbleShooterOption",
     "BubbleShooterState",
     "BubbleShotOutcome",
     "Coord",
     "bubble_entity_id",
     "landing_slot_entity_id",
+    "landing_option_entity_id",
     "option_entity_id",
     "shooter_bubble_entity_id",
 ]

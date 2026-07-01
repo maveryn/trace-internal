@@ -16,13 +16,10 @@ from ...registry import register_task
 from ...shared.config_defaults import (
     split_generation_rendering_prompt_defaults,
 )
-from ...shared.deterministic_sampling import (
-    resolve_selection_index,
-    uniform_probability_map,
-)
 from ..shared.object_resources import STREET_OBJECT_TYPES
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
+from ..shared.task_support import resolve_support_choice_for_namespace
 from ..shared.object_scene import (
     POINT_LABELS,
     _build_projection_frame,
@@ -88,14 +85,14 @@ def _resolve_choice(
         if selected not in set(choices):
             raise ValueError(f"unsupported {key}: {selected}")
         return selected, {selected: 1.0}
-    selection_index = resolve_selection_index(
+    selected, probabilities = resolve_support_choice_for_namespace(
         params=params,
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}.{key}",
+        support_values=choices,
+        explicit_key=str(key),
     )
-    selected = choices[abs(int(selection_index)) % len(choices)]
-    probability = 1.0 / float(len(choices))
-    return str(selected), {str(choice): float(probability) for choice in choices}
+    return str(selected), {str(choice): float(probabilities[str(choice)]) for choice in choices}
 
 
 def _resolve_camera_yaw_band(
@@ -109,19 +106,14 @@ def _resolve_camera_yaw_band(
         selected_index = int(explicit)
         if selected_index not in set(support):
             raise ValueError(f"unsupported camera_yaw_band_index: {selected_index}")
+        probabilities = {str(value): (1.0 if int(value) == int(selected_index) else 0.0) for value in support}
     else:
-        selection_index = resolve_selection_index(
+        selected_index, probabilities = resolve_support_choice_for_namespace(
             params=params,
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}.camera_yaw_band_index",
+            support_values=support,
         )
-        selected_index = int(support[abs(int(selection_index)) % len(support)])
-    probabilities = dict(
-        uniform_probability_map(
-            support,
-            selected=int(selected_index) if explicit is not None else None,
-        )
-    )
     return (
         tuple(float(value) for value in STREET_CAMERA_YAW_BANDS_DEGREES[int(selected_index)]),
         {str(key): float(value) for key, value in sorted(probabilities.items(), key=lambda item: int(item[0]))},
@@ -301,7 +293,7 @@ def _build_street_same_road_arm_dataset(
         present_arms = _present_road_arms(str(intersection_layout))
         actual_reference_arm = str(reference_road_arm)
         if actual_reference_arm not in set(present_arms):
-            actual_reference_arm = str(present_arms[abs(int(rng.randrange(0, 10_000))) % len(present_arms)])
+            actual_reference_arm = str(rng.choice(present_arms))
         camera = _sample_camera(rng, yaw_band_degrees=tuple(float(value) for value in camera_yaw_band))
         reference_spec, candidate_specs = _sample_reference_and_candidate_specs(
             rng=rng,
@@ -377,15 +369,7 @@ def _build_street_same_road_arm_dataset(
             continue
 
         answer_object_id = str(satisfying[0]["object_id"])
-        answer_label_index = abs(
-            int(
-                resolve_selection_index(
-                    params=params,
-                    instance_seed=int(instance_seed),
-                    namespace=f"{TASK_ID}.answer_label",
-                )
-            )
-        ) % int(candidate_count)
+        answer_label_index = int(spawn_rng(int(instance_seed), f"{TASK_ID}.answer_label").randrange(int(candidate_count)))
         answer_label = str(POINT_LABELS[int(answer_label_index)])
         remaining_labels = [
             str(label)

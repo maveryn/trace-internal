@@ -12,9 +12,17 @@ from trace.tasks.charts.population_pyramid.age_group_threshold_count import (
     THRESHOLD_QUERY_IDS,
     ChartsPopulationPyramidAgeGroupThresholdCountTask,
 )
+from trace.tasks.charts.population_pyramid.dominant_side_count import (
+    DOMINANT_SIDE_COUNT_QUERY_IDS,
+    ChartsPopulationPyramidDominantSideCountTask,
+)
 from trace.tasks.charts.population_pyramid.side_gap_extremum_label import (
     GAP_QUERY_IDS,
     ChartsPopulationPyramidSideGapExtremumLabelTask,
+)
+from trace.tasks.charts.population_pyramid.side_value_extremum_label import (
+    SIDE_VALUE_EXTREMUM_QUERY_IDS,
+    ChartsPopulationPyramidSideValueExtremumLabelTask,
 )
 from trace.tasks.registry import create_task
 
@@ -22,6 +30,8 @@ from trace.tasks.registry import create_task
 TASK_CASES = (
     *[(ChartsPopulationPyramidSideGapExtremumLabelTask, query_id, "string", "bbox") for query_id in GAP_QUERY_IDS],
     *[(ChartsPopulationPyramidAgeGroupThresholdCountTask, query_id, "integer", "bbox_set") for query_id in THRESHOLD_QUERY_IDS],
+    *[(ChartsPopulationPyramidSideValueExtremumLabelTask, query_id, "string", "bbox") for query_id in SIDE_VALUE_EXTREMUM_QUERY_IDS],
+    *[(ChartsPopulationPyramidDominantSideCountTask, query_id, "integer", "bbox_set") for query_id in DOMINANT_SIDE_COUNT_QUERY_IDS],
 )
 
 
@@ -43,6 +53,31 @@ def _expected_answer(execution: dict, query_id: str) -> int | str:
         winners = [label for label, gap in gaps if int(gap) == int(target_gap)]
         assert len(winners) == 1
         return str(winners[0])
+
+    if query_id in SIDE_VALUE_EXTREMUM_QUERY_IDS:
+        side = str(execution["side"])
+        direction = str(execution["value_direction"])
+
+        def side_value(row: dict) -> int:
+            if side == "left":
+                return int(row["left_value"])
+            if side == "right":
+                return int(row["right_value"])
+            raise AssertionError(f"unsupported side-value side: {side}")
+
+        values = [(str(row["label"]), side_value(row)) for row in rows]
+        target_value = max(value for _label, value in values) if direction == "largest" else min(value for _label, value in values)
+        winners = [label for label, value in values if int(value) == int(target_value)]
+        assert len(winners) == 1
+        return str(winners[0])
+
+    if query_id in DOMINANT_SIDE_COUNT_QUERY_IDS:
+        dominant_side = str(execution["dominant_side"])
+        if dominant_side == "left":
+            return sum(1 for row in rows if int(row["left_value"]) > int(row["right_value"]))
+        if dominant_side == "right":
+            return sum(1 for row in rows if int(row["right_value"]) > int(row["left_value"]))
+        raise AssertionError(f"unsupported dominant side: {dominant_side}")
 
     threshold = int(execution["threshold_value"])
     side = str(execution["threshold_side"])
@@ -89,6 +124,7 @@ def test_charts_population_pyramid_tasks_match_contract(
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert str(execution["question_format"]) == "population_pyramid"
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
+    assert int(render["canvas_width"]) * int(render["canvas_height"]) <= 1_280_000
     assert 8 <= int(execution["row_count"]) <= 14
 
     expected_answer = _expected_answer(execution, query_id)
@@ -96,7 +132,16 @@ def test_charts_population_pyramid_tasks_match_contract(
     assert execution["answer_value"] == expected_answer
 
     row_ids = [str(value) for value in projected["row_ids"]]
-    expected_boxes = [render_map["row_bar_bboxes_px"][row_id] for row_id in row_ids]
+    annotation_bar_scope = str(projected.get("annotation_bar_scope", "row"))
+    if annotation_bar_scope == "left":
+        box_map = render_map["left_bar_bboxes_px"]
+    elif annotation_bar_scope == "right":
+        box_map = render_map["right_bar_bboxes_px"]
+    elif annotation_bar_scope == "row":
+        box_map = render_map["row_bar_bboxes_px"]
+    else:
+        raise AssertionError(f"unsupported annotation bar scope: {annotation_bar_scope}")
+    expected_boxes = [box_map[row_id] for row_id in row_ids]
     if annotation_type == "bbox":
         assert len(row_ids) == 1
         assert out.annotation_gt.value == expected_boxes[0]
@@ -133,6 +178,8 @@ def test_charts_population_pyramid_prompt_examples_match_contract() -> None:
 def test_charts_population_pyramid_balanced_sampling_covers_queries() -> None:
     gap_queries: Counter[str] = Counter()
     threshold_queries: Counter[str] = Counter()
+    side_value_queries: Counter[str] = Counter()
+    dominant_side_queries: Counter[str] = Counter()
     for index in range(96):
         gap_out = ChartsPopulationPyramidSideGapExtremumLabelTask().generate(
             hash64(246100, "population_pyramid_gap", index),
@@ -146,8 +193,22 @@ def test_charts_population_pyramid_balanced_sampling_covers_queries() -> None:
             max_attempts=80,
         )
         threshold_queries[str(count_out.query_id)] += 1
+        side_value_out = ChartsPopulationPyramidSideValueExtremumLabelTask().generate(
+            hash64(246250, "population_pyramid_side_value", index),
+            params={},
+            max_attempts=80,
+        )
+        side_value_queries[str(side_value_out.query_id)] += 1
+        dominant_out = ChartsPopulationPyramidDominantSideCountTask().generate(
+            hash64(246275, "population_pyramid_dominant_side", index),
+            params={},
+            max_attempts=80,
+        )
+        dominant_side_queries[str(dominant_out.query_id)] += 1
     assert set(gap_queries) == set(GAP_QUERY_IDS)
     assert set(threshold_queries) == set(THRESHOLD_QUERY_IDS)
+    assert set(side_value_queries) == set(SIDE_VALUE_EXTREMUM_QUERY_IDS)
+    assert set(dominant_side_queries) == set(DOMINANT_SIDE_COUNT_QUERY_IDS)
 
 
 def test_charts_population_pyramid_is_deterministic() -> None:

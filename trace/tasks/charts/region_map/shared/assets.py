@@ -1,4 +1,4 @@
-"""Bundled geographic map assets for marker-map tasks."""
+"""Bundled geographic map assets for region-map tasks."""
 
 from __future__ import annotations
 

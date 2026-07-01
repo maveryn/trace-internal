@@ -109,7 +109,7 @@ def create_render_context(
         line_width=max(2, int(params.get("line_width", group_default(rendering_defaults, "line_width", 4)))),
         font=font,
         small_font=small_font,
-        label_stroke_width=1,
+        label_stroke_width=0,
         diagram_style_meta=dict(diagram_style_meta),
         background_meta=dict(background_meta),
         font_meta=font_role_trace(str(font_family), role="readout"),
@@ -228,10 +228,10 @@ def render_cone_cross_section(ctx: RenderContext, problem: SolidCrossSectionProb
         "target_area": draw_label(ctx, "A=?", (base_center[0], slice_y - slice_ellipse_h / 2.0 - 28.0), small=True),
         "base_radius_label": _draw_dimension(
             ctx,
-            base_center,
-            base_right,
+            (base_center[0], base_center[1] + base_ellipse_h / 2.0 + 22.0),
+            (base_right[0], base_right[1] + base_ellipse_h / 2.0 + 22.0),
             f"R={fmt_measure(problem.base_radius or 0)}",
-            label_offset=(0.0, 36.0),
+            label_offset=(0.0, 26.0),
         ),
         "height_label": _draw_dimension(
             ctx,
@@ -256,7 +256,7 @@ def render_cone_cross_section(ctx: RenderContext, problem: SolidCrossSectionProb
         solid_bbox=solid_bbox,
         cross_section_bbox=cross_section_bbox,
         label_bboxes=label_bboxes,
-        annotation_roles=("cross_section", "base_radius_label", "height_label", "slice_distance_label"),
+        annotation_roles=("cross_section",),
     )
 
 
@@ -296,8 +296,9 @@ def render_square_pyramid_cross_section(
     for start, end in zip(slice_points, slice_points[1:] + slice_points[:1]):
         ctx.draw.line([start, end], fill=ctx.accent_color, width=max(3, ctx.line_width))
 
+    cross_section_bbox = bbox_from_points(slice_points, width=ctx.width, height=ctx.height, pad=6.0)
     label_bboxes = {
-        "target_area": draw_label(ctx, "A=?", (base_center[0], slice_y - 32.0), small=True),
+        "target_area": draw_label(ctx, "A=?", (base_center[0], cross_section_bbox[1] - 22.0), small=True),
         "base_side_label": _draw_dimension(
             ctx,
             (front_left[0], front_left[1] + 34.0),
@@ -321,14 +322,13 @@ def render_square_pyramid_cross_section(
         ),
     }
     solid_bbox = bbox_from_points((apex,) + base_points, width=ctx.width, height=ctx.height, pad=58.0)
-    cross_section_bbox = bbox_from_points(slice_points, width=ctx.width, height=ctx.height, pad=6.0)
     return _rendered_scene(
         ctx=ctx,
         problem=problem,
         solid_bbox=solid_bbox,
         cross_section_bbox=cross_section_bbox,
         label_bboxes=label_bboxes,
-        annotation_roles=("cross_section", "base_side_label", "height_label", "slice_distance_label"),
+        annotation_roles=("cross_section",),
     )
 
 

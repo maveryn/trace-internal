@@ -19,7 +19,7 @@ from ._lifecycle import (
     resolve_maze_scene_variant,
     retry_maze_generation,
 )
-from .shared.annotations import single_item_bbox
+from .shared.annotations import single_item_point
 from .shared.sampling import sample_exit_label_maze
 from .shared.state import (
     DOMAIN,
@@ -54,7 +54,7 @@ class PuzzlesMazeExitReachabilityLabelTask:
         params: Dict[str, Any],
         max_attempts: int,
     ) -> TaskOutput:
-        """Generate one maze exit-label task with scalar bbox annotation."""
+        """Generate one maze exit-label task with scalar point annotation."""
 
         return retry_maze_generation(
             build_case=_build_exit_reachability_label_case,
@@ -114,8 +114,8 @@ def _build_exit_reachability_label_case(
     supporting_item_ids = [str(value) for value in dataset["supporting_item_ids"]]
     if len(supporting_item_ids) != 1:
         raise ValueError("exit reachability label task must bind exactly one exit")
-    annotation_gt, projected_annotation, witness_symbolic = single_item_bbox(
-        visual["rendered_scene"].item_bbox_map,
+    annotation_gt, projected_annotation, witness_symbolic = single_item_point(
+        visual["rendered_scene"].item_point_map,
         supporting_item_ids[0],
     )
     answer_gt = TypedValue(type="string", value=str(dataset["answer_value"]))

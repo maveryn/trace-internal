@@ -10,7 +10,15 @@
 7. Annotation schema: `bbox_set_map`
 
 ## Program Contract
-`successful_downward_steps(simulate_horizontal_shift_then_vertical_drop(board, falling_piece, requested_shift)); scene=tetris; scope=drop_collision_time_value`
+
+Program: `successful_downward_steps(simulate_horizontal_shift_then_vertical_drop(board, falling_piece, requested_shift)); scene=tetris; scope=drop_collision_time_value`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `drop_collision_time_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `simulate_horizontal_shift_then_vertical_drop`, `board`, `falling_piece`, `requested_shift`, `tetris`, `drop_collision_time_value` plus the active `query_id` branch.
+Operation: evaluate `successful_downward_steps` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `no_shift_collision_time`, `left_shift_collision_time`, `right_shift_collision_time`.
 
 ## Generation Notes
 1. Query ids choose no shift, left shift, or right shift before the vertical drop.

@@ -1,7 +1,15 @@
 # `task_puzzles__cell_board__shortest_path_length_value`
 
 ## Program Contract
-`shortest_path_length(cell_board, start=green_S_cell, goal=red_G_cell, passable=non_wall_cells, adjacency=orthogonal_4_neighbor); scene=cell_board; scope=shortest_path_length_value`
+
+Program: `shortest_path_length(cell_board, start=green_S_cell, goal=red_G_cell, passable=non_wall_cells, adjacency=orthogonal_4_neighbor); scene=cell_board; scope=shortest_path_length_value`
+
+Candidate set: the visible grid cells, cell colors/states, labels, walls, start/goal markers, and mirror or connectivity cues inside the `shortest_path_length_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `cell_board`, `start`, `green_S_cell`, `goal`, `red_G_cell`, `passable`, `non_wall_cells`, `adjacency`, `orthogonal_4_neighbor`, `shortest_path_length_value`.
+Operation: evaluate `shortest_path_length` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `segment_set` schema; one image-pixel segment for each adjacent step along a shortest path from `S` to `G`; segment count equals the answer.
+Query ids: `single`.
 
 ## 2) Scene + task contract
 1. Entities/relations: A rectangular board with dark wall cells, light passable cells, a green start cell marked `S`, a red goal cell marked `G`, and disconnected passable distractors.

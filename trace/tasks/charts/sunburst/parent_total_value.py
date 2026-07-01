@@ -9,7 +9,7 @@ from trace.tasks.charts.sunburst.shared.state import DOMAIN
 from trace.tasks.registry import register_task
 
 
-PROGRAM_CODE = "sum(value(leaf) for leaf under parent); output=integer_value; annotation=bbox_set(leaf_value_labels); scene=sunburst; scope=parent_total_value"
+PROGRAM_CODE = "sum(value(leaf) for leaf under parent); output=integer_value; annotation=point_set(leaf_value_labels); scene=sunburst; scope=parent_total_value"
 
 
 @register_task

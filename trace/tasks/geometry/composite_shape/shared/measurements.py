@@ -36,17 +36,19 @@ SECTOR_DIMENSION_CANDIDATES: Tuple[Tuple[int, int], ...] = tuple(
 def dimension_values(index: int) -> tuple[int, int, int]:
     """Return width, height, and radius support values for curved composites."""
 
-    return SEMICIRCLE_DIMENSION_CANDIDATES[
-        int(index) % len(SEMICIRCLE_DIMENSION_CANDIDATES)
-    ]
+    selected_index = int(index)
+    if selected_index < 0 or selected_index >= len(SEMICIRCLE_DIMENSION_CANDIDATES):
+        raise ValueError("dimension index is outside semicircle candidate support")
+    return SEMICIRCLE_DIMENSION_CANDIDATES[selected_index]
 
 
 def sector_values(index: int) -> tuple[int, int]:
     """Return central-angle and radius support values for sector tasks."""
 
-    return SECTOR_DIMENSION_CANDIDATES[
-        int(index) % len(SECTOR_DIMENSION_CANDIDATES)
-    ]
+    selected_index = int(index)
+    if selected_index < 0 or selected_index >= len(SECTOR_DIMENSION_CANDIDATES):
+        raise ValueError("sector index is outside sector candidate support")
+    return SECTOR_DIMENSION_CANDIDATES[selected_index]
 
 
 def one_hot_support(values: Sequence[Any], selected: Any) -> Dict[str, float]:

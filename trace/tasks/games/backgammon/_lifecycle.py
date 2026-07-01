@@ -8,19 +8,29 @@ from typing import Any, Callable, Dict, Mapping
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.config_defaults import (
+    load_scene_generation_rendering_prompt_defaults,
+)
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
-from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
+from trace.tasks.shared.support_sampling import (
+    resolve_integer_choice,
+    resolve_integer_support,
+)
 
-from .shared.annotations import annotation_bboxes_for_entity_ids, annotation_entity_ids_for_points
-from .shared.output import build_backgammon_trace_payload, common_backgammon_trace_params
+from .shared.annotations import (
+    annotation_bboxes_for_entity_ids,
+    annotation_entity_ids_for_points,
+)
+from .shared.output import (
+    build_backgammon_trace_payload,
+    common_backgammon_trace_params,
+)
 from .shared.prompts import build_backgammon_prompt_artifacts
 from .shared.rendering import render_backgammon_sample
 from .shared.sampling import ResolvedBackgammonAxes, resolve_backgammon_axes
 from .shared.state import SCENE_ID, BackgammonSample
-
 
 AttemptBuilder = Callable[[Any, ResolvedBackgammonAxes], "BackgammonAttemptResult"]
 ObjectivePreparer = Callable[
@@ -47,6 +57,8 @@ class BackgammonObjectivePlan:
     attempt_namespace: str
     query_params: Mapping[str, Any]
     construct_attempt: AttemptBuilder
+    prompt_query_key: str | None = None
+    prompt_dynamic_slots: Mapping[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -69,10 +81,12 @@ def resolve_backgammon_count_target(
 ) -> BackgammonCountTarget:
     """Resolve a task-owned Backgammon integer target from config or sampling."""
 
-    gen_defaults, _render_defaults, _prompt_defaults = load_scene_generation_rendering_prompt_defaults(
-        "games",
-        SCENE_ID,
-        task_id=str(task_id),
+    gen_defaults, _render_defaults, _prompt_defaults = (
+        load_scene_generation_rendering_prompt_defaults(
+            "games",
+            SCENE_ID,
+            task_id=str(task_id),
+        )
     )
     target_answer, target_answer_probabilities = resolve_integer_choice(
         instance_seed=int(instance_seed),
@@ -143,7 +157,10 @@ def run_backgammon_lifecycle(
     )
 
     for attempt_index in range(max(1, int(max_attempts))):
-        rng = spawn_rng(int(instance_seed), f"{objective.attempt_namespace}.attempt.{int(attempt_index)}")
+        rng = spawn_rng(
+            int(instance_seed),
+            f"{objective.attempt_namespace}.attempt.{int(attempt_index)}",
+        )
         try:
             attempt = objective.construct_attempt(rng, axes)
         except ValueError:
@@ -154,15 +171,21 @@ def run_backgammon_lifecycle(
             params=task_params,
             instance_seed=int(instance_seed),
         )
-        annotation_entity_ids = annotation_entity_ids_for_points(tuple(int(point) for point in attempt.target_points))
+        annotation_entity_ids = annotation_entity_ids_for_points(
+            tuple(int(point) for point in attempt.target_points)
+        )
         annotation_bboxes = annotation_bboxes_for_entity_ids(
             rendered_context.rendered_scene,
             annotation_entity_ids,
         )
-        annotation_gt = TypedValue(type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes])
+        annotation_gt = TypedValue(
+            type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes]
+        )
+        prompt_query_key = str(objective.prompt_query_key or query_id)
         prompt_defaults, prompt_artifacts = build_backgammon_prompt_artifacts(
             domain=str(domain),
-            prompt_query_key=str(query_id),
+            prompt_query_key=prompt_query_key,
+            dynamic_slots=dict(objective.prompt_dynamic_slots),
             instance_seed=int(instance_seed),
         )
         query_spec = build_prompt_query_spec(
@@ -174,6 +197,7 @@ def run_backgammon_lifecycle(
                 extra_params={
                     **dict(objective.query_params),
                     "query_id_probabilities": dict(query_probabilities),
+                    "prompt_query_key": prompt_query_key,
                 },
             ),
         )
@@ -205,7 +229,9 @@ def run_backgammon_lifecycle(
             query_id=str(query_id),
         )
 
-    raise RuntimeError(f"{task_id} failed to generate a valid Backgammon scene after {max_attempts} attempts")
+    raise RuntimeError(
+        f"{task_id} failed to generate a valid Backgammon scene after {max_attempts} attempts"
+    )
 
 
 __all__ = [

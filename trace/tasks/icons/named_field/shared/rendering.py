@@ -511,8 +511,8 @@ def render_distance_rank_scene(
                 sprite = sprites_by_label[str(label)]
                 distance = float(distances[int(rank)])
                 placed = False
-                for angle_attempt in range(len(angle_values)):
-                    angle_degrees = float(angle_values[(int(rank) + int(angle_attempt)) % len(angle_values)])
+                for angle_degrees in angle_values:
+                    angle_degrees = float(angle_degrees)
                     angle = math.radians(angle_degrees)
                     center = (
                         float(reference_center[0]) + distance * math.cos(angle),

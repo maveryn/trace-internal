@@ -73,7 +73,11 @@ when both output modes are materialized.
 
 ## 5) Prompt Quality Policy
 1. Keep stems natural and image-focused.
-2. Scene layer describes the visible scaffold only.
+2. Scene layer describes the visible scaffold only. Do not include taxonomy,
+   source, or construction-category labels that are not needed to solve the
+   task, such as calling a prompt scaffold "special", "synthetic",
+   "procedural", "unlettered", or naming an internal scene family when the
+   concrete visible object labels already carry the needed information.
 3. Task layer states the operation only when needed.
 4. The query layer owns the actual question; user-facing wording should come
    from prompt templates.
@@ -81,8 +85,21 @@ when both output modes are materialized.
 6. Avoid repeating broad nouns such as image, chart, table, diagram, board,
    question, or answer across adjacent layers.
 7. Template examples show valid output format for the active answer and
-   annotation contract, not the sampled instance's actual answer.
-8. Use `annotation` terminology in prompts.
+   annotation contract, not the sampled instance's actual answer. The example
+   annotation should be an answer-verification witness for the task family, not
+   a full derivation/proof trace.
+8. Template examples must be internally coherent. If the example answer is a
+   count and annotation is the counted witness collection, the example
+   annotation cardinality must match the example answer. Scalar examples must
+   use scalar shapes, not one-item sets.
+9. Annotation examples and hints must use final image pixel coordinates, not
+   grid indices, scene coordinates, data values, or normalized coordinates.
+10. Use `annotation` terminology in prompts.
+11. Prefer direct operand-bound questions over indirect scene-mechanics
+    wording. When the task asks for a total, comparison, or selection over
+    named operands, the query template should name those operands directly
+    rather than making the model infer the requested operation from verbose
+    visual descriptions.
 
 ## 6) Source Of Truth
 Do not maintain exhaustive task-to-bundle maps in this document. They drift.

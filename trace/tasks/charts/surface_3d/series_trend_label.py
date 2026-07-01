@@ -5,7 +5,7 @@ from __future__ import annotations
 from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.charts.surface_3d._lifecycle import Surface3DTaskPlan, run_surface_3d_lifecycle
-from trace.tasks.charts.surface_3d.shared.annotations import bbox_map_for_roles
+from trace.tasks.charts.surface_3d.shared.annotations import segment_between_bboxes
 from trace.tasks.charts.surface_3d.shared.defaults import DOMAIN, SCATTER_VARIANT
 from trace.tasks.charts.surface_3d.shared.sampling import (
     PALETTE,
@@ -104,9 +104,9 @@ def _build_series_dataset(params, instance_seed, selected_branch):
         points=tuple(points),
         surface_cells=(),
         panels=(),
-        x_axis_label="Year",
-        y_axis_label="Series",
-        z_axis_label="Value",
+        x_axis_label="x-axis",
+        y_axis_label="y-axis",
+        z_axis_label="z-axis",
         x_range=(0.0, float(max(1, int(time_count) - 1))),
         y_range=(0.0, float(max(1, int(series_count) - 1))),
         z_range=(0.0, 100.0),
@@ -129,11 +129,9 @@ def _build_plan(params, instance_seed, selected_branch, query_probabilities):
     end_point_id = f"series_{answer_label}_{int(time_count) - 1}"
 
     def _bind_annotation(rendered):
-        return bbox_map_for_roles(
-            {
-                "start_point": rendered.point_bboxes_px[str(start_point_id)],
-                "end_point": rendered.point_bboxes_px[str(end_point_id)],
-            }
+        return segment_between_bboxes(
+            rendered.point_bboxes_px[str(start_point_id)],
+            rendered.point_bboxes_px[str(end_point_id)],
         )
 
     return Surface3DTaskPlan(

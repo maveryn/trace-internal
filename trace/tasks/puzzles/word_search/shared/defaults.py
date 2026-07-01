@@ -92,12 +92,6 @@ def resolve_render_params(
         option_font_size_px=scale_puzzle_px(
             defaults.get("option_font_size_px", 20), unit_scale, min_px=15
         ),
-        word_chip_height_px=scale_puzzle_px(
-            defaults.get("word_chip_height_px", 44), unit_scale, min_px=34
-        ),
-        word_chip_gap_px=scale_puzzle_px(
-            defaults.get("word_chip_gap_px", 10), unit_scale, min_px=6
-        ),
         letter_font_size_px=scale_puzzle_px(
             defaults.get("letter_font_size_px", 24), unit_scale, min_px=18
         ),
@@ -112,8 +106,7 @@ def resolve_render_params(
         text_stroke_rgb=coerce_rgb(defaults.get("text_stroke_rgb"), (255, 255, 255)),
         option_fill_rgb=coerce_rgb(defaults.get("option_fill_rgb"), (255, 250, 224)),
         option_border_rgb=coerce_rgb(defaults.get("option_border_rgb"), (54, 96, 168)),
-        chip_fill_rgb=coerce_rgb(defaults.get("chip_fill_rgb"), (234, 245, 239)),
-        chip_border_rgb=coerce_rgb(defaults.get("chip_border_rgb"), (68, 122, 103)),
+        option_text_rgb=coerce_rgb(defaults.get("option_text_rgb"), (26, 31, 39)),
         unit_size_jitter=dict(unit_meta),
     )
 
@@ -128,21 +121,27 @@ def resize_canvas_to_content(render_params, *, dataset, rng) -> WordSearchRender
     cols = int(dataset.cols)
     grid_w = int(header + cols * cell)
     grid_h = int(header + rows * cell)
-    side_panel = bool(dataset.option_specs or dataset.word_bank)
-    side_width = int(render_params.option_panel_width_px) if side_panel else 0
-    side_gap = 38 if side_panel else 0
-    content_w = int(grid_w + side_gap + side_width)
-    content_h = max(
-        grid_h,
-        len(dataset.option_specs)
-        * (
-            int(render_params.option_panel_height_px) + int(render_params.option_gap_px)
-        ),
-        len(dataset.word_bank)
-        * (
-            int(render_params.word_chip_height_px) + int(render_params.word_chip_gap_px)
-        ),
+    option_count = len(dataset.option_specs)
+    if option_count == 4:
+        option_columns, option_rows = 2, 2
+    elif option_count == 6:
+        option_columns, option_rows = 3, 2
+    elif option_count > 0:
+        option_columns = min(3, int(option_count))
+        option_rows = (int(option_count) + option_columns - 1) // option_columns
+    else:
+        option_columns, option_rows = 0, 0
+    option_grid_w = int(
+        option_columns * int(render_params.option_panel_width_px)
+        + max(0, option_columns - 1) * int(render_params.option_gap_px)
     )
+    option_grid_h = int(
+        option_rows * int(render_params.option_panel_height_px)
+        + max(0, option_rows - 1) * int(render_params.option_gap_px)
+    )
+    option_gap_y = int(render_params.option_gap_px) * 2 if option_count else 0
+    content_w = max(int(grid_w), int(option_grid_w))
+    content_h = int(grid_h + option_gap_y + option_grid_h)
     panel_w = int(content_w + 2 * padding)
     panel_h = int(content_h + 2 * padding)
     margin = 34

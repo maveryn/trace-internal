@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import (
+    AnnotationArtifacts,
+    bbox_map_annotation_artifacts,
+    bbox_set_annotation_artifacts,
+)
 
 from .state import RenderedSlidingBlockScene
 
@@ -23,21 +27,19 @@ def block_bbox_set(
     return bbox_set_annotation_artifacts(bboxes)
 
 
-def block_and_option_bbox_set(
+def source_board_and_option_bbox_map(
     rendered_scene: RenderedSlidingBlockScene,
     *,
-    block_ids: Sequence[str],
     option_id: str,
 ) -> AnnotationArtifacts:
-    """Build bbox-set annotation for moved source blocks plus one option panel."""
+    """Build role-keyed bbox annotation for source board and selected option."""
 
-    bboxes = [
-        [round(float(value), 3) for value in rendered_scene.block_bbox_map[str(block_id)]]
-        for block_id in block_ids
-    ]
-    bboxes.append([round(float(value), 3) for value in rendered_scene.option_panel_bbox_map[str(option_id)]])
-    return bbox_set_annotation_artifacts(bboxes)
+    return bbox_map_annotation_artifacts(
+        {
+            "source_board": rendered_scene.board_bbox_px,
+            "selected_option": rendered_scene.option_panel_bbox_map[str(option_id)],
+        }
+    )
 
 
-__all__ = ["block_and_option_bbox_set", "block_bbox_set"]
-
+__all__ = ["block_bbox_set", "source_board_and_option_bbox_map"]

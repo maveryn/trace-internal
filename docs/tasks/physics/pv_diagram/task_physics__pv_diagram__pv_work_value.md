@@ -3,42 +3,51 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `pv_diagram`
-- Implementation scene: `thermodynamics`
-- Implementation source: `trace/tasks/physics/thermodynamics/pv_diagram.py`
+- Implementation scene: `pv_diagram`
+- Implementation source: `trace/tasks/physics/pv_diagram/pv_work_value.py`
 
-## Task Contract
-Computes signed integer work from a highlighted PV process using pressure times volume change.
+## Program Contract
+
+Program: `integer(pressure * (final_volume - initial_volume)); scene=pv_diagram; scope=pv_work_value`
+
+Candidate set: the visible pressure-volume axes, process path, endpoint labels, and shaded/process direction cues inside the `pv_work_value` objective scope.
+Operands: `pressure` (semantic_role, allowed `visible_process_pressure`, source `program_schema_concrete`); `initial_volume` (semantic_role, allowed `visible_initial_volume`, source `program_schema_concrete`); `final_volume` (semantic_role, allowed `visible_final_volume`, source `program_schema_concrete`).
+Operation: evaluate `integer` over the candidate set using the visible quantities, relations, branch semantics, and formulas encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; The answer value is an exact signed integer produced by the symbolic PV construction.
+Annotation witnesses: `bbox` witnesses from the finalized render. Annotation is one final-image pixel box around the highlighted PV path and shaded work region. Annotation must mark the visual path/area used for the work calculation, not the answer label, decorative chrome, or unrelated axes text.
+Query ids: `single`.
 
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `work_value` | `pressure * (final_volume - initial_volume); scene=pv_diagram; scope=pv_work_value; query_branch=work_value` |
+| `single` | `integer(pressure * (final_volume - initial_volume)); scene=pv_diagram; scope=pv_work_value` |
 
 ## Program Metadata
 - Program signatures: `physics.pv_work_value`
-- Base program contract: `pressure * (final_volume - initial_volume); scene=pv_diagram; scope=pv_work_value`
-- Parameter axes: `fixed_query`
+- Base program contract: `integer(pressure * (final_volume - initial_volume)); scene=pv_diagram; scope=pv_work_value`
+- Parameter axes: `scene_variant`, `work_mode`, `accent_color_name`, `target_answer`
 - Arguments:
-  - `final_volume`: semantic_role; allowed `visible_final_volume`; source `program_schema_concrete`
-  - `initial_volume`: semantic_role; allowed `visible_initial_volume`; source `program_schema_concrete`
   - `pressure`: semantic_role; allowed `visible_process_pressure`; source `program_schema_concrete`
+  - `initial_volume`: semantic_role; allowed `visible_initial_volume`; source `program_schema_concrete`
+  - `final_volume`: semantic_role; allowed `visible_final_volume`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `work_value`
+- Supported `query_id` values: `single`
 
 ## Answer Contract
-- Answer schema: `integer_value`
+- Answer schema: `integer`
 - Generator `answer_gt.type`: `integer`
-- The answer value is an exact integer produced by the symbolic physics construction.
+- The answer value is an exact signed integer produced by the symbolic PV construction.
 
 ## Annotation Contract
-- Annotation schema: `bbox_set`
-- Generator `annotation_gt.type`: `bbox_set | unordered`
-- Annotation is an unordered set of final-image pixel boxes over the minimal queried visual witnesses.
-- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Annotation schema: `bbox`
+- Generator `annotation_gt.type`: `bbox`
+- Annotation is one final-image pixel box around the highlighted PV path and shaded work region.
+- Annotation must mark the visual path/area used for the work calculation, not the answer label, decorative chrome, or unrelated axes text.
 - Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
 
 ## Prompt And Trace Requirements
-- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Prompt text must come from `prompts/physics/pv_diagram/physics_pv_diagram_v1.json`, with scene and task/query layers selected deterministically and recorded in metadata.
+- Public `query_id` is `single`; the prompt branch is recorded as `work_value` in trace metadata.
 - Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
 - Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.

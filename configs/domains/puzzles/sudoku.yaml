@@ -18,15 +18,14 @@ generation:
     balanced_unit_type_sampling: true
     balanced_style_variant_sampling: true
     balanced_target_answer_sampling: true
+    balanced_answer_label_sampling: true
+    option_label_support: [A, B, C, D]
   task_overrides:
     task_puzzles__sudoku__marked_cell_value:
       marked_cell_value_support: [1, 2, 3, 4, 5, 6, 7, 8, 9]
     task_puzzles__sudoku__marked_cell_candidate_count:
       marked_cell_candidate_count_support: [1, 2, 3, 4, 5]
-    task_puzzles__sudoku__unit_missing_digits_count:
-      unit_missing_digits_count_support: [2, 3, 4, 5, 6]
-    task_puzzles__sudoku__repeated_digit_count:
-      repeated_digit_count_support: [0, 1, 2, 3, 4]
+    task_puzzles__sudoku__mistake_cell_label: {}
 
 rendering:
   shared:

@@ -8,7 +8,15 @@
 5. Objective: identify the sister taxon leaf of a queried taxon.
 
 ## Program Contract
-select(label(leaf) where shares_immediate_parent(leaf, queried_leaf)); output=string; annotation=point(sister_leaf_center); scene=phylogeny_tree; scope=sister_leaf_label
+
+Program: `select(label(leaf) where shares_immediate_parent(leaf, queried_leaf)); output=string; annotation=point(sister_leaf_center); scene=phylogeny_tree; scope=sister_leaf_label`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `sister_leaf_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `label`, `leaf`, `where`, `shares_immediate_parent`, `queried_leaf`, `sister_leaf_center`, `phylogeny_tree`, `sister_leaf_label`.
+Operation: evaluate `select` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query IDs
 1. Supported `query_id`: `single`.

@@ -140,6 +140,7 @@ def build_trace_scaffold(
             "mean_marker_bboxes_px": dict(rendered.mean_marker_bboxes_px),
             "mode_marker_bboxes_px": dict(rendered.mode_marker_bboxes_px),
             "interval_mass_bboxes_px": dict(rendered.interval_mass_bboxes_px),
+            "interval_mass_points_px": dict(rendered.interval_mass_points_px),
             "density_at_x_points_px": dict(rendered.density_at_x_points_px),
         },
         "execution_trace": {
@@ -156,4 +157,3 @@ def build_trace_scaffold(
         },
         "projected_annotation": dict(projected_annotation),
     }
-

@@ -1210,6 +1210,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
                 "chess_variant",
                 "circular_chess",
                 "connect_four",
+                "counterfactual_board",
                 "crossing",
                 "darts",
                 "dominoes",
@@ -1287,6 +1288,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
             {
                 "icon_cutout",
                 "icon_field",
+                "icon_grid",
                 "mirror_grid",
                 "named_field",
                 "named_grid",
@@ -1354,7 +1356,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
                 "rectangular_solid",
                 "regular_polygon_decomposition",
                 "sector",
-                "shape_gallery",
+                "shape_reference",
                 "similar_figure_measure_transfer",
                 "solid_cross_section",
                 "solid_formula",
@@ -1363,10 +1365,8 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
                 "survey_traverse",
                 "tangent_packing",
                 "trapezoid_extension",
-                "triangle_congruence_correspondence",
                 "triangle_relations",
                 "volume_equivalence_conversion",
-                "wire_shape_conversion",
             )
         ),
         "icons": frozenset(
@@ -1385,7 +1385,6 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
                 "calendar",
                 "calendar_event_grid",
                 "category_grid",
-                "command_matrix",
                 "concept_map",
                 "control_board",
                 "cycle",
@@ -1400,7 +1399,6 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
                 "paired_forms",
                 "process_flow",
                 "profile_card_grid",
-                "ranked_list",
                 "record_table",
                 "schedule",
                 "schema",
@@ -1456,40 +1454,33 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
                 "arithmetic_panel",
                 "balance_scale",
                 "cell_board",
-                "code_grid",
                 "color_gradient",
-                "counterfactual_board",
                 "cube_net",
                 "cyclic_order",
-                "logic_grid",
                 "matchstick",
                 "maze",
                 "nonogram",
-                "overlay",
-                "paper_fold",
-                "paper_fold_cut",
                 "pipe_flow",
-                "polyomino_missing",
+                "polyomino_assembly",
                 "raven_matrix",
                 "rubiks_net",
+                "sheet_transform",
                 "star_battle",
-                "string_topology",
                 "sudoku",
-                "tangram",
                 "tents",
                 "toggle_grid",
                 "voxel_cube",
-                "voxel_ladder",
                 "word_search",
             }
         ),
         "symbolic": frozenset(
-            {
-                "abacus",
-                "agent_automaton",
-                "braille_cell",
-                "clock",
-                "dice",
+                {
+                    "abacus",
+                    "agent_automaton",
+                    "braille_cell",
+                    "chemical_equation",
+                    "clock",
+                    "dice",
                 "life_automaton",
                 "logic_gate_circuit",
                 "morse_code",
@@ -1497,6 +1488,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
                 "organic_structure",
                 "radial_code_wheel",
                 "spinner",
+                "truth_table",
                 "turing_tape",
             }
         ),
@@ -1607,25 +1599,18 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
         "task_geometry__paper_fold__paper_fold_angle_value", domain="geometry"
     )
     assert scene_package_migration.is_scene_package_task(
-        "task_geometry__sector__sector_area_value", domain="geometry"
-    )
-    assert scene_package_migration.is_scene_package_task(
         "task_geometry__solid_revolution__revolution_cylinder_volume_value",
         domain="geometry",
     )
     assert scene_package_migration.is_scene_package_task(
-        "task_geometry__special_quadrilateral__diagonal_angle_value", domain="geometry"
+        "task_geometry__special_quadrilateral__algebraic_angle_value", domain="geometry"
     )
     assert scene_package_migration.is_scene_package_task(
-        "task_geometry__survey_traverse__forward_bearing_from_back_bearing_value",
+        "task_geometry__survey_traverse__outgoing_bearing_from_turn_value",
         domain="geometry",
     )
     assert scene_package_migration.is_scene_package_task(
         "task_geometry__tangent_packing__circle_in_square_gap_area", domain="geometry"
-    )
-    assert scene_package_migration.is_scene_package_task(
-        "task_geometry__triangle_congruence_correspondence__corresponding_side_value",
-        domain="geometry",
     )
     assert scene_package_migration.is_scene_package_task(
         "task_geometry__triangle_relations__similar_triangles_side_length",
@@ -1633,10 +1618,6 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     )
     assert scene_package_migration.is_scene_package_task(
         "task_geometry__triangle_relations__altitude_to_hypotenuse_value",
-        domain="geometry",
-    )
-    assert scene_package_migration.is_scene_package_task(
-        "task_geometry__triangle_relations__parallel_segment_variable_value",
         domain="geometry",
     )
     assert scene_package_migration.is_scene_package_task(
@@ -1670,6 +1651,9 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
     )
     assert scene_package_migration.is_scene_package_task(
         "task_icons__icon_field__most_frequent_type_count", domain="icons"
+    )
+    assert scene_package_migration.is_scene_package_task(
+        "task_icons__icon_field__frequency_extreme_type_label", domain="icons"
     )
     assert scene_package_migration.is_scene_package_task(
         "task_icons__mirror_grid__mirror_symmetry_match_label", domain="icons"

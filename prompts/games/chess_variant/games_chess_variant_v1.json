@@ -180,13 +180,13 @@
     "rule_badge_straight_or_diagonal_range": "ANY LINE <= {range_k}",
     "rule_badge_leaper_2_1": "JUMP 2+1",
     "rule_badge_leaper_3_1": "JUMP 3+1",
-    "annotation_hint_marked_piece_move_count": "set \"annotation\" to a JSON array of pixel-space square boxes [x1, y1, x2, y2] for every legal destination square of the marked piece",
+    "annotation_hint_marked_piece_move_count": "set \"annotation\" to a JSON array of pixel-space square boxes [x0, y0, x1, y1] for every legal destination square of the marked piece",
     "answer_hint_marked_piece_move_count": "set \"answer\" to the count of legal destination squares for the marked piece",
-    "annotation_hint_marked_piece_capture_count": "set \"annotation\" to a JSON array of pixel-space square boxes [x1, y1, x2, y2] for every destination square occupied by an opponent piece that the marked piece can capture",
+    "annotation_hint_marked_piece_capture_count": "set \"annotation\" to a JSON array of pixel-space square boxes [x0, y0, x1, y1] for every destination square occupied by an opponent piece that the marked piece can capture",
     "answer_hint_marked_piece_capture_count": "set \"answer\" to the count of capture destination squares for the marked piece",
-    "annotation_hint_white_piece_reaches_target_count": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every white piece that can legally move to the blue outlined target square",
+    "annotation_hint_white_piece_reaches_target_count": "set \"annotation\" to a JSON array of pixel-space piece boxes [x0, y0, x1, y1] for every white piece that can legally move to the blue outlined target square",
     "answer_hint_white_piece_reaches_target_count": "set \"answer\" to the number of white pieces that can legally move to the blue outlined target square",
-    "annotation_hint_black_piece_reaches_target_count": "set \"annotation\" to a JSON array of pixel-space piece boxes [x1, y1, x2, y2] for every black piece that can legally move to the blue outlined target square",
+    "annotation_hint_black_piece_reaches_target_count": "set \"annotation\" to a JSON array of pixel-space piece boxes [x0, y0, x1, y1] for every black piece that can legally move to the blue outlined target square",
     "answer_hint_black_piece_reaches_target_count": "set \"answer\" to the number of black pieces that can legally move to the blue outlined target square"
   }
 }

@@ -7,14 +7,22 @@ from typing import Any, Dict, List, Mapping, Tuple
 from PIL import Image, ImageDraw
 
 from trace.core.seed import spawn_rng
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.cartesian.axes import (
+    draw_axis_lines,
+    draw_horizontal_value_grid_ticks,
+    draw_plot_frame,
+    draw_vertical_value_grid_ticks,
+)
+from trace.tasks.charts.shared.cartesian.frame import plot_bbox_from_margins
+from trace.tasks.charts.shared.cartesian.geometry import project_xy
+from trace.tasks.charts.shared.dense_text import dense_fit_bold, dense_stroke_width
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font, temporary_default_font_family
 from trace.tasks.charts.shared.visual_defaults import chart_font_asset_metadata, sample_chart_font_family
 from trace.tasks.charts.contour_density.shared.defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDER_DEFAULTS,
     SCENE_NAMESPACE,
@@ -95,19 +103,27 @@ def resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> R
 
 
 def plot_bbox(rp: RenderParams) -> BBox:
-    return (
-        float(rp.margin_left),
-        float(rp.margin_top),
-        float(rp.canvas_width - rp.margin_right),
-        float(rp.canvas_height - rp.margin_bottom),
+    return tuple(
+        plot_bbox_from_margins(
+            canvas_width=float(rp.canvas_width),
+            canvas_height=float(rp.canvas_height),
+            margin_left_px=float(rp.margin_left),
+            margin_right_px=float(rp.margin_right),
+            margin_top_px=float(rp.margin_top),
+            margin_bottom_px=float(rp.margin_bottom),
+        )
     )
 
 
 def scale_point(x_value: float, y_value: float, *, plot_box: BBox) -> Tuple[float, float]:
-    x0, y0, x1, y1 = (float(value) for value in plot_box)
-    return (
-        x0 + (float(x_value) / 100.0) * (x1 - x0),
-        y1 - (float(y_value) / 100.0) * (y1 - y0),
+    return project_xy(
+        x_value=float(x_value),
+        y_value=float(y_value),
+        plot_bbox=plot_box,
+        x_min=0.0,
+        x_max=100.0,
+        y_min=0.0,
+        y_max=100.0,
     )
 
 
@@ -121,17 +137,39 @@ def region_bbox(region: Region, *, plot_box: BBox, scale: float = 1.0) -> List[f
 
 def draw_axes(draw: ImageDraw.ImageDraw, *, plot_box: BBox, rp: RenderParams) -> None:
     x0, y0, x1, y1 = (float(value) for value in plot_box)
-    draw.rectangle([x0, y0, x1, y1], fill=rp.plot_fill_rgb, outline=rp.grid_rgb, width=1)
+    draw_plot_frame(draw, plot_box, fill=rp.plot_fill_rgb, outline=rp.grid_rgb, width=1)
     tick_font = load_font(int(rp.tick_font_size), bold=False)
-    for tick in (0, 25, 50, 75, 100):
-        sx, _ = scale_point(float(tick), 0.0, plot_box=plot_box)
-        _, sy = scale_point(0.0, float(tick), plot_box=plot_box)
-        draw.line([sx, y0, sx, y1], fill=rp.grid_rgb, width=max(1, int(rp.grid_line_width)))
-        draw.line([x0, sy, x1, sy], fill=rp.grid_rgb, width=max(1, int(rp.grid_line_width)))
+    tick_values = (0, 25, 50, 75, 100)
+    x_tick_positions = draw_vertical_value_grid_ticks(
+        draw,
+        plot_box,
+        tick_values=tick_values,
+        domain_min=0,
+        domain_max=100,
+        grid_rgb=rp.grid_rgb,
+        axis_rgb=rp.axis_rgb,
+        grid_width_px=max(1, int(rp.grid_line_width)),
+        tick_width_px=1,
+        tick_length_px=0.0,
+    )
+    y_tick_positions = draw_horizontal_value_grid_ticks(
+        draw,
+        plot_box,
+        tick_values=tick_values,
+        domain_min=0,
+        domain_max=100,
+        grid_rgb=rp.grid_rgb,
+        axis_rgb=rp.axis_rgb,
+        grid_width_px=max(1, int(rp.grid_line_width)),
+        tick_width_px=1,
+        tick_length_px=0.0,
+    )
+    for tick in tick_values:
+        sx = float(x_tick_positions[float(tick)])
+        sy = float(y_tick_positions[float(tick)])
         draw_text_traced(draw, (sx - 8.0, y1 + 10.0), str(tick), font=tick_font, fill=rp.muted_rgb, role="readout", required=False)
         draw_text_traced(draw, (x0 - 36.0, sy - 8.0), str(tick), font=tick_font, fill=rp.muted_rgb, role="readout", required=False)
-    draw.line([x0, y1, x1, y1], fill=rp.axis_rgb, width=max(1, int(rp.axis_line_width)))
-    draw.line([x0, y0, x0, y1], fill=rp.axis_rgb, width=max(1, int(rp.axis_line_width)))
+    draw_axis_lines(draw, plot_box, axis_rgb=rp.axis_rgb, axis_width_px=max(1, int(rp.axis_line_width)))
 
 
 def lighten(color: RGB, amount: float) -> RGB:
@@ -168,7 +206,7 @@ def draw_region(
             px, py = scale_point(x_value, y_value, plot_box=plot_box)
             pr = 2.8
             draw.ellipse([px - pr, py - pr, px + pr, py + pr], fill=region.color_rgb, outline=(255, 255, 255), width=1)
-    label_font = load_font(int(rp.label_font_size), bold=True)
+    label_font = load_font(int(rp.label_font_size), bold=dense_fit_bold())
     label = str(region.option_label or region.label)
     cx, cy = scale_point(region.center_x, region.center_y, plot_box=plot_box)
     draw_text_traced(
@@ -178,7 +216,7 @@ def draw_region(
         font=label_font,
         fill=rp.text_rgb,
         stroke_fill=rp.text_stroke_rgb,
-        stroke_width=2,
+        stroke_width=dense_stroke_width(),
         role="readout",
         required=False,
     )
@@ -195,7 +233,7 @@ def draw_density_threshold_guide(
     if dataset.threshold_guide is None:
         return {}
     label = str(dataset.threshold_guide.label)
-    font = load_font(int(rp.tick_font_size), bold=True)
+    font = load_font(int(rp.tick_font_size), bold=False)
     x0, y0, x1, _ = (float(value) for value in plot_box)
     text_bbox = draw.textbbox((0, 0), label, font=font)
     width = float(text_bbox[2] - text_bbox[0]) + 22.0
@@ -224,7 +262,7 @@ def draw_reference(
         radius = max(12.0, float(rp.marker_radius) * 1.35)
         ref_bbox = bbox([cx - radius, cy - radius, cx + radius, cy + radius])
         draw.ellipse(ref_bbox, fill=rp.reference_rgb, outline=(255, 255, 255), width=2)
-        ref_font = load_font(max(12, int(round(radius * 1.15))), bold=True)
+        ref_font = load_font(max(12, int(round(radius * 1.15))), bold=False)
         text_bbox = draw.textbbox((0, 0), "R", font=ref_font)
         text_w = float(text_bbox[2] - text_bbox[0])
         text_h = float(text_bbox[3] - text_bbox[1])
@@ -254,18 +292,17 @@ def _render_dataset(dataset: ContourDataset, *, params: Mapping[str, Any], insta
 
     params = {**dict(params), "_render_style_seed": int(instance_seed)}
     rp = resolve_render_params(params, instance_seed=int(instance_seed))
-    background, background_meta = make_background_canvas(
-        canvas_width=int(rp.canvas_width),
-        canvas_height=int(rp.canvas_height),
+    protected_colors = tuple(tuple(int(channel) for channel in region.color_rgb) for region in dataset.regions)
+    rp, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="contour_density",
+        render_params=rp,
+        protected_colors=protected_colors,
     )
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
     plot_box = plot_bbox(rp)
-    title_font = load_font(int(rp.title_font_size), bold=True)
-    draw_text_traced(draw, (float(rp.margin_left), 26.0), "Contour density field", font=title_font, fill=rp.text_rgb, role="readout", required=False)
     draw_axes(draw, plot_box=plot_box, rp=rp)
     threshold_guide_meta = draw_density_threshold_guide(draw, dataset=dataset, plot_box=plot_box, rp=rp)
 
@@ -321,6 +358,7 @@ def _render_dataset(dataset: ContourDataset, *, params: Mapping[str, Any], insta
         reference_bboxes=dict(reference_bboxes),
         render_meta={
             "background_style": dict(background_meta),
+            "information_scene_style": dict(information_style_meta),
             "post_image_noise": dict(post_noise_meta),
             "layout_jitter": dict(rp.layout_jitter),
             **dict(threshold_guide_meta),

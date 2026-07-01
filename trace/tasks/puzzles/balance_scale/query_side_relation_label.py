@@ -470,9 +470,9 @@ def _finalize_dataset(
         "answer_labels": list(OPTION_LABELS),
         "answer_range": list(OPTION_LABELS),
         "target_answer_support": list(OPTION_LABELS),
-        "annotation_item_id": "query_relation_box",
+        "annotation_item_id": f"option_{answer_label}",
         "supporting_role_item_ids": {
-            "query_relation": "query_relation_box",
+            "selected_option": f"option_{answer_label}",
         },
     }
 

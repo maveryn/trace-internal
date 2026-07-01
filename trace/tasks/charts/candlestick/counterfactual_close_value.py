@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from trace.core.seed import hash64
+from trace.core.sampling import integer_range_choice, shuffled_support
+from trace.core.seed import hash64, spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.charts.candlestick.shared.annotations import annotation_boxes_and_points
@@ -20,9 +21,8 @@ from trace.tasks.charts.candlestick.shared.rendering import render_dataset
 from trace.tasks.charts.candlestick.shared.sampling import sample_candles
 from trace.tasks.charts.candlestick.shared.state import Dataset, Selection
 from trace.tasks.registry import register_task
-from trace.tasks.shared.annotation_artifacts import bbox_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import point_annotation_artifacts
 from trace.tasks.shared.config_defaults import resolve_required_int_bounds
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
@@ -57,14 +57,11 @@ def _build_counterfactual_close_dataset(
     increase = str(change_direction) == "increase"
     if str(change_direction) not in {"increase", "decrease"}:
         raise ValueError(f"unsupported body-size change direction: {change_direction}")
-    index_seed = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{SCENE_NAMESPACE}.counterfactual.target",
+    counterfactual_rng = spawn_rng(
+        int(instance_seed),
+        f"{SCENE_NAMESPACE}.counterfactual.target",
     )
-    candidates = list(candles)
-    start_index = int(index_seed) % len(candidates)
-    candidates = candidates[start_index:] + candidates[:start_index]
+    candidates = list(shuffled_support(counterfactual_rng, tuple(candles)))
     for candidate in candidates:
         current_body = int(candidate.body_size)
         if increase:
@@ -73,7 +70,11 @@ def _build_counterfactual_close_dataset(
             max_change = min(int(change_max), int(current_body) - 1)
         if int(max_change) < int(change_min):
             continue
-        change = int(change_min) + int(index_seed % (int(max_change) - int(change_min) + 1))
+        change, _change_probabilities = integer_range_choice(
+            counterfactual_rng,
+            int(change_min),
+            int(max_change),
+        )
         new_body = int(current_body) + int(change) if increase else int(current_body) - int(change)
         answer = (
             int(candidate.open_value) + int(new_body)
@@ -131,11 +132,13 @@ class ChartsCandlestickCounterfactualCloseValueTask:
             change_direction=str(change_direction),
         )
         artifacts = render_dataset(dataset=dataset, params=branch_params, instance_seed=int(instance_seed))
-        annotation_boxes, _points = annotation_boxes_and_points(
+        _annotation_boxes, annotation_points = annotation_boxes_and_points(
             rendered=artifacts.rendered,
             selection=dataset.selection,
         )
-        annotation = bbox_set_annotation_artifacts(annotation_boxes)
+        if len(annotation_points) != 1:
+            raise RuntimeError("candlestick counterfactual annotation must contain exactly one point")
+        annotation = point_annotation_artifacts(annotation_points[0])
         prompt_artifacts = build_prompt_artifacts(
             prompt_query_key=str(selected_query_id),
             dynamic_slots={

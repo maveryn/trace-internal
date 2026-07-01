@@ -8,7 +8,12 @@ from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
+from trace.tasks.charts.shared.three_d.color import blend_rgb as _blend
+from trace.tasks.charts.shared.three_d.geometry import point_bbox as _point_bbox
+from trace.tasks.charts.shared.three_d.geometry import round_bbox as _bbox
+from trace.tasks.charts.shared.three_d.projection import axis_line_position as _axis_line_position
+from trace.tasks.charts.shared.three_d.projection import project_ranged_point_3d as _project_3d
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.charts.shared.visual_defaults import sample_chart_font_family
 from trace.tasks.shared.bbox_projection import bbox_union_raw
@@ -19,7 +24,6 @@ from trace.tasks.shared.text_rendering import load_font, temporary_default_font_
 
 from .defaults import (
     PANEL_VARIANT,
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDER_DEFAULTS,
     RENDER_NAMESPACE,
@@ -36,10 +40,6 @@ from .state import (
     Surface3DRenderArtifacts,
     Surface3DRenderParams,
 )
-
-
-def _bbox(values: Sequence[float]) -> BBox:
-    return [round(float(value), 3) for value in values[:4]]
 
 
 def _render_style_seed(params: Mapping[str, Any]) -> int:
@@ -173,48 +173,6 @@ def _draw_text(
     return _text_bbox(draw, xy, str(text), font, stroke_width=max(0, int(stroke_width)), anchor=anchor)
 
 
-def _value_to_unit(value: float, value_range: tuple[float, float]) -> float:
-    low, high = float(value_range[0]), float(value_range[1])
-    if math.isclose(low, high):
-        return 0.0
-    return max(0.0, min(1.0, (float(value) - low) / (high - low)))
-
-
-def _project_3d(
-    x_value: float,
-    y_value: float,
-    z_value: float,
-    *,
-    plot_bbox: Sequence[float],
-    x_range: tuple[float, float],
-    y_range: tuple[float, float],
-    z_range: tuple[float, float],
-) -> tuple[float, float]:
-    left, top, right, bottom = [float(value) for value in plot_bbox]
-    width = max(1.0, right - left)
-    height = max(1.0, bottom - top)
-    origin = (left + 0.18 * width, bottom - 0.10 * height)
-    x_vec = (0.52 * width, -0.14 * height)
-    y_vec = (0.24 * width, -0.24 * height)
-    z_vec = (0.0, -0.56 * height)
-    x_unit = _value_to_unit(float(x_value), x_range)
-    y_unit = _value_to_unit(float(y_value), y_range)
-    z_unit = _value_to_unit(float(z_value), z_range)
-    return (
-        float(origin[0] + x_unit * x_vec[0] + y_unit * y_vec[0] + z_unit * z_vec[0]),
-        float(origin[1] + x_unit * x_vec[1] + y_unit * y_vec[1] + z_unit * z_vec[1]),
-    )
-
-
-def _blend(low: RGB, high: RGB, value: float) -> RGB:
-    weight = max(0.0, min(1.0, float(value)))
-    return tuple(int(round((1.0 - weight) * float(a) + weight * float(b))) for a, b in zip(low, high))
-
-
-def _point_bbox(px: float, py: float, radius: float) -> BBox:
-    return _bbox([float(px) - float(radius), float(py) - float(radius), float(px) + float(radius), float(py) + float(radius)])
-
-
 def _draw_3d_axes(
     draw: ImageDraw.ImageDraw,
     *,
@@ -223,12 +181,17 @@ def _draw_3d_axes(
     params: Surface3DRenderParams,
     tick_values: Sequence[float] = (0.0, 0.5, 1.0),
     label_xy_ticks: bool = True,
+    label_y_ticks: bool = True,
     label_z_ticks: bool = True,
 ) -> None:
     """Draw the shared projected axes for all surface_3d variants."""
 
+    plot_width = float(plot_bbox[2]) - float(plot_bbox[0])
+    plot_height = float(plot_bbox[3]) - float(plot_bbox[1])
+    compact_axis_labels = bool(plot_width < 320.0 or plot_height < 260.0)
     axis_font = load_font(max(12, int(params.tick_font_size_px)), bold=True)
-    label_font = load_font(max(14, int(params.label_font_size_px)), bold=True)
+    label_size = max(12, int(params.label_font_size_px) - (7 if compact_axis_labels else 0))
+    label_font = load_font(max(14, int(label_size)), bold=True)
     x0, y0 = _project_3d(
         dataset.x_range[0],
         dataset.y_range[0],
@@ -261,24 +224,33 @@ def _draw_3d_axes(
         draw.line([z_base, z_grid_y], fill=params.grid_color_rgb, width=max(1, int(params.grid_line_width_px)))
         if label_xy_ticks:
             x_label = str(int(round(xv)))
-            y_label = str(int(round(yv)))
             if dataset.x_labels:
                 xi = int(round(float(tick) * (len(dataset.x_labels) - 1)))
                 x_label = str(dataset.x_labels[max(0, min(len(dataset.x_labels) - 1, xi))])
+            _draw_text(draw, (x_base[0], x_base[1] + 20), x_label, font=axis_font, fill=params.text_color_rgb, stroke_fill=params.text_stroke_rgb, stroke_width=2, anchor="mt")
+        if label_y_ticks:
+            y_label = str(int(round(yv)))
             if dataset.y_labels:
                 yi = int(round(float(tick) * (len(dataset.y_labels) - 1)))
                 y_label = str(dataset.y_labels[max(0, min(len(dataset.y_labels) - 1, yi))])
-            _draw_text(draw, (x_base[0], x_base[1] + 20), x_label, font=axis_font, fill=params.text_color_rgb, stroke_fill=params.text_stroke_rgb, stroke_width=2, anchor="mt")
             _draw_text(draw, (y_base[0] - 15, y_base[1] + 6), y_label, font=axis_font, fill=params.text_color_rgb, stroke_fill=params.text_stroke_rgb, stroke_width=2, anchor="rt")
         if label_z_ticks:
             _draw_text(draw, (z_base[0] - 13, z_base[1]), str(int(round(zv))), font=axis_font, fill=params.text_color_rgb, stroke_fill=params.text_stroke_rgb, stroke_width=2, anchor="rm")
 
     if dataset.x_axis_label:
-        _draw_text(draw, (x_tip[0] + 52, x_tip[1] + 22), dataset.x_axis_label, font=label_font, fill=params.text_color_rgb, stroke_fill=params.text_stroke_rgb, stroke_width=2, anchor="lm")
+        if compact_axis_labels:
+            x_label_xy = (x_tip[0] + 34.0, x_tip[1] + 30.0)
+            x_label_anchor = "lm"
+        else:
+            x_label_xy = (x_tip[0] + 52.0, x_tip[1] + 22.0)
+            x_label_anchor = "lm"
+        _draw_text(draw, x_label_xy, dataset.x_axis_label, font=label_font, fill=params.text_color_rgb, stroke_fill=params.text_stroke_rgb, stroke_width=2, anchor=x_label_anchor)
     if dataset.y_axis_label:
-        _draw_text(draw, (y_tip[0] + 72, y_tip[1] + 54), dataset.y_axis_label, font=label_font, fill=params.text_color_rgb, stroke_fill=params.text_stroke_rgb, stroke_width=2, anchor="lm")
+        y_label_xy = _axis_line_position((x0, y0), y_tip, fraction=0.76 if compact_axis_labels else 0.82)
+        _draw_text(draw, y_label_xy, dataset.y_axis_label, font=label_font, fill=params.text_color_rgb, stroke_fill=params.text_stroke_rgb, stroke_width=2, anchor="mm")
     if dataset.z_axis_label:
-        _draw_text(draw, (z_tip[0] - 86, z_tip[1] - 10), dataset.z_axis_label, font=label_font, fill=params.text_color_rgb, stroke_fill=params.text_stroke_rgb, stroke_width=2, anchor="rm")
+        z_label_xy = (z_tip[0] - (64.0 if compact_axis_labels else 86.0), z_tip[1] - 10.0)
+        _draw_text(draw, z_label_xy, dataset.z_axis_label, font=label_font, fill=params.text_color_rgb, stroke_fill=params.text_stroke_rgb, stroke_width=2, anchor="rm")
 
 
 def _draw_point_label(
@@ -330,14 +302,193 @@ def _draw_point(
     return bbox
 
 
+def _draw_dashed_line(
+    draw: ImageDraw.ImageDraw,
+    start: tuple[float, float],
+    end: tuple[float, float],
+    *,
+    fill: RGB,
+    width: int,
+    dash_px: float = 8.0,
+    gap_px: float = 6.0,
+) -> None:
+    """Draw one dashed line segment in screen space."""
+
+    x0, y0 = float(start[0]), float(start[1])
+    x1, y1 = float(end[0]), float(end[1])
+    dx = x1 - x0
+    dy = y1 - y0
+    distance = math.hypot(dx, dy)
+    if distance <= 0.0:
+        return
+    ux = dx / distance
+    uy = dy / distance
+    cursor = 0.0
+    dash = max(1.0, float(dash_px))
+    gap = max(0.0, float(gap_px))
+    while cursor < distance:
+        segment_end = min(distance, cursor + dash)
+        draw.line(
+            [
+                (x0 + ux * cursor, y0 + uy * cursor),
+                (x0 + ux * segment_end, y0 + uy * segment_end),
+            ],
+            fill=fill,
+            width=max(1, int(width)),
+        )
+        cursor = segment_end + gap
+
+
+def _draw_scatter_floor_guides(
+    draw: ImageDraw.ImageDraw,
+    *,
+    dataset: Surface3DDataset,
+    plot_bbox: Sequence[float],
+    params: Surface3DRenderParams,
+) -> list[dict[str, Any]]:
+    """Draw floor projections and optional y-reference line for 3D scatter readout."""
+
+    entities: list[dict[str, Any]] = []
+    z_floor = float(dataset.z_range[0])
+    guide_rgb = _blend(params.grid_color_rgb, params.text_color_rgb, 0.28)
+    reference_rgb = _blend(params.axis_color_rgb, params.surface_high_rgb, 0.45)
+    if dataset.reference_y_value is not None:
+        y_value = max(float(dataset.y_range[0]), min(float(dataset.y_range[1]), float(dataset.reference_y_value)))
+        start_xy = _project_3d(dataset.x_range[0], y_value, z_floor, plot_bbox=plot_bbox, x_range=dataset.x_range, y_range=dataset.y_range, z_range=dataset.z_range)
+        end_xy = _project_3d(dataset.x_range[1], y_value, z_floor, plot_bbox=plot_bbox, x_range=dataset.x_range, y_range=dataset.y_range, z_range=dataset.z_range)
+        _draw_dashed_line(draw, start_xy, end_xy, fill=reference_rgb, width=max(2, int(params.axis_line_width_px)), dash_px=12.0, gap_px=7.0)
+        label_font = load_font(max(12, int(params.tick_font_size_px) - 2), bold=True)
+        label_bbox = _draw_text(
+            draw,
+            (start_xy[0] - 12.0, start_xy[1] + 3.0),
+            f"y={int(round(y_value))}",
+            font=label_font,
+            fill=params.text_color_rgb,
+            stroke_fill=params.text_stroke_rgb,
+            stroke_width=1,
+            anchor="rt",
+        )
+        entities.append(
+            {
+                "entity_id": "surface_3d_y_reference_line",
+                "entity_type": "surface_3d_y_reference_line",
+                "bbox_xyxy": _bbox(
+                    bbox_union_raw(
+                        [
+                            list(label_bbox),
+                            [
+                                min(float(start_xy[0]), float(end_xy[0])),
+                                min(float(start_xy[1]), float(end_xy[1])),
+                                max(float(start_xy[0]), float(end_xy[0])),
+                                max(float(start_xy[1]), float(end_xy[1])),
+                            ],
+                        ]
+                    )
+                ),
+                "attrs": {"y_value": float(round(y_value, 3)), "excluded_from_annotation": True},
+            }
+        )
+    for point in dataset.points:
+        point_xy = _project_3d(point.x_value, point.y_value, point.z_value, plot_bbox=plot_bbox, x_range=dataset.x_range, y_range=dataset.y_range, z_range=dataset.z_range)
+        floor_xy = _project_3d(point.x_value, point.y_value, z_floor, plot_bbox=plot_bbox, x_range=dataset.x_range, y_range=dataset.y_range, z_range=dataset.z_range)
+        _draw_dashed_line(draw, floor_xy, point_xy, fill=guide_rgb, width=max(1, int(params.grid_line_width_px)), dash_px=7.0, gap_px=5.0)
+        radius = max(3.0, float(params.point_radius_px) * 0.45)
+        floor_bbox = _point_bbox(floor_xy[0], floor_xy[1], radius)
+        draw.ellipse(floor_bbox, outline=guide_rgb, width=max(1, int(params.grid_line_width_px)))
+        entities.append(
+            {
+                "entity_id": f"{point.point_id}_floor_projection",
+                "entity_type": "surface_3d_floor_projection",
+                "bbox_xyxy": list(floor_bbox),
+                "attrs": {"point_id": str(point.point_id), "label": str(point.label), "excluded_from_annotation": True},
+            }
+        )
+    return entities
+
+
+def _draw_series_legend(
+    draw: ImageDraw.ImageDraw,
+    *,
+    legend_bbox: Sequence[float],
+    series_items: Sequence[tuple[str, RGB]],
+    params: Surface3DRenderParams,
+) -> tuple[dict[str, BBox], list[dict[str, Any]]]:
+    """Draw a side legend for connected 3D series labels."""
+
+    x0, y0, x1, y1 = (float(value) for value in legend_bbox)
+    draw.rounded_rectangle(
+        [x0, y0, x1, y1],
+        radius=8,
+        fill=params.panel_fill_rgb,
+        outline=params.panel_border_rgb,
+        width=1,
+    )
+    title_font = load_font(max(12, int(params.label_font_size_px) - 5), bold=False)
+    label_font = load_font(max(12, int(params.label_font_size_px) - 6), bold=False)
+    _draw_text(
+        draw,
+        (x0 + 14.0, y0 + 12.0),
+        "Series",
+        font=title_font,
+        fill=params.text_color_rgb,
+        stroke_fill=params.text_stroke_rgb,
+        stroke_width=0,
+        anchor="la",
+    )
+    row_top = y0 + 50.0
+    row_step = max(28.0, min(42.0, (y1 - row_top - 12.0) / max(1.0, float(len(series_items)))))
+    bboxes: dict[str, BBox] = {}
+    entities: list[dict[str, Any]] = []
+    for index, (label, color_rgb) in enumerate(series_items):
+        cy = float(row_top + (float(index) * row_step) + (0.5 * row_step))
+        swatch_x0 = x0 + 14.0
+        swatch_x1 = swatch_x0 + 34.0
+        draw.line(
+            [(swatch_x0, cy), (swatch_x1, cy)],
+            fill=tuple(int(channel) for channel in color_rgb),
+            width=max(2, int(params.line_width_px)),
+        )
+        marker_radius = max(4.0, float(params.point_radius_px) - 2.0)
+        marker_box = _point_bbox((swatch_x0 + swatch_x1) / 2.0, cy, marker_radius)
+        draw.ellipse(
+            marker_box,
+            fill=tuple(int(channel) for channel in color_rgb),
+            outline=params.marker_outline_rgb,
+            width=1,
+        )
+        text_xy = (swatch_x1 + 12.0, cy - 0.5 * float(label_font.size))
+        text_box = _draw_text(
+            draw,
+            text_xy,
+            str(label),
+            font=label_font,
+            fill=params.text_color_rgb,
+            stroke_fill=params.text_stroke_rgb,
+            stroke_width=0,
+        )
+        row_bbox = _bbox(bbox_union_raw([marker_box, text_box]))
+        bboxes[str(label)] = row_bbox
+        entities.append(
+            {
+                "entity_id": f"legend_{label}",
+                "entity_type": "series_legend_entry",
+                "bbox_xyxy": list(row_bbox),
+                "attrs": {"label": str(label), "color_rgb": [int(channel) for channel in color_rgb]},
+            }
+        )
+    return bboxes, entities
+
+
 def _render_scatter_or_lines(image: Image.Image, *, dataset: Surface3DDataset, params: Surface3DRenderParams) -> RenderedSurface3D:
     """Render point clouds or connected 3D series while preserving per-marker projected boxes."""
 
     draw = ImageDraw.Draw(image)
+    legend_width = 188.0 if bool(dataset.connect_points_by_label) else 0.0
+    legend_gap = 22.0 if bool(dataset.connect_points_by_label) else 0.0
     plot_bbox = [
         float(params.plot_margin_left_px),
         float(params.plot_margin_top_px),
-        float(params.canvas_width - params.plot_margin_right_px),
+        float(params.canvas_width - params.plot_margin_right_px - legend_width - legend_gap),
         float(params.canvas_height - params.plot_margin_bottom_px),
     ]
     title_font = load_font(int(params.title_font_size_px), bold=True)
@@ -345,10 +496,19 @@ def _render_scatter_or_lines(image: Image.Image, *, dataset: Surface3DDataset, p
     draw.rounded_rectangle([plot_bbox[0] - 42, plot_bbox[1] - 50, plot_bbox[2] + 42, plot_bbox[3] + 68], radius=8, fill=params.panel_fill_rgb, outline=params.panel_border_rgb, width=2)
     draw.rectangle(plot_bbox, fill=params.plot_fill_rgb)
     _draw_text(draw, (plot_bbox[0], plot_bbox[1] - 38), dataset.title, font=title_font, fill=params.text_color_rgb, stroke_fill=params.text_stroke_rgb, stroke_width=1)
-    _draw_3d_axes(draw, plot_bbox=plot_bbox, dataset=dataset, params=params, tick_values=(0.0, 0.25, 0.5, 0.75, 1.0))
+    _draw_3d_axes(
+        draw,
+        plot_bbox=plot_bbox,
+        dataset=dataset,
+        params=params,
+        tick_values=(0.0, 0.25, 0.5, 0.75, 1.0),
+        label_y_ticks=not bool(dataset.connect_points_by_label),
+    )
 
     point_bboxes: dict[str, BBox] = {}
     entities: list[dict[str, Any]] = []
+    if not dataset.connect_points_by_label:
+        entities.extend(_draw_scatter_floor_guides(draw, dataset=dataset, plot_bbox=plot_bbox, params=params))
     if dataset.connect_points_by_label:
         by_label: dict[str, list[Point3D]] = {}
         for point in dataset.points:
@@ -362,9 +522,26 @@ def _render_scatter_or_lines(image: Image.Image, *, dataset: Surface3DDataset, p
             if len(projected) >= 2:
                 draw.line(projected, fill=ordered[0].color_rgb, width=int(params.line_width_px))
             entities.append({"entity_id": f"series_{label}", "entity_type": "series_3d", "bbox_xyxy": _bbox(bbox_union_raw([_point_bbox(px, py, params.point_radius_px) for px, py in projected])), "attrs": {"label": str(label)}})
+        legend_items = [
+            (str(label), tuple(int(channel) for channel in points[0].color_rgb))
+            for label, points in by_label.items()
+            if points
+        ]
+        _legend_bboxes, legend_entities = _draw_series_legend(
+            draw,
+            legend_bbox=[
+                float(plot_bbox[2] + legend_gap),
+                float(plot_bbox[1] + 28.0),
+                float(params.canvas_width - params.plot_margin_right_px),
+                float(plot_bbox[1] + 28.0 + min(260.0, max(130.0, 48.0 + 36.0 * len(legend_items)))),
+            ],
+            series_items=legend_items,
+            params=params,
+        )
+        entities.extend(legend_entities)
 
     for point in sorted(dataset.points, key=lambda item: (float(item.y_value), float(item.x_value), float(item.z_value))):
-        label_points = not dataset.connect_points_by_label or str(point.point_id).endswith("_0")
+        label_points = not dataset.connect_points_by_label
         bbox = _draw_point(draw, point=point, plot_bbox=plot_bbox, dataset=dataset, params=params, point_font=point_font, label_points=label_points)
         point_bboxes[str(point.point_id)] = bbox
         entities.append(
@@ -494,7 +671,7 @@ def _draw_one_panel(
     box = [outer_left + float(col) * (panel_w + gap), outer_top + float(row) * (panel_h + gap), outer_left + float(col) * (panel_w + gap) + panel_w, outer_top + float(row) * (panel_h + gap) + panel_h]
     panel_bboxes[str(panel.panel_label)] = _bbox(box)
     draw.rounded_rectangle(box, radius=7, fill=params.panel_fill_rgb, outline=params.panel_border_rgb, width=2)
-    _draw_text(draw, (box[0] + 12, box[1] + 10), f"Panel {panel.panel_label}", font=panel_font, fill=params.text_color_rgb, stroke_fill=params.text_stroke_rgb, stroke_width=1)
+    _draw_text(draw, (box[0] + 12, box[1] + 10), str(panel.panel_label), font=panel_font, fill=params.text_color_rgb, stroke_fill=params.text_stroke_rgb, stroke_width=1)
     plot_bbox = [box[0] + 34, box[1] + 46, box[2] - 30, box[3] - 30]
     _draw_3d_axes(draw, plot_bbox=plot_bbox, dataset=dataset, params=params, tick_values=(0.0, 1.0), label_xy_ticks=False, label_z_ticks=False)
     projected: list[tuple[float, float]] = []
@@ -537,13 +714,20 @@ def render_surface_3d_dataset(
 ) -> Surface3DRenderArtifacts:
     """Render a dataset with sampled background, font, and post-image noise."""
 
-    render_params = resolve_render_params(params)
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    resolved_params = resolve_render_params(params)
+    protected_colors = [
+        *(tuple(int(channel) for channel in point.color_rgb) for point in dataset.points),
+        *(tuple(int(channel) for channel in panel.color_rgb) for panel in dataset.panels),
+        resolved_params.surface_low_rgb,
+        resolved_params.surface_high_rgb,
+        resolved_params.surface_edge_rgb,
+    ]
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="surface_3d",
+        render_params=resolved_params,
+        protected_colors=protected_colors,
     )
     chart_font_family = sample_chart_font_family(
         instance_seed=int(instance_seed),
@@ -562,7 +746,7 @@ def render_surface_3d_dataset(
         image=image,
         rendered_scene=rendered,
         render_params=render_params,
-        background_style=dict(background_meta),
+        background_style={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         post_image_noise=dict(post_noise_meta),
         chart_font_family=str(chart_font_family),
     )

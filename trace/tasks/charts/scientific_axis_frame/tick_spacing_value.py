@@ -17,13 +17,15 @@ from trace.tasks.registry import register_task
 
 TASK_ID = "task_charts__scientific_axis_frame__tick_spacing_value"
 PROGRAM_CODE = (
-    "difference(next_adjacent_tick(axis), first_adjacent_tick(axis)); "
-    "output=integer_value; annotation=bbox_map(first_tick,next_tick); "
+    "difference(second_tick(axis,pair_position), first_tick(axis,pair_position)); "
+    "output=integer_value; annotation=segment(tick_interval); "
     "scene=scientific_axis_frame; scope=tick_spacing_value"
 )
 TICK_SPACING_QUERY_IDS = (
-    "x_tick_spacing_value",
-    "y_tick_spacing_value",
+    "x_first_tick_spacing_value",
+    "x_last_tick_spacing_value",
+    "y_first_tick_spacing_value",
+    "y_last_tick_spacing_value",
 )
 REASONING_LOAD = 0.38
 DEFAULT_QUERY_ID = TICK_SPACING_QUERY_IDS[0]
@@ -39,11 +41,14 @@ def _build_tick_spacing_plan(
 
     if str(selected_query_id) not in set(TICK_SPACING_QUERY_IDS):
         raise ValueError(f"unsupported query_id for {TASK_ID}: {selected_query_id}")
-    axis = str(selected_query_id)[0]
+    parts = str(selected_query_id).split("_")
+    axis = str(parts[0])
+    pair_position = str(parts[1])
     dataset = build_tick_spacing_dataset(
         params=params,
         instance_seed=int(instance_seed),
         axis=str(axis),
+        pair_position=str(pair_position),
     )
     return AxisFrameTaskPlan(
         dataset=dataset,
@@ -54,16 +59,17 @@ def _build_tick_spacing_plan(
         program_code=PROGRAM_CODE,
         query_params={
             "axis": str(axis),
+            "pair_position": str(pair_position),
             "query_id_probabilities": dict(query_probabilities),
         },
         reasoning_load=REASONING_LOAD,
-        highlight_tick_keys=tuple(str(value) for value in dataset.binding.annotation_roles.values()),
+        highlight_tick_keys=(),
     )
 
 
 @register_task
 class ChartsScientificAxisFrameTickSpacingValueTask:
-    """Compute spacing between highlighted adjacent numeric tick labels."""
+    """Compute spacing between requested adjacent numeric tick labels."""
 
     task_id = TASK_ID
     domain = DOMAIN

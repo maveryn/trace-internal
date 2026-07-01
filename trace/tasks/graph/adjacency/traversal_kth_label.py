@@ -2,11 +2,12 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
+from ....core.sampling import uniform_choice
+from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.fixed_query import select_task_query_id
 from ._lifecycle import render_single_panel_artifacts, single_panel_render_kwargs, single_panel_task_output, single_panel_trace_payload
 from .shared.algorithms import bfs_visit_order, dfs_visit_order
@@ -76,9 +77,16 @@ def _resolve_source_index(*, instance_seed: int, task_params: Mapping[str, Any],
     """Resolve which row label is the traversal source."""
     explicit_source = task_params.get('source_index')
     if explicit_source is not None:
-        return int(explicit_source) % int(node_count)
-    source_selection = resolve_selection_index(params=task_params, instance_seed=int(instance_seed), namespace=f'{TASK_ID}:source_index')
-    return int(source_selection % int(node_count))
+        source_index = int(explicit_source)
+        if not 0 <= int(source_index) < int(node_count):
+            raise ValueError('source_index is outside node support')
+        return int(source_index)
+    return int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f'{TASK_ID}:source_index'),
+            tuple(range(int(node_count))),
+        )
+    )
 
 def _ordered_visit_labels(sample: Any, source_label: str, query_id: str) -> tuple[str, ...]:
     """Return the traversal order selected by the task query."""

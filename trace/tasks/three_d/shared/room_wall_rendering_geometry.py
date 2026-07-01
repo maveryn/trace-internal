@@ -88,7 +88,10 @@ def _draw_poly(
     projected = _project_points(points, camera, frame)
     draw.polygon(projected, fill=fill)
     for index in range(len(projected)):
-        draw_line(draw, projected[index], projected[(index + 1) % len(projected)], fill=outline, width=int(width))
+        next_index = index + 1
+        if next_index >= len(projected):
+            next_index = 0
+        draw_line(draw, projected[index], projected[next_index], fill=outline, width=int(width))
     return _points_bbox(projected)
 
 

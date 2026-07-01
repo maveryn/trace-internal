@@ -9,7 +9,7 @@ from typing import Any
 from trace.core.seed import hash64
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
-from trace.tasks.charts.scientific_axis_frame.shared.annotations import bbox_map_for_tick_roles
+from trace.tasks.charts.scientific_axis_frame.shared.annotations import segment_for_tick_roles
 from trace.tasks.charts.scientific_axis_frame.shared.output import (
     base_execution_record,
     render_map,
@@ -55,7 +55,7 @@ def materialize_axis_frame_plan(
 ) -> TaskOutput:
     """Bind one task-owned semantic plan to prompt, image, answer, and annotation.
 
-    Invariant: the rendered tick labels, annotation bboxes, answer, and trace
+    Invariant: the rendered tick labels, annotation segment, answer, and trace
     all come from the same sampled dataset and render pass.
     """
 
@@ -67,7 +67,7 @@ def materialize_axis_frame_plan(
         instance_seed=int(instance_seed),
         highlight_tick_keys=tuple(plan.highlight_tick_keys),
     )
-    annotation, witness_symbolic = bbox_map_for_tick_roles(
+    annotation, witness_symbolic = segment_for_tick_roles(
         rendered=rendered,
         role_tick_keys=dict(binding.annotation_roles),
     )
@@ -87,7 +87,7 @@ def materialize_axis_frame_plan(
     execution = {
         **base_execution_record(
             dataset=dataset,
-            annotation_bbox_map=dict(annotation.value),
+            annotation_segment=[list(point) for point in annotation.value],
         ),
         "query_id": str(selected_query_id),
         "query_id_probabilities": dict(query_probabilities),

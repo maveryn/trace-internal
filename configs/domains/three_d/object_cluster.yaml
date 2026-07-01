@@ -71,7 +71,13 @@ generation:
       object_count_max: 20
       target_count_min: 1
       target_count_max: 6
-    task_three_d__object_cluster__count_arithmetic:
+    task_three_d__object_cluster__object_type_count_arithmetic:
+      object_count_min: 16
+      object_count_max: 20
+      operand_count_min: 1
+      operand_count_max: 6
+      difference_answer_max: 5
+    task_three_d__object_cluster__color_count_arithmetic:
       object_count_min: 16
       object_count_max: 20
       operand_count_min: 1
@@ -114,5 +120,7 @@ prompt:
       task_key: object_cluster_multi_attribute_xor_count_query
     task_three_d__object_cluster__multi_attribute_exclusion_count:
       task_key: object_cluster_multi_attribute_exclusion_count_query
-    task_three_d__object_cluster__count_arithmetic:
+    task_three_d__object_cluster__object_type_count_arithmetic:
+      task_key: object_cluster_count_arithmetic_query
+    task_three_d__object_cluster__color_count_arithmetic:
       task_key: object_cluster_count_arithmetic_query

@@ -36,8 +36,17 @@ def _bbox_center(box):
     ]
 
 
+def _bbox_vertical_segment(box):
+    center_x = round((float(box[0]) + float(box[2])) / 2.0, 3)
+    return [
+        [center_x, round(float(box[1]), 3)],
+        [center_x, round(float(box[3]), 3)],
+    ]
+
+
 def test_candlestick_tasks_registered() -> None:
-    assert set(CANDLESTICK_TASKS).issubset(set(TASK_REGISTRY))
+    for task_id in CANDLESTICK_TASKS:
+        assert TASK_REGISTRY.get(task_id) is not None
 
 
 def test_candlestick_tasks_generate_default_query_outputs() -> None:
@@ -51,16 +60,19 @@ def test_candlestick_tasks_generate_default_query_outputs() -> None:
         assert output.scene_id == "candlestick"
         assert output.query_id in allowed_query_ids
         assert output.trace_payload["query_spec"]["params"]["query_id"] == output.query_id
-        assert len(output.annotation_gt.value) == 1
         if output.query_id in BODY_RANGE_QUERY_IDS | WICK_RANGE_QUERY_IDS:
-            assert output.annotation_gt.type == "point_set"
-            assert output.trace_payload["projected_annotation"]["type"] == "point_set"
-            assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
-            assert output.trace_payload["projected_annotation"]["pixel_point_set"] == output.annotation_gt.value
+            assert output.annotation_gt.type == "segment"
+            assert len(output.annotation_gt.value) == 2
+            assert all(len(point) == 2 for point in output.annotation_gt.value)
+            assert output.trace_payload["projected_annotation"]["type"] == "segment"
+            assert output.trace_payload["projected_annotation"]["segment"] == output.annotation_gt.value
+            assert output.trace_payload["projected_annotation"]["pixel_segment"] == output.annotation_gt.value
         else:
-            assert output.annotation_gt.type == "bbox_set"
-            assert output.trace_payload["projected_annotation"]["type"] == "bbox_set"
-            assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
+            assert output.annotation_gt.type == "point"
+            assert len(output.annotation_gt.value) == 2
+            assert output.trace_payload["projected_annotation"]["type"] == "point"
+            assert output.trace_payload["projected_annotation"]["point"] == output.annotation_gt.value
+            assert output.trace_payload["projected_annotation"]["pixel_point"] == output.annotation_gt.value
         assert output.trace_payload["render_map"]["body_bboxes_px"]
 
 
@@ -78,7 +90,6 @@ def test_candlestick_tasks_generate_each_query_branch_and_answer_contract() -> N
             assert output.query_id == query_id
             execution = output.trace_payload["execution_trace"]
             candles = _candles_by_id(output)
-            assert len(output.annotation_gt.value) == 1
 
             if query_id in WICK_RANGE_QUERY_IDS:
                 extremum = str(execution["extremum"])
@@ -87,12 +98,12 @@ def test_candlestick_tasks_generate_each_query_branch_and_answer_contract() -> N
                 assert output.answer_gt.type == "string"
                 assert output.answer_gt.value == str(target["label"])
                 assert execution["annotation_roles"] == ["answer_wick"]
-                assert output.annotation_gt.type == "point_set"
-                assert output.annotation_gt.value == [
-                    _bbox_center(output.trace_payload["render_map"]["wick_bboxes_px"][str(target["candle_id"])])
-                ]
-                assert output.trace_payload["projected_annotation"]["type"] == "point_set"
-                assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
+                assert output.annotation_gt.type == "segment"
+                assert output.annotation_gt.value == _bbox_vertical_segment(
+                    output.trace_payload["render_map"]["wick_bboxes_px"][str(target["candle_id"])]
+                )
+                assert output.trace_payload["projected_annotation"]["type"] == "segment"
+                assert output.trace_payload["projected_annotation"]["segment"] == output.annotation_gt.value
             elif query_id in BODY_RANGE_QUERY_IDS:
                 extremum = str(execution["extremum"])
                 ranked = sorted(candles.values(), key=lambda candle: int(candle["body_size"]))
@@ -100,12 +111,12 @@ def test_candlestick_tasks_generate_each_query_branch_and_answer_contract() -> N
                 assert output.answer_gt.type == "string"
                 assert output.answer_gt.value == str(target["label"])
                 assert execution["annotation_roles"] == ["answer_body"]
-                assert output.annotation_gt.type == "point_set"
-                assert output.annotation_gt.value == [
-                    _bbox_center(output.trace_payload["render_map"]["body_bboxes_px"][str(target["candle_id"])])
-                ]
-                assert output.trace_payload["projected_annotation"]["type"] == "point_set"
-                assert output.trace_payload["projected_annotation"]["point_set"] == output.annotation_gt.value
+                assert output.annotation_gt.type == "segment"
+                assert output.annotation_gt.value == _bbox_vertical_segment(
+                    output.trace_payload["render_map"]["body_bboxes_px"][str(target["candle_id"])]
+                )
+                assert output.trace_payload["projected_annotation"]["type"] == "segment"
+                assert output.trace_payload["projected_annotation"]["segment"] == output.annotation_gt.value
             elif query_id in COUNTERFACTUAL_QUERY_IDS:
                 target = candles[str(execution["target_candle_id"])]
                 new_body = int(execution["new_body_size"])
@@ -116,10 +127,12 @@ def test_candlestick_tasks_generate_each_query_branch_and_answer_contract() -> N
                 assert output.answer_gt.type == "integer"
                 assert output.answer_gt.value == expected
                 assert execution["annotation_roles"] == ["target_body"]
-                assert output.annotation_gt.type == "bbox_set"
-                assert output.annotation_gt.value == [
+                assert output.annotation_gt.type == "point"
+                assert output.annotation_gt.value == _bbox_center(
                     output.trace_payload["render_map"]["body_bboxes_px"][str(target["candle_id"])]
-                ]
+                )
+                assert output.trace_payload["projected_annotation"]["type"] == "point"
+                assert output.trace_payload["projected_annotation"]["point"] == output.annotation_gt.value
             else:
                 raise AssertionError(f"unsupported candlestick query id: {query_id}")
 

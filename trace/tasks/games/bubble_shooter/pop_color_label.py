@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Sequence, Tuple
+from typing import Any, Dict, Mapping
 
-from trace.core.sampling import uniform_choice
-from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.config_defaults import (
+    load_scene_generation_rendering_prompt_defaults,
+)
 
 from ._lifecycle import (
     BubbleShooterObjectivePlan,
@@ -18,6 +18,7 @@ from ._lifecycle import (
     run_bubble_shooter_lifecycle,
 )
 from .shared.defaults import SCENE_ID
+from .shared.labels import resolve_bubble_shooter_label_choice
 from .shared.sampling import (
     ResolvedBubbleShooterSceneAxes,
     bubble_entity_ids_for_coords,
@@ -25,7 +26,6 @@ from .shared.sampling import (
     sample_pop_color_state,
 )
 from .shared.state import BUBBLE_OPTION_LABELS
-
 
 TASK_ID = "task_games__bubble_shooter__pop_color_label"
 QUERY_ID = "pop_color_label"
@@ -35,57 +35,13 @@ ROW_COUNT_SUPPORT = (7, 8, 9)
 COL_COUNT_SUPPORT = (8, 9, 10)
 OPTION_COUNT_SUPPORT = (4, 5, 6)
 LABEL_SUPPORT = BUBBLE_OPTION_LABELS
-_GEN_DEFAULTS, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
-    "games",
-    SCENE_ID,
-    task_id=TASK_ID,
+_GEN_DEFAULTS, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS_UNUSED = (
+    load_scene_generation_rendering_prompt_defaults(
+        "games",
+        SCENE_ID,
+        task_id=TASK_ID,
+    )
 )
-
-
-def _string_support(
-    params: Mapping[str, Any],
-    *,
-    key: str,
-    fallback: Sequence[str],
-) -> Tuple[str, ...]:
-    """Resolve the task-owned option-label support."""
-
-    raw = params.get(str(key), group_default(_GEN_DEFAULTS, str(key), tuple(fallback)))
-    if raw is None:
-        raw = tuple(fallback)
-    if isinstance(raw, str):
-        values = (raw,)
-    else:
-        values = tuple(str(value) for value in raw)
-    values = tuple(value for value in values if value)
-    if not values:
-        raise ValueError(f"{key} must contain at least one label")
-    return values
-
-
-def _resolve_label_choice(
-    *,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    support_key: str,
-    explicit_key: str,
-    fallback_support: Sequence[str],
-    namespace: str,
-    balanced_flag_key: str,
-) -> tuple[str, Dict[str, float], Tuple[str, ...]]:
-    """Resolve the requested answer label for this option-label objective."""
-
-    support = _string_support(params, key=str(support_key), fallback=fallback_support)
-    explicit = params.get(str(explicit_key))
-    if explicit is not None:
-        value = str(explicit)
-        if value not in support:
-            raise ValueError(f"{explicit_key}={value!r} is not in {support_key}")
-        return value, {str(item): (1.0 if str(item) == value else 0.0) for item in support}, support
-
-    probabilities = {str(item): 1.0 / float(len(support)) for item in support}
-    rng = spawn_rng(int(instance_seed), str(namespace))
-    return str(uniform_choice(rng, support)), probabilities, support
 
 
 def _prepare_pop_color_label_objective(
@@ -114,16 +70,20 @@ def _prepare_pop_color_label_objective(
         namespace=f"{TASK_ID}.option_count",
         balanced_flag_key="balanced_option_count_sampling",
     )
-    target_label, target_label_probabilities, target_label_support = _resolve_label_choice(
-        instance_seed=int(instance_seed),
-        params=params,
-        support_key="pop_color_label_support",
-        explicit_key="target_label",
-        fallback_support=LABEL_SUPPORT,
-        namespace=f"{TASK_ID}.target_label",
-        balanced_flag_key="balanced_target_label_sampling",
+    target_label, target_label_probabilities, target_label_support = (
+        resolve_bubble_shooter_label_choice(
+            instance_seed=int(instance_seed),
+            params=params,
+            gen_defaults=_GEN_DEFAULTS,
+            support_key="pop_color_label_support",
+            explicit_key="target_label",
+            fallback_support=LABEL_SUPPORT,
+            namespace=f"{TASK_ID}.target_label",
+        )
     )
-    option_count = max(int(option_count_axis.value), BUBBLE_OPTION_LABELS.index(str(target_label)) + 1)
+    option_count = max(
+        int(option_count_axis.value), BUBBLE_OPTION_LABELS.index(str(target_label)) + 1
+    )
 
     def construct_attempt(rng, scene_axes: ResolvedBubbleShooterSceneAxes):
         state = sample_pop_color_state(
@@ -134,9 +94,13 @@ def _prepare_pop_color_label_objective(
             option_count=int(option_count),
         )
         answer_options = [option for option in state.option_specs if option.is_answer]
-        if len(answer_options) != 1 or str(answer_options[0].label) != str(target_label):
+        if len(answer_options) != 1 or str(answer_options[0].label) != str(
+            target_label
+        ):
             raise ValueError("Bubble-shooter color-option state has ambiguous answer")
-        annotation_entity_ids = bubble_entity_ids_for_coords(state.outcome.popped_coords)
+        annotation_entity_ids = bubble_entity_ids_for_coords(
+            state.outcome.popped_coords
+        )
         return bbox_set_attempt(
             state=state,
             answer_gt=TypedValue(type="string", value=str(target_label)),
@@ -169,7 +133,9 @@ class GamesBubbleShooterPopColorLabelTask:
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+    def generate(
+        self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int
+    ) -> TaskOutput:
         return run_bubble_shooter_lifecycle(
             task_id=TASK_ID,
             supported_query_ids=SUPPORTED_QUERY_IDS,

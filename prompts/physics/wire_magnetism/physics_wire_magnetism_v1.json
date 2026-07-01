@@ -1,0 +1,58 @@
+{
+  "bundle_id": "physics_wire_magnetism_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": false,
+  "templates": {
+    "scene": {
+      "wire_magnetism_diagram": [
+        "The image shows a current-carrying wire with a marked point P and labeled direction options.",
+        "The diagram shows a straight wire with current direction marked, point P nearby, and labeled field-direction choices.",
+        "This figure shows a wire carrying current, a nearby point P, and six labeled direction options.",
+        "The visual shows a current arrow on a straight wire and a marked point P for choosing the field direction.",
+        "The diagram shows a straight current-carrying wire and direction options for the field at point P."
+      ]
+    },
+    "task": {
+      "wire_field_direction_choice_query": [
+        "Choose the labeled option for the magnetic-field direction at point P.",
+        "Use the current arrow and the position of point P to select the field-direction option.",
+        "Select the option that matches the magnetic field at the marked point.",
+        "Use the right-hand rule around the wire to choose the field direction at P.",
+        "Identify the labeled direction option for the magnetic field at P."
+      ]
+    },
+    "query": {
+      "single": [
+        "Which labeled option gives the magnetic-field direction at point P?",
+        "Which option shows the magnetic field at P?",
+        "What labeled direction option matches the field at point P?",
+        "Choose the option for the field direction at P.",
+        "Which option gives the magnetic-field direction around the wire at P?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "Use a valid JSON object with key \"answer\" for the final answer.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Use a valid JSON object with key \"answer\" for the final answer.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Use a valid JSON object with key \"answer\" for the final answer.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Use a valid JSON object with key \"answer\" for the final answer.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Use a valid JSON object with key \"answer\" for the final answer.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.\nAnswer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.\nUse this annotation format: {annotation_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "task:wire_field_direction_choice_query": {
+      "annotation_hint": "set \"annotation\" to an object with keys \"wire_current\" and \"point_p\"; each value is a pixel bounding box [x0,y0,x1,y1] around that visual witness",
+      "answer_hint": "set \"answer\" to the selected option letter as a string",
+      "json_example": "{\"annotation\":{\"wire_current\":[170,310,610,390],\"point_p\":[360,165,420,238]},\"answer\":\"C\"}",
+      "json_example_answer_only": "{\"answer\":\"C\"}"
+    }
+  }
+}

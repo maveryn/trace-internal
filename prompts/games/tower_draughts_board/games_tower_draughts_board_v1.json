@@ -116,9 +116,9 @@
     "object_description": "a tower-draughts-style board with stacks of red and black disks on alternating playable squares",
     "ownership_rule_text": "A stack is controlled by the color of its top disk.",
     "capture_rule_text": "A stack captures by jumping diagonally over an adjacent opponent-controlled stack into the empty playable square immediately beyond it.",
-    "annotation_hint_controlled_stack_count": "set \"annotation\" to bounding boxes [[x1, y1, x2, y2], ...] around every stack controlled by the named color; use an empty array if there are none",
+    "annotation_hint_controlled_stack_count": "set \"annotation\" to bounding boxes [[x0, y0, x1, y1], ...] around every stack controlled by the named color; use an empty array if there are none",
     "answer_hint_controlled_stack_count": "set \"answer\" to the number of stacks controlled by the named color",
-    "annotation_hint_marked_stack_capture_count": "set \"annotation\" to bounding boxes [[x1, y1, x2, y2], ...] around every opponent-controlled stack the X-marked stack can capture; use an empty array if there are none",
+    "annotation_hint_marked_stack_capture_count": "set \"annotation\" to bounding boxes [[x0, y0, x1, y1], ...] around every opponent-controlled stack the X-marked stack can capture; use an empty array if there are none",
     "answer_hint_marked_stack_capture_count": "set \"answer\" to the number of immediate captures for the X-marked stack"
   }
 }

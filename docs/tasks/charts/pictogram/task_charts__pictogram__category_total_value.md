@@ -18,4 +18,11 @@
 
 ## Program Contract
 
-`value(category_total(target_category, unit_scale)); output=integer_value; annotation=bbox(target_category_row); scene=pictogram; scope=category_total_value`
+Program: `value(category_total(target_category, unit_scale)); output=integer_value; annotation=bbox(target_category_row); scene=pictogram; scope=category_total_value`
+
+Candidate set: the visible pictogram rows, repeated icons, and category labels inside the `category_total_value` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `value` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `bbox` witnesses bound by `bbox(target_category_row)`. Annotation marks the requested category row as one `[x0, y0, x1, y1]` pixel box.
+Query ids: `single`.

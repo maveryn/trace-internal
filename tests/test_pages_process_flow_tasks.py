@@ -6,14 +6,25 @@ from collections import Counter
 
 from trace.core.seed import hash64
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.pages.process_flow.diagram_tasks import (
-    ALL_CROSS_LANE_HANDOFF_COUNT_TASK_ID,
-    CONDITION_PATH_ENDPOINT_TASK_ID,
-    FILTERED_NODE_COUNT_TASK_ID,
-    LANE_FILTERED_HANDOFF_COUNT_TASK_ID,
-    PagesProcessFlowAllCrossLaneHandoffCountTask,
+from trace.tasks.pages.process_flow.condition_path_endpoint_label import (
+    PROMPT_QUERY_KEY as CONDITION_PATH_ENDPOINT_PROMPT_QUERY_KEY,
+)
+from trace.tasks.pages.process_flow.condition_path_endpoint_label import (
+    TASK_ID as CONDITION_PATH_ENDPOINT_TASK_ID,
+)
+from trace.tasks.pages.process_flow.condition_path_endpoint_label import (
     PagesProcessFlowConditionPathEndpointLabelTask,
+)
+from trace.tasks.pages.process_flow.filtered_node_count import (
+    TASK_ID as FILTERED_NODE_COUNT_TASK_ID,
+)
+from trace.tasks.pages.process_flow.filtered_node_count import (
     PagesProcessFlowFilteredNodeCountTask,
+)
+from trace.tasks.pages.process_flow.lane_filtered_handoff_count import (
+    TASK_ID as LANE_FILTERED_HANDOFF_COUNT_TASK_ID,
+)
+from trace.tasks.pages.process_flow.lane_filtered_handoff_count import (
     PagesProcessFlowLaneFilteredHandoffCountTask,
 )
 
@@ -28,11 +39,11 @@ def _assert_bboxes_inside_image(out) -> None:
         assert 0.0 <= y0 <= y1 <= float(height)
 
 
-def _assert_point_pairs_inside_image(out) -> None:
+def _assert_segments_inside_image(out) -> None:
     width, height = out.image.size
-    for point_pair in out.annotation_gt.value:
-        assert len(point_pair) == 2
-        for point in point_pair:
+    for segment in out.annotation_gt.value:
+        assert len(segment) == 2
+        for point in segment:
             x, y = [float(value) for value in point]
             assert 0.0 <= x <= float(width)
             assert 0.0 <= y <= float(height)
@@ -42,19 +53,18 @@ def test_pages_process_flow_tasks_are_registered_in_public_taxonomy() -> None:
     for task_id in [
         FILTERED_NODE_COUNT_TASK_ID,
         CONDITION_PATH_ENDPOINT_TASK_ID,
-        ALL_CROSS_LANE_HANDOFF_COUNT_TASK_ID,
         LANE_FILTERED_HANDOFF_COUNT_TASK_ID,
     ]:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "pages"
         assert taxonomy.scene_id == "process_flow"
-        assert taxonomy.source_scene_id == "process_flow"
+        assert taxonomy.source_scene_id == ""
 
 
 def test_pages_process_flow_filtered_node_count_contract() -> None:
     task = PagesProcessFlowFilteredNodeCountTask()
     for query_id in ("shape_node_count", "status_node_count", "role_node_count"):
-        out = task.generate(83100, params={"query_id": query_id, "layout_variant": "vertical_swimlane"}, max_attempts=10)
+        out = task.generate(83100, params={"query_id": query_id, "layout_variant": "horizontal_swimlane"}, max_attempts=10)
         trace = out.trace_payload
         query = trace["execution_trace"]["query"]
         annotation_ids = [str(item) for item in query["annotation_node_ids"]]
@@ -85,15 +95,15 @@ def test_pages_process_flow_condition_path_endpoint_contract() -> None:
             expected[str(role["key"])] = render_map["edge_label_bboxes_px"][str(role["id"])]
 
     assert out.scene_id == "process_flow"
-    assert out.query_id == "condition_path_endpoint_label"
+    assert out.query_id == "single"
+    assert trace["execution_trace"]["prompt_query_key"] == CONDITION_PATH_ENDPOINT_PROMPT_QUERY_KEY
     assert out.answer_gt.type == "string"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     assert str(out.answer_gt.value) == str(query["answer"])
     assert out.annotation_gt.value == expected
     assert list(out.annotation_gt.value) == [
         "start_step",
         "first_decision_label",
-        "intermediate_step",
         "second_decision_label",
         "endpoint_step",
     ]
@@ -104,34 +114,27 @@ def test_pages_process_flow_condition_path_endpoint_contract() -> None:
 
 
 def test_pages_process_flow_handoff_count_contract() -> None:
-    task_cases = (
-        (PagesProcessFlowAllCrossLaneHandoffCountTask(), ("all_cross_lane_handoff_count",)),
-        (
-            PagesProcessFlowLaneFilteredHandoffCountTask(),
-            ("lane_outgoing_handoff_count", "lane_involved_handoff_count"),
-        ),
-    )
-    for task, query_ids in task_cases:
-        for query_id in query_ids:
-            out = task.generate(83140, params={"query_id": query_id, "layout_variant": "staggered_columns"}, max_attempts=10)
-            trace = out.trace_payload
-            query = trace["execution_trace"]["query"]
-            annotation_ids = [str(item) for item in query["annotation_edge_ids"]]
-            expected = [trace["render_map"]["edge_point_pairs_px"][edge_id] for edge_id in annotation_ids]
+    task = PagesProcessFlowLaneFilteredHandoffCountTask()
+    for query_id in ("lane_outgoing_handoff_count", "lane_involved_handoff_count"):
+        out = task.generate(83140, params={"query_id": query_id, "layout_variant": "horizontal_swimlane"}, max_attempts=10)
+        trace = out.trace_payload
+        query = trace["execution_trace"]["query"]
+        annotation_ids = [str(item) for item in query["annotation_edge_ids"]]
+        expected = [trace["render_map"]["edge_segments_px"][edge_id] for edge_id in annotation_ids]
 
-            assert out.scene_id == "process_flow"
-            assert out.query_id == query_id
-            assert out.answer_gt.type == "integer"
-            assert out.annotation_gt.type == "segment_set"
-            assert int(out.answer_gt.value) == int(query["answer"])
-            assert len(out.annotation_gt.value) == int(out.answer_gt.value)
-            assert out.annotation_gt.value == expected
-            _assert_point_pairs_inside_image(out)
+        assert out.scene_id == "process_flow"
+        assert out.query_id == query_id
+        assert out.answer_gt.type == "integer"
+        assert out.annotation_gt.type == "segment_set"
+        assert int(out.answer_gt.value) == int(query["answer"])
+        assert len(out.annotation_gt.value) == int(out.answer_gt.value)
+        assert out.annotation_gt.value == expected
+        _assert_segments_inside_image(out)
 
 
 def test_pages_process_flow_generation_is_deterministic() -> None:
     task = PagesProcessFlowConditionPathEndpointLabelTask()
-    params = {"layout_variant": "compact_rows", "style_variant": "warm_memo"}
+    params = {"layout_variant": "horizontal_swimlane", "style_variant": "warm_memo"}
     out_a = task.generate(83180, params=params, max_attempts=10)
     out_b = task.generate(83180, params=params, max_attempts=10)
 
@@ -146,7 +149,7 @@ def test_pages_process_flow_sampling_covers_visual_and_text_axes() -> None:
     task = PagesProcessFlowFilteredNodeCountTask()
     layouts: Counter[str] = Counter()
     styles: Counter[str] = Counter()
-    contexts: Counter[str] = Counter()
+    scenes: Counter[str] = Counter()
     queries: Counter[str] = Counter()
 
     for index in range(24):
@@ -154,10 +157,10 @@ def test_pages_process_flow_sampling_covers_visual_and_text_axes() -> None:
         execution = out.trace_payload["execution_trace"]
         layouts[str(execution["layout_variant"])] += 1
         styles[str(execution["style_variant"])] += 1
-        contexts[str(execution["context_id"])] += 1
+        scenes[str(execution["scene_variant"])] += 1
         queries[str(execution["query_id"])] += 1
 
-    assert set(layouts) == {"vertical_swimlane", "horizontal_swimlane", "staggered_columns", "compact_rows"}
+    assert set(layouts) == {"horizontal_swimlane"}
     assert set(styles) == {"blueprint", "pastel_cards", "graphite", "warm_memo"}
-    assert len(contexts) >= 5
+    assert len(scenes) >= 5
     assert set(queries) == {"shape_node_count", "status_node_count", "role_node_count"}

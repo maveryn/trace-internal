@@ -5,7 +5,7 @@ from __future__ import annotations
 from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.types import TypedValue
 from trace.tasks.charts.waterfall._lifecycle import WaterfallTaskPlan, run_waterfall_lifecycle
-from trace.tasks.charts.waterfall.shared.annotations import bbox_set_map_artifacts
+from trace.tasks.charts.waterfall.shared.annotations import bbox_set_artifacts
 from trace.tasks.charts.waterfall.shared.defaults import DOMAIN
 from trace.tasks.charts.waterfall.shared.sampling import choose_step_index, sample_waterfall_dataset
 from trace.tasks.registry import register_task
@@ -41,12 +41,7 @@ def _build_plan(params, instance_seed, selected_branch, query_probabilities):
     running_ids = ("start",) + tuple(step.step_id for step in dataset.steps[: int(target_index) + 1])
 
     def _bind_annotation(rendered):
-        return bbox_set_map_artifacts(
-            {
-                "running_values": [rendered.value_label_bboxes_px[str(bar_id)] for bar_id in running_ids],
-                "target_step_label": [rendered.x_label_bboxes_px[str(target_step.step_id)]],
-            }
-        )
+        return bbox_set_artifacts([rendered.bar_bboxes_px[str(bar_id)] for bar_id in running_ids])
 
     return WaterfallTaskPlan(
         dataset=dataset,
@@ -61,10 +56,7 @@ def _build_plan(params, instance_seed, selected_branch, query_probabilities):
             "step_count": int(len(dataset.steps)),
             "start_value": int(dataset.start_value),
             "final_value": int(dataset.final_value),
-            "annotation_roles": {
-                "running_values": list(running_ids),
-                "target_step_label": [str(target_step.step_id)],
-            },
+            "annotation_roles": list(running_ids),
         },
         relations={
             "target_step_id": str(target_step.step_id),

@@ -8,11 +8,6 @@ TASK_QUERIES = {
     "task_geometry__similar_figure_measure_transfer__corresponding_side_value": (
         "single",
     ),
-    "task_geometry__similar_figure_measure_transfer__scale_factor_value": (
-        "scale_factor_from_side_pair",
-        "scale_factor_from_perimeter_pair",
-        "scale_factor_from_area_pair",
-    ),
     "task_geometry__similar_figure_measure_transfer__area_scale_side_length_value": (
         "side_length_from_area_pair",
         "side_length_from_area_ratio",
@@ -75,10 +70,7 @@ def test_similar_figure_measure_transfer_measurements_match_trace_values() -> No
             output = _generate(task_id, query_id, seed=20260617)
             trace = output.trace_payload["execution_trace"]
             scale_factor = int(trace["scale_factor"])
-            if task_id == "task_geometry__similar_figure_measure_transfer__scale_factor_value":
-                assert output.answer_gt.value == scale_factor
-            else:
-                assert output.answer_gt.value == int(trace["target_target_side_value"])
+            assert output.answer_gt.value == int(trace["target_target_side_value"])
             source_side = trace["source_target_side_value"]
             target_side = trace["target_target_side_value"]
             if source_side is not None and target_side is not None:

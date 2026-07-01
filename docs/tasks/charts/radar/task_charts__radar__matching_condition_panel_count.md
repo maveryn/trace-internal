@@ -22,8 +22,11 @@
 
 ## Program Contract
 
-`count(filter(radar_panels, count(filter(metrics, value(panel, metric) > threshold)) >= minimum_metric_count)); scene=radar; scope=matching_condition_panel_count`
+Program: `count(filter(radar_panels, count(filter(metrics, value(panel, metric) > threshold)) >= minimum_metric_count)); scene=radar; scope=matching_condition_panel_count`
 
-Arguments:
-- `threshold`: sampled visible ring-scale integer
-- `minimum_metric_count`: sampled integer lower bound on high metric vertices
+Candidate set: the visible radar spokes, profile polygons, and profile labels inside the `matching_condition_panel_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `unspecified` value bound by `unspecified`.
+Annotation witnesses: `unspecified` witnesses bound by `see_annotation_contract`. The Annotation Contract below defines the prompt-facing witnesses.
+Query ids: `single`.

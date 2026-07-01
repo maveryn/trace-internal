@@ -15,12 +15,9 @@ from trace.tasks.geometry.composite_shape.house_outline_perimeter import Geometr
 from trace.tasks.geometry.composite_shape.l_profile_area import GeometryLProfileAreaTask
 from trace.tasks.geometry.composite_shape.rectangle_triangle_cutout_area import GeometryRectangleTriangleCutoutAreaTask
 from trace.tasks.geometry.composite_shape.tabbed_rectilinear_perimeter import GeometryCompositeShapeTabbedRectilinearPerimeterTask
-from trace.tasks.geometry.triangle_relations.angle_bisector_segment_value_angle_bisector_base_length import GeometryAngleBisectorBaseLengthTask
-from trace.tasks.geometry.triangle_relations.angle_bisector_segment_value_angle_bisector_split_length import GeometryAngleBisectorSplitLengthTask
-from trace.tasks.geometry.triangle_relations.centroid_median_segment_value_centroid_vertex_segment_length import GeometryCentroidMedianVertexSegmentLengthTask
-from trace.tasks.geometry.triangle_relations.centroid_median_segment_value_centroid_whole_median_length import GeometryCentroidMedianWholeMedianLengthTask
-from trace.tasks.geometry.triangle_relations.parallel_section_base_length import GeometryTriangleRelationsParallelSectionBaseLengthTask
-from trace.tasks.geometry.triangle_relations.parallel_section_cross_length import GeometryTriangleRelationsParallelSectionCrossLengthTask
+from trace.tasks.geometry.triangle_relations.angle_bisector_segment_value import GeometryAngleBisectorSegmentValueTask
+from trace.tasks.geometry.triangle_relations.centroid_median_segment_value import GeometryCentroidMedianSegmentValueTask
+from trace.tasks.geometry.triangle_relations.parallel_section_segment_value import GeometryTriangleRelationsParallelSectionSegmentValueTask
 from trace.tasks.geometry.triangle_relations.pythagorean_length_value_chained_rectangle_diagonal_length import GeometryPythagoreanLengthChainedRectangleDiagonalTask
 from trace.tasks.geometry.triangle_relations.pythagorean_length_value_rectangle_triangle_shared_height_length import GeometryPythagoreanLengthRectangleTriangleSharedHeightTask
 from trace.tasks.geometry.triangle_relations.similar_triangles_side_length import GeometryTriangleRelationsSimilarTrianglesSideLengthTask
@@ -30,15 +27,12 @@ TASK_CLASSES = (
     GeometryAngleRelationsParallelSupplementAngleTask,
     GeometryAngleRelationsTriangleExteriorAngleTask,
     GeometryAngleRelationsAlgebraicAngleValueTask,
-    GeometryTriangleRelationsParallelSectionBaseLengthTask,
-    GeometryTriangleRelationsParallelSectionCrossLengthTask,
+    GeometryTriangleRelationsParallelSectionSegmentValueTask,
     GeometryTriangleRelationsSimilarTrianglesSideLengthTask,
     GeometryPythagoreanLengthChainedRectangleDiagonalTask,
     GeometryPythagoreanLengthRectangleTriangleSharedHeightTask,
-    GeometryAngleBisectorBaseLengthTask,
-    GeometryAngleBisectorSplitLengthTask,
-    GeometryCentroidMedianVertexSegmentLengthTask,
-    GeometryCentroidMedianWholeMedianLengthTask,
+    GeometryAngleBisectorSegmentValueTask,
+    GeometryCentroidMedianSegmentValueTask,
     GeometryRectangleTriangleCutoutAreaTask,
     GeometryLProfileAreaTask,
     GeometryMeasurementCompositePerimeterValueTask,
@@ -121,14 +115,20 @@ def test_composite_measurement_tasks_support_explicit_query_selection() -> None:
 def test_parallel_section_scale_task_supports_every_query() -> None:
     tasks = (
         (GeometryTriangleRelationsSimilarTrianglesSideLengthTask(), "nested_similarity_side"),
-        (GeometryTriangleRelationsParallelSectionBaseLengthTask(), "parallel_base_scale"),
-        (GeometryTriangleRelationsParallelSectionCrossLengthTask(), "parallel_cross_section"),
+        (
+            GeometryTriangleRelationsParallelSectionSegmentValueTask(),
+            {"parallel_base_scale", "parallel_cross_section"},
+        ),
     )
     for task, internal_case_kind in tasks:
         out = task.generate(44025, params={"query_id": "single", "target_answer": 10}, max_attempts=20)
         assert out.scene_id == "triangle_relations"
         assert out.query_id == "single"
-        assert out.trace_payload["query_spec"]["params"]["internal_case_kind"] == internal_case_kind
+        observed_case_kind = out.trace_payload["query_spec"]["params"]["internal_case_kind"]
+        if isinstance(internal_case_kind, set):
+            assert observed_case_kind in internal_case_kind
+        else:
+            assert observed_case_kind == internal_case_kind
         assert out.answer_gt.type == "integer"
         assert out.annotation_gt.type == "segment"
 

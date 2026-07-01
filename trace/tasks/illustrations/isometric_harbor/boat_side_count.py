@@ -6,10 +6,10 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
 from trace.core.scene_config import get_scene_defaults
+from trace.core.sampling import support_probability_map
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
-from trace.tasks.shared.deterministic_sampling import uniform_probability_map
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.illustrations.shared.canvas_profiles import resolve_canvas_profile
 
@@ -88,7 +88,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
         target_count=int(target_count),
         target_count_probabilities=dict(target_count_probabilities),
         answer_count_support=tuple(int(value) for value in answer_count_support),
-        answer_count_probabilities=dict(uniform_probability_map(answer_count_support)),
+        answer_count_probabilities=dict(support_probability_map(answer_count_support, sort_keys=True)),
         canvas_width=int(profile.width),
         canvas_height=int(profile.height),
         canvas_profile=str(profile.profile_id),
@@ -144,7 +144,7 @@ def _build_plan() -> HarborCountPlan:
         required_prompt_keys=_REQUIRED_PROMPT_KEYS,
         sample_spec=lambda instance_seed, params: _sample_spec(instance_seed=int(instance_seed), params=params),
         prompt_slots=_prompt_slots,
-        scene_builder=lambda scene_seed, sample: render_isometric_harbor_scene(
+        scene_builder=lambda scene_seed, sample, task_params: render_isometric_harbor_scene(
             scene_seed,
             width=sample.canvas_width,
             height=sample.canvas_height,
@@ -153,6 +153,8 @@ def _build_plan() -> HarborCountPlan:
             required_boat_counts_by_side={
                 str(sample.target_side): int(sample.target_count)
             } if isinstance(sample, _SampleSpec) else {},
+            render_style_params=task_params,
+            render_style_defaults=_RENDER_DEFAULTS,
         ),
         entity_selector=lambda scene, sample: _matching_boats(scene, sample) if isinstance(sample, _SampleSpec) else (),
         render_map=lambda scene, sample, counted_ids: isometric_harbor_boat_count_render_map(

@@ -1,0 +1,3991 @@
+{
+  "config": {
+    "default_only": true,
+    "max_attempts": 200,
+    "max_total_samples_per_task": 1024,
+    "samples_per_query_id": 1,
+    "seed": 20260504,
+    "task_timeout_seconds": 240,
+    "tasks": [
+      "task_puzzles__arithmetic_panel__equal_sum_line_constraint_value",
+      "task_puzzles__arithmetic_panel__number_wall_value",
+      "task_puzzles__arithmetic_panel__operation_table_cell_value",
+      "task_puzzles__arithmetic_panel__row_column_total_missing_value",
+      "task_puzzles__arithmetic_panel__vertical_arithmetic_hidden_digit_value",
+      "task_puzzles__balance_scale__equivalent_object_count_value",
+      "task_puzzles__balance_scale__missing_object_weight_value",
+      "task_puzzles__balance_scale__query_side_relation_label",
+      "task_puzzles__balance_scale__weight_order_label",
+      "task_puzzles__cell_board__largest_component_size",
+      "task_puzzles__cell_board__reachable_region_size",
+      "task_puzzles__cell_board__shortest_path_length_value",
+      "task_puzzles__cell_board__symmetry_violation_count",
+      "task_puzzles__color_gradient__color_gradient_completion_label",
+      "task_puzzles__color_gradient__color_gradient_violation_cell_label",
+      "task_puzzles__cube_net__equivalent_net_label",
+      "task_puzzles__cube_net__marked_edge_neighbor_face_label",
+      "task_puzzles__cube_net__opposite_face_label",
+      "task_puzzles__cyclic_order__cyclic_order_equivalent_label",
+      "task_puzzles__cyclic_order__insertion_position_label",
+      "task_puzzles__cyclic_order__swap_repair_label",
+      "task_puzzles__matchstick__equation_repair_stick_label",
+      "task_puzzles__matchstick__matchstick_number_transform_label",
+      "task_puzzles__matchstick__max_square_count_after_additions_value",
+      "task_puzzles__maze__exit_reachability_label",
+      "task_puzzles__maze__nearest_exit_label",
+      "task_puzzles__nonogram__candidate_solution_label",
+      "task_puzzles__nonogram__line_completion_label",
+      "task_puzzles__pipe_flow__misrotated_tile_label",
+      "task_puzzles__pipe_flow__pipe_flow_repair_tile_label",
+      "task_puzzles__polyomino_assembly__composition_result_label",
+      "task_puzzles__polyomino_assembly__decomposition_pair_label",
+      "task_puzzles__polyomino_assembly__hole_fill_piece_label",
+      "task_puzzles__raven_matrix__raven_analogical_transform_label",
+      "task_puzzles__raven_matrix__raven_count_progression_label",
+      "task_puzzles__raven_matrix__raven_feature_binding_label",
+      "task_puzzles__raven_matrix__raven_position_progression_label",
+      "task_puzzles__raven_matrix__raven_set_operation_label",
+      "task_puzzles__raven_matrix__raven_spatial_transform_label",
+      "task_puzzles__rubiks_net__post_move_face_color_count_label",
+      "task_puzzles__rubiks_net__post_move_sticker_color_label",
+      "task_puzzles__rubiks_net__rubiks_move_result_label",
+      "task_puzzles__sheet_transform__fold_cut_result_label",
+      "task_puzzles__sheet_transform__fold_projection_result_label",
+      "task_puzzles__sheet_transform__overlay_union_result_label",
+      "task_puzzles__star_battle__remaining_valid_cell_count",
+      "task_puzzles__star_battle__valid_cell_anywhere_label",
+      "task_puzzles__sudoku__marked_cell_candidate_count",
+      "task_puzzles__sudoku__marked_cell_value",
+      "task_puzzles__sudoku__mistake_cell_label",
+      "task_puzzles__tents__missing_tent_cell_label",
+      "task_puzzles__tents__violating_tent_label",
+      "task_puzzles__toggle_grid__toggle_repair_switch_label",
+      "task_puzzles__toggle_grid__toggle_result_label",
+      "task_puzzles__voxel_cube__cube_count",
+      "task_puzzles__voxel_cube__cube_projection_match_label",
+      "task_puzzles__voxel_cube__cube_structure_change_count",
+      "task_puzzles__voxel_cube__cube_visible_projection_count",
+      "task_puzzles__word_search__present_word_option_label",
+      "task_puzzles__word_search__search_location_label"
+    ],
+    "workers": 1
+  },
+  "coverage": [
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__arithmetic_panel__equal_sum_line_constraint_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__arithmetic_panel__number_wall_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__arithmetic_panel__operation_table_cell_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__arithmetic_panel__row_column_total_missing_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "hidden_addition_digit_value": 1,
+        "hidden_subtraction_digit_value": 1
+      },
+      "expected_query_ids": [
+        "hidden_addition_digit_value",
+        "hidden_subtraction_digit_value"
+      ],
+      "generated_query_id_counts": {
+        "hidden_addition_digit_value": 1,
+        "hidden_subtraction_digit_value": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__arithmetic_panel__vertical_arithmetic_hidden_digit_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__balance_scale__equivalent_object_count_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__balance_scale__missing_object_weight_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__balance_scale__query_side_relation_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__balance_scale__weight_order_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__cell_board__largest_component_size",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__cell_board__reachable_region_size",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__cell_board__shortest_path_length_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__cell_board__symmetry_violation_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__color_gradient__color_gradient_completion_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__color_gradient__color_gradient_violation_cell_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__cube_net__equivalent_net_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__cube_net__marked_edge_neighbor_face_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__cube_net__opposite_face_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__cyclic_order__cyclic_order_equivalent_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__cyclic_order__insertion_position_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__cyclic_order__swap_repair_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__matchstick__equation_repair_stick_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "add_one_stick": 1,
+        "remove_one_stick": 1
+      },
+      "expected_query_ids": [
+        "add_one_stick",
+        "remove_one_stick"
+      ],
+      "generated_query_id_counts": {
+        "add_one_stick": 1,
+        "remove_one_stick": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__matchstick__matchstick_number_transform_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__matchstick__max_square_count_after_additions_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__maze__exit_reachability_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__maze__nearest_exit_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__nonogram__candidate_solution_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__nonogram__line_completion_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__pipe_flow__misrotated_tile_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__pipe_flow__pipe_flow_repair_tile_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__polyomino_assembly__composition_result_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__polyomino_assembly__decomposition_pair_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__polyomino_assembly__hole_fill_piece_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__raven_matrix__raven_analogical_transform_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__raven_matrix__raven_count_progression_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__raven_matrix__raven_feature_binding_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__raven_matrix__raven_position_progression_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__raven_matrix__raven_set_operation_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__raven_matrix__raven_spatial_transform_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__rubiks_net__post_move_face_color_count_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__rubiks_net__post_move_sticker_color_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "direct_sequence_result_label": 1,
+        "inverse_sequence_result_label": 1
+      },
+      "expected_query_ids": [
+        "direct_sequence_result_label",
+        "inverse_sequence_result_label"
+      ],
+      "generated_query_id_counts": {
+        "direct_sequence_result_label": 1,
+        "inverse_sequence_result_label": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__rubiks_net__rubiks_move_result_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__sheet_transform__fold_cut_result_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__sheet_transform__fold_projection_result_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__sheet_transform__overlay_union_result_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "remaining_valid_cells_in_marked_column_count": 1,
+        "remaining_valid_cells_in_marked_region_count": 1,
+        "remaining_valid_cells_in_marked_row_count": 1
+      },
+      "expected_query_ids": [
+        "remaining_valid_cells_in_marked_column_count",
+        "remaining_valid_cells_in_marked_region_count",
+        "remaining_valid_cells_in_marked_row_count"
+      ],
+      "generated_query_id_counts": {
+        "remaining_valid_cells_in_marked_column_count": 1,
+        "remaining_valid_cells_in_marked_region_count": 1,
+        "remaining_valid_cells_in_marked_row_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__star_battle__remaining_valid_cell_count",
+      "total_generated": 3
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__star_battle__valid_cell_anywhere_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__sudoku__marked_cell_candidate_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__sudoku__marked_cell_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__sudoku__mistake_cell_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__tents__missing_tent_cell_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__tents__violating_tent_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__toggle_grid__toggle_repair_switch_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__toggle_grid__toggle_result_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__voxel_cube__cube_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__voxel_cube__cube_projection_match_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__voxel_cube__cube_structure_change_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__voxel_cube__cube_visible_projection_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__word_search__present_word_option_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_puzzles__word_search__search_location_label",
+      "total_generated": 2
+    }
+  ],
+  "issues": [],
+  "records": [
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          720,
+          500
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          276.7,
+          260.3,
+          336.7,
+          320.3
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5009397633795012,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 19,
+          "mode": "answer_and_annotation",
+          "prompt": "The panel shows a number puzzle diagram with one question-mark entry. Find the number that completes the marked node.\nUse this annotation format: set \"annotation\" to the pixel bounding box [x0, y0, x1, y1] around the marked question-mark node\nUse this answer format: set \"answer\" to the integer that replaces the question mark\nExample JSON:\n{\"annotation\":[546,470,622,546],\"answer\":8}",
+          "word_count": 62
+        },
+        {
+          "body_word_count": 19,
+          "mode": "answer_only",
+          "prompt": "The panel shows a number puzzle diagram with one question-mark entry. Find the number that completes the marked node.\nRequired answer format: set \"answer\" to the integer that replaces the question mark\nExample JSON:\n{\"answer\":8}",
+          "word_count": 36
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__arithmetic_panel__equal_sum_line_constraint_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          720,
+          500
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          374.0,
+          214.0,
+          424.4,
+          250.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8122839646317831,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 19,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a number puzzle diagram with one question-mark entry. Find the hidden number in the number wall.\nAnnotation format: set \"annotation\" to the pixel bounding box [x0, y0, x1, y1] around the marked question-mark brick\nFinal answer format: set \"answer\" to the integer that replaces the question mark\nExample JSON:\n{\"annotation\":[498,416,600,488],\"answer\":9}",
+          "word_count": 59
+        },
+        {
+          "body_word_count": 19,
+          "mode": "answer_only",
+          "prompt": "The image shows a number puzzle diagram with one question-mark entry. Find the hidden number in the number wall.\nFormat for the \"answer\" field: set \"answer\" to the integer that replaces the question mark\nExample JSON:\n{\"answer\":9}",
+          "word_count": 38
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__arithmetic_panel__number_wall_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          720,
+          500
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          314.0,
+          210.0,
+          363.0,
+          251.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4152123592994471,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 23,
+          "mode": "answer_and_annotation",
+          "prompt": "This display shows a number puzzle diagram with one question-mark entry. Use the visible headers and filled cells to find the missing value.\nAnnotation format: set \"annotation\" to the pixel bounding box [x0, y0, x1, y1] around the marked question-mark table cell\nFinal answer format: set \"answer\" to the integer that replaces the question mark\nExample JSON:\n{\"annotation\":[582,404,666,476],\"answer\":15}",
+          "word_count": 64
+        },
+        {
+          "body_word_count": 23,
+          "mode": "answer_only",
+          "prompt": "This display shows a number puzzle diagram with one question-mark entry. Use the visible headers and filled cells to find the missing value.\nFinal answer format: set \"answer\" to the integer that replaces the question mark\nExample JSON:\n{\"answer\":15}",
+          "word_count": 40
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__arithmetic_panel__operation_table_cell_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          720,
+          500
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          341.0,
+          152.0,
+          404.0,
+          205.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2020891383051859,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 21,
+          "mode": "answer_and_annotation",
+          "prompt": "This display shows a number puzzle diagram with one question-mark entry. Use the visible grid clues to find the missing value.\nUse this annotation format: set \"annotation\" to the pixel bounding box [x0, y0, x1, y1] around the marked question-mark grid cell\nUse this answer format: set \"answer\" to the integer that replaces the question mark\nExample JSON:\n{\"annotation\":[498,332,582,404],\"answer\":8}",
+          "word_count": 65
+        },
+        {
+          "body_word_count": 21,
+          "mode": "answer_only",
+          "prompt": "This display shows a number puzzle diagram with one question-mark entry. Use the visible grid clues to find the missing value.\nAnswer format: set \"answer\" to the integer that replaces the question mark\nExample JSON:\n{\"answer\":8}",
+          "word_count": 37
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__arithmetic_panel__row_column_total_missing_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          560,
+          380
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          227.0,
+          88.2,
+          289.0,
+          150.2
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1081605336029713,
+      "issues": [],
+      "observed_query_id": "hidden_addition_digit_value",
+      "prompts": [
+        {
+          "body_word_count": 21,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows a number puzzle diagram with one question-mark entry. What digit replaces the question mark in the vertical calculation?\nRequired annotation format: set \"annotation\" to the pixel bounding box [x0, y0, x1, y1] around the marked question-mark digit cell\nRequired answer format: set \"answer\" to the digit that replaces the question mark\nExample JSON:\n{\"annotation\":[560,302,644,374],\"answer\":7}",
+          "word_count": 63
+        },
+        {
+          "body_word_count": 21,
+          "mode": "answer_only",
+          "prompt": "The visual shows a number puzzle diagram with one question-mark entry. What digit replaces the question mark in the vertical calculation?\nAnswer format: set \"answer\" to the digit that replaces the question mark\nExample JSON:\n{\"answer\":7}",
+          "word_count": 37
+        }
+      ],
+      "query_id": "hidden_addition_digit_value",
+      "task": "task_puzzles__arithmetic_panel__vertical_arithmetic_hidden_digit_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          560,
+          380
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          279.0,
+          127.5,
+          319.0,
+          167.5
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5521567511190527,
+      "issues": [],
+      "observed_query_id": "hidden_subtraction_digit_value",
+      "prompts": [
+        {
+          "body_word_count": 21,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows a number puzzle diagram with one question-mark entry. What digit replaces the question mark in the vertical calculation?\nUse this annotation format: set \"annotation\" to the pixel bounding box [x0, y0, x1, y1] around the marked question-mark digit cell\nUse this answer format: set \"answer\" to the digit that replaces the question mark\nExample JSON:\n{\"annotation\":[476,386,560,458],\"answer\":4}",
+          "word_count": 65
+        },
+        {
+          "body_word_count": 21,
+          "mode": "answer_only",
+          "prompt": "The figure shows a number puzzle diagram with one question-mark entry. What digit replaces the question mark in the vertical calculation?\nRequired answer format: set \"answer\" to the digit that replaces the question mark\nExample JSON:\n{\"answer\":4}",
+          "word_count": 38
+        }
+      ],
+      "query_id": "hidden_subtraction_digit_value",
+      "task": "task_puzzles__arithmetic_panel__vertical_arithmetic_hidden_digit_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1120,
+          840
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          522.688,
+          681.08,
+          597.312,
+          748.92
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1152288712027835,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 37,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows three pan-scale comparison panels with three labeled unknown objects, numbered weights, and a query row. The query row asks how many repeated objects balance one source object. What integer count replaces the question mark?\nAnnotation format: set \"annotation\" to the image-pixel bounding box [x0, y0, x1, y1] around the question-mark count box\nAnswer format: set \"answer\" to the integer count in the question-mark box\nExample JSON:\n{\"annotation\":[570,648,628,708],\"answer\":4}",
+          "word_count": 76
+        },
+        {
+          "body_word_count": 37,
+          "mode": "answer_only",
+          "prompt": "The image shows three pan-scale comparison panels with three labeled unknown objects, numbered weights, and a query row. The query row asks how many repeated objects balance one source object. What integer count replaces the question mark?\nUse this answer format: set \"answer\" to the integer count in the question-mark box\nExample JSON:\n{\"answer\":4}",
+          "word_count": 55
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__balance_scale__equivalent_object_count_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1120,
+          840
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          603.472,
+          688.28,
+          686.968,
+          756.72
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6625470987006303,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 32,
+          "mode": "answer_and_annotation",
+          "prompt": "The puzzle diagram shows three pan-scale comparison panels with three labeled unknown objects, numbered weights, and a query row. Solve the balance-scale equations and report the value that replaces the question mark.\nFormat for the \"annotation\" field: set \"annotation\" to the image-pixel bounding box [x0, y0, x1, y1] around the question-mark value box\nFormat for the \"answer\" field: set \"answer\" to the integer value of the query object\nExample JSON:\n{\"annotation\":[630,646,696,712],\"answer\":8}",
+          "word_count": 77
+        },
+        {
+          "body_word_count": 32,
+          "mode": "answer_only",
+          "prompt": "The puzzle diagram shows three pan-scale comparison panels with three labeled unknown objects, numbered weights, and a query row. Solve the balance-scale equations and report the value that replaces the question mark.\nUse this answer format: set \"answer\" to the integer value of the query object\nExample JSON:\n{\"answer\":8}",
+          "word_count": 50
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__balance_scale__missing_object_weight_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1120,
+          840
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          171.0,
+          744.72,
+          383.25,
+          771.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4041129833700207,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 41,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows three pan-scale comparison panels with three labeled unknown objects, numbered weights, and a query row. Use the balanced scales to decide the query comparison. Answer with the option label for left heavier, right heavier, balanced, or Cannot determine.\nAnnotation format: set \"annotation\" to the image-pixel bounding box [x0, y0, x1, y1] around the selected option\nAnswer format: set \"answer\" to the matching option label, one of \"A\", \"B\", \"C\", or \"D\"\nExample JSON:\n{\"annotation\":[720,650,920,710],\"answer\":\"D\"}",
+          "word_count": 83
+        },
+        {
+          "body_word_count": 41,
+          "mode": "answer_only",
+          "prompt": "The visual shows three pan-scale comparison panels with three labeled unknown objects, numbered weights, and a query row. Use the balanced scales to decide the query comparison. Answer with the option label for left heavier, right heavier, balanced, or Cannot determine.\nRequired answer format: set \"answer\" to the matching option label, one of \"A\", \"B\", \"C\", or \"D\"\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 62
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__balance_scale__query_side_relation_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1120,
+          840
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          840.5,
+          690.0,
+          1041.0,
+          762.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5540405167326866,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 46,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows three pan-scale comparison panels with three labeled unknown objects, numbered weights, and a query row. The lower pan is heavier and a level scale means equal weight. Infer the full weight order of the three objects and answer with the matching option label.\nRequired annotation format: set \"annotation\" to the image-pixel bounding box [x0, y0, x1, y1] around the selected option\nRequired answer format: set \"answer\" to the matching option label, one of \"A\", \"B\", \"C\", or \"D\"\nExample JSON:\n{\"annotation\":[720,650,920,710],\"answer\":\"C\"}",
+          "word_count": 90
+        },
+        {
+          "body_word_count": 46,
+          "mode": "answer_only",
+          "prompt": "The image shows three pan-scale comparison panels with three labeled unknown objects, numbered weights, and a query row. The lower pan is heavier and a level scale means equal weight. Infer the full weight order of the three objects and answer with the matching option label.\nUse this answer format: set \"answer\" to the matching option label, one of \"A\", \"B\", \"C\", or \"D\"\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 68
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__balance_scale__weight_order_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          248,
+          311
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            191.0,
+            33.0,
+            224.0,
+            64.0
+          ],
+          [
+            191.0,
+            64.0,
+            224.0,
+            95.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8432489830762557,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 35,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a rectangular board made of colored cells. Use the board cells exactly as drawn; only edge-sharing cells are adjacent. Among the connected purple groups, how many cells are in the largest group?\nFormat for the \"annotation\" field: Set annotation to a bbox_set containing image-pixel cell boxes [x0, y0, x1, y1] for the largest connected component.\nFormat for the \"answer\" field: Set answer to the number of cells in the largest target-color component.\nExample JSON:\n{\"annotation\":[[100,100,136,136],[148,100,184,136],[148,148,184,184]],\"answer\":3}",
+          "word_count": 92
+        },
+        {
+          "body_word_count": 35,
+          "mode": "answer_only",
+          "prompt": "The image shows a rectangular board made of colored cells. Use the board cells exactly as drawn; only edge-sharing cells are adjacent. Among the connected purple groups, how many cells are in the largest group?\nFormat for the \"answer\" field: Set answer to the number of cells in the largest target-color component.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 56
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__cell_board__largest_component_size"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 7,
+        "image_size": [
+          414,
+          522
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            29.0,
+            305.0,
+            86.0,
+            359.0
+          ],
+          [
+            86.0,
+            305.0,
+            143.0,
+            359.0
+          ],
+          [
+            86.0,
+            359.0,
+            143.0,
+            413.0
+          ],
+          [
+            86.0,
+            413.0,
+            143.0,
+            467.0
+          ],
+          [
+            143.0,
+            413.0,
+            200.0,
+            467.0
+          ],
+          [
+            200.0,
+            413.0,
+            257.0,
+            467.0
+          ],
+          [
+            257.0,
+            413.0,
+            314.0,
+            467.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3727413340303863,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 48,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a colored grid board. For any path, reachability, or component question, use only up, down, left, and right steps. Dark cells are walls and light cells are passable. Starting from the green S cell, how many passable cells are reachable by side-adjacent moves, including S?\nRequired annotation format: Set annotation to a bbox_set containing image-pixel cell boxes [x0, y0, x1, y1] for all reachable passable cells, including S.\nRequired answer format: Set answer to the number of light passable cells reachable from S by side-adjacent moves, including S.\nExample JSON:\n{\"annotation\":[[100,100,136,136],[148,100,184,136],[148,148,184,184]],\"answer\":3}",
+          "word_count": 108
+        },
+        {
+          "body_word_count": 48,
+          "mode": "answer_only",
+          "prompt": "The image shows a colored grid board. For any path, reachability, or component question, use only up, down, left, and right steps. Dark cells are walls and light cells are passable. Starting from the green S cell, how many passable cells are reachable by side-adjacent moves, including S?\nRequired answer format: Set answer to the number of light passable cells reachable from S by side-adjacent moves, including S.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 72
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__cell_board__reachable_region_size"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 4,
+        "image_size": [
+          332,
+          337
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              145.5,
+              130.5
+            ],
+            [
+              145.5,
+              91.5
+            ]
+          ],
+          [
+            [
+              145.5,
+              91.5
+            ],
+            [
+              190.5,
+              91.5
+            ]
+          ],
+          [
+            [
+              190.5,
+              91.5
+            ],
+            [
+              235.5,
+              91.5
+            ]
+          ],
+          [
+            [
+              235.5,
+              91.5
+            ],
+            [
+              235.5,
+              130.5
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7264412061604877,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 37,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a rectangular tile grid. Use the board cells exactly as drawn; only edge-sharing cells are adjacent. How many orthogonal steps are in the shortest path from S to G without crossing dark wall cells?\nUse this annotation format: Set annotation to a segment_set: one image-pixel segment [[x0, y0], [x1, y1]] for each adjacent step along a shortest S-to-G path.\nUse this answer format: Set answer to the shortest path length in orthogonal cell steps.\nExample JSON:\n{\"annotation\":[[[100,100],[136,100]],[[136,100],[136,136]],[[136,136],[172,136]],[[172,136],[172,172]]],\"answer\":4}",
+          "word_count": 98
+        },
+        {
+          "body_word_count": 37,
+          "mode": "answer_only",
+          "prompt": "The image shows a rectangular tile grid. Use the board cells exactly as drawn; only edge-sharing cells are adjacent. How many orthogonal steps are in the shortest path from S to G without crossing dark wall cells?\nRequired answer format: Set answer to the shortest path length in orthogonal cell steps.\nExample JSON:\n{\"answer\":4}",
+          "word_count": 55
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__cell_board__shortest_path_length_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 3,
+        "image_size": [
+          224,
+          195
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              45.0,
+              40.5
+            ],
+            [
+              183.0,
+              40.5
+            ]
+          ],
+          [
+            [
+              91.0,
+              40.5
+            ],
+            [
+              137.0,
+              40.5
+            ]
+          ],
+          [
+            [
+              45.0,
+              118.5
+            ],
+            [
+              183.0,
+              118.5
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 838624330814707,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 40,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a board of colored square or rectangular cells. Compare each counted-side cell with its mirror cell across the stated axis. For the vertical mirror check, count cells on the left side whose mirror has a different color.\nAnnotation format: Set annotation to a segment_set: one image-pixel segment [[x0, y0], [x1, y1]] from each counted-side violating cell center to its mirror-cell center.\nFinal answer format: Set answer to the number of counted-side cells that fail the mirror check.\nExample JSON:\n{\"annotation\":[[[118,118],[214,118]],[[118,166],[214,166]]],\"answer\":2}",
+          "word_count": 93
+        },
+        {
+          "body_word_count": 40,
+          "mode": "answer_only",
+          "prompt": "The image shows a board of colored square or rectangular cells. Compare each counted-side cell with its mirror cell across the stated axis. For the vertical mirror check, count cells on the left side whose mirror has a different color.\nRequired answer format: Set answer to the number of counted-side cells that fail the mirror check.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 60
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__cell_board__symmetry_violation_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          900,
+          760
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          150.0,
+          397.0,
+          241.0,
+          488.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7045882315248509,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 26,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows a notebook-style row of color swatches with one blank swatch and labeled color options. Which labeled color option should replace the blank swatch?\nAnnotation format: Set annotation to the image-pixel bounding box [x0,y0,x1,y1] for the selected option swatch.\nAnswer format: set \"answer\" to the single capital-letter label of the option that completes the color gradient.\nExample JSON:\n{\"annotation\":[524,420,628,524],\"answer\":\"C\"}",
+          "word_count": 70
+        },
+        {
+          "body_word_count": 26,
+          "mode": "answer_only",
+          "prompt": "The visual shows a notebook-style row of color swatches with one blank swatch and labeled color options. Which labeled color option should replace the blank swatch?\nFinal answer format: set \"answer\" to the single capital-letter label of the option that completes the color gradient.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 48
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__color_gradient__color_gradient_completion_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          900,
+          760
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          312.0,
+          242.0,
+          397.0,
+          327.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5147769854809861,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 26,
+          "mode": "answer_and_annotation",
+          "prompt": "The diagram shows a labeled grid of color swatches arranged as a smooth color progression. Identify the swatch label that does not fit the color progression.\nUse this annotation format: Set annotation to the image-pixel bounding box [x0,y0,x1,y1] for that swatch cell.\nUse this answer format: set \"answer\" to the single capital-letter label of the swatch that breaks the progression.\nExample JSON:\n{\"annotation\":[324,188,432,296],\"answer\":\"F\"}",
+          "word_count": 72
+        },
+        {
+          "body_word_count": 26,
+          "mode": "answer_only",
+          "prompt": "The diagram shows a labeled grid of color swatches arranged as a smooth color progression. Identify the swatch label that does not fit the color progression.\nUse this answer format: set \"answer\" to the single capital-letter label of the swatch that breaks the progression.\nExample JSON:\n{\"answer\":\"F\"}",
+          "word_count": 48
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__color_gradient__color_gradient_violation_cell_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          860
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          782.0,
+          452.0,
+          1074.0,
+          774.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6205407846664663,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 33,
+          "mode": "answer_and_annotation",
+          "prompt": "This puzzle diagram shows a reference colored cube net and four labeled candidate colored cube nets. After folding, which option has the same cube-face coloring as the reference net, up to cube rotation?\nRequired annotation format: Set annotation to the image-pixel bounding box [x0,y0,x1,y1] of the chosen option net panel.\nRequired answer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"annotation\":[782,452,1074,774],\"answer\":\"D\"}",
+          "word_count": 76
+        },
+        {
+          "body_word_count": 33,
+          "mode": "answer_only",
+          "prompt": "This puzzle diagram shows a reference colored cube net and four labeled candidate colored cube nets. After folding, which option has the same cube-face coloring as the reference net, up to cube rotation?\nRequired answer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 51
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__cube_net__equivalent_net_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          760
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          744.0,
+          106.0,
+          878.0,
+          375.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1515866536466758,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 31,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows a labeled cube net with one red marked edge and labeled face options. Identify the option whose face shares the red marked edge after the net is folded.\nRequired annotation format: Set annotation to the image-pixel bounding box [x0,y0,x1,y1] of the chosen option card.\nRequired answer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"annotation\":[812,220,966,326],\"answer\":\"D\"}",
+          "word_count": 73
+        },
+        {
+          "body_word_count": 31,
+          "mode": "answer_only",
+          "prompt": "The visual shows a labeled cube net with one red marked edge and labeled face options. Identify the option whose face shares the red marked edge after the net is folded.\nFormat for the \"answer\" field: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 51
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__cube_net__marked_edge_neighbor_face_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          760
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          744.0,
+          389.0,
+          878.0,
+          658.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 27363696895698,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 34,
+          "mode": "answer_and_annotation",
+          "prompt": "This puzzle diagram shows a labeled cube net with one marked reference face and labeled face options. Which option shows the face opposite the marked face when the net is folded into a cube?\nUse this annotation format: Set annotation to the image-pixel bounding box [x0,y0,x1,y1] of the chosen option card.\nUse this answer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"annotation\":[812,220,966,326],\"answer\":\"D\"}",
+          "word_count": 78
+        },
+        {
+          "body_word_count": 34,
+          "mode": "answer_only",
+          "prompt": "This puzzle diagram shows a labeled cube net with one marked reference face and labeled face options. Which option shows the face opposite the marked face when the net is folded into a cube?\nRequired answer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 52
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__cube_net__opposite_face_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          920
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          614.0,
+          348.0,
+          844.0,
+          528.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4609595444467585,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 41,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows a reference route loop above six labeled option loops. Use the outlined token shapes when comparing cyclic order. Select the only option that preserves the same cyclic order as the reference. Rotations are allowed, but reversal is not.\nRequired annotation format: Set annotation to the image-pixel bounding box [x0,y0,x1,y1] around the selected option loop image.\nRequired answer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"annotation\":[574,463,746,617],\"answer\":\"C\"}",
+          "word_count": 84
+        },
+        {
+          "body_word_count": 41,
+          "mode": "answer_only",
+          "prompt": "The figure shows a reference route loop above six labeled option loops. Use the outlined token shapes when comparing cyclic order. Select the only option that preserves the same cyclic order as the reference. Rotations are allowed, but reversal is not.\nAnswer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 58
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__cyclic_order__cyclic_order_equivalent_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          920
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          971.019,
+          262.142,
+          1010.619,
+          301.742
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 103901085354001,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 42,
+          "mode": "answer_and_annotation",
+          "prompt": "This puzzle diagram shows a reference token loop and a partial loop with labeled gaps. Use both the badge symbol and badge color when comparing cyclic order. Select the gap that completes the partial loop as a rotated copy of the reference.\nRequired annotation format: Set annotation to the image-pixel bounding box [x0,y0,x1,y1] around the selected labeled gap badge.\nRequired answer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"annotation\":[755,231,793,269],\"answer\":\"C\"}",
+          "word_count": 85
+        },
+        {
+          "body_word_count": 42,
+          "mode": "answer_only",
+          "prompt": "This puzzle diagram shows a reference token loop and a partial loop with labeled gaps. Use both the badge symbol and badge color when comparing cyclic order. Select the gap that completes the partial loop as a rotated copy of the reference.\nFinal answer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 60
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__cyclic_order__insertion_position_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          920
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          614.0,
+          425.0,
+          874.0,
+          529.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 502821836933134,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 49,
+          "mode": "answer_and_annotation",
+          "prompt": "This puzzle diagram shows a reference token loop, a broken numbered loop, and six swap options. Use the token shapes when comparing cyclic order. Choose the swap of two numbered positions that fixes the broken loop. The repaired loop may be rotated relative to the reference, but not reversed.\nAnnotation format: Set annotation to the image-pixel bounding box [x0,y0,x1,y1] around the selected swap option card.\nAnswer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"annotation\":[493,425,707,521],\"answer\":\"C\"}",
+          "word_count": 90
+        },
+        {
+          "body_word_count": 49,
+          "mode": "answer_only",
+          "prompt": "This puzzle diagram shows a reference token loop, a broken numbered loop, and six swap options. Use the token shapes when comparing cyclic order. Choose the swap of two numbered positions that fixes the broken loop. The repaired loop may be rotated relative to the reference, but not reversed.\nUse this answer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 68
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__cyclic_order__swap_repair_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment",
+        "annotation_value_count": 2,
+        "image_size": [
+          960,
+          560
+        ],
+        "overlay_annotation_type": "segment",
+        "overlay_annotation_value": [
+          [
+            419.581,
+            294.0
+          ],
+          [
+            529.433,
+            294.0
+          ]
+        ],
+        "projected_type": "segment"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7115539890653686,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 23,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a false matchstick equation with labeled digit sticks. Choose the one labeled stick to remove so the equation is true.\nFormat for the \"annotation\" field: Set annotation to the selected stick segment in image pixels as [[x0, y0], [x1, y1]], using the centerline endpoints of that stick.\nFormat for the \"answer\" field: Set answer to the single option label as a capital letter.\nExample JSON:\n{\"annotation\":[[240,180],[312,180]],\"answer\":\"B\"}",
+          "word_count": 75
+        },
+        {
+          "body_word_count": 23,
+          "mode": "answer_only",
+          "prompt": "The image shows a false matchstick equation with labeled digit sticks. Choose the one labeled stick to remove so the equation is true.\nAnswer format: Set answer to the single option label as a capital letter.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 40
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__matchstick__equation_repair_stick_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1200,
+          900
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "selected_option": [
+            788.0,
+            332.0,
+            1108.0,
+            550.0
+          ],
+          "source_number": [
+            58.0,
+            58.0,
+            1142.0,
+            288.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3349205432640561,
+      "issues": [],
+      "observed_query_id": "add_one_stick",
+      "prompts": [
+        {
+          "body_word_count": 26,
+          "mode": "answer_and_annotation",
+          "prompt": "This puzzle diagram shows a Source matchstick number and six labeled candidate numbers. Add one stick to the Source number. Which option shows a reachable number?\nRequired annotation format: Set annotation to a bbox_map in image pixels with keys source_number and selected_option. Each key maps to one bounding box [x0, y0, x1, y1].\nRequired answer format: Set answer to the single option label as a capital letter.\nExample JSON:\n{\"annotation\":{\"source_number\":[58,58,1142,288],\"selected_option\":[440,332,760,550]},\"answer\":\"B\"}",
+          "word_count": 82
+        },
+        {
+          "body_word_count": 26,
+          "mode": "answer_only",
+          "prompt": "This puzzle diagram shows a Source matchstick number and six labeled candidate numbers. Add one stick to the Source number. Which option shows a reachable number?\nRequired answer format: Set answer to the single option label as a capital letter.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 44
+        }
+      ],
+      "query_id": "add_one_stick",
+      "task": "task_puzzles__matchstick__matchstick_number_transform_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1200,
+          900
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "selected_option": [
+            440.0,
+            578.0,
+            760.0,
+            796.0
+          ],
+          "source_number": [
+            58.0,
+            58.0,
+            1142.0,
+            288.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1128043399937083,
+      "issues": [],
+      "observed_query_id": "remove_one_stick",
+      "prompts": [
+        {
+          "body_word_count": 28,
+          "mode": "answer_and_annotation",
+          "prompt": "The puzzle diagram shows a Source matchstick number and six labeled candidate numbers. Which labeled number can be made from the Source number by removing exactly one stick?\nAnnotation format: Set annotation to a bbox_map in image pixels with keys source_number and selected_option. Each key maps to one bounding box [x0, y0, x1, y1].\nAnswer format: Set answer to the single option label as a capital letter.\nExample JSON:\n{\"annotation\":{\"source_number\":[58,58,1142,288],\"selected_option\":[440,332,760,550]},\"answer\":\"B\"}",
+          "word_count": 82
+        },
+        {
+          "body_word_count": 28,
+          "mode": "answer_only",
+          "prompt": "The puzzle diagram shows a Source matchstick number and six labeled candidate numbers. Which labeled number can be made from the Source number by removing exactly one stick?\nAnswer format: Set answer to the single option label as a capital letter.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 45
+        }
+      ],
+      "query_id": "remove_one_stick",
+      "task": "task_puzzles__matchstick__matchstick_number_transform_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 3,
+        "image_size": [
+          900,
+          620
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            522.0,
+            94.0,
+            666.0,
+            238.0
+          ],
+          [
+            522.0,
+            238.0,
+            666.0,
+            382.0
+          ],
+          [
+            522.0,
+            382.0,
+            666.0,
+            526.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 646925091589505,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 31,
+          "mode": "answer_and_annotation",
+          "prompt": "The puzzle diagram shows a matchstick square lattice with some empty grid edges. Add exactly 1 matchsticks to empty edge positions. What is the largest possible number of complete unit squares?\nFormat for the \"annotation\" field: Set annotation to a bbox_set in image pixels, one bounding box [x0, y0, x1, y1] for each complete unit square counted in the final board.\nFormat for the \"answer\" field: Set answer to the maximum number of complete unit squares that can be present.\nExample JSON:\n{\"annotation\":[[126,118,226,218],[226,118,326,218]],\"answer\":2}",
+          "word_count": 93
+        },
+        {
+          "body_word_count": 31,
+          "mode": "answer_only",
+          "prompt": "The puzzle diagram shows a matchstick square lattice with some empty grid edges. Add exactly 1 matchsticks to empty edge positions. What is the largest possible number of complete unit squares?\nRequired answer format: Set answer to the maximum number of complete unit squares that can be present.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 52
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__matchstick__max_square_count_after_additions_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "point",
+        "annotation_value_count": 2,
+        "image_size": [
+          1200,
+          900
+        ],
+        "overlay_annotation_type": "point",
+        "overlay_annotation_value": [
+          375.823,
+          152.02
+        ],
+        "projected_type": "point"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1457492373980493,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 30,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a paper-style orthogonal wall maze with a START cell and labeled exits on the outer boundary. Identify the only boundary exit label that is reachable from START.\nAnnotation format: Set annotation to one image-pixel point [x,y] centered on the selected exit marker.\nAnswer format: set \"answer\" to the selected exit label as a string.\nExample JSON:\n{\"annotation\":[194,118],\"answer\":\"C\"}",
+          "word_count": 65
+        },
+        {
+          "body_word_count": 30,
+          "mode": "answer_only",
+          "prompt": "The image shows a paper-style orthogonal wall maze with a START cell and labeled exits on the outer boundary. Identify the only boundary exit label that is reachable from START.\nFormat for the \"answer\" field: set \"answer\" to the selected exit label as a string.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 49
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__maze__exit_reachability_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "point",
+        "annotation_value_count": 2,
+        "image_size": [
+          1200,
+          900
+        ],
+        "overlay_annotation_type": "point",
+        "overlay_annotation_value": [
+          1037.501,
+          597.69
+        ],
+        "projected_type": "point"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1485834921148411,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 29,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows an orthogonal wall maze with a START cell and labeled exits on the outer boundary. Identify the exit label with the shortest open-corridor path from START.\nRequired annotation format: Set annotation to one image-pixel point [x,y] centered on the selected nearest exit marker.\nRequired answer format: set \"answer\" to the selected exit label as a string.\nExample JSON:\n{\"annotation\":[194,118],\"answer\":\"C\"}",
+          "word_count": 67
+        },
+        {
+          "body_word_count": 29,
+          "mode": "answer_only",
+          "prompt": "The figure shows an orthogonal wall maze with a START cell and labeled exits on the outer boundary. Identify the exit label with the shortest open-corridor path from START.\nFinal answer format: set \"answer\" to the selected exit label as a string.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 46
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__maze__nearest_exit_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          980,
+          600
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          497.5,
+          313.0,
+          710.5,
+          476.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5578284620151162,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 23,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a nonogram clue grid with labeled filled-grid options. Which labeled filled grid is the valid nonogram solution for these clues?\nAnnotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected candidate grid option panel.\nAnswer format: set \"answer\" to the selected candidate-grid option letter as a string.\nExample JSON:\n{\"annotation\":[622,650,768,776],\"answer\":\"D\"}",
+          "word_count": 65
+        },
+        {
+          "body_word_count": 23,
+          "mode": "answer_only",
+          "prompt": "The image shows a nonogram clue grid with labeled filled-grid options. Which labeled filled grid is the valid nonogram solution for these clues?\nAnswer format: set \"answer\" to the selected candidate-grid option letter as a string.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 40
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__nonogram__candidate_solution_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          980,
+          600
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          317.0,
+          342.0,
+          485.0,
+          434.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1999186477242158,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 22,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows a nonogram clue grid with one marked row and labeled row-strip options. Which labeled strip correctly completes row 2?\nFormat for the \"annotation\" field: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected strip option panel.\nFormat for the \"answer\" field: set \"answer\" to the selected strip option letter as a string.\nExample JSON:\n{\"annotation\":[462,650,608,776],\"answer\":\"C\"}",
+          "word_count": 69
+        },
+        {
+          "body_word_count": 22,
+          "mode": "answer_only",
+          "prompt": "The visual shows a nonogram clue grid with one marked row and labeled row-strip options. Which labeled strip correctly completes row 2?\nRequired answer format: set \"answer\" to the selected strip option letter as a string.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 40
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__nonogram__line_completion_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          760,
+          720
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          419.0,
+          472.0,
+          487.0,
+          540.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 331778705685410,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 40,
+          "mode": "answer_and_annotation",
+          "prompt": "This repair puzzle shows a pipe-tile grid with a green start marker and a red triangular finish flag. Exactly one of the labeled pipe tiles is in the wrong orientation. Which tile should be rotated to reconnect start to finish?\nUse this annotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the tile that should be rotated.\nUse this answer format: set \"answer\" to the selected tile letter as a string.\nExample JSON:\n{\"annotation\":[376,248,420,286],\"answer\":\"B\"}",
+          "word_count": 85
+        },
+        {
+          "body_word_count": 40,
+          "mode": "answer_only",
+          "prompt": "This repair puzzle shows a pipe-tile grid with a green start marker and a red triangular finish flag. Exactly one of the labeled pipe tiles is in the wrong orientation. Which tile should be rotated to reconnect start to finish?\nFormat for the \"answer\" field: set \"answer\" to the selected tile letter as a string.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 59
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__pipe_flow__misrotated_tile_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          760,
+          720
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "missing_gap": [
+            289.0,
+            200.0,
+            360.0,
+            271.0
+          ],
+          "selected_option": [
+            261.0,
+            393.0,
+            373.0,
+            505.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1285460575541325,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 47,
+          "mode": "answer_and_annotation",
+          "prompt": "The pipe puzzle shows a pipe-tile grid with a green start marker and a red triangular finish flag. Choose the labeled 2x2 repair piece that, exactly as drawn, completes the path from the green start marker to the red finish flag when placed in the black gap.\nAnnotation format: Set annotation to an object with keys \"selected_option\" and \"missing_gap\". Each value is one image-pixel bounding box [x0,y0,x1,y1] around that visual witness.\nFinal answer format: set \"answer\" to the selected repair option letter as a string.\nExample JSON:\n{\"annotation\":{\"selected_option\":[774,248,902,376],\"missing_gap\":[424,312,512,400]},\"answer\":\"C\"}",
+          "word_count": 103
+        },
+        {
+          "body_word_count": 47,
+          "mode": "answer_only",
+          "prompt": "The pipe puzzle shows a pipe-tile grid with a green start marker and a red triangular finish flag. Choose the labeled 2x2 repair piece that, exactly as drawn, completes the path from the green start marker to the red finish flag when placed in the black gap.\nAnswer format: set \"answer\" to the selected repair option letter as a string.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 64
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__pipe_flow__pipe_flow_repair_tile_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          820,
+          760
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          424.0,
+          524.0,
+          748.0,
+          714.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2429928712690000,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 29,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows two source polyomino pieces and four labeled candidate result shapes. Choose the option that the two source pieces can form exactly using moves and rotations only.\nRequired annotation format: Set annotation to the image-pixel bounding box [x0,y0,x1,y1] of the chosen option card.\nRequired answer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"annotation\":[438,332,762,522],\"answer\":\"B\"}",
+          "word_count": 71
+        },
+        {
+          "body_word_count": 29,
+          "mode": "answer_only",
+          "prompt": "The visual shows two source polyomino pieces and four labeled candidate result shapes. Choose the option that the two source pieces can form exactly using moves and rotations only.\nFinal answer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 47
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__polyomino_assembly__composition_result_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          820,
+          760
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          424.0,
+          310.0,
+          748.0,
+          500.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2721026281174593,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 34,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows a target polyomino and four labeled options, each containing two candidate pieces. Select the option where the two pieces tile the target shape exactly. Pieces may rotate but may not flip.\nRequired annotation format: Set annotation to the image-pixel bounding box [x0,y0,x1,y1] of the chosen option card.\nRequired answer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"annotation\":[438,332,762,522],\"answer\":\"B\"}",
+          "word_count": 76
+        },
+        {
+          "body_word_count": 34,
+          "mode": "answer_only",
+          "prompt": "The figure shows a target polyomino and four labeled options, each containing two candidate pieces. Select the option where the two pieces tile the target shape exactly. Pieces may rotate but may not flip.\nAnswer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 51
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__polyomino_assembly__decomposition_pair_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          820,
+          760
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          424.0,
+          310.0,
+          748.0,
+          500.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5061257281960333,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 33,
+          "mode": "answer_and_annotation",
+          "prompt": "This puzzle diagram shows a polyomino board with one blank hole and four labeled candidate filler pieces. Which option can be moved, rotated, or flipped to fill the hole in the polyomino board?\nFormat for the \"annotation\" field: Set annotation to the image-pixel bounding box [x0,y0,x1,y1] of the chosen option card.\nFormat for the \"answer\" field: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"annotation\":[438,332,762,522],\"answer\":\"B\"}",
+          "word_count": 79
+        },
+        {
+          "body_word_count": 33,
+          "mode": "answer_only",
+          "prompt": "This puzzle diagram shows a polyomino board with one blank hole and four labeled candidate filler pieces. Which option can be moved, rotated, or flipped to fill the hole in the polyomino board?\nUse this answer format: set \"answer\" to the single option label as a capital letter.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 52
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__polyomino_assembly__hole_fill_piece_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          920
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          307.5,
+          626.5,
+          400.5,
+          719.5
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 929710998486493,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 27,
+          "mode": "answer_and_annotation",
+          "prompt": "This figure shows a 3 by 3 Raven-style matrix puzzle with four labeled image options below it. Select the option whose object attributes fit the analogical pattern.\nRequired annotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the correct option cell.\nRequired answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"annotation\":[793,647,899,752],\"answer\":\"D\"}",
+          "word_count": 68
+        },
+        {
+          "body_word_count": 27,
+          "mode": "answer_only",
+          "prompt": "This figure shows a 3 by 3 Raven-style matrix puzzle with four labeled image options below it. Select the option whose object attributes fit the analogical pattern.\nAnswer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 43
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__raven_matrix__raven_analogical_transform_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          920
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          320.5,
+          590.0,
+          387.5,
+          657.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3253753834119809,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 34,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows a 3 by 3 Raven-style matrix puzzle with four labeled image options below it. Which labeled option completes the matrix when the visible rule is about counts of filled mini-grid cells?\nRequired annotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the correct option cell.\nRequired answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"annotation\":[465,647,571,752],\"answer\":\"B\"}",
+          "word_count": 75
+        },
+        {
+          "body_word_count": 34,
+          "mode": "answer_only",
+          "prompt": "The visual shows a 3 by 3 Raven-style matrix puzzle with four labeled image options below it. Which labeled option completes the matrix when the visible rule is about counts of filled mini-grid cells?\nUse this answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 52
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__raven_matrix__raven_count_progression_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          920
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          316.5,
+          601.75,
+          391.5,
+          676.75
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 9004376290330887,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 31,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a 3 by 3 Raven-style matrix puzzle with four labeled image options below it. Identify the option that completes the 3 by 3 matrix under the paired-property rule.\nFormat for the \"annotation\" field: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the correct option cell.\nFormat for the \"answer\" field: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"annotation\":[629,647,735,752],\"answer\":\"C\"}",
+          "word_count": 76
+        },
+        {
+          "body_word_count": 31,
+          "mode": "answer_only",
+          "prompt": "The image shows a 3 by 3 Raven-style matrix puzzle with four labeled image options below it. Identify the option that completes the 3 by 3 matrix under the paired-property rule.\nFormat for the \"answer\" field: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 50
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__raven_matrix__raven_feature_binding_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          920
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          476.5,
+          612.25,
+          559.5,
+          695.25
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4040841235298495,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 32,
+          "mode": "answer_and_annotation",
+          "prompt": "The puzzle diagram shows a 3 by 3 Raven-style matrix puzzle with four labeled image options below it. Identify the option that completes the 3 by 3 matrix under the marker-position rule.\nUse this annotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the correct option cell.\nUse this answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"annotation\":[301,647,407,752],\"answer\":\"A\"}",
+          "word_count": 75
+        },
+        {
+          "body_word_count": 32,
+          "mode": "answer_only",
+          "prompt": "The puzzle diagram shows a 3 by 3 Raven-style matrix puzzle with four labeled image options below it. Identify the option that completes the 3 by 3 matrix under the marker-position rule.\nFinal answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"answer\":\"A\"}",
+          "word_count": 49
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__raven_matrix__raven_position_progression_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          920
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          813.0,
+          588.25,
+          879.0,
+          654.25
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2744794273699947,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 36,
+          "mode": "answer_and_annotation",
+          "prompt": "The puzzle diagram shows a 3 by 3 Raven-style matrix puzzle with four labeled image options below it. Use how filled-cell patterns combine across the matrix to choose the option that completes the missing lower-right cell.\nUse this annotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the correct option cell.\nUse this answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"annotation\":[629,647,735,752],\"answer\":\"C\"}",
+          "word_count": 79
+        },
+        {
+          "body_word_count": 36,
+          "mode": "answer_only",
+          "prompt": "The puzzle diagram shows a 3 by 3 Raven-style matrix puzzle with four labeled image options below it. Use how filled-cell patterns combine across the matrix to choose the option that completes the missing lower-right cell.\nUse this answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 54
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__raven_matrix__raven_set_operation_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          920
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          635.0,
+          628.25,
+          729.0,
+          722.25
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7594152168518624,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 35,
+          "mode": "answer_and_annotation",
+          "prompt": "This figure shows a 3 by 3 Raven-style matrix puzzle with four labeled image options below it. Use the spatial arrangement changes across the matrix to choose the option that completes the missing lower-right cell.\nUse this annotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the correct option cell.\nUse this answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"annotation\":[793,647,899,752],\"answer\":\"D\"}",
+          "word_count": 78
+        },
+        {
+          "body_word_count": 35,
+          "mode": "answer_only",
+          "prompt": "This figure shows a 3 by 3 Raven-style matrix puzzle with four labeled image options below it. Use the spatial arrangement changes across the matrix to choose the option that completes the missing lower-right cell.\nFinal answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 52
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__raven_matrix__raven_spatial_transform_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1480,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          800.0,
+          268.0,
+          936.0,
+          422.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3152266329001379,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 49,
+          "mode": "answer_and_annotation",
+          "prompt": "This figure shows a Rubik-style cube net with face labels, a Target color swatch, and four labeled number options; a prime mark means counterclockwise as viewed from outside the turned face. Use moves U' L F'; which number option counts stickers matching the Target color on the Front face?\nFormat for the \"annotation\" field: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected option panel.\nFormat for the \"answer\" field: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"annotation\":[836,492,972,646],\"answer\":\"A\"}",
+          "word_count": 94
+        },
+        {
+          "body_word_count": 49,
+          "mode": "answer_only",
+          "prompt": "This figure shows a Rubik-style cube net with face labels, a Target color swatch, and four labeled number options; a prime mark means counterclockwise as viewed from outside the turned face. Use moves U' L F'; which number option counts stickers matching the Target color on the Front face?\nUse this answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"answer\":\"A\"}",
+          "word_count": 67
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__rubiks_net__post_move_face_color_count_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1480,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          800.0,
+          126.0,
+          936.0,
+          280.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3731286992996582,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 51,
+          "mode": "answer_and_annotation",
+          "prompt": "This figure shows a Rubik-style cube net with face labels, a (column,row) coordinate reference, and four labeled color-swatch options; a prime mark means counterclockwise as viewed from outside the turned face. After the move sequence U' B' F', select the color option for position (0, 1) on the Front face.\nRequired annotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected option panel.\nRequired answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"annotation\":[990,126,1126,280],\"answer\":\"C\"}",
+          "word_count": 92
+        },
+        {
+          "body_word_count": 51,
+          "mode": "answer_only",
+          "prompt": "This figure shows a Rubik-style cube net with face labels, a (column,row) coordinate reference, and four labeled color-swatch options; a prime mark means counterclockwise as viewed from outside the turned face. After the move sequence U' B' F', select the color option for position (0, 1) on the Front face.\nFormat for the \"answer\" field: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 70
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__rubiks_net__post_move_sticker_color_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1480,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          1058.0,
+          386.0,
+          1430.0,
+          702.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4709522251003359,
+      "issues": [],
+      "observed_query_id": "direct_sequence_result_label",
+      "prompts": [
+        {
+          "body_word_count": 43,
+          "mode": "answer_and_annotation",
+          "prompt": "The puzzle diagram shows a Rubik-style starting cube net with face labels and four labeled candidate result nets; a prime mark means counterclockwise as viewed from outside the turned face. Apply moves F to the starting net and choose the matching result net.\nUse this annotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected candidate-net option panel.\nUse this answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"annotation\":[292,536,490,724],\"answer\":\"B\"}",
+          "word_count": 87
+        },
+        {
+          "body_word_count": 43,
+          "mode": "answer_only",
+          "prompt": "The puzzle diagram shows a Rubik-style starting cube net with face labels and four labeled candidate result nets; a prime mark means counterclockwise as viewed from outside the turned face. Apply moves F to the starting net and choose the matching result net.\nAnswer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 59
+        }
+      ],
+      "query_id": "direct_sequence_result_label",
+      "task": "task_puzzles__rubiks_net__rubiks_move_result_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1480,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          1056.0,
+          52.0,
+          1428.0,
+          368.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 846792150877120,
+      "issues": [],
+      "observed_query_id": "inverse_sequence_result_label",
+      "prompts": [
+        {
+          "body_word_count": 41,
+          "mode": "answer_and_annotation",
+          "prompt": "The puzzle diagram shows a Rubik-style starting cube net with face labels and four labeled candidate result nets; a prime mark means counterclockwise as viewed from outside the turned face. Choose the candidate net after undoing the move sequence D' F.\nRequired annotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected candidate-net option panel.\nRequired answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"annotation\":[292,536,490,724],\"answer\":\"B\"}",
+          "word_count": 83
+        },
+        {
+          "body_word_count": 41,
+          "mode": "answer_only",
+          "prompt": "The puzzle diagram shows a Rubik-style starting cube net with face labels and four labeled candidate result nets; a prime mark means counterclockwise as viewed from outside the turned face. Choose the candidate net after undoing the move sequence D' F.\nRequired answer format: set \"answer\" to the selected option letter as a string.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 58
+        }
+      ],
+      "query_id": "inverse_sequence_result_label",
+      "task": "task_puzzles__rubiks_net__rubiks_move_result_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1000,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          348.557,
+          260.0,
+          491.0,
+          402.443
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7373143414648096,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 24,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows an outline-style paper fold-and-cut puzzle with a fold diagram above labeled unfolded-result options. Select the unfolded-result option for the fold-and-cut puzzle.\nUse this annotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected unfolded-result option panel.\nUse this answer format: set \"answer\" to the selected unfolded-result option letter as a string.\nExample JSON:\n{\"annotation\":[134,420,312,598],\"answer\":\"A\"}",
+          "word_count": 69
+        },
+        {
+          "body_word_count": 24,
+          "mode": "answer_only",
+          "prompt": "The image shows an outline-style paper fold-and-cut puzzle with a fold diagram above labeled unfolded-result options. Select the unfolded-result option for the fold-and-cut puzzle.\nFinal answer format: set \"answer\" to the selected unfolded-result option letter as a string.\nExample JSON:\n{\"answer\":\"A\"}",
+          "word_count": 42
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__sheet_transform__fold_cut_result_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1000,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          286.0,
+          303.0,
+          486.0,
+          413.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8315259861914256,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 29,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows an outline-style paper-folding puzzle with a fold diagram above labeled result options. After the shown fold is made, which labeled option shows the visible mark pattern?\nRequired annotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected folded-result option panel.\nRequired answer format: set \"answer\" to the selected folded-result option letter as a string.\nExample JSON:\n{\"annotation\":[206,388,324,613],\"answer\":\"A\"}",
+          "word_count": 72
+        },
+        {
+          "body_word_count": 29,
+          "mode": "answer_only",
+          "prompt": "The figure shows an outline-style paper-folding puzzle with a fold diagram above labeled result options. After the shown fold is made, which labeled option shows the visible mark pattern?\nFormat for the \"answer\" field: set \"answer\" to the selected folded-result option letter as a string.\nExample JSON:\n{\"answer\":\"A\"}",
+          "word_count": 49
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__sheet_transform__fold_projection_result_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1000,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          162.5,
+          277.0,
+          312.5,
+          427.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4401092328658257,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 40,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows a card-style transparent-sheet overlay puzzle with two aligned source sheets above labeled result options. If the two source sheets are placed on top of each other, which result option shows every marked cell that would be visible?\nAnnotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected result option panel.\nAnswer format: set \"answer\" to the selected overlay-result option letter as a string.\nExample JSON:\n{\"annotation\":[521,384,679,542],\"answer\":\"B\"}",
+          "word_count": 81
+        },
+        {
+          "body_word_count": 40,
+          "mode": "answer_only",
+          "prompt": "The visual shows a card-style transparent-sheet overlay puzzle with two aligned source sheets above labeled result options. If the two source sheets are placed on top of each other, which result option shows every marked cell that would be visible?\nUse this answer format: set \"answer\" to the selected overlay-result option letter as a string.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 59
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__sheet_transform__overlay_union_result_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 5,
+        "image_size": [
+          1080,
+          900
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            507.0,
+            249.0,
+            563.0,
+            305.0
+          ],
+          [
+            507.0,
+            473.0,
+            563.0,
+            529.0
+          ],
+          [
+            507.0,
+            529.0,
+            563.0,
+            585.0
+          ],
+          [
+            507.0,
+            585.0,
+            563.0,
+            641.0
+          ],
+          [
+            507.0,
+            641.0,
+            563.0,
+            697.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7844302088394654,
+      "issues": [],
+      "observed_query_id": "remaining_valid_cells_in_marked_column_count",
+      "prompts": [
+        {
+          "body_word_count": 52,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows a partially filled Star Battle grid with colored regions, visible stars, and one marked row, column, or region. In Star Battle, every row, column, and colored region needs exactly one star, and no two stars may touch, even diagonally. How many possible star placements remain in the marked column?\nAnnotation format: a JSON array of image-pixel bboxes [x0,y0,x1,y1], one for each counted legal cell in the marked column\nAnswer format: the count of legal star cells in the marked column\nExample JSON:\n{\"annotation\":[[402,276,466,340],[402,468,466,532]],\"answer\":2}",
+          "word_count": 99
+        },
+        {
+          "body_word_count": 52,
+          "mode": "answer_only",
+          "prompt": "The visual shows a partially filled Star Battle grid with colored regions, visible stars, and one marked row, column, or region. In Star Battle, every row, column, and colored region needs exactly one star, and no two stars may touch, even diagonally. How many possible star placements remain in the marked column?\nRequired answer format: the count of legal star cells in the marked column\nExample JSON:\n{\"answer\":2}",
+          "word_count": 69
+        }
+      ],
+      "query_id": "remaining_valid_cells_in_marked_column_count",
+      "task": "task_puzzles__star_battle__remaining_valid_cell_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 5,
+        "image_size": [
+          1080,
+          900
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            385.0,
+            295.0,
+            423.0,
+            333.0
+          ],
+          [
+            461.0,
+            295.0,
+            499.0,
+            333.0
+          ],
+          [
+            499.0,
+            295.0,
+            537.0,
+            333.0
+          ],
+          [
+            461.0,
+            333.0,
+            499.0,
+            371.0
+          ],
+          [
+            499.0,
+            333.0,
+            537.0,
+            371.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7114869015068292,
+      "issues": [],
+      "observed_query_id": "remaining_valid_cells_in_marked_region_count",
+      "prompts": [
+        {
+          "body_word_count": 56,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows a partially filled Star Battle grid with colored regions, visible stars, and one marked row, column, or region. A legal Star Battle placement keeps exactly one star in each row, column, and colored region, with no touching stars, including diagonally. Within the marked region, count every cell where another star could be placed.\nAnnotation format: a JSON array of image-pixel bboxes [x0,y0,x1,y1], one for each counted legal cell in the marked region\nAnswer format: the count of legal star cells in the marked region\nExample JSON:\n{\"annotation\":[[402,276,466,340],[466,340,530,404]],\"answer\":2}",
+          "word_count": 103
+        },
+        {
+          "body_word_count": 56,
+          "mode": "answer_only",
+          "prompt": "The figure shows a partially filled Star Battle grid with colored regions, visible stars, and one marked row, column, or region. A legal Star Battle placement keeps exactly one star in each row, column, and colored region, with no touching stars, including diagonally. Within the marked region, count every cell where another star could be placed.\nFormat for the \"answer\" field: the count of legal star cells in the marked region\nExample JSON:\n{\"answer\":2}",
+          "word_count": 75
+        }
+      ],
+      "query_id": "remaining_valid_cells_in_marked_region_count",
+      "task": "task_puzzles__star_battle__remaining_valid_cell_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 4,
+        "image_size": [
+          1080,
+          900
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            404.0,
+            428.0,
+            442.0,
+            466.0
+          ],
+          [
+            442.0,
+            428.0,
+            480.0,
+            466.0
+          ],
+          [
+            518.0,
+            428.0,
+            556.0,
+            466.0
+          ],
+          [
+            556.0,
+            428.0,
+            594.0,
+            466.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6725308263016652,
+      "issues": [],
+      "observed_query_id": "remaining_valid_cells_in_marked_row_count",
+      "prompts": [
+        {
+          "body_word_count": 54,
+          "mode": "answer_and_annotation",
+          "prompt": "The puzzle diagram shows a partially filled Star Battle grid with colored regions, visible stars, and one marked row, column, or region. A legal Star Battle placement keeps exactly one star in each row, column, and colored region, with no touching stars, including diagonally. How many possible star placements remain in the marked row?\nAnnotation format: a JSON array of image-pixel bboxes [x0,y0,x1,y1], one for each counted legal cell in the marked row\nAnswer format: the count of legal star cells in the marked row\nExample JSON:\n{\"annotation\":[[402,276,466,340],[530,276,594,340]],\"answer\":2}",
+          "word_count": 101
+        },
+        {
+          "body_word_count": 54,
+          "mode": "answer_only",
+          "prompt": "The puzzle diagram shows a partially filled Star Battle grid with colored regions, visible stars, and one marked row, column, or region. A legal Star Battle placement keeps exactly one star in each row, column, and colored region, with no touching stars, including diagonally. How many possible star placements remain in the marked row?\nAnswer format: the count of legal star cells in the marked row\nExample JSON:\n{\"answer\":2}",
+          "word_count": 70
+        }
+      ],
+      "query_id": "remaining_valid_cells_in_marked_row_count",
+      "task": "task_puzzles__star_battle__remaining_valid_cell_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1080,
+          900
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          689.0,
+          395.0,
+          740.0,
+          446.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 723173275381247,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 54,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows a partially filled Star Battle grid with colored regions, visible stars, and labeled candidate cells. In Star Battle, every row, column, and colored region needs exactly one star, and no two stars may touch, even diagonally. A star can be added to exactly one labeled candidate cell. Which label is it?\nFormat for the \"annotation\" field: [x0,y0,x1,y1], the image-pixel bbox of the selected candidate cell\nFormat for the \"answer\" field: the legal candidate letter\nExample JSON:\n{\"annotation\":[402,276,466,340],\"answer\":\"C\"}",
+          "word_count": 89
+        },
+        {
+          "body_word_count": 54,
+          "mode": "answer_only",
+          "prompt": "The figure shows a partially filled Star Battle grid with colored regions, visible stars, and labeled candidate cells. In Star Battle, every row, column, and colored region needs exactly one star, and no two stars may touch, even diagonally. A star can be added to exactly one labeled candidate cell. Which label is it?\nUse this answer format: the legal candidate letter\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 66
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__star_battle__valid_cell_anywhere_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          572,
+          572
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          449.222,
+          357.667,
+          489.0,
+          397.444
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3506405753692526,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 25,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a partially filled Sudoku grid. How many digit values from 1 through 9 are still allowed in the red outlined empty cell?\nUse this annotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] for the red outlined marked cell.\nUse this answer format: set \"answer\" to the number of legal candidate digits for the marked empty cell.\nExample JSON:\n{\"annotation\":[140,220,210,290],\"answer\":3}",
+          "word_count": 73
+        },
+        {
+          "body_word_count": 25,
+          "mode": "answer_only",
+          "prompt": "The image shows a partially filled Sudoku grid. How many digit values from 1 through 9 are still allowed in the red outlined empty cell?\nFinal answer format: set \"answer\" to the number of legal candidate digits for the marked empty cell.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 46
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__sudoku__marked_cell_candidate_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          754,
+          754
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          480.0,
+          150.0,
+          538.0,
+          208.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8276830883898948,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 21,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows a partially filled Sudoku grid. Using standard Sudoku rules, what digit belongs in the red outlined empty cell?\nUse this annotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] for the red outlined marked cell.\nUse this answer format: set \"answer\" to the digit that must go in the marked empty cell.\nExample JSON:\n{\"annotation\":[140,220,210,290],\"answer\":7}",
+          "word_count": 68
+        },
+        {
+          "body_word_count": 21,
+          "mode": "answer_only",
+          "prompt": "The visual shows a partially filled Sudoku grid. Using standard Sudoku rules, what digit belongs in the red outlined empty cell?\nUse this answer format: set \"answer\" to the digit that must go in the marked empty cell.\nExample JSON:\n{\"answer\":7}",
+          "word_count": 42
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__sudoku__marked_cell_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          900,
+          900
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          75.0,
+          750.556,
+          149.444,
+          825.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6180144642205911,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 16,
+          "mode": "answer_and_annotation",
+          "prompt": "This scene shows a partially filled Sudoku grid. Which lettered filled Sudoku cell must be corrected?\nRequired annotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] for the selected lettered cell.\nRequired answer format: set \"answer\" to the option letter of the filled cell with the wrong digit.\nExample JSON:\n{\"annotation\":[140,220,210,290],\"answer\":\"B\"}",
+          "word_count": 61
+        },
+        {
+          "body_word_count": 16,
+          "mode": "answer_only",
+          "prompt": "This scene shows a partially filled Sudoku grid. Which lettered filled Sudoku cell must be corrected?\nUse this answer format: set \"answer\" to the option letter of the filled cell with the wrong digit.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 38
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__sudoku__mistake_cell_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          760,
+          620
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          452.0,
+          359.0,
+          497.0,
+          404.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5261788117829351,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 45,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a Tents puzzle grid with row and column clues, trees, visible tents, and labeled cells or tents. Use the row and column clues, the visible tents, and the no-touch rule. Which candidate label is the legal tent cell for the marked tree?\nAnnotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] for the selected candidate cell.\nFinal answer format: set \"answer\" to the label of the only candidate cell where the marked tree's missing tent can be placed.\nExample JSON:\n{\"annotation\":[512,386,574,448],\"answer\":\"C\"}",
+          "word_count": 94
+        },
+        {
+          "body_word_count": 45,
+          "mode": "answer_only",
+          "prompt": "The image shows a Tents puzzle grid with row and column clues, trees, visible tents, and labeled cells or tents. Use the row and column clues, the visible tents, and the no-touch rule. Which candidate label is the legal tent cell for the marked tree?\nRequired answer format: set \"answer\" to the label of the only candidate cell where the marked tree's missing tent can be placed.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 71
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__tents__missing_tent_cell_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          640,
+          560
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          386.0,
+          346.0,
+          433.0,
+          393.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8900749231686426,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 37,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows a Tents puzzle grid with row and column clues, trees, visible tents, and labeled cells or tents. Each tent should be orthogonally adjacent to at least one tree. Which labeled tent violates that rule?\nFormat for the \"annotation\" field: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] for the selected labeled tent cell.\nFormat for the \"answer\" field: set \"answer\" to the label of the tent that is not orthogonally adjacent to any tree.\nExample JSON:\n{\"annotation\":[356,226,416,286],\"answer\":\"B\"}",
+          "word_count": 89
+        },
+        {
+          "body_word_count": 37,
+          "mode": "answer_only",
+          "prompt": "The scene shows a Tents puzzle grid with row and column clues, trees, visible tents, and labeled cells or tents. Each tent should be orthogonally adjacent to at least one tree. Which labeled tent violates that rule?\nFormat for the \"answer\" field: set \"answer\" to the label of the tent that is not orthogonally adjacent to any tree.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 62
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__tents__violating_tent_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1120,
+          760
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          405.0,
+          458.0,
+          477.0,
+          530.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4010925675741432,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 47,
+          "mode": "answer_and_annotation",
+          "prompt": "This scene shows a toggle grid with switch cells, binary cell states, and visual answer options. Which lettered switch in the start grid should be pressed once to produce the target grid? A press flips that cell and its up, down, left, and right neighbors when present.\nAnnotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected switch cell.\nAnswer format: set \"answer\" to the label of the switch cell that transforms the start grid into the target grid.\nExample JSON:\n{\"annotation\":[210,286,282,358],\"answer\":\"C\"}",
+          "word_count": 94
+        },
+        {
+          "body_word_count": 47,
+          "mode": "answer_only",
+          "prompt": "This scene shows a toggle grid with switch cells, binary cell states, and visual answer options. Which lettered switch in the start grid should be pressed once to produce the target grid? A press flips that cell and its up, down, left, and right neighbors when present.\nFinal answer format: set \"answer\" to the label of the switch cell that transforms the start grid into the target grid.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 72
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__toggle_grid__toggle_repair_switch_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1120,
+          760
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          76.0,
+          528.0,
+          306.0,
+          706.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5570532711818613,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 37,
+          "mode": "answer_and_annotation",
+          "prompt": "This scene shows a toggle grid with switch cells, binary cell states, and visual answer options. Apply the visible red switch press to the start grid using the orthogonal-neighbor toggle rule. Which labeled result grid is produced?\nAnnotation format: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected result option panel.\nFinal answer format: set \"answer\" to the label of the result-grid option produced by pressing the red marked switch.\nExample JSON:\n{\"annotation\":[722,552,882,806],\"answer\":\"D\"}",
+          "word_count": 84
+        },
+        {
+          "body_word_count": 37,
+          "mode": "answer_only",
+          "prompt": "This scene shows a toggle grid with switch cells, binary cell states, and visual answer options. Apply the visible red switch press to the start grid using the orthogonal-neighbor toggle rule. Which labeled result grid is produced?\nUse this answer format: set \"answer\" to the label of the result-grid option produced by pressing the red marked switch.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 61
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__toggle_grid__toggle_result_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          760,
+          520
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          319.68,
+          215.28,
+          440.32,
+          325.52
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4577339748507616,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 23,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows an isometric voxel-cube structure with orthographic projection panels when needed. How many unit cubes are in the shown voxel structure?\nFormat for the \"annotation\" field: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the voxel structure.\nFormat for the \"answer\" field: set \"answer\" to the total unit-cube count as an integer.\nExample JSON:\n{\"annotation\":[310,170,590,520],\"answer\":9}",
+          "word_count": 67
+        },
+        {
+          "body_word_count": 23,
+          "mode": "answer_only",
+          "prompt": "The scene shows an isometric voxel-cube structure with orthographic projection panels when needed. How many unit cubes are in the shown voxel structure?\nAnswer format: set \"answer\" to the total unit-cube count as an integer.\nExample JSON:\n{\"answer\":9}",
+          "word_count": 39
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__voxel_cube__cube_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          760,
+          520
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          526.0,
+          300.0,
+          716.0,
+          478.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2344804876821701,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 22,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows an isometric voxel-cube structure with orthographic projection panels when needed. Select the labeled option matching the structure's right projection.\nFormat for the \"annotation\" field: Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected projection option panel.\nFormat for the \"answer\" field: set \"answer\" to the label of the matching projection option.\nExample JSON:\n{\"annotation\":[690,420,860,580],\"answer\":\"C\"}",
+          "word_count": 68
+        },
+        {
+          "body_word_count": 22,
+          "mode": "answer_only",
+          "prompt": "The scene shows an isometric voxel-cube structure with orthographic projection panels when needed. Select the labeled option matching the structure's right projection.\nFormat for the \"answer\" field: set \"answer\" to the label of the matching projection option.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 41
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__voxel_cube__cube_projection_match_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          760,
+          520
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            167.8,
+            204.36,
+            318.6,
+            378.04
+          ],
+          [
+            441.4,
+            204.36,
+            592.2,
+            378.04
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3626171827470011,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 29,
+          "mode": "answer_and_annotation",
+          "prompt": "The scene shows an isometric voxel-cube structure with orthographic projection panels when needed. Count the cubes that must be inserted into the changed structure to complete the reference cuboid.\nAnnotation format: Set annotation to a JSON array of image-pixel bounding boxes [x0,y0,x1,y1], one around each compared structure.\nFinal answer format: set \"answer\" to the number of cubes that must be added as an integer.\nExample JSON:\n{\"annotation\":[[120,210,420,560],[520,225,820,560]],\"answer\":2}",
+          "word_count": 80
+        },
+        {
+          "body_word_count": 29,
+          "mode": "answer_only",
+          "prompt": "The scene shows an isometric voxel-cube structure with orthographic projection panels when needed. Count the cubes that must be inserted into the changed structure to complete the reference cuboid.\nRequired answer format: set \"answer\" to the number of cubes that must be added as an integer.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 50
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__voxel_cube__cube_structure_change_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 3,
+        "image_size": [
+          760,
+          520
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            499.6,
+            291.4,
+            539.6,
+            331.4
+          ],
+          [
+            539.6,
+            291.4,
+            579.6,
+            331.4
+          ],
+          [
+            499.6,
+            251.4,
+            539.6,
+            291.4
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2048049215374083,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 28,
+          "mode": "answer_and_annotation",
+          "prompt": "This visual shows an isometric voxel-cube structure with orthographic projection panels when needed. Use the stack to fill the front view grid. How many cells would be filled?\nAnnotation format: Set annotation to a JSON array of image-pixel bounding boxes [x0,y0,x1,y1], one for each projection-grid cell that should be filled.\nFinal answer format: set \"answer\" to the filled projection-cell count as an integer.\nExample JSON:\n{\"annotation\":[[620,250,662,292],[662,250,704,292],[620,292,662,334]],\"answer\":3}",
+          "word_count": 83
+        },
+        {
+          "body_word_count": 28,
+          "mode": "answer_only",
+          "prompt": "This visual shows an isometric voxel-cube structure with orthographic projection panels when needed. Use the stack to fill the front view grid. How many cells would be filled?\nRequired answer format: set \"answer\" to the filled projection-cell count as an integer.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 45
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__voxel_cube__cube_visible_projection_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment",
+        "annotation_value_count": 2,
+        "image_size": [
+          524,
+          488
+        ],
+        "overlay_annotation_type": "segment",
+        "overlay_annotation_value": [
+          [
+            347.0,
+            289.0
+          ],
+          [
+            209.0,
+            289.0
+          ]
+        ],
+        "projected_type": "segment"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 943743655030752,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 30,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows a row-and-column labeled word-search grid. Words may read horizontally, vertically, or diagonally, forward or backward. Which option below the grid is a word present in the puzzle?\nAnnotation format: Set annotation to one image-pixel line segment [[x0, y0], [x1, y1]] from the present word's first-letter cell center to its last-letter cell center.\nFinal answer format: set \"answer\" to the selected option letter.\nExample JSON:\n{\"annotation\":[[223,251],[339,251]],\"answer\":\"C\"}",
+          "word_count": 74
+        },
+        {
+          "body_word_count": 30,
+          "mode": "answer_only",
+          "prompt": "The figure shows a row-and-column labeled word-search grid. Words may read horizontally, vertically, or diagonally, forward or backward. Which option below the grid is a word present in the puzzle?\nFinal answer format: set \"answer\" to the selected option letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 44
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__word_search__present_word_option_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_sequence",
+        "annotation_value_count": 4,
+        "image_size": [
+          779,
+          576
+        ],
+        "overlay_annotation_type": "bbox_sequence",
+        "overlay_annotation_value": [
+          [
+            404.0,
+            244.0,
+            446.0,
+            286.0
+          ],
+          [
+            404.0,
+            202.0,
+            446.0,
+            244.0
+          ],
+          [
+            404.0,
+            160.0,
+            446.0,
+            202.0
+          ],
+          [
+            404.0,
+            118.0,
+            446.0,
+            160.0
+          ]
+        ],
+        "projected_type": "bbox_sequence"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1145341166933029,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 23,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows a row-and-column labeled word-search grid. Which labeled option below the grid matches the placement of \"FERN\" in the word-search grid?\nFormat for the \"annotation\" field: Set annotation to a JSON array of ordered image-pixel bounding boxes [x0,y0,x1,y1], one for each grid cell in the found word from first letter to last letter.\nFormat for the \"answer\" field: set \"answer\" to the selected option letter.\nExample JSON:\n{\"annotation\":[[194,222,252,280],[252,222,310,280],[310,222,368,280]],\"answer\":\"C\"}",
+          "word_count": 87
+        },
+        {
+          "body_word_count": 23,
+          "mode": "answer_only",
+          "prompt": "The figure shows a row-and-column labeled word-search grid. Which labeled option below the grid matches the placement of \"FERN\" in the word-search grid?\nFinal answer format: set \"answer\" to the selected option letter.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 37
+        }
+      ],
+      "query_id": "single",
+      "task": "task_puzzles__word_search__search_location_label"
+    }
+  ],
+  "summary": {
+    "expected_public_query_id_count": 65,
+    "issue_count": 0,
+    "issue_counts_by_category": {},
+    "issue_counts_by_severity": {},
+    "sampled_instance_count": 65,
+    "sampled_query_id_count": 65,
+    "task_count": 60
+  }
+}

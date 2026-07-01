@@ -753,20 +753,35 @@ def build_dots_and_boxes_completable_box_option_board_state(
             continue
 
         correct_box_id = str(completable_box_ids[0])
+        answer_index = labels.index(str(answer_label))
+        before_count = int(answer_index)
+        after_count = int(option_count) - int(answer_index) - 1
+        correct_coord = _box_coord_from_id(correct_box_id)
         distractor_box_ids = [str(box_id) for box_id, count in sorted(side_counts.items()) if int(count) < 3]
-        if len(distractor_box_ids) < int(option_count) - 1:
+        before_options = [
+            str(box_id)
+            for box_id in distractor_box_ids
+            if _box_coord_from_id(str(box_id)) < correct_coord
+        ]
+        after_options = [
+            str(box_id)
+            for box_id in distractor_box_ids
+            if _box_coord_from_id(str(box_id)) > correct_coord
+        ]
+        if len(before_options) < before_count or len(after_options) < after_count:
             continue
-        rng.shuffle(distractor_box_ids)
-
-        distractor_iter = iter(distractor_box_ids[: int(option_count) - 1])
-        option_box_by_label: Dict[str, str] = {}
-        for label in labels:
-            if str(label) == str(answer_label):
-                option_box_by_label[str(label)] = str(correct_box_id)
-            else:
-                option_box_by_label[str(label)] = str(next(distractor_iter))
-
-        option_label_by_box_id = tuple((str(option_box_by_label[str(label)]), str(label)) for label in labels)
+        rng.shuffle(before_options)
+        rng.shuffle(after_options)
+        selected_box_ids = sorted(
+            tuple(before_options[:before_count])
+            + (str(correct_box_id),)
+            + tuple(after_options[:after_count]),
+            key=_box_coord_from_id,
+        )
+        option_label_by_box_id = tuple(
+            (str(box_id), str(label))
+            for label, box_id in zip(labels, selected_box_ids)
+        )
         return _make_board_state_from_drawn_edges(
             box_rows=int(box_rows),
             box_cols=int(box_cols),

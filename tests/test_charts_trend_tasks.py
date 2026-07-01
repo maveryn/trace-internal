@@ -10,7 +10,6 @@ from trace.tasks.charts.single_series.endpoint_change_value import ChartsTrendEn
 from trace.tasks.charts.single_series.interval_rate_value import ChartsTrendIntervalRateValueTask
 from trace.tasks.charts.single_series.monotone_streak_length import ChartsTrendMonotoneStreakLengthTask
 from trace.tasks.charts.single_series.observed_threshold_crossing_label import ChartsTrendObservedThresholdCrossingLabelTask
-from trace.tasks.charts.single_series.projected_threshold_crossing_label import ChartsTrendProjectedThresholdCrossingLabelTask
 from trace.tasks.charts.single_series.turning_point_count import ChartsTrendTurningPointCountTask
 from trace.tasks.registry import list_default_task_ids
 
@@ -230,20 +229,6 @@ def test_chart_trend_threshold_crossing_tasks_match_contract() -> None:
     cases = (
         (ChartsTrendObservedThresholdCrossingLabelTask(), "observed_above_threshold_crossing_label", "observed", "above", "line"),
         (ChartsTrendObservedThresholdCrossingLabelTask(), "observed_below_threshold_crossing_label", "observed", "below", "bar"),
-        (
-            ChartsTrendProjectedThresholdCrossingLabelTask(),
-            "projected_above_threshold_crossing_label",
-            "linear_projection",
-            "above",
-            "dot_plot",
-        ),
-        (
-            ChartsTrendProjectedThresholdCrossingLabelTask(),
-            "projected_below_threshold_crossing_label",
-            "linear_projection",
-            "below",
-            "lollipop",
-        ),
     )
     for seed, (task, query_id, crossing_mode, crossing_direction, scene_variant) in enumerate(cases, start=16100):
         out = task.generate(seed, params={"query_id": query_id, "scene_variant": scene_variant}, max_attempts=10)
@@ -257,68 +242,35 @@ def test_chart_trend_threshold_crossing_tasks_match_contract() -> None:
         answer_index = int(execution["answer_index"])
         annotation_labels = [str(label) for label in execution["annotation_labels"]]
         ordered_annotation_labels = [str(label) for label in execution["ordered_annotation_labels"]]
-        annotation_points = [list(point) for point in out.annotation_gt.value]
+        annotation_point = [float(value) for value in out.annotation_gt.value]
 
         assert str(out.query_id) == query_id
         assert str(execution["crossing_mode"]) == crossing_mode
         assert str(execution["crossing_direction"]) == crossing_direction
         assert out.answer_gt.type == "string"
-        assert out.annotation_gt.type == "point_set"
+        assert out.annotation_gt.type == "point"
         assert str(out.answer_gt.value) == str(labels[answer_index])
         assert str(execution["scene_variant"]) == scene_variant
         assert str(trace["render_spec"]["scene_variant"]) == scene_variant
         assert str(threshold) in str(out.prompt)
         assert "red dashed" not in str(out.prompt).lower()
-        assert trace["projected_annotation"]["point_set"] == annotation_points
-        assert trace["projected_annotation"]["pixel_point_set"] == annotation_points
+        assert trace["projected_annotation"]["point"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_point"] == out.annotation_gt.value
         assert "point_sequence" not in trace["projected_annotation"]
         assert "pixel_point_sequence" not in trace["projected_annotation"]
         assert "label_set" not in trace["projected_annotation"]
         assert "ordered_label_set" not in trace["projected_annotation"]
-        assert len(annotation_points) == len(ordered_annotation_labels)
-        assert len(trace["projected_annotation"]["bbox_set"]) == len(annotation_points)
+        assert len(annotation_point) == 2
+        assert len(trace["projected_annotation"]["bbox_set"]) == 1
         assert set(trace["render_map"]["label_centers_px"]) == set(labels)
         assert {str(entity["attrs"]["label"]) for entity in trace["scene_ir"]["entities"]} == set(labels)
 
-        if crossing_mode == "linear_projection":
-            projected_labels = [str(label) for label in execution["projected_labels"]]
-            assert projected_labels
-            first_projected_index = labels.index(projected_labels[0])
-            observed_values = [int(value) for value in values[:first_projected_index]]
-            projected_values = [int(value) for value in values[first_projected_index:]]
-            signed_delta = int(observed_values[-1]) - int(observed_values[-2])
-            assert signed_delta != 0
-            assert abs(signed_delta) == int(execution["projection_delta"])
-            assert all(int(right) - int(left) == signed_delta for left, right in zip(observed_values[:-1], observed_values[1:]))
-            assert all(
-                int(value) == int(observed_values[-1]) + (index + 1) * signed_delta
-                for index, value in enumerate(projected_values)
-            )
-            assert (signed_delta > 0) == (crossing_direction == "above")
-            expected_index = _first_crossing_index(
-                values,
-                threshold=threshold,
-                comparison=comparison,
-                start_index=first_projected_index,
-            )
-            assert answer_index == expected_index
-            assert all(str(execution["point_kind_by_label"][label]) == "projected" for label in projected_labels)
-            projected_entities = {
-                str(entity["attrs"]["label"]): entity
-                for entity in trace["scene_ir"]["entities"]
-                if str(entity["attrs"]["label"]) in set(projected_labels)
-            }
-            assert all(str(entity["entity_type"]) == "future_label_slot" for entity in projected_entities.values())
-            assert all(bool(entity["attrs"]["visible"]) is False for entity in projected_entities.values())
-            assert all("value" not in entity["attrs"] for entity in projected_entities.values())
-            expected_annotation = set(labels[first_projected_index - 2 : answer_index + 1])
-        else:
-            expected_index = _first_crossing_index(values, threshold=threshold, comparison=comparison)
-            assert answer_index == expected_index
-            assert not execution["projected_labels"]
-            expected_annotation = set(labels[: answer_index + 1])
-        assert set(annotation_labels) == expected_annotation
-        assert set(ordered_annotation_labels) == expected_annotation
+        expected_index = _first_crossing_index(values, threshold=threshold, comparison=comparison)
+        assert answer_index == expected_index
+        assert not execution["projected_labels"]
+        expected_annotation = str(labels[answer_index])
+        assert annotation_labels == [expected_annotation]
+        assert ordered_annotation_labels == [expected_annotation]
 
 
 @pytest.mark.parametrize(
@@ -329,12 +281,6 @@ def test_chart_trend_threshold_crossing_tasks_match_contract() -> None:
             "task_charts__single_series__observed_threshold_crossing_label",
             "observed",
             "observed_above_threshold_crossing_label",
-        ),
-        (
-            ChartsTrendProjectedThresholdCrossingLabelTask,
-            "task_charts__single_series__projected_threshold_crossing_label",
-            "linear_projection",
-            "projected_above_threshold_crossing_label",
         ),
     ),
 )
@@ -377,75 +323,16 @@ def test_chart_trend_threshold_crossing_prompt_examples_match_selected_variant()
     cases = (
         (ChartsTrendObservedThresholdCrossingLabelTask(), "observed_above_threshold_crossing_label"),
         (ChartsTrendObservedThresholdCrossingLabelTask(), "observed_below_threshold_crossing_label"),
-        (ChartsTrendProjectedThresholdCrossingLabelTask(), "projected_above_threshold_crossing_label"),
-        (ChartsTrendProjectedThresholdCrossingLabelTask(), "projected_below_threshold_crossing_label"),
     )
     for index, (task, query_id) in enumerate(cases, start=16150):
         out = task.generate(index, params={"query_id": query_id}, max_attempts=10)
         answer_and_annotation = _extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = _extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert isinstance(answer_and_annotation["annotation"], list)
+        assert len(answer_and_annotation["annotation"]) == 2
+        assert all(isinstance(value, int) for value in answer_and_annotation["annotation"])
         assert isinstance(answer_and_annotation["answer"], str)
         assert answer_only == {"answer": answer_and_annotation["answer"]}
-
-
-def test_chart_trend_threshold_crossing_projection_supports_two_observed_marks() -> None:
-    task = ChartsTrendProjectedThresholdCrossingLabelTask()
-    out = task.generate(
-        16160,
-        params={
-            "query_id": "projected_above_threshold_crossing_label",
-            "scene_variant": "line",
-            "observed_count_min": 2,
-            "observed_count_max": 2,
-            "projection_count_min": 6,
-            "projection_count_max": 6,
-        },
-        max_attempts=10,
-    )
-    execution = out.trace_payload["execution_trace"]
-    assert int(execution["observed_count"]) == 2
-    assert int(execution["projection_count"]) == 6
-    assert len(execution["observed_labels"]) == 2
-    assert len(execution["projected_labels"]) == 6
-    assert out.annotation_gt.type == "point_set"
-    assert len(out.annotation_gt.value) == len(execution["ordered_annotation_labels"])
-
-
-def test_chart_trend_threshold_crossing_projection_counts_decouple_from_query_id_sampling() -> None:
-    task = ChartsTrendProjectedThresholdCrossingLabelTask()
-    observed_by_variant = {"projected_above_threshold_crossing_label": set(), "projected_below_threshold_crossing_label": set()}
-    for sampling_index in range(16):
-        out = task.generate(
-            16161 + sampling_index,
-            params={
-                "scene_variant": "line",
-                "observed_count_min": 2,
-                "observed_count_max": 5,
-                "projection_count_min": 4,
-                "projection_count_max": 6,
-            },
-            max_attempts=10,
-        )
-        observed_by_variant[str(out.query_id)].add(int(out.trace_payload["execution_trace"]["observed_count"]))
-    assert observed_by_variant["projected_above_threshold_crossing_label"].issubset({2, 3, 4, 5})
-    assert observed_by_variant["projected_below_threshold_crossing_label"].issubset({2, 3, 4, 5})
-    assert observed_by_variant["projected_above_threshold_crossing_label"]
-    assert observed_by_variant["projected_below_threshold_crossing_label"]
-
-
-def test_chart_trend_threshold_crossing_task_is_deterministic() -> None:
-    task = ChartsTrendProjectedThresholdCrossingLabelTask()
-    params = {"query_id": "projected_above_threshold_crossing_label", "scene_variant": "line"}
-    out_a = task.generate(16170, params=params, max_attempts=10)
-    out_b = task.generate(16170, params=params, max_attempts=10)
-    assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()
-    assert out_a.annotation_gt.to_dict() == out_b.annotation_gt.to_dict()
-    assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
-    assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
-    assert out_a.prompt == out_b.prompt
-    assert out_a.image.tobytes() == out_b.image.tobytes()
-
 
 def test_chart_trend_threshold_crossing_uses_bounded_value_axis() -> None:
     task = ChartsTrendObservedThresholdCrossingLabelTask()
@@ -500,9 +387,13 @@ def test_chart_trend_interval_change_tasks_match_contract() -> None:
             assert int(out.answer_gt.value) == delta
         elif query_id == "percent_endpoint_change_value":
             assert int(out.answer_gt.value) == int(round(100 * delta / start_value))
+            assert "negative" in str(out.prompt).lower()
+            assert "percent sign" in str(out.prompt).lower()
         else:
             assert query_id == "single"
-            assert int(out.answer_gt.value) == int(delta // gap)
+            assert int(out.answer_gt.value) == abs(int(delta // gap))
+            assert int(out.answer_gt.value) >= 0
+            assert "absolute" in str(out.prompt).lower()
         assert int(out.answer_gt.value) == int(execution["answer_value"])
         _assert_value_axis_covers_values(render, values)
 

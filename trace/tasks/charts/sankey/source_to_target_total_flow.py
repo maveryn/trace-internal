@@ -10,6 +10,7 @@ from trace.tasks.registry import register_task
 from ._lifecycle import build_sankey_plan, run_sankey_task
 from .shared.sampling import (
     answer_value_bounds,
+    bottleneck_segment_ref,
     path_dict,
     sample_frame,
     sample_route_count,
@@ -56,17 +57,13 @@ def _build_plan(params: dict[str, Any], instance_seed: int, selected: str, proba
     )
     if int(answer) < int(answer_min) or int(answer) > int(answer_max):
         raise ValueError("Sankey source-target total answer outside configured support")
-    segment_refs = tuple(
-        segment_id
-        for path in selected_paths
-        for segment_id in (f"{path.path_id}:source_middle", f"{path.path_id}:middle_target")
-    )
+    segment_refs = tuple(bottleneck_segment_ref(path) for path in selected_paths)
     question = SankeyQuestion(
         branch_id=QUERY_ID,
         branch_probabilities=dict(probabilities),
         answer=int(answer),
         answer_type="integer",
-        annotation_type="bbox_set",
+        annotation_type="point_set",
         annotation_segment_ids=tuple(segment_refs),
         params={
             "program_code": "sum(min(value(source_to_middle), value(middle_to_target)) for route in routes(source_label, target_label))",

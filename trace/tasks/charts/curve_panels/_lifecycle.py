@@ -12,7 +12,7 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.charts.curve_panels.shared.annotations import (
     bbox_set_from_panel_labels,
-    keyed_point_map_from_ids,
+    point_map_from_ids,
     point_set_from_ids,
 )
 from trace.tasks.charts.curve_panels.shared.defaults import SCENE_ID, SCENE_VARIANT
@@ -136,15 +136,15 @@ def _annotation_for_plan(plan: CurvePanelTaskPlan, rendered) -> TypedValue:
         if not boxes and not bool(plan.allow_empty_annotation):
             raise RuntimeError("curve-panel task produced empty bbox annotation")
         return TypedValue(type=annotation_type, value=[list(box) for box in boxes])
-    if annotation_type == "keyed_point_map":
-        points = keyed_point_map_from_ids(
+    if annotation_type == "point_map":
+        points = point_map_from_ids(
             rendered=rendered,
             keyed_point_ids=plan.dataset.query.annotation_keyed_point_ids,
         )
         if not points and not bool(plan.allow_empty_annotation):
             raise RuntimeError("curve-panel task produced empty keyed annotation")
         return TypedValue(type=annotation_type, value=dict(points))
-    if annotation_type != "point_set":
+    if annotation_type not in {"point", "point_set"}:
         raise ValueError(f"unsupported annotation type: {annotation_type}")
     points = point_set_from_ids(
         rendered=rendered,
@@ -154,6 +154,10 @@ def _annotation_for_plan(plan: CurvePanelTaskPlan, rendered) -> TypedValue:
     )
     if not points and not bool(plan.allow_empty_annotation):
         raise RuntimeError("curve-panel task produced empty annotation")
+    if annotation_type == "point":
+        if len(points) != 1:
+            raise RuntimeError("curve-panel scalar point annotation must contain exactly one point")
+        return TypedValue(type=annotation_type, value=list(points[0]))
     return TypedValue(type=annotation_type, value=[list(point) for point in points])
 
 
@@ -246,6 +250,7 @@ def build_curve_panel_plan_from_query(
     threshold_crossings: tuple[Any, ...] = (),
     annotation_type: str = "point_set",
     allow_empty_annotation: bool = False,
+    omitted_panel_methods: Mapping[str, tuple[str, ...]] | None = None,
 ) -> CurvePanelTaskPlan:
     """Assemble neutral dataset, prompt, and relation metadata from task semantics."""
 
@@ -259,6 +264,7 @@ def build_curve_panel_plan_from_query(
             panel_labels=panel_labels,
             method_labels=method_labels,
             colors=colors,
+            omitted_panel_methods=omitted_panel_methods,
         ),
         query=query,
         intersections=tuple(intersections),

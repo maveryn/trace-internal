@@ -7,7 +7,7 @@ from ....core.types import TypedValue
 from ...registry import register_task
 from ._lifecycle import RegionMapBoundObjective, run_region_map_lifecycle
 from .shared.annotations import region_bbox_set_bundle
-from .shared.defaults import resolve_scene_variant
+from .shared.defaults import fixed_scene_variant_probabilities
 from .shared.sampling import construct_named_region_set_total_dataset
 
 
@@ -27,13 +27,12 @@ class ChartsMapNamedRegionSetTotalValueTask:
     default_dataset_enabled = True
 
     def _construct_region_set_dataset(self, instance_seed, params, selected_query_id, query_probabilities):
-        scene_variant, scene_variant_probabilities = resolve_scene_variant(params, instance_seed=instance_seed)
         dataset = construct_named_region_set_total_dataset(
-            scene_variant=scene_variant,
+            scene_variant="synthetic_region_map",
             params=params,
             instance_seed=instance_seed,
         )
-        dataset["_scene_variant_probabilities"] = scene_variant_probabilities
+        dataset["_scene_variant_probabilities"] = fixed_scene_variant_probabilities("synthetic_region_map")
         return dataset
 
     def _bind_region_set_total_objective(self, dataset, rendered, selected_query_id):

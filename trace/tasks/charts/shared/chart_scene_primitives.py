@@ -7,6 +7,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageChops, ImageDraw
 
+from ....core.sampling import uniform_choice
+from ....core.seed import spawn_rng
 from .chart_scene_types import ChartColor, ChartRenderParams, RenderedChartScene
 
 
@@ -516,7 +518,12 @@ def resolve_chart_render_params(params: Mapping[str, Any]) -> ChartRenderParams:
         styles = params.get("guide_line_styles", ())
         if isinstance(styles, Sequence) and styles and not isinstance(styles, (str, bytes)):
             seed = int(params.get("_guide_style_seed", 0))
-            return str(styles[abs(seed) % len(styles)])
+            return str(
+                uniform_choice(
+                    spawn_rng(int(seed), "charts.shared.guide_line_style"),
+                    tuple(str(style) for style in styles),
+                )
+            )
         return "dashed"
 
     return ChartRenderParams(

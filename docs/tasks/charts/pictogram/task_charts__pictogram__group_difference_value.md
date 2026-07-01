@@ -18,4 +18,11 @@
 
 ## Program Contract
 
-`difference(value(category_total(category_a, unit_scale)), value(category_total(category_b, unit_scale)), mode=absolute); output=integer_value; annotation=bbox_map(category_a_row,category_b_row); scene=pictogram; scope=group_difference_value`
+Program: `difference(value(category_total(category_a, unit_scale)), value(category_total(category_b, unit_scale)), mode=absolute); output=integer_value; annotation=bbox_map(category_a_row,category_b_row); scene=pictogram; scope=group_difference_value`
+
+Candidate set: the visible pictogram rows, repeated icons, and category labels inside the `group_difference_value` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `difference` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `bbox_map` witnesses bound by `bbox_map(category_a_row,category_b_row)`. Annotation maps each compared category label to the bbox around that category row.
+Query ids: `single`.

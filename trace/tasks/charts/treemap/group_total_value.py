@@ -6,9 +6,11 @@ from collections.abc import Mapping
 from typing import Any
 
 from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
+from trace.tasks.charts.shared.composition.values import int_sum
 from trace.tasks.registry import register_task
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from ._lifecycle import TreemapTaskPlan, run_treemap_task_from_public_class
 from .shared.prompts import (
@@ -24,7 +26,7 @@ from .shared.state import DOMAIN
 TASK_ID = "task_charts__treemap__group_total_value"
 SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
 PROMPT_KEY = "treemap_group_total_value"
-PROGRAM_CODE = "sum(value(child) for child in parent); output=integer_value; annotation=bbox_set(parent_child_value_boxes); scene=treemap; scope=group_total_value"
+PROGRAM_CODE = "sum(value(child) for child in parent); output=integer_value; annotation=bbox_set(parent_child_rectangles); scene=treemap; scope=group_total_value"
 
 
 def _parent_selection_probabilities(labels: list[str], selected: str) -> dict[str, float]:
@@ -66,15 +68,14 @@ def _build_group_total_plan(instance_seed: int, params: Mapping[str, Any], selec
     if str(selected_branch) != SINGLE_QUERY_ID:
         raise ValueError(f"unsupported treemap group-total query_id: {selected_branch}")
     dataset = build_treemap_dataset(params, instance_seed=int(instance_seed))
-    parent_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.target_parent",
-    ) % len(dataset.parents)
-    parent = dataset.parents[int(parent_index)]
+    parent = uniform_choice(
+        spawn_rng(int(instance_seed), f"{TASK_ID}.target_parent"),
+        tuple(dataset.parents),
+    )
+    parent_index = int(tuple(dataset.parents).index(parent))
     annotation_leaf_ids = tuple(str(leaf_id) for leaf_id in parent.leaf_ids)
     leaf_values = _parent_leaf_values(dataset, annotation_leaf_ids)
-    answer = int(sum(leaf_values))
+    answer = int_sum(leaf_values)
     if answer != int(parent.value):
         raise ValueError("treemap parent total mismatch")
     prompt_artifacts = render_prompt_artifacts(

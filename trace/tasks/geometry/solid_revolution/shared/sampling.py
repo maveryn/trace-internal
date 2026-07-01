@@ -6,8 +6,9 @@ from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any, Callable, Iterable, Mapping, Sequence, TypeVar
 
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.pythagorean import integer_right_triangles
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from .measurements import round_volume, volume_cone, volume_cylinder, volume_double_cone, volume_frustum
 
@@ -72,11 +73,8 @@ def _require_support(cases: Sequence[T], *, minimum: int, label: str) -> tuple[T
     return tuple(cases)
 
 
-@lru_cache(maxsize=1)
-def cylinder_case_pool() -> tuple[CylinderCase, ...]:
-    """Return cylinder cases with unique rounded volume answers."""
-
-    direct_cases = (
+def _direct_cylinder_cases() -> tuple[CylinderCase, ...]:
+    return tuple(
         CylinderCase(
             radial_input_kind="diameter",
             diameter=int(diameter),
@@ -87,7 +85,10 @@ def cylinder_case_pool() -> tuple[CylinderCase, ...]:
         for diameter in range(4, 37, 2)
         for height in range(3, 33)
     )
-    diagonal_cases = (
+
+
+def _diagonal_cylinder_cases() -> tuple[CylinderCase, ...]:
+    return tuple(
         CylinderCase(
             radial_input_kind="diagonal",
             diameter=int(triangle.leg_a),
@@ -99,14 +100,47 @@ def cylinder_case_pool() -> tuple[CylinderCase, ...]:
         )
         for triangle in integer_right_triangles(
             min_leg=4,
-            max_leg=36,
-            max_hypotenuse=80,
+            max_leg=80,
+            max_hypotenuse=180,
             include_swapped=True,
         )
         if int(triangle.leg_a) % 2 == 0 and int(triangle.leg_b) >= 3
     )
+
+
+@lru_cache(maxsize=1)
+def cylinder_direct_case_pool() -> tuple[CylinderCase, ...]:
+    """Return direct-diameter cylinder cases with unique rounded volume answers."""
+
     cases = sorted(
-        _dedupe_by_answer((*direct_cases, *diagonal_cases), key=lambda case: case.answer),
+        _dedupe_by_answer(_direct_cylinder_cases(), key=lambda case: case.answer),
+        key=lambda case: (float(case.answer), int(case.diameter), int(case.height)),
+    )
+    return _require_support(cases, minimum=50, label="direct cylinder")
+
+
+@lru_cache(maxsize=1)
+def cylinder_diagonal_case_pool() -> tuple[CylinderCase, ...]:
+    """Return diagonal-derived cylinder cases with unique rounded volume answers."""
+
+    cases = sorted(
+        _dedupe_by_answer(_diagonal_cylinder_cases(), key=lambda case: case.answer),
+        key=lambda case: (
+            float(case.answer),
+            int(case.diagonal or 0),
+            int(case.diameter),
+            int(case.height),
+        ),
+    )
+    return _require_support(cases, minimum=50, label="diagonal cylinder")
+
+
+@lru_cache(maxsize=1)
+def cylinder_case_pool() -> tuple[CylinderCase, ...]:
+    """Return all cylinder cases with unique rounded volume answers."""
+
+    cases = sorted(
+        _dedupe_by_answer((*_direct_cylinder_cases(), *_diagonal_cylinder_cases()), key=lambda case: case.answer),
         key=lambda case: (
             float(case.answer),
             str(case.radial_input_kind),
@@ -208,12 +242,8 @@ def select_case_from_pool(
     values = tuple(cases)
     if not values:
         raise ValueError("case pool must be non-empty")
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    return values[int(index) % len(values)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    return uniform_choice(rng, values)
 
 
 def support_from_cases(cases: Sequence[Any]) -> tuple[float, ...]:
@@ -229,6 +259,8 @@ __all__ = [
     "FrustumCase",
     "cone_case_pool",
     "cylinder_case_pool",
+    "cylinder_diagonal_case_pool",
+    "cylinder_direct_case_pool",
     "double_cone_case_pool",
     "frustum_case_pool",
     "select_case_from_pool",

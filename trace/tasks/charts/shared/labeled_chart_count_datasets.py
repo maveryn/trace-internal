@@ -6,22 +6,21 @@ from typing import Any, Dict, List, Mapping, Tuple
 
 from ....core.seed import spawn_rng
 from ...shared.config_defaults import group_default
-from .labeled_chart_core import (
-    LabeledChartDefaults,
-    SceneVariant,
+from .label_assets import sample_chart_labels
+from .labeled_chart_defaults import LabeledChartDefaults
+from .labeled_chart_values import (
     balanced_choice_from_values,
-    is_pie_like_scene_variant,
     resolve_mark_count_bounds,
     resolve_value_bounds,
-    sample_chart_labels,
     shuffle_values,
     sorted_labels,
 )
-from .labeled_chart_dataset_core import (
+from .labeled_chart_variants import SceneVariant, is_pie_like_scene_variant
+from .labeled_chart_composition import sample_composition_with_sum
+from .labeled_chart_sampling import (
     _sample_int_values,
     _sample_values_from_pool,
     choose_mark_count,
-    sample_composition_with_sum,
 )
 
 def _find_pie_count_query(

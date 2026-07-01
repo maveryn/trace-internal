@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping, Tuple
 
 from ....core.query_ids import SINGLE_QUERY_ID
+from ....core.sampling import uniform_choice
 from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ...base import TaskOutput
@@ -19,7 +20,6 @@ from .shared.sampling import (
     CyclicProgressionSample,
     SequenceCompletionDefaults,
     SequenceCompletionPlan,
-    option_values,
     resolve_completion_render_params,
     resolve_cyclic_progression_sample,
     sample_sequence_icon_id,
@@ -129,6 +129,28 @@ def _validate_rotation_option_angles(*, option_map: Mapping[str, int], progressi
                 raise ValueError("rotation completion options must be separated by at least 45 degrees")
 
 
+def _rotation_option_values(rng, *, progression: CyclicProgressionSample) -> Tuple[str, Dict[str, int]]:
+    """Place the correct rotation option in a stable balanced A-D slot."""
+
+    labels = ("A", "B", "C", "D")
+    answer_value = int(progression.answer_value)
+    support = tuple(int(value) for value in progression.value_support)
+    if answer_value not in set(support):
+        raise ValueError("rotation answer must be in the configured value support")
+    correct_label = str(uniform_choice(rng, labels))
+    distractors = [int(value) for value in support if int(value) != answer_value]
+    if len(distractors) < 3:
+        raise ValueError("rotation completion requires at least three distractor values")
+    rng.shuffle(distractors)
+    option_map: Dict[str, int] = {str(correct_label): int(answer_value)}
+    distractor_iter = iter(distractors)
+    for label in labels:
+        if str(label) == str(correct_label):
+            continue
+        option_map[str(label)] = int(next(distractor_iter))
+    return str(correct_label), option_map
+
+
 def _build_plan(
     instance_seed: int,
     params: Mapping[str, Any],
@@ -148,8 +170,7 @@ def _build_plan(
     )
     icon_id = sample_sequence_icon_id(rng, params=params, generation_defaults=generation_defaults, fallback=fallback_defaults.pool_manifest)
     tint_rgb, palette = sample_sequence_tint(rng, render_params=render_params)
-    distractors = [value for value in progression.value_support if int(value) != int(progression.answer_value)]
-    correct_label, option_map = option_values(rng, correct_value=int(progression.answer_value), distractor_values=distractors)
+    correct_label, option_map = _rotation_option_values(rng, progression=progression)
     _validate_rotation_option_angles(
         option_map={label: int(value) for label, value in option_map.items()},
         progression=progression,

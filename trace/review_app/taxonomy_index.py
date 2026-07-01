@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.taxonomy_semantics import classify_objective
 
 from .models import ReviewIndex
@@ -329,7 +330,7 @@ def _query_from_row(row: Mapping[str, str], *, round_id: str, review_index: Revi
     domain = str(row.get("domain", ""))
     scene_id = str(row.get("scene_id", ""))
     current_task_id = str(row.get("current_task_id", ""))
-    query_id = str(row.get("current_query_id", "")) or str(row.get("query_id", "")) or "default"
+    query_id = str(row.get("current_query_id", "")) or str(row.get("query_id", "")) or SINGLE_QUERY_ID
     current_task_slug = str(row.get("current_task_slug", "")) or _task_slug(current_task_id)
     proposed_task_id = str(row.get("proposed_task_id", ""))
     proposed_task_slug = str(row.get("proposed_task_slug", "")) or _task_slug(proposed_task_id)

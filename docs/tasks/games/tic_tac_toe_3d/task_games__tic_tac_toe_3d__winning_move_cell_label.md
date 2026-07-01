@@ -10,9 +10,17 @@
 7. Annotation schema: `bbox_set`
 
 ## Program Contract
-`label(unique(candidate_cells where play(target_player, cell) completes_3d_tic_tac_toe_line)); scene=tic_tac_toe_3d; scope=winning_move_cell_label`
+
+Program: `label(unique(candidate_cells where play(target_player, cell) completes_3d_tic_tac_toe_line)); scene=tic_tac_toe_3d; scope=winning_move_cell_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `winning_move_cell_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `unique`, `candidate_cells`, `where`, `play`, `target_player`, `cell`, `completes_3d_tic_tac_toe_line`, `tic_tac_toe_3d`, `winning_move_cell_label` plus the active `query_id` branch.
+Operation: evaluate `label` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `x_winning_move_label`, `o_winning_move_label`.
 
 ## Generation Notes
 1. Query ids are internal replay/sampling keys and do not define public task units.
 2. The board is a 3 by 3 by 3 Tic-Tac-Toe state with one correct labeled empty-cell option by construction.
-3. Annotation is projected from the selected empty cell and the two visible same-player cells that support the winning line.
+3. Annotation is projected from the three board cells that form the completed winning line after the selected move is played.

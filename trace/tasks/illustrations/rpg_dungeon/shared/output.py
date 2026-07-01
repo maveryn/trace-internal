@@ -196,6 +196,12 @@ def bbox_set_projection(bboxes: Sequence[Sequence[float]]) -> dict[str, Any]:
     return {"type": "bbox_set", "bbox_set": values, "pixel_bbox_set": values}
 
 
+def rounded_bbox_set(bboxes: Sequence[Sequence[float]]) -> list[list[float]]:
+    """Return a bbox-set annotation with stable rounded pixel coordinates."""
+
+    return [[round(float(value), 3) for value in bbox] for bbox in bboxes]
+
+
 __all__ = [
     "bbox_set_projection",
     "blocker_bbox_map",
@@ -204,6 +210,7 @@ __all__ = [
     "entity_point_map",
     "monster_entities",
     "player_entity",
+    "rounded_bbox_set",
     "rpg_dungeon_monster_chamber_count_render_map",
     "rpg_dungeon_reachable_chest_count_render_map",
     "rpg_dungeon_render_spec",

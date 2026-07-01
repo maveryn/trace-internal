@@ -7,9 +7,9 @@ from typing import Any, Callable, Dict, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
 from trace.tasks.geometry.shared.diagram_style import (
@@ -96,12 +96,8 @@ def create_circle_polygon_render_context(
         ((255, 243, 234), (235, 246, 250)),
         ((248, 247, 240), (232, 242, 255)),
     )
-    fill_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(fill_namespace),
-    )
-    polygon_fill, circle_fill = fill_palettes[int(fill_index) % len(fill_palettes)]
+    fill_rng = spawn_rng(int(instance_seed), str(fill_namespace))
+    polygon_fill, circle_fill = uniform_choice(fill_rng, fill_palettes)
     font_size = int(params.get("label_font_size", group_default(rendering_defaults, "label_font_size", 22)))
     small_font_size = int(
         params.get("small_label_font_size", group_default(rendering_defaults, "small_label_font_size", 18))

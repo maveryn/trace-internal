@@ -19,12 +19,15 @@ TASK_QUERIES: dict[str, tuple[str, ...]] = {
         "largest_decrease_between_axes",
         "largest_absolute_change_between_axes",
     ),
-    "task_charts__parallel_coords__crossings_involving_profile_between_axes": ("single",),
 }
 
 
 def _point_in_canvas(point: list[float], *, width: int, height: int) -> bool:
     return len(point) == 2 and 0 <= float(point[0]) <= width and 0 <= float(point[1]) <= height
+
+
+def _segment_in_canvas(segment: list[list[float]], *, width: int, height: int) -> bool:
+    return len(segment) == 2 and all(_point_in_canvas(list(point), width=width, height=height) for point in segment)
 
 
 @pytest.mark.parametrize(
@@ -53,13 +56,25 @@ def test_parallel_coords_task_query_and_annotation_contract(task_id: str, query_
 
     if task_id.endswith("__axis_delta_extremum_label"):
         assert output.answer_gt.type == "string"
-        assert output.annotation_gt.type == "point"
-        point = output.annotation_gt.value
-        assert isinstance(point, list)
-        assert _point_in_canvas(point, width=width, height=height)
-        assert projected["type"] == "point"
-        assert projected["pixel_point"] == point
+        assert output.annotation_gt.type == "segment"
+        segment = output.annotation_gt.value
+        assert isinstance(segment, list)
+        assert _segment_in_canvas([list(point) for point in segment], width=width, height=height)
+        assert projected["type"] == "segment"
+        assert projected["segment"] == segment
+        assert projected["pixel_segment"] == segment
+    elif task_id.endswith("__axis_condition_count"):
+        assert output.answer_gt.type == "integer"
+        assert output.annotation_gt.type == "segment_set"
+        segments = output.annotation_gt.value
+        assert isinstance(segments, list)
+        assert len(segments) == int(output.answer_gt.value)
+        assert all(_segment_in_canvas([list(point) for point in segment], width=width, height=height) for segment in segments)
+        assert projected["type"] == "segment_set"
+        assert projected["segment_set"] == segments
+        assert projected["pixel_segment_set"] == segments
     else:
+        assert task_id.endswith("__all_crossings_between_adjacent_axes")
         assert output.answer_gt.type == "integer"
         assert output.annotation_gt.type == "point_set"
         points = output.annotation_gt.value

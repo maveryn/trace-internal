@@ -34,7 +34,7 @@ Check these for every task/query:
 - JSON examples are valid for the active answer and annotation schemas.
 - Prompt examples are internally coherent, even though they are not the sampled
   instance answer.
-- The prompt uses `annotation`, not historical `evidence` wording.
+- The prompt uses `annotation`, not retired grounding wording.
 - The prompt does not expose hidden trace fields, implementation names, or
   sampling internals.
 - The prompt does not duplicate generic output-protocol boilerplate such as
@@ -44,6 +44,11 @@ Check these for every task/query:
 - The prompt does not ask for labels, option text, decorative context, or
   unrelated regions as annotation unless those are the actual visual witnesses.
 - The prompt includes only the visual/rule details needed to solve the task.
+- The prompt does not include method hints or shortcut cues that tell the model
+  how to solve the task when the scene and task contract already imply the
+  reasoning. Explicit rules are appropriate only when the rule is part of the
+  problem statement, such as game movement rules or a domain convention not
+  otherwise available from the image.
 - The prompt does not mention incidental operand attributes such as clothing,
   style, marker absence, or object rendering details unless they are required
   to identify the target or answer the question.
@@ -70,8 +75,10 @@ Required consistency:
   task family.
 - Label/MCQ examples must use labels that are valid for that task style. Use
   one-letter examples only for option-letter tasks.
-- Segment examples should use `[[x1, y1], [x2, y2]]` shape so endpoints are
-  unambiguous.
+- Bbox examples must use `[x0, y0, x1, y1]`, where `(x0, y0)` is the
+  top-left corner and `(x1, y1)` is the bottom-right corner.
+- Segment examples must use `[[x0, y0], [x1, y1]]`, where the nested arrays
+  are the two endpoints.
 - Annotation coordinates in examples are final image pixel coordinates. Do not
   show grid indices, row/column labels, chart values, scene-local coordinates,
   or normalized values as annotation.
@@ -119,6 +126,8 @@ Mark a prompt `borderline` when it is correct but:
   direct source/target, row/column, panel/category, or node/edge wording would
   be clearer;
 - includes long rule text when a shorter rule is enough;
+- includes a mild method cue that should be removed but does not change the
+  answer contract, such as "using the slope" or "using the Sun-focus distance";
 - mixes too many parentheticals, caveats, or implementation details;
 - says “image,” “question,” “answer,” or “task” repeatedly without adding
   useful information;
@@ -143,10 +152,17 @@ Mark a task `bad` when any of these is true:
   tasks.
 - The example uses one-item sets for scalar annotation.
 - The example uses scene/grid/chart/data coordinates instead of image pixels.
-- The prompt uses stale `evidence` wording.
+- The prompt uses stale grounding wording.
 - The prompt includes generic JSON-only or final-format boilerplate that should
   be supplied by the shared/system prompt layer.
 - The prompt asks the model to annotate non-witness text, labels, or options.
+- Set-boundary wording is acceptable when it is part of the answer/annotation
+  contract, such as annotating path nodes after the source or reachable nodes
+  excluding the start node.
+- The prompt gives away a task shortcut or narrows the reasoning path in a way
+  that makes the task materially easier, such as naming the unique visual
+  distinguishing feature of the correct option when that feature should be
+  inferred from the diagram.
 - The prompt includes task-specific hidden trace values that should not be
   visible to the model.
 

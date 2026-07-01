@@ -270,7 +270,10 @@ def option_content_order(
     if not permutations_by_index:
         return tuple()
     if option_permutation_index is not None:
-        return permutations_by_index[abs(int(option_permutation_index)) % len(permutations_by_index)]
+        selected_index = int(option_permutation_index)
+        if selected_index < 0 or selected_index >= len(permutations_by_index):
+            raise ValueError("option_permutation_index is outside permutation support")
+        return permutations_by_index[selected_index]
     if len(remaining_content_indices) > 2:
         return non_identity_permutation(rng, remaining_content_indices)
     order = list(tuple(int(item) for item in remaining_content_indices))

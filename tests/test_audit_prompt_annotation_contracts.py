@@ -44,6 +44,19 @@ def test_annotation_prompt_audit_rejects_negative_annotation_format_instructions
     assert any(issue["code"] == "negative_annotation_format_instruction" for issue in issues)
 
 
+def test_annotation_prompt_audit_allows_set_boundary_exclusion() -> None:
+    prompt = (
+        "Find the shortest route.\n"
+        "Annotation format: set \"annotation\" to an ordered array of [x,y] pixel points "
+        "at station centers along the route, excluding A and including B.\n"
+        "Example JSON: {\"annotation\":[[10,12],[20,24]],\"answer\":2}"
+    )
+
+    issues = audit._audit_annotation_prompt(prompt, annotation_type="point_sequence", mode="answer_and_annotation")
+
+    assert not any(issue["code"] == "negative_annotation_format_instruction" for issue in issues)
+
+
 def test_annotation_prompt_audit_rejects_degenerate_point_examples() -> None:
     prompt = (
         'Annotation format: set "annotation" to a JSON object mapping each key to a pixel point [x,y].\n'
@@ -51,7 +64,7 @@ def test_annotation_prompt_audit_rejects_degenerate_point_examples() -> None:
         '{"annotation":{"A":[320,240],"B":[320,240],"C":[320,240],"D":[320,240]},"answer":8}'
     )
 
-    issues = audit._audit_annotation_prompt(prompt, annotation_type="keyed_point_map", mode="answer_and_annotation")
+    issues = audit._audit_annotation_prompt(prompt, annotation_type="point_map", mode="answer_and_annotation")
 
     assert any(issue["code"] == "degenerate_example_points" for issue in issues)
 
@@ -145,14 +158,14 @@ def test_validate_segment_checks_nested_points() -> None:
     assert any("one two-endpoint segment" in message for message in wrong_shape)
 
 
-def test_validate_keyed_point_map_checks_keys_points_and_bounds() -> None:
+def test_validate_point_map_checks_keys_points_and_bounds() -> None:
     valid = audit._validate_annotation_value(
-        "keyed_point_map",
+        "point_map",
         {"A": [1, 2], "B": [3, 4]},
         image_size=(10, 10),
     )
     invalid = audit._validate_annotation_value(
-        "keyed_point_map",
+        "point_map",
         {"": [1, 2], "B": [30, 4]},
         image_size=(10, 10),
     )
@@ -162,14 +175,14 @@ def test_validate_keyed_point_map_checks_keys_points_and_bounds() -> None:
     assert any("outside image bounds" in message for message in invalid)
 
 
-def test_validate_keyed_bbox_map_checks_keys_boxes_and_bounds() -> None:
+def test_validate_bbox_map_checks_keys_boxes_and_bounds() -> None:
     valid = audit._validate_annotation_value(
-        "keyed_bbox_map",
+        "bbox_map",
         {"source": [1, 2, 5, 6], "target": [6, 2, 9, 6]},
         image_size=(10, 10),
     )
     invalid = audit._validate_annotation_value(
-        "keyed_bbox_map",
+        "bbox_map",
         {"": [1, 2, 5, 6], "target": [6, 2, 20, 6]},
         image_size=(10, 10),
     )

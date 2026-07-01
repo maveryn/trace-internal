@@ -5,13 +5,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Mapping, Tuple
 
+from ....core.sampling import uniform_choice
 from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.fixed_query import select_task_query_id
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PromptTraceArtifacts, build_prompt_query_spec
@@ -165,8 +166,12 @@ def resolve_integer_axis(
         if int(value) not in set(int(item) for item in support):
             raise ValueError(f"{explicit_key} outside configured support")
         return int(value), dict(uniform_probability_map(support, selected=int(value)))
-    index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)))
-    value = int(support[int(index % len(support))])
+    value = int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), str(namespace)),
+            support,
+        )
+    )
     return int(value), dict(uniform_probability_map(support))
 
 

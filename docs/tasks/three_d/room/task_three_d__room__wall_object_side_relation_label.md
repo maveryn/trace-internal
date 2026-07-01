@@ -18,9 +18,15 @@ The TV reference may appear on the back, left, or right wall. The verifier uses 
 The renderer uses a lower interior camera, extends the open/front floor toward the camera, keeps side-wall continuation capped to avoid cutaway wall panels, and includes foreground floor context so the scene reads from inside the room. Reference/candidate placement, wall coordinates, side-relation flags, and verifier geometry still use the semantic room coordinates recorded in trace metadata.
 
 ## Program Contract
-`select(label(candidate_wall_objects, wall_id == reference.wall_id and wall_plane_side(candidate, reference) == requested_side)); scene=room; scope=wall_object_side_relation_label`
 
-The public query id selects `requested_side`: `left_of_reference_on_wall` or `right_of_reference_on_wall`.
+Program: `select(label(candidate_wall_objects, wall_id == reference.wall_id and wall_plane_side(candidate, reference) == requested_side)); scene=room; scope=wall_object_side_relation_label`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `wall_object_side_relation_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `label`, `candidate_wall_objects`, `wall_id`, `reference`, `wall_plane_side`, `candidate`, `requested_side`, `room`, `wall_object_side_relation_label` plus the active `query_id` branch.
+Operation: evaluate `select` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `left_of_reference_on_wall`, `right_of_reference_on_wall`.
 
 ## Annotation Contract
 Annotation is the bounding box of the selected wall-mounted object in the room scene. The option panel, option text, and unlettered TV reference are not annotation.

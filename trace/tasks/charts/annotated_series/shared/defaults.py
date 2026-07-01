@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from trace.tasks.charts.shared.labeled_chart_core import LabeledChartDefaults
+from trace.tasks.charts.shared.labeled_chart_defaults import LabeledChartDefaults
 from trace.tasks.shared.config_defaults import (
     group_default as _config_group_default,
     load_scene_generation_rendering_prompt_defaults,
@@ -47,12 +47,28 @@ POST_IMAGE_NOISE_DEFAULTS: dict[str, Any] = {
 }
 
 CONTEXT_PARAM_KEYS = (
-    "context_mode_weights",
-    "context_element_count_min",
-    "context_element_count_max",
-    "large_context_probability",
-    "large_context_text_source_weights",
-    "context_text_source_weights",
+    "chart_context_profile",
+    "context_text_profile",
+    "chart_context_mode",
+    "chart_context_mode_weights",
+    "context_text_mode",
+    "context_text_mode_weights",
+    "context_text_enabled",
+    "context_text_top_reserved_px",
+    "context_text_bottom_reserved_px",
+    "context_text_left_margin_px",
+    "context_text_right_margin_px",
+    "context_text_sidebar_width_min_px",
+    "context_text_sidebar_width_max_px",
+    "context_text_sidebar_gap_px",
+    "context_text_bottom_band_height_min_px",
+    "context_text_bottom_band_height_max_px",
+    "context_text_bottom_band_gap_px",
+    "context_text_box_count_min",
+    "context_text_box_count_max",
+    "context_text_placement_weights",
+    "context_text_font_family_weights",
+    "context_text_light_font_family",
 )
 
 

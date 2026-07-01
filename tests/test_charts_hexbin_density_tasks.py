@@ -8,11 +8,11 @@ from trace.core.scene_config import get_scene_defaults
 from trace.tasks.charts.hexbin_density.threshold_bin_count import SUPPORTED_DENSITY_PALETTE_SCHEMES, SUPPORTED_QUERY_IDS, TASK_ID, ChartsHexbinDensityThresholdBinCountTask
 from trace.tasks.registry import create_task
 
-def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
-    assert len(bbox) == 4
-    x0, y0, x1, y1 = [float(value) for value in bbox]
-    assert 0 <= x0 < x1 <= width
-    assert 0 <= y0 < y1 <= height
+def _assert_point_inside_canvas(point: list[float], *, width: int, height: int) -> None:
+    assert len(point) == 2
+    x, y = [float(value) for value in point]
+    assert 0 <= x <= width
+    assert 0 <= y <= height
 
 @pytest.mark.parametrize('query_index,query_id', list(enumerate(SUPPORTED_QUERY_IDS)))
 def test_charts_hexbin_density_task_matches_contract(query_index: int, query_id: str) -> None:
@@ -28,7 +28,7 @@ def test_charts_hexbin_density_task_matches_contract(query_index: int, query_id:
     assert str(execution['query_id']) == query_id
     assert str(execution['question_format']) == 'hexbin_density_threshold_query'
     assert out.answer_gt.type == 'integer'
-    assert out.annotation_gt.type == 'bbox_set'
+    assert out.annotation_gt.type == 'point_set'
     assert sorted(out.prompt_variants.keys()) == ['answer_and_annotation', 'answer_only']
     assert out.image.size == (int(render['canvas_width']), int(render['canvas_height']))
     assert str(render['density_palette_scheme']) in SUPPORTED_DENSITY_PALETTE_SCHEMES
@@ -48,12 +48,14 @@ def test_charts_hexbin_density_task_matches_contract(query_index: int, query_id:
     assert execution['answer'] == len(expected_ids)
     assert execution['matching_bin_ids'] == expected_ids
     assert execution['annotation_bin_ids'] == expected_ids
-    expected_bboxes = [trace['render_map']['bin_bboxes_px'][bin_id] for bin_id in expected_ids]
-    assert out.annotation_gt.value == expected_bboxes
-    assert trace['projected_annotation']['bbox_set'] == expected_bboxes
+    expected_points = [trace['render_map']['bin_centers_px'][bin_id] for bin_id in expected_ids]
+    assert out.annotation_gt.value == expected_points
+    assert trace['projected_annotation']['type'] == 'point_set'
+    assert trace['projected_annotation']['point_set'] == expected_points
+    assert trace['projected_annotation']['pixel_point_set'] == expected_points
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
-    for bbox in out.annotation_gt.value:
-        _assert_bbox_inside_canvas([float(value) for value in bbox], width=int(render['canvas_width']), height=int(render['canvas_height']))
+    for point in out.annotation_gt.value:
+        _assert_point_inside_canvas([float(value) for value in point], width=int(render['canvas_width']), height=int(render['canvas_height']))
 
 def test_charts_hexbin_density_prompt_examples_match_contract() -> None:
     for index, query_id in enumerate(SUPPORTED_QUERY_IDS):
@@ -65,7 +67,7 @@ def test_charts_hexbin_density_prompt_examples_match_contract() -> None:
         assert isinstance(answer_and_annotation['answer'], int)
         assert isinstance(answer_and_annotation['annotation'], list)
         assert answer_and_annotation['annotation']
-        assert len(answer_and_annotation['annotation'][0]) == 4
+        assert len(answer_and_annotation['annotation'][0]) == 2
 
 def test_charts_hexbin_density_balanced_sampling_covers_branches_and_counts() -> None:
     queries: Counter[str] = Counter()

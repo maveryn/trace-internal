@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.shared.fixed_query import geometry_selected_probability_map
 from trace.tasks.geometry.shared.pythagorean import integer_right_triangles
 
@@ -107,8 +108,8 @@ def select_tangent_case(
         case = TangentCase(*(int(value) for value in explicit))
         validate_tangent_case(case)
         return case, {case.key: 1.0}
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    case = TANGENT_CASES[int(index) % len(TANGENT_CASES)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    case = uniform_choice(rng, TANGENT_CASES)
     probability = 1.0 / float(len(TANGENT_CASES))
     return case, {candidate.key: probability for candidate in TANGENT_CASES}
 
@@ -127,8 +128,8 @@ def select_larger_circle_side(
         if value not in LARGER_CIRCLE_SIDES:
             raise ValueError(f"larger_circle_side must be one of {LARGER_CIRCLE_SIDES}")
         return value, geometry_selected_probability_map(LARGER_CIRCLE_SIDES, selected=value)
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    value = LARGER_CIRCLE_SIDES[int(index) % len(LARGER_CIRCLE_SIDES)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    value = uniform_choice(rng, LARGER_CIRCLE_SIDES)
     return str(value), geometry_selected_probability_map(LARGER_CIRCLE_SIDES)
 
 
@@ -146,8 +147,8 @@ def select_tangent_side(
         if value not in TANGENT_SIDES:
             raise ValueError(f"tangent_side must be one of {TANGENT_SIDES}")
         return value, geometry_selected_probability_map(TANGENT_SIDES, selected=value)
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    value = TANGENT_SIDES[int(index) % len(TANGENT_SIDES)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    value = uniform_choice(rng, TANGENT_SIDES)
     return str(value), geometry_selected_probability_map(TANGENT_SIDES)
 
 

@@ -8,6 +8,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.scene_config import get_scene_defaults
 from trace.core.seed import spawn_rng
+from trace.core.sampling import uniform_choice_with_probabilities
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
@@ -17,7 +18,6 @@ from trace.tasks.shared.config_defaults import (
     required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.illustrations.shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS
@@ -101,16 +101,15 @@ def _select_swapped_pair(
         if pair not in set(candidates):
             raise ValueError("swapped_pair is outside visually usable candidate support")
         return (int(pair[0]), int(pair[1])), {_pair_key(pair): 1.0}
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}:swapped_pair:{attempt_index}",
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:swapped_pair", int(attempt_index))
+    selected, probabilities = uniform_choice_with_probabilities(
+        rng,
+        candidates,
+        sort_keys=True,
     )
-    selected = candidates[int(index) % len(candidates)]
-    probability = 1.0 / float(len(candidates))
     return (
         (int(selected[0]), int(selected[1])),
-        {_pair_key(pair): float(probability) for pair in candidates},
+        {_pair_key(pair): float(probabilities[str(pair)]) for pair in candidates},
     )
 
 

@@ -299,10 +299,10 @@ def run_darts_lifecycle(
             rendered_context=rendered_context,
             prompt_defaults=prompt_defaults,
             query_spec=query_spec,
-            answer_value=int(attempt.answer_gt.value),
+            answer_value=attempt.answer_gt.value,
             execution_extra={
                 **dict(attempt.execution_extra),
-                "answer": int(attempt.answer_gt.value),
+                "answer": attempt.answer_gt.value,
             },
         )
         return TaskOutput(
@@ -324,6 +324,7 @@ def run_darts_lifecycle(
 __all__ = [
     "DartsAttemptResult",
     "DartsObjectivePlan",
+    "dart_bbox_set_attempt",
     "dart_point_attempt",
     "dart_point_set_attempt",
     "prepare_darts_exact_count_objective",

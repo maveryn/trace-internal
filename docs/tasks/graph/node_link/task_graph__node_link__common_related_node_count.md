@@ -1,7 +1,15 @@
 # `task_graph__node_link__common_related_node_count`
 
 ## Program Contract
-- `count(intersection(related_nodes(node_a, relation), related_nodes(node_b, relation))); scene=node_link; scope=common_related_node_count`
+
+Program: `count(intersection(related_nodes(node_a, relation), related_nodes(node_b, relation))); scene=node_link; scope=common_related_node_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `common_related_node_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `intersection`, `related_nodes`, `node_a`, `relation`, `node_b`, `node_link`, `common_related_node_count`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Summary
 1. Domain: `graph`

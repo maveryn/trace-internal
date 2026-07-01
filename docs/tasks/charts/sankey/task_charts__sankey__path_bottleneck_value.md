@@ -8,7 +8,15 @@
 5. Supported `query_id` values: `single`
 
 ## Program Contract
-`min(value(source_to_middle), value(middle_to_target)); scene=sankey; scope=path_bottleneck_value`
+
+Program: `min(value(source_to_middle), value(middle_to_target)); scene=sankey; scope=path_bottleneck_value`
+
+Candidate set: the visible flow nodes, links, and labels inside the `path_bottleneck_value` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `min` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `point` witnesses bound by `see_annotation_contract`. Annotation marks one printed value-label center on the selected route: the uniquely lower-valued bottleneck band. Node boxes, the other flow label on the same route, unselected flow labels, flow curves, title, and panel frame are context unless explicitly referenced by the task.
+Query ids: `single`.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.sankey.path_bottleneck_value.ChartsFlowSankeyPathBottleneckValuePublicTask`
@@ -19,12 +27,12 @@
 
 ## Annotation Contract
 1. Answer schema: `integer_value`
-2. Annotation schema: `bbox_set`
-3. Annotation marks the two printed value-label boxes on the selected source-middle-target path.
-4. Node boxes, unselected flow labels, flow curves, title, and panel frame are context unless explicitly referenced by the task.
+2. Annotation schema: `point`
+3. Annotation marks one printed value-label center on the selected route: the uniquely lower-valued bottleneck band.
+4. Node boxes, the other flow label on the same route, unselected flow labels, flow curves, title, and panel frame are context unless explicitly referenced by the task.
 
 ## Query Details
 
 | Query id | Program argument | Answer schema | Annotation schema |
 |---|---|---|---|
-| `single` | `selected_path` | `integer_value` | `bbox_set` |
+| `single` | `selected_path` | `integer_value` | `point` |

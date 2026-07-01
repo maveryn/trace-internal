@@ -8,16 +8,18 @@ from pathlib import Path
 import pytest
 
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.physics.circuits.bulb_brightness import PhysicsBulbCircuitBrightnessExtremumLabelTask
+from trace.tasks.physics.bulb_circuit.brightness_extremum_label import (
+    PhysicsBulbCircuitBrightnessExtremumLabelTask,
+)
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
-def _assert_keyed_bbox_map_in_bounds(out) -> None:
+def _assert_bbox_in_bounds(out) -> None:
     width, height = out.image.size
-    assert out.annotation_gt.type == "keyed_bbox_map"
-    for bbox in out.annotation_gt.value.values():
-        assert 0 <= bbox[0] < bbox[2] <= width
-        assert 0 <= bbox[1] < bbox[3] <= height
+    assert out.annotation_gt.type == "bbox"
+    bbox = out.annotation_gt.value
+    assert 0 <= bbox[0] < bbox[2] <= width
+    assert 0 <= bbox[1] < bbox[3] <= height
 
 
 @pytest.mark.parametrize(
@@ -56,18 +58,11 @@ def test_physics_bulb_brightness_answer_matches_computed_power(
     assert out.answer_gt.type == "string"
     assert out.answer_gt.value == expected
     assert out.answer_gt.value == "B2"
-    assert set(out.annotation_gt.value) == {"B1", "B2", "B3", "B4", "B5"}
-    _assert_keyed_bbox_map_in_bounds(out)
+    assert out.annotation_gt.value == trace["render_map"]["bulb_bboxes"]["B2"]
+    _assert_bbox_in_bounds(out)
     assert trace["render_map"]["correct_label"] == out.answer_gt.value
-    assert trace["render_map"]["bulb_bboxes"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-    assert trace["witness_symbolic"]["key_to_entity_id"] == {
-        "B1": "B1",
-        "B2": "B2",
-        "B3": "B3",
-        "B4": "B4",
-        "B5": "B5",
-    }
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert trace["witness_symbolic"]["entity_id"] == "B2"
 
 
 def test_physics_bulb_brightness_task_is_deterministic() -> None:
@@ -104,20 +99,23 @@ def test_physics_bulb_brightness_rejects_ambiguous_resistances() -> None:
 
 
 def test_physics_bulb_brightness_defaults_and_prompt_bundle() -> None:
-    cfg = get_scene_defaults("physics", "circuits")
+    cfg = get_scene_defaults("physics", "bulb_circuit")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
-        task_id="physics_circuits_bulb_brightness_family",
+        task_id="task_physics__bulb_circuit__brightness_extremum_label",
     )
-    bundle = json.loads(Path("prompts/physics/circuits/physics_circuits_v0.json").read_text(encoding="utf-8"))
+    bundle = json.loads(
+        Path("prompts/physics/bulb_circuit/physics_bulb_circuit_v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
 
-    assert set(generation["query_id_weights"]) == {"brightest_bulb_label", "dimmest_bulb_label"}
     assert set(generation["scene_variant_weights"]) == {"series_unequal", "parallel_unequal", "mixed_branch"}
     assert list(generation["resistance_options"]) == [2, 3, 4, 5, 6, 8, 10, 12]
     assert int(rendering["bulb_label_font_size_px"]) == 20
-    assert str(prompt["scene_key"]) == "bulb_circuit_diagram"
-    assert str(prompt["task_key"]) == "bulb_brightness_query"
-    assert "brightest_bulb_label" in bundle["query_templates"]
-    assert "dimmest_bulb_label" in bundle["query_templates"]
-    assert len(bundle["query_templates"]["brightest_bulb_label"]) == 5
-    assert len(bundle["query_templates"]["dimmest_bulb_label"]) == 5
+    assert str(prompt["bundle_id"]) == "physics_bulb_circuit_v1"
+    assert str(prompt["task_key"]) == "brightness_extremum_query"
+    assert "brightest_bulb_label" in bundle["templates"]["query"]
+    assert "dimmest_bulb_label" in bundle["templates"]["query"]
+    assert len(bundle["templates"]["query"]["brightest_bulb_label"]) == 5
+    assert len(bundle["templates"]["query"]["dimmest_bulb_label"]) == 5

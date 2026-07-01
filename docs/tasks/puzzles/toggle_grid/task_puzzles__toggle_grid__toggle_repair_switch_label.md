@@ -12,15 +12,15 @@
 3. Internal variation: grid size, selected switch, option label, scene variant, and style are generation/render metadata.
 
 ## Program Contract
-`select_label(candidate_switch_cells, cell = inverse_one_step_toggle(start_grid, target_grid, rule=orthogonal_toggle)); scene=toggle_grid; scope=toggle_repair_switch_label`
 
-1. Program code: `simulation.discrete_state_update`
-2. Scene: `toggle_grid`
-3. Scope: `toggle_repair_switch_label`
-4. Candidate set: lettered switch cells in the start grid.
-5. Transition rule: each candidate press flips the chosen cell and any up/down/left/right neighbors present.
-6. Answer binding: selected switch label.
-7. Annotation binding: one image-pixel `bbox` around the selected switch cell.
+Program: `select_label(candidate_switch_cells, cell = inverse_one_step_toggle(start_grid, target_grid, rule=orthogonal_toggle)); scene=toggle_grid; scope=toggle_repair_switch_label`
+
+Candidate set: the visible start/target/result grids, toggle rule markers, switch cells, labels, and labeled grid options inside the `toggle_repair_switch_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `candidate_switch_cells`, `cell`, `inverse_one_step_toggle`, `start_grid`, `target_grid`, `orthogonal_toggle`, `toggle_grid`, `toggle_repair_switch_label`.
+Operation: evaluate `select_label` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the start-grid cell containing the correct switch label.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`

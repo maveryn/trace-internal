@@ -17,6 +17,7 @@ class ChartsThreeDBarCategoryExtremumGapValueTask:
     domain = DOMAIN
     objective_contract = 'category_extremum_gap_value'
     supported_query_ids = ('category_extremum_gap_value',)
+    default_dataset_enabled = True
 
     def _build_plan(self, instance_seed, params, selected_query_id):
         """Build one extrema-gap semantic plan bound to the selected category bars."""

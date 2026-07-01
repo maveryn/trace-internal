@@ -9,13 +9,6 @@
       "",
       ""
     ],
-    "scale_factor_value_query": [
-      "",
-      "",
-      "",
-      "",
-      ""
-    ],
     "area_scale_side_length_value_query": [
       "",
       "",
@@ -38,15 +31,6 @@
       "target_name"
     ],
     "query:nested_side_transfer": [
-      "target_name"
-    ],
-    "query:scale_factor_from_side_pair": [
-      "target_name"
-    ],
-    "query:scale_factor_from_perimeter_pair": [
-      "target_name"
-    ],
-    "query:scale_factor_from_area_pair": [
       "target_name"
     ],
     "query:side_length_from_area_pair": [
@@ -124,27 +108,6 @@
       "Use the visible nested side relationship. What is the length of \"{target_name}\"?",
       "Based on the corresponding sides in the nested figures, what is the length of \"{target_name}\"?"
     ],
-    "scale_factor_from_side_pair": [
-      "Use the corresponding side lengths. What is \"{target_name}\"?",
-      "Find the linear scale factor using the marked side pair. What is \"{target_name}\"?",
-      "Based on the matching side labels, what is \"{target_name}\"?",
-      "Use the visible side-pair measurements to find \"{target_name}\".",
-      "From the corresponding sides, what is \"{target_name}\"?"
-    ],
-    "scale_factor_from_perimeter_pair": [
-      "Use the two perimeter labels for the similar figures. What is \"{target_name}\"?",
-      "Find the linear scale factor from the visible perimeters. What is \"{target_name}\"?",
-      "Based on the perimeter measurements, what is \"{target_name}\"?",
-      "Use the similar-figure perimeter relationship to find \"{target_name}\".",
-      "From the two shown perimeters, what is \"{target_name}\"?"
-    ],
-    "scale_factor_from_area_pair": [
-      "Use the two area labels for the similar figures. What is \"{target_name}\"?",
-      "Find the linear scale factor from the visible areas. What is \"{target_name}\"?",
-      "Based on the area measurements, what is \"{target_name}\"?",
-      "Use the similar-figure area relationship to find \"{target_name}\".",
-      "From the two shown areas, what is \"{target_name}\"?"
-    ],
     "side_length_from_area_pair": [
       "Use the area labels to get the scale between the similar figures. What is the length of \"{target_name}\"?",
       "Find the linear scale from the two areas, then find \"{target_name}\".",
@@ -173,7 +136,6 @@
     "json_output_contract": "Return a JSON object with keys \"answer\" and \"annotation\".",
     "json_output_contract_answer_only": "Return a JSON object with key \"answer\".",
     "annotation_hint": "set \"annotation\" to a JSON object mapping each required label ({annotation_keys}) to one pixel point [x,y]",
-    "answer_hint_integer_length": "set \"answer\" to the requested side length as an integer",
-    "answer_hint_integer_scale": "set \"answer\" to the requested scale factor as an integer"
+    "answer_hint_integer_length": "set \"answer\" to the requested side length as an integer"
   }
 }

@@ -8,10 +8,6 @@ import pytest
 
 from trace.core.taxonomy import lookup_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.geometry.survey_traverse.forward_bearing_from_back_bearing_value import (
-    TASK_ID as TASK_ID_FORWARD_BEARING,
-    GeometrySurveyTraverseForwardBearingFromBackBearingValueTask,
-)
 from trace.tasks.geometry.survey_traverse.outgoing_bearing_from_turn_value import (
     TASK_ID as TASK_ID_OUTGOING_BEARING,
     GeometrySurveyTraverseOutgoingBearingFromTurnValueTask,
@@ -29,65 +25,32 @@ from trace.tasks.geometry.survey_traverse.traverse_area_value import (
 )
 
 
-def _generate(seed: int, *, task_id: str = TASK_ID_FORWARD_BEARING, **params):
+ACTIVE_TASK_IDS = (
+    TASK_ID_OUTGOING_BEARING,
+    TASK_ID_STATION_ELEVATION,
+    TASK_ID_TRAVERSE_AREA,
+)
+
+
+def _generate(seed: int, *, task_id: str = TASK_ID_OUTGOING_BEARING, **params):
     task = create_task(task_id)
     return task.generate(seed, params=dict(params), max_attempts=20)
 
 
-def test_survey_traverse_bearing_angle_registered_public_task() -> None:
-    assert TASK_ID_FORWARD_BEARING in TASK_REGISTRY
+def test_survey_traverse_registered_public_tasks() -> None:
     assert TASK_ID_OUTGOING_BEARING in TASK_REGISTRY
     assert TASK_ID_STATION_ELEVATION in TASK_REGISTRY
     assert TASK_ID_TRAVERSE_AREA in TASK_REGISTRY
-    assert TASK_REGISTRY[TASK_ID_FORWARD_BEARING] is GeometrySurveyTraverseForwardBearingFromBackBearingValueTask
     assert TASK_REGISTRY[TASK_ID_OUTGOING_BEARING] is GeometrySurveyTraverseOutgoingBearingFromTurnValueTask
     assert TASK_REGISTRY[TASK_ID_STATION_ELEVATION] is GeometrySurveyTraverseStationElevationValueTask
     assert TASK_REGISTRY[TASK_ID_TRAVERSE_AREA] is GeometrySurveyTraverseTraverseAreaValueTask
-    forward_taxonomy = lookup_task_taxonomy(TASK_ID_FORWARD_BEARING)
-    assert forward_taxonomy is not None
-    assert forward_taxonomy.domain == "geometry"
-    assert forward_taxonomy.scene_id == SCENE_ID
-    outgoing_taxonomy = lookup_task_taxonomy(TASK_ID_OUTGOING_BEARING)
-    assert outgoing_taxonomy is not None
-    assert outgoing_taxonomy.domain == "geometry"
-    assert outgoing_taxonomy.scene_id == SCENE_ID
-    elevation_taxonomy = lookup_task_taxonomy(TASK_ID_STATION_ELEVATION)
-    assert elevation_taxonomy is not None
-    assert elevation_taxonomy.domain == "geometry"
-    assert elevation_taxonomy.scene_id == SCENE_ID
-    area_taxonomy = lookup_task_taxonomy(TASK_ID_TRAVERSE_AREA)
-    assert area_taxonomy is not None
-    assert area_taxonomy.domain == "geometry"
-    assert area_taxonomy.scene_id == SCENE_ID
+    assert "task_geometry__survey_traverse__forward_bearing_from_back_bearing_value" not in TASK_REGISTRY
 
-
-def test_back_bearing_contract_and_formula() -> None:
-    out = _generate(
-        20260611,
-        query_id="single",
-        target_bearing=50,
-        station_labels=("A", "B", "C"),
-    )
-    trace = out.trace_payload
-    execution = trace["execution_trace"]
-
-    assert out.scene_id == SCENE_ID
-    assert out.query_id == "single"
-    assert out.answer_gt.type == "integer"
-    assert out.answer_gt.value == 50
-    assert execution["formula_family"] == "survey_forward_bearing_from_back_bearing"
-    assert execution["known_back_bearing"] == 230
-    assert execution["target_forward_bearing"] == 50
-
-    assert out.annotation_gt.type == "point_map"
-    assert set(out.annotation_gt.value) == {
-        "station_a",
-        "station_b",
-        "reference_north",
-        "target_direction",
-    }
-    _assert_point_map_inside_image(out.annotation_gt.value, out.image.size)
-    assert "task_variant" not in json.dumps(trace)
+    for task_id in ACTIVE_TASK_IDS:
+        taxonomy = lookup_task_taxonomy(task_id)
+        assert taxonomy is not None
+        assert taxonomy.domain == "geometry"
+        assert taxonomy.scene_id == SCENE_ID
 
 
 def test_closed_traverse_contract_and_formula() -> None:
@@ -113,16 +76,11 @@ def test_closed_traverse_contract_and_formula() -> None:
     assert execution["turn_direction"] == "right"
     assert execution["target_bearing"] == 145
 
-    assert out.annotation_gt.type == "point_map"
-    assert set(out.annotation_gt.value) == {
-        "station_a",
-        "station_b",
-        "reference_north",
-        "target_direction",
-        "turn_vertex",
-    }
-    assert out.annotation_gt.value["station_b"] == out.annotation_gt.value["turn_vertex"]
-    _assert_point_map_inside_image(out.annotation_gt.value, out.image.size)
+    assert out.annotation_gt.type == "bbox_map"
+    assert tuple(out.annotation_gt.value) == ("turn_diagram", "field_note_region")
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_map"] == out.annotation_gt.value
+    _assert_bbox_map_inside_image(out.annotation_gt.value, out.image.size)
     assert "task_variant" not in json.dumps(trace)
 
 
@@ -130,7 +88,6 @@ def test_leveling_station_elevation_contract_and_formula() -> None:
     out = _generate(
         20260614,
         task_id=TASK_ID_STATION_ELEVATION,
-        query_id="leveling_station_elevation",
         elevation_case=(120, 4, 7),
         station_labels=("A", "B", "C"),
     )
@@ -138,7 +95,8 @@ def test_leveling_station_elevation_contract_and_formula() -> None:
     execution = trace["execution_trace"]
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == "leveling_station_elevation"
+    assert out.query_id == "single"
+    assert execution["internal_query_id"] == "leveling_station_elevation"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 117
     assert execution["reference_elevation"] == 120
@@ -148,78 +106,8 @@ def test_leveling_station_elevation_contract_and_formula() -> None:
     assert execution["target_elevation"] == 117
     assert execution["formula_family"] == "survey_leveling_station_elevation"
 
-    assert out.annotation_gt.type == "point_map"
-    assert tuple(out.annotation_gt.value) == (
-        "reference_station",
-        "target_station",
-        "measurement_line",
-        "field_note_region",
-    )
-    assert trace["projected_annotation"]["point_map"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_point_map"] == out.annotation_gt.value
-    _assert_point_map_inside_image(out.annotation_gt.value, out.image.size)
-    assert "task_variant" not in json.dumps(trace)
-
-
-def test_slope_distance_elevation_change_contract_and_formula() -> None:
-    out = _generate(
-        20260615,
-        task_id=TASK_ID_STATION_ELEVATION,
-        query_id="slope_distance_elevation_change",
-        elevation_case=(120, 60, -3),
-        station_labels=("A", "B", "C"),
-    )
-    trace = out.trace_payload
-    execution = trace["execution_trace"]
-
-    assert out.scene_id == SCENE_ID
-    assert out.query_id == "slope_distance_elevation_change"
-    assert out.answer_gt.type == "integer"
-    assert out.answer_gt.value == 111
-    assert execution["reference_elevation"] == 120
-    assert execution["slope_distance"] == 60
-    assert execution["rise_per_20"] == -3
-    assert execution["total_rise"] == -9
-    assert execution["target_elevation"] == 111
-    assert execution["formula_family"] == "survey_slope_distance_elevation_change"
-
-    assert out.annotation_gt.type == "point_map"
-    assert tuple(out.annotation_gt.value) == (
-        "reference_station",
-        "target_station",
-        "measurement_line",
-        "field_note_region",
-    )
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_survey_traverse_v1"
-    _assert_point_map_inside_image(out.annotation_gt.value, out.image.size)
-    assert "task_variant" not in json.dumps(trace)
-
-
-def test_coordinate_traverse_area_contract_and_formula() -> None:
-    out = _generate(
-        20260617,
-        task_id=TASK_ID_TRAVERSE_AREA,
-        query_id="coordinate_traverse_area",
-        area_case=(0, 0, 6, 0, 7, 4, 0, 6),
-        station_labels=("A", "B", "C"),
-    )
-    trace = out.trace_payload
-    execution = trace["execution_trace"]
-
-    assert out.scene_id == SCENE_ID
-    assert out.query_id == "coordinate_traverse_area"
-    assert out.answer_gt.type == "integer"
-    assert out.answer_gt.value == 33
-    assert execution["formula_family"] == "survey_coordinate_traverse_area"
-    assert execution["coordinate_points"] == [[0, 0], [6, 0], [7, 4], [0, 6]]
-    assert execution["answer"] == 33
-
     assert out.annotation_gt.type == "bbox_map"
-    assert tuple(out.annotation_gt.value) == (
-        "traverse_region",
-        "field_note_region",
-        "area_reference_region",
-    )
+    assert tuple(out.annotation_gt.value) == ("station_profile", "field_note_region")
     assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
     assert trace["projected_annotation"]["pixel_bbox_map"] == out.annotation_gt.value
     _assert_bbox_map_inside_image(out.annotation_gt.value, out.image.size)
@@ -230,7 +118,6 @@ def test_offset_trapezoid_area_contract_and_formula() -> None:
     out = _generate(
         20260618,
         task_id=TASK_ID_TRAVERSE_AREA,
-        query_id="offset_trapezoid_area",
         area_case=(20, 40, 60, 3, 5, 4, 2),
         station_labels=("A", "B", "C"),
     )
@@ -238,7 +125,8 @@ def test_offset_trapezoid_area_contract_and_formula() -> None:
     execution = trace["execution_trace"]
 
     assert out.scene_id == SCENE_ID
-    assert out.query_id == "offset_trapezoid_area"
+    assert out.query_id == "single"
+    assert execution["internal_query_id"] == "offset_trapezoid_area"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 230
     assert execution["formula_family"] == "survey_offset_trapezoid_area"
@@ -247,46 +135,18 @@ def test_offset_trapezoid_area_contract_and_formula() -> None:
     assert execution["answer"] == 230
 
     assert out.annotation_gt.type == "bbox_map"
-    assert tuple(out.annotation_gt.value) == (
-        "traverse_region",
-        "field_note_region",
-        "area_reference_region",
-    )
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_survey_traverse_v1"
+    assert tuple(out.annotation_gt.value) == ("traverse_region", "field_note_region")
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_map"] == out.annotation_gt.value
     _assert_bbox_map_inside_image(out.annotation_gt.value, out.image.size)
     assert "task_variant" not in json.dumps(trace)
 
 
-@pytest.mark.parametrize("task_id", (TASK_ID_FORWARD_BEARING, TASK_ID_OUTGOING_BEARING))
-def test_survey_traverse_bearing_generation_is_deterministic(task_id: str) -> None:
-    first = _generate(20260613, task_id=task_id, query_id="single")
-    second = _generate(20260613, task_id=task_id, query_id="single")
-
-    assert first.prompt == second.prompt
-    assert first.answer_gt == second.answer_gt
-    assert first.annotation_gt == second.annotation_gt
-    assert first.trace_payload["execution_trace"] == second.trace_payload["execution_trace"]
-    assert first.image.tobytes() == second.image.tobytes()
-
-
-@pytest.mark.parametrize("query_id", ELEVATION_QUERY_IDS)
-def test_survey_traverse_station_elevation_generation_is_deterministic(query_id: str) -> None:
-    params = {"query_id": query_id}
-    first = _generate(20260616, task_id=TASK_ID_STATION_ELEVATION, **params)
-    second = _generate(20260616, task_id=TASK_ID_STATION_ELEVATION, **params)
-
-    assert first.prompt == second.prompt
-    assert first.answer_gt == second.answer_gt
-    assert first.annotation_gt == second.annotation_gt
-    assert first.trace_payload["execution_trace"] == second.trace_payload["execution_trace"]
-    assert first.image.tobytes() == second.image.tobytes()
-
-
-@pytest.mark.parametrize("query_id", AREA_QUERY_IDS)
-def test_survey_traverse_area_generation_is_deterministic(query_id: str) -> None:
-    params = {"query_id": query_id}
-    first = _generate(20260619, task_id=TASK_ID_TRAVERSE_AREA, **params)
-    second = _generate(20260619, task_id=TASK_ID_TRAVERSE_AREA, **params)
+@pytest.mark.parametrize("task_id", ACTIVE_TASK_IDS)
+def test_survey_traverse_generation_is_deterministic(task_id: str) -> None:
+    params = {"query_id": create_task(task_id).supported_query_ids[0]}
+    first = _generate(20260619, task_id=task_id, **params)
+    second = _generate(20260619, task_id=task_id, **params)
 
     assert first.prompt == second.prompt
     assert first.answer_gt == second.answer_gt
@@ -296,11 +156,6 @@ def test_survey_traverse_area_generation_is_deterministic(query_id: str) -> None
 
 
 def test_survey_traverse_bearing_rejects_invalid_params() -> None:
-    forward_task = create_task(TASK_ID_FORWARD_BEARING)
-    with pytest.raises(ValueError):
-        forward_task.generate(1, params={"query_id": "bad_query"}, max_attempts=1)
-    with pytest.raises(ValueError):
-        forward_task.generate(1, params={"query_id": "single", "target_bearing": 17}, max_attempts=1)
     outgoing_task = create_task(TASK_ID_OUTGOING_BEARING)
     with pytest.raises(ValueError):
         outgoing_task.generate(1, params={"query_id": "bad_query"}, max_attempts=1)
@@ -311,53 +166,37 @@ def test_survey_traverse_bearing_rejects_invalid_params() -> None:
             max_attempts=1,
         )
     with pytest.raises(ValueError):
-        forward_task.generate(1, params={"station_labels": ("A", "A", "B")}, max_attempts=1)
+        outgoing_task.generate(1, params={"station_labels": ("A", "A", "B")}, max_attempts=1)
 
 
 def test_survey_traverse_station_elevation_rejects_invalid_params() -> None:
     task = create_task(TASK_ID_STATION_ELEVATION)
+    assert ELEVATION_QUERY_IDS == ("leveling_station_elevation",)
     with pytest.raises(ValueError):
         task.generate(1, params={"query_id": "bad_query"}, max_attempts=1)
     with pytest.raises(ValueError):
         task.generate(
             1,
-            params={"query_id": "leveling_station_elevation", "elevation_case": (1, 2, 3)},
+            params={"query_id": "single", "elevation_case": (1, 2, 3)},
             max_attempts=1,
         )
     with pytest.raises(ValueError):
-        task.generate(
-            1,
-            params={"query_id": "slope_distance_elevation_change", "elevation_case": "100,80,2"},
-            max_attempts=1,
-        )
+        task.generate(1, params={"query_id": "slope_distance_elevation_change"}, max_attempts=1)
 
 
 def test_survey_traverse_area_rejects_invalid_params() -> None:
     task = create_task(TASK_ID_TRAVERSE_AREA)
+    assert AREA_QUERY_IDS == ("offset_trapezoid_area",)
     with pytest.raises(ValueError):
         task.generate(1, params={"query_id": "bad_query"}, max_attempts=1)
     with pytest.raises(ValueError):
-        task.generate(
-            1,
-            params={"query_id": "coordinate_traverse_area", "area_case": (1, 2, 3, 4)},
-            max_attempts=1,
-        )
+        task.generate(1, params={"query_id": "coordinate_traverse_area"}, max_attempts=1)
     with pytest.raises(ValueError):
         task.generate(
             1,
-            params={"query_id": "offset_trapezoid_area", "area_case": "20,40,60,3,5,4,2"},
+            params={"query_id": "single", "area_case": "20,40,60,3,5,4,2"},
             max_attempts=1,
         )
-
-
-def _assert_point_map_inside_image(annotation: dict[str, list[float]], image_size: tuple[int, int]) -> None:
-    width, height = image_size
-    for point in annotation.values():
-        assert isinstance(point, list)
-        assert len(point) == 2
-        x, y = [float(value) for value in point]
-        assert 0.0 <= x <= float(width)
-        assert 0.0 <= y <= float(height)
 
 
 def _assert_bbox_map_inside_image(annotation: dict[str, list[float]], image_size: tuple[int, int]) -> None:

@@ -130,13 +130,13 @@
       "The library image is divided into lettered tiles. One tile has been rotated. Which lettered tile is rotated?",
       "The library scene is split into lettered tiles. Identify the tile that has been rotated.",
       "One of the lettered tiles is rotated relative to the rest of the library. Which tile is it?",
-      "Look at the lettered tile grid. Which tile has the rotated library fragment?",
+      "The lettered tile grid contains one rotated library fragment. Which tile is it?",
       "Select the letter of the tile whose library fragment is rotated."
     ],
     "swapped_tile_pair_label": [
       "The library image is divided into numbered cells, and exactly two cells have been swapped. Which option names the swapped pair?",
       "Two numbered cells in the library grid are out of place. Select the option naming those two cells.",
-      "Look at the numbered library grid. Which option gives the two cells that were swapped?",
+      "The numbered library grid has exactly two swapped cells. Which option gives those two cells?",
       "Exactly two cells of the library image changed places. Choose the option naming the swapped cells.",
       "Select the lettered option that names the two swapped cells in the library grid."
     ],
@@ -144,7 +144,7 @@
       "Which option exactly fills the missing region?",
       "Select the option that restores the missing part of the library image.",
       "One region is missing from the library scene. Which lettered option matches it exactly?",
-      "Look at the missing region in the library image. Which option belongs there?",
+      "The library image has one missing region. Which option belongs there?",
       "Choose the patch option that completes the library illustration."
     ]
   },

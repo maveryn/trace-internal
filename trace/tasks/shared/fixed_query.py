@@ -7,13 +7,14 @@ from dataclasses import replace
 from typing import Any, Dict, Mapping, Sequence
 
 from trace.core.seed import spawn_rng
+from trace.core.query_ids import LEGACY_DEFAULT_QUERY_ID, SINGLE_QUERY_ID
 
 from ..base import TaskOutput
 from .deterministic_sampling import resolve_selection_index
 
 
 _UNSET = object()
-DEFAULT_QUERY_ID = "default"
+DEFAULT_QUERY_ID = SINGLE_QUERY_ID
 QUERY_ID_PARAM_KEYS: tuple[str, str] = ("query_id", "query_variant")
 QUERY_ID_WEIGHT_KEYS: tuple[str, str] = ("query_id_weights", "query_variant_weights")
 
@@ -32,7 +33,7 @@ def explicit_query_id_param(params: Mapping[str, Any], *, allow_default: bool = 
         if value is None:
             continue
         text = str(value)
-        if text == "default" and not bool(allow_default):
+        if text == LEGACY_DEFAULT_QUERY_ID and not bool(allow_default):
             continue
         if selected is not None and text != selected:
             raise ValueError(f"{selected_key} conflicts with {key}")
@@ -85,6 +86,8 @@ def resolve_task_query_id_param(
     if selected is None:
         return default_text
     selected_text = str(selected)
+    if selected_text == LEGACY_DEFAULT_QUERY_ID:
+        return default_text
     if selected_text not in supported:
         context = f" for {task_id}" if task_id else ""
         raise ValueError(f"unsupported query_id{context}: {selected_text}; supported: {supported}")
@@ -247,7 +250,7 @@ def rewrite_public_query_output(
         if not preserve_internal_keys:
             return
         prior_query_id = value.get("query_id")
-        if prior_query_id is not None and str(prior_query_id) != "default":
+        if prior_query_id is not None and str(prior_query_id) != LEGACY_DEFAULT_QUERY_ID:
             for key in preserve_internal_keys:
                 value.setdefault(str(key), str(prior_query_id))
 
@@ -361,6 +364,7 @@ def rewrite_public_query_output(
         if include_scene_ir_root:
             _rewrite_scene_ir_root(scene_ir)
         _rewrite_mapping(scene_ir.get("relations"))
+    _rewrite_mapping(payload.get("witness_symbolic"))
     _rewrite_existing_taxonomy()
 
     return replace(
@@ -479,7 +483,7 @@ def select_indexed_geometry_query_id(
 
     supported = _validated_sequence(query_ids, field_name="query_ids")
     explicit_value = params.get("query_id")
-    if explicit_value is not None and str(explicit_value) == "default" and bool(default_means_sample):
+    if explicit_value is not None and str(explicit_value) == LEGACY_DEFAULT_QUERY_ID and bool(default_means_sample):
         explicit_value = None
     if explicit_value is not None:
         selected = str(explicit_value)
@@ -581,7 +585,7 @@ def rewrite_fixed_puzzle_query_output(output: TaskOutput, *, query_id: str, scen
         query_id=str(query_id),
         scene_id=str(scene_id) if str(scene_id).strip() else None,
         include_render_spec=True,
-        query_id_probabilities={"default": 1.0},
+        query_id_probabilities={str(query_id): 1.0},
         preserve_internal_query_id_as="internal_query_id",
     )
 
@@ -598,7 +602,7 @@ def rewrite_physics_query_output(output: TaskOutput, *, query_id: str) -> TaskOu
     return rewrite_public_query_output(
         output,
         query_id=str(query_id),
-        params_query_id_probabilities={"default": 1.0},
+        params_query_id_probabilities={str(query_id): 1.0},
         preserve_internal_query_id_as="internal_query_id",
     )
 
@@ -635,7 +639,7 @@ def merged_query_params(
 def infer_query_id_from_output(output: TaskOutput) -> str:
     """Infer the concrete generated query id from output metadata."""
 
-    if str(output.query_id).strip() and str(output.query_id) != "default":
+    if str(output.query_id).strip() and str(output.query_id) != LEGACY_DEFAULT_QUERY_ID:
         return str(output.query_id)
     payload = output.trace_payload if isinstance(output.trace_payload, Mapping) else {}
     sources = [
@@ -654,7 +658,7 @@ def infer_query_id_from_output(output: TaskOutput) -> str:
                 continue
             for key in ("query_id", "query_variant"):
                 value = candidate.get(str(key))
-                if value is not None and str(value).strip() and str(value) != "default":
+                if value is not None and str(value).strip() and str(value) != LEGACY_DEFAULT_QUERY_ID:
                     return str(value)
     return ""
 
@@ -749,7 +753,7 @@ class QuerySubsetTaskMixin:
         if not supported:
             raise ValueError("supported_query_ids must contain at least one query id")
         explicit = explicit_query_id_param(params, allow_default=True)
-        if explicit == "default":
+        if explicit == LEGACY_DEFAULT_QUERY_ID:
             explicit = None
         probabilities = probability_map(supported)
         if explicit is not None:
@@ -768,7 +772,7 @@ class QuerySubsetTaskMixin:
         raw_cursor = params.get("_sample_cursor")
         explicit_query = explicit_query_id_param(params, allow_default=True)
         next_params = force_query_id_params(params, query_id=str(query_id))
-        if raw_cursor is not None and explicit_query in {None, "default"}:
+        if raw_cursor is not None and explicit_query in {None, LEGACY_DEFAULT_QUERY_ID}:
             next_params["_sample_cursor"] = abs(int(raw_cursor)) // max(1, len(tuple(self.supported_query_ids)))
         output = super().generate(  # type: ignore[misc]
             int(instance_seed),

@@ -15,17 +15,14 @@ from .shared.state import DOMAIN
 
 TASK_ID = "task_charts__scatter_cluster__cluster_area_rank_label"
 LARGEST_AREA_QUERY_ID = "largest_cluster_area_label"
-SECOND_LARGEST_AREA_QUERY_ID = "second_largest_cluster_area_label"
 SMALLEST_AREA_QUERY_ID = "smallest_cluster_area_label"
 SUPPORTED_QUERY_IDS = (
     LARGEST_AREA_QUERY_ID,
-    SECOND_LARGEST_AREA_QUERY_ID,
     SMALLEST_AREA_QUERY_ID,
 )
 DEFAULT_QUERY_ID = LARGEST_AREA_QUERY_ID
 _AREA_RANK_BY_BRANCH = {
     LARGEST_AREA_QUERY_ID: ("largest", "largest"),
-    SECOND_LARGEST_AREA_QUERY_ID: ("second_largest", "second-largest"),
     SMALLEST_AREA_QUERY_ID: ("smallest", "smallest"),
 }
 

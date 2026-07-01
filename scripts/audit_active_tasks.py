@@ -16,6 +16,7 @@ import traceback
 from typing import Any, Iterable, Mapping
 
 import trace.tasks  # noqa: F401 - registers task classes.
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.seed import hash64
 from trace.core.taxonomy import (
     ACTIVE_DOMAINS,
@@ -169,7 +170,7 @@ def _generate_smoke(task_id: str, *, max_attempts: int, smoke_seeds: int) -> dic
                 source_domain=str(getattr(task, "domain", "")),
                 source_scene_id=str(getattr(task, "scene_id", "")),
             )
-            query_id = str(getattr(output, "query_id", "") or "default")
+            query_id = str(getattr(output, "query_id", "") or SINGLE_QUERY_ID)
             trace_payload = getattr(output, "trace_payload", {})
             if not isinstance(trace_payload, Mapping):
                 trace_payload = {}

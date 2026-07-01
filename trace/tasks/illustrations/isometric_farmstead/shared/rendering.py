@@ -8,6 +8,12 @@ from typing import Any, Callable, Mapping, Sequence
 
 from PIL import Image, ImageDraw
 
+from trace.tasks.illustrations.shared.isometric_visual_styles import (
+    IsometricIllustrationTone,
+    isometric_terrain_triplet,
+    resolve_isometric_illustration_tone,
+    tint_isometric_semantic_rgb,
+)
 from trace.tasks.illustrations.shared.pixel_world_objects import draw_pixel_animal, draw_pixel_person, draw_pixel_tree
 from trace.tasks.illustrations.shared.option_rendering import draw_label_badge, sample_visual_label_font_trace
 
@@ -450,7 +456,7 @@ def _sample_farm_patches(
     return patches, terrain_by_cell, occupied
 
 
-def _terrain_colors(terrain: str, level: int) -> tuple[RGB, RGB, RGB]:
+def _terrain_colors(terrain: str, level: int, tone: IsometricIllustrationTone) -> tuple[RGB, RGB, RGB]:
     base_by_level = {
         0: (58, 124, 66),
         1: (101, 169, 80),
@@ -466,12 +472,18 @@ def _terrain_colors(terrain: str, level: int) -> tuple[RGB, RGB, RGB]:
         fill = (111, 172, 88)
     elif terrain == "pasture":
         fill = (103, 171, 92)
-    return fill, _shade(fill, -48), _shade(fill, 38)
+    return isometric_terrain_triplet(fill, tone)
 
 
-def _draw_tile_top(draw: ImageDraw.ImageDraw, layout: IsoLayout, tile: IsoFarmsteadTile, rng: random.Random) -> None:
+def _draw_tile_top(
+    draw: ImageDraw.ImageDraw,
+    layout: IsoLayout,
+    tile: IsoFarmsteadTile,
+    rng: random.Random,
+    tone: IsometricIllustrationTone,
+) -> None:
     points = [(int(round(x)), int(round(y))) for x, y in tile.polygon_xy]
-    fill, dark, light = _terrain_colors(tile.terrain, tile.level)
+    fill, dark, light = _terrain_colors(tile.terrain, tile.level, tone)
     draw.polygon(points, fill=fill)
     top, right, bottom, left = tile.polygon_xy
     draw.line((top, right), fill=light, width=2)
@@ -480,13 +492,13 @@ def _draw_tile_top(draw: ImageDraw.ImageDraw, layout: IsoLayout, tile: IsoFarmst
     draw.line((left, top), fill=_shade(dark, -4), width=2)
     cx, cy = tile.center_xy
     if tile.terrain == "crop":
-        leaf = (63, 149, 62)
+        leaf = tint_isometric_semantic_rgb((63, 149, 62), tone, strength=0.04)
         for dx in (-0.17, 0.0, 0.17):
             px = int(round(cx + dx * layout.tile_w))
             draw.line((px, int(cy - 5), px, int(cy + 8)), fill=_shade(leaf, -35), width=2)
             draw.ellipse((px - 4, int(cy - 3), px + 3, int(cy + 5)), fill=leaf)
     elif tile.terrain == "soil":
-        draw.line((int(cx - 10), int(cy + 2), int(cx + 10), int(cy - 2)), fill=(111, 72, 43), width=2)
+        draw.line((int(cx - 10), int(cy + 2), int(cx + 10), int(cy - 2)), fill=tint_isometric_semantic_rgb((111, 72, 43), tone, strength=0.04), width=2)
     elif tile.terrain == "flower":
         blossom = rng.choice(((238, 87, 107), (239, 200, 73), (185, 105, 222)))
         for dx, dy in ((-7, -1), (3, 2), (9, -2)):
@@ -494,10 +506,17 @@ def _draw_tile_top(draw: ImageDraw.ImageDraw, layout: IsoLayout, tile: IsoFarmst
     elif tile.terrain == "pasture":
         for dx in (-0.18, 0.08, 0.21):
             px = int(round(cx + dx * layout.tile_w))
-            draw.line((px, int(cy + 1), px + 5, int(cy - 5)), fill=(50, 128, 58), width=2)
+            draw.line((px, int(cy + 1), px + 5, int(cy - 5)), fill=tint_isometric_semantic_rgb((50, 128, 58), tone, strength=0.04), width=2)
 
 
-def _draw_level_faces(draw: ImageDraw.ImageDraw, layout: IsoLayout, level_grid: Mapping[tuple[int, int], int], *, open_edges: set[tuple[int, int, str]]) -> list[dict[str, Any]]:
+def _draw_level_faces(
+    draw: ImageDraw.ImageDraw,
+    layout: IsoLayout,
+    level_grid: Mapping[tuple[int, int], int],
+    *,
+    open_edges: set[tuple[int, int, str]],
+    tone: IsometricIllustrationTone,
+) -> list[dict[str, Any]]:
     """Draw visible vertical faces wherever adjacent terrain levels drop."""
 
     records: list[dict[str, Any]] = []
@@ -519,9 +538,9 @@ def _draw_level_faces(draw: ImageDraw.ImageDraw, layout: IsoLayout, level_grid: 
                     continue
                 p0, p1 = edge
                 face = (p0, p1, (p1[0], p1[1] + drop), (p0[0], p0[1] + drop))
-                fill = (118, 92, 60) if side == "east" else (138, 103, 63)
+                fill = tint_isometric_semantic_rgb((118, 92, 60) if side == "east" else (138, 103, 63), tone, strength=0.06)
                 draw.polygon([(int(round(x)), int(round(y))) for x, y in face], fill=fill)
-                draw.line((p0, p1), fill=(202, 159, 91), width=2)
+                draw.line((p0, p1), fill=tint_isometric_semantic_rgb((202, 159, 91), tone, strength=0.08), width=2)
                 for offset in range(8, int(drop), 8):
                     draw.line((int(p0[0]), int(p0[1] + offset), int(p1[0]), int(p1[1] + offset)), fill=_shade(fill, -18), width=1)
                 records.append(
@@ -894,6 +913,8 @@ def render_isometric_farmstead_scene(
     reference_farmer_tile_id: str | None = None,
     highest_level_tile_count: int | None = None,
     reserve_highest_level_tiles: bool = False,
+    render_style_params: Mapping[str, Any] | None = None,
+    render_style_defaults: Mapping[str, Any] | None = None,
 ) -> IsoFarmsteadScene:
     """Render a deterministic isometric farmstead with variable terrain levels."""
 
@@ -931,12 +952,18 @@ def render_isometric_farmstead_scene(
     tiles_by_id = {str(tile.tile_id): tile for tile in tiles}
     object_unsafe_tile_ids = _lower_tiles_adjacent_to_higher(tiles)
     farm_patches_with_bboxes = _patches_with_bboxes(farm_patches, tiles_by_id)
-    image = Image.new("RGB", (int(width), int(height)), (207, 220, 190))
+    tone = resolve_isometric_illustration_tone(
+        params=dict(render_style_params or {}),
+        render_defaults=dict(render_style_defaults or {}),
+        instance_seed=int(seed),
+        namespace=f"{SCENE_ID}:background_tone",
+    )
+    image = Image.new("RGB", (int(width), int(height)), tone.canvas_rgb)
     draw = ImageDraw.Draw(image, "RGBA")
 
     for tile in tiles:
-        _draw_tile_top(draw, layout, tile, tile_rng)
-    face_records = _draw_level_faces(draw, layout, level_grid, open_edges=set())
+        _draw_tile_top(draw, layout, tile, tile_rng, tone)
+    face_records = _draw_level_faces(draw, layout, level_grid, open_edges=set(), tone=tone)
     transitions = ()
     entities, occupied_tile_ids = _draw_context_entities(
         image,
@@ -964,9 +991,9 @@ def render_isometric_farmstead_scene(
             str(label),
             box,
             font_family=label_font_family,
-            fill=(255, 255, 244),
-            outline=(39, 46, 55),
-            text_fill=(18, 24, 31),
+            fill=tone.label_fill_rgb,
+            outline=tone.label_outline_rgb,
+            text_fill=tone.label_text_rgb,
             radius=5,
             width=2,
         )
@@ -978,6 +1005,7 @@ def render_isometric_farmstead_scene(
         "renderer_style": RENDERER_STYLE,
         "theme_id": "isometric_farmstead_elevation",
         "seed": int(seed),
+        **tone.trace_metadata(),
         "canvas_profile": str(canvas_profile),
         "canvas_profile_probabilities": dict(canvas_profile_probabilities or {}),
         "canvas_size_px": [int(width), int(height)],
@@ -1056,6 +1084,8 @@ def render_isometric_farmstead_labeled_scene_with_retry(
                 height=sample.canvas_height,
                 canvas_profile=sample.canvas_profile,
                 canvas_profile_probabilities=sample.canvas_profile_probabilities,
+                render_style_params=params,
+                render_style_defaults=rendering_defaults,
             )
             selection = dict(selection_fn(base_scene, scene_seed))
             candidates_by_label = {
@@ -1079,6 +1109,8 @@ def render_isometric_farmstead_labeled_scene_with_retry(
                 canvas_profile_probabilities=sample.canvas_profile_probabilities,
                 candidate_labels_by_tile_id=labels_by_tile_id,
                 label_font_family=str(label_font_trace["font_family"]),
+                render_style_params=params,
+                render_style_defaults=rendering_defaults,
                 **dict(selection.get("render_kwargs", {})),
             )
             return {

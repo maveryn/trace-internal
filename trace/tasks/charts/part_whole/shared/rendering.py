@@ -9,7 +9,11 @@ from typing import Any, Mapping, Sequence
 from PIL import Image, ImageDraw
 
 from trace.core.seed import spawn_rng
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import (
+    make_chart_information_background,
+    resolve_chart_information_style,
+)
+from trace.tasks.charts.shared.dense_text import dense_fit_bold, dense_stroke_width
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.charts.shared.visual_defaults import chart_font_asset_metadata, sample_chart_font_family
 from trace.tasks.shared.config_defaults import group_default
@@ -19,7 +23,6 @@ from trace.tasks.shared.text_rendering import load_font, temporary_default_font_
 
 from .defaults import (
     DEFAULTS,
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDER_DEFAULTS,
     SAMPLING_NAMESPACE,
@@ -198,7 +201,7 @@ def _render_pie_like(
             (label_x, label_y),
             str(category.label),
             label_font,
-            stroke_width=2,
+            stroke_width=dense_stroke_width(),
         )
         label_specs.append(
             {
@@ -251,7 +254,7 @@ def _render_pie_like(
                 str(category.label),
                 label_font,
                 fill,
-                stroke_width=2,
+                stroke_width=dense_stroke_width(),
                 stroke_fill=(32, 36, 44) if fill == (255, 255, 255) else (255, 255, 255),
             )
         traces.append(
@@ -389,6 +392,14 @@ def _render_share_chart(
         instance_seed=int(instance_seed),
         namespace=SAMPLING_NAMESPACE,
     )
+    zebra_row_fill = resolve_render_rgb(
+        params,
+        RENDER_DEFAULTS,
+        "zebra_row_fill_rgb",
+        [248, 249, 251],
+        instance_seed=int(instance_seed),
+        namespace=SAMPLING_NAMESPACE,
+    )
     outline_width = resolve_render_int(
         params,
         RENDER_DEFAULTS,
@@ -399,7 +410,7 @@ def _render_share_chart(
     )
     label_font = load_font(
         int(params.get("label_font_size_px", group_default(RENDER_DEFAULTS, "label_font_size_px", 18))),
-        bold=True,
+        bold=dense_fit_bold(),
     )
     table_font = load_font(
         int(params.get("table_font_size_px", group_default(RENDER_DEFAULTS, "table_font_size_px", 18))),
@@ -407,7 +418,7 @@ def _render_share_chart(
     )
     table_header_font = load_font(
         int(params.get("table_header_font_size_px", group_default(RENDER_DEFAULTS, "table_header_font_size_px", 19))),
-        bold=True,
+        bold=False,
     )
 
     margin_left = int(params.get("plot_margin_left_px", group_default(RENDER_DEFAULTS, "plot_margin_left_px", 42)))
@@ -449,18 +460,6 @@ def _render_share_chart(
     draw.rounded_rectangle(chart_bbox, radius=8, fill=panel_fill, outline=grid_color, width=max(1, int(outline_width)))
     draw.rounded_rectangle(table_bbox, radius=8, fill=panel_fill, outline=grid_color, width=max(1, int(outline_width)))
 
-    total_bbox: list[float] | None = None
-    info_y = float(margin_top + 21)
-    total_count = dataset.trace_extras.get("total_count")
-    if total_count is not None:
-        total_bbox = _draw_text(
-            draw,
-            (float(margin_left), float(info_y)),
-            f"Total count: {int(total_count)}",
-            table_header_font,
-            text_color,
-        )
-
     chart_traces, _chart_mark_bbox = _render_pie_like(
         draw,
         dataset=dataset,
@@ -491,20 +490,6 @@ def _render_share_chart(
         annotation_point_by_label[label] = [float(value) for value in trace["slice_center_px"]]
     category_traces: list[dict[str, Any]] = []
     entities: list[dict[str, Any]] = []
-    if total_bbox is not None:
-        annotation_bbox_by_label["__total__"] = list(total_bbox)
-        annotation_point_by_label["__total__"] = _bbox_center(total_bbox)
-        entities.append(
-            {
-                "entity_id": "__total__",
-                "kind": "composition_total",
-                "attrs": {
-                    "label": "total_count",
-                    "value": int(total_count),
-                    "bbox_px": list(total_bbox),
-                },
-            }
-        )
     table_categories = tuple(sorted(dataset.categories, key=lambda item: str(item.label)))
     for column_index in range(int(table_columns)):
         col_x0 = float(table_inner_left + (float(column_index) * (float(column_width) + float(column_gap))))
@@ -530,7 +515,7 @@ def _render_share_chart(
         if int(index) % 2 == 1:
             draw.rectangle(
                 (float(col_x0) + 4.0, row_y0, float(col_x1) - 4.0, row_y1),
-                fill=(248, 249, 251),
+                fill=zebra_row_fill,
             )
         if int(row_index) > 0:
             draw.line((float(col_x0) + 4.0, row_y0, float(col_x1) - 4.0, row_y0), fill=grid_color, width=1)
@@ -611,12 +596,25 @@ def render_part_whole_dataset(
 
     canvas_width = int(params.get("canvas_width", group_default(RENDER_DEFAULTS, "canvas_width", DEFAULTS.canvas_width)))
     canvas_height = int(params.get("canvas_height", group_default(RENDER_DEFAULTS, "canvas_height", DEFAULTS.canvas_height)))
-    background, background_meta = make_background_canvas(
-        canvas_width=int(canvas_width),
-        canvas_height=int(canvas_height),
+    information_style, information_style_meta = resolve_chart_information_style(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="part_whole",
+        protected_colors=[tuple(int(channel) for channel in category.color_rgb) for category in dataset.categories],
+    )
+    styled_params = {
+        **dict(params),
+        "text_color_rgb": tuple(int(value) for value in information_style.text_rgb),
+        "grid_color_rgb": tuple(int(value) for value in information_style.guide_rgb),
+        "plot_fill_rgb": tuple(int(value) for value in information_style.panel_fill_rgb),
+        "zebra_row_fill_rgb": tuple(int(value) for value in information_style.surface_alt_rgb),
+    }
+    background, background_meta = make_chart_information_background(
+        canvas_width=int(canvas_width),
+        canvas_height=int(canvas_height),
+        style=information_style,
+        instance_seed=int(instance_seed),
+        namespace="charts.part_whole.information_scene_background",
     )
     chart_font_family = sample_chart_font_family(
         instance_seed=int(instance_seed),
@@ -628,7 +626,7 @@ def render_part_whole_dataset(
             base_image=background,
             dataset=dataset,
             scene_variant=str(scene_variant),
-            params=params,
+            params=styled_params,
             instance_seed=int(instance_seed),
         )
     image, post_noise_meta = apply_post_image_noise(
@@ -651,7 +649,7 @@ def render_part_whole_dataset(
     return PartWholeRenderResult(
         image=image,
         rendered_scene=rendered_scene,
-        background_meta=dict(background_meta),
+        background_meta={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         post_noise_meta=dict(post_noise_meta),
         font_assets=chart_font_asset_metadata(str(chart_font_family)),
         canvas_width=int(canvas_width),

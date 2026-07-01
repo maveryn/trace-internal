@@ -11,7 +11,15 @@
 8. Program schema: `label(filter(labeled_empty_cells, move_result=connects_player_sides)); scene=hex; scope=winning_move_cell_label`
 
 ## Program Contract
-- `label(filter(labeled_empty_cells, move_result=connects_player_sides)); scene=hex; scope=winning_move_cell_label`
+
+Program: `label(filter(labeled_empty_cells, move_result=connects_player_sides)); scene=hex; scope=winning_move_cell_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `winning_move_cell_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `labeled_empty_cells`, `move_result`, `connects_player_sides`, `hex`, `winning_move_cell_label`.
+Operation: evaluate `label` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. `query_id=single` is the public no-branch query id; the prompt uses the Hex winning-move template.

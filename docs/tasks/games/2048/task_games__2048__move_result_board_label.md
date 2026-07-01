@@ -12,7 +12,15 @@
 9. Program schema: `label(select_option(candidate_result_boards, option_board = simulate(board, rules=slide_merge_2048, action=move_direction).final_board)); scene=2048; scope=move_result_board_label`
 
 ## Program Contract
-- `label(select_option(candidate_result_boards, option_board = simulate(board, rules=slide_merge_2048, action=move_direction).final_board)); scene=2048; scope=move_result_board_label`
+
+Program: `label(select_option(candidate_result_boards, option_board = simulate(board, rules=slide_merge_2048, action=move_direction).final_board)); scene=2048; scope=move_result_board_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `move_result_board_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `select_option`, `candidate_result_boards`, `option_board`, `simulate`, `board`, `rules`, `slide_merge_2048`, `action`, `move_direction`, `final_board`, `move_result_board_label`.
+Operation: evaluate `label` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.

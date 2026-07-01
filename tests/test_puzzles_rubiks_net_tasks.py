@@ -16,27 +16,11 @@ from trace.tasks.puzzles.rubiks_net.rubiks_move_result_label import (
     INVERSE_QUERY_ID,
     PuzzlesRubiksNetMoveResultLabelTask,
 )
-from trace.tasks.puzzles.rubiks_net.static_face_color_count_label import (
-    PuzzlesRubiksNetStaticFaceColorCountLabelTask,
-)
-from trace.tasks.puzzles.rubiks_net.static_sticker_color_label import (
-    PuzzlesRubiksNetStaticStickerColorLabelTask,
-)
 
 TASKS = (
     (
-        "task_puzzles__rubiks_net__static_sticker_color_label",
-        PuzzlesRubiksNetStaticStickerColorLabelTask,
-        {"single"},
-    ),
-    (
         "task_puzzles__rubiks_net__post_move_sticker_color_label",
         PuzzlesRubiksNetPostMoveStickerColorLabelTask,
-        {"single"},
-    ),
-    (
-        "task_puzzles__rubiks_net__static_face_color_count_label",
-        PuzzlesRubiksNetStaticFaceColorCountLabelTask,
         {"single"},
     ),
     (
@@ -89,8 +73,8 @@ def test_rubiks_tasks_emit_public_contracts() -> None:
                 int(trace["render_spec"]["canvas_width"]),
                 int(trace["render_spec"]["canvas_height"]),
             )
-            assert execution["option_count"] == 6
-            assert len(execution["option_specs"]) == 6
+            assert execution["option_count"] == 4
+            assert len(execution["option_specs"]) == 4
             assert execution["start_state"]
             assert execution["final_state"]
 
@@ -116,3 +100,23 @@ def test_rubiks_generation_is_deterministic() -> None:
     )
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_rubiks_scene_variants_affect_rendering() -> None:
+    """Configured Rubik scene variants should be visible render treatments."""
+
+    task = PuzzlesRubiksNetMoveResultLabelTask()
+    rendered_images: list[bytes] = []
+    for scene_variant in ("classic_net", "paper_net", "cool_net"):
+        out = task.generate(
+            2026052399,
+            params={
+                "query_id": DIRECT_QUERY_ID,
+                "scene_variant": scene_variant,
+            },
+            max_attempts=30,
+        )
+        assert out.trace_payload["execution_trace"]["scene_variant"] == scene_variant
+        rendered_images.append(out.image.tobytes())
+
+    assert len(set(rendered_images)) == 3

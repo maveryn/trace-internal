@@ -148,7 +148,7 @@ def _height_prompt_and_trace(
             "query_id_probabilities": dict(query_probabilities),
             "answer_type": "number",
             "answer_value": float(height_value),
-            "answer_rounding": "nearest_tenth",
+            "answer_rounding": "one_decimal",
             "annotation_roles": list(annotation_roles),
             "reasoning_steps": int(measurement_fields.get("reasoning_steps", 1)),
             **measurement_fields,

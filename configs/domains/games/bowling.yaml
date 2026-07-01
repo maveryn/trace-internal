@@ -46,6 +46,14 @@ generation:
         - 3
         - 4
         - 5
+    task_games__bowling__path_hit_count:
+      balanced_path_hit_count_sampling: true
+      path_hit_count_support:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
 rendering:
   shared:
     canvas_width: 1000

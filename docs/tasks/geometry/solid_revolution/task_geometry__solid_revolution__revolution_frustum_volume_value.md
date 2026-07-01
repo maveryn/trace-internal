@@ -5,9 +5,10 @@
 2. Scene id: `solid_revolution`
 3. Task id: `task_geometry__solid_revolution__revolution_frustum_volume_value`
 4. Supported `query_id` values: `single`
-5. Answer schema: `decimal_value_1dp`
-6. Annotation schema: `bbox_map`
-7. Scalar annotation checked: `true` (not scalar-eligible; the task requires multiple role-bound boxes for the generating shape, axis, solid preview, target cue, and visible measurement labels)
+5. Answer schema: `number`
+6. Answer precision: `one_decimal`
+7. Annotation schema: `bbox_map`
+8. Scalar annotation checked: `true` (not scalar-eligible; the task binds source and result shape witnesses)
 
 ## Program Contract
 - `solve_formula(visible_solid_revolution_measurements, formula_schema=frustum_volume_from_trapezoid, target=volume); scene=solid_revolution; scope=revolution_frustum_volume_value`
@@ -20,15 +21,10 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-The annotation is a `bbox_map` with role-bound pixel boxes:
+The annotation is a `bbox_map` with role-bound pixel boxes for the source generating diagram and the resulting solid. Numeric labels, individual dimension marks, the rotation arrow, and formula cues remain visible scene content plus private verifier metadata, not separate annotation targets:
 
-- `generating_shape`
-- `rotation_axis`
-- `solid_preview`
-- `target_volume_cue`
-- `height_label`
-- `top_radius_label`
-- `bottom_radius_label`
+- `source_diagram_bbox`
+- `resulting_solid_bbox`
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

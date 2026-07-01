@@ -10,7 +10,15 @@
 Selects the single lettered terrain tile where the blue unit ends after following an explicit up/down/left/right move sequence.
 
 ## Program Contract
-`select(tile, endpoint_after_cardinal_move_sequence(unit_start, move_sequence)); scene=rpg_tactical_map; scope=movement_sequence_endpoint_label`
+
+Program: `select(tile, endpoint_after_cardinal_move_sequence(unit_start, move_sequence)); scene=rpg_tactical_map; scope=movement_sequence_endpoint_label`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `movement_sequence_endpoint_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `tile`, `endpoint_after_cardinal_move_sequence`, `unit_start`, `move_sequence`, `rpg_tactical_map`, `movement_sequence_endpoint_label`.
+Operation: evaluate `select` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

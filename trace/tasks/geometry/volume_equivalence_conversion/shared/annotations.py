@@ -11,15 +11,9 @@ from .state import BBox, RenderedScene
 MISSING_DIMENSION_ANNOTATION_KEYS: tuple[str, ...] = (
     "source_solid_bbox",
     "target_solid_bbox",
-    "source_dimension_region_bbox",
-    "target_dimension_region_bbox",
-    "target_unknown_region_bbox",
 )
 OPTION_ANNOTATION_KEYS: tuple[str, ...] = (
-    "source_solid_bbox",
-    "source_dimension_region_bbox",
     "selected_option_bbox",
-    "selected_option_dimension_region_bbox",
 )
 
 
@@ -27,11 +21,23 @@ def annotation_bbox_map(rendered: RenderedScene, keys: Sequence[str]) -> dict[st
     return {str(key): bbox_to_list(rendered.annotation_bboxes[str(key)]) for key in keys}
 
 
+def annotation_bbox(rendered: RenderedScene, key: str) -> list[float]:
+    return bbox_to_list(rendered.annotation_bboxes[str(key)])
+
+
 def projected_annotation(annotation_value: dict[str, list[float]]) -> dict[str, object]:
     return {
         "type": "bbox_map",
         "bbox_map": dict(annotation_value),
         "pixel_bbox_map": dict(annotation_value),
+    }
+
+
+def projected_bbox_annotation(annotation_value: list[float]) -> dict[str, object]:
+    return {
+        "type": "bbox",
+        "bbox": list(annotation_value),
+        "pixel_bbox": list(annotation_value),
     }
 
 
@@ -51,7 +57,9 @@ def example_bbox_for_key(key: str) -> list[int]:
 __all__ = [
     "MISSING_DIMENSION_ANNOTATION_KEYS",
     "OPTION_ANNOTATION_KEYS",
+    "annotation_bbox",
     "annotation_bbox_map",
     "example_bbox_for_key",
+    "projected_bbox_annotation",
     "projected_annotation",
 ]

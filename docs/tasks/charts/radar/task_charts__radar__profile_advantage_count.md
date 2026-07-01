@@ -22,8 +22,11 @@
 
 ## Program Contract
 
-`count(filter(metrics, value(profile_a, metric) > value(profile_b, metric))); scene=radar; scope=profile_advantage_count`
+Program: `count(filter(metrics, value(profile_a, metric) > value(profile_b, metric))); scene=radar; scope=profile_advantage_count`
 
-Arguments:
-- `profile_a`: sampled visible legend label for the first profile
-- `profile_b`: sampled visible legend label for the second profile
+Candidate set: the visible radar spokes, profile polygons, and profile labels inside the `profile_advantage_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `unspecified` value bound by `unspecified`.
+Annotation witnesses: `unspecified` witnesses bound by `see_annotation_contract`. The Annotation Contract below defines the prompt-facing witnesses.
+Query ids: `single`.

@@ -20,7 +20,15 @@
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
 ## Program Contract
-- `sum(value(category,series_label) for category in selected_category_scope); output=integer_value; annotation=point_set(selected_bar_top_centers); scene=bar_3d; scope=series_category_scope_total_value; category_scope={all,contiguous_interval}`
+
+Program: `sum(value(category,series_label) for category in selected_category_scope); output=integer_value; annotation=point_set(selected_bar_top_centers); scene=bar_3d; scope=series_category_scope_total_value; category_scope={all,contiguous_interval}`
+
+Candidate set: the visible 3D bars grouped by category and series inside the `series_category_scope_total_value` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `sum` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `point_set` witnesses bound by `point_set(selected_bar_top_centers)`. Annotation should mark the minimal visual witnesses required by the task, following the cross-domain annotation policy. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `series_total_value`, `series_interval_total_value`.
 
 ## Query Details
 

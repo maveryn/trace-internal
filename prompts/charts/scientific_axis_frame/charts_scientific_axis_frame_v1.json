@@ -22,19 +22,33 @@
       ]
     },
     "query": {
-      "x_tick_spacing_value": [
-        "On the {axis_name}, the two highlighted tick labels are adjacent. What is the numeric spacing between them?",
-        "Using the highlighted adjacent tick labels on the {axis_name}, compute their numeric spacing.",
-        "What is the difference between the two highlighted adjacent tick labels on the {axis_name}?",
-        "Read the highlighted neighboring tick labels on the {axis_name}. What spacing do they show?",
-        "For the highlighted adjacent tick labels on the {axis_name}, what is the tick interval?"
+      "x_first_tick_spacing_value": [
+        "On the {axis_name}, what is the numeric spacing between the first two visible tick labels?",
+        "Using the first two visible tick labels on the {axis_name}, compute their spacing.",
+        "What is the difference between the first and second visible tick labels on the {axis_name}?",
+        "Read the first adjacent tick interval on the {axis_name}. What spacing does it show?",
+        "For the first pair of neighboring tick labels on the {axis_name}, what is the interval?"
       ],
-      "y_tick_spacing_value": [
-        "On the {axis_name}, the two highlighted tick labels are adjacent. What is the numeric spacing between them?",
-        "Using the highlighted adjacent tick labels on the {axis_name}, compute their numeric spacing.",
-        "What is the difference between the two highlighted adjacent tick labels on the {axis_name}?",
-        "Read the highlighted neighboring tick labels on the {axis_name}. What spacing do they show?",
-        "For the highlighted adjacent tick labels on the {axis_name}, what is the tick interval?"
+      "x_last_tick_spacing_value": [
+        "On the {axis_name}, what is the numeric spacing between the last two visible tick labels?",
+        "Using the final two visible tick labels on the {axis_name}, compute their spacing.",
+        "What is the difference between the second-to-last and last visible tick labels on the {axis_name}?",
+        "Read the last adjacent tick interval on the {axis_name}. What spacing does it show?",
+        "For the final pair of neighboring tick labels on the {axis_name}, what is the interval?"
+      ],
+      "y_first_tick_spacing_value": [
+        "On the {axis_name}, what is the numeric spacing between the first two visible tick labels?",
+        "Using the first two visible tick labels on the {axis_name}, compute their spacing.",
+        "What is the difference between the first and second visible tick labels on the {axis_name}?",
+        "Read the first adjacent tick interval on the {axis_name}. What spacing does it show?",
+        "For the first pair of neighboring tick labels on the {axis_name}, what is the interval?"
+      ],
+      "y_last_tick_spacing_value": [
+        "On the {axis_name}, what is the numeric spacing between the last two visible tick labels?",
+        "Using the final two visible tick labels on the {axis_name}, compute their spacing.",
+        "What is the difference between the second-to-last and last visible tick labels on the {axis_name}?",
+        "Read the last adjacent tick interval on the {axis_name}. What spacing does it show?",
+        "For the final pair of neighboring tick labels on the {axis_name}, what is the interval?"
       ],
       "x_axis_span_value": [
         "What is the numeric span from the smallest to largest visible tick label on the {axis_name}?",
@@ -69,28 +83,40 @@
     }
   },
   "static_slots_by_key": {
-    "query:x_tick_spacing_value": {
+    "query:x_first_tick_spacing_value": {
       "answer_hint": "set \"answer\" to the requested value as an integer",
-      "annotation_hint": "set \"annotation\" to an object mapping \"first_tick\" and \"next_tick\" to [x0,y0,x1,y1] pixel bounding boxes around the lower-value highlighted tick label and the next higher highlighted tick label",
-      "json_example": "{\"annotation\":{\"first_tick\":[210,638,232,656],\"next_tick\":[358,638,381,656]},\"answer\":10}",
+      "annotation_hint": "set \"annotation\" to one segment [[x0,y0],[x1,y1]] from the first visible tick mark to the second visible tick mark on the requested axis",
+      "json_example": "{\"annotation\":[[210,612],[358,612]],\"answer\":10}",
       "json_example_answer_only": "{\"answer\":10}"
     },
-    "query:y_tick_spacing_value": {
+    "query:x_last_tick_spacing_value": {
       "answer_hint": "set \"answer\" to the requested value as an integer",
-      "annotation_hint": "set \"annotation\" to an object mapping \"first_tick\" and \"next_tick\" to [x0,y0,x1,y1] pixel bounding boxes around the lower-value highlighted tick label and the next higher highlighted tick label",
-      "json_example": "{\"annotation\":{\"first_tick\":[210,638,232,656],\"next_tick\":[358,638,381,656]},\"answer\":10}",
+      "annotation_hint": "set \"annotation\" to one segment [[x0,y0],[x1,y1]] from the second-to-last visible tick mark to the last visible tick mark on the requested axis",
+      "json_example": "{\"annotation\":[[640,612],[812,612]],\"answer\":12}",
+      "json_example_answer_only": "{\"answer\":12}"
+    },
+    "query:y_first_tick_spacing_value": {
+      "answer_hint": "set \"answer\" to the requested value as an integer",
+      "annotation_hint": "set \"annotation\" to one segment [[x0,y0],[x1,y1]] from the first visible tick mark to the second visible tick mark on the requested axis",
+      "json_example": "{\"annotation\":[[108,612],[108,500]],\"answer\":10}",
       "json_example_answer_only": "{\"answer\":10}"
+    },
+    "query:y_last_tick_spacing_value": {
+      "answer_hint": "set \"answer\" to the requested value as an integer",
+      "annotation_hint": "set \"annotation\" to one segment [[x0,y0],[x1,y1]] from the second-to-last visible tick mark to the last visible tick mark on the requested axis",
+      "json_example": "{\"annotation\":[[108,238],[108,126]],\"answer\":12}",
+      "json_example_answer_only": "{\"answer\":12}"
     },
     "query:x_axis_span_value": {
       "answer_hint": "set \"answer\" to the requested value as an integer",
-      "annotation_hint": "set \"annotation\" to an object mapping \"min_tick\" and \"max_tick\" to [x0,y0,x1,y1] pixel bounding boxes around the smallest and largest visible tick labels on the requested axis",
-      "json_example": "{\"annotation\":{\"min_tick\":[72,620,94,638],\"max_tick\":[71,112,102,130]},\"answer\":48}",
+      "annotation_hint": "set \"annotation\" to one segment [[x0,y0],[x1,y1]] from the smallest visible tick mark to the largest visible tick mark on the requested axis",
+      "json_example": "{\"annotation\":[[108,612],[1018,612]],\"answer\":48}",
       "json_example_answer_only": "{\"answer\":48}"
     },
     "query:y_axis_span_value": {
       "answer_hint": "set \"answer\" to the requested value as an integer",
-      "annotation_hint": "set \"annotation\" to an object mapping \"min_tick\" and \"max_tick\" to [x0,y0,x1,y1] pixel bounding boxes around the smallest and largest visible tick labels on the requested axis",
-      "json_example": "{\"annotation\":{\"min_tick\":[72,620,94,638],\"max_tick\":[71,112,102,130]},\"answer\":48}",
+      "annotation_hint": "set \"annotation\" to one segment [[x0,y0],[x1,y1]] from the smallest visible tick mark to the largest visible tick mark on the requested axis",
+      "json_example": "{\"annotation\":[[108,612],[108,90]],\"answer\":48}",
       "json_example_answer_only": "{\"answer\":48}"
     }
   },

@@ -15,18 +15,26 @@
 
 ## Annotation Contract
 1. Answer schema: `string_label`.
-2. Annotation schema: `point`.
-3. Annotation marks one pixel point on the selected interval's center mark, following the cross-domain annotation policy.
+2. Annotation schema: `segment`.
+3. Annotation marks the selected interval's lower-to-upper visual span as one segment, following the cross-domain annotation policy.
 4. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
 ## Program Contract
-- `label(select_rank(intervals, key=upper-lower, order={widest,narrowest}, rank={1,2})); output=string_label; annotation=point(selected_interval_center_mark); scene=error_interval; scope=interval_width_rank_label`
+
+Program: `label(select_rank(intervals, key=upper-lower, order={widest,narrowest}, rank={1,2})); output=string_label; annotation=segment(selected_interval_lower_upper_span); scene=error_interval; scope=interval_width_rank_label`
+
+Candidate set: the visible interval marks, reference lines, and category labels inside the `interval_width_rank_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `label` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `segment` witnesses bound by `segment(selected_interval_lower_upper_span)`. Annotation marks the selected interval's lower-to-upper visual span as one segment, following the cross-domain annotation policy. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `narrowest_interval_label`, `second_narrowest_interval_label`, `second_widest_interval_label`, `widest_interval_label`.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `narrowest_interval_label` | `selection.interval_width_rank_label(order=narrowest, rank=1)` | `string_label` | `point` |
-| `second_narrowest_interval_label` | `selection.interval_width_rank_label(order=narrowest, rank=2)` | `string_label` | `point` |
-| `second_widest_interval_label` | `selection.interval_width_rank_label(order=widest, rank=2)` | `string_label` | `point` |
-| `widest_interval_label` | `selection.interval_width_rank_label(order=widest, rank=1)` | `string_label` | `point` |
+| `narrowest_interval_label` | `selection.interval_width_rank_label(order=narrowest, rank=1)` | `string_label` | `segment` |
+| `second_narrowest_interval_label` | `selection.interval_width_rank_label(order=narrowest, rank=2)` | `string_label` | `segment` |
+| `second_widest_interval_label` | `selection.interval_width_rank_label(order=widest, rank=2)` | `string_label` | `segment` |
+| `widest_interval_label` | `selection.interval_width_rank_label(order=widest, rank=1)` | `string_label` | `segment` |

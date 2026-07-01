@@ -7,7 +7,6 @@ from functools import lru_cache
 from typing import Any, Callable, Dict, Mapping, Sequence, Tuple
 
 import networkx as nx
-
 from ...shared.graph_algorithms import bfs_dist_count_by_adjacency, reconstruct_unique_shortest_path_by_adjacency
 from .graph_edge_sampling import (
     _add_directed_edge_without_reciprocal,
@@ -66,7 +65,15 @@ def _resolve_visible_edge_label_support(
         )
         metadata = dict(resolved_metadata)
         explicit_target = str(target_edge_label).strip().lower()
-        target_label = explicit_target or (edge_labels_supported[int(target_edge_label_index) % len(edge_labels_supported)] if edge_labels_supported else "")
+        if explicit_target:
+            target_label = explicit_target
+        elif edge_labels_supported:
+            target_index = int(target_edge_label_index)
+            if not 0 <= target_index < len(edge_labels_supported):
+                raise ValueError("target_edge_label_index is outside edge-label support")
+            target_label = str(edge_labels_supported[target_index])
+        else:
+            target_label = ""
     else:
         edge_labels_supported = tuple(str(label).strip().lower() for label in edge_label_support if str(label).strip())
         target_label = str(target_edge_label).strip().lower()

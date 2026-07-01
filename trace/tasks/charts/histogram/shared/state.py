@@ -8,7 +8,7 @@ from typing import Any, Mapping, Sequence
 from PIL import Image
 
 from trace.core.types import TypedValue
-from trace.tasks.charts.shared.chart_scene import ChartRenderParams, HistogramBinSpec, RenderedChartScene
+from trace.tasks.charts.shared.chart_scene_types import ChartRenderParams, HistogramBinSpec, RenderedChartScene
 from trace.tasks.shared.prompt_variants import PromptTraceArtifacts
 
 

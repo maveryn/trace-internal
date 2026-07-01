@@ -6,6 +6,7 @@ from typing import Dict, Iterable, Sequence, Tuple
 
 from .state import (
     FLEET_SHAPES,
+    SHAPE_OPTION_LABELS,
     BattleshipSample,
     Coord,
     sorted_coords,
@@ -144,6 +145,20 @@ def validate_battleship_scene(sample: BattleshipSample) -> None:
         for row, col in candidate_coords:
             if not (0 <= int(row) < int(sample.board_size) and 0 <= int(col) < int(sample.board_size)):
                 raise ValueError("Battleship candidate coords must be inside the board")
+
+    if sample.shape_options:
+        labels = [str(option.label) for option in sample.shape_options]
+        expected_labels = list(SHAPE_OPTION_LABELS[: len(labels)])
+        if labels != expected_labels:
+            raise ValueError("Battleship shape-option labels must be ordered A-prefix labels")
+        shape_ids = [str(option.shape_id) for option in sample.shape_options]
+        valid_shape_ids = {shape.shape_id for shape in FLEET_SHAPES}
+        if len(shape_ids) != len(set(shape_ids)):
+            raise ValueError("Battleship shape-option shape ids must be unique")
+        if not set(shape_ids) <= valid_shape_ids:
+            raise ValueError("Battleship shape-option shape ids must belong to the fleet")
+        if sum(1 for option in sample.shape_options if bool(option.is_answer)) != 1:
+            raise ValueError("Battleship shape-option scenes require exactly one answer")
 
 
 __all__ = [

@@ -13,9 +13,6 @@ generation:
       target_count_max: 5
       off_line_target_count_min: 1
       off_line_target_count_max: 4
-      query_id_weights:
-        row_shape_count: 1.0
-        column_shape_count: 1.0
       grid_size_support:
       - - 4
         - 4
@@ -50,11 +47,6 @@ generation:
       most_winning_count_max: 5
       fewest_winning_count_min: 1
       fewest_winning_count_max: 3
-      query_id_weights:
-        row_most_shape_number: 1.0
-        row_fewest_shape_number: 1.0
-        column_most_shape_number: 1.0
-        column_fewest_shape_number: 1.0
       grid_size_support:
       - - 4
         - 4
@@ -89,13 +81,36 @@ generation:
       at_least_threshold_max: 3
       exactly_threshold_min: 1
       exactly_threshold_max: 3
-      query_id_weights:
-        row_at_least_shape_count: 1.0
-        column_at_least_shape_count: 1.0
-        row_exactly_shape_count: 1.0
-        column_exactly_shape_count: 1.0
-        row_no_shape_count: 1.0
-        column_no_shape_count: 1.0
+      grid_size_support:
+      - - 4
+        - 4
+      - - 4
+        - 5
+      - - 4
+        - 6
+      - - 5
+        - 4
+      - - 5
+        - 5
+      - - 5
+        - 6
+      - - 6
+        - 4
+      - - 6
+        - 5
+      - - 6
+        - 6
+      named_icon_fill_style_support:
+      - solid
+      - striped
+      - dotted
+      named_icon_fill_style_weights:
+        solid: 0.75
+        striped: 0.0834
+        dotted: 0.0833
+    task_icons__named_grid__line_adjacency_pair_count:
+      answer_count_min: 1
+      answer_count_max: 5
       grid_size_support:
       - - 4
         - 4
@@ -333,6 +348,36 @@ rendering:
       - 50
       - 60
       - 78
+    task_icons__named_grid__line_adjacency_pair_count:
+      canvas_width: 880
+      canvas_height: 680
+      scene_icon_size_min_px: 48
+      scene_icon_size_max_px: 72
+      scene_max_overlap_fraction: 0.0
+      row_label_band_width_px: 48
+      column_label_band_height_px: 42
+      grid_label_gap_px: 10
+      grid_cell_max_size_px: 104
+      grid_cell_padding_px: 12
+      grid_line_width_px: 2
+      grid_border_width_px: 3
+      axis_label_font_size_px: 24
+      grid_line_rgb:
+      - 176
+      - 187
+      - 205
+      cell_fill_rgb:
+      - 255
+      - 255
+      - 255
+      alternate_cell_fill_rgb:
+      - 248
+      - 250
+      - 253
+      axis_label_rgb:
+      - 50
+      - 60
+      - 78
 prompt:
   shared:
     bundle_id: icons_named_grid_v1
@@ -378,4 +423,18 @@ prompt:
         for every qualifying {line_kind} region
       answer_hint: set "answer" to the number of qualifying {line_kind_plural} as an integer
       json_example: '{"annotation":[[96,168,620,228],[96,336,620,396]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
+    task_icons__named_grid__line_adjacency_pair_count:
+      scene_key: single_scene_counting
+      object_description: a numbered grid with one icon in each cell
+      question_text_row_unordered_adjacent_pair_count: In row {line_number}, how many adjacent two-cell pairs
+        contain one "{first_shape_name}" icon and one "{second_shape_name}" icon? Count overlapping adjacent
+        pairs separately.
+      question_text_column_unordered_adjacent_pair_count: In column {line_number}, how many adjacent two-cell
+        pairs contain one "{first_shape_name}" icon and one "{second_shape_name}" icon? Count overlapping
+        adjacent pairs separately.
+      annotation_hint: set "annotation" to a JSON array of line segments [[x0, y0], [x1, y1]], one segment
+        between the centers of each counted adjacent pair in {line_kind} {line_number}
+      answer_hint: set "answer" to the adjacent-pair count as an integer
+      json_example: '{"annotation":[[[176,168],[280,168]],[[280,168],[384,168]]],"answer":2}'
       json_example_answer_only: '{"answer":2}'

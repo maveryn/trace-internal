@@ -28,6 +28,11 @@ generation:
   task_overrides:
     task_games__hex__candidate_neighbor_count:
       balanced_target_answer_sampling: true
+      neighbor_target_state_weights:
+        red: 1.0
+        blue: 1.0
+        empty: 1.0
+      balanced_neighbor_target_state_sampling: true
       neighbor_count_support:
       - 0
       - 1

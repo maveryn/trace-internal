@@ -7,8 +7,11 @@ from datetime import datetime, timezone
 from functools import lru_cache
 import io
 import json
+import logging
+import os
 from pathlib import Path
 import re
+import sqlite3
 import threading
 import time
 from types import SimpleNamespace
@@ -23,7 +26,14 @@ from PIL import Image as PILImage
 
 from trace.core.review_overlays import render_annotation_overlay, resolve_overlay_annotation
 
-from .artifact_index import build_review_index, build_review_scene_index, load_sample_payload, merge_review_scene_index
+from .artifact_index import (
+    PUBLISH_IN_PROGRESS_ERROR,
+    build_review_index,
+    build_review_scene_index,
+    load_sample_payload,
+    merge_review_scene_index,
+    preserve_locked_scenes,
+)
 from .feedback import FeedbackStore
 from .illustration_object_review import (
     RENDERER_LABELS as ILLUSTRATION_RENDERER_LABELS,
@@ -37,6 +47,10 @@ from .illustration_object_review import (
 from .models import ReviewIndex, SampleRecord, TaskAuditRecord
 from .resource_index import build_resource_index
 from .taxonomy_index import DEFAULT_TAXONOMY_ROUND, build_taxonomy_audit_index
+from .locks import review_file_lock_active, scene_publish_lock_path
+
+
+logger = logging.getLogger(__name__)
 
 
 class ReviewAppState:
@@ -67,6 +81,7 @@ class ReviewAppState:
             )
             self._review_mtime_snapshot_ns = _max_review_file_mtime_ns(self.review_root)
         self._stale_cache = False
+        self._stale_scene_cache: list[Dict[str, str]] = []
         self._stale_cache_until_ns = 0
         self._stale_check_interval_ns = 2_000_000_000
         self._reload_in_progress = False
@@ -77,11 +92,14 @@ class ReviewAppState:
         self._reload_generation = 0
         self._reload_scope = "all"
         self._reload_thread: threading.Thread | None = None
+        self._pending_reload_all = False
+        self._pending_reload_scenes: list[tuple[str, str]] = []
         if defer_initial_index:
             self.request_reload()
 
     def index(self) -> ReviewIndex:
         with self._lock:
+            self._prune_inactive_publish_errors_locked()
             return self._index
 
     def reload(self) -> ReviewIndex:
@@ -95,6 +113,7 @@ class ReviewAppState:
             self._index = fresh
             self._review_mtime_snapshot_ns = fresh_mtime
             self._stale_cache = False
+            self._stale_scene_cache = []
             self._stale_cache_until_ns = 0
             self._reload_in_progress = False
             self._reload_status = "succeeded"
@@ -115,40 +134,71 @@ class ReviewAppState:
             scope = f"scene:{domain_name}/{scene_name}"
         with self._lock:
             if self._reload_in_progress:
+                self._queue_reload_locked(domain=domain_name, scene_id=scene_name)
                 payload = self._reload_status_payload_locked()
-                payload.update({"accepted": False, "already_running": True})
+                payload.update({"accepted": True, "already_running": True, "queued": True})
+                return payload
+            if domain_name and scene_name and review_file_lock_active(
+                scene_publish_lock_path(review_root=self.review_root, domain=domain_name, scene_id=scene_name)
+            ):
+                self._reload_generation += 1
+                self._reload_in_progress = False
+                self._reload_status = "succeeded"
+                self._reload_started_at = _utc_timestamp()
+                self._reload_finished_at = self._reload_started_at
+                self._reload_error = ""
+                self._reload_scope = scope
+                self._stale_cache = True
+                self._stale_scene_cache = [
+                    {"domain": domain_name, "scene_id": scene_name, "key": f"{domain_name}/{scene_name}"}
+                ]
+                message = (
+                    f"{domain_name}/{scene_name}: {PUBLISH_IN_PROGRESS_ERROR}; "
+                    "serving previous indexed scene"
+                )
+                if message not in self._index.errors:
+                    self._index.errors.append(message)
+                self._stale_cache_until_ns = 0
+                payload = self._reload_status_payload_locked()
+                payload.update({"accepted": True, "already_running": False, "queued": False})
                 return payload
 
-            self._reload_generation += 1
-            generation = self._reload_generation
-            self._reload_in_progress = True
-            self._reload_status = "running"
-            self._reload_started_at = _utc_timestamp()
-            self._reload_finished_at = ""
-            self._reload_error = ""
-            self._reload_scope = scope
-            thread = threading.Thread(
-                target=self._reload_worker,
-                args=(generation, domain_name, scene_name),
-                name=f"trace-review-index-reload-{generation}",
-                daemon=True,
-            )
-            self._reload_thread = thread
+            thread = self._begin_reload_locked(domain=domain_name, scene_id=scene_name, scope=scope)
             payload = self._reload_status_payload_locked()
-            payload.update({"accepted": True, "already_running": False})
+            payload.update({"accepted": True, "already_running": False, "queued": False})
 
         thread.start()
         return payload
 
     def reload_status(self) -> Dict[str, Any]:
-        stale = self.review_artifacts_stale()
+        with self._lock:
+            self._prune_inactive_publish_errors_locked()
+            publish_stale_scenes = _publish_in_progress_scenes(self._index.errors)
+            if publish_stale_scenes and not self._reload_in_progress:
+                payload = self._reload_status_payload_locked()
+                payload["stale"] = True
+                payload["stale_scenes"] = publish_stale_scenes
+                return payload
+            if self._reload_in_progress and self._reload_scope == "all":
+                payload = self._reload_status_payload_locked()
+                payload["stale"] = self._stale_cache
+                payload["stale_scenes"] = []
+                return payload
+            if self._stale_cache:
+                payload = self._reload_status_payload_locked()
+                payload["stale"] = True
+                payload["stale_scenes"] = list(self._stale_scene_cache)
+                return payload
+        stale, stale_scenes = self.review_artifacts_stale_summary()
         with self._lock:
             payload = self._reload_status_payload_locked()
             payload["stale"] = stale
+            payload["stale_scenes"] = stale_scenes
             return payload
 
     def _reload_worker(self, generation: int, domain: str = "", scene_id: str = "") -> None:
         try:
+            current = self.index()
             if domain and scene_id:
                 scene_fresh = build_review_scene_index(
                     self.review_root,
@@ -157,15 +207,18 @@ class ReviewAppState:
                     repo_root=self.repo_root,
                     enforce_migration_registry=self.enforce_migration_registry,
                 )
-                fresh = merge_review_scene_index(self.index(), scene_fresh, domain=domain, scene_id=scene_id)
+                fresh = merge_review_scene_index(current, scene_fresh, domain=domain, scene_id=scene_id)
             else:
                 fresh = build_review_index(
                     self.review_root,
                     repo_root=self.repo_root,
                     enforce_migration_registry=self.enforce_migration_registry,
                 )
+            fresh = preserve_locked_scenes(current, fresh)
+            publish_in_progress = any("review artifact publish in progress" in str(error) for error in fresh.errors)
             fresh_mtime = _max_review_file_mtime_ns(self.review_root)
         except Exception as exc:  # pragma: no cover - exercised through route tests.
+            thread_to_start: threading.Thread | None = None
             with self._lock:
                 if generation != self._reload_generation:
                     return
@@ -175,19 +228,78 @@ class ReviewAppState:
                 self._reload_error = str(exc)
                 self._stale_cache = True
                 self._stale_cache_until_ns = 0
+                thread_to_start = self._start_next_queued_reload_locked()
+            if thread_to_start is not None:
+                thread_to_start.start()
             return
 
+        thread_to_start: threading.Thread | None = None
         with self._lock:
             if generation != self._reload_generation:
                 return
             self._index = fresh
-            self._review_mtime_snapshot_ns = fresh_mtime
-            self._stale_cache = False
-            self._stale_cache_until_ns = 0
+            if publish_in_progress:
+                self._stale_cache = True
+                stale_scenes = _stale_review_scenes(self.review_root, self._review_mtime_snapshot_ns)
+                if not stale_scenes and domain and scene_id:
+                    stale_scenes = [{"domain": str(domain), "scene_id": str(scene_id), "key": f"{domain}/{scene_id}"}]
+                self._stale_scene_cache = stale_scenes
+                self._stale_cache_until_ns = time.monotonic_ns() + self._stale_check_interval_ns
+            else:
+                self._review_mtime_snapshot_ns = fresh_mtime
+                self._stale_cache = False
+                self._stale_scene_cache = []
+                self._stale_cache_until_ns = 0
             self._reload_in_progress = False
             self._reload_status = "succeeded"
             self._reload_finished_at = _utc_timestamp()
             self._reload_error = ""
+            thread_to_start = self._start_next_queued_reload_locked()
+        if thread_to_start is not None:
+            thread_to_start.start()
+
+    def _begin_reload_locked(self, *, domain: str, scene_id: str, scope: str) -> threading.Thread:
+        self._reload_generation += 1
+        generation = self._reload_generation
+        self._reload_in_progress = True
+        self._reload_status = "running"
+        self._reload_started_at = _utc_timestamp()
+        self._reload_finished_at = ""
+        self._reload_error = ""
+        self._reload_scope = scope
+        thread = threading.Thread(
+            target=self._reload_worker,
+            args=(generation, domain, scene_id),
+            name=f"trace-review-index-reload-{generation}",
+            daemon=True,
+        )
+        self._reload_thread = thread
+        return thread
+
+    def _queue_reload_locked(self, *, domain: str, scene_id: str) -> None:
+        if not domain and not scene_id:
+            self._pending_reload_all = True
+            self._pending_reload_scenes.clear()
+            return
+        pair = (str(domain), str(scene_id))
+        if self._pending_reload_all or pair in self._pending_reload_scenes:
+            return
+        self._pending_reload_scenes.append(pair)
+
+    def _start_next_queued_reload_locked(self) -> threading.Thread | None:
+        if self._pending_reload_all:
+            self._pending_reload_all = False
+            self._pending_reload_scenes.clear()
+            return self._begin_reload_locked(domain="", scene_id="", scope="all")
+        if not self._pending_reload_scenes:
+            return None
+        domain, scene_id = self._pending_reload_scenes.pop(0)
+        return self._begin_reload_locked(domain=domain, scene_id=scene_id, scope=f"scene:{domain}/{scene_id}")
+
+    def _pending_reload_scopes_locked(self) -> list[str]:
+        if self._pending_reload_all:
+            return ["all"]
+        return [f"scene:{domain}/{scene_id}" for domain, scene_id in self._pending_reload_scenes]
 
     def _reload_status_payload_locked(self) -> Dict[str, Any]:
         return {
@@ -199,20 +311,42 @@ class ReviewAppState:
             "generation": self._reload_generation,
             "scope": self._reload_scope,
             "stale": self._stale_cache,
+            "queued": bool(self._pending_reload_all or self._pending_reload_scenes),
+            "queued_scopes": self._pending_reload_scopes_locked(),
         }
 
     def review_artifacts_stale(self) -> bool:
+        stale, _stale_scenes = self.review_artifacts_stale_summary()
+        return stale
+
+    def review_artifacts_stale_summary(self) -> tuple[bool, list[Dict[str, str]]]:
         now = time.monotonic_ns()
         with self._lock:
+            if self._stale_cache:
+                return self._stale_cache, list(self._stale_scene_cache)
             if now < self._stale_cache_until_ns:
-                return self._stale_cache
+                return self._stale_cache, list(self._stale_scene_cache)
             snapshot = self._review_mtime_snapshot_ns
             interval = self._stale_check_interval_ns
-        stale = _max_review_file_mtime_ns(self.review_root) > snapshot
+        stale, stale_scenes = _review_stale_summary(self.review_root, snapshot)
         with self._lock:
             self._stale_cache = stale
+            self._stale_scene_cache = stale_scenes
             self._stale_cache_until_ns = now + interval
-        return stale
+        return stale, list(stale_scenes)
+
+    def _prune_inactive_publish_errors_locked(self) -> None:
+        """Drop publish-in-progress errors once their scene lock is released."""
+
+        if not self._index.errors:
+            return
+        pruned = _filter_active_publish_errors(
+            self._index.errors,
+            review_root=self.review_root,
+        )
+        if len(pruned) == len(self._index.errors):
+            return
+        self._index.errors = pruned
 
 
 def create_app(
@@ -224,6 +358,7 @@ def create_app(
     base_url: str = "",
     enforce_migration_registry: bool = True,
     defer_initial_index: bool = False,
+    allow_full_reload: bool | None = None,
 ) -> FastAPI:
     """Create the task-review web app."""
 
@@ -234,6 +369,11 @@ def create_app(
         Path(feedback_db).resolve()
         if feedback_db is not None
         else resolved_repo_root / "review" / "feedback" / "review_feedback.sqlite"
+    )
+    resolved_allow_full_reload = (
+        _truthy(os.environ.get("TRACE_REVIEW_ALLOW_FULL_RELOAD"))
+        if allow_full_reload is None
+        else bool(allow_full_reload)
     )
     state = ReviewAppState(
         review_root=resolved_review_root,
@@ -259,7 +399,22 @@ def create_app(
     app.state.review = state
     app.state.auth_token = str(token or "").strip()
     app.state.base_url = resolved_base_url
+    app.state.allow_full_reload = bool(resolved_allow_full_reload)
     app.mount("/static", StaticFiles(directory=str(package_dir / "static")), name="static")
+
+    @app.exception_handler(sqlite3.OperationalError)
+    async def sqlite_operational_error_handler(request: Request, exc: sqlite3.OperationalError) -> Response:
+        message = str(exc)
+        if "locked" in message.lower():
+            logger.warning("Review feedback database is locked for %s: %s", request.url.path, message)
+            return _transient_error_response(request, status_code=503, detail="Review feedback database is busy. Retry shortly.")
+        logger.exception("Unhandled SQLite error for %s", request.url.path)
+        return _transient_error_response(request, status_code=500, detail="Review feedback database error.")
+
+    @app.exception_handler(Exception)
+    async def unhandled_error_handler(request: Request, exc: Exception) -> Response:
+        logger.exception("Unhandled review app error for %s", request.url.path)
+        return _transient_error_response(request, status_code=500, detail="Internal review app error.")
 
     @app.middleware("http")
     async def auth_middleware(request: Request, call_next: Any) -> Response:
@@ -964,7 +1119,7 @@ def create_app(
         sample = index.samples.get(sample_uid)
         if sample is None:
             raise HTTPException(status_code=404, detail="unknown sample")
-        payload = load_sample_payload(index, sample)
+        payload = _load_sample_payload_or_503(index, sample)
         query_samples = index.samples_by_query.get(
             ReviewIndex.query_key(sample.domain, sample.scene_id, sample.task_id, sample.query_id),
             [],
@@ -1149,6 +1304,15 @@ def create_app(
 
     @app.post("/api/reload")
     async def api_reload() -> Dict[str, Any]:
+        if not bool(app.state.allow_full_reload):
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "Full index reload is disabled for the shared review app. "
+                    "Use POST /api/reload/scene/<domain>/<scene_id> after scene artifact changes. "
+                    "Restart the app with TRACE_REVIEW_ALLOW_FULL_RELOAD=1 only for explicit global reload work."
+                ),
+            )
         return state.request_reload()
 
     @app.post("/api/reload/scene/{domain}/{scene_id}")
@@ -1325,8 +1489,10 @@ def create_app(
     async def media(media_id: str) -> FileResponse:
         index = state.index()
         path = index.media.get(media_id)
-        if path is None or not path.exists():
+        if path is None:
             raise HTTPException(status_code=404, detail="unknown media")
+        if not path.exists():
+            raise HTTPException(status_code=503, detail="review media is being regenerated; retry after reload completes")
         return FileResponse(path, headers={"Cache-Control": "no-cache"})
 
     @app.get("/overlay/{sample_uid}.png")
@@ -1336,9 +1502,11 @@ def create_app(
         if sample is None:
             raise HTTPException(status_code=404, detail="unknown sample")
         image_path = index.media.get(sample.media_id)
-        if image_path is None or not image_path.exists():
+        if image_path is None:
             raise HTTPException(status_code=404, detail="sample image missing")
-        payload = load_sample_payload(index, sample)
+        if not image_path.exists():
+            raise HTTPException(status_code=503, detail="review media is being regenerated; retry after reload completes")
+        payload = _load_sample_payload_or_503(index, sample)
         annotation_gt = payload.get("annotation_gt", {}) if isinstance(payload, dict) else {}
         trace_payload = payload.get("trace_payload", {}) if isinstance(payload, dict) else {}
         annotation_type = str(annotation_gt.get("type", sample.annotation_type)) if isinstance(annotation_gt, dict) else sample.annotation_type
@@ -1348,15 +1516,21 @@ def create_app(
             annotation_value=annotation_value,
             trace_payload=trace_payload if isinstance(trace_payload, dict) else {},
         )
-        with PILImage.open(image_path) as source:
-            rendered = render_annotation_overlay(
-                source.convert("RGB"),
-                annotation_type=str(overlay_type),
-                annotation_value=overlay_value,
-            )
-            buffer = io.BytesIO()
-            rendered.save(buffer, format="PNG")
-            buffer.seek(0)
+        try:
+            with PILImage.open(image_path) as source:
+                rendered = render_annotation_overlay(
+                    source.convert("RGB"),
+                    annotation_type=str(overlay_type),
+                    annotation_value=overlay_value,
+                )
+                buffer = io.BytesIO()
+                rendered.save(buffer, format="PNG")
+                buffer.seek(0)
+        except OSError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="review media is being regenerated; retry after reload completes",
+            ) from exc
         return StreamingResponse(buffer, media_type="image/png")
 
     return app
@@ -1989,6 +2163,13 @@ def _context(request: Request, *, index: ReviewIndex, title: str, **extra: Any) 
         "review_root_display": _display_path(index.root, repo_root=index.repo_root),
         "review_index_stale": bool(reload_status.get("stale")),
         "review_reload_status": reload_status,
+        "review_stale_scenes": reload_status.get("stale_scenes", []),
+        "review_stale_scene_keys": [
+            str(scene.get("key", ""))
+            for scene in reload_status.get("stale_scenes", [])
+            if isinstance(scene, dict)
+        ],
+        "review_full_reload_enabled": bool(getattr(request.app.state, "allow_full_reload", False)),
         "feedback_by_domain": feedback_by_domain,
         "feedback_by_scene": feedback.counts_by_scene(),
         "feedback_by_task": feedback.counts_by_task(),
@@ -2493,13 +2674,141 @@ def _max_review_file_mtime_ns(root: Path) -> int:
     if not root.exists():
         return 0
     max_mtime = 0
-    for path in root.rglob("*"):
+    for path in _iter_review_marker_files(root):
         try:
             if path.is_file():
                 max_mtime = max(max_mtime, path.stat().st_mtime_ns)
         except OSError:
             continue
     return max_mtime
+
+
+def _review_stale_summary(root: Path, snapshot_ns: int) -> tuple[bool, list[Dict[str, str]]]:
+    if not root.exists():
+        return False, []
+    stale = False
+    scene_keys: dict[str, Dict[str, str]] = {}
+    for path in _iter_review_marker_files(root):
+        try:
+            if not path.is_file():
+                continue
+            if path.stat().st_mtime_ns <= int(snapshot_ns):
+                continue
+        except OSError:
+            continue
+        stale = True
+        try:
+            parts = path.relative_to(root).parts
+        except ValueError:
+            continue
+        if len(parts) < 3:
+            continue
+        domain, scene_id = str(parts[0]), str(parts[1])
+        if domain.startswith(".") or scene_id.startswith("."):
+            continue
+        key = f"{domain}/{scene_id}"
+        scene_keys.setdefault(key, {"domain": domain, "scene_id": scene_id, "key": key})
+    return stale, [scene_keys[key] for key in sorted(scene_keys)]
+
+
+def _iter_review_marker_files(root: Path):
+    """Yield cheap review index marker files instead of every sample image/data file."""
+
+    if not root.exists():
+        return
+    root_markers = ("review_summary.json",)
+    for name in root_markers:
+        yield root / name
+    try:
+        domain_dirs = [path for path in root.iterdir() if path.is_dir()]
+    except OSError:
+        return
+    scene_markers = (
+        "scene_review_manifest.json",
+        "manual_code_audit_status.json",
+        "taxonomy_review_status.json",
+        "migration_test_status.json",
+    )
+    task_markers = (
+        "manifest.json",
+        "distribution.json",
+        "solve_rate.json",
+        "solve_rate_summary.json",
+    )
+    for domain_dir in domain_dirs:
+        if domain_dir.name.startswith("."):
+            continue
+        if domain_dir.name in {"assets"}:
+            continue
+        try:
+            scene_dirs = [path for path in domain_dir.iterdir() if path.is_dir()]
+        except OSError:
+            continue
+        for scene_dir in scene_dirs:
+            if scene_dir.name.startswith("."):
+                continue
+            for name in scene_markers:
+                yield scene_dir / name
+            try:
+                task_dirs = [path for path in scene_dir.iterdir() if path.is_dir()]
+            except OSError:
+                continue
+            for task_dir in task_dirs:
+                if task_dir.name.startswith("."):
+                    continue
+                for name in task_markers:
+                    yield task_dir / name
+
+
+def _stale_review_scenes(root: Path, snapshot_ns: int) -> list[Dict[str, str]]:
+    _stale, scenes = _review_stale_summary(root, snapshot_ns)
+    return scenes
+
+
+def _publish_in_progress_scenes(errors: Any) -> list[Dict[str, str]]:
+    scenes: dict[str, Dict[str, str]] = {}
+    for error in errors or []:
+        scene = _publish_error_scene(error)
+        if scene is None:
+            continue
+        scenes.setdefault(str(scene["key"]), scene)
+    return [scenes[key] for key in sorted(scenes)]
+
+
+def _filter_active_publish_errors(errors: Any, *, review_root: Path) -> list[Any]:
+    """Keep publish-in-progress errors only while the scene lock is active."""
+
+    filtered: list[Any] = []
+    for error in errors or []:
+        scene = _publish_error_scene(error)
+        if scene is None:
+            filtered.append(error)
+            continue
+        if review_file_lock_active(
+            scene_publish_lock_path(
+                review_root=review_root,
+                domain=str(scene["domain"]),
+                scene_id=str(scene["scene_id"]),
+            )
+        ):
+            filtered.append(error)
+    return filtered
+
+
+def _publish_error_scene(error: Any) -> Dict[str, str] | None:
+    """Parse a publish-in-progress index error into a scene key."""
+
+    text = str(error)
+    if PUBLISH_IN_PROGRESS_ERROR not in text:
+        return None
+    scene_text = text.split(":", 1)[0].strip()
+    if "/" not in scene_text:
+        return None
+    domain, scene_id = scene_text.split("/", 1)
+    if not domain or not scene_id:
+        return None
+    key = f"{domain}/{scene_id}"
+    return {"domain": domain, "scene_id": scene_id, "key": key}
 
 
 def _infer_repo_root(review_root: Path) -> Path:
@@ -2612,6 +2921,32 @@ def _pretty_json(value: Any) -> str:
         return json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, default=str)
     except Exception:
         return str(value)
+
+
+def _load_sample_payload_or_503(index: ReviewIndex, sample: SampleRecord) -> Dict[str, Any]:
+    try:
+        return load_sample_payload(index, sample)
+    except (FileNotFoundError, json.JSONDecodeError, OSError, ValueError) as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="review sample artifacts are being regenerated; retry after reload completes",
+        ) from exc
+
+
+def _transient_error_response(request: Request, *, status_code: int, detail: str) -> Response:
+    if request.url.path.startswith("/api"):
+        return JSONResponse({"detail": detail}, status_code=int(status_code))
+    return HTMLResponse(
+        (
+            "<!doctype html><title>TRACE Review unavailable</title>"
+            "<main style='font-family: sans-serif; max-width: 720px; margin: 48px auto;'>"
+            f"<h1>{int(status_code)} Review app unavailable</h1>"
+            f"<p>{detail}</p>"
+            "<p>Refresh after the current artifact generation or reload finishes.</p>"
+            "</main>"
+        ),
+        status_code=int(status_code),
+    )
 
 
 def _format_rate(value: Any) -> str:

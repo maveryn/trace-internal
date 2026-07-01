@@ -18,6 +18,7 @@ SUPPORTED_BATTLESHIP_TARGET_SHIP_IDS: Tuple[str, ...] = (
     "elbow3",
 )
 LAST_CELL_OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
+SHAPE_OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E")
 
 
 @dataclass(frozen=True)
@@ -51,6 +52,16 @@ class BattleshipCandidateOption:
 
 
 @dataclass(frozen=True)
+class BattleshipShapeOption:
+    """One labeled fleet-shape answer option."""
+
+    label: str
+    shape_id: str
+    display_name: str
+    is_answer: bool
+
+
+@dataclass(frozen=True)
 class BattleshipSample:
     """Generated Battleship tracking-grid scene state.
 
@@ -68,6 +79,7 @@ class BattleshipSample:
     untouched_ship_count: int
     construction_mode: str
     candidate_options: Tuple[BattleshipCandidateOption, ...] = tuple()
+    shape_options: Tuple[BattleshipShapeOption, ...] = tuple()
 
 
 FLEET_SHAPES: Tuple[FleetShapeSpec, ...] = (
@@ -121,12 +133,14 @@ def sorted_coords(coords: Iterable[Coord]) -> Tuple[Coord, ...]:
 __all__ = [
     "BattleshipCandidateOption",
     "BattleshipSample",
+    "BattleshipShapeOption",
     "BattleshipShipPlacement",
     "Coord",
     "FLEET_SHAPES",
     "FleetShapeSpec",
     "LAST_CELL_OPTION_LABELS",
     "SCENE_ID",
+    "SHAPE_OPTION_LABELS",
     "SUPPORTED_BATTLESHIP_SCENE_VARIANTS",
     "SUPPORTED_BATTLESHIP_TARGET_SHIP_IDS",
     "all_coords",

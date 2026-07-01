@@ -10,6 +10,14 @@ generation:
     legend_bin_count_max: 6
     count_answer_min: 1
     count_answer_max: 6
+    marker_value_min: 1
+    marker_value_max: 5
+    marked_region_count_max: 10
+    geographic_selected_region_count_min: 14
+    geographic_selected_region_count_max: 21
+    geographic_min_target_component_area_px: 400
+    geographic_min_target_component_width_px: 12
+    geographic_min_target_component_height_px: 10
     balanced_geographic_map_variant_sampling: true
     geographic_map_variant_weights:
       world_countries: 0.5
@@ -74,6 +82,15 @@ rendering:
       warm_print: 1.0
       muted_gray: 1.0
       clean_minimal: 1.0
+    balanced_marker_style_variant_sampling: true
+    marker_style_variant_weights:
+      teal: 1.0
+      coral: 1.0
+      violet: 1.0
+      gold: 1.0
+      ink: 1.0
+    marker_min_radius_px: 8
+    marker_max_radius_px: 22
 prompt:
   shared:
     bundle_id: charts_region_map_v1

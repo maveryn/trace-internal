@@ -49,7 +49,7 @@ def _build_radius_spec(*, instance_seed: int, params: Mapping[str, Any]) -> tupl
             case=case,
             answer=float(answer),
             answer_type="number",
-            answer_rounding="nearest_tenth_from_tangent_lengths",
+            answer_rounding="one_decimal",
             unknown_measure="radius_length",
             formula_family=INTERNAL_QUERY_ID,
             unknown_label="r=?",

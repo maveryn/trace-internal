@@ -10,7 +10,15 @@
 7. Program schema: `count(filter(cells(target_ship), cell_status=target_status)); scene=battleship; scope=ship_cell_status_count`
 
 ## Program Contract
-- `count(filter(cells(target_ship), cell_status=target_status)); scene=battleship; scope=ship_cell_status_count`
+
+Program: `count(filter(cells(target_ship), cell_status=target_status)); scene=battleship; scope=ship_cell_status_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `ship_cell_status_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `cells`, `target_ship`, `cell_status`, `target_status`, `battleship`, `ship_cell_status_count` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `named_ship_hit_cell_count`, `named_ship_unhit_cell_count`.
 
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.

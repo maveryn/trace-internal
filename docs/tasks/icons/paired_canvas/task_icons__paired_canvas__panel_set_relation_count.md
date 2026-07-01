@@ -8,10 +8,15 @@
 - prompt bundle: `icons_paired_canvas_v0`
 
 ## Program Contract
-`count.set_relation(scene=paired_canvas, scope=left_right_icon_panels, relation=added_in_right|missing_from_right, output=count)`
 
-The program compares the two rendered icon panels and counts the icons satisfying
-the prompted set relation.
+Program: `count.set_relation(scene=paired_canvas, scope=left_right_icon_panels, relation=added_in_right|missing_from_right, output=count)`
+
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `left_right_icon_panels` objective scope.
+Operands: visible scene state and prompt-bound operands named by `paired_canvas`, `left_right_icon_panels`, `relation`, `added_in_right`, `missing_from_right`.
+Operation: evaluate `count.set_relation` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `added_in_right_count`.
 
 ## Scene And Query
 Renders two icon panels labeled `Left` and `Right`, then asks for a set relation

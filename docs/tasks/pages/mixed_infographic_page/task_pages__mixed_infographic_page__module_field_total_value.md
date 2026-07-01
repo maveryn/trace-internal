@@ -7,21 +7,21 @@
 4. Task id: `task_pages__mixed_infographic_page__module_field_total_value`
 
 ## Contract
-1. Objective: sum all visible values for one additive numeric field inside one titled module on a dense mixed infographic page.
-2. Branch metadata: `query_id`
-3. `query_id`: `module_field_total_value`
+1. Objective: sum all visible values for one additive numeric field inside one titled module.
+2. Public task contract: `module_field_total_value`
+3. Supported `query_id` values: `single`
 4. Answer type: `integer`
-5. Annotation type: `bbox_set` over every value cell used in the sum.
-6. Query knobs: target module, target additive numeric field, module count, per-module item/field counts, and scene layout variant.
+5. Annotation schema: `bbox_set`
+6. Annotation witness: unordered value-cell boxes for every value included in the sum.
+7. Query argument axes: target module, additive numeric field, module count, item/field supports, scene variant, and native layout mode.
+
+## Program Contract
+- `module_field_total(module_title, field_label); output=integer_sum; annotation=bbox_set(summed_value_cells); scene=mixed_infographic_page; scope=one titled module within one dense mixed infographic page`
 
 ## Prompt + Trace
-1. Prompt bundle: `pages_mixed_infographic_page_v0`
+1. Prompt bundle: `pages_mixed_infographic_page_v1`
 2. Scene key: `mixed_infographic_page`
 3. Task key: `mixed_infographic_lookup_query`
-4. Internal prompt variant key: `module_field_total_value`
-5. Trace records the summed item values, parsed numeric values, sampled style metadata, final bboxes, and layout geometry.
+4. Prompt query key: `module_field_total_value`
+5. Trace records the summed item values, parsed numeric values, final bboxes, style metadata, and layout geometry.
 6. Additive fields are limited to `Score` and `Count`.
-
-## Rendering Notes
-1. This task reuses the mixed-infographic renderer, native text blocks, page visual assets, and font profile.
-2. Native context text and decorative assets are not answer annotation.

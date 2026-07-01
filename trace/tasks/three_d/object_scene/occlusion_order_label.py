@@ -15,9 +15,9 @@ from ...registry import register_task
 from ...shared.config_defaults import (
     split_scene_generation_rendering_prompt_defaults,
 )
-from ...shared.deterministic_sampling import resolve_selection_index
 from ..shared.task_support import resolve_axis_variant as _shared_resolve_axis_variant
 from ..shared.task_support import resolve_count as _shared_resolve_count
+from ..shared.task_support import shuffled_repeated_support
 from ..shared.object_scene import (
     POINT_LABELS,
     SCENE_ID,
@@ -168,8 +168,8 @@ def _sample_distractor_specs(
     ]
     rng.shuffle(ring_slots)
     distractors: List[Dict[str, Any]] = []
-    for index, label in enumerate(labels):
-        shape = str(shape_pool[index % len(shape_pool)])
+    shape_order = shuffled_repeated_support(rng, shape_pool, len(labels))
+    for index, (label, shape) in enumerate(zip(labels, shape_order)):
         placed_spec: Dict[str, Any] | None = None
         for slot_x, slot_y in ring_slots[index:] + ring_slots[:index]:
             for _jitter_attempt in range(6):
@@ -496,11 +496,11 @@ class ThreeDSpatialOcclusionOrderLabelTask:
             lower=1,
             upper=1,
         )
-        answer_label_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(answer_seed) if answer_seed is not None else int(instance_seed),
-            namespace=f"{TASK_ID}.answer_label",
+        answer_rng = spawn_rng(
+            int(answer_seed) if answer_seed is not None else int(instance_seed),
+            f"{TASK_ID}.answer_label",
         )
+        answer_label_index = int(answer_rng.randrange(int(point_count)))
         render_params = _resolve_render_params(
             params,
             render_defaults=_RENDER_DEFAULTS,

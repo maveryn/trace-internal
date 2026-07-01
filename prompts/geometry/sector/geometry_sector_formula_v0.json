@@ -145,7 +145,7 @@
     "json_output_contract": "Return a JSON object with keys \"annotation\" and \"answer\".",
     "json_output_contract_answer_only": "Return a JSON object with key \"answer\".",
     "annotation_hint": "set \"annotation\" to an array of pixel bounding boxes [x0,y0,x1,y1] for the minimal visible measurements and marked sector or angle used",
-    "answer_hint_number": "set \"answer\" to the requested value as a number rounded to the nearest tenth when needed",
+    "answer_hint_number": "set \"answer\" to the requested value as a number rounded to one decimal place",
     "json_example": "{\"annotation\":[[150,190,330,370],[330,235,410,285]],\"answer\":12.5}",
     "json_example_answer_only": "{\"answer\":12.5}"
   }

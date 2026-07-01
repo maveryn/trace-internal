@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Mapping, Tuple
 
-from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults, required_group_defaults
+from trace.tasks.shared.config_defaults import (
+    load_scene_generation_rendering_prompt_defaults,
+    required_group_defaults,
+)
 from trace.tasks.shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
@@ -14,10 +17,11 @@ from trace.tasks.shared.prompt_variants import (
 
 from .defaults import SCENE_ID
 
-
-_GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
-    "games",
-    SCENE_ID,
+_GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS = (
+    load_scene_generation_rendering_prompt_defaults(
+        "games",
+        SCENE_ID,
+    )
 )
 
 
@@ -41,8 +45,18 @@ def build_dots_and_boxes_prompt_json_examples(
             [310, 220, 430, 340],
         ]
     return (
-        json.dumps({"annotation": annotation_value, "answer": answer_example}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
-        json.dumps({"answer": answer_example}, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
+        json.dumps(
+            {"annotation": annotation_value, "answer": answer_example},
+            ensure_ascii=False,
+            allow_nan=False,
+            separators=(",", ":"),
+        ),
+        json.dumps(
+            {"answer": answer_example},
+            ensure_ascii=False,
+            allow_nan=False,
+            separators=(",", ":"),
+        ),
     )
 
 
@@ -53,6 +67,7 @@ def build_dots_and_boxes_prompt_artifacts(
     prompt_query_key: str,
     annotation_example_shape: str,
     answer_example: int | str = 2,
+    dynamic_slots: Mapping[str, Any] | None = None,
     instance_seed: int,
 ) -> tuple[Dict[str, Any], Any]:
     """Build prompt artifacts for one objective-owned dots-and-boxes task file."""
@@ -75,14 +90,26 @@ def build_dots_and_boxes_prompt_artifacts(
         annotation_example_shape=str(annotation_example_shape),
         answer_example=answer_example,
     )
+    format_slots = {str(key): value for key, value in dict(dynamic_slots or {}).items()}
+    answer_hint = str(
+        prompt_defaults[f"answer_hint_{str(prompt_query_key)}"]
+    ).format_map(format_slots)
+    annotation_hint = str(
+        prompt_defaults[f"annotation_hint_{str(prompt_query_key)}"]
+    ).format_map(format_slots)
     prompt_slots = {
-        "object_description": str(prompt_defaults[f"object_description_{str(scene_variant)}"]),
+        "object_description": str(
+            prompt_defaults[f"object_description_{str(scene_variant)}"]
+        ),
         "json_output_contract": str(prompt_defaults["json_output_contract"]),
-        "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-        "answer_hint": str(prompt_defaults[f"answer_hint_{str(prompt_query_key)}"]),
-        "annotation_hint": str(prompt_defaults[f"annotation_hint_{str(prompt_query_key)}"]),
+        "json_output_contract_answer_only": str(
+            prompt_defaults["json_output_contract_answer_only"]
+        ),
+        "answer_hint": str(answer_hint),
+        "annotation_hint": str(annotation_hint),
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
+        **format_slots,
     }
     prompt_selection = render_scene_prompt_variants(
         domain=str(domain),

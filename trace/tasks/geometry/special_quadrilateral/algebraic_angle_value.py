@@ -4,22 +4,16 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.fixed_query import select_task_query_id
-from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from ._lifecycle import expression_payload, render_special_quadrilateral_problem
-from .shared.output import common_trace_sections, prompt_artifacts_for_bound_case
+from ._lifecycle import _run_expression_relation
 from .shared.rendering import (
     RENDER_KITE_OPPOSITE_ANGLES,
     RENDER_PARALLELOGRAM_CONSECUTIVE_ANGLES,
     RENDER_PARALLELOGRAM_OPPOSITE_ANGLES,
     RENDER_RHOMBUS_HALF_ANGLE_EXPRESSION,
 )
-from .shared.sampling import select_case_from_answer_support
-from .shared.state import DOMAIN, LinearExpression, QuadrilateralCase, SCENE_ID, SpecialQuadrilateralProblem
+from .shared.state import DOMAIN, LinearExpression, QuadrilateralCase
 
 TASK_ID = "task_geometry__special_quadrilateral__algebraic_angle_value"
 SUPPORTED_QUERY_IDS: tuple[str, ...] = (
@@ -29,10 +23,48 @@ SUPPORTED_QUERY_IDS: tuple[str, ...] = (
     "kite_opposite_angle_expression",
 )
 TASK_PROMPT_KEY = "algebraic_angle_value_query"
+AngleCaseRecord = tuple[str, str, int, str, int, str]
 
 
 def _expr(coefficient: int, constant: int) -> LinearExpression:
     return LinearExpression(int(coefficient), int(constant))
+
+
+def _expression_for_value(value: int, *, x_value: int, index: int, salt: int) -> LinearExpression:
+    """Build a compact linear expression that evaluates to one visible value."""
+
+    coefficients = (2, 3, 4, 5, 1)
+    for offset in range(len(coefficients)):
+        coefficient = coefficients[(int(index) + int(salt) + offset) % len(coefficients)]
+        constant = int(value) - int(coefficient) * int(x_value)
+        if -9 <= int(constant) <= 99:
+            return _expr(int(coefficient), int(constant))
+    coefficient = 1
+    return _expr(int(coefficient), int(value) - int(x_value))
+
+
+def _expression_pair_for_values(
+    *,
+    target_value: int,
+    support_value: int,
+    index: int,
+) -> tuple[LinearExpression, LinearExpression, int]:
+    """Return two same-variable expressions for one algebraic angle case."""
+
+    x_value = max(4, min(18, min(int(target_value), int(support_value)) // 5 + int(index) % 3))
+    target_expression = _expression_for_value(
+        int(target_value),
+        x_value=int(x_value),
+        index=int(index),
+        salt=0,
+    )
+    support_expression = _expression_for_value(
+        int(support_value),
+        x_value=int(x_value),
+        index=int(index),
+        salt=2,
+    )
+    return target_expression, support_expression, int(x_value)
 
 
 def _case(
@@ -60,193 +92,121 @@ def _case(
     )
 
 
+def _angle_cases(*records: AngleCaseRecord) -> tuple[QuadrilateralCase, ...]:
+    cases: list[QuadrilateralCase] = []
+    for index, record in enumerate(records):
+        render_kind, shape_kind, answer, target_name, support_value, theorem = record
+        target_expression, support_expression, x_value = _expression_pair_for_values(
+            target_value=int(answer),
+            support_value=int(support_value),
+            index=int(index),
+        )
+        cases.append(
+            _case(
+                render_kind=str(render_kind),
+                shape_kind=str(shape_kind),
+                answer=int(answer),
+                target_name=str(target_name),
+                target_expression=target_expression,
+                support_expression=support_expression,
+                theorem=str(theorem),
+                x_value=int(x_value),
+            )
+        )
+    return tuple(cases)
+
+
+def _equal_angle_cases(
+    *,
+    render_kind: str,
+    shape_kind: str,
+    answers: range,
+    target_name: str,
+    theorem: str,
+) -> tuple[QuadrilateralCase, ...]:
+    return _angle_cases(
+        *(
+            (str(render_kind), str(shape_kind), int(answer), str(target_name), int(answer), str(theorem))
+            for answer in answers
+        )
+    )
+
+
+def _supplementary_angle_cases(
+    *,
+    answers: range,
+) -> tuple[QuadrilateralCase, ...]:
+    return _angle_cases(
+        *(
+            (
+                RENDER_PARALLELOGRAM_CONSECUTIVE_ANGLES,
+                "parallelogram",
+                int(answer),
+                "angle ABC",
+                180 - int(answer),
+                "consecutive_angles_of_a_parallelogram_are_supplementary",
+            )
+            for answer in answers
+        )
+    )
+
+
 _CASES_BY_BRANCH: dict[str, tuple[QuadrilateralCase, ...]] = {
-    "parallelogram_opposite_angle_expression": (
-        _case(render_kind=RENDER_PARALLELOGRAM_OPPOSITE_ANGLES, shape_kind="parallelogram", answer=45, target_name="angle BCD", target_expression=_expr(2, 25), support_expression=_expr(3, 15), theorem="opposite_angles_of_a_parallelogram_are_equal", x_value=10),
-        _case(render_kind=RENDER_PARALLELOGRAM_OPPOSITE_ANGLES, shape_kind="parallelogram", answer=60, target_name="angle BCD", target_expression=_expr(1, 42), support_expression=_expr(2, 24), theorem="opposite_angles_of_a_parallelogram_are_equal", x_value=18),
-        _case(render_kind=RENDER_PARALLELOGRAM_OPPOSITE_ANGLES, shape_kind="parallelogram", answer=70, target_name="angle BCD", target_expression=_expr(4, 30), support_expression=_expr(3, 40), theorem="opposite_angles_of_a_parallelogram_are_equal", x_value=10),
-        _case(render_kind=RENDER_PARALLELOGRAM_OPPOSITE_ANGLES, shape_kind="parallelogram", answer=80, target_name="angle BCD", target_expression=_expr(5, 20), support_expression=_expr(2, 56), theorem="opposite_angles_of_a_parallelogram_are_equal", x_value=12),
-        _case(render_kind=RENDER_PARALLELOGRAM_OPPOSITE_ANGLES, shape_kind="parallelogram", answer=95, target_name="angle BCD", target_expression=_expr(3, 50), support_expression=_expr(4, 35), theorem="opposite_angles_of_a_parallelogram_are_equal", x_value=15),
+    "parallelogram_opposite_angle_expression": _equal_angle_cases(
+        render_kind=RENDER_PARALLELOGRAM_OPPOSITE_ANGLES,
+        shape_kind="parallelogram",
+        answers=range(36, 51),
+        target_name="angle BCD",
+        theorem="opposite_angles_of_a_parallelogram_are_equal",
     ),
-    "parallelogram_consecutive_angle_expression": (
-        _case(render_kind=RENDER_PARALLELOGRAM_CONSECUTIVE_ANGLES, shape_kind="parallelogram", answer=120, target_name="angle ABC", target_expression=_expr(3, 60), support_expression=_expr(2, 20), theorem="consecutive_angles_of_a_parallelogram_are_supplementary", x_value=20),
-        _case(render_kind=RENDER_PARALLELOGRAM_CONSECUTIVE_ANGLES, shape_kind="parallelogram", answer=110, target_name="angle ABC", target_expression=_expr(2, 74), support_expression=_expr(3, 16), theorem="consecutive_angles_of_a_parallelogram_are_supplementary", x_value=18),
-        _case(render_kind=RENDER_PARALLELOGRAM_CONSECUTIVE_ANGLES, shape_kind="parallelogram", answer=100, target_name="angle ABC", target_expression=_expr(3, 40), support_expression=_expr(2, 40), theorem="consecutive_angles_of_a_parallelogram_are_supplementary", x_value=20),
-        _case(render_kind=RENDER_PARALLELOGRAM_CONSECUTIVE_ANGLES, shape_kind="parallelogram", answer=130, target_name="angle ABC", target_expression=_expr(4, 70), support_expression=_expr(2, 20), theorem="consecutive_angles_of_a_parallelogram_are_supplementary", x_value=15),
-        _case(render_kind=RENDER_PARALLELOGRAM_CONSECUTIVE_ANGLES, shape_kind="parallelogram", answer=105, target_name="angle ABC", target_expression=_expr(5, 55), support_expression=_expr(4, 35), theorem="consecutive_angles_of_a_parallelogram_are_supplementary", x_value=10),
+    "parallelogram_consecutive_angle_expression": _supplementary_angle_cases(answers=range(96, 111)),
+    "rhombus_diagonal_half_angle_expression": _equal_angle_cases(
+        render_kind=RENDER_RHOMBUS_HALF_ANGLE_EXPRESSION,
+        shape_kind="rhombus",
+        answers=range(21, 36),
+        target_name="angle ABO",
+        theorem="rhombus_diagonal_bisects_vertex_angle",
     ),
-    "rhombus_diagonal_half_angle_expression": (
-        _case(render_kind=RENDER_RHOMBUS_HALF_ANGLE_EXPRESSION, shape_kind="rhombus", answer=42, target_name="angle ABO", target_expression=_expr(4, 2), support_expression=_expr(3, 12), theorem="rhombus_diagonal_bisects_vertex_angle", x_value=10),
-        _case(render_kind=RENDER_RHOMBUS_HALF_ANGLE_EXPRESSION, shape_kind="rhombus", answer=50, target_name="angle ABO", target_expression=_expr(2, 28), support_expression=_expr(3, 17), theorem="rhombus_diagonal_bisects_vertex_angle", x_value=11),
-        _case(render_kind=RENDER_RHOMBUS_HALF_ANGLE_EXPRESSION, shape_kind="rhombus", answer=35, target_name="angle ABO", target_expression=_expr(3, 20), support_expression=_expr(2, 25), theorem="rhombus_diagonal_bisects_vertex_angle", x_value=5),
-        _case(render_kind=RENDER_RHOMBUS_HALF_ANGLE_EXPRESSION, shape_kind="rhombus", answer=45, target_name="angle ABO", target_expression=_expr(4, 13), support_expression=_expr(5, 5), theorem="rhombus_diagonal_bisects_vertex_angle", x_value=8),
-        _case(render_kind=RENDER_RHOMBUS_HALF_ANGLE_EXPRESSION, shape_kind="rhombus", answer=60, target_name="angle ABO", target_expression=_expr(2, 40), support_expression=_expr(3, 30), theorem="rhombus_diagonal_bisects_vertex_angle", x_value=10),
-    ),
-    "kite_opposite_angle_expression": (
-        _case(render_kind=RENDER_KITE_OPPOSITE_ANGLES, shape_kind="kite", answer=75, target_name="angle ABC", target_expression=_expr(2, 51), support_expression=_expr(3, 39), theorem="opposite_non_vertex_angles_of_this_kite_are_equal", x_value=12),
-        _case(render_kind=RENDER_KITE_OPPOSITE_ANGLES, shape_kind="kite", answer=90, target_name="angle ABC", target_expression=_expr(1, 68), support_expression=_expr(2, 46), theorem="opposite_non_vertex_angles_of_this_kite_are_equal", x_value=22),
-        _case(render_kind=RENDER_KITE_OPPOSITE_ANGLES, shape_kind="kite", answer=60, target_name="angle ABC", target_expression=_expr(2, 36), support_expression=_expr(1, 48), theorem="opposite_non_vertex_angles_of_this_kite_are_equal", x_value=12),
-        _case(render_kind=RENDER_KITE_OPPOSITE_ANGLES, shape_kind="kite", answer=80, target_name="angle ABC", target_expression=_expr(3, 38), support_expression=_expr(2, 52), theorem="opposite_non_vertex_angles_of_this_kite_are_equal", x_value=14),
-        _case(render_kind=RENDER_KITE_OPPOSITE_ANGLES, shape_kind="kite", answer=100, target_name="angle ABC", target_expression=_expr(2, 60), support_expression=_expr(3, 40), theorem="opposite_non_vertex_angles_of_this_kite_are_equal", x_value=20),
+    "kite_opposite_angle_expression": _equal_angle_cases(
+        render_kind=RENDER_KITE_OPPOSITE_ANGLES,
+        shape_kind="kite",
+        answers=range(66, 81),
+        target_name="angle ABC",
+        theorem="opposite_non_vertex_angles_of_this_kite_are_equal",
     ),
 }
 
 
-def _prepare_problem(*, selected_query: str, params: Mapping[str, Any], instance_seed: int) -> tuple[SpecialQuadrilateralProblem, dict[str, float]]:
-    """Bind the selected algebraic-angle branch to one theorem case."""
+def _validate_angle_case_table(case_table: Mapping[str, tuple[QuadrilateralCase, ...]]) -> None:
+    """Fail fast if an algebraic angle case does not bind to its theorem."""
 
-    cases = _CASES_BY_BRANCH.get(str(selected_query))
-    if not cases:
-        raise ValueError(f"unsupported special quadrilateral algebraic-angle query: {selected_query}")
-    case, case_index, answer_probabilities = select_case_from_answer_support(
-        cases=cases,
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.{selected_query}.case",
-    )
-    return SpecialQuadrilateralProblem(case=case, case_index=int(case_index), layout_seed=int(instance_seed)), dict(answer_probabilities)
-
-
-def _select_bound_problem(
-    *,
-    instance_seed: int,
-    params: dict[str, Any],
-) -> tuple[str, dict[str, float], dict[str, Any], SpecialQuadrilateralProblem, dict[str, float]]:
-    """Resolve this task's query branch and algebraic-angle case."""
-
-    selected_query, branch_probabilities, task_params = select_task_query_id(
-        instance_seed=int(instance_seed),
-        params=params,
-        supported_query_ids=SUPPORTED_QUERY_IDS,
-        default_query_id=SUPPORTED_QUERY_IDS[0],
-        task_id=TASK_ID,
-        namespace=f"{TASK_ID}.query",
-    )
-    problem, answer_probabilities = _prepare_problem(
-        selected_query=str(selected_query),
-        params=task_params,
-        instance_seed=int(instance_seed),
-    )
-    return str(selected_query), dict(branch_probabilities), dict(task_params), problem, dict(answer_probabilities)
+    for branch_name, branch_cases in case_table.items():
+        if not branch_cases:
+            raise ValueError(f"special quadrilateral angle branch has no cases: {branch_name}")
+        for case in branch_cases:
+            if case.target_expression is None or case.support_expression is None or case.x_value is None:
+                raise ValueError(f"angle case is missing algebraic angle expressions: {branch_name}")
+            x_value = int(case.x_value)
+            target_value = int(case.target_expression.evaluate(x_value))
+            support_value = int(case.support_expression.evaluate(x_value))
+            if target_value != int(case.answer):
+                raise ValueError(f"angle case target expression does not evaluate to the answer: {branch_name}")
+            if str(branch_name) == "parallelogram_consecutive_angle_expression":
+                if target_value + support_value != 180:
+                    raise ValueError(f"consecutive-angle case is not supplementary: {branch_name}")
+            elif support_value != int(case.answer):
+                raise ValueError(f"angle case support expression does not match the answer: {branch_name}")
+            if not 0 < int(case.answer) < 180:
+                raise ValueError(f"angle answer must be between 0 and 180 degrees: {branch_name}")
 
 
-def _render_bound_artifacts(
-    *,
-    instance_seed: int,
-    max_attempts: int,
-    task_params: Mapping[str, Any],
-    selected_query: str,
-    problem: SpecialQuadrilateralProblem,
-):
-    """Render image and prompt artifacts for the algebraic-angle objective."""
-
-    parts = render_special_quadrilateral_problem(
-        problem=problem,
-        instance_seed=int(instance_seed),
-        params=task_params,
-        max_attempts=int(max_attempts),
-    )
-    prompt_artifacts = prompt_artifacts_for_bound_case(
-        prompt_defaults=parts.prompt_defaults,
-        task_prompt_key=TASK_PROMPT_KEY,
-        branch_prompt_key=str(selected_query),
-        target_name=str(problem.case.target_name),
-        annotation_roles=tuple(parts.annotation_artifacts.value.keys()),
-        answer_value=int(problem.case.answer),
-        instance_seed=int(instance_seed),
-    )
-    return parts, prompt_artifacts
+_validate_angle_case_table(_CASES_BY_BRANCH)
 
 
-def _query_params(
-    *,
-    selected_query: str,
-    branch_probabilities: Mapping[str, float],
-    answer_probabilities: Mapping[str, float],
-    problem: SpecialQuadrilateralProblem,
-) -> dict[str, Any]:
-    """Build task-owned prompt query metadata for the algebraic branch."""
+def _build_algebraic_cases() -> Mapping[str, tuple[QuadrilateralCase, ...]]:
+    """Return the task-owned theorem cases for algebraic angle solving."""
 
-    expression_values = expression_payload(problem.case)
-    return {
-        "scene_id": SCENE_ID,
-        "query_id_probabilities": dict(branch_probabilities),
-        "answer_support_probabilities": dict(answer_probabilities),
-        "case_index": int(problem.case_index),
-        "shape_kind": str(problem.case.shape_kind),
-        "theorem": str(problem.case.theorem),
-        **dict(expression_values),
-    }
-
-
-def _trace_payload(
-    *,
-    selected_query: str,
-    branch_probabilities: Mapping[str, float],
-    answer_probabilities: Mapping[str, float],
-    problem: SpecialQuadrilateralProblem,
-    parts: Any,
-    prompt_artifacts: Any,
-) -> dict[str, Any]:
-    """Bind task identity and query metadata onto neutral trace sections."""
-
-    expression_values = expression_payload(problem.case)
-    trace_payload = common_trace_sections(
-        branch_probabilities=dict(branch_probabilities),
-        answer_probabilities=answer_probabilities,
-        prompt_artifacts=prompt_artifacts,
-        problem=problem,
-        parts=parts,
-        extra_case_values=expression_values,
-    )
-    query_spec = build_prompt_query_spec(
-        prompt_artifacts=prompt_artifacts,
-        query_id=str(selected_query),
-        params=_query_params(
-            selected_query=str(selected_query),
-            branch_probabilities=branch_probabilities,
-            answer_probabilities=answer_probabilities,
-            problem=problem,
-        ),
-    )
-    query_spec["scene_id"] = SCENE_ID
-    trace_payload["query_spec"] = query_spec
-    trace_payload["scene_ir"]["task_id"] = TASK_ID
-    trace_payload["scene_ir"]["query_id"] = str(selected_query)
-    trace_payload["scene_ir"]["relations"]["query_id"] = str(selected_query)
-    trace_payload["render_spec"]["task_id"] = TASK_ID
-    trace_payload["render_spec"]["query_id"] = str(selected_query)
-    trace_payload["execution_trace"]["query_id"] = str(selected_query)
-    trace_payload["witness_symbolic"] = {
-        "type": "special_quadrilateral_algebraic_angle_relation",
-        "task_id": TASK_ID,
-        **dict(trace_payload["execution_trace"]),
-    }
-    return trace_payload
-
-
-def _task_output(
-    *,
-    selected_query: str,
-    problem: SpecialQuadrilateralProblem,
-    parts: Any,
-    prompt_artifacts: Any,
-    trace_payload: dict[str, Any],
-) -> TaskOutput:
-    """Bind final public output fields for the algebraic-angle task."""
-
-    return TaskOutput(
-        prompt=str(prompt_artifacts.prompt),
-        answer_gt=TypedValue(type="integer", value=int(problem.case.answer)),
-        annotation_gt=TypedValue(type=parts.annotation_artifacts.annotation_type, value=parts.annotation_artifacts.value),
-        image=parts.image,
-        image_id="img0",
-        trace_payload=trace_payload,
-        task_versions=parts.task_versions,
-        scene_id=SCENE_ID,
-        query_id=str(selected_query),
-        prompt_variants=dict(prompt_artifacts.prompt_variants),
-    )
+    return _CASES_BY_BRANCH
 
 
 @register_task
@@ -261,32 +221,16 @@ class GeometrySpecialQuadrilateralAlgebraicAngleValueTask:
     def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one algebraic-angle instance with task-owned binding."""
 
-        task_seed = int(instance_seed)
-        selected_query, branch_probs, task_params, problem, answer_probs = _select_bound_problem(
-            instance_seed=task_seed,
+        return _run_expression_relation(
+            task_id=TASK_ID,
+            supported_queries=SUPPORTED_QUERY_IDS,
+            cases_by_branch=_build_algebraic_cases(),
+            task_prompt_key=TASK_PROMPT_KEY,
+            witness_type="special_quadrilateral_algebraic_angle_relation",
+            unsupported_query_subject="algebraic-angle",
+            instance_seed=int(instance_seed),
             params=dict(params),
-        )
-        parts, prompt_artifacts = _render_bound_artifacts(
-            instance_seed=task_seed,
-            max_attempts=max(1, int(max_attempts)),
-            task_params=task_params,
-            selected_query=selected_query,
-            problem=problem,
-        )
-        trace_payload = _trace_payload(
-            selected_query=selected_query,
-            branch_probabilities=branch_probs,
-            answer_probabilities=answer_probs,
-            problem=problem,
-            parts=parts,
-            prompt_artifacts=prompt_artifacts,
-        )
-        return _task_output(
-            selected_query=selected_query,
-            problem=problem,
-            parts=parts,
-            prompt_artifacts=prompt_artifacts,
-            trace_payload=trace_payload,
+            max_attempts=int(max_attempts),
         )
 
 

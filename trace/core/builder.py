@@ -29,7 +29,11 @@ from .sampling import normalize_positive_weights, weighted_choice
 from .scene_package_migration import is_scene_package_task
 from .seed import SEED_DERIVATION_VERSION, hash64
 from .strict_repro import compare_staging_dirs
-from .taxonomy import inject_taxonomy_metadata, resolve_task_query_id, resolve_task_taxonomy
+from .taxonomy import (
+    inject_taxonomy_metadata,
+    resolve_task_query_id,
+    resolve_task_taxonomy,
+)
 from .trace_store import TraceShardWriter
 from .type_registry import DEFAULT_REGISTRY_PATH, TypeRegistry, load_type_registry
 from .types import CurriculumIndex, ImageRecord, TraceInstance, TrainInstance
@@ -101,7 +105,10 @@ _REQUIRED_TRACE_PAYLOAD_KEYS = (
     "projected_annotation",
 )
 _PROGRESS_DISABLED_VALUES = {"0", "false", "no", "off"}
-_BUILD_PROGRESS_ENABLED = os.environ.get("TRACE_BUILD_PROGRESS", "1").strip().lower() not in _PROGRESS_DISABLED_VALUES
+_BUILD_PROGRESS_ENABLED = (
+    os.environ.get("TRACE_BUILD_PROGRESS", "1").strip().lower()
+    not in _PROGRESS_DISABLED_VALUES
+)
 
 
 def _registered_scene_id(task_id: str, task: Any) -> str | None:
@@ -117,7 +124,9 @@ def _to_jsonl(path: Path, records: List[Dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         for record in records:
-            handle.write(json.dumps(record, ensure_ascii=False, allow_nan=False, sort_keys=True))
+            handle.write(
+                json.dumps(record, ensure_ascii=False, allow_nan=False, sort_keys=True)
+            )
             handle.write("\n")
 
 
@@ -131,7 +140,9 @@ def _serialize_task_config(task: BuildTaskConfig) -> Dict[str, Any]:
     }
 
 
-def _dataset_id_from_config(config: BuildConfig, type_registry: TypeRegistry, type_registry_hash: str) -> str:
+def _dataset_id_from_config(
+    config: BuildConfig, type_registry: TypeRegistry, type_registry_hash: str
+) -> str:
     """Compute deterministic dataset id from build-critical configuration."""
     payload = {
         "dataset_name": config.dataset_name,
@@ -154,7 +165,9 @@ def _save_image(image: Image.Image, path: Path, image_format: str) -> None:
     image.save(path, format=image_format.upper())
 
 
-def _validate_trace_payload_keys(*, task_id: str, instance_seed: int, trace_payload: Mapping[str, Any]) -> None:
+def _validate_trace_payload_keys(
+    *, task_id: str, instance_seed: int, trace_payload: Mapping[str, Any]
+) -> None:
     """Fail fast when a task omits mandatory sidecar-trace fields."""
 
     missing = [key for key in _REQUIRED_TRACE_PAYLOAD_KEYS if key not in trace_payload]
@@ -216,7 +229,9 @@ def _build_task_attempt_spec(
 ) -> _TaskAttemptSpec:
     """Build one deterministic task-attempt request."""
 
-    instance_seed = hash64(config.sampling_seed, f"{task_cfg.task_id}:instance_seed", seed_index)
+    instance_seed = hash64(
+        config.sampling_seed, f"{task_cfg.task_id}:instance_seed", seed_index
+    )
     params = dict(task_cfg.params)
     calibration_sample = bool(params.pop("_trace_calibration_sample", False))
     forbidden = [
@@ -293,7 +308,9 @@ def _ensure_unique_task_ids(tasks: List[BuildTaskConfig]) -> None:
         seen.add(task.task_id)
 
 
-def _resolve_task_targets(config: BuildConfig) -> tuple[Dict[str, int], Dict[str, float], str]:
+def _resolve_task_targets(
+    config: BuildConfig,
+) -> tuple[Dict[str, int], Dict[str, float], str]:
     """Resolve per-task target counts and global task probabilities."""
     _ensure_unique_task_ids(config.tasks)
     has_explicit_counts = all(task.count is not None for task in config.tasks)
@@ -315,7 +332,9 @@ def _resolve_task_targets(config: BuildConfig) -> tuple[Dict[str, int], Dict[str
         return target_counts, task_probabilities, "explicit_counts"
 
     if config.num_instances is None or int(config.num_instances) <= 0:
-        raise BuildError("num_instances must be positive when explicit per-task counts are not provided")
+        raise BuildError(
+            "num_instances must be positive when explicit per-task counts are not provided"
+        )
 
     configured_weights = {
         task.task_id: (float(task.weight) if task.weight is not None else 1.0)
@@ -386,14 +405,19 @@ def _finalize_generated_output(
             source_scene_id=str(scene_id or ""),
         )
         taxonomy = replace(taxonomy, scene_id=scene_id)
+    migrated_task = is_scene_package_task(str(task.task_id), domain=canonical_domain)
     query_id = str(
         getattr(generated, "query_id", "")
-        or resolve_task_query_id(query_id=query_id_used, trace_payload=generated.trace_payload)
+        or resolve_task_query_id(
+            query_id=query_id_used, trace_payload=generated.trace_payload
+        )
     )
     if not type_registry.validate_answer_type(generated.answer_gt.type):
         raise BuildError(f"unregistered answer type: {generated.answer_gt.type}")
     if not type_registry.validate_annotation_type(generated.annotation_gt.type):
-        raise BuildError(f"unregistered annotation type: {generated.annotation_gt.type}")
+        raise BuildError(
+            f"unregistered annotation type: {generated.annotation_gt.type}"
+        )
     try:
         reward_contract = resolve_reward_contract(
             answer_type=generated.answer_gt.type,
@@ -402,7 +426,12 @@ def _finalize_generated_output(
     except ValueError as exc:
         raise BuildError(str(exc)) from exc
 
-    image_rel_path = Path("images") / canonical_domain / task.task_id / f"{accepted_index:06d}.{config.image_format}"
+    image_rel_path = (
+        Path("images")
+        / canonical_domain
+        / task.task_id
+        / f"{accepted_index:06d}.{config.image_format}"
+    )
     image_abs_path = stage_root / image_rel_path
     _save_image(generated.image, image_abs_path, config.image_format)
     image_hash = blake3_file(image_abs_path)
@@ -419,7 +448,6 @@ def _finalize_generated_output(
         "instance_seed": int(instance_seed),
         "domain": canonical_domain,
         "task": task.task_id,
-        "scene_id": scene_id,
         "query_id": query_id,
         "prompt": generated.prompt,
         "prompt_variants": dict(getattr(generated, "prompt_variants", {}) or {}),
@@ -433,7 +461,7 @@ def _finalize_generated_output(
             "code_hash": code_hash,
         },
     }
-    if scene_id is not None:
+    if not migrated_task:
         partial_record["scene_id"] = scene_id
     instance_id = compute_instance_id(partial_record)
 
@@ -464,7 +492,11 @@ def _finalize_generated_output(
         execution_trace=trace_payload["execution_trace"],
         witness_symbolic=trace_payload["witness_symbolic"],
         projected_annotation=trace_payload["projected_annotation"],
-        taxonomy=trace_payload.get("taxonomy") if isinstance(trace_payload.get("taxonomy"), dict) else None,
+        taxonomy=(
+            trace_payload.get("taxonomy")
+            if isinstance(trace_payload.get("taxonomy"), dict)
+            else None
+        ),
         answer_gt=generated.answer_gt,
         annotation_gt=generated.annotation_gt,
         reward_contract=reward_contract,
@@ -513,7 +545,9 @@ def _build_task_serial(
     type_registry: TypeRegistry,
     trace_writer: TraceShardWriter,
     progress_callback: Callable[[int, int, int], None] | None = None,
-) -> tuple[list[Dict[str, Any]], list[Dict[str, Any]], int, int, Dict[str, int], str | None]:
+) -> tuple[
+    list[Dict[str, Any]], list[Dict[str, Any]], int, int, Dict[str, int], str | None
+]:
     """Generate all accepted instances for one task in-process."""
 
     accepted = 0
@@ -526,7 +560,9 @@ def _build_task_serial(
     annotation_type: str | None = None
 
     while accepted < task_target and seed_index < max_candidates:
-        attempt = _build_task_attempt_spec(task_cfg=task_cfg, config=config, seed_index=seed_index)
+        attempt = _build_task_attempt_spec(
+            task_cfg=task_cfg, config=config, seed_index=seed_index
+        )
         seed_index += 1
         try:
             generated = task.generate(
@@ -580,7 +616,9 @@ def _build_task_parallel(
     type_registry: TypeRegistry,
     trace_writer: TraceShardWriter,
     progress_callback: Callable[[int, int, int], None] | None = None,
-) -> tuple[list[Dict[str, Any]], list[Dict[str, Any]], int, int, Dict[str, int], str | None]:
+) -> tuple[
+    list[Dict[str, Any]], list[Dict[str, Any]], int, int, Dict[str, int], str | None
+]:
     """Generate all accepted instances for one task with a deterministic worker pool."""
 
     workers, max_in_flight = _resolve_parallelism(config, task_target=task_target)
@@ -616,8 +654,14 @@ def _build_task_parallel(
 
     with ProcessPoolExecutor(**executor_kwargs) as executor:
         while futures or (seed_index < max_candidates and accepted < task_target):
-            while accepted < task_target and seed_index < max_candidates and len(futures) < max_in_flight:
-                attempt = _build_task_attempt_spec(task_cfg=task_cfg, config=config, seed_index=seed_index)
+            while (
+                accepted < task_target
+                and seed_index < max_candidates
+                and len(futures) < max_in_flight
+            ):
+                attempt = _build_task_attempt_spec(
+                    task_cfg=task_cfg, config=config, seed_index=seed_index
+                )
                 future = executor.submit(_worker_generate_attempt, attempt)
                 futures[future] = int(attempt.seed_index)
                 seed_index += 1
@@ -631,7 +675,9 @@ def _build_task_parallel(
                 try:
                     outcome = future.result()
                 except Exception as exc:
-                    attempt = _build_task_attempt_spec(task_cfg=task_cfg, config=config, seed_index=result_seed_index)
+                    attempt = _build_task_attempt_spec(
+                        task_cfg=task_cfg, config=config, seed_index=result_seed_index
+                    )
                     outcome = _TaskAttemptOutcome(
                         status="error",
                         spec=attempt,
@@ -646,16 +692,18 @@ def _build_task_parallel(
                     reason = str(outcome.error_reason or "TaskGenerationError")
                     rejection_reasons[reason] = rejection_reasons.get(reason, 0) + 1
                 else:
-                    train_record, curriculum_record, annotation_type = _finalize_generated_output(
-                        task=task,
-                        generated=outcome.generated,
-                        accepted_index=accepted,
-                        instance_seed=int(outcome.spec.instance_seed),
-                        config=config,
-                        stage_root=stage_root,
-                        code_hash=code_hash,
-                        type_registry=type_registry,
-                        trace_writer=trace_writer,
+                    train_record, curriculum_record, annotation_type = (
+                        _finalize_generated_output(
+                            task=task,
+                            generated=outcome.generated,
+                            accepted_index=accepted,
+                            instance_seed=int(outcome.spec.instance_seed),
+                            config=config,
+                            stage_root=stage_root,
+                            code_hash=code_hash,
+                            type_registry=type_registry,
+                            trace_writer=trace_writer,
+                        )
                     )
                     train_records.append(train_record)
                     curriculum_records.append(curriculum_record)
@@ -691,7 +739,9 @@ def _build_staging(
         shutil.rmtree(stage_root)
     stage_root.mkdir(parents=True, exist_ok=True)
 
-    target_counts_by_task, task_probabilities, sampler_mode = _resolve_task_targets(config)
+    target_counts_by_task, task_probabilities, sampler_mode = _resolve_task_targets(
+        config
+    )
     domain_probs, scene_probs = _aggregate_sampling_probabilities(task_probabilities)
 
     warning_messages: List[str] = []
@@ -751,7 +801,11 @@ def _build_staging(
                         or rejected % 25 == 0
                         or accepted >= task_target
                     ):
-                        task_bar.set_postfix(rejected=rejected, attempts=finalized, refresh=accepted_delta == 0)
+                        task_bar.set_postfix(
+                            rejected=rejected,
+                            attempts=finalized,
+                            refresh=accepted_delta == 0,
+                        )
                         overall_bar.set_postfix(task=_task_id, refresh=False)
 
                 try:
@@ -903,7 +957,9 @@ def build_dataset(config: BuildConfig, *, code_hash: str = "local") -> Path:
             "scene_sampling_probabilities": primary.scene_sampling_probabilities,
         }
         if primary.scene_sampling_probabilities:
-            sampler_report["scene_sampling_probabilities"] = primary.scene_sampling_probabilities
+            sampler_report["scene_sampling_probabilities"] = (
+                primary.scene_sampling_probabilities
+            )
 
         build_report = {
             "build_report_schema_version": "v0",
@@ -949,7 +1005,9 @@ def build_dataset(config: BuildConfig, *, code_hash: str = "local") -> Path:
         write_json_file(temp_root / "build_report.json", build_report)
 
         if int(validation_report.get("total_errors", 0)) > 0:
-            raise BuildError(f"validation failed with {validation_report['total_errors']} errors")
+            raise BuildError(
+                f"validation failed with {validation_report['total_errors']} errors"
+            )
 
         final_root.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(temp_root), str(final_root))
@@ -967,5 +1025,7 @@ def build_dataset(config: BuildConfig, *, code_hash: str = "local") -> Path:
                 warning_messages=warning_messages,
             )
         except Exception as bundle_exc:
-            warning_messages.append(f"{error_codes.IO_FAILURE_BUNDLE_WRITE_FAILED}: {bundle_exc}")
+            warning_messages.append(
+                f"{error_codes.IO_FAILURE_BUNDLE_WRITE_FAILED}: {bundle_exc}"
+            )
         raise

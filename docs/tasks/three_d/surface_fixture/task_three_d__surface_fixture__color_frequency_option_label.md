@@ -10,8 +10,15 @@
 - Annotation schema: `bbox`
 
 ## Program Contract
-- `label(select_text_option(option_cards, color_name = argmax(count(surface_fixture_elements by color)))); scene=surface_fixture; scope=color_frequency_option_label; query=most_frequent_color`
-- `label(select_text_option(option_cards, color_count(surface_fixture_elements, option_color_name)=0)); scene=surface_fixture; scope=color_frequency_option_label; query=absent_color`
+
+Program: `label(select_text_option(option_cards, color_name = argmax(count(surface_fixture_elements by color)))); scene=surface_fixture; scope=color_frequency_option_label; query=most_frequent_color`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `color_frequency_option_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `select_text_option`, `option_cards`, `color_name`, `argmax`, `surface_fixture_elements`, `by`, `color`, `surface_fixture`, `color_frequency_option_label`, `query`, `most_frequent_color` plus the active `query_id` branch.
+Operation: evaluate `label` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `most_frequent_color`, `absent_color`.
 
 ## Contract
 The image shows one projected fixture surface containing repeated colored

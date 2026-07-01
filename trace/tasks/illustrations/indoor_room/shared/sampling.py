@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence
 
+from .....core.seed import spawn_rng
+from .....core.sampling import uniform_choice_with_probabilities
 from ....shared.config_defaults import group_default
-from ....shared.deterministic_sampling import resolve_selection_index
 from ...shared.object_library import display_name_for_object_type
 from .state import INDOOR_THEME_IDS
 
@@ -68,9 +69,9 @@ def support_choice(
         if choice not in set(values):
             raise ValueError(f"{explicit_key} must be one of {values}")
         return choice, uniform_string_probability_map(values, selected=choice)
-    selection_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    choice = str(values[int(selection_index) % len(values)])
-    return choice, uniform_string_probability_map(values)
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    choice, probabilities = uniform_choice_with_probabilities(rng, values, sort_keys=False)
+    return str(choice), dict(probabilities)
 
 
 __all__ = [

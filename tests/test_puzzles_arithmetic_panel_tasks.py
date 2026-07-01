@@ -3,16 +3,11 @@
 from __future__ import annotations
 
 from trace.tasks import TASK_REGISTRY
-from trace.tasks.puzzles.arithmetic_panel.consecutive_window_sum_value import (
-    PuzzlesArithmeticConsecutiveWindowSumValueTask,
-)
 from trace.tasks.puzzles.arithmetic_panel.equal_sum_line_constraint_value import (
     PuzzlesArithmeticEqualSumLineConstraintValueTask,
 )
 from trace.tasks.puzzles.arithmetic_panel.number_wall_value import (
     ADDITION_WALL_QUERY,
-    DIFFERENCE_WALL_QUERY,
-    MULTIPLICATION_PYRAMID_QUERY,
     PuzzlesArithmeticNumberWallValueTask,
 )
 from trace.tasks.puzzles.arithmetic_panel.operation_table_cell_value import (
@@ -29,11 +24,6 @@ from trace.tasks.puzzles.arithmetic_panel.vertical_arithmetic_hidden_digit_value
 )
 
 TASK_SPECS = (
-    (
-        "task_puzzles__arithmetic_panel__consecutive_window_sum_value",
-        PuzzlesArithmeticConsecutiveWindowSumValueTask,
-        ("single",),
-    ),
     (
         "task_puzzles__arithmetic_panel__equal_sum_line_constraint_value",
         PuzzlesArithmeticEqualSumLineConstraintValueTask,
@@ -57,7 +47,7 @@ TASK_SPECS = (
     (
         "task_puzzles__arithmetic_panel__number_wall_value",
         PuzzlesArithmeticNumberWallValueTask,
-        (ADDITION_WALL_QUERY, DIFFERENCE_WALL_QUERY, MULTIPLICATION_PYRAMID_QUERY),
+        ("single",),
     ),
 )
 
@@ -117,7 +107,6 @@ def test_arithmetic_panel_scene_tasks_use_scalar_target_bbox_annotation() -> Non
 
 def test_forced_arithmetic_panel_branches_are_valid() -> None:
     task_specs = (
-        (PuzzlesArithmeticConsecutiveWindowSumValueTask(), ("single",)),
         (PuzzlesArithmeticEqualSumLineConstraintValueTask(), ("single",)),
     )
     for task, branches in task_specs:
@@ -147,16 +136,6 @@ def test_forced_arithmetic_panel_branches_are_valid() -> None:
                         + corners[(side_index + 1) % int(data["side_count"])]
                     )
                     assert total == side_total
-            elif trace["layout_style"] == "equal_windows":
-                values = [
-                    int(out.answer_gt.value) if value is None else int(value)
-                    for value in data["visible_values"]
-                ]
-                window_size = int(data["window_size"])
-                for start in range(0, len(values) - window_size + 1):
-                    assert sum(values[start : start + window_size]) == int(
-                        data["window_total"]
-                    )
 
 
 def _number_wall_levels(base: list[int], operator: str) -> list[list[int]]:
@@ -218,11 +197,7 @@ def test_number_wall_target_position_varies_and_is_unique() -> None:
     task = PuzzlesArithmeticNumberWallValueTask()
     seen_positions_by_branch: dict[str, set[tuple[int, int]]] = {}
     upper_target_count_by_branch: dict[str, int] = {}
-    branches = (
-        ADDITION_WALL_QUERY,
-        DIFFERENCE_WALL_QUERY,
-        MULTIPLICATION_PYRAMID_QUERY,
-    )
+    branches = ("single",)
     for branch_index, branch in enumerate(branches):
         for seed_offset in range(24):
             out = task.generate(
@@ -232,6 +207,10 @@ def test_number_wall_target_position_varies_and_is_unique() -> None:
             )
             trace = out.trace_payload["execution_trace"]
             data = trace["constraint_data"]
+            assert (
+                out.trace_payload["query_spec"]["params"]["prompt_query_key"]
+                == ADDITION_WALL_QUERY
+            )
             target_level = int(data["target_level"])
             target_index = int(data["target_index"])
             seen_positions_by_branch.setdefault(branch, set()).add(
@@ -258,6 +237,32 @@ def test_number_wall_target_position_varies_and_is_unique() -> None:
         assert any(level > 0 for level, _index in positions)
     for branch in branches:
         assert upper_target_count_by_branch.get(branch, 0) >= 6
+
+
+def test_arithmetic_panel_prompts_do_not_spell_out_hidden_rules() -> None:
+    banned_fragments = (
+        "shown in the note",
+        "rule in the note",
+        "window-total rule",
+        "window-sum note",
+        "each brick is the sum",
+        "addition wall rule",
+        "difference wall",
+        "multiplication pyramid",
+        "row and column totals",
+        "visible numeric clues",
+    )
+    for _task_id, task_cls, queries in TASK_SPECS:
+        task = task_cls()
+        for index, branch in enumerate(queries):
+            out = task.generate(
+                2026062900 + (37 * index) + len(str(task.task_id)),
+                params={"query_id": str(branch)},
+                max_attempts=160,
+            )
+            prompt_lower = str(out.prompt).lower()
+            for fragment in banned_fragments:
+                assert fragment not in prompt_lower
 
 
 def test_arithmetic_panel_task_is_deterministic() -> None:

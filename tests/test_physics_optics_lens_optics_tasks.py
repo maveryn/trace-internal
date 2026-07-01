@@ -4,19 +4,20 @@ from __future__ import annotations
 
 import trace.tasks  # noqa: F401
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.physics.optics.lens_optics import (
+from trace.tasks.physics.lens_optics.image_property_choice import (
     CASE_TO_PROPERTY,
     OBJECT_POSITION_CASES,
     OPTION_LETTERS,
     PhysicsLensOpticsImagePropertyChoiceTask,
+    TASK_ID,
 )
 from trace.tasks.registry import list_default_task_ids
 from trace.tasks.shared.config_defaults import split_generation_rendering_prompt_defaults
 
 
-def _assert_keyed_bbox_map_in_bounds(out) -> None:
+def _assert_bbox_map_in_bounds(out) -> None:
     width, height = out.image.size
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     for bbox in out.annotation_gt.value.values():
         assert 0 <= bbox[0] < bbox[2] <= width
         assert 0 <= bbox[1] < bbox[3] <= height
@@ -46,11 +47,12 @@ def test_lens_optics_all_object_positions_map_to_expected_property() -> None:
         render_map = out.trace_payload["render_map"]
 
         assert out.scene_id == "lens_optics"
-        assert out.query_id == "converging_lens_image_property_choice"
+        assert out.query_id == "single"
         assert out.answer_gt.type == "option_letter"
         assert out.answer_gt.value == "B"
         assert out.trace_payload["query_spec"]["params"]["answer_support"] == list(OPTION_LETTERS)
         assert execution["lens_type"] == "converging"
+        assert execution["internal_query_id"] == "converging_lens_image_property_choice"
         assert execution["object_position_case"] == position_case
         assert execution["option_map"][out.answer_gt.value] == CASE_TO_PROPERTY[position_case]
         assert render_map["image_property"] == CASE_TO_PROPERTY[position_case]
@@ -61,9 +63,9 @@ def test_lens_optics_all_object_positions_map_to_expected_property() -> None:
             assert not _bbox_overlaps(render_map["option_letter_bboxes_px"][letter], render_map["option_text_bboxes_px"][letter])
 
         assert set(out.annotation_gt.value) == {"lens", "object_arrow", "focal_marks"}
-        _assert_keyed_bbox_map_in_bounds(out)
-        assert out.trace_payload["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-        assert out.trace_payload["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+        _assert_bbox_map_in_bounds(out)
+        assert out.trace_payload["projected_annotation"]["bbox_map"] == out.annotation_gt.value
+        assert out.trace_payload["projected_annotation"]["pixel_bbox_map"] == out.annotation_gt.value
         for option_bbox in render_map["option_bboxes_px"].values():
             assert option_bbox not in out.annotation_gt.value.values()
         assert "image_arrow_bbox_px" not in render_map
@@ -104,18 +106,16 @@ def test_lens_optics_balanced_sampling_exposes_cases_and_letters() -> None:
 
 
 def test_lens_optics_defaults_expose_prompt_and_rendering_contract() -> None:
-    optics = get_scene_defaults("physics", "optics")
+    optics = get_scene_defaults("physics", "lens_optics")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         optics,
-        task_id="physics_optics_lens_optics_family",
+        task_id=TASK_ID,
     )
 
-    assert set(generation["query_id_weights"]) == {"converging_lens_image_property_choice"}
     assert set(generation["scene_variant_weights"]) == {"clean_axis", "paper_grid", "lab_card"}
     assert set(generation["object_position_case_weights"]) == set(OBJECT_POSITION_CASES)
     assert set(generation["correct_option_letter_weights"]) == set(OPTION_LETTERS)
     assert int(rendering["canvas_width"]) == 1120
     assert int(rendering["canvas_height"]) == 720
-    assert str(prompt["scene_key"]) == "lens_optics_diagram"
     assert str(prompt["task_key"]) == "lens_image_property_query"
-    assert "object_arrow" in str(prompt["annotation_hint_converging_lens_image_property_choice"])
+    assert str(prompt["bundle_id"]) == "physics_lens_optics_v1"

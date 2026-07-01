@@ -10,7 +10,15 @@
 Counts visible small indoor objects of a sampled object type that are placed on one sampled room surface.
 
 ## Program Contract
-`count(filter(visible_room_objects, object_type(object)=target_object_type and on_surface(object, target_surface))); scene=indoor_room; scope=surface_object_count`
+
+Program: `count(filter(visible_room_objects, object_type(object)=target_object_type and on_surface(object, target_surface))); scene=indoor_room; scope=surface_object_count`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `surface_object_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `visible_room_objects`, `object_type`, `object`, `target_object_type`, `on_surface`, `target_surface`, `indoor_room`, `surface_object_count`.
+Operation: evaluate `count` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; an integer in `1..5`, derived from the same execution trace as the annotation.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

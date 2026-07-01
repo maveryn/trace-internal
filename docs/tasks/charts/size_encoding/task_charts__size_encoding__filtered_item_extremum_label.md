@@ -20,7 +20,15 @@
 4. Renderer context such as legends, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
 ## Program Contract
-`select_label(arg_extreme(filter(items, category=target_category), encoded_value(item), direction)); output=string_label; annotation=bbox(answer_item); scene=size_encoding; scope=filtered_item_extremum_label`
+
+Program: `select_label(arg_extreme(filter(items, category=target_category), encoded_value(item), direction)); output=string_label; annotation=bbox(answer_item); scene=size_encoding; scope=filtered_item_extremum_label`
+
+Candidate set: the visible items whose size encodes value and their category labels inside the `filtered_item_extremum_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `select_label` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `bbox` witnesses bound by `bbox(answer_item)`. Annotation marks the answer item's displayed box. Renderer context such as legends, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `largest_size_item_in_category_label`, `smallest_size_item_in_category_label`.
 
 ## Query Details
 

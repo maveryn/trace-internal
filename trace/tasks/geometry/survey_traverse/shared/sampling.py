@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 BEARING_SUPPORT: Tuple[int, ...] = (
@@ -49,26 +51,6 @@ LEVELING_CASES: Tuple[Tuple[int, int, int], ...] = (
     (175, 4, 10),
     (132, 6, 11),
 )
-SLOPE_ELEVATION_CASES: Tuple[Tuple[int, int, int], ...] = (
-    (100, 80, 2),
-    (120, 60, -3),
-    (96, 100, 1),
-    (150, 40, -4),
-    (82, 80, 3),
-    (135, 100, -2),
-    (110, 60, 4),
-    (170, 40, -5),
-    (92, 120, 1),
-    (148, 80, -3),
-)
-COORDINATE_TRAVERSE_CASES: Tuple[Tuple[int, int, int, int, int, int, int, int], ...] = (
-    (0, 0, 6, 0, 7, 4, 0, 6),
-    (0, 0, 8, 0, 8, 5, 0, 7),
-    (0, 0, 5, 0, 7, 6, 0, 8),
-    (0, 0, 9, 0, 8, 4, 0, 6),
-    (0, 0, 7, 0, 9, 6, 0, 8),
-    (0, 0, 10, 0, 8, 4, 0, 6),
-)
 OFFSET_TRAPEZOID_CASES: Tuple[Tuple[int, int, int, int, int, int, int], ...] = (
     (20, 40, 60, 3, 5, 4, 2),
     (30, 60, 90, 2, 4, 7, 5),
@@ -111,12 +93,8 @@ def choose_from_support(
         if selected not in values:
             raise ValueError(f"{explicit_key}={selected} is not supported")
         return selected, support_probability_map(values, selected=selected)
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    selected = values[int(index) % len(values)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    selected = uniform_choice(rng, tuple(values))
     return selected, support_probability_map(values)
 
 
@@ -164,12 +142,8 @@ def choose_station_labels3(*, params: Mapping[str, Any], instance_seed: int, nam
         ("D", "E", "F"),
         ("G", "H", "J"),
     )
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.station_labels",
-    )
-    return tuple(pools[int(index) % len(pools)])  # type: ignore[return-value]
+    rng = spawn_rng(int(instance_seed), f"{namespace}.station_labels")
+    return tuple(uniform_choice(rng, pools))  # type: ignore[return-value]
 
 
 def choose_station_labels4(*, params: Mapping[str, Any], instance_seed: int, namespace: str) -> Tuple[str, str, str, str]:
@@ -193,10 +167,8 @@ def choose_station_labels4(*, params: Mapping[str, Any], instance_seed: int, nam
 
 __all__ = [
     "BEARING_SUPPORT",
-    "COORDINATE_TRAVERSE_CASES",
     "LEVELING_CASES",
     "OFFSET_TRAPEZOID_CASES",
-    "SLOPE_ELEVATION_CASES",
     "TURN_SUPPORT",
     "choose_from_support",
     "choose_station_labels3",

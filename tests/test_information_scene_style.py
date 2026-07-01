@@ -20,6 +20,18 @@ from trace.tasks.charts.shared.information_style import resolve_chart_informatio
 def test_information_scene_style_has_expected_breadth() -> None:
     assert len(INFORMATION_SCENE_TREATMENTS) >= 20
     assert len(INFORMATION_SCENE_PALETTES) >= 20
+    light_treatments = {
+        treatment_id
+        for treatment_id, treatment in INFORMATION_SCENE_TREATMENTS.items()
+        if "light" in set(treatment.compatibility)
+    }
+    dark_treatments = {
+        treatment_id
+        for treatment_id, treatment in INFORMATION_SCENE_TREATMENTS.items()
+        if "dark" in set(treatment.compatibility)
+    }
+    assert len(light_treatments) == 20
+    assert len(dark_treatments) == 5
 
 
 def test_information_scene_style_is_deterministic_and_metadata_complete() -> None:

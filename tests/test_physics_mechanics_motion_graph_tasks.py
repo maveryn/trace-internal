@@ -3,19 +3,32 @@
 from __future__ import annotations
 
 import trace.tasks  # noqa: F401
-from trace.tasks.physics.mechanics.motion_graph import (
+from trace.tasks.physics.motion_graph.interval_displacement_value import (
     PhysicsMotionGraphIntervalDisplacementValueTask,
+)
+from trace.tasks.physics.motion_graph.average_speed_value import (
+    PhysicsMotionGraphAverageSpeedValueTask,
+)
+from trace.tasks.physics.motion_graph.speed_change_state_choice import (
     PhysicsMotionGraphSpeedChangeStateChoiceTask,
-    PhysicsMotionGraphVelocitySignChoiceTask,
 )
 
 
-def _assert_keyed_bbox_map_in_bounds(out) -> None:
+def _assert_bbox_map_in_bounds(out) -> None:
     width, height = out.image.size
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
     for bbox in out.annotation_gt.value.values():
         assert 0 <= bbox[0] < bbox[2] <= width
         assert 0 <= bbox[1] < bbox[3] <= height
+
+
+def _assert_segment_in_bounds(out) -> None:
+    width, height = out.image.size
+    assert out.annotation_gt.type == "segment"
+    assert len(out.annotation_gt.value) == 2
+    for point in out.annotation_gt.value:
+        assert 0 <= point[0] <= width
+        assert 0 <= point[1] <= height
 
 
 def _bbox_overlaps(left, right) -> bool:
@@ -27,39 +40,31 @@ def _bbox_overlaps(left, right) -> bool:
     )
 
 
-def test_motion_graph_velocity_sign_choice_contract() -> None:
-    task = PhysicsMotionGraphVelocitySignChoiceTask()
+def test_motion_graph_average_speed_value_contract() -> None:
+    out = PhysicsMotionGraphAverageSpeedValueTask().generate(
+        93011,
+        params={
+            "t_start": 2,
+            "t_end": 4,
+            "d_start": 3,
+            "d_end": 11,
+            "post_image_noise": {"enabled": False},
+        },
+        max_attempts=10,
+    )
+    execution = out.trace_payload["execution_trace"]
 
-    for state in ["moving_right", "moving_left", "stationary"]:
-        out = task.generate(
-            93011,
-            params={
-                "query_id": "velocity_sign_choice",
-                "motion_state": state,
-                "correct_option_letter": "C",
-            },
-            max_attempts=10,
-        )
-        execution = out.trace_payload["execution_trace"]
-        segment = execution["target_segment"]
-
-        assert out.scene_id == "motion_graph"
-        assert out.query_id == "velocity_sign_choice"
-        assert out.answer_gt.type == "option_letter"
-        assert out.answer_gt.value == "C"
-        assert execution["graph_kind"] == "position_time"
-        assert execution["option_map"][out.answer_gt.value] == state
-        assert set(out.annotation_gt.value) == {"query_region", "curve_segment"}
-        _assert_keyed_bbox_map_in_bounds(out)
-        assert out.trace_payload["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-
-        delta = int(segment["y_end"]) - int(segment["y_start"])
-        if state == "moving_right":
-            assert delta > 0
-        elif state == "moving_left":
-            assert delta < 0
-        else:
-            assert delta == 0
+    assert out.scene_id == "motion_graph"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "integer"
+    assert out.answer_gt.value == 4
+    assert execution["graph_kind"] == "distance_time"
+    assert execution["delta_d_m"] == 8
+    assert execution["delta_t_s"] == 2
+    assert execution["average_speed_m_s"] == out.answer_gt.value
+    _assert_segment_in_bounds(out)
+    assert out.annotation_gt.value == out.trace_payload["render_map"]["distance_segment_px"]
+    assert out.trace_payload["projected_annotation"]["segment"] == out.annotation_gt.value
 
 
 def test_motion_graph_speed_change_state_choice_contract() -> None:
@@ -69,7 +74,6 @@ def test_motion_graph_speed_change_state_choice_contract() -> None:
         out = task.generate(
             93021,
             params={
-                "query_id": "speed_change_state_choice",
                 "motion_state": state,
                 "correct_option_letter": "A",
             },
@@ -81,13 +85,15 @@ def test_motion_graph_speed_change_state_choice_contract() -> None:
         y_end = int(segment["y_end"])
 
         assert out.scene_id == "motion_graph"
-        assert out.query_id == "speed_change_state_choice"
+        assert out.query_id == "single"
         assert out.answer_gt.type == "option_letter"
         assert out.answer_gt.value == "A"
+        assert execution["motion_operation"] == "speed_change_state_choice"
         assert execution["graph_kind"] == "velocity_time"
         assert execution["option_map"][out.answer_gt.value] == state
-        assert set(out.annotation_gt.value) == {"query_region", "curve_segment"}
-        _assert_keyed_bbox_map_in_bounds(out)
+        _assert_segment_in_bounds(out)
+        assert out.annotation_gt.value == out.trace_payload["render_map"]["curve_segment_px"]
+        assert out.trace_payload["projected_annotation"]["segment"] == out.annotation_gt.value
 
         if state == "speeding_up":
             assert abs(y_end) > abs(y_start)
@@ -102,7 +108,6 @@ def test_motion_graph_options_are_visual_not_annotation() -> None:
     out = PhysicsMotionGraphSpeedChangeStateChoiceTask().generate(
         6486597898434820,
         params={
-            "query_id": "speed_change_state_choice",
             "motion_state": "speeding_up",
             "correct_option_letter": "C",
         },
@@ -116,8 +121,10 @@ def test_motion_graph_options_are_visual_not_annotation() -> None:
     assert set(render_map["option_text_bboxes_px"]) == {"A", "B", "C", "D"}
     for letter in ("A", "B", "C", "D"):
         assert not _bbox_overlaps(render_map["option_letter_bboxes_px"][letter], render_map["option_text_bboxes_px"][letter])
-    assert out.annotation_gt.value["curve_segment"] not in render_map["option_bboxes_px"].values()
-    assert out.annotation_gt.value["query_region"] not in render_map["option_bboxes_px"].values()
+    _assert_segment_in_bounds(out)
+    assert out.annotation_gt.value == render_map["curve_segment_px"]
+    for option_bbox in render_map["option_bboxes_px"].values():
+        assert out.annotation_gt.value != option_bbox
     assert out.prompt_variants["answer_only"]
     assert out.prompt_variants["answer_and_annotation"]
 
@@ -141,9 +148,9 @@ def test_motion_graph_constant_velocity_interval_displacement_contract() -> None
     assert out.query_id == "constant_velocity_interval_displacement"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 12
-    assert set(out.annotation_gt.value) == {"marked_interval", "velocity_segment", "axis_scale"}
-    _assert_keyed_bbox_map_in_bounds(out)
-    assert out.trace_payload["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
+    _assert_segment_in_bounds(out)
+    assert out.annotation_gt.value == out.trace_payload["render_map"]["velocity_segment_px"]
+    assert out.trace_payload["projected_annotation"]["segment"] == out.annotation_gt.value
     assert execution["area_formula"] == "v * delta_t"
     assert execution["delta_t_s"] == 3
     assert execution["v_start_m_s"] == execution["v_end_m_s"] == 4
@@ -169,8 +176,9 @@ def test_motion_graph_constant_acceleration_interval_displacement_contract() -> 
     assert out.query_id == "constant_acceleration_interval_displacement"
     assert out.answer_gt.type == "integer"
     assert out.answer_gt.value == 16
-    assert set(out.annotation_gt.value) == {"marked_interval", "velocity_segment", "axis_scale"}
-    _assert_keyed_bbox_map_in_bounds(out)
+    _assert_segment_in_bounds(out)
+    assert out.annotation_gt.value == out.trace_payload["render_map"]["velocity_segment_px"]
+    assert out.trace_payload["projected_annotation"]["segment"] == out.annotation_gt.value
     assert execution["area_formula"] == "((v_start + v_end) / 2) * delta_t"
     assert execution["delta_t_s"] == 4
     assert execution["v_start_m_s"] == 2

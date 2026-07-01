@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+from math import floor
 from typing import Any, Dict, Mapping, Tuple
 
 from trace.core.sampling import weighted_support_choice
@@ -234,6 +236,8 @@ def resolve_render_params(
     render_defaults: Mapping[str, Any],
     *,
     instance_seed: int,
+    grid_rows: int | None = None,
+    grid_cols: int | None = None,
 ) -> TentsRenderParams:
     """Resolve render dimensions, font sizes, and unit-size jitter."""
 
@@ -243,7 +247,7 @@ def resolve_render_params(
         instance_seed=int(instance_seed),
         namespace="puzzles.tents.unit_size",
     )
-    return TentsRenderParams(
+    render_params = TentsRenderParams(
         canvas_width=int(render_defaults.get("canvas_width", 1100)),
         canvas_height=int(render_defaults.get("canvas_height", 860)),
         cell_size_px=scale_puzzle_px(
@@ -278,6 +282,104 @@ def resolve_render_params(
         style_overrides={},
         unit_size_jitter=dict(unit_meta),
     )
+    return _fit_render_params_to_canvas(
+        render_params,
+        rows=grid_rows,
+        cols=grid_cols,
+    )
+
+
+def _fit_render_params_to_canvas(
+    render_params: TentsRenderParams,
+    *,
+    rows: int | None,
+    cols: int | None,
+) -> TentsRenderParams:
+    """Shrink repeated Tents units when a sampled grid would exceed the canvas."""
+
+    if rows is None or cols is None or int(rows) <= 0 or int(cols) <= 0:
+        return render_params
+
+    rows = int(rows)
+    cols = int(cols)
+    total_width = (
+        int(render_params.left_clue_width_px)
+        + (cols * int(render_params.cell_size_px))
+        + (2 * int(render_params.panel_padding_px))
+    )
+    total_height = (
+        int(render_params.top_clue_height_px)
+        + (rows * int(render_params.cell_size_px))
+        + (2 * int(render_params.panel_padding_px))
+    )
+    fit_scale = min(
+        1.0,
+        float(render_params.canvas_width) / max(1.0, float(total_width)),
+        float(render_params.canvas_height) / max(1.0, float(total_height)),
+    )
+    if fit_scale >= 1.0:
+        return render_params
+
+    def scaled(value: int, *, min_px: int) -> int:
+        return max(int(min_px), int(floor(float(value) * float(fit_scale))))
+
+    fitted = replace(
+        render_params,
+        cell_size_px=scaled(render_params.cell_size_px, min_px=22),
+        left_clue_width_px=scaled(render_params.left_clue_width_px, min_px=32),
+        top_clue_height_px=scaled(render_params.top_clue_height_px, min_px=32),
+        grid_line_width_px=scaled(render_params.grid_line_width_px, min_px=1),
+        heavy_line_width_px=scaled(render_params.heavy_line_width_px, min_px=2),
+        panel_padding_px=scaled(render_params.panel_padding_px, min_px=8),
+        panel_corner_radius_px=scaled(render_params.panel_corner_radius_px, min_px=6),
+        clue_font_size_px=scaled(render_params.clue_font_size_px, min_px=12),
+        candidate_font_size_px=scaled(render_params.candidate_font_size_px, min_px=12),
+    )
+
+    max_cell_width = int(
+        floor(
+            (
+                float(fitted.canvas_width)
+                - float(fitted.left_clue_width_px)
+                - (2.0 * float(fitted.panel_padding_px))
+            )
+            / float(cols)
+        )
+    )
+    max_cell_height = int(
+        floor(
+            (
+                float(fitted.canvas_height)
+                - float(fitted.top_clue_height_px)
+                - (2.0 * float(fitted.panel_padding_px))
+            )
+            / float(rows)
+        )
+    )
+    max_fit_cell_size = min(int(max_cell_width), int(max_cell_height))
+    if max_fit_cell_size < 22:
+        raise ValueError(
+            "Tents grid cannot fit within the configured canvas while preserving "
+            "the minimum cell size"
+        )
+    fitted_cell_size = min(int(fitted.cell_size_px), int(max_fit_cell_size))
+    meta = dict(fitted.unit_size_jitter)
+    meta["fit_to_canvas"] = {
+        "enabled": True,
+        "scale": float(fit_scale),
+        "grid_rows": int(rows),
+        "grid_cols": int(cols),
+        "content_size_before_fit_px": [int(total_width), int(total_height)],
+        "content_size_after_fit_px": [
+            int(fitted.left_clue_width_px)
+            + (int(cols) * int(fitted_cell_size))
+            + (2 * int(fitted.panel_padding_px)),
+            int(fitted.top_clue_height_px)
+            + (int(rows) * int(fitted_cell_size))
+            + (2 * int(fitted.panel_padding_px)),
+        ],
+    }
+    return replace(fitted, cell_size_px=int(fitted_cell_size), unit_size_jitter=meta)
 
 
 __all__ = [

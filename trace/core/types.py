@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List
 
 from .reward_contracts import RewardContract
+from .scene_package_migration import is_scene_package_task
 
 
 @dataclass(frozen=True)
@@ -71,7 +72,6 @@ class TrainInstance:
             "instance_seed": int(self.instance_seed),
             "domain": self.domain,
             "task": self.task,
-            "scene_id": self.scene_id,
             "query_id": self.query_id,
             "prompt": self.prompt,
             "prompt_variants": dict(self.prompt_variants),
@@ -82,6 +82,8 @@ class TrainInstance:
             "trace_ref": self.trace_ref.to_dict(),
             "versions": dict(self.versions),
         }
+        if not is_scene_package_task(str(self.task), domain=str(self.domain)):
+            data["scene_id"] = self.scene_id
         return data
 
 
@@ -142,7 +144,8 @@ class CurriculumIndex:
             "instance_id": self.instance_id,
             "domain": self.domain,
             "task": self.task,
-            "scene_id": self.scene_id,
             "query_id": self.query_id,
         }
+        if not is_scene_package_task(str(self.task), domain=str(self.domain)):
+            data["scene_id"] = self.scene_id
         return data

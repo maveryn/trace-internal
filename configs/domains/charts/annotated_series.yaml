@@ -87,11 +87,11 @@ rendering:
       - 44
       - 38
     context_text_enabled: true
-    context_text_mode_weights:
-      clean: 0.45
-      light_context: 0.3
-      right_sidebar: 0.15
-      bottom_band: 0.1
+    chart_context_profile: report_paragraph
+    chart_context_mode_weights:
+      clean: 0.3
+      minimal: 0.4
+      paragraph_box: 0.3
     context_text_top_reserved_px: 64
     context_text_bottom_reserved_px: 28
     context_text_sidebar_width_min_px: 180

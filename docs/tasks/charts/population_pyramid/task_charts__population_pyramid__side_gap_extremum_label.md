@@ -22,7 +22,11 @@
 
 ## Program Contract
 
-`select_label(arg_extremum(age_group_rows, abs(left_value - right_value), rank)); scene=population_pyramid; scope=side_gap_extremum_label`
+Program: `select_label(arg_extremum(age_group_rows, abs(left_value - right_value), rank)); scene=population_pyramid; scope=side_gap_extremum_label`
 
-Arguments:
-- `rank`: `largest` or `smallest_nonzero`
+Candidate set: the visible left/right population bars and age-group labels inside the `side_gap_extremum_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `select_label` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `unspecified` value bound by `unspecified`.
+Annotation witnesses: `unspecified` witnesses bound by `see_annotation_contract`. The Annotation Contract below defines the prompt-facing witnesses.
+Query ids: `largest_side_gap_label`, `smallest_nonzero_side_gap_label`.

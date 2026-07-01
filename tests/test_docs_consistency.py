@@ -27,10 +27,15 @@ BENCHMARK_COVERAGE_SCRIPT_PATHS = (
 ALLOWED_DOCS_TOP_LEVEL = {
     "ACTIVE_TASK_INVENTORY.md",
     "README.md",
+    "RLVR_TRAINING_STRATEGY.md",
+    "RLVR_TASK_SPLIT_PLAN.md",
     "SCENE_PACKAGE_MIGRATION",
     "TODO.md",
     "contracts",
+    "domain-finalization-review",
+    "domain-migration-report",
     "domains",
+    "review",
     "resources",
     "tasks",
     "workflows",
@@ -125,6 +130,26 @@ def test_source_docs_do_not_reference_banned_legacy_roots() -> None:
         for fragment in BANNED_REFERENCE_FRAGMENTS:
             if fragment in text:
                 failures.append(f"{path.relative_to(ROOT)} references banned path {fragment}")
+    assert not failures, "\n".join(failures)
+
+
+def test_retired_decimal_answer_schema_is_absent() -> None:
+    """The registry answer schema is `number`; precision is separate metadata."""
+
+    retired_schema = "_".join(("decimal", "value", "1dp"))
+    scanned_roots = (
+        ROOT / "docs",
+        ROOT / "prompts",
+        ROOT / "review" / "task-reviews",
+        ROOT / "scripts",
+        ROOT / "tests",
+        ROOT / "trace",
+    )
+    failures: list[str] = []
+    for path in _iter_text_files(scanned_roots):
+        text = path.read_text(encoding="utf-8")
+        if retired_schema in text:
+            failures.append(f"{path.relative_to(ROOT)} references retired answer schema")
     assert not failures, "\n".join(failures)
 
 

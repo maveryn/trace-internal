@@ -82,9 +82,6 @@
     }
   },
   "static_slots_by_key": {
-    "scene:tangent_packing_scene": {
-      "object_description": "a circle-square tangent packing diagram with visible measurements and one marked target value"
-    },
     "global": {
       "json_output_contract": "Return a JSON object with exactly two keys: \"annotation\" and \"answer\".",
       "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\"."
@@ -109,6 +106,9 @@
     }
   },
   "dynamic_slots": {
+    "object_description": {
+      "type": "string"
+    },
     "annotation_instruction": {
       "type": "string"
     },

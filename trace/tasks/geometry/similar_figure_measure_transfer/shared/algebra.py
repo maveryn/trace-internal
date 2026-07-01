@@ -43,37 +43,6 @@ def variable_case(
     )
 
 
-def side_expression_case(
-    *,
-    construction_family: str,
-    shape_kind: str,
-    answer: int,
-    scale_factor: int,
-    coefficient: int,
-    variable_value: int,
-    support_source: int,
-) -> SimilarEquationCase:
-    """Build a case where an expression-labeled source side is requested."""
-
-    constant = int(answer) - int(coefficient) * int(variable_value)
-    return SimilarEquationCase(
-        construction_family=str(construction_family),
-        shape_kind=str(shape_kind),
-        answer=float(answer),
-        target_name="AB",
-        variable_name="x",
-        relation="similar_side_length_from_expression",
-        source_target_label=_linear_expression(int(coefficient), int(constant)),
-        target_target_label=str(int(answer) * int(scale_factor)),
-        support_source_label=str(int(support_source)),
-        support_target_label=str(int(support_source) * int(scale_factor)),
-        scale_factor=float(scale_factor),
-        source_target_value=float(answer),
-        target_target_value=float(int(answer) * int(scale_factor)),
-        annotation_labels=_side_annotation_labels(str(shape_kind)),
-    )
-
-
 def _side_annotation_labels(shape_kind: str) -> tuple[str, ...]:
     if str(shape_kind) == "triangle":
         return ("A", "B", "B", "C", "A'", "B'", "B'", "C'")

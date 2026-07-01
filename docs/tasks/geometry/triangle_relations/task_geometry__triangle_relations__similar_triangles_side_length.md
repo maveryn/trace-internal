@@ -10,6 +10,7 @@
 
 ## Program Contract
 - `solve_formula(visible_triangle_relations_measurements, unknown_role=length_measure, formula_schema=similar_triangles_side_length); scene=triangle_relations; scope=similar_triangles_side_length`
+- The visible construction marks and prompt state that `DE` is parallel to `BC`.
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `triangle_relations`.

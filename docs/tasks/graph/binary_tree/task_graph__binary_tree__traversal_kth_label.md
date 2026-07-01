@@ -1,7 +1,15 @@
 # `task_graph__binary_tree__traversal_kth_label`
 
 ## Program Contract
-- `label(kth_node(traversal(binary_tree, traversal_order), k)); scene=binary_tree; scope=traversal_kth_label`
+
+Program: `label(kth_node(traversal(binary_tree, traversal_order), k)); scene=binary_tree; scope=traversal_kth_label`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `traversal_kth_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `kth_node`, `traversal`, `binary_tree`, `traversal_order`, `k`, `traversal_kth_label`.
+Operation: evaluate `label` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_sequence` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Summary
 1. Domain: `graph`

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
@@ -21,6 +21,12 @@ _GRID_RGB = (76, 84, 98)
 _ACCENT_RGB = (46, 111, 173)
 _TEXT_RGB = (28, 32, 38)
 _PANEL_RGB = (248, 249, 252)
+_OPTION_SIDE_MARGIN_PX = 32.0
+_OPTION_PANEL_X_PADDING_PX = 28.0
+_OPTION_PANEL_LABEL_AREA_PX = 42.0
+_OPTION_PANEL_BOTTOM_PADDING_PX = 10.0
+_OPTION_TO_GRID_GAP_PX = 56.0
+_OPTION_BOTTOM_MARGIN_PX = 38.0
 
 
 @dataclass(frozen=True)
@@ -344,22 +350,123 @@ def _draw_option_label(
 def _option_panel_bboxes(
     option_count: int,
     params: NonogramRenderParams,
+    *,
+    panel_width: float,
+    panel_height: float,
+    option_top: float,
 ) -> Dict[str, List[float]]:
-    total_width = (int(option_count) * int(params.option_panel_width_px)) + (
+    total_width = (int(option_count) * float(panel_width)) + (
         max(0, int(option_count) - 1) * int(params.option_gap_px)
     )
     start_x = round((float(params.canvas_width) - float(total_width)) / 2.0, 3)
     boxes: Dict[str, List[float]] = {}
     for index in range(int(option_count)):
-        left = float(start_x + (index * (int(params.option_panel_width_px) + int(params.option_gap_px))))
-        top = float(params.option_y_px)
+        left = float(start_x + (index * (float(panel_width) + int(params.option_gap_px))))
+        top = float(option_top)
         boxes[str(index)] = _bbox(
             left,
             top,
-            left + int(params.option_panel_width_px),
-            top + int(params.option_panel_height_px),
+            left + float(panel_width),
+            top + float(panel_height),
         )
     return boxes
+
+
+def _option_panel_size(
+    *,
+    mode: str,
+    rows: int,
+    cols: int,
+    params: NonogramRenderParams,
+) -> tuple[float, float]:
+    """Return a panel size that can contain option cells at main-grid scale."""
+
+    cell_size = float(params.cell_size_px)
+    panel_width = max(
+        float(params.option_panel_width_px),
+        (float(cols) * cell_size) + _OPTION_PANEL_X_PADDING_PX,
+    )
+    option_rows = int(rows) if str(mode) == "candidate_solution" else 1
+    panel_height = max(
+        float(params.option_panel_height_px),
+        _OPTION_PANEL_LABEL_AREA_PX
+        + (float(option_rows) * cell_size)
+        + _OPTION_PANEL_BOTTOM_PADDING_PX,
+    )
+    return float(panel_width), float(panel_height)
+
+
+def _option_top(
+    *,
+    scene_bbox: Sequence[float],
+    panel_height: float,
+    params: NonogramRenderParams,
+) -> float:
+    """Place option panels close to the clue grid without clipping the canvas."""
+
+    latest_top = float(params.canvas_height) - float(panel_height) - _OPTION_BOTTOM_MARGIN_PX
+    min_top = float(scene_bbox[3]) + _OPTION_TO_GRID_GAP_PX
+    if float(min_top) <= float(latest_top):
+        return float(min_top)
+    return float(latest_top)
+
+
+def _resolve_layout_params(
+    *,
+    mode: str,
+    rows: int,
+    cols: int,
+    option_count: int,
+    params: NonogramRenderParams,
+) -> NonogramRenderParams:
+    """Use one cell size for the main grid and MCQ cells while preserving fit."""
+
+    desired = float(params.cell_size_px)
+    width_cap = desired
+    if int(option_count) > 0:
+        available_width = (
+            float(params.canvas_width)
+            - (2.0 * _OPTION_SIDE_MARGIN_PX)
+            - (max(0, int(option_count) - 1) * float(params.option_gap_px))
+        )
+        width_cap = (
+            (available_width / float(option_count)) - _OPTION_PANEL_X_PADDING_PX
+        ) / max(1.0, float(cols))
+
+    main_static_height = float(params.margin_top_px + params.top_clue_height_px)
+    if int(option_count) <= 0:
+        height_cap = desired
+    elif str(mode) == "candidate_solution":
+        option_static_height = _OPTION_PANEL_LABEL_AREA_PX + _OPTION_PANEL_BOTTOM_PADDING_PX
+        height_cap = (
+            float(params.canvas_height)
+            - main_static_height
+            - _OPTION_TO_GRID_GAP_PX
+            - _OPTION_BOTTOM_MARGIN_PX
+            - option_static_height
+        ) / max(1.0, float(rows * 2))
+    else:
+        variable_height_cap = (
+            float(params.canvas_height)
+            - main_static_height
+            - _OPTION_TO_GRID_GAP_PX
+            - _OPTION_BOTTOM_MARGIN_PX
+            - _OPTION_PANEL_LABEL_AREA_PX
+            - _OPTION_PANEL_BOTTOM_PADDING_PX
+        ) / max(1.0, float(rows + 1))
+        fixed_panel_cap = (
+            float(params.canvas_height)
+            - main_static_height
+            - _OPTION_TO_GRID_GAP_PX
+            - _OPTION_BOTTOM_MARGIN_PX
+            - float(params.option_panel_height_px)
+        ) / max(1.0, float(rows))
+        height_cap = min(float(variable_height_cap), float(fixed_panel_cap))
+
+    resolved_cell_size = max(18, int(min(desired, width_cap, height_cap)))
+    if int(resolved_cell_size) == int(params.cell_size_px):
+        return params
+    return replace(params, cell_size_px=int(resolved_cell_size))
 
 
 def _draw_line_option(
@@ -388,10 +495,20 @@ def _draw_line_option(
         params=params,
         palette=palette,
     )
-    cell_size = min(20.0, max(12.0, (float(right - left) - 28.0) / max(1, len(line))))
+    grid_area_left = float(left + 14.0)
+    grid_area_right = float(right - 14.0)
+    grid_area_top = float(top + _OPTION_PANEL_LABEL_AREA_PX)
+    grid_area_bottom = float(bottom - _OPTION_PANEL_BOTTOM_PADDING_PX)
+    available_width = max(1.0, float(grid_area_right - grid_area_left))
+    available_height = max(1.0, float(grid_area_bottom - grid_area_top))
+    cell_size = min(
+        float(params.cell_size_px),
+        available_width / max(1, len(line)),
+        available_height,
+    )
     strip_width = float(len(line)) * float(cell_size)
-    strip_left = float((left + right - strip_width) / 2.0)
-    strip_top = float(top + 50.0)
+    strip_left = float(grid_area_left + ((available_width - strip_width) / 2.0))
+    strip_top = float(grid_area_top + ((available_height - cell_size) / 2.0))
     for index, value in enumerate(line):
         cell_bbox = _bbox(
             strip_left + (index * cell_size),
@@ -437,20 +554,21 @@ def _draw_candidate_option(
         params=params,
         palette=palette,
     )
+    grid_area_left = float(left + 14.0)
+    grid_area_right = float(right - 14.0)
+    grid_area_top = float(top + 42.0)
+    grid_area_bottom = float(bottom - 10.0)
+    available_width = max(1.0, float(grid_area_right - grid_area_left))
+    available_height = max(1.0, float(grid_area_bottom - grid_area_top))
     cell_size = min(
-        15.0,
-        max(
-            9.0,
-            min(
-                (float(right - left) - 28.0) / max(1, cols),
-                (float(bottom - top) - 48.0) / max(1, rows),
-            ),
-        ),
+        float(params.cell_size_px),
+        available_width / max(1, cols),
+        available_height / max(1, rows),
     )
     grid_width = float(cols) * float(cell_size)
     grid_height = float(rows) * float(cell_size)
-    grid_left = float((left + right - grid_width) / 2.0)
-    grid_top = float(top + 40.0 + ((float(bottom - top) - 48.0 - grid_height) / 2.0))
+    grid_left = float(grid_area_left + ((available_width - grid_width) / 2.0))
+    grid_top = float(grid_area_top + ((available_height - grid_height) / 2.0))
     for row_index, row in enumerate(grid):
         for col_index, value in enumerate(row):
             cell_bbox = _bbox(
@@ -489,6 +607,14 @@ def render_nonogram_scene(
     if not display_grid or not display_grid[0]:
         raise ValueError("nonogram scene requires a non-empty grid")
     draw = ImageDraw.Draw(image)
+    option_count = len(list(option_specs or []))
+    render_params = _resolve_layout_params(
+        mode=str(mode),
+        rows=int(len(display_grid)),
+        cols=int(len(display_grid[0])),
+        option_count=int(option_count),
+        params=render_params,
+    )
     palette = _variant_palette(str(scene_variant), scene_style=scene_style)
     cell_bboxes, clue_bboxes, scene_bbox, line_bbox = _draw_main_nonogram(
         draw,
@@ -568,7 +694,24 @@ def render_nonogram_scene(
 
     options = list(option_specs or [])
     if options:
-        indexed_bboxes = _option_panel_bboxes(len(options), render_params)
+        panel_width, panel_height = _option_panel_size(
+            mode=str(mode),
+            rows=int(len(display_grid)),
+            cols=int(len(display_grid[0])),
+            params=render_params,
+        )
+        option_top = _option_top(
+            scene_bbox=scene_bbox,
+            panel_height=float(panel_height),
+            params=render_params,
+        )
+        indexed_bboxes = _option_panel_bboxes(
+            len(options),
+            render_params,
+            panel_width=float(panel_width),
+            panel_height=float(panel_height),
+            option_top=float(option_top),
+        )
         for option_index, option in enumerate(options):
             label = str(option.get("option_label", ""))
             panel_id = str(option.get("option_panel_id", f"option_{label}"))

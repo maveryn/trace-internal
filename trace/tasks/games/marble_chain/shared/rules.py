@@ -62,6 +62,38 @@ def all_outcomes(chain_colors: Sequence[str], *, shooter_color: str) -> Dict[int
     }
 
 
+def closure_pair_indices(chain_colors: Sequence[str], outcome: MarbleOutcome) -> Tuple[int, ...]:
+    """Return original chain indices that touch after this pop closes the gap."""
+
+    chain = tuple(str(color) for color in chain_colors)
+    if int(outcome.pop_count) <= 0 or not outcome.popped_indices:
+        return ()
+    left_index = int(min(outcome.popped_indices)) - 1
+    right_index = int(max(outcome.popped_indices)) + 1
+    if left_index < 0 or right_index >= len(chain):
+        return ()
+    return (int(left_index), int(right_index))
+
+
+def closure_pair_color(chain_colors: Sequence[str], outcome: MarbleOutcome) -> str | None:
+    """Return the shared color when the closure boundary creates a color match."""
+
+    pair = closure_pair_indices(chain_colors, outcome)
+    if len(pair) != 2:
+        return None
+    left_color = str(chain_colors[int(pair[0])])
+    right_color = str(chain_colors[int(pair[1])])
+    if left_color != right_color:
+        return None
+    return left_color
+
+
+def closure_creates_same_color_match(chain_colors: Sequence[str], outcome: MarbleOutcome) -> bool:
+    """Return whether the immediate closure leaves two same-color marbles touching."""
+
+    return closure_pair_color(chain_colors, outcome) is not None
+
+
 def insertion_point_annotation_ids(slot_entity_id: str) -> Tuple[str, ...]:
     """Return the single shot-gap entity id used by direction-label tasks."""
 
@@ -76,6 +108,9 @@ def popped_marble_annotation_ids(outcome: MarbleOutcome) -> Tuple[str, ...]:
 
 __all__ = [
     "all_outcomes",
+    "closure_creates_same_color_match",
+    "closure_pair_color",
+    "closure_pair_indices",
     "compute_outcome",
     "insertion_point_annotation_ids",
     "marble_entity_id",

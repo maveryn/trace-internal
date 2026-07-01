@@ -252,6 +252,8 @@ def _trace_payload(
             "category_labels": [str(item.label) for item in dataset.items],
             "render_meta": dict(rendered_scene.render_meta),
             "font_assets": font_assets_payload(chart_font_family=rendered.chart_font_family),
+            "background_style": dict(rendered.background_meta),
+            "information_scene_style": dict(rendered.background_meta.get("information_scene_style", {})),
             "post_image_noise": dict(rendered.post_noise_meta),
         },
         "render_map": {

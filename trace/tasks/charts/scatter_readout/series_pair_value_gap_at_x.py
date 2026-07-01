@@ -20,7 +20,7 @@ PROMPT_QUERY_KEY = "series_pair_value_gap_at_x"
 QUESTION_FORMAT = "scatter_series_readout_query"
 PROGRAM_CODE = (
     "abs(value(series_a,x_label)-value(series_b,x_label)); "
-    "output=integer_value; annotation=bbox_map(target_point_readout,comparison_point_readout,x_axis_label); "
+    "output=integer_value; annotation=segment(series_a_mark,series_b_mark); "
     "scene=scatter_readout; scope=series_pair_value_gap_at_x"
 )
 QUERY_IDS = (SINGLE_QUERY_ID,)
@@ -44,6 +44,7 @@ def _build_pair_gap_plan(
         prompt_query_key=PROMPT_QUERY_KEY,
         question_format=QUESTION_FORMAT,
         program_code=PROGRAM_CODE,
+        annotation_kind="target_comparison_segment",
         operation="absolute_difference",
         reasoning_load=REASONING_LOAD,
         answer_fn=lambda target, comparison: abs(int(target.y_value) - int(comparison.y_value)),

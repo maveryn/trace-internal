@@ -32,8 +32,6 @@ UPWARD_QUERY_ID = "cross_panel_upward_threshold_earliest_label"
 DOWNWARD_QUERY_ID = "cross_panel_downward_threshold_earliest_label"
 QUERY_DIRECTIONS = {UPWARD_QUERY_ID: "upward", DOWNWARD_QUERY_ID: "downward"}
 TASK_PARAM_DEFAULTS: dict[str, Any] = {
-    "panel_count_min": 4,
-    "panel_count_max": 8,
     "method_count_min": 3,
     "method_count_max": 5,
     "x_tick_count_min": 6,
@@ -198,6 +196,7 @@ class ChartsScientificCrossPanelThresholdEarliestLabelTask:
             },
             instance_seed=int(instance_seed),
             threshold_crossings=tuple(crossings),
+            annotation_type="point",
         )
 
     def generate(

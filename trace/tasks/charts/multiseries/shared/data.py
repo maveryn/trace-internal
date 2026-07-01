@@ -6,12 +6,14 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from .....core.seed import spawn_rng
 from ....shared.config_defaults import group_default
-from ...shared.labeled_chart_common import (
+from ...shared.label_assets import sample_chart_labels
+from ...shared.labeled_chart_values import (
     balanced_choice_from_values,
     resolve_value_bounds,
-    sample_chart_labels,
-    sample_composition_with_sum,
     sorted_labels,
+)
+from ...shared.labeled_chart_composition import (
+    sample_composition_with_sum,
 )
 from .defaults import resolve_category_count_bounds, resolve_series_count_bounds
 from .sampling import _sample_distinct_values, sample_series_labels

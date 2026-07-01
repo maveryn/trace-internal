@@ -164,7 +164,8 @@ def _draw_path_underlay(
     """Draw the route scaffold and endpoint labels before path-stop icons."""
 
     draw = ImageDraw.Draw(image)
-    path_color = tuple(int(value) for value in render_params["path_color_rgb"]) + (230,)
+    path_alpha = max(0, min(255, int(render_params.get("path_line_alpha", 145))))
+    path_color = tuple(int(value) for value in render_params["path_color_rgb"]) + (path_alpha,)
     draw.line(
         [(float(x), float(y)) for x, y in points],
         fill=path_color,

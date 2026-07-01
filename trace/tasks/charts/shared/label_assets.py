@@ -8,6 +8,7 @@ from datetime import date, timedelta
 from functools import lru_cache
 from typing import Any, Mapping, Sequence, Tuple
 
+from ....core.seed import spawn_rng
 from ....core.sampling import normalize_positive_weights, weighted_choice
 from ...shared.labeling import LABEL_POOL_SAFE_UPPER, assign_random_shuffled_labels
 from ...shared.name_assets import load_label_manifest
@@ -1100,6 +1101,25 @@ def resolve_chart_entity_labels(
     )
 
 
+def sample_chart_labels(
+    *,
+    count: int,
+    instance_seed: int,
+    namespace: str = "charts.labels",
+    max_chars: int = 4,
+) -> Tuple[str, ...]:
+    """Sample one randomized short label list for chart marks."""
+
+    label_rng = spawn_rng(int(instance_seed), str(namespace))
+    resolved = resolve_chart_axis_labels(
+        label_rng,
+        count=int(count),
+        min_chars=2,
+        max_chars=int(max_chars),
+    )
+    return tuple(str(label) for label in resolved.labels)
+
+
 __all__ = [
     "CHART_ALL_LABEL_BUCKET_MANIFESTS",
     "CHART_CATEGORY_LABEL_BUCKET_MANIFESTS",
@@ -1125,5 +1145,6 @@ __all__ = [
     "resolve_chart_entity_labels",
     "resolve_chart_panel_labels",
     "resolve_chart_text_labels",
+    "sample_chart_labels",
     "validate_chart_label_namespaces",
 ]

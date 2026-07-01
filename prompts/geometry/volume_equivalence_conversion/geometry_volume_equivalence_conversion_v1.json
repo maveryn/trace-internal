@@ -109,11 +109,11 @@
       "object_description": "source and target solid diagrams with visible dimensions or equal-volume target options"
     },
     "task:missing_dimension_value_query": {
-      "annotation_hint": "set \"annotation\" to a JSON object with pixel boxes for source_solid_bbox, target_solid_bbox, source_dimension_region_bbox, target_dimension_region_bbox, and target_unknown_region_bbox",
+      "annotation_hint": "set \"annotation\" to a JSON object with pixel boxes for source_solid_bbox and target_solid_bbox",
       "answer_hint": "set \"answer\" to the requested missing dimension as an integer"
     },
     "task:equal_volume_option_label_query": {
-      "annotation_hint": "set \"annotation\" to a JSON object with pixel boxes for source_solid_bbox, source_dimension_region_bbox, selected_option_bbox, and selected_option_dimension_region_bbox",
+      "annotation_hint": "set \"annotation\" to [x0, y0, x1, y1] around the selected option card",
       "answer_hint": "set \"answer\" to the selected option label as a capital letter shown in the image"
     },
     "output:answer_only": {

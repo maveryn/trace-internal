@@ -238,6 +238,10 @@ def maze_render_map(*, rendered_scene: Any, render_params: Any, annotation_sourc
                 str(key): [round(float(value), 3) for value in bbox]
                 for key, bbox in rendered_scene.item_bbox_map.items()
             },
+            "item_points_px": {
+                str(key): [round(float(value), 3) for value in point]
+                for key, point in rendered_scene.item_point_map.items()
+            },
             "cell_bboxes_px": {
                 str(key): [round(float(value), 3) for value in bbox]
                 for key, bbox in rendered_scene.cell_bbox_map.items()
@@ -270,7 +274,13 @@ def build_maze_task_output(
     scene_variant = str(visual["scene_variant"])
     supporting_item_ids = [str(value) for value in dataset["supporting_item_ids"]]
     target_reachability = dataset.get("target_reachability")
-    annotation_source = "item_bboxes_px"
+    annotation_type = str(annotation_gt.type)
+    if annotation_type in {"point", "point_set"}:
+        annotation_source = "item_points_px"
+    elif annotation_type == "segment":
+        annotation_source = "cell_bboxes_px"
+    else:
+        annotation_source = "item_bboxes_px"
     query_spec = build_prompt_query_spec(
         prompt_artifacts=prompt_artifacts,
         query_id=str(public_query_id),

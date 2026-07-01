@@ -17,7 +17,7 @@ generation:
       - 90
       - 180
       - 270
-    task_icons__paired_canvas__panel_attribute_change_count:
+    task_icons__paired_canvas__color_change_count:
       object_count_min: 5
       object_count_max: 10
       distractor_count_min: 2
@@ -28,40 +28,17 @@ generation:
       - 90
       - 180
       - 270
-    task_icons__paired_canvas__panel_movement_direction_count:
+    task_icons__paired_canvas__rotation_change_count:
       object_count_min: 5
       object_count_max: 10
       distractor_count_min: 2
-      movement_delta_min: 0.22
-      movement_delta_max: 0.34
+      size_scale_small: 0.74
+      size_scale_large: 1.18
       rotation_candidates_degrees:
       - 0
       - 90
       - 180
       - 270
-    task_icons__paired_canvas__original_attribute_label:
-      tracked_count: 6
-      distractor_count_min: 4
-      distractor_count_max: 8
-      named_color_support:
-      - red
-      - blue
-      - green
-      - yellow
-      - orange
-      - purple
-      - brown
-      - cyan
-      - magenta
-      - maroon
-      named_icon_fill_style_support:
-      - solid
-      - striped
-      - dotted
-      named_icon_fill_style_weights:
-        solid: 0.55
-        striped: 0.15
-        dotted: 0.15
 rendering:
   shared:
     canvas_width: 1104
@@ -184,31 +161,7 @@ rendering:
         alpha:
         - 0.03
         - 0.08
-  task_overrides:
-    task_icons__paired_canvas__original_attribute_label:
-      canvas_width: 1120
-      canvas_height: 640
-      scene_icon_size_min_px: 48
-      scene_icon_size_max_px: 72
-      scene_max_overlap_fraction: 0.0
-      scene_placement_max_attempts: 420
-      icon_collision_gap_px: 8
-      paired_position_jitter_px: 14
-      candidate_label_font_size_px: 24
-      candidate_label_padding_px: 5
-      candidate_label_gap_px: 6
-      candidate_label_color_rgb:
-      - 52
-      - 60
-      - 77
-      candidate_label_background_rgb:
-      - 255
-      - 255
-      - 255
-      candidate_label_border_rgb:
-      - 172
-      - 183
-      - 204
+  task_overrides: {}
 prompt:
   shared:
     bundle_id: icons_paired_canvas_v0
@@ -227,12 +180,21 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"annotation":[[620,156,684,220],[834,338,902,406]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-    task_icons__paired_canvas__panel_attribute_change_count:
+    task_icons__paired_canvas__color_change_count:
       scene_key: paired_canvas_attribute_change
       object_description: two icon panels labeled Left and Right with corresponding
         icons at matching positions
       question_text_color_changed_count: How many Right-panel icons changed color
         compared with the corresponding icon in the Left panel?
+      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes
+        in image pixel coordinates for every counted Right-panel icon
+      answer_hint: set "answer" to the count as an integer
+      json_example: '{"annotation":[[620,156,684,220],[834,338,902,406]],"answer":2}'
+      json_example_answer_only: '{"answer":2}'
+    task_icons__paired_canvas__rotation_change_count:
+      scene_key: paired_canvas_attribute_change
+      object_description: two icon panels labeled Left and Right with corresponding
+        icons at matching positions
       question_text_rotation_changed_count: How many Right-panel icons changed rotation
         compared with the corresponding icon in the Left panel?
       annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes
@@ -240,34 +202,3 @@ prompt:
       answer_hint: set "answer" to the count as an integer
       json_example: '{"annotation":[[620,156,684,220],[834,338,902,406]],"answer":2}'
       json_example_answer_only: '{"answer":2}'
-    task_icons__paired_canvas__panel_movement_direction_count:
-      scene_key: paired_canvas_movement_direction
-      object_description: two icon panels labeled Left and Right with the same icons
-        in changed positions
-      question_text_moved_left_count: How many icons moved left from the Left panel
-        to the Right panel?
-      question_text_moved_right_count: How many icons moved right from the Left panel
-        to the Right panel?
-      question_text_moved_up_count: How many icons moved up from the Left panel to
-        the Right panel?
-      question_text_moved_down_count: How many icons moved down from the Left panel
-        to the Right panel?
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] boxes
-        in image pixel coordinates for every counted Right-panel icon
-      answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[620,156,684,220],[834,338,902,406]],"answer":2}'
-      json_example_answer_only: '{"answer":2}'
-    task_icons__paired_canvas__original_attribute_label:
-      scene_key: paired_canvas_original_attribute
-      object_description: two icon panels labeled Original and Right; the Right panel
-        contains six option icons labeled A-F and other icons
-      question_text_original_shape_label: Which labeled icon in the Right panel was
-        originally a {target_description} icon in the Original panel?
-      question_text_original_color_shape_label: Which labeled icon in the Right panel
-        was originally a {target_description} icon in the Original panel?
-      annotation_hint: set "annotation" to a JSON object with keys "original_icon"
-        and "right_icon"; values are [x0, y0, x1, y1] pixel boxes for the matched
-        icons
-      answer_hint: set "answer" to the selected Right-panel option letter as a string
-      json_example: '{"annotation":{"original_icon":[168,210,224,266],"right_icon":[716,214,772,270]},"answer":"C"}'
-      json_example_answer_only: '{"answer":"C"}'

@@ -7,7 +7,8 @@ from typing import Any
 
 from PIL import Image, ImageDraw
 
-from trace.core.seed import spawn_rng
+from trace.tasks.charts.shared.cartesian.frame import plot_bbox_from_margins
+from trace.tasks.charts.shared.cartesian.geometry import project_linear, round_bbox
 from trace.tasks.shared.bbox_projection import bbox_union_raw
 from trace.tasks.shared.font_assets import font_asset_version
 from trace.tasks.shared.render_variation import apply_layout_jitter_to_margins
@@ -23,7 +24,7 @@ from trace.tasks.charts.dumbbell.shared.state import DumbbellDataset, DumbbellRe
 
 
 def _bbox(values: Sequence[float]) -> list[float]:
-    return [round(float(value), 3) for value in values]
+    return round_bbox(values)
 
 
 def resolve_dumbbell_render_params(params: Mapping[str, Any], *, instance_seed: int) -> DumbbellRenderParams:
@@ -121,15 +122,6 @@ def _draw_centered_text(
     return _bbox([x, y, x + width, y + height])
 
 
-_TITLE_OPTIONS: tuple[tuple[str, str], ...] = (
-    ("Paired Dot Comparison", "Horizontal positions encode values; each row compares the two legend series."),
-    ("Series Gap Review", "Each connector shows the distance between paired values on one row."),
-    ("Matched Value Scan", "Two colored dots share a row label and use the same horizontal axis."),
-    ("Pairwise Difference Board", "Read each row by comparing the two dot positions against the shared scale."),
-    ("Dumbbell Summary", "The gray segment links the two series values for each category row."),
-)
-
-
 def render_dumbbell_chart(
     background: Image.Image,
     *,
@@ -146,41 +138,25 @@ def render_dumbbell_chart(
     right = float(width - int(render_params.plot_margin_right_px))
     top = float(render_params.plot_margin_top_px)
     bottom = float(height - int(render_params.plot_margin_bottom_px))
-    plot_bbox = _bbox([left, top, right, bottom])
+    plot_bbox = plot_bbox_from_margins(
+        canvas_width=float(width),
+        canvas_height=float(height),
+        margin_left_px=float(render_params.plot_margin_left_px),
+        margin_right_px=float(render_params.plot_margin_right_px),
+        margin_top_px=float(render_params.plot_margin_top_px),
+        margin_bottom_px=float(render_params.plot_margin_bottom_px),
+    )
     panel_margin = 34
     panel_bbox = [panel_margin, 36, width - panel_margin, height - 42]
     draw.rounded_rectangle(panel_bbox, radius=8, fill=render_params.panel_fill_rgb, outline=render_params.panel_border_rgb, width=1)
     draw.rectangle([left, top, right, bottom], fill=render_params.plot_fill_rgb)
 
-    title_font = load_font(render_params.title_font_size_px, bold=True, font_family=render_params.font_family)
-    subtitle_font = load_font(render_params.subtitle_font_size_px, bold=False, font_family=render_params.font_family)
     label_font = load_font(render_params.label_font_size_px, bold=True, font_family=render_params.font_family)
     tick_font = load_font(render_params.tick_font_size_px, bold=False, font_family=render_params.font_family)
     legend_font = load_font(render_params.legend_font_size_px, bold=True, font_family=render_params.font_family)
 
-    header_rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.header_text")
-    title_text, subtitle_text = _TITLE_OPTIONS[int(header_rng.randrange(len(_TITLE_OPTIONS)))]
-    draw_text_traced(
-        draw,
-        (panel_margin + 22, 48),
-        title_text,
-        font=title_font,
-        fill=render_params.text_color_rgb,
-        role="readout",
-        required=False,
-    )
-    draw_text_traced(
-        draw,
-        (panel_margin + 24, 82),
-        subtitle_text,
-        font=subtitle_font,
-        fill=render_params.muted_text_rgb,
-        role="readout",
-        required=False,
-    )
-
     def x_px(value: float) -> float:
-        return left + ((float(value) / 100.0) * (right - left))
+        return project_linear(float(value), domain_min=0.0, domain_max=100.0, pixel_min=left, pixel_max=right)
 
     tick_values = [0, 20, 40, 60, 80, 100]
     for value in tick_values:

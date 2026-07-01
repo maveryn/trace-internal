@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from .rules import (
     expanded_item_count,
@@ -16,7 +16,7 @@ from .rules import (
     unique_equivalent_counts,
     unique_target_values,
 )
-from .sampling import object_specs_for_labels
+from .sampling import BALANCE_OBJECT_TYPES, object_specs_for_labels
 from .state import (
     EQUIVALENT_COUNT_ROW_KIND,
     MISSING_WEIGHT_ROW_KIND,
@@ -334,10 +334,10 @@ def _object_specs(
 ) -> Dict[str, Dict[str, Any]]:
     """Assign visual object specs to the three unknown labels."""
 
-    object_type_offset = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.object_type_offset",
+    _ = params
+    rng = spawn_rng(int(instance_seed), f"{namespace}.object_type_offset")
+    object_type_offset = int(
+        rng.randrange(len(tuple(BALANCE_OBJECT_TYPES)))
     )
     return object_specs_for_labels(UNKNOWN_LABELS, offset=int(object_type_offset))
 
@@ -357,12 +357,12 @@ def build_missing_weight_dataset(
     """Construct guided balanced scales that determine one object value."""
 
     rng = spawn_rng(int(instance_seed), f"{namespace}.dataset")
-    target_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.target_label",
-    ) % len(UNKNOWN_LABELS)
-    target_label = str(UNKNOWN_LABELS[int(target_index)])
+    target_label = str(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{namespace}.target_label"),
+            UNKNOWN_LABELS,
+        )
+    )
     max_numeric_value = int(gen_defaults.get("numeric_weight_max", 80))
     support_values = [int(value) for value in answer_support]
     object_specs = _object_specs(int(instance_seed), params, str(namespace))
@@ -424,16 +424,19 @@ def build_equivalent_count_dataset(
     """Construct guided balanced scales implying A equals N copies of B."""
 
     rng = spawn_rng(int(instance_seed), f"{namespace}.dataset")
-    source_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.source_label",
-    ) % len(UNKNOWN_LABELS)
-    repeated_index = (
-        int(source_index) + 1 + int(rng.randrange(len(UNKNOWN_LABELS) - 1))
-    ) % len(UNKNOWN_LABELS)
-    source_label = str(UNKNOWN_LABELS[int(source_index)])
-    repeated_label = str(UNKNOWN_LABELS[int(repeated_index)])
+    source_label = str(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{namespace}.source_label"),
+            UNKNOWN_LABELS,
+        )
+    )
+    repeated_support = tuple(label for label in UNKNOWN_LABELS if label != source_label)
+    repeated_label = str(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{namespace}.repeated_label"),
+            repeated_support,
+        )
+    )
     max_numeric_value = int(gen_defaults.get("numeric_weight_max", 80))
     repeated_weight_max = int(gen_defaults.get("repeated_object_weight_max", 10))
     object_weight_support_max = int(gen_defaults.get("object_weight_support_max", 24))

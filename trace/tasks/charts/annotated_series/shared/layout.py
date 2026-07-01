@@ -23,20 +23,40 @@ def context_params(params: Mapping[str, Any]) -> dict[str, Any]:
     return resolved
 
 
+def context_profile(params: Mapping[str, Any]) -> str:
+    raw_profile = rendering_value(params, "chart_context_profile", rendering_value(params, "context_text_profile", "report_paragraph"))
+    normalized = str(raw_profile).strip().casefold().replace("-", "_").replace(" ", "_")
+    if normalized in {"dense", "clean_minimal", "clean_minimal_only", "dense_clean_minimal"}:
+        return "dense_clean_minimal"
+    return "report_paragraph"
+
+
 def choose_context_mode(*, params: Mapping[str, Any], instance_seed: int) -> str:
     if not bool(rendering_value(params, "context_text_enabled", False)):
         return "clean"
-    supported = ("clean", "light_context", "right_sidebar", "bottom_band")
+    supported = ("clean", "minimal", "paragraph_box")
+    explicit_mode = rendering_value(params, "chart_context_mode", rendering_value(params, "context_text_mode", None))
+    if explicit_mode is not None:
+        normalized = _normalize_context_mode(str(explicit_mode))
+        if normalized not in set(supported):
+            raise ValueError(f"unsupported annotated-series chart context mode: {explicit_mode!r}")
+        return str(normalized)
     raw_weights = rendering_value(
         params,
-        "context_text_mode_weights",
-        {"clean": 0.5, "light_context": 0.3, "right_sidebar": 0.1, "bottom_band": 0.1},
+        "chart_context_mode_weights",
+        rendering_value(params, "context_text_mode_weights", {"clean": 0.3, "minimal": 0.4, "paragraph_box": 0.3}),
     )
     if not isinstance(raw_weights, Mapping):
         raw_weights = {"clean": 1.0}
+    normalized_weights: dict[str, float] = {key: 0.0 for key in supported}
+    for raw_mode, raw_weight in raw_weights.items():
+        mode = _normalize_context_mode(str(raw_mode))
+        if mode not in normalized_weights:
+            continue
+        normalized_weights[str(mode)] += max(0.0, float(raw_weight))
     weights: list[tuple[str, float]] = []
     for mode in supported:
-        weight = max(0.0, float(raw_weights.get(str(mode), 0.0)))
+        weight = max(0.0, float(normalized_weights.get(str(mode), 0.0)))
         if weight > 0.0:
             weights.append((str(mode), float(weight)))
     if not weights:
@@ -49,6 +69,15 @@ def choose_context_mode(*, params: Mapping[str, Any], instance_seed: int) -> str
         if cursor <= running:
             return str(mode)
     return str(weights[-1][0])
+
+
+def _normalize_context_mode(value: str) -> str:
+    normalized = str(value).strip().casefold().replace("-", "_").replace(" ", "_")
+    if normalized in {"light", "light_context"}:
+        return "minimal"
+    if normalized in {"large", "large_distractor", "paragraph", "right_sidebar", "left_sidebar", "bottom_band", "sidebar"}:
+        return "paragraph_box"
+    return str(normalized)
 
 
 def resolve_context_layout(
@@ -65,37 +94,39 @@ def resolve_context_layout(
     """
     mode = choose_context_mode(params=params, instance_seed=int(instance_seed))
     resolved_context_params = context_params(params)
+    profile = context_profile(params)
     top_reserved = int(resolved_context_params.get("context_text_top_reserved_px", 64))
     bottom_reserved = int(resolved_context_params.get("context_text_bottom_reserved_px", 28))
     if str(mode) == "clean":
         return {
             "enabled": False,
             "mode": "clean",
-            "layout_mode": "clean",
+            "layout_mode": "chart_context:clean",
             "placement": "none",
+            "context_profile": str(profile),
             "context_params": resolved_context_params,
             "top_reserved_px": int(top_reserved),
             "bottom_reserved_px": int(bottom_reserved),
         }
-    if str(mode) == "light_context":
+    if str(mode) == "minimal":
         return {
             "enabled": True,
-            "mode": "light_context",
-            "layout_mode": "light_context",
+            "mode": "minimal",
+            "layout_mode": "chart_context:minimal",
             "placement": "top_bottom_notes",
             "box_count": 0,
+            "context_profile": str(profile),
             "context_params": resolved_context_params,
             "top_reserved_px": int(top_reserved),
             "bottom_reserved_px": int(bottom_reserved),
         }
-    placement = "right_sidebar" if str(mode) == "right_sidebar" else "bottom_band"
     layout = resolve_dashboard_context_layout(
         instance_seed=int(instance_seed),
         namespace=f"{SCENE_NAMESPACE}.context",
         params={
             **resolved_context_params,
             "context_text_enabled": True,
-            "context_text_placement": str(placement),
+            "context_text_layout_mode": "chart_context:paragraph_box",
         },
         canvas_width=int(canvas_width),
         canvas_height=int(canvas_height),
@@ -107,7 +138,9 @@ def resolve_context_layout(
     return {
         **dict(layout),
         "enabled": True,
-        "mode": str(mode),
+        "mode": "paragraph_box",
+        "layout_mode": "chart_context:paragraph_box",
+        "context_profile": str(profile),
         "context_params": resolved_context_params,
     }
 
@@ -145,5 +178,6 @@ __all__ = [
     "apply_context_margin_overrides",
     "choose_context_mode",
     "context_params",
+    "context_profile",
     "resolve_context_layout",
 ]

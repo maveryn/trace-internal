@@ -4,19 +4,16 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
-from trace.tasks.charts.shared.chart_scene import render_violin_scene
-from trace.tasks.charts.shared.distribution_chart_common import (
-    resolve_chart_mark_colors,
-    resolve_chart_render_params_for_task,
-)
+from trace.tasks.charts.shared.chart_scene_violin import render_violin_scene
+from trace.tasks.charts.shared.labeled_chart_marks import resolve_chart_mark_colors
+from trace.tasks.charts.shared.labeled_chart_render_params import resolve_chart_render_params_for_task
 from trace.tasks.charts.shared.visual_defaults import (
     chart_font_asset_metadata,
     sample_chart_font_family,
 )
 from trace.tasks.charts.violin.shared.defaults import (
-    POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
     RENDERING_DEFAULTS,
     RENDER_FALLBACKS,
@@ -61,12 +58,17 @@ def render_violin_dataset(
         defaults=RENDER_FALLBACKS,
         instance_seed=int(instance_seed),
     )
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    protected_colors = tuple(
+        tuple(int(channel) for channel in mark_style[key])
+        for key in ("mark_fill_rgb", "mark_outline_rgb")
+        if key in mark_style
+    )
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="violin",
+        render_params=render_params,
+        protected_colors=protected_colors,
     )
     chart_font_family = sample_chart_font_family(
         instance_seed=int(instance_seed),
@@ -89,7 +91,7 @@ def render_violin_dataset(
         image=image,
         rendered_scene=rendered_scene,
         render_params=render_params,
-        background_style=dict(background_meta),
+        background_style={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         post_image_noise=dict(post_noise_meta),
         chart_font_family=str(chart_font_family),
         mark_style=dict(mark_style),
@@ -108,6 +110,7 @@ def render_spec_from_artifacts(artifacts: ViolinRenderArtifacts) -> dict[str, An
         "coord_space": "pixel",
         "scene_variant": SCENE_VARIANT,
         "background_style": dict(artifacts.background_style),
+        "information_scene_style": dict(artifacts.background_style["information_scene_style"]),
         "post_image_noise": dict(artifacts.post_image_noise),
         "font_assets": chart_font_asset_metadata(str(artifacts.chart_font_family)),
         "layout_jitter": dict(render_params.layout_jitter_meta or {}),

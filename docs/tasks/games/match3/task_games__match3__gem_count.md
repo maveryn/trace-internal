@@ -9,7 +9,15 @@
 6. Annotation schema: `bbox_set`
 
 ## Program Contract
-`count.scoped_attribute(candidate_set=gems, scope=grid|row|column, attribute=color_name=target_color); scene=match3; scope=gem_count`
+
+Program: `count.scoped_attribute(candidate_set=gems, scope=grid|row|column, attribute=color_name=target_color); scene=match3; scope=gem_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `grid|row|column` objective scope.
+Operands: visible scene state and prompt-bound operands named by `candidate_set`, `gems`, `grid`, `row`, `column`, `attribute`, `color_name`, `target_color`, `match3`, `gem_count` plus the active `query_id` branch.
+Operation: evaluate `count.scoped_attribute` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `grid_color_gem_count`, `row_color_gem_count`, `column_color_gem_count`.
 
 ## Generation Notes
 1. Gem colors are sampled from the repo-wide canonical named-color palette.

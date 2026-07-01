@@ -10,18 +10,23 @@
 1. Entities/relations:
 2. Supported `query_id` values:
 3. `answer_gt.type`:
-4. Default `annotation_gt.type`:
-5. Alternate annotation forms:
-6. Annotation witness policy:
-   - minimal object/primitive witnesses:
+4. Answer precision/format, if narrower than the registered answer type:
+5. Default `annotation_gt.type`:
+6. Alternate annotation forms:
+7. Annotation witness policy:
+   - task family for annotation review (`direct_visible_answer`, `derived_visual_value`, or `diagram_primitives`):
+   - minimal visual answer-verification witnesses:
+   - derivation/proof details kept in trace metadata:
    - annotation shape choice (`point`, `bbox`, `segment`, `point_set`, `bbox_set`, `segment_set`,
-     `keyed_point_map`, `keyed_bbox_map`, etc.):
-   - keyed annotation role names, if used:
+     `point_map`, `bbox_map`, etc.):
+     Use `segment` for exactly one visual line/edge/path witness and
+     `segment_set` for multiple unordered line/edge/path witnesses.
+   - map annotation role names, if used:
    - numeric/readout annotation handling:
    - answer-option annotation policy (only allowed for complete visual
      option-image/panel tasks with a source/reference/original image or
      region; otherwise ground source/candidate objects or primitives):
-7. Overlap/touch policy (if applicable):
+8. Overlap/touch policy (if applicable):
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`:

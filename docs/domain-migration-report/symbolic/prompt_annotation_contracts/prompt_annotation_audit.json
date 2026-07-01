@@ -1,0 +1,4264 @@
+{
+  "config": {
+    "default_only": true,
+    "max_attempts": 200,
+    "max_total_samples_per_task": 1024,
+    "samples_per_query_id": 1,
+    "seed": 20260504,
+    "task_timeout_seconds": 240,
+    "tasks": [
+      "task_symbolic__abacus__displayed_value_readout",
+      "task_symbolic__abacus__target_value_match_label",
+      "task_symbolic__agent_automaton__agent_final_pose_label",
+      "task_symbolic__agent_automaton__future_grid_label",
+      "task_symbolic__braille_cell__braille_word_read_label",
+      "task_symbolic__braille_cell__matching_pattern_label",
+      "task_symbolic__braille_cell__word_braille_match_label",
+      "task_symbolic__clock__elapsed_time_value",
+      "task_symbolic__clock__equivalent_time_label",
+      "task_symbolic__clock__hand_angle_value",
+      "task_symbolic__clock__offset_readout",
+      "task_symbolic__clock__sequence_completion_label",
+      "task_symbolic__clock__time_extremum_label",
+      "task_symbolic__dice__dice_conditional_event_value",
+      "task_symbolic__dice__pair_attribute_combo_probability",
+      "task_symbolic__dice__pair_difference_probability",
+      "task_symbolic__dice__pair_sum_probability",
+      "task_symbolic__dice__pair_sum_threshold_probability",
+      "task_symbolic__dice__single_attribute_probability",
+      "task_symbolic__dice__single_threshold_probability",
+      "task_symbolic__life_automaton__life_future_grid_label",
+      "task_symbolic__life_automaton__one_step_cell_state_count",
+      "task_symbolic__logic_gate_circuit__gate_type_count",
+      "task_symbolic__logic_gate_circuit__internal_output_count",
+      "task_symbolic__logic_gate_circuit__output_value_label",
+      "task_symbolic__logic_gate_circuit__satisfying_assignment_label",
+      "task_symbolic__morse_code__morse_word_read_label",
+      "task_symbolic__morse_code__word_morse_match_label",
+      "task_symbolic__music_staff__articulation_symbol_label",
+      "task_symbolic__music_staff__chord_inversion_label",
+      "task_symbolic__music_staff__chord_quality_label",
+      "task_symbolic__music_staff__duration_equivalence_label",
+      "task_symbolic__music_staff__interval_name_label",
+      "task_symbolic__music_staff__key_signature_label",
+      "task_symbolic__music_staff__meter_type_count",
+      "task_symbolic__music_staff__note_name_label",
+      "task_symbolic__music_staff__roman_numeral_label",
+      "task_symbolic__music_staff__scale_degree_function_label",
+      "task_symbolic__music_staff__scale_validation_count",
+      "task_symbolic__music_staff__transposed_pitch_pair_count",
+      "task_symbolic__organic_structure__bond_order_count",
+      "task_symbolic__organic_structure__ring_size_count",
+      "task_symbolic__radial_code_wheel__code_output_label",
+      "task_symbolic__radial_code_wheel__output_code_match_label",
+      "task_symbolic__spinner__multi_attribute_and_probability",
+      "task_symbolic__spinner__multi_attribute_or_probability",
+      "task_symbolic__spinner__single_attribute_probability",
+      "task_symbolic__spinner__spinner_pair_event_value",
+      "task_symbolic__turing_tape__final_head_position_value",
+      "task_symbolic__turing_tape__turing_written_symbol_count"
+    ],
+    "workers": 4
+  },
+  "coverage": [
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__abacus__displayed_value_readout",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__abacus__target_value_match_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__agent_automaton__agent_final_pose_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__agent_automaton__future_grid_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__braille_cell__braille_word_read_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__braille_cell__matching_pattern_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__braille_cell__word_braille_match_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__clock__elapsed_time_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "analog_reference_digital_options": 1,
+        "digital_reference_analog_options": 1
+      },
+      "expected_query_ids": [
+        "analog_reference_digital_options",
+        "digital_reference_analog_options"
+      ],
+      "generated_query_id_counts": {
+        "analog_reference_digital_options": 1,
+        "digital_reference_analog_options": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__clock__equivalent_time_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__clock__hand_angle_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "minutes_after": 1,
+        "minutes_before": 1
+      },
+      "expected_query_ids": [
+        "minutes_after",
+        "minutes_before"
+      ],
+      "generated_query_id_counts": {
+        "minutes_after": 1,
+        "minutes_before": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__clock__offset_readout",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__clock__sequence_completion_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "earliest_time_label": 1,
+        "latest_time_label": 1
+      },
+      "expected_query_ids": [
+        "earliest_time_label",
+        "latest_time_label"
+      ],
+      "generated_query_id_counts": {
+        "earliest_time_label": 1,
+        "latest_time_label": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__clock__time_extremum_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "conditional_color_given_value_property_probability": 1,
+        "conditional_color_given_value_set_probability": 1,
+        "conditional_value_property_given_color_probability": 1
+      },
+      "expected_query_ids": [
+        "conditional_color_given_value_property_probability",
+        "conditional_color_given_value_set_probability",
+        "conditional_value_property_given_color_probability"
+      ],
+      "generated_query_id_counts": {
+        "conditional_color_given_value_property_probability": 1,
+        "conditional_color_given_value_set_probability": 1,
+        "conditional_value_property_given_color_probability": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__dice__dice_conditional_event_value",
+      "total_generated": 3
+    },
+    {
+      "collected_query_id_counts": {
+        "pair_color_value_combo_probability": 1,
+        "pair_parity_combo_probability": 1
+      },
+      "expected_query_ids": [
+        "pair_color_value_combo_probability",
+        "pair_parity_combo_probability"
+      ],
+      "generated_query_id_counts": {
+        "pair_color_value_combo_probability": 1,
+        "pair_parity_combo_probability": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__dice__pair_attribute_combo_probability",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__dice__pair_difference_probability",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__dice__pair_sum_probability",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "pair_sum_at_least_probability": 1,
+        "pair_sum_at_most_probability": 1
+      },
+      "expected_query_ids": [
+        "pair_sum_at_least_probability",
+        "pair_sum_at_most_probability"
+      ],
+      "generated_query_id_counts": {
+        "pair_sum_at_least_probability": 1,
+        "pair_sum_at_most_probability": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__dice__pair_sum_threshold_probability",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single_color_and_value_probability": 1,
+        "single_color_or_value_probability": 1,
+        "single_parity_probability": 1,
+        "single_value_set_probability": 1
+      },
+      "expected_query_ids": [
+        "single_color_and_value_probability",
+        "single_color_or_value_probability",
+        "single_parity_probability",
+        "single_value_set_probability"
+      ],
+      "generated_query_id_counts": {
+        "single_color_and_value_probability": 1,
+        "single_color_or_value_probability": 1,
+        "single_parity_probability": 1,
+        "single_value_set_probability": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__dice__single_attribute_probability",
+      "total_generated": 4
+    },
+    {
+      "collected_query_id_counts": {
+        "single_value_at_least_probability": 1,
+        "single_value_at_most_probability": 1
+      },
+      "expected_query_ids": [
+        "single_value_at_least_probability",
+        "single_value_at_most_probability"
+      ],
+      "generated_query_id_counts": {
+        "single_value_at_least_probability": 1,
+        "single_value_at_most_probability": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__dice__single_threshold_probability",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "one_step_future_grid": 1,
+        "two_step_future_grid": 1
+      },
+      "expected_query_ids": [
+        "one_step_future_grid",
+        "two_step_future_grid"
+      ],
+      "generated_query_id_counts": {
+        "one_step_future_grid": 1,
+        "two_step_future_grid": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__life_automaton__life_future_grid_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "one_step_alive_cell_count": 1,
+        "one_step_dead_cell_count": 1
+      },
+      "expected_query_ids": [
+        "one_step_alive_cell_count",
+        "one_step_dead_cell_count"
+      ],
+      "generated_query_id_counts": {
+        "one_step_alive_cell_count": 1,
+        "one_step_dead_cell_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__life_automaton__one_step_cell_state_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__logic_gate_circuit__gate_type_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "internal_output_one_count": 1,
+        "internal_output_zero_count": 1
+      },
+      "expected_query_ids": [
+        "internal_output_one_count",
+        "internal_output_zero_count"
+      ],
+      "generated_query_id_counts": {
+        "internal_output_one_count": 1,
+        "internal_output_zero_count": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__logic_gate_circuit__internal_output_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "output_one_label": 1,
+        "output_zero_label": 1
+      },
+      "expected_query_ids": [
+        "output_one_label",
+        "output_zero_label"
+      ],
+      "generated_query_id_counts": {
+        "output_one_label": 1,
+        "output_zero_label": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__logic_gate_circuit__output_value_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "assignment_outputs_one_label": 1,
+        "assignment_outputs_zero_label": 1
+      },
+      "expected_query_ids": [
+        "assignment_outputs_one_label",
+        "assignment_outputs_zero_label"
+      ],
+      "generated_query_id_counts": {
+        "assignment_outputs_one_label": 1,
+        "assignment_outputs_zero_label": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__logic_gate_circuit__satisfying_assignment_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__morse_code__morse_word_read_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__morse_code__word_morse_match_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__music_staff__articulation_symbol_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__music_staff__chord_inversion_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__music_staff__chord_quality_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__music_staff__duration_equivalence_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__music_staff__interval_name_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__music_staff__key_signature_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__music_staff__meter_type_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__music_staff__note_name_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__music_staff__roman_numeral_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__music_staff__scale_degree_function_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__music_staff__scale_validation_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__music_staff__transposed_pitch_pair_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__organic_structure__bond_order_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__organic_structure__ring_size_count",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__radial_code_wheel__code_output_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__radial_code_wheel__output_code_match_label",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__spinner__multi_attribute_and_probability",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__spinner__multi_attribute_or_probability",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single_color_probability": 1,
+        "single_shape_probability": 1
+      },
+      "expected_query_ids": [
+        "single_color_probability",
+        "single_shape_probability"
+      ],
+      "generated_query_id_counts": {
+        "single_color_probability": 1,
+        "single_shape_probability": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__spinner__single_attribute_probability",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "pair_at_least_one_target_color_probability": 1,
+        "pair_both_target_color_probability": 1,
+        "pair_same_color_probability": 1
+      },
+      "expected_query_ids": [
+        "pair_at_least_one_target_color_probability",
+        "pair_both_target_color_probability",
+        "pair_same_color_probability"
+      ],
+      "generated_query_id_counts": {
+        "pair_at_least_one_target_color_probability": 1,
+        "pair_both_target_color_probability": 1,
+        "pair_same_color_probability": 1
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__spinner__spinner_pair_event_value",
+      "total_generated": 3
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__turing_tape__final_head_position_value",
+      "total_generated": 2
+    },
+    {
+      "collected_query_id_counts": {
+        "single": 1
+      },
+      "expected_query_ids": [
+        "single"
+      ],
+      "generated_query_id_counts": {
+        "single": 2
+      },
+      "generation_error_counts": {},
+      "incomplete_query_ids": [],
+      "sampling_mode": "variant_sampler",
+      "task": "task_symbolic__turing_tape__turing_written_symbol_count",
+      "total_generated": 2
+    }
+  ],
+  "issues": [],
+  "records": [
+    {
+      "annotation": {
+        "annotation_type": "point_set_map",
+        "annotation_value_count": 3,
+        "image_size": [
+          980,
+          760
+        ],
+        "overlay_annotation_type": "point_set_map",
+        "overlay_annotation_value": {
+          "hundreds_active_beads": [
+            [
+              234.0,
+              322.8
+            ],
+            [
+              234.0,
+              390.8
+            ],
+            [
+              234.0,
+              428.8
+            ],
+            [
+              234.0,
+              466.8
+            ]
+          ],
+          "ones_active_beads": [],
+          "tens_active_beads": [
+            [
+              490.0,
+              322.8
+            ],
+            [
+              490.0,
+              390.8
+            ],
+            [
+              490.0,
+              428.8
+            ],
+            [
+              490.0,
+              466.8
+            ],
+            [
+              490.0,
+              504.8
+            ]
+          ]
+        },
+        "projected_type": "point_set_map"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5742766212263879,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 22,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows a wood-framed three-column soroban-style abacus with place-value labels 100, 10, and 1. What number is shown on the abacus?\nFormat for the \"annotation\" field: set \"annotation\" to an object/dictionary keyed by \"hundreds_active_beads\", \"tens_active_beads\", and \"ones_active_beads\"; each key maps to an array of active bead center points in pixel space [x,y], with an empty array when that column has no active beads.\nFormat for the \"answer\" field: set \"answer\" to the integer shown by the abacus.\nExample JSON:\n{\"annotation\":{\"hundreds_active_beads\":[[239,292],[239,362]],\"tens_active_beads\":[],\"ones_active_beads\":[[739,362],[739,400],[739,438]]},\"answer\":603}",
+          "word_count": 98
+        },
+        {
+          "body_word_count": 22,
+          "mode": "answer_only",
+          "prompt": "The visual shows a wood-framed three-column soroban-style abacus with place-value labels 100, 10, and 1. What number is shown on the abacus?\nRequired answer format: set \"answer\" to the integer shown by the abacus.\nExample JSON:\n{\"answer\":603}",
+          "word_count": 38
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__abacus__displayed_value_readout"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1200,
+          760
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          814.0,
+          74.0,
+          1154.0,
+          354.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7203254463398644,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 14,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows six labeled three-column soroban-style abacus option boards. Which option shows 656?\nFormat for the \"annotation\" field: set \"annotation\" to the pixel-space bounding box [x0,y0,x1,y1] around the selected abacus option card.\nFormat for the \"answer\" field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":[430,74,770,354],\"answer\":\"B\"}",
+          "word_count": 58
+        },
+        {
+          "body_word_count": 24,
+          "mode": "answer_only",
+          "prompt": "The visual shows six labeled three-column soroban-style abacus option boards. Which option shows 656?\nAnswer field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 28
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__abacus__target_value_match_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          520,
+          420
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "selected_option": [
+            379.0,
+            305.0,
+            470.0,
+            396.0
+          ],
+          "start_marker": [
+            258.0,
+            139.0,
+            288.0,
+            169.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4944993425304571,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 70,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a turning-agent automaton grid with an arrow marker showing the starting cell and direction. Binary rule: before moving, a light cell turns the agent right and changes to colored; a colored cell turns the agent left and changes to light; then the agent moves one cell forward, wrapping around the grid edge. Follow the agent for 6 steps. Which option shows the agent's final cell and direction?\nRequired annotation format: set \"annotation\" to an object/dictionary with keys \"start_marker\" and \"selected_option\"; each key maps to a pixel bounding box [x0,y0,x1,y1].\nRequired answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":{\"start_marker\":[322,136,376,190],\"selected_option\":[624,512,774,628]},\"answer\":\"C\"}",
+          "word_count": 122
+        },
+        {
+          "body_word_count": 70,
+          "mode": "answer_only",
+          "prompt": "The image shows a turning-agent automaton grid with an arrow marker showing the starting cell and direction. Binary rule: before moving, a light cell turns the agent right and changes to colored; a colored cell turns the agent left and changes to light; then the agent moves one cell forward, wrapping around the grid edge. Follow the agent for 6 steps. Which option shows the agent's final cell and direction?\nAnswer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 84
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__agent_automaton__agent_final_pose_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          798,
+          501
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "selected_option": [
+            203.0,
+            277.0,
+            374.0,
+            468.0
+          ],
+          "source_grid": [
+            304.0,
+            75.0,
+            455.0,
+            226.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6495983334462537,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 71,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a lab-style turning-agent automaton grid with an arrow marker showing the starting cell and direction. Binary rule: before moving, a light cell turns the agent right and changes to colored; a colored cell turns the agent left and changes to light; then the agent moves one cell forward, wrapping around the grid edge. Run the rule for 6 steps. Which option shows the full grid after the updates?\nFormat for the \"annotation\" field: set \"annotation\" to an object/dictionary with keys \"source_grid\" and \"selected_option\"; each key maps to a pixel bounding box [x0,y0,x1,y1].\nFormat for the \"answer\" field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":{\"source_grid\":[322,136,490,304],\"selected_option\":[624,512,794,682]},\"answer\":\"C\"}",
+          "word_count": 127
+        },
+        {
+          "body_word_count": 71,
+          "mode": "answer_only",
+          "prompt": "The image shows a lab-style turning-agent automaton grid with an arrow marker showing the starting cell and direction. Binary rule: before moving, a light cell turns the agent right and changes to colored; a colored cell turns the agent left and changes to light; then the agent moves one cell forward, wrapping around the grid edge. Run the rule for 6 steps. Which option shows the full grid after the updates?\nAnswer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 85
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__agent_automaton__future_grid_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          980,
+          680
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "selected_option": [
+            207.0,
+            492.0,
+            467.0,
+            562.0
+          ],
+          "source_plate": [
+            278.0,
+            88.0,
+            702.0,
+            248.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1255771622560909,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 25,
+          "mode": "answer_and_annotation",
+          "prompt": "The notation panel shows a clean Braille word plate above four labeled word options. Which option letter gives the word represented by the Braille cells?\nAnnotation format: set \"annotation\" to an object with keys \"source_plate\" and \"selected_option\", each mapped to a pixel-space bounding box [x0, y0, x1, y1].\nAnswer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":{\"source_plate\":[172,88,808,248],\"selected_option\":[560,492,820,562]},\"answer\":\"D\"}",
+          "word_count": 73
+        },
+        {
+          "body_word_count": 25,
+          "mode": "answer_only",
+          "prompt": "The notation panel shows a clean Braille word plate above four labeled word options. Which option letter gives the word represented by the Braille cells?\nRequired answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 40
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__braille_cell__braille_word_read_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          980,
+          680
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "reference_cell": [
+            88.0,
+            248.0,
+            220.0,
+            432.0
+          ],
+          "selected_option": [
+            718.0,
+            366.0,
+            850.0,
+            550.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1271517033995004,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 28,
+          "mode": "answer_and_annotation",
+          "prompt": "The Braille notation card shows a notebook-style Braille reference cell and six labeled Braille option cells. Which option shows the same raised dots as the REF Braille cell?\nRequired annotation format: set \"annotation\" to an object with keys \"reference_cell\" and \"selected_option\", each mapped to a pixel-space bounding box [x0, y0, x1, y1].\nRequired answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":{\"reference_cell\":[90,248,222,432],\"selected_option\":[548,110,680,294]},\"answer\":\"C\"}",
+          "word_count": 78
+        },
+        {
+          "body_word_count": 38,
+          "mode": "answer_only",
+          "prompt": "The Braille notation card shows a notebook-style Braille reference cell and six labeled Braille option cells. Which option shows the same raised dots as the REF Braille cell?\nAnswer field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 42
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__braille_cell__matching_pattern_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          980,
+          680
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "selected_option": [
+            196.0,
+            422.0,
+            476.0,
+            576.0
+          ],
+          "source_word": [
+            314.0,
+            56.0,
+            666.0,
+            136.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 670780701521102,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 22,
+          "mode": "answer_and_annotation",
+          "prompt": "This Braille-cell panel shows a notebook-style source word above four labeled Braille word-plate options. Which labeled Braille plate encodes the source word?\nAnnotation format: set \"annotation\" to an object with keys \"source_word\" and \"selected_option\", each mapped to a pixel-space bounding box [x0, y0, x1, y1].\nAnswer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":{\"source_word\":[312,56,668,136],\"selected_option\":[350,422,630,576]},\"answer\":\"D\"}",
+          "word_count": 70
+        },
+        {
+          "body_word_count": 22,
+          "mode": "answer_only",
+          "prompt": "This Braille-cell panel shows a notebook-style source word above four labeled Braille word-plate options. Which labeled Braille plate encodes the source word?\nRequired answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 37
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__braille_cell__word_braille_match_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          880,
+          520
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "end_clock": [
+            512.0,
+            185.0,
+            748.0,
+            421.0
+          ],
+          "start_clock": [
+            132.0,
+            185.0,
+            368.0,
+            421.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1046712406106352,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 37,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows two labeled analog clocks, A and B, shown side by side with hour numerals, minute ticks, and two visible hands. What is the forward elapsed time in minutes from clock A to clock B?\nFinal answer format: set \"answer\" to the elapsed time in minutes as an integer.\nAnnotation format: set \"annotation\" to an object/dictionary with keys \"start_clock\" and \"end_clock\", each containing a clock-face bounding box [x0,y0,x1,y1].\nExample JSON:\n{\"annotation\":{\"start_clock\":[136,186,372,422],\"end_clock\":[508,186,744,422]},\"answer\":45}",
+          "word_count": 89
+        },
+        {
+          "body_word_count": 37,
+          "mode": "answer_only",
+          "prompt": "The figure shows two labeled analog clocks, A and B, shown side by side with hour numerals, minute ticks, and two visible hands. What is the forward elapsed time in minutes from clock A to clock B?\nFinal answer format: set \"answer\" to the elapsed time in minutes as an integer.\nExample JSON:\n{\"answer\":45}",
+          "word_count": 55
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__clock__elapsed_time_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          980,
+          760
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "correct_option": [
+            413.0,
+            628.0,
+            605.0,
+            706.0
+          ],
+          "reference": [
+            354.0,
+            74.0,
+            626.0,
+            346.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1515614459357867,
+      "issues": [],
+      "observed_query_id": "analog_reference_digital_options",
+      "prompts": [
+        {
+          "body_word_count": 25,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows one analog reference clock above six labeled digital-display options. Find the labeled digital display with the same time as the reference clock.\nFormat for the \"annotation\" field: set \"annotation\" to an object/dictionary with keys \"reference\" and \"correct_option\", each containing a visual bounding box [x0,y0,x1,y1].\nFormat for the \"answer\" field: set \"answer\" to the single matching option label as a string.\nExample JSON:\n{\"annotation\":{\"reference\":[315,74,587,346],\"correct_option\":[382,442,652,602]},\"answer\":\"B\"}",
+          "word_count": 82
+        },
+        {
+          "body_word_count": 25,
+          "mode": "answer_only",
+          "prompt": "The visual shows one analog reference clock above six labeled digital-display options. Find the labeled digital display with the same time as the reference clock.\nFinal answer format: set \"answer\" to the single matching option label as a string.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 43
+        }
+      ],
+      "query_id": "analog_reference_digital_options",
+      "task": "task_symbolic__clock__equivalent_time_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          980,
+          760
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "correct_option": [
+            414.0,
+            398.0,
+            566.0,
+            550.0
+          ],
+          "reference": [
+            315.0,
+            145.0,
+            665.0,
+            255.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2724778166453172,
+      "issues": [],
+      "observed_query_id": "digital_reference_analog_options",
+      "prompts": [
+        {
+          "body_word_count": 25,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows one digital reference display above six labeled analog-clock options. Find the labeled analog clock with the same time as the reference display.\nFinal answer format: set \"answer\" to the single matching option label as a string.\nAnnotation format: set \"annotation\" to an object/dictionary with keys \"reference\" and \"correct_option\", each containing a visual bounding box [x0,y0,x1,y1].\nExample JSON:\n{\"annotation\":{\"reference\":[315,74,587,346],\"correct_option\":[382,442,652,602]},\"answer\":\"B\"}",
+          "word_count": 77
+        },
+        {
+          "body_word_count": 25,
+          "mode": "answer_only",
+          "prompt": "The image shows one digital reference display above six labeled analog-clock options. Find the labeled analog clock with the same time as the reference display.\nRequired answer format: set \"answer\" to the single matching option label as a string.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 43
+        }
+      ],
+      "query_id": "digital_reference_analog_options",
+      "task": "task_symbolic__clock__equivalent_time_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          640,
+          640
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              320.0,
+              320.0
+            ],
+            [
+              364.394,
+              198.028
+            ]
+          ],
+          [
+            [
+              320.0,
+              320.0
+            ],
+            [
+              152.407,
+              416.76
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5545418915325803,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 37,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows one clean analog clock with hour numerals and two visible hands. Use the hour hand and minute hand shown on the clock. Find the smaller angle formed by the two clock hands, in degrees.\nFormat for the \"annotation\" field: set \"annotation\" to an array of two hand segments; each segment is [[x0, y0], [x1, y1]], where each endpoint is an [x, y] pixel-space point from the clock center to a hand tip.\nFormat for the \"answer\" field: set \"answer\" to the smaller angle in degrees as an integer.\nExample JSON:\n{\"annotation\":[[[320,320],[430,350]],[[320,320],[484,461]]],\"answer\":45}",
+          "word_count": 104
+        },
+        {
+          "body_word_count": 37,
+          "mode": "answer_only",
+          "prompt": "The figure shows one clean analog clock with hour numerals and two visible hands. Use the hour hand and minute hand shown on the clock. Find the smaller angle formed by the two clock hands, in degrees.\nAnswer format: set \"answer\" to the smaller angle in degrees as an integer.\nExample JSON:\n{\"answer\":45}",
+          "word_count": 54
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__clock__hand_angle_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          640,
+          640
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              320.0,
+              320.0
+            ],
+            [
+              198.028,
+              364.394
+            ]
+          ],
+          [
+            [
+              320.0,
+              320.0
+            ],
+            [
+              487.593,
+              416.76
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2380155777417286,
+      "issues": [],
+      "observed_query_id": "minutes_after",
+      "prompts": [
+        {
+          "body_word_count": 37,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows one analog clock with all hour numerals, minute ticks, and two visible hands. Use the analog clock as the starting time. Shift the shown time forward by 380 minutes. What time do you get?\nFinal answer format: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nAnnotation format: set \"annotation\" to an array of two hand segments; each segment is [[x0, y0], [x1, y1]], where each endpoint is an [x, y] pixel-space point from the clock center to a hand tip.\nExample JSON:\n{\"annotation\":[[[320,320],[430,350]],[[320,320],[484,461]]],\"answer\":\"09:45\"}",
+          "word_count": 103
+        },
+        {
+          "body_word_count": 53,
+          "mode": "answer_only",
+          "prompt": "The image shows one analog clock with all hour numerals, minute ticks, and two visible hands. Use the analog clock as the starting time. Shift the shown time forward by 380 minutes. What time do you get?\nAnswer field: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"answer\":\"09:45\"}",
+          "word_count": 58
+        }
+      ],
+      "query_id": "minutes_after",
+      "task": "task_symbolic__clock__offset_readout"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          640,
+          640
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              320.0,
+              320.0
+            ],
+            [
+              286.405,
+              194.623
+            ]
+          ],
+          [
+            [
+              320.0,
+              320.0
+            ],
+            [
+              320.0,
+              513.52
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 811632102744664,
+      "issues": [],
+      "observed_query_id": "minutes_before",
+      "prompts": [
+        {
+          "body_word_count": 28,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows one outline-style analog clock with hour numerals and two visible hands. Use the displayed time. What time was it 510 minutes before the shown time?\nFinal answer format: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nAnnotation format: set \"annotation\" to an array of two hand segments; each segment is [[x0, y0], [x1, y1]], where each endpoint is an [x, y] pixel-space point from the clock center to a hand tip.\nExample JSON:\n{\"annotation\":[[[320,320],[430,350]],[[320,320],[484,461]]],\"answer\":\"06:55\"}",
+          "word_count": 94
+        },
+        {
+          "body_word_count": 28,
+          "mode": "answer_only",
+          "prompt": "The image shows one outline-style analog clock with hour numerals and two visible hands. Use the displayed time. What time was it 510 minutes before the shown time?\nAnswer format: set \"answer\" to the exact time in HH:MM 12-hour format with leading zeros.\nExample JSON:\n{\"answer\":\"06:55\"}",
+          "word_count": 49
+        }
+      ],
+      "query_id": "minutes_before",
+      "task": "task_symbolic__clock__offset_readout"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          980,
+          760
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "correct_option": [
+            725.0,
+            430.0,
+            930.0,
+            650.0
+          ],
+          "sequence_panel": [
+            50.0,
+            70.0,
+            930.0,
+            290.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6827680478594991,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 35,
+          "mode": "answer_and_annotation",
+          "prompt": "This clock display shows a top row of four clock boxes with one empty box, and a bottom row of four labeled option clocks. Choose the option clock that belongs in the missing sequence slot.\nFinal answer format: set \"answer\" to the single selected option label as a string.\nAnnotation format: set \"annotation\" to an object/dictionary with keys \"sequence_panel\" and \"correct_option\", each containing a bounding box [x0,y0,x1,y1].\nExample JSON:\n{\"annotation\":{\"sequence_panel\":[50,70,930,290],\"correct_option\":[275,430,480,650]},\"answer\":\"B\"}",
+          "word_count": 86
+        },
+        {
+          "body_word_count": 35,
+          "mode": "answer_only",
+          "prompt": "This clock display shows a top row of four clock boxes with one empty box, and a bottom row of four labeled option clocks. Choose the option clock that belongs in the missing sequence slot.\nRequired answer format: set \"answer\" to the single selected option label as a string.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 53
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__clock__sequence_completion_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          960,
+          760
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          495.0,
+          320.0,
+          663.0,
+          488.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1869107886367255,
+      "issues": [],
+      "observed_query_id": "earliest_time_label",
+      "prompts": [
+        {
+          "body_word_count": 38,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows six to twelve labeled analog clocks arranged in a centered grid with at most four clocks per row, each with hour numerals, minute ticks, and two visible hands. Find the clock showing the earliest time.\nAnnotation format: set \"annotation\" to the bounding box [x0, y0, x1, y1] for the selected clock face.\nAnswer format: set \"answer\" to the single selected clock label as a string.\nExample JSON:\n{\"annotation\":[368,94,552,278],\"answer\":\"B\"}",
+          "word_count": 77
+        },
+        {
+          "body_word_count": 38,
+          "mode": "answer_only",
+          "prompt": "The figure shows six to twelve labeled analog clocks arranged in a centered grid with at most four clocks per row, each with hour numerals, minute ticks, and two visible hands. Find the clock showing the earliest time.\nFormat for the \"answer\" field: set \"answer\" to the single selected clock label as a string.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 58
+        }
+      ],
+      "query_id": "earliest_time_label",
+      "task": "task_symbolic__clock__time_extremum_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          960,
+          760
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          198.0,
+          445.0,
+          366.0,
+          613.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1308207580999354,
+      "issues": [],
+      "observed_query_id": "latest_time_label",
+      "prompts": [
+        {
+          "body_word_count": 39,
+          "mode": "answer_and_annotation",
+          "prompt": "This clock display shows six to twelve labeled analog clocks arranged in a centered grid with at most four clocks per row, each with hour numerals, minute ticks, and two visible hands. Find the clock showing the latest time.\nAnnotation format: set \"annotation\" to the bounding box [x0, y0, x1, y1] for the selected clock face.\nAnswer format: set \"answer\" to the single selected clock label as a string.\nExample JSON:\n{\"annotation\":[368,94,552,278],\"answer\":\"B\"}",
+          "word_count": 78
+        },
+        {
+          "body_word_count": 39,
+          "mode": "answer_only",
+          "prompt": "This clock display shows six to twelve labeled analog clocks arranged in a centered grid with at most four clocks per row, each with hour numerals, minute ticks, and two visible hands. Find the clock showing the latest time.\nRequired answer format: set \"answer\" to the single selected clock label as a string.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 57
+        }
+      ],
+      "query_id": "latest_time_label",
+      "task": "task_symbolic__clock__time_extremum_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          145.0,
+          112.0,
+          955.0,
+          650.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4058970891402880,
+      "issues": [],
+      "observed_query_id": "conditional_color_given_value_property_probability",
+      "prompts": [
+        {
+          "body_word_count": 57,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows one tray of colored dice. Each die shows a visible top value. Condition on the stated visible property and compute the probability from the tray. Choose one shown die uniformly at random. Conditional on the fact that the selected die shows a value at least 4, what is the probability that it is red?\nAnnotation format: set \"annotation\" to the full dice tray bounding box [x0, y0, x1, y1].\nAnswer field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":[145,112,955,650],\"answer\":\"1/4\"}",
+          "word_count": 97
+        },
+        {
+          "body_word_count": 72,
+          "mode": "answer_only",
+          "prompt": "The visual shows one tray of colored dice. Each die shows a visible top value. Condition on the stated visible property and compute the probability from the tray. Choose one shown die uniformly at random. Conditional on the fact that the selected die shows a value at least 4, what is the probability that it is red?\nAnswer field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"1/4\"}",
+          "word_count": 77
+        }
+      ],
+      "query_id": "conditional_color_given_value_property_probability",
+      "task": "task_symbolic__dice__dice_conditional_event_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          145.0,
+          112.0,
+          955.0,
+          650.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8331795458525705,
+      "issues": [],
+      "observed_query_id": "conditional_color_given_value_set_probability",
+      "prompts": [
+        {
+          "body_word_count": 56,
+          "mode": "answer_and_annotation",
+          "prompt": "The puzzle diagram shows one notebook-style tray of colored dice. Each die shows a visible top value. Condition on the stated visible property and compute the probability from the tray. For a uniformly selected die from the tray, suppose shows one of 2, 5, or 6. What is the probability that the selected die is yellow?\nFinal answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nAnnotation format: set \"annotation\" to the full dice tray bounding box [x0, y0, x1, y1].\nExample JSON:\n{\"annotation\":[145,112,955,650],\"answer\":\"1/3\"}",
+          "word_count": 97
+        },
+        {
+          "body_word_count": 71,
+          "mode": "answer_only",
+          "prompt": "The puzzle diagram shows one notebook-style tray of colored dice. Each die shows a visible top value. Condition on the stated visible property and compute the probability from the tray. For a uniformly selected die from the tray, suppose shows one of 2, 5, or 6. What is the probability that the selected die is yellow?\nAnswer field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"1/3\"}",
+          "word_count": 76
+        }
+      ],
+      "query_id": "conditional_color_given_value_set_probability",
+      "task": "task_symbolic__dice__dice_conditional_event_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          145.0,
+          112.0,
+          955.0,
+          650.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4559372255240068,
+      "issues": [],
+      "observed_query_id": "conditional_value_property_given_color_probability",
+      "prompts": [
+        {
+          "body_word_count": 54,
+          "mode": "answer_and_annotation",
+          "prompt": "The probability panel shows one tray of colored dice. Each die shows a visible top value. Compute the conditional probability from the visible colors and top values. Choose one shown die uniformly at random. Conditional on the fact that the selected die is yellow, what is the probability that it shows an odd value?\nAnnotation format: set \"annotation\" to the full dice tray bounding box [x0, y0, x1, y1].\nFormat for the \"answer\" field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":[145,112,955,650],\"answer\":\"2/5\"}",
+          "word_count": 97
+        },
+        {
+          "body_word_count": 54,
+          "mode": "answer_only",
+          "prompt": "The probability panel shows one tray of colored dice. Each die shows a visible top value. Compute the conditional probability from the visible colors and top values. Choose one shown die uniformly at random. Conditional on the fact that the selected die is yellow, what is the probability that it shows an odd value?\nRequired answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"2/5\"}",
+          "word_count": 75
+        }
+      ],
+      "query_id": "conditional_value_property_given_color_probability",
+      "task": "task_symbolic__dice__dice_conditional_event_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "tray_a": [
+            68.0,
+            142.0,
+            522.0,
+            628.0
+          ],
+          "tray_b": [
+            578.0,
+            142.0,
+            1032.0,
+            628.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5896083216858790,
+      "issues": [],
+      "observed_query_id": "pair_color_value_combo_probability",
+      "prompts": [
+        {
+          "body_word_count": 63,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows two notebook-style dice trays labeled Tray A and Tray B. Each die shows a visible top value. Answer using the product space formed by one visible die from each tray. Choose uniformly from Tray A and independently from Tray B. What is the probability that the Tray A die is red and the Tray B die shows an odd value?\nFinal answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nAnnotation format: set \"annotation\" to an object with keys \"tray_a\" and \"tray_b\", each mapped to that tray bounding box [x0, y0, x1, y1].\nExample JSON:\n{\"annotation\":{\"tray_a\":[68,142,522,628],\"tray_b\":[578,142,1032,628]},\"answer\":\"1/8\"}",
+          "word_count": 118
+        },
+        {
+          "body_word_count": 78,
+          "mode": "answer_only",
+          "prompt": "The figure shows two notebook-style dice trays labeled Tray A and Tray B. Each die shows a visible top value. Answer using the product space formed by one visible die from each tray. Choose uniformly from Tray A and independently from Tray B. What is the probability that the Tray A die is red and the Tray B die shows an odd value?\nAnswer field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"1/8\"}",
+          "word_count": 83
+        }
+      ],
+      "query_id": "pair_color_value_combo_probability",
+      "task": "task_symbolic__dice__pair_attribute_combo_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "tray_a": [
+            68.0,
+            142.0,
+            522.0,
+            628.0
+          ],
+          "tray_b": [
+            578.0,
+            142.0,
+            1032.0,
+            628.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2131481354324055,
+      "issues": [],
+      "observed_query_id": "pair_parity_combo_probability",
+      "prompts": [
+        {
+          "body_word_count": 56,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows two dice trays labeled Tray A and Tray B. Each die shows a visible top value. Use the two dice trays to compute the requested probability. If one die is chosen from each tray with equal chance among dice in that tray, what is the probability that both selected dice show odd values?\nAnnotation format: set \"annotation\" to an object with keys \"tray_a\" and \"tray_b\", each mapped to that tray bounding box [x0, y0, x1, y1].\nAnswer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":{\"tray_a\":[68,142,522,628],\"tray_b\":[578,142,1032,628]},\"answer\":\"1/4\"}",
+          "word_count": 110
+        },
+        {
+          "body_word_count": 56,
+          "mode": "answer_only",
+          "prompt": "The figure shows two dice trays labeled Tray A and Tray B. Each die shows a visible top value. Use the two dice trays to compute the requested probability. If one die is chosen from each tray with equal chance among dice in that tray, what is the probability that both selected dice show odd values?\nAnswer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"1/4\"}",
+          "word_count": 76
+        }
+      ],
+      "query_id": "pair_parity_combo_probability",
+      "task": "task_symbolic__dice__pair_attribute_combo_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "tray_a": [
+            68.0,
+            142.0,
+            522.0,
+            628.0
+          ],
+          "tray_b": [
+            578.0,
+            142.0,
+            1032.0,
+            628.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2056382872714265,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 53,
+          "mode": "answer_and_annotation",
+          "prompt": "The puzzle diagram shows two dice trays labeled Tray A and Tray B. Each die shows a visible top value. Use the two dice trays to compute the requested probability. What probability corresponds to the event that the absolute difference between the selected values is 1 after selecting one die from each tray?\nAnnotation format: set \"annotation\" to an object with keys \"tray_a\" and \"tray_b\", each mapped to that tray bounding box [x0, y0, x1, y1].\nAnswer field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":{\"tray_a\":[68,142,522,628],\"tray_b\":[578,142,1032,628]},\"answer\":\"1/4\"}",
+          "word_count": 107
+        },
+        {
+          "body_word_count": 53,
+          "mode": "answer_only",
+          "prompt": "The puzzle diagram shows two dice trays labeled Tray A and Tray B. Each die shows a visible top value. Use the two dice trays to compute the requested probability. What probability corresponds to the event that the absolute difference between the selected values is 1 after selecting one die from each tray?\nFinal answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"1/4\"}",
+          "word_count": 74
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__dice__pair_difference_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "tray_a": [
+            68.0,
+            142.0,
+            522.0,
+            628.0
+          ],
+          "tray_b": [
+            578.0,
+            142.0,
+            1032.0,
+            628.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7894703384270946,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 54,
+          "mode": "answer_and_annotation",
+          "prompt": "The probability panel shows two felt-style dice trays labeled Tray A and Tray B. Each die shows a visible top value. Answer using the product space formed by one visible die from each tray. What probability corresponds to the event that the selected values sum to 6 after selecting one die from each tray?\nRequired annotation format: set \"annotation\" to an object with keys \"tray_a\" and \"tray_b\", each mapped to that tray bounding box [x0, y0, x1, y1].\nRequired answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":{\"tray_a\":[68,142,522,628],\"tray_b\":[578,142,1032,628]},\"answer\":\"1/6\"}",
+          "word_count": 110
+        },
+        {
+          "body_word_count": 69,
+          "mode": "answer_only",
+          "prompt": "The probability panel shows two felt-style dice trays labeled Tray A and Tray B. Each die shows a visible top value. Answer using the product space formed by one visible die from each tray. What probability corresponds to the event that the selected values sum to 6 after selecting one die from each tray?\nAnswer field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"1/6\"}",
+          "word_count": 74
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__dice__pair_sum_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "tray_a": [
+            68.0,
+            142.0,
+            522.0,
+            628.0
+          ],
+          "tray_b": [
+            578.0,
+            142.0,
+            1032.0,
+            628.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3449095980997272,
+      "issues": [],
+      "observed_query_id": "pair_sum_at_least_probability",
+      "prompts": [
+        {
+          "body_word_count": 51,
+          "mode": "answer_and_annotation",
+          "prompt": "The probability panel shows two felt-style dice trays labeled Tray A and Tray B. Each die shows a visible top value. Use the two dice trays to compute the requested probability. Select one die uniformly from each tray. What is the probability that the selected values sum to at least 7?\nAnnotation format: set \"annotation\" to an object with keys \"tray_a\" and \"tray_b\", each mapped to that tray bounding box [x0, y0, x1, y1].\nFormat for the \"answer\" field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":{\"tray_a\":[68,142,522,628],\"tray_b\":[578,142,1032,628]},\"answer\":\"5/12\"}",
+          "word_count": 108
+        },
+        {
+          "body_word_count": 51,
+          "mode": "answer_only",
+          "prompt": "The probability panel shows two felt-style dice trays labeled Tray A and Tray B. Each die shows a visible top value. Use the two dice trays to compute the requested probability. Select one die uniformly from each tray. What is the probability that the selected values sum to at least 7?\nRequired answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"5/12\"}",
+          "word_count": 72
+        }
+      ],
+      "query_id": "pair_sum_at_least_probability",
+      "task": "task_symbolic__dice__pair_sum_threshold_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "tray_a": [
+            68.0,
+            142.0,
+            522.0,
+            628.0
+          ],
+          "tray_b": [
+            578.0,
+            142.0,
+            1032.0,
+            628.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8563761663974724,
+      "issues": [],
+      "observed_query_id": "pair_sum_at_most_probability",
+      "prompts": [
+        {
+          "body_word_count": 59,
+          "mode": "answer_and_annotation",
+          "prompt": "The dice tray diagram shows two felt-style dice trays labeled Tray A and Tray B. Each die shows a visible top value. Use Tray A and Tray B as the two independent sources for the probability question. What probability corresponds to the event that the selected values sum to at most 5 after selecting one die from each tray?\nAnnotation format: set \"annotation\" to an object with keys \"tray_a\" and \"tray_b\", each mapped to that tray bounding box [x0, y0, x1, y1].\nAnswer field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":{\"tray_a\":[68,142,522,628],\"tray_b\":[578,142,1032,628]},\"answer\":\"5/12\"}",
+          "word_count": 113
+        },
+        {
+          "body_word_count": 59,
+          "mode": "answer_only",
+          "prompt": "The dice tray diagram shows two felt-style dice trays labeled Tray A and Tray B. Each die shows a visible top value. Use Tray A and Tray B as the two independent sources for the probability question. What probability corresponds to the event that the selected values sum to at most 5 after selecting one die from each tray?\nRequired answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"5/12\"}",
+          "word_count": 80
+        }
+      ],
+      "query_id": "pair_sum_at_most_probability",
+      "task": "task_symbolic__dice__pair_sum_threshold_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          145.0,
+          112.0,
+          955.0,
+          650.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2162587344728867,
+      "issues": [],
+      "observed_query_id": "single_color_and_value_probability",
+      "prompts": [
+        {
+          "body_word_count": 54,
+          "mode": "answer_and_annotation",
+          "prompt": "The probability panel shows one felt-style tray of colored dice. Each die shows a visible top value. Answer the probability question using only the visible dice in the tray. If one die is chosen uniformly from the dice in the tray, what is the probability that it is green and shows an odd value?\nRequired annotation format: set \"annotation\" to the full dice tray bounding box [x0, y0, x1, y1].\nRequired answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":[145,112,955,650],\"answer\":\"1/6\"}",
+          "word_count": 96
+        },
+        {
+          "body_word_count": 54,
+          "mode": "answer_only",
+          "prompt": "The probability panel shows one felt-style tray of colored dice. Each die shows a visible top value. Answer the probability question using only the visible dice in the tray. If one die is chosen uniformly from the dice in the tray, what is the probability that it is green and shows an odd value?\nFinal answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"1/6\"}",
+          "word_count": 75
+        }
+      ],
+      "query_id": "single_color_and_value_probability",
+      "task": "task_symbolic__dice__single_attribute_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          145.0,
+          112.0,
+          955.0,
+          650.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1172079283109263,
+      "issues": [],
+      "observed_query_id": "single_color_or_value_probability",
+      "prompts": [
+        {
+          "body_word_count": 51,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows one tray of colored dice. Each die shows a visible top value. Use the shown dice tray to compute the requested probability. One die is selected uniformly at random from the shown dice. What is the probability that the selected die is red or shows an odd value?\nAnnotation format: set \"annotation\" to the full dice tray bounding box [x0, y0, x1, y1].\nFormat for the \"answer\" field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":[145,112,955,650],\"answer\":\"7/12\"}",
+          "word_count": 94
+        },
+        {
+          "body_word_count": 51,
+          "mode": "answer_only",
+          "prompt": "The figure shows one tray of colored dice. Each die shows a visible top value. Use the shown dice tray to compute the requested probability. One die is selected uniformly at random from the shown dice. What is the probability that the selected die is red or shows an odd value?\nFinal answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"7/12\"}",
+          "word_count": 72
+        }
+      ],
+      "query_id": "single_color_or_value_probability",
+      "task": "task_symbolic__dice__single_attribute_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          145.0,
+          112.0,
+          955.0,
+          650.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4781923256358388,
+      "issues": [],
+      "observed_query_id": "single_parity_probability",
+      "prompts": [
+        {
+          "body_word_count": 44,
+          "mode": "answer_and_annotation",
+          "prompt": "The puzzle diagram shows one tray of colored dice. Each die shows a visible top value. Answer the probability question using only the visible dice in the tray. What probability corresponds to selecting one shown die whose visible top face shows an odd value?\nAnnotation format: set \"annotation\" to the full dice tray bounding box [x0, y0, x1, y1].\nAnswer field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":[145,112,955,650],\"answer\":\"3/8\"}",
+          "word_count": 84
+        },
+        {
+          "body_word_count": 44,
+          "mode": "answer_only",
+          "prompt": "The puzzle diagram shows one tray of colored dice. Each die shows a visible top value. Answer the probability question using only the visible dice in the tray. What probability corresponds to selecting one shown die whose visible top face shows an odd value?\nFormat for the \"answer\" field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"3/8\"}",
+          "word_count": 67
+        }
+      ],
+      "query_id": "single_parity_probability",
+      "task": "task_symbolic__dice__single_attribute_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          145.0,
+          112.0,
+          955.0,
+          650.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4570753070348131,
+      "issues": [],
+      "observed_query_id": "single_value_set_probability",
+      "prompts": [
+        {
+          "body_word_count": 50,
+          "mode": "answer_and_annotation",
+          "prompt": "The puzzle diagram shows one felt-style tray of colored dice. Each die shows a visible top value. Compute the requested probability from the visible top faces in the dice tray. For a uniformly selected die from this tray, what is the probability that the die shows either 1 or 4?\nAnnotation format: set \"annotation\" to the full dice tray bounding box [x0, y0, x1, y1].\nAnswer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":[145,112,955,650],\"answer\":\"1/3\"}",
+          "word_count": 90
+        },
+        {
+          "body_word_count": 65,
+          "mode": "answer_only",
+          "prompt": "The puzzle diagram shows one felt-style tray of colored dice. Each die shows a visible top value. Compute the requested probability from the visible top faces in the dice tray. For a uniformly selected die from this tray, what is the probability that the die shows either 1 or 4?\nAnswer field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"1/3\"}",
+          "word_count": 70
+        }
+      ],
+      "query_id": "single_value_set_probability",
+      "task": "task_symbolic__dice__single_attribute_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          145.0,
+          112.0,
+          955.0,
+          650.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4014921195897212,
+      "issues": [],
+      "observed_query_id": "single_value_at_least_probability",
+      "prompts": [
+        {
+          "body_word_count": 49,
+          "mode": "answer_and_annotation",
+          "prompt": "The dice tray diagram shows one felt-style tray of colored dice. Each die shows a visible top value. Use the shown dice tray to compute the requested probability. For a uniformly selected die from this tray, what is the probability that the die shows a value at least 3?\nRequired annotation format: set \"annotation\" to the full dice tray bounding box [x0, y0, x1, y1].\nRequired answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":[145,112,955,650],\"answer\":\"5/12\"}",
+          "word_count": 91
+        },
+        {
+          "body_word_count": 49,
+          "mode": "answer_only",
+          "prompt": "The dice tray diagram shows one felt-style tray of colored dice. Each die shows a visible top value. Use the shown dice tray to compute the requested probability. For a uniformly selected die from this tray, what is the probability that the die shows a value at least 3?\nFinal answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"5/12\"}",
+          "word_count": 70
+        }
+      ],
+      "query_id": "single_value_at_least_probability",
+      "task": "task_symbolic__dice__single_threshold_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          145.0,
+          112.0,
+          955.0,
+          650.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2571345039099605,
+      "issues": [],
+      "observed_query_id": "single_value_at_most_probability",
+      "prompts": [
+        {
+          "body_word_count": 49,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows one tray of colored dice. Each die shows a visible top value. Use the shown dice tray to compute the requested probability. If one die is chosen uniformly from the dice in the tray, what is the probability that it shows a value at most 2?\nAnnotation format: set \"annotation\" to the full dice tray bounding box [x0, y0, x1, y1].\nAnswer field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":[145,112,955,650],\"answer\":\"5/12\"}",
+          "word_count": 89
+        },
+        {
+          "body_word_count": 49,
+          "mode": "answer_only",
+          "prompt": "The figure shows one tray of colored dice. Each die shows a visible top value. Use the shown dice tray to compute the requested probability. If one die is chosen uniformly from the dice in the tray, what is the probability that it shows a value at most 2?\nRequired answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"5/12\"}",
+          "word_count": 70
+        }
+      ],
+      "query_id": "single_value_at_most_probability",
+      "task": "task_symbolic__dice__single_threshold_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          695,
+          496
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "selected_option": [
+            193.0,
+            271.0,
+            343.0,
+            441.0
+          ],
+          "source_grid": [
+            285.0,
+            80.0,
+            415.0,
+            210.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5760669431681049,
+      "issues": [],
+      "observed_query_id": "one_step_future_grid",
+      "prompts": [
+        {
+          "body_word_count": 74,
+          "mode": "answer_and_annotation",
+          "prompt": "The grid diagram shows a cellular-automaton source grid marked START where dark cells are alive and light cells are empty, with labeled future-grid options below. Use the rule that an alive cell survives with exactly 2 or 3 alive neighbors, an empty cell becomes alive with exactly 3 alive neighbors, and all other cells are empty in the next grid. Starting from the grid marked START, select the option showing the one-step future grid.\nAnnotation format: set \"annotation\" to an object/dictionary with keys \"source_grid\" and \"selected_option\", each mapped to that pixel bounding box [x0, y0, x1, y1].\nAnswer field: set \"answer\" to the single selected option letter.\nExample JSON:\n{\"annotation\":{\"source_grid\":[322,104,718,500],\"selected_option\":[624,552,774,706]},\"answer\":\"D\"}",
+          "word_count": 123
+        },
+        {
+          "body_word_count": 74,
+          "mode": "answer_only",
+          "prompt": "The grid diagram shows a cellular-automaton source grid marked START where dark cells are alive and light cells are empty, with labeled future-grid options below. Use the rule that an alive cell survives with exactly 2 or 3 alive neighbors, an empty cell becomes alive with exactly 3 alive neighbors, and all other cells are empty in the next grid. Starting from the grid marked START, select the option showing the one-step future grid.\nRequired answer format: set \"answer\" to the single selected option letter.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 89
+        }
+      ],
+      "query_id": "one_step_future_grid",
+      "task": "task_symbolic__life_automaton__life_future_grid_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          743,
+          485
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "selected_option": [
+            28.0,
+            272.0,
+            191.0,
+            455.0
+          ],
+          "source_grid": [
+            300.0,
+            79.0,
+            443.0,
+            222.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8460254735678923,
+      "issues": [],
+      "observed_query_id": "two_step_future_grid",
+      "prompts": [
+        {
+          "body_word_count": 51,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows a lab-style cellular-automaton source grid marked START where dark cells are alive and light cells are empty, with labeled future-grid options below. Apply the same alive-neighbor rule for two updates in sequence. Starting from the grid marked START, choose the option that matches the grid after two updates.\nFormat for the \"annotation\" field: set \"annotation\" to an object/dictionary with keys \"source_grid\" and \"selected_option\", each mapped to that pixel bounding box [x0, y0, x1, y1].\nFormat for the \"answer\" field: set \"answer\" to the single selected option letter.\nExample JSON:\n{\"annotation\":{\"source_grid\":[322,104,718,500],\"selected_option\":[624,552,774,706]},\"answer\":\"D\"}",
+          "word_count": 106
+        },
+        {
+          "body_word_count": 51,
+          "mode": "answer_only",
+          "prompt": "The visual shows a lab-style cellular-automaton source grid marked START where dark cells are alive and light cells are empty, with labeled future-grid options below. Apply the same alive-neighbor rule for two updates in sequence. Starting from the grid marked START, choose the option that matches the grid after two updates.\nFormat for the \"answer\" field: set \"answer\" to the single selected option letter.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 68
+        }
+      ],
+      "query_id": "two_step_future_grid",
+      "task": "task_symbolic__life_automaton__life_future_grid_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 6,
+        "image_size": [
+          420,
+          360
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            82.0,
+            184.0,
+            134.0,
+            236.0
+          ],
+          [
+            136.0,
+            184.0,
+            188.0,
+            236.0
+          ],
+          [
+            190.0,
+            184.0,
+            242.0,
+            236.0
+          ],
+          [
+            82.0,
+            238.0,
+            134.0,
+            290.0
+          ],
+          [
+            136.0,
+            238.0,
+            188.0,
+            290.0
+          ],
+          [
+            190.0,
+            238.0,
+            242.0,
+            290.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6201116215051606,
+      "issues": [],
+      "observed_query_id": "one_step_alive_cell_count",
+      "prompts": [
+        {
+          "body_word_count": 72,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows a cellular-automaton source grid marked START where dark cells are alive and light cells are empty. Use the rule that an alive cell survives with exactly 2 or 3 alive neighbors, an empty cell becomes alive with exactly 3 alive neighbors, and all other cells are empty in the next grid. Using the grid marked START as the source grid, how many cells are alive in the next grid?\nFinal answer format: set \"answer\" to the integer count.\nAnnotation format: set \"annotation\" to an array of pixel-space bounding boxes [x0, y0, x1, y1], one for each visible source-grid cell that has the requested state after one update; use an empty array if there are none.\nExample JSON:\n{\"annotation\":[[322,104,376,158],[380,104,434,158],[322,162,376,216]],\"answer\":3}",
+          "word_count": 135
+        },
+        {
+          "body_word_count": 72,
+          "mode": "answer_only",
+          "prompt": "The figure shows a cellular-automaton source grid marked START where dark cells are alive and light cells are empty. Use the rule that an alive cell survives with exactly 2 or 3 alive neighbors, an empty cell becomes alive with exactly 3 alive neighbors, and all other cells are empty in the next grid. Using the grid marked START as the source grid, how many cells are alive in the next grid?\nAnswer format: set \"answer\" to the integer count.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 84
+        }
+      ],
+      "query_id": "one_step_alive_cell_count",
+      "task": "task_symbolic__life_automaton__one_step_cell_state_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 14,
+        "image_size": [
+          420,
+          360
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            62.0,
+            121.0,
+            94.0,
+            153.0
+          ],
+          [
+            95.0,
+            121.0,
+            127.0,
+            153.0
+          ],
+          [
+            128.0,
+            121.0,
+            160.0,
+            153.0
+          ],
+          [
+            161.0,
+            121.0,
+            193.0,
+            153.0
+          ],
+          [
+            62.0,
+            154.0,
+            94.0,
+            186.0
+          ],
+          [
+            95.0,
+            154.0,
+            127.0,
+            186.0
+          ],
+          [
+            128.0,
+            154.0,
+            160.0,
+            186.0
+          ],
+          [
+            161.0,
+            154.0,
+            193.0,
+            186.0
+          ],
+          [
+            62.0,
+            187.0,
+            94.0,
+            219.0
+          ],
+          [
+            95.0,
+            187.0,
+            127.0,
+            219.0
+          ],
+          [
+            161.0,
+            187.0,
+            193.0,
+            219.0
+          ],
+          [
+            62.0,
+            220.0,
+            94.0,
+            252.0
+          ],
+          [
+            128.0,
+            220.0,
+            160.0,
+            252.0
+          ],
+          [
+            161.0,
+            220.0,
+            193.0,
+            252.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3248338038024353,
+      "issues": [],
+      "observed_query_id": "one_step_dead_cell_count",
+      "prompts": [
+        {
+          "body_word_count": 75,
+          "mode": "answer_and_annotation",
+          "prompt": "The Life automaton diagram shows a lab-style cellular-automaton source grid marked START where dark cells are alive and light cells are empty. Use the rule that an alive cell survives with exactly 2 or 3 alive neighbors, an empty cell becomes alive with exactly 3 alive neighbors, and all other cells are empty in the next grid. Using the grid marked START as the source grid, how many cells are empty in the next grid?\nAnnotation format: set \"annotation\" to an array of pixel-space bounding boxes [x0, y0, x1, y1], one for each visible source-grid cell that has the requested state after one update; use an empty array if there are none.\nAnswer field: set \"answer\" to the integer count.\nExample JSON:\n{\"annotation\":[[322,104,376,158],[380,104,434,158],[322,162,376,216]],\"answer\":3}",
+          "word_count": 137
+        },
+        {
+          "body_word_count": 75,
+          "mode": "answer_only",
+          "prompt": "The Life automaton diagram shows a lab-style cellular-automaton source grid marked START where dark cells are alive and light cells are empty. Use the rule that an alive cell survives with exactly 2 or 3 alive neighbors, an empty cell becomes alive with exactly 3 alive neighbors, and all other cells are empty in the next grid. Using the grid marked START as the source grid, how many cells are empty in the next grid?\nFormat for the \"answer\" field: set \"answer\" to the integer count.\nExample JSON:\n{\"answer\":3}",
+          "word_count": 90
+        }
+      ],
+      "query_id": "one_step_dead_cell_count",
+      "task": "task_symbolic__life_automaton__one_step_cell_state_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          1180,
+          820
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            214.0,
+            326.0,
+            286.0,
+            372.0
+          ],
+          [
+            695.333,
+            376.25,
+            767.333,
+            422.25
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2650728928885458,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 26,
+          "mode": "answer_and_annotation",
+          "prompt": "The circuit-notation panel shows a notebook-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. Count the NAND gate symbols.\nRequired annotation format: set \"annotation\" to a JSON array of pixel-space gate-symbol bounding boxes [x0, y0, x1, y1], one for each counted gate; use [] if no gate matches.\nRequired answer format: set \"answer\" to the integer number of matching gates.\nExample JSON:\n{\"annotation\":[[320,210,392,256],[560,380,632,426]],\"answer\":2}",
+          "word_count": 79
+        },
+        {
+          "body_word_count": 26,
+          "mode": "answer_only",
+          "prompt": "The circuit-notation panel shows a notebook-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. Count the NAND gate symbols.\nRequired answer format: set \"answer\" to the integer number of matching gates.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 42
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__logic_gate_circuit__gate_type_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 1,
+        "image_size": [
+          1180,
+          820
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            214.0,
+            527.0,
+            286.0,
+            573.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6530736306769896,
+      "issues": [],
+      "observed_query_id": "internal_output_one_count",
+      "prompts": [
+        {
+          "body_word_count": 27,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual panel contains a notebook-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. How many intermediate gates produce 1?\nAnnotation format: set \"annotation\" to a JSON array of pixel-space gate bounding boxes [x0, y0, x1, y1], one for each gate whose computed output is 1; use [] if no gate matches.\nAnswer format: set \"answer\" to the integer number of gates whose computed output is 1.\nExample JSON:\n{\"annotation\":[[320,210,392,256],[560,380,632,426]],\"answer\":2}",
+          "word_count": 86
+        },
+        {
+          "body_word_count": 27,
+          "mode": "answer_only",
+          "prompt": "The visual panel contains a notebook-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. How many intermediate gates produce 1?\nAnswer format: set \"answer\" to the integer number of gates whose computed output is 1.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 46
+        }
+      ],
+      "query_id": "internal_output_one_count",
+      "task": "task_symbolic__logic_gate_circuit__internal_output_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          1180,
+          820
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            575.0,
+            493.5,
+            647.0,
+            539.5
+          ],
+          [
+            936.0,
+            342.75,
+            1008.0,
+            388.75
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4694551040317992,
+      "issues": [],
+      "observed_query_id": "internal_output_zero_count",
+      "prompts": [
+        {
+          "body_word_count": 34,
+          "mode": "answer_and_annotation",
+          "prompt": "A circuit worksheet presents a clean worksheet-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. With the shown input values, count the gates whose output is 0.\nAnnotation format: set \"annotation\" to a JSON array of pixel-space gate bounding boxes [x0, y0, x1, y1], one for each gate whose computed output is 0; use [] if no gate matches.\nAnswer format: set \"answer\" to the integer number of gates whose computed output is 0.\nExample JSON:\n{\"annotation\":[[410,250,482,296]],\"answer\":1}",
+          "word_count": 89
+        },
+        {
+          "body_word_count": 34,
+          "mode": "answer_only",
+          "prompt": "A circuit worksheet presents a clean worksheet-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. With the shown input values, count the gates whose output is 0.\nRequired answer format: set \"answer\" to the integer number of gates whose computed output is 0.\nExample JSON:\n{\"answer\":1}",
+          "word_count": 54
+        }
+      ],
+      "query_id": "internal_output_zero_count",
+      "task": "task_symbolic__logic_gate_circuit__internal_output_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1180,
+          820
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          607.0,
+          426.0,
+          1132.0,
+          770.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7289826020022598,
+      "issues": [],
+      "observed_query_id": "output_one_label",
+      "prompts": [
+        {
+          "body_word_count": 30,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual panel contains a notebook-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. Which circuit panel produces a final output of 1?\nRequired annotation format: set \"annotation\" to the pixel-space bounding box [x0, y0, x1, y1] of the selected circuit panel whose final OUT value is 1.\nRequired answer format: set \"answer\" to the single capital-letter circuit option label.\nExample JSON:\n{\"annotation\":[48,50,573,394],\"answer\":\"C\"}",
+          "word_count": 76
+        },
+        {
+          "body_word_count": 30,
+          "mode": "answer_only",
+          "prompt": "The visual panel contains a notebook-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. Which circuit panel produces a final output of 1?\nAnswer format: set \"answer\" to the single capital-letter circuit option label.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 45
+        }
+      ],
+      "query_id": "output_one_label",
+      "task": "task_symbolic__logic_gate_circuit__output_value_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1180,
+          820
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          607.0,
+          426.0,
+          1132.0,
+          770.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 3112530208857775,
+      "issues": [],
+      "observed_query_id": "output_zero_label",
+      "prompts": [
+        {
+          "body_word_count": 31,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual panel contains a clean worksheet-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. Which circuit panel produces a final output of 0?\nAnnotation format: set \"annotation\" to the pixel-space bounding box [x0, y0, x1, y1] of the selected circuit panel whose final OUT value is 0.\nAnswer field: set \"answer\" to the single capital-letter circuit option label.\nExample JSON:\n{\"annotation\":[607,426,1132,770],\"answer\":\"D\"}",
+          "word_count": 75
+        },
+        {
+          "body_word_count": 42,
+          "mode": "answer_only",
+          "prompt": "The visual panel contains a clean worksheet-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. Which circuit panel produces a final output of 0?\nAnswer field: set \"answer\" to the single capital-letter circuit option label.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 46
+        }
+      ],
+      "query_id": "output_zero_label",
+      "task": "task_symbolic__logic_gate_circuit__output_value_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1180,
+          820
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "selected_option": [
+            793.0,
+            455.0,
+            1114.0,
+            548.5
+          ],
+          "source_circuit": [
+            48.0,
+            120.0,
+            730.0,
+            690.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2291940810435636,
+      "issues": [],
+      "observed_query_id": "assignment_outputs_one_label",
+      "prompts": [
+        {
+          "body_word_count": 33,
+          "mode": "answer_and_annotation",
+          "prompt": "A circuit worksheet presents a notebook-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. Which labeled assignment sets the source circuit's final OUT value to 1?\nRequired annotation format: set \"annotation\" to an object with keys \"source_circuit\" and \"selected_option\", each mapped to a pixel-space bounding box [x0, y0, x1, y1].\nRequired answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":{\"source_circuit\":[48,120,730,690],\"selected_option\":[793,302,1132,358]},\"answer\":\"D\"}",
+          "word_count": 83
+        },
+        {
+          "body_word_count": 33,
+          "mode": "answer_only",
+          "prompt": "A circuit worksheet presents a notebook-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. Which labeled assignment sets the source circuit's final OUT value to 1?\nFormat for the \"answer\" field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 50
+        }
+      ],
+      "query_id": "assignment_outputs_one_label",
+      "task": "task_symbolic__logic_gate_circuit__satisfying_assignment_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1180,
+          820
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "selected_option": [
+            793.0,
+            560.5,
+            1114.0,
+            654.0
+          ],
+          "source_circuit": [
+            48.0,
+            120.0,
+            730.0,
+            690.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "option_letter",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7790165805562085,
+      "issues": [],
+      "observed_query_id": "assignment_outputs_zero_label",
+      "prompts": [
+        {
+          "body_word_count": 31,
+          "mode": "answer_and_annotation",
+          "prompt": "The circuit-notation panel shows a notebook-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. Select the assignment option that produces final OUT value 0.\nFormat for the \"annotation\" field: set \"annotation\" to an object with keys \"source_circuit\" and \"selected_option\", each mapped to a pixel-space bounding box [x0, y0, x1, y1].\nFormat for the \"answer\" field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":{\"source_circuit\":[48,120,730,690],\"selected_option\":[793,386,1132,470]},\"answer\":\"B\"}",
+          "word_count": 85
+        },
+        {
+          "body_word_count": 31,
+          "mode": "answer_only",
+          "prompt": "The circuit-notation panel shows a notebook-style Boolean logic-gate circuit diagram with labeled inputs, standard gate symbols, wires, and final OUT nodes. Select the assignment option that produces final OUT value 0.\nAnswer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 45
+        }
+      ],
+      "query_id": "assignment_outputs_zero_label",
+      "task": "task_symbolic__logic_gate_circuit__satisfying_assignment_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          980,
+          680
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "selected_option": [
+            218.0,
+            488.0,
+            458.0,
+            558.0
+          ],
+          "source_code": [
+            234.0,
+            88.0,
+            746.0,
+            230.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 388929633468909,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 27,
+          "mode": "answer_and_annotation",
+          "prompt": "A Morse-code notation panel shows a clean Morse-code word card above four labeled word options. Choose the option that spells the word encoded by the Morse code.\nRequired annotation format: set \"annotation\" to an object with keys \"source_code\" and \"selected_option\", each mapped to a pixel-space bounding box [x0, y0, x1, y1].\nRequired answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":{\"source_code\":[172,88,808,230],\"selected_option\":[523,489,763,559]},\"answer\":\"D\"}",
+          "word_count": 77
+        },
+        {
+          "body_word_count": 27,
+          "mode": "answer_only",
+          "prompt": "A Morse-code notation panel shows a clean Morse-code word card above four labeled word options. Choose the option that spells the word encoded by the Morse code.\nRequired answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 42
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__morse_code__morse_word_read_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          980,
+          680
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "selected_option": [
+            520.0,
+            406.0,
+            920.0,
+            538.0
+          ],
+          "source_word": [
+            340.0,
+            56.0,
+            640.0,
+            136.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5620929416603271,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 24,
+          "mode": "answer_and_annotation",
+          "prompt": "The notation panel shows an exam-scan-style source word above four labeled Morse-code options. Choose the option whose Morse-code symbols spell the word shown above.\nRequired annotation format: set \"annotation\" to an object with keys \"source_word\" and \"selected_option\", each mapped to a pixel-space bounding box [x0, y0, x1, y1].\nRequired answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":{\"source_word\":[312,56,668,136],\"selected_option\":[350,400,630,532]},\"answer\":\"D\"}",
+          "word_count": 74
+        },
+        {
+          "body_word_count": 24,
+          "mode": "answer_only",
+          "prompt": "The notation panel shows an exam-scan-style source word above four labeled Morse-code options. Choose the option whose Morse-code symbols spell the word shown above.\nRequired answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 39
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__morse_code__word_morse_match_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "point",
+        "annotation_value_count": 2,
+        "image_size": [
+          1180,
+          480
+        ],
+        "overlay_annotation_type": "point",
+        "overlay_annotation_value": [
+          396.0,
+          177.0
+        ],
+        "projected_type": "point"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2172175706094506,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 20,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows a clean engraved-style sheet-music staff panel with marked notation items. Read mark 2 and choose its name.\nFinal answer format: set \"answer\" to the single capital-letter option label.\nAnnotation format: set \"annotation\" to the pixel-space point [x, y] at the center of the target articulation symbol.\nExample JSON:\n{\"annotation\":[302,149],\"answer\":\"A\"}",
+          "word_count": 56
+        },
+        {
+          "body_word_count": 20,
+          "mode": "answer_only",
+          "prompt": "The figure shows a clean engraved-style sheet-music staff panel with marked notation items. Read mark 2 and choose its name.\nAnswer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"A\"}",
+          "word_count": 34
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__music_staff__articulation_symbol_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1180,
+          480
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          277.0,
+          141.0,
+          302.0,
+          206.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7812251496531690,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 19,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a notebook-style sheet-music staff panel with marked notation items. Read chord 1 and choose its inversion.\nFormat for the \"annotation\" field: set \"annotation\" to the target numbered chord pixel-space bounding box [x0, y0, x1, y1].\nFormat for the \"answer\" field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":[300,145,354,248],\"answer\":\"B\"}",
+          "word_count": 60
+        },
+        {
+          "body_word_count": 19,
+          "mode": "answer_only",
+          "prompt": "The image shows a notebook-style sheet-music staff panel with marked notation items. Read chord 1 and choose its inversion.\nFormat for the \"answer\" field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 36
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__music_staff__chord_inversion_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1180,
+          480
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          348.0,
+          168.0,
+          373.0,
+          227.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2224064324601812,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 22,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows an exam-scan-style sheet-music staff panel with marked notation items. Which visible option gives the chord-quality name for chord 2?\nRequired annotation format: set \"annotation\" to the target numbered chord pixel-space bounding box [x0, y0, x1, y1].\nRequired answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":[300,145,354,248],\"answer\":\"A\"}",
+          "word_count": 59
+        },
+        {
+          "body_word_count": 32,
+          "mode": "answer_only",
+          "prompt": "The visual shows an exam-scan-style sheet-music staff panel with marked notation items. Which visible option gives the chord-quality name for chord 2?\nAnswer field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"A\"}",
+          "word_count": 36
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__music_staff__chord_quality_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1180,
+          480
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          352.0,
+          87.0,
+          391.0,
+          137.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 736306776969510,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 20,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows a notebook-style sheet-music staff panel with marked notation items. Choose the duration name for numbered note 2.\nRequired annotation format: set \"annotation\" to the pixel-space bounding box [x0, y0, x1, y1] around the target numbered note.\nRequired answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":[280,188,324,250],\"answer\":\"C\"}",
+          "word_count": 59
+        },
+        {
+          "body_word_count": 20,
+          "mode": "answer_only",
+          "prompt": "The image shows a notebook-style sheet-music staff panel with marked notation items. Choose the duration name for numbered note 2.\nRequired answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 35
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__music_staff__duration_equivalence_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1180,
+          480
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          434.0,
+          95.0,
+          486.0,
+          197.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1871423632093219,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 18,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows a clean engraved-style sheet-music staff panel with marked notation items. Which option names interval 3?\nFormat for the \"annotation\" field: set \"annotation\" to the pixel-space bounding box [x0, y0, x1, y1] for the marked interval region.\nFormat for the \"answer\" field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":[242,154,383,253],\"answer\":\"D\"}",
+          "word_count": 61
+        },
+        {
+          "body_word_count": 18,
+          "mode": "answer_only",
+          "prompt": "The visual shows a clean engraved-style sheet-music staff panel with marked notation items. Which option names interval 3?\nAnswer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 32
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__music_staff__interval_name_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1180,
+          480
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          200.0,
+          207.0,
+          225.0,
+          236.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1168086467224608,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 26,
+          "mode": "answer_and_annotation",
+          "prompt": "This music-notation item shows a clean engraved-style sheet-music staff panel with marked notation items. Select the option naming the major key shown by the key signature.\nFormat for the \"annotation\" field: set \"annotation\" to the key-signature pixel-space bounding box [x0, y0, x1, y1].\nFormat for the \"answer\" field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":[190,178,250,222],\"answer\":\"B\"}",
+          "word_count": 65
+        },
+        {
+          "body_word_count": 36,
+          "mode": "answer_only",
+          "prompt": "This music-notation item shows a clean engraved-style sheet-music staff panel with marked notation items. Select the option naming the major key shown by the key signature.\nAnswer field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"B\"}",
+          "word_count": 40
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__music_staff__key_signature_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 0,
+        "image_size": [
+          1180,
+          480
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6968072807274550,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 23,
+          "mode": "answer_and_annotation",
+          "prompt": "The sheet-music panel shows a notebook-style sheet-music staff panel with marked notation items. Count the measures whose visible time signature is compound meter.\nFinal answer format: set \"answer\" to the integer count of measures with the requested meter type.\nAnnotation format: set \"annotation\" to an array containing every counted measure pixel-space bounding box [x0, y0, x1, y1]; use an empty array when no shown measures have the requested meter type.\nExample JSON:\n{\"annotation\":[[240,160,330,245],[420,160,510,245]],\"answer\":2}",
+          "word_count": 83
+        },
+        {
+          "body_word_count": 23,
+          "mode": "answer_only",
+          "prompt": "The sheet-music panel shows a notebook-style sheet-music staff panel with marked notation items. Count the measures whose visible time signature is compound meter.\nAnswer format: set \"answer\" to the integer count of measures with the requested meter type.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 42
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__music_staff__meter_type_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1180,
+          480
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          689.0,
+          141.0,
+          714.0,
+          175.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8590068661550215,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 21,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows a notebook-style sheet-music staff panel with marked notation items. Select the option that names the note marked 5.\nFormat for the \"annotation\" field: set \"annotation\" to the pixel-space bounding box [x0, y0, x1, y1] for the marked note.\nFormat for the \"answer\" field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":[270,188,315,252],\"answer\":\"C\"}",
+          "word_count": 63
+        },
+        {
+          "body_word_count": 21,
+          "mode": "answer_only",
+          "prompt": "The figure shows a notebook-style sheet-music staff panel with marked notation items. Select the option that names the note marked 5.\nFinal answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"C\"}",
+          "word_count": 36
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__music_staff__note_name_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1180,
+          480
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "key_signature": [
+            154.0,
+            113.0,
+            178.0,
+            151.0
+          ],
+          "target_chord": [
+            490.0,
+            87.0,
+            515.0,
+            147.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2648142599690401,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 27,
+          "mode": "answer_and_annotation",
+          "prompt": "This music-notation item shows a clean engraved-style sheet-music staff panel with marked notation items. Select the option naming the roman numeral of chord 3 in F major.\nAnnotation format: set \"annotation\" to an object with keys \"key_signature\" and \"target_chord\", each mapped to a pixel-space bounding box [x0, y0, x1, y1].\nAnswer field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":{\"key_signature\":[190,178,250,222],\"target_chord\":[300,145,354,248]},\"answer\":\"F\"}",
+          "word_count": 75
+        },
+        {
+          "body_word_count": 27,
+          "mode": "answer_only",
+          "prompt": "This music-notation item shows a clean engraved-style sheet-music staff panel with marked notation items. Select the option naming the roman numeral of chord 3 in F major.\nFormat for the \"answer\" field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"F\"}",
+          "word_count": 44
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__music_staff__roman_numeral_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1180,
+          480
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "key_signature": [
+            234.0,
+            95.0,
+            258.0,
+            120.0
+          ],
+          "target_note": [
+            357.0,
+            117.0,
+            382.0,
+            155.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6681591999909014,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 25,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows a clean engraved-style sheet-music staff panel with marked notation items. In G major, which option gives the scale-degree function of note 1?\nRequired annotation format: set \"annotation\" to an object with keys \"key_signature\" and \"target_note\", each mapped to a pixel-space bounding box [x0, y0, x1, y1].\nRequired answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":{\"key_signature\":[190,178,250,222],\"target_note\":[330,188,374,250]},\"answer\":\"E\"}",
+          "word_count": 75
+        },
+        {
+          "body_word_count": 25,
+          "mode": "answer_only",
+          "prompt": "The visual shows a clean engraved-style sheet-music staff panel with marked notation items. In G major, which option gives the scale-degree function of note 1?\nAnswer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"E\"}",
+          "word_count": 39
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__music_staff__scale_degree_function_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 0,
+        "image_size": [
+          1180,
+          480
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1279534503554878,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 24,
+          "mode": "answer_and_annotation",
+          "prompt": "This music-notation item shows an exam-scan-style sheet-music staff panel with marked notation items. Find the count of fragment ranges that correctly follow Bb major.\nAnnotation format: set \"annotation\" to an array containing every counted scale-fragment range pixel-space bounding box [x0, y0, x1, y1]; use an empty array when no shown fragments correctly fit the requested key.\nAnswer format: set \"answer\" to the integer count of scale fragments that correctly fit the requested key.\nExample JSON:\n{\"annotation\":[[240,160,330,245],[420,160,510,245]],\"answer\":2}",
+          "word_count": 86
+        },
+        {
+          "body_word_count": 24,
+          "mode": "answer_only",
+          "prompt": "This music-notation item shows an exam-scan-style sheet-music staff panel with marked notation items. Find the count of fragment ranges that correctly follow Bb major.\nAnswer format: set \"answer\" to the integer count of scale fragments that correctly fit the requested key.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 45
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__music_staff__scale_validation_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 2,
+        "image_size": [
+          1180,
+          480
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            303.0,
+            151.0,
+            404.0,
+            265.0
+          ],
+          [
+            697.0,
+            151.0,
+            798.0,
+            265.0
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 7844507750037408,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 23,
+          "mode": "answer_and_annotation",
+          "prompt": "The image shows an exam-scan-style sheet-music staff panel with marked notation items. How many marked pairs show the requested upward perfect 5th transposition?\nAnnotation format: set \"annotation\" to an array containing every counted transposition-pair range pixel-space bounding box [x0, y0, x1, y1]; use an empty array when no shown pairs match the requested transposition.\nAnswer field: set \"answer\" to the integer count of note pairs that match the requested upward interval.\nExample JSON:\n{\"annotation\":[[240,160,330,245],[420,160,510,245]],\"answer\":2}",
+          "word_count": 84
+        },
+        {
+          "body_word_count": 23,
+          "mode": "answer_only",
+          "prompt": "The image shows an exam-scan-style sheet-music staff panel with marked notation items. How many marked pairs show the requested upward perfect 5th transposition?\nAnswer format: set \"answer\" to the integer count of note pairs that match the requested upward interval.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 44
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__music_staff__transposed_pitch_pair_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "segment_set",
+        "annotation_value_count": 4,
+        "image_size": [
+          1180,
+          820
+        ],
+        "overlay_annotation_type": "segment_set",
+        "overlay_annotation_value": [
+          [
+            [
+              448.802,
+              322.951
+            ],
+            [
+              492.893,
+              348.407
+            ]
+          ],
+          [
+            [
+              536.984,
+              373.863
+            ],
+            [
+              581.075,
+              399.319
+            ]
+          ],
+          [
+            [
+              625.166,
+              424.775
+            ],
+            [
+              669.256,
+              450.231
+            ]
+          ],
+          [
+            [
+              713.347,
+              475.687
+            ],
+            [
+              757.438,
+              501.142
+            ]
+          ]
+        ],
+        "projected_type": "segment_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8265831146240113,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 24,
+          "mode": "answer_and_annotation",
+          "prompt": "The panel contains an exam-scan-style organic skeletal structure with line-angle bonds, rings, and occasional atom or substituent labels. How many triple bonds are shown?\nAnnotation format: set \"annotation\" to a list of bond segments; each segment is [[x0, y0], [x1, y1]], where each endpoint is an [x, y] pixel-space point at a semantic bond endpoint.\nAnswer format: set \"answer\" to the integer count of matching bonds.\nExample JSON:\n{\"annotation\":[[[420,260],[512,310]],[[610,340],[704,388]]],\"answer\":2}",
+          "word_count": 79
+        },
+        {
+          "body_word_count": 24,
+          "mode": "answer_only",
+          "prompt": "The panel contains an exam-scan-style organic skeletal structure with line-angle bonds, rings, and occasional atom or substituent labels. How many triple bonds are shown?\nRequired answer format: set \"answer\" to the integer count of matching bonds.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 40
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__organic_structure__bond_order_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_set",
+        "annotation_value_count": 3,
+        "image_size": [
+          1180,
+          820
+        ],
+        "overlay_annotation_type": "bbox_set",
+        "overlay_annotation_value": [
+          [
+            685.238,
+            349.247,
+            802.284,
+            460.564
+          ],
+          [
+            372.982,
+            529.528,
+            490.028,
+            640.845
+          ],
+          [
+            372.982,
+            168.965,
+            490.028,
+            280.283
+          ]
+        ],
+        "projected_type": "bbox_set"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5385094829741857,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 25,
+          "mode": "answer_and_annotation",
+          "prompt": "The panel contains a notebook-style organic skeletal structure with line-angle bonds, rings, and occasional atom or substituent labels. Count the pentagonal rings in the structure.\nAnnotation format: set \"annotation\" to an array containing the pixel-space bounding box [x0, y0, x1, y1] around every matching ring.\nAnswer format: set \"answer\" to the integer count of matching rings.\nExample JSON:\n{\"annotation\":[[220,250,340,370],[520,250,640,370]],\"answer\":2}",
+          "word_count": 69
+        },
+        {
+          "body_word_count": 25,
+          "mode": "answer_only",
+          "prompt": "The panel contains a notebook-style organic skeletal structure with line-angle bonds, rings, and occasional atom or substituent labels. Count the pentagonal rings in the structure.\nFinal answer format: set \"answer\" to the integer count of matching rings.\nExample JSON:\n{\"answer\":2}",
+          "word_count": 41
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__organic_structure__ring_size_count"
+    },
+    {
+      "annotation": {
+        "annotation_type": "point_map",
+        "annotation_value_count": 3,
+        "image_size": [
+          1080,
+          860
+        ],
+        "overlay_annotation_type": "point_map",
+        "overlay_annotation_value": {
+          "inner_ring_symbol": [
+            296.0,
+            430.0
+          ],
+          "middle_ring_symbol": [
+            219.151,
+            398.005
+          ],
+          "outer_ring_symbol": [
+            150.263,
+            347.799
+          ]
+        },
+        "projected_type": "point_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2941626889574254,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 56,
+          "mode": "answer_and_annotation",
+          "prompt": "This radial code wheel shows a clean three-ring code wheel, a source code card, and six labeled output options. Read codes from center to edge: first symbol in the inner ring, second in the middle ring, third in the outer ring. Use the code card and select the option with the terminal output label it reaches.\nFormat for the \"annotation\" field: set \"annotation\" to an object with keys \"inner_ring_symbol\", \"middle_ring_symbol\", and \"outer_ring_symbol\", each mapped to the pixel-space center point [x, y] of the matching code symbol on that ring.\nFormat for the \"answer\" field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":{\"inner_ring_symbol\":[408,327],\"middle_ring_symbol\":[481,405],\"outer_ring_symbol\":[568,461]},\"answer\":\"D\"}",
+          "word_count": 116
+        },
+        {
+          "body_word_count": 56,
+          "mode": "answer_only",
+          "prompt": "This radial code wheel shows a clean three-ring code wheel, a source code card, and six labeled output options. Read codes from center to edge: first symbol in the inner ring, second in the middle ring, third in the outer ring. Use the code card and select the option with the terminal output label it reaches.\nRequired answer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"D\"}",
+          "word_count": 71
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__radial_code_wheel__code_output_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "point_map",
+        "annotation_value_count": 3,
+        "image_size": [
+          1080,
+          860
+        ],
+        "overlay_annotation_type": "point_map",
+        "overlay_annotation_value": {
+          "inner_ring_symbol": [
+            380.0,
+            514.0
+          ],
+          "middle_ring_symbol": [
+            471.114,
+            566.361
+          ],
+          "outer_ring_symbol": [
+            484.323,
+            650.573
+          ]
+        },
+        "projected_type": "point_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 1678427920765117,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 48,
+          "mode": "answer_and_annotation",
+          "prompt": "The code-wheel panel shows an exam-scan-style three-ring code wheel, a target output card, and six labeled code options. Follow a code from the center outward through the inner, middle, and outer rings. Use the radial wheel to choose the code option that leads to the displayed output label.\nAnnotation format: set \"annotation\" to an object with keys \"inner_ring_symbol\", \"middle_ring_symbol\", and \"outer_ring_symbol\", each mapped to the pixel-space center point [x, y] of the code path that reaches the target output.\nAnswer format: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"annotation\":{\"inner_ring_symbol\":[408,327],\"middle_ring_symbol\":[481,405],\"outer_ring_symbol\":[568,461]},\"answer\":\"E\"}",
+          "word_count": 103
+        },
+        {
+          "body_word_count": 48,
+          "mode": "answer_only",
+          "prompt": "The code-wheel panel shows an exam-scan-style three-ring code wheel, a target output card, and six labeled code options. Follow a code from the center outward through the inner, middle, and outer rings. Use the radial wheel to choose the code option that leads to the displayed output label.\nFormat for the \"answer\" field: set \"answer\" to the single capital-letter option label.\nExample JSON:\n{\"answer\":\"E\"}",
+          "word_count": 65
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__radial_code_wheel__output_code_match_label"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          281.0,
+          47.0,
+          819.0,
+          629.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 4001845318772774,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 46,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows one card-style equal-sector spinner. Each sector has a color and a shape marker. Use one random spin of the spinner for the probability question. For a random spin, what is the probability that the selected sector is blue and marked with a circle?\nFinal answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nAnnotation format: set \"annotation\" to the full spinner panel bounding box [x0, y0, x1, y1].\nExample JSON:\n{\"annotation\":[281,47,819,629],\"answer\":\"1/8\"}",
+          "word_count": 87
+        },
+        {
+          "body_word_count": 46,
+          "mode": "answer_only",
+          "prompt": "The visual shows one card-style equal-sector spinner. Each sector has a color and a shape marker. Use one random spin of the spinner for the probability question. For a random spin, what is the probability that the selected sector is blue and marked with a circle?\nAnswer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"1/8\"}",
+          "word_count": 66
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__spinner__multi_attribute_and_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          281.0,
+          47.0,
+          819.0,
+          629.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 599171634876677,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 43,
+          "mode": "answer_and_annotation",
+          "prompt": "The spinner diagram shows one card-style equal-sector spinner. Each sector has a color and a shape marker. Use the equal sectors to compute the requested one-spin probability. What probability corresponds to landing on a sector that is yellow or marked with a diamond?\nAnnotation format: set \"annotation\" to the full spinner panel bounding box [x0, y0, x1, y1].\nFormat for the \"answer\" field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":[281,47,819,629],\"answer\":\"1/3\"}",
+          "word_count": 86
+        },
+        {
+          "body_word_count": 43,
+          "mode": "answer_only",
+          "prompt": "The spinner diagram shows one card-style equal-sector spinner. Each sector has a color and a shape marker. Use the equal sectors to compute the requested one-spin probability. What probability corresponds to landing on a sector that is yellow or marked with a diamond?\nAnswer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"1/3\"}",
+          "word_count": 63
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__spinner__multi_attribute_or_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          281.0,
+          47.0,
+          819.0,
+          629.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8870257222376468,
+      "issues": [],
+      "observed_query_id": "single_color_probability",
+      "prompts": [
+        {
+          "body_word_count": 38,
+          "mode": "answer_and_annotation",
+          "prompt": "The probability diagram shows one notebook-style equal-sector spinner. Each sector has a color and a shape marker. Use the equal sectors to compute the requested one-spin probability. What probability corresponds to landing on a sector that is green?\nFinal answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nAnnotation format: set \"annotation\" to the full spinner panel bounding box [x0, y0, x1, y1].\nExample JSON:\n{\"annotation\":[281,47,819,629],\"answer\":\"2/7\"}",
+          "word_count": 79
+        },
+        {
+          "body_word_count": 38,
+          "mode": "answer_only",
+          "prompt": "The probability diagram shows one notebook-style equal-sector spinner. Each sector has a color and a shape marker. Use the equal sectors to compute the requested one-spin probability. What probability corresponds to landing on a sector that is green?\nFinal answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"2/7\"}",
+          "word_count": 59
+        }
+      ],
+      "query_id": "single_color_probability",
+      "task": "task_symbolic__spinner__single_attribute_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox",
+        "annotation_value_count": 4,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox",
+        "overlay_annotation_value": [
+          281.0,
+          47.0,
+          819.0,
+          629.0
+        ],
+        "projected_type": "bbox"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 8890715119628595,
+      "issues": [],
+      "observed_query_id": "single_shape_probability",
+      "prompts": [
+        {
+          "body_word_count": 43,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows one notebook-style equal-sector spinner. Each sector has a color and a shape marker. Compute the requested probability from the shown equal-sector spinner. For one spin, what is the probability of landing on a sector that is marked with a square?\nAnnotation format: set \"annotation\" to the full spinner panel bounding box [x0, y0, x1, y1].\nAnswer field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":[281,47,819,629],\"answer\":\"3/8\"}",
+          "word_count": 83
+        },
+        {
+          "body_word_count": 43,
+          "mode": "answer_only",
+          "prompt": "The visual shows one notebook-style equal-sector spinner. Each sector has a color and a shape marker. Compute the requested probability from the shown equal-sector spinner. For one spin, what is the probability of landing on a sector that is marked with a square?\nFinal answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"3/8\"}",
+          "word_count": 64
+        }
+      ],
+      "query_id": "single_shape_probability",
+      "task": "task_symbolic__spinner__single_attribute_probability"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "spinner_a": [
+            136.0,
+            102.0,
+            564.0,
+            574.0
+          ],
+          "spinner_b": [
+            536.0,
+            102.0,
+            964.0,
+            574.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6761677091306538,
+      "issues": [],
+      "observed_query_id": "pair_at_least_one_target_color_probability",
+      "prompts": [
+        {
+          "body_word_count": 45,
+          "mode": "answer_and_annotation",
+          "prompt": "The probability panel shows two independent card-style equal-sector spinners labeled Spinner A and Spinner B. Each sector has a color. Answer using one independent spin of each shown spinner. Find the probability that at least one spinner lands on yellow after spinning both spinners once.\nAnnotation format: set \"annotation\" to an object with keys \"spinner_a\" and \"spinner_b\", each mapped to that spinner panel bounding box [x0, y0, x1, y1].\nAnswer field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":{\"spinner_a\":[136,102,564,574],\"spinner_b\":[536,102,964,574]},\"answer\":\"5/12\"}",
+          "word_count": 100
+        },
+        {
+          "body_word_count": 45,
+          "mode": "answer_only",
+          "prompt": "The probability panel shows two independent card-style equal-sector spinners labeled Spinner A and Spinner B. Each sector has a color. Answer using one independent spin of each shown spinner. Find the probability that at least one spinner lands on yellow after spinning both spinners once.\nFinal answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"5/12\"}",
+          "word_count": 66
+        }
+      ],
+      "query_id": "pair_at_least_one_target_color_probability",
+      "task": "task_symbolic__spinner__spinner_pair_event_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "spinner_a": [
+            136.0,
+            102.0,
+            564.0,
+            574.0
+          ],
+          "spinner_b": [
+            536.0,
+            102.0,
+            964.0,
+            574.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 6474680971190,
+      "issues": [],
+      "observed_query_id": "pair_both_target_color_probability",
+      "prompts": [
+        {
+          "body_word_count": 55,
+          "mode": "answer_and_annotation",
+          "prompt": "The visual shows two independent notebook-style equal-sector spinners labeled Spinner A and Spinner B. Each sector has a color. Use Spinner A and Spinner B as the two independent sources for the event. If each spinner is spun once, what is the probability that Spinner A lands on red and Spinner B lands on red?\nFinal answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nAnnotation format: set \"annotation\" to an object with keys \"spinner_a\" and \"spinner_b\", each mapped to that spinner panel bounding box [x0, y0, x1, y1].\nExample JSON:\n{\"annotation\":{\"spinner_a\":[136,102,564,574],\"spinner_b\":[536,102,964,574]},\"answer\":\"1/12\"}",
+          "word_count": 111
+        },
+        {
+          "body_word_count": 55,
+          "mode": "answer_only",
+          "prompt": "The visual shows two independent notebook-style equal-sector spinners labeled Spinner A and Spinner B. Each sector has a color. Use Spinner A and Spinner B as the two independent sources for the event. If each spinner is spun once, what is the probability that Spinner A lands on red and Spinner B lands on red?\nFinal answer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"1/12\"}",
+          "word_count": 76
+        }
+      ],
+      "query_id": "pair_both_target_color_probability",
+      "task": "task_symbolic__spinner__spinner_pair_event_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          1100,
+          780
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "spinner_a": [
+            136.0,
+            102.0,
+            564.0,
+            574.0
+          ],
+          "spinner_b": [
+            536.0,
+            102.0,
+            964.0,
+            574.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "string",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 2436612874700069,
+      "issues": [],
+      "observed_query_id": "pair_same_color_probability",
+      "prompts": [
+        {
+          "body_word_count": 51,
+          "mode": "answer_and_annotation",
+          "prompt": "The figure shows two independent card-style equal-sector spinners labeled Spinner A and Spinner B. Each sector has a color. Treat one spin of Spinner A and one spin of Spinner B as independent. With one independent spin on each spinner, what is the probability that both spinners show the same color?\nAnnotation format: set \"annotation\" to an object with keys \"spinner_a\" and \"spinner_b\", each mapped to that spinner panel bounding box [x0, y0, x1, y1].\nFormat for the \"answer\" field: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"annotation\":{\"spinner_a\":[136,102,564,574],\"spinner_b\":[536,102,964,574]},\"answer\":\"5/24\"}",
+          "word_count": 109
+        },
+        {
+          "body_word_count": 51,
+          "mode": "answer_only",
+          "prompt": "The figure shows two independent card-style equal-sector spinners labeled Spinner A and Spinner B. Each sector has a color. Treat one spin of Spinner A and one spin of Spinner B as independent. With one independent spin on each spinner, what is the probability that both spinners show the same color?\nAnswer format: set \"answer\" to the probability as a reduced fraction string like \"3/8\".\nExample JSON:\n{\"answer\":\"5/24\"}",
+          "word_count": 71
+        }
+      ],
+      "query_id": "pair_same_color_probability",
+      "task": "task_symbolic__spinner__spinner_pair_event_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          780,
+          720
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "machine_panel": [
+            148.0,
+            83.0,
+            632.0,
+            297.0
+          ],
+          "transition_table": [
+            186.0,
+            313.0,
+            594.0,
+            619.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 896192930420056,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 81,
+          "mode": "answer_and_annotation",
+          "prompt": "The symbolic machine panel shows a tape-machine automaton with a starting tape, head marker, state label, step count, symbol alphabet, and transition table. Simulate the shown tape machine using the visible starting configuration. At each step, find the row with the current state and the symbol under the head, write the new symbol, move the head L or R, and switch to the next state. Use the table for 4 steps. Report the 1-based cell number under the final head position.\nAnnotation format: set \"annotation\" to an object with keys \"machine_panel\" and \"transition_table\", each mapped to a bounding box [x0, y0, x1, y1].\nAnswer field: set \"answer\" to the 1-based integer tape cell number.\nExample JSON:\n{\"annotation\":{\"machine_panel\":[248,96,792,238],\"transition_table\":[316,282,724,536]},\"answer\":5}",
+          "word_count": 129
+        },
+        {
+          "body_word_count": 92,
+          "mode": "answer_only",
+          "prompt": "The symbolic machine panel shows a tape-machine automaton with a starting tape, head marker, state label, step count, symbol alphabet, and transition table. Simulate the shown tape machine using the visible starting configuration. At each step, find the row with the current state and the symbol under the head, write the new symbol, move the head L or R, and switch to the next state. Use the table for 4 steps. Report the 1-based cell number under the final head position.\nAnswer field: set \"answer\" to the 1-based integer tape cell number.\nExample JSON:\n{\"answer\":5}",
+          "word_count": 96
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__turing_tape__final_head_position_value"
+    },
+    {
+      "annotation": {
+        "annotation_type": "bbox_map",
+        "annotation_value_count": 2,
+        "image_size": [
+          780,
+          720
+        ],
+        "overlay_annotation_type": "bbox_map",
+        "overlay_annotation_value": {
+          "machine_panel": [
+            99.0,
+            88.0,
+            681.0,
+            301.0
+          ],
+          "transition_table": [
+            186.0,
+            317.0,
+            594.0,
+            614.0
+          ]
+        },
+        "projected_type": "bbox_map"
+      },
+      "answer_type": "integer",
+      "generation_params": {
+        "_sample_cursor": 0
+      },
+      "instance_seed": 5897274751379628,
+      "issues": [],
+      "observed_query_id": "single",
+      "prompts": [
+        {
+          "body_word_count": 79,
+          "mode": "answer_and_annotation",
+          "prompt": "The automaton panel shows a notebook-style tape-machine automaton with a starting tape, head marker, state label, step count, symbol alphabet, and transition table. Simulate the shown tape machine using the visible starting configuration. At each step, find the row with the current state and the symbol under the head, write the new symbol, move the head L or R, and switch to the next state. Simulate exactly 4 steps. What is the count of tape cells showing 0 afterward?\nAnnotation format: set \"annotation\" to an object with keys \"machine_panel\" and \"transition_table\", each mapped to a bounding box [x0, y0, x1, y1].\nAnswer field: set \"answer\" to the integer count.\nExample JSON:\n{\"annotation\":{\"machine_panel\":[248,96,792,238],\"transition_table\":[316,282,724,536]},\"answer\":4}",
+          "word_count": 124
+        },
+        {
+          "body_word_count": 79,
+          "mode": "answer_only",
+          "prompt": "The automaton panel shows a notebook-style tape-machine automaton with a starting tape, head marker, state label, step count, symbol alphabet, and transition table. Simulate the shown tape machine using the visible starting configuration. At each step, find the row with the current state and the symbol under the head, write the new symbol, move the head L or R, and switch to the next state. Simulate exactly 4 steps. What is the count of tape cells showing 0 afterward?\nFinal answer format: set \"answer\" to the integer count.\nExample JSON:\n{\"answer\":4}",
+          "word_count": 92
+        }
+      ],
+      "query_id": "single",
+      "task": "task_symbolic__turing_tape__turing_written_symbol_count"
+    }
+  ],
+  "summary": {
+    "expected_public_query_id_count": 69,
+    "issue_count": 0,
+    "issue_counts_by_category": {},
+    "issue_counts_by_severity": {},
+    "sampled_instance_count": 69,
+    "sampled_query_id_count": 69,
+    "task_count": 50
+  }
+}

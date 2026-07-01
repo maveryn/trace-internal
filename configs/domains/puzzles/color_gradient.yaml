@@ -35,10 +35,10 @@ generation:
         swatch_clean: 1.0
         swatch_card: 1.0
         swatch_notebook: 1.0
-      completion_hue_step_min: 34.0
-      completion_hue_step_max: 54.0
-      completion_lightness_step_min: 0.060
-      completion_lightness_step_max: 0.088
+      completion_hue_step_min: 20.0
+      completion_hue_step_max: 34.0
+      completion_lightness_step_min: 0.035
+      completion_lightness_step_max: 0.060
 
 rendering:
   shared:
@@ -53,9 +53,9 @@ rendering:
     panel_border_width_px: 3
     swatch_corner_radius_px: 12
     swatch_border_width_px: 3
-    label_chip_size_px: 32
+    label_chip_size_px: 40
     label_margin_px: 9
-    label_font_size_px: 18
+    label_font_size_px: 22
     panel_fill_rgb: [250, 251, 253]
     panel_border_rgb: [88, 96, 110]
     swatch_border_rgb: [40, 46, 58]

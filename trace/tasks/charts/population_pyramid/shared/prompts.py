@@ -19,6 +19,9 @@ def dynamic_slots(*, dataset: PopulationPyramidDataset) -> dict[str, Any]:
         ),
         "rank_phrase": str(qparams.get("rank_phrase", "")),
         "metric_phrase": str(qparams.get("metric_phrase", "")),
+        "side_series_label": str(qparams.get("side_series_label", "")),
+        "other_series_label": str(qparams.get("other_series_label", "")),
+        "extremum_phrase": str(qparams.get("extremum_phrase", "")),
         "threshold_relation_phrase": str(qparams.get("threshold_relation_phrase", "")),
         "threshold_value": int(qparams.get("threshold_value", 0)),
     }

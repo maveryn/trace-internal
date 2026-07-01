@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Any, Dict, Tuple
 
 DOMAIN = "puzzles"
 SCENE_ID = "sudoku"
@@ -30,13 +30,16 @@ class SudokuSample:
 
     board: Board
     solution: Board
-    answer: int
+    answer: int | str
     annotation_coords: Tuple[Coord, ...]
     marked_cell: Coord | None
     highlighted_unit_type: str | None
     highlighted_unit_index: int | None
     repeated_digit_values: Tuple[int, ...]
     missing_digit_values: Tuple[int, ...]
+    option_specs: Tuple[Dict[str, Any], ...]
+    correct_option_label: str | None
+    target_digit: int | None
     visible_count: int
     construction_mode: str
 

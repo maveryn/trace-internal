@@ -6,10 +6,6 @@ generation:
     series_count_max: 4
     overlap_series_count_min: 5
     overlap_series_count_max: 5
-    threshold_value_min: 38
-    threshold_value_max: 62
-    threshold_answer_count_min: 1
-    threshold_answer_count_max: 5
     overlap_answer_count_min: 0
     overlap_answer_count_max: 4
     x_label_min_chars: 2
@@ -27,6 +23,7 @@ generation:
       mixed_compact: 0.35
 rendering:
   shared:
+    chart_context_profile: dense_clean_minimal
     canvas_width: 1280
     canvas_height: 820
     plot_margin_left_px: 92
@@ -90,10 +87,6 @@ rendering:
       - [222, 227, 234]
       - [218, 224, 226]
       - [229, 224, 216]
-    threshold_rgb_options:
-      - [95, 84, 74]
-      - [118, 72, 52]
-      - [68, 92, 110]
     text_rgb_options:
       - [36, 42, 54]
       - [42, 47, 58]

@@ -1,7 +1,15 @@
 # `task_graph__node_link__node_color_count`
 
 ## Program Contract
-- `count(filter(nodes(graph), node_color=target_color)); scene=node_link; scope=node_color_count`
+
+Program: `count(filter(nodes(graph), node_color=target_color)); scene=node_link; scope=node_color_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `node_color_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `nodes`, `graph`, `node_color`, `target_color`, `node_link`, `node_color_count`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; the count of matching nodes.
+Annotation witnesses: `annotation` uses the `point_set` schema; the unordered `point_set` of pixel centers for all nodes whose semantic fill color matches the queried color.
+Query ids: `single`.
 
 ## 1) Identity
 1. Domain: `graph`

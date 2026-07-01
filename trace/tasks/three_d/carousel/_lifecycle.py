@@ -94,8 +94,15 @@ def _rendered_bboxes_are_readable(
     for bbox in rendered.object_bboxes_px.values():
         if not _bbox_inside_image(bbox, width=width, height=height):
             return False
+        box_width = float(bbox[2]) - float(bbox[0])
+        box_height = float(bbox[3]) - float(bbox[1])
+        if max(box_width, box_height) < float(min_side_px):
+            return False
+        if box_width * box_height < float(min_side_px) ** 2:
+            return False
+    for bbox in rendered.target_object_bboxes_px.values():
         side = min(float(bbox[2]) - float(bbox[0]), float(bbox[3]) - float(bbox[1]))
-        if float(side) < float(min_side_px):
+        if side < float(min_side_px):
             return False
     return True
 
@@ -757,7 +764,7 @@ def run_conveyor_between_marked_items_count_lifecycle(
             )
             dataset = build_between_marked_items_count_dataset(
                 instance_seed=int(attempt_seed),
-                params={**dict(clean_params), "_balanced_answer_seed": int(instance_seed)},
+                params=clean_params,
                 gen_defaults=gen_defaults,
                 render_params=render_params,
                 axes=axes,
@@ -1015,7 +1022,7 @@ def run_conveyor_count_arithmetic_lifecycle(
             )
             dataset = build_belt_count_arithmetic_dataset(
                 instance_seed=int(attempt_seed),
-                params={**dict(clean_params), "_balanced_answer_seed": int(instance_seed)},
+                params=clean_params,
                 gen_defaults=gen_defaults,
                 render_params=render_params,
                 axes=axes,

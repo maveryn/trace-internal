@@ -13,33 +13,19 @@
       ]
     },
     "task": {
-      "angle_bisector_segment_value_angle_bisector_base_length_query": [
-        "What is the length of BC?",
-        "Find BC.",
-        "Determine the length of BC.",
-        "What is the missing base length BC?",
-        "Find the segment length BC."
-      ],
-      "angle_bisector_segment_value_angle_bisector_split_length_query": [
-        "What is the length of DC?",
-        "Find DC.",
-        "Determine the length of DC.",
-        "What is the missing split length DC?",
-        "Find the segment length DC."
+      "angle_bisector_segment_value_query": [
+        "AD bisects angle BAC. What is the length of {target_name}?",
+        "AD bisects angle BAC. Find {target_name}.",
+        "AD bisects angle BAC. Determine the length of {target_name}.",
+        "AD bisects angle BAC. What is the missing segment length {target_name}?",
+        "AD bisects angle BAC. Find the segment length {target_name}."
       ],
       "angle_bisector_variable_value_query": [
-        "Use the displayed angle-bisector relation to solve for x.",
-        "Use the visible labels and angle bisector to find x.",
-        "Solve for x from the marked angle-bisector diagram.",
-        "What is the value of x?",
-        "Determine x from the angle-bisector relation."
-      ],
-      "angle_of_elevation_value_query": [
-        "What is the angle θ?",
-        "Find angle θ.",
-        "Determine the measure of θ.",
-        "What is the angle of elevation θ?",
-        "Find the displayed angle θ."
+        "AD bisects angle BAC. Use the visible labels to solve for x.",
+        "AD bisects angle BAC. Find x.",
+        "AD bisects angle BAC. Solve for x from the diagram.",
+        "AD bisects angle BAC. What is the value of x?",
+        "AD bisects angle BAC. Determine x."
       ],
       "altitude_to_hypotenuse_value_query": [
         "What is the length of {target_name}?",
@@ -48,47 +34,19 @@
         "What is the requested altitude-theorem length {target_name}?",
         "Find the segment length {target_name}."
       ],
-      "centroid_median_segment_value_centroid_vertex_segment_length_query": [
-        "What is the length of AG?",
-        "Find AG.",
-        "Determine the length of AG.",
-        "What is the missing centroid segment AG?",
-        "Find the segment length AG."
+      "centroid_median_segment_value_query": [
+        "Point G is the centroid, and D is the midpoint of BC. What is the length of {target_name}?",
+        "Point G is the centroid, and D is the midpoint of BC. Find {target_name}.",
+        "Point G is the centroid, and D is the midpoint of BC. Determine the length of {target_name}.",
+        "Point G is the centroid, and D is the midpoint of BC. What is the missing centroid segment {target_name}?",
+        "Point G is the centroid, and D is the midpoint of BC. Find the segment length {target_name}."
       ],
-      "centroid_median_segment_value_centroid_whole_median_length_query": [
-        "What is the length of AD?",
-        "Find AD.",
-        "Determine the length of AD.",
-        "What is the whole median length AD?",
-        "Find the segment length AD."
-      ],
-      "parallel_section_base_length_query": [
-        "What is the length of BC?",
-        "Find BC.",
-        "Determine the length of BC.",
-        "What is the missing base length BC?",
-        "Find the segment length BC."
-      ],
-      "parallel_section_cross_length_query": [
-        "What is the length of DE?",
-        "Find DE.",
-        "Determine the length of DE.",
-        "What is the missing parallel segment length DE?",
-        "Find the segment length DE."
-      ],
-      "parallel_segment_expression_length_value_query": [
-        "What is the length of {target_name}?",
-        "Find {target_name}.",
-        "Determine the length of {target_name}.",
-        "Solve the side-splitter relation and find {target_name}.",
-        "Find the requested segment length {target_name}."
-      ],
-      "parallel_segment_variable_value_query": [
-        "What is the value of {target_name}?",
-        "Find {target_name}.",
-        "Determine {target_name}.",
-        "Solve the side-splitter relation for {target_name}.",
-        "Use the visible proportional segments to find {target_name}."
+      "parallel_section_segment_value_query": [
+        "DE is parallel to BC. What is the length of {target_name}?",
+        "DE is parallel to BC. Find {target_name}.",
+        "DE is parallel to BC. Determine the length of {target_name}.",
+        "DE is parallel to BC. What is the missing segment length {target_name}?",
+        "DE is parallel to BC. Find the segment length {target_name}."
       ],
       "pythagorean_length_value_chained_rectangle_diagonal_length_query": [
         "What is the length of DB?",
@@ -104,27 +62,6 @@
         "What is the missing slanted side length CD?",
         "Find the segment length CD."
       ],
-      "right_triangle_inverse_trig_angle_angle_from_adjacent_hypotenuse_query": [
-        "What is the angle θ?",
-        "Find angle θ.",
-        "Determine the measure of θ.",
-        "What is the displayed angle θ?",
-        "Find θ."
-      ],
-      "right_triangle_inverse_trig_angle_angle_from_opposite_adjacent_query": [
-        "What is the angle θ?",
-        "Find angle θ.",
-        "Determine the measure of θ.",
-        "What is the displayed angle θ?",
-        "Find θ."
-      ],
-      "right_triangle_inverse_trig_angle_angle_from_opposite_hypotenuse_query": [
-        "What is the angle θ?",
-        "Find angle θ.",
-        "Determine the measure of θ.",
-        "What is the displayed angle θ?",
-        "Find θ."
-      ],
       "leg_projection_length_value_query": [
         "What is the length of {target_name}?",
         "Find {target_name}.",
@@ -132,47 +69,19 @@
         "What is the requested projection-theorem length {target_name}?",
         "Find the segment length {target_name}."
       ],
-      "right_triangle_missing_side_value_ground_from_angle_and_height_query": [
-        "What is the ground length?",
-        "Find the ground length.",
-        "Determine the missing ground length.",
-        "What is the length of the ground side?",
-        "Find the missing ground side."
-      ],
-      "right_triangle_missing_side_value_ground_from_angle_and_hypotenuse_query": [
-        "What is the ground length?",
-        "Find the ground length.",
-        "Determine the missing ground length.",
-        "What is the length of the ground side?",
-        "Find the missing ground side."
-      ],
-      "right_triangle_missing_side_value_height_from_angle_and_ground_query": [
-        "What is the height?",
-        "Find the height.",
-        "Determine the missing height.",
-        "What is the length of the height side?",
-        "Find the missing height side."
-      ],
-      "right_triangle_missing_side_value_height_from_angle_and_hypotenuse_query": [
-        "What is the height?",
-        "Find the height.",
-        "Determine the missing height.",
-        "What is the length of the height side?",
-        "Find the missing height side."
-      ],
-      "right_triangle_missing_side_value_hypotenuse_from_angle_and_height_query": [
-        "What is the slope length?",
-        "Find the slope length.",
-        "Determine the missing slope length.",
-        "What is the length of the slope side?",
-        "Find the missing slope side."
+      "right_triangle_missing_side_value_query": [
+        "What is the length of {target_name}?",
+        "Find {target_name}.",
+        "Determine the length of {target_name}.",
+        "What is the missing side length {target_name}?",
+        "Find the missing side {target_name}."
       ],
       "similar_triangles_side_length_query": [
-        "What is the length of EC?",
-        "Find EC.",
-        "Determine the length of EC.",
-        "What is the missing side length EC?",
-        "Find the segment length EC."
+        "DE is parallel to BC. What is the length of EC?",
+        "DE is parallel to BC. Find EC.",
+        "DE is parallel to BC. Determine the length of EC.",
+        "DE is parallel to BC. What is the missing side length EC?",
+        "DE is parallel to BC. Find the segment length EC."
       ],
       "split_triangle_angle_value_query": [
         "What is the measure of {target_name}?",
@@ -249,10 +158,7 @@
       "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\".",
       "answer_hint": "set \"answer\" to the requested value as a number"
     },
-    "task:angle_bisector_segment_value_angle_bisector_base_length_query": {
-      "answer_hint": "set \"answer\" to the requested segment length as an integer"
-    },
-    "task:angle_bisector_segment_value_angle_bisector_split_length_query": {
+    "task:angle_bisector_segment_value_query": {
       "answer_hint": "set \"answer\" to the requested segment length as an integer"
     },
     "task:angle_bisector_variable_value_query": {
@@ -261,23 +167,11 @@
     "task:altitude_to_hypotenuse_value_query": {
       "answer_hint": "set \"answer\" to the requested length as an integer"
     },
-    "task:centroid_median_segment_value_centroid_vertex_segment_length_query": {
+    "task:centroid_median_segment_value_query": {
       "answer_hint": "set \"answer\" to the requested segment length as an integer"
     },
-    "task:centroid_median_segment_value_centroid_whole_median_length_query": {
+    "task:parallel_section_segment_value_query": {
       "answer_hint": "set \"answer\" to the requested segment length as an integer"
-    },
-    "task:parallel_section_base_length_query": {
-      "answer_hint": "set \"answer\" to the requested segment length as an integer"
-    },
-    "task:parallel_section_cross_length_query": {
-      "answer_hint": "set \"answer\" to the requested segment length as an integer"
-    },
-    "task:parallel_segment_expression_length_value_query": {
-      "answer_hint": "set \"answer\" to the requested segment length as a number"
-    },
-    "task:parallel_segment_variable_value_query": {
-      "answer_hint": "set \"answer\" to the value of x as a number"
     },
     "task:pythagorean_length_value_chained_rectangle_diagonal_length_query": {
       "answer_hint": "set \"answer\" to the requested segment length as an integer"
@@ -285,31 +179,10 @@
     "task:pythagorean_length_value_rectangle_triangle_shared_height_length_query": {
       "answer_hint": "set \"answer\" to the requested segment length as an integer"
     },
-    "task:right_triangle_inverse_trig_angle_angle_from_adjacent_hypotenuse_query": {
-      "answer_hint": "set \"answer\" to the angle measure as a number rounded to one decimal place"
-    },
-    "task:right_triangle_inverse_trig_angle_angle_from_opposite_adjacent_query": {
-      "answer_hint": "set \"answer\" to the angle measure as a number rounded to one decimal place"
-    },
-    "task:right_triangle_inverse_trig_angle_angle_from_opposite_hypotenuse_query": {
-      "answer_hint": "set \"answer\" to the angle measure as a number rounded to one decimal place"
-    },
     "task:leg_projection_length_value_query": {
       "answer_hint": "set \"answer\" to the requested length as an integer"
     },
-    "task:right_triangle_missing_side_value_ground_from_angle_and_height_query": {
-      "answer_hint": "set \"answer\" to the requested length as a number rounded to one decimal place"
-    },
-    "task:right_triangle_missing_side_value_ground_from_angle_and_hypotenuse_query": {
-      "answer_hint": "set \"answer\" to the requested length as a number rounded to one decimal place"
-    },
-    "task:right_triangle_missing_side_value_height_from_angle_and_ground_query": {
-      "answer_hint": "set \"answer\" to the requested length as a number rounded to one decimal place"
-    },
-    "task:right_triangle_missing_side_value_height_from_angle_and_hypotenuse_query": {
-      "answer_hint": "set \"answer\" to the requested length as a number rounded to one decimal place"
-    },
-    "task:right_triangle_missing_side_value_hypotenuse_from_angle_and_height_query": {
+    "task:right_triangle_missing_side_value_query": {
       "answer_hint": "set \"answer\" to the requested length as a number rounded to one decimal place"
     },
     "task:similar_triangles_side_length_query": {

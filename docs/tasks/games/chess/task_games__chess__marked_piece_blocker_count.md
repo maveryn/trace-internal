@@ -10,7 +10,15 @@
 7. Program schema: `count(pieces strictly between marked_slider and target_square); scene=chess; scope=marked_piece_blocker_count`
 
 ## Program Contract
-- `count(pieces strictly between marked_slider and target_square); scene=chess; scope=marked_piece_blocker_count`
+
+Program: `count(pieces strictly between marked_slider and target_square); scene=chess; scope=marked_piece_blocker_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `marked_piece_blocker_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `pieces`, `strictly`, `between`, `marked_slider`, `target_square`, `chess`, `marked_piece_blocker_count` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `rook_line_blocker_count`, `bishop_diagonal_blocker_count`, `queen_line_blocker_count`.
 
 ## Generation Notes
 1. The red outlined square contains the source sliding piece.

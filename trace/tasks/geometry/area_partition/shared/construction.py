@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import integer_range_choice, uniform_choice
+from trace.core.seed import spawn_rng
 
 from .relations import selected_probability_map, total_area_from_unit_partition
 from .state import AreaPartitionProblem, PartitionCase
@@ -73,13 +74,9 @@ def _sample_shaded_area(
     if int(denominator) not in SHADED_AREA_RANGE_BY_DENOMINATOR:
         raise ValueError(f"unsupported area partition denominator: {denominator}")
     low, high = SHADED_AREA_RANGE_BY_DENOMINATOR[int(denominator)]
-    span = int(high) - int(low) + 1
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    return int(low) + (int(index) % int(span))
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    value, _probabilities = integer_range_choice(rng, int(low), int(high))
+    return int(value)
 
 
 def resolve_area_partition_problem(
@@ -95,12 +92,8 @@ def resolve_area_partition_problem(
     if not cases:
         raise ValueError("area-partition case support must be non-empty")
 
-    case_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(sampling_namespace),
-    )
-    scene_variant, _case_shaded_area, denominator = cases[int(case_index) % len(cases)]
+    rng = spawn_rng(int(instance_seed), str(sampling_namespace))
+    scene_variant, _case_shaded_area, denominator = uniform_choice(rng, cases)
     scene_variant = str(params.get("scene_variant", scene_variant))
     denominator = int(params.get("area_denominator", denominator))
     shaded_area = _sample_shaded_area(

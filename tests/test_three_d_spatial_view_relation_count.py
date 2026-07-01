@@ -24,6 +24,10 @@ TASK_ID_BY_QUERY_ID = {
 }
 
 
+def _bbox_min_side(bbox) -> float:
+    return min(float(bbox[2]) - float(bbox[0]), float(bbox[3]) - float(bbox[1]))
+
+
 def test_view_relation_count_answer_and_annotation() -> None:
     task = create_task(IMAGE_PLANE_LATERAL_RELATION_COUNT_TASK_ID)
     output = task.generate(
@@ -58,7 +62,11 @@ def test_view_relation_count_answer_and_annotation() -> None:
     assert output.trace_payload["render_map"]["reference_highlight_entity_id"] == reference_highlight_entity_id
     assert any(entity["entity_id"] == reference_highlight_entity_id for entity in output.trace_payload["scene_ir"]["entities"])
     assert len(output.annotation_gt.value) == int(output.answer_gt.value)
-    assert output.annotation_gt.value == [render_map["object_bboxes_px"][object_id] for object_id in target_object_ids]
+    expected_annotation_bboxes = [render_map["target_object_bboxes_px"][object_id] for object_id in target_object_ids]
+    expected_raw_bboxes = [render_map["object_bboxes_px"][object_id] for object_id in target_object_ids]
+    assert output.annotation_gt.value == expected_annotation_bboxes
+    assert [render_map["target_object_raw_bboxes_px"][object_id] for object_id in target_object_ids] == expected_raw_bboxes
+    assert all(_bbox_min_side(bbox) >= 24.0 for bbox in output.annotation_gt.value)
     assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
 
     for spec in trace["object_specs"]:

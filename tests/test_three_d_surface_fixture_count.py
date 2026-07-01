@@ -98,6 +98,10 @@ def _mean_rgb_for_bbox(image, bbox):
     return tuple(float(mean(pixel[channel] for pixel in pixels)) for channel in range(3))
 
 
+def _bbox_min_side(bbox) -> float:
+    return min(float(bbox[2]) - float(bbox[0]), float(bbox[3]) - float(bbox[1]))
+
+
 def _assert_composite_canvas_expanded(output) -> None:
     render_spec = output.trace_payload["render_spec"]
     source_pixels = int(render_spec["scene_canvas_width"]) * int(render_spec["scene_canvas_height"])
@@ -250,7 +254,11 @@ def test_surface_fixture_repeated_element_count_variants() -> None:
         _assert_present_cells_have_canonical_colors(trace["surface_cells"])
         assert trace["solver_trace"]["color_role"] == "non_semantic_visual_variation"
         assert sum(int(count) for count in trace["solver_trace"]["visual_color_counts"].values()) == count
-        assert output.annotation_gt.value == [render_map["element_bboxes_px"][element_id] for element_id in target_element_ids]
+        expected_annotation_bboxes = [render_map["target_element_bboxes_px"][element_id] for element_id in target_element_ids]
+        expected_raw_bboxes = [render_map["element_bboxes_px"][element_id] for element_id in target_element_ids]
+        assert output.annotation_gt.value == expected_annotation_bboxes
+        assert [render_map["target_element_raw_bboxes_px"][element_id] for element_id in target_element_ids] == expected_raw_bboxes
+        assert all(_bbox_min_side(bbox) >= 24.0 for bbox in output.annotation_gt.value)
         assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
         assert output.trace_payload["projected_annotation"]["pixel_bbox_set"] == output.annotation_gt.value
         assert output.trace_payload["query_spec"]["params"]["target_element_type"] == element_type
@@ -300,9 +308,14 @@ def test_surface_fixture_predicate_count_tasks() -> None:
         assert output.answer_gt.value == len(target_element_ids)
         assert output.annotation_gt.type == "bbox_set"
         assert len(output.annotation_gt.value) == output.answer_gt.value
+        render_map = output.trace_payload["render_map"]
         assert output.annotation_gt.value == [
-            output.trace_payload["render_map"]["element_bboxes_px"][element_id] for element_id in target_element_ids
+            render_map["target_element_bboxes_px"][element_id] for element_id in target_element_ids
         ]
+        assert [render_map["target_element_raw_bboxes_px"][element_id] for element_id in target_element_ids] == [
+            render_map["element_bboxes_px"][element_id] for element_id in target_element_ids
+        ]
+        assert all(_bbox_min_side(bbox) >= 24.0 for bbox in output.annotation_gt.value)
         assert "{target_" not in output.prompt
         assert "{scope_" not in output.prompt
 
@@ -507,9 +520,14 @@ def test_surface_fixture_color_count_after_operations_tracks_final_count() -> No
     assert len(target_element_ids) == 3
     assert output.annotation_gt.type == "bbox_set"
     assert len(output.annotation_gt.value) == 3
+    render_map = output.trace_payload["render_map"]
     assert output.annotation_gt.value == [
-        output.trace_payload["render_map"]["element_bboxes_px"][element_id] for element_id in target_element_ids
+        render_map["target_element_bboxes_px"][element_id] for element_id in target_element_ids
     ]
+    assert [render_map["target_element_raw_bboxes_px"][element_id] for element_id in target_element_ids] == [
+        render_map["element_bboxes_px"][element_id] for element_id in target_element_ids
+    ]
+    assert all(_bbox_min_side(bbox) >= 24.0 for bbox in output.annotation_gt.value)
     assert "{operation_" not in output.prompt
     assert "{target_" not in output.prompt
     assert "after" in output.prompt.lower()

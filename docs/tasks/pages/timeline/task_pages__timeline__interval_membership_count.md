@@ -6,18 +6,21 @@
 3. Source scene: `timeline`
 4. Task id: `task_pages__timeline__interval_membership_count`
 
-## Contract
-1. Objective: count timeline events inside or outside the interval defined by two highlighted reference events.
-2. Branch metadata: `query_id`
-3. `query_id`: `between_reference_events_count` or `outside_reference_interval_count`
-4. Answer type: `integer`
-5. Annotation type: `bbox_set` over the event cards that satisfy the interval relation.
-6. Mirror/query knob: `interval_relation=between|outside`
+## Program Contract
+1. Program schema: `timeline_interval_membership_count(reference_event_pair, interval_relation) -> event_count; scene=timeline; scope=interval_membership_count`
+2. Scene: `timeline`
+3. Scope: one rendered milestone timeline with dated event cards and two highlighted reference events.
+4. Supported `query_id` values: `between_reference_events_count`, `outside_reference_interval_count`
+5. Answer schema: `integer`
+6. Annotation schema: `bbox_set`
+7. Annotation roles: unordered event-card boxes for every counted event; empty set is valid for zero-count samples.
+8. Query arguments: `interval_relation=between|outside`.
+9. Render arguments: month/year, event count, scene variant, style variant, accent color, render dimensions, and post-render noise.
 
 ## Prompt + Trace
-1. Prompt bundle: `pages_timeline_v0`
+1. Prompt bundle: `pages_timeline_v1`
 2. Scene key: `milestone_timeline`
 3. Task key: `timeline_milestone_query`
-4. Internal prompt variant key: `interval_membership_count`
-5. Trace records event order, dates, reference event ids, answer event ids, and event-card bboxes.
-6. Generation is deterministic from `instance_seed`; answers and annotation come from the finalized timeline metadata.
+4. Prompt query keys: `between_reference_events_count`, `outside_reference_interval_count`
+5. Trace records selected `query_id`, `interval_relation`, event order, dates, reference event ids, answer event ids, event-card bboxes, style metadata, and projected annotation.
+6. Generation is deterministic from `instance_seed`; answer and annotation come from the finalized render metadata.

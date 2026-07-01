@@ -19,10 +19,6 @@ from trace.tasks.charts.scatter_cluster.cluster_area_rank_label import (
     ChartsScatterClusterAreaRankLabelTask,
     SUPPORTED_QUERY_IDS as AREA_RANK_QUERY_IDS,
 )
-from trace.tasks.charts.scatter_cluster.cluster_separation_extremum_label import (
-    ChartsScatterClusterSeparationExtremumLabelTask,
-    SUPPORTED_QUERY_IDS as SEPARATION_QUERY_IDS,
-)
 from trace.tasks.charts.scatter_cluster.cluster_spread_extremum_label import (
     ChartsScatterClusterSpreadExtremumLabelTask,
     SUPPORTED_QUERY_IDS as SPREAD_QUERY_IDS,
@@ -36,10 +32,9 @@ from trace.tasks.charts.scatter_cluster.shared.state import AREA_ENVELOPE_SCATTE
 
 _TASK_CASES = (
     (ChartsScatterClusterTrendDirectionLabelTask, TREND_QUERY_IDS, "bbox"),
-    (ChartsScatterClusterSeparationExtremumLabelTask, SEPARATION_QUERY_IDS, "bbox_map"),
     (ChartsScatterClusterSpreadExtremumLabelTask, SPREAD_QUERY_IDS, "bbox"),
     (ChartsScatterClusterAreaRankLabelTask, AREA_RANK_QUERY_IDS, "bbox"),
-    (ChartsScatterClusterCentroidOptionSelectionLabelTask, CENTROID_QUERY_IDS, "bbox_map"),
+    (ChartsScatterClusterCentroidOptionSelectionLabelTask, CENTROID_QUERY_IDS, "point"),
 )
 _OPTION_LABELS = set(OPTION_LABELS)
 
@@ -51,6 +46,13 @@ def _assert_bbox_inside_canvas(bbox: Sequence[float], *, width: int, height: int
     assert 0 <= y0 < y1 <= height
 
 
+def _assert_point_inside_canvas(point: Sequence[float], *, width: int, height: int) -> None:
+    assert len(point) == 2
+    x, y = [float(value) for value in point]
+    assert 0 <= x <= width
+    assert 0 <= y <= height
+
+
 def _expected_answer(execution: dict) -> str:
     branch = str(execution["query_id"])
     labels = [str(label) for label in execution["cluster_labels"]]
@@ -59,12 +61,6 @@ def _expected_answer(execution: dict) -> str:
         if str(execution["trend_direction"]) == "upward":
             return max(labels, key=lambda label: (slopes[label], label))
         return min(labels, key=lambda label: (slopes[label], label))
-    if branch in SEPARATION_QUERY_IDS:
-        distances = {str(label): float(value) for label, value in execution["centroid_distances_from_reference"].items()}
-        candidate_labels = sorted(distances)
-        if str(execution["separation_extremum"]) == "closest":
-            return min(candidate_labels, key=lambda label: (distances[label], label))
-        return max(candidate_labels, key=lambda label: (distances[label], label))
     if branch in SPREAD_QUERY_IDS:
         metrics = {str(label): float(value) for label, value in execution["cluster_spread_metrics"].items()}
         if str(execution["spread_extremum"]) == "largest":
@@ -73,8 +69,6 @@ def _expected_answer(execution: dict) -> str:
     if branch in AREA_RANK_QUERY_IDS:
         metrics = {str(label): float(value) for label, value in execution["cluster_area_metrics"].items()}
         largest_to_smallest = sorted(labels, key=lambda label: (-metrics[label], label))
-        if branch == "second_largest_cluster_area_label":
-            return largest_to_smallest[1]
         if branch == "smallest_cluster_area_label":
             return largest_to_smallest[-1]
         return largest_to_smallest[0]
@@ -119,31 +113,25 @@ def test_chart_scatter_cluster_public_tasks_match_contract(task_cls, query_ids: 
             _assert_bbox_inside_canvas(out.annotation_gt.value, width=int(render["canvas_width"]), height=int(render["canvas_height"]))
             assert out.annotation_gt.value == render_map["cluster_bboxes_px"][expected_answer]
             assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+        elif annotation_type == "point":
+            _assert_point_inside_canvas(out.annotation_gt.value, width=int(render["canvas_width"]), height=int(render["canvas_height"]))
+            assert out.annotation_gt.value == render_map["option_centers_px"][expected_answer]
+            assert trace["projected_annotation"]["point"] == out.annotation_gt.value
         else:
-            for bbox in out.annotation_gt.value.values():
-                _assert_bbox_inside_canvas(bbox, width=int(render["canvas_width"]), height=int(render["canvas_height"]))
-            assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
+            raise AssertionError(f"unsupported annotation type: {annotation_type}")
 
         if branch in AREA_RANK_QUERY_IDS:
             assert str(execution["scene_variant"]) == AREA_ENVELOPE_SCATTER
             assert set(render_map["cluster_envelope_bboxes_px"]) == set(execution["cluster_labels"])
             assert out.annotation_gt.value == render_map["cluster_envelope_bboxes_px"][expected_answer]
-            assert 0.1 <= float(execution["cluster_area_nearest_relative_gap"]) <= 0.3
-        elif branch in SEPARATION_QUERY_IDS:
-            assert out.annotation_gt.value == {
-                "reference_cluster": render_map["cluster_bboxes_px"][str(execution["reference_cluster_label"])],
-                "answer_cluster": render_map["cluster_bboxes_px"][expected_answer],
-            }
+            assert 0.18 <= float(execution["cluster_area_nearest_relative_gap"]) <= 0.35
         elif branch == SINGLE_QUERY_ID:
             option_labels = {str(label) for label in execution["option_labels"]}
             assert int(execution["option_count"]) in {4, 6}
             assert len(option_labels) == int(execution["option_count"])
             assert option_labels.issubset(_OPTION_LABELS)
             assert expected_answer in option_labels
-            assert out.annotation_gt.value == {
-                "target_cluster": render_map["cluster_bboxes_px"][str(execution["target_cluster_label"])],
-                "selected_option_marker": render_map["option_bboxes_px"][expected_answer],
-            }
+            assert out.annotation_gt.value == render_map["option_centers_px"][expected_answer]
             distances = {str(label): float(value) for label, value in execution["option_distances_to_centroid"].items()}
             answer_distance = distances[expected_answer]
             assert all(
@@ -166,6 +154,9 @@ def test_chart_scatter_prompt_examples_match_annotation_contract() -> None:
             if annotation_type == "bbox":
                 assert isinstance(answer_and_annotation["annotation"], list)
                 assert len(answer_and_annotation["annotation"]) == 4
+            elif annotation_type == "point":
+                assert isinstance(answer_and_annotation["annotation"], list)
+                assert len(answer_and_annotation["annotation"]) == 2
             else:
                 assert isinstance(answer_and_annotation["annotation"], dict)
             assert "from from" not in out.prompt
@@ -175,7 +166,6 @@ def test_chart_scatter_prompt_examples_match_annotation_contract() -> None:
 def test_chart_scatter_sampling_covers_task_branches_and_axes() -> None:
     observed: dict[str, set[str]] = {
         "trend": set(),
-        "separation": set(),
         "spread_axis": set(),
         "spread_extremum": set(),
         "area_rank": set(),
@@ -184,9 +174,6 @@ def test_chart_scatter_sampling_covers_task_branches_and_axes() -> None:
     for query_index, branch in enumerate(TREND_QUERY_IDS):
         execution = ChartsScatterClusterTrendDirectionLabelTask().generate(91500 + query_index, params={"query_id": branch}, max_attempts=120).trace_payload["execution_trace"]
         observed["trend"].add(str(execution["trend_direction"]))
-    for query_index, branch in enumerate(SEPARATION_QUERY_IDS):
-        execution = ChartsScatterClusterSeparationExtremumLabelTask().generate(91520 + query_index, params={"query_id": branch}, max_attempts=120).trace_payload["execution_trace"]
-        observed["separation"].add(str(execution["separation_extremum"]))
     for query_index, branch in enumerate(SPREAD_QUERY_IDS):
         execution = ChartsScatterClusterSpreadExtremumLabelTask().generate(91540 + query_index, params={"query_id": branch}, max_attempts=120).trace_payload["execution_trace"]
         observed["spread_axis"].add(str(execution["spread_axis"]))
@@ -199,10 +186,9 @@ def test_chart_scatter_sampling_covers_task_branches_and_axes() -> None:
         observed["centroid"].add(str(execution["answer"]))
 
     assert observed["trend"] == {"upward", "downward"}
-    assert observed["separation"] == {"closest", "farthest"}
     assert observed["spread_axis"] == {"horizontal", "vertical", "overall"}
     assert observed["spread_extremum"] == {"largest", "smallest"}
-    assert observed["area_rank"] == {"largest", "second_largest", "smallest"}
+    assert observed["area_rank"] == {"largest", "smallest"}
     assert observed["centroid"].issubset(_OPTION_LABELS)
 
 

@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from .....core.seed import spawn_rng
 from ....shared.config_defaults import group_default
-from .model import _InfographicTextBlock
+from .state import _InfographicTextBlock
 from .sampling import (
     resolve_named_variant as _resolve_named_variant,
     resolve_supported_int as _resolve_supported_int,
@@ -71,13 +71,13 @@ class _NativeLayoutPlan:
 
 def _resolve_native_text_block_count(
     *,
-    task_id: str,
+    sampling_namespace: str,
     params: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
     instance_seed: int,
 ) -> Tuple[int, Tuple[int, ...], Dict[str, float]]:
     return _resolve_supported_int(
-        task_id=str(task_id),
+        sampling_namespace=str(sampling_namespace),
         params=params,
         gen_defaults=render_defaults,
         explicit_key="native_text_block_count",
@@ -90,7 +90,7 @@ def _resolve_native_text_block_count(
 
 def _resolve_native_layout_mode(
     *,
-    task_id: str,
+    sampling_namespace: str,
     params: Mapping[str, Any],
     render_defaults: Mapping[str, Any],
     instance_seed: int,
@@ -99,7 +99,7 @@ def _resolve_native_layout_mode(
     defaults.setdefault("native_layout_mode_weights", dict(NATIVE_LAYOUT_MODE_WEIGHTS))
     defaults.setdefault("balanced_native_layout_mode_sampling", False)
     return _resolve_named_variant(
-        task_id=str(task_id),
+        sampling_namespace=str(sampling_namespace),
         gen_defaults=defaults,
         params=params,
         instance_seed=int(instance_seed),
@@ -148,6 +148,8 @@ def _layout_slots(
     content_bbox: Sequence[float],
     footer_bbox: Sequence[float],
 ) -> Tuple[List[List[float]], Dict[str, Any]]:
+    """Place module slots inside content bounds while preserving readable minimum sizes."""
+
     gap = float(render_params.gap_px)
     left, top, right, bottom = [float(value) for value in content_bbox]
     width = right - left
@@ -307,6 +309,8 @@ def _resolve_native_layout(
     native_layout_mode: str,
     text_blocks: Sequence[_InfographicTextBlock],
 ) -> _NativeLayoutPlan:
+    """Reserve header/footer/native text regions before answer-bearing module layout."""
+
     x0, y0, x1, y1 = [float(value) for value in page_bbox]
     gap = float(render_params.gap_px)
     header_bottom = y0 + float(render_params.header_height_px)

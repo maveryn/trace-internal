@@ -68,6 +68,12 @@ def build_trace_scaffold(
     """Assemble neutral scene/render trace sections after a task binds semantics."""
 
     method_labels = [str(curve.method_label) for curve in dataset.panels[0].curves]
+    answerability = str(relations.get("answerability", "answerable"))
+    absence_fields = (
+        {"absence_proof": dict(relations["absence_proof"])}
+        if answerability == "unanswerable" and "absence_proof" in relations
+        else {}
+    )
     relation_fields = {
         "scene_variant": str(dataset.scene_variant),
         "answer": dataset.query.answer,
@@ -87,7 +93,7 @@ def build_trace_scaffold(
             "relations": dict(relation_fields),
         },
         "render_spec": {
-            "canvas_width": resolve_int(params, "canvas_width", 1600),
+            "canvas_width": resolve_int(params, "canvas_width", 1200),
             "canvas_height": resolve_int(params, "canvas_height", 1000),
             "coord_space": "pixel",
             "scene_variant": str(dataset.scene_variant),
@@ -142,6 +148,8 @@ def build_trace_scaffold(
                 dataset.query.annotation_threshold_crossing_ids
             ),
             "answer": dataset.query.answer,
+            "answerability": answerability,
+            **absence_fields,
         },
         "projected_annotation": projected_annotation_payload(
             dataset=dataset,

@@ -1,7 +1,15 @@
 # `task_graph__node_link__named_node_degree_value`
 
 ## Program Contract
-- `value(degree_metric(query_node)); scene=node_link; scope=named_node_degree_value`
+
+Program: `value(degree_metric(query_node)); scene=node_link; scope=named_node_degree_value`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `named_node_degree_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `degree_metric`, `query_node`, `node_link`, `named_node_degree_value` plus the active `query_id` branch.
+Operation: evaluate `value` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; the queried degree value for the named node.
+Annotation witnesses: `annotation` uses the `segment_set` schema; the `segment_set` of endpoint-center segments for all edges counted toward the queried degree value.
+Query ids: `undirected_named_node_degree_value`, `directed_named_node_in_degree_value`, `directed_named_node_out_degree_value`, `directed_named_node_total_degree_value`.
 
 ## 1) Identity
 1. Domain: `graph`
@@ -38,7 +46,7 @@
 4. Modes: `answer_only`, `answer_and_annotation`
 5. Answer-only JSON shape: `{"answer":2}`
 6. Answer+annotation JSON shape: `{"annotation":[[[180,220],[310,180]],[[180,220],[430,260]]],"answer":2}`
-7. Prompt-facing annotation uses `segment_set`; each segment is `[[x1, y1], [x2, y2]]` using endpoint node centers for one counted edge.
+7. Prompt-facing annotation uses `segment_set`; each segment is `[[x0, y0], [x1, y1]]`, where each endpoint is an `[x, y]` pixel point at an endpoint node center for one counted edge.
 8. If the node label format is `named`, prompt references quote the node label, for example node `"Abby"`.
 
 ## 4) Annotation + trace contract

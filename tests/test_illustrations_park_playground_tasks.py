@@ -128,6 +128,7 @@ def test_playground_equipment_count_contract() -> None:
     assert execution["target_equipment_type"] == "slide"
     assert sorted(out.annotation_gt.value) == sorted(trace["render_map"]["counted_equipment_bboxes_px"])
     assert len(trace["render_map"]["counted_equipment_bboxes_px"]) == len(counted_equipment_ids)
+    assert all(min(float(box[2]) - float(box[0]), float(box[3]) - float(box[1])) >= 24.0 for box in trace["render_map"]["counted_equipment_bboxes_px"])
     assert trace["projected_annotation"]["type"] == "bbox_set"
     assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
     assert trace["projected_annotation"]["pixel_bbox_set"] == out.annotation_gt.value

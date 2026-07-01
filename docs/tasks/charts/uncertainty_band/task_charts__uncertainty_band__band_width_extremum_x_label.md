@@ -10,11 +10,14 @@
 
 ## Program Contract
 
-- Program schema: `arg_extreme(x_label, width(vertical_interval(target_series_band_at_x)), direction={widest,narrowest}); output=string_label; annotation=segment(answer_band_lower_upper_span); scene=uncertainty_band; scope=band_width_extremum_x_label`.
-- Program: select the visible x-axis label where the requested series has the widest or narrowest shaded band.
-- Answer: `string`.
-- Annotation schema: `segment`, from the lower band boundary to the upper band boundary at the answer x-axis label.
-- The answer and annotation are bound from the same sampled uncertainty-band execution trace.
+Program: `arg_extreme(x_label, width(vertical_interval(target_series_band_at_x)), direction={widest,narrowest}); output=string_label; annotation=segment(answer_band_lower_upper_span); scene=uncertainty_band; scope=band_width_extremum_x_label`
+
+Candidate set: the visible uncertainty bands, central series marks, and x labels inside the `band_width_extremum_x_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `arg_extreme` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `unspecified` value bound by `string_label`.
+Annotation witnesses: `unspecified` witnesses bound by `segment(answer_band_lower_upper_span)`. The Annotation Contract below defines the prompt-facing witnesses.
+Query ids: `narrowest_band_x_label`, `widest_band_x_label`.
 
 ## Review Notes
 

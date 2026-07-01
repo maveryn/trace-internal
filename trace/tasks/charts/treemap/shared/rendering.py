@@ -3,9 +3,18 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from dataclasses import replace
 
 from PIL import Image, ImageDraw, ImageFont
 
+from trace.tasks.charts.shared.information_style import ChartInformationStyle
+from trace.tasks.charts.shared.dense_text import (
+    DENSE_TEXT_DARK_RGB,
+    DENSE_TEXT_MUTED_RGB,
+    dense_stroke_width,
+    dense_text_style_meta,
+    lighten_for_dense_text,
+)
 from trace.tasks.shared.bbox_projection import bbox_union_raw as _bbox_union
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
@@ -53,6 +62,23 @@ def resolve_treemap_render_params(params: Mapping[str, object], *, instance_seed
     )
 
 
+def apply_treemap_information_style(
+    render_params: TreemapRenderParams,
+    style: ChartInformationStyle,
+) -> TreemapRenderParams:
+    """Apply non-semantic information style roles to treemap chrome."""
+
+    return replace(
+        render_params,
+        panel_fill_rgb=tuple(int(value) for value in style.panel_fill_rgb),
+        panel_border_rgb=tuple(int(value) for value in style.panel_border_rgb),
+        text_color_rgb=tuple(int(value) for value in style.text_rgb),
+        muted_text_rgb=tuple(int(value) for value in style.muted_text_rgb),
+        separator_rgb=tuple(int(value) for value in style.guide_rgb),
+        text_stroke_rgb=tuple(int(value) for value in style.text_stroke_rgb),
+    )
+
+
 def _slice_rects(
     items: Sequence[tuple[str, int]],
     rect: tuple[float, float, float, float],
@@ -85,6 +111,22 @@ def _text_bbox(
     stroke_width: int = 0,
 ) -> BBox:
     return _bbox(draw.textbbox(xy, str(text), font=font, anchor=anchor, stroke_width=max(0, int(stroke_width))))
+
+
+def _relative_luminance(color: RGB) -> float:
+    def _linear(channel: int) -> float:
+        value = float(channel) / 255.0
+        return value / 12.92 if value <= 0.04045 else ((value + 0.055) / 1.055) ** 2.4
+
+    red, green, blue = (_linear(int(channel)) for channel in color)
+    return 0.2126 * red + 0.7152 * green + 0.0722 * blue
+
+
+def _text_on_color(fill_rgb: RGB) -> tuple[RGB, RGB]:
+    """Return the dense semantic treemap text style for one already-lightened fill."""
+
+    del fill_rgb
+    return DENSE_TEXT_DARK_RGB, DENSE_TEXT_MUTED_RGB
 
 
 def _draw_label_value(
@@ -190,16 +232,18 @@ def render_treemap_scene(
     dataset: TreemapDataset,
     params: Mapping[str, object],
     instance_seed: int,
+    render_params: TreemapRenderParams | None = None,
 ) -> RenderedTreemap:
-    """Render one treemap dataset and record all projected leaf/value geometry."""
+    """Render one treemap dataset and record all projected leaf-cell/value geometry."""
 
-    render_params = resolve_treemap_render_params(params, instance_seed=int(instance_seed))
+    if render_params is None:
+        render_params = resolve_treemap_render_params(params, instance_seed=int(instance_seed))
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
-    title_font = _font(render_params.title_font_size_px, bold=True)
-    parent_font = _font(render_params.parent_font_size_px, bold=True)
+    title_font = _font(render_params.title_font_size_px, bold=False)
+    parent_font = _font(render_params.parent_font_size_px, bold=False)
     leaf_font = _font(render_params.leaf_font_size_px)
-    value_font = _font(render_params.value_font_size_px, bold=True)
+    value_font = _font(render_params.value_font_size_px, bold=False)
     note_font = _font(render_params.note_font_size_px)
     chart_bbox = (
         float(render_params.plot_margin_left_px),
@@ -222,7 +266,7 @@ def render_treemap_scene(
         fill=render_params.text_color_rgb,
         anchor="mm",
         stroke_fill=render_params.text_stroke_rgb,
-        stroke_width=1,
+        stroke_width=0,
         role="readout",
         required=False,
     )
@@ -252,17 +296,19 @@ def render_treemap_scene(
         draw.rectangle(parent_rect, fill=lighten(parent.color_rgb, 0.18), outline=render_params.panel_border_rgb, width=2)
         header_h = 30
         header_rect = (parent_rect[0], parent_rect[1], parent_rect[2], min(parent_rect[3], parent_rect[1] + header_h))
-        draw.rectangle(header_rect, fill=darken(parent.color_rgb, 0.10), outline=render_params.panel_border_rgb, width=1)
+        header_fill = lighten_for_dense_text(parent.color_rgb, 0.42)
+        header_text_rgb, header_stroke_rgb = _text_on_color(header_fill)
+        draw.rectangle(header_rect, fill=header_fill, outline=render_params.panel_border_rgb, width=1)
         parent_text = _truncate(str(parent.label), max_chars=max(5, int((parent_rect[2] - parent_rect[0]) // 9)))
         draw_text_traced(
             draw,
             (header_rect[0] + 7, (header_rect[1] + header_rect[3]) / 2.0),
             parent_text,
             font=parent_font,
-            fill=(255, 255, 255),
+            fill=header_text_rgb,
             anchor="lm",
-            stroke_fill=darken(parent.color_rgb, 0.35),
-            stroke_width=1,
+            stroke_fill=header_stroke_rgb,
+            stroke_width=dense_stroke_width(),
             role="readout",
             required=False,
         )
@@ -295,21 +341,23 @@ def render_treemap_scene(
             leaf = leaves_by_id[str(leaf_id)]
             lx0, ly0, lx1, ly1 = leaf_rects[str(leaf_id)]
             leaf_rect = (lx0 + 1.5, ly0 + 1.5, lx1 - 1.5, ly1 - 1.5)
-            draw.rectangle(leaf_rect, fill=leaf.color_rgb, outline=render_params.separator_rgb, width=2)
+            leaf_fill = lighten_for_dense_text(leaf.color_rgb, 0.38)
+            draw.rectangle(leaf_rect, fill=leaf_fill, outline=render_params.separator_rgb, width=2)
+            leaf_text_rgb, leaf_stroke_rgb = _text_on_color(leaf_fill)
             value_bbox = _draw_label_value(
                 draw,
                 leaf_rect,
                 label=str(leaf.label),
                 value=int(leaf.value),
-                text_color=render_params.text_color_rgb,
-                muted_text=render_params.muted_text_rgb,
-                stroke=render_params.text_stroke_rgb,
+                text_color=leaf_text_rgb,
+                muted_text=leaf_text_rgb,
+                stroke=leaf_stroke_rgb,
                 label_font=leaf_font,
                 value_font=value_font,
-                stroke_width=render_params.label_stroke_width_px,
+                stroke_width=dense_stroke_width(),
             )
             leaf_bbox = _bbox(leaf_rect)
-            annotation_bbox_by_leaf_id[str(leaf.leaf_id)] = list(value_bbox)
+            annotation_bbox_by_leaf_id[str(leaf.leaf_id)] = list(leaf_bbox)
             entities.append(
                 {
                     "entity_id": str(leaf.leaf_id),
@@ -346,6 +394,7 @@ def render_treemap_scene(
             "layout": "slice_and_dice_treemap",
             "parent_count": int(len(dataset.parents)),
             "leaf_count_per_parent": int(len(dataset.parents[0].leaf_ids)) if dataset.parents else 0,
+            "dense_text_style": dense_text_style_meta(role="treemap_leaf_values"),
         },
     )
 
@@ -371,6 +420,7 @@ def treemap_annotation_region(rendered: RenderedTreemap, leaf_ids: Sequence[str]
 
 
 __all__ = [
+    "apply_treemap_information_style",
     "render_treemap_scene",
     "resolve_treemap_render_params",
     "treemap_annotation_region",

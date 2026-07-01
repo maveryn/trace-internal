@@ -8,8 +8,6 @@ from ...shared.visual_defaults import (
     default_noise_fallback,
     load_scene_background_defaults,
     load_scene_noise_defaults,
-    load_scene_background_defaults,
-    load_scene_noise_defaults,
 )
 
 

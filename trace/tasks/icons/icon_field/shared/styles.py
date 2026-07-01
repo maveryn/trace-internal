@@ -36,6 +36,9 @@ def resolve_icon_field_render_params(
     if not rotations:
         raise ValueError("rotation_candidates_degrees resolved no values")
     render_params["rotation_candidates_degrees"] = rotations
+    render_params["placement_mode"] = str(
+        params.get("placement_mode", group_default(render_defaults, "placement_mode", "scatter"))
+    )
     return render_params
 
 
@@ -85,6 +88,7 @@ def icon_field_style_trace(
     style["rotation_candidates_degrees"] = [
         int(value) for value in render_params["rotation_candidates_degrees"]
     ]
+    style["placement_mode"] = str(render_params.get("placement_mode", "scatter"))
     return style
 
 

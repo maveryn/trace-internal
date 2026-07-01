@@ -4,15 +4,14 @@ Public taxonomy: `games -> ludo_board -> task_games__ludo_board__winning_roll_va
 
 ## Program Contract
 
-Program code: `exact_finish_roll(token_position, finish_cell); scene=ludo_board; scope=winning_roll_value`.
+Program: `exact_finish_roll(token_position, finish_cell); scene=ludo_board; scope=winning_roll_value`
 
-The scene renders a Ludo-style cross board with one visible token for each player color and twelve two-cell arrows showing clockwise flow. The task asks what single die roll the named token needs to land exactly on its matching finish. No capture, blocking, bonus-turn, or strategy rule is used.
-
-Answer schema: `integer` in `1..5`.
-
-Annotation schema: `point` at the named token center.
-
-Supported `query_id`: `single`.
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `winning_roll_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `token_position`, `finish_cell`, `ludo_board`, `winning_roll_value`.
+Operation: evaluate `exact_finish_roll` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generator
 

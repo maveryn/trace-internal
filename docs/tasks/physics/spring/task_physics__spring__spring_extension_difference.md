@@ -3,41 +3,49 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `spring`
-- Implementation scene: `mechanics`
-- Implementation source: `trace/tasks/physics/mechanics/spring_extension.py`
+- Implementation scene: `spring`
+- Implementation source: `trace/tasks/physics/spring/spring_extension_difference.py`
 
-## Task Contract
-Computes the absolute difference between two visible spring-extension markers.
+## Program Contract
+
+Program: `abs(extension_a - extension_b); scene=spring; scope=spring_extension_difference`
+
+Candidate set: the visible spring setups, weight blocks, extension markers, and measurement labels inside the `spring_extension_difference` objective scope.
+Operands: `extension_a` (semantic_role, allowed `left_spring_extension_marker`, source `program_schema_concrete`); `extension_b` (semantic_role, allowed `right_spring_extension_marker`, source `program_schema_concrete`).
+Operation: evaluate `abs` over the candidate set using the visible quantities, relations, branch semantics, and formulas encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer_value` schema; The answer value is the exact integer absolute difference between the two shown extension markers.
+Annotation witnesses: `bbox_set` witnesses from the finalized render. Annotation must mark the two visible spring-extension markers being compared. Extension-marker boxes are vertically padded around the marker so the annotation target is not too thin.
+Query ids: `single`.
 
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `extension_difference` | `abs(extension_a - extension_b); scene=spring; scope=spring_extension_difference; query_branch=extension_difference` |
+| `single` | `abs(extension_a - extension_b); scene=spring; scope=spring_extension_difference` |
 
 ## Program Metadata
 - Program signatures: `physics.extension_difference_value`
 - Base program contract: `abs(extension_a - extension_b); scene=spring; scope=spring_extension_difference`
-- Parameter axes: `fixed_query`
+- Parameter axes: `scene_variant`, `target_answer`, `accent_color_name`
 - Arguments:
-  - `extension_a`: semantic_role; allowed `first_visible_extension_marker`; source `program_schema_concrete`
-  - `extension_b`: semantic_role; allowed `second_visible_extension_marker`; source `program_schema_concrete`
+  - `extension_a`: semantic_role; allowed `left_spring_extension_marker`; source `program_schema_concrete`
+  - `extension_b`: semantic_role; allowed `right_spring_extension_marker`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `extension_difference`
+- Supported query ids: `single`
+- Internal trace query branch: `extension_difference`
 
 ## Answer Contract
 - Answer schema: `integer_value`
 - Generator `answer_gt.type`: `integer`
-- The answer value is an exact integer produced by the symbolic physics construction.
+- The answer value is the exact integer absolute difference between the two shown extension markers.
 
 ## Annotation Contract
 - Annotation schema: `bbox_set`
-- Generator `annotation_gt.type`: `bbox_set | unordered`
-- Annotation is an unordered set of final-image pixel boxes over the minimal queried visual witnesses.
-- Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+- Generator `annotation_gt.type`: `bbox_set`
+- Annotation must mark the two visible spring-extension markers being compared. Extension-marker boxes are vertically padded around the marker so the annotation target is not too thin.
 - Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
 
 ## Prompt And Trace Requirements
-- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
-- Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
-- Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.
+- Prompt text must come from `prompts/physics/spring/physics_spring_v1.json`, with scene and task/query layers selected deterministically and recorded in metadata.
+- Render randomness, sampled fonts/styles, scene variant, accent color, target answer, scale factor, and verifier payloads must be explicit in the instance trace.
+- The task compares only the two visible extension markers, not the weight blocks or ruler tick labels.

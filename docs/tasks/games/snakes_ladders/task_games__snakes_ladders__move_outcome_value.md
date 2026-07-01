@@ -11,7 +11,15 @@
 8. Scalar annotation checked: `true`
 
 ## Program Contract
-- `value(simulate(start_square, rules=snakes_ladders_jumps, action=shown_die).final_square); scene=snakes_ladders; scope=move_outcome_value`
+
+Program: `value(simulate(start_square, rules=snakes_ladders_jumps, action=shown_die).final_square); scene=snakes_ladders; scope=move_outcome_value`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `move_outcome_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `simulate`, `start_square`, `rules`, `snakes_ladders_jumps`, `action`, `shown_die`, `final_square`, `snakes_ladders`, `move_outcome_value`.
+Operation: evaluate `value` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. Move the token by the shown die value, then immediately follow a snake or ladder if the landing square starts one.

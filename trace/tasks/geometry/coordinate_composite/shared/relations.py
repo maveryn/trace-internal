@@ -75,6 +75,24 @@ def object_to_trace(obj: SceneObject) -> Dict[str, Any]:
     return {"id": str(obj.object_id), "kind": "polygon", "vertices": [point_to_list(point) for point in obj.vertices]}
 
 
+def first_line_object(objects: Iterable[SceneObject]) -> LineObject:
+    """Return the first line segment object in a coordinate-composite scene."""
+
+    return next(obj for obj in objects if isinstance(obj, LineObject))
+
+
+def first_circle_object(objects: Iterable[SceneObject]) -> CircleObject:
+    """Return the first circle object in a coordinate-composite scene."""
+
+    return next(obj for obj in objects if isinstance(obj, CircleObject))
+
+
+def first_polygon_object(objects: Iterable[SceneObject]) -> PolygonObject:
+    """Return the first polygon object in a coordinate-composite scene."""
+
+    return next(obj for obj in objects if isinstance(obj, PolygonObject))
+
+
 def dedupe_points(points: Iterable[GraphPoint], *, tol: float = 1e-5) -> Tuple[GraphPoint, ...]:
     unique: List[GraphPoint] = []
     for point in points:
@@ -155,6 +173,85 @@ def _polygon_edges(polygon: PolygonObject) -> Tuple[Tuple[GraphPoint, GraphPoint
     return tuple((vertices[index], vertices[(index + 1) % len(vertices)]) for index in range(len(vertices)))
 
 
+def point_inside_circle(point: GraphPoint, circle: CircleObject, *, tol: float = 1e-7) -> bool:
+    """Return whether a graph point is strictly inside a circle."""
+
+    distance = math.hypot(float(point[0]) - float(circle.center[0]), float(point[1]) - float(circle.center[1]))
+    return bool(float(distance) < float(circle.radius) - float(tol))
+
+
+def point_inside_polygon(point: GraphPoint, polygon: PolygonObject, *, tol: float = 1e-7) -> bool:
+    """Return whether a graph point is strictly inside a polygon boundary."""
+
+    x_value = float(point[0])
+    y_value = float(point[1])
+    vertices = tuple(polygon.vertices)
+    inside = False
+    prior_x, prior_y = float(vertices[-1][0]), float(vertices[-1][1])
+    for vertex in vertices:
+        current_x, current_y = float(vertex[0]), float(vertex[1])
+        cross = ((x_value - prior_x) * (current_y - prior_y)) - ((y_value - prior_y) * (current_x - prior_x))
+        if abs(cross) <= float(tol):
+            min_x, max_x = sorted((prior_x, current_x))
+            min_y, max_y = sorted((prior_y, current_y))
+            if min_x - tol <= x_value <= max_x + tol and min_y - tol <= y_value <= max_y + tol:
+                return False
+        if ((current_y > y_value) != (prior_y > y_value)):
+            intersect_x = ((prior_x - current_x) * (y_value - current_y) / (prior_y - current_y)) + current_x
+            if x_value < float(intersect_x):
+                inside = not inside
+        prior_x, prior_y = current_x, current_y
+    return bool(inside)
+
+
+def point_on_line_segment(point: GraphPoint, line: LineObject, *, tol: float = 1e-7) -> bool:
+    """Return whether a graph point lies on a finite line segment."""
+
+    px, py = float(point[0]), float(point[1])
+    ax, ay = float(line.p0[0]), float(line.p0[1])
+    bx, by = float(line.p1[0]), float(line.p1[1])
+    cross = ((px - ax) * (by - ay)) - ((py - ay) * (bx - ax))
+    if abs(cross) > float(tol):
+        return False
+    dot = ((px - ax) * (bx - ax)) + ((py - ay) * (by - ay))
+    if dot < -float(tol):
+        return False
+    length_sq = ((bx - ax) ** 2) + ((by - ay) ** 2)
+    return bool(dot <= length_sq + float(tol))
+
+
+def point_on_circle_boundary(point: GraphPoint, circle: CircleObject, *, tol: float = 1e-7) -> bool:
+    """Return whether a graph point lies on a circle boundary."""
+
+    distance = math.hypot(float(point[0]) - float(circle.center[0]), float(point[1]) - float(circle.center[1]))
+    return bool(abs(float(distance) - float(circle.radius)) <= float(tol))
+
+
+def point_on_polygon_boundary(point: GraphPoint, polygon: PolygonObject, *, tol: float = 1e-7) -> bool:
+    """Return whether a graph point lies on any polygon edge."""
+
+    return any(
+        point_on_line_segment(
+            point,
+            LineObject(object_id="edge", p0=edge[0], p1=edge[1]),
+            tol=float(tol),
+        )
+        for edge in _polygon_edges(polygon)
+    )
+
+
+def point_above_line(point: GraphPoint, line: LineObject, *, tol: float = 1e-7) -> bool:
+    """Return whether a graph point is visually above a horizontal line segment."""
+
+    return bool(float(point[1]) > max(float(line.p0[1]), float(line.p1[1])) + float(tol))
+
+
+def point_below_line(point: GraphPoint, line: LineObject, *, tol: float = 1e-7) -> bool:
+    """Return whether a graph point is visually below a horizontal line segment."""
+
+    return bool(float(point[1]) < min(float(line.p0[1]), float(line.p1[1])) - float(tol))
+
+
 def object_pair_intersections(a: SceneObject, b: SceneObject) -> Tuple[GraphPoint, ...]:
     """Return all visible boundary intersections for one unordered object pair."""
 
@@ -213,11 +310,21 @@ __all__ = [
     "circle_object",
     "dedupe_points",
     "filtered_intersections",
+    "first_circle_object",
+    "first_line_object",
+    "first_polygon_object",
     "line_object",
     "object_pair_intersections",
     "object_to_trace",
     "pair_matches_filter",
     "polygon_object",
+    "point_above_line",
+    "point_below_line",
+    "point_on_circle_boundary",
+    "point_on_line_segment",
+    "point_on_polygon_boundary",
+    "point_inside_circle",
+    "point_inside_polygon",
     "transform_object",
     "transform_point",
 ]

@@ -15,13 +15,24 @@
 
 ## Annotation Contract
 1. Answer schema: `string_label`.
-2. Annotation schema: `keyed_bbox_map`.
-3. Annotation should mark the selected contour region as `answer_region`.
+2. Annotation schema: `bbox`.
+3. Annotation should mark the selected contour region.
 4. Renderer context such as axes, decorative labels, titles, and background treatments is metadata unless the task explicitly asks for it as annotation.
+
+## Program Contract
+
+Program: `arg_extreme(region_label, footprint_area(region_label), direction={widest,narrowest}); output=string_label; annotation=bbox(answer_region); scene=contour_density; scope=spread_extremum_region_label`
+
+Candidate set: the visible contour-density regions, guide labels, and marked areas inside the `spread_extremum_region_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `arg_extreme` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string_label` value bound by `string_label`.
+Annotation witnesses: `bbox` witnesses bound by `bbox(answer_region)`. Annotation should mark the selected contour region. Renderer context such as axes, decorative labels, titles, and background treatments is metadata unless the task explicitly asks for it as annotation.
+Query ids: `widest_spread_region_label`, `narrowest_spread_region_label`.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `widest_spread_region_label` | `select.visible_footprint_extremum_label(direction=widest)` | `string_label` | `keyed_bbox_map` |
-| `narrowest_spread_region_label` | `select.visible_footprint_extremum_label(direction=narrowest)` | `string_label` | `keyed_bbox_map` |
+| `widest_spread_region_label` | `selection.region_spread_extremum_label` | `string_label` | `bbox` |
+| `narrowest_spread_region_label` | `selection.region_spread_extremum_label` | `string_label` | `bbox` |

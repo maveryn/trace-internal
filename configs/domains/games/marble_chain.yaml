@@ -31,6 +31,12 @@ generation:
     - 5
     - 6
   task_overrides:
+    task_games__marble_chain__closure_match_direction_label:
+      option_count_support:
+      - 4
+      - 5
+      - 6
+      balanced_option_count_sampling: true
     task_games__marble_chain__max_pop_direction_label:
       option_count_support:
       - 4

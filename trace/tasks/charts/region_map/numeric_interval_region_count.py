@@ -6,7 +6,7 @@ from ....core.query_ids import SINGLE_QUERY_ID
 from ....core.types import TypedValue
 from ...registry import register_task
 from ._lifecycle import RegionMapBoundObjective, run_region_map_lifecycle
-from .shared.annotations import region_bbox_set_bundle
+from .shared.annotations import region_point_set_bundle
 from .shared.defaults import resolve_scene_variant
 from .shared.sampling import construct_numeric_interval_dataset
 
@@ -37,7 +37,7 @@ class ChartsMapNumericIntervalRegionCountTask:
         return dataset
 
     def _bind_numeric_interval_objective(self, dataset, rendered, selected_query_id):
-        annotation = region_bbox_set_bundle(rendered, dataset["annotation_region_ids"])
+        annotation = region_point_set_bundle(rendered, dataset["annotation_region_ids"])
         return RegionMapBoundObjective(
             answer_gt=TypedValue(type="integer", value=int(dataset["answer_value"])),
             annotation=annotation,

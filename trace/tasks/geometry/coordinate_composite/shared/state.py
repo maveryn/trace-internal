@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, Tuple
 
@@ -58,6 +58,11 @@ class RenderedScene:
     background_meta: Dict[str, Any]
     post_noise_meta: Dict[str, Any]
     render_spec_extra: Dict[str, Any]
+    candidate_points_px: Tuple[PixelPoint, ...] = tuple()
+    candidate_points_graph: Tuple[GraphPoint, ...] = tuple()
+    candidate_point_labels: Tuple[str, ...] = tuple()
+    candidate_marker_bboxes: Dict[str, Any] = field(default_factory=dict)
+    candidate_label_bboxes: Dict[str, Any] = field(default_factory=dict)
 
 
 __all__ = [

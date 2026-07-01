@@ -6,6 +6,9 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.tasks.charts.shared.cartesian.axes import draw_axis_lines, draw_horizontal_value_grid_ticks, draw_plot_frame
+from trace.tasks.charts.shared.cartesian.frame import plot_bbox_from_margins
+from trace.tasks.charts.shared.cartesian.geometry import project_linear_inverted, round_bbox, round_point
 from trace.tasks.charts.errorbar_series.shared.defaults import (
     RENDER_DEFAULTS,
     as_rgb,
@@ -21,10 +24,13 @@ from trace.tasks.charts.errorbar_series.shared.state import (
     RGB,
     SCENE_NAMESPACE,
 )
+from trace.tasks.charts.shared.visual_defaults import (
+    render_style_seed,
+    resolve_chart_render_int,
+    resolve_chart_render_rgb,
+)
 from trace.tasks.shared.render_variation import (
     apply_layout_jitter_to_margins,
-    resolve_render_int,
-    resolve_render_rgb,
 )
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
@@ -33,48 +39,29 @@ from trace.tasks.shared.text_rendering import load_font
 def bbox(values: Sequence[float]) -> BBox:
     """Return a JSON-stable pixel bbox."""
 
-    return [round(float(value), 3) for value in values]
+    return round_bbox(values)
 
 
 def point(x: float, y: float) -> Point:
     """Return a JSON-stable pixel point."""
 
-    return [round(float(x), 3), round(float(y), 3)]
-
-
-def render_style_seed(params: Mapping[str, Any]) -> int:
-    """Resolve the deterministic style seed stored in render params."""
-
-    try:
-        return int(params.get("_render_style_seed", params.get("_sample_cursor", 0)) or 0)
-    except Exception:
-        return 0
+    return round_point(float(x), float(y))
 
 
 def resolve_int(params: Mapping[str, Any], key: str, fallback: int) -> int:
     """Resolve one integer rendering parameter."""
 
-    return int(
-        resolve_render_int(
-            params,
-            RENDER_DEFAULTS,
-            str(key),
-            int(fallback),
-            instance_seed=render_style_seed(params),
-            namespace=SCENE_NAMESPACE,
-        )
-    )
+    return resolve_chart_render_int(params, RENDER_DEFAULTS, str(key), int(fallback), namespace=SCENE_NAMESPACE)
 
 
 def resolve_rgb(params: Mapping[str, Any], key: str, fallback: RGB) -> RGB:
     """Resolve one RGB rendering parameter."""
 
-    return resolve_render_rgb(
+    return resolve_chart_render_rgb(
         params,
         RENDER_DEFAULTS,
         str(key),
         as_rgb(group_render_default(key, fallback), fallback),
-        instance_seed=render_style_seed(params),
         namespace=SCENE_NAMESPACE,
     )
 
@@ -135,13 +122,13 @@ def resolve_errorbar_render_params(
 def plot_bbox(render_params: ErrorbarRenderParams) -> BBox:
     """Return the plot area in pixel space."""
 
-    return bbox(
-        [
-            float(render_params.margin_left_px),
-            float(render_params.margin_top_px),
-            float(render_params.canvas_width - render_params.margin_right_px),
-            float(render_params.canvas_height - render_params.margin_bottom_px),
-        ]
+    return plot_bbox_from_margins(
+        canvas_width=float(render_params.canvas_width),
+        canvas_height=float(render_params.canvas_height),
+        margin_left_px=float(render_params.margin_left_px),
+        margin_right_px=float(render_params.margin_right_px),
+        margin_top_px=float(render_params.margin_top_px),
+        margin_bottom_px=float(render_params.margin_bottom_px),
     )
 
 
@@ -149,8 +136,13 @@ def scale_y(value: float, *, render_params: ErrorbarRenderParams, plot_box: Sequ
     """Project one data value to the y-axis pixel coordinate."""
 
     _x0, y0, _x1, y1 = (float(item) for item in plot_box)
-    denom = max(1.0, float(render_params.axis_max) - float(render_params.axis_min))
-    return y1 - ((float(value) - float(render_params.axis_min)) / denom) * (y1 - y0)
+    return project_linear_inverted(
+        float(value),
+        domain_min=float(render_params.axis_min),
+        domain_max=float(render_params.axis_max),
+        pixel_top=float(y0),
+        pixel_bottom=float(y1),
+    )
 
 
 def x_positions(
@@ -192,15 +184,23 @@ def draw_axes(
     """Draw the plot frame, grid, y ticks, and x-axis labels."""
 
     x0, y0, x1, y1 = (float(value) for value in plot_box)
-    draw.rectangle([x0, y0, x1, y1], fill=render_params.panel_fill_rgb, outline=render_params.panel_outline_rgb, width=1)
+    draw_plot_frame(draw, plot_box, fill=render_params.panel_fill_rgb, outline=render_params.panel_outline_rgb, width=1)
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
     label_font = load_font(int(render_params.label_font_size_px), bold=False)
-    for tick in range(int(render_params.axis_min), int(render_params.axis_max) + 1, max(1, int(render_params.tick_step))):
-        sy = scale_y(float(tick), render_params=render_params, plot_box=plot_box)
-        draw.line([x0, sy, x1, sy], fill=render_params.grid_rgb, width=max(1, int(render_params.grid_line_width_px)))
-        draw_text_traced(draw, (x0 - 12.0, sy), str(tick), font=tick_font, fill=render_params.muted_text_rgb, anchor="rm", role="readout", required=False)
-    draw.line([x0, y1, x1, y1], fill=render_params.axis_rgb, width=max(1, int(render_params.axis_line_width_px)))
-    draw.line([x0, y0, x0, y1], fill=render_params.axis_rgb, width=max(1, int(render_params.axis_line_width_px)))
+    y_tick_positions = draw_horizontal_value_grid_ticks(
+        draw,
+        plot_box,
+        tick_values=range(int(render_params.axis_min), int(render_params.axis_max) + 1, max(1, int(render_params.tick_step))),
+        domain_min=int(render_params.axis_min),
+        domain_max=int(render_params.axis_max),
+        grid_rgb=render_params.grid_rgb,
+        axis_rgb=render_params.axis_rgb,
+        grid_width_px=max(1, int(render_params.grid_line_width_px)),
+        tick_width_px=1,
+    )
+    for tick, sy in y_tick_positions.items():
+        draw_text_traced(draw, (x0 - 12.0, sy), str(int(tick)), font=tick_font, fill=render_params.muted_text_rgb, anchor="rm", role="readout", required=False)
+    draw_axis_lines(draw, plot_box, axis_rgb=render_params.axis_rgb, axis_width_px=max(1, int(render_params.axis_line_width_px)))
     base_positions = x_positions(dataset, plot_box=plot_box, render_params=render_params)[str(dataset.series[0].series_id)]
     for label in dataset.x_labels:
         x = float(base_positions[str(label)])
@@ -331,20 +331,20 @@ def render_errorbar_series_chart(
     params: Mapping[str, Any],
     instance_seed: int,
     chart_font_family: str,
+    render_params: ErrorbarRenderParams | None = None,
 ) -> ErrorbarRendered:
     """Draw one complete error-bar chart on a prepared background image."""
 
     params = {**dict(params), "_render_style_seed": int(instance_seed)}
-    render_params = resolve_errorbar_render_params(
-        params,
-        instance_seed=int(instance_seed),
-        chart_font_family=str(chart_font_family),
-    )
+    if render_params is None:
+        render_params = resolve_errorbar_render_params(
+            params,
+            instance_seed=int(instance_seed),
+            chart_font_family=str(chart_font_family),
+        )
     canvas = image.convert("RGB")
     draw = ImageDraw.Draw(canvas)
     box = plot_bbox(render_params)
-    title_font = load_font(int(render_params.title_font_size_px), bold=True)
-    draw_text_traced(draw, (float(render_params.margin_left_px), 30.0), str(dataset.title), font=title_font, fill=render_params.text_rgb, role="readout", required=False)
     draw_axes(draw, dataset=dataset, render_params=render_params, plot_box=box)
     threshold_bbox = draw_threshold(draw, threshold_value=dataset.threshold_value, render_params=render_params, plot_box=box)
     entities, errorbar_bboxes, points = draw_series_marks(draw, dataset=dataset, render_params=render_params, plot_box=box)

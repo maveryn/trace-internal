@@ -6,14 +6,15 @@
 - module: `trace/tasks/icons/named_ring/scoped_attribute_count.py`
 
 ## Program Contract
-`count.filtered_on_directed_ring_arc(scene=named_ring, scope=icons_strictly_between_markers, traversal=clockwise|counterclockwise, predicate=shape_equals_target, output=integer)`
 
-Supported `query_id` values: `clockwise_arc_shape_count`, `counterclockwise_arc_shape_count`.
+Program: `count.filtered_on_directed_ring_arc(scene=named_ring, scope=icons_strictly_between_markers, traversal=clockwise|counterclockwise, predicate=shape_equals_target, output=integer)`
 
-Allowed program arguments:
-- `traversal`: `clockwise`, `counterclockwise`
-- `predicate`: `shape_equals_target`
-- `output`: `integer`
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `icons_strictly_between_markers` objective scope.
+Operands: visible scene state and prompt-bound operands named by `named_ring`, `icons_strictly_between_markers`, `traversal`, `clockwise`, `counterclockwise`, `predicate`, `shape_equals_target`.
+Operation: evaluate `count.filtered_on_directed_ring_arc` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `clockwise_arc_shape_count`, `counterclockwise_arc_shape_count`.
 
 ## Contract
 1. The image shows one visible ring of procedural named icons.

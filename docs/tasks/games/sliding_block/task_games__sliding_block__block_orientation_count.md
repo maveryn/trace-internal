@@ -11,7 +11,15 @@
 8. Scalar annotation checked: `true`
 
 ## Program Contract
-- `count(blocks_matching_orientation(board_state, requested_orientation)); scene=sliding_block; scope=block_orientation_count`
+
+Program: `count(blocks_matching_orientation(board_state, requested_orientation)); scene=sliding_block; scope=block_orientation_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `block_orientation_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `blocks_matching_orientation`, `board_state`, `requested_orientation`, `sliding_block`, `block_orientation_count` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `horizontal_block_count`, `vertical_block_count`.
 
 ## Generation Notes
 1. The board has no target block or exit arrow for this task.

@@ -9,6 +9,7 @@ from functools import wraps
 from typing import Any, Dict, Mapping, Sequence, Type
 
 from ..core.scene_package_migration import is_scene_package_task, parse_public_task_id
+from ..core.query_ids import LEGACY_DEFAULT_QUERY_ID, SINGLE_QUERY_ID
 from ..core.taxonomy import resolve_task_query_id
 from .base import Task, TaskOutput
 from .shared.font_assets import font_role_trace, get_font_family_record, sample_font_family
@@ -21,6 +22,7 @@ from .shared.text_rendering import temporary_default_font_family
 _ALL_TASKS_REGISTERED = False
 _ALL_TASKS_REGISTERING = False
 _TASKS_REGISTERING_BY_ID: set[str] = set()
+_INTERNAL_SUPPORTED_QUERY_IDS_ATTR = "_trace_internal_supported_query_ids"
 
 
 class _TaskRegistry(dict[str, Type[Task]]):
@@ -175,47 +177,96 @@ def _coerce_supported_query_ids(raw: Any) -> tuple[str, ...]:
 def _ensure_supported_query_ids(cls: Type[Task], *, task_id: str) -> tuple[str, ...]:
     """Attach a public-query support declaration when a task has a single clear query."""
 
+    def _public_supported(values: Sequence[str]) -> tuple[str, ...]:
+        resolved = tuple(str(value) for value in values if str(value))
+        if len(resolved) == 1:
+            return (SINGLE_QUERY_ID,)
+        return resolved
+
     supported = _coerce_supported_query_ids(getattr(cls, "supported_query_ids", ()))
     if not supported:
         supported = _coerce_supported_query_ids(getattr(cls, "supported_queries", ()))
     if supported:
-        cls.supported_query_ids = supported  # type: ignore[attr-defined]
-        return supported
+        public_supported = _public_supported(supported)
+        setattr(cls, _INTERNAL_SUPPORTED_QUERY_IDS_ATTR, supported)
+        cls.supported_query_ids = public_supported  # type: ignore[attr-defined]
+        return public_supported
 
     for attr in ("fixed_query_id", "query_id"):
         value = getattr(cls, attr, None)
         if value is not None and str(value):
-            supported = (str(value),)
-            cls.supported_query_ids = supported  # type: ignore[attr-defined]
-            return supported
+            internal_supported = (str(value),)
+            public_supported = (SINGLE_QUERY_ID,)
+            setattr(cls, _INTERNAL_SUPPORTED_QUERY_IDS_ATTR, internal_supported)
+            cls.supported_query_ids = public_supported  # type: ignore[attr-defined]
+            return public_supported
 
-    try:
-        objective = parse_public_task_id(str(task_id)).objective_contract
-    except Exception:
-        objective = ""
-    supported = (str(objective),) if str(objective) else tuple()
+    supported = (SINGLE_QUERY_ID,)
     if supported:
+        setattr(cls, _INTERNAL_SUPPORTED_QUERY_IDS_ATTR, supported)
         cls.supported_query_ids = supported  # type: ignore[attr-defined]
     return supported
+
+
+def _generate_with_internal_supported_query_ids(
+    self: Task,
+    generate_impl: Any,
+    instance_seed: int,
+    *,
+    params: Mapping[str, Any],
+    max_attempts: int,
+    internal_supported_query_ids: Sequence[str],
+) -> TaskOutput:
+    """Call a task generator with its original single-query id available internally."""
+
+    missing = object()
+    previous = getattr(self, "supported_query_ids", missing)
+    setattr(self, "supported_query_ids", tuple(str(value) for value in internal_supported_query_ids if str(value)))
+    try:
+        return generate_impl(self, instance_seed, params=params, max_attempts=max_attempts)
+    finally:
+        if previous is missing:
+            try:
+                delattr(self, "supported_query_ids")
+            except AttributeError:
+                pass
+        else:
+            setattr(self, "supported_query_ids", previous)
 
 
 def _validate_requested_query_id(params: Mapping[str, Any], *, supported_query_ids: Sequence[str], task_id: str) -> None:
     """Reject caller-provided query ids not owned by this public task."""
 
     requested = explicit_query_id_param(params or {}, allow_default=True)
-    if requested is None or str(requested) == "default":
+    if requested is None or str(requested) == LEGACY_DEFAULT_QUERY_ID:
         return
     supported = tuple(str(value) for value in supported_query_ids if str(value))
     if str(requested) not in set(supported):
         raise ValueError(f"unsupported query_id for {task_id}: {requested}; supported: {supported}")
 
 
-def _normalize_public_query_params(params: Mapping[str, Any]) -> dict[str, Any]:
+def _normalize_public_query_params(
+    params: Mapping[str, Any],
+    *,
+    supported_query_ids: Sequence[str],
+) -> dict[str, Any]:
     """Return params with legacy query_variant copied into canonical query_id."""
 
     normalized = dict(params or {})
     requested = explicit_query_id_param(normalized, allow_default=True)
-    if requested is not None and str(requested) != "default" and normalized.get("query_id") is None:
+    public_supported = tuple(str(value) for value in supported_query_ids if str(value))
+    if public_supported == (SINGLE_QUERY_ID,) and str(requested or "") in {
+        SINGLE_QUERY_ID,
+        LEGACY_DEFAULT_QUERY_ID,
+    }:
+        normalized.pop("query_id", None)
+        normalized.pop("query_variant", None)
+        return normalized
+    if (
+        requested is not None
+        and str(requested) != LEGACY_DEFAULT_QUERY_ID
+        and normalized.get("query_id") is None
+    ):
         normalized["query_id"] = str(requested)
     return normalized
 
@@ -374,10 +425,15 @@ def register_task(cls: Type[Task]) -> Type[Task]:
     v0_match = _V0_TASK_ID_PATTERN.match(task_id)
     task_parts = parse_public_task_id(task_id)
     supported_query_ids = _ensure_supported_query_ids(cls, task_id=task_id)
+    internal_supported_query_ids = tuple(
+        str(value)
+        for value in getattr(cls, _INTERNAL_SUPPORTED_QUERY_IDS_ATTR, supported_query_ids)
+        if str(value)
+    )
     migrated_task = is_scene_package_task(task_id, domain=str(task_parts.domain))
     generate_impl = cls.generate
     if str(getattr(cls, "domain", "")) == "charts":
-        from .charts.shared.render_audit_defaults import wrap_charts_generation
+        from .charts.shared.context_text import wrap_charts_generation
 
         generate_impl = wrap_charts_generation(
             generate_impl,
@@ -405,7 +461,10 @@ def register_task(cls: Type[Task]) -> Type[Task]:
 
         @wraps(original_generate)
         def _generate_with_public_query_contract(self, instance_seed, *, params, max_attempts):
-            params = _normalize_public_query_params(params)
+            params = _normalize_public_query_params(
+                params,
+                supported_query_ids=supported_query_ids,
+            )
             _validate_requested_query_id(
                 params,
                 supported_query_ids=supported_query_ids,
@@ -419,17 +478,25 @@ def register_task(cls: Type[Task]) -> Type[Task]:
             with collect_traced_text_records() as drawn_text_records:
                 with collect_semantic_marker_records() as marker_records:
                     with temporary_default_font_family(implicit_font_family):
-                        output = original_generate(self, instance_seed, params=params, max_attempts=max_attempts)
+                        output = _generate_with_internal_supported_query_ids(
+                            self,
+                            original_generate,
+                            instance_seed,
+                            params=params,
+                            max_attempts=max_attempts,
+                            internal_supported_query_ids=internal_supported_query_ids,
+                        )
             output = _attach_implicit_readout_font(
                 output,
                 task_id=task_id,
                 font_family=implicit_font_family,
             )
             output = _attach_illustration_art_style_metadata(output, task_id=task_id)
-            query_id = str(
+            generated_query_id = str(
                 output.query_id
                 or resolve_task_query_id(trace_payload=output.trace_payload)
             )
+            query_id = SINGLE_QUERY_ID if supported_query_ids == (SINGLE_QUERY_ID,) else generated_query_id
             if not query_id:
                 return _attach_collected_visual_legibility(
                     output,
@@ -437,11 +504,25 @@ def register_task(cls: Type[Task]) -> Type[Task]:
                     marker_records=marker_records,
                 )
             scene_id = str(output.scene_id or taxonomy_scene_id)
+            public_query_probabilities = (
+                {SINGLE_QUERY_ID: 1.0}
+                if supported_query_ids == (SINGLE_QUERY_ID,)
+                else None
+            )
+            query_rewrite_kwargs = (
+                {
+                    "query_id_probabilities": public_query_probabilities,
+                    "params_query_id_probabilities": public_query_probabilities,
+                }
+                if public_query_probabilities is not None
+                else {}
+            )
             output = rewrite_public_query_output(
                 output,
                 query_id=query_id,
                 scene_id=scene_id,
                 preserve_internal_query_id_as="internal_query_id",
+                **query_rewrite_kwargs,
             )
             return _attach_collected_visual_legibility(
                 output,

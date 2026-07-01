@@ -82,41 +82,6 @@ def _union_bbox(boxes: Iterable[Sequence[float]]) -> Tuple[float, float, float, 
     )
 
 
-def _note_text(case: ArithmeticCase) -> str:
-    """Return the rule note shown in the panel."""
-
-    return str(case.rule_note)
-
-
-def _draw_note(
-    draw: ImageDraw.ImageDraw,
-    *,
-    text: str,
-    center_x: float,
-    top_y: float,
-    font,
-    fill: Sequence[int],
-    stroke: Sequence[int],
-) -> Tuple[float, float, float, float]:
-    """Draw a centered rule note above the puzzle body."""
-
-    bbox = draw.textbbox((0, 0), str(text), font=font, stroke_width=1)
-    width = float(bbox[2] - bbox[0])
-    height = float(bbox[3] - bbox[1])
-    center = (float(center_x), float(top_y + 0.5 * height))
-    return _as_bbox(
-        draw_centered_text(
-            draw,
-            text=str(text),
-            center=center,
-            font=font,
-            fill=fill,
-            stroke_fill=stroke,
-            stroke_width=1,
-        )
-    )
-
-
 def _draw_value_box(
     draw: ImageDraw.ImageDraw,
     *,
@@ -325,59 +290,6 @@ def _draw_equal_sum_case(
             font=fonts["value"],
             is_target=is_target,
             entity_id=entity_id,
-            item_bboxes=item_bboxes,
-            entities=entities,
-        )
-        boxes.append(item_bboxes[entity_id])
-    return boxes
-
-
-def _draw_window_case(
-    draw: ImageDraw.ImageDraw,
-    *,
-    case: ArithmeticCase,
-    origin: Sequence[float],
-    render_params: ArithmeticRenderParams,
-    style: Any,
-    fonts: Mapping[str, Any],
-    item_bboxes: Dict[str, Tuple[float, float, float, float]],
-    entities: list[Dict[str, Any]],
-) -> list[Tuple[float, float, float, float]]:
-    """Render a sequence of repeated cells with one hidden value."""
-
-    values = list(case.data["visible_values"])
-    cell_w = float(render_params.cell_width_px)
-    cell_h = float(render_params.cell_height_px)
-    gap = float(max(6, int(render_params.cell_width_px * 0.12)))
-    max_total_w = float(render_params.canvas_width * 0.72)
-    raw_total_w = float(len(values) * cell_w + (len(values) - 1) * gap)
-    if raw_total_w > max_total_w and values:
-        cell_w = max(42.0, (max_total_w - (len(values) - 1) * gap) / len(values))
-    total_w = float(len(values) * cell_w + (len(values) - 1) * gap)
-    left = float(origin[0] - total_w / 2.0)
-    top = float(origin[1] - cell_h / 2.0)
-    boxes: list[Tuple[float, float, float, float]] = []
-    for index, value in enumerate(values):
-        box = _as_bbox(
-            (
-                left + index * (cell_w + gap),
-                top,
-                left + index * (cell_w + gap) + cell_w,
-                top + cell_h,
-            )
-        )
-        is_target = value is None
-        entity_id = "target" if is_target else f"seq_{index}"
-        _draw_value_box(
-            draw,
-            bbox=box,
-            text="?" if is_target else str(value),
-            render_params=render_params,
-            style=style,
-            font=fonts["value"],
-            is_target=is_target,
-            entity_id=entity_id,
-            entity_type="sequence_cell",
             item_bboxes=item_bboxes,
             entities=entities,
         )
@@ -642,17 +554,6 @@ def _draw_case_body(
             item_bboxes=item_bboxes,
             entities=entities,
         )
-    if case.layout_style == "equal_windows":
-        return _draw_window_case(
-            draw,
-            case=case,
-            origin=body_center,
-            render_params=render_params,
-            style=style,
-            fonts=fonts,
-            item_bboxes=item_bboxes,
-            entities=entities,
-        )
     if case.layout_style == "stacked_arithmetic":
         return _draw_vertical_case(
             draw,
@@ -809,30 +710,18 @@ def render_arithmetic_case(
     ]
     body_center = (
         0.5 * (panel_bbox[0] + panel_bbox[2]),
-        panel_bbox[1] + 0.56 * (panel_bbox[3] - panel_bbox[1]),
+        panel_bbox[1] + 0.50 * (panel_bbox[3] - panel_bbox[1]),
     )
     with temporary_default_font_family(str(font_family)):
-        note_bbox = _draw_note(
+        content_boxes = _draw_case_body(
             draw,
-            text=_note_text(case),
-            center_x=0.5 * (panel_bbox[0] + panel_bbox[2]),
-            top_y=panel_bbox[1] + max(12, int(render_params.panel_padding_px * 0.7)),
-            font=fonts["note"],
-            fill=style.text_rgb,
-            stroke=style.text_stroke_rgb,
-        )
-        content_boxes = [note_bbox]
-        content_boxes.extend(
-            _draw_case_body(
-                draw,
-                case=case,
-                body_center=body_center,
-                render_params=render_params,
-                style=style,
-                fonts=fonts,
-                item_bboxes=item_bboxes,
-                entities=entities,
-            )
+            case=case,
+            body_center=body_center,
+            render_params=render_params,
+            style=style,
+            fonts=fonts,
+            item_bboxes=item_bboxes,
+            entities=entities,
         )
     scene_bbox = _union_bbox(content_boxes + [item_bboxes["diagram_panel"]])
     rendered_scene = RenderedArithmeticScene(

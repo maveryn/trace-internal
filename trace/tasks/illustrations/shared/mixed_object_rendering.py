@@ -371,7 +371,7 @@ def sample_placements(
                 px = max(x0, min(x1 - w, px))
                 py = max(float(py_min), min(float(py_max), py))
             elif placement_layout_id == "two_clusters":
-                center_x, center_y = cluster_centers[index % len(cluster_centers)]
+                center_x, center_y = rng.choice(cluster_centers)
                 px = x0 + center_x * max(1.0, x1 - x0 - w) + float(rng.uniform(-88.0, 88.0))
                 py = float(py_min) + center_y * max(1.0, float(py_max) - float(py_min)) + float(rng.uniform(-62.0, 62.0))
                 px = max(x0, min(x1 - w, px))

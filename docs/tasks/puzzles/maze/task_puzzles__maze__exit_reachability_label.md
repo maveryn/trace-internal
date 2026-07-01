@@ -9,12 +9,19 @@
 5. Supported `query_id` values: `single`
 6. Prompt query key: `exit_reachability_label`
 7. Answer schema: `string`
-8. Annotation schema: `bbox`
+8. Annotation schema: `point`
 9. Program schema: `select_label(maze.exit, target_reachability=reachable|unreachable); scene=maze; scope=exit_reachability_label`
 
 ## Program Contract
 
-- `select_label(maze.exit, target_reachability=reachable|unreachable); scene=maze; scope=exit_reachability_label`
+Program: `select_label(maze.exit, target_reachability=reachable|unreachable); scene=maze; scope=exit_reachability_label`
+
+Candidate set: the visible maze cells, walls, start marker, exits, labels, and reachability/path structure inside the `exit_reachability_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `maze`, `exit`, `target_reachability`, `reachable`, `unreachable`, `exit_reachability_label`.
+Operation: evaluate `select_label` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; the selected exit label.
+Annotation witnesses: `annotation` uses the `point` schema; one image-pixel point centered on the selected exit marker.
+Query ids: `single`.
 
 ## Query Contract
 
@@ -36,14 +43,14 @@
 - `task_key`: `exit_reachability_label_query`
 - `query_key`: `exit_reachability_label`
 - Prompt-facing answer is the selected exit label.
-- Prompt-facing annotation is one image-pixel bbox for the selected exit marker and doorway.
+- Prompt-facing annotation is one image-pixel point centered on the selected exit marker.
 
 ## Annotation + Trace Contract
 
 - `answer_gt.type`: `string`
-- `annotation_gt.type`: `bbox`
-- `projected_annotation` includes `bbox`, `pixel_bbox`, and `value`.
-- `render_map.item_bboxes_px` stores exit bboxes keyed by exit item id.
+- `annotation_gt.type`: `point`
+- `projected_annotation` includes `point`, `pixel_point`, and `value`.
+- `render_map.item_points_px` stores exit marker centers keyed by exit item id.
 - `execution_trace` records public query `single`, internal query `exit_reachability_label`, target reachability, maze topology, reachable/unreachable labels, answer label, and solver trace.
 - Answer and annotation are projected from the same selected exit item id.
 - `scalar_annotation_checked=true`.

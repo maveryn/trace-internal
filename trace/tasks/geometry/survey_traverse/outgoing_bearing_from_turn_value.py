@@ -5,16 +5,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping
 
-from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
 
-from ._lifecycle import SurveyRenderedAttempt, build_survey_trace_payload, render_survey_attempts, survey_output_metadata
-from .shared.annotations import point_scene_annotation
+from ._lifecycle import SurveyRenderedAttempt, build_survey_task_output, render_survey_attempts
+from .shared.annotations import area_scene_annotation
 from .shared.defaults import load_survey_traverse_defaults
 from .shared.measurements import normalize_bearing
-from .shared.prompts import build_survey_traverse_prompt_artifacts
 from .shared.rendering import render_closed_traverse_scene
 from .shared.sampling import BEARING_SUPPORT, choose_from_support, choose_station_labels3, choose_turn
 from .shared.state import DOMAIN, SCENE_ID, BearingTurnCase
@@ -110,7 +107,7 @@ def _render_attempt(
         max_attempts=int(max_attempts),
         render_defaults=_RENDER_DEFAULTS,
         render_scene=render_scene,
-        build_annotation=point_scene_annotation,
+        build_annotation=area_scene_annotation,
     )
 
 
@@ -123,7 +120,7 @@ class GeometrySurveyTraverseOutgoingBearingFromTurnValueTask:
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int):
         """Bind the single traverse-turn formula, prompt, annotation, and output."""
 
         query_id, query_probabilities, task_params = select_task_query_id(
@@ -147,21 +144,14 @@ class GeometrySurveyTraverseOutgoingBearingFromTurnValueTask:
             max_attempts=int(max_attempts),
         )
         answer = int(problem.answer)
-        prompt_artifacts = build_survey_traverse_prompt_artifacts(
-            prompt_defaults=_PROMPT_DEFAULTS,
-            task_prompt_key=TASK_PROMPT_KEY,
-            prompt_branch_key=str(problem.query_id),
-            annotation_roles=rendered_attempt.rendered.annotation_roles,
-            annotation_kind=str(rendered_attempt.annotation_artifacts.annotation_type),
-            answer_value=int(answer),
-            instance_seed=int(instance_seed),
-        )
-        trace_payload = build_survey_trace_payload(
+        return build_survey_task_output(
             task_identity=TASK_ID,
-            query_id=str(problem.query_id),
+            task_prompt_key=TASK_PROMPT_KEY,
+            prompt_defaults=_PROMPT_DEFAULTS,
+            instance_seed=int(instance_seed),
+            prompt_branch_key=str(problem.query_id),
             formula_family="survey_outgoing_bearing_from_turn",
             rendered_attempt=rendered_attempt,
-            prompt_artifacts=prompt_artifacts,
             answer_value=int(answer),
             query_probabilities=problem.query_probabilities,
             query_params_extra={
@@ -177,18 +167,6 @@ class GeometrySurveyTraverseOutgoingBearingFromTurnValueTask:
                 **dict(rendered_attempt.rendered.witness),
             },
             witness_extra=dict(rendered_attempt.rendered.witness),
-        )
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=TypedValue(type="integer", value=int(answer)),
-            annotation_gt=TypedValue(
-                type=str(rendered_attempt.annotation_artifacts.annotation_type),
-                value=rendered_attempt.annotation_artifacts.value,
-            ),
-            image=rendered_attempt.image,
-            image_id="img0",
-            trace_payload=dict(trace_payload),
-            **survey_output_metadata(prompt_artifacts=prompt_artifacts, query_name=str(problem.query_id)),
         )
 
 

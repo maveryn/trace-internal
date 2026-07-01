@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from .....core.seed import spawn_rng
 from ...shared.label_assets import resolve_chart_entity_labels
-from ...shared.unanswerable import (
+from trace.tasks.shared.unanswerable import (
     UNANSWERABLE_ANSWER,
     absence_proof,
     choose_missing_label,

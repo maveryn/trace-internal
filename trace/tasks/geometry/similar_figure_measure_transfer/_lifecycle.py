@@ -249,6 +249,7 @@ def _trace_payload(
             "relation": str(case.relation),
             "scale_factor": float(case.scale_factor),
             "answer": _answer_value(case.answer, answer_type=str(plan.answer_type)),
+            **({"answer_rounding": "one_decimal"} if str(plan.answer_type) == "number" else {}),
             "annotation_roles": list(annotation_value.keys()),
             **measure_values,
         },
@@ -259,6 +260,7 @@ def _trace_payload(
             "target_name": str(case.target_name),
             "relation": str(case.relation),
             "answer": _answer_value(case.answer, answer_type=str(plan.answer_type)),
+            **({"answer_rounding": "one_decimal"} if str(plan.answer_type) == "number" else {}),
             **measure_values,
         },
         "projected_annotation": {
@@ -300,7 +302,4 @@ def _answer_value(value: float | int, *, answer_type: str) -> int | float:
 
 
 def _number(value: float) -> int | float:
-    rounded = round(float(value), 3)
-    if abs(rounded - round(rounded)) < 1e-9:
-        return int(round(rounded))
-    return rounded
+    return float(round(float(value), 1))

@@ -7,6 +7,8 @@ from typing import Any, Mapping
 
 from PIL import ImageDraw
 
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.diagram_style import (
     geometry_diagram_style_metadata,
     prepare_geometry_diagram_style_and_background,
@@ -270,7 +272,8 @@ def render_length_measurement_scene(
     ruler_start_cm = int(plan.ruler_start_cm)
     ruler_end_cm = int(plan.ruler_start_cm + plan.target_length_cm)
     orientation_options = (-22.0, -12.0, 0.0, 14.0, 25.0)
-    orientation = orientation_options[int(instance_seed) % len(orientation_options)]
+    orientation_rng = spawn_rng(int(instance_seed), "geometry.measuring_tools.ruler_orientation")
+    orientation = float(uniform_choice(orientation_rng, orientation_options))
     axis = unit_from_degrees(float(orientation))
     ruler_normal = normal(axis)
 

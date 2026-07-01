@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
-from trace.tasks.charts.shared.labeled_chart_common import sample_chart_labels
+from trace.tasks.charts.shared.label_assets import sample_chart_labels
 from trace.tasks.charts.waterfall.shared.defaults import GENERATION_DEFAULTS, SCENE_NAMESPACE
 from trace.tasks.charts.waterfall.shared.state import WaterfallDataset, WaterfallStep
 from trace.tasks.shared.config_defaults import resolve_required_int_bounds
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 
 def _resolve_step_count_bounds(
@@ -149,12 +149,9 @@ def choose_step_index(
     support = [index for index in range(int(step_count)) if int(min_index) <= int(index) <= int(resolved_max)]
     if not support:
         raise ValueError("no feasible waterfall target step")
-    cursor = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    return int(support[int(cursor) % len(support)])
+    del params
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    return int(uniform_choice(rng, tuple(support)))
 
 
 def threshold_options(

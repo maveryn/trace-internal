@@ -7,7 +7,7 @@ from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 
 from ._lifecycle import SlidingBlockObjective, run_sliding_block_lifecycle
-from .shared.annotations import block_and_option_bbox_set
+from .shared.annotations import source_board_and_option_bbox_map
 from .shared.sampling import build_board_for_move_result, move_result_option_labels, select_target_from_support
 from .shared.state import DOMAIN
 
@@ -47,12 +47,11 @@ def _prepare_result_objective(
         answer_gt=TypedValue(type="option_letter", value=str(correct_label)),
         answer_block_ids=moved_block_ids,
         render_mode="final_board_options",
-        annotation_source="block_bboxes_px+option_panel_bboxes_px",
+        annotation_source="board_bbox_px+option_panel_bboxes_px",
         prompt_query_key=PROMPT_QUERY_KEY,
         prompt_default_prefix=PROMPT_QUERY_KEY,
-        build_annotation=lambda rendered: block_and_option_bbox_set(
+        build_annotation=lambda rendered: source_board_and_option_bbox_map(
             rendered,
-            block_ids=moved_block_ids,
             option_id=correct_option_id,
         ),
         prompt_dynamic_values={"move_sequence_description": str(dataset["move_sequence_description"])},

@@ -39,6 +39,7 @@ class DartInstance:
     """One visible dart marker before rendering."""
 
     dart_id: str
+    label: str | None
     area_kind: str
     sector_value: int | None
     score: int

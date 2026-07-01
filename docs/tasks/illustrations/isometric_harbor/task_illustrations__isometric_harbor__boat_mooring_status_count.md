@@ -10,7 +10,15 @@
 Counts boats by mooring status in an isometric harbor scene: tied along the main dock versus floating in open water away from the dock.
 
 ## Program Contract
-`count(boat where mooring_status(boat, main_dock)=status); scene=isometric_harbor; scope=boat_mooring_status_count`
+
+Program: `count(boat where mooring_status(boat, main_dock)=status); scene=isometric_harbor; scope=boat_mooring_status_count`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `boat_mooring_status_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `boat`, `where`, `mooring_status`, `main_dock`, `status`, `isometric_harbor`, `boat_mooring_status_count` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `moored_boat_count`, `open_water_boat_count`.
 
 ## Query Branches
 

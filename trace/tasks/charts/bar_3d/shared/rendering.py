@@ -8,16 +8,20 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw, ImageFont
 
 from .....core.seed import spawn_rng
-from .....core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
+from trace.tasks.charts.shared.three_d.color import lighten_rgb as _lighten
+from trace.tasks.charts.shared.three_d.color import shade_rgb as _shade
+from trace.tasks.charts.shared.three_d.geometry import polygon_bbox as _polygon_bbox
+from trace.tasks.charts.shared.three_d.geometry import round_bbox as _bbox
 from .....core.visual.noise import apply_post_image_noise
-from ....shared.bbox_projection import bbox_union as _bbox_union, round_bbox as _bbox
+from ....shared.bbox_projection import bbox_union as _bbox_union
 from ....shared.config_defaults import group_default
 from ....shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
 from ....shared.text_rendering import temporary_default_font_family
 from ....shared.text_rendering import load_font
 from ....shared.text_legibility import draw_text_traced
 from ...shared.visual_defaults import chart_font_asset_metadata, sample_chart_font_family
-from .defaults import POST_IMAGE_BACKGROUND_DEFAULTS, POST_IMAGE_NOISE_DEFAULTS, _RENDER_DEFAULTS
+from .defaults import POST_IMAGE_NOISE_DEFAULTS, _RENDER_DEFAULTS
 from .state import (
     BBox,
     RGB,
@@ -103,17 +107,6 @@ def _render_params(params: Mapping[str, Any], *, instance_seed: int) -> _RenderP
     )
 
 
-def _polygon_bbox(points: Sequence[Tuple[float, float]]) -> BBox:
-    return _bbox(
-        (
-            min(float(point[0]) for point in points),
-            min(float(point[1]) for point in points),
-            max(float(point[0]) for point in points),
-            max(float(point[1]) for point in points),
-        )
-    )
-
-
 def _text_bbox(
     draw: ImageDraw.ImageDraw,
     xy: Tuple[float, float],
@@ -164,17 +157,6 @@ def _draw_text(
         required=False,
     )
     return _text_bbox(draw, xy, str(text), font, anchor=anchor, stroke_width=max(0, int(stroke_width)))
-
-
-def _shade(color: RGB, factor: float) -> RGB:
-    return tuple(max(0, min(255, int(round(float(channel) * float(factor))))) for channel in color)
-
-
-def _lighten(color: RGB, amount: float) -> RGB:
-    return tuple(
-        max(0, min(255, int(round(float(channel) + (255.0 - float(channel)) * float(amount)))))
-        for channel in color
-    )
 
 
 def _draw_front_highlight(
@@ -265,10 +247,11 @@ def _render_bar_grid(
     dataset: _Dataset,
     params: Mapping[str, Any],
     instance_seed: int,
+    render_params: _RenderParams | None = None,
 ) -> _RenderedBarGrid:
     """Render the symbolic bar grid and record every projected bar/legend witness in one pass."""
 
-    render_params = _render_params(params, instance_seed=int(instance_seed))
+    render_params = render_params or _render_params(params, instance_seed=int(instance_seed))
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
     x_count = len(dataset.x_labels)
@@ -289,21 +272,10 @@ def _render_bar_grid(
     )
     draw.rectangle((plot_left, plot_top, plot_right, plot_bottom), fill=render_params.plot_fill_rgb)
 
-    title_font = load_font(max(18, int(render_params.label_font_size_px) + 1), bold=True)
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
     label_font = load_font(int(render_params.label_font_size_px), bold=True)
     value_font = load_font(int(render_params.value_font_size_px), bold=True)
     legend_font = load_font(int(render_params.legend_font_size_px), bold=True)
-
-    _draw_text(
-        draw,
-        (plot_left, plot_top - 34),
-        "3D Bar Chart",
-        font=title_font,
-        fill=render_params.text_color_rgb,
-        stroke_fill=render_params.text_stroke_rgb,
-        stroke_width=1,
-    )
 
     max_value = max(int(bar.value) for bar in dataset.bars)
     tick_step = int(params.get("z_axis_tick_step", group_default(_RENDER_DEFAULTS, "z_axis_tick_step", 10)))
@@ -557,12 +529,14 @@ def render_bar_grid_scene(
     does not choose the objective target, answer value, or annotation bars.
     """
 
-    background, background_meta = make_background_canvas(
-        canvas_width=int(params.get("canvas_width", group_default(_RENDER_DEFAULTS, "canvas_width", 1120))),
-        canvas_height=int(params.get("canvas_height", group_default(_RENDER_DEFAULTS, "canvas_height", 760))),
+    render_params = _render_params(params, instance_seed=int(instance_seed))
+    protected_colors = tuple(tuple(int(channel) for channel in bar.color_rgb) for bar in dataset.bars)
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=POST_IMAGE_BACKGROUND_DEFAULTS,
+        scene_id="bar_3d",
+        render_params=render_params,
+        protected_colors=protected_colors,
     )
     chart_font_family = sample_chart_font_family(
         instance_seed=int(instance_seed),
@@ -575,6 +549,7 @@ def render_bar_grid_scene(
             dataset=dataset,
             params=params,
             instance_seed=int(instance_seed),
+            render_params=render_params,
         )
     image, post_noise_meta = apply_post_image_noise(
         rendered.image,
@@ -595,7 +570,7 @@ def render_bar_grid_scene(
     )
     return BarGridRenderArtifacts(
         rendered=rendered,
-        background_style=dict(background_meta),
+        background_style={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         font_assets=chart_font_asset_metadata(str(chart_font_family)),
         post_image_noise=dict(post_noise_meta),
     )

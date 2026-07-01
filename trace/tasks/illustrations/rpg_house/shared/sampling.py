@@ -5,7 +5,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any, Mapping, Sequence
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from trace.core.seed import spawn_rng
+from trace.core.sampling import support_probability_map, uniform_choice_with_probabilities
 from trace.tasks.illustrations.shared.task_support import uniform_string_probability_map
 from trace.tasks.shared.support_sampling import resolve_integer_choice, resolve_integer_support
 
@@ -63,13 +64,13 @@ def select_feasible_count_from_support(
         selected = int(explicit)
         if selected not in set(support):
             raise ValueError(f"{explicit_key} must be in {support}, got {selected}")
-        return selected, uniform_probability_map(support, selected=selected)
+        return selected, support_probability_map(support, selected=selected, sort_keys=True)
+    sample_namespace = str(namespace)
     if params.get("_sample_cursor") is not None:
-        index = abs(int(params["_sample_cursor"]))
-    else:
-        index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    selected = int(support[int(index) % len(support)])
-    return selected, uniform_probability_map(support)
+        sample_namespace = f"{sample_namespace}:{int(params['_sample_cursor'])}"
+    rng = spawn_rng(int(instance_seed), sample_namespace)
+    selected, probabilities = uniform_choice_with_probabilities(rng, support, sort_keys=True)
+    return int(selected), dict(probabilities)
 
 
 def select_string_from_support(
@@ -89,12 +90,12 @@ def select_string_from_support(
         if value not in set(support_tuple):
             raise ValueError(f"{explicit_key} must be one of {support_tuple}")
         return value, uniform_string_probability_map(support_tuple, selected=value)
+    sample_namespace = str(namespace)
     if params.get("_sample_cursor") is not None:
-        index = abs(int(params["_sample_cursor"]))
-    else:
-        index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    value = support_tuple[int(index) % len(support_tuple)]
-    return str(value), uniform_string_probability_map(support_tuple)
+        sample_namespace = f"{sample_namespace}:{int(params['_sample_cursor'])}"
+    rng = spawn_rng(int(instance_seed), sample_namespace)
+    value, probabilities = uniform_choice_with_probabilities(rng, support_tuple, sort_keys=False)
+    return str(value), dict(probabilities)
 
 
 __all__ = [

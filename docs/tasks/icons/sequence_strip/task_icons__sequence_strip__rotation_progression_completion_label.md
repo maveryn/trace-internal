@@ -2,7 +2,14 @@
 
 ## Program Contract
 
-`selection.sequence_completion(scene=sequence_strip, scope=four_cell_icon_sequence_with_visual_options, attribute=rotation, rule=constant_rotation_step, missing_role=question_mark_cell, output=option_label)`
+Program: `selection.sequence_completion(scene=sequence_strip, scope=four_cell_icon_sequence_with_visual_options, attribute=rotation, rule=constant_rotation_step, missing_role=question_mark_cell, output=option_label)`
+
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `four_cell_icon_sequence_with_visual_options` objective scope.
+Operands: visible scene state and prompt-bound operands named by `sequence_strip`, `four_cell_icon_sequence_with_visual_options`, `attribute`, `rotation`, `constant_rotation_step`, `missing_role`, `question_mark_cell`, `option_label`.
+Operation: evaluate `selection.sequence_completion` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `D` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Identity
 

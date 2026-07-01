@@ -2,12 +2,14 @@
 
 ## Program Contract
 
-- scene=`matchstick`
-- scope=`source_number_and_candidate_options`
-- Program schema: `select_option(matchstick_number.one_stick_transform, operation=add_one|remove_one, source=visible_source_number); scene=matchstick; scope=source_number_and_candidate_options`
-- task contract: choose the single labeled candidate number reachable from the visible Source number by adding or removing exactly one matchstick.
-- query ids: `add_one_stick`, `remove_one_stick`
-- query ids are semantic mirrors of the same program contract; nonsemantic material style, font, and panel treatment are trace metadata.
+Program: `select_option(matchstick_number.one_stick_transform, operation=add_one|remove_one, source=visible_source_number); scene=matchstick; scope=source_number_and_candidate_options`
+
+Candidate set: the visible matchstick segments, digit/equation/lattice structure, segment labels, and labeled candidate options when present inside the `source_number_and_candidate_options` objective scope.
+Operands: visible scene state and prompt-bound operands named by `matchstick_number`, `one_stick_transform`, `operation`, `add_one`, `remove_one`, `source`, `visible_source_number`, `matchstick`, `source_number_and_candidate_options`.
+Operation: evaluate `select_option` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Answer And Annotation
 

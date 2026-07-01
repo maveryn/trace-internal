@@ -56,7 +56,7 @@ def test_tangent_polygon_incircle_tasks_emit_public_contract(task_cls) -> None:
         assert out.answer_gt.value == int(round(2.0 * trace["execution_trace"]["semiperimeter"]))
     else:
         assert "area" not in out.annotation_gt.value
-        assert trace["execution_trace"]["answer_rounding"] == "nearest_tenth_from_tangent_lengths"
+        assert trace["execution_trace"]["answer_rounding"] == "one_decimal"
         assert out.answer_gt.value == pytest.approx(
             round(trace["execution_trace"]["inradius"], 1)
         )

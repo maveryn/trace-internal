@@ -1,4 +1,4 @@
-"""Geographic projection and adjacency helpers for marker-map charts."""
+"""Geographic projection and adjacency helpers for region-map charts."""
 
 from __future__ import annotations
 

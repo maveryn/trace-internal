@@ -13,6 +13,7 @@ from .shared.defaults import SCENE_ID
 from .shared.prompts import make_marble_prompt_slots
 from .shared.rules import popped_marble_annotation_ids
 from .shared.sampling import (
+    interior_slots,
     resolve_chain_length_axis,
     resolve_color_count_axis,
     resolve_target_pop_axis,
@@ -54,6 +55,7 @@ def _sample_shot_effect_scene(
             for slot, outcome in outcomes.items()
             if int(outcome.pop_count) == int(desired_pop_count)
         ]
+        candidate_slots = interior_slots(candidate_slots, chain_length=len(chain_colors))
         if not candidate_slots:
             continue
         marked_slot = int(candidate_slots[int(rng.randrange(len(candidate_slots)))])

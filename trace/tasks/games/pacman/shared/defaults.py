@@ -46,7 +46,6 @@ class PacmanDefaults:
 
     row_count_support: Tuple[int, ...] = (7, 8, 9)
     col_count_support: Tuple[int, ...] = (9, 11, 13)
-    path_pellet_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     pellet_count_before_ghost_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     route_score_on_route_pellet_count_support: Tuple[int, ...] = (1, 2, 3, 4)
     route_score_on_route_bonus_count_support: Tuple[int, ...] = (1, 2, 3)

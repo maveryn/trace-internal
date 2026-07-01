@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw
 from ...shared.config_defaults import group_default
 from ...shared.visual_style.panel import (
     DEFAULT_PANEL_SCENE_STYLE,
+    PANEL_SCENE_TREATMENTS,
     PanelSceneStyle,
     draw_panel_plain_chrome,
     draw_panel_scene_chrome,
@@ -21,18 +22,7 @@ from ...shared.visual_style.panel import (
 
 IconCanvasStyle = PanelSceneStyle
 
-ICON_CANVAS_TREATMENTS: tuple[str, ...] = (
-    "bare_canvas",
-    "plain_sheet",
-    "matte_sheet",
-    "thin_frame",
-    "soft_panel",
-    "margin_sheet",
-    "dot_sheet",
-    "worksheet_panel",
-    "index_card",
-    "printout_panel",
-)
+ICON_CANVAS_TREATMENTS: tuple[str, ...] = tuple(PANEL_SCENE_TREATMENTS)
 
 DEFAULT_ICON_CANVAS_TREATMENT_WEIGHTS: dict[str, float] = {
     "bare_canvas": 0.12,

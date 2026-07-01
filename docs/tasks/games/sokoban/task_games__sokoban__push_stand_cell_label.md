@@ -11,7 +11,15 @@
 8. Scalar annotation checked: `true`
 
 ## Program Contract
-- `select_player_stand_cell_for_straight_push(box, matching_goal, candidate_stand_cells); scene=sokoban; scope=push_stand_cell_label`
+
+Program: `select_player_stand_cell_for_straight_push(box, matching_goal, candidate_stand_cells); scene=sokoban; scope=push_stand_cell_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `push_stand_cell_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `box`, `matching_goal`, `candidate_stand_cells`, `sokoban`, `push_stand_cell_label`.
+Operation: evaluate `select_player_stand_cell_for_straight_push` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The board shows a player, colored boxes, matching colored goal dots, and four labeled candidate standing cells around one target box.

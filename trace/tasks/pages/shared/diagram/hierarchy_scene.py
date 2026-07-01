@@ -7,8 +7,12 @@ from typing import Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ....shared.drawing import draw_rounded_rect
-from .common import draw_diagram_text_in_box, resolve_jittered_diagram_panel_geometry, round_diagram_bbox
+from trace.tasks.shared.drawing import draw_rounded_rect
+from trace.tasks.pages.shared.diagram.common import (
+    draw_diagram_text_in_box,
+    resolve_jittered_diagram_panel_geometry,
+    round_diagram_bbox,
+)
 from .hierarchy_common import HierarchyRenderParams
 
 

@@ -8,7 +8,15 @@
 - Annotation type: `bbox_set`
 
 ## Program Contract
-- `count(filter(carousel_objects, belt_key=target_belt_key, color_name=target_color_name)); scene=carousel; scope=scoped_belt_color_count`
+
+Program: `count(filter(carousel_objects, belt_key=target_belt_key, color_name=target_color_name)); scene=carousel; scope=scoped_belt_color_count`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `scoped_belt_color_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `carousel_objects`, `belt_key`, `target_belt_key`, `color_name`, `target_color_name`, `carousel`, `scoped_belt_color_count`.
+Operation: evaluate `count` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Contract
 The scene has inner and outer elliptical conveyor belts. The prompt selects one belt and one canonical named color. Target color is a sampled operand, not a query id.

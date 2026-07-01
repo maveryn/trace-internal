@@ -5,9 +5,11 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
+from trace.tasks.charts.shared.composition.values import int_sum
 from trace.tasks.registry import register_task
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 
 from ._lifecycle import TreemapTaskPlan, run_treemap_task_from_public_class
 from .shared.prompts import (
@@ -28,7 +30,7 @@ QUERY_OPERATIONS = {
     SUM_QUERY_ID: "sum",
     AVERAGE_QUERY_ID: "average",
 }
-PROGRAM_CODE = "aggregate(value(child_label across parents), operation=sum_or_average); output=integer_value; annotation=bbox_set(repeated_child_value_boxes); scene=treemap; scope=repeated_leaf_aggregate_value"
+PROGRAM_CODE = "aggregate(value(child_label across parents), operation=sum_or_average); output=integer_value; annotation=bbox_set(repeated_child_rectangles); scene=treemap; scope=repeated_leaf_aggregate_value"
 
 
 def _label_probability_map(labels: list[str]) -> dict[str, float]:
@@ -50,16 +52,17 @@ def _build_repeated_leaf_plan(instance_seed: int, params: Mapping[str, Any], sel
         raise ValueError(f"unsupported treemap repeated-leaf query_id: {selected_branch}")
     dataset = build_treemap_dataset(params, instance_seed=int(instance_seed))
     leaf_labels = sorted({str(leaf.label) for leaf in dataset.leaves})
-    label_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.target_leaf_label",
-    ) % len(leaf_labels)
-    leaf_label = str(leaf_labels[int(label_index)])
+    leaf_label = str(
+        uniform_choice(
+            spawn_rng(int(instance_seed), f"{TASK_ID}.target_leaf_label"),
+            tuple(str(label) for label in leaf_labels),
+        )
+    )
+    label_index = int(leaf_labels.index(str(leaf_label)))
     matching = tuple(leaf for leaf in dataset.leaves if str(leaf.label) == leaf_label)
     if not matching:
         raise ValueError("treemap repeated-leaf target has no matching leaves")
-    total = int(sum(int(leaf.value) for leaf in matching))
+    total = int_sum([int(leaf.value) for leaf in matching])
     if operation == "average":
         if total % len(matching) != 0:
             raise ValueError("treemap repeated-leaf average is not an integer")

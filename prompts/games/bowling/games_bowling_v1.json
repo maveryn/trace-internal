@@ -35,6 +35,13 @@
         "{spare_path_rule_text} Report the number of the path that covers the whole spare.",
         "{spare_path_rule_text} Which numbered dashed path should be selected?",
         "{spare_path_rule_text} Identify the numbered path that picks up all remaining pins."
+      ],
+      "path_hit_count": [
+        "{path_hit_rule_text} How many standing pins does the extended path pass through?",
+        "{path_hit_rule_text} Count the standing pins crossed by the extended path.",
+        "Extending the straight dashed cue from the ball, how many standing pins are crossed? {path_hit_rule_text}",
+        "{path_hit_rule_text} What is the number of standing pins intersected by the extended path?",
+        "Count only the standing pins whose visible bodies are crossed by the extended path. {path_hit_rule_text}"
       ]
     },
     "output": {
@@ -68,9 +75,16 @@
     "query:spare_path_label": {
       "spare_path_rule_text": "Extend each numbered dashed path straight toward the pins; the correct spare path is the extended line that passes through every remaining standing pin.",
       "answer_hint": "set \"answer\" to the selected numbered path label as a string",
-      "annotation_hint": "set \"annotation\" to one segment [[x1, y1], [x2, y2]], using the two endpoints of the selected visible dashed cue",
+      "annotation_hint": "set \"annotation\" to one segment using two pixel-point endpoints [x, y] in [[x0, y0], [x1, y1]] form, matching the endpoints of the selected visible dashed cue",
       "json_example": "{\"annotation\":[[430,610],[620,250]],\"answer\":\"4\"}",
       "json_example_answer_only": "{\"answer\":\"4\"}"
+    },
+    "query:path_hit_count": {
+      "path_hit_rule_text": "Extend the short straight dashed path from the ball toward the pins. Count standing pins whose visible pin body is crossed by that extended path, and ignore any chain reaction after contact.",
+      "answer_hint": "set \"answer\" to the number of standing pins crossed by the shown path",
+      "annotation_hint": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around every counted standing pin",
+      "json_example": "{\"annotation\":[[430,135,472,193],[492,185,534,243],[554,238,596,296]],\"answer\":3}",
+      "json_example_answer_only": "{\"answer\":3}"
     }
   },
   "dynamic_slots": {},

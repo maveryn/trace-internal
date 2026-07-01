@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping
+from typing import Any, MutableMapping, Mapping, Sequence
 
 from PIL import ImageDraw
 
@@ -21,11 +21,30 @@ from trace.tasks.geometry.shared.measurement_rendering import (
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.font_assets import font_role_trace, sample_font_family
+from trace.tasks.shared.text_legibility import contrast_ratio
 from trace.tasks.shared.text_rendering import load_font, temporary_default_font_family
 
 from .defaults import SCENE_ID
 from .measurements import format_measure, format_pi_multiple
 from .state import BBox, Color, Point, RenderContext, RenderedSolidFormulaScene, SolidFormulaProblem
+
+_DARK_LABEL_RGB: Color = (10, 14, 22)
+_LIGHT_LABEL_RGB: Color = (250, 252, 255)
+
+
+def _min_contrast(color: Color, surfaces: tuple[Color, ...]) -> float:
+    if not surfaces:
+        return float("inf")
+    return min(float(contrast_ratio(color, surface)) for surface in surfaces)
+
+
+def _resolve_measurement_label_color(*, preferred: Color, surfaces: tuple[Color, ...]) -> tuple[Color, str, float]:
+    """Use a neutral ink that stays readable on the sampled solid-formula treatment."""
+
+    candidates = (preferred, _DARK_LABEL_RGB, _LIGHT_LABEL_RGB)
+    best = max(candidates, key=lambda candidate: (_min_contrast(candidate, surfaces), candidate == preferred))
+    policy = "preferred" if best == preferred else "neutral_high_contrast"
+    return best, policy, _min_contrast(best, surfaces)
 
 
 def create_render_context(
@@ -77,6 +96,18 @@ def create_render_context(
     fill_color, secondary_fill_color, accent_color, muted_color = palettes[
         int(palette_index) % len(palettes)
     ]
+    label_surfaces: tuple[Color, ...] = (
+        tuple(int(v) for v in diagram_style.canvas_rgb),
+        tuple(int(v) for v in diagram_style.paper_rgb),
+        tuple(int(v) for v in diagram_style.panel_fill_rgb),
+        tuple(int(v) for v in diagram_style.panel_alt_fill_rgb),
+        fill_color,
+        secondary_fill_color,
+    )
+    label_color, label_color_policy, label_min_surface_contrast = _resolve_measurement_label_color(
+        preferred=shape_style.label_color,
+        surfaces=label_surfaces,
+    )
     font_size = int(params.get("label_font_size", group_default(rendering_defaults, "label_font_size", 22)))
     small_font_size = int(
         params.get("small_label_font_size", group_default(rendering_defaults, "small_label_font_size", 18))
@@ -90,6 +121,15 @@ def create_render_context(
     with temporary_default_font_family(str(font_family)):
         font = load_font(max(12, int(font_size)), bold=False)
         small_font = load_font(max(10, int(small_font_size)), bold=False)
+    requested_label_stroke_width = int(
+        params.get("label_stroke_width", group_default(rendering_defaults, "label_stroke_width", 0))
+    )
+    if "label_stroke_width" not in params and label_color == _LIGHT_LABEL_RGB:
+        requested_label_stroke_width = max(
+            int(requested_label_stroke_width),
+            int(group_default(rendering_defaults, "dark_measurement_label_stroke_width", 1)),
+        )
+    label_stroke_width = max(0, min(1, int(requested_label_stroke_width)))
     return RenderContext(
         rng=rng,
         image=image,
@@ -97,8 +137,8 @@ def create_render_context(
         width=int(width),
         height=int(height),
         line_color=shape_style.line_color,
-        label_color=shape_style.label_color,
-        label_stroke_color=shape_style.label_stroke_color,
+        label_color=label_color,
+        label_stroke_color=label_color,
         fill_color=fill_color,
         secondary_fill_color=secondary_fill_color,
         accent_color=accent_color,
@@ -106,7 +146,7 @@ def create_render_context(
         line_width=max(2, int(params.get("line_width", group_default(rendering_defaults, "line_width", 4)))),
         font=font,
         small_font=small_font,
-        label_stroke_width=1,
+        label_stroke_width=int(label_stroke_width),
         diagram_style_meta=dict(diagram_style_meta),
         background_meta=dict(background_meta),
         font_meta=font_role_trace(str(font_family), role="readout"),
@@ -116,7 +156,27 @@ def create_render_context(
             "accent_color": list(accent_color),
             "muted_color": list(muted_color),
             "palette_index": int(palette_index) % len(palettes),
+            "measurement_label_color": list(label_color),
+            "measurement_label_color_policy": str(label_color_policy),
+            "measurement_label_min_surface_contrast": round(float(label_min_surface_contrast), 3),
+            "measurement_label_surface_rgbs": [list(surface) for surface in label_surfaces],
         },
+    )
+
+
+def _dimension_segment(start: Point, end: Point) -> list[list[float]]:
+    return [
+        [round(float(start[0]), 3), round(float(start[1]), 3)],
+        [round(float(end[0]), 3), round(float(end[1]), 3)],
+    ]
+
+
+def _dimension_bbox(ctx: RenderContext, start: Point, end: Point) -> BBox:
+    return bbox_from_points(
+        (start, end),
+        width=int(ctx.width),
+        height=int(ctx.height),
+        pad=max(12.0, float(ctx.line_width) * 4.0),
     )
 
 
@@ -137,6 +197,32 @@ def _draw_dimension(
         label_offset=label_offset,
         color=ctx.accent_color if bool(target) else ctx.label_color,
     )
+
+
+def _add_dimension(
+    ctx: RenderContext,
+    *,
+    label_bboxes: MutableMapping[str, BBox],
+    dimension_bboxes: MutableMapping[str, BBox],
+    dimension_segments: MutableMapping[str, list[list[float]]],
+    label_key: str,
+    witness_key: str,
+    start: Point,
+    end: Point,
+    label: str,
+    label_offset: Point = (0.0, 0.0),
+    target: bool = False,
+) -> None:
+    label_bboxes[str(label_key)] = _draw_dimension(
+        ctx,
+        start,
+        end,
+        label,
+        label_offset=label_offset,
+        target=bool(target),
+    )
+    dimension_bboxes[str(witness_key)] = _dimension_bbox(ctx, start, end)
+    dimension_segments[str(witness_key)] = _dimension_segment(start, end)
 
 
 def _draw_dashed_line(
@@ -181,7 +267,14 @@ def _solid_entity(kind: str, bbox: BBox) -> tuple[dict[str, Any], ...]:
     )
 
 
-def _render_map(kind: str, solid_bbox: BBox, label_bboxes: Mapping[str, BBox]) -> dict[str, Any]:
+def _render_map(
+    kind: str,
+    solid_bbox: BBox,
+    label_bboxes: Mapping[str, BBox],
+    *,
+    dimension_bboxes: Mapping[str, BBox] | None = None,
+    dimension_segments: Mapping[str, Sequence[Sequence[float]]] | None = None,
+) -> dict[str, Any]:
     return {
         "coord_space": "pixel",
         "solid": {
@@ -189,6 +282,14 @@ def _render_map(kind: str, solid_bbox: BBox, label_bboxes: Mapping[str, BBox]) -
             "bbox": bbox_to_list(solid_bbox),
         },
         "label_bboxes": {str(key): bbox_to_list(value) for key, value in label_bboxes.items()},
+        "dimension_bboxes": {
+            str(key): bbox_to_list(value)
+            for key, value in dict(dimension_bboxes or {}).items()
+        },
+        "dimension_segments": {
+            str(key): [[round(float(point[0]), 3), round(float(point[1]), 3)] for point in segment[:2]]
+            for key, segment in dict(dimension_segments or {}).items()
+        },
     }
 
 
@@ -198,12 +299,14 @@ def _with_scene_payload(
     problem: SolidFormulaProblem,
     solid_bbox: BBox,
     label_bboxes: Mapping[str, BBox],
+    annotation_bboxes: Mapping[str, BBox],
+    dimension_segments: Mapping[str, Sequence[Sequence[float]]],
     annotation_roles: tuple[str, ...],
 ) -> RenderedSolidFormulaScene:
     """Pack rendered labels and measurements into scene-neutral output state."""
 
     annotation_bboxes = {
-        str(role): label_bboxes[str(role)]
+        str(role): annotation_bboxes[str(role)]
         for role in tuple(str(value) for value in annotation_roles)
     }
     measurements = {
@@ -235,7 +338,13 @@ def _with_scene_payload(
         annotation_roles=tuple(annotation_roles),
         label_bboxes=dict(label_bboxes),
         scene_entities=_solid_entity(problem.solid_kind, solid_bbox),
-        render_map=_render_map(problem.solid_kind, solid_bbox, label_bboxes),
+        render_map=_render_map(
+            problem.solid_kind,
+            solid_bbox,
+            label_bboxes,
+            dimension_bboxes=annotation_bboxes,
+            dimension_segments=dimension_segments,
+        ),
         measurements=measurements,
     )
 
@@ -297,6 +406,8 @@ def render_cylinder_cone_radius(ctx: RenderContext, problem: SolidFormulaProblem
 
     solid_bbox, points = _draw_cylinder_cone_body(ctx)
     label_bboxes: dict[str, BBox] = {}
+    dimension_bboxes: dict[str, BBox] = {}
+    dimension_segments: dict[str, list[list[float]]] = {}
     label_bboxes["volume_label"] = draw_readout_centered(
         ctx,
         f"V={format_pi_multiple(problem.volume_pi_multiple or 0)}",
@@ -304,26 +415,41 @@ def render_cylinder_cone_radius(ctx: RenderContext, problem: SolidFormulaProblem
         small=False,
         backed=True,
     )
-    label_bboxes["total_height_label"] = _draw_dimension(
+    _add_dimension(
         ctx,
-        (points["bottom_left"][0] - 50.0, points["apex"][1]),
-        (points["bottom_left"][0] - 50.0, points["bottom_left"][1]),
-        f"H={format_measure(problem.total_height or 0)}",
+        label_bboxes=label_bboxes,
+        dimension_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
+        label_key="total_height_label",
+        witness_key="total_height_segment",
+        start=(points["bottom_left"][0] - 50.0, points["apex"][1]),
+        end=(points["bottom_left"][0] - 50.0, points["bottom_left"][1]),
+        label=f"H={format_measure(problem.total_height or 0)}",
         label_offset=(-42.0, 0.0),
     )
-    label_bboxes["cone_height_label"] = _draw_dimension(
+    _add_dimension(
         ctx,
-        (points["cyl_top_right"][0] + 38.0, points["apex"][1]),
-        (points["cyl_top_right"][0] + 38.0, points["cyl_top_right"][1]),
-        f"c={format_measure(problem.cone_height or 0)}",
+        label_bboxes=label_bboxes,
+        dimension_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
+        label_key="cone_height_label",
+        witness_key="cone_height_segment",
+        start=(points["cyl_top_right"][0] + 38.0, points["apex"][1]),
+        end=(points["cyl_top_right"][0] + 38.0, points["cyl_top_right"][1]),
+        label=f"c={format_measure(problem.cone_height or 0)}",
         label_offset=(36.0, 0.0),
     )
-    label_bboxes["target_radius_label"] = _draw_dimension(
+    _add_dimension(
         ctx,
-        points["base_center"],
-        points["base_right"],
-        "r=?",
-        label_offset=(0.0, -34.0),
+        label_bboxes=label_bboxes,
+        dimension_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
+        label_key="target_radius_label",
+        witness_key="target_radius_segment",
+        start=points["base_center"],
+        end=points["base_right"],
+        label="r=?",
+        label_offset=(0.0, 36.0),
         target=True,
     )
     return _with_scene_payload(
@@ -331,11 +457,12 @@ def render_cylinder_cone_radius(ctx: RenderContext, problem: SolidFormulaProblem
         problem=problem,
         solid_bbox=solid_bbox,
         label_bboxes=label_bboxes,
+        annotation_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
         annotation_roles=(
-            "target_radius_label",
-            "volume_label",
-            "total_height_label",
-            "cone_height_label",
+            "target_radius_segment",
+            "total_height_segment",
+            "cone_height_segment",
         ),
     )
 
@@ -345,6 +472,8 @@ def render_cylinder_cone_height(ctx: RenderContext, problem: SolidFormulaProblem
 
     solid_bbox, points = _draw_cylinder_cone_body(ctx)
     label_bboxes: dict[str, BBox] = {}
+    dimension_bboxes: dict[str, BBox] = {}
+    dimension_segments: dict[str, list[list[float]]] = {}
     label_bboxes["volume_label"] = draw_readout_centered(
         ctx,
         f"V={format_pi_multiple(problem.volume_pi_multiple or 0)}",
@@ -352,25 +481,40 @@ def render_cylinder_cone_height(ctx: RenderContext, problem: SolidFormulaProblem
         small=False,
         backed=True,
     )
-    label_bboxes["radius_label"] = _draw_dimension(
+    _add_dimension(
         ctx,
-        points["base_center"],
-        points["base_right"],
-        f"r={format_measure(problem.radius or 0)}",
-        label_offset=(0.0, -34.0),
+        label_bboxes=label_bboxes,
+        dimension_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
+        label_key="radius_label",
+        witness_key="radius_segment",
+        start=points["base_center"],
+        end=points["base_right"],
+        label=f"r={format_measure(problem.radius or 0)}",
+        label_offset=(0.0, 36.0),
     )
-    label_bboxes["cone_height_label"] = _draw_dimension(
+    _add_dimension(
         ctx,
-        (points["cyl_top_right"][0] + 38.0, points["apex"][1]),
-        (points["cyl_top_right"][0] + 38.0, points["cyl_top_right"][1]),
-        f"c={format_measure(problem.cone_height or 0)}",
+        label_bboxes=label_bboxes,
+        dimension_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
+        label_key="cone_height_label",
+        witness_key="cone_height_segment",
+        start=(points["cyl_top_right"][0] + 38.0, points["apex"][1]),
+        end=(points["cyl_top_right"][0] + 38.0, points["cyl_top_right"][1]),
+        label=f"c={format_measure(problem.cone_height or 0)}",
         label_offset=(36.0, 0.0),
     )
-    label_bboxes["target_cylinder_height_label"] = _draw_dimension(
+    _add_dimension(
         ctx,
-        (points["bottom_right"][0] + 42.0, points["cyl_top_right"][1]),
-        (points["bottom_right"][0] + 42.0, points["bottom_right"][1]),
-        "x=?",
+        label_bboxes=label_bboxes,
+        dimension_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
+        label_key="target_cylinder_height_label",
+        witness_key="target_cylinder_height_segment",
+        start=(points["bottom_right"][0] + 42.0, points["cyl_top_right"][1]),
+        end=(points["bottom_right"][0] + 42.0, points["bottom_right"][1]),
+        label="x=?",
         label_offset=(38.0, 0.0),
         target=True,
     )
@@ -379,11 +523,12 @@ def render_cylinder_cone_height(ctx: RenderContext, problem: SolidFormulaProblem
         problem=problem,
         solid_bbox=solid_bbox,
         label_bboxes=label_bboxes,
+        annotation_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
         annotation_roles=(
-            "target_cylinder_height_label",
-            "volume_label",
-            "radius_label",
-            "cone_height_label",
+            "target_cylinder_height_segment",
+            "radius_segment",
+            "cone_height_segment",
         ),
     )
 
@@ -437,6 +582,8 @@ def render_prism_pyramid(ctx: RenderContext, problem: SolidFormulaProblem) -> Re
     _draw_dashed_line(ctx, roof_apex, roof_center, fill=ctx.accent_color, width=3)
 
     label_bboxes: dict[str, BBox] = {}
+    dimension_bboxes: dict[str, BBox] = {}
+    dimension_segments: dict[str, list[list[float]]] = {}
     label_bboxes["volume_label"] = draw_readout_centered(
         ctx,
         f"V={format_measure(problem.volume or 0)}",
@@ -444,32 +591,52 @@ def render_prism_pyramid(ctx: RenderContext, problem: SolidFormulaProblem) -> Re
         small=False,
         backed=True,
     )
-    label_bboxes["known_length_label"] = _draw_dimension(
+    _add_dimension(
         ctx,
-        (front_bl[0], front_bl[1] + 36.0),
-        (front_br[0], front_br[1] + 36.0),
-        f"l={format_measure(problem.side_a or 0)}",
+        label_bboxes=label_bboxes,
+        dimension_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
+        label_key="known_length_label",
+        witness_key="base_length_segment",
+        start=(front_bl[0], front_bl[1] + 36.0),
+        end=(front_br[0], front_br[1] + 36.0),
+        label=f"l={format_measure(problem.side_a or 0)}",
         label_offset=(0.0, 28.0),
     )
-    label_bboxes["known_width_label"] = _draw_dimension(
+    _add_dimension(
         ctx,
-        (front_br[0] + 18.0, front_br[1] + 18.0),
-        (back_br[0] + 18.0, back_br[1] + 18.0),
-        f"w={format_measure(problem.side_b or 0)}",
+        label_bboxes=label_bboxes,
+        dimension_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
+        label_key="known_width_label",
+        witness_key="base_width_segment",
+        start=(front_br[0] + 18.0, front_br[1] + 18.0),
+        end=(back_br[0] + 18.0, back_br[1] + 18.0),
+        label=f"w={format_measure(problem.side_b or 0)}",
         label_offset=(30.0, 20.0),
     )
-    label_bboxes["pyramid_height_label"] = _draw_dimension(
+    _add_dimension(
         ctx,
-        (roof_center[0] + 32.0, roof_apex[1]),
-        (roof_center[0] + 32.0, roof_center[1]),
-        f"p={format_measure(problem.pyramid_height or 0)}",
+        label_bboxes=label_bboxes,
+        dimension_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
+        label_key="pyramid_height_label",
+        witness_key="pyramid_height_segment",
+        start=(roof_center[0] + 32.0, roof_apex[1]),
+        end=(roof_center[0] + 32.0, roof_center[1]),
+        label=f"p={format_measure(problem.pyramid_height or 0)}",
         label_offset=(36.0, 0.0),
     )
-    label_bboxes["target_prism_height_label"] = _draw_dimension(
+    _add_dimension(
         ctx,
-        (front_tl[0] - 34.0, front_tl[1]),
-        (front_bl[0] - 34.0, front_bl[1]),
-        "x=?",
+        label_bboxes=label_bboxes,
+        dimension_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
+        label_key="target_prism_height_label",
+        witness_key="target_prism_height_segment",
+        start=(front_tl[0] - 34.0, front_tl[1]),
+        end=(front_bl[0] - 34.0, front_bl[1]),
+        label="x=?",
         label_offset=(-34.0, 0.0),
         target=True,
     )
@@ -479,12 +646,13 @@ def render_prism_pyramid(ctx: RenderContext, problem: SolidFormulaProblem) -> Re
         problem=problem,
         solid_bbox=solid_bbox,
         label_bboxes=label_bboxes,
+        annotation_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
         annotation_roles=(
-            "target_prism_height_label",
-            "volume_label",
-            "known_length_label",
-            "known_width_label",
-            "pyramid_height_label",
+            "target_prism_height_segment",
+            "base_length_segment",
+            "base_width_segment",
+            "pyramid_height_segment",
         ),
     )
 
@@ -532,6 +700,8 @@ def render_house_prism(ctx: RenderContext, problem: SolidFormulaProblem) -> Rend
     _draw_dashed_line(ctx, front_d, roof_foot, fill=ctx.accent_color, width=3)
 
     label_bboxes: dict[str, BBox] = {}
+    dimension_bboxes: dict[str, BBox] = {}
+    dimension_segments: dict[str, list[list[float]]] = {}
     label_bboxes["volume_label"] = draw_readout_centered(
         ctx,
         f"V={format_measure(problem.volume or 0)}",
@@ -539,32 +709,52 @@ def render_house_prism(ctx: RenderContext, problem: SolidFormulaProblem) -> Rend
         small=False,
         backed=True,
     )
-    label_bboxes["triangle_base_label"] = _draw_dimension(
+    _add_dimension(
         ctx,
-        (front_a[0], front_a[1] + 34.0),
-        (front_b[0], front_b[1] + 34.0),
-        f"b={format_measure(problem.triangle_base or 0)}",
+        label_bboxes=label_bboxes,
+        dimension_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
+        label_key="triangle_base_label",
+        witness_key="base_width_segment",
+        start=(front_a[0], front_a[1] + 34.0),
+        end=(front_b[0], front_b[1] + 34.0),
+        label=f"b={format_measure(problem.triangle_base or 0)}",
         label_offset=(0.0, 28.0),
     )
-    label_bboxes["wall_height_label"] = _draw_dimension(
+    _add_dimension(
         ctx,
-        (front_a[0] - 34.0, front_e[1]),
-        (front_a[0] - 34.0, front_a[1]),
-        f"h={format_measure(problem.wall_height or 0)}",
+        label_bboxes=label_bboxes,
+        dimension_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
+        label_key="wall_height_label",
+        witness_key="wall_height_segment",
+        start=(front_a[0] - 34.0, front_e[1]),
+        end=(front_a[0] - 34.0, front_a[1]),
+        label=f"h={format_measure(problem.wall_height or 0)}",
         label_offset=(-36.0, 0.0),
     )
-    label_bboxes["roof_height_label"] = _draw_dimension(
+    _add_dimension(
         ctx,
-        (roof_foot[0] + 34.0, front_d[1]),
-        (roof_foot[0] + 34.0, roof_foot[1]),
-        f"t={format_measure(problem.roof_height or 0)}",
-        label_offset=(34.0, 0.0),
+        label_bboxes=label_bboxes,
+        dimension_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
+        label_key="roof_height_label",
+        witness_key="roof_height_segment",
+        start=(roof_foot[0] + 34.0, front_d[1]),
+        end=(roof_foot[0] + 34.0, roof_foot[1]),
+        label=f"t={format_measure(problem.roof_height or 0)}",
+        label_offset=(64.0, 0.0),
     )
-    label_bboxes["target_length_label"] = _draw_dimension(
+    _add_dimension(
         ctx,
-        (front_b[0] + 20.0, front_b[1] + 16.0),
-        (back_b[0] + 20.0, back_b[1] + 16.0),
-        "L=?",
+        label_bboxes=label_bboxes,
+        dimension_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
+        label_key="target_length_label",
+        witness_key="target_length_segment",
+        start=(front_b[0] + 20.0, front_b[1] + 16.0),
+        end=(back_b[0] + 20.0, back_b[1] + 16.0),
+        label="L=?",
         label_offset=(34.0, 20.0),
         target=True,
     )
@@ -574,12 +764,13 @@ def render_house_prism(ctx: RenderContext, problem: SolidFormulaProblem) -> Rend
         problem=problem,
         solid_bbox=solid_bbox,
         label_bboxes=label_bboxes,
+        annotation_bboxes=dimension_bboxes,
+        dimension_segments=dimension_segments,
         annotation_roles=(
-            "target_length_label",
-            "volume_label",
-            "triangle_base_label",
-            "wall_height_label",
-            "roof_height_label",
+            "target_length_segment",
+            "base_width_segment",
+            "wall_height_segment",
+            "roof_height_segment",
         ),
     )
 

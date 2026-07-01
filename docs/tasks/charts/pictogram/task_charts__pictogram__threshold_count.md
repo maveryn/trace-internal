@@ -18,7 +18,14 @@
 
 ## Program Contract
 
-`count(filter(categories, compare(category_total(category, unit_scale), threshold, comparator={greater_than,less_than}))); output=integer_count; annotation=bbox_set(matching_category_rows); scene=pictogram; scope=threshold_count`
+Program: `count(filter(categories, compare(category_total(category, unit_scale), threshold, comparator={greater_than,less_than}))); output=integer_count; annotation=bbox_set(matching_category_rows); scene=pictogram; scope=threshold_count`
+
+Candidate set: the visible pictogram rows, repeated icons, and category labels inside the `threshold_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_count` value bound by `integer_count`.
+Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(matching_category_rows)`. Annotation marks every matching category row as an unordered set of row bboxes.
+Query ids: `greater_than_threshold`, `less_than_threshold`.
 
 ## Query Details
 

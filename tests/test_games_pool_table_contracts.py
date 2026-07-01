@@ -9,16 +9,15 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.games.pool.blocking_ball_count import GamesPoolBlockingBallCountTask, GamesPoolTableTask
+from trace.tasks.games.pool.blocking_ball_count import GamesPoolBlockingBallCountTask
 from trace.tasks.games.pool.group_ball_count import GamesPoolGroupBallCountTask
-from trace.tasks.games.pool.shared.common import (
-    POOL_POCKETS,
-    PoolBall,
+from trace.tasks.games.pool.shared.rules import (
     balls_on_segment,
     object_balls,
     pocket_by_id,
     sorted_ids,
 )
+from trace.tasks.games.pool.shared.state import POOL_POCKETS, PoolBall
 from tests.helpers import read_jsonl
 
 
@@ -45,37 +44,31 @@ def test_games_pool_table_scene_package_source_layout() -> None:
     for task_cls, relative_path in expected_sources.items():
         source_path = Path(inspect.getsourcefile(task_cls) or "").resolve()
         assert source_path == (Path.cwd() / relative_path).resolve()
-        assert getattr(task_cls, "scene_id", "")
-        assert getattr(task_cls, "scene_id") == "pool"
 
 
 @pytest.mark.parametrize(
-    ("task_cls", "params", "expected_query", "expected_answer"),
+    ("task_cls", "params", "expected_answer"),
     (
         (
             GamesPoolGroupBallCountTask,
             {
-                "query_id": "current_group_ball_count",
                 "target_answer": 4,
                 "object_ball_count": 9,
                 "current_player_group": "solid",
                 "style_variant": "classic",
             },
-            "current_group_ball_count",
             4,
         ),
         (
             GamesPoolBlockingBallCountTask,
             {"target_answer": 2, "style_variant": "charcoal"},
-            "blocking_ball_count",
             2,
         ),
     ),
 )
 def test_games_pool_table_public_tasks_emit_expected_contract(
-    task_cls: type[GamesPoolTableTask],
+    task_cls: type[GamesPoolGroupBallCountTask] | type[GamesPoolBlockingBallCountTask],
     params: dict[str, int | str],
-    expected_query: str,
     expected_answer: int,
 ) -> None:
     out = task_cls().generate(61100, params=params, max_attempts=256)
@@ -85,11 +78,11 @@ def test_games_pool_table_public_tasks_emit_expected_contract(
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(expected_answer)
     assert out.annotation_gt.type == "point_set"
-    assert out.query_id == str(expected_query)
+    assert out.query_id == "single"
     assert out.scene_id == "pool"
-    assert trace["query_spec"]["query_id"] == str(expected_query)
-    assert trace["query_spec"]["params"]["query_id"] == str(expected_query)
-    assert execution["query_id"] == str(expected_query)
+    assert trace["query_spec"]["query_id"] == "single"
+    assert trace["query_spec"]["params"]["query_id"] == "single"
+    assert execution["query_id"] == "single"
     assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
     assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
 
@@ -152,20 +145,14 @@ def test_games_pool_blocking_ball_count_matches_marked_two_segment_lane() -> Non
 
 def test_games_pool_table_supports_requested_answer_ranges() -> None:
     cases = (
-        (GamesPoolGroupBallCountTask, "current_group_ball_count", range(2, 7)),
+        (GamesPoolGroupBallCountTask, range(2, 7)),
         (GamesPoolBlockingBallCountTask, range(0, 5)),
     )
     for case_index, case in enumerate(cases):
-        if len(case) == 3:
-            task_cls, query_id, support = case
-        else:
-            task_cls, support = case
-            query_id = None
+        task_cls, support = case
         task = task_cls()
         for target_answer in support:
             params: dict[str, int | str] = {"target_answer": int(target_answer)}
-            if query_id is not None:
-                params["query_id"] = str(query_id)
             out = task.generate(
                 61200 + (case_index * 100) + int(target_answer),
                 params=params,
@@ -176,11 +163,10 @@ def test_games_pool_table_supports_requested_answer_ranges() -> None:
 
 def test_games_pool_table_is_deterministic() -> None:
     params = {
-        "query_id": "blocking_ball_count",
         "target_answer": 2,
         "style_variant": "light_rail",
     }
-    task = GamesPoolTableTask()
+    task = GamesPoolBlockingBallCountTask()
     out_a = task.generate(61150, params=params, max_attempts=256)
     out_b = task.generate(61150, params=params, max_attempts=256)
     assert out_a.answer_gt.to_dict() == out_b.answer_gt.to_dict()

@@ -7,6 +7,19 @@ from typing import Any, Mapping
 from .state import SCENE_ID, RenderedSlidingBlockScene, SlidingBlockRenderParams
 
 
+def _annotation_value_from_payload(annotation_payload: Mapping[str, Any]) -> Any:
+    """Return the public annotation value from a projected annotation payload."""
+
+    annotation_type = str(annotation_payload.get("type", "bbox_set"))
+    if annotation_type == "bbox_map":
+        return dict(annotation_payload.get("bbox_map", {}))
+    if annotation_type == "bbox_set_map":
+        return dict(annotation_payload.get("bbox_set_map", {}))
+    if annotation_type == "bbox":
+        return list(annotation_payload.get("bbox", []))
+    return list(annotation_payload.get("bbox_set", []))
+
+
 def common_query_params(
     *,
     scene_variant: str,
@@ -76,6 +89,7 @@ def build_common_trace_sections(
             "scene_id": SCENE_ID,
             "scene_variant": str(scene_variant),
             "exit_side": str(exit_side),
+            "panel_scene_style": dict(scene_style_meta),
             "background_style": dict(background_meta),
             "scene_style": dict(scene_style_meta),
             "post_image_noise": dict(post_noise_meta),
@@ -116,10 +130,12 @@ def build_common_trace_sections(
             "view_family": SCENE_ID,
         },
         "witness_symbolic": {
-            "type": "bbox_set",
-            "value": list(annotation_payload.get("bbox_set", [])),
+            "type": str(annotation_payload.get("type", "bbox_set")),
+            "value": _annotation_value_from_payload(annotation_payload),
         },
         "projected_annotation": dict(annotation_payload),
+        "background": dict(background_meta),
+        "post_image_noise": dict(post_noise_meta),
     }
 
 

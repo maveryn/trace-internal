@@ -10,34 +10,38 @@ import pytest
 
 from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
-from trace.tasks.physics.mechanics.pulley_mechanical_advantage import PhysicsMechanicsPulleyMechanicalAdvantageTask
+from trace.tasks.physics.pulley.pulley_mechanical_advantage import PhysicsPulleyMechanicalAdvantageTask
 from tests.helpers import read_jsonl
 
 
 @pytest.mark.parametrize(
-    ("params", "expected_answer", "expected_annotation_count"),
+    ("params", "expected_answer", "expected_annotation_count", "expected_query_id", "expected_solve_for"),
     (
         (
             {
                 "scene_variant": "compact_block",
-                "query_id": "effort_force_for_load",
+                "query_id": "missing_effort_force_value",
                 "target_answer": 12,
                 "support_segment_count": 5,
                 "disconnected_segment_count": 4,
             },
             12,
-            7,
+            3,
+            "missing_effort_force_value",
+            "effort_force",
         ),
         (
             {
                 "scene_variant": "tall_block",
-                "query_id": "load_force_from_effort",
+                "query_id": "missing_load_force_value",
                 "target_answer": 60,
                 "support_segment_count": 5,
                 "disconnected_segment_count": 4,
             },
             60,
-            7,
+            3,
+            "missing_load_force_value",
+            "load_force",
         ),
     ),
 )
@@ -45,8 +49,10 @@ def test_physics_mechanics_pulley_emits_expected_contract(
     params: dict[str, int | str],
     expected_answer: int,
     expected_annotation_count: int | None,
+    expected_query_id: str,
+    expected_solve_for: str,
 ) -> None:
-    out = PhysicsMechanicsPulleyMechanicalAdvantageTask().generate(39001, params=params, max_attempts=40)
+    out = PhysicsPulleyMechanicalAdvantageTask().generate(39001, params=params, max_attempts=40)
     trace = out.trace_payload
     execution = trace["execution_trace"]
 
@@ -55,23 +61,16 @@ def test_physics_mechanics_pulley_emits_expected_contract(
 
     assert int(out.answer_gt.value) == int(expected_answer)
 
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox_map"
 
-    assert out.query_id == "force_relation"
+    assert out.query_id == expected_query_id
 
-    assert trace["query_spec"]["query_id"] == "force_relation"
+    assert trace["query_spec"]["query_id"] == expected_query_id
 
-    assert trace["query_spec"]["params"]["query_id"] == "force_relation"
-    assert trace["query_spec"]["params"]["internal_query_id"] in {
-        "effort_force_for_load",
-        "load_force_from_effort",
-    }
+    assert trace["query_spec"]["params"]["query_id"] == expected_query_id
 
-    assert execution["query_id"] == "force_relation"
-    assert execution["internal_query_id"] in {
-        "effort_force_for_load",
-        "load_force_from_effort",
-    }
+    assert execution["query_id"] == expected_query_id
+    assert execution["solve_for"] == expected_solve_for
     expected_count = (
         int(expected_annotation_count)
         if expected_annotation_count is not None
@@ -80,15 +79,19 @@ def test_physics_mechanics_pulley_emits_expected_contract(
 
     assert len(out.annotation_gt.value) == int(expected_count)
 
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_keyed_bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["type"] == "bbox_map"
+    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox_map"] == out.annotation_gt.value
     assert trace["render_map"]["annotation_bbox_map_px"] == out.annotation_gt.value
     assert set(out.annotation_gt.value) == {
-        *(f"support_{index}" for index in range(1, int(execution["support_segment_count"]) + 1)),
-        "known_force",
-        "target_force",
+        "supporting_strands_region",
+        "known_force_label",
+        "unknown_force_label",
     }
+    assert (
+        out.annotation_gt.value["supporting_strands_region"]
+        == trace["render_map"]["supporting_strands_region_bbox_px"]
+    )
     assert trace["witness_symbolic"]["type"] == "object_map"
     assert trace["render_spec"]["font"]["selection_policy"]["pool"] == "global_approved_font_pool"
     assert trace["render_spec"]["layout_placement"]["mode"] == "whole_pulley_diagram_offset"
@@ -118,16 +121,34 @@ def test_physics_mechanics_pulley_emits_expected_contract(
         assert execution["shown_load_force_value"] is None
 
 
+def test_physics_mechanics_pulley_accepts_legacy_solve_for_param() -> None:
+    out = PhysicsPulleyMechanicalAdvantageTask().generate(
+        39011,
+        params={
+            "scene_variant": "compact_block",
+            "solve_for": "load_force",
+            "target_answer": 60,
+            "support_segment_count": 5,
+            "disconnected_segment_count": 1,
+        },
+        max_attempts=40,
+    )
+
+    assert out.query_id == "missing_load_force_value"
+    assert out.trace_payload["execution_trace"]["query_id"] == "missing_load_force_value"
+    assert out.trace_payload["execution_trace"]["solve_for"] == "load_force"
+
+
 def test_physics_mechanics_pulley_is_deterministic() -> None:
     params = {
         "scene_variant": "tall_block",
-        "query_id": "load_force_from_effort",
+        "solve_for": "load_force",
         "target_answer": 84,
         "support_segment_count": 6,
         "disconnected_segment_count": 4,
         "accent_color_name": "cyan",
     }
-    task = PhysicsMechanicsPulleyMechanicalAdvantageTask()
+    task = PhysicsPulleyMechanicalAdvantageTask()
     out_a = task.generate(39021, params=params, max_attempts=40)
     out_b = task.generate(39021, params=params, max_attempts=40)
 
@@ -143,11 +164,11 @@ def test_physics_mechanics_pulley_is_deterministic() -> None:
 
 
 def test_physics_mechanics_pulley_accepts_explicit_accent_color() -> None:
-    out = PhysicsMechanicsPulleyMechanicalAdvantageTask().generate(
+    out = PhysicsPulleyMechanicalAdvantageTask().generate(
         39031,
         params={
             "scene_variant": "open_block",
-            "query_id": "effort_force_for_load",
+            "solve_for": "effort_force",
             "target_answer": 10,
             "support_segment_count": 6,
             "disconnected_segment_count": 0,
@@ -167,15 +188,15 @@ def test_physics_mechanics_pulley_accepts_explicit_accent_color() -> None:
 
 def test_physics_mechanics_pulley_rejects_unknown_scene_variant() -> None:
     with pytest.raises(ValueError):
-        PhysicsMechanicsPulleyMechanicalAdvantageTask().generate(
+        PhysicsPulleyMechanicalAdvantageTask().generate(
             39041,
-            params={"scene_variant": "sideways_block", "query_id": "effort_force_for_load"},
+            params={"scene_variant": "sideways_block", "solve_for": "effort_force"},
             max_attempts=20,
         )
 
 
 def test_physics_mechanics_pulleyseeded_sampler_decouples_variant_and_answer_support() -> None:
-    task = PhysicsMechanicsPulleyMechanicalAdvantageTask()
+    task = PhysicsPulleyMechanicalAdvantageTask()
     answers_by_solve_for: dict[str, set[int]] = {
         "effort_force": set(),
         "load_force": set(),
@@ -191,9 +212,14 @@ def test_physics_mechanics_pulleyseeded_sampler_decouples_variant_and_answer_sup
             max_attempts=60,
         )
 
-        assert str(out.query_id) == "force_relation"
         execution = out.trace_payload["execution_trace"]
         solve_for = str(execution["solve_for"])
+        expected_query_id = (
+            "missing_effort_force_value" if solve_for == "effort_force" else "missing_load_force_value"
+        )
+        assert str(out.query_id) == expected_query_id
+        assert str(execution["query_id"]) == expected_query_id
+        assert str(out.trace_payload["query_spec"]["query_id"]) == expected_query_id
         scene_variant = str(out.trace_payload["query_spec"]["params"]["scene_variant"])
         support_count = int(execution["support_segment_count"])
         cut_count = int(execution["disconnected_segment_count"])
@@ -272,13 +298,18 @@ def test_physics_mechanics_pulleyseeded_sampler_decouples_variant_and_answer_sup
 
 
 def test_physics_mechanics_pulley_prompt_bundle_supports_variants() -> None:
-    bundle = json.loads(Path("prompts/physics/mechanics/physics_mechanics_v0.json").read_text(encoding="utf-8"))
+    bundle = json.loads(Path("prompts/physics/pulley/physics_pulley_v1.json").read_text(encoding="utf-8"))
 
-    assert len(bundle["scene_templates"]["pulley_system_diagram"]) == 5
+    assert len(bundle["templates"]["scene"]["pulley_system_diagram"]) == 5
 
-    assert "supporting_segment_count" not in bundle["query_templates"]
+    assert set(bundle["templates"]["query"]) == {
+        "missing_effort_force_value",
+        "missing_load_force_value",
+    }
 
-    assert len(bundle["query_templates"]["force_relation"]) == 5
+    assert len(bundle["templates"]["query"]["missing_effort_force_value"]) == 5
+
+    assert len(bundle["templates"]["query"]["missing_load_force_value"]) == 5
 
 
 def test_physics_mechanics_pulley_build_smoke(tmp_path: Path) -> None:
@@ -308,7 +339,7 @@ def test_physics_mechanics_pulley_build_smoke(tmp_path: Path) -> None:
 
     assert all(record["domain"] == "physics" for record in train_records)
 
-    assert all(record["scene_id"] == "mechanics" for record in train_records)
+    assert all(record["scene_id"] == "pulley" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
 

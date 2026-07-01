@@ -7,6 +7,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.diagram_style import (
     GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
@@ -21,7 +22,6 @@ from trace.tasks.geometry.shared.measurement_rendering import (
 )
 from trace.tasks.geometry.shared.scene_transform import LazySceneTransform
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from trace.tasks.shared.text_rendering import load_font
 
@@ -354,12 +354,11 @@ def create_area_partition_render_context(
             tuple(int(value) for value in diagram_style.guide_rgb),
         ),
     )
-    palette_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace="geometry.area_partition.palette",
+    palette_rng = spawn_rng(int(instance_seed), "geometry.area_partition.palette")
+    fill_color, shaded_color, accent_color, muted_color = uniform_choice(
+        palette_rng,
+        palettes,
     )
-    fill_color, shaded_color, accent_color, muted_color = palettes[int(palette_index) % len(palettes)]
     font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 22)))
     small_font_size = int(
         params.get(

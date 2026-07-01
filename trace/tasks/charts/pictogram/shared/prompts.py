@@ -27,6 +27,7 @@ def dynamic_slots(*, dataset: PictogramDataset, scene_variant: str) -> dict[str,
         "category_label": str(qparams.get("target_category_label", "")),
         "category_label_a": str(qparams.get("category_label_a", "")),
         "category_label_b": str(qparams.get("category_label_b", "")),
+        "target_value": int(qparams.get("target_value", 0) or 0),
         "threshold_value": int(qparams.get("threshold_value", 0) or 0),
     }
 

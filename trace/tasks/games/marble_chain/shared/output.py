@@ -6,6 +6,7 @@ from typing import Any, Dict, Mapping, Sequence
 
 from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts
 
+from .rules import closure_creates_same_color_match, closure_pair_color, closure_pair_indices
 from .state import MarbleSample, MarbleSceneAxes, RenderedMarbleScene
 
 
@@ -32,18 +33,24 @@ def build_marble_common_trace_params(
 def build_shot_option_trace(sample: MarbleSample) -> list[dict[str, Any]]:
     """Serialize visible shot-option mechanics for replay/debug traces."""
 
-    return [
-        {
-            "label": str(option.label),
-            "entity_id": str(option.entity_id),
-            "slot_index": int(option.slot_index),
-            "pop_count": int(option.outcome.pop_count),
-            "remaining_count": int(option.outcome.remaining_count),
-            "popped_indices": [int(index) for index in option.outcome.popped_indices],
-            "is_answer": bool(option.is_answer),
-        }
-        for option in sample.option_specs
-    ]
+    options: list[dict[str, Any]] = []
+    for option in sample.option_specs:
+        pair_indices = closure_pair_indices(sample.chain_colors, option.outcome)
+        options.append(
+            {
+                "label": str(option.label),
+                "entity_id": str(option.entity_id),
+                "slot_index": int(option.slot_index),
+                "pop_count": int(option.outcome.pop_count),
+                "remaining_count": int(option.outcome.remaining_count),
+                "popped_indices": [int(index) for index in option.outcome.popped_indices],
+                "closure_pair_indices": [int(index) for index in pair_indices],
+                "closure_pair_color": closure_pair_color(sample.chain_colors, option.outcome),
+                "creates_closure_match": closure_creates_same_color_match(sample.chain_colors, option.outcome),
+                "is_answer": bool(option.is_answer),
+            }
+        )
+    return options
 
 
 def build_marked_outcome_trace(sample: MarbleSample) -> dict[str, Any] | None:

@@ -20,7 +20,15 @@
 4. Renderer context such as axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
 
 ## Program Contract
-- `sum(count(bin) for bin where interval_relation(bin, query_interval, relation={inside,outside})); output=integer_value; annotation=bbox_set(included_bins); scene=histogram; scope=interval_mass`
+
+Program: `sum(count(bin) for bin where interval_relation(bin, query_interval, relation={inside,outside})); output=integer_value; annotation=bbox_set(included_bins); scene=histogram; scope=interval_mass`
+
+Candidate set: the visible histogram bins and axis/value labels inside the `interval_mass` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `sum` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(included_bins)`. Annotation marks the histogram bars included in the requested inside/outside interval total. Renderer context such as axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `inside_interval_mass`, `outside_interval_mass`.
 
 ## Query Details
 

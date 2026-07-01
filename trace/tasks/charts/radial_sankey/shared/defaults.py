@@ -5,8 +5,10 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from trace.core.sampling import uniform_choice
 from trace.core.scene_config import get_scene_defaults
 from trace.core.seed import spawn_rng
+from trace.tasks.charts.shared.flow import resolve_flow_required_int_bounds
 from trace.tasks.charts.shared.visual_defaults import (
     chart_font_asset_metadata,
     load_chart_scene_background_defaults,
@@ -15,10 +17,8 @@ from trace.tasks.charts.shared.visual_defaults import (
 )
 from trace.tasks.shared.bbox_projection import round_bbox
 from trace.tasks.shared.config_defaults import (
-    resolve_required_int_bounds,
     split_scene_generation_rendering_prompt_defaults,
 )
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.render_variation import apply_layout_jitter_to_margins, resolve_render_rgb
 
 from .state import RGB, SCENE_ID, SCENE_NAMESPACE, RadialRenderParams
@@ -170,7 +170,7 @@ def required_int_bounds(
     fallback_max: int,
     context: str,
 ) -> tuple[int, int]:
-    return resolve_required_int_bounds(
+    return resolve_flow_required_int_bounds(
         params,
         GEN_DEFAULTS,
         min_key=str(min_key),
@@ -214,12 +214,14 @@ def resolve_radial_color_scheme(params: Mapping[str, Any], *, instance_seed: int
         )
         if not option_names:
             option_names = [str(scheme["name"]) for scheme in RADIAL_COLOR_SCHEMES]
-        index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{SCENE_NAMESPACE}.radial_color_scheme",
+        scheme_name = uniform_choice(
+            spawn_rng(
+                int(instance_seed),
+                f"{SCENE_NAMESPACE}.radial_color_scheme",
+            ),
+            tuple(option_names),
         )
-        selected = dict(RADIAL_COLOR_SCHEME_BY_NAME[str(option_names[int(index) % len(option_names)])])
+        selected = dict(RADIAL_COLOR_SCHEME_BY_NAME[str(scheme_name)])
 
     palette = [as_rgb(color, (52, 111, 179)) for color in selected.get("flow_palette_rgb", ())]
     if len(palette) < 3:

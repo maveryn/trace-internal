@@ -9,7 +9,15 @@
 Counts visible books in one labeled library shelf section filtered by a prompt-visible book attribute predicate.
 
 ## Program Contract
-`count(filter(books, section(book)=target_section and book_attribute(book)=target_attribute_value)); scene=library; scope=filtered_book_in_section_count`
+
+Program: `count(filter(books, section(book)=target_section and book_attribute(book)=target_attribute_value)); scene=library; scope=filtered_book_in_section_count`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `filtered_book_in_section_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `books`, `section`, `book`, `target_section`, `book_attribute`, `target_attribute_value`, `library`, `filtered_book_in_section_count` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; the number of counted book witnesses projected from the same execution trace as the annotation.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `book_color_in_section_count`, `horizontal_book_in_section_count`, `upright_book_in_section_count`.
 
 ## Query Branches
 

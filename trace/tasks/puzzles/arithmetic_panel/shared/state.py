@@ -42,7 +42,6 @@ class ArithmeticCase:
     answer_support: Tuple[int, ...]
     answer_range: Tuple[int, int]
     target_item_id: str
-    rule_note: str
     data: Mapping[str, Any]
 
 

@@ -1,7 +1,15 @@
 # `task_puzzles__cell_board__symmetry_violation_count`
 
 ## Program Contract
-`count_mirror_mismatches(cell_board, axis=vertical|horizontal, counted_side=left|top); scene=cell_board; scope=symmetry_violation_count`
+
+Program: `count_mirror_mismatches(cell_board, axis=vertical|horizontal, counted_side=left|top); scene=cell_board; scope=symmetry_violation_count`
+
+Candidate set: the visible grid cells, cell colors/states, labels, walls, start/goal markers, and mirror or connectivity cues inside the `symmetry_violation_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `cell_board`, `axis`, `vertical`, `horizontal`, `counted_side`, `left`, `top`, `symmetry_violation_count`.
+Operation: evaluate `count_mirror_mismatches` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `segment_set` schema; one image-pixel segment from each counted-side violating cell center to its mirror-cell center.
+Query ids: `single`.
 
 ## 2) Scene + task contract
 1. Entities/relations: A rectangular colored cell board with a sampled vertical or horizontal mirror check.

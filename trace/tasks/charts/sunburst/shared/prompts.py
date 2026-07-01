@@ -29,13 +29,13 @@ JSON_OUTPUT_CONTRACT_ANSWER_ONLY = 'Use a valid JSON object with key "answer" fo
 
 ANSWER_HINT_INTEGER = 'set "answer" to the requested integer'
 ANSWER_HINT_LABEL = 'set "answer" to the exact parent category label'
-ANNOTATION_HINT_LEAF_VALUES = 'set "annotation" to an array of [x0,y0,x1,y1] boxes around the printed outer leaf values used to answer'
+ANNOTATION_HINT_LEAF_VALUES = 'set "annotation" to an array of [x,y] pixel points at the centers of the printed outer leaf values used to answer'
 
-JSON_EXAMPLE_TOTAL = '{"annotation":[[860,250,910,278],[930,312,980,340],[970,390,1020,418]],"answer":105}'
-JSON_EXAMPLE_LABEL = '{"annotation":[[840,230,890,258],[920,320,970,348],[420,520,470,548]],"answer":"Healthcare"}'
-JSON_EXAMPLE_COUNT = '{"annotation":[[840,230,890,258],[920,320,970,348],[970,410,1020,438]],"answer":2}'
+JSON_EXAMPLE_TOTAL = '{"annotation":[[885,264],[955,326],[995,404]],"answer":105}'
+JSON_EXAMPLE_LABEL = '{"annotation":[[865,244],[945,334],[445,534]],"answer":"Ablation"}'
+JSON_EXAMPLE_COUNT = '{"annotation":[[865,244],[945,334],[995,424]],"answer":2}'
 ANSWER_ONLY_EXAMPLE_TOTAL = '{"answer":105}'
-ANSWER_ONLY_EXAMPLE_LABEL = '{"answer":"Healthcare"}'
+ANSWER_ONLY_EXAMPLE_LABEL = '{"answer":"Ablation"}'
 ANSWER_ONLY_EXAMPLE_COUNT = '{"answer":2}'
 
 

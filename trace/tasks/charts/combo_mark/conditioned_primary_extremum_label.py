@@ -48,6 +48,7 @@ class ChartsComboConditionedPrimaryExtremumLabelTask:
     domain = DOMAIN
     objective_contract = "conditioned_primary_extremum_label"
     supported_query_ids = (MAX_QUERY_ID, MIN_QUERY_ID)
+    default_dataset_enabled = True
     default_primary_filter_dataset_enabled = True
 
     def _build_primary_after_line_filter_plan(self, instance_seed, params, selected_query_id):

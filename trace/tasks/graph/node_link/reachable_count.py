@@ -5,18 +5,41 @@ from typing import Any, Dict
 from ...base import TaskOutput
 from ...registry import register_task
 from ._lifecycle import NodeLinkAxes, NodeLinkObjectivePlan, run_node_link_plan
-from .shared.sampling import sample_reachable_count_graph
+from .shared.sampling import feasible_node_counts_for_reachable_count, sample_reachable_count_graph
 TASK_ID = 'task_graph__node_link__reachable_count'
 SCENE_ID = 'node_link'
 SUPPORTED_QUERY_IDS = ('single',)
 
+def _nearest_feasible_node_count(requested_node_count: int, feasible_nodes: tuple[int, ...]) -> int:
+    """Return the nearest feasible node count at or above the requested count."""
+
+    if not feasible_nodes:
+        raise ValueError("no feasible node count for reachable-count query")
+    for node_count in feasible_nodes:
+        if int(node_count) >= int(requested_node_count):
+            return int(node_count)
+    return int(feasible_nodes[-1])
+
 def _sample_graph(rng: Any, axes: NodeLinkAxes, attempts: int) -> Any:
     """Sample a graph satisfying this public objective contract."""
     requested_non_start_count = int(axes.values['target_count'])
+    if int(requested_non_start_count) < 1 or int(requested_non_start_count) > 6:
+        raise ValueError('target_count must be in [1, 6] for reachable-count queries')
+    sampler_target_count = int(requested_non_start_count) + 1
+    feasible_nodes = feasible_node_counts_for_reachable_count(
+        target_reachable_count=int(sampler_target_count),
+        node_count_min=5,
+        node_count_max=max(15, int(axes.node_count)),
+    )
+    node_count = (
+        int(axes.node_count)
+        if int(axes.node_count) in feasible_nodes
+        else _nearest_feasible_node_count(int(axes.node_count), feasible_nodes)
+    )
     sample = sample_reachable_count_graph(
         rng,
-        node_count=int(axes.node_count),
-        target_reachable_count=int(requested_non_start_count) + 1,
+        node_count=int(node_count),
+        target_reachable_count=int(sampler_target_count),
         topology_profile=str(axes.topology_profile),
         label_variant=str(axes.label_variant),
     )
@@ -52,5 +75,8 @@ class GraphRelationReachableCountTask:
 
     def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
         """Generate one task instance through neutral scene lifecycle plumbing."""
-        return run_node_link_plan(plan=self._build_objective_plan(), instance_seed=int(instance_seed), params=dict(params), max_attempts=int(max_attempts))
+        resolved_params = dict(params)
+        if 'target_reachable_count' in resolved_params and 'target_count' not in resolved_params:
+            resolved_params['target_count'] = resolved_params['target_reachable_count']
+        return run_node_link_plan(plan=self._build_objective_plan(), instance_seed=int(instance_seed), params=resolved_params, max_attempts=int(max_attempts))
 __all__ = ['GraphRelationReachableCountTask', 'TASK_ID']

@@ -10,7 +10,15 @@
 Counts quarry objects of a sampled subtype on either the highest or lowest terrain level in an isometric quarry scene.
 
 ## Program Contract
-`count(object where subtype in {ore_vein,mine_cart} and level(object_base)=extremum(levels), mode=highest|lowest); scene=isometric_quarry; scope=terrain_level_object_count`
+
+Program: `count(object where subtype in {ore_vein,mine_cart} and level(object_base)=extremum(levels), mode=highest|lowest); scene=isometric_quarry; scope=terrain_level_object_count`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `terrain_level_object_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `object`, `where`, `subtype`, `ore_vein`, `mine_cart`, `level`, `object_base`, `extremum`, `levels`, `mode`, `highest`, `lowest` plus the active `query_id` branch.
+Operation: evaluate `count` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `highest_terrain_object_count`, `lowest_terrain_object_count`.
 
 ## Query Branches
 

@@ -14,11 +14,9 @@ generation:
     - 3
     - 4
     - 5
-    option_count_support:
-    - 4
-    - 6
 rendering:
   shared:
+    chart_context_profile: dense_clean_minimal
     canvas_width: 1280
     canvas_height: 820
     outer_margin_px: 48

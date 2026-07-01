@@ -17,6 +17,14 @@ generation:
       target_count_min: 2
       target_count_max: 6
       other_repeated_type_count_max: 3
+    task_icons__icon_field__frequency_extreme_type_label:
+      object_count_min: 8
+      object_count_max: 18
+      frequency_min: 1
+      frequency_max: 5
+      option_count_support:
+      - 4
+      - 6
 rendering:
   shared:
     canvas_width: 960

@@ -2,15 +2,14 @@
 
 ## Program Contract
 
-- Domain: `games`
-- Scene: `rule_override_board`
-- Public task id: `task_games__rule_override_board__line_result_count`
-- Supported `query_id` values: `line_override_win_count`, `line_override_loss_count`
-- Answer schema: `integer_count`
-- Annotation schema: `bbox_set`
-- Program schema: `count(filter(mini_boards, anti_line_result(target_player)=target_result)); scene=rule_override_board; scope=line_result_count`
-- Program code: `count.filter.rule_override_line_result`
-- Scalar annotation checked: `true`
+Program: `count(filter(mini_boards, anti_line_result(target_player)=target_result)); scene=rule_override_board; scope=line_result_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `line_result_count` objective scope.
+Operands: visible scene state and prompt-bound target operands named by the task contract.
+Operation: evaluate `count(filter(mini_boards, anti_line_result(target_player)=target_result))` over the visible mini-board set; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema for every counted mini-board panel.
+Query ids: `line_override_win_count`, `line_override_loss_count`.
 
 ## Generation Notes
 

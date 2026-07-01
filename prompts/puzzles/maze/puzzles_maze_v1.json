@@ -20,7 +20,7 @@
         "",
         ""
       ],
-      "reachable_exit_count_query": [
+      "nearest_exit_label_query": [
         "",
         "",
         "",
@@ -36,43 +36,43 @@
         "Find the single labeled exit that is {target_reachability_description} without crossing a wall.",
         "What is the label of the {target_reachability_description} exit from START?"
       ],
-      "reachable_exit_count": [
-        "How many labeled exits are reachable from START?",
-        "Count the boundary exits that have an open corridor path from START.",
-        "Starting at START, how many labeled exits can be reached without crossing a wall?",
-        "What is the number of reachable exit labels from START?",
-        "Count all exit labels connected to START through open maze corridors."
+      "nearest_exit_label": [
+        "Which labeled exit is nearest to START by corridor path length?",
+        "Using only open corridors, which exit label has the shortest path from START?",
+        "From START, which boundary exit can be reached in the fewest corridor steps?",
+        "Identify the exit label with the shortest open-corridor path from START.",
+        "What is the label of the exit nearest to START through the maze corridors?"
       ]
     },
     "output": {
       "answer_only": [
-        "Set answer to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nUse the answer-only JSON shape shown here.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nReturn the answer in JSON.\nExample JSON:\n{json_example_answer_only}",
-        "Set answer to {answer_instruction}.\nUse this JSON shape for the final response.\nExample JSON:\n{json_example_answer_only}"
+        "Answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}",
+        "Use this answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example_answer_only}"
       ],
       "answer_and_annotation": [
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nWrite only a JSON object in this shape.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nReturn both fields in JSON.\nExample JSON:\n{json_example}",
-        "Set answer to {answer_instruction}.\n{annotation_hint}\nUse this JSON shape for the final response.\nExample JSON:\n{json_example}"
+        "Annotation format: {annotation_hint}\nAnswer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Required annotation format: {annotation_hint}\nRequired answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Format for the \"annotation\" field: {annotation_hint}\nFormat for the \"answer\" field: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Use this annotation format: {annotation_hint}\nUse this answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}",
+        "Annotation format: {annotation_hint}\nFinal answer format: set \"answer\" to {answer_instruction}.\nExample JSON:\n{json_example}"
       ]
     }
   },
   "static_slots_by_key": {
     "task:exit_reachability_label_query": {
       "answer_instruction": "the selected exit label as a string",
-      "annotation_hint": "Set annotation to one image-pixel bounding box [x0,y0,x1,y1] around the selected exit marker and doorway.",
-      "json_example": "{\"annotation\":[166,91,221,146],\"answer\":\"C\"}",
+      "annotation_hint": "Set annotation to one image-pixel point [x,y] centered on the selected exit marker.",
+      "json_example": "{\"annotation\":[194,118],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
-    "task:reachable_exit_count_query": {
-      "answer_instruction": "the number of reachable exits as an integer",
-      "annotation_hint": "Set annotation to a list of image-pixel bounding boxes [x0,y0,x1,y1], one for each reachable exit marker and doorway.",
-      "json_example": "{\"annotation\":[[166,91,221,146],[472,789,527,844],[979,676,1034,731]],\"answer\":3}",
-      "json_example_answer_only": "{\"answer\":3}"
+    "task:nearest_exit_label_query": {
+      "answer_instruction": "the selected exit label as a string",
+      "annotation_hint": "Set annotation to one image-pixel point [x,y] centered on the selected nearest exit marker.",
+      "json_example": "{\"annotation\":[194,118],\"answer\":\"C\"}",
+      "json_example_answer_only": "{\"answer\":\"C\"}"
     }
   },
   "dynamic_slots": {

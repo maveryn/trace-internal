@@ -21,6 +21,7 @@ generation:
     - 5
 rendering:
   shared:
+    chart_context_profile: dense_clean_minimal
     canvas_width: 1120
     canvas_height: 760
     plot_margin_left_px: 104

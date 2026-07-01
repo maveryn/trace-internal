@@ -15,7 +15,15 @@
 4. Answers and annotation are produced from the same metadata execution trace.
 
 ## Program Contract
-`count(turning_points(sequence(values), turning_kind)); output=integer_count; annotation=point_set(turning_points); scene=single_series; scope=turning_point_count`
+
+Program: `count(turning_points(sequence(values), turning_kind)); output=integer_count; annotation=point_set(turning_points); scene=single_series; scope=turning_point_count`
+
+Candidate set: the visible marks in the ordered single-series chart inside the `turning_point_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_count` value bound by `integer_count`.
+Annotation witnesses: `point_set` witnesses bound by `point_set(turning_points)`. Annotation marks every local peak or trough point counted by the selected query. Axes, legend, titles, captions, decorative context, and distractor text are context unless the task explicitly asks for them as annotation.
+Query ids: `peak_turning_point_count`, `trough_turning_point_count`.
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.

@@ -7,9 +7,13 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from trace.core.seed import spawn_rng
+from trace.tasks.charts.shared.flow import (
+    sample_flow_count,
+    sample_flow_scene_variant,
+    sample_flow_title,
+)
+from trace.tasks.charts.shared.balanced_sampling import balanced_int_from_support
 from trace.tasks.charts.shared.label_assets import resolve_chart_entity_labels
-from trace.tasks.charts.shared.labeled_chart_common import resolve_chart_axis_variant_for_namespace
-from trace.tasks.charts.shared.sampling_defaults import balanced_int_from_support
 
 from .defaults import GEN_DEFAULTS, TITLE_OPTIONS, gen_int_param, required_int_bounds
 from .state import (
@@ -23,7 +27,7 @@ from .state import (
 
 
 def sample_scene_variant(params: Mapping[str, Any], *, instance_seed: int) -> tuple[str, dict[str, float]]:
-    return resolve_chart_axis_variant_for_namespace(
+    return sample_flow_scene_variant(
         params=params,
         gen_defaults=GEN_DEFAULTS,
         instance_seed=int(instance_seed),
@@ -46,36 +50,28 @@ def sample_count(
     instance_seed: int,
     namespace: str,
 ) -> tuple[int, tuple[int, int]]:
-    lower, upper = required_int_bounds(
+    return sample_flow_count(
         params,
+        GEN_DEFAULTS,
         min_key=str(min_key),
         max_key=str(max_key),
+        explicit_key=str(explicit_key),
         fallback_min=int(fallback_min),
         fallback_max=int(fallback_max),
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
         context=f"Sankey {explicit_key}",
-    )
-    support = [int(value) for value in range(int(lower), int(upper) + 1)]
-    explicit = params.get(str(explicit_key))
-    if explicit is not None:
-        selected = int(explicit)
-        if selected not in set(support):
-            raise ValueError(f"{explicit_key} must be in {lower}..{upper}")
-        return int(selected), (int(lower), int(upper))
-    return (
-        balanced_int_from_support(
-            support,
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(namespace),
-        ),
-        (int(lower), int(upper)),
     )
 
 
 def sample_title(params: Mapping[str, Any], *, instance_seed: int) -> str:
-    title_options = [str(value) for value in params.get("title_options", TITLE_OPTIONS) if str(value)] or list(TITLE_OPTIONS)
-    rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.title")
-    return str(title_options[int(rng.randrange(len(title_options)))])
+    return sample_flow_title(
+        params,
+        title_options=TITLE_OPTIONS,
+        instance_seed=int(instance_seed),
+        namespace=SCENE_NAMESPACE,
+        selection="index",
+    )
 
 
 def node_dict(node: FlowNode) -> dict[str, Any]:
@@ -101,6 +97,15 @@ def path_dict(path: FlowPath) -> dict[str, Any]:
         "bottleneck_value": int(path.bottleneck_value),
         "absolute_difference": int(path.absolute_difference),
     }
+
+
+def bottleneck_segment_ref(path: FlowPath) -> str:
+    """Return the unique lower-valued segment ref for a two-band path."""
+
+    if int(path.first_value) == int(path.second_value):
+        raise ValueError("Sankey bottleneck segment is ambiguous when path values tie")
+    segment_kind = "source_middle" if int(path.first_value) < int(path.second_value) else "middle_target"
+    return f"{path.path_id}:{segment_kind}"
 
 
 def join_quoted(labels: Sequence[str]) -> str:

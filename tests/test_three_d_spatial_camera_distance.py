@@ -87,12 +87,13 @@ def test_camera_distance_extremum_answer_and_annotation(query_id: str) -> None:
     assert all(max(spec["dimensions_xyz"][:2]) < 0.85 for spec in point_specs)
     assert any(max(spec["dimensions_xyz"]) > 1.35 for spec in context_specs)
     expected_bbox = output.trace_payload["render_map"]["object_bboxes_px"][str(expected["object_id"])]
+    expected_annotation_bbox = output.trace_payload["render_map"]["annotation_bboxes_px"][0]
     context_bboxes = list(output.trace_payload["render_map"]["context_object_bboxes_px"].values())
     assert output.annotation_gt.type == "bbox"
-    assert output.annotation_gt.value == expected_bbox
+    assert output.annotation_gt.value == expected_annotation_bbox
     assert str(expected["shape_type"]) not in set(UNRELIABLE_CAMERA_DISTANCE_ANSWER_SHAPES)
     assert _max_context_overlap_fraction(expected_bbox, context_bboxes) <= MAX_ANSWER_CONTEXT_OVERLAP_FRACTION
-    assert output.trace_payload["projected_annotation"]["bbox"] == expected_bbox
+    assert output.trace_payload["projected_annotation"]["bbox"] == expected_annotation_bbox
     assert output.trace_payload["render_map"]["point_bboxes_px"][expected_label] == expected_bbox
     assert_option_panel_matches_candidates(
         output,
@@ -133,7 +134,8 @@ def test_three_d_camera_sampler_uses_multiple_orbit_families() -> None:
         (48.0, 82.0),
         (108.0, 145.0),
     }
-    assert {
+    sampled_bands = {
         _camera_yaw_band_for_instance(20260521 + index)
-        for index in range(len(CAMERA_YAW_BANDS_DEGREES))
-    } == set(CAMERA_YAW_BANDS_DEGREES)
+        for index in range(120)
+    }
+    assert sampled_bands == set(CAMERA_YAW_BANDS_DEGREES)

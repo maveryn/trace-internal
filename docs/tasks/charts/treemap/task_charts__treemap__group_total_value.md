@@ -10,11 +10,14 @@
 
 ## Program Contract
 
-- Program schema: `sum(value(child) for child in parent); output=integer_value; annotation=bbox_set(parent_child_value_boxes); scene=treemap; scope=group_total_value`.
-- Program: sum every printed child value inside the requested parent category.
-- Answer: `integer`.
-- Annotation schema: `bbox_set` over the child value labels inside the selected parent rectangle.
-- The answer and annotation are bound from the same sampled treemap execution trace.
+Program: `sum(value(child) for child in parent); output=integer_value; annotation=bbox_set(parent_child_rectangles); scene=treemap; scope=group_total_value`
+
+Candidate set: the visible treemap rectangles and hierarchy labels inside the `group_total_value` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `sum` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `unspecified` value bound by `integer_value`.
+Annotation witnesses: `unspecified` witnesses bound by `bbox_set(parent_child_rectangles)`. The Annotation Contract below defines the prompt-facing witnesses.
+Query ids: `single`.
 
 ## Review Notes
 

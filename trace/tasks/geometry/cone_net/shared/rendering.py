@@ -7,6 +7,7 @@ from typing import Any, Dict, Mapping, Tuple
 
 from PIL import ImageDraw
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.diagram_style import (
     geometry_diagram_style_metadata,
@@ -20,7 +21,6 @@ from trace.tasks.geometry.shared.measurement_rendering import (
     pad_bbox,
 )
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from trace.tasks.shared.text_rendering import load_font
 
@@ -72,12 +72,8 @@ def create_render_context(
             tuple(int(v) for v in diagram_style.guide_rgb),
         ),
     )
-    palette_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"geometry.{SCENE_ID}.palette",
-    )
-    fill_color, cone_fill_color, accent_color = palettes[int(palette_index) % len(palettes)]
+    palette_rng = spawn_rng(int(instance_seed), f"geometry.{SCENE_ID}.palette")
+    fill_color, cone_fill_color, accent_color = uniform_choice(palette_rng, palettes)
     font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 22)))
     small_font_size = int(params.get("small_label_font_size", group_default(render_defaults, "small_label_font_size", 18)))
     line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 4)))

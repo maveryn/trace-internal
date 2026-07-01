@@ -12,13 +12,23 @@ GridCell = Tuple[int, int]
 BBox = Tuple[float, float, float, float]
 HeightGrid = Tuple[Tuple[int, ...], ...]
 Direction = str
+Color = Tuple[int, int, int]
 
 VIEW_DIRECTIONS: Tuple[Direction, ...] = ("top", "front", "right")
 CHANGE_TYPES: Tuple[str, ...] = ("missing_to_complete", "removed")
-PAINTED_QUERY_TYPES: Tuple[str, ...] = (
-    "exterior_face_total",
-    "exact_k_faces_cube_count",
-)
+
+
+@dataclass(frozen=True)
+class VoxelPalette:
+    """One fixed non-semantic color palette for a rendered voxel question."""
+
+    palette_id: str
+    cube_top_rgb: Color
+    cube_left_rgb: Color
+    cube_right_rgb: Color
+    cube_edge_rgb: Color
+    projection_fill_rgb: Color
+    projection_empty_rgb: Color
 
 
 @dataclass(frozen=True)
@@ -57,15 +67,6 @@ class ProjectionOption:
     label: str
     projection: ProjectionGrid
     is_correct: bool
-
-
-@dataclass(frozen=True)
-class ConsistencyOption:
-    """One labeled projection panel with declared view direction."""
-
-    label: str
-    projection: ProjectionGrid
-    is_inconsistent: bool
 
 
 @dataclass(frozen=True)
@@ -111,14 +112,6 @@ class ProjectionMatchDataset(VoxelDataset):
 
 
 @dataclass(frozen=True)
-class ProjectionConsistencyDataset(VoxelDataset):
-    """Generated state for finding one inconsistent projection panel."""
-
-    options: Tuple[ConsistencyOption, ...]
-    answer_label: str
-
-
-@dataclass(frozen=True)
 class VoxelRenderParams:
     """Render dimensions and typography for one voxel-cube scene."""
 
@@ -128,6 +121,7 @@ class VoxelRenderParams:
     projection_cell_size_px: int
     panel_gap_px: int
     label_font_size_px: int
+    palette: VoxelPalette
 
 
 @dataclass(frozen=True)

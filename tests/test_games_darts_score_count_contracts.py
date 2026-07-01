@@ -11,6 +11,7 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.darts.bullseye_membership_count import GamesDartsBullseyeMembershipCountTask
 from trace.tasks.games.darts.dart_score_value import GamesDartsDartScoreValueTask
+from trace.tasks.games.darts.highest_scoring_dart_label import GamesDartsHighestScoringDartLabelTask
 from trace.tasks.games.darts.shared.rendering import dartboard_anchor_colors
 from trace.tasks.shared.color_distance import color_distance
 from tests.helpers import read_jsonl
@@ -35,6 +36,43 @@ def test_games_darts_score_value_uses_only_visible_dart_as_annotation() -> None:
     assert visible_darts[0]["area_kind"] == "bullseye"
     assert int(visible_darts[0]["score"]) == int(out.answer_gt.value)
     assert execution["annotation_entity_ids"] == [str(visible_darts[0]["dart_id"])]
+    assert out.trace_payload["projected_annotation"]["point"] == out.annotation_gt.value
+
+
+@pytest.mark.parametrize("target_answer", (0, 1, 2, 3))
+def test_games_darts_highest_scoring_dart_label_contract(target_answer: int) -> None:
+    out = GamesDartsHighestScoringDartLabelTask().generate(
+        92031 + int(target_answer),
+        params={
+            "scene_variant": "single_board",
+            "target_answer": int(target_answer),
+        },
+        max_attempts=64,
+    )
+    execution = out.trace_payload["execution_trace"]
+    specs = list(execution["dart_specs"])
+    specs_by_label = {str(spec["label"]): spec for spec in specs}
+    correct_label = "ABCD"[int(target_answer)]
+    correct_spec = specs_by_label[correct_label]
+
+    assert out.answer_gt.type == "option_letter"
+    assert str(out.answer_gt.value) == correct_label
+    assert out.annotation_gt.type == "point"
+    assert set(specs_by_label) == {"A", "B", "C", "D"}
+    assert len(specs) == 4
+    assert all(str(spec["area_kind"]) == "sector" for spec in specs)
+    assert execution["correct_option_label"] == correct_label
+    assert execution["correct_dart_id"] == correct_spec["dart_id"]
+    assert execution["annotation_entity_ids"] == [str(correct_spec["dart_id"])]
+    assert execution["scores_by_label"] == {
+        str(spec["label"]): int(spec["score"])
+        for spec in specs
+    }
+    assert all(
+        int(correct_spec["score"]) > int(spec["score"])
+        for spec in specs
+        if str(spec["label"]) != correct_label
+    )
     assert out.trace_payload["projected_annotation"]["point"] == out.annotation_gt.value
 
 
@@ -66,14 +104,14 @@ def test_games_darts_bullseye_membership_count_contract(
 
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(target_answer)
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert len(out.annotation_gt.value) == int(target_answer)
     assert execution["bullseye_membership"] == expected_membership
     if expected_membership == "inside":
         assert all(spec["area_kind"] == "bullseye" for spec in annotated_specs)
     else:
         assert all(spec["area_kind"] == "sector" for spec in annotated_specs)
-    assert out.trace_payload["projected_annotation"]["point_set"] == out.annotation_gt.value
+    assert out.trace_payload["projected_annotation"]["bbox_set"] == out.annotation_gt.value
 
 
 def test_games_darts_query_cycle_covers_simplified_answers() -> None:
@@ -103,6 +141,18 @@ def test_games_darts_query_cycle_covers_simplified_answers() -> None:
     assert score_answers == set(range(1, 21)) | {50}
     assert {0, 1, 2, 3, 4, 5}.issubset(inside_answers)
     assert {0, 1, 2, 3, 4, 5}.issubset(outside_answers)
+
+    label_answers = {
+        str(
+            GamesDartsHighestScoringDartLabelTask().generate(
+                92401 + int(sampling_index),
+                params={"_sample_cursor": int(sampling_index)},
+                max_attempts=64,
+            ).answer_gt.value
+        )
+        for sampling_index in range(80)
+    }
+    assert label_answers == {"A", "B", "C", "D"}
 
 
 def test_games_darts_score_value_is_deterministic() -> None:
@@ -151,6 +201,7 @@ def test_games_darts_prompt_bundle_uses_simplified_terms() -> None:
     assert required["query:dart_score_value"] == ["scoring_rule_text"]
     assert required["query:inside_bullseye_count"] == []
     assert required["query:outside_bullseye_count"] == []
+    assert required["query:highest_scoring_dart_label"] == ["scoring_rule_text"]
     assert bundle["static_slots_by_key"]["scene:visible_dartboard"]["object_description"]
 
 
@@ -190,7 +241,7 @@ def test_games_darts_score_value_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "games" for record in train_records)
-    assert all(record.get("scene_id") == "darts" for record in train_records)
+    assert all(record["task"] == "task_games__darts__dart_score_value" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_games__darts__dart_score_value"]) == 4

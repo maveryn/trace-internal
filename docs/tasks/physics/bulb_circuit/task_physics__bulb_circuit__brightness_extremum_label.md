@@ -3,11 +3,22 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `bulb_circuit`
-- Implementation scene: `circuits`
-- Implementation source: `trace/tasks/physics/circuits/bulb_brightness.py`
+- Implementation scene: `bulb_circuit`
+- Implementation source: `trace/tasks/physics/bulb_circuit/brightness_extremum_label.py`
 
 ## Task Contract
 Selects the labeled bulb that is brightest or dimmest in a visible ideal-battery circuit.
+
+## Program Contract
+
+Program: `label(arg_extreme(bulbs, power_in_visible_circuit, direction=brightest_or_dimmest)); scene=bulb_circuit; scope=brightness_extremum_label`
+
+Candidate set: the visible bulb symbols, wire topology, switch states, and component labels inside the `brightness_extremum_label` objective scope.
+Operands: `bulbs` (semantic_role, allowed `visible_labeled_bulbs_b1_through_b5_with_resistance_labels`, source `program_schema_concrete`); `circuit_topology` (semantic_role, allowed `visible_series_parallel_bulb_topology`, source `program_schema_concrete`); `target_direction` (query_operand, allowed `brightest|dimmest`, source `query_id`); active `query_id` branch when present.
+Operation: evaluate `label` over the candidate set using the visible quantities, relations, branch semantics, and formulas encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; The answer value is the selected visible bulb label, for example `B2`.
+Annotation witnesses: `bbox` witnesses from the finalized render. Annotation marks one bounding box around the selected answer bulb symbol and its resistance label. Other bulb boxes remain visible context in the image and trace metadata, but they are not public annotation witnesses.
+Query ids: `brightest_bulb_label`, `dimmest_bulb_label`.
 
 ## Query Branches
 
@@ -25,7 +36,7 @@ Selects the labeled bulb that is brightest or dimmest in a visible ideal-battery
   - `circuit_topology`: semantic_role; allowed `visible_series_parallel_bulb_topology`; source `program_schema_concrete`
   - `target_direction`: query_operand; allowed `brightest|dimmest`; source `query_id`
 - Argument metadata status: `curated`
-- Supported query ids: `brightest_bulb_label`, `dimmest_bulb_label`
+- Supported `query_id`s: `brightest_bulb_label`, `dimmest_bulb_label`
 
 ## Answer Contract
 - Answer schema: `string`
@@ -33,10 +44,10 @@ Selects the labeled bulb that is brightest or dimmest in a visible ideal-battery
 - The answer value is the selected visible bulb label, for example `B2`.
 
 ## Annotation Contract
-- Annotation schema: `keyed_bbox_map`
-- Generator `annotation_gt.type`: `keyed_bbox_map`
-- Annotation is keyed by visible bulb labels `B1` through `B5`.
-- Annotation must mark minimal visual witnesses from the final rendered diagram: the bulb symbol and its resistance label. Annotation must not mark wires, battery terminals, decorative chrome, or inferred brightness ranks.
+- Annotation schema: `bbox`
+- Generator `annotation_gt.type`: `bbox`
+- Annotation marks one bounding box around the selected answer bulb symbol and its resistance label.
+- Other bulb boxes remain visible context in the image and trace metadata, but they are not public annotation witnesses.
 - Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
 
 ## Prompt And Trace Requirements

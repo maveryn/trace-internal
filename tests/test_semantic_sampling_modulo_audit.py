@@ -148,6 +148,31 @@ target_index = (mover_index + distance) % len(MAIN_PATH)
     ]
 
 
+def test_audit_allows_graph_directed_component_cycle_wraparound() -> None:
+    source = """
+target = nodes[(index + 1) % len(nodes)]
+"""
+
+    assert _categories(source, "trace/tasks/graph/adjacency/shared/sampling.py") == [
+        "allowed_deterministic_enumeration"
+    ]
+
+
+def test_audit_allows_graph_cycle_edge_wraparound() -> None:
+    source = """
+cycle_edges = {
+    frozenset((int(ordered[index]), int(ordered[(index + 1) % len(ordered)])))
+    for index in range(len(ordered))
+}
+target = int(ordered[(index + 1) % len(ordered)])
+"""
+
+    assert _categories(source, "trace/tasks/graph/shared/graph_path_order_sampling.py") == [
+        "allowed_deterministic_enumeration",
+        "allowed_deterministic_enumeration",
+    ]
+
+
 def test_audit_allows_mancala_sowing_wraparound() -> None:
     source = """
 source_index = (int(target_index) - int(source_seed_count)) % len(LABELS)

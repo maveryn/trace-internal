@@ -21,6 +21,25 @@ def parse_grid_size_variant(value: str) -> tuple[int, int]:
     return int(raw_rows), int(raw_cols)
 
 
+def parse_gap_size_variant(value: str | int) -> int:
+    """Parse the supported pipe-flow gap-size variant."""
+
+    if isinstance(value, int):
+        size = int(value)
+    else:
+        raw = str(value).strip().lower()
+        if "x" in raw:
+            raw_rows, raw_cols = raw.split("x", maxsplit=1)
+            if int(raw_rows) != int(raw_cols):
+                raise ValueError(f"gap size must be square: {value!r}")
+            size = int(raw_rows)
+        else:
+            size = int(raw)
+    if size != 2:
+        raise ValueError(f"unsupported pipe-flow gap size: {value!r}")
+    return int(size)
+
+
 def normalize_openings(openings: Iterable[str]) -> Openings:
     """Return canonical N/E/S/W opening order."""
 
@@ -97,29 +116,36 @@ def connected_to_destination(
     return False
 
 
-def block_cells(origin: Cell) -> tuple[Cell, ...]:
-    """Return the four global cells covered by a 2x2 missing piece."""
+def block_cells(origin: Cell, *, gap_size: int = 2) -> tuple[Cell, ...]:
+    """Return the global cells covered by a square missing piece."""
 
     row, col = int(origin[0]), int(origin[1])
-    return ((row, col), (row, col + 1), (row + 1, col), (row + 1, col + 1))
+    size = parse_gap_size_variant(int(gap_size))
+    return tuple(
+        (int(row + local_row), int(col + local_col))
+        for local_row in range(size)
+        for local_col in range(size)
+    )
 
 
-def local_cells() -> tuple[Cell, ...]:
-    """Return the local cells in a 2x2 option piece."""
+def local_cells(*, gap_size: int = 2) -> tuple[Cell, ...]:
+    """Return the local cells in one square option piece."""
 
-    return ((0, 0), (0, 1), (1, 0), (1, 1))
+    size = parse_gap_size_variant(int(gap_size))
+    return tuple((int(row), int(col)) for row in range(size) for col in range(size))
 
 
 def localize_block(
     global_openings: Mapping[Cell, Openings],
     *,
     origin: Cell,
+    gap_size: int = 2,
 ) -> dict[Cell, Openings]:
-    """Convert global 2x2 block openings into local coordinates."""
+    """Convert global missing-region openings into local coordinates."""
 
     origin_row, origin_col = int(origin[0]), int(origin[1])
     localized: dict[Cell, Openings] = {}
-    for row, col in local_cells():
+    for row, col in local_cells(gap_size=int(gap_size)):
         global_cell = (int(origin_row + row), int(origin_col + col))
         localized[(int(row), int(col))] = normalize_openings(global_openings.get(global_cell, ()))
     return localized
@@ -129,26 +155,29 @@ def globalize_block(
     local_openings: Mapping[Cell, Openings],
     *,
     origin: Cell,
+    gap_size: int = 2,
 ) -> dict[Cell, Openings]:
-    """Convert local 2x2 option openings into global grid coordinates."""
+    """Convert local option openings into global grid coordinates."""
 
     origin_row, origin_col = int(origin[0]), int(origin[1])
     return {
         (int(origin_row + row), int(origin_col + col)): normalize_openings(
             local_openings.get((row, col), ())
         )
-        for row, col in local_cells()
+        for row, col in local_cells(gap_size=int(gap_size))
     }
 
 
 def option_signature(
     local_openings: Mapping[Cell, Openings],
+    *,
+    gap_size: int = 2,
 ) -> tuple[tuple[int, int, Openings], ...]:
     """Return a stable signature for one option orientation."""
 
     return tuple(
         (int(row), int(col), normalize_openings(local_openings.get((row, col), ())))
-        for row, col in local_cells()
+        for row, col in local_cells(gap_size=int(gap_size))
     )
 
 
@@ -156,17 +185,19 @@ def rotate_local_option(
     local_openings: Mapping[Cell, Openings],
     *,
     turns: int,
+    gap_size: int = 2,
 ) -> dict[Cell, Openings]:
-    """Rotate a 2x2 option piece clockwise by quarter-turns."""
+    """Rotate one square option piece clockwise by quarter-turns."""
 
+    size = parse_gap_size_variant(int(gap_size))
     result = {
         cell: normalize_openings(local_openings.get(cell, ()))
-        for cell in local_cells()
+        for cell in local_cells(gap_size=size)
     }
     for _ in range(int(turns) % 4):
-        rotated: dict[Cell, Openings] = {cell: tuple() for cell in local_cells()}
+        rotated: dict[Cell, Openings] = {cell: tuple() for cell in local_cells(gap_size=size)}
         for (row, col), openings in result.items():
-            next_cell = (int(col), int(1 - row))
+            next_cell = (int(col), int(size - 1 - row))
             rotated[next_cell] = rotate_openings(openings, 1)
         result = rotated
     return result
@@ -174,11 +205,16 @@ def rotate_local_option(
 
 def rotation_canonical_option_signature(
     local_openings: Mapping[Cell, Openings],
+    *,
+    gap_size: int = 2,
 ) -> tuple[tuple[int, int, Openings], ...]:
     """Return a signature treating quarter-turn rotations as equivalent."""
 
     return min(
-        option_signature(rotate_local_option(local_openings, turns=turns))
+        option_signature(
+            rotate_local_option(local_openings, turns=turns, gap_size=int(gap_size)),
+            gap_size=int(gap_size),
+        )
         for turns in range(4)
     )
 
@@ -192,6 +228,7 @@ def option_connects(
     cols: int,
     start_cell: Cell,
     destination_cell: Cell,
+    gap_size: int = 2,
 ) -> bool:
     """Return whether an option would reconnect start to finish."""
 
@@ -199,7 +236,7 @@ def option_connects(
         tuple(cell): normalize_openings(openings)
         for cell, openings in visible_map.items()
     }
-    test_map.update(globalize_block(local_openings, origin=origin))
+    test_map.update(globalize_block(local_openings, origin=origin, gap_size=int(gap_size)))
     return connected_to_destination(
         test_map,
         rows=int(rows),
@@ -218,12 +255,17 @@ def option_connecting_rotation_turns(
     cols: int,
     start_cell: Cell,
     destination_cell: Cell,
+    gap_size: int = 2,
 ) -> tuple[int, ...]:
     """Return all rotations that make a displayed option solve the path."""
 
     turns: list[int] = []
     for turn_count in range(4):
-        rotated = rotate_local_option(local_openings, turns=int(turn_count))
+        rotated = rotate_local_option(
+            local_openings,
+            turns=int(turn_count),
+            gap_size=int(gap_size),
+        )
         if option_connects(
             visible_map=visible_map,
             local_openings=rotated,
@@ -232,6 +274,7 @@ def option_connecting_rotation_turns(
             cols=int(cols),
             start_cell=start_cell,
             destination_cell=destination_cell,
+            gap_size=int(gap_size),
         ):
             turns.append(int(turn_count))
     return tuple(turns)

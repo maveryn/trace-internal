@@ -82,7 +82,7 @@
     "query:hit_row_remaining_count": {
       "brick_breaker_motion_rule_text": "The short dashed arrow shows the ball's current straight direction.",
       "answer_hint": "set \"answer\" to the number of bricks left in that row after the hit brick is removed",
-      "annotation_hint": "set \"annotation\" to an array of pixel-space brick boxes [x1, y1, x2, y2] for the bricks left in the same row after the hit brick is removed",
+      "annotation_hint": "set \"annotation\" to an array of pixel-space brick boxes [x0, y0, x1, y1] for the bricks left in the same row after the hit brick is removed",
       "json_example": "{\"annotation\":[[135,258,205,298],[245,258,315,298],[355,258,425,298],[465,258,535,298]],\"answer\":4}",
       "json_example_answer_only": "{\"answer\":4}"
     }

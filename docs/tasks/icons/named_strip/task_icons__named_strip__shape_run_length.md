@@ -2,7 +2,14 @@
 
 ## Program Contract
 
-`counting.sequence_run_extremum_length(scene=named_strip, scope=procedural_named_icons, target=quoted_shape_name, extremum=longest|shortest, adjacency=consecutive_horizontal_cells, output=integer)`
+Program: `counting.sequence_run_extremum_length(scene=named_strip, scope=procedural_named_icons, target=quoted_shape_name, extremum=longest|shortest, adjacency=consecutive_horizontal_cells, output=integer)`
+
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `procedural_named_icons` objective scope.
+Operands: visible scene state and prompt-bound operands named by `named_strip`, `procedural_named_icons`, `quoted_shape_name`, `extremum`, `longest`, `shortest`, `adjacency`, `consecutive_horizontal_cells`.
+Operation: evaluate `counting.sequence_run_extremum_length` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `longest_shape_run_length`.
 
 ## Identity
 

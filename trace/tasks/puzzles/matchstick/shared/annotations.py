@@ -14,6 +14,42 @@ def round_bbox(bbox: Sequence[float]) -> list[float]:
     return [round(float(value), 3) for value in bbox[:4]]
 
 
+def round_segment(segment: Sequence[Sequence[float]]) -> list[list[float]]:
+    """Round one pixel segment into the public annotation representation."""
+
+    return [
+        [round(float(point[0]), 3), round(float(point[1]), 3)]
+        for point in segment[:2]
+    ]
+
+
+def segment_artifacts(
+    item_segment_map: Mapping[str, Sequence[Sequence[float]]],
+    item_id: str,
+) -> AnnotationArtifacts:
+    """Project one item segment as a scalar segment annotation."""
+
+    key = str(item_id)
+    if key not in item_segment_map:
+        raise RuntimeError(f"missing segment annotation for item {key!r}")
+    value = round_segment(item_segment_map[key])
+    projected = {
+        "type": "segment",
+        "segment": [list(point) for point in value],
+        "pixel_segment": [list(point) for point in value],
+        "value": [list(point) for point in value],
+    }
+    return AnnotationArtifacts(
+        annotation_type="segment",
+        value=[list(point) for point in value],
+        annotation_gt=TypedValue(
+            type="segment",
+            value=[list(point) for point in value],
+        ),
+        projected_annotation=projected,
+    )
+
+
 def bbox_artifacts(
     item_bbox_map: Mapping[str, Sequence[float]],
     item_id: str,
@@ -34,6 +70,35 @@ def bbox_artifacts(
         annotation_type="bbox",
         value=list(value),
         annotation_gt=TypedValue(type="bbox", value=list(value)),
+        projected_annotation=projected,
+    )
+
+
+def bbox_set_artifacts(
+    item_bbox_map: Mapping[str, Sequence[float]],
+    item_ids: Sequence[str],
+) -> AnnotationArtifacts:
+    """Project a homogeneous item set as bbox_set annotation."""
+
+    values: list[list[float]] = []
+    for item_id in item_ids:
+        key = str(item_id)
+        if key not in item_bbox_map:
+            raise RuntimeError(f"missing bbox annotation for item {key!r}")
+        values.append(round_bbox(item_bbox_map[key]))
+    projected = {
+        "type": "bbox_set",
+        "bbox_set": [list(bbox) for bbox in values],
+        "pixel_bbox_set": [list(bbox) for bbox in values],
+        "value": [list(bbox) for bbox in values],
+    }
+    return AnnotationArtifacts(
+        annotation_type="bbox_set",
+        value=[list(bbox) for bbox in values],
+        annotation_gt=TypedValue(
+            type="bbox_set",
+            value=[list(bbox) for bbox in values],
+        ),
         projected_annotation=projected,
     )
 
@@ -69,4 +134,11 @@ def bbox_map_artifacts(
     )
 
 
-__all__ = ["bbox_artifacts", "bbox_map_artifacts", "round_bbox"]
+__all__ = [
+    "bbox_artifacts",
+    "bbox_map_artifacts",
+    "bbox_set_artifacts",
+    "round_bbox",
+    "round_segment",
+    "segment_artifacts",
+]

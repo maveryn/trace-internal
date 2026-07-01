@@ -8,7 +8,7 @@ generation:
     distractor_count_max: 10
     balanced_sampling: true
   task_overrides:
-    task_icons__reference_canvas__reference_attribute_match_count:
+    task_icons__reference_canvas__reference_type_match_count:
       object_count_min: 1
       object_count_max: 16
       target_count_min: 0
@@ -16,8 +16,20 @@ generation:
       variant_generation_params:
         match_type:
           pool_manifest: all_icons.txt
+    task_icons__reference_canvas__reference_color_match_count:
+      object_count_min: 1
+      object_count_max: 16
+      target_count_min: 0
+      target_count_max: 8
+      variant_generation_params:
         match_color:
           pool_manifest: all_icons.txt
+    task_icons__reference_canvas__reference_rotation_match_count:
+      object_count_min: 1
+      object_count_max: 16
+      target_count_min: 0
+      target_count_max: 8
+      variant_generation_params:
         match_rotation:
           pool_manifest: non_symmetry.txt
           rotation_candidates_degrees:
@@ -25,6 +37,12 @@ generation:
           - 90
           - 180
           - 270
+    task_icons__reference_canvas__reference_type_color_rotation_match_count:
+      object_count_min: 1
+      object_count_max: 16
+      target_count_min: 0
+      target_count_max: 8
+      variant_generation_params:
         match_type_color_rotation:
           pool_manifest: non_symmetry.txt
           rotation_candidates_degrees:
@@ -198,12 +216,14 @@ rendering:
         - 0.03
         - 0.08
   task_overrides:
-    task_icons__reference_canvas__reference_attribute_match_count:
+    task_icons__reference_canvas__reference_color_match_count:
       variant_render_params:
         match_color:
           min_color_distance: 60.0
           palette_size_min: 3
           palette_size_max: 4
+    task_icons__reference_canvas__reference_type_color_rotation_match_count:
+      variant_render_params:
         match_type_color_rotation:
           min_color_distance: 40.0
           palette_size_min: 3
@@ -270,7 +290,13 @@ prompt:
     scene_key: reference_canvas_counting
     task_key: reference_canvas_query
   task_overrides:
-    task_icons__reference_canvas__reference_attribute_match_count:
+    task_icons__reference_canvas__reference_type_match_count:
+      scene_key: reference_canvas_counting
+    task_icons__reference_canvas__reference_color_match_count:
+      scene_key: reference_canvas_counting
+    task_icons__reference_canvas__reference_rotation_match_count:
+      scene_key: reference_canvas_counting
+    task_icons__reference_canvas__reference_type_color_rotation_match_count:
       scene_key: reference_canvas_counting
     task_icons__reference_canvas__reference_metric_relation_count:
       scene_key: reference_canvas_counting

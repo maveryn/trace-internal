@@ -89,6 +89,46 @@ def reachable_cells_from_start(*, start: Cell, rows: int, cols: int, edges: Sequ
             visited.add(tuple(nxt))
             frontier.append(tuple(nxt))
     return tuple(sorted(visited, key=lambda item: (item[1], item[0])))
+
+
+def shortest_path_between(
+    *,
+    start: Cell,
+    goal: Cell,
+    rows: int,
+    cols: int,
+    edges: Sequence[CellEdge],
+) -> Tuple[Cell, ...]:
+    """Return one shortest open-corridor path from start to goal."""
+
+    start_cell = tuple(int(value) for value in start)
+    goal_cell = tuple(int(value) for value in goal)
+    edge_set = {edge_key(a, b) for a, b in edges}
+    frontier: List[Cell] = [start_cell]
+    parent: dict[Cell, Cell | None] = {start_cell: None}
+    while frontier:
+        current = frontier.pop(0)
+        if tuple(current) == goal_cell:
+            break
+        for nxt in neighbors(current, rows=int(rows), cols=int(cols)):
+            nxt_cell = tuple(nxt)
+            if nxt_cell in parent:
+                continue
+            if edge_key(current, nxt_cell) not in edge_set:
+                continue
+            parent[nxt_cell] = tuple(current)
+            frontier.append(nxt_cell)
+    if goal_cell not in parent:
+        raise ValueError("goal cell is not reachable from start")
+
+    path: List[Cell] = []
+    cursor: Cell | None = goal_cell
+    while cursor is not None:
+        path.append(tuple(cursor))
+        cursor = parent[tuple(cursor)]
+    return tuple(reversed(path))
+
+
 def exit_clockwise_sort_key(exit_spec: Mapping[str, Any], *, rows: int, cols: int) -> Tuple[int, int]:
     col, row = (int(value) for value in exit_spec["cell"])
     side = str(exit_spec["side"])
@@ -109,4 +149,5 @@ __all__ = [
     "maze_cell_id",
     "neighbors",
     "reachable_cells_from_start",
+    "shortest_path_between",
 ]

@@ -5,8 +5,9 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Callable, Dict, Mapping, Sequence, TypeVar
 
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.measurement_rendering import fmt_measure
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.fixed_query import geometry_selected_probability_map
 
 from .state import TangentTriangleCase
@@ -102,36 +103,19 @@ def select_answer_balanced_case(
         )
         return cases[0], selected_index, support
 
-    cursor = params.get("_sample_cursor")
-    if cursor is not None:
-        cursor_value = abs(int(cursor))
-        answer_index = cursor_value % len(answer_values)
-        case_cursor = cursor_value // len(answer_values)
-    else:
-        answer_index = int(
-            resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=f"{namespace}.answer",
-            )
-        ) % len(answer_values)
-        case_cursor = int(
-            resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=f"{namespace}.case",
-            )
-        )
-    answer = answer_values[int(answer_index)]
+    rng = spawn_rng(int(instance_seed), f"{namespace}.answer")
+    answer = uniform_choice(rng, answer_values)
     cases = tuple(answer_cases[answer])
-    case_index = int(case_cursor) % len(cases)
+    rng = spawn_rng(int(instance_seed), f"{namespace}.case.{fmt_measure(answer)}")
+    case = uniform_choice(rng, cases)
+    case_index = cases.index(case)
     support = geometry_selected_probability_map(
         answer_values,
         answer,
         key_fn=key_fn,
         sort_unique=True,
     )
-    return cases[int(case_index)], int(case_index), support
+    return case, int(case_index), support
 
 
 def support_for_answer(

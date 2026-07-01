@@ -8,7 +8,15 @@
 5. Supported `query_id` values: `single`
 
 ## Program Contract
-`sum(min(value(source_to_middle), value(middle_to_target)) for route in routes(source_label, target_label)); scene=sankey; scope=source_to_target_total_flow`
+
+Program: `sum(min(value(source_to_middle), value(middle_to_target)) for route in routes(source_label, target_label)); scene=sankey; scope=source_to_target_total_flow`
+
+Candidate set: the visible flow nodes, links, and labels inside the `source_to_target_total_flow` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `sum` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `point_set` witnesses bound by `see_annotation_contract`. Annotation marks the set of printed value-label centers for the selected route bottlenecks included in the sum. Node boxes, non-bottleneck labels on selected routes, unselected flow labels, flow curves, title, and panel frame are context unless explicitly referenced by the task.
+Query ids: `single`.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.sankey.source_to_target_total_flow.ChartsFlowSankeySourceToTargetTotalFlowPublicTask`
@@ -19,12 +27,12 @@
 
 ## Annotation Contract
 1. Answer schema: `integer_value`
-2. Annotation schema: `bbox_set`
-3. Annotation marks the printed value-label boxes for the two Sankey bands on every route included in the sum.
-4. Node boxes, unselected flow labels, flow curves, title, and panel frame are context unless explicitly referenced by the task.
+2. Annotation schema: `point_set`
+3. Annotation marks the set of printed value-label centers for the selected route bottlenecks included in the sum.
+4. Node boxes, non-bottleneck labels on selected routes, unselected flow labels, flow curves, title, and panel frame are context unless explicitly referenced by the task.
 
 ## Query Details
 
 | Query id | Program argument | Answer schema | Annotation schema |
 |---|---|---|---|
-| `single` | `source_label,target_label` | `integer_value` | `bbox_set` |
+| `single` | `source_label,target_label` | `integer_value` | `point_set` |

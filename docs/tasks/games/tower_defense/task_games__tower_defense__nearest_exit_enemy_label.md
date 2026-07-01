@@ -11,7 +11,14 @@
 
 ## Program Contract
 
-`argmax_label(enemy in labeled_enemies_A_to_F, path_index(enemy)); scene=tower_defense; scope=nearest_exit_enemy_label`
+Program: `argmax_label(enemy in labeled_enemies_A_to_F, path_index(enemy)); scene=tower_defense; scope=nearest_exit_enemy_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `nearest_exit_enemy_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `enemy`, `labeled_enemies_A_to_F`, `path_index`, `tower_defense`, `nearest_exit_enemy_label`.
+Operation: evaluate `argmax_label` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The path has six labeled enemy markers `A` through `F`.

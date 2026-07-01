@@ -29,6 +29,7 @@ class HeatmapTaskPlan:
     dataset: Mapping[str, Any]
     params: Mapping[str, Any]
     answer_gt: TypedValue
+    annotation_type: str
     prompt_artifacts: PromptTraceArtifacts
     relation_params: Mapping[str, Any]
 
@@ -72,6 +73,7 @@ def package_heatmap_plan(
     dataset: Mapping[str, Any],
     params: Mapping[str, Any],
     answer_gt: TypedValue,
+    annotation_type: str = "bbox_set",
     prompt_query_key: str,
     supports_unanswerable: bool,
     relation_params: Mapping[str, Any],
@@ -88,6 +90,7 @@ def package_heatmap_plan(
         dataset=dataset,
         params=dict(params),
         answer_gt=answer_gt,
+        annotation_type=str(annotation_type),
         prompt_artifacts=prompt_artifacts,
         relation_params=relation_params,
     )
@@ -109,6 +112,7 @@ def materialize_heatmap_plan(
     )
     annotation_cell_ids = annotation_cell_ids_from_dataset(plan.dataset)
     annotation_type, annotation_value, projected_annotation = annotation_payload(
+        annotation_type=str(plan.annotation_type),
         annotation_cell_ids=list(annotation_cell_ids),
         rendered=rendered,
     )

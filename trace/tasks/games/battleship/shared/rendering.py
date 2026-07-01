@@ -12,7 +12,7 @@ from trace.tasks.shared.config_defaults import group_default, load_scene_generat
 from trace.tasks.shared.font_assets import get_font_family_record, sample_font_family
 from ....shared.text_rendering import fit_font_to_box
 from ...shared.text import draw_game_text_traced as draw_text_traced
-from .state import Coord, FLEET_SHAPES, BattleshipSample, all_coords, coord_to_cell_id
+from .state import Coord, FLEET_SHAPES, BattleshipSample, BattleshipShapeOption, all_coords, coord_to_cell_id
 from .rules import shape_orientations
 from .defaults import FALLBACK_RENDERING_DEFAULTS
 from ...shared.layout import apply_games_layout_jitter_to_bbox
@@ -395,6 +395,118 @@ def _draw_fleet_panel(
     return icon_bboxes
 
 
+def _draw_shape_option_panel(
+    draw: ImageDraw.ImageDraw,
+    *,
+    panel_bbox: Tuple[float, float, float, float],
+    shape_options: Sequence[BattleshipShapeOption],
+    params: BattleshipRenderParams,
+    theme: BattleshipTheme,
+) -> Tuple[Dict[str, List[float]], Dict[str, List[float]]]:
+    """Draw labeled fleet-shape answer choices and return icon/option bboxes."""
+
+    draw.rounded_rectangle(
+        panel_bbox,
+        radius=12,
+        fill=tuple(int(v) for v in theme.panel_fill_rgb),
+        outline=tuple(int(v) for v in theme.panel_border_rgb),
+        width=3,
+    )
+    title_bbox = (panel_bbox[0] + 14, panel_bbox[1] + 14, panel_bbox[2] - 14, panel_bbox[1] + 58)
+    _draw_centered_label(
+        draw,
+        bbox_px=title_bbox,
+        text="Answer choices",
+        fill=tuple(int(v) for v in theme.panel_text_rgb),
+        max_size_px=int(params.label_font_size_px) + 3,
+        bold=True,
+        font_family=str(params.font_family) or None,
+    )
+
+    shapes_by_id = {str(shape.shape_id): shape for shape in FLEET_SHAPES}
+    icon_bboxes: Dict[str, List[float]] = {}
+    option_bboxes: Dict[str, List[float]] = {}
+    row_count = max(1, len(tuple(shape_options)))
+    content_top = float(panel_bbox[1] + 68)
+    content_bottom = float(panel_bbox[3] - 18)
+    row_gap = float((content_bottom - content_top) / float(row_count))
+    row_height = max(36.0, min(96.0, float(row_gap - 8.0)))
+    option_left = float(panel_bbox[0] + 14)
+    option_right = float(panel_bbox[2] - 14)
+    badge_size = max(24.0, min(42.0, row_height * 0.46))
+    cell_px = max(8, min(int(round(float(params.fleet_icon_cell_px) * 0.9)), int(round(row_height * 0.32))))
+    icon_left = float(option_left + badge_size + 18.0)
+    text_left = float(option_left + badge_size + 128.0)
+
+    for index, option in enumerate(shape_options):
+        row_mid = float(content_top + (index * row_gap) + (0.5 * row_gap))
+        option_bbox = (
+            round(option_left, 3),
+            round(row_mid - (0.5 * row_height), 3),
+            round(option_right, 3),
+            round(row_mid + (0.5 * row_height), 3),
+        )
+        option_bboxes[str(option.label)] = [float(value) for value in option_bbox]
+        draw.rounded_rectangle(
+            option_bbox,
+            radius=10,
+            fill=tuple(int(v) for v in theme.board_fill_rgb) + (182,),
+            outline=tuple(int(v) for v in theme.panel_border_rgb),
+            width=2,
+        )
+        badge_bbox = (
+            round(float(option_bbox[0] + 10.0), 3),
+            round(float(row_mid - (0.5 * badge_size)), 3),
+            round(float(option_bbox[0] + 10.0 + badge_size), 3),
+            round(float(row_mid + (0.5 * badge_size)), 3),
+        )
+        draw.ellipse(
+            badge_bbox,
+            fill=(255, 244, 184, 250),
+            outline=(24, 38, 62, 255),
+            width=2,
+        )
+        _draw_centered_label(
+            draw,
+            bbox_px=badge_bbox,
+            text=str(option.label),
+            fill=(20, 29, 45),
+            max_size_px=max(14, int(round(badge_size * 0.52))),
+            bold=True,
+            font_family=str(params.font_family) or None,
+            required=True,
+        )
+
+        shape = shapes_by_id[str(option.shape_id)]
+        oriented = shape_orientations(shape.offsets)[0]
+        icon_height = float((max(row for row, _col in oriented) - min(row for row, _col in oriented) + 1) * cell_px)
+        icon_top = float(row_mid - (0.5 * icon_height))
+        icon_bbox = _draw_fleet_shape_icon(
+            draw,
+            origin_xy=(icon_left, icon_top),
+            shape_offsets=shape.offsets,
+            cell_px=cell_px,
+            theme=theme,
+        )
+        icon_bboxes[str(option.shape_id)] = [float(value) for value in icon_bbox]
+        label_bbox = (
+            text_left,
+            float(option_bbox[1] + 8.0),
+            float(option_bbox[2] - 10.0),
+            float(option_bbox[3] - 8.0),
+        )
+        _draw_centered_label(
+            draw,
+            bbox_px=label_bbox,
+            text=str(option.display_name),
+            fill=tuple(int(v) for v in theme.panel_text_rgb),
+            max_size_px=int(params.label_font_size_px),
+            bold=False,
+            font_family=str(params.font_family) or None,
+        )
+    return icon_bboxes, option_bboxes
+
+
 def _bbox_union(bboxes: Sequence[Sequence[float]]) -> List[float]:
     """Return the tight axis-aligned union for non-empty bboxes."""
 
@@ -425,6 +537,7 @@ def render_battleship_grid_scene(
     panel_style: GamePanelSceneStyle | None = None,
     show_ship_bodies: bool = True,
     candidate_labels_by_coord: Mapping[Coord, str] | None = None,
+    shape_options: Sequence[BattleshipShapeOption] = tuple(),
 ) -> RenderedBattleshipScene:
     """Render one Battleship grid with visible ships, red hits, misses, and a fleet panel."""
 
@@ -626,12 +739,34 @@ def render_battleship_grid_scene(
                 "point_px": list(point),
             }
         )
-    fleet_icon_bboxes_px = _draw_fleet_panel(
-        draw,
-        panel_bbox=panel_bbox,
-        params=params,
-        theme=theme,
-    )
+    shape_option_bboxes_px: Dict[str, List[float]] = {}
+    if shape_options:
+        fleet_icon_bboxes_px, shape_option_bboxes_px = _draw_shape_option_panel(
+            draw,
+            panel_bbox=panel_bbox,
+            shape_options=tuple(shape_options),
+            params=params,
+            theme=theme,
+        )
+        for option in shape_options:
+            scene_entities.append(
+                {
+                    "entity_id": f"shape_option_{str(option.label)}",
+                    "entity_type": "battleship_shape_option",
+                    "label": str(option.label),
+                    "shape_id": str(option.shape_id),
+                    "display_name": str(option.display_name),
+                    "is_answer": bool(option.is_answer),
+                    "bbox_px": list(shape_option_bboxes_px[str(option.label)]),
+                }
+            )
+    else:
+        fleet_icon_bboxes_px = _draw_fleet_panel(
+            draw,
+            panel_bbox=panel_bbox,
+            params=params,
+            theme=theme,
+        )
     ship_bboxes_px: Dict[str, List[float]] = {}
     for ship_id, coords in ship_cells_by_id.items():
         cell_ids = [coord_to_cell_id((int(row), int(col))) for row, col in coords]
@@ -667,6 +802,7 @@ def render_battleship_grid_scene(
         },
         "ship_bboxes_px": dict(ship_bboxes_px),
         "fleet_icon_bboxes_px": dict(fleet_icon_bboxes_px),
+        "shape_option_bboxes_px": dict(shape_option_bboxes_px),
         "show_ship_bodies": bool(show_ship_bodies),
         "candidate_label_cell_ids": dict(candidate_label_cell_ids),
         "candidate_label_bboxes_px": dict(candidate_label_bboxes_px),
@@ -752,8 +888,9 @@ def render_battleship_sample(
         style_variant=str(style_variant),
         params=render_params,
         panel_style=panel_style,
-        show_ship_bodies=not bool(sample.candidate_options),
+        show_ship_bodies=not bool(sample.candidate_options or sample.shape_options),
         candidate_labels_by_coord=candidate_labels_by_coord,
+        shape_options=sample.shape_options,
     )
     image, post_noise_meta = apply_post_image_noise(
         rendered_scene.image,

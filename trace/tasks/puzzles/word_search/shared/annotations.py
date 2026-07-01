@@ -26,54 +26,30 @@ def bbox_sequence_for_cells(
     return annotation_gt, projected_annotation, witness_symbolic
 
 
-def bbox_set_for_cells(
-    item_bbox_map: dict[str, list[float]],
-    cells: tuple[Cell, ...],
-) -> tuple[TypedValue, dict[str, object], dict[str, object]]:
-    """Return unordered bbox-set annotation for countable grid cells."""
-
-    bboxes = [
-        [round(float(value), 3) for value in item_bbox_map[cell_key(cell)]]
-        for cell in cells
-    ]
-    annotation_gt = TypedValue(type="bbox_set", value=list(bboxes))
-    projected_annotation = {
-        "type": "bbox_set",
-        "bbox_set": list(bboxes),
-        "value": list(bboxes),
-    }
-    witness_symbolic = {"type": "bbox_set", "value": list(bboxes)}
-    return annotation_gt, projected_annotation, witness_symbolic
-
-
-def segment_set_for_cell_pairs(
+def segment_for_cell_pair(
     cell_centers_px: dict[str, tuple[float, float]],
-    cell_pairs: tuple[tuple[Cell, Cell], ...],
+    cell_pair: tuple[Cell, Cell],
 ) -> tuple[TypedValue, dict[str, object], dict[str, object]]:
-    """Return unordered segment-set annotation from start/end cell centers."""
+    """Return one segment annotation from start/end cell centers."""
 
-    segments: list[list[list[float]]] = []
-    for start_cell, end_cell in cell_pairs:
-        start = cell_centers_px[cell_key(start_cell)]
-        end = cell_centers_px[cell_key(end_cell)]
-        segments.append(
-            [
-                [round(float(start[0]), 3), round(float(start[1]), 3)],
-                [round(float(end[0]), 3), round(float(end[1]), 3)],
-            ]
-        )
-    annotation_gt = TypedValue(type="segment_set", value=list(segments))
+    start_cell, end_cell = cell_pair
+    start = cell_centers_px[cell_key(start_cell)]
+    end = cell_centers_px[cell_key(end_cell)]
+    segment = [
+        [round(float(start[0]), 3), round(float(start[1]), 3)],
+        [round(float(end[0]), 3), round(float(end[1]), 3)],
+    ]
+    annotation_gt = TypedValue(type="segment", value=list(segment))
     projected_annotation = {
-        "type": "segment_set",
-        "segment_set": list(segments),
-        "value": list(segments),
+        "type": "segment",
+        "segment": list(segment),
+        "value": list(segment),
     }
-    witness_symbolic = {"type": "segment_set", "value": list(segments)}
+    witness_symbolic = {"type": "segment", "value": list(segment)}
     return annotation_gt, projected_annotation, witness_symbolic
 
 
 __all__ = [
     "bbox_sequence_for_cells",
-    "bbox_set_for_cells",
-    "segment_set_for_cell_pairs",
+    "segment_for_cell_pair",
 ]

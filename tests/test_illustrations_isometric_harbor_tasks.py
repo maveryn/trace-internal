@@ -35,6 +35,11 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
     assert 0 <= float(bbox[1]) < float(bbox[3]) <= float(height)
 
 
+def _assert_bbox_min_side(bbox: list[float], *, min_side: float = 24.0) -> None:
+    assert float(bbox[2]) - float(bbox[0]) >= float(min_side)
+    assert float(bbox[3]) - float(bbox[1]) >= float(min_side)
+
+
 def test_isometric_harbor_renderer_is_deterministic_and_profile_safe() -> None:
     for width, height, profile, expected_grid in (
         (1200, 800, "landscape", (16, 12)),
@@ -61,7 +66,7 @@ def test_isometric_harbor_renderer_is_deterministic_and_profile_safe() -> None:
         assert first.trace["renderer_id"] == RENDERER_ID
         assert first.trace["renderer_style"] == "isometric_pixel_harbor"
         assert first.trace["theme_id"] == "isometric_harbor_shoreline_dock"
-        assert first.trace["background_rgb"] == [207, 220, 190]
+        assert first.trace["background_rgb"] == first.trace["background_tone_rgb"]
         assert first.trace["projection"]["type"] == "2:1_isometric"
         assert (int(first.trace["grid_cols"]), int(first.trace["grid_rows"])) == expected_grid
         assert first.trace["boat_counts_by_side"] == {"left": 5, "right": 0}
@@ -234,6 +239,7 @@ def test_isometric_harbor_boat_mooring_status_count_contract() -> None:
         assert len(trace["projected_annotation"]["bbox_set"]) == int(target_count)
         for bbox in out.annotation_gt.value:
             _assert_bbox_inside_canvas(list(bbox), width=out.image.size[0], height=out.image.size[1])
+            _assert_bbox_min_side(list(bbox))
 
 
 def test_isometric_harbor_boat_heading_status_count_contract() -> None:

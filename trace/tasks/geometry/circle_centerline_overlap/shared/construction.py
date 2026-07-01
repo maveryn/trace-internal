@@ -5,7 +5,8 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Any, Mapping, Sequence
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import integer_range_choice, uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.shared.fixed_query import geometry_selected_probability_map
 
 from .state import BOUNDARY_PAIRS, BOUNDARY_TARGET_ROLES, LABEL_MODES, CircleOverlapCase
@@ -30,8 +31,9 @@ def _select_int_inclusive(
     high_int = int(high)
     if high_int < low_int:
         raise ValueError(f"invalid integer range: {low_int}..{high_int}")
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return low_int + (int(index) % (high_int - low_int + 1))
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    selected, _probabilities = integer_range_choice(rng, low_int, high_int)
+    return int(selected)
 
 
 def _max_overlap_for_pair(left_radius: int, right_radius: int) -> int:
@@ -218,19 +220,11 @@ def _select_case_by_answer(
         if answer not in answer_cases:
             raise ValueError(f"target_answer={answer} is not supported")
     else:
-        answer_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}.answer",
-        ) % len(answer_values)
-        answer = int(answer_values[int(answer_index)])
+        rng = spawn_rng(int(instance_seed), f"{namespace}.answer")
+        answer = int(uniform_choice(rng, answer_values))
     cases = tuple(answer_cases[int(answer)])
-    case_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.case.{answer}",
-    ) % len(cases)
-    case = cases[int(case_index)]
+    rng = spawn_rng(int(instance_seed), f"{namespace}.case.{answer}")
+    case = uniform_choice(rng, cases)
     return case, {case.key: 1.0}
 
 
@@ -302,8 +296,8 @@ def select_label_mode(
         if value not in LABEL_MODES:
             raise ValueError(f"label_mode must be one of {LABEL_MODES}")
         return value, geometry_selected_probability_map(LABEL_MODES, selected=value)
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    value = LABEL_MODES[int(index) % len(LABEL_MODES)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    value = uniform_choice(rng, LABEL_MODES)
     return str(value), geometry_selected_probability_map(LABEL_MODES)
 
 
@@ -321,8 +315,8 @@ def select_boundary_pair(
         if value not in BOUNDARY_PAIRS:
             raise ValueError(f"boundary_pair must be one of {BOUNDARY_PAIRS}")
         return value, geometry_selected_probability_map(BOUNDARY_PAIRS, selected=value)
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    value = BOUNDARY_PAIRS[int(index) % len(BOUNDARY_PAIRS)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    value = uniform_choice(rng, BOUNDARY_PAIRS)
     return str(value), geometry_selected_probability_map(BOUNDARY_PAIRS)
 
 
@@ -340,8 +334,8 @@ def select_boundary_target_role(
         if value not in BOUNDARY_TARGET_ROLES:
             raise ValueError(f"boundary_target_role must be one of {BOUNDARY_TARGET_ROLES}")
         return value, geometry_selected_probability_map(BOUNDARY_TARGET_ROLES, selected=value)
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    value = BOUNDARY_TARGET_ROLES[int(index) % len(BOUNDARY_TARGET_ROLES)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    value = uniform_choice(rng, BOUNDARY_TARGET_ROLES)
     return str(value), geometry_selected_probability_map(BOUNDARY_TARGET_ROLES)
 
 

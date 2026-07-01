@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from trace.core.sampling import uniform_choice_with_probabilities
 from trace.core.seed import hash64, spawn_rng
 from trace.tasks.charts.candlestick.shared.defaults import GENERATION_DEFAULTS, SCENE_NAMESPACE
 from trace.tasks.charts.candlestick.shared.state import Candle
-from trace.tasks.charts.shared.labeled_chart_common import sample_chart_labels
+from trace.tasks.charts.shared.label_assets import sample_chart_labels
 from trace.tasks.shared.config_defaults import resolve_required_int_bounds
 
 
@@ -67,7 +68,7 @@ def sample_candles(params: Mapping[str, Any], *, instance_seed: int) -> tuple[Ca
         candles: list[Candle] = []
         for index in range(int(candle_count)):
             body = int(body_sizes[index])
-            direction = "up" if ((index + int(rng.randrange(2))) % 2 == 0) else "down"
+            direction = str(rng.choice(("up", "down")))
             if index == 0:
                 direction = "up"
             if index == 1:
@@ -133,15 +134,11 @@ def select_semantic_branch(
         branch_params = dict(params)
         branch_params.pop(str(branch_key), None)
         return selected, {value: (1.0 if value == selected else 0.0) for value in support}, branch_params
-    sample_cursor = params.get("_sample_cursor")
-    if sample_cursor is not None:
-        cursor = abs(int(sample_cursor))
-        selected = support[cursor % len(support)]
-        branch_params = dict(params)
-        branch_params["_sample_cursor"] = cursor // len(support)
-        return selected, {value: 1.0 / float(len(support)) for value in support}, branch_params
-    selected = support[int(hash64(int(instance_seed), str(namespace))) % len(support)]
-    return selected, {value: 1.0 / float(len(support)) for value in support}, dict(params)
+    selected, probabilities = uniform_choice_with_probabilities(
+        spawn_rng(int(instance_seed), str(namespace)),
+        support,
+    )
+    return str(selected), dict(probabilities), dict(params)
 
 
 __all__ = ["sample_candles", "select_semantic_branch"]

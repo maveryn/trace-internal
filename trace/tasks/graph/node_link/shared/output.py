@@ -4,9 +4,14 @@ from __future__ import annotations
 
 from typing import Any
 
-def node_entities(rendered_scene: Any) -> list[dict[str, Any]]:
+def node_entities(rendered_scene: Any, sample: Any | None = None) -> list[dict[str, Any]]:
     """Return generic rendered-node entities for trace inspection."""
 
+    removed_node_label = str(getattr(sample, "removed_node_label", ""))
+    post_removal_isolated_labels = {
+        str(label)
+        for label in getattr(sample, "target_labels", ())
+    } if hasattr(sample, "removed_node_label") else set()
     return [
         {
             "entity_id": f"node_{node.label}",
@@ -21,6 +26,8 @@ def node_entities(rendered_scene: Any) -> list[dict[str, Any]]:
             "node_color_name": str(node.color_name) if node.color_name is not None else None,
             "fill_rgb": list(node.fill_rgb) if node.fill_rgb is not None else None,
             "border_rgb": list(node.border_rgb) if node.border_rgb is not None else None,
+            "is_removed_query_node": bool(removed_node_label and str(node.label) == removed_node_label),
+            "is_post_removal_isolated": bool(str(node.label) in post_removal_isolated_labels),
         }
         for node in rendered_scene.nodes
     ]

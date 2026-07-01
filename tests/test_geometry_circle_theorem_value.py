@@ -26,9 +26,12 @@ from trace.tasks.geometry.circle_theorem.multi_step_angle_value import GeometryC
 from trace.tasks.geometry.circle_theorem.secant_secant_length_value import GeometryCircleSecantSecantLengthValueTask
 from trace.tasks.geometry.circle_theorem.tangent_chord_angle_value_tangent_chord_angle_from_arc import GeometryCircleTangentChordAngleFromArcTask
 from trace.tasks.geometry.circle_theorem.tangent_chord_angle_value_tangent_chord_angle_from_inscribed import GeometryCircleTangentChordAngleFromInscribedTask
-from trace.tasks.geometry.circle_theorem.tangent_radius_right_triangle_length_value import (
-    GeometryCircleTangentRadiusRightTriangleLengthValueTask,
-    _DEFAULT_TRIPLES,
+from trace.tasks.geometry.circle_theorem.radius_from_external_distance_and_angle_value import (
+    GeometryCircleRadiusFromExternalDistanceAndAngleValueTask,
+)
+from trace.tasks.geometry.circle_theorem.shared.construction import _DEFAULT_TRIPLES
+from trace.tasks.geometry.circle_theorem.tangent_length_from_radius_and_external_distance_value import (
+    GeometryCircleTangentLengthFromRadiusAndExternalDistanceValueTask,
 )
 from trace.tasks.geometry.circle_theorem.tangent_secant_length_value import GeometryCircleTangentSecantLengthValueTask
 from trace.tasks.geometry.circle_theorem.shared.state import (
@@ -135,6 +138,8 @@ QUERY_TASK_CLASSES = {
     "external_two_secants_angle_from_arcs": GeometryCircleExternalSecantAngleValueTask,
     "opposite_angle_supplement": GeometryCircleCyclicQuadrilateralOppositeAngleValueTask,
     "exterior_angle_from_opposite_interior": GeometryCircleCyclicQuadrilateralExteriorAngleValueTask,
+    "radius_from_external_distance_and_angle": GeometryCircleRadiusFromExternalDistanceAndAngleValueTask,
+    "tangent_length_from_radius_and_external_distance": GeometryCircleTangentLengthFromRadiusAndExternalDistanceValueTask,
 }
 
 
@@ -236,7 +241,7 @@ def test_circle_chord_length_from_radius_angle_contract(
     assert out.answer_gt.type == "number"
     assert float(out.answer_gt.value) == pytest.approx(expected_answer)
     assert execution["answer_type"] == "number"
-    assert execution["answer_rounding"] == "nearest_tenth"
+    assert execution["answer_rounding"] == "one_decimal"
     assert execution["central_angle_degrees"] == expected_central
     assert execution["answer_value"] == pytest.approx(expected_answer)
     assert out.annotation_gt.type == "point_map"
@@ -283,13 +288,14 @@ def test_circle_chord_length_from_radius_angle_contract(
         ),
     ),
 )
-def test_circle_tangent_radius_right_triangle_length_contract(
+def test_circle_tangent_radius_tasks_contract(
     params: dict[str, object],
     expected_answer: float,
     expected_canonical_segment: str,
     expected_angle: int | None,
 ) -> None:
-    out = GeometryCircleTangentRadiusRightTriangleLengthValueTask().generate(
+    out = _generate_for_query(
+        str(params["query_id"]),
         29137,
         params=params,
         max_attempts=40,
@@ -311,7 +317,7 @@ def test_circle_tangent_radius_right_triangle_length_contract(
     assert out.answer_gt.type == "number"
     assert float(out.answer_gt.value) == pytest.approx(expected_answer)
     assert execution["answer_type"] == "number"
-    assert execution["answer_rounding"] == "nearest_tenth"
+    assert execution["answer_rounding"] == "one_decimal"
     assert execution["canonical_answer_segment"] == expected_canonical_segment
     assert execution["answer_value"] == pytest.approx(expected_answer)
     assert execution["angle_degrees"] == expected_angle
@@ -947,15 +953,19 @@ def test_geometry_circle_scene_config_keeps_render_and_prompt_defaults_only() ->
         assert str(chord_prompt["answer_hint_number"]).strip()
         assert str(chord_prompt["annotation_hint_chord_length_points"]).strip()
 
-    tangent_radius_generation, _, tangent_radius_prompt = (
-        split_generation_rendering_prompt_defaults(
-            cfg,
-            task_id="task_geometry__circle_theorem__tangent_radius_right_triangle_length_value",
+    for tangent_radius_task_id in (
+        "task_geometry__circle_theorem__radius_from_external_distance_and_angle_value",
+        "task_geometry__circle_theorem__tangent_length_from_radius_and_external_distance_value",
+    ):
+        tangent_radius_generation, _, tangent_radius_prompt = (
+            split_generation_rendering_prompt_defaults(
+                cfg,
+                task_id=tangent_radius_task_id,
+            )
         )
-    )
-    assert tangent_radius_generation == {}
-    assert str(tangent_radius_prompt["answer_hint_tangent_radius_number"]).strip()
-    assert str(tangent_radius_prompt["annotation_hint_tangent_radius_points"]).strip()
+        assert tangent_radius_generation == {}
+        assert str(tangent_radius_prompt["answer_hint_tangent_radius_number"]).strip()
+        assert str(tangent_radius_prompt["annotation_hint_tangent_radius_points"]).strip()
 
 
 def test_diameter_chord_prompt_names_roles_without_readout_phrase() -> None:

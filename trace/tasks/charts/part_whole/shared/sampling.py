@@ -3,22 +3,18 @@
 from __future__ import annotations
 
 import colorsys
-import itertools
 from typing import Any, Mapping, Sequence
 
 from trace.core.seed import spawn_rng
 from trace.tasks.charts.shared.label_assets import resolve_chart_category_labels
-from trace.tasks.charts.shared.labeled_chart_common import sample_composition_with_sum
-from trace.tasks.shared.config_defaults import group_default
+from trace.tasks.charts.shared.labeled_chart_composition import sample_composition_with_sum
 
 from .defaults import (
     GEN_DEFAULTS,
     ORDER_DIRECTIONS,
-    POSITIONAL_RELATIONS,
     SAMPLING_NAMESPACE,
     balanced_int,
     configured_int_values,
-    format_offset_list,
     format_quoted,
     resolve_count_bounds,
 )
@@ -234,36 +230,6 @@ def sample_chart_order_span(
     }
 
 
-def sample_total_count(
-    *,
-    params: Mapping[str, Any],
-    count_params: Mapping[str, Any],
-    instance_seed: int,
-) -> int:
-    """Sample a displayed total count compatible with integer percentage answers."""
-
-    configured = params.get("part_whole_total_values", group_default(GEN_DEFAULTS, "part_whole_total_values", None))
-    if configured is None:
-        configured = (600, 800, 1000, 1200, 1500, 1800, 2000, 2400, 3000)
-    values = [int(value) for value in configured]
-    if not values or any(int(value) <= 0 for value in values):
-        raise ValueError("part_whole_total_values must contain positive integers")
-    if any(int(value) % 100 != 0 for value in values):
-        raise ValueError("part_whole_total_values must be multiples of 100 so count answers are integral")
-    return balanced_int(
-        values,
-        params=count_params,
-        instance_seed=int(instance_seed),
-        namespace=f"{SAMPLING_NAMESPACE}.total_count",
-    )
-
-
-def count_from_share(total_count: int, share_value: int) -> int:
-    """Convert an integer percent share into an integer count."""
-
-    return int((int(total_count) * int(share_value)) // 100)
-
-
 def sample_subset_denominator(
     *,
     category_count: int,
@@ -443,82 +409,3 @@ def sample_adjacent_transfer(
             "calculation": "adjacent_chart_order_absolute_gap_after_share_transfer",
         },
     )
-
-
-def sample_positional_segments(
-    categories: Sequence[CategorySpec],
-    *,
-    relation: str,
-    direction: str,
-    params: Mapping[str, Any],
-    count_params: Mapping[str, Any],
-    instance_seed: int,
-) -> tuple[tuple[CategorySpec, ...], tuple[str, ...], dict[str, Any]]:
-    """Select target segments from a circular relation around an anchor."""
-
-    if str(relation) not in POSITIONAL_RELATIONS:
-        raise ValueError("unsupported positional relation")
-    if str(direction) not in ORDER_DIRECTIONS:
-        raise ValueError("unsupported positional direction")
-    category_count = len(categories)
-    step = 1 if str(direction) == "clockwise" else -1
-    relation_rng = spawn_rng(int(instance_seed), f"{SAMPLING_NAMESPACE}.positional.{relation}")
-    anchor_index = int(relation_rng.randrange(0, int(category_count)))
-    anchor_label = str(categories[int(anchor_index)].label)
-    if str(relation) == "anchor_offset_sum":
-        feasible_offsets = [
-            offsets
-            for offsets in itertools.combinations(range(1, int(category_count)), 2)
-            if int(offsets[1]) - int(offsets[0]) >= 2
-        ]
-        offset_index = balanced_int(
-            range(0, len(feasible_offsets)),
-            params=count_params,
-            instance_seed=int(instance_seed),
-            namespace=f"{SAMPLING_NAMESPACE}.positional.anchor_offsets",
-        )
-        selected_offsets = tuple(int(offset) for offset in feasible_offsets[int(offset_index)])
-        selected_indices = tuple(
-            (int(anchor_index) + (int(step) * int(offset))) % int(category_count)
-            for offset in selected_offsets
-        )
-        selected_categories = tuple(categories[int(index)] for index in selected_indices)
-        instruction = (
-            f"Starting at category \"{anchor_label}\" and moving {direction}, use the segments "
-            f"{format_offset_list(selected_offsets)} away from that anchor. Do not include category \"{anchor_label}\"."
-        )
-        extras = {
-            "anchor_category": str(anchor_label),
-            "anchor_index": int(anchor_index),
-            "selected_offsets": [int(offset) for offset in selected_offsets],
-            "offset_list_text": format_offset_list(selected_offsets),
-            "offset_index": int(offset_index),
-        }
-    else:
-        opposite_index = (int(anchor_index) + (int(category_count) // 2)) % int(category_count)
-        neighbor_index = (int(opposite_index) + int(step)) % int(category_count)
-        selected_indices = (int(opposite_index), int(neighbor_index))
-        selected_categories = tuple(categories[int(index)] for index in selected_indices)
-        instruction = (
-            f"Find the segment opposite category \"{anchor_label}\", then also use the segment immediately "
-            f"{direction} from that opposite segment."
-        )
-        extras = {
-            "anchor_category": str(anchor_label),
-            "anchor_index": int(anchor_index),
-            "opposite_index": int(opposite_index),
-            "opposite_category": str(categories[int(opposite_index)].label),
-            "neighbor_index": int(neighbor_index),
-            "neighbor_category": str(categories[int(neighbor_index)].label),
-        }
-    extras.update(
-        {
-            "category_list": [str(category.label) for category in selected_categories],
-            "selected_indices": [int(index) for index in selected_indices],
-            "position_relation": str(relation),
-            "positional_instruction": str(instruction),
-            "chart_order_direction": str(direction),
-            "calculation": "select_segments_by_circular_position_then_sum_shares",
-        }
-    )
-    return tuple(selected_categories), (str(anchor_label),), dict(extras)

@@ -19,6 +19,7 @@ class ChartsThreeDBarSeriesCategoryScopeTotalValueTask:
     domain = DOMAIN
     objective_contract = 'series_category_scope_total_value'
     supported_query_ids = (ALL_CATEGORIES_QUERY_ID, INTERVAL_QUERY_ID)
+    default_dataset_enabled = True
 
     def _build_plan(self, instance_seed, params, selected_query_id):
         """Build one series-scope total plan for the selected all-category or interval branch."""

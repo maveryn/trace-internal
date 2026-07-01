@@ -328,7 +328,7 @@ CANDIDATE_BACKLOG: list[dict[str, Any]] = [
             "task_pages__infographic__sum_named_metrics_value",
             "task_pages__infographic__section_extrema_arithmetic_value",
             "task_pages__infographic__section_ranked_total_label",
-            "task_pages__infographic__value_for_named_item",
+            "task_pages__infographic__metric_card_field_lookup",
         ],
         "annotation": "card/section bboxes, icon arrays, metric ids",
         "why": (

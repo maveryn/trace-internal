@@ -7,8 +7,9 @@ from typing import Any, Mapping, Sequence
 
 from PIL import Image, ImageDraw
 
+from trace.core.seed import spawn_rng
+from trace.core.sampling import uniform_choice_with_probabilities
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.illustrations.shared.canvas_profiles import (
     CANVAS_PROFILE_LANDSCAPE,
     CANVAS_PROFILE_PORTRAIT,
@@ -138,14 +139,20 @@ def resolve_tactical_map_render_params(
             raise ValueError(f"canvas_profile must be one of {support}")
         probabilities = {profile_id: 1.0}
     else:
-        if params.get("_sample_cursor") is not None:
-            index = abs(int(params["_sample_cursor"])) % len(support)
-        elif instance_seed is not None:
-            index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace)) % len(support)
+        if instance_seed is None:
+            profile_id = str(support[0])
+            probabilities = _uniform_probability_map(support)
         else:
-            index = 0
-        profile_id = str(support[int(index)])
-        probabilities = _uniform_probability_map(support)
+            sample_namespace = str(namespace)
+            if params.get("_sample_cursor") is not None:
+                sample_namespace = f"{sample_namespace}:{int(params['_sample_cursor'])}"
+            rng = spawn_rng(int(instance_seed), sample_namespace)
+            profile_id, probabilities = uniform_choice_with_probabilities(
+                rng,
+                support,
+                sort_keys=False,
+            )
+            profile_id = str(profile_id)
     cols, rows = TACTICAL_PROFILE_GRIDS[profile_id]
     return {
         "canvas_profile": str(profile_id),

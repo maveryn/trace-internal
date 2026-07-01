@@ -28,6 +28,7 @@ def resolve_named_path_render_params(
     )
     for key in (
         "path_stroke_width_px",
+        "path_line_alpha",
         "path_stop_radius_px",
         "path_horizontal_margin_px",
         "path_vertical_margin_px",
@@ -71,8 +72,6 @@ def resolve_named_path_render_params(
         role="named_path_candidate_label_text",
         surface_rgbs=(
             tuple(int(value) for value in render_params["candidate_label_background_rgb"]),
-            tuple(int(value) for value in render_params["panel_fill_rgb"]),
-            tuple(int(value) for value in render_params["background_color_rgb"]),
         ),
         preferred_rgbs=(tuple(int(value) for value in render_params["candidate_label_color_rgb"]),),
     )
@@ -89,8 +88,6 @@ def resolve_named_path_render_params(
         role="named_path_endpoint_label_text",
         surface_rgbs=(
             tuple(int(value) for value in render_params["endpoint_label_background_rgb"]),
-            tuple(int(value) for value in render_params["panel_fill_rgb"]),
-            tuple(int(value) for value in render_params["background_color_rgb"]),
         ),
         preferred_rgbs=(tuple(int(value) for value in render_params["endpoint_label_color_rgb"]),),
     )
@@ -112,6 +109,7 @@ def named_path_style_trace(render_params: Mapping[str, Any]) -> Dict[str, Any]:
     return {
         "path_stroke_width_px": int(render_params["path_stroke_width_px"]),
         "path_color_rgb": [int(value) for value in render_params["path_color_rgb"]],
+        "path_line_alpha": int(render_params["path_line_alpha"]),
         "path_stop_radius_px": int(render_params["path_stop_radius_px"]),
         "candidate_label_font_size_px": int(render_params["candidate_label_font_size_px"]),
         "candidate_label_color_rgb": [int(value) for value in render_params["candidate_label_color_rgb"]],

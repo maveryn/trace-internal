@@ -5,11 +5,6 @@ from trace.tasks.registry import create_task
 
 
 TASK_QUERIES = {
-    "task_geometry__special_quadrilateral__diagonal_angle_value": (
-        "rhombus_vertex_angle_bisected_by_diagonal",
-        "kite_vertex_angle_bisected_by_symmetry_diagonal",
-        "rhombus_diagonal_perpendicular_complement",
-    ),
     "task_geometry__special_quadrilateral__algebraic_angle_value": (
         "parallelogram_opposite_angle_expression",
         "parallelogram_consecutive_angle_expression",
@@ -33,6 +28,12 @@ def _generate(task_id: str, query_id: str, seed: int = 20260605):
 def test_special_quadrilateral_tasks_are_registered() -> None:
     for task_id in TASK_QUERIES:
         assert create_task(task_id).task_id == task_id
+    try:
+        create_task("task_geometry__special_quadrilateral__diagonal_angle_value")
+    except KeyError:
+        pass
+    else:
+        raise AssertionError("retired diagonal-angle task is still registered")
 
 
 def test_special_quadrilateral_queries_emit_point_map_annotation() -> None:
@@ -87,7 +88,7 @@ def test_special_quadrilateral_generation_is_deterministic() -> None:
 
 
 def test_special_quadrilateral_rejects_unsupported_query() -> None:
-    task = create_task("task_geometry__special_quadrilateral__diagonal_angle_value")
+    task = create_task("task_geometry__special_quadrilateral__algebraic_angle_value")
     try:
         task.generate(20260605, params={"query_id": "__bad__"}, max_attempts=3)
     except ValueError as exc:

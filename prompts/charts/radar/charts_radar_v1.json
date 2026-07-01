@@ -25,7 +25,7 @@
       "highlighted_metric_threshold_panel_count": [
         "For the highlighted metric \"{metric_label}\", how many panels have values above threshold {threshold_value}?",
         "Count the panels where the highlighted spoke \"{metric_label}\" is greater than {threshold_value}.",
-        "Across the radar panels, how many highlighted-metric vertices exceed threshold {threshold_value}?",
+                "Across the radar panels, how many profile vertices for spoke \"{metric_label}\" exceed threshold {threshold_value}?",
         "Using highlighted metric \"{metric_label}\", count the panels with profile values above {threshold_value}.",
         "How many panels are beyond ring {threshold_value} on the highlighted spoke \"{metric_label}\"?"
       ],
@@ -83,7 +83,7 @@
     },
     "query:profile_advantage_count": {
       "answer_hint": "set \"answer\" to the count as an integer",
-      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is [[x1, y1], [x2, y2]], using the two named profile points for one counted metric; use [] if no metrics match",
+      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the two named profile points for one counted metric; use [] if no metrics match",
       "json_example": "{\"annotation\":[[[650,244],[622,270]],[[744,430],[708,408]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },

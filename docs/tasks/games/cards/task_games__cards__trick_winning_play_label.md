@@ -10,7 +10,15 @@
 7. Program schema: `label(select(candidate_cards, would_win_trick(played_cards, candidate_card, led_suit, trump_suit))); scene=cards; scope=trick_winning_play_label`
 
 ## Program Contract
-- `label(select(candidate_cards, would_win_trick(played_cards, candidate_card, led_suit, trump_suit))); scene=cards; scope=trick_winning_play_label`
+
+Program: `label(select(candidate_cards, would_win_trick(played_cards, candidate_card, led_suit, trump_suit))); scene=cards; scope=trick_winning_play_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `trick_winning_play_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `select`, `candidate_cards`, `would_win_trick`, `played_cards`, `candidate_card`, `led_suit`, `trump_suit`, `cards`, `trick_winning_play_label`.
+Operation: evaluate `label` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 2. Prompt wording comes from `prompts/games/cards/games_cards_v1.json`.

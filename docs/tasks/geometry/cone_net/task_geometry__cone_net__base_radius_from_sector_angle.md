@@ -3,9 +3,10 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `cone_net`
-5. Query id: `single`
-6. Answer schema: `decimal_value_1dp`
-7. Annotation schema: `point_map`
+3. Query id: `single`
+4. Answer schema: `number`
+5. Answer precision: `one_decimal`
+6. Annotation schema: `point_map`
 
 ## Program Contract
 - `derive_geometry_metric(visible_cone_net_measurements, derivation_rule=base_radius_from_sector_angle, output_role=radius_length); scene=cone_net; scope=base_radius_from_sector_angle`

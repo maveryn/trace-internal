@@ -22,14 +22,6 @@ generation:
     - 11
     - 13
   task_overrides:
-    task_games__pacman__path_pellet_count:
-      balanced_target_answer_sampling: true
-      path_pellet_count_support:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
     task_games__pacman__pellet_count_before_ghost:
       balanced_target_answer_sampling: true
       pellet_count_before_ghost_support:

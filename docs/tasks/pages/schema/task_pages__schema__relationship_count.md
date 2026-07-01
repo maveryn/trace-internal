@@ -1,11 +1,21 @@
-# task_pages__schema__relationship_count
+# `task_pages__schema__relationship_count`
 
 ## Identity
-- domain: `pages`
-- scene_id: `schema`
-- scene_id: `schema`
+- Domain: `pages`
+- Scene id: `schema`
+- Task id: `task_pages__schema__relationship_count`
 
-## Contract
-Counts all schema relationship lines in the rendered database schema.
+## Program Contract
+1. Program schema: `schema_relationship_count(relationship_lines) -> relationship_count; scene=schema; scope=relationship_count`
+2. Scene: `schema`
+3. Scope: one rendered database schema diagram with table boxes, field rows, relationship lines, labels, and cardinality markers.
+4. Supported `query_id` values: `single`
+5. Answer schema: `integer`
+6. Annotation schema: `segment_set`
+7. Annotation roles: unordered visible relationship-line segments for every counted relationship.
+8. Query arguments: fixed total relationship-line count; old source branch is recorded as prompt/source metadata.
+9. Render arguments: table labels, field labels, key badges, relationship layout, scene variant, style variant, render dimensions, and post-render noise.
 
-Annotation is a `segment_set`; each segment is `[[x1, y1], [x2, y2]]` using the endpoints of one counted relationship line. Relationship-line bboxes, label bboxes, and cardinality-marker bboxes remain render metadata for audit.
+Each annotation segment is the visible endpoint-to-endpoint line witness for one
+counted relationship. Relationship labels and cardinality markers are context,
+not separate count witnesses.

@@ -111,7 +111,7 @@
     "minigolf_bank_rule_text": "A shot travels straight and bounces off course walls like a mirror before continuing.",
     "annotation_hint_first_obstacle_label": "set \"annotation\" to one [x, y] pixel point at the center of the first labeled obstacle hit by the extended cue",
     "answer_hint_first_obstacle_label": "set \"answer\" to the selected obstacle label as a string",
-    "annotation_hint_shot_path_label": "set \"annotation\" to one path segment [[x1, y1], [x2, y2]], using the two endpoints of the selected visible dashed cue from the ball outward",
+    "annotation_hint_shot_path_label": "set \"annotation\" to one path segment using two pixel-point endpoints [x, y] in [[x0, y0], [x1, y1]] form, matching the endpoints of the selected visible dashed cue from the ball outward",
     "answer_hint_shot_path_label": "set \"answer\" to the selected numbered shot label as a string"
   }
 }

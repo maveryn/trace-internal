@@ -5,8 +5,9 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence
 
 from trace.core.scene_config import get_scene_defaults
-from trace.tasks.charts.shared.labeled_chart_common import LabeledChartDefaults
-from trace.tasks.charts.shared.sampling_defaults import balanced_int_from_support, resolve_chart_axis_variant
+from trace.tasks.charts.shared.balanced_sampling import balanced_int_from_support
+from trace.tasks.charts.shared.labeled_chart_defaults import LabeledChartDefaults
+from trace.tasks.charts.shared.labeled_chart_variants import resolve_chart_axis_variant
 from trace.tasks.charts.shared.visual_defaults import load_chart_scene_background_defaults, load_chart_scene_noise_defaults
 from trace.tasks.shared.config_defaults import group_default, split_scene_generation_rendering_prompt_defaults
 
@@ -17,7 +18,6 @@ SCENE_NAMESPACE = "charts_part_whole"
 SAMPLING_NAMESPACE = "charts_part_whole"
 SUPPORTED_SCENE_VARIANTS: tuple[str, ...] = ("pie", "donut")
 ORDER_DIRECTIONS: tuple[str, ...] = ("clockwise", "counterclockwise")
-POSITIONAL_RELATIONS: tuple[str, ...] = ("anchor_offset_sum", "opposite_neighbor_sum")
 
 DEFAULTS = LabeledChartDefaults(canvas_width=1280, canvas_height=920)
 SCENE_DEFAULTS = get_scene_defaults(DOMAIN, SCENE_ID)
@@ -119,17 +119,6 @@ def format_quoted(values: Sequence[str]) -> str:
     """Format visible category labels for prompt slots."""
 
     return ", ".join(f'"{str(value)}"' for value in values)
-
-
-def format_offset_list(values: Sequence[int]) -> str:
-    """Format circular offsets as a compact English list."""
-
-    phrases = [f"{int(value)} segment{'s' if int(value) != 1 else ''}" for value in values]
-    if not phrases:
-        return ""
-    if len(phrases) == 1:
-        return str(phrases[0])
-    return f"{', '.join(phrases[:-1])}, and {phrases[-1]}"
 
 
 def chart_order_phrase(scene_variant: str) -> str:

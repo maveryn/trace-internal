@@ -23,8 +23,6 @@ def dynamic_slots(*, dataset: ScatterClusterDataset) -> dict[str, Any]:
             else "a scatter plot with several colored point clusters and a matching legend"
         ),
         "trend_direction_phrase": str(trace.get("trend_direction", "")),
-        "reference_cluster_label": str(trace.get("reference_cluster_label", "")),
-        "separation_extremum_phrase": "closest to" if str(trace.get("separation_extremum")) == "closest" else "farthest from",
         "spread_axis_phrase": str(trace.get("spread_axis", "")),
         "spread_extremum_phrase": str(trace.get("spread_extremum", "")),
         "area_rank_phrase": str(trace.get("area_rank_phrase", "")),

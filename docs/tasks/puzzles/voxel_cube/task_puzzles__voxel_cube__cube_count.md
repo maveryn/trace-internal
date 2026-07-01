@@ -12,14 +12,15 @@
 3. Internal variation: stack dimensions, cube count, scene treatment, palette, and font/render style are generation/render metadata.
 
 ## Program Contract
-`count(unit_cubes(stack)); scene=voxel_cube; scope=cube_count`
 
-1. Program code: `voxel_cube.unit_cube_count`
-2. Scene: `voxel_cube`
-3. Scope: `cube_count`
-4. Candidate set: every unit cube encoded by the sampled height grid.
-5. Answer binding: integer unit-cube count.
-6. Annotation binding: one image-pixel `bbox` around the voxel structure.
+Program: `count(unit_cubes(stack)); scene=voxel_cube; scope=cube_count`
+
+Candidate set: the visible voxel stack, unit cubes, projections, changed/reference stacks, and labeled candidate views inside the `cube_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `unit_cubes`, `stack`, `voxel_cube`, `cube_count`.
+Operation: evaluate `count` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the full rendered voxel structure.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. `answer_gt.type = integer`

@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from ....core.query_ids import SINGLE_QUERY_ID
-from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults
 
@@ -84,7 +83,7 @@ class IconsIconFieldMostFrequentTypeCountTask(IconFieldFrequencyTaskLifecycle):
     prompt_query_key = PROMPT_QUERY_KEY
     scene_kind = "icons_most_frequent_type_counting"
 
-    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int) -> TaskOutput:
+    def generate(self, instance_seed: int, *, params: dict[str, Any], max_attempts: int):
         return run_icon_field_frequency_lifecycle(
             self,
             instance_seed=int(instance_seed),

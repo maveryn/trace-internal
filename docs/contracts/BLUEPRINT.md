@@ -114,9 +114,16 @@ Required sections:
 2. Domain and scene probabilities are derived by task aggregation unless build
    config explicitly overrides them.
 3. Query sampling is inside each task and uniform by default.
-4. Validate answer distributions per task/query with lightweight
+4. Uniform semantic sampling is implemented by seeded RNG draws over explicit
+   equal probabilities. Seed modulo, hash modulo, cursor cycling, and index
+   enumeration are not valid substitutes for random sampling of task-internal
+   semantic axes.
+5. Exact stratification, when needed for a review/build, belongs in the
+   sampler/review harness and must be recorded as a sampling policy rather than
+   hidden inside task generation.
+6. Validate answer distributions per task/query with lightweight
    anti-degeneracy checks over generated answers.
-5. Never relax semantic constraints to force acceptance.
+7. Never relax semantic constraints to force acceptance.
 
 ## 9) Build, Validation, And Finalize
 1. Build to staging directory.

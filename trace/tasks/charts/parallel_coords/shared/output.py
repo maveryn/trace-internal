@@ -72,7 +72,6 @@ def build_trace_payload(
             "metrics": [str(value) for value in dataset.metrics],
             "profiles": list(rows),
             "threshold": dataset.query.threshold,
-            "reference_profile_id": dataset.query.reference_profile_id,
             "annotation_profile_ids": [str(value) for value in annotation_profile_ids],
             "crossing_pairs": [list(pair) for pair in dataset.query.crossing_pairs],
             **dict(dataset.query.params),

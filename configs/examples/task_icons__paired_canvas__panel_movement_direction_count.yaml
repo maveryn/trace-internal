@@ -1,5 +1,0 @@
-task_id: task_icons__paired_canvas__panel_movement_direction_count
-params:
-  query_id: moved_right_count
-  target_count: 2
-  distractor_count: 3

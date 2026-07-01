@@ -15,15 +15,22 @@
 
 ## Annotation Contract
 1. Answer schema: `integer_value`.
-2. Annotation schema: `bbox_set_map`.
-3. `running_values` contains printed value boxes from the start value through the requested step.
-4. `target_step_label` contains the visible x-axis label box for the requested step.
+2. Annotation schema: `bbox_set`.
+3. The annotation contains full waterfall bar boxes from the start bar through the requested step, including the target contribution bar.
 
 ## Program Contract
-`sum(start_value, signed_deltas_through(target_step)); target_step=visible_step_label; output=integer_value; annotation=bbox_set_map(running_values,target_step_label); scene=waterfall; scope=running_total_value`
+
+Program: `sum(start_value, signed_deltas_through(target_step)); target_step=visible_step_label; output=integer_value; annotation=bbox_set(running_bars_through_target); scene=waterfall; scope=running_total_value`
+
+Candidate set: the visible waterfall bars, contribution steps, and total bars inside the `running_total_value` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `sum` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_value` value bound by `integer_value`.
+Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(running_bars_through_target)`. The annotation contains full waterfall bar boxes from the start bar through the requested step, including the target contribution bar.
+Query ids: `single`.
 
 ## Query Details
 
 | Query id | Program contract | Answer schema | Annotation schema |
 |---|---|---|---|
-| `single` | `sum(start_value, signed_deltas_through(target_step)); target_step=visible_step_label; output=integer_value; annotation=bbox_set_map(running_values,target_step_label); scene=waterfall; scope=running_total_value` | `integer_value` | `bbox_set_map` |
+| `single` | `sum(start_value, signed_deltas_through(target_step)); target_step=visible_step_label; output=integer_value; annotation=bbox_set(running_bars_through_target); scene=waterfall; scope=running_total_value` | `integer_value` | `bbox_set` |

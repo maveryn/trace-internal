@@ -1,17 +1,25 @@
-"""Behavior tests for pages concept-map diagram tasks."""
+"""Behavior tests for pages concept-map scene-package tasks."""
 
 from __future__ import annotations
 
 from collections import Counter
 
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.seed import hash64
 from trace.core.taxonomy import resolve_task_taxonomy
-from trace.tasks.pages.concept_map.diagram_tasks import (
-    BRANCH_CHILD_COUNT_TASK_ID,
-    MARKED_CHILD_COUNT_TASK_ID,
-    ORDERED_CHILD_LABEL_TASK_ID,
+from trace.tasks.pages.concept_map.branch_child_count import (
+    PROMPT_QUERY_KEY as BRANCH_PROMPT_QUERY_KEY,
+    TASK_ID as BRANCH_CHILD_COUNT_TASK_ID,
     PagesConceptMapBranchChildCountTask,
+)
+from trace.tasks.pages.concept_map.marked_child_count import (
+    PROMPT_QUERY_KEY as MARKED_PROMPT_QUERY_KEY,
+    TASK_ID as MARKED_CHILD_COUNT_TASK_ID,
     PagesConceptMapMarkedChildCountTask,
+)
+from trace.tasks.pages.concept_map.ordered_child_label import (
+    PROMPT_QUERY_KEY as ORDERED_PROMPT_QUERY_KEY,
+    TASK_ID as ORDERED_CHILD_LABEL_TASK_ID,
     PagesConceptMapOrderedChildLabelTask,
 )
 
@@ -19,7 +27,12 @@ from trace.tasks.pages.concept_map.diagram_tasks import (
 def _assert_bboxes_inside_image(out) -> None:
     width, height = out.image.size
     annotation_value = out.annotation_gt.value
-    bboxes = annotation_value.values() if isinstance(annotation_value, dict) else annotation_value
+    if isinstance(annotation_value, dict):
+        bboxes = annotation_value.values()
+    elif out.annotation_gt.type == "bbox":
+        bboxes = [annotation_value]
+    else:
+        bboxes = annotation_value
     for bbox in bboxes:
         x0, y0, x1, y1 = [float(value) for value in bbox]
         assert 0.0 <= x0 <= x1 <= float(width)
@@ -31,12 +44,11 @@ def test_pages_concept_map_tasks_are_registered_in_public_taxonomy() -> None:
         taxonomy = resolve_task_taxonomy(task_id)
         assert taxonomy.domain == "pages"
         assert taxonomy.scene_id == "concept_map"
-        assert taxonomy.source_scene_id == "concept_map"
 
 
 def test_pages_concept_map_branch_item_count_contract() -> None:
     task = PagesConceptMapBranchChildCountTask()
-    out = task.generate(95100, params={"query_id": "branch_child_count", "layout_variant": "radial_mind_map"}, max_attempts=10)
+    out = task.generate(95100, params={"query_id": SINGLE_QUERY_ID, "layout_variant": "radial_mind_map"}, max_attempts=10)
     trace = out.trace_payload
     query = trace["execution_trace"]["query"]
     expected = [
@@ -45,8 +57,10 @@ def test_pages_concept_map_branch_item_count_contract() -> None:
     ]
 
     assert out.scene_id == "concept_map"
-    assert out.query_id == "branch_child_count"
-    assert trace["execution_trace"]["source_query_id"] == "branch_child_count"
+    assert out.query_id == SINGLE_QUERY_ID
+    assert trace["execution_trace"]["prompt_query_key"] == BRANCH_PROMPT_QUERY_KEY
+    assert trace["query_spec"]["params"]["prompt_query_key"] == BRANCH_PROMPT_QUERY_KEY
+    assert trace["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
     assert trace["execution_trace"]["node_shape_profile"] in {"mixed_hub_circle", "oval_branch_mix", "mixed_cards_ovals"}
     assert out.answer_gt.type == "integer"
     assert out.annotation_gt.type == "bbox_set"
@@ -59,35 +73,38 @@ def test_pages_concept_map_branch_item_count_contract() -> None:
 
 def test_pages_concept_map_ordered_child_label_contract() -> None:
     task = PagesConceptMapOrderedChildLabelTask()
-    out = task.generate(95140, params={"query_id": "nth_child_label", "layout_variant": "left_right_map"}, max_attempts=10)
+    out = task.generate(95140, params={"query_id": SINGLE_QUERY_ID, "layout_variant": "left_right_map"}, max_attempts=10)
     trace = out.trace_payload
     query = trace["execution_trace"]["query"]
-    expected = {
-        "parent_branch": trace["render_map"]["node_bboxes_px"][str(query["branch_id"])],
-        "answer_child": trace["render_map"]["node_bboxes_px"][str(query["answer_node_id"])],
-    }
+    expected = trace["render_map"]["node_bboxes_px"][str(query["answer_node_id"])]
 
     assert out.scene_id == "concept_map"
-    assert out.query_id == "nth_child_label"
-    assert trace["execution_trace"]["source_query_id"] == "nth_child_label"
+    assert out.query_id == SINGLE_QUERY_ID
+    assert trace["execution_trace"]["prompt_query_key"] == ORDERED_PROMPT_QUERY_KEY
+    assert trace["query_spec"]["params"]["prompt_query_key"] == ORDERED_PROMPT_QUERY_KEY
     assert out.answer_gt.type == "string"
-    assert out.annotation_gt.type == "keyed_bbox_map"
+    assert out.annotation_gt.type == "bbox"
     assert 2 <= int(query["rank"]) <= 5
     assert str(query["rank_ordinal"]) in out.prompt
     assert str(out.answer_gt.value) == str(query["answer"])
     assert out.annotation_gt.value == expected
-    assert trace["projected_annotation"]["type"] == "keyed_bbox_map"
-    assert trace["projected_annotation"]["keyed_bbox_map"] == expected
-    assert trace["execution_trace"]["annotation_role_node_ids"] == {
-        "parent_branch": str(query["branch_id"]),
-        "answer_child": str(query["answer_node_id"]),
-    }
+    assert trace["projected_annotation"]["type"] == "bbox"
+    assert trace["projected_annotation"]["bbox"] == expected
+    assert trace["execution_trace"]["annotation_ids"] == [f"node:{query['answer_node_id']}"]
+    assert trace["execution_trace"]["annotation_role_node_ids"] == {}
     _assert_bboxes_inside_image(out)
+
+
+def test_pages_concept_map_ordered_child_label_avoids_radial_layout() -> None:
+    task = PagesConceptMapOrderedChildLabelTask()
+    out = task.generate(95141, params={"query_id": SINGLE_QUERY_ID, "layout_variant": "radial_mind_map"}, max_attempts=10)
+
+    assert out.trace_payload["execution_trace"]["layout_variant"] in {"left_right_map", "clustered_map"}
 
 
 def test_pages_concept_map_filtered_node_count_contract() -> None:
     task = PagesConceptMapMarkedChildCountTask()
-    out = task.generate(95180, params={"query_id": "marked_child_count", "layout_variant": "clustered_map"}, max_attempts=10)
+    out = task.generate(95180, params={"query_id": SINGLE_QUERY_ID, "layout_variant": "clustered_map"}, max_attempts=10)
     trace = out.trace_payload
     query = trace["execution_trace"]["query"]
     expected = [
@@ -96,8 +113,9 @@ def test_pages_concept_map_filtered_node_count_contract() -> None:
     ]
 
     assert out.scene_id == "concept_map"
-    assert out.query_id == "marked_child_count"
-    assert trace["execution_trace"]["source_query_id"] == "marked_child_count"
+    assert out.query_id == SINGLE_QUERY_ID
+    assert trace["execution_trace"]["prompt_query_key"] == MARKED_PROMPT_QUERY_KEY
+    assert trace["query_spec"]["params"]["prompt_query_key"] == MARKED_PROMPT_QUERY_KEY
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == int(query["answer"])
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
@@ -108,7 +126,7 @@ def test_pages_concept_map_filtered_node_count_contract() -> None:
 
 def test_pages_concept_map_generation_is_deterministic() -> None:
     task = PagesConceptMapMarkedChildCountTask()
-    params = {"query_id": "marked_child_count", "layout_variant": "radial_mind_map", "style_variant": "bright_notes"}
+    params = {"query_id": SINGLE_QUERY_ID, "layout_variant": "radial_mind_map", "style_variant": "bright_notes"}
     out_a = task.generate(95220, params=params, max_attempts=10)
     out_b = task.generate(95220, params=params, max_attempts=10)
 
@@ -135,15 +153,15 @@ def test_pages_concept_map_sampling_covers_visual_and_text_axes() -> None:
         styles[str(execution["style_variant"])] += 1
         shape_profiles[str(execution["node_shape_profile"])] += 1
         contexts[str(execution["context_id"])] += 1
-        queries[str(execution["query_id"])] += 1
+        queries[str(execution["prompt_query_key"])] += 1
         for branch in execution["branches"]:
             node_shapes[str(branch["shape"])] += 1
             node_shapes.update(str(shape) for shape in branch["child_node_shapes"].values())
 
-    assert set(layouts) == {"radial_mind_map", "left_right_map", "clustered_map"}
+    assert set(layouts) == {"left_right_map", "clustered_map"}
     assert set(styles) == {"bright_notes", "ink_outline", "soft_cards", "technical_pastel"}
     assert set(shape_profiles) == {"mixed_hub_circle", "oval_branch_mix", "mixed_cards_ovals"}
     assert {"rounded_rect", "ellipse", "pill"}.issubset(set(node_shapes))
     assert "circle" in set(node_shapes)
     assert len(contexts) >= 5
-    assert set(queries) == {"nth_child_label"}
+    assert set(queries) == {ORDERED_PROMPT_QUERY_KEY}

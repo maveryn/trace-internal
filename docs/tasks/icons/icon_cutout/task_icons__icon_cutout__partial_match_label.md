@@ -8,13 +8,21 @@
 5. Objective: select the labeled full-icon option that generated the partial icon fragment.
 
 ## Program Contract
-`selection.option_match(scene=icon_cutout, scope=partial_fragment_options, rule=source_fragment_shape_match, output=option_letter)`
+
+Program: `selection.option_match(scene=icon_cutout, scope=partial_fragment_options, rule=source_fragment_shape_match, output=option_letter)`
+
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `partial_fragment_options` objective scope.
+Operands: visible scene state and prompt-bound operands named by `icon_cutout`, `partial_fragment_options`, `source_fragment_shape_match`.
+Operation: evaluate `selection.option_match` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## 2) Scene + task contract
 1. Entities/relations: one two-panel image with a partial icon fragment on the left and six labeled full-icon options on the right.
 2. Supported `query_id` value: `single`
 3. Answer type: `answer_gt.type = option_letter`.
-4. Annotation type: `annotation_gt.type = keyed_bbox_map` with `source_fragment` and `selected_option`.
+4. Annotation type: `annotation_gt.type = bbox_map` with `source_fragment` and `selected_option`.
 5. Option policy: the Scene grid uses labels `A..F`; exactly one full-icon option shares the hidden curated `icon_id` that produced the fragment.
 6. Fragment policy: the source fragment is a rectangular, rounded, or elliptical window over the correct icon sprite. The window keeps a visible alpha ratio in the configured range and rejects near-blank crops.
 7. Distractor policy: distractors are different curated icon ids with distinct full-icon alpha signatures from the correct option.
@@ -40,7 +48,7 @@
 2. Unique-answer policy: the correct option index is sampled first, the correct icon id is inserted exactly once, and distractors are signature-distinct.
 3. Reject/resample conditions: unsupported option count, empty icon pool, palette-separation failures, too few distinct distractors, or inability to sample a visible fragment.
 4. No-auto-relaxation guarantee: generation fails on unmet fragment/option constraints instead of accepting ambiguous options.
-5. Semantic-unit rule: keyed annotation binds the source fragment frame to the selected full-icon option cell because the task is a visual option-image match.
+5. Semantic-unit rule: map annotation binds the source fragment frame to the selected full-icon option cell because the task is a visual option-image match.
 6. Trace style metadata records the sampled palette, fragment window style, visible alpha ratio, crop coordinates, cell styling, validated text-legibility metadata, and per-icon noise edits.
 
 ## 5) Complexity + tests

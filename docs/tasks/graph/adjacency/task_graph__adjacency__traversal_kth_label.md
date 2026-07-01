@@ -17,7 +17,15 @@
 3. The BFS versus DFS operator is a semantic query branch. Source label, visit position, node labels, node count, extra edge count, font, style, and layout are generation/render metadata.
 
 ## Program Contract
-- `label_at(traverse(adjacency_list_graph, source_node, traversal_operator), visit_position); output=string; annotation=bbox_sequence(visited_row_label_prefix); scene=adjacency; scope=traversal_kth_label`
+
+Program: `label_at(traverse(adjacency_list_graph, source_node, traversal_operator), visit_position); output=string; annotation=bbox_sequence(visited_row_label_prefix); scene=adjacency; scope=traversal_kth_label`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `traversal_kth_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `traverse`, `adjacency_list_graph`, `source_node`, `traversal_operator`, `visit_position`, `visited_row_label_prefix`, `adjacency`, `traversal_kth_label`.
+Operation: evaluate `label_at` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_sequence` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Annotation
 1. Answer type: `string`.

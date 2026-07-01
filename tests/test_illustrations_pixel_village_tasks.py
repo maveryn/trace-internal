@@ -15,6 +15,7 @@ from trace.tasks.illustrations.pixel_village.rotated_tile_label import (
 from trace.tasks.illustrations.pixel_village.swapped_tile_pair_label import (
     _sample_spec as _sample_swapped_tile_pair_spec,
 )
+from trace.tasks.illustrations.pixel_village.shared.sampling import _build_river_side_object_sample
 from trace.tasks.illustrations.shared.canvas_profiles import MAX_RECONSTRUCTION_OUTPUT_PIXELS
 
 
@@ -432,7 +433,7 @@ def test_pixel_village_river_side_object_count_uses_strict_tile_side_membership(
     for index, (target, side) in enumerate(cases):
         out = task.generate(
             hash64(20260610, RIVER_SIDE_TASK_ID, index),
-            params={"target_object": target, "river_side": side},
+            params={"target_object": target, "river_side": side, "target_count": 1},
             max_attempts=200,
         )
         trace = out.trace_payload
@@ -448,6 +449,8 @@ def test_pixel_village_river_side_object_count_uses_strict_tile_side_membership(
         assert params["target_object"] == target
         assert params["river_side"] == side
         assert params["river_orientation"] == RIVER_SIDE_ORIENTATION[side]
+        assert params["requested_target_count"] == 1
+        assert params["target_count"] == 1
         assert params["render_constraints"]["river_mode"] == "force"
         assert params["render_constraints"]["river_placement"] == "balanced"
         assert trace["query_spec"]["params"]["renderer"]["river_present"] is True
@@ -477,3 +480,20 @@ def test_pixel_village_river_side_object_count_uses_strict_tile_side_membership(
             assert params["render_constraints"]["cemetery_mode"] == "none"
             assert params["renderer"]["cemetery_present"] is False
             assert all(entity["public_name"] != "dead tree" for entity in entities.values())
+
+
+def test_pixel_village_river_side_object_count_sampler_cycles_target_counts() -> None:
+    samples = [
+        _build_river_side_object_sample(
+            instance_seed=hash64(20260610, RIVER_SIDE_TASK_ID, index),
+            params={"_sample_cursor": index, "target_count_support": [1, 2, 3, 4, 5]},
+            defaults={},
+            namespace=RIVER_SIDE_TASK_ID,
+        )
+        for index in range(20)
+    ]
+    counts = Counter(sample.target_count for sample in samples)
+
+    assert counts == Counter({1: 4, 2: 4, 3: 4, 4: 4, 5: 4})
+    assert all(sample.target_count_support == (1, 2, 3, 4, 5) for sample in samples)
+    assert all(sample.target_count_probabilities == {"1": 0.2, "2": 0.2, "3": 0.2, "4": 0.2, "5": 0.2} for sample in samples)

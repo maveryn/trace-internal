@@ -1,1 +1,0 @@
-"""Physics optics task implementations."""

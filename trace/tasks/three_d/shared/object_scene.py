@@ -8,6 +8,8 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from ....core.sampling import uniform_choice
+from ....core.seed import spawn_rng
 from ...shared.color_distance import coerce_rgb as _rgb
 from ...shared.text_rendering import load_font
 from .task_support import float_value as _float_value
@@ -95,6 +97,11 @@ POINT_COLORS: Tuple[Tuple[int, int, int], ...] = (
     (48, 178, 150),
     (177, 93, 67),
 )
+POINT_COLOR_BY_LABEL: Dict[str, Tuple[int, int, int]] = {
+    str(label): tuple(int(channel) for channel in POINT_COLORS[int(index)])
+    for index, label in enumerate(POINT_LABELS)
+    if int(index) < len(POINT_COLORS)
+}
 CONTEXT_OBJECT_COLORS: Tuple[Tuple[int, int, int], ...] = (
     (150, 105, 72),
     (91, 128, 159),
@@ -288,8 +295,9 @@ def resolve_object_scene_render_params(
 
 
 def _camera_yaw_band_for_instance(instance_seed: int) -> Tuple[float, float]:
-    band_index = abs(int(instance_seed)) % len(CAMERA_YAW_BANDS_DEGREES)
-    return tuple(float(value) for value in CAMERA_YAW_BANDS_DEGREES[int(band_index)])
+    rng = spawn_rng(int(instance_seed), "three_d.object_scene.camera_yaw_band")
+    yaw_band = uniform_choice(rng, CAMERA_YAW_BANDS_DEGREES, sort_keys=True)
+    return tuple(float(value) for value in yaw_band)
 
 
 def _base_shape_dimensions(shape_type: str, *, object_role: str = "candidate") -> Tuple[float, float, float]:
@@ -550,10 +558,10 @@ def render_object_scene_3d(
         shape_type = str(spec["shape_type"])
         x, y = float(spec["screen_xy"][0]), float(spec["screen_xy"][1])
         if spec.get("fill_rgb") is not None:
-            fallback_color = POINT_COLORS[POINT_LABELS.index(label) % len(POINT_COLORS)] if label in POINT_LABELS else POINT_COLORS[0]
+            fallback_color = POINT_COLOR_BY_LABEL.get(str(label), POINT_COLORS[0])
             color = _rgb(spec.get("fill_rgb"), fallback_color)
         elif bool(spec.get("is_answer_candidate", False)):
-            base_color = POINT_COLORS[POINT_LABELS.index(label) % len(POINT_COLORS)]
+            base_color = POINT_COLOR_BY_LABEL.get(str(label), POINT_COLORS[0])
             color = resolve_three_d_object_fill_rgb(
                 spec,
                 base_rgb=base_color,

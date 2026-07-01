@@ -7,7 +7,7 @@ from trace.core.seed import spawn_rng
 from trace.tasks.registry import register_task
 
 from ._lifecycle import build_sankey_plan, run_sankey_task
-from .shared.sampling import path_dict, sample_frame
+from .shared.sampling import bottleneck_segment_ref, path_dict, sample_frame
 from .shared.state import DOMAIN, SankeyDataset, SankeyQuestion
 
 
@@ -22,18 +22,18 @@ def _build_plan(params, instance_seed, selected, probabilities):
         raise ValueError(f"unsupported Sankey path bottleneck branch: {selected}")
     frame = sample_frame(params, instance_seed=int(instance_seed))
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.path_selection")
-    path = frame.paths[int(rng.randrange(len(frame.paths)))]
-    segments = (
-        f"{path.path_id}:source_middle",
-        f"{path.path_id}:middle_target",
-    )
+    eligible = [path for path in frame.paths if int(path.first_value) != int(path.second_value)]
+    if not eligible:
+        raise ValueError("no eligible Sankey path with a unique bottleneck segment")
+    path = eligible[int(rng.randrange(len(eligible)))]
+    segment = bottleneck_segment_ref(path)
     question = SankeyQuestion(
         branch_id=SINGLE_QUERY_ID,
         branch_probabilities=dict(probabilities),
         answer=int(path.bottleneck_value),
         answer_type="integer",
-        annotation_type="bbox_set",
-        annotation_segment_ids=segments,
+        annotation_type="point",
+        annotation_segment_ids=(segment,),
         params={
             "program_code": "min(value(source_to_middle), value(middle_to_target))",
             "source_label": str(path.source_label),

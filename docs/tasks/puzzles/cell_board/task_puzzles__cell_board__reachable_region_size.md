@@ -1,7 +1,15 @@
 # `task_puzzles__cell_board__reachable_region_size`
 
 ## Program Contract
-`count_reachable_cells(cell_board, start=green_S_cell, passable=non_wall_cells, adjacency=orthogonal_4_neighbor); scene=cell_board; scope=reachable_region_size`
+
+Program: `count_reachable_cells(cell_board, start=green_S_cell, passable=non_wall_cells, adjacency=orthogonal_4_neighbor); scene=cell_board; scope=reachable_region_size`
+
+Candidate set: the visible grid cells, cell colors/states, labels, walls, start/goal markers, and mirror or connectivity cues inside the `reachable_region_size` objective scope.
+Operands: visible scene state and prompt-bound operands named by `cell_board`, `start`, `green_S_cell`, `passable`, `non_wall_cells`, `adjacency`, `orthogonal_4_neighbor`, `reachable_region_size`.
+Operation: evaluate `count_reachable_cells` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; one image-pixel cell bbox for every reachable light passable cell, including the start cell.
+Query ids: `single`.
 
 ## 2) Scene + task contract
 1. Entities/relations: A rectangular board with dark wall cells, light passable cells, disconnected light distractor regions, and a green start cell marked `S`.

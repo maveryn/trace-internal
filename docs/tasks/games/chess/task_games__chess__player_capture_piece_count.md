@@ -10,7 +10,15 @@
 7. Program schema: `count(filter(legal_moves(current_player), move_type=capture)); scene=chess; scope=player_capture_piece_count`
 
 ## Program Contract
-- `count(filter(legal_moves(current_player), move_type=capture)); scene=chess; scope=player_capture_piece_count`
+
+Program: `count(filter(legal_moves(current_player), move_type=capture)); scene=chess; scope=player_capture_piece_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `player_capture_piece_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `legal_moves`, `current_player`, `move_type`, `capture`, `chess`, `player_capture_piece_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.

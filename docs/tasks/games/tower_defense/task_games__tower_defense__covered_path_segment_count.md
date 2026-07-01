@@ -11,7 +11,14 @@
 
 ## Program Contract
 
-`count(path_enemy for path_enemy in path_enemies if any(path_enemy_center inside tower_range_circle for tower in towers)); scene=tower_defense; scope=covered_path_segment_count`
+Program: `count(path_enemy for path_enemy in path_enemies if any(path_enemy_center inside tower_range_circle for tower in towers)); scene=tower_defense; scope=covered_path_segment_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `covered_path_segment_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `path_enemy`, `path_enemies`, `if`, `any`, `path_enemy_center`, `inside`, `tower_range_circle`, `tower`, `towers`, `tower_defense`, `covered_path_segment_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. The path is drawn with small visible enemy markers along a winding or switchback route.

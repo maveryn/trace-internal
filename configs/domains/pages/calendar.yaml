@@ -4,105 +4,82 @@ generation:
       classic: 1.0
       minimal: 1.0
       outline: 1.0
-    style_variant_weights:
-      studio: 1.0
-      accented: 1.0
-      marker: 1.0
-    accent_color_name_weights:
-      red: 1.0
-      blue: 1.0
-      green: 1.0
-      yellow: 1.0
-      orange: 1.0
-      purple: 1.0
-      brown: 1.0
-      cyan: 1.0
-      magenta: 1.0
-      maroon: 1.0
-    balanced_query_id_sampling: true
+    layout_mode_weights:
+      center_clean: 1.0
+      free_jitter_clean: 1.0
+      left_with_side_note: 1.0
+      right_with_side_note: 1.0
+      top_with_bottom_note: 1.0
+    title_mode_weights:
+      none: 1.5
+      generic: 1.25
+      full_month_year: 1.0
+    week_start_weights:
+      monday: 1.0
+      sunday: 1.0
+    marked_day_class_weights:
+      weekend: 1.0
+      weekday: 1.0
     balanced_scene_variant_sampling: true
-    balanced_style_variant_sampling: true
-    balanced_accent_color_name_sampling: true
     balanced_layout_mode_sampling: true
     balanced_title_mode_sampling: true
-    balanced_surface_mode_sampling: true
-    balanced_text_color_mode_sampling: true
+    balanced_week_start_sampling: true
+    balanced_marked_day_class_sampling: true
+    weekend_weekday_indices:
+    - 5
+    - 6
+    date_occurrence_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    marked_weekend_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    marked_weekday_count_support:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    marked_weekday_distractor_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    marked_weekend_distractor_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    workday_offset_support:
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    date_range_day_count_support:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+    date_range_min_span_days: 4
+    date_range_max_span_days: 16
     year_min: 2022
     year_max: 2030
-  task_overrides:
-    pages_calendar_month_view_base:
-      query_id_weights:
-        date_of_weekday_occurrence: 1.0
-        count_marked_day_class: 1.0
-        workday_after_offset_date: 1.0
-        workday_before_offset_date: 1.0
-      layout_mode_weights:
-        center_clean: 1.0
-        free_jitter_clean: 1.0
-        left_with_side_note: 1.0
-        right_with_side_note: 1.0
-        top_with_bottom_note: 1.0
-      title_mode_weights:
-        none: 1.5
-        generic: 1.25
-        full_month_year: 1.0
-      surface_mode_weights:
-        light: 1.0
-        dark: 1.0
-      text_color_mode_weights:
-        neutral: 1.0
-        accent: 1.0
-        cool: 1.0
-        warm: 1.0
-      marked_day_class_weights:
-        weekend: 1.0
-        weekday: 1.0
-      balanced_query_id_sampling: true
-      balanced_marked_day_class_sampling: true
-      balanced_layout_mode_sampling: true
-      balanced_title_mode_sampling: true
-      balanced_surface_mode_sampling: true
-      balanced_text_color_mode_sampling: true
-      weekend_weekday_indices:
-      - 5
-      - 6
-      date_occurrence_support:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      marked_weekend_count_support:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      marked_weekday_count_support:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      marked_weekday_distractor_support:
-      - 1
-      - 2
-      - 3
-      - 4
-      marked_weekend_distractor_support:
-      - 1
-      - 2
-      - 3
-      - 4
-      workday_offset_support:
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
 rendering:
   shared:
     canvas_width: 860
@@ -130,52 +107,12 @@ rendering:
     marker_outline_width_px: 3
     marker_outline_width_px_min: 2
     marker_outline_width_px_max: 4
-visual:
-  shared:
-    context_text:
-      pages_context_density_weights:
-        clean: 0.24
-        light: 0.2
-        one_side_note: 0.38
-        two_side_notes: 0.18
-      pages_context_text_max_elements: 7
+    pages_context_profile: report_paragraph
+    pages_context_mode_weights:
+      clean: 0.24
+      minimal: 0.2
+      paragraph_box: 0.56
+    pages_context_text_max_elements: 7
 prompt:
   shared:
-    bundle_id: pages_calendar_v0
-  task_overrides:
-    pages_calendar_month_view_base:
-      scene_key: month_calendar
-      task_key: calendar_month_query
-      object_description_date_of_weekday_occurrence: one month-view calendar with
-        weekday headers and date cells
-      object_description_count_marked_day_class: one month-view calendar with weekday
-        headers, date cells, and several marked dates
-      object_description_workday_after_offset_date: one month-view calendar with weekday
-        headers, date cells, and one marked reference date
-      object_description_workday_before_offset_date: one month-view calendar with
-        weekday headers, date cells, and one marked reference date
-      answer_hint_date_of_weekday_occurrence: set "answer" to the integer date number
-      answer_hint_count_marked_day_class: set "answer" to the integer count of marked
-        dates in the requested day class
-      answer_hint_workday_after_offset_date: set "answer" to the integer date number
-        reached after moving the requested number of workdays from the marked date
-      answer_hint_workday_before_offset_date: set "answer" to the integer date number
-        reached before moving the requested number of workdays from the marked date
-      annotation_hint_date_of_weekday_occurrence: set "annotation" to an array containing
-        exactly one bounding box [x0, y0, x1, y1] for the target date cell
-      annotation_hint_count_marked_day_class: set "annotation" to an array of bounding
-        boxes [x0, y0, x1, y1] for all marked date cells in the requested day class
-      annotation_hint_workday_after_offset_date: set "annotation" to an object with
-        keys "reference_date" and "target_date", each mapped to the bounding box [x0,
-        y0, x1, y1] of that date cell
-      annotation_hint_workday_before_offset_date: set "annotation" to an object with
-        keys "reference_date" and "target_date", each mapped to the bounding box [x0,
-        y0, x1, y1] of that date cell
-      json_example_date_of_weekday_occurrence: '{"annotation":[[354,256,456,352]],"answer":18}'
-      json_example_answer_only_date_of_weekday_occurrence: '{"answer":18}'
-      json_example_count_marked_day_class: '{"annotation":[[148,352,250,448],[560,352,662,448]],"answer":2}'
-      json_example_answer_only_count_marked_day_class: '{"answer":2}'
-      json_example_workday_after_offset_date: '{"annotation":{"reference_date":[354,256,456,352],"target_date":[560,256,662,352]},"answer":20}'
-      json_example_answer_only_workday_after_offset_date: '{"answer":20}'
-      json_example_workday_before_offset_date: '{"annotation":{"reference_date":[560,256,662,352],"target_date":[354,256,456,352]},"answer":18}'
-      json_example_answer_only_workday_before_offset_date: '{"answer":18}'
+    bundle_id: pages_calendar_v1

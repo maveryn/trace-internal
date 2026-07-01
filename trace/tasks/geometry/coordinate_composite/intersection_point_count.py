@@ -6,19 +6,21 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Tuple
 
 from trace.core.scene_config import get_scene_defaults
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
+from trace.tasks.shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.fixed_query import geometry_selected_probability_map, select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
 
 from ..shared.background_defaults import load_geometry_background_defaults
 from ..shared.noise_defaults import load_geometry_noise_defaults
 from ..shared.vector2d import point_to_list
 from .shared.relations import circle_object, filtered_intersections, line_object, polygon_object, transform_object
+from .shared.prompts import build_coordinate_composite_prompt_artifacts
 from .shared.rendering import render_coordinate_composite_scene
 from .shared.state import PairFilter, SceneObject
 
@@ -259,12 +261,8 @@ def _select_problem(*, instance_seed: int, params: Mapping[str, Any]) -> _Resolv
         case = matching[0]
         case_probabilities = geometry_selected_probability_map((case.case_id for case in eligible_cases), selected=case.case_id)
     else:
-        case_index = resolve_selection_index(
-            params=task_params,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.{selected_query}.case",
-        )
-        case = eligible_cases[int(case_index) % len(eligible_cases)]
+        rng = spawn_rng(int(instance_seed), f"{TASK_ID}.{selected_query}.case")
+        case = uniform_choice(rng, eligible_cases)
         case_probabilities = geometry_selected_probability_map(tuple(case.case_id for case in eligible_cases))
 
     explicit_transform = task_params.get("transform")
@@ -274,12 +272,8 @@ def _select_problem(*, instance_seed: int, params: Mapping[str, Any]) -> _Resolv
             raise ValueError(f"transform={transform!r} is not valid for {TASK_ID}")
         transform_probabilities = geometry_selected_probability_map(TRANSFORMS, selected=transform)
     else:
-        transform_index = resolve_selection_index(
-            params=task_params,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.transform",
-        )
-        transform = str(TRANSFORMS[int(transform_index) % len(TRANSFORMS)])
+        rng = spawn_rng(int(instance_seed), f"{TASK_ID}.transform")
+        transform = str(uniform_choice(rng, TRANSFORMS))
         transform_probabilities = geometry_selected_probability_map(TRANSFORMS)
 
     return _ResolvedProblem(
@@ -303,48 +297,21 @@ def _prompt_artifacts(
 ) -> Any:
     """Render the external prompt bundle after the public query is selected."""
 
-    prompt_params = required_group_defaults(
-        {
-            **dict(prompt_defaults),
-            "bundle_id": str(group_default(prompt_defaults, "bundle_id", PROMPT_BUNDLE_ID)),
-            "scene_key": str(group_default(prompt_defaults, "scene_key", "coordinate_composite_scene")),
-            "task_key": str(group_default(prompt_defaults, "task_key", "coordinate_composite_query")),
-        },
-        (
-            "bundle_id",
-            "scene_key",
-            "task_key",
-            "object_description",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            "annotation_hint",
-            "answer_hint_integer",
-            "json_example",
-            "json_example_answer_only",
-        ),
-        context=f"prompt defaults for {TASK_ID}",
-    )
-    prompt_selection = render_scene_prompt_variants(
+    return build_coordinate_composite_prompt_artifacts(
         domain=DOMAIN,
         scene_id=SCENE_ID,
-        bundle_id=str(prompt_params["bundle_id"]),
-        scene_key=str(prompt_params["scene_key"]),
-        task_key=str(prompt_params["task_key"]),
-        query_key=str(problem.query_id),
-        answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={
-            "object_description": str(prompt_params["object_description"]),
-            "json_output_contract": str(prompt_params["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_params["json_output_contract_answer_only"]),
-            "annotation_hint": str(prompt_params["annotation_hint"]),
-            "answer_hint": str(prompt_params["answer_hint_integer"]),
-            "json_example": str(prompt_params["json_example"]),
-            "json_example_answer_only": str(prompt_params["json_example_answer_only"]),
-        },
+        prompt_defaults=prompt_defaults,
+        params=params,
         instance_seed=int(instance_seed),
-        preferred_mode=str(params.get("prompt_mode", "answer_and_annotation")),
+        query_key=str(problem.query_id),
+        prompt_bundle_id=PROMPT_BUNDLE_ID,
+        object_description_key="object_description",
+        annotation_hint_key="annotation_hint",
+        answer_hint_key="answer_hint_integer",
+        json_example_key="json_example",
+        json_example_answer_only_key="json_example_answer_only",
+        context=f"prompt defaults for {TASK_ID}",
     )
-    return build_prompt_trace_artifacts(prompt_selection)
 
 
 def _trace_payload(

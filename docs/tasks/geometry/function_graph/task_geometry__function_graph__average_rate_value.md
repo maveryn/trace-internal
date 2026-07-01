@@ -3,9 +3,10 @@
 ## Contract
 1. Domain: `geometry`
 2. Scene id: `function_graph`
-5. Query ids: `single`
-6. Answer schema: `decimal_value_1dp`
-7. Annotation schema: `point_map` with keys `A` and `B`
+3. Query ids: `single`
+4. Answer schema: `number`
+5. Answer precision: `one_decimal`
+6. Annotation schema: `point_map` with keys `A` and `B`
 
 ## Program Contract
 - `average_rate(marked_function_points, point_roles=A|B); scene=function_graph; scope=average_rate_value`

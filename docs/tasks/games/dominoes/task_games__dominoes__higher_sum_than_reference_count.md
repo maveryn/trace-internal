@@ -11,7 +11,15 @@
 8. Program schema: `count(filter(domino_tiles, compare(sum(pips(tile)), sum(pips(reference_tile)), direction=greater_than))); scene=dominoes; scope=higher_sum_than_reference_count`
 
 ## Program Contract
-- `count(filter(domino_tiles, compare(sum(pips(tile)), sum(pips(reference_tile)), direction=greater_than))); scene=dominoes; scope=higher_sum_than_reference_count`
+
+Program: `count(filter(domino_tiles, compare(sum(pips(tile)), sum(pips(reference_tile)), direction=greater_than))); scene=dominoes; scope=higher_sum_than_reference_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `higher_sum_than_reference_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `domino_tiles`, `compare`, `sum`, `pips`, `tile`, `reference_tile`, `direction`, `greater_than`, `dominoes`, `higher_sum_than_reference_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. Renders a face-up domino tableau with one tile marked `REF`; countable tiles are the other visible dominoes.

@@ -7,17 +7,27 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from trace.core.seed import spawn_rng
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.cartesian.axes import (
+    draw_horizontal_value_grid_ticks,
+    draw_plot_frame,
+    draw_vertical_index_grid_ticks,
+)
+from trace.tasks.charts.shared.cartesian.frame import plot_bbox_from_margins
+from trace.tasks.charts.shared.cartesian.geometry import project_index, project_linear_inverted, round_bbox
+from trace.tasks.charts.shared.cartesian.markers import draw_marker as draw_cartesian_marker
+from trace.tasks.charts.shared.dense_text import dense_fit_bold, dense_stroke_width
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
-from trace.tasks.charts.shared.visual_defaults import chart_font_asset_metadata
+from trace.tasks.charts.shared.visual_defaults import (
+    chart_font_asset_metadata,
+    sample_chart_font_family as sample_shared_chart_font_family,
+)
 from trace.tasks.shared.bbox_projection import bbox_union_raw as bbox_union
-from trace.tasks.shared.font_assets import sample_font_family
 from trace.tasks.shared.render_variation import apply_layout_jitter_to_margins
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font, temporary_default_font_family
 
 from .defaults import (
-    BACKGROUND_DEFAULTS,
     NOISE_DEFAULTS,
     RENDER_DEFAULTS,
     render_style_seed,
@@ -37,7 +47,7 @@ from .state import (
 
 
 def bbox(values: Sequence[float]) -> list[float]:
-    return [round(float(value), 3) for value in values]
+    return round_bbox(values)
 
 
 def resolve_render_params(params: Mapping[str, Any]) -> RenderParams:
@@ -89,16 +99,10 @@ def resolve_render_params(params: Mapping[str, Any]) -> RenderParams:
 
 
 def sample_chart_font_family(instance_seed: int, params: Mapping[str, Any]) -> str:
-    return str(
-        sample_font_family(
-            role="readout",
-            instance_seed=int(instance_seed),
-            namespace=f"{SCENE_NAMESPACE}.chart_font",
-            params=params,
-            exclude_tags=("display",),
-            explicit_key="chart_font_family",
-            weights_key="chart_font_family_weights",
-        )
+    return sample_shared_chart_font_family(
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.chart_font",
+        params=params,
     )
 
 
@@ -141,12 +145,14 @@ def draw_text(
 
 def point_xy(point: Point, *, x_count: int, plot_bbox: Sequence[float]) -> tuple[float, float]:
     left, top, right, bottom = [float(value) for value in plot_bbox]
-    if int(x_count) <= 1:
-        x_fraction = 0.5
-    else:
-        x_fraction = float(point.x_index) / float(int(x_count) - 1)
-    x = left + x_fraction * (right - left)
-    y = bottom - (float(point.y_value) / 100.0) * (bottom - top)
+    x = project_index(int(point.x_index), pixel_min=float(left), pixel_max=float(right), count=int(x_count))
+    y = project_linear_inverted(
+        float(point.y_value),
+        domain_min=0.0,
+        domain_max=100.0,
+        pixel_top=float(top),
+        pixel_bottom=float(bottom),
+    )
     return float(x), float(y)
 
 
@@ -158,20 +164,18 @@ def draw_marker(
     shape: str,
     fill: RGB,
 ) -> list[float]:
-    cx, cy = float(center[0]), float(center[1])
-    r = float(radius)
-    marker_bbox = [cx - r, cy - r, cx + r, cy + r]
-    if str(shape) == "square":
-        draw.rectangle(marker_bbox, fill=fill, outline=(255, 255, 255), width=2)
-    elif str(shape) == "diamond":
-        draw.polygon([(cx, cy - r), (cx + r, cy), (cx, cy + r), (cx - r, cy)], fill=fill, outline=(255, 255, 255))
-    elif str(shape) == "triangle":
-        draw.polygon([(cx, cy - r), (cx + r, cy + r), (cx - r, cy + r)], fill=fill, outline=(255, 255, 255))
-    elif str(shape) == "ring":
-        draw.ellipse(marker_bbox, fill=(255, 255, 255), outline=fill, width=4)
-    else:
-        draw.ellipse(marker_bbox, fill=fill, outline=(255, 255, 255), width=2)
-    return bbox(marker_bbox)
+    outline = fill if str(shape) == "ring" else (255, 255, 255)
+    return draw_cartesian_marker(
+        draw,
+        center=(float(center[0]), float(center[1])),
+        radius=float(radius),
+        shape=str(shape),
+        fill=fill,
+        outline=outline,
+        width=4 if str(shape) == "ring" else 2,
+        triangle_style="down",
+        ring_style="outline",
+    )
 
 
 def render_scatter_readout_scene(
@@ -184,17 +188,19 @@ def render_scatter_readout_scene(
 
     draw = ImageDraw.Draw(image)
     width, height = image.size
-    plot_bbox = [
-        float(render_params.plot_margin_left_px),
-        float(render_params.plot_margin_top_px),
-        float(width - render_params.plot_margin_right_px),
-        float(height - render_params.plot_margin_bottom_px),
-    ]
-    title_font = load_font(int(render_params.title_font_size_px), bold=True)
+    plot_bbox = plot_bbox_from_margins(
+        canvas_width=float(width),
+        canvas_height=float(height),
+        margin_left_px=float(render_params.plot_margin_left_px),
+        margin_right_px=float(render_params.plot_margin_right_px),
+        margin_top_px=float(render_params.plot_margin_top_px),
+        margin_bottom_px=float(render_params.plot_margin_bottom_px),
+    )
+    title_font = load_font(int(render_params.title_font_size_px), bold=False)
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
-    axis_font = load_font(int(render_params.label_font_size_px), bold=True)
-    value_font = load_font(int(render_params.value_font_size_px), bold=True)
-    legend_font = load_font(int(render_params.legend_font_size_px), bold=True)
+    axis_font = load_font(int(render_params.label_font_size_px), bold=False)
+    value_font = load_font(int(render_params.value_font_size_px), bold=dense_fit_bold())
+    legend_font = load_font(int(render_params.legend_font_size_px), bold=False)
 
     panel_bbox = [
         float(plot_bbox[0] - 60.0),
@@ -209,7 +215,8 @@ def render_scatter_readout_scene(
         outline=render_params.panel_border_rgb,
         width=2,
     )
-    draw.rectangle(
+    draw_plot_frame(
+        draw,
         plot_bbox,
         fill=render_params.plot_fill_rgb,
         outline=render_params.axis_color_rgb,
@@ -217,13 +224,22 @@ def render_scatter_readout_scene(
     )
 
     x_label_bboxes: dict[str, list[float]] = {}
-    for tick in range(0, 101, 20):
-        y = plot_bbox[3] - (float(tick) / 100.0) * (plot_bbox[3] - plot_bbox[1])
-        draw.line([plot_bbox[0], y, plot_bbox[2], y], fill=render_params.grid_color_rgb, width=int(render_params.grid_line_width_px))
-        draw.line([plot_bbox[0] - render_params.tick_length_px, y, plot_bbox[0], y], fill=render_params.axis_color_rgb, width=1)
+    y_tick_positions = draw_horizontal_value_grid_ticks(
+        draw,
+        plot_bbox,
+        tick_values=range(0, 101, 20),
+        domain_min=0,
+        domain_max=100,
+        grid_rgb=render_params.grid_color_rgb,
+        axis_rgb=render_params.axis_color_rgb,
+        grid_width_px=int(render_params.grid_line_width_px),
+        tick_width_px=1,
+        tick_length_px=float(render_params.tick_length_px),
+    )
+    for tick, y in y_tick_positions.items():
         draw_text(
             draw,
-            str(tick),
+            str(int(tick)),
             (plot_bbox[0] - 13.0, y),
             font=tick_font,
             fill=render_params.text_color_rgb,
@@ -232,13 +248,18 @@ def render_scatter_readout_scene(
         )
 
     x_count = len(dataset.x_labels)
+    x_tick_positions = draw_vertical_index_grid_ticks(
+        draw,
+        plot_bbox,
+        count=int(x_count),
+        grid_rgb=render_params.grid_color_rgb,
+        axis_rgb=render_params.axis_color_rgb,
+        grid_width_px=int(render_params.grid_line_width_px),
+        tick_width_px=1,
+        tick_length_px=float(render_params.tick_length_px),
+    )
     for index, label in enumerate(dataset.x_labels):
-        if x_count <= 1:
-            x = (plot_bbox[0] + plot_bbox[2]) / 2.0
-        else:
-            x = plot_bbox[0] + (float(index) / float(x_count - 1)) * (plot_bbox[2] - plot_bbox[0])
-        draw.line([x, plot_bbox[1], x, plot_bbox[3]], fill=render_params.grid_color_rgb, width=int(render_params.grid_line_width_px))
-        draw.line([x, plot_bbox[3], x, plot_bbox[3] + render_params.tick_length_px], fill=render_params.axis_color_rgb, width=1)
+        x = float(x_tick_positions[int(index)])
         x_label_bboxes[str(label)] = draw_text(
             draw,
             str(label),
@@ -312,7 +333,7 @@ def render_scatter_readout_scene(
                 font=value_font,
                 fill=render_params.text_color_rgb,
                 stroke_fill=render_params.text_stroke_rgb,
-                stroke_width=2,
+                stroke_width=dense_stroke_width(),
                 anchor="mm",
             )
             value_label_bboxes[str(point.point_id)] = list(value_box)
@@ -347,7 +368,7 @@ def render_scatter_readout_scene(
     for index, series_item in enumerate(dataset.series):
         y = legend_top + float(index) * legend_row_height
         row_box = [legend_left - 10.0, y - 8.0, float(width - 54.0), y + 36.0]
-        draw.rounded_rectangle(row_box, radius=6, fill=(255, 255, 255), outline=render_params.panel_border_rgb, width=1)
+        draw.rounded_rectangle(row_box, radius=6, fill=render_params.panel_fill_rgb, outline=render_params.panel_border_rgb, width=1)
         marker_box = draw_marker(
             draw,
             center=(legend_left + 15.0, y + 14.0),
@@ -394,13 +415,14 @@ def render_scatter_readout_dataset(
     instance_seed: int,
 ) -> ScatterReadoutRenderResult:
     render_style_params = {**dict(params), "_render_style_seed": int(instance_seed)}
-    render_params = resolve_render_params(render_style_params)
-    background, background_meta = make_background_canvas(
-        canvas_width=int(render_params.canvas_width),
-        canvas_height=int(render_params.canvas_height),
+    resolved_params = resolve_render_params(render_style_params)
+    protected_colors = [tuple(int(channel) for channel in series_item.color_rgb) for series_item in dataset.series]
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=params,
-        default_config=BACKGROUND_DEFAULTS,
+        scene_id="scatter_readout",
+        render_params=resolved_params,
+        protected_colors=protected_colors,
     )
     chart_font_family = sample_chart_font_family(int(instance_seed), params)
     with temporary_default_font_family(str(chart_font_family)):
@@ -419,7 +441,7 @@ def render_scatter_readout_dataset(
         image=image,
         rendered_scene=rendered_scene,
         render_params=render_params,
-        background_meta=dict(background_meta),
+        background_meta={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         post_noise_meta=dict(post_noise_meta),
         chart_font_family=str(chart_font_family),
     )

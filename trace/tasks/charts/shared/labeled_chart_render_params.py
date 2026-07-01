@@ -6,26 +6,25 @@ from dataclasses import dataclass
 from itertools import product
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from ....core.seed import hash64, spawn_rng
+from ....core.seed import spawn_rng
 from ...shared.color_distance import (
     sample_color_palette_with_distance_constraints,
     sample_color_with_distance_constraints,
 )
 from ...shared.config_defaults import group_default, resolve_required_int_bounds
-from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.named_colors import darken_color
 from ...shared.render_variation import apply_layout_jitter_to_margins
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
-from .chart_scene import (
+from .chart_scene_primitives import resolve_chart_render_params
+from .chart_scene_types import (
     ChartMarkSpec,
     ChartRenderParams,
     RenderedChartScene,
     SUPPORTED_CHART_SCENE_VARIANTS,
-    resolve_chart_render_params,
 )
 from .label_assets import resolve_chart_compact_axis_labels
 
-from .labeled_chart_core import LabeledChartDefaults
+from .labeled_chart_defaults import LabeledChartDefaults
 
 
 def resolve_chart_render_params_for_task(
@@ -37,9 +36,9 @@ def resolve_chart_render_params_for_task(
 ) -> ChartRenderParams:
     """Resolve one chart render-parameter block."""
 
-    def _selection_index(key: str) -> int:
+    def _rng_for_key(key: str):
         seed = 0 if instance_seed is None else int(instance_seed)
-        return abs(int(hash64(int(seed), f"chart_render:{str(key)}", 91421)))
+        return spawn_rng(int(seed), f"chart_render:{str(key)}")
 
     def _resolve_int(key: str, fallback: int, *, minimum: int = 1) -> int:
         if params.get(str(key)) is not None:
@@ -52,7 +51,7 @@ def resolve_chart_render_params_for_task(
             high = int(default_value if high_raw is None else high_raw)
             if int(low) > int(high):
                 raise ValueError(f"{str(key)}_min must be <= {str(key)}_max")
-            return max(int(minimum), int(low) + (_selection_index(str(key)) % (int(high) - int(low) + 1)))
+            return max(int(minimum), int(_rng_for_key(str(key)).randint(int(low), int(high))))
         return max(int(minimum), int(group_default(render_defaults, str(key), int(fallback))))
 
     def _resolve_float(key: str, fallback: float, *, steps: int = 15) -> float:
@@ -67,7 +66,7 @@ def resolve_chart_render_params_for_task(
             if float(low) > float(high):
                 raise ValueError(f"{str(key)}_min must be <= {str(key)}_max")
             step_count = max(1, int(steps))
-            offset = _selection_index(str(key)) % (int(step_count) + 1)
+            offset = _rng_for_key(str(key)).randint(0, int(step_count))
             return float(low + ((high - low) * (float(offset) / float(step_count))))
         return float(group_default(render_defaults, str(key), float(fallback)))
 
@@ -76,7 +75,7 @@ def resolve_chart_render_params_for_task(
             return params[str(key)]
         options = params.get(f"{str(key)}_options", group_default(render_defaults, f"{str(key)}_options", None))
         if isinstance(options, Sequence) and options and not isinstance(options, (str, bytes)):
-            selected = options[_selection_index(str(key)) % len(options)]
+            selected = _rng_for_key(str(key)).choice(list(options))
             return selected
         return group_default(render_defaults, str(key), list(fallback))
 
@@ -95,7 +94,7 @@ def resolve_chart_render_params_for_task(
             return str(explicit)
         options = params.get(f"{str(key)}_options", group_default(render_defaults, f"{str(key)}_options", None))
         if isinstance(options, Sequence) and options and not isinstance(options, (str, bytes)):
-            return str(options[_selection_index(str(key)) % len(options)])
+            return str(_rng_for_key(str(key)).choice(list(options)))
         return str(fallback)
 
     def _resolve_float_value(key: str, fallback: float) -> float:
@@ -107,7 +106,7 @@ def resolve_chart_render_params_for_task(
             return str(explicit)
         styles = params.get("guide_line_styles", group_default(render_defaults, "guide_line_styles", ("dashed", "dotted")))
         if isinstance(styles, Sequence) and styles and not isinstance(styles, (str, bytes)):
-            return str(styles[_selection_index("guide_line_style") % len(styles)])
+            return str(_rng_for_key("guide_line_style").choice(list(styles)))
         return "dashed"
 
     def _resolve_guide_mode() -> str:
@@ -115,7 +114,7 @@ def resolve_chart_render_params_for_task(
         if mode != "variant":
             return str(mode)
         probability = max(0.0, min(1.0, _resolve_float_value("guide_line_prob", 0.5)))
-        draw_value = (_selection_index("guide_line_enabled") % 10_000) / 10_000.0
+        draw_value = _rng_for_key("guide_line_enabled").random()
         return "always" if float(draw_value) < float(probability) else "off"
 
     margin_left = int(params.get("plot_margin_left_px", group_default(render_defaults, "plot_margin_left_px", defaults.plot_margin_left_px)))
@@ -169,7 +168,6 @@ def resolve_chart_render_params_for_task(
         "guide_line_style": _resolve_style(),
         "guide_line_width_px": int(params.get("guide_line_width_px", group_default(render_defaults, "guide_line_width_px", 1))),
         "guide_line_color_rgb": _resolve_rgb("guide_line_color_rgb", [150, 156, 166]),
-        "_guide_style_seed": _selection_index("guide_line_style"),
         "layout_jitter_dx_px": int(layout_jitter_meta.get("dx_px", 0)),
         "layout_jitter_dy_px": int(layout_jitter_meta.get("dy_px", 0)),
         "layout_jitter_meta": dict(layout_jitter_meta),

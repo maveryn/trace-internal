@@ -23,6 +23,7 @@ from trace.tasks.three_d.shared.semantic_colors import sample_readout_palette as
 from trace.tasks.three_d.shared.task_support import (
     resolve_axis_variant_for_namespace,
     resolve_count_for_namespace,
+    shuffled_repeated_support,
 )
 
 from .state import (
@@ -267,22 +268,17 @@ def _resolve_between_items_count(
     instance_seed: int,
     namespace: str,
 ) -> tuple[int, Dict[str, float]]:
-    del namespace
-    min_count = int(params.get("target_count_min", group_default(gen_defaults, "target_count_min", 1)))
-    max_count = int(params.get("target_count_max", group_default(gen_defaults, "target_count_max", 5)))
-    min_count = max(1, min(5, int(min_count)))
-    max_count = max(min_count, min(5, int(max_count)))
-    support = tuple(range(int(min_count), int(max_count) + 1))
-    explicit = params.get("target_count")
-    if explicit is not None:
-        count = int(explicit)
-        if count not in set(support):
-            raise ValueError(f"unsupported target_count: {count}")
-        return int(count), {str(value): (1.0 if int(value) == int(count) else 0.0) for value in support}
-    balanced_seed = int(params.get("_balanced_answer_seed", int(instance_seed)))
-    count = int(support[abs(int(balanced_seed)) % len(support)])
-    probability = 1.0 / float(len(support))
-    return int(count), {str(value): float(probability) for value in support}
+    return resolve_count_for_namespace(
+        params,
+        namespace=str(namespace),
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        key="target_count",
+        default_min=int(params.get("target_count_min", group_default(gen_defaults, "target_count_min", 1))),
+        default_max=int(params.get("target_count_max", group_default(gen_defaults, "target_count_max", 5))),
+        lower=1,
+        upper=5,
+    )
 
 
 def _resolve_transfer_answer_and_counts(
@@ -579,17 +575,16 @@ def _ordered_pair_symbol_sequence(
     if not fillers and total_count > 2 * pair_count:
         raise ValueError("ordered pair sequence needs filler symbols")
     units: list[tuple[str, ...]] = [(str(first_symbol), str(second_symbol)) for _ in range(pair_count)]
-    filler_count = total_count - 2 * pair_count
-    for index in range(filler_count):
-        units.append((str(fillers[index % len(fillers)]),))
+    for filler in shuffled_repeated_support(rng, fillers, total_count - 2 * pair_count):
+        units.append((str(filler),))
     rng.shuffle(units)
     sequence = tuple(symbol for unit in units for symbol in unit)
     observed = sum(
         1
         for index, symbol in enumerate(sequence)
         if str(symbol) == str(first_symbol)
-        and str(sequence[(index + 1) % len(sequence)]) == str(second_symbol)
         and (bool(circular) or index + 1 < len(sequence))
+        and str(sequence[0 if index + 1 >= len(sequence) else index + 1]) == str(second_symbol)
     )
     if int(observed) != int(pair_count):
         raise ValueError("ordered pair sequence construction produced the wrong count")
@@ -904,7 +899,7 @@ def build_belt_total_count_dataset(
                     rng=rng,
                     object_id=str(object_id),
                     shape_type=str(target_shape),
-                    color_name=str(color_names[(index + len(object_specs)) % len(color_names)]),
+                    color_name=str(rng.choice(color_names)),
                     lane_key=str(lane_key),
                     layout_orientation=str(layout_orientation),
                     slot=slot,
@@ -1030,7 +1025,7 @@ def build_scoped_belt_count_dataset(
                 shape_type = str(target_shape) if bool(matches_query) or (str(lane_key) != str(target_lane_key) and rng.random() < 0.35) else str(
                     distractor_shapes[int(rng.randrange(len(distractor_shapes)))]
                 )
-                color_name = str(color_names[(index + len(object_specs)) % len(color_names)])
+                color_name = str(rng.choice(color_names))
                 count_role = "target" if bool(matches_query) else ("same_belt_distractor" if str(lane_key) == str(target_lane_key) else "lane_distractor")
             else:
                 if str(predicate_kind) == PREDICATE_COLOR:
@@ -1040,7 +1035,7 @@ def build_scoped_belt_count_dataset(
                     elif str(lane_key) != str(target_lane_key) and rng.random() < 0.35:
                         color_name = str(target_color_name)
                     else:
-                        color_name = str(wrong_colors[(index + len(object_specs)) % len(wrong_colors)])
+                        color_name = str(rng.choice(wrong_colors))
                     count_role = "target" if bool(matches_query) else ("same_belt_distractor" if str(lane_key) == str(target_lane_key) else "lane_distractor")
                 else:
                     if bool(matches_query):
@@ -1055,11 +1050,11 @@ def build_scoped_belt_count_dataset(
                             count_role = "same_belt_same_color_wrong_type"
                         elif pattern == 1:
                             shape_type = str(target_shape)
-                            color_name = str(wrong_colors[index % len(wrong_colors)])
+                            color_name = str(rng.choice(wrong_colors))
                             count_role = "same_belt_same_type_wrong_color"
                         else:
                             shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
-                            color_name = str(wrong_colors[index % len(wrong_colors)])
+                            color_name = str(rng.choice(wrong_colors))
                             count_role = "same_belt_wrong_type_wrong_color"
                     elif int(index) == 0:
                         shape_type = str(target_shape)
@@ -1071,11 +1066,11 @@ def build_scoped_belt_count_dataset(
                         count_role = "other_belt_same_color_wrong_type"
                     elif int(index) % 3 == 2:
                         shape_type = str(target_shape)
-                        color_name = str(wrong_colors[index % len(wrong_colors)])
+                        color_name = str(rng.choice(wrong_colors))
                         count_role = "other_belt_same_type_wrong_color"
                     else:
                         shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
-                        color_name = str(wrong_colors[index % len(wrong_colors)])
+                        color_name = str(rng.choice(wrong_colors))
                         count_role = "other_belt_wrong_type_wrong_color"
             object_id = f"obj_{len(object_specs):03d}"
             if bool(matches_query):
@@ -1199,7 +1194,7 @@ def build_lane_count_arithmetic_dataset(
                 shape_type = str(target_shape)
             else:
                 shape_type = str(distractor_shapes[int(rng.randrange(len(distractor_shapes)))])
-            color_name = str(wrong_colors[(index + len(object_specs)) % len(wrong_colors)])
+            color_name = str(rng.choice(wrong_colors))
             object_id = f"obj_{len(object_specs):03d}"
             if bool(matches_query):
                 target_object_ids_by_lane[str(lane_key)].append(str(object_id))
@@ -1386,30 +1381,30 @@ def build_transfer_count_dataset(
             object_id = f"obj_{len(object_specs):03d}"
             if str(lane_key) == str(source_lane_key) and int(index) < int(moved_count):
                 if str(predicate_kind) == PREDICATE_COLOR_TRANSFER:
-                    shape_type = str(target_shape if index % 2 == 0 else distractor_shapes[index % len(distractor_shapes)])
+                    shape_type = str(target_shape if index % 2 == 0 else rng.choice(distractor_shapes))
                     color_name = str(target_color_name)
                 else:
                     shape_type = str(target_shape)
-                    color_name = str(color_names[index % len(color_names)])
+                    color_name = str(rng.choice(color_names))
                 matches_query = True
                 count_role = "source_moved_object"
                 source_moved_ids.append(str(object_id))
             elif str(lane_key) == str(source_lane_key):
                 if str(predicate_kind) == PREDICATE_COLOR_TRANSFER:
-                    shape_type = str(distractor_shapes[index % len(distractor_shapes)])
-                    color_name = str(wrong_colors[index % len(wrong_colors)])
+                    shape_type = str(rng.choice(distractor_shapes))
+                    color_name = str(rng.choice(wrong_colors))
                 else:
-                    shape_type = str(distractor_shapes[index % len(distractor_shapes)])
-                    color_name = str(color_names[index % len(color_names)])
+                    shape_type = str(rng.choice(distractor_shapes))
+                    color_name = str(rng.choice(color_names))
                 matches_query = False
                 count_role = "source_non_moved_distractor"
             elif str(lane_key) == str(destination_lane_key):
                 if str(predicate_kind) == PREDICATE_COLOR_TRANSFER:
-                    shape_type = str(target_shape if index % 3 == 0 else distractor_shapes[index % len(distractor_shapes)])
-                    color_name = str(color_names[index % len(color_names)])
+                    shape_type = str(target_shape if index % 3 == 0 else rng.choice(distractor_shapes))
+                    color_name = str(rng.choice(color_names))
                 else:
-                    shape_type = str(target_shape if index % 3 == 0 else distractor_shapes[index % len(distractor_shapes)])
-                    color_name = str(color_names[index % len(color_names)])
+                    shape_type = str(target_shape if index % 3 == 0 else rng.choice(distractor_shapes))
+                    color_name = str(rng.choice(color_names))
                 matches_query = True
                 count_role = "destination_existing_object"
                 destination_existing_ids.append(str(object_id))
@@ -1419,10 +1414,10 @@ def build_transfer_count_dataset(
                     color_name = str(target_color_name)
                 elif str(predicate_kind) == PREDICATE_OBJECT_TYPE_TRANSFER and index % 3 == 0:
                     shape_type = str(target_shape)
-                    color_name = str(color_names[index % len(color_names)])
+                    color_name = str(rng.choice(color_names))
                 else:
-                    shape_type = str(distractor_shapes[index % len(distractor_shapes)])
-                    color_name = str(color_names[index % len(color_names)])
+                    shape_type = str(rng.choice(distractor_shapes))
+                    color_name = str(rng.choice(color_names))
                 matches_query = False
                 count_role = "outside_scope_distractor"
             object_specs.append(
@@ -1681,7 +1676,7 @@ def build_ordered_pair_count_dataset(
                 color_name = str(sequence[index])
             else:
                 shape_type = str(sequence[index])
-                color_name = str(palette[(index + len(object_specs)) % len(palette)])
+                color_name = str(rng.choice(palette))
             object_specs.append(
                 _make_object_spec(
                     rng=rng,
@@ -1873,7 +1868,7 @@ def build_between_marked_items_count_dataset(
         elif int(index) == int(end_index):
             target_sequence.append(str(target_shape_pair[1]))
         else:
-            target_sequence.append(str(filler_symbols[(index + rng.randrange(len(filler_symbols))) % len(filler_symbols)]))
+            target_sequence.append(str(rng.choice(filler_symbols)))
 
     object_specs: List[Dict[str, Any]] = []
     object_sequences_by_lane: Dict[str, list[str]] = {}
@@ -1898,7 +1893,7 @@ def build_between_marked_items_count_dataset(
             object_id = f"obj_{len(object_specs):03d}"
             lane_object_ids.append(str(object_id))
             shape_type = str(sequence[index])
-            color_name = str(color_palette[(index + len(object_specs)) % len(color_palette)])
+            color_name = str(rng.choice(color_palette))
 
             is_start_anchor = str(lane_key) == str(target_lane_key) and int(index) == int(start_index)
             is_end_anchor = str(lane_key) == str(target_lane_key) and int(index) == int(end_index)

@@ -15,7 +15,7 @@ from trace.tasks.icons.wallpaper_panels.same_pattern_as_reference_label import (
     TASK_ID,
 )
 from trace.tasks.icons.wallpaper_panels.shared.rendering import (
-    SAFE_WALLPAPER_CANVAS_TREATMENTS,
+    WALLPAPER_CANVAS_TREATMENTS,
     WALLPAPER_PANEL_CHROME_POLICY,
 )
 from trace.tasks.icons.shared.icon_assets import resolve_icon_pool
@@ -72,8 +72,8 @@ def test_icons_wallpaper_reference_match_contract_matches_scene() -> None:
     assert execution["visible_internal_grid"] is False
     assert trace["render_spec"]["style"]["visible_internal_grid"] is False
     assert trace["render_spec"]["style"]["wallpaper_panel_chrome_policy"] == WALLPAPER_PANEL_CHROME_POLICY
-    assert trace["render_spec"]["style"]["safe_canvas_treatments"] == list(SAFE_WALLPAPER_CANVAS_TREATMENTS)
-    assert trace["render_spec"]["style"]["icon_canvas_style"]["treatment"] in SAFE_WALLPAPER_CANVAS_TREATMENTS
+    assert trace["render_spec"]["style"]["available_canvas_treatments"] == list(WALLPAPER_CANVAS_TREATMENTS)
+    assert trace["render_spec"]["style"]["icon_canvas_style"]["treatment"] in WALLPAPER_CANVAS_TREATMENTS
     assert trace["render_spec"]["panel_geometry"]["motif_lattice"] == {"rows": 4, "cols": 4, "visible_grid": False}
     assert trace["render_spec"]["panel_geometry"]["reference_panel_position"] == "above_candidate_grid"
     canvas_width, canvas_height = trace["render_spec"]["canvas_size"]
@@ -129,10 +129,10 @@ def test_icons_wallpaper_reference_match_prompt_example_matches_contract() -> No
 
 def test_icons_wallpaper_reference_match_rejects_unsafe_canvas_treatment() -> None:
     task = IconsWallpaperPanelsSamePatternAsReferenceLabelTask()
-    with pytest.raises(ValueError, match="quiet canvas treatments"):
+    with pytest.raises(ValueError, match="shared icon canvas treatments"):
         task.generate(
             2026060912,
-            params={"icon_canvas_treatments": ["plain_sheet", "worksheet_panel"]},
+            params={"icon_canvas_treatments": ["plain_sheet", "unsupported_canvas"]},
             max_attempts=20,
         )
 

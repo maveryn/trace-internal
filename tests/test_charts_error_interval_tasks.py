@@ -16,17 +16,22 @@ from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID
 
 
 TASK_CASES = (
-    (ChartsErrorIntervalReferenceContainmentCountTask, ChartsErrorIntervalReferenceContainmentCountTask.supported_query_ids, "integer"),
-    (ChartsErrorIntervalReferenceExclusionSideCountTask, ChartsErrorIntervalReferenceExclusionSideCountTask.supported_query_ids, "integer"),
-    (ChartsErrorIntervalRelationLabelTask, ChartsErrorIntervalRelationLabelTask.supported_query_ids, "string"),
+    (ChartsErrorIntervalReferenceContainmentCountTask, ChartsErrorIntervalReferenceContainmentCountTask.supported_query_ids, "integer", "segment_set"),
+    (ChartsErrorIntervalReferenceExclusionSideCountTask, ChartsErrorIntervalReferenceExclusionSideCountTask.supported_query_ids, "integer", "segment_set"),
+    (ChartsErrorIntervalRelationLabelTask, ChartsErrorIntervalRelationLabelTask.supported_query_ids, "string", "segment"),
 )
 
 
-def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
-    assert len(bbox) == 4
-    x0, y0, x1, y1 = [float(value) for value in bbox]
-    assert 0 <= x0 < x1 <= width
-    assert 0 <= y0 < y1 <= height
+def _assert_point_inside_canvas(point: list[float], *, width: int, height: int) -> None:
+    assert len(point) == 2
+    assert 0 <= float(point[0]) <= width
+    assert 0 <= float(point[1]) <= height
+
+
+def _assert_segment_inside_canvas(segment: list[list[float]], *, width: int, height: int) -> None:
+    assert len(segment) == 2
+    for point in segment:
+        _assert_point_inside_canvas(list(point), width=width, height=height)
 
 
 def _expected_answer(execution: dict, query_id: str) -> int | str:
@@ -51,29 +56,40 @@ def _expected_answer(execution: dict, query_id: str) -> int | str:
     raise AssertionError(f"unsupported query_id: {query_id}")
 
 
-@pytest.mark.parametrize(("task_cls", "query_ids", "answer_type"), TASK_CASES)
-def test_charts_error_interval_tasks_match_contract(task_cls: type, query_ids: tuple[str, ...], answer_type: str) -> None:
+@pytest.mark.parametrize(("task_cls", "query_ids", "answer_type", "annotation_type"), TASK_CASES)
+def test_charts_error_interval_tasks_match_contract(task_cls: type, query_ids: tuple[str, ...], answer_type: str, annotation_type: str) -> None:
     task = task_cls()
     for index, query_id in enumerate(query_ids):
         out = task.generate(117000 + index + len(task_cls.task_id), params={"query_id": query_id}, max_attempts=60)
         width, height = out.image.size
         assert out.query_id == query_id
         assert out.answer_gt.type == answer_type
-        assert out.annotation_gt.type == "bbox_set"
+        assert out.annotation_gt.type == annotation_type
         assert out.answer_gt.value == _expected_answer(out.trace_payload["execution_trace"], query_id)
         assert out.trace_payload["query_spec"]["query_id"] == query_id
         assert out.trace_payload["query_spec"]["params"]["query_id"] == query_id
         assert out.trace_payload["execution_trace"]["query_id"] == query_id
         annotation = out.annotation_gt.value
-        assert isinstance(annotation, list)
-        assert annotation
-        for bbox in annotation:
-            _assert_bbox_inside_canvas(list(bbox), width=width, height=height)
-        assert len(annotation) == len(out.trace_payload["execution_trace"]["annotation_item_ids"])
+        if annotation_type == "segment_set":
+            assert isinstance(annotation, list)
+            assert annotation
+            assert out.trace_payload["projected_annotation"]["segment_set"] == annotation
+            assert out.trace_payload["projected_annotation"]["pixel_segment_set"] == annotation
+            for segment in annotation:
+                _assert_segment_inside_canvas([list(point) for point in segment], width=width, height=height)
+            assert len(annotation) == len(out.trace_payload["execution_trace"]["annotation_item_ids"])
+        elif annotation_type == "segment":
+            assert isinstance(annotation, list)
+            _assert_segment_inside_canvas([list(point) for point in annotation], width=width, height=height)
+            assert out.trace_payload["projected_annotation"]["segment"] == annotation
+            assert out.trace_payload["projected_annotation"]["pixel_segment"] == annotation
+            assert len(out.trace_payload["execution_trace"]["annotation_item_ids"]) == 1
+        else:
+            raise AssertionError(f"unsupported annotation type in test: {annotation_type}")
 
 
 def test_charts_error_interval_prompt_examples_match_contract() -> None:
-    for task_cls, _query_ids, answer_type in TASK_CASES:
+    for task_cls, _query_ids, answer_type, annotation_type in TASK_CASES:
         out = task_cls().generate(118000 + len(task_cls.task_id), params={}, max_attempts=60)
         answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
@@ -84,6 +100,16 @@ def test_charts_error_interval_prompt_examples_match_contract() -> None:
             assert isinstance(answer_and_annotation["answer"], str)
             assert isinstance(answer_only["answer"], str)
         assert isinstance(answer_and_annotation["annotation"], list)
+        if annotation_type == "segment":
+            assert len(answer_and_annotation["annotation"]) == 2
+            assert all(isinstance(point, list) and len(point) == 2 for point in answer_and_annotation["annotation"])
+        elif annotation_type == "segment_set":
+            assert all(
+                isinstance(segment, list)
+                and len(segment) == 2
+                and all(isinstance(point, list) and len(point) == 2 for point in segment)
+                for segment in answer_and_annotation["annotation"]
+            )
 
 
 def test_charts_error_interval_balanced_sampling_covers_scene_axis() -> None:

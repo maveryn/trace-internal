@@ -292,34 +292,12 @@ visual:
         - 0.035
 generation:
   shared:
-    balanced_query_id_sampling: true
-    balanced_scene_variant_sampling: true
     landmark_count_min: 10
     landmark_count_max: 14
     direction_step_count_min: 2
     direction_step_count_max: 4
     highlighted_route_step_min: 2
     highlighted_route_step_max: 5
-    scene_variant_weights:
-      campus_map: 1.0
-  task_overrides:
-    task_pages__map__destination_after_directions_label:
-      query_id_weights:
-        destination_after_directions: 1.0
-    task_pages__map__landmark_after_route_step_label:
-      query_id_weights:
-        landmark_after_route_step: 1.0
 prompt:
   shared:
-    bundle_id: pages_map_v0
-    answer_hint: set "answer" to the exact visible landmark or zone label
-    scene_key: printed_map
-    task_key: map_navigation_query
-    object_description_campus_map: a printed campus layout with labeled landmarks,
-      named zones, visible walking paths, and a compass
-    annotation_hint_destination_after_directions: set "annotation" to an ordered array
-      of [x0, y0, x1, y1] pixel bounding boxes for the route landmarks from the start
-      through the destination
-    annotation_hint_landmark_after_route_step: set "annotation" to an ordered array
-      of [x0, y0, x1, y1] pixel bounding boxes for the highlighted-route landmarks
-      from the start through the requested landmark
+    bundle_id: pages_map_v1

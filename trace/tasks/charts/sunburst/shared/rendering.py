@@ -8,16 +8,29 @@ from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont
 
-from trace.core.visual.background import make_background_canvas
+from trace.tasks.charts.shared.information_style import prepare_chart_information_scene
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.charts.shared.visual_defaults import chart_font_asset_metadata, sample_chart_font_family
 from trace.tasks.shared.bbox_projection import bbox_union_raw
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font, temporary_default_font_family
 
-from .defaults import BACKGROUND_DEFAULTS, POST_IMAGE_NOISE_DEFAULTS, canvas_size, render_int, render_rgb, rendering_value
+from .defaults import POST_IMAGE_NOISE_DEFAULTS, canvas_size, generation_value, render_int, render_rgb, rendering_value
 from .sampling import descendant_leaf_ids, lighten, nodes_by_id
 from .state import BBox, RGB, RenderedSunburst, RenderParams, SunburstNode, SunburstTree
+
+
+SUNBURST_LABEL_FILL_RGB: RGB = (22, 28, 38)
+SUNBURST_LABEL_STROKE_RGB: RGB = (248, 252, 255)
+SUNBURST_CHART_FONT_FAMILY_WEIGHTS = {
+    "roboto": 1.0,
+    "source_sans_3": 1.0,
+    "nunito_sans": 1.0,
+    "fira_sans": 1.0,
+    "barlow": 1.0,
+    "karla": 1.0,
+    "cabin": 1.0,
+}
 
 
 def render_scene(
@@ -29,18 +42,21 @@ def render_scene(
 ) -> RenderedSunburst:
     """Apply chart-wide visual variation before drawing the deterministic tree."""
 
-    width, height = canvas_size(params)
-    background, background_meta = make_background_canvas(
-        canvas_width=int(width),
-        canvas_height=int(height),
+    resolved_params = _render_params(params, instance_seed=int(instance_seed))
+    protected_colors = [tuple(int(channel) for channel in node.color_rgb) for node in tree.nodes]
+    render_params, background, background_meta, information_style_meta = prepare_chart_information_scene(
         instance_seed=int(instance_seed),
         params=dict(params),
-        default_config=BACKGROUND_DEFAULTS,
+        scene_id="sunburst",
+        render_params=resolved_params,
+        protected_colors=protected_colors,
     )
+    font_params = dict(params)
+    font_params.setdefault("chart_font_family_weights", dict(SUNBURST_CHART_FONT_FAMILY_WEIGHTS))
     chart_font_family = sample_chart_font_family(
         instance_seed=int(instance_seed),
         namespace=str(font_namespace),
-        params=dict(params),
+        params=font_params,
     )
     with temporary_default_font_family(str(chart_font_family)):
         rendered = _render_sunburst(
@@ -48,6 +64,7 @@ def render_scene(
             tree=tree,
             params=params,
             instance_seed=int(instance_seed),
+            render_params=render_params,
         )
     image, post_noise_meta = apply_post_image_noise(
         rendered.image,
@@ -61,8 +78,13 @@ def render_scene(
         node_traces=rendered.node_traces,
         leaf_value_bbox_by_node_id=rendered.leaf_value_bbox_by_node_id,
         chart_bbox_px=rendered.chart_bbox_px,
-        render_meta=rendered.render_meta,
-        background_meta=dict(background_meta),
+        render_meta={
+            **dict(rendered.render_meta),
+            "background_style": {**dict(background_meta), "information_scene_style": dict(information_style_meta)},
+            "information_scene_style": dict(information_style_meta),
+            "post_image_noise": dict(post_noise_meta),
+        },
+        background_meta={**dict(background_meta), "information_scene_style": dict(information_style_meta)},
         post_noise_meta=dict(post_noise_meta),
         font_assets=chart_font_asset_metadata(str(chart_font_family)),
     )
@@ -74,10 +96,11 @@ def _render_sunburst(
     tree: SunburstTree,
     params: Mapping[str, Any],
     instance_seed: int,
+    render_params: RenderParams | None = None,
 ) -> RenderedSunburst:
     """Draw concentric rings and record leaf-value bboxes for annotation."""
 
-    render_params = _render_params(params, instance_seed=int(instance_seed))
+    render_params = render_params or _render_params(params, instance_seed=int(instance_seed))
     image = background.convert("RGB")
     draw = ImageDraw.Draw(image)
     center = (float(render_params.center_x_px), float(render_params.center_y_px))
@@ -104,26 +127,31 @@ def _render_sunburst(
         width=2,
     )
 
-    parent_font = _font(render_params.parent_font_size_px, bold=True)
-    subgroup_font = _font(render_params.subgroup_font_size_px, bold=True)
-    leaf_font = _font(render_params.leaf_font_size_px, bold=True)
-    value_font = _font(render_params.value_font_size_px, bold=True)
+    parent_font = _font(render_params.parent_font_size_px, bold=False)
+    subgroup_font = _font(render_params.subgroup_font_size_px, bold=False)
+    leaf_font = _font(render_params.leaf_font_size_px, bold=False)
+    value_font = _font(render_params.value_font_size_px, bold=False)
 
     node_lookup = nodes_by_id(tree)
     spans = _node_angle_spans(tree)
     node_traces: list[dict[str, Any]] = []
     entities: list[dict[str, Any]] = []
     leaf_value_bbox_by_node_id: dict[str, BBox] = {}
+    parent_label_max_chars = int(generation_value(params, "sunburst_parent_label_max_chars", 10))
+    subgroup_label_max_chars = int(generation_value(params, "sunburst_subgroup_label_max_chars", 8))
+    leaf_label_max_chars = int(generation_value(params, "sunburst_leaf_label_max_chars", 7))
 
     for level in ("leaf", "subgroup", "parent"):
         for node in [item for item in tree.nodes if item.level == level]:
             start, end = spans[str(node.node_id)]
             inner_radius, outer_radius = _ring_for_level(render_params, str(level))
             fill = tuple(int(channel) for channel in node.color_rgb)
-            if str(level) == "subgroup":
-                fill = lighten(fill, 0.10)
-            elif str(level) == "leaf":
+            if str(level) == "parent":
                 fill = lighten(fill, 0.18)
+            elif str(level) == "subgroup":
+                fill = lighten(fill, 0.26)
+            elif str(level) == "leaf":
+                fill = lighten(fill, 0.34)
             _draw_ring_wedge(
                 draw,
                 center=center,
@@ -162,22 +190,22 @@ def _render_sunburst(
         )
         sweep = abs(float(end) - float(start))
         if node.level == "parent":
-            label_lines = [_truncate_label(node.label, max_chars=14)]
+            label_lines = [_truncate_label(node.label, max_chars=int(parent_label_max_chars))]
             font = parent_font
         elif node.level == "subgroup":
-            label_lines = [_truncate_label(node.label, max_chars=13)]
+            label_lines = [_truncate_label(node.label, max_chars=int(subgroup_label_max_chars))]
             font = subgroup_font
         else:
-            label_lines = [_truncate_label(node.label, max_chars=12), str(int(node.value))]
+            label_lines = [_truncate_label(node.label, max_chars=int(leaf_label_max_chars)), str(int(node.value))]
             font = leaf_font if sweep >= 16.0 else value_font
         text_boxes = _draw_multiline_centered_text(
             draw,
             label_xy,
             label_lines,
             font=font,
-            fill=render_params.text_color_rgb,
-            stroke_fill=render_params.text_stroke_rgb,
-            stroke_width=int(render_params.label_stroke_width_px),
+            fill=SUNBURST_LABEL_FILL_RGB,
+            stroke_fill=SUNBURST_LABEL_STROKE_RGB,
+            stroke_width=0,
             line_gap_px=2,
         )
         text_bbox = _bbox_union(text_boxes)
@@ -234,6 +262,11 @@ def _render_sunburst(
                 "leaf_outer": int(render_params.leaf_outer_radius_px),
             },
             "value_display_policy": "outer_leaf_values_only",
+            "label_text_style": {
+                "fill_rgb": list(SUNBURST_LABEL_FILL_RGB),
+                "stroke_width_px": 0,
+                "font_weight": "regular",
+            },
         },
         background_meta={},
         post_noise_meta={},

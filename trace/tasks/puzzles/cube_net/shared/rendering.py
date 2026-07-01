@@ -6,12 +6,15 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.tasks.puzzles.shared.scene_style import (
     make_puzzle_scene_background,
     resolve_puzzle_scene_style,
 )
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.drawing import draw_arrow, draw_centered_text, draw_rounded_rect
+from trace.tasks.shared.drawing import draw_centered_text, draw_rounded_rect
+from trace.tasks.shared.named_colors import named_color
 from trace.tasks.shared.text_rendering import load_font
 
 from .sampling import resolve_scene_int
@@ -22,9 +25,8 @@ from .state import (
     SIDE_OFFSETS,
     FaceOption,
     FaceRelationDataset,
-    PathSequenceOption,
-    RollingDataset,
-    SurfacePathDataset,
+    NetEquivalenceDataset,
+    NetEquivalenceOption,
 )
 
 
@@ -52,25 +54,59 @@ def style_face_colors(style: Any) -> Dict[str, Tuple[int, int, int]]:
     }
 
 
-def draw_title(
-    draw: ImageDraw.ImageDraw,
-    text: str,
-    center_x: float,
-    y: float,
-    style: Any,
-    font_size: int,
-) -> None:
-    """Draw a compact panel title using the current scene style."""
+def _net_rotation_degrees(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> int:
+    """Resolve a nonsemantic 90-degree cube-net rotation."""
 
-    draw_centered_text(
-        draw,
-        text=str(text),
-        center=(float(center_x), float(y)),
-        font=load_font(int(font_size), bold=True),
-        fill=tuple(style.text_rgb),
-        stroke_fill=tuple(style.text_stroke_rgb),
-        stroke_width=1,
-    )
+    allowed = (0, 90, 180, 270)
+    explicit = params.get("net_rotation_degrees")
+    if explicit is not None:
+        value = int(explicit)
+        if value not in allowed:
+            raise ValueError("net_rotation_degrees must be one of 0, 90, 180, 270")
+        return int(value)
+    rng = spawn_rng(int(instance_seed), f"{namespace}.net_rotation")
+    return int(uniform_choice(rng, allowed))
+
+
+def _rotated_net_grid_coords(rotation_degrees: int) -> Dict[str, Tuple[int, int]]:
+    """Return display-grid coordinates for the cube net after 90-degree turns."""
+
+    min_x = min(coord[0] for coord in NET_COORDS.values())
+    max_x = max(coord[0] for coord in NET_COORDS.values())
+    min_y = min(coord[1] for coord in NET_COORDS.values())
+    max_y = max(coord[1] for coord in NET_COORDS.values())
+    width = int(max_x - min_x + 1)
+    height = int(max_y - min_y + 1)
+    rotation = int(rotation_degrees) % 360
+    rotated: Dict[str, Tuple[int, int]] = {}
+    for face, (x, y) in NET_COORDS.items():
+        nx = int(x - min_x)
+        ny = int(y - min_y)
+        if rotation == 0:
+            rx, ry = nx, ny
+        elif rotation == 90:
+            rx, ry = int(height - 1 - ny), nx
+        elif rotation == 180:
+            rx, ry = int(width - 1 - nx), int(height - 1 - ny)
+        elif rotation == 270:
+            rx, ry = ny, int(width - 1 - nx)
+        else:
+            raise ValueError("net rotation must be 0, 90, 180, or 270 degrees")
+        rotated[str(face)] = (int(rx), int(ry))
+    return rotated
+
+
+def _rotated_side(side: str, rotation_degrees: int) -> str:
+    """Map a canonical face side to the displayed side after net rotation."""
+
+    order = ("top", "right", "bottom", "left")
+    turns = (int(rotation_degrees) % 360) // 90
+    return str(order[(order.index(str(side)) + turns) % len(order)])
 
 
 def draw_face_label(
@@ -248,7 +284,8 @@ def draw_net_panel(
     style: Any,
     font_size: int,
     cell_size_px: int,
-) -> Tuple[Dict[str, list[float]], list[float]]:
+    rotation_degrees: int,
+) -> Tuple[Dict[str, list[float]], list[float], Dict[str, list[float]]]:
     """Draw the six-face cube net and mark the relation reference face/edge."""
 
     x0, y0, x1, y1 = [int(round(float(value))) for value in panel_bbox]
@@ -260,20 +297,23 @@ def draw_net_panel(
         outline=tuple(style.panel_border_rgb),
         width=2,
     )
-    min_x = min(coord[0] for coord in NET_COORDS.values())
-    max_x = max(coord[0] for coord in NET_COORDS.values())
-    min_y = min(coord[1] for coord in NET_COORDS.values())
-    max_y = max(coord[1] for coord in NET_COORDS.values())
-    net_w = int(max_x - min_x + 1) * int(cell_size_px)
-    net_h = int(max_y - min_y + 1) * int(cell_size_px)
+    rendered_coords = _rotated_net_grid_coords(rotation_degrees)
+    max_x = max(coord[0] for coord in rendered_coords.values())
+    max_y = max(coord[1] for coord in rendered_coords.values())
+    net_w = int(max_x + 1) * int(cell_size_px)
+    net_h = int(max_y + 1) * int(cell_size_px)
     origin_x = int(round(0.5 * (x0 + x1 - net_w)))
     origin_y = int(round(y0 + 42 + max(0, (y1 - y0 - 70 - net_h) * 0.5)))
     face_colors = style_face_colors(style)
     face_bboxes: Dict[str, list[float]] = {}
-    for face_id in sorted(FACE_IDS, key=lambda face: (NET_COORDS[face][1], NET_COORDS[face][0])):
-        gx, gy = NET_COORDS[str(face_id)]
-        fx0 = origin_x + int(gx - min_x) * int(cell_size_px)
-        fy0 = origin_y + int(gy - min_y) * int(cell_size_px)
+    relation_bboxes: Dict[str, list[float]] = {}
+    for face_id in sorted(
+        FACE_IDS,
+        key=lambda face: (rendered_coords[face][1], rendered_coords[face][0]),
+    ):
+        gx, gy = rendered_coords[str(face_id)]
+        fx0 = origin_x + int(gx) * int(cell_size_px)
+        fy0 = origin_y + int(gy) * int(cell_size_px)
         fx1 = fx0 + int(cell_size_px)
         fy1 = fy0 + int(cell_size_px)
         draw.rectangle(
@@ -291,19 +331,39 @@ def draw_net_panel(
         )
         face_bboxes[str(face_id)] = [float(fx0), float(fy0), float(fx1), float(fy1)]
     ref_bbox = face_bboxes[str(dataset.reference_face)]
-    draw.rectangle(tuple(ref_bbox), outline=tuple(style.mark_rgb), width=6)
+    if dataset.marked_side is None:
+        draw.rectangle(tuple(ref_bbox), outline=tuple(style.mark_rgb), width=6)
+        relation_bboxes["marked_face"] = [float(value) for value in ref_bbox]
     if dataset.marked_side is not None:
         rx0, ry0, rx1, ry1 = [float(value) for value in ref_bbox]
-        if dataset.marked_side == "top":
+        displayed_side = _rotated_side(str(dataset.marked_side), rotation_degrees)
+        if displayed_side == "top":
             start, end = (rx0 + 8, ry0 + 2), (rx1 - 8, ry0 + 2)
-        elif dataset.marked_side == "bottom":
+        elif displayed_side == "bottom":
             start, end = (rx0 + 8, ry1 - 2), (rx1 - 8, ry1 - 2)
-        elif dataset.marked_side == "left":
+        elif displayed_side == "left":
             start, end = (rx0 + 2, ry0 + 8), (rx0 + 2, ry1 - 8)
         else:
             start, end = (rx1 - 2, ry0 + 8), (rx1 - 2, ry1 - 8)
+        draw.line([start, end], fill=tuple(style.panel_fill_rgb), width=16)
         draw.line([start, end], fill=tuple(style.mark_rgb), width=10)
-    return face_bboxes, [float(x0), float(y0), float(x1), float(y1)]
+        for cx, cy in (start, end):
+            radius = 5
+            draw.ellipse(
+                (cx - radius, cy - radius, cx + radius, cy + radius),
+                fill=tuple(style.mark_rgb),
+                outline=tuple(style.panel_fill_rgb),
+                width=2,
+            )
+        edge_pad = 12.0
+        relation_bboxes["marked_edge"] = [
+            float(min(start[0], end[0]) - edge_pad),
+            float(min(start[1], end[1]) - edge_pad),
+            float(max(start[0], end[0]) + edge_pad),
+            float(max(start[1], end[1]) + edge_pad),
+        ]
+        relation_bboxes["marked_face"] = [float(value) for value in ref_bbox]
+    return face_bboxes, [float(x0), float(y0), float(x1), float(y1)], relation_bboxes
 
 
 def draw_options(
@@ -392,374 +452,91 @@ def draw_options(
     return bboxes
 
 
-def draw_surface_path_net_panel(
+def draw_colored_net_panel(
     draw: ImageDraw.ImageDraw,
     *,
     panel_bbox: Sequence[float],
-    dataset: SurfacePathDataset,
+    face_color_names: Mapping[str, str],
+    option_label: str | None,
+    panel_title: str,
     style: Any,
-    font_size: int,
     cell_size_px: int,
-) -> Tuple[Dict[str, list[float]], list[float]]:
-    """Draw a cube net for folded path tasks and mark the start face."""
+    rotation_degrees: int,
+) -> Tuple[list[float], Dict[str, list[float]]]:
+    """Draw one colored cube net panel for reference/option comparison."""
 
     x0, y0, x1, y1 = [int(round(float(value))) for value in panel_bbox]
     draw_rounded_rect(
         draw,
         (x0, y0, x1, y1),
-        radius=18,
+        radius=16,
         fill=tuple(style.panel_fill_rgb),
         outline=tuple(style.panel_border_rgb),
         width=2,
     )
-    min_x = min(coord[0] for coord in NET_COORDS.values())
-    max_x = max(coord[0] for coord in NET_COORDS.values())
-    min_y = min(coord[1] for coord in NET_COORDS.values())
-    max_y = max(coord[1] for coord in NET_COORDS.values())
-    net_w = int(max_x - min_x + 1) * int(cell_size_px)
-    net_h = int(max_y - min_y + 1) * int(cell_size_px)
-    origin_x = int(round(0.5 * (x0 + x1 - net_w)))
-    origin_y = int(round(y0 + 42 + max(0, (y1 - y0 - 76 - net_h) * 0.5)))
-    face_colors = style_face_colors(style)
-    face_bboxes: Dict[str, list[float]] = {}
-    for face_id in sorted(FACE_IDS, key=lambda face: (NET_COORDS[face][1], NET_COORDS[face][0])):
-        gx, gy = NET_COORDS[str(face_id)]
-        fx0 = origin_x + int(gx - min_x) * int(cell_size_px)
-        fy0 = origin_y + int(gy - min_y) * int(cell_size_px)
-        fx1 = fx0 + int(cell_size_px)
-        fy1 = fy0 + int(cell_size_px)
-        draw.rectangle(
-            (fx0, fy0, fx1, fy1),
-            fill=tuple(face_colors[str(face_id)]),
-            outline=tuple(style.grid_rgb),
-            width=2,
-        )
-        draw_face_label(
-            draw,
-            text=str(dataset.face_labels[str(face_id)]),
-            bbox=(fx0, fy0, fx1, fy1),
-            style=style,
-            font_size=int(font_size),
-        )
-        face_bboxes[str(face_id)] = [float(fx0), float(fy0), float(fx1), float(fy1)]
-    start_bbox = face_bboxes[str(dataset.start_face)]
-    draw.rectangle(tuple(start_bbox), outline=tuple(style.mark_rgb), width=6)
-    draw_centered_text(
-        draw,
-        text="START",
-        center=(0.5 * (start_bbox[0] + start_bbox[2]), start_bbox[1] - 14),
-        font=load_font(13, bold=True),
-        fill=tuple(style.mark_rgb),
-        stroke_fill=tuple(style.text_stroke_rgb),
-        stroke_width=2,
-    )
-    return face_bboxes, [float(x0), float(y0), float(x1), float(y1)]
-
-
-def draw_surface_instruction_panel(
-    draw: ImageDraw.ImageDraw,
-    *,
-    panel_bbox: Sequence[float],
-    dataset: SurfacePathDataset,
-    style: Any,
-) -> list[float]:
-    """Draw numbered folded-edge move instructions as a visual witness panel."""
-
-    x0, y0, x1, y1 = [int(round(float(value))) for value in panel_bbox]
-    draw_rounded_rect(
-        draw,
-        (x0, y0, x1, y1),
-        radius=18,
-        fill=tuple(style.panel_fill_rgb),
-        outline=tuple(style.panel_border_rgb),
-        width=2,
-    )
-    side_words = {
-        "top": "top edge",
-        "right": "right edge",
-        "bottom": "bottom edge",
-        "left": "left edge",
-    }
-    row_h = max(34, int((y1 - y0 - 44) / max(1, len(dataset.path_sides))))
-    for index, side in enumerate(dataset.path_sides):
-        cy = y0 + 28 + index * row_h + 0.5 * row_h
-        badge = (x0 + 28, cy - 15, x0 + 60, cy + 17)
+    if option_label:
+        badge = (x0 + 14, y0 + 12, x0 + 46, y0 + 44)
         draw_rounded_rect(
             draw,
             badge,
-            radius=8,
+            radius=9,
             fill=tuple(style.option_marker_fill_rgb),
             outline=tuple(style.panel_border_rgb),
             width=1,
         )
         draw_centered_text(
             draw,
-            text=str(index + 1),
-            center=(0.5 * (badge[0] + badge[2]), 0.5 * (badge[1] + badge[3])),
+            text=str(option_label),
+            center=(x0 + 30, y0 + 28),
+            font=load_font(16, bold=True),
+            fill=tuple(style.text_rgb),
+            stroke_fill=tuple(style.text_stroke_rgb),
+            stroke_width=1,
+        )
+    if panel_title:
+        draw_centered_text(
+            draw,
+            text=str(panel_title),
+            center=(0.5 * (x0 + x1), y0 + 26),
             font=load_font(15, bold=True),
             fill=tuple(style.text_rgb),
             stroke_fill=tuple(style.text_stroke_rgb),
             stroke_width=1,
         )
-        draw_centered_text(
-            draw,
-            text=str(side_words[str(side)]),
-            center=(x0 + 185, cy),
-            font=load_font(19, bold=True),
-            fill=tuple(style.text_rgb),
-            stroke_fill=tuple(style.text_stroke_rgb),
-            stroke_width=1,
-        )
-    return [float(x0), float(y0), float(x1), float(y1)]
 
-
-def draw_sequence_options(
-    draw: ImageDraw.ImageDraw,
-    *,
-    options: Sequence[PathSequenceOption],
-    panel_bbox: Sequence[float],
-    title: str,
-    style: Any,
-    columns: int,
-) -> Dict[str, list[float]]:
-    """Draw folded-path sequence options without interpreting which one is correct."""
-
-    x0, y0, x1, y1 = [int(round(float(value))) for value in panel_bbox]
-    draw_rounded_rect(
-        draw,
-        (x0, y0, x1, y1),
-        radius=18,
-        fill=tuple(style.panel_fill_rgb),
-        outline=tuple(style.panel_border_rgb),
-        width=2,
-    )
-    columns = max(1, int(columns))
-    rows = int((len(options) + columns - 1) // columns)
-    pad = 20
-    gap = 14
-    top = y0 + 24
-    usable_w = x1 - x0 - 2 * pad - (columns - 1) * gap
-    usable_h = y1 - top - pad - (rows - 1) * gap
-    card_w = max(120, int(usable_w / columns))
-    card_h = max(54, int(usable_h / rows))
-    bboxes: Dict[str, list[float]] = {}
-    for index, option in enumerate(options):
-        row = int(index // columns)
-        col = int(index % columns)
-        bx0 = x0 + pad + col * (card_w + gap)
-        by0 = top + row * (card_h + gap)
-        bx1 = bx0 + card_w
-        by1 = by0 + card_h
-        draw_rounded_rect(
-            draw,
-            (bx0, by0, bx1, by1),
-            radius=10,
-            fill=tuple(style.option_fill_rgb),
-            outline=tuple(style.panel_border_rgb),
+    rendered_coords = _rotated_net_grid_coords(rotation_degrees)
+    max_x = max(coord[0] for coord in rendered_coords.values())
+    max_y = max(coord[1] for coord in rendered_coords.values())
+    net_w = int(max_x + 1) * int(cell_size_px)
+    net_h = int(max_y + 1) * int(cell_size_px)
+    origin_x = int(round(0.5 * (x0 + x1 - net_w)))
+    origin_y = int(round(y0 + 50 + max(0, (y1 - y0 - 66 - net_h) * 0.5)))
+    face_bboxes: Dict[str, list[float]] = {}
+    for face_id in sorted(
+        FACE_IDS,
+        key=lambda face: (rendered_coords[face][1], rendered_coords[face][0]),
+    ):
+        gx, gy = rendered_coords[str(face_id)]
+        fx0 = origin_x + int(gx) * int(cell_size_px)
+        fy0 = origin_y + int(gy) * int(cell_size_px)
+        fx1 = fx0 + int(cell_size_px)
+        fy1 = fy0 + int(cell_size_px)
+        color_name = str(face_color_names[str(face_id)])
+        fill = named_color(color_name)
+        draw.rectangle(
+            (fx0, fy0, fx1, fy1),
+            fill=tuple(fill),
+            outline=tuple(style.grid_rgb),
             width=2,
         )
-        draw_rounded_rect(
-            draw,
-            (bx0 + 8, by0 + 8, bx0 + 34, by0 + 34),
-            radius=6,
-            fill=tuple(style.option_marker_fill_rgb),
-            outline=tuple(style.panel_border_rgb),
-            width=1,
-        )
-        draw_centered_text(
-            draw,
-            text=str(option.option_label),
-            center=(bx0 + 21, by0 + 21),
-            font=load_font(15, bold=True),
-            fill=tuple(style.text_rgb),
-            stroke_fill=tuple(style.text_stroke_rgb),
-            stroke_width=1,
-        )
-        sequence_text = " -> ".join(str(label) for label in option.face_labels)
-        draw_centered_text(
-            draw,
-            text=sequence_text,
-            center=(0.5 * (bx0 + 54 + bx1), 0.5 * (by0 + by1)),
-            font=load_font(17, bold=True),
-            fill=tuple(style.text_rgb),
-            stroke_fill=tuple(style.text_stroke_rgb),
-            stroke_width=1,
-        )
-        bboxes[f"option_{option.option_label}"] = [
-            float(bx0),
-            float(by0),
-            float(bx1),
-            float(by1),
-        ]
-    return bboxes
-
-
-def draw_cube_panel(
-    draw: ImageDraw.ImageDraw,
-    *,
-    panel_bbox: Sequence[float],
-    orientation: Mapping[str, str],
-    face_labels: Mapping[str, str],
-    style: Any,
-) -> Tuple[list[float], Dict[str, list[float]]]:
-    """Draw the visible start cube faces used before rolling along a path."""
-
-    x0, y0, x1, y1 = [int(round(float(value))) for value in panel_bbox]
-    draw_rounded_rect(
+        face_bboxes[str(face_id)] = [float(fx0), float(fy0), float(fx1), float(fy1)]
+    draw_net_fold_seams(
         draw,
-        (x0, y0, x1, y1),
-        radius=18,
-        fill=tuple(style.panel_fill_rgb),
-        outline=tuple(style.panel_border_rgb),
-        width=2,
+        face_bboxes=face_bboxes,
+        scene_variant="paper_model",
+        style=style,
     )
-    draw_title(draw, "Start cube", 0.5 * (x0 + x1), y0 + 28, style, 20)
-    cx = 0.5 * (x0 + x1)
-    top_y = y0 + 88
-    mid_y = y0 + 162
-    bottom_y = y1 - 48
-    half_w = min(110.0, 0.28 * (x1 - x0))
-    top = [
-        (cx, top_y),
-        (cx + half_w, 0.5 * (top_y + mid_y)),
-        (cx, mid_y),
-        (cx - half_w, 0.5 * (top_y + mid_y)),
-    ]
-    front = [
-        (cx - half_w, 0.5 * (top_y + mid_y)),
-        (cx, mid_y),
-        (cx, bottom_y),
-        (cx - half_w, bottom_y - 0.5 * (mid_y - top_y)),
-    ]
-    right = [
-        (cx, mid_y),
-        (cx + half_w, 0.5 * (top_y + mid_y)),
-        (cx + half_w, bottom_y - 0.5 * (mid_y - top_y)),
-        (cx, bottom_y),
-    ]
-    face_colors = style_face_colors(style)
-    face_polys = {"south": front, "east": right, "top": top}
-    face_bboxes: Dict[str, list[float]] = {}
-    for slot in ("south", "east", "top"):
-        face_id = str(orientation[str(slot)])
-        poly = face_polys[str(slot)]
-        draw.polygon(poly, fill=tuple(face_colors[str(face_id)]), outline=tuple(style.grid_rgb))
-        draw.line(poly + [poly[0]], fill=tuple(style.grid_rgb), width=2)
-        px = sum(point[0] for point in poly) / len(poly)
-        py = sum(point[1] for point in poly) / len(poly)
-        draw_centered_text(
-            draw,
-            text=str(face_labels[str(face_id)]),
-            center=(px, py),
-            font=load_font(28, bold=True),
-            fill=tuple(style.text_rgb),
-            stroke_fill=tuple(style.text_stroke_rgb),
-            stroke_width=2,
-        )
-        xs = [point[0] for point in poly]
-        ys = [point[1] for point in poly]
-        face_bboxes[str(slot)] = [
-            float(min(xs)),
-            float(min(ys)),
-            float(max(xs)),
-            float(max(ys)),
-        ]
     return [float(x0), float(y0), float(x1), float(y1)], face_bboxes
-
-
-def draw_path_panel(
-    draw: ImageDraw.ImageDraw,
-    *,
-    panel_bbox: Sequence[float],
-    dataset: RollingDataset,
-    style: Any,
-) -> Tuple[list[float], Dict[str, list[float]]]:
-    """Draw the rolling grid, path cells, step arrows, and start/end markers."""
-
-    x0, y0, x1, y1 = [int(round(float(value))) for value in panel_bbox]
-    draw_rounded_rect(
-        draw,
-        (x0, y0, x1, y1),
-        radius=18,
-        fill=tuple(style.panel_fill_rgb),
-        outline=tuple(style.panel_border_rgb),
-        width=2,
-    )
-    draw_title(draw, "Roll path", 0.5 * (x0 + x1), y0 + 28, style, 20)
-    board_pad = 44
-    top = y0 + 62
-    cell = int(
-        min(
-            (x1 - x0 - 2 * board_pad) / dataset.grid_cols,
-            (y1 - top - 28) / dataset.grid_rows,
-        )
-    )
-    board_w = int(cell * dataset.grid_cols)
-    board_h = int(cell * dataset.grid_rows)
-    bx0 = int(round(0.5 * (x0 + x1 - board_w)))
-    by0 = int(round(top + 0.5 * max(0, (y1 - top - 28 - board_h))))
-    path_set = set(dataset.path_cells)
-    cell_bboxes: Dict[str, list[float]] = {}
-    for row in range(dataset.grid_rows):
-        for col in range(dataset.grid_cols):
-            cx0 = bx0 + col * cell
-            cy0 = by0 + row * cell
-            cx1 = cx0 + cell
-            cy1 = cy0 + cell
-            fill = (
-                tuple(style.step_fill_rgb)
-                if (row, col) in path_set
-                else tuple(style.option_fill_rgb)
-            )
-            draw.rectangle((cx0, cy0, cx1, cy1), fill=fill, outline=tuple(style.grid_rgb), width=1)
-            cell_bboxes[f"cell_{row}_{col}"] = [float(cx0), float(cy0), float(cx1), float(cy1)]
-    centers = [
-        (
-            float(bx0 + col * cell + 0.5 * cell),
-            float(by0 + row * cell + 0.5 * cell),
-        )
-        for row, col in dataset.path_cells
-    ]
-    for index, (start, end) in enumerate(zip(centers, centers[1:])):
-        draw_arrow(
-            draw,
-            start=start,
-            end=end,
-            fill=tuple(style.mark_rgb),
-            width=4,
-            head_length_px=14,
-            head_width_px=14,
-        )
-        sx, sy = start
-        draw_centered_text(
-            draw,
-            text=str(index + 1),
-            center=(sx, sy),
-            font=load_font(13, bold=True),
-            fill=tuple(style.text_rgb),
-            stroke_fill=tuple(style.text_stroke_rgb),
-            stroke_width=1,
-        )
-    if centers:
-        draw_centered_text(
-            draw,
-            text="S",
-            center=centers[0],
-            font=load_font(18, bold=True),
-            fill=tuple(style.text_rgb),
-            stroke_fill=tuple(style.text_stroke_rgb),
-            stroke_width=2,
-        )
-        draw_centered_text(
-            draw,
-            text="E",
-            center=centers[-1],
-            font=load_font(18, bold=True),
-            fill=tuple(style.text_rgb),
-            stroke_fill=tuple(style.text_stroke_rgb),
-            stroke_width=2,
-        )
-    return [float(x0), float(y0), float(x1), float(y1)], cell_bboxes
 
 
 def render_face_relation_scene(
@@ -791,7 +568,12 @@ def render_face_relation_scene(
     draw = ImageDraw.Draw(image)
     net_panel = (54, 54, 686, int(height) - 54)
     option_panel = (724, 82, int(width) - 54, int(height) - 82)
-    net_bboxes, net_panel_bbox = draw_net_panel(
+    net_rotation_degrees = _net_rotation_degrees(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace="cube_net.face_relation",
+    )
+    net_bboxes, net_panel_bbox, relation_bboxes = draw_net_panel(
         draw,
         panel_bbox=net_panel,
         dataset=dataset,
@@ -808,6 +590,7 @@ def render_face_relation_scene(
             "net_cell_size_px",
             DEFAULTS.net_cell_size_px,
         ),
+        rotation_degrees=int(net_rotation_degrees),
     )
     option_bboxes = draw_options(
         draw,
@@ -839,32 +622,34 @@ def render_face_relation_scene(
         "background_style": dict(background_meta),
         "scene_style": dict(style_meta),
         "scene_variant_style": scene_variant_style_metadata(str(scene_variant)),
+        "net_rotation_degrees": int(net_rotation_degrees),
         "net_panel_bbox_px": list(net_panel_bbox),
         "face_bboxes_px": dict(net_bboxes),
+        "relation_bboxes_px": dict(relation_bboxes),
         "option_panel_bboxes_px": dict(option_bboxes),
     }
 
 
-def render_rolling_scene(
+def render_equivalent_net_scene(
     *,
-    dataset: RollingDataset,
+    dataset: NetEquivalenceDataset,
     params: Mapping[str, Any],
     rendering_defaults: Mapping[str, Any],
     instance_seed: int,
     scene_variant: str,
 ) -> Tuple[Image.Image, Dict[str, Any]]:
-    """Render start-cube, roll-path, and face-option panels for rolling tasks."""
+    """Render a reference colored net and four candidate colored nets."""
 
     width = _render_int(params, rendering_defaults, "canvas_width", DEFAULTS.canvas_width)
     height = _render_int(
         params,
         rendering_defaults,
-        "rolling_canvas_height",
-        DEFAULTS.rolling_canvas_height,
+        "equivalent_net_canvas_height",
+        DEFAULTS.equivalent_net_canvas_height,
     )
     style, style_meta = resolve_puzzle_scene_style(
         instance_seed=int(instance_seed),
-        namespace="cube_net.rolling",
+        namespace="cube_net.equivalent_net",
     )
     image, background_meta = make_puzzle_scene_background(
         canvas_width=int(width),
@@ -872,31 +657,48 @@ def render_rolling_scene(
         style=style,
     )
     draw = ImageDraw.Draw(image)
-    cube_panel = (54, 54, 384, 438)
-    path_panel = (420, 54, int(width) - 54, 438)
-    option_panel = (76, 488, int(width) - 76, int(height) - 54)
-    cube_bbox, cube_face_bboxes = draw_cube_panel(
+    rng = spawn_rng(int(instance_seed), "cube_net.equivalent_net.display_rotations")
+    rotations = (0, 90, 180, 270)
+    reference_rotation = int(uniform_choice(rng, rotations))
+    option_rotations = {
+        str(option.option_label): int(uniform_choice(rng, rotations))
+        for option in dataset.options
+    }
+
+    reference_panel = (54, 86, 410, int(height) - 92)
+    reference_bbox, reference_face_bboxes = draw_colored_net_panel(
         draw,
-        panel_bbox=cube_panel,
-        orientation=dataset.start_orientation,
-        face_labels=dataset.face_labels,
+        panel_bbox=reference_panel,
+        face_color_names=dataset.reference_face_color_names,
+        option_label=None,
+        panel_title="Reference",
         style=style,
+        cell_size_px=86,
+        rotation_degrees=int(reference_rotation),
     )
-    path_bbox, path_cell_bboxes = draw_path_panel(
-        draw,
-        panel_bbox=path_panel,
-        dataset=dataset,
-        style=style,
+    option_layouts = (
+        (456, 72, 748, 394),
+        (782, 72, 1074, 394),
+        (456, 452, 748, 774),
+        (782, 452, 1074, 774),
     )
-    option_bboxes = draw_options(
-        draw,
-        options=dataset.options,
-        panel_bbox=option_panel,
-        title="Face options",
-        style=style,
-        columns=3,
-    )
-    for panel in (cube_bbox, path_bbox, option_panel):
+    option_panel_bboxes: Dict[str, list[float]] = {}
+    option_face_bboxes: Dict[str, Dict[str, list[float]]] = {}
+    for option, panel_bbox in zip(dataset.options, option_layouts):
+        panel, face_bboxes = draw_colored_net_panel(
+            draw,
+            panel_bbox=panel_bbox,
+            face_color_names=option.face_color_names,
+            option_label=str(option.option_label),
+            panel_title="",
+            style=style,
+            cell_size_px=54,
+            rotation_degrees=int(option_rotations[str(option.option_label)]),
+        )
+        option_panel_bboxes[f"option_{option.option_label}"] = list(panel)
+        option_face_bboxes[f"option_{option.option_label}"] = dict(face_bboxes)
+
+    for panel in (reference_bbox, *option_panel_bboxes.values()):
         draw_variant_panel_trim(
             draw,
             panel_bbox=panel,
@@ -907,116 +709,17 @@ def render_rolling_scene(
         "background_style": dict(background_meta),
         "scene_style": dict(style_meta),
         "scene_variant_style": scene_variant_style_metadata(str(scene_variant)),
-        "start_cube_bbox_px": list(cube_bbox),
-        "start_cube_face_bboxes_px": dict(cube_face_bboxes),
-        "path_panel_bbox_px": list(path_bbox),
-        "path_cell_bboxes_px": dict(path_cell_bboxes),
-        "option_panel_bboxes_px": dict(option_bboxes),
-    }
-
-
-def render_surface_path_scene(
-    *,
-    dataset: SurfacePathDataset,
-    option_mode: str,
-    params: Mapping[str, Any],
-    rendering_defaults: Mapping[str, Any],
-    instance_seed: int,
-    scene_variant: str,
-) -> Tuple[Image.Image, Dict[str, Any]]:
-    """Render folded-path panels and draw endpoint or sequence option cards."""
-
-    width = _render_int(params, rendering_defaults, "canvas_width", DEFAULTS.canvas_width)
-    height = _render_int(
-        params,
-        rendering_defaults,
-        "rolling_canvas_height",
-        DEFAULTS.rolling_canvas_height,
-    )
-    style, style_meta = resolve_puzzle_scene_style(
-        instance_seed=int(instance_seed),
-        namespace="cube_net.surface_path",
-    )
-    image, background_meta = make_puzzle_scene_background(
-        canvas_width=int(width),
-        canvas_height=int(height),
-        style=style,
-    )
-    draw = ImageDraw.Draw(image)
-    net_panel = (54, 54, 520, 482)
-    instruction_panel = (558, 54, int(width) - 54, 482)
-    option_panel = (76, 532, int(width) - 76, int(height) - 54)
-    face_bboxes, net_panel_bbox = draw_surface_path_net_panel(
-        draw,
-        panel_bbox=net_panel,
-        dataset=dataset,
-        style=style,
-        font_size=resolve_scene_int(
-            params,
-            rendering_defaults,
-            "face_font_size_px",
-            DEFAULTS.face_font_size_px,
-        ),
-        cell_size_px=resolve_scene_int(
-            params,
-            rendering_defaults,
-            "net_cell_size_px",
-            DEFAULTS.net_cell_size_px,
-        ),
-    )
-    instruction_bbox = draw_surface_instruction_panel(
-        draw,
-        panel_bbox=instruction_panel,
-        dataset=dataset,
-        style=style,
-    )
-    if str(option_mode) == "endpoint":
-        option_bboxes = draw_options(
-            draw,
-            options=dataset.endpoint_options,
-            panel_bbox=option_panel,
-            title="Endpoint options",
-            style=style,
-            columns=3,
-        )
-    elif str(option_mode) == "sequence":
-        option_bboxes = draw_sequence_options(
-            draw,
-            options=dataset.sequence_options,
-            panel_bbox=option_panel,
-            title="Sequence options",
-            style=style,
-            columns=2,
-        )
-    else:
-        raise ValueError(f"unsupported surface path option mode: {option_mode}")
-    draw_net_fold_seams(
-        draw,
-        face_bboxes=face_bboxes,
-        scene_variant=str(scene_variant),
-        style=style,
-    )
-    for panel in (net_panel_bbox, instruction_bbox, option_panel):
-        draw_variant_panel_trim(
-            draw,
-            panel_bbox=panel,
-            scene_variant=str(scene_variant),
-            style=style,
-        )
-    return image, {
-        "background_style": dict(background_meta),
-        "scene_style": dict(style_meta),
-        "scene_variant_style": scene_variant_style_metadata(str(scene_variant)),
-        "net_panel_bbox_px": list(net_panel_bbox),
-        "instruction_panel_bbox_px": list(instruction_bbox),
-        "face_bboxes_px": dict(face_bboxes),
-        "option_panel_bboxes_px": dict(option_bboxes),
+        "reference_panel_bbox_px": list(reference_bbox),
+        "reference_face_bboxes_px": dict(reference_face_bboxes),
+        "reference_net_rotation_degrees": int(reference_rotation),
+        "option_panel_bboxes_px": dict(option_panel_bboxes),
+        "option_face_bboxes_px": dict(option_face_bboxes),
+        "option_net_rotation_degrees": dict(option_rotations),
     }
 
 
 __all__ = [
+    "render_equivalent_net_scene",
     "render_face_relation_scene",
-    "render_rolling_scene",
-    "render_surface_path_scene",
     "scene_variant_style_metadata",
 ]

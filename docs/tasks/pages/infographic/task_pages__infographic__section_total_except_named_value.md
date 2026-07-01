@@ -1,26 +1,23 @@
 # `task_pages__infographic__section_total_except_named_value`
 
-## 1) Identity
+## Identity
 1. Domain: `pages`
-2. Scene: `infographic`
-3. Scene id: `infographic`
+2. Scene id: `infographic`
+3. Source path: `trace/tasks/pages/infographic/section_total_except_named_value.py`
 4. Task id: `task_pages__infographic__section_total_except_named_value`
-5. Objective: Compute a section total after excluding named metric cards.
 
-## 2) Scene + Task Contract
-1. Supported `query_id` values: `section_total_except_named`
-2. `answer_gt.type`: `integer`
-3. `annotation_gt.type`: `keyed_bbox_map`
-4. Annotation witness policy: Supporting metric-card boxes keyed by visible metric-card labels.
-5. `query_id` is retained as internal replay metadata; this public task id is the sampling unit.
+## Program Contract
+1. Program schema: `numeric.aggregate_sum(candidate_set=cards_in_resolved_section_excluding_named_cards, metric=printed_value); scene=infographic; scope=one multi-section metric-card infographic`
+2. Contract: in the named section, exclude the named metric cards and return the sum of the remaining printed values.
+3. Public query id: `single`
+4. Answer schema: `integer`
+5. Annotation schema: `bbox_set` containing the included metric-card boxes after the named exclusions are removed.
+6. Query argument axes: target section and excluded card labels.
+7. scalar_annotation_checked=true
 
-## 3) Prompt Contract
-1. `prompt_bundle_id`: `pages_infographic_v0`
-2. Prompt templates come from `prompts/pages/infographic/` and are rendered with the scene layer plus task/query layer.
-3. Output modes: `answer_only` and `answer_and_annotation`.
-4. Annotation examples must match the role names and annotation type above.
-
-## 4) Determinism + Constraints
-1. Generation is deterministic for `instance_seed` plus params.
-2. Answers and annotation come from the same rendered trace payload.
-3. The generator constructs unique final answers and rejects invalid samples instead of semantically relaxing constraints.
+## Prompt + Trace
+1. Prompt bundle: `pages_infographic_v1`
+2. Scene key: `infographic_metric_arithmetic`
+3. Task key: `metric_arithmetic_query`
+4. Prompt query key: `section_total_except_named`
+5. Trace records included labels, excluded labels, target section, answer expression, and section card boxes. Public annotation marks only the included cards contributing to the final sum; excluded cards remain trace context.

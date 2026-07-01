@@ -12,7 +12,15 @@
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 
 ## Program Contract
-`argextreme_label(cluster, spread(cluster, axis), direction); scene=scatter_cluster; scope=cluster_spread_extremum_label`
+
+Program: `argextreme_label(cluster, spread(cluster, axis), direction); scene=scatter_cluster; scope=cluster_spread_extremum_label`
+
+Candidate set: the visible scatter points, clusters, and cluster labels inside the `cluster_spread_extremum_label` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `argextreme_label` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `string` value bound by `string`.
+Annotation witnesses: `bbox` witnesses bound by `see_annotation_contract`. Annotation should mark the answer cluster hull, not the legend row or cluster label text. Renderer context such as legends, axes, decorative labels, titles, and distractor text is metadata unless the task explicitly asks for it as annotation.
+Query ids: `largest_horizontal_spread_label`, `smallest_horizontal_spread_label`, `largest_vertical_spread_label`, `smallest_vertical_spread_label`, `largest_overall_spread_label`, `smallest_overall_spread_label`.
 
 ## Annotation Contract
 1. Answer schema: `string`.

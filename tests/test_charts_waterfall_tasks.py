@@ -4,13 +4,17 @@ from __future__ import annotations
 
 from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks import TASK_REGISTRY, ensure_scene_tasks_registered
+from trace.tasks.charts.waterfall.running_total_extremum_value import (
+    MAXIMUM_QUERY_ID,
+    MINIMUM_QUERY_ID,
+)
 
 
 WATERFALL_TASKS = {
     "task_charts__waterfall__running_total_value": {SINGLE_QUERY_ID},
-    "task_charts__waterfall__threshold_crossing_label": {
-        "first_total_at_least_threshold",
-        "first_total_at_most_threshold",
+    "task_charts__waterfall__running_total_extremum_value": {
+        MAXIMUM_QUERY_ID,
+        MINIMUM_QUERY_ID,
     },
     "task_charts__waterfall__remove_step_final_total": {SINGLE_QUERY_ID},
     "task_charts__waterfall__reverse_step_final_total": {SINGLE_QUERY_ID},
@@ -22,6 +26,10 @@ def _steps_by_id(output):
         str(step["step_id"]): dict(step)
         for step in output.trace_payload["execution_trace"]["steps"]
     }
+
+
+def _round_bbox(bbox):
+    return [round(float(value), 3) for value in bbox]
 
 
 def _task(task_id: str):
@@ -51,6 +59,10 @@ def test_waterfall_tasks_generate_default_query_outputs() -> None:
             assert output.trace_payload["projected_annotation"]["bbox_set_map"] == output.annotation_gt.value
         elif output.annotation_gt.type == "bbox_map":
             assert output.trace_payload["projected_annotation"]["bbox_map"] == output.annotation_gt.value
+        elif output.annotation_gt.type == "bbox_set":
+            assert output.trace_payload["projected_annotation"]["bbox_set"] == output.annotation_gt.value
+        elif output.annotation_gt.type == "bbox":
+            assert output.trace_payload["projected_annotation"]["bbox"] == output.annotation_gt.value
         else:  # pragma: no cover - defensive contract guard
             raise AssertionError(f"unexpected waterfall annotation type: {output.annotation_gt.type}")
         assert str(output.trace_payload["render_spec"]["font_assets"]["chart_font_family"]).strip()
@@ -76,45 +88,43 @@ def test_waterfall_tasks_generate_each_query_branch_and_answer_contract() -> Non
                 target = steps[str(execution["target_step_id"])]
                 assert output.answer_gt.type == "integer"
                 assert output.answer_gt.value == int(target["running_after"])
-                assert output.annotation_gt.type == "bbox_set_map"
-                assert set(output.annotation_gt.value) == {"running_values", "target_step_label"}
-            elif query_id == "first_total_at_least_threshold":
-                threshold = int(execution["threshold_value"])
-                answer_step = steps[str(execution["answer_step_id"])]
-                previous = [
-                    int(step["running_after"])
-                    for step in execution["steps"][: int(execution["answer_step_index"])]
+                assert output.annotation_gt.type == "bbox_set"
+                expected_ids = ["start"] + [
+                    str(step["step_id"])
+                    for step in execution["steps"][: int(execution["target_step_index"]) + 1]
                 ]
-                previous.append(int(execution["start_value"]))
-                assert output.answer_gt.type == "string"
-                assert output.answer_gt.value == str(answer_step["label"])
-                assert int(answer_step["running_after"]) >= threshold
-                assert all(value < threshold for value in previous)
-                assert output.annotation_gt.type == "bbox_set_map"
-                assert set(output.annotation_gt.value) == {"running_values", "threshold_label"}
-            elif query_id == "first_total_at_most_threshold":
-                threshold = int(execution["threshold_value"])
-                answer_step = steps[str(execution["answer_step_id"])]
-                previous = [
-                    int(step["running_after"])
-                    for step in execution["steps"][: int(execution["answer_step_index"])]
+                expected_boxes = [
+                    _round_bbox(output.trace_payload["render_map"]["bar_bboxes_px"][bar_id])
+                    for bar_id in expected_ids
                 ]
-                previous.append(int(execution["start_value"]))
-                assert output.answer_gt.type == "string"
-                assert output.answer_gt.value == str(answer_step["label"])
-                assert int(answer_step["running_after"]) <= threshold
-                assert all(value > threshold for value in previous)
-                assert output.annotation_gt.type == "bbox_set_map"
-                assert set(output.annotation_gt.value) == {"running_values", "threshold_label"}
+                assert output.annotation_gt.value == expected_boxes
+            elif task_id.endswith("__running_total_extremum_value"):
+                candidates = list(execution["candidate_running_totals"])
+                values = {
+                    str(candidate["bar_id"]): int(candidate["running_total"])
+                    for candidate in candidates
+                }
+                expected_id = (
+                    max(values, key=values.get)
+                    if str(query_id) == MAXIMUM_QUERY_ID
+                    else min(values, key=values.get)
+                )
+                assert output.answer_gt.type == "integer"
+                assert output.answer_gt.value == int(values[str(expected_id)])
+                assert output.annotation_gt.type == "bbox"
+                assert str(execution["answer_bar_id"]) == str(expected_id)
+                assert int(execution["answer_running_total"]) == int(values[str(expected_id)])
+                assert output.annotation_gt.value == _round_bbox(
+                    output.trace_payload["render_map"]["bar_bboxes_px"][str(expected_id)]
+                )
             elif task_id.endswith("__remove_step_final_total"):
                 target = steps[str(execution["target_step_id"])]
                 assert output.answer_gt.type == "integer"
                 assert output.answer_gt.value == int(execution["final_value"]) - int(target["delta"])
                 assert output.annotation_gt.type == "bbox_map"
                 assert set(output.annotation_gt.value) == {
-                    "final_total_value",
-                    "target_contribution_value",
-                    "target_step_label",
+                    "final_total_bar",
+                    "target_contribution_bar",
                 }
             elif task_id.endswith("__reverse_step_final_total"):
                 target = steps[str(execution["target_step_id"])]
@@ -122,29 +132,11 @@ def test_waterfall_tasks_generate_each_query_branch_and_answer_contract() -> Non
                 assert output.answer_gt.value == int(execution["final_value"]) - (2 * int(target["delta"]))
                 assert output.annotation_gt.type == "bbox_map"
                 assert set(output.annotation_gt.value) == {
-                    "final_total_value",
-                    "target_contribution_value",
-                    "target_step_label",
+                    "final_total_bar",
+                    "target_contribution_bar",
                 }
 
             seed_index += 1
-
-
-def test_waterfall_threshold_crossing_can_be_controlled_unanswerable() -> None:
-    output = _task("task_charts__waterfall__threshold_crossing_label").generate(
-        205_005,
-        params={"query_id": "first_total_at_least_threshold", "force_unanswerable": True},
-        max_attempts=100,
-    )
-    assert output.answer_gt.type == "string"
-    assert output.answer_gt.value == "unanswerable"
-    assert output.annotation_gt.type == "bbox_set_map"
-    assert output.annotation_gt.value == {}
-    assert output.trace_payload["projected_annotation"]["bbox_set_map"] == {}
-    assert output.trace_payload["execution_trace"]["answerability"] == "unanswerable"
-    prompt_lower = output.prompt.lower()
-    assert "unanswerable" in prompt_lower
-    assert prompt_lower.index("unanswerable") < prompt_lower.index("annotation")
 
 
 def test_waterfall_running_total_uses_late_nonfinal_targets() -> None:

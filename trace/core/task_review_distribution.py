@@ -365,23 +365,6 @@ def build_random_review_report(*, task_id: str, rows: Sequence[Mapping[str, Any]
     }
 
 
-def _support_size_from_rows(rows: Sequence[Mapping[str, Any]]) -> int | None:
-    supports: list[tuple[str, ...]] = []
-    for row in rows:
-        raw = row.get("answer_support")
-        if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes)):
-            continue
-        support = tuple(str(value) for value in raw)
-        if support:
-            supports.append(tuple(dict.fromkeys(support)))
-    if not supports:
-        return None
-    first = supports[0]
-    if any(tuple(value) != first for value in supports):
-        return None
-    return int(len(first))
-
-
 def evaluate_rows(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
     """Evaluate standard answer-distribution checks for one row slice."""
 
@@ -392,11 +375,8 @@ def evaluate_rows(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
         }
         for row in rows
     ]
-    support_size = _support_size_from_rows(rows)
-    min_unique_answers = 4 if support_size is None else min(4, int(support_size))
+    min_unique_answers = 4
     max_answer_frequency = 1.0 / 3.0
-    if support_size is not None and int(support_size) > 1:
-        max_answer_frequency = max(float(max_answer_frequency), (1.0 / float(support_size)) + 0.05)
     if not answer_rows:
         return {
             "sample_count": 0,

@@ -47,6 +47,7 @@ class ChartsComboDirectionalGapExtremumLabelTask:
     domain = DOMAIN
     objective_contract = "directional_gap_extremum_label"
     supported_query_ids = (PRIMARY_OVER_LINE_QUERY_ID, LINE_OVER_PRIMARY_QUERY_ID)
+    default_dataset_enabled = True
     default_direction_dataset_enabled = True
 
     def _build_directional_gap_plan(self, instance_seed, params, selected_query_id):

@@ -81,6 +81,7 @@ def build_trace_payload(
             "coord_space": "pixel",
             "scene_variant": str(dataset.scene_variant),
             "background_style": dict(artifacts.background_style),
+            "information_scene_style": dict(artifacts.background_style.get("information_scene_style", {})),
             "post_image_noise": dict(artifacts.post_image_noise),
             "font_assets": chart_font_asset_metadata(str(artifacts.chart_font_family)),
             "layout_jitter": dict(artifacts.render_params.layout_jitter_meta),
@@ -90,6 +91,7 @@ def build_trace_payload(
                 "y": str(dataset.y_axis_label),
                 "z": str(dataset.z_axis_label),
             },
+            "reference_y_value": None if dataset.reference_y_value is None else float(dataset.reference_y_value),
         },
         "render_map": {
             "image_id": "img0",
@@ -109,6 +111,7 @@ def build_trace_payload(
             "x_range": [float(value) for value in dataset.x_range],
             "y_range": [float(value) for value in dataset.y_range],
             "z_range": [float(value) for value in dataset.z_range],
+            "reference_y_value": None if dataset.reference_y_value is None else float(dataset.reference_y_value),
             "point_count": len(dataset.points),
             "surface_cell_count": len(dataset.surface_cells),
             "panel_count": len(dataset.panels),

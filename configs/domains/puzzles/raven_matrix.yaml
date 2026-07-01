@@ -1,6 +1,6 @@
 generation:
   shared:
-    option_count: 6
+    option_count: 4
     count_min: 1
     count_max: 8
     balanced_scene_variant_sampling: true
@@ -26,11 +26,11 @@ rendering:
     unit_size_scale_max: 1.0
     cell_gap_px: 14
     board_panel_padding_px: 22
-    board_to_options_gap_px: 50
+    board_to_options_gap_px: 76
     option_panel_width_px: 144
-    option_panel_height_px: 172
+    option_panel_height_px: 180
     option_gap_px: 20
-    option_symbol_box_size_px: 92
+    option_symbol_box_size_px: 118
     option_label_gap_px: 16
     slot_corner_radius_px: 18
     border_width_px: 3
@@ -55,3 +55,5 @@ prompt:
       task_key: raven_analogical_transform_label_query
     task_puzzles__raven_matrix__raven_position_progression_label:
       task_key: raven_position_progression_label_query
+    task_puzzles__raven_matrix__raven_feature_binding_label:
+      task_key: raven_feature_binding_label_query

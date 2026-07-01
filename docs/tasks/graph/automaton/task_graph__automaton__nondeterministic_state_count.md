@@ -21,7 +21,15 @@ A state counts as nondeterministic when either:
 Missing outgoing transitions do not count as nondeterminism.
 
 ## Program Contract
-- `count(filter(states, has_epsilon_outgoing(state) or has_duplicate_outgoing_symbol(state))); output=integer; annotation=point_set(nondeterministic_state_centers); scene=automaton; scope=nondeterministic_state_count`
+
+Program: `count(filter(states, has_epsilon_outgoing(state) or has_duplicate_outgoing_symbol(state))); output=integer; annotation=point_set(nondeterministic_state_centers); scene=automaton; scope=nondeterministic_state_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `nondeterministic_state_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `states`, `has_epsilon_outgoing`, `state`, `has_duplicate_outgoing_symbol`, `nondeterministic_state_centers`, `automaton`, `nondeterministic_state_count`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. Answer type: `integer`.

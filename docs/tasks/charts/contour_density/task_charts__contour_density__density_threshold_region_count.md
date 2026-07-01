@@ -19,9 +19,20 @@
 3. Annotation should mark every region matching the visible density-level threshold.
 4. Renderer context such as axes, decorative labels, titles, and background treatments is metadata unless the task explicitly asks for it as annotation.
 
+## Program Contract
+
+Program: `count(region where compare(density_level(region), threshold_level, relation={at_least,below})); output=integer_count; annotation=bbox_set(matching_regions); scene=contour_density; scope=density_threshold_region_count`
+
+Candidate set: the visible contour-density regions, guide labels, and marked areas inside the `density_threshold_region_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_count` value bound by `integer_count`.
+Annotation witnesses: `bbox_set` witnesses bound by `bbox_set(matching_regions)`. Annotation should mark every region matching the visible density-level threshold. Renderer context such as axes, decorative labels, titles, and background treatments is metadata unless the task explicitly asks for it as annotation.
+Query ids: `density_at_least_threshold_region_count`, `density_below_threshold_region_count`.
+
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `density_at_least_threshold_region_count` | `count.thresholded_visible_density_level` | `integer_count` | `bbox_set` |
-| `density_below_threshold_region_count` | `count.thresholded_visible_density_level` | `integer_count` | `bbox_set` |
+| `density_at_least_threshold_region_count` | `count.density_threshold_regions` | `integer_count` | `bbox_set` |
+| `density_below_threshold_region_count` | `count.density_threshold_regions` | `integer_count` | `bbox_set` |

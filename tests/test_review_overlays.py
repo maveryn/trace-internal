@@ -80,41 +80,41 @@ def test_resolve_overlay_annotation_prefers_scalar_pixel_segment() -> None:
 
 def test_resolve_overlay_annotation_uses_canonical_keyed_point_projection() -> None:
     annotation_type, annotation_value = resolve_overlay_annotation(
-        annotation_type="keyed_point_map",
+        annotation_type="point_map",
         annotation_value={"A": [0, 0]},
-        trace_payload={"projected_annotation": {"pixel_keyed_point_map": {"A": [40.0, 50.0]}}},
+        trace_payload={"projected_annotation": {"pixel_point_map": {"A": [40.0, 50.0]}}},
     )
-    assert annotation_type == "keyed_point_map"
+    assert annotation_type == "point_map"
     assert annotation_value == {"A": [40.0, 50.0]}
 
 
 def test_resolve_overlay_annotation_uses_canonical_keyed_point_set_projection() -> None:
     annotation_type, annotation_value = resolve_overlay_annotation(
-        annotation_type="keyed_point_set_map",
+        annotation_type="point_set_map",
         annotation_value={"A": [[0, 0]]},
-        trace_payload={"projected_annotation": {"pixel_keyed_point_set_map": {"A": [[40.0, 50.0], [60.0, 70.0]]}}},
+        trace_payload={"projected_annotation": {"pixel_point_set_map": {"A": [[40.0, 50.0], [60.0, 70.0]]}}},
     )
-    assert annotation_type == "keyed_point_set_map"
+    assert annotation_type == "point_set_map"
     assert annotation_value == {"A": [[40.0, 50.0], [60.0, 70.0]]}
 
 
 def test_resolve_overlay_annotation_uses_canonical_keyed_bbox_projection() -> None:
     annotation_type, annotation_value = resolve_overlay_annotation(
-        annotation_type="keyed_bbox_map",
+        annotation_type="bbox_map",
         annotation_value={},
-        trace_payload={"projected_annotation": {"keyed_bbox_map": {"A": [10.0, 20.0, 30.0, 40.0]}}},
+        trace_payload={"projected_annotation": {"bbox_map": {"A": [10.0, 20.0, 30.0, 40.0]}}},
     )
-    assert annotation_type == "keyed_bbox_map"
+    assert annotation_type == "bbox_map"
     assert annotation_value == {"A": [10.0, 20.0, 30.0, 40.0]}
 
 
 def test_resolve_overlay_annotation_uses_canonical_keyed_bbox_set_projection() -> None:
     annotation_type, annotation_value = resolve_overlay_annotation(
-        annotation_type="keyed_bbox_set_map",
+        annotation_type="bbox_set_map",
         annotation_value={},
-        trace_payload={"projected_annotation": {"pixel_keyed_bbox_set_map": {"A": [[10.0, 20.0, 30.0, 40.0]]}}},
+        trace_payload={"projected_annotation": {"pixel_bbox_set_map": {"A": [[10.0, 20.0, 30.0, 40.0]]}}},
     )
-    assert annotation_type == "keyed_bbox_set_map"
+    assert annotation_type == "bbox_set_map"
     assert annotation_value == {"A": [[10.0, 20.0, 30.0, 40.0]]}
 
 
@@ -205,12 +205,12 @@ def test_render_annotation_overlay_draws_keyed_maps() -> None:
     source = PILImage.new("RGB", (120, 100), color=(255, 255, 255))
     point_overlay = render_annotation_overlay(
         source,
-        annotation_type="keyed_point_map",
+        annotation_type="point_map",
         annotation_value={"A": [50, 50]},
     )
     bbox_overlay = render_annotation_overlay(
         source,
-        annotation_type="keyed_bbox_map",
+        annotation_type="bbox_map",
         annotation_value={"B": [10, 10, 40, 40]},
     )
 
@@ -222,12 +222,12 @@ def test_render_annotation_overlay_draws_keyed_set_maps() -> None:
     source = PILImage.new("RGB", (140, 120), color=(255, 255, 255))
     point_overlay = render_annotation_overlay(
         source,
-        annotation_type="keyed_point_set_map",
+        annotation_type="point_set_map",
         annotation_value={"A": [[50, 50], [70, 50]]},
     )
     bbox_overlay = render_annotation_overlay(
         source,
-        annotation_type="keyed_bbox_set_map",
+        annotation_type="bbox_set_map",
         annotation_value={"B": [[10, 10, 40, 40], [70, 10, 100, 40]]},
     )
 

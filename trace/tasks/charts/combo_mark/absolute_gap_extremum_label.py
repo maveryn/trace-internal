@@ -39,6 +39,7 @@ class ChartsComboAbsoluteGapExtremumLabelTask:
     domain = DOMAIN
     objective_contract = "absolute_gap_extremum_label"
     supported_query_ids = (LARGEST_ABSOLUTE_QUERY_ID, SMALLEST_NONZERO_QUERY_ID)
+    default_dataset_enabled = True
     default_absolute_dataset_enabled = True
 
     def _build_absolute_gap_plan(self, instance_seed, params, selected_query_id):

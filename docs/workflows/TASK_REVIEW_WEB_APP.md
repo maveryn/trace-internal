@@ -24,13 +24,25 @@ Then use this review loop:
    the app shows it as the scene-level code audit status.
    Scene-package migration also requires `taxonomy_review_status.json` for the
    scene with `passed: true`; the app shows it as the scene-level taxonomy
-   audit status.
-2. Generate review artifacts under `review/task-reviews` as usual.
-3. If one scene under `review/task-reviews` changed, prefer the scene-scoped
-   reload API, `POST /api/reload/scene/<domain>/<scene_id>`. If many scenes or
-   shared review assets changed, click **Reload Index** in the app or call
-   `POST /api/reload`. Reload runs in the background; the app keeps serving the
-   previous index until the rebuild finishes and swaps in.
+   audit status only when every task in that scene also has a concrete
+   app-visible `## Program Contract` in its task doc.
+   It also requires `migration_test_status.json` with `passed: true` after the
+   scene-scoped command in `docs/SCENE_PACKAGE_MIGRATION/ENFORCEMENT_TESTS.md`
+   has passed. The review runner refuses scene-package review artifacts until
+   all three scene-level status files pass.
+2. Generate review artifacts under `review/task-reviews` as usual. The review
+   runner stages each task first and publishes it under a scene-level lock; do
+   not manually delete or rewrite live `data/` or `images/` directories while
+   reviewers are using the app.
+3. If one scene under `review/task-reviews` changed, use the scene-scoped
+   reload API, `POST /api/reload/scene/<domain>/<scene_id>`. The shared review
+   app rejects default full-index reloads so artifact refreshes do not interrupt
+   reviewers working in unrelated scenes. Full reload is an explicit global
+   maintenance action only: restart the app with
+   `TRACE_REVIEW_ALLOW_FULL_RELOAD=1` before calling `POST /api/reload`.
+   Reload runs in the background; the app keeps serving the previous index
+   until the rebuild finishes and swaps in. Reload requests made while another
+   reload is already running are queued and coalesced.
 4. Inspect through the browser app by domain, scene, task, and query id.
 5. Use scene, task, and sample pages to review image, prompt, answer, annotation,
    distribution status, review status, and solve-rate status.
@@ -46,14 +58,15 @@ Then use this review loop:
    outside the app, or fallback debugging.
 10. If web-app code, templates, CSS, JavaScript, indexer logic, resource
    indexing, feedback storage, or schemas changed, restart the app instead of
-   only reloading the index.
-10. After reload or restart, verify the affected domain/scene/task/sample page
+   only reloading the index. Prefer `scripts/restart_review_app.py`; do not
+   start a second review app for the same review root and feedback DB.
+11. After reload or restart, verify the affected domain/scene/task/sample page
     shows the updated local files, statuses, and issue controls before
     handing off.
-11. When an agent fixes a reviewer issue, add an agent repair note to the
+12. When an agent fixes a reviewer issue, add an agent repair note to the
     existing issue thread after validation. The repair note is the handoff
     from agent to reviewer; it is not the resolution.
-12. Reviewer/human resolution changes the underlying feedback status to
+13. Reviewer/human resolution changes the underlying feedback status to
     `resolved`. Resolved issues leave the open work queue but remain stored,
     exportable, and inspectable through their thread/detail page.
 
@@ -85,6 +98,21 @@ PYTHONPATH=. python scripts/run_review_app.py --host 0.0.0.0 --port 7860
 The launcher refuses to bind a non-localhost host without a token. The app uses
 one shared token and an HttpOnly cookie after login. Static media and overlays
 are served only for indexed review artifacts, not arbitrary filesystem paths.
+Only one task-review app may own a given `review/task-reviews` root and feedback
+database at a time. A second launcher for the same pair exits with the current
+owner metadata instead of starting a stale competing server. Stop/restart the
+existing app after app/template/static/indexer/feedback-schema changes; use
+scene-scoped reload only for artifact-only scene changes.
+
+Use the safe restart helper for app-code changes:
+
+```bash
+PYTHONPATH=. python scripts/restart_review_app.py --host 127.0.0.1 --port 7860 --review-root review/task-reviews
+```
+
+The helper stops the current lock owner, starts the app detached from the
+agent shell, health-checks `/api/reload/status`, and writes logs under
+`logs/review_app/` by default.
 
 When running inside Jupyter, open the app through the server-proxy URL:
 
@@ -100,26 +128,42 @@ proxy URL and enter `TRACE_REVIEW_APP_TOKEN` at the TRACE Review login screen.
 Agents must refresh the app before reporting that regenerated review artifacts
 are ready:
 
-- If one scene under `review/task-reviews` changes, prefer
+- If one scene under `review/task-reviews` changes, call
   `POST /api/reload/scene/<domain>/<scene_id>` before inspecting or handing off
   the app URL. This rebuilds only that scene in the index and swaps it into the
   current in-memory index.
 - If many scenes changed, or files under `review/task-reviews/assets` changed,
-  click **Reload Index** or call `POST /api/reload`. This starts a full
-  background index rebuild and returns immediately; poll
-  `GET /api/reload/status` or wait for the browser to refresh after the new
-  index is installed. Refreshing includes task samples, images, `data/*.json`,
-  manifests, distribution files, solve-rate artifacts, and scene review
-  manifests.
+  do not use the shared app's default reload endpoint. Either reload affected
+  scenes one by one, or perform an explicit global maintenance reload by
+  restarting the app with `TRACE_REVIEW_ALLOW_FULL_RELOAD=1` and then calling
+  `POST /api/reload`. The normal shared app returns `403` for
+  `POST /api/reload` so agents cannot accidentally trigger a full index rebuild
+  during review.
+- Scene-scoped refresh includes task samples, images, `data/*.json`, manifests,
+  distribution files, solve-rate artifacts, and scene review manifests for that
+  scene.
+- If a reload request arrives while another reload is running, the app queues
+  the latest requested scene/full reload and keeps serving the current index.
+  Agents do not need to retry immediately; wait for `GET /api/reload/status`
+  to report `in_progress: false`.
 - The app shows a `Review artifacts changed` banner when files under
-  `review/task-reviews` are newer than the loaded index. Treat that banner as a
-  blocker for visual inspection until **Reload Index** has completed
-  successfully.
+  `review/task-reviews` are newer than the loaded index. On scene, task, and
+  sample pages, the banner is shown only when that scene is stale; use
+  **Reload This Scene** / **Reload Scene**. On non-scene pages, the banner lists
+  affected scene links; open the affected scene and reload it there, or use
+  explicit global maintenance mode.
 - If review-app code changes, restart the server. This includes templates,
   CSS/JS, server routes, indexer logic, resource indexing, feedback storage, and
   schema changes. The launcher binds the server before the first full index scan
   finishes; if the app shows an index-loading notice, wait for the background
   reload to complete before reviewing regenerated samples.
+- If a sample briefly returns `503` during regeneration, wait for the artifact
+  command to finish and reload the affected scene. This means the app avoided
+  serving a missing or partially published artifact.
+- If a reload sees a scene-level publish lock, the app preserves the previous
+  indexed copy of that scene and records an index warning instead of blanking
+  or replacing the page with partial artifacts. Reload that scene again after
+  artifact generation finishes.
 - After either refresh path, open the affected domain/scene/task/sample page and
   verify the displayed image/prompt/annotation/status reflects the local files.
 - Issue comments, manual audit checkboxes, theme changes, and ordinary

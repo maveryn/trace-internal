@@ -5,7 +5,8 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any, Callable, Dict, Mapping, Sequence, Tuple, TypeVar
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 
 T = TypeVar("T")
 
@@ -23,15 +24,13 @@ def select_case_value(
         raise ValueError("case values must be non-empty")
     explicit_case = params.get("case_index")
     if explicit_case is not None:
-        index = int(explicit_case) % len(values)
+        index = int(explicit_case)
+        if index < 0 or index >= len(values):
+            raise ValueError(f"case_index must be in [0, {len(values) - 1}]")
+        return values[index]
     else:
-        raw_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(namespace),
-        )
-        index = int(raw_index) % len(values)
-    return values[index]
+        rng = spawn_rng(int(instance_seed), str(namespace))
+        return uniform_choice(rng, tuple(values))
 
 
 def answer_key(value: Any) -> str:
@@ -64,26 +63,6 @@ def _answer_sort_key(key: str) -> tuple[int, float | str]:
         return (1, str(key))
 
 
-def _uniform_answer_index(
-    *,
-    answer_count: int,
-    instance_seed: int,
-    params: Mapping[str, Any],
-    namespace: str,
-) -> int:
-    """Choose a final answer uniformly before selecting one construction case."""
-
-    if int(answer_count) <= 0:
-        raise ValueError("answer_count must be positive")
-    return int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{namespace}.answer",
-        )
-    ) % int(answer_count)
-
-
 def select_answer_balanced_case(
     answer_cases: Mapping[str, Sequence[T]],
     *,
@@ -111,7 +90,10 @@ def select_answer_balanced_case(
         )
         if not flat_cases:
             raise ValueError("answer_cases must contain at least one case")
-        return flat_cases[int(explicit_case) % len(flat_cases)], support_probabilities
+        case_index = int(explicit_case)
+        if case_index < 0 or case_index >= len(flat_cases):
+            raise ValueError(f"case_index must be in [0, {len(flat_cases) - 1}]")
+        return flat_cases[int(case_index)], support_probabilities
 
     explicit_answer = params.get("target_answer")
     if explicit_answer is not None:
@@ -119,19 +101,10 @@ def select_answer_balanced_case(
         if answer not in answer_cases:
             raise ValueError(f"target_answer {explicit_answer!r} is not in answer support")
     else:
-        answer_index = _uniform_answer_index(
-            answer_count=len(keys),
-            instance_seed=int(instance_seed),
-            params=params,
-            namespace=str(namespace),
-        )
-        answer = keys[int(answer_index)]
+        rng = spawn_rng(int(instance_seed), f"{namespace}.answer")
+        answer = str(uniform_choice(rng, keys))
     cases = tuple(answer_cases[str(answer)])
     if not cases:
         raise ValueError(f"answer {answer!r} has no candidate cases")
-    case_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.case.{answer}",
-    ) % len(cases)
-    return cases[int(case_index)], support_probabilities
+    rng = spawn_rng(int(instance_seed), f"{namespace}.case.{answer}")
+    return uniform_choice(rng, cases), support_probabilities

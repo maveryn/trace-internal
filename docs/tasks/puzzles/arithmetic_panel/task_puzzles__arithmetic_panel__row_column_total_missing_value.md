@@ -12,7 +12,15 @@
 9. Program schema: `solve_value(row_column_total_grid, target=question_mark_cell); scene=arithmetic_panel; scope=row_column_total_missing_value`
 
 ## Program Contract
-`solve_value(row_column_total_grid, target=question_mark_cell); scene=arithmetic_panel; scope=row_column_total_missing_value`
+
+Program: `solve_value(row_column_total_grid, target=question_mark_cell); scene=arithmetic_panel; scope=row_column_total_missing_value`
+
+Candidate set: the visible arithmetic panels, numeric entries, operators, totals, and marked target cell/node/brick inside the `row_column_total_missing_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `row_column_total_grid`, `question_mark_cell`, `arithmetic_panel`, `row_column_total_missing_value`.
+Operation: evaluate `solve_value` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the scalar bbox is the pixel box around the single visible question-mark target cell, node, or brick. It is not a one-item set.
+Query ids: `single`.
 
 ## 2) Scene + task contract
 1. Entities/relations: A small arithmetic grid with visible row and column totals and one question-mark target cell.

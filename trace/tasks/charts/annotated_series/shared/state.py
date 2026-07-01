@@ -7,7 +7,7 @@ from typing import Any
 
 from PIL import Image
 
-from trace.tasks.charts.shared.chart_scene import RenderedChartScene
+from trace.tasks.charts.shared.chart_scene_types import RenderedChartScene
 from trace.tasks.shared.visual_style.context_layer import ContextTextElement
 
 

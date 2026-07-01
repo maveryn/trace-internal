@@ -5,7 +5,6 @@ from .pair_equality_label import ChartsMultiseriesPairEqualityLabelTask
 from .ranked_change_extremum_label import ChartsMultiseriesRankedChangeExtremumTask
 from .ranked_pair_ratio_extremum_label import ChartsMultiseriesRankedPairRatioExtremumTask
 from .ranked_series_share_extremum_label import ChartsMultiseriesRankedSeriesShareExtremumTask
-from .series_comparison_count import ChartsMultiseriesSeriesComparisonCountTask
 from .series_rank_at_category_label import ChartsMultiseriesSeriesRankAtCategoryLabelTask
 
 __all__ = [
@@ -14,6 +13,5 @@ __all__ = [
     "ChartsMultiseriesRankedChangeExtremumTask",
     "ChartsMultiseriesRankedPairRatioExtremumTask",
     "ChartsMultiseriesRankedSeriesShareExtremumTask",
-    "ChartsMultiseriesSeriesComparisonCountTask",
     "ChartsMultiseriesSeriesRankAtCategoryLabelTask",
 ]

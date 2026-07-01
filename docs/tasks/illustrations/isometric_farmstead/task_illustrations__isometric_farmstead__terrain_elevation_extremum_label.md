@@ -10,7 +10,15 @@
 Selects the lettered terrain tile at the requested elevation extremum in an isometric farmstead scene. Each scene samples an active elevation range from `0..1` or `0..2`.
 
 ## Program Contract
-`select(label, extremum(level(tile), mode=highest|lowest), tile in lettered_ground_tiles); scene=isometric_farmstead; scope=terrain_elevation_extremum_label`
+
+Program: `select(label, extremum(level(tile), mode=highest|lowest), tile in lettered_ground_tiles); scene=isometric_farmstead; scope=terrain_elevation_extremum_label`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `terrain_elevation_extremum_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `label`, `extremum`, `level`, `tile`, `mode`, `highest`, `lowest`, `lettered_ground_tiles`, `isometric_farmstead`, `terrain_elevation_extremum_label` plus the active `query_id` branch.
+Operation: evaluate `select` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `highest_terrain_tile`, `lowest_terrain_tile`.
 
 ## Query Branches
 

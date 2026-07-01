@@ -27,11 +27,27 @@ def test_table_temporal_tasks_match_queried_year_cells() -> None:
         assert out.query_id == "single"
         assert execution["operation"] == operation
         assert out.answer_gt.type == "integer"
-        assert out.annotation_gt.type == "bbox_set"
-        assert out.annotation_gt.value == [
-            [float(value) for value in out.trace_payload["render_map"]["cell_bboxes_px"][cell_id]]
-            for cell_id in cell_ids
-        ]
+        if operation.startswith("absolute_difference"):
+            assert out.annotation_gt.type == "bbox_map"
+            expected_map = {}
+            for row_label, row_cell_ids in execution["supporting_cell_ids_by_row"].items():
+                boxes = [
+                    [float(value) for value in out.trace_payload["render_map"]["cell_bboxes_px"][str(cell_id)]]
+                    for cell_id in row_cell_ids
+                ]
+                expected_map[str(row_label)] = [
+                    min(box[0] for box in boxes),
+                    min(box[1] for box in boxes),
+                    max(box[2] for box in boxes),
+                    max(box[3] for box in boxes),
+                ]
+            assert out.annotation_gt.value == expected_map
+        else:
+            assert out.annotation_gt.type == "bbox_set"
+            assert out.annotation_gt.value == [
+                [float(value) for value in out.trace_payload["render_map"]["cell_bboxes_px"][cell_id]]
+                for cell_id in cell_ids
+            ]
         assert len(query_cells) == len(cell_ids) == 2 * len(query_years)
         row_a = str(execution["query_row_label_a"])
         row_b = str(execution["query_row_label_b"])
@@ -55,7 +71,12 @@ def test_table_temporal_prompt_examples_match_selected_variants() -> None:
         answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
         answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
         assert answer_and_annotation["answer"] == answer
-        assert isinstance(answer_and_annotation["annotation"], list)
+        if isinstance(task, ChartsTableAbsoluteDifferenceBetweenRowsOverYearIntervalTask):
+            assert isinstance(answer_and_annotation["annotation"], dict)
+            row_labels = out.trace_payload["execution_trace"]["query_row_labels"]
+            assert sorted(answer_and_annotation["annotation"]) == sorted(row_labels)
+        else:
+            assert isinstance(answer_and_annotation["annotation"], list)
         assert answer_only == {"answer": answer}
 
 

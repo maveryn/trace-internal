@@ -143,7 +143,7 @@ def resolve_render_params(
                 DEFAULTS.label_chip_size_px,
             ),
             unit_scale,
-            min_px=16,
+            min_px=28,
         ),
         label_margin_px=scale_puzzle_px(
             group_default(
@@ -161,7 +161,7 @@ def resolve_render_params(
                 DEFAULTS.label_font_size_px,
             ),
             unit_scale,
-            min_px=10,
+            min_px=16,
         ),
         panel_fill_rgb=coerce_rgb(
             group_default(

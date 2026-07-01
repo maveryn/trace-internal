@@ -5,9 +5,9 @@ from __future__ import annotations
 import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from .....core.sampling import uniform_choice
 from .....core.seed import spawn_rng
 from ....shared.bbox_projection import round_bbox as _round_bbox
-from ....shared.deterministic_sampling import resolve_selection_index
 
 
 Point = Tuple[float, float]
@@ -140,8 +140,13 @@ def _balanced_int(
     ordered = [int(value) for value in support]
     if not ordered:
         raise ValueError(f"empty support for {namespace}")
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=str(namespace))
-    return int(ordered[int(index) % len(ordered)])
+    return int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), str(namespace)),
+            ordered,
+            sort_keys=True,
+        )
+    )
 
 
 def _choose_random(items: Sequence[Any], *, rng) -> Any:

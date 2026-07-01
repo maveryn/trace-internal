@@ -142,9 +142,14 @@ INFORMATION_SCENE_TREATMENTS: dict[str, InformationSceneTreatment] = {
     "web_article_embed": InformationSceneTreatment("web_article_embed", ("light",), "web_embed", "panel", "none", 30, 20, 44, 1, 6, 3, "normal", "medium", 1.0),
     "desktop_app_window": InformationSceneTreatment("desktop_app_window", ("light",), "app_window", "accent_header", "none", 22, 16, 36, 1, 5, 3, "dense", "medium", 0.94),
     "control_console": InformationSceneTreatment("control_console", ("light",), "console", "accent_frame", "none", 24, 16, 40, 2, 4, 3, "dense", "medium", 0.96),
+    "lab_report_sheet": InformationSceneTreatment("lab_report_sheet", ("light",), "publication", "rule_header", "paper", 28, 18, 40, 1, 1, 1, "normal", "medium", 0.96),
     "presentation_slide": InformationSceneTreatment("presentation_slide", ("light",), "slide", "accent_header", "none", 36, 26, 52, 1, 0, 0, "sparse", "light", 1.08),
     "print_scan_sheet": InformationSceneTreatment("print_scan_sheet", ("light",), "printout", "thin_frame", "scan", 28, 18, 34, 1, 1, 1, "normal", "light", 0.96),
     "dark_analytics_board": InformationSceneTreatment("dark_analytics_board", ("dark",), "dark_board", "accent_header", "none", 28, 20, 44, 1, 6, 0, "dense", "light", 0.98),
+    "dark_report_card": InformationSceneTreatment("dark_report_card", ("dark",), "card", "panel", "none", 28, 20, 42, 1, 6, 0, "normal", "light", 1.0),
+    "dark_publication_figure": InformationSceneTreatment("dark_publication_figure", ("dark",), "publication", "thin_frame", "none", 26, 18, 32, 1, 0, 0, "normal", "light", 0.94),
+    "dark_dashboard_tile": InformationSceneTreatment("dark_dashboard_tile", ("dark",), "dashboard", "accent_header", "none", 22, 18, 38, 1, 6, 0, "dense", "light", 0.96),
+    "dark_console_panel": InformationSceneTreatment("dark_console_panel", ("dark",), "console", "accent_frame", "none", 24, 16, 40, 2, 4, 0, "dense", "medium", 0.96),
 }
 
 INFORMATION_SCENE_TREATMENT_IDS: Tuple[str, ...] = tuple(INFORMATION_SCENE_TREATMENTS.keys())

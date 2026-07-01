@@ -10,14 +10,20 @@ import pytest
 import yaml
 
 from trace.core.seed import hash64
-from trace.core.prompts import load_prompt_bundle, load_scene_prompt_bundle, render_prompt, render_prompt_variants
+from trace.core.prompts import (
+    load_prompt_bundle,
+    load_scene_prompt_bundle,
+    render_prompt,
+    render_prompt_variants,
+)
 from trace.core.prompts.schema import REQUIRED_PROMPT_VARIANTS
 from trace.tasks import TASK_REGISTRY, create_task
-from trace.tasks.shared.prompt_json_example import build_prompt_json_examples, dump_prompt_json_examples
-
-ANSWER_AND_ANNOTATION_CONTRACT = (
-    'Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.'
+from trace.tasks.shared.prompt_json_example import (
+    build_prompt_json_examples,
+    dump_prompt_json_examples,
 )
+
+ANSWER_AND_ANNOTATION_CONTRACT = 'Use a valid JSON object with keys "annotation" and "answer" in that order for the final answer.'
 ANSWER_ONLY_CONTRACT = 'Use a valid JSON object with key "answer" for the final answer.'
 ANSWER_FORMAT_TEXT = re.compile(
     r"(Answer format:|Answer field:|Required answer format:|Final answer format:|Use this answer format:|Format for the \"answer\" field:)"
@@ -58,7 +64,9 @@ def _active_prompt_bundle_coords() -> list[tuple[str, str, str]]:
     for path in sorted(Path("configs/domains").rglob("*.yaml")):
         _walk(yaml.safe_load(path.read_text()) or {})
 
-    missing = sorted(bundle_id for bundle_id in active_bundle_ids if bundle_id not in prompt_coords)
+    missing = sorted(
+        bundle_id for bundle_id in active_bundle_ids if bundle_id not in prompt_coords
+    )
     assert missing == []
     return [
         (prompt_coords[bundle_id][0], prompt_coords[bundle_id][1], bundle_id)
@@ -81,7 +89,9 @@ def _semantic_prompt_part(prompt: str) -> str:
         "Use this answer format:",
         'Format for the "answer" field:',
     )
-    marker_positions = [prompt.find(marker) for marker in markers if prompt.find(marker) >= 0]
+    marker_positions = [
+        prompt.find(marker) for marker in markers if prompt.find(marker) >= 0
+    ]
     if not marker_positions:
         return str(prompt).strip()
     return str(prompt)[: min(marker_positions)].strip()
@@ -136,10 +146,19 @@ def test_render_prompt_is_deterministic() -> None:
 
 def test_prompt_bundle_contract_and_required_slots() -> None:
     bundle = load_prompt_bundle("geometry", "measurement", "geometry_measurement_v0")
-    assert len(bundle.scene_templates["measurement_single_object"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.scene_templates["measurement_single_object"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.task_templates["measurement_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.answer_or_annotation_templates["answer_only"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.answer_or_annotation_templates["answer_and_annotation"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.answer_or_annotation_templates["answer_only"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.answer_or_annotation_templates["answer_and_annotation"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
 
     with pytest.raises(ValueError):
         render_prompt(
@@ -153,7 +172,9 @@ def test_prompt_bundle_contract_and_required_slots() -> None:
         )
 
 
-def test_render_prompt_variants_contains_answer_only_and_answer_and_annotation() -> None:
+def test_render_prompt_variants_contains_answer_only_and_answer_and_annotation() -> (
+    None
+):
     results = render_prompt_variants(
         domain="geometry",
         scene_id="measurement",
@@ -180,52 +201,119 @@ def test_render_prompt_variants_contains_answer_only_and_answer_and_annotation()
     assert ANSWER_ONLY_CONTRACT not in results["answer_only"].prompt
     assert ANSWER_AND_ANNOTATION_CONTRACT not in results["answer_and_annotation"].prompt
     assert ANSWER_FORMAT_TEXT.search(results["answer_only"].prompt) is not None
-    assert ANNOTATION_FORMAT_TEXT.search(results["answer_and_annotation"].prompt) is not None
+    assert (
+        ANNOTATION_FORMAT_TEXT.search(results["answer_and_annotation"].prompt)
+        is not None
+    )
     assert results["answer_only"].metadata["answer_or_annotation_key"] == "answer_only"
-    assert results["answer_and_annotation"].metadata["answer_or_annotation_key"] == "answer_and_annotation"
+    assert (
+        results["answer_and_annotation"].metadata["answer_or_annotation_key"]
+        == "answer_and_annotation"
+    )
 
 
-def test_geometry_measurement_bundles_answer_templates_use_contract_and_avoid_only_just() -> None:
+def test_geometry_measurement_bundles_answer_templates_use_contract_and_avoid_only_just() -> (
+    None
+):
     banned = re.compile(r"\b(only|just)\b", flags=re.IGNORECASE)
     for bundle_id in ("geometry_angle_measure_v0", "geometry_measurement_v0"):
         bundle = load_prompt_bundle("geometry", "measurement", bundle_id)
 
         task_templates = bundle.task_templates[
-            "measurement_angle_value" if bundle_id == "geometry_angle_measure_v0" else "measurement_query"
+            (
+                "measurement_angle_value"
+                if bundle_id == "geometry_angle_measure_v0"
+                else "measurement_query"
+            )
         ]
         answer_only_templates = bundle.answer_or_annotation_templates["answer_only"]
-        annotation_templates = bundle.answer_or_annotation_templates["answer_and_annotation"]
+        annotation_templates = bundle.answer_or_annotation_templates[
+            "answer_and_annotation"
+        ]
 
         assert len(task_templates) == REQUIRED_PROMPT_VARIANTS
         assert len(answer_only_templates) == REQUIRED_PROMPT_VARIANTS
         assert len(annotation_templates) == REQUIRED_PROMPT_VARIANTS
         assert all(str(template).strip() for template in answer_only_templates)
-        assert all("{json_output_contract_answer_only}" in str(template) for template in answer_only_templates)
-        assert all(ANSWER_FORMAT_TEXT.search(str(template)) is not None for template in answer_only_templates)
-        assert all("{answer_hint}" in str(template) for template in answer_only_templates)
-        assert all("{json_example_answer_only}" in str(template) for template in answer_only_templates)
-        assert all(banned.search(str(template)) is None for template in answer_only_templates)
-        assert all(banned.search(str(template)) is None for template in annotation_templates)
-        assert all("{json_output_contract}" in str(template) for template in annotation_templates)
-        assert all(ANSWER_FORMAT_TEXT.search(str(template)) is not None for template in annotation_templates)
-        assert all(ANNOTATION_FORMAT_TEXT.search(str(template)) is not None for template in annotation_templates)
-        assert all("{annotation_hint}" in str(template) for template in annotation_templates)
-        assert all("{answer_hint}" in str(template) for template in annotation_templates)
-        assert all("{json_example}" in str(template) for template in annotation_templates)
+        assert all(
+            "{json_output_contract_answer_only}" in str(template)
+            for template in answer_only_templates
+        )
+        assert all(
+            ANSWER_FORMAT_TEXT.search(str(template)) is not None
+            for template in answer_only_templates
+        )
+        assert all(
+            "{answer_hint}" in str(template) for template in answer_only_templates
+        )
+        assert all(
+            "{json_example_answer_only}" in str(template)
+            for template in answer_only_templates
+        )
+        assert all(
+            banned.search(str(template)) is None for template in answer_only_templates
+        )
+        assert all(
+            banned.search(str(template)) is None for template in annotation_templates
+        )
+        assert all(
+            "{json_output_contract}" in str(template)
+            for template in annotation_templates
+        )
+        assert all(
+            ANSWER_FORMAT_TEXT.search(str(template)) is not None
+            for template in annotation_templates
+        )
+        assert all(
+            ANNOTATION_FORMAT_TEXT.search(str(template)) is not None
+            for template in annotation_templates
+        )
+        assert all(
+            "{annotation_hint}" in str(template) for template in annotation_templates
+        )
+        assert all(
+            "{answer_hint}" in str(template) for template in annotation_templates
+        )
+        assert all(
+            "{json_example}" in str(template) for template in annotation_templates
+        )
 
         if bundle_id == "geometry_angle_measure_v0":
-            assert len({str(template) for template in task_templates}) == REQUIRED_PROMPT_VARIANTS
+            assert (
+                len({str(template) for template in task_templates})
+                == REQUIRED_PROMPT_VARIANTS
+            )
             assert all("{angle_label}" in str(template) for template in task_templates)
-            assert all("{question_text}" not in str(template) for template in task_templates)
-            assert list(bundle.required_slots_by_key["task:measurement_angle_value"]) == ["angle_label"]
-            assert all("option" not in str(template).lower() for template in task_templates)
-            assert all("nearest integer" in str(template).lower() for template in task_templates)
+            assert all(
+                "{question_text}" not in str(template) for template in task_templates
+            )
+            assert list(
+                bundle.required_slots_by_key["task:measurement_angle_value"]
+            ) == ["angle_label"]
+            assert all(
+                "option" not in str(template).lower() for template in task_templates
+            )
+            assert all(
+                "nearest integer" in str(template).lower()
+                for template in task_templates
+            )
         else:
-            assert len({str(template) for template in task_templates}) == REQUIRED_PROMPT_VARIANTS
-            assert all("{question_text}" in str(template) for template in task_templates)
-            assert all("figure" not in str(template).lower() for template in task_templates)
-            assert all("image" not in str(template).lower() for template in task_templates)
-            assert all("diagram" not in str(template).lower() for template in task_templates)
+            assert (
+                len({str(template) for template in task_templates})
+                == REQUIRED_PROMPT_VARIANTS
+            )
+            assert all(
+                "{question_text}" in str(template) for template in task_templates
+            )
+            assert all(
+                "figure" not in str(template).lower() for template in task_templates
+            )
+            assert all(
+                "image" not in str(template).lower() for template in task_templates
+            )
+            assert all(
+                "diagram" not in str(template).lower() for template in task_templates
+            )
 
 
 def _assert_geometry_analytical_measurement_query_text(
@@ -293,27 +381,56 @@ def test_active_task_bundles_use_json_output_contracts_for_both_modes() -> None:
     for domain, scene_id, bundle_id in _active_prompt_bundle_coords():
         bundle = load_prompt_bundle(domain, scene_id, bundle_id)
         answer_only_templates = bundle.answer_or_annotation_templates["answer_only"]
-        annotation_templates = bundle.answer_or_annotation_templates["answer_and_annotation"]
+        annotation_templates = bundle.answer_or_annotation_templates[
+            "answer_and_annotation"
+        ]
         assert len(answer_only_templates) == REQUIRED_PROMPT_VARIANTS
         assert len(annotation_templates) == REQUIRED_PROMPT_VARIANTS
-        assert all("{json_output_contract_answer_only}" in str(template) for template in answer_only_templates)
-        assert all("{answer_hint}" in str(template) for template in answer_only_templates)
-        assert all("{json_example_answer_only}" in str(template) for template in answer_only_templates)
-        assert all("{json_output_contract}" in str(template) for template in annotation_templates)
-        assert all("{annotation_hint}" in str(template) for template in annotation_templates)
-        assert all("{answer_hint}" in str(template) for template in annotation_templates)
-        assert all("{json_example}" in str(template) for template in annotation_templates)
+        assert all(
+            "{json_output_contract_answer_only}" in str(template)
+            for template in answer_only_templates
+        )
+        assert all(
+            "{answer_hint}" in str(template) for template in answer_only_templates
+        )
+        assert all(
+            "{json_example_answer_only}" in str(template)
+            for template in answer_only_templates
+        )
+        assert all(
+            "{json_output_contract}" in str(template)
+            for template in annotation_templates
+        )
+        assert all(
+            "{annotation_hint}" in str(template) for template in annotation_templates
+        )
+        assert all(
+            "{answer_hint}" in str(template) for template in annotation_templates
+        )
+        assert all(
+            "{json_example}" in str(template) for template in annotation_templates
+        )
         assert {
             "json_output_contract_answer_only",
             "answer_hint",
             "json_example_answer_only",
-        }.issubset(set(bundle.required_slots_by_key.get("answer_or_annotation:answer_only", ())))
+        }.issubset(
+            set(
+                bundle.required_slots_by_key.get("answer_or_annotation:answer_only", ())
+            )
+        )
         assert {
             "json_output_contract",
             "annotation_hint",
             "answer_hint",
             "json_example",
-        }.issubset(set(bundle.required_slots_by_key.get("answer_or_annotation:answer_and_annotation", ())))
+        }.issubset(
+            set(
+                bundle.required_slots_by_key.get(
+                    "answer_or_annotation:answer_and_annotation", ()
+                )
+            )
+        )
 
 
 def test_prompt_bundles_use_format_language_in_output_and_variant_templates() -> None:
@@ -331,10 +448,14 @@ def test_prompt_bundles_use_format_language_in_output_and_variant_templates() ->
     for path in sorted(Path("prompts").rglob("*.json")):
         bundle = json.loads(path.read_text())
 
-        for template in bundle.get("answer_or_annotation_templates", {}).get("answer_only", ()):
+        for template in bundle.get("answer_or_annotation_templates", {}).get(
+            "answer_only", ()
+        ):
             assert "Return a valid JSON object" not in str(template), path
             assert ANSWER_FORMAT_TEXT.search(str(template)) is not None, path
-        for template in bundle.get("answer_or_annotation_templates", {}).get("answer_and_annotation", ()):
+        for template in bundle.get("answer_or_annotation_templates", {}).get(
+            "answer_and_annotation", ()
+        ):
             assert "Return a valid JSON object" not in str(template), path
             assert ANSWER_FORMAT_TEXT.search(str(template)) is not None, path
             assert ANNOTATION_FORMAT_TEXT.search(str(template)) is not None, path
@@ -342,13 +463,23 @@ def test_prompt_bundles_use_format_language_in_output_and_variant_templates() ->
         for templates in bundle.get("query_templates", {}).values():
             for template in templates:
                 lowered = str(template)
-                assert all(pattern.search(lowered) is None for pattern in banned_variant_patterns), path
+                assert all(
+                    pattern.search(lowered) is None
+                    for pattern in banned_variant_patterns
+                ), path
 
     for path in sorted(Path("configs").rglob("*.yaml")):
         text = path.read_text()
         assert 'Return a valid JSON object with key "answer".' not in text, path
-        assert 'Return a valid JSON object with keys "annotation" and "answer" in that order.' not in text, path
-        assert ANSWER_ONLY_CONTRACT in text or ANSWER_AND_ANNOTATION_CONTRACT in text or "json_output_contract" not in text, path
+        assert (
+            'Return a valid JSON object with keys "annotation" and "answer" in that order.'
+            not in text
+        ), path
+        assert (
+            ANSWER_ONLY_CONTRACT in text
+            or ANSWER_AND_ANNOTATION_CONTRACT in text
+            or "json_output_contract" not in text
+        ), path
 
 
 def test_prompt_bundles_avoid_awkward_visual_openers() -> None:
@@ -361,7 +492,10 @@ def test_prompt_bundles_avoid_awkward_visual_openers() -> None:
                 for template in templates:
                     if not str(template).strip():
                         continue
-                    assert BAD_PROMPT_OPENER.search(str(template)) is None, (path, template)
+                    assert BAD_PROMPT_OPENER.search(str(template)) is None, (
+                        path,
+                        template,
+                    )
 
 
 def _example_answer_matches_type(answer_type: str, value: object) -> bool:
@@ -373,7 +507,12 @@ def _example_answer_matches_type(answer_type: str, value: object) -> bool:
     if answer_type == "string":
         return isinstance(value, str)
     if answer_type == "option_letter":
-        return isinstance(value, str) and len(value) == 1 and value.isalpha() and value.upper() == value
+        return (
+            isinstance(value, str)
+            and len(value) == 1
+            and value.isalpha()
+            and value.upper() == value
+        )
     if answer_type == "pi_expression":
         return isinstance(value, str)
     return True
@@ -395,17 +534,23 @@ def test_active_tasks_answer_only_prompts_stay_answer_only() -> None:
                     max_attempts=128,
                 )
                 break
-            except Exception as exc:  # pragma: no cover - exercised only on unlucky audit seeds
+            except (
+                Exception
+            ) as exc:  # pragma: no cover - exercised only on unlucky audit seeds
                 last_error = exc
                 continue
         if out is None:
-            raise AssertionError(f"{task_id} failed answer-only audit generation across 8 deterministic seeds") from last_error
+            raise AssertionError(
+                f"{task_id} failed answer-only audit generation across 8 deterministic seeds"
+            ) from last_error
         prompt = str(out.prompt_variants.get("answer_only", ""))
         annotation_prompt = str(out.prompt_variants.get("answer_and_annotation", ""))
         assert prompt, task_id
         assert annotation_prompt, task_id
         assert BAD_PROMPT_OPENER.search(_semantic_prompt_part(prompt)) is None, task_id
-        assert _semantic_prompt_part(prompt) == _semantic_prompt_part(annotation_prompt), task_id
+        assert _semantic_prompt_part(prompt) == _semantic_prompt_part(
+            annotation_prompt
+        ), task_id
         assert "Example JSON:" in prompt, task_id
         assert '"annotation"' not in prompt, task_id
         assert banned_annotation_word.search(prompt) is None, task_id
@@ -424,51 +569,87 @@ def test_active_tasks_answer_only_prompts_stay_answer_only() -> None:
 
         example = json.loads(str(slot_values.get("json_example_answer_only", "")))
         assert list(example.keys()) == ["answer"], task_id
-        assert _example_answer_matches_type(str(out.answer_gt.type), example["answer"]), task_id
+        assert _example_answer_matches_type(
+            str(out.answer_gt.type), example["answer"]
+        ), task_id
 
 
 def test_cell_board_count_bundle_supports_both_count_and_component_queries() -> None:
-    bundle = load_prompt_bundle("puzzles", "cell_board_count", "puzzles_cell_board_count_v0")
+    bundle = load_prompt_bundle(
+        "puzzles", "cell_board_count", "puzzles_cell_board_count_v0"
+    )
     assert len(bundle.task_templates["color_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["color_component_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task:color_count_query"]) == ["query_color"]
-    assert list(bundle.required_slots_by_key["task:color_component_count_query"]) == ["query_color"]
+    assert (
+        len(bundle.task_templates["color_component_count_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["task:color_count_query"]) == [
+        "query_color"
+    ]
+    assert list(bundle.required_slots_by_key["task:color_component_count_query"]) == [
+        "query_color"
+    ]
 
 
-def test_pages_arithmetic_bundle_supports_section_expression_query() -> None:
-    bundle = load_prompt_bundle("pages", "arithmetic", "pages_arithmetic_v0")
-    assert len(bundle.scene_templates["structured_document_sections"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["section_expression_query"]) == REQUIRED_PROMPT_VARIANTS
+def test_pages_form_section_bundle_supports_section_expression_query() -> None:
+    bundle = load_prompt_bundle("pages", "form_section", "pages_form_section_v1")
+    assert (
+        len(bundle.scene_templates["structured_document_sections"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["section_expression_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert bundle.allow_empty_task_templates is True
-    assert list(bundle.required_slots_by_key["query:sum_two_amounts_in_section"]) == [
+    assert list(
+        bundle.required_slots_by_key["query:sum_two_amounts_in_section_value"]
+    ) == [
         "section_label",
         "first_label",
         "second_label",
     ]
-    assert list(bundle.required_slots_by_key["query:sum_minus_amount_in_section"]) == [
+    assert list(
+        bundle.required_slots_by_key["query:sum_minus_amount_in_section_value"]
+    ) == [
         "section_label",
         "first_label",
         "second_label",
         "third_label",
     ]
+    assert list(
+        bundle.required_slots_by_key["query:difference_two_amounts_in_section_value"]
+    ) == [
+        "section_label",
+        "first_label",
+        "second_label",
+    ]
 
 
 def test_pages_hierarchy_bundle_supports_tree_count_query() -> None:
-    bundle = load_prompt_bundle("pages", "hierarchy", "pages_hierarchy_v0")
+    bundle = load_prompt_bundle("pages", "hierarchy", "pages_hierarchy_v1")
     assert len(bundle.scene_templates["hierarchy_diagram"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["tree_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.task_templates["org_chart_query"]) == REQUIRED_PROMPT_VARIANTS
     assert bundle.allow_empty_task_templates is True
-    assert list(bundle.required_slots_by_key["query:subtree_descendant_count"]) == ["query_label"]
-    assert list(bundle.required_slots_by_key["query:path_length_between_two_nodes"]) == [
-        "query_label",
-        "right_query_label",
+    assert list(bundle.required_slots_by_key["query:subtree_descendant_count"]) == [
+        "query_label"
     ]
+    assert (
+        list(bundle.required_slots_by_key["query:manager_most_direct_reports_label"])
+        == []
+    )
+    assert (
+        list(bundle.required_slots_by_key["query:manager_most_total_reports_label"])
+        == []
+    )
 
 
 def test_icons_relation_bundle_supports_anchor_relation_query() -> None:
     bundle = load_prompt_bundle("icons", "relation", "icons_relation_v0")
     assert len(bundle.task_templates["relation_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task:relation_query"]) == ["question_text"]
+    assert list(bundle.required_slots_by_key["task:relation_query"]) == [
+        "question_text"
+    ]
     assert "named_reference_distance_relation" in bundle.scene_templates
     assert "reference_grid_mirror_symmetry_relation" in bundle.scene_templates
 
@@ -476,10 +657,16 @@ def test_icons_relation_bundle_supports_anchor_relation_query() -> None:
 def test_icons_overlap_grid_bundle_supports_occlusion_order_count() -> None:
     bundle = load_prompt_bundle("icons", "overlap_grid", "icons_overlap_grid_v1")
     assert bundle.schema_version == "v1"
-    assert len(bundle.task_templates["occlusion_order_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["occlusion_order_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
     assert "overlap_grid_occlusion_order" in bundle.scene_templates
-    assert list(bundle.required_slots_by_key["scene:overlap_grid_occlusion_order"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["task:occlusion_order_count"]) == ["question_text"]
+    assert list(bundle.required_slots_by_key["scene:overlap_grid_occlusion_order"]) == [
+        "object_description"
+    ]
+    assert list(bundle.required_slots_by_key["task:occlusion_order_count"]) == [
+        "question_text"
+    ]
 
 
 def test_icons_named_strip_bundle_supports_run_length_queries() -> None:
@@ -487,21 +674,40 @@ def test_icons_named_strip_bundle_supports_run_length_queries() -> None:
     assert bundle.schema_version == "v1"
     assert bundle.allow_empty_task_templates is True
     assert len(bundle.task_templates["shape_run_length"]) == REQUIRED_PROMPT_VARIANTS
-    assert set(bundle.query_templates.keys()) == {"longest_shape_run_length", "shortest_shape_run_length"}
-    assert list(bundle.required_slots_by_key["query:longest_shape_run_length"]) == ["target_shape_name"]
-    assert list(bundle.required_slots_by_key["query:shortest_shape_run_length"]) == ["target_shape_name"]
+    assert len(bundle.task_templates["shape_run_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert set(bundle.query_templates.keys()) == {
+        "longest_shape_run_length",
+        "shape_run_count",
+        "shortest_shape_run_length",
+    }
+    assert list(bundle.required_slots_by_key["query:longest_shape_run_length"]) == [
+        "target_shape_name"
+    ]
+    assert list(bundle.required_slots_by_key["query:shortest_shape_run_length"]) == [
+        "target_shape_name"
+    ]
+    assert list(bundle.required_slots_by_key["query:shape_run_count"]) == [
+        "target_shape_name"
+    ]
     assert "named_strip_run_length" in bundle.scene_templates
 
 
 def test_icons_pattern_bundle_supports_structured_violation_query() -> None:
     bundle = load_prompt_bundle("icons", "pattern_grid", "icons_pattern_v0")
-    assert len(bundle.task_templates["structured_violation_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task:structured_violation_query"]) == ["question_text"]
+    assert (
+        len(bundle.task_templates["structured_violation_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["task:structured_violation_query"]) == [
+        "question_text"
+    ]
     assert "structured_violation_scene" in bundle.scene_templates
 
 
 def test_icons_wallpaper_panels_bundle_supports_reference_tasks() -> None:
-    bundle = load_prompt_bundle("icons", "wallpaper_panels", "icons_wallpaper_panels_v1")
+    bundle = load_prompt_bundle(
+        "icons", "wallpaper_panels", "icons_wallpaper_panels_v1"
+    )
     assert set(bundle.scene_templates.keys()) == {
         "wallpaper_panel_violation_scene",
         "wallpaper_reference_match_scene",
@@ -517,51 +723,110 @@ def test_icons_wallpaper_panels_bundle_supports_reference_tasks() -> None:
 def test_icons_venn_field_bundle_supports_region_count_queries() -> None:
     bundle = load_prompt_bundle("icons", "venn_field", "icons_venn_field_v1")
     assert "venn_field_scene" in bundle.scene_templates
-    assert len(bundle.task_templates["scoped_attribute_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["scoped_attribute_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["same_region_as_reference_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert set(bundle.query_templates.keys()) == {
+        "single",
         "inside_both_circles_count",
         "inside_either_circle_count",
         "inside_exactly_one_circle_count",
         "outside_both_circles_count",
     }
-    assert list(bundle.required_slots_by_key["query:inside_both_circles_count"]) == ["target_description"]
+    assert list(bundle.required_slots_by_key["query:inside_both_circles_count"]) == [
+        "target_description"
+    ]
+    assert list(bundle.required_slots_by_key["query:single"]) == ["target_description"]
 
 
 def test_graph_counting_bundle_supports_degree_count_query() -> None:
     bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_counting_v1")
     assert "single_graph_counting" in bundle.scene_templates
     assert len(bundle.task_templates["degree_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["named_node_degree_value_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["node_color_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["edge_color_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["isolated_node_count_after_node_removal_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["named_node_degree_value_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["node_color_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["edge_color_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["isolated_node_count_after_node_removal_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.query_templates["degree_count"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["in_degree_count"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["out_degree_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["named_node_degree_value"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["named_node_in_degree_value"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["named_node_out_degree_value"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["named_node_total_degree_value"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["named_node_degree_value"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["named_node_in_degree_value"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["named_node_out_degree_value"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["named_node_total_degree_value"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.query_templates["node_color_count"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["edge_color_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["isolated_node_count_after_node_removal"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["isolated_node_count_after_node_removal"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert list(bundle.required_slots_by_key["query:degree_count"]) == ["query_degree"]
-    assert list(bundle.required_slots_by_key["query:in_degree_count"]) == ["query_degree"]
-    assert list(bundle.required_slots_by_key["query:out_degree_count"]) == ["query_degree"]
-    assert list(bundle.required_slots_by_key["query:named_node_degree_value"]) == ["query_label"]
-    assert list(bundle.required_slots_by_key["query:named_node_in_degree_value"]) == ["query_label"]
-    assert list(bundle.required_slots_by_key["query:named_node_out_degree_value"]) == ["query_label"]
-    assert list(bundle.required_slots_by_key["query:named_node_total_degree_value"]) == ["query_label"]
-    assert list(bundle.required_slots_by_key["query:node_color_count"]) == ["target_color_label"]
-    assert list(bundle.required_slots_by_key["query:edge_color_count"]) == ["target_color_label"]
-    assert list(bundle.required_slots_by_key["query:isolated_node_count_after_node_removal"]) == ["query_label"]
+    assert list(bundle.required_slots_by_key["query:in_degree_count"]) == [
+        "query_degree"
+    ]
+    assert list(bundle.required_slots_by_key["query:out_degree_count"]) == [
+        "query_degree"
+    ]
+    assert list(bundle.required_slots_by_key["query:named_node_degree_value"]) == [
+        "query_label"
+    ]
+    assert list(bundle.required_slots_by_key["query:named_node_in_degree_value"]) == [
+        "query_label"
+    ]
+    assert list(bundle.required_slots_by_key["query:named_node_out_degree_value"]) == [
+        "query_label"
+    ]
+    assert list(
+        bundle.required_slots_by_key["query:named_node_total_degree_value"]
+    ) == ["query_label"]
+    assert list(bundle.required_slots_by_key["query:node_color_count"]) == [
+        "target_color_label"
+    ]
+    assert list(bundle.required_slots_by_key["query:edge_color_count"]) == [
+        "target_color_label"
+    ]
+    assert list(
+        bundle.required_slots_by_key["query:isolated_node_count_after_node_removal"]
+    ) == ["query_label"]
 
 
 def test_graph_counting_bundle_supports_articulation_point_count_query() -> None:
     bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_counting_v1")
     assert "single_graph_counting" in bundle.scene_templates
-    assert len(bundle.task_templates["articulation_point_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["articulation_point_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["articulation_point_count_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["articulation_point_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
 
 
 def test_graph_counting_bundle_supports_bridge_count_query() -> None:
@@ -575,64 +840,126 @@ def test_graph_counting_bundle_supports_metro_transfer_station_count_query() -> 
     bundle = load_scene_prompt_bundle("graph", "metro", "graph_metro_v1")
     assert "metro_route_map" in bundle.scene_templates
     assert len(bundle.task_templates["metro_route_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["metro_transfer_station_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["metro_single_route_station_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["metro_transfer_station_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["metro_single_route_station_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
 
 
 def test_graph_relation_bundle_supports_metro_exact_distance_count_query() -> None:
     bundle = load_scene_prompt_bundle("graph", "metro", "graph_metro_v1")
     assert "metro_route_map" in bundle.scene_templates
-    assert len(bundle.query_templates["metro_exact_distance_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:metro_exact_distance_count"]) == ["query_label", "query_distance"]
+    assert (
+        len(bundle.query_templates["metro_exact_distance_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["query:metro_exact_distance_count"]) == [
+        "query_label",
+        "query_distance",
+    ]
 
 
 def test_graph_path_bundle_supports_metro_shortest_path_length_query() -> None:
     bundle = load_scene_prompt_bundle("graph", "metro", "graph_metro_v1")
     assert "metro_route_map" in bundle.scene_templates
-    assert len(bundle.query_templates["metro_shortest_path_length"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:metro_shortest_path_length"]) == ["source_label", "goal_label"]
+    assert (
+        len(bundle.query_templates["metro_shortest_path_length"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["query:metro_shortest_path_length"]) == [
+        "source_label",
+        "goal_label",
+    ]
 
 
 def test_graph_relation_bundle_supports_same_component_count_query() -> None:
     bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
-    assert len(bundle.task_templates["same_component_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["same_component_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:same_component_count"]) == ["query_label"]
+    assert (
+        len(bundle.task_templates["same_component_count_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["same_component_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["query:same_component_count"]) == [
+        "query_label"
+    ]
 
 
 def test_graph_relation_bundle_supports_reachable_count_query() -> None:
     bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
-    assert len(bundle.task_templates["reachable_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["reachable_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.query_templates["reachable_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:reachable_count"]) == ["query_label"]
+    assert list(bundle.required_slots_by_key["query:reachable_count"]) == [
+        "query_label"
+    ]
 
 
 def test_graph_relation_bundle_supports_common_neighbor_count_query() -> None:
     bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
-    assert len(bundle.task_templates["common_neighbor_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["common_neighbor_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["common_successor_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["common_predecessor_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:common_neighbor_count"]) == ["query_label_a", "query_label_b"]
-    assert list(bundle.required_slots_by_key["query:common_successor_count"]) == ["query_label_a", "query_label_b"]
-    assert list(bundle.required_slots_by_key["query:common_predecessor_count"]) == ["query_label_a", "query_label_b"]
+    assert (
+        len(bundle.task_templates["common_neighbor_count_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["common_neighbor_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["common_successor_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["common_predecessor_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["query:common_neighbor_count"]) == [
+        "query_label_a",
+        "query_label_b",
+    ]
+    assert list(bundle.required_slots_by_key["query:common_successor_count"]) == [
+        "query_label_a",
+        "query_label_b",
+    ]
+    assert list(bundle.required_slots_by_key["query:common_predecessor_count"]) == [
+        "query_label_a",
+        "query_label_b",
+    ]
 
 
 def test_graph_relation_bundle_supports_component_size_after_edge_edit_query() -> None:
     bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
-    assert len(bundle.task_templates["component_size_after_edge_edit_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["component_size_after_edge_removal"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["component_size_after_edge_addition"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:component_size_after_edge_removal"]) == [
+    assert (
+        len(bundle.task_templates["component_size_after_edge_edit_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["component_size_after_edge_removal"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["component_size_after_edge_addition"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(
+        bundle.required_slots_by_key["query:component_size_after_edge_removal"]
+    ) == [
         "edit_label_a",
         "edit_label_b",
         "query_label",
     ]
-    assert list(bundle.required_slots_by_key["query:component_size_after_edge_addition"]) == [
+    assert list(
+        bundle.required_slots_by_key["query:component_size_after_edge_addition"]
+    ) == [
         "edit_label_a",
         "edit_label_b",
         "query_label",
@@ -642,15 +969,28 @@ def test_graph_relation_bundle_supports_component_size_after_edge_edit_query() -
 def test_graph_relation_bundle_supports_reachable_count_after_edge_edit_query() -> None:
     bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
-    assert len(bundle.task_templates["reachable_count_after_edge_edit_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["reachable_count_after_edge_removal"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["reachable_count_after_edge_addition"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:reachable_count_after_edge_removal"]) == [
+    assert (
+        len(bundle.task_templates["reachable_count_after_edge_edit_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["reachable_count_after_edge_removal"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["reachable_count_after_edge_addition"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(
+        bundle.required_slots_by_key["query:reachable_count_after_edge_removal"]
+    ) == [
         "edit_label_a",
         "edit_label_b",
         "query_label",
     ]
-    assert list(bundle.required_slots_by_key["query:reachable_count_after_edge_addition"]) == [
+    assert list(
+        bundle.required_slots_by_key["query:reachable_count_after_edge_addition"]
+    ) == [
         "edit_label_a",
         "edit_label_b",
         "query_label",
@@ -660,39 +1000,73 @@ def test_graph_relation_bundle_supports_reachable_count_after_edge_edit_query() 
 def test_graph_relation_bundle_supports_unique_cycle_size_query() -> None:
     bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
-    assert len(bundle.task_templates["unique_cycle_size_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["unique_cycle_size_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.query_templates["unique_cycle_size"]) == REQUIRED_PROMPT_VARIANTS
 
 
 def test_graph_relation_bundle_supports_largest_chordless_cycle_size_query() -> None:
     bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
-    assert len(bundle.task_templates["largest_chordless_cycle_size_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["largest_chordless_cycle_size"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["largest_chordless_cycle_size_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["largest_chordless_cycle_size"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
 
 
-def test_graph_relation_bundle_supports_hamiltonian_cycle_neighbor_label_query() -> None:
+def test_graph_relation_bundle_supports_hamiltonian_cycle_neighbor_label_query() -> (
+    None
+):
     bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_relation_v1")
     assert "single_graph_relation" in bundle.scene_templates
-    assert len(bundle.task_templates["hamiltonian_cycle_neighbor_label_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["next_in_hamiltonian_cycle_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["previous_in_hamiltonian_cycle_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:next_in_hamiltonian_cycle_label"]) == [
+    assert (
+        len(bundle.task_templates["hamiltonian_cycle_neighbor_label_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["next_in_hamiltonian_cycle_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["previous_in_hamiltonian_cycle_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(
+        bundle.required_slots_by_key["query:next_in_hamiltonian_cycle_label"]
+    ) == [
         "orientation_start_label",
         "orientation_final_label",
     ]
-    assert list(bundle.required_slots_by_key["query:previous_in_hamiltonian_cycle_label"]) == [
+    assert list(
+        bundle.required_slots_by_key["query:previous_in_hamiltonian_cycle_label"]
+    ) == [
         "orientation_start_label",
         "orientation_final_label",
     ]
 
 
 def test_graph_pedigree_chart_scene_bundle_supports_label_queries() -> None:
-    bundle = load_scene_prompt_bundle("graph", "pedigree_chart", "graph_pedigree_chart_v1")
+    bundle = load_scene_prompt_bundle(
+        "graph", "pedigree_chart", "graph_pedigree_chart_v1"
+    )
     assert "pedigree_chart" in bundle.scene_templates
-    assert len(bundle.task_templates["pedigree_chart_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["relationship_label_between_two_people"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["relatedness_coefficient_between_two_people"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["pedigree_chart_query"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["relationship_label_between_two_people"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["relatedness_coefficient_between_two_people"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     rendered = render_prompt(
         domain="graph",
         scene_id="pedigree_chart",
@@ -707,7 +1081,7 @@ def test_graph_pedigree_chart_scene_bundle_supports_label_queries() -> None:
             "json_output_contract": ANSWER_AND_ANNOTATION_CONTRACT,
             "json_output_contract_answer_only": ANSWER_ONLY_CONTRACT,
             "annotation_hint": 'set "annotation" to a keyed person-symbol bbox map',
-            "answer_hint": "set \"answer\" to the exact option letter",
+            "answer_hint": 'set "answer" to the exact option letter',
             "json_example": '{"annotation":{"person_a":[1,2,3,4],"person_b":[5,6,7,8]},"answer":"A"}',
             "json_example_answer_only": '{"answer":"A"}',
         },
@@ -718,14 +1092,22 @@ def test_graph_pedigree_chart_scene_bundle_supports_label_queries() -> None:
 
 
 def test_graph_phylogeny_tree_scene_bundle_supports_tree_queries() -> None:
-    bundle = load_scene_prompt_bundle("graph", "phylogeny_tree", "graph_phylogeny_tree_v1")
+    bundle = load_scene_prompt_bundle(
+        "graph", "phylogeny_tree", "graph_phylogeny_tree_v1"
+    )
     assert "phylogeny_tree" in bundle.scene_templates
     assert "phylogeny_tree_options" in bundle.scene_templates
     assert len(bundle.task_templates["phylogeny_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["marked_clade_leaf_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["marked_clade_leaf_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.query_templates["sister_leaf_label"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["mrca_leaf_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["topology_outlier_label"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["topology_outlier_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     rendered = render_prompt(
         domain="graph",
         scene_id="phylogeny_tree",
@@ -747,10 +1129,19 @@ def test_graph_pipe_network_scene_bundle_supports_pipe_queries() -> None:
     bundle = load_scene_prompt_bundle("graph", "pipe_network", "graph_pipe_network_v1")
     assert "pipe_network" in bundle.scene_templates
     assert len(bundle.task_templates["pipe_network_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["pipe_shortest_path_length"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["pipe_shortest_path_length"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.query_templates["pipe_bridge_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["pipe_reachable_junction_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["pipe_exact_distance_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["pipe_reachable_junction_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["pipe_exact_distance_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     rendered = render_prompt(
         domain="graph",
         scene_id="pipe_network",
@@ -778,14 +1169,35 @@ def test_graph_pipe_network_scene_bundle_supports_pipe_queries() -> None:
 def test_graph_automaton_scene_bundle_supports_state_machine_queries() -> None:
     bundle = load_scene_prompt_bundle("graph", "automaton", "automaton_v1")
     assert "automaton" in bundle.scene_templates
-    assert len(bundle.task_templates["state_after_input_label_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["accepted_string_label_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["nondeterministic_state_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["state_after_input_label_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["accepted_string_label_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["nondeterministic_state_count_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.query_templates["final_state_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["transition_step_state_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["dfa_accepted_string_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["nfa_accepted_string_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["nondeterministic_state_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["transition_step_state_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["dfa_accepted_string_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["nfa_accepted_string_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["nondeterministic_state_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     rendered = render_prompt(
         domain="graph",
         scene_id="automaton",
@@ -805,21 +1217,39 @@ def test_graph_automaton_scene_bundle_supports_state_machine_queries() -> None:
 
 
 def test_pages_schedule_bundle_supports_day_planner_queries() -> None:
-    bundle = load_prompt_bundle("pages", "schedule", "pages_schedule_v0")
+    bundle = load_prompt_bundle("pages", "schedule", "pages_schedule_v1")
     assert "day_schedule" in bundle.scene_templates
     assert len(bundle.task_templates["schedule_day_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:day_schedule"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["scene:day_schedule"]) == [
+        "object_description"
+    ]
+    assert set(bundle.query_templates.keys()) == {
+        "longer_than_reference_count",
+        "maximum_non_overlapping_count",
+        "overlap_count",
+    }
 
 
 def test_pages_timeline_bundle_supports_milestone_queries() -> None:
-    bundle = load_prompt_bundle("pages", "timeline", "pages_timeline_v0")
+    bundle = load_prompt_bundle("pages", "timeline", "pages_timeline_v1")
     assert "milestone_timeline" in bundle.scene_templates
-    assert len(bundle.task_templates["timeline_milestone_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["interval_membership_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["event_date_gap_value"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:milestone_timeline"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["query:interval_membership_count"]) == [
-        "interval_relation_description"
+    assert (
+        len(bundle.task_templates["timeline_milestone_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["between_reference_events_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["outside_reference_interval_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["event_date_gap_value"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["scene:milestone_timeline"]) == [
+        "object_description"
     ]
     assert list(bundle.required_slots_by_key["query:event_date_gap_value"]) == [
         "endpoint_pair_description"
@@ -827,53 +1257,122 @@ def test_pages_timeline_bundle_supports_milestone_queries() -> None:
 
 
 def test_pages_step_list_bundle_supports_detail_lookup_queries() -> None:
-    bundle = load_prompt_bundle("pages", "step_list", "pages_step_list_v0")
+    bundle = load_prompt_bundle("pages", "step_list", "pages_step_list_v1")
     assert "step_list" in bundle.scene_templates
-    assert "instruction_panel" in bundle.scene_templates
     assert len(bundle.task_templates["step_lookup_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["instruction_panel_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["step_title_for_detail"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["step_number_for_detail"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["shared_control_for_step_set_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["step_for_control_pair_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:step_title_for_detail"]) == ["source_step_detail"]
-    assert list(bundle.required_slots_by_key["query:step_number_for_detail"]) == ["source_step_detail"]
-    assert list(bundle.required_slots_by_key["scene:instruction_panel"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["query:shared_control_for_step_set_label"]) == ["step_reference_list"]
-    assert list(bundle.required_slots_by_key["query:step_for_control_pair_label"]) == [
+    assert (
+        len(bundle.query_templates["step_title_for_detail"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["step_number_for_detail"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert len(bundle.query_templates["nth_step_title"]) == REQUIRED_PROMPT_VARIANTS
+    assert len(bundle.query_templates["nth_step_detail"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["step_after_named_step"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["query:step_title_for_detail"]) == [
+        "source_step_detail"
+    ]
+    assert list(bundle.required_slots_by_key["query:step_number_for_detail"]) == [
+        "source_step_detail"
+    ]
+    assert list(bundle.required_slots_by_key["scene:step_list"]) == [
+        "object_description"
+    ]
+
+    panel_bundle = load_prompt_bundle(
+        "pages", "instruction_panel", "pages_instruction_panel_v1"
+    )
+    assert "instruction_panel" in panel_bundle.scene_templates
+    assert (
+        len(panel_bundle.task_templates["instruction_panel_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(panel_bundle.query_templates["shared_control_for_step_set_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(panel_bundle.query_templates["step_for_control_pair_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(panel_bundle.required_slots_by_key["scene:instruction_panel"]) == [
+        "object_description"
+    ]
+    assert list(
+        panel_bundle.required_slots_by_key["query:shared_control_for_step_set_label"]
+    ) == ["step_reference_list"]
+    assert list(
+        panel_bundle.required_slots_by_key["query:step_for_control_pair_label"]
+    ) == [
         "first_control_label",
         "second_control_label",
     ]
 
 
-def test_pages_document_lookup_bundle_supports_profile_ordering_queries() -> None:
-    bundle = load_prompt_bundle("pages", "document_lookup", "pages_document_lookup_v0")
-    assert "category_grid" not in bundle.scene_templates
-    assert "comparison_panel" not in bundle.scene_templates
+def test_pages_profile_card_grid_bundle_supports_profile_ordering_queries() -> None:
+    bundle = load_prompt_bundle(
+        "pages", "profile_card_grid", "pages_profile_card_grid_v1"
+    )
     assert "profile_card_grid" in bundle.scene_templates
-    assert len(bundle.task_templates["profile_attribute_lookup_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["highest_field_profile_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["lowest_field_profile_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["nth_highest_field_profile_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["nth_lowest_field_profile_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:highest_field_profile_label"]) == ["field_label"]
-    assert list(bundle.required_slots_by_key["query:lowest_field_profile_label"]) == ["field_label"]
-    assert list(bundle.required_slots_by_key["query:nth_highest_field_profile_label"]) == [
+    assert (
+        len(bundle.task_templates["profile_attribute_lookup_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["highest_field_profile_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["lowest_field_profile_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["nth_highest_field_profile_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["nth_lowest_field_profile_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["query:highest_field_profile_label"]) == [
+        "field_label"
+    ]
+    assert list(bundle.required_slots_by_key["query:lowest_field_profile_label"]) == [
+        "field_label"
+    ]
+    assert list(
+        bundle.required_slots_by_key["query:nth_highest_field_profile_label"]
+    ) == [
         "field_label",
         "rank_ordinal",
     ]
-    assert list(bundle.required_slots_by_key["query:nth_lowest_field_profile_label"]) == [
+    assert list(
+        bundle.required_slots_by_key["query:nth_lowest_field_profile_label"]
+    ) == [
         "field_label",
         "rank_ordinal",
     ]
 
 
 def test_pages_category_grid_scene_bundle_supports_lookup_queries() -> None:
-    bundle = load_scene_prompt_bundle("pages", "category_grid", "pages_category_grid_v0")
+    bundle = load_scene_prompt_bundle(
+        "pages", "category_grid", "pages_category_grid_v1"
+    )
     assert "category_grid" in bundle.scene_templates
-    assert len(bundle.task_templates["category_grid_lookup_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["category_slot_item_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["category_item_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["category_grid_lookup_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["category_slot_item_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["category_item_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
     assert list(bundle.required_slots_by_key["query:category_slot_item_label"]) == [
         "category_label",
         "subcategory_label",
@@ -885,36 +1384,44 @@ def test_pages_category_grid_scene_bundle_supports_lookup_queries() -> None:
     ]
 
 
-def test_pages_comparison_panel_scene_bundle_supports_lookup_query() -> None:
-    bundle = load_scene_prompt_bundle("pages", "comparison_panel", "pages_comparison_panel_v0")
-    assert "comparison_panel" in bundle.scene_templates
-    assert len(bundle.task_templates["comparison_panel_lookup_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["side_attribute_value_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:side_attribute_value_label"]) == [
-        "side_label",
-        "attribute_label",
-    ]
+def test_pages_control_board_scene_bundle_supports_count_queries() -> None:
+    bundle = load_scene_prompt_bundle(
+        "pages", "control_board", "pages_control_board_v1"
+    )
+    assert "control_board" in bundle.scene_templates
+    assert (
+        len(bundle.task_templates["control_board_count_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["disabled_controls_in_group_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["selected_enabled_controls_in_group_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(
+        bundle.required_slots_by_key["query:disabled_controls_in_group_count"]
+    ) == ["group_name"]
 
 
 def test_pages_infographic_bundle_supports_metric_ranked_item_queries() -> None:
-    bundle = load_prompt_bundle("pages", "infographic", "pages_infographic_v0")
+    bundle = load_prompt_bundle("pages", "infographic", "pages_infographic_v1")
     assert "infographic_metric_arithmetic" in bundle.scene_templates
-    assert "sectioned_infographic" in bundle.scene_templates
-    assert "mixed_infographic_page" not in bundle.scene_templates
-    assert len(bundle.task_templates["metric_arithmetic_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["sectioned_infographic_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["section_item_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["section_filtered_item_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:section_item_count"]) == ["target_section"]
-    assert list(bundle.required_slots_by_key["query:section_filtered_item_label"]) == [
-        "target_section",
-        "filter_marker_label",
-    ]
+    assert (
+        len(bundle.task_templates["metric_arithmetic_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     for query_key in (
         "nth_highest_metric_label",
         "nth_lowest_metric_label",
         "nth_highest_metric_in_section_label",
         "nth_lowest_metric_in_section_label",
+        "section_ranked_total_label",
+        "section_icon_total_value",
+        "section_icon_total_difference_value",
+        "sum_named_metrics",
     ):
         assert len(bundle.query_templates[query_key]) == REQUIRED_PROMPT_VARIANTS
         assert len(set(bundle.query_templates[query_key])) == REQUIRED_PROMPT_VARIANTS
@@ -929,27 +1436,58 @@ def test_pages_infographic_bundle_supports_metric_ranked_item_queries() -> None:
         "rank_direction",
         "rank_order_phrase",
     ]
-    assert list(bundle.required_slots_by_key["query:nth_highest_metric_in_section_label"]) == [
+    assert list(
+        bundle.required_slots_by_key["query:nth_highest_metric_in_section_label"]
+    ) == [
         "target_section",
         "rank_ordinal",
         "rank_direction",
         "rank_order_phrase",
     ]
-    assert list(bundle.required_slots_by_key["query:nth_lowest_metric_in_section_label"]) == [
+    assert list(
+        bundle.required_slots_by_key["query:nth_lowest_metric_in_section_label"]
+    ) == [
         "target_section",
         "rank_ordinal",
         "rank_direction",
         "rank_order_phrase",
+    ]
+
+
+def test_pages_sectioned_infographic_bundle_supports_section_queries() -> None:
+    bundle = load_prompt_bundle(
+        "pages", "sectioned_infographic", "pages_sectioned_infographic_v1"
+    )
+    assert "sectioned_infographic" in bundle.scene_templates
+    assert (
+        len(bundle.task_templates["sectioned_infographic_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert len(bundle.query_templates["section_item_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["section_filtered_item_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["query:section_item_count"]) == [
+        "target_section"
+    ]
+    assert list(bundle.required_slots_by_key["query:section_filtered_item_label"]) == [
+        "target_section",
+        "filter_marker_label",
     ]
 
 
 def test_pages_mixed_infographic_page_scene_bundle_supports_lookup_queries() -> None:
-    bundle = load_scene_prompt_bundle("pages", "mixed_infographic_page", "pages_mixed_infographic_page_v0")
+    bundle = load_scene_prompt_bundle(
+        "pages", "mixed_infographic_page", "pages_mixed_infographic_page_v1"
+    )
     assert "mixed_infographic_page" in bundle.scene_templates
-    assert len(bundle.task_templates["mixed_infographic_lookup_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["mixed_infographic_lookup_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     for query_key in (
         "module_field_value_label",
-        "module_field_extremum_item_label",
         "module_field_ranked_item_label",
         "page_field_extremum_module_label",
         "module_two_field_condition_item_label",
@@ -958,7 +1496,9 @@ def test_pages_mixed_infographic_page_scene_bundle_supports_lookup_queries() -> 
         "two_module_field_total_comparison_module_label",
     ):
         assert len(bundle.query_templates[query_key]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:mixed_infographic_page"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["scene:mixed_infographic_page"]) == [
+        "object_description"
+    ]
     assert list(bundle.required_slots_by_key["query:module_field_value_label"]) == [
         "module_title",
         "item_label",
@@ -969,9 +1509,18 @@ def test_pages_mixed_infographic_page_scene_bundle_supports_lookup_queries() -> 
 def test_graph_comparison_bundle_supports_largest_component_size_query() -> None:
     bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_comparison_v1")
     assert "single_graph_comparison" in bundle.scene_templates
-    assert len(bundle.task_templates["largest_component_size_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["extreme_degree_value_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["largest_component_size"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["largest_component_size_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["extreme_degree_value_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["largest_component_size"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     for query_key in (
         "max_degree_value",
         "min_degree_value",
@@ -989,22 +1538,53 @@ def test_graph_comparison_bundle_supports_largest_component_size_query() -> None
 def test_graph_path_bundle_supports_shortest_path_length_query() -> None:
     bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_path_v1")
     assert "single_graph_path" in bundle.scene_templates
-    assert len(bundle.task_templates["shortest_path_length_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["longest_path_length_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["shortest_path_length"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["directed_shortest_path_length"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["directed_longest_path_length"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:directed_longest_path_length"]) == []
+    assert (
+        len(bundle.task_templates["shortest_path_length_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["longest_path_length_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["shortest_path_length"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["directed_shortest_path_length"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["directed_longest_path_length"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        list(bundle.required_slots_by_key["query:directed_longest_path_length"]) == []
+    )
 
 
 def test_graph_order_bundle_supports_topological_endpoint_queries() -> None:
     bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_order_v1")
     assert "single_graph_order" in bundle.scene_templates
-    assert len(bundle.task_templates["topological_endpoint_node_label_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["first_in_topological_order_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["last_in_topological_order_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["query:first_in_topological_order_label"]) == []
-    assert list(bundle.required_slots_by_key["query:last_in_topological_order_label"]) == []
+    assert (
+        len(bundle.task_templates["topological_endpoint_node_label_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["first_in_topological_order_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["last_in_topological_order_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        list(bundle.required_slots_by_key["query:first_in_topological_order_label"])
+        == []
+    )
+    assert (
+        list(bundle.required_slots_by_key["query:last_in_topological_order_label"])
+        == []
+    )
 
 
 def test_symbolic_clock_bundle_supports_offset_variants() -> None:
@@ -1016,104 +1596,275 @@ def test_symbolic_clock_bundle_supports_offset_variants() -> None:
     assert len(bundle.task_templates["clock_compare_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.task_templates["clock_match_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["offset_time"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["time_extremum_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["analog_reference_digital_options"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["digital_reference_analog_options"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:analog_clock"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["scene:multi_analog_clock"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["scene:clock_match_panel"]) == ["object_description"]
+    assert (
+        len(bundle.query_templates["time_extremum_label"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["analog_reference_digital_options"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["digital_reference_analog_options"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["scene:analog_clock"]) == [
+        "object_description"
+    ]
+    assert list(bundle.required_slots_by_key["scene:multi_analog_clock"]) == [
+        "object_description"
+    ]
+    assert list(bundle.required_slots_by_key["scene:clock_match_panel"]) == [
+        "object_description"
+    ]
     assert list(bundle.required_slots_by_key["query:offset_time"]) == [
         "delta_value",
         "offset_unit",
         "offset_direction",
         "answer_format",
     ]
-    assert list(bundle.required_slots_by_key["query:time_extremum_label"]) == ["extremum_direction"]
-    assert list(bundle.required_slots_by_key["query:analog_reference_digital_options"]) == []
-    assert list(bundle.required_slots_by_key["query:digital_reference_analog_options"]) == []
+    assert list(bundle.required_slots_by_key["query:time_extremum_label"]) == [
+        "extremum_direction"
+    ]
+    assert (
+        list(bundle.required_slots_by_key["query:analog_reference_digital_options"])
+        == []
+    )
+    assert (
+        list(bundle.required_slots_by_key["query:digital_reference_analog_options"])
+        == []
+    )
 
 
 def test_symbolic_abacus_bundle_supports_displayed_value_readout() -> None:
     bundle = load_prompt_bundle("symbolic", "abacus", "symbolic_abacus_v0")
     assert "abacus_readout" in bundle.scene_templates
     assert "abacus_match_panel" in bundle.scene_templates
-    assert len(bundle.task_templates["abacus_displayed_value_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["abacus_target_value_match_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["displayed_value_readout"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["target_value_match_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:abacus_readout"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["scene:abacus_match_panel"]) == ["object_description"]
+    assert (
+        len(bundle.task_templates["abacus_displayed_value_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["abacus_target_value_match_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["displayed_value_readout"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["target_value_match_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["scene:abacus_readout"]) == [
+        "object_description"
+    ]
+    assert list(bundle.required_slots_by_key["scene:abacus_match_panel"]) == [
+        "object_description"
+    ]
     assert list(bundle.required_slots_by_key["query:displayed_value_readout"]) == []
-    assert list(bundle.required_slots_by_key["query:target_value_match_label"]) == ["target_value"]
+    assert list(bundle.required_slots_by_key["query:target_value_match_label"]) == [
+        "target_value"
+    ]
 
 
 def test_pages_calendar_bundle_supports_month_view_variants() -> None:
-    bundle = load_prompt_bundle("pages", "calendar", "pages_calendar_v0")
+    bundle = load_prompt_bundle("pages", "calendar", "pages_calendar_v1")
     assert "month_calendar" in bundle.scene_templates
     assert "calendar_event_grid" not in bundle.scene_templates
-    assert len(bundle.task_templates["calendar_month_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["date_of_weekday_occurrence"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["count_marked_day_class"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["workday_after_offset_date"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["workday_before_offset_date"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:month_calendar"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["query:date_of_weekday_occurrence"]) == ["ordinal", "weekday_name"]
-    assert list(bundle.required_slots_by_key["query:count_marked_day_class"]) == [
+    assert (
+        len(bundle.task_templates["calendar_weekday_occurrence_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["calendar_date_weekday_label_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["calendar_marked_day_class_count_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["calendar_workday_offset_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["calendar_date_range_day_class_count_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["weekday_occurrence_date"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert len(bundle.query_templates["date_weekday_label"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["marked_day_class_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["workday_after_offset_date"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["workday_before_offset_date"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["weekday_range_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["weekend_range_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["scene:month_calendar"]) == [
+        "object_description"
+    ]
+    assert list(bundle.required_slots_by_key["query:weekday_occurrence_date"]) == [
+        "ordinal",
+        "weekday_name",
+    ]
+    assert list(bundle.required_slots_by_key["query:date_weekday_label"]) == [
+        "target_date"
+    ]
+    assert list(bundle.required_slots_by_key["query:marked_day_class_count"]) == [
         "marked_day_class",
         "marked_day_class_phrase",
     ]
-    assert list(bundle.required_slots_by_key["query:workday_after_offset_date"]) == ["workday_offset"]
-    assert list(bundle.required_slots_by_key["query:workday_before_offset_date"]) == ["workday_offset"]
+    assert list(bundle.required_slots_by_key["query:workday_after_offset_date"]) == [
+        "workday_offset"
+    ]
+    assert list(bundle.required_slots_by_key["query:workday_before_offset_date"]) == [
+        "workday_offset"
+    ]
+    assert list(bundle.required_slots_by_key["query:weekday_range_count"]) == []
+    assert list(bundle.required_slots_by_key["query:weekend_range_count"]) == []
 
 
 def test_pages_calendar_event_grid_scene_bundle_supports_lookup_queries() -> None:
-    bundle = load_scene_prompt_bundle("pages", "calendar_event_grid", "pages_calendar_event_grid_v0")
+    bundle = load_scene_prompt_bundle(
+        "pages", "calendar_event_grid", "pages_calendar_event_grid_v1"
+    )
     assert "calendar_event_grid" in bundle.scene_templates
-    assert len(bundle.task_templates["calendar_event_grid_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["date_slot_category_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["category_slot_day_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["date_for_category_slot_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:calendar_event_grid"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["query:date_slot_category_label"]) == ["date_number", "slot_label"]
-    assert list(bundle.required_slots_by_key["query:category_slot_day_count"]) == ["category_label", "slot_label"]
-    assert list(bundle.required_slots_by_key["query:date_for_category_slot_label"]) == ["category_label", "slot_label"]
+    assert (
+        len(bundle.task_templates["calendar_event_grid_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["date_slot_category_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["category_slot_day_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["date_filled_slot_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["date_for_category_slot_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["scene:calendar_event_grid"]) == [
+        "object_description"
+    ]
+    assert list(bundle.required_slots_by_key["query:date_slot_category_label"]) == [
+        "date_number",
+        "slot_label",
+    ]
+    assert list(bundle.required_slots_by_key["query:category_slot_day_count"]) == [
+        "category_label",
+        "slot_label",
+    ]
+    assert list(bundle.required_slots_by_key["query:date_filled_slot_count"]) == [
+        "date_number"
+    ]
+    assert list(bundle.required_slots_by_key["query:date_for_category_slot_label"]) == [
+        "category_label",
+        "slot_label",
+    ]
 
 
 def test_pages_schema_bundle_supports_relationship_endpoint_query() -> None:
-    bundle = load_prompt_bundle("pages", "schema", "pages_schema_v0")
-    assert len(bundle.task_templates["relationship_endpoint_label_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["relationship_cardinality_label_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["target_table_for_relationship_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["relationship_cardinality_between_tables"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task:relationship_endpoint_label_query"]) == [
-        "source_table_label",
-        "relationship_label",
-    ]
-    assert list(bundle.required_slots_by_key["task:relationship_cardinality_label_query"]) == [
+    bundle = load_prompt_bundle("pages", "schema", "pages_schema_v1")
+    assert len(bundle.task_templates["schema_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["target_table_for_relationship_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["relationship_cardinality_between_tables"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["relationship_cardinality_between_tables"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["total_relationship_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["join_path_length_value"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert len(bundle.query_templates["all_field_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["attribute_field_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["query:join_path_length_value"]) == [
         "source_table_label",
         "target_table_label",
     ]
-    assert list(bundle.required_slots_by_key["query:target_table_for_relationship_label"]) == []
-    assert list(bundle.required_slots_by_key["query:relationship_cardinality_between_tables"]) == []
+    assert list(
+        bundle.required_slots_by_key["query:target_table_for_relationship_label"]
+    ) == [
+        "source_table_label",
+        "relationship_label",
+    ]
+    assert list(
+        bundle.required_slots_by_key["query:relationship_cardinality_between_tables"]
+    ) == [
+        "source_table_label",
+        "target_table_label",
+    ]
 
 
-def test_graph_optimization_bundle_supports_minimum_spanning_tree_weight_query() -> None:
+def test_graph_optimization_bundle_supports_minimum_spanning_tree_weight_query() -> (
+    None
+):
     bundle = load_prompt_bundle("graph", "node_link", "graph_node_link_optimization_v1")
     assert "single_graph_optimization" in bundle.scene_templates
-    assert len(bundle.task_templates["minimum_spanning_tree_weight_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["minimum_spanning_tree_weight"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["minimum_spanning_tree_weight_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["minimum_spanning_tree_weight"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
 
 
 def test_cell_board_reachability_bundle_supports_region_size_query() -> None:
-    bundle = load_prompt_bundle("puzzles", "cell_board_reachability", "puzzles_cell_board_reachability_v0")
+    bundle = load_prompt_bundle(
+        "puzzles", "cell_board_reachability", "puzzles_cell_board_reachability_v0"
+    )
     assert len(bundle.task_templates["region_size_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["task:region_size_query"]) == ["obstacle_color", "start_color"]
+    assert list(bundle.required_slots_by_key["task:region_size_query"]) == [
+        "obstacle_color",
+        "start_color",
+    ]
 
 
-def test_cell_board_path_bundle_supports_shortest_path_and_reachable_target_queries() -> None:
-    bundle = load_prompt_bundle("puzzles", "cell_board_path", "puzzles_cell_board_path_v0")
+def test_cell_board_path_bundle_supports_shortest_path_and_reachable_target_queries() -> (
+    None
+):
+    bundle = load_prompt_bundle(
+        "puzzles", "cell_board_path", "puzzles_cell_board_path_v0"
+    )
     assert len(bundle.task_templates["shortest_path_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["reachable_target_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["reachable_target_count_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert list(bundle.required_slots_by_key["task:shortest_path_query"]) == [
         "obstacle_color",
         "start_color",
@@ -1127,7 +1878,9 @@ def test_cell_board_path_bundle_supports_shortest_path_and_reachable_target_quer
 
 
 def test_cell_board_relation_bundle_supports_min_distance_query() -> None:
-    bundle = load_prompt_bundle("puzzles", "cell_board_relation", "puzzles_cell_board_relation_v0")
+    bundle = load_prompt_bundle(
+        "puzzles", "cell_board_relation", "puzzles_cell_board_relation_v0"
+    )
     assert len(bundle.task_templates["min_distance_query"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["task:min_distance_query"]) == [
         "color_a",
@@ -1145,7 +1898,9 @@ def test_charts_statistics_bundle_supports_summary_variants() -> None:
     assert len(bundle.query_templates["median_label"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["nth_highest_label"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["nth_lowest_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:labeled_chart_statistics"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["scene:labeled_chart_statistics"]) == [
+        "object_description"
+    ]
 
 
 def test_charts_counting_bundle_supports_value_count_variants() -> None:
@@ -1153,17 +1908,33 @@ def test_charts_counting_bundle_supports_value_count_variants() -> None:
     assert len(bundle.task_templates["value_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["threshold_count"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["in_interval"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:labeled_chart_counting"]) == ["object_description"]
+    assert list(bundle.required_slots_by_key["scene:labeled_chart_counting"]) == [
+        "object_description"
+    ]
 
 
 def test_charts_radar_bundle_supports_profile_queries() -> None:
     bundle = load_prompt_bundle("charts", "radar", "charts_radar_v0")
     assert len(bundle.task_templates["radar_profile_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["highlighted_metric_threshold_panel_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["threshold_metric_count_for_panel"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["profile_advantage_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["matching_condition_panel_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:radar_profile_charts"]) == ["object_description"]
+    assert (
+        len(bundle.query_templates["highlighted_metric_threshold_panel_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["threshold_metric_count_for_panel"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["profile_advantage_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["matching_condition_panel_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["scene:radar_profile_charts"]) == [
+        "object_description"
+    ]
 
 
 def test_tables_statistics_bundle_supports_filtered_subset_variants() -> None:
@@ -1172,10 +1943,22 @@ def test_tables_statistics_bundle_supports_filtered_subset_variants() -> None:
     assert len(bundle.query_templates["column_sum"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["column_mean"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["column_median"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["filtered_subset_value_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["above_threshold_filtered_mean"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["below_threshold_filtered_mean"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["interval_filtered_mean"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["filtered_subset_value_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["above_threshold_filtered_mean"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["below_threshold_filtered_mean"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["interval_filtered_mean"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert list(bundle.required_slots_by_key["query:interval_filtered_mean"]) == [
         "query_filter_column",
         "query_target_column",
@@ -1186,9 +1969,16 @@ def test_tables_statistics_bundle_supports_filtered_subset_variants() -> None:
 def test_tables_ranking_bundle_supports_kth_label_variants() -> None:
     bundle = load_prompt_bundle("charts", "table", "charts_table_ranking_v1")
     assert len(bundle.task_templates["rank_label_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["highest_rank_in_column"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["lowest_rank_in_column"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:styled_table_ranking"]) == ["object_description"]
+    assert (
+        len(bundle.query_templates["highest_rank_in_column"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["lowest_rank_in_column"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["scene:styled_table_ranking"]) == [
+        "object_description"
+    ]
     assert list(bundle.required_slots_by_key["query:highest_rank_in_column"]) == [
         "query_column",
         "query_rank",
@@ -1199,10 +1989,19 @@ def test_tables_ranking_bundle_supports_kth_label_variants() -> None:
 def test_tables_counting_bundle_supports_value_count_variants() -> None:
     bundle = load_prompt_bundle("charts", "table", "charts_table_counting_v1")
     assert len(bundle.task_templates["value_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["above_threshold_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["below_threshold_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["interval_value_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["categorical_value_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["above_threshold_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["below_threshold_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["interval_value_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["categorical_value_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert list(bundle.required_slots_by_key["query:above_threshold_count"]) == [
         "query_column",
         "threshold_value",
@@ -1220,17 +2019,43 @@ def test_tables_counting_bundle_supports_value_count_variants() -> None:
 
 def test_tables_temporal_bundle_supports_year_conditioned_variants() -> None:
     bundle = load_prompt_bundle("charts", "table", "charts_table_temporal_v1")
-    assert len(bundle.task_templates["temporal_value_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["absolute_difference_between_rows_over_year_interval"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["sum_absolute_differences_between_rows_over_year_interval"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:styled_table_temporal"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["query:absolute_difference_between_rows_over_year_interval"]) == [
+    assert (
+        len(bundle.task_templates["temporal_value_query"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(
+            bundle.query_templates[
+                "absolute_difference_between_rows_over_year_interval"
+            ]
+        )
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(
+            bundle.query_templates[
+                "sum_absolute_differences_between_rows_over_year_interval"
+            ]
+        )
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(bundle.required_slots_by_key["scene:styled_table_temporal"]) == [
+        "object_description"
+    ]
+    assert list(
+        bundle.required_slots_by_key[
+            "query:absolute_difference_between_rows_over_year_interval"
+        ]
+    ) == [
         "query_row_label_a",
         "query_row_label_b",
         "query_year_start",
         "query_year_end",
     ]
-    assert list(bundle.required_slots_by_key["query:sum_absolute_differences_between_rows_over_year_interval"]) == [
+    assert list(
+        bundle.required_slots_by_key[
+            "query:sum_absolute_differences_between_rows_over_year_interval"
+        ]
+    ) == [
         "query_row_label_a",
         "query_row_label_b",
         "query_year_start",
@@ -1240,27 +2065,72 @@ def test_tables_temporal_bundle_supports_year_conditioned_variants() -> None:
 
 def test_puzzles_logic_bundle_supports_grid_completion_variants() -> None:
     bundle = load_prompt_bundle("puzzles", "logic", "puzzles_logic_v0")
-    assert len(bundle.task_templates["grid_completion_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["grid_completion_query"]) == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.task_templates["raven_matrix_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["nonogram_line_completion_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["nonogram_candidate_solution_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["tents_missing_tent_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["tents_valid_candidate_count_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["star_battle_valid_cell_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["star_battle_remaining_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["nonogram_line_completion_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["nonogram_candidate_solution_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["tents_missing_tent_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["tents_valid_candidate_count_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["star_battle_valid_cell_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["star_battle_remaining_count_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.query_templates["axis_uniqueness"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["row_and_column_uniqueness"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["line_completion_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["candidate_solution_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["missing_tent_cell_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["valid_candidate_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["valid_cell_anywhere_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["valid_cell_in_marked_region_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["valid_cell_for_marked_row_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["remaining_valid_cells_in_marked_region_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["remaining_valid_cells_in_marked_row_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["remaining_valid_cells_in_marked_column_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:logic_option_completion_puzzle"]) == [
+    assert (
+        len(bundle.query_templates["row_and_column_uniqueness"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["line_completion_label"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["candidate_solution_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["missing_tent_cell_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["valid_candidate_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["valid_cell_anywhere_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["remaining_valid_cells_in_marked_region_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["remaining_valid_cells_in_marked_row_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["remaining_valid_cells_in_marked_column_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert list(
+        bundle.required_slots_by_key["scene:logic_option_completion_puzzle"]
+    ) == [
         "object_description",
     ]
     assert list(bundle.required_slots_by_key["scene:raven_matrix_puzzle"]) == [
@@ -1270,18 +2140,39 @@ def test_puzzles_logic_bundle_supports_grid_completion_variants() -> None:
         "object_description",
     ]
     assert list(bundle.required_slots_by_key["scene:tents"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["scene:star_battle"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["query:axis_uniqueness"]) == ["uniqueness_axis"]
-    assert list(bundle.required_slots_by_key["query:line_completion_label"]) == ["line_label"]
+    assert list(bundle.required_slots_by_key["scene:star_battle"]) == [
+        "object_description"
+    ]
+    assert list(bundle.required_slots_by_key["query:axis_uniqueness"]) == [
+        "uniqueness_axis"
+    ]
+    assert list(bundle.required_slots_by_key["query:line_completion_label"]) == [
+        "line_label"
+    ]
 
 
 def test_symbolic_probability_bundle_supports_spinner_variants() -> None:
     bundle = load_prompt_bundle("symbolic", "probability", "symbolic_probability_v0")
-    assert len(bundle.task_templates["single_dice_probability_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["pair_dice_probability_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["conditional_dice_probability_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["single_spinner_probability_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.task_templates["pair_spinner_probability_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["single_dice_probability_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["pair_dice_probability_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["conditional_dice_probability_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["single_spinner_probability_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.task_templates["pair_spinner_probability_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     dice_event_queries = (
         "single_parity_probability",
         "single_threshold_probability",
@@ -1296,14 +2187,19 @@ def test_symbolic_probability_bundle_supports_spinner_variants() -> None:
     )
     for query_key in dice_event_queries:
         assert len(bundle.query_templates[query_key]) == REQUIRED_PROMPT_VARIANTS
-        assert list(bundle.required_slots_by_key[f"query:{query_key}"]) == ["event_description"]
+        assert list(bundle.required_slots_by_key[f"query:{query_key}"]) == [
+            "event_description"
+        ]
     for query_key in (
         "conditional_value_property_given_color_probability",
         "conditional_color_given_value_property_probability",
         "conditional_color_given_value_set_probability",
     ):
         assert len(bundle.query_templates[query_key]) == REQUIRED_PROMPT_VARIANTS
-        assert list(bundle.required_slots_by_key[f"query:{query_key}"]) == ["given_description", "event_description"]
+        assert list(bundle.required_slots_by_key[f"query:{query_key}"]) == [
+            "given_description",
+            "event_description",
+        ]
     for query_key in (
         "single_color_probability",
         "single_shape_probability",
@@ -1314,32 +2210,58 @@ def test_symbolic_probability_bundle_supports_spinner_variants() -> None:
         "pair_same_color_probability",
     ):
         assert len(bundle.query_templates[query_key]) == REQUIRED_PROMPT_VARIANTS
-        assert list(bundle.required_slots_by_key[f"query:{query_key}"]) == ["event_description"]
-    assert list(bundle.required_slots_by_key["scene:dice_probability"]) == ["object_description"]
-    assert list(bundle.required_slots_by_key["scene:spinner_probability"]) == ["object_description"]
+        assert list(bundle.required_slots_by_key[f"query:{query_key}"]) == [
+            "event_description"
+        ]
+    assert list(bundle.required_slots_by_key["scene:dice_probability"]) == [
+        "object_description"
+    ]
+    assert list(bundle.required_slots_by_key["scene:spinner_probability"]) == [
+        "object_description"
+    ]
 
 
 def test_puzzles_spatial_bundle_supports_fold_result_variants() -> None:
     bundle = load_prompt_bundle("puzzles", "spatial", "puzzles_spatial_v0")
-    assert len(bundle.task_templates["transform_result_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["transform_result_query"]) == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.query_templates["paper_fold_result"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["paper_fold_cut_result"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["paper_fold_cut_result"]) == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.query_templates["overlay_result"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:spatial_transform_result_puzzle"]) == [
+    assert list(
+        bundle.required_slots_by_key["scene:spatial_transform_result_puzzle"]
+    ) == [
         "object_description",
     ]
 
 
 def test_puzzles_spatial_bundle_supports_cube_structure_variants() -> None:
     bundle = load_prompt_bundle("puzzles", "spatial", "puzzles_spatial_v0")
-    assert len(bundle.task_templates["cube_structure_count_query"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["cube_structure_count_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.query_templates["total_cube_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["missing_to_complete_cuboid_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["missing_to_complete_cuboid_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.query_templates["removed_cube_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["painted_exterior_face_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["exact_k_painted_faces_cube_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["painted_exterior_face_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["exact_k_painted_faces_cube_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.query_templates["visible_cube_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert list(bundle.required_slots_by_key["scene:spatial_cube_structure_puzzle"]) == [
+    assert list(
+        bundle.required_slots_by_key["scene:spatial_cube_structure_puzzle"]
+    ) == [
         "object_description",
     ]
     assert list(bundle.required_slots_by_key["query:visible_cube_count"]) == [
@@ -1352,9 +2274,16 @@ def test_games_sliding_block_bundle_supports_sliding_block_variants() -> None:
     bundle = load_prompt_bundle("games", "sliding_block", "games_sliding_block_v1")
     assert len(bundle.task_templates["sliding_block_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["blocker_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["movable_block_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["horizontal_block_count"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["vertical_block_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.query_templates["movable_block_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["horizontal_block_count"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["vertical_block_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
     assert len(bundle.query_templates["move_result_label"]) == REQUIRED_PROMPT_VARIANTS
     assert list(bundle.required_slots_by_key["scene:sliding_block"]) == [
         "object_description",
@@ -1368,21 +2297,36 @@ def test_games_sliding_block_bundle_supports_sliding_block_variants() -> None:
 
 def test_puzzles_topology_bundle_supports_cyclic_order_variants() -> None:
     bundle = load_prompt_bundle("puzzles", "topology", "puzzles_topology_v0")
-    assert len(bundle.task_templates["cyclic_order_match_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["cyclic_order_equivalent_label"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["cyclic_order_match_query"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["cyclic_order_equivalent_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
     assert list(bundle.required_slots_by_key["scene:topology_cyclic_order_puzzle"]) == [
         "object_description",
     ]
-    assert list(bundle.required_slots_by_key["query:cyclic_order_equivalent_label"]) == [
+    assert list(
+        bundle.required_slots_by_key["query:cyclic_order_equivalent_label"]
+    ) == [
         "token_render_style_instruction",
     ]
 
 
 def test_puzzles_topology_bundle_supports_maze_exit_variants() -> None:
     bundle = load_prompt_bundle("puzzles", "topology", "puzzles_topology_v0")
-    assert len(bundle.task_templates["maze_exit_label_query"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["exit_reachability_label"]) == REQUIRED_PROMPT_VARIANTS
-    assert len(bundle.query_templates["reachable_exit_count"]) == REQUIRED_PROMPT_VARIANTS
+    assert (
+        len(bundle.task_templates["maze_exit_label_query"]) == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["exit_reachability_label"])
+        == REQUIRED_PROMPT_VARIANTS
+    )
+    assert (
+        len(bundle.query_templates["reachable_exit_count"]) == REQUIRED_PROMPT_VARIANTS
+    )
     assert list(bundle.required_slots_by_key["scene:topology_maze_exit_puzzle"]) == [
         "object_description",
     ]
@@ -1413,11 +2357,17 @@ def test_geometry_task_templates_avoid_awkward_comma_question_prefixes() -> None
         assert all(", {question_text}" not in str(template) for template in templates)
 
 
-def test_geometry_measurement_task_templates_do_not_repeat_graph_paper_reference() -> None:
+def test_geometry_measurement_task_templates_do_not_repeat_graph_paper_reference() -> (
+    None
+):
     bundle = load_prompt_bundle("geometry", "measurement", "geometry_measurement_v0")
     templates = bundle.task_templates["measurement_query"]
-    assert all("graph-paper image" not in str(template).lower() for template in templates)
-    assert all("graph-paper diagram" not in str(template).lower() for template in templates)
+    assert all(
+        "graph-paper image" not in str(template).lower() for template in templates
+    )
+    assert all(
+        "graph-paper diagram" not in str(template).lower() for template in templates
+    )
 
 
 def test_prompt_json_examples_use_non_degenerate_point_layouts() -> None:
@@ -1440,5 +2390,8 @@ def test_dump_prompt_json_examples_uses_compact_answer_contract() -> None:
         answer="12π",
         ensure_ascii=False,
     )
-    assert answer_and_annotation == '{"annotation":{"angle":[120,180],"side":[220,240]},"answer":"12π"}'
+    assert (
+        answer_and_annotation
+        == '{"annotation":{"angle":[120,180],"side":[220,240]},"answer":"12π"}'
+    )
     assert answer_only == '{"answer":"12π"}'

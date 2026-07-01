@@ -5,7 +5,8 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any, Callable, Mapping, Sequence
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 
 from .state import ConcentricChordCase
 
@@ -78,22 +79,6 @@ def group_concentric_chord_cases_by_answer(
     return {key: tuple(values) for key, values in grouped.items()}
 
 
-def _balanced_answer_index(
-    *,
-    answer_count: int,
-    instance_seed: int,
-    namespace: str,
-) -> int:
-    if int(answer_count) <= 0:
-        raise ValueError("answer_count must be positive")
-    offset = resolve_selection_index(
-        params={},
-        instance_seed=0,
-        namespace=f"{namespace}.answer_offset",
-    )
-    return int(int(instance_seed) + int(offset)) % int(answer_count)
-
-
 def select_answer_balanced_concentric_chord_case(
     *,
     answer_cases: Mapping[str, Sequence[IndexedConcentricChordCase]],
@@ -110,23 +95,17 @@ def select_answer_balanced_concentric_chord_case(
 
     explicit_case = params.get("case_index")
     if explicit_case is not None:
-        case_index = int(explicit_case) % len(PYTHAGOREAN_CASES)
+        case_index = int(explicit_case)
+        if case_index < 0 or case_index >= len(PYTHAGOREAN_CASES):
+            raise ValueError(f"case_index must be in [0, {len(PYTHAGOREAN_CASES) - 1}]")
         case = PYTHAGOREAN_CASES[int(case_index)]
         return _validate_case(case), int(case_index), support_probabilities
 
-    answer_index = _balanced_answer_index(
-        answer_count=len(keys),
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    answer = keys[int(answer_index)]
+    rng = spawn_rng(int(instance_seed), f"{namespace}.answer")
+    answer = str(uniform_choice(rng, keys))
     cases = tuple(answer_cases[str(answer)])
-    case_selection = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{namespace}.case.{answer}",
-    )
-    case_index, case = cases[int(case_selection) % len(cases)]
+    rng = spawn_rng(int(instance_seed), f"{namespace}.case.{answer}")
+    case_index, case = uniform_choice(rng, cases)
     return _validate_case(case), int(case_index), support_probabilities
 
 
@@ -140,14 +119,16 @@ def select_concentric_chord_case(
 
     explicit_case = params.get("case_index")
     if explicit_case is not None:
-        index = int(explicit_case) % len(PYTHAGOREAN_CASES)
+        index = int(explicit_case)
+        if index < 0 or index >= len(PYTHAGOREAN_CASES):
+            raise ValueError(f"case_index must be in [0, {len(PYTHAGOREAN_CASES) - 1}]")
     else:
-        selection_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(namespace),
+        rng = spawn_rng(int(instance_seed), str(namespace))
+        indexed_case = uniform_choice(
+            rng,
+            tuple(enumerate(PYTHAGOREAN_CASES)),
         )
-        index = int(selection_index) % len(PYTHAGOREAN_CASES)
+        index = int(indexed_case[0])
     base_case = PYTHAGOREAN_CASES[int(index)]
     case = ConcentricChordCase(
         outer_radius=int(params.get("outer_radius", base_case.outer_radius)),

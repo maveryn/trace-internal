@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence, TypeVar
 
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 
 T = TypeVar("T")
 
@@ -21,12 +22,8 @@ def select_support_value(
     values = tuple(support)
     if not values:
         raise ValueError("answer support must be non-empty")
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    return values[int(index) % len(values)]
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    return uniform_choice(rng, values)
 
 
 def select_case_option(
@@ -41,12 +38,8 @@ def select_case_option(
     values = tuple(options)
     if not values:
         raise ValueError("construction option support must be non-empty")
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(namespace),
-    )
-    return values[int(index) % len(values)], len(values)
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    return uniform_choice(rng, values), len(values)
 
 
 __all__ = ["select_case_option", "select_support_value"]

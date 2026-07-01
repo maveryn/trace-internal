@@ -6,18 +6,15 @@
 - module: `trace/tasks/icons/named_grid/row_column_shape_extreme_number.py`
 
 ## Program Contract
-`selection.extreme_metric_label(scene=named_grid, scope=numbered_rows_or_columns, metric=target_shape_count, extrema=most|fewest, output=one_based_line_number)`
 
-1. The image shows one visible grid with numbered rows and numbered columns.
-2. Each grid cell contains one procedural named icon.
-3. The prompt names one target icon shape in quotes and asks which row or
-   column has the most or fewest target-shape icons.
-4. The answer is the one-based row or column number with the unique extreme.
-5. `answer_gt.type = integer`.
-6. `annotation_gt.type = bbox_set` over the bounding boxes of the target-shape
-   icons in the selected row or column. `projected_annotation` mirrors this as
-   typed bbox-set annotation with `bbox_set`, `pixel_bbox_set`, and derived
-   `pixel_point_set`.
+Program: `selection.extreme_metric_label(scene=named_grid, scope=numbered_rows_or_columns, metric=target_shape_count, extrema=most|fewest, output=one_based_line_number)`
+
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `numbered_rows_or_columns` objective scope.
+Operands: visible scene state and prompt-bound operands named by `named_grid`, `numbered_rows_or_columns`, `metric`, `target_shape_count`, `extrema`, `most`, `fewest`, `one_based_line_number`.
+Operation: evaluate `selection.extreme_metric_label` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `one_based_line_number` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; non-empty.
+Query ids: `single`.
 
 ## Query IDs
 - `row_most_shape_number`

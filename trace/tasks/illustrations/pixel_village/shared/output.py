@@ -515,9 +515,9 @@ def bind_river_side_result(
                 raise RuntimeError("rendered river orientation did not match requested side")
             counted_entities = _river_side_object_entities(scene, sample)
             answer_count = len(counted_entities)
-            if 0 < answer_count <= answer_count_max:
+            if answer_count == int(sample.target_count):
                 break
-            last_error = RuntimeError(f"river-side object count {answer_count} is outside allowed range 1..{answer_count_max}")
+            last_error = RuntimeError(f"river-side object count {answer_count} did not match requested count {sample.target_count}")
             scene = None
         except Exception as exc:  # pragma: no cover
             last_error = exc
@@ -581,6 +581,8 @@ def bind_river_side_result(
             "river_orientation": str(sample.river_orientation),
             "river_relation": str(sample.river_relation),
             "target_count": answer,
+            "requested_target_count": int(sample.target_count),
+            "target_count_support": [int(value) for value in sample.target_count_support],
             "target_answer_count_max": int(answer_count_max),
             "render_constraints": {
                 "river_mode": "force",
@@ -590,6 +592,7 @@ def bind_river_side_result(
             },
             "target_object_probabilities": dict(sample.target_object_probabilities),
             "river_side_probabilities": dict(sample.river_side_probabilities),
+            "target_count_probabilities": dict(sample.target_count_probabilities),
             "renderer": _render_metadata(scene),
         },
         render_map_extra={"water_tiles": list(scene.trace.get("water_tiles", [])), "river_bounds": dict(river_bounds)},
@@ -599,6 +602,7 @@ def bind_river_side_result(
             "river_side": str(sample.river_side),
             "river_orientation": str(sample.river_orientation),
             "river_bounds": dict(river_bounds),
+            "requested_target_count": int(sample.target_count),
             "answer": answer,
             "counted_entity_ids": list(counted_entity_ids),
             "water_tiles": list(scene.trace.get("water_tiles", [])),

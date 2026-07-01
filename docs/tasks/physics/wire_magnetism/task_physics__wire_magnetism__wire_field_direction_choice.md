@@ -3,8 +3,19 @@
 ## Summary
 - Domain: `physics`
 - Scene id: `wire_magnetism`
-- Implementation scene: `magnetism`
-- Implementation source: `trace/tasks/physics/magnetism/wire_field.py`
+- Implementation scene: `wire_magnetism`
+- Implementation source: `trace/tasks/physics/wire_magnetism/wire_field_direction_choice.py`
+
+## Program Contract
+
+Program: `option_letter(direction(right_hand_rule_around_current_wire(current_direction, point_p_side))); scene=wire_magnetism; scope=wire_field_direction_choice`
+
+Candidate set: the visible current-carrying wire, current direction cue, point marker, and magnetic-field direction options inside the `wire_field_direction_choice` objective scope.
+Operands: `current_direction` (semantic_role, allowed `visible_current_arrow_on_wire`, source `program_schema_concrete`); `point_p_side` (semantic_role, allowed `visible_marked_point_side_relative_to_wire`, source `program_schema_concrete`).
+Operation: evaluate `option_letter` over the candidate set using the visible quantities, relations, branch semantics, and formulas encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; The answer value is the selected visible option letter.
+Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation is keyed because witness roles are distinct; keys include `wire_current` and `point_p`. Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
+Query ids: `single`.
 
 ## Task Contract
 Selects the magnetic-field direction at a marked point near a straight current-carrying wire.
@@ -13,7 +24,7 @@ Selects the magnetic-field direction at a marked point near a straight current-c
 
 | Query id | Program schema |
 | --- | --- |
-| `field_direction_at_point` | `option_letter(direction(right_hand_rule_around_current_wire(current_direction, point_p_side))); scene=wire_magnetism; scope=wire_field_direction_choice; query_branch=field_direction_at_point` |
+| `single` | `option_letter(direction(right_hand_rule_around_current_wire(current_direction, point_p_side))); scene=wire_magnetism; scope=wire_field_direction_choice` |
 
 ## Program Metadata
 - Program signatures: `physics.wire_field_direction_choice`
@@ -23,7 +34,7 @@ Selects the magnetic-field direction at a marked point near a straight current-c
   - `current_direction`: semantic_role; allowed `visible_current_arrow_on_wire`; source `program_schema_concrete`
   - `point_p_side`: semantic_role; allowed `visible_marked_point_side_relative_to_wire`; source `program_schema_concrete`
 - Argument metadata status: `curated`
-- Supported query ids: `field_direction_at_point`
+- Supported query ids: `single`
 
 ## Answer Contract
 - Answer schema: `option_letter`
@@ -31,13 +42,13 @@ Selects the magnetic-field direction at a marked point near a straight current-c
 - The answer value is the selected visible option letter.
 
 ## Annotation Contract
-- Annotation schema: `keyed_bbox_map`
-- Generator `annotation_gt.type`: `keyed_bbox_map`
+- Annotation schema: `bbox_map`
+- Generator `annotation_gt.type`: `bbox_map`
 - Annotation is keyed because witness roles are distinct; keys include `wire_current` and `point_p`.
 - Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
 - Annotation and answer must be projected from the same generated execution trace, not inferred from pixels or prompt text.
 
 ## Prompt And Trace Requirements
-- Prompt text must come from the physics prompt bundles, with scene and task/query layers selected deterministically and recorded in metadata.
+- Prompt text must come from `prompts/physics/wire_magnetism/physics_wire_magnetism_v1.json`, with scene and task/query layers selected deterministically and recorded in metadata.
 - Render randomness, sampled fonts/styles, query operands, formula quantities, and verifier payloads must be explicit in the instance trace.
 - Diagrams must keep all quantities required for the physics computation visible or explicitly stated by the task prompt contract.

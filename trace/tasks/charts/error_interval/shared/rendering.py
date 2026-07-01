@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from trace.tasks.charts.shared.cartesian.geometry import round_bbox, round_point
 from trace.tasks.charts.error_interval.shared.defaults import SCENE_NAMESPACE, _RENDER_DEFAULTS
-from trace.tasks.charts.error_interval.shared.state import BBox, RGB, _Dataset, _IntervalItem, _Rendered, _RenderParams
+from trace.tasks.charts.error_interval.shared.state import BBox, Point, RGB, Segment, _Dataset, _IntervalItem, _Rendered, _RenderParams
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.drawing import draw_centered_text, draw_dashed_line, draw_rounded_rect
+from trace.tasks.shared.drawing import draw_dashed_line, draw_rounded_rect
 from trace.tasks.shared.font_assets import font_asset_version, sample_font_family
 from trace.tasks.shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
 from trace.tasks.shared.text_legibility import draw_text_traced
@@ -17,7 +18,10 @@ from trace.tasks.shared.text_rendering import load_font
 
 
 def _bbox(values: Sequence[float]) -> BBox:
-    return [round(float(value), 3) for value in values]
+    return round_bbox(values)
+
+def _point(x: float, y: float) -> Point:
+    return round_point(float(x), float(y))
 
 def _render_int(params: Mapping[str, Any], key: str, fallback: int, *, instance_seed: int | None = None) -> int:
     return int(
@@ -193,8 +197,8 @@ def _render_horizontal_forest(
     dataset: _Dataset,
     p: _RenderParams,
     panel_bbox: Sequence[float],
-) -> Tuple[BBox, Dict[str, BBox], Dict[str, BBox], List[Dict[str, Any]]]:
-    """Render the forest-plot variant and project category interval bboxes."""
+) -> Tuple[BBox, Dict[str, BBox], Dict[str, BBox], Dict[str, List[float]], Dict[str, Segment], List[Dict[str, Any]]]:
+    """Render the forest-plot variant and project category interval geometry."""
 
     left, top, right, bottom = [float(value) for value in panel_bbox]
     plot_left = left + p.label_band_px
@@ -226,28 +230,24 @@ def _render_horizontal_forest(
     value_font = load_font(p.value_font_size_px, bold=False, font_family=p.font_family)
     item_bboxes: Dict[str, BBox] = {}
     interval_bboxes: Dict[str, BBox] = {}
+    interval_center_points: Dict[str, List[float]] = {}
+    interval_segments: Dict[str, Segment] = {}
     entities: List[Dict[str, Any]] = []
 
     for index, item in enumerate(dataset.items):
         y = float(plot_top + (index + 0.5) * row_h)
         row_top = float(plot_top + index * row_h + 4)
         row_bottom = float(plot_top + (index + 1) * row_h - 4)
-        if index % 2 == 0:
-            draw.rounded_rectangle(
-                (left + 12, row_top, right - 12, row_bottom),
-                radius=8,
-                fill=(248, 250, 252),
-                outline=None,
-            )
         _draw_text(draw, xy=(left + 26, y), text=item.label, font=label_font, fill=p.text_rgb, stroke_fill=p.text_stroke_rgb, anchor="lm")
         x0 = x_for(item.lower)
         xm = x_for(item.midpoint)
         x1 = x_for(item.upper)
         cap = float(p.cap_length_px) * 0.5
+        cap_width = max(2, int(p.interval_line_width_px))
         draw.line([(x0, y), (x1, y)], fill=tuple(p.interval_outline_rgb), width=int(p.interval_line_width_px + 2))
         draw.line([(x0, y), (x1, y)], fill=tuple(item.color_rgb), width=int(p.interval_line_width_px))
-        draw.line([(x0, y - cap), (x0, y + cap)], fill=tuple(p.interval_outline_rgb), width=2)
-        draw.line([(x1, y - cap), (x1, y + cap)], fill=tuple(p.interval_outline_rgb), width=2)
+        draw.line([(x0, y - cap), (x0, y + cap)], fill=tuple(item.color_rgb), width=cap_width)
+        draw.line([(x1, y - cap), (x1, y + cap)], fill=tuple(item.color_rgb), width=cap_width)
         r = float(p.point_radius_px)
         draw.ellipse((xm - r, y - r, xm + r, y + r), fill=tuple(item.color_rgb), outline=tuple(p.interval_outline_rgb), width=2)
         _draw_text(draw, xy=(x0, y - cap - 3), text=str(item.lower), font=value_font, fill=p.text_rgb, stroke_fill=p.text_stroke_rgb, anchor="mb")
@@ -261,8 +261,10 @@ def _render_horizontal_forest(
         ])
         item_bbox = _bbox([left + 12, row_top, right - 12, row_bottom])
         interval_bboxes[item.item_id] = interval_bbox
+        interval_center_points[item.item_id] = _bbox([xm, y, xm, y])[:2]
+        interval_segments[item.item_id] = [_point(x0, y), _point(x1, y)]
         item_bboxes[item.item_id] = item_bbox
-        entities.append(_entity_record(item, interval_bbox=interval_bbox, item_bbox=item_bbox))
+        entities.append(_entity_record(item, interval_bbox=interval_bbox, item_bbox=item_bbox, interval_center_point=interval_center_points[item.item_id], interval_segment=interval_segments[item.item_id]))
     if dataset.reference_value is not None:
         ref_x = x_for(int(dataset.reference_value))
         draw_dashed_line(
@@ -274,7 +276,7 @@ def _render_horizontal_forest(
             dash_px=10,
             gap_px=7,
         )
-    return plot_bbox, item_bboxes, interval_bboxes, entities
+    return plot_bbox, item_bboxes, interval_bboxes, interval_center_points, interval_segments, entities
 
 
 def _render_vertical_dot_whisker(
@@ -284,8 +286,8 @@ def _render_vertical_dot_whisker(
     dataset: _Dataset,
     p: _RenderParams,
     panel_bbox: Sequence[float],
-) -> Tuple[BBox, Dict[str, BBox], Dict[str, BBox], List[Dict[str, Any]]]:
-    """Render the vertical dot-whisker variant and project interval bboxes."""
+) -> Tuple[BBox, Dict[str, BBox], Dict[str, BBox], Dict[str, List[float]], Dict[str, Segment], List[Dict[str, Any]]]:
+    """Render the vertical dot-whisker variant and project interval geometry."""
 
     del image
     left, top, right, bottom = [float(value) for value in panel_bbox]
@@ -310,6 +312,8 @@ def _render_vertical_dot_whisker(
     value_font = load_font(p.value_font_size_px, bold=False, font_family=p.font_family)
     item_bboxes: Dict[str, BBox] = {}
     interval_bboxes: Dict[str, BBox] = {}
+    interval_center_points: Dict[str, List[float]] = {}
+    interval_segments: Dict[str, Segment] = {}
     entities: List[Dict[str, Any]] = []
 
     for index, item in enumerate(dataset.items):
@@ -318,10 +322,11 @@ def _render_vertical_dot_whisker(
         ym = y_for(item.midpoint)
         y1 = y_for(item.upper)
         cap = min(float(p.cap_length_px), slot_w * 0.34)
+        cap_width = max(2, int(p.interval_line_width_px))
         draw.line([(x, min(y0, y1)), (x, max(y0, y1))], fill=tuple(p.interval_outline_rgb), width=int(p.interval_line_width_px + 2))
         draw.line([(x, min(y0, y1)), (x, max(y0, y1))], fill=tuple(item.color_rgb), width=int(p.interval_line_width_px))
-        draw.line([(x - cap, y0), (x + cap, y0)], fill=tuple(p.interval_outline_rgb), width=2)
-        draw.line([(x - cap, y1), (x + cap, y1)], fill=tuple(p.interval_outline_rgb), width=2)
+        draw.line([(x - cap, y0), (x + cap, y0)], fill=tuple(item.color_rgb), width=cap_width)
+        draw.line([(x - cap, y1), (x + cap, y1)], fill=tuple(item.color_rgb), width=cap_width)
         r = float(p.point_radius_px)
         draw.ellipse((x - r, ym - r, x + r, ym + r), fill=tuple(item.color_rgb), outline=tuple(p.interval_outline_rgb), width=2)
         _draw_text(draw, xy=(x - cap - 3, y0), text=str(item.lower), font=value_font, fill=p.text_rgb, stroke_fill=p.text_stroke_rgb, anchor="rm")
@@ -336,9 +341,11 @@ def _render_vertical_dot_whisker(
         ])
         item_bbox = _bbox([x - slot_w * 0.45, plot_top, x + slot_w * 0.45, plot_bottom + 48])
         interval_bboxes[item.item_id] = interval_bbox
+        interval_center_points[item.item_id] = _bbox([x, ym, x, ym])[:2]
+        interval_segments[item.item_id] = [_point(x, y0), _point(x, y1)]
         item_bboxes[item.item_id] = item_bbox
-        entities.append(_entity_record(item, interval_bbox=interval_bbox, item_bbox=item_bbox))
-    return plot_bbox, item_bboxes, interval_bboxes, entities
+        entities.append(_entity_record(item, interval_bbox=interval_bbox, item_bbox=item_bbox, interval_center_point=interval_center_points[item.item_id], interval_segment=interval_segments[item.item_id]))
+    return plot_bbox, item_bboxes, interval_bboxes, interval_center_points, interval_segments, entities
 
 
 def _render_bar_with_error(
@@ -348,8 +355,8 @@ def _render_bar_with_error(
     dataset: _Dataset,
     p: _RenderParams,
     panel_bbox: Sequence[float],
-) -> Tuple[BBox, Dict[str, BBox], Dict[str, BBox], List[Dict[str, Any]]]:
-    """Render the bar-with-error variant and project interval bboxes."""
+) -> Tuple[BBox, Dict[str, BBox], Dict[str, BBox], Dict[str, List[float]], Dict[str, Segment], List[Dict[str, Any]]]:
+    """Render the bar-with-error variant and project interval geometry."""
 
     del image
     left, top, right, bottom = [float(value) for value in panel_bbox]
@@ -375,6 +382,8 @@ def _render_bar_with_error(
     value_font = load_font(p.value_font_size_px, bold=False, font_family=p.font_family)
     item_bboxes: Dict[str, BBox] = {}
     interval_bboxes: Dict[str, BBox] = {}
+    interval_center_points: Dict[str, List[float]] = {}
+    interval_segments: Dict[str, Segment] = {}
     entities: List[Dict[str, Any]] = []
 
     for index, item in enumerate(dataset.items):
@@ -386,9 +395,11 @@ def _render_bar_with_error(
         bar_bbox = (x - bar_w * 0.5, min(y_mid, baseline_y), x + bar_w * 0.5, max(y_mid, baseline_y))
         draw.rounded_rectangle(bar_bbox, radius=5, fill=tuple(item.color_rgb), outline=tuple(p.interval_outline_rgb), width=2)
         cap = min(float(p.cap_length_px), slot_w * 0.36)
-        draw.line([(x, min(y_lower, y_upper)), (x, max(y_lower, y_upper))], fill=tuple(p.interval_outline_rgb), width=int(p.interval_line_width_px))
-        draw.line([(x - cap, y_lower), (x + cap, y_lower)], fill=tuple(p.interval_outline_rgb), width=2)
-        draw.line([(x - cap, y_upper), (x + cap, y_upper)], fill=tuple(p.interval_outline_rgb), width=2)
+        cap_width = max(2, int(p.interval_line_width_px))
+        draw.line([(x, min(y_lower, y_upper)), (x, max(y_lower, y_upper))], fill=tuple(p.interval_outline_rgb), width=int(p.interval_line_width_px + 2))
+        draw.line([(x, min(y_lower, y_upper)), (x, max(y_lower, y_upper))], fill=tuple(item.color_rgb), width=int(p.interval_line_width_px))
+        draw.line([(x - cap, y_lower), (x + cap, y_lower)], fill=tuple(item.color_rgb), width=cap_width)
+        draw.line([(x - cap, y_upper), (x + cap, y_upper)], fill=tuple(item.color_rgb), width=cap_width)
         draw.ellipse((x - 4, y_mid - 4, x + 4, y_mid + 4), fill=tuple(p.text_stroke_rgb), outline=tuple(p.interval_outline_rgb), width=1)
         _draw_text(draw, xy=(x - cap - 3, y_lower), text=str(item.lower), font=value_font, fill=p.text_rgb, stroke_fill=p.text_stroke_rgb, anchor="rm")
         _draw_text(draw, xy=(x + cap + 3, y_upper), text=str(item.upper), font=value_font, fill=p.text_rgb, stroke_fill=p.text_stroke_rgb, anchor="lm")
@@ -402,12 +413,21 @@ def _render_bar_with_error(
         ])
         item_bbox = _bbox([x - slot_w * 0.45, plot_top, x + slot_w * 0.45, plot_bottom + 48])
         interval_bboxes[item.item_id] = interval_bbox
+        interval_center_points[item.item_id] = _bbox([x, y_mid, x, y_mid])[:2]
+        interval_segments[item.item_id] = [_point(x, y_lower), _point(x, y_upper)]
         item_bboxes[item.item_id] = item_bbox
-        entities.append(_entity_record(item, interval_bbox=interval_bbox, item_bbox=item_bbox))
-    return plot_bbox, item_bboxes, interval_bboxes, entities
+        entities.append(_entity_record(item, interval_bbox=interval_bbox, item_bbox=item_bbox, interval_center_point=interval_center_points[item.item_id], interval_segment=interval_segments[item.item_id]))
+    return plot_bbox, item_bboxes, interval_bboxes, interval_center_points, interval_segments, entities
 
 
-def _entity_record(item: _IntervalItem, *, interval_bbox: Sequence[float], item_bbox: Sequence[float]) -> Dict[str, Any]:
+def _entity_record(
+    item: _IntervalItem,
+    *,
+    interval_bbox: Sequence[float],
+    item_bbox: Sequence[float],
+    interval_center_point: Sequence[float],
+    interval_segment: Sequence[Sequence[float]],
+) -> Dict[str, Any]:
     return {
         "entity_id": str(item.item_id),
         "entity_type": "error_interval_item",
@@ -418,6 +438,8 @@ def _entity_record(item: _IntervalItem, *, interval_bbox: Sequence[float], item_
         "interval_width": int(item.upper) - int(item.lower),
         "bbox_px": list(item_bbox),
         "interval_bbox_px": list(interval_bbox),
+        "interval_center_point_px": [round(float(interval_center_point[0]), 3), round(float(interval_center_point[1]), 3)],
+        "interval_segment_px": [[round(float(point[0]), 3), round(float(point[1]), 3)] for point in interval_segment],
     }
 
 
@@ -427,10 +449,11 @@ def _render_chart(
     dataset: _Dataset,
     params: Mapping[str, Any],
     instance_seed: int,
+    render_params: _RenderParams | None = None,
 ) -> _Rendered:
     """Render the selected scene variant and return projected interval geometry."""
 
-    p = _resolve_render_params(params, instance_seed=int(instance_seed))
+    p = render_params or _resolve_render_params(params, instance_seed=int(instance_seed))
     image = background.convert("RGB")
     if image.size != (int(p.canvas_width), int(p.canvas_height)):
         image = image.resize((int(p.canvas_width), int(p.canvas_height)))
@@ -450,19 +473,8 @@ def _render_chart(
         outline=p.panel_outline_rgb,
         width=int(p.panel_outline_width_px),
     )
-    title_font = load_font(p.title_font_size_px, bold=True, font_family=p.font_family)
-    draw_centered_text(
-        draw,
-        text=str(dataset.title),
-        center=((float(panel_bbox[0]) + float(panel_bbox[2])) / 2.0, float(panel_bbox[1]) + p.title_band_height_px * 0.43),
-        font=title_font,
-        fill=p.text_rgb,
-        stroke_fill=p.text_stroke_rgb,
-        stroke_width=1,
-    )
-
     if dataset.scene_variant == "horizontal_forest":
-        plot_bbox, item_bboxes, interval_bboxes, entities = _render_horizontal_forest(
+        plot_bbox, item_bboxes, interval_bboxes, interval_center_points, interval_segments, entities = _render_horizontal_forest(
             image=image,
             draw=draw,
             dataset=dataset,
@@ -470,7 +482,7 @@ def _render_chart(
             panel_bbox=panel_bbox,
         )
     elif dataset.scene_variant == "vertical_dot_whisker":
-        plot_bbox, item_bboxes, interval_bboxes, entities = _render_vertical_dot_whisker(
+        plot_bbox, item_bboxes, interval_bboxes, interval_center_points, interval_segments, entities = _render_vertical_dot_whisker(
             image=image,
             draw=draw,
             dataset=dataset,
@@ -478,7 +490,7 @@ def _render_chart(
             panel_bbox=panel_bbox,
         )
     elif dataset.scene_variant == "bar_with_error":
-        plot_bbox, item_bboxes, interval_bboxes, entities = _render_bar_with_error(
+        plot_bbox, item_bboxes, interval_bboxes, interval_center_points, interval_segments, entities = _render_bar_with_error(
             image=image,
             draw=draw,
             dataset=dataset,
@@ -513,6 +525,8 @@ def _render_chart(
         plot_bbox_px=list(plot_bbox),
         item_bboxes_px=dict(item_bboxes),
         interval_bboxes_px=dict(interval_bboxes),
+        interval_center_points_px=dict(interval_center_points),
+        interval_segments_px=dict(interval_segments),
         render_meta=render_meta,
     )
 
@@ -522,6 +536,7 @@ def render_error_interval_chart(
     dataset: _Dataset,
     params: Mapping[str, Any],
     instance_seed: int,
+    render_params: _RenderParams | None = None,
 ) -> _Rendered:
     """Render an already sampled error-interval dataset."""
 
@@ -530,6 +545,7 @@ def render_error_interval_chart(
         dataset=dataset,
         params=params,
         instance_seed=int(instance_seed),
+        render_params=render_params,
     )
 
 

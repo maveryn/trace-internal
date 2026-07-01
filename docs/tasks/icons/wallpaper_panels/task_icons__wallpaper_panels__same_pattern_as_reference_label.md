@@ -2,7 +2,14 @@
 
 ## Program Contract
 
-`relation.reference_panel_pattern_match_label(scene=wallpaper_panels, scope=curated_icon_wallpaper_patterns, relation=same_wallpaper_group_as_reference, output=option_letter)`
+Program: `relation.reference_panel_pattern_match_label(scene=wallpaper_panels, scope=curated_icon_wallpaper_patterns, relation=same_wallpaper_group_as_reference, output=option_letter)`
+
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `curated_icon_wallpaper_patterns` objective scope.
+Operands: visible scene state and prompt-bound operands named by `wallpaper_panels`, `curated_icon_wallpaper_patterns`, `relation`, `same_wallpaper_group_as_reference`.
+Operation: evaluate `relation.reference_panel_pattern_match_label` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_map` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Identity
 
@@ -31,8 +38,8 @@
 - The Reference and correct candidate share one wallpaper group.
 - Nonmatching candidate groups are distinct from the Reference group and from each other.
 - Each panel, including Reference, uses a distinct curated icon from `non_symmetry.txt`.
-- Wallpaper panels use quiet canvas treatments only, with no visible internal grid or tile outline.
-- Generation rejects unsupported option counts, unsupported wallpaper groups, unsafe canvas treatments, too-small group supports, collapsed layouts, insufficient icon pools, and palette/style failures.
+- Wallpaper panels support the shared icon canvas treatment set, with no visible internal grid or tile outline.
+- Generation rejects unsupported option counts, unsupported wallpaper groups, unsupported canvas treatments, too-small group supports, collapsed layouts, insufficient icon pools, and palette/style failures.
 
 ## Prompt
 

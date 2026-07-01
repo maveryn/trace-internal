@@ -1,7 +1,15 @@
 # `task_graph__node_link__unique_cycle_size`
 
 ## Program Contract
-- `count(nodes(unique_cycle(graph))); scene=node_link; scope=unique_cycle_size`
+
+Program: `count(nodes(unique_cycle(graph))); scene=node_link; scope=unique_cycle_size`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `unique_cycle_size` objective scope.
+Operands: visible scene state and prompt-bound operands named by `nodes`, `unique_cycle`, `graph`, `node_link`, `unique_cycle_size`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; the number of nodes on that unique cycle.
+Annotation witnesses: `annotation` uses the `point_set` schema; the `point_set` of node-center pixel points for all nodes in the unique cycle.
+Query ids: `single`.
 
 ## 1) Identity
 1. Domain: `graph`

@@ -13,11 +13,11 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import PromptTraceArtifacts, build_prompt_query_spec
 
-from .shared.annotations import bbox_map_for_roles
 from .shared.defaults import DOMAIN, POST_IMAGE_NOISE_DEFAULTS, SCENE_ID, raw_scene_defaults
 from .shared.prompts import sector_prompt_artifacts
 from .shared.rendering import create_render_context, render_sector_scene
 from .shared.state import RenderedSectorScene, SectorObjectivePlan
+from trace.tasks.geometry.shared.annotation_values import bbox_annotation_artifacts
 
 
 @dataclass(frozen=True)
@@ -26,7 +26,8 @@ class SectorArtifact:
 
     prompt_artifacts: PromptTraceArtifacts
     image: Any
-    annotation_value: Mapping[str, Any]
+    annotation_value: Any
+    projected_annotation: Mapping[str, Any]
     trace_payload: Mapping[str, Any]
     task_versions: Mapping[str, Any]
     rendered_scene: RenderedSectorScene
@@ -47,7 +48,8 @@ def _trace_payload(
     plan: SectorObjectivePlan,
     rendered: RenderedSectorScene,
     image_size: tuple[int, int],
-    annotation_value: Mapping[str, Any],
+    annotation_value: Any,
+    projected_annotation: Mapping[str, Any],
     noise_meta: Mapping[str, Any],
     style_meta: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -62,7 +64,7 @@ def _trace_payload(
     trace_values = {
         "answer": float(plan.problem.answer),
         "answer_type": str(plan.answer_type),
-        "answer_rounding": "nearest_tenth",
+        "answer_rounding": "one_decimal",
         "annotation_roles": list(plan.annotation_roles),
         "target_kind": str(plan.problem.target_kind),
         "visible_measure_kind": str(plan.problem.visible_measure_kind),
@@ -113,14 +115,11 @@ def _trace_payload(
             "task_id": str(task_id),
             "scene_id": SCENE_ID,
             "query_id": str(selected_branch),
-            "source_witness_type": "bbox_map",
+            "source_witness_type": "bbox",
+            "original_annotation_value": list(annotation_value),
             **dict(trace_values),
         },
-        "projected_annotation": {
-            "type": "bbox_map",
-            "bbox_map": dict(annotation_value),
-            "pixel_bbox_map": dict(annotation_value),
-        },
+        "projected_annotation": dict(projected_annotation),
     }
 
 
@@ -149,15 +148,18 @@ def build_sector_artifact(
         params=task_params,
         default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
-    annotation_value = bbox_map_for_roles(rendered, tuple(plan.annotation_roles))
+    if len(tuple(plan.annotation_roles)) != 1:
+        raise ValueError("sector tasks require exactly one scalar bbox annotation role")
+    annotation_role = str(tuple(plan.annotation_roles)[0])
+    if annotation_role not in rendered.annotation_bboxes:
+        raise ValueError(f"sector render did not produce annotation role: {annotation_role}")
+    annotation_artifacts = bbox_annotation_artifacts(rendered.annotation_bboxes[annotation_role])
+    annotation_value = list(annotation_artifacts.value)
     _prompt_defaults, prompt_artifacts = sector_prompt_artifacts(
         prompt_defaults=prompt_defaults,
         prompt_task_key=str(plan.prompt_task_key),
         prompt_branch_key=str(plan.prompt_branch_key),
-        annotation_roles=tuple(plan.annotation_roles),
         answer=float(plan.problem.answer),
-        arc_length=float(plan.problem.values.arc_length),
-        sector_area=float(plan.problem.values.sector_area),
         instance_seed=int(instance_seed),
     )
     trace_payload = _trace_payload(
@@ -169,6 +171,7 @@ def build_sector_artifact(
         rendered=rendered,
         image_size=image.size,
         annotation_value=annotation_value,
+        projected_annotation=annotation_artifacts.projected_annotation,
         noise_meta=noise_meta,
         style_meta={
             "technical_diagram": dict(ctx.diagram_style_meta),
@@ -181,7 +184,8 @@ def build_sector_artifact(
     return SectorArtifact(
         prompt_artifacts=prompt_artifacts,
         image=image,
-        annotation_value=dict(annotation_value),
+        annotation_value=list(annotation_value),
+        projected_annotation=dict(annotation_artifacts.projected_annotation),
         trace_payload=trace_payload,
         task_versions=default_task_versions(),
         rendered_scene=rendered,
@@ -237,7 +241,7 @@ def run_sector_public_entry(
     return TaskOutput(
         prompt=str(artifact.prompt_artifacts.prompt),
         answer_gt=TypedValue(type=str(plan.answer_type), value=float(plan.problem.answer)),
-        annotation_gt=TypedValue(type="bbox_map", value=dict(artifact.annotation_value)),
+        annotation_gt=TypedValue(type="bbox", value=list(artifact.annotation_value)),
         image=artifact.image,
         image_id="img0",
         trace_payload=dict(artifact.trace_payload),

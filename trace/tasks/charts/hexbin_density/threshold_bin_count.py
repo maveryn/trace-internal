@@ -11,7 +11,7 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.text_rendering import temporary_default_font_family
 from trace.tasks.charts.hexbin_density.shared.annotations import (
-    annotation_bbox_set,
+    annotation_point_set,
     projected_annotation_payload,
 )
 from trace.tasks.charts.hexbin_density.shared.defaults import (
@@ -106,7 +106,7 @@ def _build_trace_payload(
             "question_format": "hexbin_density_threshold_query",
             "answer": int(answer_value),
             "answer_type": "integer",
-            "annotation_type": "bbox_set",
+            "annotation_type": "point_set",
             "row_count": int(dataset.row_count),
             "column_count": int(dataset.column_count),
             "occupied_bin_count": int(len(dataset.bins)),
@@ -127,16 +127,16 @@ def _build_trace_payload(
         },
         "witness_symbolic": {
             "type": "hexbin_density_threshold_witness",
-            "annotation_type": "bbox_set",
+            "annotation_type": "point_set",
             "annotation_bin_ids": list(dataset.query.annotation_bin_ids),
             "answer": int(answer_value),
         },
         "projected_annotation": dict(projected_annotation),
         "annotation_refs": {
-            "type": "bbox_set",
+            "type": "point_set",
             "items": [
-                {"bin_id": str(bin_id), "bbox_px": list(box)}
-                for bin_id, box in zip(dataset.query.annotation_bin_ids, annotation, strict=True)
+                {"bin_id": str(bin_id), "point_px": list(point)}
+                for bin_id, point in zip(dataset.query.annotation_bin_ids, annotation, strict=True)
             ],
         },
     }
@@ -199,7 +199,7 @@ class ChartsHexbinDensityThresholdBinCountTask:
                 prompt_query_key=str(selected_query_id),
                 instance_seed=int(instance_seed),
             )
-        annotation = annotation_bbox_set(dataset, rendered)
+        annotation = annotation_point_set(dataset, rendered)
         answer_value = int(dataset.query.answer)
         projected_annotation = projected_annotation_payload(dataset, annotation)
         trace_payload = _build_trace_payload(
@@ -216,7 +216,7 @@ class ChartsHexbinDensityThresholdBinCountTask:
         return TaskOutput(
             prompt=str(prompt),
             answer_gt=TypedValue(type="integer", value=int(answer_value)),
-            annotation_gt=TypedValue(type="bbox_set", value=[list(value) for value in annotation]),
+            annotation_gt=TypedValue(type="point_set", value=[list(value) for value in annotation]),
             image=rendered.image,
             image_id="img0",
             trace_payload=trace_payload,

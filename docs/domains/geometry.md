@@ -34,6 +34,12 @@ different givens/unknowns in one algebraically equivalent construction, rank
 direction, and shape subtype when the same program schema and annotation
 contract remain stable.
 
+For keyed point annotation in geometry, sample-bound point labels do not by
+themselves change the annotation contract. A segment task may ask for `AY` in
+one instance and `XB` in another, with annotation keys matching those visible
+labels, as long as the role family is still "the two endpoints of the requested
+segment" and the cardinality stays fixed.
+
 Split when a branch changes the formula schema, the answer type, the witness
 roles, the visual scaffold, or the final output binding.
 
@@ -41,7 +47,7 @@ roles, the visual scaffold, or the final output binding.
 Use point annotation for points, vertices, segment endpoints, angle arms, and
 coordinate witnesses. Use bbox annotation for whole shapes, panels, shaded
 regions, option images, or diagrams whose decisive witness is an area/object.
-Use keyed annotation when operand roles matter.
+Use map annotation when operand roles matter.
 
 The visible `?` marker should be annotated only when the unknown location itself
 is the requested visual witness. For formula tasks, annotation should usually

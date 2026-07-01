@@ -7,7 +7,7 @@ from typing import Any, Dict, Mapping
 from ....shared.config_defaults import group_default
 from ...shared.icon_task_rendering import resolve_icon_cell_render_params
 
-from .rendering import wallpaper_safe_canvas_params
+from .rendering import wallpaper_canvas_params
 
 
 def resolve_wallpaper_render_params(
@@ -20,9 +20,9 @@ def resolve_wallpaper_render_params(
 ) -> Dict[str, Any]:
     """Resolve render parameters shared by wallpaper-panel tasks."""
 
-    safe_params = wallpaper_safe_canvas_params(params)
+    canvas_params = wallpaper_canvas_params(params)
     render_params = resolve_icon_cell_render_params(
-        params=safe_params,
+        params=canvas_params,
         render_defaults=render_defaults,
         fallback_defaults=fallback_defaults,
         instance_seed=int(instance_seed),

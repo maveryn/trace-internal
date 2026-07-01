@@ -27,9 +27,9 @@ generation:
     - 6
     area_rank_product_min: 34.0
     area_rank_product_max: 42.0
-    area_rank_adjacent_gap_min: 0.12
-    area_rank_adjacent_gap_max: 0.2
-    area_rank_max_min_ratio: 2.8
+    area_rank_adjacent_gap_min: 0.24
+    area_rank_adjacent_gap_max: 0.34
+    area_rank_max_min_ratio: 5.5
     area_rank_aspect_ratio_min: 0.72
     area_rank_aspect_ratio_max: 1.38
     area_rank_angle_min_degrees: -38.0

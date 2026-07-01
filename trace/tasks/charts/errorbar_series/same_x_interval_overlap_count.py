@@ -106,17 +106,14 @@ class ChartsErrorbarSeriesSameXIntervalOverlapCountTask:
                 make_series(
                     series_id=f"series_{series_index}",
                     label=str(base.series_labels[int(series_index)]),
-                    color_rgb=colors[int(series_index) % len(colors)],
+                    color_rgb=colors[int(series_index)],
                     triples=adjusted,
                 )
             )
         target = series_rows[int(target_series_index)]
         target_x_label = str(base.x_labels[int(target_x_index)])
         counted_labels = [str(series_rows[index].label) for index in sorted(overlapping_indices)]
-        annotation_keys = tuple(
-            [f"{target.label}:{target_x_label}"]
-            + [f"{label}:{target_x_label}" for label in counted_labels]
-        )
+        annotation_keys = tuple(f"{label}:{target_x_label}" for label in counted_labels)
         relation_params = {
             "query_id": str(selected_query_id),
             "internal_query_id": PROMPT_KEY,
@@ -150,7 +147,7 @@ class ChartsErrorbarSeriesSameXIntervalOverlapCountTask:
                 prompt_key=PROMPT_KEY,
                 answer=int(answer_count),
                 answer_type="integer",
-                annotation_kind="keyed_bbox_map",
+                annotation_kind="segment_set",
                 annotation_item_keys=tuple(annotation_keys),
                 params=dict(relation_params),
             ),

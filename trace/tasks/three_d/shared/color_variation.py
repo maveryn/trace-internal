@@ -66,7 +66,13 @@ def resolve_three_d_object_fill_rgb(
         labels = tuple(str(label) for label in (candidate_labels or ()))
         candidate_colors = tuple(candidate_palette or ())
         if bool(spec.get("is_answer_candidate", False)) and point_label in labels and candidate_colors:
-            base_rgb = candidate_colors[labels.index(point_label) % len(candidate_colors)]
+            candidate_index = labels.index(point_label)
+            if candidate_index < len(candidate_colors):
+                base_rgb = candidate_colors[candidate_index]
+            else:
+                base_rgb = candidate_colors[
+                    _stable_color_index((salt, point_label, "candidate"), len(candidate_colors))
+                ]
         else:
             active_palette = tuple(palette or candidate_colors or ((128, 128, 128),))
             base_rgb = active_palette[

@@ -18,16 +18,6 @@ DEGREE_SYMBOL = chr(176)
 
 
 @dataclass(frozen=True)
-class BearingBackCase:
-    """Back-bearing construction values selected by the public bearing task."""
-
-    answer: int
-    given_bearing: int
-    station_labels: Tuple[str, str, str]
-    bearing_probabilities: Dict[str, float]
-
-
-@dataclass(frozen=True)
 class BearingTurnCase:
     """Closed-traverse turn construction values selected by the public bearing task."""
 
@@ -50,29 +40,6 @@ class ElevationLevelingCase:
     foresight: int
     height_of_instrument: int
     station_labels: Tuple[str, str, str]
-    case_probabilities: Dict[str, float]
-
-
-@dataclass(frozen=True)
-class ElevationSlopeCase:
-    """Slope-distance construction values selected by the public elevation task."""
-
-    answer: int
-    reference_elevation: int
-    slope_distance: int
-    rise_per_20: int
-    total_rise: int
-    station_labels: Tuple[str, str, str]
-    case_probabilities: Dict[str, float]
-
-
-@dataclass(frozen=True)
-class AreaCoordinateCase:
-    """Coordinate-traverse construction values selected by the public area task."""
-
-    answer: int
-    station_labels: Tuple[str, str, str, str]
-    coordinate_points: Tuple[Tuple[int, int], ...]
     case_probabilities: Dict[str, float]
 
 
@@ -114,19 +81,6 @@ class RenderContext:
 
 
 @dataclass(frozen=True)
-class RenderedPointScene:
-    """Rendered scene with role-bound point-map annotation witnesses."""
-
-    image: Image.Image
-    annotation_points: Dict[str, Point]
-    annotation_roles: Tuple[str, ...]
-    scene_entities: Tuple[Dict[str, Any], ...]
-    label_bboxes: Dict[str, BBox]
-    render_map: Dict[str, Any]
-    witness: Dict[str, Any]
-
-
-@dataclass(frozen=True)
 class RenderedAreaScene:
     """Rendered scene with role-bound bbox-map annotation witnesses."""
 
@@ -140,20 +94,16 @@ class RenderedAreaScene:
 
 
 __all__ = [
-    "AreaCoordinateCase",
     "AreaOffsetCase",
     "BBox",
-    "BearingBackCase",
     "BearingTurnCase",
     "Color",
     "DEGREE_SYMBOL",
     "DOMAIN",
     "ElevationLevelingCase",
-    "ElevationSlopeCase",
     "Point",
     "RenderContext",
     "RenderedAreaScene",
-    "RenderedPointScene",
     "SCENE_ID",
     "SCENE_KIND",
 ]

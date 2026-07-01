@@ -57,7 +57,13 @@ def resolve_context_text_params(params: Mapping[str, Any]) -> Dict[str, Any]:
     """Resolve dashboard context-text render defaults plus caller overrides."""
 
     keys = (
+        "chart_context_profile",
+        "context_text_profile",
         "context_text_enabled",
+        "chart_context_mode",
+        "chart_context_mode_weights",
+        "context_text_mode",
+        "context_text_mode_weights",
         "context_text_layout_mode",
         "context_text_placement",
         "context_text_placement_weights",

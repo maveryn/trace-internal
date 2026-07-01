@@ -39,6 +39,7 @@ def build_trace_scaffold(
                 "font_assets": dict(artifacts.font_assets),
             },
             "background": dict(artifacts.background_style),
+            "information_scene_style": dict(artifacts.background_style["information_scene_style"]),
             "post_image_noise": dict(artifacts.post_image_noise),
         },
         "render_map": {

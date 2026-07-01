@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from itertools import combinations
 
 import pytest
 
@@ -22,11 +23,13 @@ from trace.tasks.charts.density_curve.mode_location_extremum_label import (
     ChartsDistributionDensityCurveModeLocationExtremumLabelTask,
 )
 from trace.tasks.charts.density_curve.shared.defaults import (
+    DEFAULT_DENSITY_CURVE_PAIRWISE_DELTA_E,
     SCENE_ID,
     SUPPORTED_CURVE_LINE_STYLES,
     SUPPORTED_DENSITY_FAMILIES,
 )
-from trace.tasks.registry import create_task, list_default_task_ids
+from trace.tasks.registry import create_task
+from trace.tasks.shared.color_distance import color_distance
 
 
 TASK_CASES = (
@@ -37,7 +40,7 @@ TASK_CASES = (
         "mean_marker_bboxes_px",
         "mean_x_by_label",
         "max",
-        "keyed_bbox_map",
+        "point",
     ),
     (
         ChartsDistributionDensityCurveMeanExtremumLabelTask,
@@ -46,7 +49,7 @@ TASK_CASES = (
         "mean_marker_bboxes_px",
         "mean_x_by_label",
         "min",
-        "keyed_bbox_map",
+        "point",
     ),
     (
         ChartsDistributionDensityCurveModeLocationExtremumLabelTask,
@@ -55,7 +58,7 @@ TASK_CASES = (
         "mode_marker_bboxes_px",
         "mode_x_by_label",
         "min",
-        "keyed_bbox_map",
+        "point",
     ),
     (
         ChartsDistributionDensityCurveModeLocationExtremumLabelTask,
@@ -64,25 +67,25 @@ TASK_CASES = (
         "mode_marker_bboxes_px",
         "mode_x_by_label",
         "max",
-        "keyed_bbox_map",
+        "point",
     ),
     (
         ChartsDistributionDensityCurveIntervalMassExtremumLabelTask,
         "greatest_interval_mass_label",
         "answer_interval_mass",
-        "interval_mass_bboxes_px",
+        "interval_mass_points_px",
         "interval_mass_by_label",
         "max",
-        "keyed_bbox_map",
+        "point",
     ),
     (
         ChartsDistributionDensityCurveIntervalMassExtremumLabelTask,
         "least_interval_mass_label",
         "answer_interval_mass",
-        "interval_mass_bboxes_px",
+        "interval_mass_points_px",
         "interval_mass_by_label",
         "min",
-        "keyed_bbox_map",
+        "point",
     ),
     (
         ChartsDistributionDensityCurveDensityAtXExtremumLabelTask,
@@ -91,7 +94,7 @@ TASK_CASES = (
         "density_at_x_points_px",
         "density_at_x_by_label",
         "max",
-        "keyed_point_map",
+        "point",
     ),
     (
         ChartsDistributionDensityCurveDensityAtXExtremumLabelTask,
@@ -100,7 +103,7 @@ TASK_CASES = (
         "density_at_x_points_px",
         "density_at_x_by_label",
         "min",
-        "keyed_point_map",
+        "point",
     ),
 )
 
@@ -138,6 +141,13 @@ def _assert_point_inside_canvas(point: list[float], *, width: int, height: int) 
 
 def _bbox_contains_point(outer: list[float], point: list[float]) -> bool:
     return float(outer[0]) <= float(point[0]) <= float(outer[2]) and float(outer[1]) <= float(point[1]) <= float(outer[3])
+
+
+def _bbox_center(bbox: list[float]) -> list[float]:
+    return [
+        round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
+        round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
+    ]
 
 
 def _expected_label(values_by_label: dict[str, float], mode: str) -> str:
@@ -188,27 +198,51 @@ def test_charts_density_curve_tasks_match_contract(
     assert str(render["font_asset_version"])
     assert str(render["chart_font_family"])
     assert str(render["font_assets"]["chart_font_family"]) == str(render["chart_font_family"])
-    assert 4 <= int(execution["curve_count"]) <= 7
+    assert 4 <= int(execution["curve_count"]) <= 6
     assert len(execution["labels"]) == int(execution["curve_count"])
     assert len(set(execution["labels"])) == int(execution["curve_count"])
     assert set(execution["families_by_label"].values()).issubset(set(SUPPORTED_DENSITY_FAMILIES))
     assert set(execution["line_style_by_label"].values()).issubset(set(SUPPORTED_CURVE_LINE_STYLES))
+    colors_by_label = {
+        str(record["label"]): tuple(int(channel) for channel in record["color_rgb"])
+        for record in execution["curve_records"]
+    }
+    assert set(colors_by_label) == set(execution["labels"])
+    for first_label, second_label in combinations(sorted(colors_by_label), 2):
+        assert (
+            color_distance(colors_by_label[first_label], colors_by_label[second_label], distance_space="lab")
+            >= DEFAULT_DENSITY_CURVE_PAIRWISE_DELTA_E
+        )
+    assert float(execution["min_curve_pairwise_lab_distance"]) >= DEFAULT_DENSITY_CURVE_PAIRWISE_DELTA_E
+    line_style_rendering = render["line_style_rendering"]
+    assert float(line_style_rendering["dash_off_px"]) <= 5.0
+    assert float(line_style_rendering["dash_off_px"]) < float(line_style_rendering["dash_on_px"])
+    assert float(line_style_rendering["dot_spacing_px"]) <= 10.0
     assert 0.0 <= float(execution["interval_start"]) < float(execution["interval_end"]) <= 100.0
     assert float(execution["winner_gap"]) >= 0.0
     expected = _expected_label({str(label): float(value) for label, value in execution[metric_key].items()}, mode)
     assert str(out.answer_gt.value) == expected
     assert str(execution["answer"]) == expected
     assert trace["projected_annotation"]["type"] == annotation_type
-    if annotation_type == "keyed_point_map":
-        assert trace["projected_annotation"]["keyed_point_map"] == out.annotation_gt.value
+    if annotation_type == "point":
+        assert trace["projected_annotation"]["point"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_point"] == out.annotation_gt.value
     else:
-        assert trace["projected_annotation"]["keyed_bbox_map"] == out.annotation_gt.value
-    assert set(out.annotation_gt.value) == {annotation_key}
-    annotation_witness = list(out.annotation_gt.value[annotation_key])
-    assert annotation_witness == render_map[render_map_key][expected]
-    if annotation_type == "keyed_point_map":
+        assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+        assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
+    assert str(trace["projected_annotation"]["annotation_key"]) == annotation_key
+    annotation_witness = list(out.annotation_gt.value)
+    source_witness = list(render_map[render_map_key][expected])
+    expected_witness = _bbox_center(source_witness) if annotation_type == "point" and len(source_witness) == 4 else source_witness
+    assert annotation_witness == expected_witness
+    if annotation_type == "point":
         _assert_point_inside_canvas(annotation_witness, width=width, height=height)
-        assert _bbox_contains_point(render_map["plot_bbox_px"], annotation_witness)
+        if annotation_key == "answer_mean_marker":
+            plot_bbox = render_map["plot_bbox_px"]
+            assert float(plot_bbox[0]) <= float(annotation_witness[0]) <= float(plot_bbox[2])
+            assert float(annotation_witness[1]) >= float(plot_bbox[3])
+        else:
+            assert _bbox_contains_point(render_map["plot_bbox_px"], annotation_witness)
     else:
         _assert_bbox_inside_canvas(annotation_witness, width=width, height=height)
         if annotation_key == "answer_mean_marker":
@@ -232,7 +266,9 @@ def test_charts_density_curve_prompt_examples_match_contract() -> None:
         assert isinstance(answer_only["answer"], str)
         assert set(answer_and_annotation) == {"annotation", "answer"}
         assert isinstance(answer_and_annotation["answer"], str)
-        assert set(answer_and_annotation["annotation"]) == {annotation_key}
+        assert isinstance(answer_and_annotation["annotation"], list)
+        expected_length = 2 if "point" in _annotation_type else 4
+        assert len(answer_and_annotation["annotation"]) == expected_length
 
 
 def test_charts_density_curve_balanced_sampling_covers_branches_counts_and_families() -> None:
@@ -254,7 +290,7 @@ def test_charts_density_curve_balanced_sampling_covers_branches_counts_and_famil
         families.update((str(value) for value in execution["families_by_label"].values()))
     assert set(queries) == set(ALL_QUERY_IDS)
     assert min(counts) >= 4
-    assert max(counts) <= 7
+    assert max(counts) <= 6
     assert len(counts) >= 3
     assert set(families).issubset(set(SUPPORTED_DENSITY_FAMILIES))
     assert len(families) >= 5
@@ -279,8 +315,6 @@ def test_charts_density_curve_registered_and_group_config_loaded() -> None:
         "task_charts__density_curve__mode_location_extremum_label",
         "task_charts__density_curve__interval_mass_extremum_label",
     }
-    default_task_ids = set(list_default_task_ids())
-    assert expected_task_ids.issubset(default_task_ids)
     for task_id in expected_task_ids:
         out = create_task(task_id).generate(hash64(20260606, task_id), params={}, max_attempts=100)
         assert out.scene_id == SCENE_ID
@@ -288,7 +322,8 @@ def test_charts_density_curve_registered_and_group_config_loaded() -> None:
     cfg = get_scene_defaults("charts", "density_curve")
     generation = cfg["generation"]["shared"]
     assert int(generation["density_curve_count_min"]) == 4
-    assert int(generation["density_curve_count_max"]) == 7
+    assert int(generation["density_curve_count_max"]) == 6
+    assert dict(generation["density_curve_count_weights"]) == {"4": 1.0, "5": 1.0, "6": 1.0}
     prompt = cfg["prompt"]["shared"]
     assert str(prompt["scene_key"]) == "density_curve"
     assert str(prompt["task_key"]) == "density_curve_query"

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Callable, Dict, Mapping
 
 from trace.core.query_ids import SINGLE_QUERY_ID
@@ -22,7 +22,7 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.defaults import resolve_render_params
+from .shared.defaults import resolve_render_params, sample_voxel_palette
 from .shared.output import build_trace_payload, json_ready
 from .shared.prompts import render_voxel_prompt_artifacts
 from .shared.state import DOMAIN, SCENE_ID, RenderedVoxelScene, VoxelDataset
@@ -226,6 +226,10 @@ def prepare_voxel_visual_case(
     """Resolve style, render image, and build prompt artifacts."""
 
     render_params = resolve_render_params(params, rendering_defaults)
+    render_params = replace(
+        render_params,
+        palette=sample_voxel_palette(spawn_rng(int(instance_seed), f"{namespace}.palette")),
+    )
     scene_style, scene_style_meta = resolve_puzzle_scene_style(
         instance_seed=int(instance_seed),
         namespace=f"{namespace}.background",
@@ -345,6 +349,15 @@ def build_voxel_task_output(
             "post_image_noise": dict(visual["post_noise_meta"]),
             "scene_bbox_px": list(rendered_scene.scene_bbox_px),
             "layout": "isometric_voxel_stack_with_projection_panels",
+            "voxel_palette": {
+                "palette_id": str(render_params.palette.palette_id),
+                "cube_top_rgb": list(render_params.palette.cube_top_rgb),
+                "cube_left_rgb": list(render_params.palette.cube_left_rgb),
+                "cube_right_rgb": list(render_params.palette.cube_right_rgb),
+                "cube_edge_rgb": list(render_params.palette.cube_edge_rgb),
+                "projection_fill_rgb": list(render_params.palette.projection_fill_rgb),
+                "projection_empty_rgb": list(render_params.palette.projection_empty_rgb),
+            },
         },
         render_map=render_map,
         execution_trace={

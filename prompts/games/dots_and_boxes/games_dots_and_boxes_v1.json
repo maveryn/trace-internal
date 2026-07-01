@@ -36,19 +36,12 @@
         "Find the box that has only one side missing.",
         "Which labeled cell can be completed next?"
       ],
-      "player_a_owned_box_count": [
-        "How many boxes are marked with player A?",
-        "Count the boxes owned by player A.",
-        "How many completed boxes show an A mark?",
-        "Find the number of box cells marked A.",
-        "How many boxes on the board belong to player A?"
-      ],
-      "player_b_owned_box_count": [
-        "How many boxes are marked with player B?",
-        "Count the boxes owned by player B.",
-        "How many completed boxes show a B mark?",
-        "Find the number of box cells marked B.",
-        "How many boxes on the board belong to player B?"
+      "owned_box_count": [
+        "How many boxes are marked with player {target_owner}?",
+        "Count the boxes owned by player {target_owner}.",
+        "How many completed boxes show a {target_owner} mark?",
+        "Find the number of box cells marked {target_owner}.",
+        "How many boxes on the board belong to player {target_owner}?"
       ]
     },
     "output": {
@@ -74,8 +67,9 @@
     ],
     "query:three_sided_box_count": [],
     "query:completable_box_label": [],
-    "query:player_a_owned_box_count": [],
-    "query:player_b_owned_box_count": [],
+    "query:owned_box_count": [
+      "target_owner"
+    ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -109,17 +103,18 @@
     },
     "object_description": {
       "type": "string"
+    },
+    "target_owner": {
+      "type": "string"
     }
   },
   "code_prompt_defaults": {
     "object_description_single_board": "a dots-and-boxes grid with some edges already drawn",
     "annotation_hint_three_sided_box_count": "set \"annotation\" to a JSON array of full-cell bounding boxes [x0, y0, x1, y1] for every box with exactly three drawn sides",
     "answer_hint_three_sided_box_count": "set \"answer\" to the number of boxes with exactly three drawn sides",
-    "annotation_hint_completable_box_label": "set \"annotation\" to the full-cell bounding box [x1, y1, x2, y2] of the selected labeled box",
+    "annotation_hint_completable_box_label": "set \"annotation\" to the full-cell bounding box [x0, y0, x1, y1] of the selected labeled box",
     "answer_hint_completable_box_label": "set \"answer\" to the option letter, one of A, B, C, D, E, or F",
-    "annotation_hint_player_a_owned_box_count": "set \"annotation\" to a JSON array of full-cell bounding boxes [x0, y0, x1, y1] for every box marked with player A",
-    "answer_hint_player_a_owned_box_count": "set \"answer\" to the number of boxes marked with player A",
-    "annotation_hint_player_b_owned_box_count": "set \"annotation\" to a JSON array of full-cell bounding boxes [x0, y0, x1, y1] for every box marked with player B",
-    "answer_hint_player_b_owned_box_count": "set \"answer\" to the number of boxes marked with player B"
+    "annotation_hint_owned_box_count": "set \"annotation\" to a JSON array of full-cell bounding boxes [x0, y0, x1, y1] for every box marked with player {target_owner}",
+    "answer_hint_owned_box_count": "set \"answer\" to the number of boxes marked with player {target_owner}"
   }
 }

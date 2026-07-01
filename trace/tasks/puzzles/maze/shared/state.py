@@ -67,6 +67,7 @@ class RenderedMazeExitScene:
     entities: Tuple[Dict[str, Any], ...]
     scene_bbox_px: BBox
     item_bbox_map: Dict[str, BBox]
+    item_point_map: Dict[str, Tuple[float, float]]
     cell_bbox_map: Dict[str, BBox]
 
 

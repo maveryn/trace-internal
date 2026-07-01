@@ -381,6 +381,7 @@ def render_backgammon_scene(
     background: Image.Image,
     style_variant: str,
     active_player: str,
+    use_dice_for_moves: bool = True,
     params: BackgammonRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedBackgammonScene:
@@ -572,7 +573,8 @@ def render_backgammon_scene(
 
     player_text = "White" if str(active_player) == PLAYER_WHITE else "Black"
     direction_text = "1 to 24" if str(active_player) == PLAYER_WHITE else "24 to 1"
-    header_text = f"{player_text.upper()} moves {direction_text} | use either die"
+    header_suffix = "use either die" if bool(use_dice_for_moves) else "pip count"
+    header_text = f"{player_text.upper()} moves {direction_text} | {header_suffix}"
     header_height = max(28.0, float(params.header_font_size_px) * 1.85)
     header_y1 = round(float(top_b - 8.0), 3)
     header_y0 = round(max(4.0, float(header_y1 - header_height)), 3)
@@ -624,6 +626,7 @@ def render_backgammon_scene(
         "style_variant": str(style_variant),
         "active_player": str(active_player),
         "movement_direction_text": str(direction_text),
+        "use_dice_for_moves": bool(use_dice_for_moves),
         "panel_scene_style": None if panel_style is None else game_panel_scene_style_metadata(panel_style),
         "effective_point_width_px": round(float(min_point_width), 3),
         "font_family": str(params.font_family),
@@ -682,6 +685,7 @@ def render_backgammon_sample(
         background=background,
         style_variant=str(sample.style_variant),
         active_player=str(sample.active_player),
+        use_dice_for_moves=bool(sample.use_dice_for_moves),
         params=render_params,
         panel_style=panel_style,
     )

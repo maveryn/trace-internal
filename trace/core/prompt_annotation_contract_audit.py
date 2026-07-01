@@ -40,6 +40,10 @@ _BBOX_NOTATION_RE = re.compile(
     r"\[\s*x0\s*,\s*y0\s*,\s*x1\s*,\s*y1\s*\]",
     flags=re.IGNORECASE,
 )
+_SEGMENT_NOTATION_RE = re.compile(
+    r"\[\s*\[\s*x0\s*,\s*y0\s*\]\s*,\s*\[\s*x1\s*,\s*y1\s*\]\s*\]",
+    flags=re.IGNORECASE,
+)
 _ANNOTATION_FORMAT_HEADER_RE = re.compile(
     r"(?:Annotation format:|Required annotation format:|Use this annotation format:|Format for the \"annotation\" field:)",
     flags=re.IGNORECASE,
@@ -54,6 +58,17 @@ _NEXT_FORMAT_HEADER_RE = re.compile(
 _NEGATIVE_ANNOTATION_FORMAT_RE = re.compile(
     r"\b(?:do not|don't|exclude|excluding|avoid|must not|should not|never)\b"
     r"|\bnot\s+(?:include|mark|box|use|return|select|provide)\b",
+    flags=re.IGNORECASE,
+)
+_ALLOWED_SET_BOUNDARY_EXCLUSION_RE = re.compile(
+    r"\bexclud(?:e|ing)\s+(?:"
+    r"(?:the\s+)?(?:source|start(?:ing)?|origin|reference|queried|asked)\b"
+    r"(?:\s+(?:node|station|cell|point|vertex|junction|tile|square|object|item))?"
+    r"(?:\s+itself)?"
+    r"|"
+    r"[\"']?[A-Za-z0-9][A-Za-z0-9_-]{0,23}[\"']?"
+    r"(?:\s+itself|\s+and\s+including\s+[\"']?[A-Za-z0-9][A-Za-z0-9_-]{0,23}[\"']?)"
+    r")",
     flags=re.IGNORECASE,
 )
 _EXACT_JSON_KEYS_RE = re.compile(r'"annotation".*"answer"', flags=re.IGNORECASE | re.DOTALL)
@@ -187,18 +202,6 @@ def _find_redundancy_issues(prompt: str, *, mode: str) -> list[dict[str, str]]:
                 )
             )
 
-    answer_format_terms = len(re.findall(r"\b(answer format|final answer|json object|example json)\b", body, re.I))
-    if answer_format_terms > 0:
-        issues.append(
-            _issue(
-                category="prompt_redundancy",
-                code="format_instruction_in_body",
-                severity="info",
-                mode=mode,
-                message="Prompt body appears to include answer-format wording before the format section.",
-                excerpt=body[:220],
-            )
-        )
     return issues
 
 
@@ -225,6 +228,23 @@ def _extract_annotation_format_section(prompt: str) -> str:
     next_match = _NEXT_FORMAT_HEADER_RE.search(str(prompt), match.end())
     end = next_match.start() if next_match is not None else len(str(prompt))
     return str(prompt)[match.start() : end].strip()
+
+
+def _is_allowed_set_boundary_exclusion(section: str, match: re.Match[str]) -> bool:
+    """Return whether an exclusion defines the witness set boundary."""
+
+    if str(match.group(0)).lower() not in {"exclude", "excluding"}:
+        return False
+    tail = str(section)[int(match.start()) : int(match.start()) + 160]
+    return _ALLOWED_SET_BOUNDARY_EXCLUSION_RE.match(tail) is not None
+
+
+def _find_disallowed_negative_annotation_format(section: str) -> re.Match[str] | None:
+    for match in _NEGATIVE_ANNOTATION_FORMAT_RE.finditer(str(section)):
+        if _is_allowed_set_boundary_exclusion(str(section), match):
+            continue
+        return match
+    return None
 
 
 def _as_number(value: Any) -> float | None:
@@ -299,7 +319,7 @@ def _validate_annotation_value(
         for index, bbox in enumerate(value):
             errors.extend(_validate_bbox(bbox, image_size=image_size, field=f"{field}[{index}]"))
         return errors
-    if kind == "keyed_bbox_map":
+    if kind == "bbox_map":
         if not isinstance(value, Mapping):
             return [f"{field} must be an object mapping string keys to bounding boxes"]
         for key, bbox in value.items():
@@ -308,7 +328,7 @@ def _validate_annotation_value(
                 continue
             errors.extend(_validate_bbox(bbox, image_size=image_size, field=f"{field}.{key}"))
         return errors
-    if kind == "keyed_bbox_set_map":
+    if kind == "bbox_set_map":
         if not isinstance(value, Mapping):
             return [f"{field} must be an object mapping string keys to lists of bounding boxes"]
         for key, bboxes in value.items():
@@ -329,7 +349,7 @@ def _validate_annotation_value(
         for index, point in enumerate(value):
             errors.extend(_validate_point(point, image_size=image_size, field=f"{field}[{index}]"))
         return errors
-    if kind == "keyed_point_map":
+    if kind == "point_map":
         if not isinstance(value, Mapping):
             return [f"{field} must be an object mapping string keys to points"]
         for key, point in value.items():
@@ -338,7 +358,7 @@ def _validate_annotation_value(
                 continue
             errors.extend(_validate_point(point, image_size=image_size, field=f"{field}.{key}"))
         return errors
-    if kind == "keyed_point_set_map":
+    if kind == "point_set_map":
         if not isinstance(value, Mapping):
             return [f"{field} must be an object mapping string keys to lists of points"]
         for key, points in value.items():
@@ -396,12 +416,12 @@ def _flatten_example_points(annotation_type: str, annotation_value: Any) -> list
             parsed = _parse_point(item)
             if parsed is not None:
                 points.append(parsed)
-    elif kind == "keyed_point_map" and isinstance(annotation_value, Mapping):
+    elif kind == "point_map" and isinstance(annotation_value, Mapping):
         for item in annotation_value.values():
             parsed = _parse_point(item)
             if parsed is not None:
                 points.append(parsed)
-    elif kind == "keyed_point_set_map" and isinstance(annotation_value, Mapping):
+    elif kind == "point_set_map" and isinstance(annotation_value, Mapping):
         for item in annotation_value.values():
             if isinstance(item, list):
                 for point in item:
@@ -459,7 +479,11 @@ def _audit_annotation_prompt(prompt: str, *, annotation_type: str, mode: str) ->
     prompt_text = str(prompt)
     lower = prompt_text.lower()
 
-    if "annotation format:" not in lower and 'format for the "annotation" field:' not in lower:
+    has_annotation_format_header = bool(_ANNOTATION_FORMAT_HEADER_RE.search(prompt_text))
+    has_legacy_annotation_instruction = bool(
+        re.search(r"\bset\s+annotation\s+to\b|\bannotation\s+to\b", prompt_text, flags=re.IGNORECASE)
+    )
+    if not has_annotation_format_header and not has_legacy_annotation_instruction:
         issues.append(
             _issue(
                 category="annotation_prompt",
@@ -469,7 +493,21 @@ def _audit_annotation_prompt(prompt: str, *, annotation_type: str, mode: str) ->
                 message="Annotation prompt is missing a named annotation-format section.",
             )
         )
-    if "example json:" not in lower:
+    elif not has_annotation_format_header:
+        issues.append(
+            _issue(
+                category="annotation_prompt",
+                code="legacy_annotation_format_wording",
+                severity="warning",
+                mode=mode,
+                message=(
+                    "Annotation prompt describes the annotation but does not use a canonical "
+                    "Annotation format section header."
+                ),
+            )
+        )
+    has_example_header = "example json:" in lower
+    if not has_example_header:
         issues.append(
             _issue(
                 category="annotation_prompt",
@@ -490,7 +528,7 @@ def _audit_annotation_prompt(prompt: str, *, annotation_type: str, mode: str) ->
             )
         )
     annotation_format_section = _extract_annotation_format_section(prompt_text)
-    negative_match = _NEGATIVE_ANNOTATION_FORMAT_RE.search(annotation_format_section)
+    negative_match = _find_disallowed_negative_annotation_format(annotation_format_section)
     if negative_match is not None:
         issues.append(
             _issue(
@@ -499,14 +537,14 @@ def _audit_annotation_prompt(prompt: str, *, annotation_type: str, mode: str) ->
                 severity="error",
                 mode=mode,
                 message=(
-                    "Annotation-format prompt text must describe only the requested witness category/shape; "
-                    "move exclusions and non-witness policy to task docs or trace metadata."
+                    "Annotation-format prompt text must describe the requested witness category/shape; "
+                    "avoid non-witness exclusion instructions unless the exclusion defines the witness set boundary."
                 ),
                 excerpt=annotation_format_section[:260],
             )
         )
 
-    if str(annotation_type) in {"bbox", "bbox_sequence", "bbox_set", "keyed_bbox_map", "keyed_bbox_set_map"} and _BBOX_NOTATION_RE.search(prompt_text) is None:
+    if str(annotation_type) in {"bbox", "bbox_sequence", "bbox_set", "bbox_map", "bbox_set_map"} and _BBOX_NOTATION_RE.search(prompt_text) is None:
         issues.append(
             _issue(
                 category="annotation_prompt",
@@ -516,7 +554,28 @@ def _audit_annotation_prompt(prompt: str, *, annotation_type: str, mode: str) ->
                 message=f"{annotation_type} annotation prompt should explicitly use [x0, y0, x1, y1] pixel boxes.",
             )
         )
-    if str(annotation_type) in {"point", "point_sequence", "point_set", "segment", "segment_set", "keyed_point_map", "keyed_point_set_map"}:
+    if str(annotation_type) in {"segment", "segment_set"}:
+        if _SEGMENT_NOTATION_RE.search(prompt_text) is None:
+            issues.append(
+                _issue(
+                    category="annotation_prompt",
+                    code="missing_segment_notation",
+                    severity="warning",
+                    mode=mode,
+                    message=f"{annotation_type} prompt should explicitly use [[x0, y0], [x1, y1]] pixel segment endpoints.",
+                )
+            )
+        if "pixel" not in lower:
+            issues.append(
+                _issue(
+                    category="annotation_prompt",
+                    code="missing_pixel_space_wording",
+                    severity="warning",
+                    mode=mode,
+                    message=f"{annotation_type} prompt should state that annotation coordinates are in pixel space.",
+                )
+            )
+    elif str(annotation_type) in {"point", "point_sequence", "point_set", "point_map", "point_set_map"}:
         if _POINT_NOTATION_RE.search(prompt_text) is None:
             issues.append(
                 _issue(
@@ -537,7 +596,7 @@ def _audit_annotation_prompt(prompt: str, *, annotation_type: str, mode: str) ->
                     message=f"{annotation_type} prompt should state that annotation coordinates are in pixel space.",
             )
         )
-    if str(annotation_type) in {"keyed_bbox_map", "keyed_bbox_set_map", "keyed_point_map", "keyed_point_set_map"} and not any(
+    if str(annotation_type) in {"bbox_map", "bbox_set_map", "point_map", "point_set_map"} and not any(
         term in lower for term in ("object", "dictionary", "mapping", "keys")
     ):
         issues.append(
@@ -549,6 +608,9 @@ def _audit_annotation_prompt(prompt: str, *, annotation_type: str, mode: str) ->
                 message=f"{annotation_type} prompt should state that annotation is an object/dictionary keyed by witness role.",
             )
         )
+
+    if not has_example_header:
+        return issues
 
     example, error = _extract_example_json(prompt_text)
     if example is None:
@@ -617,6 +679,17 @@ def _audit_prompts(output: Any) -> tuple[list[dict[str, Any]], list[dict[str, st
         if mode_text == _ANNOTATION_MODE:
             issues.extend(_audit_annotation_prompt(prompt_text, annotation_type=annotation_type, mode=mode_text))
         elif mode_text == _ANSWER_ONLY_MODE:
+            if "example json:" not in prompt_text.lower():
+                issues.append(
+                    _issue(
+                        category="answer_prompt",
+                        code="missing_answer_only_example_json",
+                        severity="error",
+                        mode=mode_text,
+                        message="Answer-only prompt is missing an Example JSON section.",
+                    )
+                )
+                continue
             example, error = _extract_example_json(prompt_text)
             if example is None:
                 issues.append(
@@ -704,14 +777,14 @@ def _audit_annotation_payload(output: Any) -> tuple[dict[str, Any], list[dict[st
         projected_value = projected.get("pixel_bbox")
     if projected_value is None and annotation_type == "point_set" and isinstance(projected, Mapping):
         projected_value = projected.get("pixel_point_set")
-    if projected_value is None and annotation_type == "keyed_point_map" and isinstance(projected, Mapping):
-        projected_value = projected.get("pixel_keyed_point_map")
-    if projected_value is None and annotation_type == "keyed_point_set_map" and isinstance(projected, Mapping):
-        projected_value = projected.get("pixel_keyed_point_set_map")
-    if projected_value is None and annotation_type == "keyed_bbox_map" and isinstance(projected, Mapping):
-        projected_value = projected.get("pixel_keyed_bbox_map")
-    if projected_value is None and annotation_type == "keyed_bbox_set_map" and isinstance(projected, Mapping):
-        projected_value = projected.get("pixel_keyed_bbox_set_map")
+    if projected_value is None and annotation_type == "point_map" and isinstance(projected, Mapping):
+        projected_value = projected.get("pixel_point_map")
+    if projected_value is None and annotation_type == "point_set_map" and isinstance(projected, Mapping):
+        projected_value = projected.get("pixel_point_set_map")
+    if projected_value is None and annotation_type == "bbox_map" and isinstance(projected, Mapping):
+        projected_value = projected.get("pixel_bbox_map")
+    if projected_value is None and annotation_type == "bbox_set_map" and isinstance(projected, Mapping):
+        projected_value = projected.get("pixel_bbox_set_map")
     if projected_value is None:
         issues.append(
             _issue(

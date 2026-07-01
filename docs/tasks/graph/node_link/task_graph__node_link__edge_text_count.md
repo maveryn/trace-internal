@@ -1,7 +1,15 @@
 # `task_graph__node_link__edge_text_count`
 
 ## Program Contract
-- `count(filter(edge_labels(graph), text=target_edge_label)); scene=node_link; scope=edge_text_count`
+
+Program: `count(filter(edge_labels(graph), text=target_edge_label)); scene=node_link; scope=edge_text_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `edge_text_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `edge_labels`, `graph`, `text`, `target_edge_label`, `node_link`, `edge_text_count`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; the count of matching visible edge-label boxes.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the `bbox_set` of all visible edge-label text boxes whose text equals the queried label.
+Query ids: `single`.
 
 ## 1) Identity
 1. Domain: `graph`

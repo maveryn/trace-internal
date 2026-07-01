@@ -12,7 +12,7 @@ from trace.tasks.icons.wallpaper_panels.motif_violation_label import (
     TASK_ID,
 )
 from trace.tasks.icons.wallpaper_panels.shared.rendering import (
-    SAFE_WALLPAPER_CANVAS_TREATMENTS,
+    WALLPAPER_CANVAS_TREATMENTS,
     WALLPAPER_PANEL_CHROME_POLICY,
     elements_for_group,
 )
@@ -70,8 +70,8 @@ def test_icons_wallpaper_motif_violation_contract_matches_scene() -> None:
     assert execution['visible_internal_grid'] is False
     assert trace['render_spec']['style']['visible_internal_grid'] is False
     assert trace['render_spec']['style']['wallpaper_panel_chrome_policy'] == WALLPAPER_PANEL_CHROME_POLICY
-    assert trace['render_spec']['style']['safe_canvas_treatments'] == list(SAFE_WALLPAPER_CANVAS_TREATMENTS)
-    assert trace['render_spec']['style']['icon_canvas_style']['treatment'] in SAFE_WALLPAPER_CANVAS_TREATMENTS
+    assert trace['render_spec']['style']['available_canvas_treatments'] == list(WALLPAPER_CANVAS_TREATMENTS)
+    assert trace['render_spec']['style']['icon_canvas_style']['treatment'] in WALLPAPER_CANVAS_TREATMENTS
     assert trace['render_spec']['panel_geometry']['motif_lattice'] == {'rows': 4, 'cols': 4, 'visible_grid': False}
     assert len(scene_panels) == 4
     assert [str(panel['label']) for panel in scene_panels] == list('ABCD')
@@ -97,8 +97,8 @@ def test_icons_wallpaper_motif_violation_rejects_six_option_layout() -> None:
 
 def test_icons_wallpaper_motif_violation_rejects_unsafe_canvas_treatment() -> None:
     task = IconsWallpaperPanelsMotifViolationLabelTask()
-    with pytest.raises(ValueError, match='quiet canvas treatments'):
-        task.generate(2026060815, params={'icon_canvas_treatment': 'worksheet_panel'}, max_attempts=20)
+    with pytest.raises(ValueError, match='shared icon canvas treatments'):
+        task.generate(2026060815, params={'icon_canvas_treatment': 'unsupported_canvas'}, max_attempts=20)
 
 def test_icons_wallpaper_motif_violation_all_motifs_have_unique_answer() -> None:
     task = IconsWallpaperPanelsMotifViolationLabelTask()

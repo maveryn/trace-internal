@@ -8,18 +8,19 @@
 
 ## Query Contract
 1. Supported `query_id`: `single`
-2. Prompt asks which labeled projection option matches the selected view of the voxel structure.
+2. Prompt asks which labeled projection option matches the selected view of the voxel structure, using the rendered front/right direction cue.
 3. Internal variation: selected `view_direction`, option count, and correct option label are trace metadata.
 
 ## Program Contract
-`select_label(projection_options, option = orthographic_projection(stack, view_direction)); scene=voxel_cube; scope=cube_projection_match_label`
 
-1. Program code: `voxel_cube.projection_option_match`
-2. Scene: `voxel_cube`
-3. Scope: `cube_projection_match_label`
-4. Candidate set: visible projection option panels labeled `A`..`D`.
-5. Answer binding: selected option letter.
-6. Annotation binding: one image-pixel `bbox` around the selected projection option panel.
+Program: `select_label(projection_options, option = orthographic_projection(stack, view_direction)); scene=voxel_cube; scope=cube_projection_match_label`
+
+Candidate set: the visible voxel stack, unit cubes, projections, changed/reference stacks, and labeled candidate views inside the `cube_projection_match_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `projection_options`, `orthographic_projection`, `stack`, `view_direction`, `voxel_cube`, `cube_projection_match_label`.
+Operation: evaluate `select_label` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the correct projection option panel.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`

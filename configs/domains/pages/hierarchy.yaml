@@ -1,154 +1,176 @@
+generation:
+  shared:
+    balanced_scene_variant_sampling: true
+    tree_node_count_min: 16
+    tree_node_count_max: 30
+    tree_depth_min: 4
+    tree_depth_max: 8
+    subtree_descendant_count_min: 4
+    subtree_descendant_count_max: 18
+    manager_total_reports_min: 6
+    manager_total_reports_max: 14
+    manager_direct_reports_min: 3
+    manager_direct_reports_max: 5
+    scene_variant_weights:
+      org_chart: 1.0
 rendering:
   shared:
+    canvas_width: 1464
+    canvas_height: 848
+    outer_margin_px: 36
+    panel_padding_px: 22
+    panel_corner_radius_px: 22
+    title_font_size_px: 24
+    title_band_height_px: 58
+    node_width_px: 84
+    node_height_px: 48
+    node_corner_radius_px: 12
+    node_border_width_px: 3
+    node_border_width_px_min: 2
+    node_border_width_px_max: 4
+    connector_width_px: 4
+    connector_width_px_min: 3
+    connector_width_px_max: 5
+    connector_branch_gap_px: 16
+    label_font_size_px: 14
+    root_fill_rgb:
+    - 232
+    - 245
+    - 241
+    root_fill_rgb_options:
+    - - 232
+      - 245
+      - 241
+    - - 232
+      - 240
+      - 252
+    - - 247
+      - 239
+      - 229
+    - - 241
+      - 237
+      - 250
+    node_fill_rgb:
+    - 247
+    - 249
+    - 252
+    node_fill_rgb_options:
+    - - 247
+      - 249
+      - 252
+    - - 242
+      - 250
+      - 247
+    - - 253
+      - 248
+      - 239
+    - - 247
+      - 246
+      - 254
+    - - 250
+      - 244
+      - 249
+    panel_fill_rgb:
+    - 252
+    - 252
+    - 255
+    panel_fill_rgb_options:
+    - - 252
+      - 252
+      - 255
+    - - 248
+      - 252
+      - 250
+    - - 255
+      - 250
+      - 243
+    - - 249
+      - 249
+      - 254
+    panel_border_rgb:
+    - 80
+    - 92
+    - 106
+    panel_border_rgb_options:
+    - - 80
+      - 92
+      - 106
+    - - 77
+      - 105
+      - 106
+    - - 114
+      - 98
+      - 82
+    - - 86
+      - 90
+      - 122
+    - - 108
+      - 91
+      - 118
+    title_color_rgb:
+    - 34
+    - 40
+    - 48
+    node_border_rgb:
+    - 75
+    - 88
+    - 103
+    node_border_rgb_options:
+    - - 75
+      - 88
+      - 103
+    - - 71
+      - 101
+      - 101
+    - - 108
+      - 92
+      - 76
+    - - 84
+      - 86
+      - 118
+    label_color_rgb:
+    - 28
+    - 34
+    - 41
+    label_stroke_rgb:
+    - 255
+    - 255
+    - 255
+    connector_color_rgb:
+    - 90
+    - 100
+    - 112
+    connector_color_rgb_options:
+    - - 90
+      - 100
+      - 112
+    - - 80
+      - 108
+      - 109
+    - - 116
+      - 101
+      - 84
+    - - 91
+      - 94
+      - 123
+    - - 112
+      - 90
+      - 118
     layout_jitter_enabled: true
     layout_jitter_x_px_min: -24
     layout_jitter_x_px_max: 24
     layout_jitter_y_px_min: -18
     layout_jitter_y_px_max: 18
     layout_jitter_min_margin_px: 16
-  task_overrides:
-    pages_hierarchy_tree_count_base:
-      canvas_width: 1464
-      canvas_height: 848
-      outer_margin_px: 36
-      panel_padding_px: 22
-      panel_corner_radius_px: 22
-      title_font_size_px: 24
-      title_band_height_px: 58
-      node_width_px: 84
-      node_height_px: 48
-      node_corner_radius_px: 12
-      node_border_width_px: 3
-      node_border_width_px_min: 2
-      node_border_width_px_max: 4
-      connector_width_px: 4
-      connector_width_px_min: 3
-      connector_width_px_max: 5
-      connector_branch_gap_px: 16
-      label_font_size_px: 14
-      root_fill_rgb:
-      - 232
-      - 245
-      - 241
-      root_fill_rgb_options:
-      - - 232
-        - 245
-        - 241
-      - - 232
-        - 240
-        - 252
-      - - 247
-        - 239
-        - 229
-      - - 241
-        - 237
-        - 250
-      node_fill_rgb:
-      - 247
-      - 249
-      - 252
-      node_fill_rgb_options:
-      - - 247
-        - 249
-        - 252
-      - - 242
-        - 250
-        - 247
-      - - 253
-        - 248
-        - 239
-      - - 247
-        - 246
-        - 254
-      - - 250
-        - 244
-        - 249
-      panel_fill_rgb:
-      - 252
-      - 252
-      - 255
-      panel_fill_rgb_options:
-      - - 252
-        - 252
-        - 255
-      - - 248
-        - 252
-        - 250
-      - - 255
-        - 250
-        - 243
-      - - 249
-        - 249
-        - 254
-      panel_border_rgb:
-      - 80
-      - 92
-      - 106
-      panel_border_rgb_options:
-      - - 80
-        - 92
-        - 106
-      - - 77
-        - 105
-        - 106
-      - - 114
-        - 98
-        - 82
-      - - 86
-        - 90
-        - 122
-      - - 108
-        - 91
-        - 118
-      title_color_rgb:
-      - 34
-      - 40
-      - 48
-      node_border_rgb:
-      - 75
-      - 88
-      - 103
-      node_border_rgb_options:
-      - - 75
-        - 88
-        - 103
-      - - 71
-        - 101
-        - 101
-      - - 108
-        - 92
-        - 76
-      - - 84
-        - 86
-        - 118
-      label_color_rgb:
-      - 28
-      - 34
-      - 41
-      label_stroke_rgb:
-      - 255
-      - 255
-      - 255
-      connector_color_rgb:
-      - 90
-      - 100
-      - 112
-      connector_color_rgb_options:
-      - - 90
-        - 100
-        - 112
-      - - 80
-        - 108
-        - 109
-      - - 116
-        - 101
-        - 84
-      - - 91
-        - 94
-        - 123
-      - - 112
-        - 90
-        - 118
+    pages_context_profile: report_paragraph
+    pages_context_mode_weights:
+      clean: 0.24
+      minimal: 0.2
+      paragraph_box: 0.56
+    pages_context_text_max_elements: 7
+prompt:
+  shared:
+    bundle_id: pages_hierarchy_v1
 visual:
   background:
     enabled: true
@@ -211,43 +233,3 @@ visual:
         alpha:
         - 0.01
         - 0.035
-generation:
-  task_overrides:
-    pages_hierarchy_tree_count_base:
-      balanced_query_id_sampling: true
-      balanced_scene_variant_sampling: true
-      tree_node_count_min: 16
-      tree_node_count_max: 30
-      tree_depth_min: 4
-      tree_depth_max: 8
-      subtree_descendant_count_min: 4
-      subtree_descendant_count_max: 18
-      subtree_leaf_count_min: 2
-      subtree_leaf_count_max: 12
-      path_length_between_two_nodes_min: 3
-      path_length_between_two_nodes_max: 16
-      query_id_weights:
-        subtree_descendant_count: 1.0
-        subtree_leaf_count: 1.0
-        path_length_between_two_nodes: 1.0
-      scene_variant_weights:
-        rooted_tree: 1.0
-prompt:
-  shared:
-    bundle_id: pages_hierarchy_v0
-    answer_hint: set "answer" to the integer count
-  task_overrides:
-    pages_hierarchy_tree_count_base:
-      scene_key: hierarchy_diagram
-      task_key: tree_count_query
-      answer_hint: set "answer" to the integer count
-      object_description_rooted_tree: a rooted tree with labeled nodes and visible
-        parent-child connector lines
-      annotation_hint_subtree_descendant_count: set "annotation" to an array of bounding
-        boxes [x0, y0, x1, y1] for every counted descendant node, in any order
-      annotation_hint_subtree_leaf_count: set "annotation" to an array of bounding
-        boxes [x0, y0, x1, y1] for every counted leaf node in the queried subtree,
-        in any order
-      annotation_hint_path_length_between_two_nodes: set "annotation" to an ordered
-        array of bounding boxes [x0, y0, x1, y1] for the nodes on the path from the
-        first queried node to the second queried node

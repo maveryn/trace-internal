@@ -12,7 +12,15 @@
 9. Program schema: `value(simulate(board, rules=slide_merge_2048, action=move_direction).final_board, property=max_tile_value); scene=2048; scope=max_tile_value`
 
 ## Program Contract
-- `value(simulate(board, rules=slide_merge_2048, action=move_direction).final_board, property=max_tile_value); scene=2048; scope=max_tile_value`
+
+Program: `value(simulate(board, rules=slide_merge_2048, action=move_direction).final_board, property=max_tile_value); scene=2048; scope=max_tile_value`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `max_tile_value` objective scope.
+Operands: visible scene state and prompt-bound operands named by `simulate`, `board`, `rules`, `slide_merge_2048`, `action`, `move_direction`, `final_board`, `property`, `max_tile_value`.
+Operation: evaluate `value` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 2. Query ids are internal replay/sampling keys and do not define public task units.

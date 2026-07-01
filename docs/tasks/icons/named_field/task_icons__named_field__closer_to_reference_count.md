@@ -8,7 +8,15 @@
 - prompt bundle: `prompts/icons/named_field/icons_named_field_v1.json`
 
 ## Program Contract
-`count.reference_metric_relation(scene=named_field, scope=target_shape_icons, metric=center_distance_to_two_references, relation=closer_to_queried_reference, output=count)`
+
+Program: `count.reference_metric_relation(scene=named_field, scope=target_shape_icons, metric=center_distance_to_two_references, relation=closer_to_queried_reference, output=count)`
+
+Candidate set: the visible icon instances, icon attributes, fields, grids, paths, panels, reference items, and labeled option cards inside the `target_shape_icons` objective scope.
+Operands: visible scene state and prompt-bound operands named by `named_field`, `target_shape_icons`, `metric`, `center_distance_to_two_references`, `relation`, `closer_to_queried_reference`.
+Operation: evaluate `count.reference_metric_relation` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `closer_to_reference_count`.
 
 ## Scene And Query
 The task renders one panel containing two larger reference

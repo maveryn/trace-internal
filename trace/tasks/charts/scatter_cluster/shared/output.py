@@ -51,6 +51,8 @@ def render_spec(rendered: ScatterClusterRenderResult) -> dict[str, Any]:
         "point_radius_px": int(rendered.render_params.point_radius_px),
         "layout_jitter": dict(rendered.render_params.layout_jitter_meta),
         "font_assets": font_assets_payload(chart_font_family=rendered.chart_font_family),
+        "background_style": dict(rendered.background_meta),
+        "information_scene_style": dict(rendered.background_meta.get("information_scene_style", {})),
         "post_image_noise": dict(rendered.post_noise_meta),
     }
 

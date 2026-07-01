@@ -15,15 +15,23 @@
 
 ## Annotation Contract
 1. Answer schema: `integer_count`.
-2. Annotation schema: `bbox_set`.
-3. Annotation marks the counted or summed map-region boxes only; legend, title, and context text are not annotation targets.
-4. Adjacent-region tasks annotate matching neighbors and exclude the highlighted reference region.
+2. Annotation schema: `point_set`.
+3. Annotation contains center points for every counted map region; legend, title, and context text are not annotation targets.
+4. Geographic variants use only selected regions whose largest projected connected component is at least `400 px^2`; only that largest component is colored and annotated.
 
 ## Program Contract
-- `count(filter(regions, category == target_category)); output=integer_count; annotation=bbox_set(matching_regions); scene=region_map; scope=categorical_region_count`
+
+Program: `count(filter(regions, category == target_category)); output=integer_count; annotation=point_set(matching_regions); scene=region_map; scope=categorical_region_count`
+
+Candidate set: the visible map regions, region labels, and legend/value encodings inside the `categorical_region_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the task's prompt-bound target operands when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `integer_count` value bound by `integer_count`.
+Annotation witnesses: `point_set` witnesses bound by `point_set(matching_regions)`. Annotation contains center points for every counted map region; legend, title, and context text are not annotation targets. Geographic variants use only selected regions whose largest projected connected component is at least `400 px^2`; only that largest component is colored and annotated.
+Query ids: `single`.
 
 ## Query Details
 
 | Query id | Program signature | Answer schema | Annotation schema |
 |---|---|---|---|
-| `single` | `count(regions where category == target_category)` | `integer_count` | `bbox_set` |
+| `single` | `count(regions where category == target_category)` | `integer_count` | `point_set` |

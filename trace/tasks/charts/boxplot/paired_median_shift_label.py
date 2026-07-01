@@ -22,7 +22,7 @@ from trace.tasks.charts.boxplot.shared.sampling import (
     resolve_value_bounds,
     sample_labels,
 )
-from trace.tasks.charts.shared.chart_scene import BoxPlotSpec
+from trace.tasks.charts.shared.chart_scene_types import BoxPlotSpec
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions

@@ -1,4 +1,4 @@
-"""Config regression tests for physics fluids hydraulic-piston defaults."""
+"""Config regression tests for hydraulic-piston physics defaults."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from trace.tasks.shared.config_defaults import split_generation_rendering_prompt
 
 
 def test_physics_fluids_hydraulic_defaults_expose_scene_query_and_support() -> None:
-    cfg = get_scene_defaults("physics", "fluids")
+    cfg = get_scene_defaults("physics", "hydraulic")
     generation, rendering, prompt = split_generation_rendering_prompt_defaults(
         cfg,
         task_id="task_physics__hydraulic__hydraulic_missing_value",
@@ -15,8 +15,6 @@ def test_physics_fluids_hydraulic_defaults_expose_scene_query_and_support() -> N
 
 
     assert bool(generation["balanced_scene_variant_sampling"]) is True
-
-    assert bool(generation["balanced_query_id_sampling"]) is True
 
     assert bool(generation["balanced_target_answer_sampling"]) is True
 
@@ -28,12 +26,9 @@ def test_physics_fluids_hydraulic_defaults_expose_scene_query_and_support() -> N
         "tall_columns",
     }
 
-    assert set(generation["query_id_weights"].keys()) == {
-        "missing_output_force",
-        "missing_input_force",
-        "missing_piston_area",
-        "missing_input_area",
-    }
+    assert "query_id_weights" not in generation
+
+    assert "balanced_query_id_sampling" not in generation
 
     assert list(generation["input_force_support"]) == list(range(4, 13))
 
@@ -57,24 +52,6 @@ def test_physics_fluids_hydraulic_defaults_expose_scene_query_and_support() -> N
 
     assert bool(rendering["layout_jitter_enabled"]) is True
 
-    assert str(prompt["bundle_id"]) == "physics_fluids_v0"
+    assert str(prompt["bundle_id"]) == "physics_hydraulic_v1"
 
-    assert str(prompt["scene_key"]) == "hydraulic_piston_diagram"
-
-    assert "three fluid chambers" in str(prompt["object_description_wide_bench"])
-
-    assert "keys \"input_force\", \"input_area\", and \"output_area\"" in str(prompt["annotation_hint_missing_output_force"])
-
-    assert "keys \"output_force\", \"input_area\", and \"output_area\"" in str(prompt["annotation_hint_missing_input_force"])
-
-    assert "keys \"input_force\", \"output_force\", and \"input_area\"" in str(prompt["annotation_hint_missing_piston_area"])
-
-    assert "keys \"input_force\", \"output_force\", and \"output_area\"" in str(prompt["annotation_hint_missing_input_area"])
-
-    assert "red `?`" not in str(prompt["annotation_hint_missing_output_force"])
-
-    assert "red `?`" not in str(prompt["annotation_hint_missing_input_force"])
-
-    assert "red `?`" not in str(prompt["annotation_hint_missing_piston_area"])
-
-    assert "red `?`" not in str(prompt["annotation_hint_missing_input_area"])
+    assert str(prompt["task_key"]) == "hydraulic_missing_value_query"

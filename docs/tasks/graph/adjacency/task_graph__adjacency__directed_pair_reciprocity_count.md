@@ -18,7 +18,15 @@
 3. `target_count`, node labels, node count, font, style, and matrix layout are generation/render metadata, not public query branches.
 
 ## Program Contract
-- `count(filter(unordered_node_pairs, has_edge(source,target) and has_edge(target,source))); output=integer; annotation=segment_set(mutual_edge_cell_centers); scene=adjacency; scope=directed_pair_reciprocity_count`
+
+Program: `count(filter(unordered_node_pairs, has_edge(source,target) and has_edge(target,source))); output=integer; annotation=segment_set(mutual_edge_cell_centers); scene=adjacency; scope=directed_pair_reciprocity_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `directed_pair_reciprocity_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `filter`, `unordered_node_pairs`, `has_edge`, `source`, `mutual_edge_cell_centers`, `adjacency`, `directed_pair_reciprocity_count`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `segment_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. Answer type: `integer`.

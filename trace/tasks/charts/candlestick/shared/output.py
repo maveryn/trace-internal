@@ -52,6 +52,7 @@ def build_trace_scaffold(
             "y_axis_max": int(render_params.y_axis_max),
             "layout_jitter": dict(render_params.layout_jitter_meta),
             "background_style": dict(artifacts.background_style),
+            "information_scene_style": dict(artifacts.background_style["information_scene_style"]),
             "font_assets": dict(artifacts.font_assets),
             "post_image_noise": dict(artifacts.post_image_noise),
         },

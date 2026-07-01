@@ -10,7 +10,15 @@
 7. Annotation schema: `bbox_set`
 
 ## Program Contract
-`count(enemy_ships); scene=space_shooter; scope=enemy_ship_count`
+
+Program: `count(enemy_ships); scene=space_shooter; scope=enemy_ship_count`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `enemy_ship_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `enemy_ships`, `space_shooter`, `enemy_ship_count`.
+Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Generation Notes
 1. `single` is the only public query id; the task-specific prompt key is trace metadata.

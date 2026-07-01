@@ -143,6 +143,7 @@ def build_reference_count_plan(
             prompt_key=str(prompt_key),
             answer=int(answer_count),
             answer_type="integer",
+            annotation_type="segment_set",
             annotation_item_ids=tuple(annotation_item_ids),
             params=dict(relation_params),
         ),
@@ -207,6 +208,7 @@ def build_width_rank_plan(
             prompt_key=str(prompt_key),
             answer=str(answer_label),
             answer_type="string",
+            annotation_type="segment",
             annotation_item_ids=tuple(annotation_item_ids),
             params=dict(relation_params),
         ),
@@ -235,7 +237,10 @@ def materialize_error_interval_plan(
     """Render a task-owned plan and project its bound interval annotations."""
 
     rendered, render_meta, sidecar_meta = render_dataset(plan.dataset, params=plan.params, instance_seed=int(instance_seed))
-    annotation_type, annotation, projected_annotation, annotation_refs = annotation_payload(dataset=plan.dataset, rendered=rendered)
+    annotation_type, annotation, projected_annotation, annotation_refs = annotation_payload(
+        dataset=plan.dataset,
+        rendered=rendered,
+    )
     trace_payload = build_trace_scaffold(
         dataset=plan.dataset,
         rendered=rendered,

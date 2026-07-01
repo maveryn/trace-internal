@@ -62,6 +62,12 @@ generation:
         - right
         - above
         - below
+      target_count_support:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
       target_answer_count_max: 8
 
 rendering:

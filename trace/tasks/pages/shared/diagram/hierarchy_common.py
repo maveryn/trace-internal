@@ -5,10 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from .....core.seed import spawn_rng
-from ....shared.deterministic_sampling import resolve_selection_index
-from ....shared.render_variation import resolve_layout_jitter
-from .common import (
+from trace.core.seed import spawn_rng
+from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.tasks.shared.render_variation import resolve_layout_jitter
+from trace.tasks.pages.shared.diagram.common import (
     resolve_diagrams_axis_variant,
     resolve_diagrams_int_param,
     resolve_diagrams_rgb_triple,
@@ -21,11 +21,11 @@ SUPPORTED_DIAGRAM_HIERARCHY_QUERY_IDS: Tuple[str, ...] = (
     "parent_of_node",
     "lowest_common_ancestor_of_two_nodes",
 )
-SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_SCENE_VARIANTS: Tuple[str, ...] = ("rooted_tree",)
+SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_SCENE_VARIANTS: Tuple[str, ...] = ("org_chart",)
 SUPPORTED_DIAGRAM_HIERARCHY_TREE_COUNT_QUERY_IDS: Tuple[str, ...] = (
     "subtree_descendant_count",
-    "subtree_leaf_count",
-    "path_length_between_two_nodes",
+    "manager_most_total_reports_label",
+    "manager_most_direct_reports_label",
 )
 
 _TITLE_OPTIONS: Tuple[str, ...] = (
@@ -36,11 +36,11 @@ _TITLE_OPTIONS: Tuple[str, ...] = (
     "Org Overview",
 )
 _TREE_TITLE_OPTIONS: Tuple[str, ...] = (
-    "Rooted Tree",
-    "Tree Structure",
-    "Parent-Child Tree",
-    "Node Hierarchy",
-    "Tree Diagram",
+    "Organization Chart",
+    "Team Structure",
+    "Department Reporting Chart",
+    "Company Reporting Lines",
+    "Org Chart",
 )
 _TEMPLATES: Tuple[Dict[str, object], ...] = (
     {
@@ -620,6 +620,208 @@ def _build_leaf_count_tree(
     return str(query_node_id), [str(node_id) for node_id in annotation_node_ids], dict(builder.children_by_parent)
 
 
+def _add_descendants_limited(
+    *,
+    builder: _TreeBuilder,
+    parent_id: str,
+    total_descendants: int,
+    target_depth: int,
+    max_direct_for_parent: int | None = None,
+) -> List[str]:
+    """Add a bounded subtree below one employee and return new node ids."""
+
+    parent_key = str(parent_id)
+    owned: List[str] = [parent_key, *_descendants(parent_key, builder.children_by_parent)]
+    added: List[str] = []
+    while len(added) < int(total_descendants):
+        candidates: List[str] = []
+        for candidate in owned:
+            candidate_key = str(candidate)
+            if int(builder.depths[candidate_key]) >= int(target_depth):
+                continue
+            if (
+                candidate_key == parent_key
+                and max_direct_for_parent is not None
+                and len(builder.children_by_parent.get(parent_key, [])) >= int(max_direct_for_parent)
+            ):
+                continue
+            candidates.append(candidate_key)
+        if not candidates:
+            raise ValueError("could not add bounded hierarchy descendants within the configured depth")
+        selected_parent = sorted(
+            candidates,
+            key=lambda node_id: (
+                len(builder.children_by_parent.get(str(node_id), [])),
+                int(builder.depths[str(node_id)]),
+                str(node_id),
+            ),
+        )[0]
+        child_id = builder.add_child(str(selected_parent))
+        owned.append(str(child_id))
+        added.append(str(child_id))
+    return [str(node_id) for node_id in added]
+
+
+def _manager_node_ids(children_by_parent: Mapping[str, Sequence[str]], *, root_node_id: str) -> List[str]:
+    """Return non-root employees who manage at least one direct report."""
+
+    return [
+        str(node_id)
+        for node_id in sorted(str(node_id) for node_id in children_by_parent)
+        if str(node_id) != str(root_node_id)
+    ]
+
+
+def _candidate_manager_counts(
+    *,
+    children_by_parent: Mapping[str, Sequence[str]],
+    labels: Mapping[str, str],
+    root_node_id: str,
+    metric: str,
+) -> List[Dict[str, Any]]:
+    """Compute compared manager counts for direct-report and total-report tasks."""
+
+    rows: List[Dict[str, Any]] = []
+    for node_id in _manager_node_ids(children_by_parent, root_node_id=str(root_node_id)):
+        if str(metric) == "total_reports":
+            count = len(_descendants(str(node_id), children_by_parent))
+        elif str(metric) == "direct_reports":
+            count = len(children_by_parent.get(str(node_id), []))
+        else:
+            raise ValueError(f"unsupported manager count metric: {metric}")
+        rows.append(
+            {
+                "node_id": str(node_id),
+                "node_label": str(labels[str(node_id)]),
+                "count": int(count),
+            }
+        )
+    return rows
+
+
+def _unique_manager_winner(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
+    """Return the unique manager row with the highest count."""
+
+    if not rows:
+        raise ValueError("manager extremum task requires at least one candidate manager")
+    max_count = max(int(row["count"]) for row in rows)
+    winners = [dict(row) for row in rows if int(row["count"]) == int(max_count)]
+    if len(winners) != 1:
+        raise ValueError("manager extremum construction did not produce a unique winner")
+    return dict(winners[0])
+
+
+def _build_manager_total_reports_tree(
+    *,
+    winner_total_reports: int,
+    target_node_count: int,
+    target_depth: int,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    task_id: str,
+    query_id: str,
+) -> Tuple[str, Dict[str, List[str]]]:
+    """Build an org chart where one non-CEO manager has the most total reports."""
+
+    builder = _TreeBuilder()
+    top_manager_count = 4
+    top_managers = [builder.add_child("node_0") for _ in range(top_manager_count)]
+    winner_index = _select_from_support(
+        support=range(0, len(top_managers)),
+        params=params,
+        instance_seed=int(instance_seed),
+        task_id=str(task_id),
+        query_id=str(query_id),
+        namespace="winner_manager_index",
+    )
+    winner_id = str(top_managers[int(winner_index)])
+    chain_length = min(int(winner_total_reports), max(1, int(target_depth) - int(builder.depths[winner_id])))
+    builder.add_chain(winner_id, edge_count=int(chain_length))
+    _add_descendants_limited(
+        builder=builder,
+        parent_id=winner_id,
+        total_descendants=int(winner_total_reports) - int(chain_length),
+        target_depth=int(target_depth),
+        max_direct_for_parent=3,
+    )
+    for offset, manager_id in enumerate(top_managers):
+        manager_key = str(manager_id)
+        if manager_key == winner_id:
+            continue
+        safe_total = max(1, min(int(winner_total_reports) - 2, 2 + int(offset)))
+        _add_descendants_limited(
+            builder=builder,
+            parent_id=manager_key,
+            total_descendants=int(safe_total),
+            target_depth=int(target_depth),
+            max_direct_for_parent=2,
+        )
+    while len(builder.node_ids) < int(target_node_count):
+        builder.add_child("node_0")
+    return winner_id, dict(builder.children_by_parent)
+
+
+def _build_manager_direct_reports_tree(
+    *,
+    winner_direct_reports: int,
+    target_node_count: int,
+    target_depth: int,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    task_id: str,
+    query_id: str,
+) -> Tuple[str, Dict[str, List[str]]]:
+    """Build an org chart where one non-CEO manager has the most direct reports."""
+
+    builder = _TreeBuilder()
+    top_manager_count = 4
+    top_managers = [builder.add_child("node_0") for _ in range(top_manager_count)]
+    winner_index = _select_from_support(
+        support=range(0, len(top_managers)),
+        params=params,
+        instance_seed=int(instance_seed),
+        task_id=str(task_id),
+        query_id=str(query_id),
+        namespace="winner_manager_index",
+        offset=1,
+    )
+    winner_id = str(top_managers[int(winner_index)])
+    winner_children = [builder.add_child(winner_id) for _ in range(int(winner_direct_reports))]
+    if winner_children:
+        chain_parent = str(winner_children[0])
+        chain_length = max(0, min(2, int(target_depth) - int(builder.depths[chain_parent])))
+        if chain_length:
+            builder.add_chain(chain_parent, edge_count=int(chain_length))
+    for offset, manager_id in enumerate(top_managers):
+        manager_key = str(manager_id)
+        if manager_key == winner_id:
+            continue
+        direct_count = max(1, min(int(winner_direct_reports) - 1, 1 + int(offset)))
+        for _ in range(int(direct_count)):
+            builder.add_child(manager_key)
+    while len(builder.node_ids) < int(target_node_count):
+        candidates = [
+            str(node_id)
+            for node_id in builder.node_ids
+            if str(node_id) != "node_0"
+            and int(builder.depths[str(node_id)]) < int(target_depth)
+            and len(builder.children_by_parent.get(str(node_id), [])) < int(winner_direct_reports) - 1
+        ]
+        if not candidates:
+            builder.add_child("node_0")
+            continue
+        selected_parent = sorted(
+            candidates,
+            key=lambda node_id: (
+                len(builder.children_by_parent.get(str(node_id), [])),
+                -int(builder.depths[str(node_id)]),
+                str(node_id),
+            ),
+        )[0]
+        builder.add_child(str(selected_parent))
+    return winner_id, dict(builder.children_by_parent)
+
+
 def _path_branch_lengths(
     *,
     answer_count: int,
@@ -949,7 +1151,7 @@ def build_hierarchy_tree_count_dataset(
     instance_seed: int,
     task_id: str,
 ) -> Dict[str, Any]:
-    """Build one generic rooted-tree counting dataset instance."""
+    """Build one org-chart hierarchy dataset instance."""
 
     rng = spawn_rng(int(instance_seed), f"{task_id}.dataset")
     query_key = str(query_id)
@@ -983,33 +1185,32 @@ def build_hierarchy_tree_count_dataset(
         fallback_max=18,
         context=str(task_id),
     )
-    leaf_min, leaf_max = _resolve_int_bound_pair(
+    total_reports_min, total_reports_max = _resolve_int_bound_pair(
         params=params,
         gen_defaults=gen_defaults,
-        min_key="subtree_leaf_count_min",
-        max_key="subtree_leaf_count_max",
-        fallback_min=2,
-        fallback_max=12,
+        min_key="manager_total_reports_min",
+        max_key="manager_total_reports_max",
+        fallback_min=6,
+        fallback_max=14,
         context=str(task_id),
     )
-    path_min, path_max = _resolve_int_bound_pair(
+    direct_reports_min, direct_reports_max = _resolve_int_bound_pair(
         params=params,
         gen_defaults=gen_defaults,
-        min_key="path_length_between_two_nodes_min",
-        max_key="path_length_between_two_nodes_max",
+        min_key="manager_direct_reports_min",
+        max_key="manager_direct_reports_max",
         fallback_min=3,
-        fallback_max=2 * int(depth_max),
+        fallback_max=5,
         context=str(task_id),
     )
-    path_max = min(int(path_max), 2 * int(depth_max))
     if int(depth_min) < 1:
         raise ValueError("tree_depth_min must be at least 1")
     if int(node_min) < 2:
         raise ValueError("tree_node_count_min must be at least 2")
-    if int(path_min) < 1:
-        raise ValueError("path_length_between_two_nodes_min must be at least 1")
-    if int(path_min) > int(path_max):
-        raise ValueError("path_length_between_two_nodes_min exceeds feasible tree-depth support")
+    if int(total_reports_min) < 1:
+        raise ValueError("manager_total_reports_min must be at least 1")
+    if int(direct_reports_min) < 1:
+        raise ValueError("manager_direct_reports_min must be at least 1")
 
     target_node_count = _select_from_support(
         support=range(int(node_min), int(node_max) + 1),
@@ -1045,35 +1246,51 @@ def build_hierarchy_tree_count_dataset(
             target_depth=int(target_depth),
         )
         query_relationship = "subtree_descendant_count"
-        annotation_semantics = "descendant_nodes_unordered"
-    elif query_key == "subtree_leaf_count":
-        answer_count = _select_from_support(
-            support=range(int(leaf_min), int(leaf_max) + 1),
+        annotation_semantics = "all_reports_under_named_manager"
+        answer_type = "integer"
+        answer_value: int | str = int(answer_count)
+        answer_node_id = str(query_node_id)
+        candidate_manager_counts: List[Dict[str, Any]] = []
+        answer_metric_name = "total_reports"
+        answer_metric_count = int(answer_count)
+    elif query_key == "manager_most_total_reports_label":
+        requested_total = _select_from_support(
+            support=range(int(total_reports_min), int(total_reports_max) + 1),
             params=params,
             instance_seed=int(instance_seed),
             task_id=str(task_id),
             query_id=query_key,
-            namespace="answer_count",
+            namespace="winning_total_reports",
         )
-        query_node_id, annotation_node_ids, children_by_parent = _build_leaf_count_tree(
-            answer_count=int(answer_count),
+        answer_node_id, children_by_parent = _build_manager_total_reports_tree(
+            winner_total_reports=int(requested_total),
             target_node_count=int(target_node_count),
             target_depth=int(target_depth),
+            params=params,
+            instance_seed=int(instance_seed),
+            task_id=str(task_id),
+            query_id=query_key,
         )
-        query_relationship = "subtree_leaf_count"
-        annotation_semantics = "leaf_descendant_nodes_unordered"
+        query_node_id = ""
+        annotation_node_ids = [str(answer_node_id)]
+        query_relationship = "manager_most_total_reports_label"
+        annotation_semantics = "selected_manager_node"
+        answer_type = "string"
+        answer_value = ""
+        answer_metric_name = "total_reports"
+        answer_metric_count = 0
+        candidate_manager_counts = []
     else:
-        answer_count = _select_from_support(
-            support=range(int(path_min), int(path_max) + 1),
+        requested_direct = _select_from_support(
+            support=range(int(direct_reports_min), int(direct_reports_max) + 1),
             params=params,
             instance_seed=int(instance_seed),
             task_id=str(task_id),
             query_id=query_key,
-            namespace="answer_count",
+            namespace="winning_direct_reports",
         )
-        target_depth = max(int(target_depth), (int(answer_count) + 1) // 2)
-        left_query_node_id, right_query_node_id, annotation_node_ids, children_by_parent = _build_node_pair_path_tree(
-            answer_count=int(answer_count),
+        answer_node_id, children_by_parent = _build_manager_direct_reports_tree(
+            winner_direct_reports=int(requested_direct),
             target_node_count=int(target_node_count),
             target_depth=int(target_depth),
             params=params,
@@ -1081,9 +1298,15 @@ def build_hierarchy_tree_count_dataset(
             task_id=str(task_id),
             query_id=query_key,
         )
-        query_node_id = str(left_query_node_id)
-        query_relationship = "path_length_between_two_nodes"
-        annotation_semantics = "path_nodes_between_query_nodes_ordered"
+        query_node_id = ""
+        annotation_node_ids = [str(answer_node_id)]
+        query_relationship = "manager_most_direct_reports_label"
+        annotation_semantics = "selected_manager_node"
+        answer_type = "string"
+        answer_value = ""
+        answer_metric_name = "direct_reports"
+        answer_metric_count = 0
+        candidate_manager_counts = []
 
     root_node_id = "node_0"
     node_ids = _all_node_ids(root_node_id, children_by_parent)
@@ -1095,18 +1318,26 @@ def build_hierarchy_tree_count_dataset(
     if max_depth < int(depth_min) or max_depth > int(depth_max):
         raise ValueError("constructed tree depth fell outside configured bounds")
 
-    labels = _label_map(node_ids=node_ids, rng=rng)
-    query_label = str(labels[str(query_node_id)])
     if query_key == "subtree_descendant_count":
-        query_prompt_slots = {"query_label": str(query_label)}
-    elif query_key == "subtree_leaf_count":
+        labels = _label_map(node_ids=node_ids, rng=rng)
+        labels[str(root_node_id)] = "CEO"
+        query_label = str(labels[str(query_node_id)])
         query_prompt_slots = {"query_label": str(query_label)}
     else:
-        right_query_label = str(labels[str(right_query_node_id)])
-        query_prompt_slots = {
-            "query_label": str(query_label),
-            "right_query_label": str(right_query_label),
-        }
+        labels = _label_map(node_ids=node_ids, rng=rng)
+        labels[str(root_node_id)] = "CEO"
+        query_prompt_slots = {}
+        candidate_manager_counts = _candidate_manager_counts(
+            children_by_parent=children_by_parent,
+            labels=labels,
+            root_node_id=str(root_node_id),
+            metric=str(answer_metric_name),
+        )
+        winner = _unique_manager_winner(candidate_manager_counts)
+        if str(winner["node_id"]) != str(answer_node_id):
+            raise ValueError("constructed org chart winner does not match requested winner")
+        answer_value = str(winner["node_label"])
+        answer_metric_count = int(winner["count"])
 
     node_specs: List[Dict[str, Any]] = []
     for node_id in node_ids:
@@ -1137,14 +1368,14 @@ def build_hierarchy_tree_count_dataset(
 
     descendant_node_ids = _descendants(str(query_node_id), children_by_parent)
     leaf_descendant_node_ids = _leaf_descendants(str(query_node_id), children_by_parent)
-    if query_key == "path_length_between_two_nodes":
-        query_node_ids = [str(query_node_id), str(right_query_node_id)]
-        path_node_ids = _path_between_nodes(str(query_node_id), str(right_query_node_id), parent_by_child)
-        path_lca_node_id = _lowest_common_ancestor(str(query_node_id), str(right_query_node_id), parent_by_child)
-    else:
+    if query_key == "subtree_descendant_count":
         query_node_ids = [str(query_node_id)]
-        path_node_ids = _ancestors(str(query_node_id), parent_by_child)
-        path_lca_node_id = str(query_node_id)
+        descendant_node_ids = _descendants(str(query_node_id), children_by_parent)
+        leaf_descendant_node_ids = _leaf_descendants(str(query_node_id), children_by_parent)
+    else:
+        query_node_ids = []
+        descendant_node_ids = _descendants(str(answer_node_id), children_by_parent)
+        leaf_descendant_node_ids = _leaf_descendants(str(answer_node_id), children_by_parent)
     leaf_count = sum(1 for node_id in node_ids if str(node_id) not in children_by_parent)
     annotation_node_bbox_ids = [str(node_id).replace("node", "node_bbox") for node_id in annotation_node_ids]
     return {
@@ -1152,8 +1383,8 @@ def build_hierarchy_tree_count_dataset(
         "scene_variant": str(scene_variant),
         "query_id": query_key,
         "query_prompt_slots": dict(query_prompt_slots),
-        "question_format": "hierarchy_tree_count",
-        "view_family": "rooted_tree_diagram",
+        "question_format": "hierarchy_org_chart",
+        "view_family": "org_chart_diagram",
         "template_id": f"generated_{query_key}",
         "root_node_id": str(root_node_id),
         "node_specs": node_specs,
@@ -1165,7 +1396,15 @@ def build_hierarchy_tree_count_dataset(
         "query_node_labels": [str(labels[str(node_id)]) for node_id in query_node_ids],
         "query_depths": [int(depths[str(node_id)]) for node_id in query_node_ids],
         "query_relationship": str(query_relationship),
-        "answer_count": int(answer_count),
+        "answer_type": str(answer_type),
+        "answer_value": str(answer_value) if str(answer_type) == "string" else int(answer_value),
+        "answer_count": int(answer_metric_count),
+        "answer_node_id": str(answer_node_id),
+        "answer_node_label": str(labels[str(answer_node_id)]),
+        "answer_node_bbox_id": str(answer_node_id).replace("node", "node_bbox"),
+        "answer_metric_name": str(answer_metric_name),
+        "answer_metric_count": int(answer_metric_count),
+        "candidate_manager_counts": [dict(row) for row in candidate_manager_counts],
         "annotation_node_ids": [str(node_id) for node_id in annotation_node_ids],
         "annotation_node_bbox_ids": [str(bbox_id) for bbox_id in annotation_node_bbox_ids],
         "annotation_semantics": str(annotation_semantics),
@@ -1173,12 +1412,6 @@ def build_hierarchy_tree_count_dataset(
         "descendant_count": int(len(descendant_node_ids)),
         "leaf_descendant_node_ids": [str(node_id) for node_id in leaf_descendant_node_ids],
         "leaf_descendant_count": int(len(leaf_descendant_node_ids)),
-        "path_node_ids": [str(node_id) for node_id in path_node_ids],
-        "path_node_labels": [str(labels[str(node_id)]) for node_id in path_node_ids],
-        "path_length_between_nodes": int(len(path_node_ids) - 1),
-        "path_lca_node_id": str(path_lca_node_id),
-        "path_lca_node_label": str(labels[str(path_lca_node_id)]),
-        "path_lca_depth": int(depths[str(path_lca_node_id)]),
     }
 
 

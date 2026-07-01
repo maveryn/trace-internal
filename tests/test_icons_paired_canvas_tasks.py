@@ -3,7 +3,11 @@ from __future__ import annotations
 import json
 from trace.core.seed import hash64
 from trace.tasks import create_task
-PAIRED_TASKS = ('task_icons__paired_canvas__panel_set_relation_count', 'task_icons__paired_canvas__panel_attribute_change_count', 'task_icons__paired_canvas__panel_movement_direction_count')
+PAIRED_TASKS = (
+    'task_icons__paired_canvas__panel_set_relation_count',
+    'task_icons__paired_canvas__color_change_count',
+    'task_icons__paired_canvas__rotation_change_count',
+)
 
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = 'Example JSON:\n'
@@ -27,12 +31,16 @@ def test_icons_paired_canvas_added_removed_contracts() -> None:
         assert out.trace_payload['projected_annotation']['type'] == 'bbox_set'
 
 def test_icons_paired_canvas_attribute_change_contracts() -> None:
-    query_to_attribute = {'color_changed_count': 'color', 'rotation_changed_count': 'rotation'}
-    for query_id, attribute in query_to_attribute.items():
-        out = create_task('task_icons__paired_canvas__panel_attribute_change_count').generate(hash64(20260519003, query_id), params={'query_id': query_id, 'target_count': 2, 'distractor_count': 3}, max_attempts=200)
+    cases = (
+        ('task_icons__paired_canvas__color_change_count', 'color_changed_count', 'color'),
+        ('task_icons__paired_canvas__rotation_change_count', 'rotation_changed_count', 'rotation'),
+    )
+    for task_id, internal_query_id, attribute in cases:
+        out = create_task(task_id).generate(hash64(20260519003, task_id), params={'target_count': 2, 'distractor_count': 3}, max_attempts=200)
         execution = out.trace_payload['execution_trace']
         right = _panel_entities(out, 'right')
-        assert out.query_id == query_id
+        assert out.query_id == 'single'
+        assert execution['internal_query_id'] == internal_query_id
         assert execution['active_attribute'] == attribute
         assert int(out.answer_gt.value) == 2
         assert len(out.annotation_gt.value) == 2
@@ -41,21 +49,6 @@ def test_icons_paired_canvas_attribute_change_contracts() -> None:
             has_attribute = attribute in set((str(value) for value in entity.get('changed_attributes', [])))
             assert has_attribute is (index in set(execution['matching_right_indices']))
 
-def test_icons_paired_canvas_movement_contracts() -> None:
-    query_to_direction = {'moved_left_count': 'left', 'moved_right_count': 'right', 'moved_up_count': 'up', 'moved_down_count': 'down'}
-    for query_id, direction in query_to_direction.items():
-        out = create_task('task_icons__paired_canvas__panel_movement_direction_count').generate(hash64(20260519004, query_id), params={'query_id': query_id, 'target_count': 2, 'distractor_count': 3}, max_attempts=200)
-        execution = out.trace_payload['execution_trace']
-        right = _panel_entities(out, 'right')
-        assert out.query_id == query_id
-        assert execution['active_direction'] == direction
-        assert int(out.answer_gt.value) == 2
-        assert len(out.annotation_gt.value) == 2
-        assert out.trace_payload['projected_annotation']['type'] == 'bbox_set'
-        for index, entity in enumerate(right):
-            is_target = str(entity.get('movement_direction')) == direction
-            assert is_target is (index in set(execution['matching_right_indices']))
-
 def test_icons_paired_canvas_prompt_examples_and_balanced_queries() -> None:
     out = create_task('task_icons__paired_canvas__panel_set_relation_count').generate(20260519005, params={'query_id': 'added_in_right_count'}, max_attempts=200)
     assert _extract_prompt_json_example(out.prompt_variants['answer_only']) == {'answer': 2}
@@ -63,13 +56,17 @@ def test_icons_paired_canvas_prompt_examples_and_balanced_queries() -> None:
     assert list(answer_and_annotation.keys()) == ['annotation', 'answer']
     assert isinstance(answer_and_annotation['annotation'], list)
     assert isinstance(answer_and_annotation['answer'], int)
-    expected_queries = {'task_icons__paired_canvas__panel_set_relation_count': {'added_in_right_count', 'missing_from_right_count'}, 'task_icons__paired_canvas__panel_attribute_change_count': {'color_changed_count', 'rotation_changed_count'}, 'task_icons__paired_canvas__panel_movement_direction_count': {'moved_left_count', 'moved_right_count', 'moved_up_count', 'moved_down_count'}}
+    expected_queries = {
+        'task_icons__paired_canvas__panel_set_relation_count': {'added_in_right_count', 'missing_from_right_count'},
+        'task_icons__paired_canvas__color_change_count': {'single'},
+        'task_icons__paired_canvas__rotation_change_count': {'single'},
+    }
     for task_id, expected in expected_queries.items():
         observed: set[str] = set()
         for index, query_id in enumerate(sorted(expected)):
             out = create_task(task_id).generate(
                 hash64(20260519006, f'{task_id}:{query_id}', index),
-                params={'query_id': query_id},
+                params={'query_id': query_id} if query_id != 'single' else {},
                 max_attempts=200,
             )
             observed.add(str(out.query_id))

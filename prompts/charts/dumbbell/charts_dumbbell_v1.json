@@ -85,37 +85,37 @@
   "static_slots_by_key": {
     "query:largest_gap_rank_row_label": {
       "answer_hint": "set \"answer\" to the exact visible row label as a string",
-      "annotation_hint": "set \"annotation\" to one segment [[x1, y1], [x2, y2]], using the two colored dot centers for the supporting row",
+      "annotation_hint": "set \"annotation\" to one segment: two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the two colored dot centers for the supporting row",
       "json_example": "{\"annotation\":[[276,231],[1032,231]],\"answer\":\"Harbor\"}",
       "json_example_answer_only": "{\"answer\":\"Harbor\"}"
     },
     "query:smallest_gap_rank_row_label": {
       "answer_hint": "set \"answer\" to the exact visible row label as a string",
-      "annotation_hint": "set \"annotation\" to one segment [[x1, y1], [x2, y2]], using the two colored dot centers for the supporting row",
+      "annotation_hint": "set \"annotation\" to one segment: two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the two colored dot centers for the supporting row",
       "json_example": "{\"annotation\":[[276,231],[1032,231]],\"answer\":\"Harbor\"}",
       "json_example_answer_only": "{\"answer\":\"Harbor\"}"
     },
     "query:series_a_greater_threshold_count": {
       "answer_hint": "set \"answer\" to the requested integer count",
-      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is [[x1, y1], [x2, y2]], using the two colored dot centers for one row that satisfies the condition; use [] if no rows match",
+      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the two colored dot centers for one row that satisfies the condition; use [] if no rows match",
       "json_example": "{\"annotation\":[[[276,231],[1032,231]],[[318,355],[1032,355]],[[284,541],[1032,541]]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:series_b_greater_threshold_count": {
       "answer_hint": "set \"answer\" to the requested integer count",
-      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is [[x1, y1], [x2, y2]], using the two colored dot centers for one row that satisfies the condition; use [] if no rows match",
+      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the two colored dot centers for one row that satisfies the condition; use [] if no rows match",
       "json_example": "{\"annotation\":[[[276,231],[1032,231]],[[318,355],[1032,355]],[[284,541],[1032,541]]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:absolute_gap_at_least_threshold_count": {
       "answer_hint": "set \"answer\" to the requested integer count",
-      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is [[x1, y1], [x2, y2]], using the two colored dot centers for one row that satisfies the condition; use [] if no rows match",
+      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the two colored dot centers for one row that satisfies the condition; use [] if no rows match",
       "json_example": "{\"annotation\":[[[276,231],[1032,231]],[[318,355],[1032,355]],[[284,541],[1032,541]]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:absolute_gap_at_most_threshold_count": {
       "answer_hint": "set \"answer\" to the requested integer count",
-      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is [[x1, y1], [x2, y2]], using the two colored dot centers for one row that satisfies the condition; use [] if no rows match",
+      "annotation_hint": "set \"annotation\" to a list of segments. Each segment is two [x, y] pixel points formatted [[x0, y0], [x1, y1]], using the two colored dot centers for one row that satisfies the condition; use [] if no rows match",
       "json_example": "{\"annotation\":[[[276,231],[1032,231]],[[318,355],[1032,355]],[[284,541],[1032,541]]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"
     }

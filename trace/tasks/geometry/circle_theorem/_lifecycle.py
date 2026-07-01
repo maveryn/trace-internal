@@ -450,7 +450,7 @@ def run_label_keyed_number_circle_theorem_task(
             "query_id": str(query_id),
             "answer_type": "number",
             "answer_value": float(answer_value),
-            "answer_rounding": "nearest_tenth",
+            "answer_rounding": "one_decimal",
             "support_measurement_tokens": list(rendered_scene.support_measurement_tokens),
             "annotation_values": dict(rendered_scene.annotation_values),
             **dict(query_params),

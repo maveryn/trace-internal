@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -10,10 +11,9 @@ from trace.core.builder import build_dataset
 from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.platformer.collectible_count import (
     GamesPlatformerCollectibleCountTask,
-    GamesPlatformerJumpCollectibleScoreValueTask,
-    GamesPlatformerJumpLandingLabelTask,
-    GamesPlatformerLevelTask,
 )
+from trace.tasks.games.platformer.jump_collectible_score_value import GamesPlatformerJumpCollectibleScoreValueTask
+from trace.tasks.games.platformer.jump_landing_label import GamesPlatformerJumpLandingLabelTask
 from tests.helpers import read_jsonl
 
 
@@ -23,25 +23,25 @@ from tests.helpers import read_jsonl
         (
             GamesPlatformerJumpLandingLabelTask,
             {"target_platform_label": "F", "platform_count": 7, "style_variant": "snow"},
-            "jump_landing_label",
-            ("string", "bbox_set"),
+            "single",
+            ("string", "bbox"),
         ),
         (
             GamesPlatformerCollectibleCountTask,
             {"target_collectible_count": 6, "style_variant": "cave"},
-            "collectible_count",
+            "single",
             ("integer", "point_set"),
         ),
         (
             GamesPlatformerJumpCollectibleScoreValueTask,
             {"style_variant": "neon"},
-            "jump_collectible_score_value",
+            "single",
             ("integer", "point_set"),
         ),
     ),
 )
 def test_games_platformer_public_tasks_emit_expected_contract(
-    task_cls: type[GamesPlatformerLevelTask],
+    task_cls: type[Any],
     params: dict[str, int | str],
     expected_query: str,
     expected_type: tuple[str, str],
@@ -58,8 +58,12 @@ def test_games_platformer_public_tasks_emit_expected_contract(
     assert trace["query_spec"]["query_id"] == expected_query
     assert trace["query_spec"]["params"]["query_id"] == expected_query
     assert execution["query_id"] == expected_query
-    assert trace["projected_annotation"][expected_annotation_type] == out.annotation_gt.value
-    assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
+    if expected_annotation_type == "bbox":
+        assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+        assert len(execution["annotation_entity_ids"]) == 1
+    else:
+        assert trace["projected_annotation"][expected_annotation_type] == out.annotation_gt.value
+        assert len(execution["annotation_entity_ids"]) == len(out.annotation_gt.value)
 
 
 def test_games_platformer_landing_answer_matches_target_platform() -> None:
@@ -74,6 +78,9 @@ def test_games_platformer_landing_answer_matches_target_platform() -> None:
 
     assert str(out.answer_gt.value) == str(target_platform["label"])
     assert list(execution["annotation_entity_ids"]) == [target_id]
+    assert out.query_id == "single"
+    assert out.annotation_gt.type == "bbox"
+    assert len(out.annotation_gt.value) == 4
     assert 4 <= len(execution["platforms"]) <= 7
     path = execution["path_points_norm"]
     peak_index = min(range(len(path)), key=lambda index: float(path[int(index)][1]))

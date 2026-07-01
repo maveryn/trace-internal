@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from ...registry import register_task
-from ._lifecycle import ParallelCoordsTaskPlan, profile_segment_point_set_plan, run_parallel_coords_task
+from ._lifecycle import ParallelCoordsTaskPlan, profile_segment_set_plan, run_parallel_coords_task
 from .shared.defaults import DOMAIN, SCENE_NAMESPACE
 from .shared.sampling import sample_axis_condition_dataset
 
@@ -31,7 +31,7 @@ def _build_plan(params: Mapping[str, Any], instance_seed: int, selected: str) ->
         comparator_pair=comparators,
         namespace=f"{SCENE_NAMESPACE}.axis_condition.{selected}",
     )
-    return profile_segment_point_set_plan(
+    return profile_segment_set_plan(
         dataset=dataset,
         params=dict(params),
         instance_seed=int(instance_seed),

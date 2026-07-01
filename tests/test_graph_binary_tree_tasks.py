@@ -42,6 +42,33 @@ def _binary_tree_edges(trace_payload: dict) -> list[dict]:
     ]
 
 
+_BROAD_BINARY_TREE_ANSWER_HINT = (
+    "requested count as an integer or the answer node label"
+)
+_COUNT_ANSWER_HINT = 'set "answer" to the requested count as an integer'
+_NODE_LABEL_ANSWER_HINT = (
+    'set "answer" to the answer node label as a string exactly as shown'
+)
+_NUMERIC_KEY_ANSWER_HINT = (
+    'set "answer" to the answer node key as a string exactly as shown'
+)
+
+
+def _answer_hint_slot(trace_payload: dict) -> str:
+    return str(
+        trace_payload["query_spec"]["prompt_variants"]["answer_only"]["metadata"][
+            "slot_values"
+        ]["answer_hint"]
+    )
+
+
+def _assert_answer_hint(out, expected: str) -> None:
+    assert _answer_hint_slot(out.trace_payload) == expected
+    for prompt in out.prompt_variants.values():
+        assert expected in prompt
+        assert _BROAD_BINARY_TREE_ANSWER_HINT not in prompt
+
+
 def test_graph_counting_binary_tree_node_count_contracts() -> None:
     child_task = GraphCountingBinaryTreeChildStructureNodeCountTask()
     depth_task = GraphCountingBinaryTreeDepthLevelNodeCountTask()
@@ -90,6 +117,7 @@ def test_graph_counting_binary_tree_node_count_contracts() -> None:
         assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
         assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
         assert "[x,y]" in out.prompt_variants["answer_and_annotation"]
+        _assert_answer_hint(out, _COUNT_ANSWER_HINT)
 
 
 def test_graph_order_binary_tree_traversal_label_contracts() -> None:
@@ -130,6 +158,7 @@ def test_graph_order_binary_tree_traversal_label_contracts() -> None:
         assert trace["projected_annotation"]["point_sequence"] == out.annotation_gt.value
         assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
         assert "ordered JSON array" in out.prompt_variants["answer_and_annotation"]
+        _assert_answer_hint(out, _NODE_LABEL_ANSWER_HINT)
 
 
 def test_graph_relation_binary_tree_node_label_contracts() -> None:
@@ -184,6 +213,7 @@ def test_graph_relation_binary_tree_node_label_contracts() -> None:
         assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
         assert "JSON object" in out.prompt_variants["answer_and_annotation"]
         assert "[x,y]" in out.prompt_variants["answer_and_annotation"]
+        _assert_answer_hint(out, _NODE_LABEL_ANSWER_HINT)
 
 
 def test_graph_binary_tree_lca_answer_scope_can_be_forced() -> None:
@@ -244,6 +274,7 @@ def test_graph_relation_bst_path_operation_label_contracts() -> None:
         assert execution["target_key"] is not None
         assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
         assert "ordered JSON array" in out.prompt_variants["answer_and_annotation"]
+        _assert_answer_hint(out, _NUMERIC_KEY_ANSWER_HINT)
 
 
 def test_graph_relation_heap_property_violation_label_contracts() -> None:
@@ -281,3 +312,4 @@ def test_graph_relation_heap_property_violation_label_contracts() -> None:
     assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
     assert '"parent"' in out.prompt_variants["answer_and_annotation"]
     assert '"child"' in out.prompt_variants["answer_and_annotation"]
+    _assert_answer_hint(out, _NUMERIC_KEY_ANSWER_HINT)

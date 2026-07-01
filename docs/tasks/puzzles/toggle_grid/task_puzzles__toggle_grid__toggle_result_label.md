@@ -8,19 +8,19 @@
 
 ## Query Contract
 1. Supported `query_id`: `single`
-2. Prompt asks for the labeled result grid produced by applying the numbered switch presses.
-3. Internal variation: grid size, press sequence, option label, scene variant, and style are generation/render metadata.
+2. Prompt asks for the labeled result grid produced by pressing the red marked switch once.
+3. Internal variation: grid size, selected press cell, option label, scene variant, and style are generation/render metadata.
 
 ## Program Contract
-`select_label(result_grid_options, option_grid = simulate(start_grid, rule=orthogonal_toggle, actions=numbered_switch_sequence)); scene=toggle_grid; scope=toggle_result_label`
 
-1. Program code: `simulation.discrete_state_update`
-2. Scene: `toggle_grid`
-3. Scope: `toggle_result_label`
-4. Candidate set: visual result-grid option panels labeled `A`..`E`.
-5. Transition rule: each press flips the chosen cell and any up/down/left/right neighbors present.
-6. Answer binding: selected result option letter.
-7. Annotation binding: one image-pixel `bbox` around the selected result option panel.
+Program: `select_label(result_grid_options, option_grid = simulate(start_grid, rule=orthogonal_toggle, action=red_marked_switch)); scene=toggle_grid; scope=toggle_result_label`
+
+Candidate set: the visible start/target/result grids, toggle rule markers, switch cells, labels, and labeled grid options inside the `toggle_result_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `result_grid_options`, `option_grid`, `simulate`, `start_grid`, `orthogonal_toggle`, `action`, `red_marked_switch`, `toggle_grid`, `toggle_result_label`.
+Operation: evaluate `select_label` over the candidate set using the visible states, constraints, transforms, comparisons, counts, paths, or option-selection rules encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the correct result option panel.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. `answer_gt.type = option_letter`

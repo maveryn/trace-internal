@@ -11,7 +11,13 @@ from trace.tasks.shared.text_rendering import load_font
 from trace.tasks.puzzles.shared.drawing import draw_centered_text, draw_rounded_rect
 
 from .defaults import PALETTE_COLORS, STYLE_COLORS
-from .state import CandidateCellSpec, Cell, RenderedTentsScene, TentsRenderParams
+from .state import (
+    CandidateCellSpec,
+    Cell,
+    LabeledTentSpec,
+    RenderedTentsScene,
+    TentsRenderParams,
+)
 
 
 def render_tents_scene(
@@ -23,10 +29,11 @@ def render_tents_scene(
     cols: int,
     row_clues: Sequence[int],
     col_clues: Sequence[int],
-    marked_tree: Cell,
+    marked_tree: Cell | None,
     tree_cells: Sequence[Cell],
     visible_tents: Sequence[Cell],
     candidate_specs: Sequence[CandidateCellSpec],
+    labeled_tent_specs: Sequence[LabeledTentSpec] | None = None,
     render_params: TentsRenderParams,
 ) -> RenderedTentsScene:
     """Render the complete Tents scene and return item-to-pixel maps."""
@@ -45,6 +52,7 @@ def render_tents_scene(
     grid_h = int(rows) * int(cell_size)
     total_w = int(render_params.left_clue_width_px) + int(grid_w)
     total_h = int(render_params.top_clue_height_px) + int(grid_h)
+    labeled_tents = list(labeled_tent_specs or [])
     panel_x0 = int((int(render_params.canvas_width) - total_w) // 2) - int(
         render_params.panel_padding_px
     )
@@ -77,6 +85,7 @@ def render_tents_scene(
     candidate_font = load_font(int(render_params.candidate_font_size_px), bold=True)
     cell_bbox_map: Dict[str, List[float]] = {}
     clue_bbox_map: Dict[str, List[float]] = {}
+    option_panel_bbox_map: Dict[str, List[float]] = {}
     item_bbox_map: Dict[str, List[float]] = {}
     entities: List[Dict[str, Any]] = [
         {
@@ -158,6 +167,16 @@ def render_tents_scene(
         item_bbox_map=item_bbox_map,
         entities=entities,
     )
+    _draw_labeled_tent_labels(
+        draw,
+        labeled_tent_specs=labeled_tents,
+        cell_size=cell_size,
+        label_font=candidate_font,
+        cell_bbox_map=cell_bbox_map,
+        style=style,
+        item_bbox_map=item_bbox_map,
+        entities=entities,
+    )
     _draw_candidate_labels(
         draw,
         candidate_specs=candidate_specs,
@@ -175,6 +194,7 @@ def render_tents_scene(
         scene_bbox_px=round_bbox((panel_x0, panel_y0, panel_x1, panel_y1)),
         cell_bbox_map=cell_bbox_map,
         clue_bbox_map=clue_bbox_map,
+        option_panel_bbox_map=option_panel_bbox_map,
         item_bbox_map=item_bbox_map,
     )
 
@@ -347,23 +367,20 @@ def _draw_tree_items(
     draw: ImageDraw.ImageDraw,
     *,
     tree_cells: Sequence[Cell],
-    marked_tree: Cell,
+    marked_tree: Cell | None,
     cell_bbox_map: Dict[str, List[float]],
     style: Dict[str, Tuple[int, int, int]],
     item_bbox_map: Dict[str, List[float]],
     entities: List[Dict[str, Any]],
 ) -> None:
-    """Draw tree icons, using a ring only for the marked tree."""
+    """Draw tree icons, using a square outline only for the marked tree."""
 
     tree_index = 0
     for tree_cell in tree_cells:
         row, col = int(tree_cell[0]), int(tree_cell[1])
         bbox = cell_bbox_map[f"cell_{row}_{col}"]
-        entity_id = (
-            "marked_tree"
-            if tuple(tree_cell) == tuple(marked_tree)
-            else f"tree_{tree_index}"
-        )
+        is_marked = marked_tree is not None and tuple(tree_cell) == tuple(marked_tree)
+        entity_id = "marked_tree" if bool(is_marked) else f"tree_{tree_index}"
         _draw_tree_icon(
             draw,
             bbox=bbox,
@@ -371,8 +388,8 @@ def _draw_tree_items(
             outline=style["tree_outline"],
             trunk_fill=style.get("trunk_fill", (126, 88, 54)),
             trunk_outline=style.get("trunk_outline", (83, 58, 38)),
-            ring_fill=style.get("marked_tree_ring", (24, 28, 34)),
-            marked=bool(tuple(tree_cell) == tuple(marked_tree)),
+            ring_fill=style.get("marked_tree_outline", (214, 48, 49)),
+            marked=bool(is_marked),
         )
         item_bbox_map[entity_id] = list(bbox)
         entities.append(
@@ -382,7 +399,7 @@ def _draw_tree_items(
                 "bbox_px": list(bbox),
                 "row": int(row),
                 "col": int(col),
-                "marked": bool(tuple(tree_cell) == tuple(marked_tree)),
+                "marked": bool(is_marked),
             }
         )
         tree_index += 1
@@ -422,6 +439,48 @@ def _draw_tent_items(
         )
 
 
+def _draw_labeled_tent_labels(
+    draw: ImageDraw.ImageDraw,
+    *,
+    labeled_tent_specs: Sequence[LabeledTentSpec],
+    cell_size: int,
+    label_font: Any,
+    cell_bbox_map: Dict[str, List[float]],
+    style: Dict[str, Tuple[int, int, int]],
+    item_bbox_map: Dict[str, List[float]],
+    entities: List[Dict[str, Any]],
+) -> None:
+    """Draw option letters on visible tent cells without visible answer boxes."""
+
+    for spec in labeled_tent_specs:
+        row, col = int(spec.row), int(spec.col)
+        bbox = cell_bbox_map[f"cell_{row}_{col}"]
+        x0, y0, x1, y1 = [float(value) for value in bbox]
+        draw_centered_text(
+            draw,
+            text=str(spec.label),
+            center=((x0 + x1) / 2.0, y0 + (float(cell_size) * 0.52)),
+            font=label_font,
+            fill=style.get("candidate_label_fill", (255, 255, 255)),
+            stroke_fill=style.get("tent_shadow", (40, 40, 40)),
+            stroke_width=max(2, int(float(cell_size) * 0.05)),
+        )
+        tent_id = f"labeled_tent_{spec.label}"
+        item_bbox_map[tent_id] = list(bbox)
+        entities.append(
+            {
+                "entity_id": tent_id,
+                "entity_type": "puzzle_tents_labeled_tent",
+                "bbox_px": list(bbox),
+                "label": str(spec.label),
+                "row": int(row),
+                "col": int(col),
+                "is_correct": bool(spec.is_correct),
+                "violation_type": str(spec.violation_type),
+            }
+        )
+
+
 def _draw_candidate_labels(
     draw: ImageDraw.ImageDraw,
     *,
@@ -439,21 +498,6 @@ def _draw_candidate_labels(
         row, col = int(spec.row), int(spec.col)
         bbox = cell_bbox_map[f"cell_{row}_{col}"]
         x0, y0, x1, y1 = [float(value) for value in bbox]
-        label_w = float(cell_size) * 0.56
-        label_h = float(cell_size) * 0.48
-        label_bbox = (
-            ((x0 + x1) / 2.0) - (label_w / 2.0),
-            ((y0 + y1) / 2.0) - (label_h / 2.0),
-            ((x0 + x1) / 2.0) + (label_w / 2.0),
-            ((y0 + y1) / 2.0) + (label_h / 2.0),
-        )
-        draw.rounded_rectangle(
-            label_bbox,
-            radius=max(5, int(cell_size * 0.10)),
-            fill=style["candidate_label_fill"],
-            outline=style["candidate_outline"],
-            width=max(2, int(cell_size * 0.04)),
-        )
         draw_centered_text(
             draw,
             text=str(spec.label),
@@ -490,7 +534,7 @@ def _draw_tree_icon(
     ring_fill: Tuple[int, int, int],
     marked: bool,
 ) -> None:
-    """Draw a stylized tree inside one grid cell; marked trees get an outer ring."""
+    """Draw a stylized tree inside one grid cell; marked trees get a square outline."""
 
     x0, y0, x1, y1 = [float(value) for value in bbox]
     w = float(x1 - x0)
@@ -516,13 +560,13 @@ def _draw_tree_icon(
     )
     draw.ellipse(canopy, fill=tuple(fill), outline=tuple(outline), width=2)
     if bool(marked):
-        ring = (
+        mark = (
             x0 + (0.08 * w),
             y0 + (0.07 * h),
             x0 + (0.92 * w),
             y0 + (0.91 * h),
         )
-        draw.ellipse(ring, outline=tuple(ring_fill), width=max(3, int(w * 0.07)))
+        draw.rectangle(mark, outline=tuple(ring_fill), width=max(3, int(w * 0.07)))
 
 
 def _draw_tent_icon(

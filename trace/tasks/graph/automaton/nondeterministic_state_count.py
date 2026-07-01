@@ -4,6 +4,7 @@ import random
 from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 import networkx as nx
+from ....core.sampling import uniform_choice
 from ....core.seed import spawn_rng
 from ....core.types import TypedValue
 from ....core.visual.background import make_background_canvas
@@ -11,7 +12,7 @@ from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
 from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults
-from ...shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ...shared.deterministic_sampling import uniform_probability_map
 from ...shared.output_metadata import default_task_versions
 from ..shared.graph_scene import RenderedGraphScene, projected_edge_label_bbox_annotation, projected_node_point_annotation, render_graph_scene
 from ..shared.style import SUPPORTED_NODE_COLOR_NAMES
@@ -114,8 +115,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         if int(state_count) not in set(state_count_support):
             raise ValueError('state_count is outside feasible support')
     else:
-        state_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f'{TASK_ID}:state_count'))
-        state_count = int(state_count_support[int(state_index % len(state_count_support))])
+        state_count = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f'{TASK_ID}:state_count'),
+                state_count_support,
+            )
+        )
     target_count_min = int(params.get('target_count_min', group_default(_GEN_DEFAULTS, 'target_count_min', _DEFAULTS.target_count_min)))
     target_count_max = int(params.get('target_count_max', group_default(_GEN_DEFAULTS, 'target_count_max', _DEFAULTS.target_count_max)))
     target_support = tuple((int(value) for value in range(max(0, int(target_count_min)), min(int(target_count_max), int(state_count)) + 1)))
@@ -127,8 +132,12 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> _Resolve
         if int(target_count) not in set(target_support):
             raise ValueError('target_count is outside feasible support')
     else:
-        target_index = int(resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f'{TASK_ID}:target_count'))
-        target_count = int(target_support[int(target_index % len(target_support))])
+        target_count = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f'{TASK_ID}:target_count'),
+                target_support,
+            )
+        )
     layout_variant, layout_variant_probabilities = _resolve_named_variant(int(instance_seed), params=params, explicit_key='layout_variant', weights_key='layout_variant_weights', balance_flag_key='balanced_layout_variant_sampling', supported=SUPPORTED_AUTOMATON_LAYOUT_VARIANTS, namespace='layout_variant')
     layout_transform_variant, layout_transform_variant_probabilities = _resolve_named_variant(int(instance_seed), params=params, explicit_key='layout_transform_variant', weights_key='layout_transform_variant_weights', balance_flag_key='balanced_layout_transform_variant_sampling', supported=('identity', 'mirror_left_right', 'mirror_up_down'), namespace='layout_transform_variant')
     edge_routing_variant, edge_routing_variant_probabilities = _resolve_named_variant(int(instance_seed), params=params, explicit_key='edge_routing_variant', weights_key='edge_routing_variant_weights', balance_flag_key='balanced_edge_routing_variant_sampling', supported=('straight', 'mixed_arc'), namespace='edge_routing_variant')

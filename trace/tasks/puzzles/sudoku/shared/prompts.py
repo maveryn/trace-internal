@@ -20,6 +20,7 @@ def render_sudoku_prompt_artifacts(
     prompt_query_key: str,
     object_description: str,
     unit_scope_text: str = "",
+    target_digit: str = "",
     instance_seed: int,
 ) -> PromptTraceArtifacts:
     """Render Sudoku prompt variants from the v1 scene prompt bundle."""
@@ -35,6 +36,7 @@ def render_sudoku_prompt_artifacts(
         dynamic_slots={
             "object_description": str(object_description),
             "unit_scope_text": str(unit_scope_text),
+            "target_digit": str(target_digit),
         },
         instance_seed=int(instance_seed),
     )

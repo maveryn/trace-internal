@@ -18,7 +18,7 @@ from trace.tasks.registry import register_task
 TASK_ID = "task_charts__scientific_axis_frame__axis_span_value"
 PROGRAM_CODE = (
     "difference(max_visible_tick(axis), min_visible_tick(axis)); "
-    "output=integer_value; annotation=bbox_map(min_tick,max_tick); "
+    "output=integer_value; annotation=segment(axis_visible_span); "
     "scene=scientific_axis_frame; scope=axis_span_value"
 )
 AXIS_SPAN_QUERY_IDS = (

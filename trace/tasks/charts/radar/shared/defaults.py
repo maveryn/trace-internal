@@ -7,9 +7,14 @@ from typing import Any
 
 from .....core.scene_config import get_scene_defaults
 from ....shared.config_defaults import group_default, split_scene_generation_rendering_prompt_defaults
-from ....shared.font_assets import font_asset_version, sample_font_family
-from ....shared.render_variation import resolve_render_rgb
-from ...shared.visual_defaults import load_chart_scene_background_defaults, load_chart_scene_noise_defaults
+from ...shared.visual_defaults import (
+    chart_font_asset_metadata,
+    load_chart_scene_background_defaults,
+    load_chart_scene_noise_defaults,
+    render_style_seed,
+    sample_chart_font_family as sample_shared_chart_font_family,
+    resolve_chart_render_rgb,
+)
 
 from .state import PROMPT_BUNDLE_ID, RGB, SCENE_ID, SCENE_NAMESPACE
 
@@ -25,24 +30,15 @@ PANEL_LABEL_SUPPORT: tuple[str, ...] = tuple("ABCDEFGH")
 
 
 def sample_chart_font_family(instance_seed: int, params: Mapping[str, Any]) -> str:
-    return str(
-        sample_font_family(
-            role="readout",
-            instance_seed=int(instance_seed),
-            namespace=f"{SCENE_NAMESPACE}.chart_font",
-            params=params,
-            exclude_tags=("display",),
-            explicit_key="chart_font_family",
-            weights_key="chart_font_family_weights",
-        )
+    return sample_shared_chart_font_family(
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.chart_font",
+        params=params,
     )
 
 
 def font_assets_payload(*, chart_font_family: str) -> dict[str, str]:
-    return {
-        "font_asset_version": font_asset_version(),
-        "chart_font_family": str(chart_font_family),
-    }
+    return chart_font_asset_metadata(str(chart_font_family))
 
 
 def prompt_bundle_id() -> str:
@@ -57,22 +53,8 @@ def resolve_gen_int(params: Mapping[str, Any], key: str, fallback: int) -> int:
     return int(params.get(str(key), group_default(GEN_DEFAULTS, str(key), int(fallback))))
 
 
-def render_style_seed(params: Mapping[str, Any]) -> int:
-    try:
-        return int(params.get("_render_style_seed", params.get("_sample_cursor", 0)) or 0)
-    except Exception:
-        return 0
-
-
 def resolve_rgb(params: Mapping[str, Any], key: str, fallback: RGB) -> RGB:
-    return resolve_render_rgb(
-        params,
-        RENDER_DEFAULTS,
-        str(key),
-        fallback,
-        instance_seed=render_style_seed(params),
-        namespace=SCENE_NAMESPACE,
-    )
+    return resolve_chart_render_rgb(params, RENDER_DEFAULTS, str(key), fallback, namespace=SCENE_NAMESPACE)
 
 
 def profile_palette(params: Mapping[str, Any]) -> tuple[RGB, ...]:

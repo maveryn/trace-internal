@@ -31,8 +31,6 @@ QUERY_PARAMS = {
     END_LOWEST_QUERY_ID: ("end", "lowest"),
 }
 TASK_PARAM_DEFAULTS: dict[str, Any] = {
-    "panel_count_min": 4,
-    "panel_count_max": 8,
     "method_count_min": 3,
     "method_count_max": 5,
     "x_tick_count_min": 5,
@@ -197,6 +195,7 @@ class ChartsScientificEndpointRankPanelLabelTask:
             query=query,
             dynamic_slots={"method_label": f'"{query.method_label}"'},
             instance_seed=int(instance_seed),
+            annotation_type="point",
         )
 
     def generate(

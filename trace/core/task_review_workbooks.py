@@ -15,6 +15,8 @@ from openpyxl.utils import get_column_letter
 from PIL import Image as PILImage
 from PIL import ImageOps as PILImageOps
 
+from .query_ids import SINGLE_QUERY_ID
+
 from .review_overlays import render_annotation_overlay
 
 
@@ -122,7 +124,7 @@ def sanitize_sheet_title(raw: str) -> str:
 
     title = re.sub(r"[\\/*?:\[\]]+", "_", str(raw).strip())
     if not title:
-        return "default"
+        return SINGLE_QUERY_ID
     return title[:31]
 
 
@@ -245,7 +247,7 @@ def write_inspection_excel(
         sorted_query_ids = [""]
 
     for index, query_id in enumerate(sorted_query_ids):
-        base_title = str(query_id).strip() or "default"
+        base_title = str(query_id).strip() or SINGLE_QUERY_ID
         sheet_title = dedupe_sheet_title(base_title, used_titles)
         if int(index) == 0:
             sheet = workbook.active

@@ -6,6 +6,8 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.scene_config import get_scene_defaults
+from trace.core.seed import spawn_rng
+from trace.core.sampling import uniform_choice_with_probabilities
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
@@ -13,7 +15,6 @@ from trace.tasks.shared.config_defaults import (
     required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.illustrations.shared.canvas_profiles import resolve_canvas_profile
 from trace.tasks.illustrations.shared.option_rendering import sample_visual_label_font_trace
@@ -69,15 +70,12 @@ def _select_nearest_label(*, instance_seed: int, params: Mapping[str, Any], labe
         if label not in set(support):
             raise ValueError(f"selected_label must be one of {support}")
         return label
+    namespace = f"{TASK_ID}:nearest_label"
     if params.get("_sample_cursor") is not None:
-        index = abs(int(params["_sample_cursor"]))
-    else:
-        index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}:nearest_label",
-        )
-    return str(support[int(index) % len(support)])
+        namespace = f"{namespace}:{int(params['_sample_cursor'])}"
+    rng = spawn_rng(int(instance_seed), namespace)
+    selected, _probabilities = uniform_choice_with_probabilities(rng, support, sort_keys=False)
+    return str(selected)
 
 
 def _prompt_slots(prompt_defaults: Mapping[str, Any]) -> dict[str, str]:
@@ -180,6 +178,8 @@ class IllustrationsIsometricHarborShorelineNearestBoatLabelTask:
                     shoreline_candidate_labels=labels,
                     shoreline_nearest_label=str(selected_label),
                     shoreline_label_font_family=label_font_family,
+                    render_style_params=params,
+                    render_style_defaults=_RENDER_DEFAULTS,
                 )
                 _validate_candidate_scene(candidate_scene, labels=labels, selected_label=str(selected_label))
                 scene = candidate_scene

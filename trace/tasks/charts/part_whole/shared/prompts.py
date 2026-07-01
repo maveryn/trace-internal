@@ -31,7 +31,6 @@ def dynamic_slots(dataset_extras: Mapping[str, Any], *, scene_variant: str) -> d
         "chart_order_phrase": str(dataset_extras.get("chart_order_direction", chart_order_phrase(str(scene_variant)))),
         "start_category": str(dataset_extras.get("start_category", "")),
         "end_category": str(dataset_extras.get("end_category", "")),
-        "positional_instruction": str(dataset_extras.get("positional_instruction", "")),
         "subset_category_list_text": str(dataset_extras.get("subset_category_list_text", "")),
         "target_category": str(dataset_extras.get("target_category", "")),
         "source_category": str(dataset_extras.get("source_category", "")),

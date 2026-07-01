@@ -1,7 +1,15 @@
 # `task_graph__node_link__hamiltonian_cycle_neighbor_label`
 
 ## Program Contract
-- `label(adjacent_node_on_cycle(unique_hamiltonian_cycle(graph), reference_node, direction=next_or_previous)); scene=node_link; scope=hamiltonian_cycle_neighbor_label`
+
+Program: `label(adjacent_node_on_cycle(unique_hamiltonian_cycle(graph), reference_node, direction=next_or_previous)); scene=node_link; scope=hamiltonian_cycle_neighbor_label`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `hamiltonian_cycle_neighbor_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `adjacent_node_on_cycle`, `unique_hamiltonian_cycle`, `graph`, `reference_node`, `direction`, `next_or_previous`, `node_link`, `hamiltonian_cycle_neighbor_label`.
+Operation: evaluate `label` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `string` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Summary
 1. Domain: `graph`

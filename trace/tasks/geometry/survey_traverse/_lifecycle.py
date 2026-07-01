@@ -7,14 +7,17 @@ from typing import Any, Callable, Mapping
 
 from PIL import Image
 
+from trace.core.types import TypedValue
+from trace.tasks.base import TaskOutput
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.geometry.shared.annotation_values import PixelAnnotationArtifacts
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS
+from .shared.prompts import build_survey_traverse_prompt_artifacts
 from .shared.rendering import create_render_context
-from .shared.state import SCENE_ID, SCENE_KIND, RenderContext, RenderedAreaScene, RenderedPointScene
+from .shared.state import SCENE_ID, SCENE_KIND, RenderContext, RenderedAreaScene
 
 
 @dataclass(frozen=True)
@@ -22,7 +25,7 @@ class SurveyRenderedAttempt:
     """Rendered image and annotation artifacts returned by one public task."""
 
     context: RenderContext
-    rendered: RenderedPointScene | RenderedAreaScene
+    rendered: RenderedAreaScene
     image: Image.Image
     noise_meta: dict[str, Any]
     annotation_artifacts: PixelAnnotationArtifacts
@@ -34,8 +37,8 @@ def render_survey_attempts(
     params: Mapping[str, Any],
     max_attempts: int,
     render_defaults: Mapping[str, Any],
-    render_scene: Callable[[RenderContext, int], RenderedPointScene | RenderedAreaScene],
-    build_annotation: Callable[[RenderedPointScene | RenderedAreaScene], PixelAnnotationArtifacts],
+    render_scene: Callable[[RenderContext, int], RenderedAreaScene],
+    build_annotation: Callable[[RenderedAreaScene], PixelAnnotationArtifacts],
 ) -> SurveyRenderedAttempt:
     """Run neutral render retries after a public task has bound its scene case."""
 
@@ -150,6 +153,60 @@ def build_survey_trace_payload(
     }
 
 
+def build_survey_task_output(
+    *,
+    task_identity: str,
+    task_prompt_key: str,
+    prompt_defaults: Mapping[str, Any],
+    instance_seed: int,
+    prompt_branch_key: str,
+    formula_family: str,
+    rendered_attempt: SurveyRenderedAttempt,
+    answer_value: int,
+    query_probabilities: Mapping[str, float],
+    query_params_extra: Mapping[str, Any],
+    execution_extra: Mapping[str, Any],
+    witness_extra: Mapping[str, Any],
+    relation_extra: Mapping[str, Any] | None = None,
+) -> TaskOutput:
+    """Build prompt artifacts, trace payload, and final output for a survey task."""
+
+    prompt_artifacts = build_survey_traverse_prompt_artifacts(
+        task_prompt_key=str(task_prompt_key),
+        prompt_defaults=prompt_defaults,
+        instance_seed=int(instance_seed),
+        prompt_branch_key=str(prompt_branch_key),
+        annotation_roles=rendered_attempt.rendered.annotation_roles,
+        annotation_kind=str(rendered_attempt.annotation_artifacts.annotation_type),
+        answer_value=int(answer_value),
+    )
+    trace_payload = build_survey_trace_payload(
+        task_identity=str(task_identity),
+        query_id=str(prompt_branch_key),
+        formula_family=str(formula_family),
+        rendered_attempt=rendered_attempt,
+        prompt_artifacts=prompt_artifacts,
+        answer_value=int(answer_value),
+        query_probabilities=query_probabilities,
+        query_params_extra=query_params_extra,
+        execution_extra=execution_extra,
+        witness_extra=witness_extra,
+        relation_extra=relation_extra,
+    )
+    return TaskOutput(
+        prompt=str(prompt_artifacts.prompt),
+        answer_gt=TypedValue(type="integer", value=int(answer_value)),
+        annotation_gt=TypedValue(
+            type=str(rendered_attempt.annotation_artifacts.annotation_type),
+            value=rendered_attempt.annotation_artifacts.value,
+        ),
+        image=rendered_attempt.image,
+        image_id="img0",
+        trace_payload=dict(trace_payload),
+        **survey_output_metadata(prompt_artifacts=prompt_artifacts, query_name=str(prompt_branch_key)),
+    )
+
+
 def survey_output_metadata(*, prompt_artifacts: Any, query_name: str) -> dict[str, Any]:
     """Return neutral output metadata for a public task's final TaskOutput."""
 
@@ -163,6 +220,7 @@ def survey_output_metadata(*, prompt_artifacts: Any, query_name: str) -> dict[st
 
 __all__ = [
     "SurveyRenderedAttempt",
+    "build_survey_task_output",
     "build_survey_trace_payload",
     "render_survey_attempts",
     "survey_output_metadata",

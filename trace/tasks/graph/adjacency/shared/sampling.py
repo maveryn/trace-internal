@@ -5,9 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
+from .....core.sampling import uniform_choice
 from .....core.seed import spawn_rng
 from ....shared.config_defaults import group_default
-from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ....shared.deterministic_sampling import uniform_probability_map
 from ...shared.graph_sample_types import SUPPORTED_NODE_LINK_LABEL_VARIANTS
 from ...shared.label_assets import default_graph_label_bucket_weights, resolve_graph_node_labels
 from ...shared.task_support import graph_int_support, resolve_graph_named_variant
@@ -106,12 +107,12 @@ def resolve_adjacency_int_axis(
         if int(value) not in set(feasible):
             raise ValueError(f"{axis_name} is outside configured support")
     else:
-        index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{str(rng_namespace)}:{str(axis_name)}",
+        value = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{str(rng_namespace)}:{str(axis_name)}"),
+                feasible,
+            )
         )
-        value = int(feasible[int(index % len(feasible))])
     return ResolvedIntAxis(
         value=int(value),
         probabilities=uniform_probability_map(feasible, selected=int(value) if explicit is not None else None),
@@ -236,8 +237,12 @@ def resolve_component_count_axes(
         if int(node_count) not in set(node_support):
             raise ValueError("node_count is outside configured support")
     else:
-        node_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{str(rng_namespace)}:node_count")
-        node_count = int(node_support[int(node_index % len(node_support))])
+        node_count = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{str(rng_namespace)}:node_count"),
+                node_support,
+            )
+        )
 
     component_max = min(
         int(node_count),
@@ -253,12 +258,12 @@ def resolve_component_count_axes(
         if int(component_count) not in set(component_support):
             raise ValueError("component_count is outside configured support")
     else:
-        component_index = resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{str(rng_namespace)}:component_count",
+        component_count = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{str(rng_namespace)}:component_count"),
+                component_support,
+            )
         )
-        component_count = int(component_support[int(component_index % len(component_support))])
 
     extra_support = graph_int_support(params, gen_defaults, "extra_edge_count", defaults.extra_edge_count_min, defaults.extra_edge_count_max)
     explicit_extra = params.get("extra_edge_count")
@@ -267,8 +272,12 @@ def resolve_component_count_axes(
         if int(extra_edge_count) not in set(extra_support):
             raise ValueError("extra_edge_count is outside configured support")
     else:
-        extra_index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{str(rng_namespace)}:extra_edge_count")
-        extra_edge_count = int(extra_support[int(extra_index % len(extra_support))])
+        extra_edge_count = int(
+            uniform_choice(
+                spawn_rng(int(instance_seed), f"{str(rng_namespace)}:extra_edge_count"),
+                extra_support,
+            )
+        )
 
     return ComponentCountAxes(
         scene_variant=str(scene_variant),

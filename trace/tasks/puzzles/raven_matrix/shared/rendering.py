@@ -7,7 +7,6 @@ from typing import Any, Mapping, Sequence
 from PIL import Image, ImageDraw
 
 from trace.tasks.puzzles.shared.drawing import draw_centered_text, draw_rounded_rect
-from trace.tasks.puzzles.shared.option_panels import render_puzzle_option_panel
 from trace.tasks.puzzles.shared.symbol_rendering import draw_puzzle_shape_icon
 from trace.tasks.shared.text_rendering import load_font
 
@@ -18,6 +17,26 @@ def _rgb(value: Sequence[int]) -> tuple[int, int, int]:
     """Normalize one RGB sequence."""
 
     return tuple(int(component) for component in value[:3])
+
+
+def _matrix_content_pad(cell_size: float) -> float:
+    """Return the matrix-cell inset used before Raven panel content is drawn."""
+
+    return float(max(8.0, 0.08 * float(cell_size)))
+
+
+def _centered_square(
+    bbox: tuple[float, float, float, float] | list[float],
+    side: float,
+) -> tuple[float, float, float, float]:
+    """Return a square with the requested side centered inside a bbox."""
+
+    left, top, right, bottom = [float(value) for value in bbox]
+    resolved_side = float(min(float(side), right - left, bottom - top))
+    cx = float(0.5 * (left + right))
+    cy = float(0.5 * (top + bottom))
+    half = float(0.5 * resolved_side)
+    return (cx - half, cy - half, cx + half, cy + half)
 
 
 def _draw_attribute_panel(
@@ -45,21 +64,75 @@ def _draw_attribute_panel(
     )
 
 
-def _count_positions(count: int) -> list[tuple[float, float]]:
-    """Return normalized dot positions for count panels."""
+def _draw_raven_option_cell(
+    draw: ImageDraw.ImageDraw,
+    *,
+    slot_bbox: tuple[float, float, float, float],
+    option_label: str,
+    label_font,
+    label_center_y_px: float,
+    cell_side_px: float,
+    label_gap_px: float,
+    cell_fill_rgb: Sequence[int],
+    border_color_rgb: Sequence[int],
+    text_color_rgb: Sequence[int],
+    text_stroke_rgb: Sequence[int],
+    cell_corner_radius_px: int,
+    border_width_px: int,
+) -> tuple[list[float], list[float]]:
+    """Draw one Raven option label and candidate cell without card chrome."""
+
+    left, top, right, bottom = [float(value) for value in slot_bbox]
+    slot_width = float(right - left)
+    label_bbox = draw_centered_text(
+        draw,
+        text=str(option_label),
+        center=(float(left + 0.5 * slot_width), float(label_center_y_px)),
+        font=label_font,
+        fill=text_color_rgb,
+        stroke_fill=text_stroke_rgb,
+        stroke_width=1,
+    )
+    cell_top_min = float(label_bbox[3] + float(label_gap_px))
+    available_height = float(bottom - cell_top_min)
+    side = float(min(float(cell_side_px), slot_width, max(1.0, available_height)))
+    cell_left = float(left + 0.5 * (slot_width - side))
+    cell_top = float(cell_top_min + max(0.0, 0.5 * (available_height - side)))
+    cell_bbox = (
+        float(cell_left),
+        float(cell_top),
+        float(cell_left + side),
+        float(cell_top + side),
+    )
+    draw_rounded_rect(
+        draw,
+        cell_bbox,
+        radius=int(cell_corner_radius_px),
+        fill=cell_fill_rgb,
+        outline=border_color_rgb,
+        width=int(border_width_px),
+    )
+    return (
+        [round(float(value), 3) for value in label_bbox],
+        [round(float(value), 3) for value in cell_bbox],
+    )
+
+
+def _count_cells(count: int) -> tuple[tuple[int, int], ...]:
+    """Return a stable filled-cell pattern for a visible count."""
 
     support = (
-        (0.50, 0.50),
-        (0.30, 0.30),
-        (0.70, 0.70),
-        (0.70, 0.30),
-        (0.30, 0.70),
-        (0.50, 0.30),
-        (0.50, 0.70),
-        (0.30, 0.50),
-        (0.70, 0.50),
+        (1, 1),
+        (0, 0),
+        (2, 2),
+        (0, 2),
+        (2, 0),
+        (0, 1),
+        (2, 1),
+        (1, 0),
+        (1, 2),
     )
-    return [(float(x), float(y)) for x, y in support[: max(0, min(9, int(count)))]]
+    return tuple(support[: max(0, min(9, int(count)))])
 
 
 def _draw_count_panel(
@@ -70,37 +143,32 @@ def _draw_count_panel(
     outline_rgb: Sequence[int],
     border_width_px: int,
 ) -> None:
-    """Draw one repeated-dot count panel."""
+    """Draw one count as filled cells in a Raven mini-grid."""
 
-    left, top, right, bottom = [float(value) for value in bbox]
-    width = float(right - left)
-    height = float(bottom - top)
-    radius = float(max(5.0, 0.085 * min(width, height)))
-    fill = _rgb(panel_spec["fill_rgb"])
-    outline = _rgb(outline_rgb)
-    for norm_x, norm_y in _count_positions(int(panel_spec["count"])):
-        cx = float(left + norm_x * width)
-        cy = float(top + norm_y * height)
-        draw.ellipse(
-            (cx - radius, cy - radius, cx + radius, cy + radius),
-            fill=fill,
-            outline=outline,
-            width=max(1, int(border_width_px) - 1),
-        )
+    _draw_filled_cell_grid(
+        draw,
+        bbox=bbox,
+        grid_size=3,
+        selected_cells=_count_cells(int(panel_spec["count"])),
+        fill_rgb=panel_spec["fill_rgb"],
+        outline_rgb=outline_rgb,
+        border_width_px=int(border_width_px),
+    )
 
 
-def _draw_pattern_panel(
+def _draw_filled_cell_grid(
     draw: ImageDraw.ImageDraw,
     *,
     bbox: tuple[float, float, float, float],
-    panel_spec: Mapping[str, Any],
+    grid_size: int,
+    selected_cells: Sequence[Sequence[int]],
+    fill_rgb: Sequence[int],
     outline_rgb: Sequence[int],
     border_width_px: int,
 ) -> None:
-    """Draw one filled-cell spatial pattern panel."""
+    """Draw a nested Raven mini-grid with selected cells filled."""
 
     left, top, right, bottom = [float(value) for value in bbox]
-    grid_size = int(panel_spec.get("grid_size", 3))
     if grid_size < 2:
         raise ValueError("Raven pattern panels require grid_size >= 2")
     pad = float(0.14 * min(right - left, bottom - top))
@@ -112,9 +180,9 @@ def _draw_pattern_panel(
     grid_width = float(cell_size * grid_size)
     grid_left = float(0.5 * (left + right - grid_width))
     grid_top = float(0.5 * (top + bottom - grid_width))
-    fill = _rgb(panel_spec["fill_rgb"])
+    fill = _rgb(fill_rgb)
     outline = _rgb(outline_rgb)
-    selected = {(int(row), int(col)) for row, col in panel_spec["cells"]}
+    selected = {(int(row), int(col)) for row, col in selected_cells}
     for row_index in range(grid_size):
         for col_index in range(grid_size):
             x0 = float(grid_left + col_index * cell_size)
@@ -127,6 +195,27 @@ def _draw_pattern_panel(
                 outline=outline,
                 width=max(1, int(border_width_px) - 1),
             )
+
+
+def _draw_pattern_panel(
+    draw: ImageDraw.ImageDraw,
+    *,
+    bbox: tuple[float, float, float, float],
+    panel_spec: Mapping[str, Any],
+    outline_rgb: Sequence[int],
+    border_width_px: int,
+) -> None:
+    """Draw one filled-cell spatial pattern panel."""
+
+    _draw_filled_cell_grid(
+        draw,
+        bbox=bbox,
+        grid_size=int(panel_spec.get("grid_size", 3)),
+        selected_cells=panel_spec["cells"],
+        fill_rgb=panel_spec["fill_rgb"],
+        outline_rgb=outline_rgb,
+        border_width_px=int(border_width_px),
+    )
 
 
 def draw_raven_panel_content(
@@ -178,7 +267,7 @@ def render_raven_scene(
     option_specs: Sequence[Mapping[str, Any]],
     render_params: RavenRenderParams,
 ) -> RenderedRavenScene:
-    """Render one Raven-style 3 by 3 matrix and six labeled image options."""
+    """Render one Raven-style 3 by 3 matrix and labeled image options."""
 
     selected_variant = str(scene_variant)
     if selected_variant not in set(SUPPORTED_SCENE_VARIANTS):
@@ -254,43 +343,7 @@ def render_raven_scene(
     entities: list[dict[str, Any]] = []
     matrix_cell_bbox_map: dict[str, list[float]] = {}
     option_panel_bbox_map: dict[str, list[float]] = {}
-
-    if selected_variant in {"raven_card", "raven_outline"}:
-        fill = render_params.panel_fill_rgb
-        if selected_variant == "raven_outline":
-            fill = render_params.option_panel_fill_rgb
-        draw_rounded_rect(
-            draw,
-            matrix_panel_bbox,
-            radius=int(render_params.panel_corner_radius_px),
-            fill=fill,
-            outline=render_params.border_color_rgb,
-            width=int(render_params.border_width_px),
-        )
-        draw_rounded_rect(
-            draw,
-            options_panel_bbox,
-            radius=int(render_params.panel_corner_radius_px),
-            fill=fill,
-            outline=render_params.border_color_rgb,
-            width=int(render_params.border_width_px),
-        )
-        entities.append(
-            {
-                "entity_id": "raven_matrix_panel",
-                "entity_type": "puzzle_raven_panel",
-                "bbox_px": [round(float(value), 3) for value in matrix_panel_bbox],
-                "attrs": {"panel_role": "matrix", "scene_variant": selected_variant},
-            }
-        )
-        entities.append(
-            {
-                "entity_id": "raven_options_panel",
-                "entity_type": "puzzle_raven_panel",
-                "bbox_px": [round(float(value), 3) for value in options_panel_bbox],
-                "attrs": {"panel_role": "options", "scene_variant": selected_variant},
-            }
-        )
+    option_cell_bbox_map: dict[str, list[float]] = {}
 
     for row_index, row in enumerate(rows):
         for col_index, cell in enumerate(row):
@@ -330,7 +383,7 @@ def render_raven_scene(
                     stroke_width=1,
                 )
             else:
-                content_pad = float(max(8.0, 0.08 * cell_size))
+                content_pad = _matrix_content_pad(cell_size)
                 draw_raven_panel_content(
                     draw,
                     bbox=(
@@ -361,7 +414,13 @@ def render_raven_scene(
                 }
             )
 
-    symbol_box_size = float(render_params.option_symbol_box_size_px)
+    matrix_content_side = float(cell_size - 2.0 * _matrix_content_pad(cell_size))
+    symbol_box_size = float(
+        max(
+            float(render_params.option_symbol_box_size_px),
+            matrix_content_side + 12.0,
+        )
+    )
     option_label_gap = float(render_params.option_label_gap_px)
     for option_index, option in enumerate(options):
         panel_left = float(options_left + option_index * (option_panel_width + option_gap))
@@ -373,43 +432,37 @@ def render_raven_scene(
             float(panel_top + option_panel_height),
         )
         option_panel_id = str(option["option_panel_id"])
-        option_panel = render_puzzle_option_panel(
+        label_bbox, cell_bbox = _draw_raven_option_cell(
             draw,
-            panel_bbox=panel_bbox,
+            slot_bbox=panel_bbox,
             option_label=str(option["option_label"]),
             label_font=option_label_font,
             label_center_y_px=float(panel_top + 28.0),
-            content_box_size_px=float(symbol_box_size),
-            content_gap_px=float(option_label_gap),
-            panel_fill_rgb=render_params.option_panel_fill_rgb,
-            content_fill_rgb=render_params.option_symbol_fill_rgb,
+            cell_side_px=float(symbol_box_size),
+            label_gap_px=float(option_label_gap),
+            cell_fill_rgb=render_params.option_symbol_fill_rgb,
             border_color_rgb=render_params.border_color_rgb,
             text_color_rgb=render_params.text_color_rgb,
             text_stroke_rgb=render_params.text_stroke_rgb,
-            panel_corner_radius_px=int(render_params.slot_corner_radius_px),
-            content_corner_radius_px=int(max(8, render_params.slot_corner_radius_px - 4)),
+            cell_corner_radius_px=int(max(8, render_params.slot_corner_radius_px - 4)),
             border_width_px=int(render_params.border_width_px),
         )
-        content_pad = float(max(6.0, 0.06 * symbol_box_size))
         draw_raven_panel_content(
             draw,
-            bbox=(
-                float(option_panel.content_bbox[0] + content_pad),
-                float(option_panel.content_bbox[1] + content_pad),
-                float(option_panel.content_bbox[2] - content_pad),
-                float(option_panel.content_bbox[3] - content_pad),
-            ),
+            bbox=_centered_square(cell_bbox, matrix_content_side),
             panel_spec=option["panel_spec"],
             outline_rgb=render_params.border_color_rgb,
             border_width_px=int(render_params.border_width_px),
         )
 
-        panel_bbox_list = list(option_panel.panel_bbox)
+        panel_bbox_list = [round(float(value), 3) for value in panel_bbox]
+        cell_bbox_list = [round(float(value), 3) for value in cell_bbox]
         option_panel_bbox_map[option_panel_id] = list(panel_bbox_list)
+        option_cell_bbox_map[option_panel_id] = list(cell_bbox_list)
         entities.append(
             {
                 "entity_id": option_panel_id,
-                "entity_type": "puzzle_raven_option_panel",
+                "entity_type": "puzzle_raven_option_slot",
                 "bbox_px": list(panel_bbox_list),
                 "attrs": {
                     "option_index": int(option_index),
@@ -423,7 +476,7 @@ def render_raven_scene(
             {
                 "entity_id": f"{option_panel_id}_label",
                 "entity_type": "puzzle_raven_option_label",
-                "bbox_px": list(option_panel.label_bbox),
+                "bbox_px": list(label_bbox),
                 "attrs": {
                     "option_index": int(option_index),
                     "option_label": str(option["option_label"]),
@@ -432,9 +485,9 @@ def render_raven_scene(
         )
         entities.append(
             {
-                "entity_id": f"{option_panel_id}_content_box",
-                "entity_type": "puzzle_raven_option_content_box",
-                "bbox_px": list(option_panel.content_bbox),
+                "entity_id": f"{option_panel_id}_cell",
+                "entity_type": "puzzle_raven_option_cell",
+                "bbox_px": list(cell_bbox_list),
                 "attrs": {
                     "option_index": int(option_index),
                     "option_label": str(option["option_label"]),
@@ -461,6 +514,7 @@ def render_raven_scene(
         scene_bbox_px=scene_bbox,
         matrix_cell_bbox_map=matrix_cell_bbox_map,
         option_panel_bbox_map=option_panel_bbox_map,
+        option_cell_bbox_map=option_cell_bbox_map,
     )
 
 

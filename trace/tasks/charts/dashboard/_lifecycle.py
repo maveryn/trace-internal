@@ -9,9 +9,11 @@ from PIL import Image
 
 from trace.core.seed import hash64
 from trace.core.types import TypedValue
-from trace.tasks.charts.dashboard.shared.annotations import keyed_point_artifacts, point_set_artifacts
+from trace.tasks.charts.dashboard.shared.annotations import keyed_point_artifacts, point_artifacts, point_set_artifacts
 from trace.tasks.charts.dashboard.shared.output import build_trace_scaffold, render_dataset
-from trace.tasks.charts.dashboard.shared.state import AnnotationRef, DashboardDataset, SCENE_ID
+from trace.tasks.charts.dashboard.shared.prompts import build_prompt_artifacts, build_prompt_slots
+from trace.tasks.charts.dashboard.shared.sampling import DashboardTotalExtremumSample
+from trace.tasks.charts.dashboard.shared.state import AnnotationRef, Category, DashboardDataset, DashboardQuery, SCENE_ID, SCENE_VARIANT
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import PromptTraceArtifacts, build_prompt_query_spec
 
@@ -25,6 +27,7 @@ class DashboardTaskPlan:
     relations: Mapping[str, Any]
     answer_gt: TypedValue
     annotation_refs: tuple[AnnotationRef, ...]
+    annotation_type: str = "point_set"
     annotation_roles: Mapping[str, AnnotationRef] | None = None
 
 
@@ -51,7 +54,24 @@ def materialize_dashboard_plan(*, instance_seed: int, params: Mapping[str, Any],
     """Render a task-owned plan and add shared trace sections."""
 
     rendered, render_meta, sidecar_meta = render_dataset(plan.dataset, params=params, instance_seed=int(instance_seed))
-    if plan.annotation_roles is None:
+    annotation_type = str(plan.annotation_type)
+    if annotation_type == "point":
+        if len(plan.annotation_refs) != 1:
+            raise RuntimeError("dashboard scalar point annotation must contain exactly one ref")
+        annotation_gt, witness_symbolic, projected_annotation, annotation_refs = point_artifacts(
+            ref=plan.annotation_refs[0],
+            rendered=rendered,
+            panels=plan.dataset.panels,
+            categories=plan.dataset.categories,
+        )
+    elif plan.annotation_roles is not None:
+        annotation_gt, witness_symbolic, projected_annotation, annotation_refs = keyed_point_artifacts(
+            role_to_ref=plan.annotation_roles,
+            rendered=rendered,
+            panels=plan.dataset.panels,
+            categories=plan.dataset.categories,
+        )
+    elif annotation_type == "point_set":
         annotation_gt, witness_symbolic, projected_annotation = point_set_artifacts(
             refs=plan.annotation_refs,
             rendered=rendered,
@@ -60,12 +80,7 @@ def materialize_dashboard_plan(*, instance_seed: int, params: Mapping[str, Any],
         )
         annotation_refs = tuple(plan.annotation_refs)
     else:
-        annotation_gt, witness_symbolic, projected_annotation, annotation_refs = keyed_point_artifacts(
-            role_to_ref=plan.annotation_roles,
-            rendered=rendered,
-            panels=plan.dataset.panels,
-            categories=plan.dataset.categories,
-        )
+        raise ValueError(f"unsupported dashboard annotation type: {annotation_type}")
     trace_payload = build_trace_scaffold(
         dataset=plan.dataset,
         rendered=rendered,
@@ -131,6 +146,42 @@ def dashboard_task_output_fields(materialized: MaterializedDashboardTask) -> dic
     }
 
 
+def dashboard_total_extremum_plan_from_sample(
+    *,
+    categories: tuple[Category, ...],
+    total_sample: DashboardTotalExtremumSample,
+    relations: Mapping[str, Any],
+    prompt_query_key: str,
+    instance_seed: int,
+) -> DashboardTaskPlan:
+    """Return a plan for label tasks whose annotation is a total witness set."""
+
+    dataset = DashboardDataset(
+        scene_variant=SCENE_VARIANT,
+        categories=categories,
+        panels=total_sample.panels,
+        query=DashboardQuery(
+            answer=str(total_sample.answer_label),
+            answer_type="string",
+            annotation_refs=total_sample.annotation_refs,
+            params=dict(relations),
+        ),
+    )
+    prompt_artifacts = build_prompt_artifacts(
+        prompt_query_key=str(prompt_query_key),
+        dynamic_slots=build_prompt_slots(dataset=dataset),
+        instance_seed=int(instance_seed),
+    )
+    return DashboardTaskPlan(
+        dataset=dataset,
+        prompt_artifacts=prompt_artifacts,
+        relations=dict(relations),
+        answer_gt=TypedValue(type="string", value=str(total_sample.answer_label)),
+        annotation_refs=total_sample.annotation_refs,
+        annotation_type="point_set",
+    )
+
+
 def run_dashboard_public_task(
     *,
     instance_seed: int,
@@ -156,6 +207,7 @@ __all__ = [
     "DashboardTaskPlan",
     "MaterializedDashboardTask",
     "dashboard_task_output_fields",
+    "dashboard_total_extremum_plan_from_sample",
     "materialize_dashboard_plan",
     "materialize_dashboard_plan_with_retries",
     "run_dashboard_public_task",

@@ -4,38 +4,27 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from trace.core.types import TypedValue
 from trace.tasks.charts.scientific_axis_frame.shared.state import AxisFrameRenderResult
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, segment_annotation_artifacts
 
 
-def bbox_map_for_tick_roles(
+def segment_for_tick_roles(
     *,
     rendered: AxisFrameRenderResult,
     role_tick_keys: Mapping[str, str],
 ) -> tuple[AnnotationArtifacts, dict[str, Any]]:
-    tick_bboxes = rendered.rendered_scene.tick_label_bboxes_px
-    mapped = {
-        str(role): list(tick_bboxes[str(tick_key)])
-        for role, tick_key in role_tick_keys.items()
-    }
-    projected = {
-        "type": "bbox_map",
-        "bbox_map": dict(mapped),
-        "pixel_bbox_map": dict(mapped),
-    }
-    artifacts = AnnotationArtifacts(
-        annotation_type="bbox_map",
-        value=dict(mapped),
-        annotation_gt=TypedValue(type="bbox_map", value=dict(mapped)),
-        projected_annotation=dict(projected),
-    )
+    tick_points = rendered.rendered_scene.tick_points_px
+    ordered_keys = [str(tick_key) for tick_key in role_tick_keys.values()]
+    if len(ordered_keys) != 2:
+        raise ValueError("axis-frame segment annotation requires exactly two tick roles")
+    segment = [list(tick_points[str(tick_key)]) for tick_key in ordered_keys]
+    artifacts = segment_annotation_artifacts(segment)
     witness_symbolic = {
-        "type": "axis_tick_label_witness",
-        "tick_keys": [str(value) for value in role_tick_keys.values()],
-        "annotation_bbox_map": dict(mapped),
+        "type": "axis_tick_segment_witness",
+        "tick_keys": list(ordered_keys),
+        "annotation_segment": [list(point) for point in artifacts.value],
     }
     return artifacts, witness_symbolic
 
 
-__all__ = ["bbox_map_for_tick_roles"]
+__all__ = ["segment_for_tick_roles"]

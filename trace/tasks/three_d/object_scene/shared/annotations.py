@@ -11,14 +11,24 @@ from ....shared.text_rendering import load_font
 from ...shared.object_scene import POINT_COLORS, POINT_LABELS, _RenderParams
 
 
+def _wrap_color_index(index: int) -> int:
+    color_count = len(POINT_COLORS)
+    if color_count <= 0:
+        return 0
+    resolved = abs(int(index))
+    while resolved >= color_count:
+        resolved -= color_count
+    return int(resolved)
+
+
 def _marker_color_for_label(label: str) -> Tuple[int, int, int]:
     """Return a deterministic marker color for standard or task-local point labels."""
 
     if str(label) in POINT_LABELS:
         color_index = POINT_LABELS.index(str(label))
     else:
-        color_index = sum(ord(char) for char in str(label)) % len(POINT_COLORS)
-    return tuple(int(channel) for channel in POINT_COLORS[int(color_index) % len(POINT_COLORS)])
+        color_index = sum(ord(char) for char in str(label))
+    return tuple(int(channel) for channel in POINT_COLORS[_wrap_color_index(int(color_index))])
 
 
 def _text_bbox_at_xy(

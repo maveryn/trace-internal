@@ -92,44 +92,44 @@
   "static_slots_by_key": {
     "query:contains_reference_count": {
       "answer_hint": "set \"answer\" to the requested integer count",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around every interval mark that satisfies the condition",
-      "json_example": "{\"annotation\":[[220,260,520,292],[220,430,540,462]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array of lower-to-upper interval segments, each segment written as [[x0,y0],[x1,y1]] for every interval that satisfies the condition",
+      "json_example": "{\"annotation\":[[[300,276],[470,276]],[[310,446],[520,446]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:entirely_above_reference_count": {
       "answer_hint": "set \"answer\" to the requested integer count",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around every interval mark that satisfies the condition",
-      "json_example": "{\"annotation\":[[220,260,520,292],[220,430,540,462]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array of lower-to-upper interval segments, each segment written as [[x0,y0],[x1,y1]] for every interval that satisfies the condition",
+      "json_example": "{\"annotation\":[[[300,276],[470,276]],[[310,446],[520,446]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:entirely_below_reference_count": {
       "answer_hint": "set \"answer\" to the requested integer count",
-      "annotation_hint": "set \"annotation\" to an array of [x0,y0,x1,y1] pixel boxes around every interval mark that satisfies the condition",
-      "json_example": "{\"annotation\":[[220,260,520,292],[220,430,540,462]],\"answer\":2}",
+      "annotation_hint": "set \"annotation\" to an array of lower-to-upper interval segments, each segment written as [[x0,y0],[x1,y1]] for every interval that satisfies the condition",
+      "json_example": "{\"annotation\":[[[300,276],[470,276]],[[310,446],[520,446]]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:widest_interval_label": {
       "answer_hint": "set \"answer\" to the requested category label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0,y0,x1,y1] pixel box around the interval mark used for the answer",
-      "json_example": "{\"annotation\":[[320,250,590,286]],\"answer\":\"Cedar\"}",
+      "annotation_hint": "set \"annotation\" to the selected interval's lower-to-upper segment as [[x0,y0],[x1,y1]]",
+      "json_example": "{\"annotation\":[[310,268],[610,268]],\"answer\":\"Cedar\"}",
       "json_example_answer_only": "{\"answer\":\"Cedar\"}"
     },
     "query:narrowest_interval_label": {
       "answer_hint": "set \"answer\" to the requested category label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0,y0,x1,y1] pixel box around the interval mark used for the answer",
-      "json_example": "{\"annotation\":[[320,250,590,286]],\"answer\":\"Cedar\"}",
+      "annotation_hint": "set \"annotation\" to the selected interval's lower-to-upper segment as [[x0,y0],[x1,y1]]",
+      "json_example": "{\"annotation\":[[310,268],[610,268]],\"answer\":\"Cedar\"}",
       "json_example_answer_only": "{\"answer\":\"Cedar\"}"
     },
     "query:second_widest_interval_label": {
       "answer_hint": "set \"answer\" to the requested category label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0,y0,x1,y1] pixel box around the interval mark used for the answer",
-      "json_example": "{\"annotation\":[[320,250,590,286]],\"answer\":\"Cedar\"}",
+      "annotation_hint": "set \"annotation\" to the selected interval's lower-to-upper segment as [[x0,y0],[x1,y1]]",
+      "json_example": "{\"annotation\":[[310,268],[610,268]],\"answer\":\"Cedar\"}",
       "json_example_answer_only": "{\"answer\":\"Cedar\"}"
     },
     "query:second_narrowest_interval_label": {
       "answer_hint": "set \"answer\" to the requested category label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0,y0,x1,y1] pixel box around the interval mark used for the answer",
-      "json_example": "{\"annotation\":[[320,250,590,286]],\"answer\":\"Cedar\"}",
+      "annotation_hint": "set \"annotation\" to the selected interval's lower-to-upper segment as [[x0,y0],[x1,y1]]",
+      "json_example": "{\"annotation\":[[310,268],[610,268]],\"answer\":\"Cedar\"}",
       "json_example_answer_only": "{\"answer\":\"Cedar\"}"
     }
   },

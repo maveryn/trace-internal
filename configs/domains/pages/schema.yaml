@@ -6,16 +6,9 @@ generation:
     field_count_max: 7
     relationship_count_min: 5
     relationship_count_max: 9
-    balanced_query_sampling: true
     balanced_context_sampling: true
     balanced_layout_sampling: true
     balanced_style_sampling: true
-    query_weights:
-      all_field_count: 1.0
-      attribute_field_count: 1.0
-      total_relationship_count: 1.0
-      target_table_for_relationship_label: 1.0
-      relationship_cardinality_between_tables: 1.0
     context_weights:
       clinic: 1.0
       commerce: 1.0
@@ -32,25 +25,6 @@ generation:
       violet_cards: 1.0
       monochrome_sql: 1.0
       amber_blueprint: 1.0
-  task_overrides:
-    task_pages__schema__field_role_count:
-      table_count_min: 6
-      table_count_max: 8
-    task_pages__schema__relationship_count:
-      table_count_min: 8
-      table_count_max: 8
-      relationship_count_min: 5
-      relationship_count_max: 9
-    task_pages__schema__relationship_endpoint_label:
-      table_count_min: 8
-      table_count_max: 8
-      relationship_count_min: 6
-      relationship_count_max: 9
-    task_pages__schema__relationship_cardinality_label:
-      table_count_min: 8
-      table_count_max: 8
-      relationship_count_min: 6
-      relationship_count_max: 9
 rendering:
   shared:
     canvas_width: 1300
@@ -82,29 +56,7 @@ rendering:
     layout_jitter_min_margin_px: 18
 prompt:
   shared:
-    bundle_id: pages_schema_v0
-    scene_key: database_schema_diagram
-    object_description: database tables with field rows, key markers, and relationship
-      lines
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
-      in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
-      the final answer.
-    integer_answer_hint: set "answer" to the requested integer count
-    string_answer_hint: set "answer" to the exact target table label as shown
-    cardinality_answer_hint: set "answer" to the normalized cardinality label, one
-      of "one_to_one", "one_to_many", or "optional_many"
-    annotation_hint_field_count: set "annotation" to an array of [x0,y0,x1,y1] pixel
-      bounding boxes for the counted field rows
-    annotation_hint_relationship_count: set "annotation" to a list of segments.
-      Each segment is [[x1, y1], [x2, y2]], using the endpoints of one counted
-      relationship line; use [] when the answer is zero
-    annotation_hint_relationship_endpoint: set "annotation" to an object with keys
-      "source_table", "relationship_label", and "target_table", each mapped to a [x0,y0,x1,y1]
-      pixel bounding box
-    annotation_hint_relationship_cardinality: set "annotation" to an object with keys
-      "source_table", "target_table", "source_cardinality_marker", and "target_cardinality_marker",
-      each mapped to a [x0,y0,x1,y1] pixel bounding box
+    bundle_id: pages_schema_v1
 visual:
   background:
     enabled: true

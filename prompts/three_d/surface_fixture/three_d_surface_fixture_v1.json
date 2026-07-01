@@ -112,14 +112,14 @@
     },
     "query:highest_element_count_panel": {
       "answer_hint": "set \"answer\" to the selected panel label as a single capital letter",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around the selected panel",
-      "json_example": "{\"annotation\":[[80,90,520,410]],\"answer\":\"B\"}",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] pixel box around the selected panel",
+      "json_example": "{\"annotation\":[80,90,520,410],\"answer\":\"B\"}",
       "json_example_answer_only": "{\"answer\":\"B\"}"
     },
     "query:lowest_element_count_panel": {
       "answer_hint": "set \"answer\" to the selected panel label as a single capital letter",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around the selected panel",
-      "json_example": "{\"annotation\":[[80,90,520,410]],\"answer\":\"B\"}",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] pixel box around the selected panel",
+      "json_example": "{\"annotation\":[80,90,520,410],\"answer\":\"B\"}",
       "json_example_answer_only": "{\"answer\":\"B\"}"
     },
     "query:element_color_count": {
@@ -136,8 +136,8 @@
     },
     "query:recolor_board_match": {
       "answer_hint": "set \"answer\" to the selected candidate board label as a single capital letter",
-      "annotation_hint": "set \"annotation\" to an array containing one [x0, y0, x1, y1] pixel box around the selected candidate board",
-      "json_example": "{\"annotation\":[[640,470,1050,720]],\"answer\":\"C\"}",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] pixel box around the selected candidate board",
+      "json_example": "{\"annotation\":[640,470,1050,720],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "query:scoped_element_color_count": {

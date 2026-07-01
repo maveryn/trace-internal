@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from ...registry import register_task
-from ._lifecycle import ParallelCoordsTaskPlan, profile_segment_point_plan, run_parallel_coords_task
+from ._lifecycle import ParallelCoordsTaskPlan, profile_segment_plan, run_parallel_coords_task
 from .shared.defaults import DOMAIN, SCENE_NAMESPACE
 from .shared.sampling import sample_axis_delta_dataset
 
@@ -27,7 +27,7 @@ def _build_plan(params: Mapping[str, Any], instance_seed: int, selected: str) ->
         change_mode=mode,
         namespace=f"{SCENE_NAMESPACE}.axis_delta.{selected}",
     )
-    return profile_segment_point_plan(
+    return profile_segment_plan(
         dataset=dataset,
         params=dict(params),
         instance_seed=int(instance_seed),

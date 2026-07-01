@@ -64,7 +64,7 @@ def _source_outgoing_question(frame, *, params: dict[str, Any], probabilities: d
         branch_probabilities=dict(probabilities),
         answer=int(answer),
         answer_type="integer",
-        annotation_type="bbox_set",
+        annotation_type="point_set",
         annotation_segment_ids=tuple(segment_refs),
         params={
             "program_code": "sum(value(source_to_middle) for link in links if link.source == source_label)",
@@ -119,7 +119,7 @@ def _target_incoming_question(frame, *, params: dict[str, Any], probabilities: d
         branch_probabilities=dict(probabilities),
         answer=int(answer),
         answer_type="integer",
-        annotation_type="bbox_set",
+        annotation_type="point_set",
         annotation_segment_ids=tuple(segment_refs),
         params={
             "program_code": "sum(value(middle_to_target) for link in links if link.target == target_label)",

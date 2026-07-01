@@ -13,21 +13,7 @@ PROTECTED_CONTRACT_FILES = (
     "tests/test_scene_package_migration_contracts.py",
     "trace/core/scene_package_file_policies.py",
     "trace/core/scene_package_migration.py",
-    "docs/SCENE_PACKAGE_MIGRATION/README.md",
-    "docs/SCENE_PACKAGE_MIGRATION/DOMAIN_FILE_POLICIES.md",
-    "docs/SCENE_PACKAGE_MIGRATION/domain_file_policies/charts.md",
-    "docs/SCENE_PACKAGE_MIGRATION/domain_file_policies/games.md",
-    "docs/SCENE_PACKAGE_MIGRATION/domain_file_policies/geometry.md",
-    "docs/SCENE_PACKAGE_MIGRATION/domain_file_policies/graph.md",
-    "docs/SCENE_PACKAGE_MIGRATION/domain_file_policies/icons.md",
-    "docs/SCENE_PACKAGE_MIGRATION/domain_file_policies/illustrations.md",
-    "docs/SCENE_PACKAGE_MIGRATION/domain_file_policies/pages.md",
-    "docs/SCENE_PACKAGE_MIGRATION/domain_file_policies/physics.md",
-    "docs/SCENE_PACKAGE_MIGRATION/domain_file_policies/puzzles.md",
-    "docs/SCENE_PACKAGE_MIGRATION/domain_file_policies/three_d.md",
-    "docs/SCENE_PACKAGE_MIGRATION/ENFORCEMENT_TESTS.md",
-    "docs/SCENE_PACKAGE_MIGRATION/RECEIPT_SCHEMA.md",
-    "docs/SCENE_PACKAGE_MIGRATION/SCENE_MIGRATION_GUIDE.md",
+    "docs/SCENE_PACKAGE_MIGRATION",
 )
 
 

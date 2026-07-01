@@ -21,9 +21,11 @@ from .state import (
     FLEET_SHAPES,
     LAST_CELL_OPTION_LABELS,
     SCENE_ID,
+    SHAPE_OPTION_LABELS,
     SUPPORTED_BATTLESHIP_SCENE_VARIANTS,
     BattleshipCandidateOption,
     BattleshipSample,
+    BattleshipShapeOption,
     BattleshipShipPlacement,
     Coord,
     all_coords,
@@ -339,6 +341,7 @@ def build_battleship_scene_state(
     miss_coords: Sequence[Coord],
     construction_mode: str,
     candidate_options: Sequence[BattleshipCandidateOption] = tuple(),
+    shape_options: Sequence[BattleshipShapeOption] = tuple(),
 ) -> BattleshipSample:
     """Build and validate a query-neutral Battleship scene state."""
 
@@ -354,9 +357,49 @@ def build_battleship_scene_state(
         untouched_ship_count=int(untouched_count),
         construction_mode=str(construction_mode),
         candidate_options=tuple(candidate_options),
+        shape_options=tuple(shape_options),
     )
     validate_battleship_scene(sample)
     return sample
+
+
+def sample_shape_options(
+    *,
+    rng: Any,
+    answer_shape_id: str,
+    answer_label_index: int,
+    option_count: int = 5,
+) -> Tuple[BattleshipShapeOption, ...]:
+    """Return labeled fleet-shape options with exactly one answer."""
+
+    labels = tuple(str(label) for label in SHAPE_OPTION_LABELS[: int(option_count)])
+    if len(labels) != int(option_count) or int(option_count) != len(SHAPE_OPTION_LABELS):
+        raise ValueError("Battleship shape-option tasks currently require five options")
+    answer_shape = next((shape for shape in FLEET_SHAPES if str(shape.shape_id) == str(answer_shape_id)), None)
+    if answer_shape is None:
+        raise ValueError("answer_shape_id must belong to the Battleship fleet")
+    answer_index = int(answer_label_index)
+    if answer_index < 0 or answer_index >= len(labels):
+        raise ValueError("answer_label_index must be inside the visible Battleship shape-option labels")
+    distractors = [shape for shape in FLEET_SHAPES if str(shape.shape_id) != str(answer_shape_id)]
+    rng.shuffle(distractors)
+    option_shapes: list[Any] = []
+    distractor_index = 0
+    for label_index in range(len(labels)):
+        if int(label_index) == int(answer_index):
+            option_shapes.append(answer_shape)
+        else:
+            option_shapes.append(distractors[distractor_index])
+            distractor_index += 1
+    return tuple(
+        BattleshipShapeOption(
+            label=str(label),
+            shape_id=str(shape.shape_id),
+            display_name=str(shape.display_name),
+            is_answer=bool(str(shape.shape_id) == str(answer_shape_id)),
+        )
+        for label, shape in zip(labels, option_shapes)
+    )
 
 
 def sample_last_cell_candidate_options(
@@ -463,4 +506,5 @@ __all__ = [
     "resolve_battleship_target_ship_id",
     "sample_last_cell_candidate_options",
     "sample_miss_coords",
+    "sample_shape_options",
 ]

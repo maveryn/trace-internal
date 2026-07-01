@@ -29,19 +29,26 @@
         "Looking only at subplot {panel_label}, which method is highest at x = {x_value}?",
         "Which method has the largest plotted marker value at x = {x_value} in subplot {panel_label}?"
       ],
-      "threshold_series_count": [
+      "above_threshold_series_count": [
         "In subplot {panel_label}, how many methods are above y = {threshold_value} at x = {x_value}?",
         "At x = {x_value} in subplot {panel_label}, count the methods whose y-value is greater than {threshold_value}.",
         "For subplot {panel_label}, how many method markers exceed y = {threshold_value} at x = {x_value}?",
         "Using subplot {panel_label}, count the methods above y = {threshold_value} at x = {x_value}.",
         "How many curves in subplot {panel_label} are above y = {threshold_value} at x = {x_value}?"
       ],
+      "below_threshold_series_count": [
+        "In subplot {panel_label}, how many methods are below y = {threshold_value} at x = {x_value}?",
+        "At x = {x_value} in subplot {panel_label}, count the methods whose y-value is less than {threshold_value}.",
+        "For subplot {panel_label}, how many method markers are under y = {threshold_value} at x = {x_value}?",
+        "Using subplot {panel_label}, count the methods below y = {threshold_value} at x = {x_value}.",
+        "How many curves in subplot {panel_label} are below y = {threshold_value} at x = {x_value}?"
+      ],
       "cross_panel_delta_extremum_label": [
-        "For method {method_label}, which subplot has the largest increase from x = {start_x_value} to x = {end_x_value}?",
-        "Across subplots, where does method {method_label} increase the most between x = {start_x_value} and x = {end_x_value}?",
-        "Compare method {method_label} in every subplot: which subplot shows the greatest y-value gain from x = {start_x_value} to x = {end_x_value}?",
-        "Which subplot has the biggest rise for method {method_label} from x = {start_x_value} through x = {end_x_value}?",
-        "Using method {method_label}, find the subplot with the maximum upward change between x = {start_x_value} and x = {end_x_value}."
+        "For method {method_label}, which subplot has the largest increase from x = {start_x_value} to x = {end_x_value}? {unanswerable_instruction}",
+        "Across subplots, where does method {method_label} increase the most between x = {start_x_value} and x = {end_x_value}? {unanswerable_instruction}",
+        "Compare method {method_label} in every subplot: which subplot shows the greatest y-value gain from x = {start_x_value} to x = {end_x_value}? {unanswerable_instruction}",
+        "Which subplot has the biggest rise for method {method_label} from x = {start_x_value} through x = {end_x_value}? {unanswerable_instruction}",
+        "Using method {method_label}, find the subplot with the maximum upward change between x = {start_x_value} and x = {end_x_value}. {unanswerable_instruction}"
       ],
       "overall_maximum_value_panel_label": [
         "Which subplot contains the single highest plotted marker value across the whole figure?",
@@ -162,32 +169,38 @@
   "static_slots_by_key": {
     "query:curve_at_x_extremum_label": {
       "answer_hint": "set \"answer\" to the exact visible method label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x,y] pixel point on the answer method marker at the requested x-value",
-      "json_example": "{\"annotation\":[[220,290]],\"answer\":\"Method B\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the answer method marker at the requested x-value",
+      "json_example": "{\"annotation\":[220,290],\"answer\":\"Method B\"}",
       "json_example_answer_only": "{\"answer\":\"Method B\"}"
     },
-    "query:threshold_series_count": {
+    "query:above_threshold_series_count": {
+      "answer_hint": "set \"answer\" to the requested count as an integer",
+      "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points on the method markers that satisfy the threshold at the requested x-value",
+      "json_example": "{\"annotation\":[[220,360],[220,290]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    },
+    "query:below_threshold_series_count": {
       "answer_hint": "set \"answer\" to the requested count as an integer",
       "annotation_hint": "set \"annotation\" to an array of [x,y] pixel points on the method markers that satisfy the threshold at the requested x-value",
       "json_example": "{\"annotation\":[[220,360],[220,290]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:cross_panel_delta_extremum_label": {
-      "answer_hint": "set \"answer\" to the exact visible subplot label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"start_point\" and \"end_point\" to [x,y] pixel points on the answer subplot's selected method markers",
+      "answer_hint": "set \"answer\" to the exact visible subplot label as a string, or \"unanswerable\" if the requested method is not plotted in every subplot",
+      "annotation_hint": "set \"annotation\" to an object mapping \"start_point\" and \"end_point\" to [x,y] pixel points on the answer subplot's selected method markers; if the answer is \"unanswerable\", use an empty object",
       "json_example": "{\"annotation\":{\"start_point\":[220,360],\"end_point\":[460,250]},\"answer\":\"Trade\"}",
       "json_example_answer_only": "{\"answer\":\"Trade\"}"
     },
     "query:overall_maximum_value_panel_label": {
       "answer_hint": "set \"answer\" to the exact visible subplot label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x,y] pixel point on the overall maximum marker",
-      "json_example": "{\"annotation\":[[460,180]],\"answer\":\"Energy\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the overall maximum marker",
+      "json_example": "{\"annotation\":[460,180],\"answer\":\"Energy\"}",
       "json_example_answer_only": "{\"answer\":\"Energy\"}"
     },
     "query:overall_minimum_value_panel_label": {
       "answer_hint": "set \"answer\" to the exact visible subplot label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x,y] pixel point on the overall minimum marker",
-      "json_example": "{\"annotation\":[[340,520]],\"answer\":\"Trade\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the overall minimum marker",
+      "json_example": "{\"annotation\":[340,520],\"answer\":\"Trade\"}",
       "json_example_answer_only": "{\"answer\":\"Trade\"}"
     },
     "query:curve_intersection_count": {
@@ -198,32 +211,32 @@
     },
     "query:earliest_maximum_panel_label": {
       "answer_hint": "set \"answer\" to the exact visible subplot label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x,y] pixel point on the answer subplot's maximum marker for the requested method",
-      "json_example": "{\"annotation\":[[260,210]],\"answer\":\"A\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point on the answer subplot's maximum marker for the requested method",
+      "json_example": "{\"annotation\":[260,210],\"answer\":\"A\"}",
       "json_example_answer_only": "{\"answer\":\"A\"}"
     },
     "query:start_highest_panel_label": {
       "answer_hint": "set \"answer\" to the exact visible subplot label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x,y] pixel point on the answer subplot's selected endpoint marker",
-      "json_example": "{\"annotation\":[[210,190]],\"answer\":\"RunA\"}",
+      "annotation_hint": "set \"annotation\" to the [x,y] pixel point on the answer subplot's selected endpoint marker",
+      "json_example": "{\"annotation\":[210,190],\"answer\":\"RunA\"}",
       "json_example_answer_only": "{\"answer\":\"RunA\"}"
     },
     "query:start_lowest_panel_label": {
       "answer_hint": "set \"answer\" to the exact visible subplot label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x,y] pixel point on the answer subplot's selected endpoint marker",
-      "json_example": "{\"annotation\":[[210,510]],\"answer\":\"RunB\"}",
+      "annotation_hint": "set \"annotation\" to the [x,y] pixel point on the answer subplot's selected endpoint marker",
+      "json_example": "{\"annotation\":[210,510],\"answer\":\"RunB\"}",
       "json_example_answer_only": "{\"answer\":\"RunB\"}"
     },
     "query:end_highest_panel_label": {
       "answer_hint": "set \"answer\" to the exact visible subplot label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x,y] pixel point on the answer subplot's selected endpoint marker",
-      "json_example": "{\"annotation\":[[520,180]],\"answer\":\"Trade\"}",
+      "annotation_hint": "set \"annotation\" to the [x,y] pixel point on the answer subplot's selected endpoint marker",
+      "json_example": "{\"annotation\":[520,180],\"answer\":\"Trade\"}",
       "json_example_answer_only": "{\"answer\":\"Trade\"}"
     },
     "query:end_lowest_panel_label": {
       "answer_hint": "set \"answer\" to the exact visible subplot label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x,y] pixel point on the answer subplot's selected endpoint marker",
-      "json_example": "{\"annotation\":[[520,520]],\"answer\":\"Energy\"}",
+      "annotation_hint": "set \"annotation\" to the [x,y] pixel point on the answer subplot's selected endpoint marker",
+      "json_example": "{\"annotation\":[520,520],\"answer\":\"Energy\"}",
       "json_example_answer_only": "{\"answer\":\"Energy\"}"
     },
     "query:largest_panel_spread_label": {
@@ -252,14 +265,14 @@
     },
     "query:cross_panel_upward_threshold_earliest_label": {
       "answer_hint": "set \"answer\" to the exact visible subplot label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x,y] pixel point at the answer subplot's threshold crossing",
-      "json_example": "{\"annotation\":[[310,340]],\"answer\":\"A\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point at the answer subplot's threshold crossing",
+      "json_example": "{\"annotation\":[310,340],\"answer\":\"A\"}",
       "json_example_answer_only": "{\"answer\":\"A\"}"
     },
     "query:cross_panel_downward_threshold_earliest_label": {
       "answer_hint": "set \"answer\" to the exact visible subplot label as a string",
-      "annotation_hint": "set \"annotation\" to an array containing one [x,y] pixel point at the answer subplot's threshold crossing",
-      "json_example": "{\"annotation\":[[310,340]],\"answer\":\"A\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point at the answer subplot's threshold crossing",
+      "json_example": "{\"annotation\":[310,340],\"answer\":\"A\"}",
       "json_example_answer_only": "{\"answer\":\"A\"}"
     }
   },
@@ -291,6 +304,9 @@
     "threshold_value": {
       "type": "string"
     },
+    "unanswerable_instruction": {
+      "type": "string"
+    },
     "x_value": {
       "type": "string"
     }
@@ -300,7 +316,12 @@
       "panel_label",
       "x_value"
     ],
-    "query:threshold_series_count": [
+    "query:above_threshold_series_count": [
+      "panel_label",
+      "x_value",
+      "threshold_value"
+    ],
+    "query:below_threshold_series_count": [
       "panel_label",
       "x_value",
       "threshold_value"
@@ -308,7 +329,8 @@
     "query:cross_panel_delta_extremum_label": [
       "method_label",
       "start_x_value",
-      "end_x_value"
+      "end_x_value",
+      "unanswerable_instruction"
     ],
     "query:overall_maximum_value_panel_label": [],
     "query:overall_minimum_value_panel_label": [],

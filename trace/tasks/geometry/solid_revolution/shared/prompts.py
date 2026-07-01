@@ -20,14 +20,8 @@ def _example_bbox_for_key(key: str) -> list[int]:
         "generating_shape": [80, 132, 365, 440],
         "rotation_axis": [184, 98, 208, 472],
         "solid_preview": [520, 145, 756, 442],
-        "target_volume_cue": [602, 92, 674, 126],
-        "height_label": [76, 260, 134, 304],
-        "radial_input_label": [145, 438, 258, 486],
-        "slant_height_label": [268, 240, 344, 282],
-        "radius_label": [190, 300, 260, 340],
-        "half_height_label": [74, 178, 140, 218],
-        "top_radius_label": [190, 100, 260, 138],
-        "bottom_radius_label": [185, 430, 274, 474],
+        "source_diagram_bbox": [70, 70, 390, 500],
+        "resulting_solid_bbox": [510, 120, 760, 455],
     }
     return list(examples.get(str(key), [120, 120, 180, 160]))
 

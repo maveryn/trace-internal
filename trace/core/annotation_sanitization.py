@@ -12,10 +12,10 @@ PUBLIC_IMAGE_ANNOTATION_TYPES = frozenset(
         "bbox",
         "bbox_sequence",
         "bbox_set",
-        "keyed_bbox_map",
-        "keyed_bbox_set_map",
-        "keyed_point_map",
-        "keyed_point_set_map",
+        "bbox_map",
+        "bbox_set_map",
+        "point_map",
+        "point_set_map",
         "point",
         "segment",
         "segment_set",
@@ -112,21 +112,21 @@ def public_projected_annotation(annotation: TypedValue) -> dict[str, Any]:
             "type": "bbox_sequence",
             "bbox_sequence": [list(item) for item in value],
         }
-    if annotation_type == "keyed_bbox_map":
+    if annotation_type == "bbox_map":
         keyed_bboxes = {key: list(item) for key, item in _as_string_keyed_mapping(annotation.value).items()}
         return {
-            "type": "keyed_bbox_map",
-            "keyed_bbox_map": keyed_bboxes,
+            "type": "bbox_map",
+            "bbox_map": keyed_bboxes,
         }
-    if annotation_type == "keyed_bbox_set_map":
+    if annotation_type == "bbox_set_map":
         keyed_bbox_sets = {
             key: [list(bbox) for bbox in bboxes]
             for key, bboxes in _as_keyed_list_mapping(annotation.value).items()
         }
         return {
-            "type": "keyed_bbox_set_map",
-            "keyed_bbox_set_map": keyed_bbox_sets,
-            "pixel_keyed_bbox_set_map": keyed_bbox_sets,
+            "type": "bbox_set_map",
+            "bbox_set_map": keyed_bbox_sets,
+            "pixel_bbox_set_map": keyed_bbox_sets,
         }
     if annotation_type == "point":
         point = list(annotation.value) if isinstance(annotation.value, (list, tuple)) else annotation.value
@@ -156,22 +156,22 @@ def public_projected_annotation(annotation: TypedValue) -> dict[str, Any]:
             "point_sequence": points,
             "pixel_point_sequence": points,
         }
-    if annotation_type == "keyed_point_map":
+    if annotation_type == "point_map":
         keyed_points = {key: list(item) for key, item in _as_string_keyed_mapping(annotation.value).items()}
         return {
-            "type": "keyed_point_map",
-            "keyed_point_map": keyed_points,
-            "pixel_keyed_point_map": keyed_points,
+            "type": "point_map",
+            "point_map": keyed_points,
+            "pixel_point_map": keyed_points,
         }
-    if annotation_type == "keyed_point_set_map":
+    if annotation_type == "point_set_map":
         keyed_point_sets = {
             key: [list(point) for point in points]
             for key, points in _as_keyed_list_mapping(annotation.value).items()
         }
         return {
-            "type": "keyed_point_set_map",
-            "keyed_point_set_map": keyed_point_sets,
-            "pixel_keyed_point_set_map": keyed_point_sets,
+            "type": "point_set_map",
+            "point_set_map": keyed_point_sets,
+            "pixel_point_set_map": keyed_point_sets,
         }
     if annotation_type == "segment_set":
         pairs = [[list(endpoint) for endpoint in item] for item in value]

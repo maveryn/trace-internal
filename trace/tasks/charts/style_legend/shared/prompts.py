@@ -24,18 +24,18 @@ JSON_OUTPUT_CONTRACT_ANSWER_ONLY = 'Use a valid JSON object with key "answer" fo
 OBJECT_DESCRIPTION = "a scientific line chart where series are identified by legend style, including line pattern, marker shape, and color or grayscale tone"
 ANSWER_HINT_COUNT = 'set "answer" to the requested count as an integer'
 ANSWER_HINT_LABEL = 'set "answer" to the exact visible series label as a string'
-ANSWER_HINT_VALUE = 'set "answer" to the requested value as an integer'
+ANSWER_HINT_X_LABEL = 'set "answer" to the exact visible x-axis label as a string'
 POINT_HINT = 'set "annotation" to a single [x,y] pixel point at the center of the plotted point used to answer'
 POINT_SET_HINT = 'set "annotation" to an array of [x,y] pixel points at the centers of the plotted points used to answer'
 
 JSON_EXAMPLES = {
     "extremum_label": '{"annotation":[420,260],"answer":"M7"}',
-    "gap_value": '{"annotation":[[510,230],[510,390]],"answer":28}',
+    "x_label": '{"annotation":[510,230],"answer":"Q3"}',
     "threshold_count": '{"annotation":[[610,210],[610,285],[610,360]],"answer":3}',
 }
 ANSWER_ONLY_EXAMPLES = {
     "extremum_label": '{"answer":"M7"}',
-    "gap_value": '{"answer":28}',
+    "x_label": '{"answer":"Q3"}',
     "threshold_count": '{"answer":3}',
 }
 

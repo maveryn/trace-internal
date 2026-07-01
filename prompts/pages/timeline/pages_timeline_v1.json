@@ -1,0 +1,113 @@
+{
+  "bundle_id": "pages_timeline_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "templates": {
+    "scene": {
+      "milestone_timeline": [
+        "The image shows {object_description}.",
+        "The timeline shows {object_description}.",
+        "This timeline shows {object_description}.",
+        "The figure shows {object_description}.",
+        "The visual shows {object_description}."
+      ]
+    },
+    "task": {
+      "timeline_milestone_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "between_reference_events_count": [
+        "How many events are strictly between the two highlighted reference events?",
+        "Count the events strictly between the two highlighted reference events.",
+        "Among the labeled events, how many are between the two highlighted references?",
+        "How many milestone cards fall strictly between the highlighted reference events?",
+        "Count the milestones inside the highlighted interval, excluding the highlighted endpoints."
+      ],
+      "outside_reference_interval_count": [
+        "How many events are before the first highlighted reference event or after the second highlighted reference event?",
+        "Count the events outside the highlighted reference interval, excluding the highlighted events.",
+        "Among the labeled events, how many are outside the two highlighted references?",
+        "How many milestone cards fall before the first highlighted reference or after the second one?",
+        "Count the milestones in the two outer timeline ranges, excluding the highlighted endpoints."
+      ],
+      "event_date_gap_value": [
+        "How many calendar days are between {endpoint_pair_description}?",
+        "Find the day difference between {endpoint_pair_description}.",
+        "What is the calendar-day gap between {endpoint_pair_description}?",
+        "Using the dates on the milestone cards, how many days separate {endpoint_pair_description}?",
+        "How many days apart are {endpoint_pair_description}?"
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFormat for the \"annotation\" field: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "global": {
+      "json_output_contract": "Return a JSON object with \"annotation\" and \"answer\".",
+      "json_output_contract_answer_only": "Return a JSON object with \"answer\" only."
+    },
+    "scene:milestone_timeline": {
+      "object_description": "one labeled milestone timeline with dated event cards and highlighted reference events"
+    },
+    "query:between_reference_events_count": {
+      "answer_hint": "set \"answer\" to the integer count of events strictly between the two highlighted reference events",
+      "annotation_hint": "set \"annotation\" to an array of [x0, y0, x1, y1] boxes for all counted event cards",
+      "json_example": "{\"annotation\":[[412,410,516,480],[538,158,642,228]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    },
+    "query:outside_reference_interval_count": {
+      "answer_hint": "set \"answer\" to the integer count of events in the two outer timeline ranges",
+      "annotation_hint": "set \"annotation\" to an array of [x0, y0, x1, y1] boxes for all counted event cards",
+      "json_example": "{\"annotation\":[[160,158,264,228],[790,410,894,480]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    },
+    "query:event_date_gap_value": {
+      "answer_hint": "set \"answer\" to the nonnegative integer number of calendar days between the two named events",
+      "annotation_hint": "set \"annotation\" to an object with keys \"earlier_event\" and \"later_event\", each mapped to the [x0, y0, x1, y1] box of that endpoint event card",
+      "json_example": "{\"annotation\":{\"earlier_event\":[160,158,264,228],\"later_event\":[538,158,642,228]},\"answer\":9}",
+      "json_example_answer_only": "{\"answer\":9}"
+    }
+  },
+  "dynamic_slots": {
+    "endpoint_pair_description": {"type": "string"}
+  },
+  "required_slots_by_key": {
+    "scene:milestone_timeline": [
+      "object_description"
+    ],
+    "query:event_date_gap_value": [
+      "endpoint_pair_description"
+    ],
+    "output:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "output:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  }
+}

@@ -7,6 +7,8 @@ from functools import lru_cache
 from typing import Any, Dict, Mapping, Tuple
 
 from trace.core.scene_config import get_scene_defaults
+from trace.core.sampling import uniform_choice
+from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.geometry.shared.pythagorean import IntegerRightTriangle, integer_right_triangles
@@ -101,20 +103,12 @@ def _resolve_surface_path_request(*, instance_seed: int, params: Mapping[str, An
             raise ValueError(f"target_path_length={path_length} is not supported by {TASK_ID}")
         probabilities = uniform_probability_map(support, selected=path_length)
     else:
-        support_index = resolve_selection_index(
-            params=task_params,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_ID}.path_length",
-        )
-        path_length = int(support[int(support_index) % len(support)])
+        rng = spawn_rng(int(instance_seed), f"{TASK_ID}.path_length")
+        path_length = int(uniform_choice(rng, support))
         probabilities = uniform_probability_map(support)
     compatible_cases = tuple(cases_by_answer[int(path_length)])
-    case_index = resolve_selection_index(
-        params=task_params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_ID}.case.{path_length}",
-    )
-    triangle = compatible_cases[int(case_index) % len(compatible_cases)]
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.case.{path_length}")
+    triangle = uniform_choice(rng, compatible_cases)
     problem = SurfacePathProblem(
         circumference=int(triangle.leg_a),
         height=int(triangle.leg_b),

@@ -132,6 +132,63 @@ def target_points_for_stack_state(
     )
 
 
+def pip_distance_for_player(point_id: int, *, active_player: str) -> int:
+    """Return standard pips-to-bear-off for one checker on a numbered point."""
+
+    point = int(point_id)
+    if point not in POINT_IDS:
+        raise ValueError(f"Backgammon point out of range: {point_id}")
+    player = str(active_player)
+    if player == PLAYER_BLACK:
+        return int(point)
+    if player == PLAYER_WHITE:
+        return int(25 - point)
+    raise ValueError(f"unsupported Backgammon player: {active_player!r}")
+
+
+def pip_count_points_for_player(
+    points: Mapping[int, BackgammonPoint],
+    *,
+    active_player: str,
+) -> Tuple[int, ...]:
+    """Return active-player occupied points that contribute to pip count."""
+
+    player = str(active_player)
+    if player not in {PLAYER_BLACK, PLAYER_WHITE}:
+        raise ValueError(f"unsupported Backgammon player: {active_player!r}")
+    return tuple(
+        int(point)
+        for point in POINT_IDS
+        if str(stack_at(points, int(point)).owner) == player
+        and int(stack_at(points, int(point)).count) > 0
+    )
+
+
+def pip_count_contributions_for_player(
+    points: Mapping[int, BackgammonPoint],
+    *,
+    active_player: str,
+) -> dict[int, int]:
+    """Return per-point pip-count contributions for active-player stacks."""
+
+    player = str(active_player)
+    return {
+        int(point): int(stack_at(points, int(point)).count)
+        * pip_distance_for_player(int(point), active_player=player)
+        for point in pip_count_points_for_player(points, active_player=player)
+    }
+
+
+def pip_count_for_player(
+    points: Mapping[int, BackgammonPoint],
+    *,
+    active_player: str,
+) -> int:
+    """Return standard Backgammon pip count for the active player."""
+
+    return int(sum(pip_count_contributions_for_player(points, active_player=str(active_player)).values()))
+
+
 def validate_backgammon_sample(sample: BackgammonSample) -> None:
     """Validate the generated Backgammon sample against the public contract."""
 
@@ -186,6 +243,26 @@ def validate_backgammon_sample(sample: BackgammonSample) -> None:
         if int(sample.answer) != len(expected_points):
             raise ValueError("answer does not match target point count")
         return
+    if tuple(sample.target_points) or sample.pip_count_contributions:
+        if tuple(sample.target_destinations):
+            raise ValueError("pip-count samples must not report target destinations")
+        expected_points = pip_count_points_for_player(
+            sample.points,
+            active_player=str(sample.active_player),
+        )
+        if tuple(expected_points) != tuple(sample.target_points):
+            raise ValueError("target points do not match active-player pip-count points")
+        expected_contributions = pip_count_contributions_for_player(
+            sample.points,
+            active_player=str(sample.active_player),
+        )
+        if dict(sample.pip_count_contributions) and {
+            int(key): int(value) for key, value in sample.pip_count_contributions.items()
+        } != expected_contributions:
+            raise ValueError("pip-count contributions do not match board state")
+        if int(sample.answer) != int(sum(expected_contributions.values())):
+            raise ValueError("answer does not match active-player pip count")
+        return
     raise ValueError("Backgammon sample must define a destination status or point-state predicate")
 
 
@@ -195,6 +272,10 @@ __all__ = [
     "is_blocked_by_opponent",
     "is_opponent_blot",
     "opponent_for_player",
+    "pip_count_contributions_for_player",
+    "pip_count_for_player",
+    "pip_count_points_for_player",
+    "pip_distance_for_player",
     "point_matches_stack_state",
     "target_destinations_for_status",
     "target_points_for_stack_state",

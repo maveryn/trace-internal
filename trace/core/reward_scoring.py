@@ -43,10 +43,10 @@ TRACE_ANNOTATION_LOG_TYPES = (
     "bbox",
     "bbox_sequence",
     "bbox_set",
-    "keyed_bbox_map",
-    "keyed_bbox_set_map",
-    "keyed_point_map",
-    "keyed_point_set_map",
+    "bbox_map",
+    "bbox_set_map",
+    "point_map",
+    "point_set_map",
     "point",
     "segment",
     "segment_set",
@@ -549,7 +549,7 @@ def _normalize_map_key(key: Any) -> str | None:
     return normalized
 
 
-def _normalize_keyed_point_map(value: Any) -> dict[str, tuple[float, float]] | None:
+def _normalize_point_map(value: Any) -> dict[str, tuple[float, float]] | None:
     parsed = _parse_json_like(value)
     if not isinstance(parsed, dict):
         return None
@@ -565,7 +565,7 @@ def _normalize_keyed_point_map(value: Any) -> dict[str, tuple[float, float]] | N
     return out
 
 
-def _normalize_keyed_point_set_map(value: Any) -> dict[str, list[tuple[float, float]]] | None:
+def _normalize_point_set_map(value: Any) -> dict[str, list[tuple[float, float]]] | None:
     parsed = _parse_json_like(value)
     if not isinstance(parsed, dict):
         return None
@@ -581,7 +581,7 @@ def _normalize_keyed_point_set_map(value: Any) -> dict[str, list[tuple[float, fl
     return out
 
 
-def _normalize_keyed_bbox_map(value: Any) -> dict[str, list[float]] | None:
+def _normalize_bbox_map(value: Any) -> dict[str, list[float]] | None:
     parsed = _parse_json_like(value)
     if not isinstance(parsed, dict):
         return None
@@ -597,7 +597,7 @@ def _normalize_keyed_bbox_map(value: Any) -> dict[str, list[float]] | None:
     return out
 
 
-def _normalize_keyed_bbox_set_map(value: Any) -> dict[str, list[list[float]]] | None:
+def _normalize_bbox_set_map(value: Any) -> dict[str, list[list[float]]] | None:
     parsed = _parse_json_like(value)
     if not isinstance(parsed, dict):
         return None
@@ -705,7 +705,7 @@ def _score_bbox_sequence_soft_iou(
     return score, len(ious), mean_iou
 
 
-def _score_keyed_bbox_map_soft_iou(
+def _score_bbox_map_soft_iou(
     pred_boxes: dict[str, list[float]],
     gt_boxes: dict[str, list[float]],
 ) -> tuple[float, int, float]:
@@ -723,7 +723,7 @@ def _score_keyed_bbox_map_soft_iou(
     return score, len(ious), mean_iou
 
 
-def _score_keyed_bbox_set_map_soft_iou(
+def _score_bbox_set_map_soft_iou(
     pred_box_sets: dict[str, list[list[float]]],
     gt_box_sets: dict[str, list[list[float]]],
 ) -> tuple[float, int, float, int]:
@@ -814,7 +814,7 @@ def _score_point_sequence_soft_distance(
     return score, len(similarities), mean_similarity
 
 
-def _score_keyed_point_map_soft_distance(
+def _score_point_map_soft_distance(
     pred_points: dict[str, tuple[float, float]],
     gt_points: dict[str, tuple[float, float]],
     *,
@@ -840,7 +840,7 @@ def _score_keyed_point_map_soft_distance(
     return score, len(similarities), mean_similarity
 
 
-def _score_keyed_point_set_map_soft_distance(
+def _score_point_set_map_soft_distance(
     pred_point_sets: dict[str, list[tuple[float, float]]],
     gt_point_sets: dict[str, list[tuple[float, float]]],
     *,
@@ -1097,12 +1097,12 @@ def _score_trace_annotation(
             "assigned_iou_mean": assigned_iou_mean,
         }
 
-    if annotation_type == "keyed_point_map":
-        pred = _normalize_keyed_point_map(annotation_value)
-        gt = _normalize_keyed_point_map(annotation_gt_value)
+    if annotation_type == "point_map":
+        pred = _normalize_point_map(annotation_value)
+        gt = _normalize_point_map(annotation_gt_value)
         if pred is None or gt is None:
-            return 0.0, False, {"reason": "keyed_point_map_parse_failed"}
-        score, assigned_count, assigned_similarity_mean = _score_keyed_point_map_soft_distance(
+            return 0.0, False, {"reason": "point_map_parse_failed"}
+        score, assigned_count, assigned_similarity_mean = _score_point_map_soft_distance(
             pred,
             gt,
             half_life_px=point_half_life_px,
@@ -1118,12 +1118,12 @@ def _score_trace_annotation(
             "point_half_life_px": float(point_half_life_px),
         }
 
-    if annotation_type == "keyed_point_set_map":
-        pred = _normalize_keyed_point_set_map(annotation_value)
-        gt = _normalize_keyed_point_set_map(annotation_gt_value)
+    if annotation_type == "point_set_map":
+        pred = _normalize_point_set_map(annotation_value)
+        gt = _normalize_point_set_map(annotation_gt_value)
         if pred is None or gt is None:
-            return 0.0, False, {"reason": "keyed_point_set_map_parse_failed"}
-        score, shared_key_count, assigned_similarity_mean, assigned_point_count = _score_keyed_point_set_map_soft_distance(
+            return 0.0, False, {"reason": "point_set_map_parse_failed"}
+        score, shared_key_count, assigned_similarity_mean, assigned_point_count = _score_point_set_map_soft_distance(
             pred,
             gt,
             half_life_px=point_half_life_px,
@@ -1139,12 +1139,12 @@ def _score_trace_annotation(
             "point_half_life_px": float(point_half_life_px),
         }
 
-    if annotation_type == "keyed_bbox_map":
-        pred = _normalize_keyed_bbox_map(annotation_value)
-        gt = _normalize_keyed_bbox_map(annotation_gt_value)
+    if annotation_type == "bbox_map":
+        pred = _normalize_bbox_map(annotation_value)
+        gt = _normalize_bbox_map(annotation_gt_value)
         if pred is None or gt is None:
-            return 0.0, False, {"reason": "keyed_bbox_map_parse_failed"}
-        score, assigned_count, assigned_iou_mean = _score_keyed_bbox_map_soft_iou(pred, gt)
+            return 0.0, False, {"reason": "bbox_map_parse_failed"}
+        score, assigned_count, assigned_iou_mean = _score_bbox_map_soft_iou(pred, gt)
         return score, True, {
             "pred_size": len(pred),
             "gt_size": len(gt),
@@ -1155,12 +1155,12 @@ def _score_trace_annotation(
             "assigned_iou_mean": float(assigned_iou_mean),
         }
 
-    if annotation_type == "keyed_bbox_set_map":
-        pred = _normalize_keyed_bbox_set_map(annotation_value)
-        gt = _normalize_keyed_bbox_set_map(annotation_gt_value)
+    if annotation_type == "bbox_set_map":
+        pred = _normalize_bbox_set_map(annotation_value)
+        gt = _normalize_bbox_set_map(annotation_gt_value)
         if pred is None or gt is None:
-            return 0.0, False, {"reason": "keyed_bbox_set_map_parse_failed"}
-        score, shared_key_count, assigned_iou_mean, assigned_bbox_count = _score_keyed_bbox_set_map_soft_iou(pred, gt)
+            return 0.0, False, {"reason": "bbox_set_map_parse_failed"}
+        score, shared_key_count, assigned_iou_mean, assigned_bbox_count = _score_bbox_set_map_soft_iou(pred, gt)
         return score, True, {
             "pred_size": len(pred),
             "gt_size": len(gt),

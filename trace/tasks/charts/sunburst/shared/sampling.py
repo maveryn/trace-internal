@@ -2,91 +2,50 @@
 
 from __future__ import annotations
 
-import colorsys
 import math
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from typing import Any
 
 from trace.core.seed import spawn_rng
+from trace.tasks.charts.shared.composition.palette import composition_hsv_color, lighten_rgb as lighten
+from trace.tasks.charts.shared.composition.values import select_unique_extremum
+from trace.tasks.charts.shared.label_assets import normalize_chart_label_for_collision
+from trace.tasks.shared.name_assets import load_label_manifest
 
 from .defaults import generation_value, int_sequence, resolve_bounds
 from .state import RGB, SunburstNode, SunburstTree
 
 
-_THEMES: tuple[dict[str, Any], ...] = (
-    {
-        "parent": "Healthcare",
-        "subgroups": {
-            "Clinics": ("Mobile", "Rural", "Urgent", "Remote"),
-            "Telehealth": ("Video", "Phone", "Portal", "Nurse"),
-            "Outreach": ("Home", "Wellness", "Screening", "Transit"),
-        },
-    },
-    {
-        "parent": "Transport",
-        "subgroups": {
-            "Shuttles": ("North", "South", "Evening", "Market"),
-            "Rides": ("Medical", "Senior", "Rural", "Weekend"),
-            "Drivers": ("Volunteer", "Taxi", "Van", "Rapid"),
-        },
-    },
-    {
-        "parent": "Commercial",
-        "subgroups": {
-            "Cafes": ("Olde", "Market", "Roaster", "Corner"),
-            "Markets": ("Farmers", "Craft", "Night", "River"),
-            "Retail": ("Books", "Gallery", "Florist", "Depot"),
-        },
-    },
-    {
-        "parent": "Historical",
-        "subgroups": {
-            "War": ("Square", "Marker", "Memorial", "Trail"),
-            "Colonial": ("Hall", "Church", "Mansion", "Bridge"),
-            "Industry": ("Mill", "Forge", "Depot", "Canal"),
-        },
-    },
-    {
-        "parent": "Athletics",
-        "subgroups": {
-            "Medals": ("Gold", "Silver", "Bronze", "Podium"),
-            "Teams": ("National", "Youth", "Club", "League"),
-            "Events": ("Track", "Judo", "Table", "Swimming"),
-        },
-    },
-    {
-        "parent": "Culture",
-        "subgroups": {
-            "Museums": ("Local", "Art", "History", "Science"),
-            "Music": ("Jazz", "Pop", "Classic", "Folk"),
-            "Festivals": ("Spring", "Summer", "Autumn", "Winter"),
-        },
-    },
-    {
-        "parent": "Natural",
-        "subgroups": {
-            "Parks": ("Riverside", "Founders", "Hill", "Lake"),
-            "Trails": ("Ridge", "Creek", "Forest", "Valley"),
-            "Views": ("Lookout", "Garden", "Harbor", "Sunset"),
-        },
-    },
-    {
-        "parent": "Education",
-        "subgroups": {
-            "Schools": ("Primary", "Middle", "High", "Adult"),
-            "Libraries": ("Central", "Branch", "Mobile", "Digital"),
-            "Training": ("Career", "STEM", "Language", "Arts"),
-        },
-    },
+PARENT_LABEL_MANIFESTS: tuple[str, ...] = (
+    "panel_titles/technical_topics.txt",
+    "industries/industries_bls_qcew.txt",
+    "categories/abstract_group_labels.txt",
 )
-
-
-def lighten(color: RGB, amount: float) -> RGB:
-    return tuple(
-        max(0, min(255, int(round(float(channel) + (255.0 - float(channel)) * float(amount)))))
-        for channel in color
-    )
+SUBGROUP_LABEL_MANIFESTS: tuple[str, ...] = (
+    "categories/product_labels.txt",
+    "categories/status_labels.txt",
+    "categories/priority_labels.txt",
+    "categories/abstract_group_labels.txt",
+    "panel_titles/technical_topics.txt",
+)
+LEAF_LABEL_MANIFESTS: tuple[str, ...] = (
+    "categories/product_labels.txt",
+    "categories/status_labels.txt",
+    "categories/priority_labels.txt",
+    "panel_titles/technical_topics.txt",
+    "organizations/company_tickers_sec.txt",
+)
+LEGACY_PARENT_LABELS: tuple[str, ...] = (
+    "Healthcare",
+    "Transport",
+    "Commercial",
+    "Historical",
+    "Athletics",
+    "Culture",
+    "Natural",
+    "Education",
+)
 
 
 def parent_nodes(tree: SunburstTree) -> tuple[SunburstNode, ...]:
@@ -156,7 +115,29 @@ def sample_tree(params: Mapping[str, Any], *, instance_seed: int) -> SunburstTre
     value_step = max(1, int(generation_value(params, "sunburst_leaf_value_step", 5)))
     rng = spawn_rng(int(instance_seed), "charts.sunburst.tree")
     parent_count = int(rng.randint(int(parent_min), int(parent_max)))
-    themes = _sample_parent_themes(count=int(parent_count), instance_seed=int(instance_seed))
+    parent_label_max_chars = int(generation_value(params, "sunburst_parent_label_max_chars", 10))
+    subgroup_label_max_chars = int(generation_value(params, "sunburst_subgroup_label_max_chars", 8))
+    leaf_label_max_chars = int(generation_value(params, "sunburst_leaf_label_max_chars", 7))
+    subgroup_counts = [
+        int(rng.randint(int(subgroup_min), int(subgroup_max)))
+        for _ in range(int(parent_count))
+    ]
+    leaf_counts_by_parent = [
+        [
+            int(rng.randint(int(leaf_min), int(leaf_max)))
+            for _ in range(int(subgroup_count))
+        ]
+        for subgroup_count in subgroup_counts
+    ]
+    parent_labels, subgroup_labels, leaf_labels = _sample_hierarchy_labels(
+        parent_count=int(parent_count),
+        subgroup_counts=tuple(subgroup_counts),
+        leaf_counts_by_parent=tuple(tuple(counts) for counts in leaf_counts_by_parent),
+        parent_max_chars=int(parent_label_max_chars),
+        subgroup_max_chars=int(subgroup_label_max_chars),
+        leaf_max_chars=int(leaf_label_max_chars),
+        instance_seed=int(instance_seed),
+    )
 
     built_nodes: dict[str, SunburstNode] = {}
     parent_ids: list[str] = []
@@ -167,27 +148,29 @@ def sample_tree(params: Mapping[str, Any], *, instance_seed: int) -> SunburstTre
     if leaf_value_low > leaf_value_high:
         raise ValueError("sunburst leaf value range is incompatible with value step")
 
-    for parent_index, theme in enumerate(themes):
+    subgroup_label_index = 0
+    leaf_label_index = 0
+    for parent_index in range(int(parent_count)):
         parent_id = f"parent_{parent_index}"
         parent_ids.append(parent_id)
         parent_color = _parent_color(parent_index, parent_count, instance_seed=int(instance_seed))
-        raw_subgroups = list(dict(theme["subgroups"]).items())
-        rng.shuffle(raw_subgroups)
-        subgroup_count = int(rng.randint(int(subgroup_min), min(int(subgroup_max), len(raw_subgroups))))
+        subgroup_count = int(subgroup_counts[int(parent_index)])
         value_units = list(range(int(leaf_value_low), int(leaf_value_high) + 1))
         rng.shuffle(value_units)
         parent_child_ids: list[str] = []
         parent_value = 0
-        for subgroup_index, (subgroup_label, leaf_pool) in enumerate(raw_subgroups[:subgroup_count]):
+        for subgroup_index in range(int(subgroup_count)):
             subgroup_id = f"{parent_id}_subgroup_{subgroup_index}"
             subgroup_ids.append(subgroup_id)
             parent_child_ids.append(subgroup_id)
-            leaf_labels = [str(item) for item in leaf_pool]
-            rng.shuffle(leaf_labels)
-            leaf_count = int(rng.randint(int(leaf_min), min(int(leaf_max), len(leaf_labels))))
+            subgroup_label = str(subgroup_labels[int(subgroup_label_index)])
+            subgroup_label_index += 1
+            leaf_count = int(leaf_counts_by_parent[int(parent_index)][int(subgroup_index)])
             subgroup_child_ids: list[str] = []
             subgroup_value = 0
-            for leaf_index, leaf_label in enumerate(leaf_labels[:leaf_count]):
+            for leaf_index in range(int(leaf_count)):
+                leaf_label = str(leaf_labels[int(leaf_label_index)])
+                leaf_label_index += 1
                 leaf_id = f"{subgroup_id}_leaf_{leaf_index}"
                 if value_units:
                     value_unit = int(value_units.pop())
@@ -218,7 +201,7 @@ def sample_tree(params: Mapping[str, Any], *, instance_seed: int) -> SunburstTre
             )
         built_nodes[parent_id] = SunburstNode(
             node_id=parent_id,
-            label=str(theme["parent"]),
+            label=str(parent_labels[int(parent_index)]),
             level="parent",
             parent_id="root",
             value=int(parent_value),
@@ -257,6 +240,16 @@ def sample_tree(params: Mapping[str, Any], *, instance_seed: int) -> SunburstTre
             "leaf_count_range": [int(leaf_min), int(leaf_max)],
             "leaf_value_range": [int(value_min), int(value_max)],
             "leaf_value_step": int(value_step),
+            "label_max_chars": {
+                "parent": int(parent_label_max_chars),
+                "subgroup": int(subgroup_label_max_chars),
+                "leaf": int(leaf_label_max_chars),
+            },
+            "label_manifests": {
+                "parent": list(PARENT_LABEL_MANIFESTS),
+                "subgroup": list(SUBGROUP_LABEL_MANIFESTS),
+                "leaf": list(LEAF_LABEL_MANIFESTS),
+            },
         },
     )
 
@@ -271,14 +264,19 @@ def choose_parent(tree: SunburstTree, *, instance_seed: int, namespace: str) -> 
 
 def unique_extreme_parent(tree: SunburstTree, *, direction: str) -> SunburstNode:
     parents = parent_nodes(tree)
-    totals = [int(parent.value) for parent in parents]
-    if len(set(totals)) != len(totals):
-        raise ValueError("sunburst parent totals must be unique for extremum task")
     if str(direction) == "highest":
-        return max(parents, key=lambda node: int(node.value))
-    if str(direction) == "lowest":
-        return min(parents, key=lambda node: int(node.value))
-    raise ValueError(f"unsupported sunburst extremum direction: {direction}")
+        select_largest = True
+    elif str(direction) == "lowest":
+        select_largest = False
+    else:
+        raise ValueError(f"unsupported sunburst extremum direction: {direction}")
+    return select_unique_extremum(
+        tuple((parent, int(parent.value)) for parent in parents),
+        select_largest=bool(select_largest),
+        min_margin=1,
+        error_label="sunburst parent totals",
+        item_label="parents",
+    ).item
 
 
 def threshold_leaf_case(
@@ -407,32 +405,125 @@ def range_matching_leaf_ids(case: Mapping[str, Any], node_lookup: Mapping[str, S
     return matched
 
 
-def _sample_parent_themes(*, count: int, instance_seed: int) -> tuple[dict[str, Any], ...]:
-    rng = spawn_rng(int(instance_seed), "charts.sunburst.themes")
-    themes = list(_THEMES)
-    rng.shuffle(themes)
-    if int(count) > len(themes):
-        raise ValueError("sunburst parent_count exceeds theme pool")
-    return tuple(dict(theme) for theme in themes[: int(count)])
+def _sample_hierarchy_labels(
+    *,
+    parent_count: int,
+    subgroup_counts: Sequence[int],
+    leaf_counts_by_parent: Sequence[Sequence[int]],
+    parent_max_chars: int,
+    subgroup_max_chars: int,
+    leaf_max_chars: int,
+    instance_seed: int,
+) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
+    """Resolve parent, subgroup, and leaf label tiers as one collision domain.
+
+    The three returned tiers are sampled separately for readability constraints,
+    but they share one used-label set so prompt-referenced labels are unambiguous.
+    """
+
+    rng = spawn_rng(int(instance_seed), "charts.sunburst.labels")
+    used: set[str] = {
+        normalize_chart_label_for_collision(label)
+        for label in ("Total", *LEGACY_PARENT_LABELS)
+    }
+    parent_labels = _sample_unique_labels(
+        rng=rng,
+        manifests=PARENT_LABEL_MANIFESTS,
+        count=int(parent_count),
+        min_chars=2,
+        max_chars=int(parent_max_chars),
+        used=used,
+    )
+    subgroup_labels = _sample_unique_labels(
+        rng=rng,
+        manifests=SUBGROUP_LABEL_MANIFESTS,
+        count=sum(int(count) for count in subgroup_counts),
+        min_chars=2,
+        max_chars=int(subgroup_max_chars),
+        used=used,
+    )
+    leaf_labels = _sample_unique_labels(
+        rng=rng,
+        manifests=LEAF_LABEL_MANIFESTS,
+        count=sum(sum(int(count) for count in parent_counts) for parent_counts in leaf_counts_by_parent),
+        min_chars=2,
+        max_chars=int(leaf_max_chars),
+        used=used,
+    )
+    return tuple(parent_labels), tuple(subgroup_labels), tuple(leaf_labels)
+
+
+def _sample_unique_labels(
+    *,
+    rng: Any,
+    manifests: Sequence[str],
+    count: int,
+    min_chars: int,
+    max_chars: int,
+    used: set[str],
+) -> tuple[str, ...]:
+    """Sample one non-overlapping label tier from curated manifests.
+
+    Labels are unique across the whole sunburst tree by normalized visible
+    text, so a prompt never has two hierarchy nodes with the same label.
+    """
+
+    pool: list[str] = []
+    seen_pool: set[str] = set()
+    for manifest in manifests:
+        labels = load_label_manifest(
+            str(manifest),
+            min_chars=int(min_chars),
+            max_chars=int(max_chars),
+            allow_spaces=False,
+            allow_punctuation=False,
+            ascii_only=True,
+            compact_length=False,
+        )
+        for label in labels:
+            value = str(label).strip()
+            normalized = normalize_chart_label_for_collision(value)
+            if not value or normalized in used or normalized in seen_pool:
+                continue
+            seen_pool.add(normalized)
+            pool.append(value)
+    if len(pool) < int(count):
+        raise ValueError(f"sunburst label pool too small for {count} labels with max_chars={max_chars}")
+    rng.shuffle(pool)
+    selected: list[str] = []
+    for label in pool:
+        normalized = normalize_chart_label_for_collision(str(label))
+        if normalized in used:
+            continue
+        selected.append(str(label))
+        used.add(normalized)
+        if len(selected) == int(count):
+            break
+    if len(selected) != int(count):
+        raise ValueError("sunburst label sampler could not build unique labels")
+    return tuple(selected)
 
 
 def _parent_color(index: int, count: int, *, instance_seed: int) -> RGB:
-    rng = spawn_rng(int(instance_seed), "charts.sunburst.palette")
-    offset = rng.random()
-    hue = (float(offset) + float(index) / max(1.0, float(count))) % 1.0
-    sat = 0.48 + 0.14 * rng.random()
-    val = 0.76 + 0.12 * rng.random()
-    red, green, blue = colorsys.hsv_to_rgb(float(hue), float(sat), float(val))
-    return int(red * 255), int(green * 255), int(blue * 255)
+    return composition_hsv_color(
+        int(index),
+        int(count),
+        instance_seed=int(instance_seed),
+        namespace="charts.sunburst.palette",
+        saturation_base=0.48,
+        saturation_jitter=0.14,
+        value_base=0.76,
+        value_jitter=0.12,
+    )
 
 
 def _ordered_count_support(count_support: Sequence[int], *, params: Mapping[str, Any], rng: Any) -> list[int]:
+    """Return count support in seeded random order for feasible-case search."""
+
+    del params
     support = [int(value) for value in count_support]
     if not support:
         return []
-    if params.get("_sample_cursor") is not None:
-        target = support[abs(int(params["_sample_cursor"])) % len(support)]
-        return [int(target)] + [int(value) for value in support if int(value) != int(target)]
     rng.shuffle(support)
     return list(support)
 

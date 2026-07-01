@@ -10,7 +10,15 @@
 - Annotation schema: `point`
 
 ## Program Contract
-`select(label(marked_points, collinear_with(line_between(reference_object_a, reference_object_b)))); scene=object_scene; scope=point_on_object_line_label`
+
+Program: `select(label(marked_points, collinear_with(line_between(reference_object_a, reference_object_b)))); scene=object_scene; scope=point_on_object_line_label`
+
+Candidate set: the visible 3D objects, surfaces, room/street/warehouse structures, spatial anchors, markers, and labeled options inside the `point_on_object_line_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `label`, `marked_points`, `collinear_with`, `line_between`, `reference_object_a`, `reference_object_b`, `object_scene`, `point_on_object_line_label`.
+Operation: evaluate `select` over the candidate set using the finalized 3D scene state, camera projection, object identities, spatial relations, counts, distances, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Contract
 The image uses the `object_scene` renderer: a perspective 3D floor, table, or platform scene with one or more large context props, several uniquely named small objects, and six lettered point markers. Each marked point is rendered as a visible point glyph with a nearby letter label. The prompt names two unique reference objects and asks which marked point lies on the line connecting them.

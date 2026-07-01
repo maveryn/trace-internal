@@ -18,7 +18,15 @@
 3. Adjacency list versus matrix display, component count target, node labels, node count, font, style, and layout are generation/render metadata, not public query branches.
 
 ## Program Contract
-- `count(connected_components(undirected_adjacency_graph)); output=integer; annotation=bbox_set(component_representative_row_labels); scene=adjacency; scope=undirected_component_count`
+
+Program: `count(connected_components(undirected_adjacency_graph)); output=integer; annotation=bbox_set(component_representative_row_labels); scene=adjacency; scope=undirected_component_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `undirected_component_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `connected_components`, `undirected_adjacency_graph`, `component_representative_row_labels`, `adjacency`, `undirected_component_count`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. Answer type: `integer`.

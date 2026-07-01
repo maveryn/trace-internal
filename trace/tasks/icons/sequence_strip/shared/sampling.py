@@ -5,13 +5,14 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Mapping, Sequence, Tuple
 
+from .....core.sampling import uniform_choice
 from .....core.seed import spawn_rng
 from ...shared.icon_assets import resolve_icon_pool
 from ...shared.icon_scene import IconInstanceSpec
 from ...shared.icon_task_rendering import resolve_icon_cell_render_params, sample_icon_instance_noise
 from ...shared.icon_style import sample_single_icon_tint
 from ....shared.config_defaults import group_default
-from ....shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
+from ....shared.deterministic_sampling import uniform_probability_map
 
 from .rendering import IconSequenceCellSpec, resolve_completion_canvas_size
 
@@ -278,12 +279,10 @@ def resolve_cyclic_progression_sample(
             feasible.append((int(answer), int(start), int(step), sequence))
     if not feasible:
         raise ValueError("no feasible cyclic progression for requested parameters")
-    selection_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=str(selection_namespace),
+    answer, start, step, sequence = uniform_choice(
+        spawn_rng(int(instance_seed), str(selection_namespace)),
+        tuple(feasible),
     )
-    answer, start, step, sequence = feasible[int(selection_index % len(feasible))]
     return CyclicProgressionSample(
         answer_value=int(answer),
         start_value=int(start),
@@ -317,12 +316,12 @@ def sequence_missing_index(*, params: Mapping[str, Any], generation_defaults: Ma
             raise ValueError("explicit missing_index is outside configured support")
         return value
     support = tuple(range(lo, hi + 1))
-    index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace="icons_sequence_strip_missing_index",
+    return int(
+        uniform_choice(
+            spawn_rng(int(instance_seed), "icons_sequence_strip_missing_index"),
+            support,
+        )
     )
-    return int(support[int(index % len(support))])
 
 
 def sample_sequence_icon_id(rng, *, params: Mapping[str, Any], generation_defaults: Mapping[str, Any], fallback: str) -> str:

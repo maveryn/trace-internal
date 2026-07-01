@@ -3,7 +3,9 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from itertools import combinations
 from trace.core.seed import hash64
-from trace.tasks.pages.schedule.day_planner import PagesScheduleLongerThanReferenceCountTask, PagesScheduleMaximumNonOverlappingCountTask, PagesScheduleOverlapCountTask
+from trace.tasks.pages.schedule.longer_than_reference_count import PagesScheduleLongerThanReferenceCountTask
+from trace.tasks.pages.schedule.maximum_non_overlapping_count import PagesScheduleMaximumNonOverlappingCountTask
+from trace.tasks.pages.schedule.overlap_count import PagesScheduleOverlapCountTask
 from trace.tasks.shared.time_artifact_style import SUPPORTED_TIME_ARTIFACT_COLOR_NAMES, SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS
 from tests.helpers import extract_prompt_json_example
 
@@ -33,11 +35,53 @@ def test_pages_schedule_day_planner_contract_matches_trace() -> None:
     scene_variants = ('classic', 'outline')
     style_variants = ('studio', 'marker')
     accent_colors = ('blue', 'orange')
+    for task, source_query_id in task_cases:
+        for index, scene_variant in enumerate(scene_variants):
+            out = task.generate(hash64(22100, task.task_id, index), params={'scene_variant': scene_variant, 'style_variant': style_variants[index], 'accent_color_name': accent_colors[index]}, max_attempts=20)
+            trace = out.trace_payload
+            execution = trace['execution_trace']
+            assert out.query_id == 'single'
+            assert execution['source_query_id'] == source_query_id
+            assert out.answer_gt.type == 'integer'
+            assert out.annotation_gt.type == 'bbox_set'
+            assert int(out.answer_gt.value) == len(execution['answer_event_ids'])
+            expected_boxes = [trace['render_map']['event_bboxes_by_id'][str(event_id)] for event_id in execution['answer_event_ids']]
+            assert out.annotation_gt.value == expected_boxes
+            assert trace['projected_annotation']['bbox_set'] == expected_boxes
+            if source_query_id == 'overlap_count':
+                assert all(entity.get('type') != 'reference_time_band' for entity in trace['scene_ir']['entities'])
+
+def test_pages_schedule_maximum_non_overlapping_count_is_activity_selection() -> None:
+    task = PagesScheduleMaximumNonOverlappingCountTask()
+    for index in range(50):
+        out = task.generate(hash64(22125, task.task_id, index), params={}, max_attempts=20)
+        trace = out.trace_payload
+        execution = trace['execution_trace']
+        answer_event_ids = tuple(str(event_id) for event_id in execution['answer_event_ids'])
+        answer_set = set(answer_event_ids)
+        best_size, best_subsets = _maximum_non_overlapping_subsets(list(execution['events']))
+        assert int(out.answer_gt.value) in {2, 3, 4, 5}
+        assert int(best_size) == int(out.answer_gt.value)
+        assert tuple(best_subsets) == (tuple(sorted(answer_event_ids)),)
+        expected_boxes = [trace['render_map']['event_bboxes_by_id'][str(event_id)] for event_id in answer_event_ids]
+        assert out.annotation_gt.value == expected_boxes
+        lane_by_event_id = {
+            str(event['event_id']): int(event['lane_index'])
+            for event in execution['events']
+        }
+        answer_lanes = {lane_by_event_id[str(event_id)] for event_id in answer_event_ids}
+        assert len(answer_lanes) > 1
+        lane_sets: defaultdict[int, set[str]] = defaultdict(set)
+        for event_id, lane_index in lane_by_event_id.items():
+            lane_sets[int(lane_index)].add(str(event_id))
+        assert all(event_ids != answer_set for event_ids in lane_sets.values())
 
 def test_pages_schedule_day_planner_prompt_examples_match_variants() -> None:
     expected = ((PagesScheduleOverlapCountTask(), 'overlap_count', ({'annotation': [[250, 276, 396, 366], [404, 318, 550, 438]], 'answer': 2}, {'answer': 2})), (PagesScheduleLongerThanReferenceCountTask(), 'longer_than_reference_count', ({'annotation': [[250, 240, 396, 408], [404, 430, 550, 634], [558, 352, 704, 568]], 'answer': 3}, {'answer': 3})), (PagesScheduleMaximumNonOverlappingCountTask(), 'maximum_non_overlapping_count', ({'annotation': [[250, 220, 396, 316], [404, 316, 550, 412], [558, 412, 704, 508], [250, 508, 396, 604]], 'answer': 4}, {'answer': 4})))
     for index, (task, query_id, (expected_answer_and_annotation, expected_answer_only)) in enumerate(expected, start=22110):
-        out = task.generate(index, params={'query_id': query_id}, max_attempts=20)
+        out = task.generate(index, params={}, max_attempts=20)
+        assert out.query_id == 'single'
+        assert out.trace_payload['execution_trace']['source_query_id'] == query_id
         answer_and_annotation = extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
         answer_only = extract_prompt_json_example(out.prompt_variants['answer_only'])
         assert answer_and_annotation == expected_answer_and_annotation
@@ -76,4 +120,5 @@ def test_pages_schedule_day_planner_balanced_sampling_defaults_cover_axes() -> N
     for query_id in query_ids:
         assert set(scenes_by_query_id[query_id].keys()) == {'classic', 'minimal', 'outline'}
         assert set(styles_by_query_id[query_id].keys()) == set(SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS)
-        assert len(answers_by_query_id[query_id]) >= 5
+        expected_min_answers = 4 if query_id == 'maximum_non_overlapping_count' else 5
+        assert len(answers_by_query_id[query_id]) >= expected_min_answers

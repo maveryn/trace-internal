@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from .....core.seed import spawn_rng
@@ -321,96 +322,383 @@ def select_extreme_item_in_category(
     )
 
 
-def select_nearest_size_neighbor(
+def enforce_global_extreme_item_gap(
     dataset: SizeEncodingDataset,
     *,
+    direction: str,
     params: Mapping[str, Any],
     instance_seed: int,
-) -> SizeEncodingSelection:
-    """Select the unique nearest same-category neighbor for one reference."""
+) -> SizeEncodingDataset:
+    """Make one item the unique global extremum with a controlled runner-up gap."""
 
-    neighbor_gap_min = resolve_int(params, "neighbor_gap_min", 5)
-    feasible_categories: list[tuple[str, list[tuple[SizeEncodingItem, list[tuple[int, str, SizeEncodingItem]]]]]] = []
-    for category, group in sorted(items_by_category(dataset.items).items()):
-        if len(group) < 3:
-            continue
-        feasible_references: list[tuple[SizeEncodingItem, list[tuple[int, str, SizeEncodingItem]]]] = []
-        for reference in group:
-            candidates = [item for item in group if str(item.item_id) != str(reference.item_id)]
-            distances = sorted(
-                ((abs(int(item.value) - int(reference.value)), str(item.label), item) for item in candidates),
-                key=lambda row: (int(row[0]), str(row[1])),
-            )
-            if len(distances) >= 2 and int(distances[1][0]) - int(distances[0][0]) >= int(neighbor_gap_min):
-                feasible_references.append((reference, distances))
-        if feasible_references:
-            feasible_categories.append((str(category), feasible_references))
-    if not feasible_categories:
-        raise ValueError("reference-neighbor gap too small")
-    category, feasible_references = feasible_categories[
-        choose_index(
-            len(feasible_categories),
-            params=params,
-            instance_seed=instance_seed,
-            namespace=f"{SCENE_NAMESPACE}.neighbor_category",
-        )
-    ]
-    reference, distances = feasible_references[
-        choose_index(
-            len(feasible_references),
-            params=params,
-            instance_seed=instance_seed,
-            namespace=f"{SCENE_NAMESPACE}.neighbor_reference",
-        )
-    ]
-    answer_item = distances[0][2]
-    return SizeEncodingSelection(
-        answer=str(answer_item.label),
-        annotation_item_ids=(str(reference.item_id), str(answer_item.item_id)),
-        category_label=str(category),
-        panel_label="",
-        reference_label=str(reference.label),
-        direction="closest",
+    if len(dataset.items) < 2:
+        raise ValueError("global item extremum requires at least two items")
+    value_min, value_max = resolve_required_int_bounds(
+        params,
+        GEN_DEFAULTS,
+        min_key="value_min",
+        max_key="value_max",
+        fallback_min=12,
+        fallback_max=99,
+        context=f"generation defaults for {SCENE_NAMESPACE}",
+    )
+    global_gap_min = resolve_int(params, "global_item_winner_gap_min", resolve_int(params, "winner_gap_min", 8))
+    global_gap_max = min(
+        resolve_int(params, "global_item_winner_gap_max", 10_000),
+        int(value_max) - int(value_min),
+    )
+    if int(global_gap_min) > int(global_gap_max):
+        raise ValueError("global item-extremum gap cannot fit value range")
+
+    rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.global_item_extreme_gap.{direction}")
+    winner_index = int(rng.randrange(0, len(dataset.items)))
+    runner_offset = int(rng.randrange(1, len(dataset.items)))
+    runner_index = int((winner_index + runner_offset) % len(dataset.items))
+    gap = int(rng.randint(int(global_gap_min), int(global_gap_max)))
+    if str(direction) == "largest":
+        winner_value = int(value_max)
+        runner_value = int(value_max) - int(gap)
+
+        def adjusted_value(index: int, item: SizeEncodingItem) -> int:
+            if index == winner_index:
+                return winner_value
+            if index == runner_index:
+                return runner_value
+            return min(int(item.value), int(runner_value))
+
+    elif str(direction) == "smallest":
+        winner_value = int(value_min)
+        runner_value = int(value_min) + int(gap)
+
+        def adjusted_value(index: int, item: SizeEncodingItem) -> int:
+            if index == winner_index:
+                return winner_value
+            if index == runner_index:
+                return runner_value
+            return max(int(item.value), int(runner_value))
+
+    else:
+        raise ValueError(f"unsupported extremum direction: {direction}")
+
+    adjusted_items = tuple(
+        replace(item, value=int(adjusted_value(index, item)))
+        for index, item in enumerate(dataset.items)
+    )
+    return SizeEncodingDataset(
+        items=adjusted_items,
+        categories=dataset.categories,
+        panels=dataset.panels,
         trace={
-            "reference_label": str(reference.label),
-            "reference_value": int(reference.value),
-            "nearest_distance": int(distances[0][0]),
-            "nearest_gap": int(distances[1][0]) - int(distances[0][0]),
-            "candidate_count": int(len(distances)),
+            **dict(dataset.trace),
+            "global_item_gap_forced": True,
+            "global_item_gap_target": int(gap),
+            "global_item_winner_item_id": str(dataset.items[winner_index].item_id),
+            "global_item_runner_item_id": str(dataset.items[runner_index].item_id),
         },
     )
 
 
-def select_extreme_category_total(
+def select_global_extreme_item_category(
     dataset: SizeEncodingDataset,
     *,
     direction: str,
     params: Mapping[str, Any],
 ) -> SizeEncodingSelection:
-    category_total_gap_min = resolve_int(params, "category_total_gap_min", 18)
-    totals = {
-        str(category): int(sum(int(item.value) for item in dataset.items if str(item.category) == str(category)))
-        for category in dataset.categories
-    }
-    ordered = sorted(totals.items(), key=lambda row: (int(row[1]), str(row[0])))
+    """Select the category of the single globally extremal item."""
+
+    global_gap_min = resolve_int(params, "global_item_winner_gap_min", resolve_int(params, "winner_gap_min", 8))
+    global_gap_max = resolve_int(params, "global_item_winner_gap_max", 10_000)
+    ordered = sorted(dataset.items, key=lambda item: (int(item.value), str(item.label)))
+    if len(ordered) < 2:
+        raise ValueError("global item extremum requires at least two items")
     if str(direction) == "largest":
-        answer_category, answer_total = ordered[-1]
-        runner_total = ordered[-2][1]
+        winner = ordered[-1]
+        runner = ordered[-2]
     elif str(direction) == "smallest":
-        answer_category, answer_total = ordered[0]
-        runner_total = ordered[1][1]
+        winner = ordered[0]
+        runner = ordered[1]
     else:
         raise ValueError(f"unsupported extremum direction: {direction}")
-    gap = abs(int(answer_total) - int(runner_total))
-    if int(gap) < int(category_total_gap_min):
-        raise ValueError("category-total gap too small")
-    annotation_ids = tuple(str(item.item_id) for item in dataset.items if str(item.category) == str(answer_category))
+    gap = abs(int(winner.value) - int(runner.value))
+    if int(gap) < int(global_gap_min):
+        raise ValueError("global item-extremum gap too small")
+    if int(gap) > int(global_gap_max):
+        raise ValueError("global item-extremum gap too large")
     return SizeEncodingSelection(
-        answer=str(answer_category),
-        annotation_item_ids=annotation_ids,
-        category_label=str(answer_category),
+        answer=str(winner.category),
+        annotation_item_ids=(str(winner.item_id),),
+        category_label=str(winner.category),
         panel_label="",
         reference_label="",
         direction=str(direction),
-        trace={"category_totals": dict(totals), "winner_gap": int(gap), "winner_total": int(answer_total)},
+        trace={
+            "winner_gap": int(gap),
+            "winner_item_label": str(winner.label),
+            "winner_item_value": int(winner.value),
+            "winner_item_category": str(winner.category),
+            "closest_distractor_label": str(runner.label),
+            "closest_distractor_value": int(runner.value),
+            "closest_distractor_category": str(runner.category),
+        },
+    )
+
+
+def enforce_relative_size_reference_gap(
+    dataset: SizeEncodingDataset,
+    *,
+    direction: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> SizeEncodingDataset:
+    """Force a same-category reference item with a visually separated side count."""
+
+    value_min, value_max = resolve_required_int_bounds(
+        params,
+        GEN_DEFAULTS,
+        min_key="value_min",
+        max_key="value_max",
+        fallback_min=12,
+        fallback_max=99,
+        context=f"generation defaults for {SCENE_NAMESPACE}",
+    )
+    gap_min = resolve_int(params, "relative_size_reference_gap_min", 20)
+    if int(value_min) + (2 * int(gap_min)) > int(value_max):
+        raise ValueError("relative size gap cannot fit value range")
+    count_min = resolve_int(params, "relative_size_answer_count_min", 1)
+    count_max = resolve_int(params, "relative_size_answer_count_max", 10_000)
+    feasible = [
+        (str(category), list(group))
+        for category, group in sorted(items_by_category(dataset.items).items())
+        if len(group) >= max(3, int(count_min) + 2) and min(len(group) - 2, int(count_max)) >= int(count_min)
+    ]
+    if not feasible:
+        raise ValueError("no feasible category for relative size count")
+
+    rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.relative_size.{direction}")
+    category, group = feasible[int(rng.randrange(0, len(feasible)))]
+    rng.shuffle(group)
+    answer_count = int(rng.randint(int(count_min), min(len(group) - 2, int(count_max))))
+    counted_items = tuple(group[:answer_count])
+    reference = group[answer_count]
+    other_items = tuple(group[answer_count + 1 :])
+    ref_value = int((int(value_min) + int(value_max)) // 2)
+    low_max = int(ref_value) - int(gap_min)
+    high_min = int(ref_value) + int(gap_min)
+    if low_max < int(value_min) or high_min > int(value_max):
+        raise ValueError("relative size reference value leaves no separated side range")
+
+    value_by_id: dict[str, int] = {str(item.item_id): int(item.value) for item in dataset.items}
+    if str(direction) == "larger":
+        for item in counted_items:
+            value_by_id[str(item.item_id)] = int(rng.randint(high_min, int(value_max)))
+        for item in other_items:
+            value_by_id[str(item.item_id)] = int(rng.randint(int(value_min), low_max))
+    elif str(direction) == "smaller":
+        for item in counted_items:
+            value_by_id[str(item.item_id)] = int(rng.randint(int(value_min), low_max))
+        for item in other_items:
+            value_by_id[str(item.item_id)] = int(rng.randint(high_min, int(value_max)))
+    else:
+        raise ValueError(f"unsupported relative size direction: {direction}")
+    value_by_id[str(reference.item_id)] = int(ref_value)
+
+    adjusted_items = tuple(replace(item, value=int(value_by_id[str(item.item_id)])) for item in dataset.items)
+    return SizeEncodingDataset(
+        items=adjusted_items,
+        categories=dataset.categories,
+        panels=dataset.panels,
+        trace={
+            **dict(dataset.trace),
+            "relative_size_gap_forced": True,
+            "relative_size_reference_gap_min": int(gap_min),
+            "relative_size_target_category": str(category),
+            "relative_size_reference_item_id": str(reference.item_id),
+            "relative_size_counted_item_ids": [str(item.item_id) for item in counted_items],
+            "relative_size_answer_count": int(answer_count),
+        },
+    )
+
+
+def select_category_relative_size_count(
+    dataset: SizeEncodingDataset,
+    *,
+    direction: str,
+    params: Mapping[str, Any],
+) -> SizeEncodingSelection:
+    """Count same-category items larger or smaller than the selected reference."""
+
+    target_category = str(dataset.trace.get("relative_size_target_category", ""))
+    reference_item_id = str(dataset.trace.get("relative_size_reference_item_id", ""))
+    reference = next((item for item in dataset.items if str(item.item_id) == reference_item_id), None)
+    if reference is None or not target_category:
+        raise ValueError("relative size reference metadata missing")
+    group = [item for item in dataset.items if str(item.category) == str(target_category)]
+    if str(direction) == "larger":
+        counted = [item for item in group if int(item.value) > int(reference.value)]
+    elif str(direction) == "smaller":
+        counted = [item for item in group if int(item.value) < int(reference.value)]
+    else:
+        raise ValueError(f"unsupported relative size direction: {direction}")
+    counted = sorted(counted, key=lambda item: str(item.item_id))
+    if not counted:
+        raise ValueError("relative size count cannot be empty")
+    closest_gap = min(abs(int(item.value) - int(reference.value)) for item in counted)
+    gap_min = resolve_int(params, "relative_size_reference_gap_min", 20)
+    if int(closest_gap) < int(gap_min):
+        raise ValueError("relative size counted item gap too small")
+    return SizeEncodingSelection(
+        answer=str(len(counted)),
+        annotation_item_ids=(str(reference.item_id), *(str(item.item_id) for item in counted)),
+        category_label=str(target_category),
+        panel_label="",
+        reference_label=str(reference.label),
+        direction=str(direction),
+        trace={
+            "reference_item_id": str(reference.item_id),
+            "reference_value": int(reference.value),
+            "counted_item_ids": [str(item.item_id) for item in counted],
+            "counted_labels": [str(item.label) for item in counted],
+            "counted_values": [int(item.value) for item in counted],
+            "answer_count": int(len(counted)),
+            "closest_counted_gap": int(closest_gap),
+            "comparison_direction": str(direction),
+            "target_category_label": str(target_category),
+        },
+    )
+
+
+def enforce_panel_category_extreme_gap(
+    dataset: SizeEncodingDataset,
+    *,
+    direction: str,
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> SizeEncodingDataset:
+    """Force a unique target-category item extremum across panels."""
+
+    if len(dataset.panels) < 2:
+        raise ValueError("panel category extremum requires multiple panels")
+    value_min, value_max = resolve_required_int_bounds(
+        params,
+        GEN_DEFAULTS,
+        min_key="value_min",
+        max_key="value_max",
+        fallback_min=12,
+        fallback_max=99,
+        context=f"generation defaults for {SCENE_NAMESPACE}",
+    )
+    gap_min = resolve_int(params, "panel_category_item_winner_gap_min", resolve_int(params, "winner_gap_min", 8))
+    gap_max = min(
+        resolve_int(params, "panel_category_item_winner_gap_max", 10_000),
+        int(value_max) - int(value_min),
+    )
+    if int(gap_min) > int(gap_max):
+        raise ValueError("panel category item-extremum gap cannot fit value range")
+
+    rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.panel_category_extreme_gap.{direction}")
+    categories = tuple(str(category) for category in dataset.categories)
+    if not categories:
+        raise ValueError("panel category extremum requires categories")
+    target_category = categories[int(rng.randrange(0, len(categories)))]
+    target_items = [item for item in dataset.items if str(item.category) == str(target_category)]
+    if len(target_items) < 2:
+        raise ValueError("panel category extremum requires at least two items in target category")
+
+    winner = target_items[int(rng.randrange(0, len(target_items)))]
+    runner_candidates = [item for item in target_items if str(item.item_id) != str(winner.item_id)]
+    runner = runner_candidates[int(rng.randrange(0, len(runner_candidates)))]
+    gap = int(rng.randint(int(gap_min), int(gap_max)))
+    if str(direction) == "largest":
+        winner_value = int(value_max)
+        runner_value = int(value_max) - int(gap)
+
+        def adjusted_value(item: SizeEncodingItem) -> int:
+            if str(item.item_id) == str(winner.item_id):
+                return winner_value
+            if str(item.item_id) == str(runner.item_id):
+                return runner_value
+            if str(item.category) == str(target_category):
+                return min(int(item.value), int(runner_value))
+            return int(item.value)
+
+    elif str(direction) == "smallest":
+        winner_value = int(value_min)
+        runner_value = int(value_min) + int(gap)
+
+        def adjusted_value(item: SizeEncodingItem) -> int:
+            if str(item.item_id) == str(winner.item_id):
+                return winner_value
+            if str(item.item_id) == str(runner.item_id):
+                return runner_value
+            if str(item.category) == str(target_category):
+                return max(int(item.value), int(runner_value))
+            return int(item.value)
+
+    else:
+        raise ValueError(f"unsupported extremum direction: {direction}")
+
+    adjusted_items = tuple(replace(item, value=int(adjusted_value(item))) for item in dataset.items)
+    return SizeEncodingDataset(
+        items=adjusted_items,
+        categories=dataset.categories,
+        panels=dataset.panels,
+        trace={
+            **dict(dataset.trace),
+            "panel_category_gap_forced": True,
+            "panel_category_gap_target": int(gap),
+            "panel_category_target_category": str(target_category),
+            "panel_category_winner_item_id": str(winner.item_id),
+            "panel_category_runner_item_id": str(runner.item_id),
+        },
+    )
+
+
+def select_panel_category_extreme_panel(
+    dataset: SizeEncodingDataset,
+    *,
+    direction: str,
+    params: Mapping[str, Any],
+) -> SizeEncodingSelection:
+    """Select the panel containing the target category's extremal item."""
+
+    target_category = str(dataset.trace.get("panel_category_target_category", ""))
+    if not target_category:
+        raise ValueError("panel category target missing from dataset trace")
+    target_items = [item for item in dataset.items if str(item.category) == str(target_category)]
+    if len(target_items) < 2:
+        raise ValueError("panel category extremum requires at least two target-category items")
+    ordered = sorted(target_items, key=lambda item: (int(item.value), str(item.label)))
+    if str(direction) == "largest":
+        winner = ordered[-1]
+        runner = ordered[-2]
+    elif str(direction) == "smallest":
+        winner = ordered[0]
+        runner = ordered[1]
+    else:
+        raise ValueError(f"unsupported extremum direction: {direction}")
+    gap_min = resolve_int(params, "panel_category_item_winner_gap_min", resolve_int(params, "winner_gap_min", 8))
+    gap_max = resolve_int(params, "panel_category_item_winner_gap_max", 10_000)
+    gap = abs(int(winner.value) - int(runner.value))
+    if int(gap) < int(gap_min):
+        raise ValueError("panel category item-extremum gap too small")
+    if int(gap) > int(gap_max):
+        raise ValueError("panel category item-extremum gap too large")
+    return SizeEncodingSelection(
+        answer=str(winner.panel),
+        annotation_item_ids=(str(winner.item_id),),
+        category_label=str(target_category),
+        panel_label=str(winner.panel),
+        reference_label="",
+        direction=str(direction),
+        trace={
+            "winner_gap": int(gap),
+            "winner_item_label": str(winner.label),
+            "winner_item_value": int(winner.value),
+            "winner_item_category": str(winner.category),
+            "winner_panel_label": str(winner.panel),
+            "closest_distractor_label": str(runner.label),
+            "closest_distractor_value": int(runner.value),
+            "closest_distractor_panel": str(runner.panel),
+            "target_category_label": str(target_category),
+        },
     )

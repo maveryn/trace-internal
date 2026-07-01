@@ -29,40 +29,26 @@
         "Compare the labeled points by \"{target_axis_label}\". Which one is nearest to {target_axis_value}?",
         "What label marks the point with \"{target_axis_label}\" value closest to {target_axis_value}?"
       ],
-      "surface_highest_value": [
-        "For group \"{target_y_category}\", which x-axis label has the highest surface value?",
-        "Looking only at group \"{target_y_category}\", find the x-axis label with the highest value.",
-        "In the \"{target_y_category}\" row of the surface, which x-axis label is highest?",
-        "Which x-axis category has the highest value for group \"{target_y_category}\"?",
-        "Within group \"{target_y_category}\", what x-axis label reaches the highest surface height?"
-      ],
-      "surface_lowest_value": [
-        "For group \"{target_y_category}\", which x-axis label has the lowest surface value?",
-        "Looking only at group \"{target_y_category}\", find the x-axis label with the lowest value.",
-        "In the \"{target_y_category}\" row of the surface, which x-axis label is lowest?",
-        "Which x-axis category has the lowest value for group \"{target_y_category}\"?",
-        "Within group \"{target_y_category}\", what x-axis label reaches the lowest surface height?"
-      ],
       "increase": [
-        "Which series has the greatest overall increase from the first year to the last year?",
-        "Compare each series from its first point to its last point. Which has the greatest increase?",
-        "What series label shows the largest first-to-last increase?",
-        "From start to finish, which series has the strongest increase?",
-        "Which labeled series increases the most between the first and last year?"
+        "Which series has the greatest increase in z-axis value from the first x-axis position to the last?",
+        "Compare each series from its first x-axis point to its last x-axis point. Which has the greatest increase in z-axis value?",
+        "What series label shows the largest first-to-last increase in z-axis value?",
+        "From the first x-axis position to the last, which series has the strongest z-axis increase?",
+        "Which labeled series increases the most in z-axis value between the first and last x-axis positions?"
       ],
       "decrease": [
-        "Which series has the greatest overall decrease from the first year to the last year?",
-        "Compare each series from its first point to its last point. Which has the greatest decrease?",
-        "What series label shows the largest first-to-last decrease?",
-        "From start to finish, which series has the strongest decrease?",
-        "Which labeled series decreases the most between the first and last year?"
+        "Which series has the greatest decrease in z-axis value from the first x-axis position to the last?",
+        "Compare each series from its first x-axis point to its last x-axis point. Which has the greatest decrease in z-axis value?",
+        "What series label shows the largest first-to-last decrease in z-axis value?",
+        "From the first x-axis position to the last, which series has the strongest z-axis decrease?",
+        "Which labeled series decreases the most in z-axis value between the first and last x-axis positions?"
       ],
       "panel_variation_label": [
-        "Which panel has the largest vertical range?",
-        "Compare the panels by vertical range. Which panel has the largest vertical range?",
-        "What panel label has the largest vertical range?",
-        "Find the panel with the largest vertical range.",
-        "Which small 3D chart panel shows the largest vertical range?"
+        "Which panel has the largest z-axis value range?",
+        "Compare the panels by z-axis value range. Which panel has the largest range?",
+        "What panel label has the largest spread of z-axis values?",
+        "Find the panel with the largest z-axis range.",
+        "Which small 3D chart panel shows the largest z-axis value range?"
       ]
     },
     "output": {
@@ -85,32 +71,20 @@
   "static_slots_by_key": {
     "query:reference_nearest_label": {
       "answer_hint": "set \"answer\" to the exact visible point label as a string",
-      "annotation_hint": "set \"annotation\" to one [x0,y0,x1,y1] pixel box around the selected point marker",
-      "json_example": "{\"annotation\":[330,210,356,236],\"answer\":\"Haidon\"}",
+      "annotation_hint": "set \"annotation\" to one [x,y] pixel point at the center of the selected point marker",
+      "json_example": "{\"annotation\":[343,223],\"answer\":\"Haidon\"}",
       "json_example_answer_only": "{\"answer\":\"Haidon\"}"
-    },
-    "query:surface_highest_value": {
-      "answer_hint": "set \"answer\" to the exact visible x-axis label as a string",
-      "annotation_hint": "set \"annotation\" to one [x0,y0,x1,y1] pixel box around the selected surface-cell marker",
-      "json_example": "{\"annotation\":[508,276,522,290],\"answer\":\"A7\"}",
-      "json_example_answer_only": "{\"answer\":\"A7\"}"
-    },
-    "query:surface_lowest_value": {
-      "answer_hint": "set \"answer\" to the exact visible x-axis label as a string",
-      "annotation_hint": "set \"annotation\" to one [x0,y0,x1,y1] pixel box around the selected surface-cell marker",
-      "json_example": "{\"annotation\":[508,276,522,290],\"answer\":\"A7\"}",
-      "json_example_answer_only": "{\"answer\":\"A7\"}"
     },
     "query:increase": {
       "answer_hint": "set \"answer\" to the exact visible series label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"start_point\" and \"end_point\" to [x0,y0,x1,y1] pixel boxes around the answer series endpoints",
-      "json_example": "{\"annotation\":{\"start_point\":[220,360,238,378],\"end_point\":[590,226,608,244]},\"answer\":\"Davin\"}",
+      "annotation_hint": "set \"annotation\" to one segment [[x0,y0],[x1,y1]] connecting the first and last marker centers of the answer series",
+      "json_example": "{\"annotation\":[[229,369],[599,235]],\"answer\":\"Davin\"}",
       "json_example_answer_only": "{\"answer\":\"Davin\"}"
     },
     "query:decrease": {
       "answer_hint": "set \"answer\" to the exact visible series label as a string",
-      "annotation_hint": "set \"annotation\" to an object mapping \"start_point\" and \"end_point\" to [x0,y0,x1,y1] pixel boxes around the answer series endpoints",
-      "json_example": "{\"annotation\":{\"start_point\":[220,226,238,244],\"end_point\":[590,360,608,378]},\"answer\":\"Davin\"}",
+      "annotation_hint": "set \"annotation\" to one segment [[x0,y0],[x1,y1]] connecting the first and last marker centers of the answer series",
+      "json_example": "{\"annotation\":[[229,235],[599,369]],\"answer\":\"Davin\"}",
       "json_example_answer_only": "{\"answer\":\"Davin\"}"
     },
     "query:panel_variation_label": {
@@ -126,21 +100,12 @@
     },
     "target_axis_value": {
       "type": "integer"
-    },
-    "target_y_category": {
-      "type": "string"
     }
   },
   "required_slots_by_key": {
     "query:reference_nearest_label": [
       "target_axis_label",
       "target_axis_value"
-    ],
-    "query:surface_highest_value": [
-      "target_y_category"
-    ],
-    "query:surface_lowest_value": [
-      "target_y_category"
     ],
     "answer_or_annotation:answer_only": [
       "answer_hint",

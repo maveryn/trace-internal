@@ -22,9 +22,11 @@
 
 ## Program Contract
 
-`count(filter(age_group_rows, compare(metric(row, side), threshold, relation))); scene=population_pyramid; scope=age_group_threshold_count`
+Program: `count(filter(age_group_rows, compare(metric(row, side), threshold, relation))); scene=population_pyramid; scope=age_group_threshold_count`
 
-Arguments:
-- `side`: `left`, `right`, or `combined_total`
-- `relation`: `at_least` or `at_most`
-- `threshold`: sampled visible chart-scale integer
+Candidate set: the visible left/right population bars and age-group labels inside the `age_group_threshold_count` objective scope.
+Operands: prompt-bound labels, categories, series names, thresholds, intervals, references, and encoded chart values, plus the active query id's comparator, direction, target role, or extremum focus when present.
+Operation: evaluate `count` over the candidate set using the filters, comparisons, aggregations, rankings, projections, or counterfactual edits named in the program expression; generation enforces a unique final answer.
+Output binding: `answer` is the `unspecified` value bound by `unspecified`.
+Annotation witnesses: `unspecified` witnesses bound by `see_annotation_contract`. The Annotation Contract below defines the prompt-facing witnesses.
+Query ids: `left_side_at_least_threshold_count`, `left_side_at_most_threshold_count`, `right_side_at_least_threshold_count`, `right_side_at_most_threshold_count`, `combined_total_at_least_threshold_count`, `combined_total_at_most_threshold_count`.

@@ -1,14 +1,15 @@
 # `task_games__rhythm__most_notes_lane_label`
 
 ## Program Contract
-- Domain: `games`
-- Scene: `rhythm`
-- Public task id: `task_games__rhythm__most_notes_lane_label`
-- Supported `query_id` values: `single`
-- Answer schema: `integer_value`
-- Annotation schema: `bbox_set`
-- Program schema: `argmax(lanes, metric=count(filter(notes, lane=lane))).label; scene=rhythm; scope=most_notes_lane_label`
-- Program code: `argmax.rhythm.most_notes_lane`
+
+Program: `argmax(lanes, metric=count(filter(notes, lane=lane))).label; scene=rhythm; scope=most_notes_lane_label`
+
+Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `most_notes_lane_label` objective scope.
+Operands: visible scene state and prompt-bound target operands named by the task contract.
+Operation: evaluate `argmax(lanes, metric=count(filter(notes, lane=lane))).label` over visible rhythm notes; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox_set` schema for all note objects in the winning lane.
+Query ids: `single`.
 
 ## Notes
 - The sampled scene has one lane with a unique maximum note-object count.

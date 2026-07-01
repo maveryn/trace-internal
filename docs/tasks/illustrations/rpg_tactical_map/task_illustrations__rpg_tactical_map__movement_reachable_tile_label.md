@@ -10,7 +10,15 @@
 Selects the single lettered terrain tile that the blue unit can reach within a visible movement-point budget on a top-down tactical RPG map.
 
 ## Program Contract
-`select(tile, reachable_by_movement_budget(unit, tile, budget, terrain_costs)); scene=rpg_tactical_map; scope=movement_reachable_tile_label`
+
+Program: `select(tile, reachable_by_movement_budget(unit, tile, budget, terrain_costs)); scene=rpg_tactical_map; scope=movement_reachable_tile_label`
+
+Candidate set: the visible illustrated scene objects, people, regions, tiles, patches, labels, and option panels inside the `movement_reachable_tile_label` objective scope.
+Operands: visible scene state and prompt-bound operands named by `tile`, `reachable_by_movement_budget`, `unit`, `budget`, `terrain_costs`, `rpg_tactical_map`, `movement_reachable_tile_label`.
+Operation: evaluate `select` over the candidate set using the visible illustrated objects, regions, layout relationships, counts, patch/tile transforms, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Query Branches
 

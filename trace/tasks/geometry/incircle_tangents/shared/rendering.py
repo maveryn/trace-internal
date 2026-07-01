@@ -7,6 +7,7 @@ from typing import Any, Dict, Mapping
 
 from PIL import ImageDraw
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.diagram_style import (
     geometry_diagram_style_metadata,
@@ -25,7 +26,6 @@ from trace.tasks.geometry.shared.shape_style import (
     sample_geometry_shape_style,
 )
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.text_rendering import load_font
 
 from .defaults import SCENE_ID
@@ -125,12 +125,8 @@ def _make_render_context(
         (111, 92, 190),
         (30, 132, 92),
     )
-    accent_index = resolve_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{random_namespace}.accent",
-    )
-    accent_color = accents[int(accent_index) % len(accents)]
+    accent_rng = spawn_rng(int(instance_seed), f"{random_namespace}.accent")
+    accent_color = uniform_choice(accent_rng, accents)
     fill_color = (
         min(255, int(accent_color[0] * 0.18 + 255 * 0.82)),
         min(255, int(accent_color[1] * 0.18 + 255 * 0.82)),

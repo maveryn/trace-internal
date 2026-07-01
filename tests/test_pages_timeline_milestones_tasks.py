@@ -4,7 +4,8 @@ from collections import Counter, defaultdict
 from trace.core.seed import hash64
 from trace.tasks.shared.text_rendering import resolve_text_stroke_fill
 from trace.tasks.shared.time_artifact_style import SUPPORTED_TIME_ARTIFACT_COLOR_NAMES, SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS
-from trace.tasks.pages.timeline.milestones import PagesTimelineEventDateGapValueTask, PagesTimelineIntervalMembershipCountTask
+from trace.tasks.pages.timeline.event_date_gap_value import PagesTimelineEventDateGapValueTask
+from trace.tasks.pages.timeline.interval_membership_count import PagesTimelineIntervalMembershipCountTask
 from tests.helpers import extract_prompt_json_example
 
 def test_pages_timeline_milestones_contract_matches_trace() -> None:
@@ -13,6 +14,34 @@ def test_pages_timeline_milestones_contract_matches_trace() -> None:
     scene_variants = ('classic', 'roadmap')
     style_variants = ('studio', 'marker')
     accent_colors = ('blue', 'orange')
+    for index, query_id in enumerate(query_ids):
+        out = task.generate(
+            22624 + index,
+            params={
+                'query_id': query_id,
+                'scene_variant': scene_variants[index],
+                'style_variant': style_variants[index],
+                'accent_color_name': accent_colors[index],
+            },
+            max_attempts=20,
+        )
+        trace = out.trace_payload
+        execution = trace['execution_trace']
+        render_map = trace['render_map']
+        expected_relation = 'between' if query_id.startswith('between') else 'outside'
+        assert out.query_id == query_id
+        assert str(execution['query_id']) == query_id
+        assert str(execution['source_query_id']) == query_id
+        assert str(execution['interval_relation']) == expected_relation
+        assert out.answer_gt.type == 'integer'
+        assert out.annotation_gt.type == 'bbox_set'
+        assert int(out.answer_gt.value) == len(execution['answer_event_ids'])
+        expected_boxes = [
+            render_map['event_bboxes_by_id'][str(event_id)]
+            for event_id in execution['answer_event_ids']
+        ]
+        assert out.annotation_gt.value == expected_boxes
+        assert trace['projected_annotation']['bbox_set'] == expected_boxes
 
 def test_pages_timeline_event_date_gap_value_contract_matches_trace() -> None:
     task = PagesTimelineEventDateGapValueTask()
@@ -24,18 +53,18 @@ def test_pages_timeline_event_date_gap_value_contract_matches_trace() -> None:
     earlier_event_id, later_event_id = [str(value) for value in execution['endpoint_event_ids']]
     earlier_event = events_by_id[earlier_event_id]
     later_event = events_by_id[later_event_id]
-    assert out.query_id == 'event_date_gap_value'
-    assert str(execution['query_id']) == 'event_date_gap_value'
+    assert out.query_id == 'single'
+    assert str(execution['query_id']) == 'single'
     assert str(execution['source_query_id']) == 'event_date_gap_value'
     assert str(execution['interval_relation']) == 'date_gap'
     assert out.answer_gt.type == 'integer'
-    assert out.annotation_gt.type == 'keyed_bbox_map'
+    assert out.annotation_gt.type == 'bbox_map'
     assert int(earlier_event['day_of_month']) < int(later_event['day_of_month'])
     assert int(out.answer_gt.value) == int(later_event['day_of_month']) - int(earlier_event['day_of_month'])
     assert set(out.annotation_gt.value.keys()) == {'earlier_event', 'later_event'}
     assert out.annotation_gt.value['earlier_event'] == render_map['event_bboxes_by_id'][earlier_event_id]
     assert out.annotation_gt.value['later_event'] == render_map['event_bboxes_by_id'][later_event_id]
-    assert trace['projected_annotation']['keyed_bbox_map'] == out.annotation_gt.value
+    assert trace['projected_annotation']['bbox_map'] == out.annotation_gt.value
     assert tuple((str(value) for value in render_map['endpoint_event_ids'])) == (earlier_event_id, later_event_id)
 
 def test_pages_timeline_milestones_prompt_examples_match_variants() -> None:
@@ -83,7 +112,7 @@ def test_pages_timeline_milestones_balanced_sampling_defaults_cover_axes() -> No
         scenes_by_query_id[query_id][scene_variant] += 1
         styles_by_query_id[query_id][style_variant] += 1
         answers_by_query_id[query_id][int(out.answer_gt.value)] += 1
-    assert set(query_ids.keys()) == {'interval_membership_count'}
+    assert set(query_ids.keys()) == {'between_reference_events_count', 'outside_reference_interval_count'}
     assert set(interval_relations.keys()) == {'between', 'outside'}
     assert set(scene_variants.keys()) == {'classic', 'roadmap', 'minimal'}
     assert set(style_variants.keys()) == set(SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS)

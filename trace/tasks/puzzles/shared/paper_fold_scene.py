@@ -66,6 +66,23 @@ def _paper_bbox_within_panel(
     return (float(x1), float(y1), float(x1 + paper_width), float(y1 + paper_height))
 
 
+def _square_paper_bbox_within_panel(
+    panel_bbox: Sequence[float],
+    *,
+    padding_px: float,
+) -> Tuple[float, float, float, float]:
+    """Center the largest square paper sheet that fits inside a panel."""
+
+    left, top, right, bottom = [float(value) for value in panel_bbox]
+    width = float(right - left)
+    height = float(bottom - top)
+    padding = max(0.0, float(padding_px))
+    paper_size = float(max(1.0, min(width - (2.0 * padding), height - (2.0 * padding))))
+    x1 = float(left + 0.5 * (width - paper_size))
+    y1 = float(top + 0.5 * (height - paper_size))
+    return (float(x1), float(y1), float(x1 + paper_size), float(y1 + paper_size))
+
+
 def _scale_bbox(bbox: Sequence[float], *, scale: float) -> List[float]:
     """Scale one bbox from the supersampled canvas back to final pixels."""
 
@@ -249,7 +266,7 @@ def _draw_marks(
             fill_rgb=PUZZLE_OBJECT_COLOR_BY_TYPE[str(object_type)],
             outline_rgb=(44, 52, 66),
             width=max(2, int(round(2.0 * unit_scale))),
-            inset_px=float(min(12.0 * unit_scale, 0.22 * min(cell_width, cell_height))),
+            inset_px=float(min(10.0 * unit_scale, 0.16 * min(cell_width, cell_height))),
         )
         attrs = {
             "object_type": str(object_type),
@@ -300,7 +317,7 @@ def _draw_cut_holes(
         )
         cell_width = float(cell_bbox[2] - cell_bbox[0])
         cell_height = float(cell_bbox[3] - cell_bbox[1])
-        radius = float(0.22 * min(cell_width, cell_height))
+        radius = float(0.28 * min(cell_width, cell_height))
         center_x = float(0.5 * (cell_bbox[0] + cell_bbox[2]))
         center_y = float(0.5 * (cell_bbox[1] + cell_bbox[3]))
         hole_bbox = (
@@ -557,11 +574,9 @@ def _render_fold_result_scene_base(
             width=max(1, int(border_width if reference_outline is not None else 1)),
         )
 
-    jitter_scale = float(render_params.unit_size_scale)
-    reference_paper_bbox = _paper_bbox_within_panel(
+    reference_paper_bbox = _square_paper_bbox_within_panel(
         reference_panel_bbox,
-        width_ratio=float(0.22 * jitter_scale),
-        height_ratio=float(0.74 * jitter_scale),
+        padding_px=float(render_params.reference_panel_padding_px),
     )
     _draw_paper(
         draw,
@@ -613,8 +628,15 @@ def _render_fold_result_scene_base(
 
     reference_width = float(reference_paper_bbox[2] - reference_paper_bbox[0])
     reference_height = float(reference_paper_bbox[3] - reference_paper_bbox[1])
-    option_paper_width = float(reference_width * (float(result_grid_cols) / float(grid_size)))
-    option_paper_height = float(reference_height * (float(result_grid_rows) / float(grid_size)))
+    paper_inner_pad = float(10.0 * unit_scale)
+    reference_cell_size = float(
+        min(
+            (reference_width - (2.0 * paper_inner_pad)) / float(grid_size),
+            (reference_height - (2.0 * paper_inner_pad)) / float(grid_size),
+        )
+    )
+    option_paper_width = float((reference_cell_size * float(result_grid_cols)) + (2.0 * paper_inner_pad))
+    option_paper_height = float((reference_cell_size * float(result_grid_rows)) + (2.0 * paper_inner_pad))
     option_block_height = float(option_paper_height + float(render_params.option_label_gap_px) + option_label_height)
     option_count = len(option_specs)
     option_columns = 2 if int(option_count) == 4 else min(3, int(option_count))

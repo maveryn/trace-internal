@@ -19,18 +19,68 @@ ALL_OPTION_TRANSFORMS: Tuple[str, ...] = (
 )
 
 
+_TRANSFORM_MATRICES: dict[str, tuple[tuple[int, int], tuple[int, int]]] = {
+    IDENTITY_TRANSFORM_ID: ((1, 0), (0, 1)),
+    "rot90": ((0, -1), (1, 0)),
+    "rot180": ((-1, 0), (0, -1)),
+    "rot270": ((0, 1), (-1, 0)),
+    "flip_h": ((-1, 0), (0, 1)),
+    "flip_v": ((1, 0), (0, -1)),
+    "flip_diag_main": ((0, 1), (1, 0)),
+    "flip_diag_anti": ((0, -1), (-1, 0)),
+}
+_MATRIX_TRANSFORMS = {matrix: transform_id for transform_id, matrix in _TRANSFORM_MATRICES.items()}
+
+
+def _matrix_multiply(
+    left: tuple[tuple[int, int], tuple[int, int]],
+    right: tuple[tuple[int, int], tuple[int, int]],
+) -> tuple[tuple[int, int], tuple[int, int]]:
+    """Return the product `left * right` for two 2x2 transform matrices."""
+
+    return (
+        (
+            int(left[0][0] * right[0][0] + left[0][1] * right[1][0]),
+            int(left[0][0] * right[0][1] + left[0][1] * right[1][1]),
+        ),
+        (
+            int(left[1][0] * right[0][0] + left[1][1] * right[1][0]),
+            int(left[1][0] * right[0][1] + left[1][1] * right[1][1]),
+        ),
+    )
+
+
+def compose_transform_ids(*, after_transform_id: str, before_transform_id: str) -> str:
+    """Return the canonical transform produced by applying `before`, then `after`."""
+
+    after = str(after_transform_id)
+    before = str(before_transform_id)
+    if after not in _TRANSFORM_MATRICES:
+        raise ValueError(f"unsupported after_transform_id: {after}")
+    if before not in _TRANSFORM_MATRICES:
+        raise ValueError(f"unsupported before_transform_id: {before}")
+    matrix = _matrix_multiply(_TRANSFORM_MATRICES[after], _TRANSFORM_MATRICES[before])
+    if matrix not in _MATRIX_TRANSFORMS:
+        raise ValueError(f"unsupported composed transform matrix: {matrix}")
+    return str(_MATRIX_TRANSFORMS[matrix])
+
+
 def resolve_fixed_option_count(
     params: Mapping[str, Any],
     *,
     generation_defaults: Mapping[str, Any],
     fallback_defaults: Any,
 ) -> int:
-    """Resolve the fixed six-option layout count."""
+    """Resolve the task-configured fixed option layout count."""
 
     raw = params.get("object_count", group_default(generation_defaults, "object_count_max", fallback_defaults.object_count_max))
     count = int(raw)
-    if count != 6:
-        raise ValueError("single-transform option scenes require object_count=6")
+    low = int(group_default(generation_defaults, "object_count_min", fallback_defaults.object_count_min))
+    high = int(group_default(generation_defaults, "object_count_max", fallback_defaults.object_count_max))
+    if low != high:
+        raise ValueError("single-transform option scenes require a fixed object_count range")
+    if count != high:
+        raise ValueError(f"single-transform option scenes require object_count={high}")
     return count
 
 
@@ -97,6 +147,7 @@ def validate_option_transform_signatures(
 
 __all__ = [
     "ALL_OPTION_TRANSFORMS",
+    "compose_transform_ids",
     "icon_supports_transform_set",
     "option_transforms_for_answer",
     "resolve_fixed_option_count",

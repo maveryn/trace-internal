@@ -5,8 +5,8 @@ from __future__ import annotations
 import math
 from typing import Any, Dict, Mapping, Tuple
 
+from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.labeling import LABEL_POOL_SAFE_UPPER, assign_random_shuffled_labels
 from trace.tasks.shared.fixed_query import geometry_selected_probability_map as _probability_map
 
@@ -65,24 +65,14 @@ def resolve_endpoint_route_case(
             raise ValueError(f"target_displacement={target_displacement} is not supported")
         case_index = ENDPOINT_GRID_ROUTE_CASES.index(matching[0])
     else:
-        case_index = int(
-            resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=str(route_case_namespace),
-            )
-        ) % len(ENDPOINT_GRID_ROUTE_CASES)
+        route_rng = spawn_rng(int(instance_seed), str(route_case_namespace))
+        case_index = int(uniform_choice(route_rng, tuple(range(len(ENDPOINT_GRID_ROUTE_CASES)))))
     leg_a, leg_b, displacement = ENDPOINT_GRID_ROUTE_CASES[case_index]
 
-    orientation_index = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(orientation_namespace),
-        )
-    )
-    bearing_a = CARDINAL_BEARINGS[orientation_index % len(CARDINAL_BEARINGS)]
-    turn_left = ((orientation_index // len(CARDINAL_BEARINGS)) % 2) == 0
+    orientation_rng = spawn_rng(int(instance_seed), str(orientation_namespace))
+    bearing_a = int(uniform_choice(orientation_rng, CARDINAL_BEARINGS))
+    turn_rng = spawn_rng(int(instance_seed), f"{orientation_namespace}.turn")
+    turn_left = bool(uniform_choice(turn_rng, (True, False)))
     bearing_b = (int(bearing_a) - 90) % 360 if turn_left else (int(bearing_a) + 90) % 360
     turn_direction = "left" if turn_left else "right"
 
@@ -93,13 +83,8 @@ def resolve_endpoint_route_case(
 
     explicit_index = params.get("target_index")
     if explicit_index is None:
-        target_index = int(
-            resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=str(target_index_namespace),
-            )
-        ) % int(option_count)
+        target_rng = spawn_rng(int(instance_seed), str(target_index_namespace))
+        target_index = int(uniform_choice(target_rng, tuple(range(int(option_count)))))
     else:
         target_index = int(explicit_index)
         if target_index < 0 or target_index >= int(option_count):
@@ -147,33 +132,18 @@ def resolve_final_bearing_route_case(
             raise ValueError(f"target_bearing={target_bearing} is not supported")
         bearing_index = FINAL_BEARING_VALUES.index(int(target_bearing))
     else:
-        bearing_index = int(
-            resolve_selection_index(
-                params=params,
-                instance_seed=int(instance_seed),
-                namespace=str(bearing_namespace),
-            )
-        ) % len(FINAL_BEARING_VALUES)
+        bearing_rng = spawn_rng(int(instance_seed), str(bearing_namespace))
+        bearing_index = int(uniform_choice(bearing_rng, tuple(range(len(FINAL_BEARING_VALUES)))))
         target_bearing = int(FINAL_BEARING_VALUES[int(bearing_index)])
 
-    length_index = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(leg_length_namespace),
-        )
-    ) % len(FINAL_BEARING_LEG_LENGTHS)
+    leg_rng = spawn_rng(int(instance_seed), str(leg_length_namespace))
+    length_index = int(uniform_choice(leg_rng, tuple(range(len(FINAL_BEARING_LEG_LENGTHS)))))
     leg_length = int(FINAL_BEARING_LEG_LENGTHS[int(length_index)])
 
     bearing_a = normalize_bearing(int(target_bearing) - 45)
     bearing_b = normalize_bearing(int(target_bearing) + 45)
-    swap_index = int(
-        resolve_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=str(leg_order_namespace),
-        )
-    )
+    order_rng = spawn_rng(int(instance_seed), str(leg_order_namespace))
+    swap_index = int(uniform_choice(order_rng, (0, 1)))
     if swap_index % 2:
         bearing_a, bearing_b = bearing_b, bearing_a
     turn_delta = (int(bearing_b) - int(bearing_a)) % 360

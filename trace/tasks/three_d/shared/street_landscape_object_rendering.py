@@ -101,7 +101,10 @@ def _draw_street_evergreen_tree_object(
     for index, point in enumerate(ornament_points[:6]):
         radius = max(2.0, min(4.0, tree_h * 0.032))
         ornament_bbox = [point[0] - radius, point[1] - radius, point[0] + radius, point[1] + radius]
-        draw.ellipse(tuple(ornament_bbox), fill=ornament_colors[index % len(ornament_colors)], outline=(45, 55, 42), width=1)
+        color_index = int(index)
+        while color_index >= len(ornament_colors):
+            color_index -= len(ornament_colors)
+        draw.ellipse(tuple(ornament_bbox), fill=ornament_colors[color_index], outline=(45, 55, 42), width=1)
         bboxes.append(ornament_bbox)
     return _bbox_union(*bboxes)
 

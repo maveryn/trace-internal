@@ -23,11 +23,15 @@ JSON_OUTPUT_CONTRACT = 'Use a valid JSON object with keys "annotation" and "answ
 JSON_OUTPUT_CONTRACT_ANSWER_ONLY = 'Use a valid JSON object with key "answer" for the final answer.'
 OBJECT_DESCRIPTION = "a treemap composition chart with parent category rectangles and child rectangles labeled with printed integer values"
 ANSWER_HINT_INTEGER = 'set "answer" to the requested integer'
-ANNOTATION_HINT_GROUP_TOTAL = 'set "annotation" to an array of [x0,y0,x1,y1] boxes around the child value labels inside the requested parent rectangle'
-ANNOTATION_HINT_REPEATED_LEAF = 'set "annotation" to an array of [x0,y0,x1,y1] boxes around the matching child value labels across parent rectangles'
-JSON_EXAMPLE_GROUP_TOTAL = '{"annotation":[[150,160,190,184],[210,240,250,264],[310,320,350,344]],"answer":168}'
-JSON_EXAMPLE_REPEATED_LEAF = '{"annotation":[[150,160,190,184],[410,160,450,184],[680,160,720,184]],"answer":54}'
+ANSWER_HINT_PARENT_LABEL = 'set "answer" to the exact visible parent category label as a string'
+ANNOTATION_HINT_GROUP_TOTAL = 'set "annotation" to an array of [x0,y0,x1,y1] boxes around the child rectangles inside the requested parent rectangle'
+ANNOTATION_HINT_PARENT_EXTREMUM = 'set "annotation" to an array of [x0,y0,x1,y1] boxes around every child rectangle inside the answer parent rectangle'
+ANNOTATION_HINT_REPEATED_LEAF = 'set "annotation" to an array of [x0,y0,x1,y1] boxes around the matching child rectangles across parent rectangles'
+JSON_EXAMPLE_GROUP_TOTAL = '{"annotation":[[142,150,198,210],[204,216,268,286],[300,300,370,372]],"answer":168}'
+JSON_EXAMPLE_PARENT_EXTREMUM = '{"annotation":[[142,150,198,210],[204,216,268,286],[300,300,370,372]],"answer":"Housing"}'
+JSON_EXAMPLE_REPEATED_LEAF = '{"annotation":[[142,150,198,210],[404,150,468,210],[672,150,738,210]],"answer":54}'
 JSON_EXAMPLE_ANSWER_ONLY_GROUP_TOTAL = '{"answer":168}'
+JSON_EXAMPLE_ANSWER_ONLY_PARENT_EXTREMUM = '{"answer":"Housing"}'
 JSON_EXAMPLE_ANSWER_ONLY_REPEATED_LEAF = '{"answer":54}'
 
 
@@ -64,11 +68,15 @@ def render_prompt_artifacts(
 
 
 __all__ = [
+    "ANSWER_HINT_PARENT_LABEL",
     "ANNOTATION_HINT_GROUP_TOTAL",
+    "ANNOTATION_HINT_PARENT_EXTREMUM",
     "ANNOTATION_HINT_REPEATED_LEAF",
     "JSON_EXAMPLE_ANSWER_ONLY_GROUP_TOTAL",
+    "JSON_EXAMPLE_ANSWER_ONLY_PARENT_EXTREMUM",
     "JSON_EXAMPLE_ANSWER_ONLY_REPEATED_LEAF",
     "JSON_EXAMPLE_GROUP_TOTAL",
+    "JSON_EXAMPLE_PARENT_EXTREMUM",
     "JSON_EXAMPLE_REPEATED_LEAF",
     "render_prompt_artifacts",
 ]

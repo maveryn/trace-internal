@@ -18,10 +18,8 @@ from .rules import (
     board_size,
     bottom_edge_below_cells,
     can_place,
-    cell_ids_in_row_matching_status,
     column_heights,
     drop_collision,
-    edge_occupied_row_index,
     evaluate_outcome,
     freeze,
     hard_drop_top,
@@ -683,70 +681,6 @@ def build_row_occupancy_sample(
             "row_occupancy_status": str(row_status),
             "qualifying_rows": [int(row) for row in qualifying_rows],
             "row_empty_counts": [int(row_empty_count(row)) for row in board],
-        },
-    )
-
-
-def build_edge_occupied_row_cell_count_sample(
-    rng,
-    *,
-    scene_variant: str,
-    board_rows: int,
-    board_cols: int,
-    edge: str,
-    cell_status: str,
-    target_cell_count: int,
-) -> TetrisSample:
-    """Construct a board whose top/bottom occupied row has an exact status count."""
-
-    target = int(target_cell_count)
-    filled_in_selected_row = int(target) if str(cell_status) == "filled" else int(board_cols) - int(target)
-    if filled_in_selected_row < 1 or filled_in_selected_row > int(board_cols):
-        raise ValueError("edge occupied row target is infeasible")
-    height_cap = {"low_stack": 3, "notched_stack": 5, "high_stack": 7}.get(str(scene_variant), 5)
-    height_cap = max(1, min(int(height_cap), int(board_rows) - 2))
-    active_cols = set(int(col) for col in rng.sample(range(int(board_cols)), int(filled_in_selected_row)))
-    if str(edge) == "top":
-        peak_height = int(rng.randint(1 if height_cap == 1 else 2, int(height_cap)))
-        heights = [
-            int(peak_height) if int(col) in active_cols else int(rng.randint(0, max(0, int(peak_height) - 1)))
-            for col in range(int(board_cols))
-        ]
-    else:
-        heights = [int(rng.randint(1, int(height_cap))) if int(col) in active_cols else 0 for col in range(int(board_cols))]
-    board = supported_stack_from_heights(rng, board_rows=int(board_rows), board_cols=int(board_cols), heights=heights)
-    selected_row_index = edge_occupied_row_index(board, edge=str(edge))
-    annotation_entity_ids = cell_ids_in_row_matching_status(
-        board,
-        row_index=int(selected_row_index),
-        status=str(cell_status),
-        entity_prefix="main",
-    )
-    if len(annotation_entity_ids) != int(target):
-        raise ValueError("constructed Tetris edge-row board has wrong answer")
-    selected_row = board[int(selected_row_index)]
-    return TetrisSample(
-        answer=int(target),
-        answer_type="integer",
-        board=board,
-        piece="",
-        preview_orientation_index=0,
-        placement=None,
-        falling_placement=None,
-        outcome=None,
-        options=(),
-        annotation_entity_ids=tuple(annotation_entity_ids),
-        annotation_kind="cell_set",
-        metadata={
-            **supported_stack_generation_meta(strategy="edge_occupied_row_column_heights"),
-            "target_cell_count": int(target),
-            "edge_row_selector": str(edge),
-            "counted_cell_status": str(cell_status),
-            "selected_row_index": int(selected_row_index),
-            "selected_row_filled_count": int(sum(1 for cell in selected_row if str(cell) != EMPTY)),
-            "selected_row_empty_count": int(sum(1 for cell in selected_row if str(cell) == EMPTY)),
-            "selected_cell_ids": [str(entity_id) for entity_id in annotation_entity_ids],
-            "column_heights": [int(value) for value in column_heights(board)],
         },
     )
 

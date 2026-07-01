@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from trace.core.scene_config import get_scene_defaults
+from trace.core.seed import spawn_rng
+from trace.core.sampling import support_probability_map, uniform_choice_with_probabilities
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
@@ -14,7 +16,6 @@ from trace.tasks.shared.config_defaults import (
     required_group_defaults,
     split_scene_generation_rendering_prompt_defaults,
 )
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index, uniform_probability_map
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.illustrations.shared.canvas_profiles import resolve_canvas_profile
@@ -116,9 +117,9 @@ def _select_target_object_type(
         if value not in set(support):
             raise ValueError(f"target_object_type must be one of {support}")
         return value, {value: 1.0}
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:target_object_type")
-    value = str(support[int(index) % len(support)])
-    return value, _uniform_string_probability_map(support)
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:target_object_type")
+    value, probabilities = uniform_choice_with_probabilities(rng, support, sort_keys=False)
+    return str(value), dict(probabilities)
 
 
 def _select_target_count(
@@ -133,10 +134,10 @@ def _select_target_count(
         value = int(explicit)
         if value not in set(support):
             raise ValueError(f"target_count must be one of {support}")
-        return value, {str(value): 1.0}, support
-    index = resolve_selection_index(params=params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}:target_count")
-    value = int(support[int(index) % len(support)])
-    return value, dict(uniform_probability_map(support)), support
+        return value, support_probability_map(support, selected=value, sort_keys=True), support
+    rng = spawn_rng(int(instance_seed), f"{TASK_ID}:target_count")
+    value, probabilities = uniform_choice_with_probabilities(rng, support, sort_keys=True)
+    return int(value), dict(probabilities), support
 
 
 def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpec:
@@ -180,7 +181,7 @@ def _sample_spec(*, instance_seed: int, params: Mapping[str, Any]) -> _SampleSpe
         target_count=int(target_count),
         target_count_probabilities=dict(target_count_probabilities),
         answer_count_support=tuple(int(value) for value in answer_count_support),
-        answer_count_probabilities=dict(uniform_probability_map(answer_count_support)),
+        answer_count_probabilities=dict(support_probability_map(answer_count_support, sort_keys=True)),
         canvas_width=int(profile.width),
         canvas_height=int(profile.height),
         canvas_profile=str(profile.profile_id),
@@ -273,6 +274,8 @@ class IllustrationsIsometricQuarryTerrainLevelObjectCountTask:
                     canvas_profile_probabilities=sample.canvas_profile_probabilities,
                     context_object_types=OBJECT_COUNT_QUARRY_OBJECT_TYPES,
                     quarry_patch_mode="none",
+                    render_style_params=params,
+                    render_style_defaults=_RENDER_DEFAULTS,
                 )
                 target_level, extremum_mode = _target_level(base_scene, selected_query=sample.selected_query)
                 scene = render_isometric_quarry_scene(
@@ -286,6 +289,8 @@ class IllustrationsIsometricQuarryTerrainLevelObjectCountTask:
                     },
                     context_object_types=OBJECT_COUNT_QUARRY_OBJECT_TYPES,
                     quarry_patch_mode="none",
+                    render_style_params=params,
+                    render_style_defaults=_RENDER_DEFAULTS,
                 )
                 target_level, extremum_mode = _target_level(scene, selected_query=sample.selected_query)
                 matching_entities = _matching_entities(

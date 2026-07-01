@@ -78,6 +78,16 @@ def _assert_bbox_set_inside_image(output) -> None:
         _assert_bbox_inside_image(output, bbox)
 
 
+def _entity_bbox(output, entity_id: str) -> list[float]:
+    """Return one rendered entity bbox by id."""
+
+    entities = output.trace_payload["scene_ir"]["entities"]
+    for entity in entities:
+        if str(entity.get("entity_id")) == str(entity_id):
+            return list(entity["bbox_px"])
+    raise AssertionError(f"missing rendered entity {entity_id!r}")
+
+
 def _assert_three_balance_panels(execution) -> None:
     """Every redesigned balance task uses three readable scale panels."""
 
@@ -213,14 +223,16 @@ def test_weight_order_task_emits_public_contract() -> None:
     assert out.query_id == WEIGHT_QUERY_ID
     assert out.answer_gt.type == "string"
     assert str(out.answer_gt.value) in OPTION_LABELS
-    assert out.annotation_gt.type == "bbox_set"
-    assert len(out.annotation_gt.value) == 3
+    assert out.annotation_gt.type == "bbox"
     assert trace["query_spec"]["params"]["query_id"] == WEIGHT_QUERY_ID
     assert trace["query_spec"]["params"]["answer_type"] == "string"
     assert trace["query_spec"]["params"]["target_cue_mode"] == "query_row_only"
     assert trace["render_spec"]["scene_id"] == SCENE_ID
-    assert trace["render_map"]["annotation_source"] == "annotation_bboxes_px"
-    assert trace["projected_annotation"]["bbox_set"] == out.annotation_gt.value
+    assert trace["render_map"]["annotation_source"] == "annotation_bbox_px"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert execution["supporting_role_item_ids"] == {
+        "selected_option": f"option_{out.answer_gt.value}"
+    }
     assert len(execution["order_options"]) == 4
     selected = [
         option
@@ -228,8 +240,12 @@ def test_weight_order_task_emits_public_contract() -> None:
         if option["option_label"] == out.answer_gt.value
     ][0]
     assert selected["order_text"] == execution["correct_order"]
+    assert out.annotation_gt.value == _entity_bbox(
+        out,
+        f"option_{out.answer_gt.value}",
+    )
     _assert_three_balance_panels(execution)
-    _assert_bbox_set_inside_image(out)
+    _assert_bbox_inside_image(out, out.annotation_gt.value)
 
 
 def test_query_side_relation_task_emits_public_contract() -> None:
@@ -255,7 +271,7 @@ def test_query_side_relation_task_emits_public_contract() -> None:
     assert execution["scene_id"] == SCENE_ID
     assert execution["query_id"] == RELATION_QUERY_ID
     assert execution["supporting_role_item_ids"] == {
-        "query_relation": "query_relation_box"
+        "selected_option": f"option_{out.answer_gt.value}"
     }
     assert len(execution["relation_options"]) == 4
     assert str(execution["target_relation"]) == RELATION_BY_OPTION[out.answer_gt.value]

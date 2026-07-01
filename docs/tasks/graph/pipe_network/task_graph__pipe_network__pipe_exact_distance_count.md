@@ -19,7 +19,15 @@
 4. Query distance, target count, node count, grid shape, label style, color, font, background, context text, and noise are generation/render metadata, not public query branches.
 
 ## Program Contract
-- `count(junction where shortest_open_pipe_distance(query_junction, junction) == k); output=integer; annotation=point_set(exact_distance_junction_centers); scene=pipe_network; scope=pipe_exact_distance_count`
+
+Program: `count(junction where shortest_open_pipe_distance(query_junction, junction) == k); output=integer; annotation=point_set(exact_distance_junction_centers); scene=pipe_network; scope=pipe_exact_distance_count`
+
+Candidate set: the visible graph, tree, network, route, matrix, table, node, edge, label, weight, path, and option elements inside the `pipe_exact_distance_count` objective scope.
+Operands: visible scene state and prompt-bound operands named by `junction`, `where`, `shortest_open_pipe_distance`, `query_junction`, `k`, `exact_distance_junction_centers`, `pipe_network`, `pipe_exact_distance_count`.
+Operation: evaluate `count` over the candidate set using the visible graph structure, labels, weights, directions, reachability, paths, connectivity, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
+Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Query ids: `single`.
 
 ## Answer And Annotation
 1. Answer type: `integer`.

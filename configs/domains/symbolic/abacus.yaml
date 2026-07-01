@@ -1,20 +1,23 @@
 generation:
   shared:
-    balanced_query_id_sampling: true
     balanced_scene_variant_sampling: true
     scene_variant_weights:
       clean_card: 1.0
       wood_frame: 1.0
       worksheet: 1.0
   task_overrides:
-    task_symbolic__abacus_readout__displayed_value_readout:
-      query_id_weights:
-        displayed_value_readout: 1.0
+    task_symbolic__abacus__displayed_value_readout:
       target_answer_min: 0
       target_answer_max: 999
-    task_symbolic__abacus_match_panel__target_value_match_label:
-      query_id_weights:
-        target_value_match_label: 1.0
+    task_symbolic__abacus__place_digit_readout:
+      target_value_min: 0
+      target_value_max: 999
+      balanced_target_column_role_sampling: true
+      target_column_role_weights:
+        hundreds: 1.0
+        tens: 1.0
+        ones: 1.0
+    task_symbolic__abacus__target_value_match_label:
       option_label_support:
       - A
       - B
@@ -33,6 +36,7 @@ generation:
         F: 1.0
       target_value_min: 0
       target_value_max: 999
+
 visual:
   noise:
     apply_prob: 0.18
@@ -56,23 +60,38 @@ visual:
         alpha:
         - 0.004
         - 0.018
+
 rendering:
-  shared:
-    canvas_width: 980
-    canvas_height: 760
-    panel_width_px: 800
-    panel_height_px: 540
-    panel_corner_radius_px: 24
-    frame_width_px: 8
-    rod_width_px: 5
-    beam_height_px: 22
-    bead_width_px: 58
-    bead_height_px: 34
-    title_font_size_px: 25
-    label_font_size_px: 23
-    small_font_size_px: 16
   task_overrides:
-    task_symbolic__abacus_match_panel__target_value_match_label:
+    task_symbolic__abacus__displayed_value_readout:
+      canvas_width: 980
+      canvas_height: 760
+      panel_width_px: 800
+      panel_height_px: 540
+      panel_corner_radius_px: 24
+      frame_width_px: 8
+      rod_width_px: 5
+      beam_height_px: 22
+      bead_width_px: 58
+      bead_height_px: 34
+      title_font_size_px: 25
+      label_font_size_px: 23
+      small_font_size_px: 16
+    task_symbolic__abacus__place_digit_readout:
+      canvas_width: 980
+      canvas_height: 760
+      panel_width_px: 800
+      panel_height_px: 540
+      panel_corner_radius_px: 24
+      frame_width_px: 8
+      rod_width_px: 5
+      beam_height_px: 22
+      bead_width_px: 58
+      bead_height_px: 34
+      title_font_size_px: 25
+      label_font_size_px: 23
+      small_font_size_px: 16
+    task_symbolic__abacus__target_value_match_label:
       canvas_width: 1200
       canvas_height: 760
       option_card_width_px: 340
@@ -86,40 +105,15 @@ rendering:
       option_bead_height_px: 20
       option_rod_width_px: 3
       option_beam_height_px: 10
+
 prompt:
   shared:
-    bundle_id: symbolic_abacus_v0
-    scene_key: abacus_readout
-    task_key: abacus_displayed_value_query
-    object_description_clean_card: a three-column soroban-style abacus with place-value
-      labels 100, 10, and 1
-    object_description_wood_frame: a wood-framed three-column soroban-style abacus
-      with place-value labels 100, 10, and 1
-    object_description_worksheet: a worksheet-style three-column soroban-style abacus
-      with place-value labels 100, 10, and 1
-    json_output_contract: Use a valid JSON object with keys "annotation" and "answer"
-      in that order for the final answer.
-    json_output_contract_answer_only: Use a valid JSON object with key "answer" for
-      the final answer.
-    annotation_hint: set "annotation" to an object/dictionary keyed by "hundreds_active_beads",
-      "tens_active_beads", and "ones_active_beads"; each key maps to an array of active
-      bead center points in pixel space [x,y], with an empty array when that column
-      has no active beads
-    answer_hint: set "answer" to the integer shown by the abacus
-    json_example: '{"annotation":{"hundreds_active_beads":[[239,292],[239,362]],"tens_active_beads":[],"ones_active_beads":[[739,362],[739,400],[739,438]]},"answer":603}'
-    json_example_answer_only: '{"answer":603}'
+    bundle_id: symbolic_abacus_v1
+    scene_key: abacus
   task_overrides:
-    task_symbolic__abacus_match_panel__target_value_match_label:
-      scene_key: abacus_match_panel
+    task_symbolic__abacus__displayed_value_readout:
+      task_key: abacus_displayed_value_query
+    task_symbolic__abacus__place_digit_readout:
+      task_key: abacus_place_digit_query
+    task_symbolic__abacus__target_value_match_label:
       task_key: abacus_target_value_match_query
-      object_description_clean_card: six labeled three-column soroban-style abacus
-        option boards
-      object_description_wood_frame: six labeled wood-framed three-column soroban-style
-        abacus option boards
-      object_description_worksheet: six labeled worksheet-style three-column soroban-style
-        abacus option boards
-      annotation_hint: set "annotation" to an array containing exactly one pixel-space
-        bounding box [x0,y0,x1,y1] around the selected abacus option card
-      answer_hint: set "answer" to the single capital-letter option label
-      json_example: '{"annotation":[[430,74,770,354]],"answer":"B"}'
-      json_example_answer_only: '{"answer":"B"}'

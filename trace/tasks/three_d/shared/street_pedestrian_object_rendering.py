@@ -91,7 +91,10 @@ def _draw_pedestrian_object(
         screen_points = [(float(px), float(py)) for px, py in points]
         draw.polygon(screen_points, fill=fill_rgb)
         for index in range(len(screen_points)):
-            _draw_line(draw, screen_points[index], screen_points[(index + 1) % len(screen_points)], fill=outline_rgb, width=max(1, int(width_px)))
+            next_index = index + 1
+            if next_index >= len(screen_points):
+                next_index = 0
+            _draw_line(draw, screen_points[index], screen_points[next_index], fill=outline_rgb, width=max(1, int(width_px)))
         return [
             round(float(min(px for px, _py in screen_points)), 3),
             round(float(min(py for _px, py in screen_points)), 3),

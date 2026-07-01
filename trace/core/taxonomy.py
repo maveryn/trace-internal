@@ -1458,6 +1458,12 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__coordinate_composite__intersection_point_count": _entry(
         "geometry", "coordinate_composite", "geometry", "coordinate"
     ),
+    "task_geometry__coordinate_conversion__cartesian_component_value": _entry(
+        "geometry", "coordinate_conversion", "geometry", "coordinate"
+    ),
+    "task_geometry__coordinate_conversion__polar_component_value": _entry(
+        "geometry", "coordinate_conversion", "geometry", "coordinate"
+    ),
     "task_geometry__coordinate_panels__quadrilateral_shape_match_label": _entry(
         "geometry", "coordinate_panels", "geometry", "coordinate"
     ),

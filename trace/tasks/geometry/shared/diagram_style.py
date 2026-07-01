@@ -33,6 +33,7 @@ GEOMETRY_STYLE_PROFILES = (
 COORDINATE_GRID_SCENE_IDS: frozenset[str] = frozenset(
     {
         "coordinate_composite",
+        "coordinate_conversion",
         "coordinate_panels",
         "coordinate_plane",
         "function_graph",

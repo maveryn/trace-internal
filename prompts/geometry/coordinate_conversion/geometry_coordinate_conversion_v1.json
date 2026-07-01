@@ -1,0 +1,107 @@
+{
+  "bundle_id": "geometry_coordinate_conversion_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "code_prompt_defaults": {
+    "object_description_cartesian_point": "a coordinate grid with point P plotted on it",
+    "object_description_polar_point": "coordinate axes with point P shown by a labeled polar radius and angle",
+    "annotation_hint_point_p": "set \"annotation\" to the pixel point [x,y] at point P",
+    "annotation_hint_segment_op": "set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] from O to P",
+    "answer_hint_number": "set \"answer\" to the requested number, rounded to one decimal place when needed"
+  },
+  "templates": {
+    "scene": {
+      "coordinate_conversion_scene": [
+        "The image shows {object_description}.",
+        "The diagram shows {object_description}.",
+        "This figure shows {object_description}.",
+        "The visual shows {object_description}.",
+        "The coordinate diagram shows {object_description}."
+      ]
+    },
+    "task": {
+      "coordinate_conversion_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "radius_from_cartesian_point": [
+        "What is the polar radius of point P?",
+        "Find the polar radius r for point P.",
+        "Convert point P to polar form. What is r?",
+        "What is the distance from the origin to point P?",
+        "What is point P's polar radius?"
+      ],
+      "angle_from_cartesian_point": [
+        "What is the polar angle of point P, in degrees counterclockwise from the positive x-axis?",
+        "Find the polar angle theta for point P, in degrees from the positive x-axis.",
+        "Convert point P to polar form. What is theta in degrees?",
+        "What is point P's polar angle in degrees, with 0 <= theta < 360?",
+        "Measure the polar angle of point P counterclockwise from the positive x-axis. What is it in degrees?"
+      ],
+      "x_from_polar_point": [
+        "What is the Cartesian x-coordinate of point P?",
+        "Convert point P to Cartesian form. What is x?",
+        "Using the shown polar radius and angle, find the x-coordinate of P.",
+        "What x-value does point P have in Cartesian coordinates?",
+        "Find point P's Cartesian x-coordinate."
+      ],
+      "y_from_polar_point": [
+        "What is the Cartesian y-coordinate of point P?",
+        "Convert point P to Cartesian form. What is y?",
+        "Using the shown polar radius and angle, find the y-coordinate of P.",
+        "What y-value does point P have in Cartesian coordinates?",
+        "Find point P's Cartesian y-coordinate."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "dynamic_slots": {
+    "object_description": {"type": "string"},
+    "json_output_contract": {"type": "string"},
+    "json_output_contract_answer_only": {"type": "string"},
+    "annotation_hint": {"type": "string"},
+    "answer_hint": {"type": "string"},
+    "json_example": {"type": "string"},
+    "json_example_answer_only": {"type": "string"}
+  },
+  "required_slots_by_key": {
+    "scene:coordinate_conversion_scene": [
+      "object_description"
+    ],
+    "query:radius_from_cartesian_point": [],
+    "query:angle_from_cartesian_point": [],
+    "query:x_from_polar_point": [],
+    "query:y_from_polar_point": [],
+    "output:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "output:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+generation:
+  shared:
+    cartesian_abs_max: 12
+    polar_radius_min: 12
+    polar_radius_max: 80
+    polar_angle_step_degrees: 30
+rendering:
+  shared:
+    canvas_width: 768
+    canvas_height: 768
+    graph_grid_min: -12
+    graph_grid_max: 12
+    marker_radius_px: 9
+    label_font_size: 28
+    readout_font_size: 24
+    polar_display_radius_min_px: 80
+    polar_display_radius_max_px: 255
+prompt:
+  shared:
+    bundle_id: geometry_coordinate_conversion_v1
+    scene_key: coordinate_conversion_scene
+    task_key: coordinate_conversion_query

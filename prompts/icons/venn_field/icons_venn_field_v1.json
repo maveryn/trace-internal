@@ -19,9 +19,23 @@
         "",
         "",
         ""
+      ],
+      "same_region_as_reference_count": [
+        "",
+        "",
+        "",
+        "",
+        ""
       ]
     },
     "query": {
+      "single": [
+        "The two circles divide the panel into four regions: left circle only, right circle only, the overlap of both circles, and outside both circles. Using icon centers to decide regions, how many {target_description} are in the same region as the marked reference icon?",
+        "Treat each icon's center as its Venn-region position. The four regions are left circle only, right circle only, both-circle overlap, and outside both circles. Count the {target_description} in the same region as the marked reference icon.",
+        "Using the center of each icon, classify it as left-only, right-only, in both circles, or outside both circles. How many {target_description} share the marked reference icon's region?",
+        "The marked reference icon belongs to exactly one of four center-based regions: left circle only, right circle only, overlap of both circles, or outside both circles. How many {target_description} are in that same region?",
+        "By icon center, the possible regions are left-only, right-only, both-circle overlap, and outside both circles. Find the number of {target_description} in the marked reference icon's region."
+      ],
       "inside_both_circles_count": [
         "How many {target_description} have centers inside both marked circles?",
         "Count the {target_description} whose centers are inside both marked circles.",
@@ -90,6 +104,9 @@
       "target_description"
     ],
     "query:outside_both_circles_count": [
+      "target_description"
+    ],
+    "query:single": [
       "target_description"
     ],
     "output:answer_only": [

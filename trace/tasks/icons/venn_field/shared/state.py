@@ -18,6 +18,41 @@ class NamedColorEntry:
 
 
 @dataclass(frozen=True)
+class TargetPredicateSample:
+    """Resolved prompt target predicate and its sampling metadata."""
+
+    mode: str
+    mode_probabilities: Dict[str, float]
+    shape_id: str
+    shape_probabilities: Dict[str, float]
+    color: NamedColorEntry | None
+    color_probabilities: Dict[str, float]
+
+
+@dataclass(frozen=True)
+class VennCountSample:
+    """Resolved count/object-count support and sampled values."""
+
+    target_count: int
+    target_count_probabilities: Dict[int, float]
+    object_count: int
+    object_count_probabilities: Dict[int, float]
+    target_opposite_count: int
+
+
+@dataclass(frozen=True)
+class VennCountInputs:
+    """Resolved inputs shared by Venn count-style objectives."""
+
+    shape_ids: Tuple[str, ...]
+    colors: Tuple[NamedColorEntry, ...]
+    fill_styles: Tuple[str, ...]
+    fill_style_probabilities: Dict[str, float]
+    target: TargetPredicateSample
+    counts: VennCountSample
+
+
+@dataclass(frozen=True)
 class VennSpec:
     """Pixel-space geometry for the two marked circles."""
 
@@ -38,6 +73,7 @@ class VennIconPlan:
     fill_style: str
     venn_category: str
     matches_target: bool
+    is_reference: bool = False
 
 
 @dataclass(frozen=True)
@@ -59,6 +95,7 @@ class RenderedVennIcon:
     inside_right_circle: bool
     matches_target: bool
     counted: bool
+    is_reference: bool
     noise_edits: Tuple[Dict[str, Any], ...]
     noise_seed: int | None
 
@@ -79,6 +116,9 @@ class VennScenePayload:
 __all__ = [
     "NamedColorEntry",
     "RenderedVennIcon",
+    "TargetPredicateSample",
+    "VennCountInputs",
+    "VennCountSample",
     "VennIconPlan",
     "VennScenePayload",
     "VennSpec",

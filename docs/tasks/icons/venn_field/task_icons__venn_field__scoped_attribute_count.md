@@ -30,7 +30,7 @@
 ## Generation
 
 - `target_count` defaults to `1..5`.
-- `object_count` defaults to `8..16`.
+- `object_count` defaults to `8..13`.
 - At least one target icon is also placed outside the counted region as an opposite-region distractor.
 - Non-target distractors include shape and color confounds.
 - Query selection is task-owned and uniform unless `query_id` is explicitly supplied.

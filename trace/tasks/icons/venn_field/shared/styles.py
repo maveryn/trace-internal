@@ -5,7 +5,11 @@ from __future__ import annotations
 from typing import Any, Dict, Mapping
 
 from ....shared.config_defaults import group_default
-from ...shared.icon_task_rendering import icon_render_style_trace, resolve_icon_render_params, resolve_icon_rgb_param
+from ...shared.icon_task_rendering import (
+    icon_render_style_trace,
+    resolve_icon_render_params,
+    resolve_icon_rgb_param,
+)
 
 from .defaults import VennFieldDefaults
 
@@ -30,7 +34,9 @@ def resolve_venn_render_params(
         ("venn_fill_alpha", fallback_defaults.venn_fill_alpha),
         ("venn_outline_width_px", fallback_defaults.venn_outline_width_px),
     ):
-        render_params[str(key)] = int(params.get(str(key), group_default(render_defaults, str(key), fallback)))
+        render_params[str(key)] = int(
+            params.get(str(key), group_default(render_defaults, str(key), fallback))
+        )
     for key, fallback in (
         ("venn_left_fill_rgb", fallback_defaults.venn_left_fill_rgb),
         ("venn_right_fill_rgb", fallback_defaults.venn_right_fill_rgb),
@@ -55,11 +61,21 @@ def venn_style_trace(
     """Serialize Venn-field style metadata."""
 
     return {
-        **icon_render_style_trace(render_params=render_params, sampled_palette_rgb=sampled_palette_rgb),
-        "venn_left_fill_rgb": [int(value) for value in render_params["venn_left_fill_rgb"]],
-        "venn_right_fill_rgb": [int(value) for value in render_params["venn_right_fill_rgb"]],
-        "venn_left_outline_rgb": [int(value) for value in render_params["venn_left_outline_rgb"]],
-        "venn_right_outline_rgb": [int(value) for value in render_params["venn_right_outline_rgb"]],
+        **icon_render_style_trace(
+            render_params=render_params, sampled_palette_rgb=sampled_palette_rgb
+        ),
+        "venn_left_fill_rgb": [
+            int(value) for value in render_params["venn_left_fill_rgb"]
+        ],
+        "venn_right_fill_rgb": [
+            int(value) for value in render_params["venn_right_fill_rgb"]
+        ],
+        "venn_left_outline_rgb": [
+            int(value) for value in render_params["venn_left_outline_rgb"]
+        ],
+        "venn_right_outline_rgb": [
+            int(value) for value in render_params["venn_right_outline_rgb"]
+        ],
         "venn_fill_alpha": int(render_params["venn_fill_alpha"]),
         "venn_outline_width_px": int(render_params["venn_outline_width_px"]),
         "venn_boundary_margin_px": int(render_params["venn_boundary_margin_px"]),

@@ -10,7 +10,9 @@ from ...shared.icon_scene import BBox
 from .state import VennSpec
 
 
-def bbox_from_center(center_xy: Sequence[float], sprite_size: Sequence[int]) -> Tuple[int, int, int, int]:
+def bbox_from_center(
+    center_xy: Sequence[float], sprite_size: Sequence[int]
+) -> Tuple[int, int, int, int]:
     """Return an integer bbox for a sprite centered at `center_xy`."""
 
     cx, cy = float(center_xy[0]), float(center_xy[1])
@@ -66,13 +68,35 @@ def category_membership(category: str) -> Tuple[bool, bool]:
     raise ValueError(f"unsupported Venn category: {category}")
 
 
-def bbox_venn_category(venn: VennSpec, box: Sequence[int | float], *, margin_px: int) -> str | None:
+def bbox_venn_category(
+    venn: VennSpec, box: Sequence[int | float], *, margin_px: int
+) -> str | None:
     """Return a stable Venn category when a bbox clears circle boundaries."""
 
-    left_inside = _bbox_inside_circle(box, center_xy=venn.left_center_xy, radius_px=venn.radius_px, margin_px=int(margin_px))
-    right_inside = _bbox_inside_circle(box, center_xy=venn.right_center_xy, radius_px=venn.radius_px, margin_px=int(margin_px))
-    left_outside = _bbox_outside_circle(box, center_xy=venn.left_center_xy, radius_px=venn.radius_px, margin_px=int(margin_px))
-    right_outside = _bbox_outside_circle(box, center_xy=venn.right_center_xy, radius_px=venn.radius_px, margin_px=int(margin_px))
+    left_inside = _bbox_inside_circle(
+        box,
+        center_xy=venn.left_center_xy,
+        radius_px=venn.radius_px,
+        margin_px=int(margin_px),
+    )
+    right_inside = _bbox_inside_circle(
+        box,
+        center_xy=venn.right_center_xy,
+        radius_px=venn.radius_px,
+        margin_px=int(margin_px),
+    )
+    left_outside = _bbox_outside_circle(
+        box,
+        center_xy=venn.left_center_xy,
+        radius_px=venn.radius_px,
+        margin_px=int(margin_px),
+    )
+    right_outside = _bbox_outside_circle(
+        box,
+        center_xy=venn.right_center_xy,
+        radius_px=venn.radius_px,
+        margin_px=int(margin_px),
+    )
     if left_inside and right_inside:
         return "both"
     if left_inside and right_outside:
@@ -135,24 +159,45 @@ def _bbox_corners(box: Sequence[int | float]) -> Tuple[Tuple[float, float], ...]
     return ((x0, y0), (x1, y0), (x1, y1), (x0, y1))
 
 
-def _corner_distances_to_circle(box: Sequence[int | float], center_xy: Sequence[float]) -> Tuple[float, ...]:
+def _corner_distances_to_circle(
+    box: Sequence[int | float], center_xy: Sequence[float]
+) -> Tuple[float, ...]:
     cx, cy = float(center_xy[0]), float(center_xy[1])
-    return tuple(math.hypot(float(x) - cx, float(y) - cy) for x, y in _bbox_corners(box))
+    return tuple(
+        math.hypot(float(x) - cx, float(y) - cy) for x, y in _bbox_corners(box)
+    )
 
 
-def _bbox_inside_circle(box: Sequence[int | float], *, center_xy: Sequence[float], radius_px: float, margin_px: int) -> bool:
+def _bbox_inside_circle(
+    box: Sequence[int | float],
+    *,
+    center_xy: Sequence[float],
+    radius_px: float,
+    margin_px: int,
+) -> bool:
     threshold = float(radius_px) - float(max(0, int(margin_px)))
     if threshold <= 0.0:
         return False
-    return all(float(distance) <= threshold for distance in _corner_distances_to_circle(box, center_xy))
+    return all(
+        float(distance) <= threshold
+        for distance in _corner_distances_to_circle(box, center_xy)
+    )
 
 
-def _bbox_outside_circle(box: Sequence[int | float], *, center_xy: Sequence[float], radius_px: float, margin_px: int) -> bool:
+def _bbox_outside_circle(
+    box: Sequence[int | float],
+    *,
+    center_xy: Sequence[float],
+    radius_px: float,
+    margin_px: int,
+) -> bool:
     cx, cy = float(center_xy[0]), float(center_xy[1])
     x0, y0, x1, y1 = [float(value) for value in box]
     nearest_x = min(max(cx, x0), x1)
     nearest_y = min(max(cy, y0), y1)
-    return math.hypot(nearest_x - cx, nearest_y - cy) >= float(radius_px) + float(max(0, int(margin_px)))
+    return math.hypot(nearest_x - cx, nearest_y - cy) >= float(radius_px) + float(
+        max(0, int(margin_px))
+    )
 
 
 __all__ = [

@@ -2120,6 +2120,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_icons__venn_field__scoped_attribute_count": _entry(
         "icons", "venn_field", "icons", "venn_field"
     ),
+    "task_icons__venn_field__same_region_as_reference_count": _entry(
+        "icons", "venn_field", "icons", "venn_field"
+    ),
     "task_icons__paired_canvas__panel_set_relation_count": _entry(
         "icons", "paired_canvas", "icons", "paired_canvas"
     ),

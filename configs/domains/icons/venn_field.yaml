@@ -1,7 +1,7 @@
 generation:
   shared:
     object_count_min: 8
-    object_count_max: 16
+    object_count_max: 13
     target_count_min: 1
     target_count_max: 5
     target_count_weights:
@@ -36,6 +36,13 @@ generation:
       dotted: 0.15
   task_overrides:
     task_icons__venn_field__scoped_attribute_count: {}
+    task_icons__venn_field__same_region_as_reference_count:
+      target_count_weights:
+        1: 0.2
+        2: 0.2
+        3: 0.2
+        4: 0.2
+        5: 0.2
 rendering:
   shared:
     canvas_width: 800
@@ -171,8 +178,19 @@ rendering:
     - 86
     venn_fill_alpha: 54
     venn_outline_width_px: 3
+    reference_marker_outline_rgb:
+    - 28
+    - 32
+    - 42
+    reference_marker_dot_rgb:
+    - 255
+    - 255
+    - 255
+    reference_marker_width_px: 4
+    reference_marker_padding_px: 7
   task_overrides:
     task_icons__venn_field__scoped_attribute_count: {}
+    task_icons__venn_field__same_region_as_reference_count: {}
 prompt:
   shared:
     bundle_id: icons_venn_field_v1
@@ -180,3 +198,5 @@ prompt:
     task_key: scoped_attribute_count
   task_overrides:
     task_icons__venn_field__scoped_attribute_count: {}
+    task_icons__venn_field__same_region_as_reference_count:
+      task_key: same_region_as_reference_count

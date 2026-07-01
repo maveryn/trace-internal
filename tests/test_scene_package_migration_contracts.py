@@ -1258,7 +1258,6 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
                 "cone_net",
                 "container_volume_transfer",
                 "coordinate_composite",
-                "coordinate_conversion",
                 "coordinate_panels",
                 "coordinate_plane",
                 "cuboid_views",
@@ -1269,6 +1268,7 @@ def test_scene_package_migration_registries_only_track_review_candidate_scenes()
                 "incircle_tangents",
                 "measuring_tools",
                 "paper_fold",
+                "polar_graph_paper",
             }
         ),
         "graph": frozenset(

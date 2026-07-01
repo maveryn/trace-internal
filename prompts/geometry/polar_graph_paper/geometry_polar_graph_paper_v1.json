@@ -1,0 +1,107 @@
+{
+  "bundle_id": "geometry_polar_graph_paper_v1",
+  "schema_version": "v1",
+  "allow_empty_task_templates": true,
+  "code_prompt_defaults": {
+    "object_description": "point P plotted on polar graph paper with six labeled answer options",
+    "json_output_contract": "Return a JSON object with keys \"answer\" and \"annotation\".",
+    "json_output_contract_answer_only": "Return a JSON object with key \"answer\".",
+    "answer_hint_option_letter": "set \"answer\" to the selected option label as a capital letter shown in the image",
+    "annotation_hint_point_p": "set \"annotation\" to the pixel point [x,y] at point P"
+  },
+  "templates": {
+    "scene": {
+      "polar_graph_paper_scene": [
+        "The image shows {object_description}.",
+        "The diagram shows {object_description}.",
+        "This figure shows {object_description}.",
+        "The visual shows {object_description}.",
+        "The polar graph shows {object_description}."
+      ]
+    },
+    "task": {
+      "polar_graph_paper_readout_query": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "query": {
+      "radius_readout_label": [
+        "Which option gives the polar radius of point P?",
+        "Choose the option that gives the radius coordinate of point P.",
+        "Which labeled option matches the radius of point P?",
+        "Find the option showing the radius value for point P.",
+        "Select the option whose value is the polar radius of point P."
+      ],
+      "angle_readout_label": [
+        "Which option gives the polar angle of point P in degrees?",
+        "Choose the option that gives the angle coordinate of point P in degrees.",
+        "Which labeled option matches the polar angle of point P?",
+        "Find the option showing the angle value for point P in degrees.",
+        "Select the option whose value is the polar angle of point P."
+      ]
+    },
+    "output": {
+      "answer_only": [
+        "{json_output_contract_answer_only}\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nFormat for the \"answer\" field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "{json_output_contract_answer_only}\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
+      ],
+      "answer_and_annotation": [
+        "{json_output_contract}\nFinal answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nFormat for the \"answer\" field: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nRequired answer format: {answer_hint}.\nAnnotation format: {annotation_hint}.\nExample JSON:\n{json_example}",
+        "{json_output_contract}\nAnnotation format: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}"
+      ]
+    }
+  },
+  "static_slots_by_key": {
+    "scene:polar_graph_paper_scene": {
+      "object_description": "point P plotted on polar graph paper with six labeled answer options"
+    }
+  },
+  "dynamic_slots": {
+    "json_output_contract": {
+      "type": "string"
+    },
+    "json_output_contract_answer_only": {
+      "type": "string"
+    },
+    "answer_hint": {
+      "type": "string"
+    },
+    "annotation_hint": {
+      "type": "string"
+    },
+    "json_example": {
+      "type": "string"
+    },
+    "json_example_answer_only": {
+      "type": "string"
+    }
+  },
+  "required_slots_by_key": {
+    "scene:polar_graph_paper_scene": [
+      "object_description"
+    ],
+    "query:radius_readout_label": [],
+    "query:angle_readout_label": [],
+    "output:answer_only": [
+      "json_output_contract_answer_only",
+      "answer_hint",
+      "json_example_answer_only"
+    ],
+    "output:answer_and_annotation": [
+      "json_output_contract",
+      "annotation_hint",
+      "answer_hint",
+      "json_example"
+    ]
+  }
+}

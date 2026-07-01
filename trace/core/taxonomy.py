@@ -1458,12 +1458,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__coordinate_composite__intersection_point_count": _entry(
         "geometry", "coordinate_composite", "geometry", "coordinate"
     ),
-    "task_geometry__coordinate_conversion__cartesian_component_value": _entry(
-        "geometry", "coordinate_conversion", "geometry", "coordinate"
-    ),
-    "task_geometry__coordinate_conversion__polar_component_value": _entry(
-        "geometry", "coordinate_conversion", "geometry", "coordinate"
-    ),
     "task_geometry__coordinate_panels__quadrilateral_shape_match_label": _entry(
         "geometry", "coordinate_panels", "geometry", "coordinate"
     ),
@@ -1598,6 +1592,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     ),
     "task_geometry__paper_fold__paper_fold_angle_value": _entry(
         "geometry", "paper_fold", "geometry", "measurement"
+    ),
+    "task_geometry__polar_graph_paper__readout_value_label": _entry(
+        "geometry", "polar_graph_paper", "geometry", "coordinate"
     ),
     "task_geometry__polygon_equation_diagram__equal_angle_measure_value": _entry(
         "geometry", "polygon_equation_diagram", "geometry", "measurement"

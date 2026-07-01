@@ -229,6 +229,61 @@ def _bbox_overlap_area(a: Sequence[float], b: Sequence[float]) -> float:
     return overlap_w * overlap_h
 
 
+def _point_to_segment_distance(point: Point, start: Point, end: Point) -> float:
+    px, py = float(point[0]), float(point[1])
+    ax, ay = float(start[0]), float(start[1])
+    bx, by = float(end[0]), float(end[1])
+    vx, vy = bx - ax, by - ay
+    length_sq = vx * vx + vy * vy
+    if length_sq <= 1e-9:
+        return math.hypot(px - ax, py - ay)
+    t = max(0.0, min(1.0, ((px - ax) * vx + (py - ay) * vy) / length_sq))
+    closest = (ax + vx * t, ay + vy * t)
+    return math.hypot(px - closest[0], py - closest[1])
+
+
+def _point_to_bbox_distance(point: Point, bbox: Sequence[float]) -> float:
+    x0, y0, x1, y1 = _coerce_bbox(bbox)
+    px, py = float(point[0]), float(point[1])
+    dx = max(x0 - px, 0.0, px - x1)
+    dy = max(y0 - py, 0.0, py - y1)
+    return math.hypot(dx, dy)
+
+
+def _orientation(a: Point, b: Point, c: Point) -> float:
+    return (float(b[0]) - float(a[0])) * (float(c[1]) - float(a[1])) - (float(b[1]) - float(a[1])) * (float(c[0]) - float(a[0]))
+
+
+def _segments_intersect(a: Point, b: Point, c: Point, d: Point) -> bool:
+    o1 = _orientation(a, b, c)
+    o2 = _orientation(a, b, d)
+    o3 = _orientation(c, d, a)
+    o4 = _orientation(c, d, b)
+    return (o1 <= 0.0 <= o2 or o2 <= 0.0 <= o1) and (o3 <= 0.0 <= o4 or o4 <= 0.0 <= o3)
+
+
+def _segment_intersects_bbox(start: Point, end: Point, bbox: Sequence[float]) -> bool:
+    x0, y0, x1, y1 = _coerce_bbox(bbox)
+    if x0 <= float(start[0]) <= x1 and y0 <= float(start[1]) <= y1:
+        return True
+    if x0 <= float(end[0]) <= x1 and y0 <= float(end[1]) <= y1:
+        return True
+    corners = ((x0, y0), (x1, y0), (x1, y1), (x0, y1))
+    edges = tuple(zip(corners, corners[1:] + corners[:1]))
+    return any(_segments_intersect(start, end, edge_start, edge_end) for edge_start, edge_end in edges)
+
+
+def _bbox_segment_clearance(bbox: Sequence[float], start: Point, end: Point) -> float:
+    if _segment_intersects_bbox(start, end, bbox):
+        return 0.0
+    x0, y0, x1, y1 = _coerce_bbox(bbox)
+    corners = ((x0, y0), (x1, y0), (x1, y1), (x0, y1))
+    distances = [_point_to_segment_distance(corner, start, end) for corner in corners]
+    distances.append(_point_to_bbox_distance(start, bbox))
+    distances.append(_point_to_bbox_distance(end, bbox))
+    return min(distances)
+
+
 def _expand_bbox(bbox: Sequence[float], pad: float) -> BBox:
     x0, y0, x1, y1 = _coerce_bbox(bbox)
     return (x0 - float(pad), y0 - float(pad), x1 + float(pad), y1 + float(pad))
@@ -252,6 +307,7 @@ def _placement_penalty(
     bbox: Sequence[float],
     *,
     avoid_bboxes: Sequence[Sequence[float]],
+    avoid_segments: Sequence[tuple[Point, Point]] = (),
     anchor: Point,
     center: Point,
 ) -> float:
@@ -271,6 +327,12 @@ def _placement_penalty(
         overlap_area = _bbox_overlap_area(bbox, avoid_bbox)
         if overlap_area > 0.0:
             overlap_penalty += 1_000_000.0 + overlap_area * 100.0
+    for segment_start, segment_end in avoid_segments:
+        clearance = _bbox_segment_clearance(bbox, segment_start, segment_end)
+        if clearance < 10.0:
+            overlap_penalty += 1_000_000.0 + (10.0 - clearance) * 80_000.0
+        elif clearance < 24.0:
+            overlap_penalty += (24.0 - clearance) * 4_000.0
     distance_penalty = math.hypot(float(center[0]) - float(anchor[0]), float(center[1]) - float(anchor[1])) * 0.08
     return edge_penalty + overlap_penalty + distance_penalty
 
@@ -607,6 +669,7 @@ def _choose_point_label_center(
     point: Point,
     *,
     avoid_bboxes: Sequence[Sequence[float]],
+    avoid_segments: Sequence[tuple[Point, Point]] = (),
 ) -> Point:
     """Choose a readable point-label position without changing projected geometry."""
 
@@ -638,14 +701,31 @@ def _choose_point_label_center(
         (66.0, 0.0),
         (0.0, 66.0),
         (-66.0, 0.0),
+        (0.0, -84.0),
+        (84.0, 0.0),
+        (0.0, 84.0),
+        (-84.0, 0.0),
+        (60.0 * outward_x, 60.0 * outward_y),
+        (60.0 * outward_x, -60.0 * outward_y),
+        (-60.0 * outward_x, 60.0 * outward_y),
+        (-60.0 * outward_x, -60.0 * outward_y),
+        (0.0, -104.0),
+        (104.0, 0.0),
+        (0.0, 104.0),
+        (-104.0, 0.0),
     )
     candidates = [(x + dx, y + dy) for dx, dy in offsets]
+    for radius in (76.0, 96.0, 118.0, 140.0):
+        for degrees in range(0, 360, 30):
+            radians = math.radians(float(degrees))
+            candidates.append((x + math.cos(radians) * radius, y + math.sin(radians) * radius))
     return min(
         candidates,
         key=lambda center: _placement_penalty(
             ctx,
             _readout_bbox(ctx, label, center, small=True),
             avoid_bboxes=avoid_bboxes,
+            avoid_segments=avoid_segments,
             anchor=point,
             center=center,
         ),
@@ -658,6 +738,7 @@ def _draw_point_labels(
     *,
     avoid_bboxes: Sequence[Sequence[float]] = (),
     point_avoid_bboxes: Mapping[str, Sequence[Sequence[float]]] | None = None,
+    point_avoid_segments: Mapping[str, Sequence[tuple[Point, Point]]] | None = None,
 ) -> dict[str, list[float]]:
     bboxes: dict[str, list[float]] = {}
     placed_avoid_bboxes: list[BBox] = []
@@ -668,6 +749,7 @@ def _draw_point_labels(
             str(label),
             point,
             avoid_bboxes=tuple(avoid_bboxes) + point_specific + tuple(placed_avoid_bboxes),
+            avoid_segments=tuple((point_avoid_segments or {}).get(str(label), ())),
         )
         bbox = draw_readout_centered(ctx, str(label), center, small=True, backed=False, required=False)
         bboxes[str(label)] = bbox_to_list(bbox)
@@ -683,7 +765,7 @@ def _point_line_guard_bboxes(
     """Return local line guards so point labels do not sit on incident segments."""
 
     result: dict[str, list[BBox]] = {str(label): [] for label in points}
-    half_span = 44.0
+    half_span = 98.0
     max_distance = max(10.0, float(ctx.line_width) + 7.0)
     for point_label, point in points.items():
         px, py = float(point[0]), float(point[1])
@@ -713,10 +795,18 @@ def _point_line_guard_bboxes(
                     (guard_start, guard_end),
                     width=ctx.width,
                     height=ctx.height,
-                    pad=max(14.0, float(ctx.line_width) + 10.0),
+                    pad=max(22.0, float(ctx.line_width) + 18.0),
                 )
             )
     return {label: tuple(bboxes) for label, bboxes in result.items()}
+
+
+def _point_line_guard_segments(
+    points: Mapping[str, Point],
+    edges: Sequence[tuple[str, str]],
+) -> dict[str, tuple[tuple[Point, Point], ...]]:
+    segments = tuple((points[str(edge_start)], points[str(edge_end)]) for edge_start, edge_end in edges)
+    return {str(label): segments for label in points}
 
 
 def _vertex_guard_bboxes(ctx: RenderContext, points: Mapping[str, Point], *, radius: float = 18.0) -> dict[str, BBox]:
@@ -841,6 +931,7 @@ def render_triangle_relations_scene(
         points,
         avoid_bboxes=construction_bboxes + tuple(label_avoid_bboxes),
         point_avoid_bboxes=_point_line_guard_bboxes(ctx, points, case.edges),
+        point_avoid_segments=_point_line_guard_segments(points, case.edges),
     )
     annotation_segment = None
     annotation_point = None

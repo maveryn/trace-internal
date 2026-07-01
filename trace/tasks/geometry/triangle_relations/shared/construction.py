@@ -30,6 +30,8 @@ def _trim_answer_variants(
     for case in cases:
         if not _case_has_readable_labeled_geometry(case):
             continue
+        if not _case_has_no_visible_answer_collision(case):
+            continue
         bucket = by_answer.setdefault(_answer_key(case.answer), [])
         if len(bucket) < int(max_variants_per_answer):
             bucket.append(case)
@@ -70,6 +72,36 @@ def _case_has_readable_labeled_geometry(case: TriangleRelationsCase) -> bool:
     if str(case.formula_family).startswith("angle_bisector") and _angle_bisector_split_fraction(case) < 0.2:
         return False
     return True
+
+
+def _case_has_no_visible_answer_collision(case: TriangleRelationsCase) -> bool:
+    """Reject cases where a non-target visible label directly equals the answer."""
+
+    answer_key = _answer_key(case.answer)
+    target_segment = tuple(case.target_segment) if case.target_segment is not None else None
+    for label in case.segment_labels:
+        if target_segment is not None and tuple(label.segment) == target_segment:
+            continue
+        if _visible_numeric_label_key(label.text) == answer_key:
+            return False
+    for label in case.angle_labels:
+        if _visible_numeric_label_key(label.text) == answer_key:
+            return False
+    return True
+
+
+def _visible_numeric_label_key(text: object) -> str | None:
+    """Return the normalized value of a plain visible numeric label, if any."""
+
+    raw = str(text).strip().replace(DEGREE_SYMBOL, "")
+    if not raw:
+        return None
+    if any(token in raw for token in ("?", "x", "θ", "=")):
+        return None
+    try:
+        return _answer_key(float(raw))
+    except ValueError:
+        return None
 
 
 def _angle_bisector_split_fraction(case: TriangleRelationsCase) -> float:
@@ -141,6 +173,7 @@ def _case(
     target_segment: tuple[str, str] | None = None,
     target_point: str | None = None,
     point_annotation_labels: Iterable[str] = (),
+    point_mark_labels: Iterable[str] = (),
     angle_labels: Iterable[AngleLabel] = (),
     right_angles: Iterable[RightAngleMark] = (),
     tick_groups: Iterable[TickGroup] = (),
@@ -165,6 +198,7 @@ def _case(
         target_segment=target_segment,
         target_point=target_point,
         point_annotation_labels=tuple(str(label) for label in point_annotation_labels),
+        point_mark_labels=tuple(str(label) for label in point_mark_labels),
         angle_labels=tuple(angle_labels),
         right_angles=tuple(right_angles),
         tick_groups=tuple(tick_groups),
@@ -488,7 +522,7 @@ def _bisector_case(
         polygons=(("A", "B", "C"),),
         segment_labels=labels,
         target_segment=target,
-        angle_labels=(AngleLabel("A", "B", "D", "", 34.0), AngleLabel("A", "D", "C", "", 44.0)),
+        angle_labels=(AngleLabel("A", "B", "D", "", 34.0), AngleLabel("A", "D", "C", "", 34.0)),
         tick_groups=(TickGroup((("A", "B"), ("A", "C")), count=0, kind="angle_bisector"),),
         trace_values=trace_values,
     )
@@ -618,6 +652,7 @@ def _centroid_case(*, given: int, target_whole: bool) -> TriangleRelationsCase:
         polygons=(("A", "B", "C"),),
         segment_labels=labels,
         target_segment=target,
+        point_mark_labels=("G",),
         tick_groups=(TickGroup((("B", "D"), ("D", "C")), count=1),),
         trace_values={"D_midpoint_of_BC": True, "G_is_centroid": True, **values},
     )
@@ -654,7 +689,7 @@ def _right_triangle_case(
         labels.append(SegmentLabel(side_segments[target_side], f"{segment_name}=?", -34.0, segment_name))
     angle_text = "?" if target_side is None else f"θ={fmt_measure(theta)}°"
     answer_type = "number"
-    rounding = "nearest_tenth"
+    rounding = "one_decimal"
     annotation_mode = "segment" if target_side is not None else "point"
     trace_values = {
         "adjacent": round1(adjacent),
@@ -855,7 +890,8 @@ def _angle_bisector_variable_case(
         polygons=(("A", "B", "C"),),
         segment_labels=labels,
         point_annotation_labels=("A", "B", "C", "D"),
-        angle_labels=(AngleLabel("A", "B", "D", "", 34.0), AngleLabel("A", "D", "C", "", 44.0)),
+        angle_labels=(AngleLabel("A", "B", "D", "", 34.0), AngleLabel("A", "D", "C", "", 34.0)),
+        tick_groups=(TickGroup((("A", "B"), ("A", "C")), count=0, kind="angle_bisector"),),
         trace_values={**trace, "internal_case_family": str(family)},
     )
 
@@ -966,7 +1002,7 @@ def split_triangle_trig_side_cases() -> tuple[TriangleRelationsCase, ...]:
                 case_kind=str(family),
                 answer=round1(float(answer)),
                 answer_type="number",
-                answer_rounding="nearest_tenth",
+                answer_rounding="one_decimal",
                 formula_family="shared_altitude_right_triangle_trig",
                 formula_text="use one right triangle to derive the shared altitude, then solve the target side",
                 reasoning_steps=3,
@@ -1072,7 +1108,7 @@ def split_triangle_trig_side_cases() -> tuple[TriangleRelationsCase, ...]:
             )
         if len([case for case in cases if case.case_kind == "isosceles_altitude_trig_side"]) >= 80:
             break
-    return tuple(cases)
+    return _trim_answer_variants(cases, max_answers=240, max_variants_per_answer=3)
 
 
 @cache
@@ -1279,7 +1315,7 @@ def parallel_segment_expression_length_cases() -> tuple[TriangleRelationsCase, .
                 _case(
                     case_kind="triangle_side_splitter_segment_length_expression",
                     answer=int(answer),
-                    answer_type="number",
+                    answer_type="integer",
                     answer_rounding="integer",
                     formula_family="parallel_segment_ratio_target_length",
                     formula_text="AD / DB = AE / EC, solve x, then AE = x + offset",
@@ -1326,7 +1362,7 @@ def parallel_segment_variable_cases() -> tuple[TriangleRelationsCase, ...]:
                 _case(
                     case_kind="triangle_side_splitter_proportion_expression",
                     answer=int(answer),
-                    answer_type="number",
+                    answer_type="integer",
                     answer_rounding="integer",
                     formula_family="parallel_segment_ratio_variable",
                     formula_text="AD / DB = AE / EC, solve for x",

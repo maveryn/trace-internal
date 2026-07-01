@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Sequence, Tuple
+from typing import Any, Mapping, Sequence, Tuple
 
 from ...shared.color_distance import color_distance
 from ...shared.text_legibility import (
@@ -185,6 +185,7 @@ def draw_readout_centered(
     small: bool = True,
     required: bool = True,
     backed: bool = False,
+    extra_metadata: Mapping[str, Any] | None = None,
 ) -> BBox:
     """Draw centered readout text, with label backing only when explicitly requested."""
 
@@ -205,7 +206,7 @@ def draw_readout_centered(
     else:
         fill = _coerce_color(getattr(ctx, "label_color", (10, 14, 22)), (10, 14, 22))
         stroke_fill = _coerce_color(getattr(ctx, "label_stroke_color", (255, 255, 255)), (255, 255, 255))
-        extra_metadata = None
+        extra_metadata = dict(extra_metadata) if extra_metadata is not None else None
     draw_text_traced(
         ctx.draw,
         (float(center[0]), float(center[1])),

@@ -77,6 +77,7 @@ class TriangleRelationsCase:
     target_segment: tuple[str, str] | None = None
     target_point: str | None = None
     point_annotation_labels: tuple[str, ...] = ()
+    point_mark_labels: tuple[str, ...] = ()
     angle_labels: tuple[AngleLabel, ...] = ()
     right_angles: tuple[RightAngleMark, ...] = ()
     tick_groups: tuple[TickGroup, ...] = ()
@@ -111,6 +112,7 @@ class RenderContext:
     alt_fill_color: Color
     line_width: int
     label_stroke_width: int
+    readout_text_metadata: Mapping[str, Any]
     font: Any
     small_font: Any
     diagram_style_meta: Mapping[str, Any]

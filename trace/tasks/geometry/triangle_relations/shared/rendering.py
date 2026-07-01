@@ -8,6 +8,12 @@ from typing import Any, Mapping, Sequence
 from PIL import ImageDraw
 
 from trace.core.seed import spawn_rng
+from trace.tasks.shared.color_distance import color_distance
+from trace.tasks.shared.text_legibility import (
+    READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+    READ_REQUIRED_TEXT_MIN_LAB_DISTANCE,
+    contrast_ratio,
+)
 from trace.tasks.geometry.shared.diagram_style import (
     geometry_diagram_style_metadata,
     prepare_geometry_diagram_style_and_background,
@@ -39,6 +45,72 @@ from .state import (
 )
 
 BBox = tuple[float, float, float, float]
+_DARK_READOUT: tuple[int, int, int] = (10, 14, 22)
+_LIGHT_READOUT: tuple[int, int, int] = (250, 252, 255)
+
+
+def _high_contrast_readout_color(*surfaces: Sequence[int]) -> tuple[int, int, int]:
+    """Use a conservative ink for dense triangle measurement readouts."""
+
+    normalized = [tuple(int(channel) for channel in surface[:3]) for surface in surfaces if len(surface) >= 3]
+    if not normalized:
+        return _DARK_READOUT
+    return max(
+        (_DARK_READOUT, _LIGHT_READOUT),
+        key=lambda candidate: min(float(contrast_ratio(candidate, surface)) for surface in normalized),
+    )
+
+
+def _opposite_readout_color(color: Sequence[int]) -> tuple[int, int, int]:
+    return _LIGHT_READOUT if tuple(int(channel) for channel in color[:3]) == _DARK_READOUT else _DARK_READOUT
+
+
+def _dual_ink_readout_metadata(
+    *,
+    fill: Sequence[int],
+    stroke: Sequence[int],
+    surfaces: Sequence[Sequence[int]],
+) -> dict[str, Any]:
+    """Record contrast for readouts whose fill and outline work as a pair."""
+
+    fill_rgb = tuple(int(channel) for channel in fill[:3])
+    stroke_rgb = tuple(int(channel) for channel in stroke[:3])
+    surface_rgbs = tuple(tuple(int(channel) for channel in surface[:3]) for surface in surfaces if len(surface) >= 3)
+    min_contrast = min(
+        (max(float(contrast_ratio(fill_rgb, surface)), float(contrast_ratio(stroke_rgb, surface))) for surface in surface_rgbs),
+        default=float("inf"),
+    )
+    min_lab = min(
+        (
+            max(
+                float(color_distance(fill_rgb, surface, distance_space="lab")),
+                float(color_distance(stroke_rgb, surface, distance_space="lab")),
+            )
+            for surface in surface_rgbs
+        ),
+        default=float("inf"),
+    )
+    return {
+        "surface_rgbs": [list(surface) for surface in surface_rgbs],
+        "surface_sample_method": "triangle_relations_dual_ink_surface_anchors",
+        "min_contrast_ratio": round(float(min_contrast), 3),
+        "min_lab_distance": round(float(min_lab), 3),
+        "min_contrast_required": round(float(READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO), 3),
+        "min_lab_distance_required": round(float(READ_REQUIRED_TEXT_MIN_LAB_DISTANCE), 3),
+        "passes": bool(
+            float(min_contrast) >= float(READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO)
+            and float(min_lab) >= float(READ_REQUIRED_TEXT_MIN_LAB_DISTANCE)
+        ),
+    }
+
+
+def _bbox_has_visible_area(bbox: Sequence[float]) -> bool:
+    """Return whether a bbox survived clamping with a nonzero visible area."""
+
+    if len(bbox) != 4:
+        return False
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    return (x1 - x0) > 1.0 and (y1 - y0) > 1.0
 
 
 def create_render_context(
@@ -73,11 +145,35 @@ def create_render_context(
     small_font_size = int(params.get("small_label_font_size", group_default(render_defaults, "small_label_font_size", 18)))
     line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 3)))
     label_stroke_width = int(params.get("label_stroke_width", group_default(render_defaults, "label_stroke_width", 1)))
+    readout_color = _high_contrast_readout_color(
+        diagram_style.canvas_rgb,
+        diagram_style.paper_rgb,
+        diagram_style.panel_fill_rgb,
+        diagram_style.panel_alt_fill_rgb,
+        diagram_style.option_fill_rgb,
+    )
+    readout_stroke_color = _opposite_readout_color(readout_color)
+    readout_metadata = _dual_ink_readout_metadata(
+        fill=readout_color,
+        stroke=readout_stroke_color,
+        surfaces=(
+            diagram_style.canvas_rgb,
+            diagram_style.paper_rgb,
+            diagram_style.panel_fill_rgb,
+            diagram_style.panel_alt_fill_rgb,
+            diagram_style.option_fill_rgb,
+            readout_color,
+            readout_stroke_color,
+        ),
+    )
     diagram_meta = {
         **geometry_diagram_style_metadata(diagram_style),
         **dict(diagram_meta),
         "font_family": font_record.to_trace(),
         "font_asset_version": font_asset_version(),
+        "triangle_relations_readout_ink": list(readout_color),
+        "triangle_relations_readout_stroke": list(readout_stroke_color),
+        "triangle_relations_readout_contrast": dict(readout_metadata),
     }
     rgb_image = image.convert("RGB")
     return RenderContext(
@@ -86,14 +182,15 @@ def create_render_context(
         draw=ImageDraw.Draw(rgb_image),
         width=int(width),
         height=int(height),
-        line_color=tuple(int(value) for value in diagram_style.stroke_rgb),
-        label_color=tuple(int(value) for value in diagram_style.label_rgb),
-        label_stroke_color=tuple(int(value) for value in diagram_style.label_stroke_rgb),
-        accent_color=tuple(int(value) for value in diagram_style.accent_rgb),
+        line_color=readout_color,
+        label_color=readout_color,
+        label_stroke_color=readout_stroke_color,
+        accent_color=readout_color,
         fill_color=tuple(int(value) for value in diagram_style.panel_alt_fill_rgb),
         alt_fill_color=tuple(int(value) for value in diagram_style.option_fill_rgb),
         line_width=max(2, int(line_width)),
-        label_stroke_width=max(0, min(1, int(label_stroke_width))),
+        label_stroke_width=max(1, min(1, int(label_stroke_width))),
+        readout_text_metadata=dict(readout_metadata),
         font=load_font(max(12, int(font_size)), bold=False, font_family=str(font_family)),
         small_font=load_font(max(10, int(small_font_size)), bold=False, font_family=str(font_family)),
         diagram_style_meta=diagram_meta,
@@ -226,7 +323,14 @@ def _draw_segment_label(
     a = points[str(label.segment[0])]
     b = points[str(label.segment[1])]
     center = _choose_segment_label_center(ctx, a, b, str(label.text), float(label.offset), avoid_bboxes=avoid_bboxes)
-    return draw_readout_centered(ctx, str(label.text), center, small=True, backed=False)
+    return draw_readout_centered(
+        ctx,
+        str(label.text),
+        center,
+        small=True,
+        backed=False,
+        extra_metadata=dict(ctx.readout_text_metadata),
+    )
 
 
 def _segment_name(label: SegmentLabel) -> str:
@@ -357,7 +461,14 @@ def _draw_side_readout_labels(
     bboxes: dict[str, BBox] = {}
     for label, text, (_expected_bbox, center) in zip(labels, texts, rows, strict=True):
         bboxes[label.role or "".join(label.segment)] = _coerce_bbox(
-            draw_readout_centered(ctx, text, center, small=True, backed=False)
+            draw_readout_centered(
+                ctx,
+                text,
+                center,
+                small=True,
+                backed=False,
+                extra_metadata=dict(ctx.readout_text_metadata),
+            )
         )
     return bboxes
 
@@ -389,7 +500,13 @@ def _angle_marker_radius(ctx: RenderContext, vertex: Point, arm_a: Point, arm_b:
     return max(min_radius, min(requested, max_radius))
 
 
-def _draw_angle(ctx: RenderContext, points: Mapping[str, Point], angle: AngleLabel) -> tuple[float, float, float, float]:
+def _draw_angle(
+    ctx: RenderContext,
+    points: Mapping[str, Point],
+    angle: AngleLabel,
+    *,
+    avoid_bboxes: Sequence[Sequence[float]] = (),
+) -> tuple[float, float, float, float]:
     vertex = points[str(angle.vertex)]
     arm_a = points[str(angle.arm_a)]
     arm_b = points[str(angle.arm_b)]
@@ -398,11 +515,57 @@ def _draw_angle(ctx: RenderContext, points: Mapping[str, Point], angle: AngleLab
     arc_bbox = _draw_line(ctx, arc, color=ctx.accent_color, width=max(2, ctx.line_width - 1))
     if not str(angle.text):
         return arc_bbox
-    direction = unit(add_scaled(unit(sub(arm_a, vertex)), unit(sub(arm_b, vertex)), 1.0))
+    text_bbox = draw_readout_centered(
+        ctx,
+        str(angle.text),
+        _choose_angle_text_center(ctx, vertex, arm_a, arm_b, str(angle.text), radius, avoid_bboxes=avoid_bboxes),
+        small=True,
+        backed=False,
+        extra_metadata=dict(ctx.readout_text_metadata),
+    )
+    return bbox_from_points(((arc_bbox[0], arc_bbox[1]), (arc_bbox[2], arc_bbox[3]), (text_bbox[0], text_bbox[1]), (text_bbox[2], text_bbox[3])), width=ctx.width, height=ctx.height, pad=2.0)
+
+
+def _choose_angle_text_center(
+    ctx: RenderContext,
+    vertex: Point,
+    arm_a: Point,
+    arm_b: Point,
+    text: str,
+    radius: float,
+    *,
+    avoid_bboxes: Sequence[Sequence[float]],
+) -> Point:
+    """Place an angle readout near the mark without sitting on its arms."""
+
+    u = unit(sub(arm_a, vertex))
+    v = unit(sub(arm_b, vertex))
+    direction = unit(add_scaled(u, v, 1.0))
     if math.hypot(direction[0], direction[1]) <= 1e-6:
         direction = perp(unit(sub(arm_a, vertex)))
-    text_bbox = draw_readout_centered(ctx, str(angle.text), add_scaled(vertex, direction, radius + 24.0), small=True, backed=False)
-    return bbox_from_points(((arc_bbox[0], arc_bbox[1]), (arc_bbox[2], arc_bbox[3]), (text_bbox[0], text_bbox[1]), (text_bbox[2], text_bbox[3])), width=ctx.width, height=ctx.height, pad=2.0)
+    candidate_directions = (
+        direction,
+        perp(u),
+        perp(v),
+        (-direction[0], -direction[1]),
+        (-perp(u)[0], -perp(u)[1]),
+        (-perp(v)[0], -perp(v)[1]),
+    )
+    candidates: list[Point] = []
+    for candidate_direction in candidate_directions:
+        normalized = unit(candidate_direction)
+        for distance in (float(radius) + 28.0, float(radius) + 42.0, float(radius) + 58.0, float(radius) + 76.0):
+            candidates.append(add_scaled(vertex, normalized, distance))
+    return min(
+        candidates,
+        key=lambda center: _placement_penalty(
+            ctx,
+            _readout_bbox(ctx, text, center, small=True),
+            avoid_bboxes=avoid_bboxes,
+            anchor=vertex,
+            center=center,
+        ),
+    )
 
 
 def _draw_right_angle(ctx: RenderContext, points: Mapping[str, Point], mark: RightAngleMark) -> tuple[float, float, float, float]:
@@ -563,6 +726,32 @@ def _vertex_guard_bboxes(ctx: RenderContext, points: Mapping[str, Point], *, rad
     }
 
 
+def _draw_point_markers(
+    ctx: RenderContext,
+    points: Mapping[str, Point],
+    labels: Sequence[str],
+) -> dict[str, list[float]]:
+    """Draw small visual markers for special interior construction points."""
+
+    bboxes: dict[str, list[float]] = {}
+    radius = max(4.0, float(ctx.line_width) + 2.5)
+    outline_width = max(2, int(ctx.line_width) - 1)
+    for raw_label in labels:
+        label = str(raw_label)
+        if label not in points:
+            continue
+        x, y = points[label]
+        bbox = (float(x) - radius, float(y) - radius, float(x) + radius, float(y) + radius)
+        ctx.draw.ellipse(
+            bbox,
+            fill=ctx.accent_color,
+            outline=ctx.label_stroke_color,
+            width=outline_width,
+        )
+        bboxes[label] = bbox_to_list(bbox)
+    return bboxes
+
+
 def render_triangle_relations_scene(
     ctx: RenderContext,
     problem: TriangleRelationsProblem,
@@ -585,10 +774,16 @@ def render_triangle_relations_scene(
         bbox = _draw_line(ctx, (points[a], points[b]), color=ctx.line_color)
         edge_bboxes[f"{a}{b}"] = bbox_to_list(bbox)
         edge_bbox_by_segment[frozenset((a, b))] = _coerce_bbox(bbox)
+    vertex_guards = _vertex_guard_bboxes(ctx, points)
     angle_bboxes: dict[str, list[float]] = {}
     angle_bbox_values: list[BBox] = []
     for angle in case.angle_labels:
-        bbox = _draw_angle(ctx, points, angle)
+        angle_edges = (
+            edge_bbox_by_segment.get(frozenset((str(angle.vertex), str(angle.arm_a)))),
+            edge_bbox_by_segment.get(frozenset((str(angle.vertex), str(angle.arm_b)))),
+            vertex_guards.get(str(angle.vertex)),
+        )
+        bbox = _draw_angle(ctx, points, angle, avoid_bboxes=tuple(bbox for bbox in angle_edges if bbox is not None))
         angle_bboxes[angle.role or f"{angle.arm_a}{angle.vertex}{angle.arm_b}"] = bbox_to_list(bbox)
         angle_bbox_values.append(_coerce_bbox(bbox))
     right_angle_bboxes: dict[str, list[float]] = {}
@@ -603,7 +798,7 @@ def render_triangle_relations_scene(
         bbox = _draw_tick_group(ctx, points, group)
         tick_bboxes[f"{group.kind}_{idx}"] = bbox_to_list(bbox)
         tick_bbox_values.append(_coerce_bbox(bbox))
-    vertex_guards = _vertex_guard_bboxes(ctx, points)
+    point_marker_bboxes = _draw_point_markers(ctx, points, case.point_mark_labels)
     construction_bboxes = tuple(angle_bbox_values + right_angle_bbox_values + tick_bbox_values)
     label_bboxes: dict[str, list[float]] = {}
     label_bbox_values: list[BBox] = []
@@ -619,10 +814,11 @@ def render_triangle_relations_scene(
             + tuple(label_avoid_bboxes)
         )
         bbox = _draw_segment_label(ctx, points, label, avoid_bboxes=avoid_bboxes)
-        label_bboxes[label.role or "".join(label.segment)] = bbox_to_list(bbox)
         raw_bbox = _coerce_bbox(bbox)
-        label_bbox_values.append(raw_bbox)
-        label_avoid_bboxes.append(_expand_bbox(raw_bbox, 14.0))
+        if _bbox_has_visible_area(raw_bbox):
+            label_bboxes[label.role or "".join(label.segment)] = bbox_to_list(raw_bbox)
+            label_bbox_values.append(raw_bbox)
+            label_avoid_bboxes.append(_expand_bbox(raw_bbox, 14.0))
     side_label_bboxes = _draw_side_readout_labels(
         ctx,
         side_readout_labels,
@@ -636,9 +832,10 @@ def render_triangle_relations_scene(
         ),
     )
     for key, raw_bbox in side_label_bboxes.items():
-        label_bboxes[key] = bbox_to_list(raw_bbox)
-        label_bbox_values.append(raw_bbox)
-        label_avoid_bboxes.append(_expand_bbox(raw_bbox, 14.0))
+        if _bbox_has_visible_area(raw_bbox):
+            label_bboxes[key] = bbox_to_list(raw_bbox)
+            label_bbox_values.append(raw_bbox)
+            label_avoid_bboxes.append(_expand_bbox(raw_bbox, 14.0))
     point_label_bboxes = _draw_point_labels(
         ctx,
         points,
@@ -683,6 +880,7 @@ def render_triangle_relations_scene(
             "angle_bboxes": angle_bboxes,
             "right_angle_bboxes": right_angle_bboxes,
             "tick_bboxes": tick_bboxes,
+            "point_marker_bboxes": point_marker_bboxes,
             "single_object_scene_rotation": ctx.scene_transform.metadata(),
         },
         witness=geometry_json_ready(case.trace_values),

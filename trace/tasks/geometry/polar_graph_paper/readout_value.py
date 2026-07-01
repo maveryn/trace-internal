@@ -19,17 +19,17 @@ from .shared.rendering import render_polar_graph_paper_scene
 from .shared.sampling import select_polar_readout_case
 from .shared.state import ReadoutComponent
 
-TASK_ID = "task_geometry__polar_graph_paper__readout_value_label"
+TASK_ID = "task_geometry__polar_graph_paper__readout_value"
 SCENE_ID = "polar_graph_paper"
-QUERY_IDS = ("radius_readout_label", "angle_readout_label")
+QUERY_IDS = ("radius_readout_value", "angle_readout_value")
 
 QUERY_COMPONENTS: dict[str, ReadoutComponent] = {
-    "radius_readout_label": "radius",
-    "angle_readout_label": "angle_degrees",
+    "radius_readout_value": "radius",
+    "angle_readout_value": "angle_degrees",
 }
 PROMPT_QUERY_KEYS = {
-    "radius_readout_label": "radius_readout_label",
-    "angle_readout_label": "angle_readout_label",
+    "radius_readout_value": "radius_readout_value",
+    "angle_readout_value": "angle_readout_value",
 }
 
 
@@ -53,7 +53,7 @@ def _trace_payload(
         "scene_ir": {
             "scene_id": SCENE_ID,
             "task_id": TASK_ID,
-            "object_description": "point P plotted on polar graph paper with six labeled answer options",
+            "object_description": "point P plotted on polar graph paper",
         },
         "query_spec": {
             **build_prompt_query_spec(
@@ -64,7 +64,6 @@ def _trace_payload(
                     "radius": case.radius,
                     "theta_degrees": case.theta_degrees,
                     "correct_value": case.correct_value,
-                    "correct_label": case.correct_label,
                 },
             ),
             "query_id_probabilities": query_probabilities,
@@ -80,17 +79,13 @@ def _trace_payload(
             "radius": case.radius,
             "theta_degrees": case.theta_degrees,
             "correct_value": case.correct_value,
-            "correct_label": case.correct_label,
-            "option_values_by_label": case.option_values_by_label,
-            "option_display_by_label": case.option_display_by_label,
-            "option_label_probabilities": case.option_label_probabilities,
         },
         "projected_annotation": projected_point_annotation(annotation_value),
     }
 
 
 @register_task
-class PolarGraphPaperReadoutValueLabelTask(Task):
+class PolarGraphPaperReadoutValueTask(Task):
     task_id = TASK_ID
     domain = "geometry"
     default_dataset_enabled = True
@@ -103,7 +98,7 @@ class PolarGraphPaperReadoutValueLabelTask(Task):
         params: dict[str, Any],
         max_attempts: int = 1,
     ) -> TaskOutput:
-        """Generate one polar readout sample with a unique correct visible option."""
+        """Generate one direct polar readout sample."""
 
         del max_attempts
         params = dict(params or {})
@@ -145,7 +140,7 @@ class PolarGraphPaperReadoutValueLabelTask(Task):
 
         return TaskOutput(
             prompt=prompt_artifacts.prompt,
-            answer_gt=TypedValue(type="option_letter", value=case.correct_label),
+            answer_gt=TypedValue(type="integer", value=int(case.correct_value)),
             annotation_gt=TypedValue(type="point", value=annotation_value),
             image=rendered.image,
             image_id="img0",

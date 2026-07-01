@@ -113,64 +113,6 @@ def _draw_polar_grid(
     return {"plot_scale_px_per_radius": scale}
 
 
-def _draw_options(
-    draw: ImageDraw.ImageDraw,
-    *,
-    case: PolarReadoutCase,
-    canvas_width: int,
-    option_top: int,
-    option_height: int,
-    option_font_size: int,
-    style: Any,
-) -> dict[str, list[int]]:
-    """Draw the fixed six-option MCQ panel and return label-to-box mapping."""
-
-    card_gap = 18
-    side_margin = 54
-    columns = 3
-    rows = 2
-    card_width = (canvas_width - 2 * side_margin - (columns - 1) * card_gap) / columns
-    card_height = (option_height - (rows - 1) * card_gap) / rows
-    option_font = load_font(option_font_size, bold=False)
-    label_font = load_font(option_font_size + 2, bold=True)
-    option_bboxes: dict[str, list[int]] = {}
-
-    for index, option in enumerate(case.options):
-        row = index // columns
-        col = index % columns
-        x0 = side_margin + col * (card_width + card_gap)
-        y0 = option_top + row * (card_height + card_gap)
-        x1 = x0 + card_width
-        y1 = y0 + card_height
-        bbox = [round(x0), round(y0), round(x1), round(y1)]
-        draw.rounded_rectangle(
-            bbox,
-            radius=10,
-            fill=tuple(style.option_fill_rgb),
-            outline=tuple(style.panel_border_rgb),
-            width=2,
-        )
-        draw_text_centered(
-            draw,
-            center=(x0 + 34, (y0 + y1) / 2),
-            text=option.label,
-            font=label_font,
-            fill=tuple(style.accent_rgb),
-            stroke_width=0,
-        )
-        draw_text_centered(
-            draw,
-            center=((x0 + x1) / 2 + 20, (y0 + y1) / 2),
-            text=option.display_text,
-            font=option_font,
-            fill=tuple(style.label_rgb),
-            stroke_width=0,
-        )
-        option_bboxes[option.label] = bbox
-
-    return option_bboxes
-
-
 def render_polar_graph_paper_scene(
     *,
     instance_seed: int,
@@ -179,7 +121,7 @@ def render_polar_graph_paper_scene(
     case: PolarReadoutCase,
     rendering_defaults: Mapping[str, Any],
 ) -> RenderedPolarGraphPaperScene:
-    """Render the polar grid, point witness, and options from one sampled case."""
+    """Render the polar grid and point witness from one sampled case."""
 
     canvas_width = _int_default(rendering_defaults, "canvas_width", 820)
     canvas_height = _int_default(rendering_defaults, "canvas_height", 780)
@@ -189,7 +131,6 @@ def render_polar_graph_paper_scene(
     radius_label_step = _int_default(rendering_defaults, "radius_label_step", 1)
     marker_radius = _int_default(rendering_defaults, "marker_radius_px", 9)
     label_font_size = _int_default(rendering_defaults, "label_font_size", 28)
-    option_font_size = _int_default(rendering_defaults, "option_font_size", 24)
 
     background, background_meta, style, style_meta = prepare_geometry_diagram_style_and_background(
         instance_seed=int(instance_seed),
@@ -204,7 +145,7 @@ def render_polar_graph_paper_scene(
     image = background
     draw = ImageDraw.Draw(image)
 
-    plot_panel = (42, 32, canvas_width - 42, 552)
+    plot_panel = (42, 32, canvas_width - 42, canvas_height - 42)
     draw.rounded_rectangle(
         plot_panel,
         radius=18,
@@ -213,7 +154,7 @@ def render_polar_graph_paper_scene(
         width=2,
     )
 
-    center = (canvas_width / 2, 292.0)
+    center = (canvas_width / 2, canvas_height / 2 + 8)
     plot_radius_px = min(
         (plot_panel[2] - plot_panel[0]) / 2 - 78,
         (plot_panel[3] - plot_panel[1]) / 2 - 58,
@@ -256,16 +197,6 @@ def render_polar_graph_paper_scene(
         stroke_width=0,
     )
 
-    option_bboxes = _draw_options(
-        draw,
-        case=case,
-        canvas_width=canvas_width,
-        option_top=584,
-        option_height=152,
-        option_font_size=option_font_size,
-        style=style,
-    )
-
     point_value = [round(point_xy[0], 3), round(point_xy[1], 3)]
     render_map = {
         "point_p": point_value,
@@ -277,9 +208,6 @@ def render_polar_graph_paper_scene(
         "plot_center": [round(center[0], 3), round(center[1], 3)],
         "plot_radius_px": round(plot_radius_px, 3),
         "plot_scale_px_per_radius": round(scale, 3),
-        "option_bboxes_by_label": option_bboxes,
-        "option_values_by_label": case.option_values_by_label,
-        "option_display_by_label": case.option_display_by_label,
     }
     render_spec = {
         "canvas_width": canvas_width,

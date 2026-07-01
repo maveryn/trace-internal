@@ -35,14 +35,14 @@ def polar_graph_prompt_artifacts(
             "json_output_contract_answer_only",
             "object_description",
             "annotation_hint_point_p",
-            "answer_hint_option_letter",
+            "answer_hint_integer",
         ),
         context=f"prompt defaults for {scene_id}",
     )
     json_example, json_example_answer_only = resolve_prompt_json_examples(
         prompt_defaults_all,
         annotation_value=annotation_value,
-        answer_type="option_letter",
+        answer_type="integer",
     )
     prompt_selection = render_scene_prompt_variants(
         domain="geometry",
@@ -56,7 +56,7 @@ def polar_graph_prompt_artifacts(
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
             "annotation_hint": str(prompt_defaults["annotation_hint_point_p"]),
-            "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
+            "answer_hint": str(prompt_defaults["answer_hint_integer"]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
         },

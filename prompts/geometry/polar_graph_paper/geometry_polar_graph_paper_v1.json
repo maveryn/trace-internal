@@ -3,10 +3,10 @@
   "schema_version": "v1",
   "allow_empty_task_templates": true,
   "code_prompt_defaults": {
-    "object_description": "point P plotted on polar graph paper with six labeled answer options",
+    "object_description": "point P plotted on polar graph paper",
     "json_output_contract": "Return a JSON object with keys \"answer\" and \"annotation\".",
     "json_output_contract_answer_only": "Return a JSON object with key \"answer\".",
-    "answer_hint_option_letter": "set \"answer\" to the selected option label as a capital letter shown in the image",
+    "answer_hint_integer": "set \"answer\" to the integer value read from the polar graph",
     "annotation_hint_point_p": "set \"annotation\" to the pixel point [x,y] at point P"
   },
   "templates": {
@@ -29,19 +29,19 @@
       ]
     },
     "query": {
-      "radius_readout_label": [
-        "Which option gives the polar radius of point P?",
-        "Choose the option that gives the radius coordinate of point P.",
-        "Which labeled option matches the radius of point P?",
-        "Find the option showing the radius value for point P.",
-        "Select the option whose value is the polar radius of point P."
+      "radius_readout_value": [
+        "What is the polar radius of point P?",
+        "Read the radius coordinate of point P.",
+        "Find the polar radius of point P.",
+        "What radius value is shown for point P?",
+        "Give the polar radius of point P."
       ],
-      "angle_readout_label": [
-        "Which option gives the polar angle of point P in degrees?",
-        "Choose the option that gives the angle coordinate of point P in degrees.",
-        "Which labeled option matches the polar angle of point P?",
-        "Find the option showing the angle value for point P in degrees.",
-        "Select the option whose value is the polar angle of point P."
+      "angle_readout_value": [
+        "What is the polar angle of point P in degrees?",
+        "Read the angle coordinate of point P in degrees.",
+        "Find the polar angle of point P in degrees.",
+        "What angle value is shown for point P in degrees?",
+        "Give the polar angle of point P in degrees."
       ]
     },
     "output": {
@@ -63,7 +63,7 @@
   },
   "static_slots_by_key": {
     "scene:polar_graph_paper_scene": {
-      "object_description": "point P plotted on polar graph paper with six labeled answer options"
+      "object_description": "point P plotted on polar graph paper"
     }
   },
   "dynamic_slots": {
@@ -90,8 +90,8 @@
     "scene:polar_graph_paper_scene": [
       "object_description"
     ],
-    "query:radius_readout_label": [],
-    "query:angle_readout_label": [],
+    "query:radius_readout_value": [],
+    "query:angle_readout_value": [],
     "output:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",

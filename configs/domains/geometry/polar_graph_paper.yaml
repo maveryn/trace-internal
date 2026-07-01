@@ -1,21 +1,19 @@
 generation:
   shared:
     radius_min: 1
-    radius_max: 8
+    radius_max: 10
     sample_angle_step_degrees: 30
-    option_count: 6
 
 rendering:
   shared:
     canvas_width: 820
-    canvas_height: 780
-    polar_radius_max: 8
+    canvas_height: 640
+    polar_radius_max: 10
     minor_spoke_step_degrees: 15
     major_spoke_step_degrees: 30
     radius_label_step: 1
     marker_radius_px: 9
     label_font_size: 28
-    option_font_size: 24
 
 prompt:
   shared:

@@ -56,39 +56,20 @@ def composite_shape_prompt_artifacts(
             "bundle_id",
             "scene_key",
             "task_key",
-            "object_description",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            "annotation_hint",
         ),
         context="prompt defaults for composite shape",
     )
-    answer_hint = defaults.get("answer_hint_integer", defaults.get("answer_hint_number", defaults.get("answer_hint", "")))
-    json_example = str(defaults.get("json_example", ""))
-    json_example_answer_only = str(defaults.get("json_example_answer_only", ""))
-    if not json_example or not json_example_answer_only:
-        json_example, json_example_answer_only = _prompt_examples(
-            annotation_type=str(annotation_type),
-            annotation_keys=tuple(str(key) for key in annotation_keys),
-            answer=answer_value,
-        )
-    annotation_key_list = ", ".join(f'"{key}"' for key in annotation_keys)
-    annotation_hint_template = str(defaults["annotation_hint"])
-    annotation_hint = (
-        annotation_hint_template.format(annotation_keys=annotation_key_list)
-        if "{annotation_keys}" in annotation_hint_template
-        else annotation_hint_template
+    json_example, json_example_answer_only = _prompt_examples(
+        annotation_type=str(annotation_type),
+        annotation_keys=tuple(str(key) for key in annotation_keys),
+        answer=answer_value,
     )
-    slots = {
-        "object_description": str(defaults["object_description"]),
-        "json_output_contract": str(defaults["json_output_contract"]),
-        "json_output_contract_answer_only": str(defaults["json_output_contract_answer_only"]),
-        "annotation_hint": str(annotation_hint),
-        "answer_hint": str(answer_hint),
+    annotation_key_list = ", ".join(f'"{key}"' for key in annotation_keys)
+    dynamic_slots = {
+        "annotation_keys": str(annotation_key_list),
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
         **numeric_prompt_slots(prompt_slots),
-        **{str(key): value for key, value in prompt_slots.items()},
     }
     prompt_selection = render_scene_prompt_variants(
         domain="geometry",
@@ -98,7 +79,7 @@ def composite_shape_prompt_artifacts(
         task_key=str(defaults["task_key"]),
         query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots=slots,
+        dynamic_slots=dynamic_slots,
         instance_seed=int(instance_seed),
     )
     return dict(defaults), build_prompt_trace_artifacts(prompt_selection)

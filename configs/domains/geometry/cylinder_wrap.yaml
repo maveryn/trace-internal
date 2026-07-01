@@ -14,7 +14,7 @@ rendering:
     tiny_label_font_size: 14
 prompt:
   shared:
-    bundle_id: geometry_cylinder_wrap_v0
+    bundle_id: geometry_cylinder_wrap_v1
     scene_key: cylinder_wrap_scene
   task_overrides:
     task_geometry__cylinder_wrap__surface_path_length_value:

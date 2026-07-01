@@ -8,7 +8,7 @@
 5. Annotation schema: `point_map`
 
 ## Program Contract
-compare_two_polar_graph_components(points={P,Q}, component in {radius, angle_degrees}, operation=absolute_or_smaller_difference); scene=polar_graph_paper; scope=coordinate_difference_value
+- `compare_two_polar_graph_components(candidates={P,Q}, component={radius|angle_degrees}, operation={absolute_radius_difference|smaller_angular_difference}, output_role=integer_difference_value, annotation_witness=point_map_P_Q); scene=polar_graph_paper; scope=coordinate_difference_value`
 
 ## Task Summary
 - Scene: `polar_graph_paper`

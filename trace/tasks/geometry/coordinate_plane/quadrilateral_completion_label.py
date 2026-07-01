@@ -17,7 +17,6 @@ from ...registry import register_task
 from ...shared.config_defaults import group_default, required_group_defaults, split_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_json_example import resolve_prompt_json_examples
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
 from ...shared.text_rendering import resolve_scene_label_font_size_px
 from ..shared.background_defaults import load_geometry_background_defaults
@@ -759,20 +758,10 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
                 "bundle_id",
                 "scene_key",
                 "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description",
-                "annotation_hint_candidate_point",
-                "answer_hint_option_letter",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
         annotation_value = _completion_point_annotation(rendered, str(query.winner_label))
-        json_example, json_example_answer_only = resolve_prompt_json_examples(
-            prompt_defaults_all,
-            annotation_value=annotation_value,
-            answer_type="option_letter",
-        )
         prompt_selection = render_scene_prompt_variants(
             domain=self.domain,
             scene_id=str(getattr(self, "scene_id", "") or getattr(self, "public_scene_id", "") or globals().get("SCENE_ID", "")),
@@ -781,15 +770,7 @@ class GeometryCoordinateQuadrilateralCompletionLabelTask:
             task_key=str(prompt_defaults["task_key"]),
             query_key=str(query.query_id),
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description"]),
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint_candidate_point"]),
-                "answer_hint": str(prompt_defaults["answer_hint_option_letter"]),
-                "json_example": str(json_example),
-                "json_example_answer_only": str(json_example_answer_only),
-            },
+            dynamic_slots={},
             instance_seed=int(instance_seed),
         )
         prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)

@@ -196,103 +196,39 @@ rendering:
     locus_condition_label_font_size: 18
 prompt:
   shared:
-    bundle_id: geometry_coordinate_v0
+    bundle_id: geometry_coordinate_v1
     scene_key: coordinate_graph_scene
     task_key: coordinate_query
   task_overrides:
     task_geometry__coordinate_plane__quadrilateral_completion_label:
-      bundle_id: geometry_coordinate_quadrilateral_v0
+      bundle_id: geometry_coordinate_quadrilateral_v1
       scene_key: coordinate_quadrilateral_candidate_scene
       task_key: coordinate_quadrilateral_query
-      object_description: a coordinate grid with three unlabeled points and lettered
-        candidate points
-      annotation_hint_candidate_point: set "annotation" to the pixel point [x,y]
-        at the center of the selected candidate point
-      answer_hint_option_letter: set "answer" to the selected candidate letter as
-        a capital letter
-      json_example: '{"annotation":[420,344],"answer":"B"}'
-      json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__missing_endpoint_label:
-      bundle_id: geometry_coordinate_algebra_v0
+      bundle_id: geometry_coordinate_algebra_v1
       scene_key: coordinate_algebra_midpoint_scene
       task_key: coordinate_algebra_query
-      object_description: a coordinate grid with a labeled endpoint, labeled midpoint,
-        and lettered candidate points
-      annotation_hint_candidate_point: set "annotation" to the pixel point [x,y]
-        at the center of the selected candidate point
-      answer_hint_option_letter: set "answer" to the selected candidate letter as
-        a capital letter
-      json_example: '{"annotation":[420,344],"answer":"B"}'
-      json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__section_point_label:
-      bundle_id: geometry_coordinate_algebra_v0
+      bundle_id: geometry_coordinate_algebra_v1
       scene_key: coordinate_algebra_section_scene
       task_key: coordinate_algebra_query
-      object_description: a coordinate grid with segment PQ and lettered candidate
-        section points
-      annotation_hint_candidate_point: set "annotation" to the pixel point [x,y]
-        at the center of the selected candidate point
-      answer_hint_option_letter: set "answer" to the selected candidate letter as
-        a capital letter
-      json_example: '{"annotation":[420,344],"answer":"B"}'
-      json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__locus_point_label:
-      bundle_id: geometry_coordinate_locus_v0
+      bundle_id: geometry_coordinate_locus_v1
       scene_key: coordinate_locus_candidate_scene
       task_key: coordinate_locus_query
-      object_description: a coordinate grid with one shaded locus region and lettered
-        candidate points
-      annotation_hint_candidate_point: set "annotation" to the pixel point [x,y]
-        at the center of the selected candidate point
-      answer_hint_option_letter: set "answer" to the selected candidate letter as
-        a capital letter
-      json_example: '{"annotation":[420,344],"answer":"B"}'
-      json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__locus_panel_match_label:
-      bundle_id: geometry_coordinate_locus_v0
+      bundle_id: geometry_coordinate_locus_v1
       scene_key: coordinate_locus_panel_grid_scene
       task_key: coordinate_locus_query
-      object_description: labeled coordinate panels with shaded locus regions and
-        a condition box
-      annotation_hint_selected_panel_bbox: set "annotation" to the bounding box
-        [x0,y0,x1,y1] around the selected panel
-      answer_hint_option_letter: set "answer" to the selected panel label as a capital
-        letter
-      json_example: '{"annotation":[361,32,661,344],"answer":"B"}'
-      json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__reflected_point_label:
-      bundle_id: geometry_coordinate_algebra_v0
+      bundle_id: geometry_coordinate_algebra_v1
       scene_key: coordinate_algebra_transform_scene
       task_key: coordinate_algebra_query
-      object_description: a coordinate grid with a labeled point, a visible transformation,
-        and lettered candidate image points
-      annotation_hint_candidate_point: set "annotation" to the pixel point [x,y]
-        at the center of the selected candidate point
-      answer_hint_option_letter: set "answer" to the selected candidate letter as
-        a capital letter
-      json_example: '{"annotation":[420,344],"answer":"B"}'
-      json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__rotated_point_label:
-      bundle_id: geometry_coordinate_algebra_v0
+      bundle_id: geometry_coordinate_algebra_v1
       scene_key: coordinate_algebra_transform_scene
       task_key: coordinate_algebra_query
-      object_description: a coordinate grid with a labeled point, a visible transformation,
-        and lettered candidate image points
-      annotation_hint_candidate_point: set "annotation" to the pixel point [x,y]
-        at the center of the selected candidate point
-      answer_hint_option_letter: set "answer" to the selected candidate letter as
-        a capital letter
-      json_example: '{"annotation":[420,344],"answer":"B"}'
-      json_example_answer_only: '{"answer":"B"}'
     task_geometry__coordinate_plane__translated_point_label:
-      bundle_id: geometry_coordinate_algebra_v0
+      bundle_id: geometry_coordinate_algebra_v1
       scene_key: coordinate_algebra_transform_scene
       task_key: coordinate_algebra_query
-      object_description: a coordinate grid with a labeled point, a visible transformation,
-        and lettered candidate image points
-      annotation_hint_candidate_point: set "annotation" to the pixel point [x,y]
-        at the center of the selected candidate point
-      answer_hint_option_letter: set "answer" to the selected candidate letter as
-        a capital letter
-      json_example: '{"annotation":[420,344],"answer":"B"}'
-      json_example_answer_only: '{"answer":"B"}'

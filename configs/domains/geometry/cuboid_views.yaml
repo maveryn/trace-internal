@@ -7,6 +7,6 @@ rendering:
     small_label_font_size: 18
 prompt:
   shared:
-    bundle_id: geometry_cuboid_orthographic_views_v0
+    bundle_id: geometry_cuboid_orthographic_views_v1
     scene_key: cuboid_orthographic_views_scene
     task_key: cuboid_orthographic_value_query

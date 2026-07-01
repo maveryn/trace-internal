@@ -18,11 +18,6 @@ def cylinder_wrap_prompt_artifacts(
     *,
     prompt_defaults: Mapping[str, Any],
     prompt_key: str,
-    object_description: str,
-    annotation_hint: str,
-    answer_hint: str,
-    json_example: str,
-    json_example_answer_only: str,
     instance_seed: int,
 ) -> Any:
     """Render prompt variants from external prompt assets."""
@@ -35,15 +30,7 @@ def cylinder_wrap_prompt_artifacts(
         task_key=str(prompt_key),
         query_key=None,
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={
-            "object_description": str(object_description),
-            "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(annotation_hint),
-            "answer_hint": str(answer_hint),
-            "json_example": str(json_example),
-            "json_example_answer_only": str(json_example_answer_only),
-        },
+        dynamic_slots={},
         instance_seed=int(instance_seed),
     )
     return build_prompt_trace_artifacts(prompt_selection)
@@ -63,24 +50,12 @@ def resolve_cylinder_wrap_prompt(
             "bundle_id",
             "scene_key",
             "task_key",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            f"{field_prefix}_object_description",
-            f"{field_prefix}_annotation_hint",
-            f"{field_prefix}_answer_hint",
-            f"{field_prefix}_json_example",
-            f"{field_prefix}_json_example_answer_only",
         ),
         context="prompt defaults for cylinder_wrap",
     )
     prompt_artifacts = cylinder_wrap_prompt_artifacts(
         prompt_defaults=defaults,
         prompt_key=str(defaults["task_key"]),
-        object_description=str(defaults[f"{field_prefix}_object_description"]),
-        annotation_hint=str(defaults[f"{field_prefix}_annotation_hint"]),
-        answer_hint=str(defaults[f"{field_prefix}_answer_hint"]),
-        json_example=str(defaults[f"{field_prefix}_json_example"]),
-        json_example_answer_only=str(defaults[f"{field_prefix}_json_example_answer_only"]),
         instance_seed=int(instance_seed),
     )
     return dict(defaults), prompt_artifacts

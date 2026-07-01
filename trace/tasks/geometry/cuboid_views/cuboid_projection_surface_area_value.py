@@ -25,7 +25,7 @@ from .shared.state import CuboidDimensions, RenderedCuboidViewsScene
 DOMAIN = "geometry"
 SCENE_ID = "cuboid_views"
 TASK_ID = "task_geometry__cuboid_views__cuboid_projection_surface_area_value"
-PROMPT_BUNDLE_ID = "geometry_cuboid_orthographic_views_v0"
+PROMPT_BUNDLE_ID = "geometry_cuboid_orthographic_views_v1"
 QUERY_ID = "single"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (QUERY_ID,)
 FORMULA_SCHEMA = "surface_area_from_orthographic_views"
@@ -181,13 +181,6 @@ def _prompt_artifacts(
             "bundle_id",
             "scene_key",
             "task_key",
-            "object_description",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            "annotation_hint",
-            "answer_hint_number",
-            "json_example",
-            "json_example_answer_only",
         ),
         context=f"prompt defaults for {TASK_ID}",
     )
@@ -199,15 +192,7 @@ def _prompt_artifacts(
         task_key=str(prompt_defaults["task_key"]),
         query_key=str(problem.query_id),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={
-            "object_description": str(prompt_defaults["object_description"]),
-            "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(prompt_defaults["annotation_hint"]),
-            "answer_hint": str(prompt_defaults["answer_hint_number"]),
-            "json_example": str(prompt_defaults["json_example"]),
-            "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
-        },
+        dynamic_slots={},
         instance_seed=int(instance_seed),
         preferred_mode=str(params.get("prompt_mode", "answer_and_annotation")),
     )

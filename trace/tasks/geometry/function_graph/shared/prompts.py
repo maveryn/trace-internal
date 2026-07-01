@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Sequence
 
+from trace.core.prompts import load_scene_prompt_bundle
 from trace.tasks.shared.config_defaults import required_group_default, required_group_defaults
 from trace.tasks.shared.prompt_json_example import build_prompt_json_examples
 from trace.tasks.shared.prompt_variants import (
@@ -21,6 +22,21 @@ def prompt_defaults(keys: Sequence[str], *, context: str) -> dict[str, Any]:
     return required_group_defaults(PROMPT_DEFAULTS, tuple(str(key) for key in keys), context=str(context))
 
 
+def prompt_asset_slot(defaults: Mapping[str, Any], slot_key: str) -> str:
+    """Read one static slot from the scene prompt asset."""
+
+    bundle = load_scene_prompt_bundle(
+        domain=DOMAIN,
+        scene_id=SCENE_ID,
+        bundle_id=str(defaults["bundle_id"]),
+    )
+    static_slots = dict(bundle.static_slots_by_key or {}).get("global", {})
+    value = static_slots.get(str(slot_key))
+    if value is None or not str(value).strip():
+        raise ValueError(f"missing function_graph prompt asset slot: {slot_key}")
+    return str(value)
+
+
 def function_object_description(*, defaults: Mapping[str, Any], family: str, has_guide_line: bool) -> str:
     """Resolve a prompt-facing function description."""
 
@@ -28,7 +44,7 @@ def function_object_description(*, defaults: Mapping[str, Any], family: str, has
     key = f"object_description_{str(family).strip().lower()}{suffix}"
     if key in defaults:
         return str(defaults[key])
-    return str(required_group_default(PROMPT_DEFAULTS, key, context="function_graph prompt defaults"))
+    return prompt_asset_slot(defaults, key)
 
 
 def prompt_artifacts_for_scene(
@@ -48,7 +64,7 @@ def prompt_artifacts_for_scene(
         task_key=str(defaults["task_key"]),
         query_key=str(prompt_template_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={str(key): value for key, value in slots.items()},
+        dynamic_slots={str(key): value for key, value in slots.items()},
         instance_seed=int(instance_seed),
     )
     return build_prompt_trace_artifacts(selection)

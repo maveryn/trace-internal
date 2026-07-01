@@ -7,7 +7,6 @@ from typing import Any, Dict, Mapping
 
 from trace.tasks.shared.config_defaults import group_default, required_group_defaults
 from trace.tasks.shared.output_metadata import default_task_versions
-from trace.tasks.shared.prompt_json_example import build_prompt_json_examples
 from trace.tasks.shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
@@ -303,49 +302,9 @@ def build_relation_artifacts(
             "bundle_id",
             "scene_key",
             "task_key",
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            "answer_hint_integer",
-            "annotation_hint_segment_endpoints",
-            "annotation_hint_collinear_pixel_point_set",
-            "annotation_hint_quadrant_pixel_point_set",
-            "annotation_hint_pixel_point_set",
-            "json_example_segment_count",
-            "json_example_segment_count_answer_only",
-            "object_description_segment_set",
-            "object_description_line_points",
-            "object_description_quadrant_points",
-            "object_description_polygon_lattice",
         ),
         context="prompt defaults for coordinate-plane relation count",
     )
-
-    object_description = {
-        "segment_set": str(prompt_defaults["object_description_segment_set"]),
-        "line_points": str(prompt_defaults["object_description_line_points"]),
-        "quadrant_points": str(prompt_defaults["object_description_quadrant_points"]),
-        "polygon_lattice": str(prompt_defaults["object_description_polygon_lattice"]),
-    }[str(query.scene_variant)]
-    if str(query.scene_variant) == "segment_set":
-        annotation_hint = str(prompt_defaults["annotation_hint_segment_endpoints"])
-    elif str(query.operation_key) == "collinear":
-        annotation_hint = str(prompt_defaults["annotation_hint_collinear_pixel_point_set"])
-    elif str(query.operation_key) == "same_quadrant":
-        annotation_hint = str(prompt_defaults["annotation_hint_quadrant_pixel_point_set"])
-    else:
-        annotation_hint = str(prompt_defaults["annotation_hint_pixel_point_set"])
-
-    json_example, json_example_answer_only = build_prompt_json_examples(
-        annotation_value=rendered_scene.annotation_value,
-        answer_type="integer",
-    )
-    if str(query.scene_variant) == "segment_set":
-        configured_json_example = prompt_defaults.get("json_example_segment_count")
-        configured_answer_only_example = prompt_defaults.get("json_example_segment_count_answer_only")
-        if isinstance(configured_json_example, str) and configured_json_example.strip():
-            json_example = str(configured_json_example)
-        if isinstance(configured_answer_only_example, str) and configured_answer_only_example.strip():
-            json_example_answer_only = str(configured_answer_only_example)
     prompt_selection = render_scene_prompt_variants(
         domain="geometry",
         scene_id="coordinate_plane",
@@ -354,15 +313,7 @@ def build_relation_artifacts(
         task_key=str(prompt_defaults["task_key"]),
         query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={
-            "object_description": str(object_description),
-            "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(annotation_hint),
-            "answer_hint": str(prompt_defaults["answer_hint_integer"]),
-            "json_example": str(json_example),
-            "json_example_answer_only": str(json_example_answer_only),
-        },
+        dynamic_slots={},
         instance_seed=int(instance_seed),
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)

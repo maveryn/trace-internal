@@ -11,7 +11,7 @@ from ._lifecycle import (
     run_function_graph_count_entry,
 )
 from .shared.defaults import DOMAIN
-from .shared.prompts import function_object_description
+from .shared.prompts import function_object_description, prompt_asset_slot
 from .shared.sampling import (
     sample_turning_scene,
     turning_count_support_by_family,
@@ -26,9 +26,9 @@ def _prompt_slots(defaults: Mapping[str, Any], *, family: str):
     return integer_count_prompt_slots(
         defaults,
         object_description=function_object_description(defaults=defaults, family=str(family), has_guide_line=False),
-        annotation_hint=str(defaults["annotation_hint_turning_point_count"]),
-        json_example=str(defaults["json_example_turning_point_count"]),
-        json_example_answer_only=str(defaults["json_example_answer_only_turning_point_count"]),
+        annotation_hint=prompt_asset_slot(defaults, "annotation_hint_turning_point_count"),
+        json_example=prompt_asset_slot(defaults, "json_example_turning_point_count"),
+        json_example_answer_only=prompt_asset_slot(defaults, "json_example_turning_point_count_answer_only"),
     )
 
 

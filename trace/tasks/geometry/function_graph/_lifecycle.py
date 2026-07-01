@@ -18,7 +18,7 @@ from .shared.rendering import (
     render_count_graph,
     style_and_widths,
 )
-from .shared.prompts import function_object_description, prompt_artifacts_for_scene
+from .shared.prompts import function_object_description, prompt_artifacts_for_scene, prompt_asset_slot
 from .shared.sampling import resolve_family_for_target, resolve_numeric_target, support_union
 from .shared.state import RenderedFunctionGraph, SampledFunctionGraph
 
@@ -69,27 +69,11 @@ TURNING_COUNT_PROMPT_KEYS = (
     "bundle_id",
     "scene_key",
     "task_key",
-    "json_output_contract",
-    "json_output_contract_answer_only",
-    "answer_hint_integer",
-    "annotation_hint_turning_point_count",
-    "json_example_turning_point_count",
-    "json_example_answer_only_turning_point_count",
 )
 LOCAL_EXTREMUM_PROMPT_KEYS = (
     "bundle_id",
     "scene_key",
     "task_key",
-    "json_output_contract",
-    "json_output_contract_answer_only",
-    "answer_hint_integer",
-    "annotation_hint_local_extremum_count",
-    "json_example_local_extremum_count",
-    "json_example_answer_only_local_extremum_count",
-    "extremum_kind_adjective_minimum",
-    "extremum_kind_adjective_maximum",
-    "extremum_visual_description_minimum",
-    "extremum_visual_description_maximum",
 )
 
 def render_count_scene_artifacts(
@@ -358,10 +342,8 @@ def integer_count_prompt_slots(
 
     return {
         "object_description": str(object_description),
-        "json_output_contract": str(defaults["json_output_contract"]),
-        "json_output_contract_answer_only": str(defaults["json_output_contract_answer_only"]),
         "annotation_hint": str(annotation_hint),
-        "answer_hint": str(defaults["answer_hint_integer"]),
+        "answer_hint": prompt_asset_slot(defaults, "answer_hint_integer"),
         "json_example": str(json_example),
         "json_example_answer_only": str(json_example_answer_only),
         **dict(extra_slots or {}),
@@ -377,14 +359,16 @@ def local_extremum_count_prompt_slots(
     """Assemble local-extremum prompt slots from a task-selected extremum kind."""
 
     extremum_slots = {
-        "extremum_kind_adjective": str(defaults[f"extremum_kind_adjective_{extremum_kind}"]),
-        "extremum_visual_description": str(defaults[f"extremum_visual_description_{extremum_kind}"]),
+        "extremum_kind_adjective": prompt_asset_slot(defaults, f"extremum_kind_adjective_{extremum_kind}"),
+        "extremum_visual_description": prompt_asset_slot(defaults, f"extremum_visual_description_{extremum_kind}"),
     }
     return integer_count_prompt_slots(
         defaults,
         object_description=function_object_description(defaults=defaults, family=str(family), has_guide_line=False),
-        annotation_hint=str(defaults["annotation_hint_local_extremum_count"]).format(**dict(extremum_slots)),
-        json_example=str(defaults["json_example_local_extremum_count"]),
-        json_example_answer_only=str(defaults["json_example_answer_only_local_extremum_count"]),
+        annotation_hint=prompt_asset_slot(defaults, "annotation_hint_local_extremum_count").format(
+            **dict(extremum_slots)
+        ),
+        json_example=prompt_asset_slot(defaults, "json_example_local_extremum_count"),
+        json_example_answer_only=prompt_asset_slot(defaults, "json_example_local_extremum_count_answer_only"),
         extra_slots=extremum_slots,
     )

@@ -54,6 +54,6 @@ rendering:
     label_font_size_max: 24
 prompt:
   shared:
-    bundle_id: geometry_graphing_v0
+    bundle_id: geometry_graphing_v1
     scene_key: graphing_scene
     task_key: graphing_query

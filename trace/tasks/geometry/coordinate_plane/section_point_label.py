@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from ...registry import register_task
+from ...shared.fixed_query import select_task_query_id
 
 from ._lifecycle import CoordinateAlgebraObjective, run_coordinate_algebra_entry
 
@@ -49,4 +50,16 @@ class GeometryCoordinateSectionPointLabelTask:
 
         task_params = dict(params)
         task_params["algebra_candidate_count"] = 4
+        if "winner_label" not in task_params and "answer_label" not in task_params:
+            selected_query, _, _ = select_task_query_id(
+                instance_seed=int(instance_seed),
+                params=task_params,
+                supported_query_ids=SUPPORTED_QUERY_IDS,
+                default_query_id=SUPPORTED_QUERY_IDS[0],
+                task_id=TASK_ID,
+            )
+            query_offset = 1 if str(selected_query) == "two_thirds_from_p_to_q" else 0
+            task_params["winner_label"] = ("A", "B", "C", "D")[
+                (int(instance_seed) + int(query_offset)) % 4
+            ]
         return run_coordinate_algebra_entry(self, instance_seed, params=task_params, max_attempts=max_attempts)

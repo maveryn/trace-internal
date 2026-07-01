@@ -8,7 +8,7 @@
 7. Annotation schema: `point_map`
 
 ## Program Contract
-- Program schema: `read_visible_measurement_tool(tool=protractor, target=marked_angle, unit=degrees, output_role=angle_measure); scene=measuring_tools; scope=protractor_angle_value`
+- `read_visible_measurement_tool(tool=protractor, candidate=marked_angle_on_carrier_shape, unit=degrees, operation=read_protractor_tick, output_role=angle_measure_integer, annotation_witness={angle_vertex,protractor_reading_tick}); scene=measuring_tools; scope=protractor_angle_value`
 
 ## Prompt Bundle
 - Prompt text is loaded from the scene prompt bundle configured for `measuring_tools`.

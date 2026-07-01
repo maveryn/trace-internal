@@ -67,6 +67,7 @@ class GeometryMeasurementCompositePerimeterValueTask:
 
     task_id = TASK_ID
     domain = "geometry"
+    default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
 
     def generate(self, instance_seed, *, params, max_attempts):

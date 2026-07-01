@@ -22,7 +22,6 @@ SCENE_ID = "function_graph"
 from ...shared.drawing import draw_centered_text
 from ...shared.fixed_query import select_task_query_id
 from ...shared.output_metadata import default_task_versions
-from ...shared.prompt_json_example import build_prompt_json_examples
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
@@ -43,6 +42,7 @@ from ..shared.single_object_scene import (
     make_graph_scene_canvas,
     resolve_graph_scene_context,
 )
+from .shared.prompts import prompt_asset_slot
 from .shared.sampling import resolve_rate_target
 
 
@@ -467,11 +467,6 @@ class GeometryGraphingAverageRateValueTask:
                 "bundle_id",
                 "scene_key",
                 "task_key",
-                "json_output_contract",
-                "json_output_contract_answer_only",
-                "object_description_average_rate",
-                "answer_hint_number_one_decimal",
-                "annotation_hint_average_rate_points",
             ),
             context=f"prompt defaults for {self.task_id}",
         )
@@ -542,28 +537,25 @@ class GeometryGraphingAverageRateValueTask:
             background_meta=background_meta,
             noise_defaults=POST_IMAGE_NOISE_DEFAULTS,
         )
-        json_example, json_example_answer_only = build_prompt_json_examples(
-            annotation_value=rendered_scene.annotation_value,
-            answer_type="number",
-        )
         prompt_selection = render_scene_prompt_variants(
             domain=self.domain,
-            scene_id=str(getattr(self, "scene_id", "") or getattr(self, "public_scene_id", "") or globals().get("SCENE_ID", "")),
+            scene_id=SCENE_ID,
             bundle_id=str(prompt_defaults["bundle_id"]),
             scene_key=str(prompt_defaults["scene_key"]),
             task_key=str(prompt_defaults["task_key"]),
             query_key=AVERAGE_RATE_BETWEEN_MARKED_POINTS,
             answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-            slots={
-                "object_description": str(prompt_defaults["object_description_average_rate"]),
+            dynamic_slots={
+                "object_description": prompt_asset_slot(prompt_defaults, "object_description_average_rate"),
                 "point_label_start": "A",
                 "point_label_end": "B",
-                "json_output_contract": str(prompt_defaults["json_output_contract"]),
-                "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-                "annotation_hint": str(prompt_defaults["annotation_hint_average_rate_points"]),
-                "answer_hint": str(prompt_defaults["answer_hint_number_one_decimal"]),
-                "json_example": str(json_example),
-                "json_example_answer_only": str(json_example_answer_only),
+                "annotation_hint": prompt_asset_slot(prompt_defaults, "annotation_hint_average_rate_points"),
+                "answer_hint": prompt_asset_slot(prompt_defaults, "answer_hint_number_one_decimal"),
+                "json_example": prompt_asset_slot(prompt_defaults, "json_example_average_rate_points"),
+                "json_example_answer_only": prompt_asset_slot(
+                    prompt_defaults,
+                    "json_example_average_rate_points_answer_only",
+                ),
             },
             instance_seed=int(instance_seed),
         )

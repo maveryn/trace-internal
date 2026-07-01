@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Mapping, Sequence
 
+from trace.core.prompts import load_scene_prompt_bundle
 from trace.tasks.shared.config_defaults import required_group_defaults
 from trace.tasks.shared.prompt_json_example import dump_prompt_json_examples
 from trace.tasks.shared.prompt_variants import (
@@ -14,6 +15,12 @@ from trace.tasks.shared.prompt_variants import (
 
 from .defaults import PROMPT_DEFAULTS
 from .state import DOMAIN, SCENE_ID
+
+_OBJECT_DESCRIPTION_ASSET_KEYS = {
+    "object_description": "object_description_default",
+    "object_description_chord_length": "object_description_chord_length",
+    "object_description_tangent_radius": "object_description_tangent_radius",
+}
 
 
 def _keyed_point_prompt_examples(
@@ -30,6 +37,32 @@ def _keyed_point_prompt_examples(
         answer=answer,
         ensure_ascii=False,
     )
+
+
+def _global_prompt_asset_slot(*, bundle_id: str, slot_key: str) -> str:
+    """Read one scene prompt prose slot from the v1 prompt asset."""
+
+    bundle = load_scene_prompt_bundle(
+        domain=DOMAIN,
+        scene_id=SCENE_ID,
+        bundle_id=str(bundle_id),
+    )
+    static_slots = dict(bundle.static_slots_by_key or {}).get("global", {})
+    value = static_slots.get(str(slot_key))
+    if value is None or not str(value).strip():
+        raise ValueError(f"missing circle_theorem prompt asset slot: {slot_key}")
+    return str(value)
+
+
+def _object_description_slot_key(object_description_key: str) -> str:
+    """Map historical object-description selectors to v1 asset slot names."""
+
+    try:
+        return _OBJECT_DESCRIPTION_ASSET_KEYS[str(object_description_key)]
+    except KeyError as exc:
+        raise ValueError(
+            f"unsupported circle_theorem object description key: {object_description_key}"
+        ) from exc
 
 
 def build_circle_theorem_prompt_artifacts(
@@ -51,41 +84,40 @@ def build_circle_theorem_prompt_artifacts(
             "bundle_id",
             "scene_key",
             "task_key",
-            object_description_key,
-            "json_output_contract",
-            "json_output_contract_answer_only",
-            answer_hint_key,
-            annotation_hint_key,
         ),
         context="circle_theorem prompt wiring defaults",
     )
-    key_text = ", ".join(f'"{key}"' for key in annotation_keys)
-    annotation_hint = str(prompt_defaults[annotation_hint_key]).format(
-        annotation_point_keys=key_text,
-        annotation_keys=key_text,
+    bundle_id = str(prompt_defaults["bundle_id"])
+    object_description = _global_prompt_asset_slot(
+        bundle_id=bundle_id,
+        slot_key=_object_description_slot_key(object_description_key),
     )
+    answer_hint = _global_prompt_asset_slot(
+        bundle_id=bundle_id,
+        slot_key=str(answer_hint_key),
+    )
+    key_text = ", ".join(f'"{key}"' for key in annotation_keys)
     json_example, json_example_answer_only = _keyed_point_prompt_examples(
         annotation_keys,
         answer=answer_example,
     )
+    dynamic_slots = {
+        "object_description": object_description,
+        "annotation_keys": key_text,
+        "answer_hint": answer_hint,
+        "json_example": str(json_example),
+        "json_example_answer_only": str(json_example_answer_only),
+        **{str(key): str(value) for key, value in dict(prompt_slots).items()},
+    }
     prompt_selection = render_scene_prompt_variants(
         domain=DOMAIN,
         scene_id=SCENE_ID,
-        bundle_id=str(prompt_defaults["bundle_id"]),
+        bundle_id=bundle_id,
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_defaults["task_key"]),
         query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={
-            "object_description": str(prompt_defaults[object_description_key]),
-            "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(annotation_hint),
-            "answer_hint": str(prompt_defaults[answer_hint_key]),
-            "json_example": str(json_example),
-            "json_example_answer_only": str(json_example_answer_only),
-            **dict(prompt_slots),
-        },
+        dynamic_slots=dynamic_slots,
         instance_seed=int(instance_seed),
     )
     return dict(prompt_defaults), build_prompt_trace_artifacts(prompt_selection)

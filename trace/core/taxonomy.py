@@ -1593,6 +1593,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__paper_fold__paper_fold_angle_value": _entry(
         "geometry", "paper_fold", "geometry", "measurement"
     ),
+    "task_geometry__polar_graph_paper__coordinate_difference_value": _entry(
+        "geometry", "polar_graph_paper", "geometry", "coordinate"
+    ),
     "task_geometry__polar_graph_paper__readout_value": _entry(
         "geometry", "polar_graph_paper", "geometry", "coordinate"
     ),

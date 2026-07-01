@@ -14,7 +14,7 @@ from trace.tasks.geometry.shared.diagram_style import (
 )
 from trace.tasks.shared.text_rendering import draw_text_centered, load_font
 
-from .state import PolarReadoutCase, RenderedPolarGraphPaperScene
+from .state import PolarDifferenceCase, PolarPointSpec, PolarReadoutCase, RenderedPolarGraphPaperScene
 
 
 def _int_default(defaults: Mapping[str, Any], name: str, fallback: int) -> int:
@@ -113,6 +113,54 @@ def _draw_polar_grid(
     return {"plot_scale_px_per_radius": scale}
 
 
+def _draw_labeled_polar_point(
+    draw: ImageDraw.ImageDraw,
+    *,
+    center: tuple[float, float],
+    scale: float,
+    point: PolarPointSpec,
+    marker_radius: int,
+    label_font_size: int,
+    marker_fill: tuple[int, int, int],
+    style: Any,
+) -> dict[str, Any]:
+    """Draw one labeled polar point and return its projected witness geometry."""
+
+    point_xy = _polar_point(center, scale, point.radius, point.theta_degrees)
+    draw.line((center, point_xy), fill=marker_fill, width=2)
+    point_bbox = [
+        round(point_xy[0] - marker_radius),
+        round(point_xy[1] - marker_radius),
+        round(point_xy[0] + marker_radius),
+        round(point_xy[1] + marker_radius),
+    ]
+    draw.ellipse(
+        point_bbox,
+        fill=marker_fill,
+        outline=tuple(style.stroke_rgb),
+        width=3,
+    )
+
+    label_font = load_font(label_font_size, bold=True)
+    label_offset = _polar_point((0.0, 0.0), 1.0, marker_radius + 22, point.theta_degrees + 180)
+    draw_text_centered(
+        draw,
+        center=(point_xy[0] + label_offset[0], point_xy[1] + label_offset[1]),
+        text=point.label,
+        font=label_font,
+        fill=tuple(style.label_rgb),
+        stroke_width=0,
+    )
+    return {
+        "point": [round(point_xy[0], 3), round(point_xy[1], 3)],
+        "bbox": point_bbox,
+        "polar": {
+            "radius": int(point.radius),
+            "theta_degrees": int(point.theta_degrees),
+        },
+    }
+
+
 def render_polar_graph_paper_scene(
     *,
     instance_seed: int,
@@ -170,41 +218,127 @@ def render_polar_graph_paper_scene(
         style=style,
     )
     scale = grid_spec["plot_scale_px_per_radius"]
-    point_xy = _polar_point(center, scale, case.radius, case.theta_degrees)
-
-    draw.line((center, point_xy), fill=tuple(style.accent_rgb), width=2)
-    point_bbox = [
-        round(point_xy[0] - marker_radius),
-        round(point_xy[1] - marker_radius),
-        round(point_xy[0] + marker_radius),
-        round(point_xy[1] + marker_radius),
-    ]
-    draw.ellipse(
-        point_bbox,
-        fill=tuple(style.accent_rgb),
-        outline=tuple(style.stroke_rgb),
-        width=3,
-    )
-
-    label_font = load_font(label_font_size, bold=True)
-    label_offset = _polar_point((0.0, 0.0), 1.0, marker_radius + 22, case.theta_degrees + 180)
-    draw_text_centered(
+    point_render = _draw_labeled_polar_point(
         draw,
-        center=(point_xy[0] + label_offset[0], point_xy[1] + label_offset[1]),
-        text="P",
-        font=label_font,
-        fill=tuple(style.label_rgb),
-        stroke_width=0,
+        center=center,
+        scale=scale,
+        point=PolarPointSpec(label="P", radius=int(case.radius), theta_degrees=int(case.theta_degrees)),
+        marker_radius=marker_radius,
+        label_font_size=label_font_size,
+        marker_fill=tuple(style.accent_rgb),
+        style=style,
     )
 
-    point_value = [round(point_xy[0], 3), round(point_xy[1], 3)]
     render_map = {
-        "point_p": point_value,
-        "point_p_bbox": point_bbox,
-        "point_p_polar": {
-            "radius": case.radius,
-            "theta_degrees": case.theta_degrees,
-        },
+        "point_p": point_render["point"],
+        "point_p_bbox": point_render["bbox"],
+        "point_p_polar": point_render["polar"],
+        "plot_center": [round(center[0], 3), round(center[1], 3)],
+        "plot_radius_px": round(plot_radius_px, 3),
+        "plot_scale_px_per_radius": round(scale, 3),
+    }
+    render_spec = {
+        "canvas_width": canvas_width,
+        "canvas_height": canvas_height,
+        "polar_radius_max": radius_max,
+        "minor_spoke_step_degrees": minor_spoke_step,
+        "major_spoke_step_degrees": major_spoke_step,
+        "style_profile": GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
+    }
+
+    return RenderedPolarGraphPaperScene(
+        image=image,
+        render_map=render_map,
+        render_spec=render_spec,
+        style_metadata={"background": background_meta, "diagram_style": style_meta},
+    )
+
+
+def render_polar_graph_paper_difference_scene(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    scene_id: str,
+    case: PolarDifferenceCase,
+    rendering_defaults: Mapping[str, Any],
+) -> RenderedPolarGraphPaperScene:
+    """Render the polar grid and two labeled point witnesses."""
+
+    canvas_width = _int_default(rendering_defaults, "canvas_width", 820)
+    canvas_height = _int_default(rendering_defaults, "canvas_height", 780)
+    radius_max = _int_default(rendering_defaults, "polar_radius_max", 8)
+    minor_spoke_step = _int_default(rendering_defaults, "minor_spoke_step_degrees", 15)
+    major_spoke_step = _int_default(rendering_defaults, "major_spoke_step_degrees", 30)
+    radius_label_step = _int_default(rendering_defaults, "radius_label_step", 1)
+    marker_radius = _int_default(rendering_defaults, "marker_radius_px", 9)
+    label_font_size = _int_default(rendering_defaults, "label_font_size", 28)
+
+    background, background_meta, style, style_meta = prepare_geometry_diagram_style_and_background(
+        instance_seed=int(instance_seed),
+        params=params,
+        scene_id=scene_id,
+        canvas_width=canvas_width,
+        canvas_height=canvas_height,
+        style_profile=GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
+        allow_dark=True,
+        require_grid=False,
+    )
+    image = background
+    draw = ImageDraw.Draw(image)
+
+    plot_panel = (42, 32, canvas_width - 42, canvas_height - 42)
+    draw.rounded_rectangle(
+        plot_panel,
+        radius=18,
+        fill=tuple(style.panel_fill_rgb),
+        outline=tuple(style.panel_border_rgb),
+        width=2,
+    )
+
+    center = (canvas_width / 2, canvas_height / 2 + 8)
+    plot_radius_px = min(
+        (plot_panel[2] - plot_panel[0]) / 2 - 78,
+        (plot_panel[3] - plot_panel[1]) / 2 - 58,
+    )
+    grid_spec = _draw_polar_grid(
+        draw,
+        center=center,
+        plot_radius_px=plot_radius_px,
+        radius_max=radius_max,
+        minor_spoke_step=minor_spoke_step,
+        major_spoke_step=major_spoke_step,
+        radius_label_step=radius_label_step,
+        style=style,
+    )
+    scale = grid_spec["plot_scale_px_per_radius"]
+    point_p = _draw_labeled_polar_point(
+        draw,
+        center=center,
+        scale=scale,
+        point=case.point_p,
+        marker_radius=marker_radius,
+        label_font_size=label_font_size,
+        marker_fill=tuple(style.accent_rgb),
+        style=style,
+    )
+    point_q = _draw_labeled_polar_point(
+        draw,
+        center=center,
+        scale=scale,
+        point=case.point_q,
+        marker_radius=marker_radius,
+        label_font_size=label_font_size,
+        marker_fill=tuple(style.secondary_accent_rgb),
+        style=style,
+    )
+
+    render_map = {
+        "point_p": point_p["point"],
+        "point_q": point_q["point"],
+        "point_p_bbox": point_p["bbox"],
+        "point_q_bbox": point_q["bbox"],
+        "point_p_polar": point_p["polar"],
+        "point_q_polar": point_q["polar"],
         "plot_center": [round(center[0], 3), round(center[1], 3)],
         "plot_radius_px": round(plot_radius_px, 3),
         "plot_scale_px_per_radius": round(scale, 3),

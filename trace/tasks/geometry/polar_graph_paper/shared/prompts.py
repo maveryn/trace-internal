@@ -22,6 +22,9 @@ def polar_graph_prompt_artifacts(
     prompt_query_key: str,
     annotation_value: Any,
     instance_seed: int,
+    answer_hint_key: str = "answer_hint_integer",
+    annotation_hint_key: str = "annotation_hint_point_p",
+    answer_type: str = "integer",
 ) -> PromptTraceArtifacts:
     """Render v1 prompt variants from task-selected readout semantics."""
 
@@ -34,15 +37,15 @@ def polar_graph_prompt_artifacts(
             "json_output_contract",
             "json_output_contract_answer_only",
             "object_description",
-            "annotation_hint_point_p",
-            "answer_hint_integer",
+            str(annotation_hint_key),
+            str(answer_hint_key),
         ),
         context=f"prompt defaults for {scene_id}",
     )
     json_example, json_example_answer_only = resolve_prompt_json_examples(
         prompt_defaults_all,
         annotation_value=annotation_value,
-        answer_type="integer",
+        answer_type=str(answer_type),
     )
     prompt_selection = render_scene_prompt_variants(
         domain="geometry",
@@ -55,8 +58,8 @@ def polar_graph_prompt_artifacts(
         dynamic_slots={
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(prompt_defaults["annotation_hint_point_p"]),
-            "answer_hint": str(prompt_defaults["answer_hint_integer"]),
+            "annotation_hint": str(prompt_defaults[str(annotation_hint_key)]),
+            "answer_hint": str(prompt_defaults[str(answer_hint_key)]),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
         },

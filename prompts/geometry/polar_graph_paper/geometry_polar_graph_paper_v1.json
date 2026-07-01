@@ -3,11 +3,12 @@
   "schema_version": "v1",
   "allow_empty_task_templates": true,
   "code_prompt_defaults": {
-    "object_description": "point P plotted on polar graph paper",
+    "object_description": "a polar graph paper diagram with labeled point markers",
     "json_output_contract": "Return a JSON object with keys \"answer\" and \"annotation\".",
     "json_output_contract_answer_only": "Return a JSON object with key \"answer\".",
-    "answer_hint_integer": "set \"answer\" to the integer value read from the polar graph",
-    "annotation_hint_point_p": "set \"annotation\" to the pixel point [x,y] at point P"
+    "answer_hint_integer": "set \"answer\" to the requested integer value",
+    "annotation_hint_point_p": "set \"annotation\" to the pixel point [x,y] at point P",
+    "annotation_hint_points_pq": "set \"annotation\" to an object with exactly the keys \"P\" and \"Q\"; each value must be that labeled point's pixel point [x,y]"
   },
   "templates": {
     "scene": {
@@ -42,6 +43,20 @@
         "Find the polar angle of point P in degrees.",
         "What angle value is shown for point P in degrees?",
         "Give the polar angle of point P in degrees."
+      ],
+      "radius_difference_value": [
+        "What is the absolute difference between the polar radii of P and Q?",
+        "Find the difference between the radius coordinates of P and Q.",
+        "How far apart are P and Q in polar radius value?",
+        "Read both radius coordinates and give their absolute difference.",
+        "What is the positive difference between the polar radii of P and Q?"
+      ],
+      "angle_difference_value": [
+        "What is the smaller angle difference between OP and OQ in degrees?",
+        "Find the smaller angular difference between points P and Q in degrees.",
+        "Read both angle coordinates and give their smaller difference in degrees.",
+        "What is the smaller polar angle difference between P and Q?",
+        "Give the smaller angle from ray OP to ray OQ in degrees."
       ]
     },
     "output": {
@@ -63,7 +78,7 @@
   },
   "static_slots_by_key": {
     "scene:polar_graph_paper_scene": {
-      "object_description": "point P plotted on polar graph paper"
+      "object_description": "a polar graph paper diagram with labeled point markers"
     }
   },
   "dynamic_slots": {
@@ -92,6 +107,8 @@
     ],
     "query:radius_readout_value": [],
     "query:angle_readout_value": [],
+    "query:radius_difference_value": [],
+    "query:angle_difference_value": [],
     "output:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",

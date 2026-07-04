@@ -135,7 +135,11 @@ do and where to verify it.
    unless the visible scaffold changes the objective contract.
 6. Answer supports should be constructively feasible and contiguous unless task
    semantics make interior values impossible.
-7. Use the same seeded sampler for review, calibration, and dataset generation.
+7. Use the same seeded sampler for normal review, calibration, and dataset
+   generation. When a harness passes `_sample_cursor` for fixed review/export
+   coverage, shared samplers may use it as explicit stratification metadata;
+   task-local generators must still not implement their own seed or cursor
+   modulo sampling.
 
 ## Visual And Resource Checklist
 1. Use shared font, label, context-text, marker-legibility, and text-legibility

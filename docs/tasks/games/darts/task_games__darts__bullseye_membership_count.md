@@ -22,7 +22,7 @@ Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annota
 Query ids: `inside_bullseye_count`, `outside_bullseye_count`.
 
 ## Generation Notes
-1. The scene renders a simplified dartboard with 20 numbered sectors and one center bullseye.
+1. The scene renders a simplified dartboard with 10 numbered sectors and one center bullseye.
 2. Query ids switch only the user-facing membership predicate: inside vs outside the bullseye.
 3. The answer support is `0..5`.
 4. Annotation marks the dart boxes whose bullseye membership matches the query.

@@ -44,7 +44,13 @@ def resolve_integer_choice(
     use_instance_seed_cycle: bool = False,
     namespace_support_permutation: bool = False,
 ) -> Tuple[int, Dict[str, float]]:
-    """Resolve one integer choice from explicit support with seeded RNG sampling."""
+    """Resolve one integer choice from explicit support with seeded RNG sampling.
+
+    When a review/export caller provides ``_sample_cursor`` and the configured
+    balance flag is enabled, this uses the cursor as a round-robin coverage
+    index over the explicit support. Normal dataset sampling still uses seeded
+    RNG draws over the support instead of seed modulo.
+    """
 
     support = resolve_integer_support(
         params,
@@ -57,6 +63,18 @@ def resolve_integer_choice(
         selected = int(explicit)
         if int(selected) not in set(support):
             raise ValueError(f"unsupported {explicit_key}: {selected}")
+        return int(selected), support_probability_map(support, selected=int(selected), sort_keys=True)
+
+    balanced = bool(params.get(str(balanced_flag_key), group_default(gen_defaults, str(balanced_flag_key), True)))
+    sample_cursor = params.get("_sample_cursor")
+    if bool(balanced) and sample_cursor is not None:
+        values = tuple(int(value) for value in support)
+        if bool(namespace_support_permutation) and len(values) > 1:
+            shuffled = list(values)
+            permutation_rng = spawn_rng(0, f"{namespace}.support_permutation")
+            permutation_rng.shuffle(shuffled)
+            values = tuple(int(value) for value in shuffled)
+        selected = values[abs(int(sample_cursor)) % len(values)]
         return int(selected), support_probability_map(support, selected=int(selected), sort_keys=True)
 
     rng = spawn_rng(int(instance_seed), str(namespace))

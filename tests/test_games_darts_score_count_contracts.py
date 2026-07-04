@@ -138,7 +138,7 @@ def test_games_darts_query_cycle_covers_simplified_answers() -> None:
         inside_answers.add(int(inside.answer_gt.value))
         outside_answers.add(int(outside.answer_gt.value))
 
-    assert score_answers == set(range(1, 21)) | {50}
+    assert score_answers == set(range(1, 11)) | {50}
     assert {0, 1, 2, 3, 4, 5}.issubset(inside_answers)
     assert {0, 1, 2, 3, 4, 5}.issubset(outside_answers)
 
@@ -158,7 +158,7 @@ def test_games_darts_query_cycle_covers_simplified_answers() -> None:
 def test_games_darts_score_value_is_deterministic() -> None:
     params = {
         "scene_variant": "single_board",
-        "target_score": 17,
+        "target_score": 7,
     }
     task = GamesDartsDartScoreValueTask()
     out_a = task.generate(92041, params=params, max_attempts=48)
@@ -208,7 +208,7 @@ def test_games_darts_prompt_bundle_uses_simplified_terms() -> None:
 def test_games_darts_score_prompt_asks_for_integer_score_not_option_letter() -> None:
     out = GamesDartsDartScoreValueTask().generate(
         92061,
-        params={"scene_variant": "single_board", "target_score": 12},
+        params={"scene_variant": "single_board", "target_score": 10},
         max_attempts=48,
     )
 

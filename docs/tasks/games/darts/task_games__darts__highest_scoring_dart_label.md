@@ -22,7 +22,7 @@ Annotation witnesses: `annotation` uses the `point` schema at the center of the 
 Query ids: `single`.
 
 ## Generation Notes
-1. The scene renders a simplified dartboard with 20 numbered sectors, one center bullseye, and four visible darts labeled `A` through `D`.
+1. The scene renders a simplified dartboard with 10 numbered sectors, one center bullseye, and four visible darts labeled `A` through `D`.
 2. A dart in a numbered sector scores that number; a dart in the center bullseye scores `50`.
 3. Generated instances place the four labeled darts in numbered sectors and enforce one unique highest score.
 4. Query ids are internal replay/sampling keys and do not define public task units.

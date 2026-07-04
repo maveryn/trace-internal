@@ -28,7 +28,7 @@ def test_games_darts_defaults_expose_simplified_scene_style_and_prompt_axes() ->
         "parchment",
         "neon",
     }
-    assert list(generation["score_value_support"]) == list(range(1, 21)) + [50]
+    assert list(generation["score_value_support"]) == list(range(1, 11)) + [50]
     assert int(rendering["board_radius_px"]) > 0
     assert int(rendering["marker_radius_px"]) > 0
     assert str(prompt["bundle_id"]) == "games_darts_v1"

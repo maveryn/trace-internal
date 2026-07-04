@@ -12,25 +12,15 @@ PROMPT_WIRING_KEYS: Tuple[str, ...] = ("bundle_id", "scene_key", "task_key")
 SUPPORTED_DARTS_SCENE_VARIANTS: Tuple[str, ...] = ("single_board",)
 BULLSEYE_SCORE = 50
 STANDARD_DART_SECTORS: Tuple[int, ...] = (
-    20,
-    1,
-    18,
-    4,
-    13,
-    6,
     10,
-    15,
-    2,
-    17,
-    3,
-    19,
-    7,
-    16,
-    8,
-    11,
-    14,
+    1,
     9,
-    12,
+    2,
+    8,
+    3,
+    7,
+    4,
+    6,
     5,
 )
 

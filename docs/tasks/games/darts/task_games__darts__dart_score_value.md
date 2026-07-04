@@ -22,7 +22,7 @@ Annotation witnesses: `annotation` uses the `point` schema; the prompt/annotatio
 Query ids: `single`.
 
 ## Generation Notes
-1. The scene renders a simplified dartboard with 20 numbered sectors, one center bullseye, and exactly one dart.
+1. The scene renders a simplified dartboard with 10 numbered sectors, one center bullseye, and exactly one dart.
 2. A dart in a numbered sector scores that number; a dart in the center bullseye scores `50`.
 3. Query ids are internal replay/sampling keys and do not define public task units.
 4. Annotation is the center point of the only visible dart, projected from the same generated game state used for answer verification.

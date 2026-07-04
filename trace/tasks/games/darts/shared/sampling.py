@@ -35,6 +35,12 @@ from .state import (
 _SECTOR_TO_INDEX = {int(value): int(index) for index, value in enumerate(STANDARD_DART_SECTORS)}
 
 
+def sector_angle_width_deg() -> float:
+    """Return the angular width of one simplified dartboard sector."""
+
+    return 360.0 / float(max(1, len(STANDARD_DART_SECTORS)))
+
+
 def _resolve_named_axis(
     *,
     instance_seed: int,
@@ -207,8 +213,10 @@ def _slot_position(rng, *, slot: DartsScoreSlot, params: DartboardRenderParams) 
         )
 
     sector_index = _SECTOR_TO_INDEX[int(slot.sector_value or 0)]
-    center_angle = float(sector_index * 18.0)
-    angle = float(rng.uniform(center_angle - 6.4, center_angle + 6.4))
+    sector_width = sector_angle_width_deg()
+    center_angle = float(sector_index) * float(sector_width)
+    angle_margin = float(sector_width) * 0.36
+    angle = float(rng.uniform(center_angle - angle_margin, center_angle + angle_margin))
     radius_min, radius_max = DARTBOARD_SAMPLE_RADIUS_FRACTIONS["sector"]
     radius = float(rng.uniform(float(radius_min), float(radius_max)) * board_radius)
     return polar_to_xy(

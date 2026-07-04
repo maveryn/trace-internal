@@ -305,12 +305,14 @@ def _draw_board(
     radius = float(params.board_radius_px)
     bull_radius = float(DARTBOARD_RADIUS_FRACTIONS["bullseye"]) * radius
     sector_outer = float(DARTBOARD_RADIUS_FRACTIONS["sector_outer"]) * radius
+    sector_width_deg = 360.0 / float(max(1, len(STANDARD_DART_SECTORS)))
+    sector_half_width_deg = 0.5 * float(sector_width_deg)
 
     # Draw only the scoring disk. The old filled outer frame looked like an extra
     # scoring ring, which made the simplified board harder to read.
     for sector_index, _sector_value in enumerate(STANDARD_DART_SECTORS):
-        start_deg = float((sector_index * 18.0) - 9.0)
-        end_deg = float((sector_index * 18.0) + 9.0)
+        start_deg = float((sector_index * sector_width_deg) - sector_half_width_deg)
+        end_deg = float((sector_index * sector_width_deg) + sector_half_width_deg)
         fill = palette["light_sector"] if sector_index % 2 == 0 else palette["dark_sector"]
         draw.polygon(
             _ring_polygon(
@@ -337,7 +339,7 @@ def _draw_board(
         width=3,
     )
     for sector_index in range(len(STANDARD_DART_SECTORS)):
-        angle = float((sector_index * 18.0) - 9.0)
+        angle = float((sector_index * sector_width_deg) - sector_half_width_deg)
         x_outer, y_outer = polar_to_xy(cx=cx, cy=cy, radius=sector_outer, angle_deg=angle)
         x_inner, y_inner = polar_to_xy(cx=cx, cy=cy, radius=bull_radius, angle_deg=angle)
         draw.line([(x_inner, y_inner), (x_outer, y_outer)], fill=wire, width=2)
@@ -349,7 +351,7 @@ def _draw_board(
     )
     number_radius = float(sector_outer) + float(max(62, int(params.number_font_size_px) * 1.6))
     for sector_index, sector_value in enumerate(STANDARD_DART_SECTORS):
-        angle = float(sector_index * 18.0)
+        angle = float(sector_index * sector_width_deg)
         x_text, y_text = polar_to_xy(cx=cx, cy=cy, radius=number_radius, angle_deg=angle)
         _draw_centered_text(
             draw,

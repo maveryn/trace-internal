@@ -48,17 +48,12 @@ generation:
       higher_rank_order_by_rank: false
       higher_rank_center_label_mode: rank_suit
       higher_than_reference_count_card_count_support:
-      - 16
-      - 17
-      - 18
-      - 19
-      - 20
-      - 21
-      - 22
-      - 23
-      - 24
-      - 25
-      - 26
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
     task_games__cards__exact_triple_count:
       balanced_target_answer_sampling: true
       balanced_card_count_sampling: true

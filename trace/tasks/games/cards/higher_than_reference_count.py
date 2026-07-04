@@ -19,7 +19,7 @@ TASK_ID = "task_games__cards__higher_than_reference_count"
 PROMPT_QUERY_KEY = "higher_than_reference_count"
 SUPPORTED_QUERY_IDS = (DEFAULT_QUERY_ID,)
 TARGET_ANSWER_SUPPORT = (0, 1, 2, 3, 4, 5)
-CARD_COUNT_SUPPORT = (16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26)
+CARD_COUNT_SUPPORT = (10, 11, 12, 13, 14, 15)
 _GEN_DEFAULTS, _RENDER_DEFAULTS_UNUSED, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
     "games",
     SCENE_ID,

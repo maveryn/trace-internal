@@ -26,7 +26,7 @@ def test_games_cards_scene_defaults_expose_shared_rendering_and_task_axes() -> N
     assert bool(higher_generation['balanced_card_count_sampling']) is True
     assert list(higher_generation['higher_rank_target_answer_support']) == [0, 1, 2, 3, 4, 5]
     assert bool(higher_generation['higher_rank_order_by_rank']) is False
-    assert list(higher_generation['higher_than_reference_count_card_count_support']) == list(range(16, 27))
+    assert list(higher_generation['higher_than_reference_count_card_count_support']) == list(range(10, 16))
     triple_generation, _rendering, _prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__cards__exact_triple_count')
     assert bool(triple_generation['balanced_target_answer_sampling']) is True
     assert bool(triple_generation['balanced_card_count_sampling']) is True

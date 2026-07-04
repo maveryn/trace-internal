@@ -314,10 +314,10 @@ def test_isometric_quarry_worker_same_level_tile_contract() -> None:
 def test_isometric_quarry_highest_terrain_tile_count_contract() -> None:
     task = create_task(HIGHEST_TILE_COUNT_TASK_ID)
     cases = (
-        ("landscape", 6, 2026062441),
-        ("square", 11, 2026062442),
-        ("landscape", 17, 2026062443),
-        ("square", 20, 2026062444),
+        ("landscape", 4, 2026062441),
+        ("square", 8, 2026062442),
+        ("landscape", 10, 2026062443),
+        ("square", 12, 2026062444),
     )
     for profile, target_count, seed in cases:
         out = task.generate(
@@ -329,7 +329,7 @@ def test_isometric_quarry_highest_terrain_tile_count_contract() -> None:
         assert out.query_id == "single"
         assert out.answer_gt.type == "integer"
         assert int(out.answer_gt.value) == int(target_count)
-        assert 6 <= int(out.answer_gt.value) <= 20
+        assert 4 <= int(out.answer_gt.value) <= 12
         assert out.annotation_gt.type == "bbox"
         width, height = out.image.size
         _assert_bbox_inside_canvas(list(out.annotation_gt.value), width=width, height=height)

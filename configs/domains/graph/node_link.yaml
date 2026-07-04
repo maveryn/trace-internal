@@ -1569,8 +1569,8 @@ generation:
       target_cycle_size_min: 3
       target_cycle_size_max: 7
     task_graph__node_link__unique_related_node_label:
-      node_count_min: 6
-      node_count_max: 15
+      node_count_min: 5
+      node_count_max: 12
       component_count_min: 2
       component_count_max: 4
       target_component_size_min: 2

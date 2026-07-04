@@ -62,6 +62,12 @@ def reachable_room_ids(doors: Sequence[RpgHouseDoor], *, start_room_id: str) -> 
     return tuple(sorted(connected_component(open_edges, start_room_id=str(start_room_id))))
 
 
+def adjacent_room_ids(doors: Sequence[RpgHouseDoor], *, start_room_id: str) -> tuple[str, ...]:
+    """Return rooms that share any direct doorway with the start room."""
+
+    return tuple(sorted(str(room_id) for room_id, _door_id in door_edges(doors).get(str(start_room_id), ())))
+
+
 def door_id_between(edges: DoorEdgeMap, *, room_a_id: str, room_b_id: str) -> str:
     """Return the door id connecting two adjacent rooms."""
 
@@ -100,6 +106,7 @@ def grow_reachable_subset(
 
 
 __all__ = [
+    "adjacent_room_ids",
     "connected_component",
     "door_edges",
     "door_id_between",

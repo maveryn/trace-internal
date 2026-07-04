@@ -1,11 +1,11 @@
 {
   "bundle_id": "illustrations_rpg_house_v0",
-  "schema_version": "v0",
-  "task_templates": {
-    "rpg_house_door_state_count_task": [
-      "",
-      "",
-      "",
+    "schema_version": "v0",
+    "task_templates": {
+        "rpg_house_adjacent_room_count_task": [
+            "",
+            "",
+            "",
       "",
       ""
     ],
@@ -40,10 +40,9 @@
   },
   "required_slots_by_key": {
     "scene:rpg_house_canvas": [],
-    "query:closed_door_count": [],
-    "query:missing_patch_label": [],
-    "query:open_door_count": [],
-    "query:reachable_room_count": [],
+        "query:adjacent_room_count": [],
+        "query:missing_patch_label": [],
+        "query:reachable_room_count": [],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
       "answer_hint",
@@ -83,26 +82,19 @@
     ]
   },
   "query_templates": {
-    "closed_door_count": [
-      "How many closed doors are shown in the house layout?",
-      "Count the doors that are closed. How many closed doors are there?",
-      "What is the total number of closed doors in this RPG house?",
-      "How many doorways have a closed door across them?",
-      "Count each closed door once. What is the total?"
-    ],
+        "adjacent_room_count": [
+            "How many rooms directly share a doorway with the player's room?",
+            "Count the rooms that touch the player's room through one doorway. What is the count?",
+            "How many rooms are immediately connected to the room with the player by a doorway?",
+            "From the player's room, how many other rooms are one doorway away?",
+            "Count the rooms directly adjacent to the player's room by a doorway. What is the total?"
+        ],
     "missing_patch_label": [
       "One rectangular region is missing from the source house image. Which patch option restores that missing region?",
       "Select the lettered patch that belongs in the missing rectangle of the RPG house image.",
       "Which option patch matches the hidden region in the top-down house layout?",
       "A patch has been removed from the house floor plan. Which lettered option should fill it?",
       "Choose the patch option that completes the missing part of the RPG house scene."
-    ],
-    "open_door_count": [
-      "How many open doors are shown in the house layout?",
-      "Count the doorways that are open. How many open doors are there?",
-      "What is the total number of open doors in this RPG house?",
-      "How many doors are open enough for a player to pass through?",
-      "Count each open doorway once. What is the total?"
     ],
     "reachable_room_count": [
       "Starting from the room with the player, how many other rooms can the player reach by passing only through open doors?",

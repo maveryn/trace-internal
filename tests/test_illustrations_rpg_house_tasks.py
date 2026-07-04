@@ -1,16 +1,12 @@
 from __future__ import annotations
 
 from trace.tasks.registry import create_task
-from trace.tasks.illustrations.rpg_house.door_state_count import (
-    CLOSED_DOOR_COUNT_QUERY_ID,
-    OPEN_DOOR_COUNT_QUERY_ID,
-    TASK_ID as DOOR_STATE_COUNT_TASK_ID,
-)
+from trace.tasks.illustrations.rpg_house.adjacent_room_count import TASK_ID as ADJACENT_COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_house.missing_patch_label import TASK_ID as MISSING_PATCH_TASK_ID
 from trace.tasks.illustrations.rpg_house.reachable_room_count import TASK_ID as REACHABLE_COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_house.room_count import TASK_ID as ROOM_COUNT_TASK_ID
 from trace.tasks.illustrations.rpg_house.swapped_tile_pair_label import TASK_ID as SWAPPED_TILE_PAIR_TASK_ID
-from trace.tasks.illustrations.rpg_house.shared.relations import reachable_room_ids
+from trace.tasks.illustrations.rpg_house.shared.relations import adjacent_room_ids, reachable_room_ids
 from trace.tasks.illustrations.rpg_house.shared.rendering import (
     MAX_ROOM_COUNT,
     MIN_ROOM_COUNT,
@@ -226,40 +222,61 @@ def test_rpg_house_reachable_room_count_contract() -> None:
     assert zero.annotation_gt.value["reachable_rooms"] == []
 
 
-def test_rpg_house_door_state_count_contract() -> None:
-    task = create_task(DOOR_STATE_COUNT_TASK_ID)
-    for query_id, target_state, seed in (
-        (OPEN_DOOR_COUNT_QUERY_ID, "open", 2026061609),
-        (CLOSED_DOOR_COUNT_QUERY_ID, "closed", 2026061610),
-    ):
-        out = task.generate(
-            seed,
-            params={
-                "query_id": query_id,
-                "canvas_profile": "square",
-                "room_count": 6,
-                "door_state_count": 2,
-            },
-            max_attempts=20,
+def test_rpg_house_adjacent_room_count_contract() -> None:
+    task = create_task(ADJACENT_COUNT_TASK_ID)
+    out = task.generate(
+        2026061609,
+        params={
+            "canvas_profile": "square",
+            "room_count": 6,
+            "adjacent_room_count": 2,
+        },
+        max_attempts=80,
+    )
+    assert out.scene_id == "rpg_house"
+    assert out.query_id == "single"
+    assert out.answer_gt.type == "integer"
+    assert out.answer_gt.value == 2
+    assert out.annotation_gt.type == "point_set_map"
+    assert sorted(out.annotation_gt.value) == ["adjacent_rooms", "player"]
+    assert len(out.annotation_gt.value["player"]) == 1
+    assert len(out.annotation_gt.value["adjacent_rooms"]) == 2
+    width, height = out.image.size
+    for points in out.annotation_gt.value.values():
+        for point in points:
+            assert 0 <= float(point[0]) <= float(width)
+            assert 0 <= float(point[1]) <= float(height)
+    trace = out.trace_payload
+    assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_house_v0"
+    assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_house"
+    assert trace["projected_annotation"]["type"] == "point_set_map"
+    assert trace["projected_annotation"]["point_set_map"] == out.annotation_gt.value
+    assert trace["render_map"]["adjacent_count"] == 2
+    assert trace["render_map"]["player_room_id"] == trace["query_spec"]["params"]["player_room_id"]
+    entities = trace["scene_ir"]["entities"]
+    players = [entity for entity in entities if entity["public_name"] == "player"]
+    assert len(players) == 1
+    assert players[0]["room_id"] == trace["render_map"]["player_room_id"]
+    doors = trace["scene_ir"]["doors"]
+    adjacent = set(
+        adjacent_room_ids(
+            tuple(
+                type(
+                    "Door",
+                    (),
+                    {
+                        "room_a_id": door["room_a_id"],
+                        "room_b_id": door["room_b_id"],
+                        "door_id": door["door_id"],
+                        "state": door["state"],
+                    },
+                )()
+                for door in doors
+            ),
+            start_room_id=trace["render_map"]["player_room_id"],
         )
-        assert out.scene_id == "rpg_house"
-        assert out.query_id == query_id
-        assert out.answer_gt.type == "integer"
-        assert out.answer_gt.value == 2
-        assert out.annotation_gt.type == "point_set"
-        assert len(out.annotation_gt.value) == 2
-        trace = out.trace_payload
-        assert trace["query_spec"]["prompt_variant"]["prompt_bundle_id"] == "illustrations_rpg_house_v0"
-        assert trace["query_spec"]["prompt_variant"]["prompt_scene_id"] == "rpg_house"
-        assert trace["projected_annotation"]["type"] == "point_set"
-        assert trace["projected_annotation"]["point_set"] == out.annotation_gt.value
-        assert trace["render_map"]["target_state"] == target_state
-        assert trace["render_map"]["matching_door_count"] == 2
-        states = {door["door_id"]: door["state"] for door in trace["scene_ir"]["doors"]}
-        assert sorted(door_id for door_id, state in states.items() if state == target_state) == sorted(
-            trace["render_map"]["matching_door_ids"]
-        )
-        assert set(states.values()) == {"open", "closed"}
+    )
+    assert sorted(adjacent) == sorted(trace["render_map"]["adjacent_room_ids"])
 
 
 def test_rpg_house_missing_patch_label_contract() -> None:

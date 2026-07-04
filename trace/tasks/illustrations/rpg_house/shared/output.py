@@ -112,25 +112,30 @@ def rpg_house_reachable_room_count_render_map(
     }
 
 
-def rpg_house_door_state_count_render_map(
+def rpg_house_adjacent_room_count_render_map(
     *,
     scene: RpgHouseScene,
-    target_state: str,
-    matching_door_ids: Sequence[str],
+    player_room_id: str,
+    adjacent_room_ids: Sequence[str],
 ) -> dict[str, Any]:
-    """Return task render-map fields for open/closed door counting."""
+    """Return task render-map fields for adjacent-room counting."""
 
-    door_boxes = door_bbox_map(scene)
-    door_points = door_point_map(scene)
-    matching_ids = [str(door_id) for door_id in matching_door_ids]
+    room_points = room_point_map(scene)
+    player = player_entity(scene)
+    if player is None:
+        raise ValueError("adjacent-room count render map requires a player entity")
+    adjacent_ids = [str(room_id) for room_id in adjacent_room_ids]
     return {
         "image_id": "img0",
-        "door_bboxes_px": door_boxes,
-        "door_points_px": door_points,
-        "target_state": str(target_state),
-        "matching_door_ids": matching_ids,
-        "matching_door_points_px": {door_id: door_points[door_id] for door_id in matching_ids},
-        "matching_door_count": len(matching_ids),
+        "room_bboxes_px": room_bbox_map(scene),
+        "room_points_px": room_points,
+        "door_bboxes_px": door_bbox_map(scene),
+        "door_points_px": door_point_map(scene),
+        "player_room_id": str(player_room_id),
+        "player_point_px": [round(float(value), 3) for value in player.point_xy],
+        "adjacent_room_ids": adjacent_ids,
+        "adjacent_room_points_px": {room_id: room_points[room_id] for room_id in adjacent_ids},
+        "adjacent_count": len(adjacent_ids),
     }
 
 
@@ -195,6 +200,7 @@ def point_set_map_projection(keyed_points: Mapping[str, Sequence[Sequence[float]
 
 __all__ = [
     "bbox_projection",
+    "rpg_house_adjacent_room_count_render_map",
     "door_point_map",
     "door_bbox_map",
     "point_set_map_projection",
@@ -202,7 +208,6 @@ __all__ = [
     "point_set_projection",
     "room_bbox_map",
     "room_point_map",
-    "rpg_house_door_state_count_render_map",
     "rpg_house_reachable_room_count_render_map",
     "rpg_house_room_count_render_map",
     "rpg_house_reachability_render_map",

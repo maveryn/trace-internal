@@ -2,22 +2,16 @@ generation:
   shared:
     balanced_sampling: true
   task_overrides:
-    task_illustrations__rpg_house__door_state_count:
+    task_illustrations__rpg_house__adjacent_room_count:
       query_id_support:
-        - open_door_count
-        - closed_door_count
-      door_state_count_support:
+        - single
+      adjacent_room_count_support:
         - 1
         - 2
         - 3
         - 4
         - 5
-        - 6
-        - 7
-        - 8
       room_count_support:
-        - 4
-        - 5
         - 6
         - 7
         - 8
@@ -76,16 +70,16 @@ rendering:
 
 prompt:
   task_overrides:
-    task_illustrations__rpg_house__door_state_count:
+    task_illustrations__rpg_house__adjacent_room_count:
       bundle_id: illustrations_rpg_house_v0
       scene_key: rpg_house_canvas
-      task_key: rpg_house_door_state_count_task
+      task_key: rpg_house_adjacent_room_count_task
       json_output_contract: 'Return JSON with keys "annotation" and "answer".'
       json_output_contract_answer_only: 'Return JSON with key "answer".'
-      answer_hint_rpg_house_door_state_count: set "answer" to the number of doors in the requested state
-      annotation_hint_rpg_house_door_state_count: set "annotation" to one [x, y] point on each counted door in image pixel coordinates
-      json_example_rpg_house_door_state_count: '{"annotation":[[320,246],[480,486],[640,246]],"answer":3}'
-      json_example_answer_only_rpg_house_door_state_count: '{"answer":3}'
+      answer_hint_rpg_house_adjacent_room_count: set "answer" to the number of rooms that directly share a doorway with the player's room
+      annotation_hint_rpg_house_adjacent_room_count: set "annotation" to an object with keys "player" and "adjacent_rooms"; "player" contains one [x, y] point on the player, and "adjacent_rooms" contains one [x, y] point near the center of each counted room
+      json_example_rpg_house_adjacent_room_count: '{"annotation":{"player":[[420,360]],"adjacent_rooms":[[260,180],[620,180]]},"answer":2}'
+      json_example_answer_only_rpg_house_adjacent_room_count: '{"answer":2}'
     task_illustrations__rpg_house__missing_patch_label:
       bundle_id: illustrations_rpg_house_v0
       scene_key: rpg_house_canvas

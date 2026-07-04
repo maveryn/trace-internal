@@ -188,6 +188,26 @@ def scene_occupied_range(scene_variant: str) -> Tuple[int, int]:
     )
 
 
+def resolve_task_occupied_range(
+    *,
+    params: Mapping[str, Any],
+    gen_defaults: Mapping[str, Any],
+) -> Tuple[int, int] | None:
+    """Return an optional task-local occupied-piece range override."""
+
+    raw_min = params.get("min_occupied_count", gen_defaults.get("min_occupied_count"))
+    raw_max = params.get("max_occupied_count", gen_defaults.get("max_occupied_count"))
+    if raw_min is None and raw_max is None:
+        return None
+    if raw_min is None or raw_max is None:
+        raise ValueError("Checkers occupied-piece override requires both min and max values")
+    min_occupied = int(raw_min)
+    max_occupied = int(raw_max)
+    if min_occupied < 0 or max_occupied < min_occupied:
+        raise ValueError("invalid Checkers occupied-piece override")
+    return min_occupied, max_occupied
+
+
 def is_edge_coord(coord: Coord) -> bool:
     """Return true when a playable coordinate lies on the board perimeter."""
 
@@ -471,11 +491,16 @@ def _try_add_fillers(
     current_player: int,
     target_answer: int,
     scene_variant: str,
+    occupied_range: Tuple[int, int] | None = None,
     evaluator: Callable[[Board], CheckersEvaluation | None],
 ) -> Tuple[Board, CheckersEvaluation, int]:
     """Add non-semantic filler pieces while preserving the requested answer."""
 
-    min_occupied, max_occupied = scene_occupied_range(str(scene_variant))
+    min_occupied, max_occupied = (
+        occupied_range
+        if occupied_range is not None
+        else scene_occupied_range(str(scene_variant))
+    )
     desired_occupied = int(rng.randint(int(min_occupied), int(max_occupied)))
     mutable = [list(int(cell) for cell in row) for row in board]
     current_occupied = int(occupied_piece_count(mutable))
@@ -518,6 +543,7 @@ def sample_move_destination_scene(
     params: Mapping[str, Any],
     target_answer: int,
     capture_only: bool,
+    occupied_range: Tuple[int, int] | None = None,
 ) -> SampledCheckersScene:
     """Construct one Checkers landing-square count scene."""
 
@@ -539,6 +565,7 @@ def sample_move_destination_scene(
         current_player=int(current_player),
         target_answer=int(target_answer),
         scene_variant=str(axes.scene_variant),
+        occupied_range=occupied_range,
         evaluator=evaluator,
     )
     return SampledCheckersScene(
@@ -559,6 +586,7 @@ def sample_piece_mobility_scene(
     params: Mapping[str, Any],
     target_answer: int,
     capture_only: bool,
+    occupied_range: Tuple[int, int] | None = None,
 ) -> SampledCheckersScene:
     """Construct one Checkers source-piece mobility count scene."""
 
@@ -580,6 +608,7 @@ def sample_piece_mobility_scene(
         current_player=int(current_player),
         target_answer=int(target_answer),
         scene_variant=str(axes.scene_variant),
+        occupied_range=occupied_range,
         evaluator=evaluator,
     )
     return SampledCheckersScene(
@@ -601,6 +630,7 @@ def sample_piece_state_scene(
     target_answer: int,
     player: int,
     edge_only: bool,
+    occupied_range: Tuple[int, int] | None = None,
 ) -> SampledCheckersScene:
     """Construct one Checkers visible piece-state count scene."""
 
@@ -622,6 +652,7 @@ def sample_piece_state_scene(
         current_player=int(current_player),
         target_answer=int(target_answer),
         scene_variant=str(axes.scene_variant),
+        occupied_range=occupied_range,
         evaluator=evaluator,
     )
     return SampledCheckersScene(
@@ -642,6 +673,7 @@ def sample_king_capture_chain_scene(
     axes: ResolvedCheckersSceneAxes,
     params: Mapping[str, Any],
     target_answer: int,
+    occupied_range: Tuple[int, int] | None = None,
 ) -> SampledCheckersScene:
     """Construct one marked-king capture-chain scene."""
 
@@ -662,6 +694,7 @@ def sample_king_capture_chain_scene(
         current_player=int(current_player),
         target_answer=int(target_answer),
         scene_variant=str(axes.scene_variant),
+        occupied_range=occupied_range,
         evaluator=evaluator,
     )
     return SampledCheckersScene(
@@ -683,6 +716,7 @@ __all__ = [
     "movement_rule_text",
     "resolve_checkers_scene_axes",
     "resolve_checkers_target_answer",
+    "resolve_task_occupied_range",
     "sample_king_capture_chain_scene",
     "sample_move_destination_scene",
     "sample_piece_mobility_scene",

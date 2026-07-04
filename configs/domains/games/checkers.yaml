@@ -19,6 +19,8 @@ generation:
   task_overrides:
     task_games__checkers__move_count:
       balanced_target_answer_sampling: true
+      min_occupied_count: 6
+      max_occupied_count: 10
       legal_move_count_support: [0, 1, 2, 3, 4, 5]
       capture_move_count_support: [0, 1, 2, 3, 4]
     task_games__checkers__max_capture_chain_length:
@@ -30,6 +32,8 @@ generation:
       piece_with_capture_move_count_support: [0, 1, 2, 3, 4]
     task_games__checkers__piece_state_count:
       balanced_target_answer_sampling: true
+      min_occupied_count: 6
+      max_occupied_count: 12
       piece_state_count_support: [0, 1, 2, 3, 4, 5, 6]
       target_player_weights:
         red: 1.0

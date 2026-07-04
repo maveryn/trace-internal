@@ -17,7 +17,11 @@ from ._lifecycle import (
     run_checkers_lifecycle,
 )
 from .shared.rules import BLACK, RED
-from .shared.sampling import sample_piece_state_scene, scene_object_description
+from .shared.sampling import (
+    resolve_task_occupied_range,
+    sample_piece_state_scene,
+    scene_object_description,
+)
 from .shared.state import SCENE_ID, SampledCheckersScene
 
 TASK_ID = "task_games__checkers__piece_state_count"
@@ -31,7 +35,7 @@ PIECE_STATE_KIND_SETTINGS: Mapping[str, Mapping[str, Any]] = {
     },
     "edge": {
         "edge_only": True,
-        "scope_phrase": "are on the outer edge of the board",
+        "scope_phrase": "are on the outer border row or column",
     },
 }
 PIECE_STATE_COUNT_SUPPORT = (0, 1, 2, 3, 4, 5, 6)
@@ -85,6 +89,10 @@ def _prepare_piece_state_objective(
         fallback_support=PIECE_STATE_COUNT_SUPPORT,
         namespace=f"{TASK_ID}.target_answer",
     )
+    occupied_range = resolve_task_occupied_range(
+        params=task_params,
+        gen_defaults=_GEN_DEFAULTS,
+    )
 
     def construct_attempt(rng, axes):
         return sample_piece_state_scene(
@@ -94,6 +102,7 @@ def _prepare_piece_state_objective(
             target_answer=int(target.target_answer),
             player=int(player),
             edge_only=bool(edge_only),
+            occupied_range=occupied_range,
         )
 
     def prompt_slots(sample: SampledCheckersScene) -> dict[str, str]:

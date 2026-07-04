@@ -86,7 +86,7 @@
     "query:legal_move_count": {
       "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty square beyond.",
       "single_jump_rule_text": "Count only one jump per move; ignore follow-up jumps.",
-      "legal_move_rule_text": "Include simple diagonal steps and capture jumps.",
+      "legal_move_rule_text": "A landing square is the empty square where a piece ends after exactly one move. Include simple diagonal steps and capture jumps.",
       "annotation_hint": "set \"annotation\" to a JSON array of pixel-space square boxes [x0, y0, x1, y1] for every legal landing square; use an empty array if none are available",
       "answer_hint": "set \"answer\" to the count of legal landing squares",
       "json_example": "{\"annotation\":[[132,188,196,252],[204,188,268,252],[276,188,340,252]],\"answer\":3}",
@@ -103,7 +103,7 @@
     "query:piece_with_legal_move_count": {
       "capture_rule_text": "A jump captures one adjacent opponent piece and lands on the empty square beyond.",
       "single_jump_rule_text": "Count only one jump per move; ignore follow-up jumps.",
-      "legal_move_rule_text": "Include simple diagonal steps and capture jumps.",
+      "legal_move_rule_text": "A landing square is the empty square where a piece ends after exactly one move. Include simple diagonal steps and capture jumps.",
       "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x0, y0, x1, y1] for every current-player piece with at least one legal move; use an empty array if none are available",
       "answer_hint": "set \"answer\" to the number of current-player pieces with at least one legal move",
       "json_example": "{\"annotation\":[[144,200,184,240],[216,272,256,312],[288,344,328,384]],\"answer\":3}",

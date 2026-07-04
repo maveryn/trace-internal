@@ -21,6 +21,7 @@ from .shared.sampling import (
     ResolvedCheckersSceneAxes,
     resolve_checkers_scene_axes,
     resolve_checkers_target_answer,
+    resolve_task_occupied_range,
 )
 from .shared.state import SCENE_ID, SampledCheckersScene, TargetAnswerAxis
 
@@ -231,6 +232,10 @@ def prepare_checkers_move_condition_objective(
         fallback_support=tuple(int(value) for value in fallback_support),
         namespace=f"{task_id}.target_answer.{str(query_id)}",
     )
+    occupied_range = resolve_task_occupied_range(
+        params=task_params,
+        gen_defaults=gen_defaults,
+    )
 
     def construct_attempt(rng, axes):
         return sample_scene(
@@ -239,6 +244,7 @@ def prepare_checkers_move_condition_objective(
             params=task_params,
             target_answer=int(target.target_answer),
             capture_only=bool(capture_only),
+            occupied_range=occupied_range,
         )
 
     def prompt_slots(sample: SampledCheckersScene) -> dict[str, str]:

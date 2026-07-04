@@ -66,7 +66,7 @@ def test_curvilinear_tasks_emit_public_contract(task_cls) -> None:
     assert out.answer_gt.type == "number"
     assert out.annotation_gt.type == "point_map"
     assert set(out.annotation_gt.value) == EXPECTED_ANNOTATION_KEYS_BY_TASK[task_cls]
-    assert "Annotation format:" in out.prompt_variants["answer_and_annotation"]
+    assert '"annotation"' in out.prompt_variants["answer_and_annotation"]
     assert '"answer"' in out.prompt_variants["answer_only"]
 
     trace = out.trace_payload

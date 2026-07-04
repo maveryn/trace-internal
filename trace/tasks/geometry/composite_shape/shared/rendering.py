@@ -58,10 +58,10 @@ def create_composite_render_context(
         diagram_style=diagram_style,
         background_meta=background_meta,
     )
-    font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 22)))
-    small_font_size = int(params.get("small_label_font_size", group_default(render_defaults, "small_label_font_size", 18)))
+    font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 24)))
+    small_font_size = int(params.get("small_label_font_size", group_default(render_defaults, "small_label_font_size", 22)))
     line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 4)))
-    label_stroke_width = int(params.get("label_stroke_width", group_default(render_defaults, "label_stroke_width", 1)))
+    label_stroke_width = int(params.get("label_stroke_width", group_default(render_defaults, "label_stroke_width", 0)))
     ctx = CompositeRenderContext(
         rng=rng,
         image=image,
@@ -77,8 +77,8 @@ def create_composite_render_context(
         secondary_fill_color=tuple(int(value) for value in composite_style.secondary_fill_color),
         line_width=max(2, int(line_width)),
         label_stroke_width=max(0, int(label_stroke_width)),
-        font=load_font(max(12, int(font_size))),
-        small_font=load_font(max(10, int(small_font_size))),
+        font=load_font(max(12, int(font_size)), bold=False),
+        small_font=load_font(max(10, int(small_font_size)), bold=False),
         scene_transform=LazySceneTransform(
             rng,
             params=params,
@@ -94,6 +94,7 @@ def create_composite_render_context(
         "label_font_size": int(font_size),
         "small_label_font_size": int(small_font_size),
         "label_stroke_width": int(ctx.label_stroke_width),
+        "label_font_bold": False,
         "fill_color": list(ctx.fill_color),
         "secondary_fill_color": list(ctx.secondary_fill_color),
         "accent_color": list(ctx.accent_color),
@@ -152,7 +153,7 @@ def _draw_text(
     return pad_bbox(bbox, 2.0, width=ctx.width, height=ctx.height)
 
 
-def _draw_segment_label(ctx: CompositeRenderContext, text: str, a: Point, b: Point, *, offset: float = 24.0) -> BBox:
+def _draw_segment_label(ctx: CompositeRenderContext, text: str, a: Point, b: Point, *, offset: float = 30.0) -> BBox:
     dx = float(b[0]) - float(a[0])
     dy = float(b[1]) - float(a[1])
     length = max(1.0, math.hypot(dx, dy))
@@ -413,10 +414,10 @@ def _render_rect_cut(ctx: CompositeRenderContext, problem: CompositeShapeProblem
     region_bbox = bbox_from_points(rect, width=ctx.width, height=ctx.height, pad=2.0)
     cutout_bbox = bbox_from_points(tri, width=ctx.width, height=ctx.height, pad=4.0)
     label_bboxes = {
-        "outer_width": _draw_segment_label(ctx, str(width_value), rect[3], rect[2], offset=-30.0),
-        "outer_height": _draw_segment_label(ctx, str(height_value), rect[0], rect[3], offset=-26.0),
-        "cutout_base": _draw_segment_label(ctx, str(cut_base), tri[1], tri[0], offset=24.0),
-        "cutout_height": _draw_segment_label(ctx, str(cut_height), tri[0], tri[2], offset=25.0),
+        "outer_width": _draw_segment_label(ctx, f"DC={width_value}", rect[3], rect[2], offset=-36.0),
+        "outer_height": _draw_segment_label(ctx, f"AD={height_value}", rect[0], rect[3], offset=-34.0),
+        "cutout_base": _draw_segment_label(ctx, f"EC={cut_base}", tri[1], tri[0], offset=32.0),
+        "cutout_height": _draw_segment_label(ctx, f"CF={cut_height}", tri[0], tri[2], offset=34.0),
     }
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,
@@ -492,10 +493,10 @@ def _render_l_profile(ctx: CompositeRenderContext, problem: CompositeShapeProble
     region_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=2.0)
     cutout_bbox = bbox_from_points(cutout_rect, width=ctx.width, height=ctx.height, pad=4.0)
     label_bboxes = {
-        "outer_width": _draw_segment_label(ctx, str(width_value), pts[0], pts[1], offset=-30.0),
-        "outer_height": _draw_segment_label(ctx, str(height_value), pts[0], pts[5], offset=-26.0),
-        "missing_width": _draw_segment_label(ctx, str(cut_width), pts[3], pts[2], offset=-24.0),
-        "missing_height": _draw_segment_label(ctx, str(cut_height), pts[3], pts[4], offset=25.0),
+        "outer_width": _draw_segment_label(ctx, f"AB={width_value}", pts[0], pts[1], offset=-36.0),
+        "outer_height": _draw_segment_label(ctx, f"AF={height_value}", pts[0], pts[5], offset=-34.0),
+        "missing_width": _draw_segment_label(ctx, f"DC={cut_width}", pts[3], pts[2], offset=-32.0),
+        "missing_height": _draw_segment_label(ctx, f"DE={cut_height}", pts[3], pts[4], offset=34.0),
     }
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,
@@ -563,9 +564,9 @@ def _render_house(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -
     }
     target_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=4.0)
     label_bboxes = {
-        "base_length_AB": _draw_segment_label(ctx, str(width_value), a, b, offset=25.0),
-        "wall_height_AE": _draw_segment_label(ctx, str(wall_height), a, e, offset=-25.0),
-        "roof_side_CD": _draw_segment_label(ctx, str(roof_side), d, c, offset=28.0),
+        "base_length_AB": _draw_segment_label(ctx, f"AB={width_value}", a, b, offset=34.0),
+        "wall_height_AE": _draw_segment_label(ctx, f"AE={wall_height}", a, e, offset=-34.0),
+        "roof_side_CD": _draw_segment_label(ctx, f"CD={roof_side}", d, c, offset=36.0),
     }
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,
@@ -629,9 +630,9 @@ def _render_tabbed(ctx: CompositeRenderContext, problem: CompositeShapeProblem) 
     notation_bboxes = _draw_polygon_right_angle_notation(ctx, pts, key_prefix="corner")
     target_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=4.0)
     label_bboxes = {
-        "overall_width": _draw_segment_label(ctx, str(width_value), pts[0], pts[1], offset=25.0),
-        "main_height": _draw_segment_label(ctx, str(height_value), pts[0], pts[7], offset=-25.0),
-        "tab_height": _draw_segment_label(ctx, str(tab_height), pts[3], pts[4], offset=26.0),
+        "overall_width": _draw_segment_label(ctx, f"AB={width_value}", pts[0], pts[1], offset=34.0),
+        "main_height": _draw_segment_label(ctx, f"AH={height_value}", pts[0], pts[7], offset=-34.0),
+        "tab_height": _draw_segment_label(ctx, f"DE={tab_height}", pts[3], pts[4], offset=36.0),
     }
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,
@@ -735,9 +736,9 @@ def _render_semicircle(ctx: CompositeRenderContext, problem: CompositeShapeProbl
         if cap_end_y < bottom - 1.0:
             _draw_polyline(ctx, [cap_end, p_right_bottom], fill=ctx.accent_color, width=highlight_width)
         _draw_polyline(ctx, arc, fill=ctx.accent_color, width=highlight_width)
-    width_dim_y = min(bottom + 34.0, float(ctx.height) - 46.0)
-    width_label_offset_y = -22.0 if width_dim_y >= float(ctx.height) - 54.0 else 20.0
-    width_label = "?" if problem.metric_kind == "missing_width" else fmt_measure(width_units)
+    width_dim_y = min(bottom + 44.0, float(ctx.height) - 54.0)
+    width_label_offset_y = -30.0 if width_dim_y >= float(ctx.height) - 62.0 else 30.0
+    width_label = "?" if problem.metric_kind == "missing_width" else f"AB={fmt_measure(width_units)}"
     width_bbox = _draw_dimension(
         ctx,
         _place_point(ctx, (left, width_dim_y)),
@@ -747,17 +748,17 @@ def _render_semicircle(ctx: CompositeRenderContext, problem: CompositeShapeProbl
     )
     height_bbox = _draw_dimension(
         ctx,
-        _place_point(ctx, (left - 34.0, top)),
-        _place_point(ctx, (left - 34.0, bottom)),
-        fmt_measure(height_units),
-        label_offset=(-26.0, 0.0),
+        _place_point(ctx, (left - 46.0, top)),
+        _place_point(ctx, (left - 46.0, bottom)),
+        f"AD={fmt_measure(height_units)}",
+        label_offset=(-36.0, 0.0),
     )
     radius_bbox = _draw_dimension(
         ctx,
         center,
         _place_point(ctx, (right, mid_y - radius_px)),
         f"r={fmt_measure(radius_units)}",
-        label_offset=(44.0 if cutout else 54.0, 0.0),
+        label_offset=(58.0 if cutout else 66.0, 0.0),
     )
     support_roles = ["width_label", "height_label", "radius_label"]
     support_bboxes = [width_bbox, height_bbox, radius_bbox]
@@ -883,22 +884,22 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
             f,
         ),
     }
-    width_dim_y = min(bottom + 34.0, float(ctx.height) - 46.0)
+    width_dim_y = min(bottom + 44.0, float(ctx.height) - 54.0)
     width_bbox = _draw_dimension(
         ctx,
         _place_point(ctx, (left, width_dim_y)),
         _place_point(ctx, (right, width_dim_y)),
-        fmt_measure(width_units),
-        label_offset=(0.0, 20.0),
+        f"AB={fmt_measure(width_units)}",
+        label_offset=(0.0, 30.0),
     )
     height_bbox = _draw_dimension(
         ctx,
-        _place_point(ctx, (left - 34.0, top)),
-        _place_point(ctx, (left - 34.0, bottom)),
-        fmt_measure(height_units),
-        label_offset=(-26.0, 0.0),
+        _place_point(ctx, (left - 46.0, top)),
+        _place_point(ctx, (left - 46.0, bottom)),
+        f"AD={fmt_measure(height_units)}",
+        label_offset=(-36.0, 0.0),
     )
-    radius_bbox = _draw_dimension(ctx, b, e, f"r={fmt_measure(radius_units)}", label_offset=(0.0, -26.0))
+    radius_bbox = _draw_dimension(ctx, b, e, f"r={fmt_measure(radius_units)}", label_offset=(0.0, -36.0))
     center_marker_bbox = _draw_point_marker(ctx, b)
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,

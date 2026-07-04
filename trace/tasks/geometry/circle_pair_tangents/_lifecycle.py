@@ -160,6 +160,8 @@ def pair_tangent_trace_base(
             "style": {
                 "technical_diagram": dict(prepared.render_context.diagram_style_meta),
                 "background": dict(prepared.render_context.background_meta),
+                "font_bold": False,
+                "label_stroke_width": int(prepared.render_context.label_stroke_width),
                 "post_image_noise": dict(prepared.noise_meta),
             },
             "prompt": {

@@ -7,6 +7,7 @@ from typing import Any, Mapping
 from PIL import ImageDraw
 
 from trace.core.seed import spawn_rng
+from trace.tasks.shared.drawing import draw_dashed_line
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.text_rendering import load_font
 from trace.tasks.geometry.shared.diagram_style import (
@@ -91,11 +92,7 @@ def create_pair_tangent_render_context(
     label_stroke_width = int(
         params.get(
             "label_stroke_width",
-            group_default(
-                rendering_defaults,
-                "label_stroke_width",
-                int(diagram_style.label_stroke_width_px),
-            ),
+            group_default(rendering_defaults, "label_stroke_width", 0),
         )
     )
     return PairTangentRenderContext(
@@ -115,8 +112,8 @@ def create_pair_tangent_render_context(
         accent_color=tuple(int(value) for value in diagram_style.accent_rgb),
         line_width=max(2, int(line_width)),
         label_stroke_width=max(0, int(label_stroke_width)),
-        font=load_font(max(12, int(font_size))),
-        small_font=load_font(max(10, int(small_font_size))),
+        font=load_font(max(12, int(font_size)), bold=False),
+        small_font=load_font(max(10, int(small_font_size)), bold=False),
         diagram_style_meta=dict(diagram_style_meta),
         background_meta=dict(background_meta),
         scene_transform=LazySceneTransform(
@@ -253,7 +250,7 @@ def _draw_radius_callout(
         fill=ctx.secondary_color,
         width=max(1, int(ctx.line_width) - 2),
     )
-    return draw_readout_centered(ctx, text, chosen_center, small=True, backed=False)
+    return draw_readout_centered(ctx, text, chosen_center, small=True, backed=True)
 
 
 def render_pair_tangent_scene(
@@ -318,10 +315,11 @@ def render_pair_tangent_scene(
     o2 = transform(o2_local)
     t1 = transform(t1_local)
     t2 = transform(t2_local)
+    aux_e = transform(add(o1_local, sub(t2_local, t1_local)))
     radius_o1_px = radius_o1 * scale
     radius_o2_px = radius_o2 * scale
-    ctx.scene_transform.resolve((o1, o2, t1, t2))
-    o1, o2, t1, t2 = ctx.scene_transform.points((o1, o2, t1, t2))
+    ctx.scene_transform.resolve((o1, o2, t1, t2, aux_e))
+    o1, o2, t1, t2, aux_e = ctx.scene_transform.points((o1, o2, t1, t2, aux_e))
     radius_o1_px *= float(ctx.scene_transform.transform.scale)
     radius_o2_px *= float(ctx.scene_transform.transform.scale)
     u_px = sub(t2, t1)
@@ -351,7 +349,7 @@ def render_pair_tangent_scene(
         label_offset=center_label_offset,
         color=ctx.secondary_color,
         tick_px=7.0,
-        backed=False,
+        backed=True,
     )
     radius_o1_segment_bbox = _draw_dimension_segment_without_label(
         ctx,
@@ -368,6 +366,36 @@ def render_pair_tangent_scene(
         tick_px=7.0,
     )
 
+    aux_color = ctx.secondary_color
+    draw_dashed_line(
+        ctx.draw,
+        start=o1,
+        end=aux_e,
+        fill=aux_color,
+        width=max(1, int(ctx.line_width) - 2),
+        dash_px=10.0,
+        gap_px=7.0,
+    )
+    label_bboxes["auxiliary_radius_difference"] = draw_dimension_line(
+        ctx,
+        aux_e,
+        o2,
+        f"ED={abs(int(spec.radius_o2) - int(spec.radius_o1))}",
+        label_offset=mul(unit(u_px), 50.0 if str(spec.larger_circle_side) == "right" else -50.0),
+        color=aux_color,
+        tick_px=7.0,
+        backed=True,
+    )
+    label_bboxes["right_angle_aux_e"] = draw_right_angle_marker(
+        ctx,
+        aux_e,
+        arm_a=sub(o1, aux_e),
+        arm_b=sub(o2, aux_e),
+        side_px=16.0,
+        color=aux_color,
+        width=max(1, int(ctx.line_width) - 2),
+    )
+
     extension = max(18.0, ctx.line_width * 7.0)
     tangent_start = add(t1, mul(unit(u_px), -extension))
     tangent_end = add(t2, mul(unit(u_px), extension))
@@ -382,7 +410,7 @@ def render_pair_tangent_scene(
         label_offset=tangent_label_offset,
         color=ctx.accent_color,
         tick_px=7.0,
-        backed=False,
+        backed=True,
     )
 
     label_bboxes["right_angle_t1"] = draw_right_angle_marker(
@@ -398,6 +426,7 @@ def render_pair_tangent_scene(
         "D": (18.0, 18.0),
         "A": (-22.0, -20.0 if str(spec.tangent_side) == "above" else 20.0),
         "B": (22.0, -20.0 if str(spec.tangent_side) == "above" else 20.0),
+        "E": (20.0, 20.0 if str(spec.tangent_side) == "above" else -20.0),
     }
     for label, point in (("C", o1), ("D", o2), ("A", t1), ("B", t2)):
         ctx.draw.ellipse(
@@ -416,8 +445,15 @@ def render_pair_tangent_scene(
             label,
             add(point, point_label_offsets[label]),
             small=True,
-            backed=False,
+            backed=True,
         )
+    label_bboxes["E_label"] = draw_readout_centered(
+        ctx,
+        "E",
+        add(aux_e, point_label_offsets["E"]),
+        small=True,
+        backed=True,
+    )
     occupied_for_radius_labels = list(label_bboxes.values())
     occupied_for_radius_labels.extend((radius_o1_segment_bbox, radius_o2_segment_bbox))
     label_bboxes["radius_o1"] = _draw_radius_callout(
@@ -482,6 +518,13 @@ def render_pair_tangent_scene(
         "radii_segments": {
             "CA": [point_to_list(o1), point_to_list(t1)],
             "DB": [point_to_list(o2), point_to_list(t2)],
+        },
+        "auxiliary_right_triangle": {
+            "E": point_to_list(aux_e),
+            "CE": [point_to_list(o1), point_to_list(aux_e)],
+            "ED": [point_to_list(aux_e), point_to_list(o2)],
+            "CD": [point_to_list(o1), point_to_list(o2)],
+            "ED_length_units": abs(int(spec.radius_o2) - int(spec.radius_o1)),
         },
         "label_bboxes": {
             key: bbox_to_list(value) for key, value in label_bboxes.items()

@@ -56,7 +56,7 @@
   },
   "static_slots_by_key": {
     "scene:circle_pair_tangents_scene": {
-      "object_description": "two separated non-concentric circles with centers C and D, a common tangent touching them at A and B, radii to the tangent points, right-angle markers, and one center or tangent segment marked with ?"
+      "object_description": "two separated non-concentric circles with centers C and D, a common tangent touching them at A and B, radii to the tangent points, and an auxiliary right triangle CED whose leg ED shows the radius difference"
     }
   },
   "dynamic_slots": {

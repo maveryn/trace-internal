@@ -100,6 +100,8 @@ def test_circle_pair_tangent_formula_and_annotation(
     assert trace["projected_annotation"]["point_map"] == annotation
     assert trace["projected_annotation"]["pixel_point_map"] == annotation
     assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_circle_pair_tangents_v1"
+    assert trace["render_spec"]["style"]["font_bold"] is False
+    assert trace["render_spec"]["style"]["label_stroke_width"] == 0
     assert "task_variant" not in json.dumps(trace)
     _assert_point_map_inside_image(annotation, out.image.size)
     _assert_rendered_tangent_geometry(trace["render_map"])
@@ -177,11 +179,13 @@ def _assert_rendered_tangent_geometry(render_map: dict[str, object]) -> None:
     tangent_points = render_map["tangent_points"]
     circle_bboxes = render_map["circle_bboxes"]
     label_bboxes = render_map["label_bboxes"]
+    auxiliary = render_map["auxiliary_right_triangle"]
 
     c = _point(centers["C"])
     d = _point(centers["D"])
     a = _point(tangent_points["A"])
     b = _point(tangent_points["B"])
+    e = _point(auxiliary["E"])
     tangent_vector = _sub(b, a)
     radius_c = _bbox_radius(circle_bboxes["C"])
     radius_d = _bbox_radius(circle_bboxes["D"])
@@ -190,6 +194,8 @@ def _assert_rendered_tangent_geometry(render_map: dict[str, object]) -> None:
     assert abs(_distance(d, b) - radius_d) <= 1.5
     assert abs(_cosine(tangent_vector, _sub(a, c))) <= 1e-3
     assert abs(_cosine(tangent_vector, _sub(b, d))) <= 1e-3
+    assert abs(_distance(e, d) - float(auxiliary["ED_length_units"]) * float(render_map["scale_px_per_unit"])) <= 2.0
+    assert abs(_cosine(_sub(e, c), tangent_vector)) >= 0.999
     assert _bbox_outside_circle(label_bboxes["radius_o1"], center=c, radius=radius_c)
     assert _bbox_outside_circle(label_bboxes["radius_o2"], center=d, radius=radius_d)
     for radius_label in ("radius_o1", "radius_o2"):

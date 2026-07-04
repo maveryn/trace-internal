@@ -15,9 +15,12 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses pixel-space witnesses only. Annotation is a keyed point map with visible construction-point roles `C`, `D`, `A`, and `B`, marking the two circle centers and two tangent points. Segment labels, right-angle markers, numeric labels, and the symbolic tangent relation remain visible annotations plus private verifier metadata.
+Prompt-facing annotation uses pixel-space witnesses only. Annotation is a keyed point map with visible construction-point roles `C`, `D`, `A`, and `B`, marking the two circle centers and two tangent points. The auxiliary point `E`, segment labels, right-angle markers, numeric labels, and the symbolic tangent relation remain visible context plus private verifier metadata.
 
 Scalar annotation does not apply because the task always needs multiple role-bound construction points.
+
+## Rendering
+The diagram explicitly draws the auxiliary right triangle `C-E-D`: `CE` is parallel to the common tangent `AB`, `ED` is labeled with the radius difference, and `CD` is the center-to-center distance. This makes the external-tangent right-triangle relation visible without changing the answer or annotation contract.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

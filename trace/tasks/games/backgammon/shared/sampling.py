@@ -401,7 +401,7 @@ def _pip_term_combinations(
     target_answer: int,
     *,
     max_distance: int = 12,
-    min_points: int = 2,
+    min_points: int = 1,
     max_points: int = 5,
     max_stack_count: int = 3,
 ) -> tuple[tuple[tuple[int, int], ...], ...]:
@@ -435,8 +435,8 @@ def sample_pip_count_scene(
     *,
     axes: ResolvedBackgammonAxes,
     target_answer: int,
-    opponent_distractor_min: int = 3,
-    opponent_distractor_max: int = 8,
+    opponent_distractor_min: int = 0,
+    opponent_distractor_max: int = 2,
 ) -> BackgammonSample:
     """Construct a sparse exact-answer Backgammon pip-count race position."""
 

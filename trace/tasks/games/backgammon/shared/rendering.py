@@ -72,7 +72,8 @@ class BackgammonTheme:
     label_rgb: Tuple[int, int, int]
     black_checker_rgb: Tuple[int, int, int]
     white_checker_rgb: Tuple[int, int, int]
-    checker_outline_rgb: Tuple[int, int, int]
+    black_checker_outline_rgb: Tuple[int, int, int]
+    white_checker_outline_rgb: Tuple[int, int, int]
     die_fill_rgb: Tuple[int, int, int]
     die_pip_rgb: Tuple[int, int, int]
     header_rgb: Tuple[int, int, int]
@@ -209,7 +210,8 @@ def build_backgammon_theme(*, style_variant: str) -> BackgammonTheme:
             label_rgb=(238, 242, 247),
             black_checker_rgb=(23, 24, 31),
             white_checker_rgb=(235, 238, 229),
-            checker_outline_rgb=(251, 252, 246),
+            black_checker_outline_rgb=(244, 247, 245),
+            white_checker_outline_rgb=(83, 91, 96),
             die_fill_rgb=(235, 238, 229),
             die_pip_rgb=(20, 24, 32),
             header_rgb=(245, 248, 252),
@@ -224,7 +226,8 @@ def build_backgammon_theme(*, style_variant: str) -> BackgammonTheme:
             label_rgb=(54, 41, 30),
             black_checker_rgb=(45, 38, 32),
             white_checker_rgb=(246, 238, 216),
-            checker_outline_rgb=(76, 53, 36),
+            black_checker_outline_rgb=(247, 238, 214),
+            white_checker_outline_rgb=(102, 78, 52),
             die_fill_rgb=(249, 241, 219),
             die_pip_rgb=(59, 43, 31),
             header_rgb=(55, 40, 30),
@@ -239,7 +242,8 @@ def build_backgammon_theme(*, style_variant: str) -> BackgammonTheme:
             label_rgb=(239, 243, 246),
             black_checker_rgb=(18, 19, 22),
             white_checker_rgb=(224, 228, 230),
-            checker_outline_rgb=(245, 248, 249),
+            black_checker_outline_rgb=(242, 246, 247),
+            white_checker_outline_rgb=(77, 83, 88),
             die_fill_rgb=(226, 231, 232),
             die_pip_rgb=(28, 31, 35),
             header_rgb=(239, 243, 246),
@@ -254,7 +258,8 @@ def build_backgammon_theme(*, style_variant: str) -> BackgammonTheme:
             label_rgb=(245, 239, 208),
             black_checker_rgb=(26, 31, 33),
             white_checker_rgb=(244, 242, 230),
-            checker_outline_rgb=(30, 31, 30),
+            black_checker_outline_rgb=(244, 236, 204),
+            white_checker_outline_rgb=(90, 78, 58),
             die_fill_rgb=(244, 242, 230),
             die_pip_rgb=(34, 37, 39),
             header_rgb=(244, 238, 205),
@@ -268,7 +273,8 @@ def build_backgammon_theme(*, style_variant: str) -> BackgammonTheme:
         label_rgb=(250, 236, 207),
         black_checker_rgb=(28, 26, 24),
         white_checker_rgb=(238, 226, 201),
-        checker_outline_rgb=(67, 42, 28),
+        black_checker_outline_rgb=(245, 230, 198),
+        white_checker_outline_rgb=(95, 67, 43),
         die_fill_rgb=(244, 232, 207),
         die_pip_rgb=(45, 33, 25),
         header_rgb=(250, 237, 211),
@@ -385,7 +391,7 @@ def render_backgammon_scene(
     params: BackgammonRenderParams,
     panel_style: GamePanelSceneStyle | None = None,
 ) -> RenderedBackgammonScene:
-    """Render one visible Backgammon board with numbered points and dice."""
+    """Render one visible Backgammon board with numbered points."""
 
     image = background.convert("RGBA")
     draw = ImageDraw.Draw(image, "RGBA")
@@ -488,15 +494,17 @@ def render_backgammon_scene(
                 "bbox_px": list(point_bbox),
             }
         )
-        draw_centered_text(
-            draw,
-            text=str(point),
-            center=geom["label_center"],
-            font=label_font,
-            fill=tuple(int(v) for v in theme.label_rgb),
-            stroke_fill=tuple(int(v) for v in theme.board_fill_rgb),
-            stroke_width=2,
-        )
+        if bool(use_dice_for_moves):
+            draw_centered_text(
+                draw,
+                text=str(point),
+                center=geom["label_center"],
+                font=label_font,
+                fill=tuple(int(v) for v in theme.label_rgb),
+                stroke_fill=tuple(int(v) for v in theme.board_fill_rgb),
+                stroke_width=0,
+                role="context_text",
+            )
 
     radius = float(params.checker_radius_px)
     stack_step = float(radius * 1.34)
@@ -511,6 +519,17 @@ def render_backgammon_scene(
         fill_ratio=0.92,
         font_family=str(params.font_family) or None,
     )
+    pip_distance_font = fit_font_to_box(
+        draw,
+        text="D12",
+        max_width=max(20.0, float(min_point_width) * 0.58),
+        max_height=max(12.0, float(params.point_label_font_size_px) * 1.12),
+        bold=True,
+        min_size_px=8,
+        max_size_px=max(9, int(params.point_label_font_size_px)),
+        fill_ratio=0.94,
+        font_family=str(params.font_family) or None,
+    )
     for point in POINT_IDS:
         stack = stack_at(points, int(point))
         if stack.owner is None or int(stack.count) <= 0:
@@ -519,6 +538,11 @@ def render_backgammon_scene(
         sx, sy = geom["stack_start"]
         direction = float(geom["stack_direction"])
         fill = theme.black_checker_rgb if str(stack.owner) == PLAYER_BLACK else theme.white_checker_rgb
+        outline = (
+            theme.black_checker_outline_rgb
+            if str(stack.owner) == PLAYER_BLACK
+            else theme.white_checker_outline_rgb
+        )
         for index in range(int(stack.count)):
             cy = float(sy + (direction * stack_step * float(index)))
             center = (float(sx), float(cy))
@@ -526,18 +550,28 @@ def render_backgammon_scene(
             draw.ellipse(
                 bbox,
                 fill=tuple(int(v) for v in fill) + (255,),
-                outline=tuple(int(v) for v in theme.checker_outline_rgb) + (255,),
+                outline=tuple(int(v) for v in outline) + (255,),
                 width=3,
             )
-            if int(stack.count) >= 4 and index == int(stack.count) - 1:
+            show_stack_count = int(stack.count) >= 4 or (
+                not bool(use_dice_for_moves)
+                and str(stack.owner) == str(active_player)
+                and int(stack.count) >= 2
+            )
+            if show_stack_count and index == int(stack.count) - 1:
                 draw_centered_text(
                     draw,
                     text=str(stack.count),
                     center=center,
                     font=checker_font,
-                    fill=tuple(int(v) for v in theme.label_rgb),
+                    fill=(
+                        tuple(int(v) for v in theme.white_checker_outline_rgb)
+                        if str(stack.owner) == PLAYER_WHITE
+                        else tuple(int(v) for v in theme.black_checker_outline_rgb)
+                    ),
                     stroke_fill=tuple(int(v) for v in fill),
-                    stroke_width=2,
+                    stroke_width=0,
+                    role="checker_count",
                 )
             entity_id = checker_entity_id(point, index)
             checker_bboxes[str(entity_id)] = bbox
@@ -552,29 +586,65 @@ def render_backgammon_scene(
                     "bbox_px": list(bbox),
                 }
             )
+        if not bool(use_dice_for_moves) and str(stack.owner) == str(active_player):
+            distance = int(point) if str(active_player) == PLAYER_BLACK else int(25 - int(point))
+            label_text = f"D{distance}"
+            label_cx = float(geom["label_center"][0])
+            if float(geom["stack_direction"]) > 0.0:
+                label_cy = float(geom["label_center"][1]) + max(18.0, float(params.point_label_font_size_px) * 1.08)
+            else:
+                label_cy = float(geom["label_center"][1]) - max(18.0, float(params.point_label_font_size_px) * 1.08)
+            label_w = max(34.0, float(min_point_width) * 0.56)
+            label_h = max(18.0, float(params.point_label_font_size_px) * 1.24)
+            label_bbox = (
+                round(label_cx - label_w / 2.0, 3),
+                round(label_cy - label_h / 2.0, 3),
+                round(label_cx + label_w / 2.0, 3),
+                round(label_cy + label_h / 2.0, 3),
+            )
+            draw.rounded_rectangle(
+                label_bbox,
+                radius=max(5, int(round(label_h * 0.26))),
+                fill=tuple(int(v) for v in theme.board_fill_rgb) + (238,),
+                outline=tuple(int(v) for v in theme.board_outline_rgb) + (255,),
+                width=2,
+            )
+            pip_fill = tuple(int(v) for v in theme.header_rgb)
+            draw_centered_text(
+                draw,
+                text=label_text,
+                center=(label_cx, label_cy),
+                font=pip_distance_font,
+                fill=pip_fill,
+                stroke_fill=resolve_text_stroke_fill(pip_fill),
+                stroke_width=1,
+            )
 
-    die_size = int(params.die_size_px)
-    die_y = float((top_b + bottom_b) / 2.0)
-    die_x0 = float((left_b + right_b) / 2.0) - float(die_size * 0.68)
-    die_x1 = float((left_b + right_b) / 2.0) + float(die_size * 0.68)
-    for index, (x, value) in enumerate(((die_x0, dice[0]), (die_x1, dice[1]))):
-        die_bbox = _draw_die(draw, center=(x, die_y), value=int(value), size=die_size, theme=theme)
-        entity_id = die_entity_id(index)
-        entity_bboxes[str(entity_id)] = die_bbox
-        scene_entities.append(
-            {
-                "entity_id": str(entity_id),
-                "entity_type": "backgammon_die",
-                "die_index": int(index),
-                "value": int(value),
-                "bbox_px": list(die_bbox),
-            }
-        )
+    if bool(use_dice_for_moves):
+        die_size = int(params.die_size_px)
+        die_y = float((top_b + bottom_b) / 2.0)
+        die_x0 = float((left_b + right_b) / 2.0) - float(die_size * 0.68)
+        die_x1 = float((left_b + right_b) / 2.0) + float(die_size * 0.68)
+        for index, (x, value) in enumerate(((die_x0, dice[0]), (die_x1, dice[1]))):
+            die_bbox = _draw_die(draw, center=(x, die_y), value=int(value), size=die_size, theme=theme)
+            entity_id = die_entity_id(index)
+            entity_bboxes[str(entity_id)] = die_bbox
+            scene_entities.append(
+                {
+                    "entity_id": str(entity_id),
+                    "entity_type": "backgammon_die",
+                    "die_index": int(index),
+                    "value": int(value),
+                    "bbox_px": list(die_bbox),
+                }
+            )
 
     player_text = "White" if str(active_player) == PLAYER_WHITE else "Black"
     direction_text = "1 to 24" if str(active_player) == PLAYER_WHITE else "24 to 1"
-    header_suffix = "use either die" if bool(use_dice_for_moves) else "pip count"
-    header_text = f"{player_text.upper()} moves {direction_text} | {header_suffix}"
+    if bool(use_dice_for_moves):
+        header_text = f"{player_text.upper()} moves {direction_text} | use either die"
+    else:
+        header_text = f"{player_text.upper()} pip count | use D labels"
     header_height = max(28.0, float(params.header_font_size_px) * 1.85)
     header_y1 = round(float(top_b - 8.0), 3)
     header_y0 = round(max(4.0, float(header_y1 - header_height)), 3)

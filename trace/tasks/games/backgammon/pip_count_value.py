@@ -16,7 +16,7 @@ from .shared.sampling import sample_pip_count_scene
 
 TASK_ID = "task_games__backgammon__pip_count_value"
 QUERY_ID = "single"
-PIP_COUNT_SUPPORT = (6, 8, 10, 12, 14, 16, 18, 20, 22, 24)
+PIP_COUNT_SUPPORT = (1, 2, 3, 4, 5, 6, 7, 8)
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 
 
@@ -49,6 +49,9 @@ def _prepare_pip_count_objective(instance_seed, task_params, query_id):
     return BackgammonObjectivePlan(
         attempt_namespace="games.backgammon.pip_count_value",
         prompt_query_key="pip_count_value",
+        prompt_dynamic_slot_builder=lambda sample: {
+            "active_player_label": str(sample.active_player),
+        },
         query_params={
             "target_answer_support": [int(value) for value in target.target_answer_support],
             "target_answer_probabilities": dict(target.target_answer_probabilities),

@@ -22,7 +22,7 @@ Query ids: `single`.
 
 ## Generation Notes
 1. Query ids are internal replay/sampling keys and do not define public task units.
-2. The generated board is a sparse exact-answer race position with a small integer answer support.
+2. The generated board is a sparse exact-answer race position with answer support `1..8`.
 3. Pip distance follows standard Backgammon bearing-off distance: black checkers on point `p` contribute `p` each, while white checkers on point `p` contribute `25 - p` each.
-4. The dice remain visible as board context, but this task does not use them for solving.
+4. Pip-count renders omit dice and add `D` labels beside active-player stacks to show the distance-to-bear-off value used in the sum.
 5. Annotation is projected from active-player occupied point bboxes that contribute to the pip-count sum, not individual checker bboxes.

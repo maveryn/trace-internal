@@ -33,6 +33,7 @@ from .shared.sampling import ResolvedBackgammonAxes, resolve_backgammon_axes
 from .shared.state import SCENE_ID, BackgammonSample
 
 AttemptBuilder = Callable[[Any, ResolvedBackgammonAxes], "BackgammonAttemptResult"]
+PromptDynamicSlotBuilder = Callable[[BackgammonSample], Mapping[str, Any]]
 ObjectivePreparer = Callable[
     [int, Mapping[str, Any], str],
     "BackgammonObjectivePlan",
@@ -59,6 +60,7 @@ class BackgammonObjectivePlan:
     construct_attempt: AttemptBuilder
     prompt_query_key: str | None = None
     prompt_dynamic_slots: Mapping[str, Any] = field(default_factory=dict)
+    prompt_dynamic_slot_builder: PromptDynamicSlotBuilder | None = None
 
 
 @dataclass(frozen=True)
@@ -182,10 +184,13 @@ def run_backgammon_lifecycle(
             type="bbox_set", value=[list(bbox) for bbox in annotation_bboxes]
         )
         prompt_query_key = str(objective.prompt_query_key or query_id)
+        dynamic_slots = dict(objective.prompt_dynamic_slots)
+        if objective.prompt_dynamic_slot_builder is not None:
+            dynamic_slots.update(dict(objective.prompt_dynamic_slot_builder(attempt.sample)))
         prompt_defaults, prompt_artifacts = build_backgammon_prompt_artifacts(
             domain=str(domain),
             prompt_query_key=prompt_query_key,
-            dynamic_slots=dict(objective.prompt_dynamic_slots),
+            dynamic_slots=dynamic_slots,
             instance_seed=int(instance_seed),
         )
         query_spec = build_prompt_query_spec(

@@ -51,11 +51,11 @@
         "Count all numbered points occupied by {point_state_phrase}."
       ],
       "pip_count_value": [
-        "{backgammon_rule_text} What is the active player's pip count?",
-        "{backgammon_rule_text} Add the pip-distance contributions for the active player's checker stacks. What total do you get?",
-        "Compute the active player's pip count from the numbered points. {backgammon_rule_text}",
-        "{backgammon_rule_text} What is the total number of pips the active player has left to bear off?",
-        "For the active-player checker stacks, sum checker count times distance to bear off. {backgammon_rule_text}"
+        "The active player is {active_player_label}. {backgammon_rule_text} What is the active player's pip count?",
+        "The active player is {active_player_label}. {backgammon_rule_text} Add the active-player stack contributions. What total do you get?",
+        "The active player is {active_player_label}. {backgammon_rule_text} Compute the active player's pip count.",
+        "The active player is {active_player_label}. {backgammon_rule_text} What is the total number of pips for the active player?",
+        "The active player is {active_player_label}. {backgammon_rule_text} Sum the active-player checker stacks."
       ]
     },
     "output": {
@@ -107,14 +107,16 @@
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:pip_count_value": {
-      "backgammon_rule_text": "The board header shows the active player and movement direction. Pip count ignores the dice and sums each active-player checker stack's distance to bear off. Black checkers on point p contribute p each; white checkers on point p contribute 25 - p each.",
+      "object_description": "a simplified backgammon pip-count board with checker stacks and D distance labels",
+      "backgammon_rule_text": "Count only that player's checkers and ignore the other color. Use the D label beside each active-player stack as that stack's distance. For each active-player stack, multiply checker count by D value, then add the products.",
       "answer_hint": "set \"answer\" to the active player's integer pip count",
       "annotation_hint": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around every active-player occupied point used in the pip-count sum",
-      "json_example": "{\"annotation\":[[144,104,209,316],[342,400,407,612]],\"answer\":14}",
-      "json_example_answer_only": "{\"answer\":14}"
+      "json_example": "{\"annotation\":[[144,104,209,316],[342,400,407,612]],\"answer\":6}",
+      "json_example_answer_only": "{\"answer\":6}"
     }
   },
   "dynamic_slots": {
+    "active_player_label": {"type": "string"},
     "point_state_phrase": {"type": "string"}
   },
   "required_slots_by_key": {}

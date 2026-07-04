@@ -235,6 +235,7 @@ def draw_dimension_line(
     color: Color | None = None,
     tick_px: float | None = None,
     backed: bool = False,
+    extra_metadata: Mapping[str, Any] | None = None,
 ) -> BBox:
     """Draw a measured segment with endpoint ticks and a plain label by default."""
 
@@ -250,7 +251,14 @@ def draw_dimension_line(
             fill=draw_color,
             width=max(1, line_width - 2),
         )
-    return draw_readout_centered(ctx, label, add(mid(start, end), label_offset), small=True, backed=bool(backed))
+    return draw_readout_centered(
+        ctx,
+        label,
+        add(mid(start, end), label_offset),
+        small=True,
+        backed=bool(backed),
+        extra_metadata=extra_metadata,
+    )
 
 
 def draw_right_angle_marker(

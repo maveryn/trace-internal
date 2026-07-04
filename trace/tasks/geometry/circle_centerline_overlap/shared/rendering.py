@@ -3,13 +3,19 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 from PIL import Image, ImageDraw
 
 from trace.core.seed import spawn_rng
+from trace.tasks.shared.color_distance import color_distance
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.deterministic_sampling import resolve_selection_index
+from trace.tasks.shared.text_legibility import (
+    READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+    READ_REQUIRED_TEXT_MIN_LAB_DISTANCE,
+    contrast_ratio,
+)
 from trace.tasks.shared.text_rendering import load_font
 from trace.tasks.geometry.shared.diagram_style import (
     GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
@@ -78,7 +84,7 @@ def create_centerline_overlap_render_context(
     label_stroke_width = int(
         params.get(
             "label_stroke_width",
-            group_default(rendering_defaults, "label_stroke_width", int(diagram_style.label_stroke_width_px)),
+            group_default(rendering_defaults, "label_stroke_width", 0),
         )
     )
     return CenterlineOverlapRenderContext(
@@ -95,8 +101,8 @@ def create_centerline_overlap_render_context(
         accent_color=tuple(int(value) for value in diagram_style.accent_rgb),
         line_width=max(2, int(line_width)),
         label_stroke_width=max(0, int(label_stroke_width)),
-        font=load_font(max(12, int(font_size))),
-        small_font=load_font(max(10, int(small_font_size))),
+        font=load_font(max(12, int(font_size)), bold=False),
+        small_font=load_font(max(10, int(small_font_size)), bold=False),
         diagram_style_meta=dict(diagram_style_meta),
         background_meta=dict(background_meta),
         scene_transform=LazySceneTransform(
@@ -127,6 +133,33 @@ def _circle_measure_label(spec: CenterlineOverlapDiagramSpec, label: str) -> str
     if str(spec.label_mode) == "diameter":
         return f"d{label}={2 * radius}"
     return f"r{label}={radius}"
+
+
+def _rgb_tuple(value: Sequence[int] | Any) -> tuple[int, int, int]:
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)) and len(value) >= 3:
+        return tuple(max(0, min(255, int(channel))) for channel in value[:3])  # type: ignore[return-value]
+    return (255, 255, 255)
+
+
+def _readout_surface_metadata(ctx: CenterlineOverlapRenderContext) -> dict[str, Any]:
+    """Describe the intended plain-background surface under unbacked labels."""
+
+    fill_rgb = _rgb_tuple(ctx.label_color)
+    surfaces = (_rgb_tuple(ctx.label_backing_color),)
+    min_contrast = min(float(contrast_ratio(fill_rgb, surface)) for surface in surfaces)
+    min_lab = min(float(color_distance(fill_rgb, surface, distance_space="lab")) for surface in surfaces)
+    return {
+        "surface_rgbs": [list(surface) for surface in surfaces],
+        "surface_sample_method": "geometry_scene_plain_background_anchors",
+        "min_contrast_ratio": round(float(min_contrast), 3),
+        "min_lab_distance": round(float(min_lab), 3),
+        "min_contrast_required": round(float(READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO), 3),
+        "min_lab_distance_required": round(float(READ_REQUIRED_TEXT_MIN_LAB_DISTANCE), 3),
+        "passes": bool(
+            min_contrast >= float(READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO)
+            and min_lab >= float(READ_REQUIRED_TEXT_MIN_LAB_DISTANCE)
+        ),
+    }
 
 
 def render_centerline_overlap_scene(
@@ -207,6 +240,7 @@ def render_centerline_overlap_scene(
     ctx.draw.line([line_start, line_end], fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
 
     label_bboxes: dict[str, BBox] = {}
+    readout_metadata = _readout_surface_metadata(ctx)
     dot_radius = max(4, int(ctx.line_width + 1))
     boundary_dot_radius = max(3, int(ctx.line_width))
     if spec.show_overlap_dimensions:
@@ -231,7 +265,13 @@ def render_centerline_overlap_scene(
             outline=ctx.line_color,
             width=max(1, ctx.line_width - 1),
         )
-        label_bboxes[f"{label}_label"] = draw_readout_centered(ctx, label, add(point, point_offsets[label]), small=True)
+        label_bboxes[f"{label}_label"] = draw_readout_centered(
+            ctx,
+            label,
+            add(point, point_offsets[label]),
+            small=True,
+            extra_metadata=readout_metadata,
+        )
     for label in ("X", "Y", "U", "V"):
         point = points[label]
         ctx.draw.ellipse(
@@ -244,7 +284,13 @@ def render_centerline_overlap_scene(
             outline=ctx.accent_color,
             width=max(1, ctx.line_width - 1),
         )
-        label_bboxes[f"{label}_label"] = draw_readout_centered(ctx, label, add(point, point_offsets[label]), small=True)
+        label_bboxes[f"{label}_label"] = draw_readout_centered(
+            ctx,
+            label,
+            add(point, point_offsets[label]),
+            small=True,
+            extra_metadata=readout_metadata,
+        )
 
     for label in CENTER_LABELS:
         text_point = add(points[label], mul(normal, -radius_px[label] - 22.0))
@@ -253,6 +299,7 @@ def render_centerline_overlap_scene(
             _circle_measure_label(spec, label),
             text_point,
             small=True,
+            extra_metadata=readout_metadata,
         )
 
     if spec.show_overlap_dimensions:
@@ -263,6 +310,7 @@ def render_centerline_overlap_scene(
             f"XY={int(case.overlap_ab)}",
             label_offset=mul(normal, 58.0),
             color=ctx.accent_color,
+            extra_metadata=readout_metadata,
         )
         label_bboxes["overlap_bc"] = draw_dimension_line(
             ctx,
@@ -271,6 +319,7 @@ def render_centerline_overlap_scene(
             f"UV={int(case.overlap_bc)}",
             label_offset=mul(normal, 58.0),
             color=ctx.accent_color,
+            extra_metadata=readout_metadata,
         )
         label_bboxes["target_ac"] = draw_dimension_line(
             ctx,
@@ -279,6 +328,7 @@ def render_centerline_overlap_scene(
             "AC=?",
             label_offset=mul(normal, -62.0),
             color=ctx.secondary_color,
+            extra_metadata=readout_metadata,
         )
     else:
         known_start, known_end = spec.known_segment_points
@@ -290,6 +340,7 @@ def render_centerline_overlap_scene(
             f"{spec.known_segment_name}={int(spec.known_segment_value)}",
             label_offset=mul(normal, 46.0),
             color=ctx.accent_color,
+            extra_metadata=readout_metadata,
         )
         label_bboxes["target_segment"] = draw_dimension_line(
             ctx,
@@ -298,6 +349,7 @@ def render_centerline_overlap_scene(
             f"{spec.target_name}=?",
             label_offset=mul(normal, -52.0),
             color=ctx.secondary_color,
+            extra_metadata=readout_metadata,
         )
 
     assert_bboxes_inside(

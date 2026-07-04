@@ -52,6 +52,8 @@ def test_circle_centerline_overlap_queries_emit_segment_annotation(query_id: str
     assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_circle_centerline_overlap_v1"
     technical_style = trace["render_spec"]["style"]["technical_diagram"]
     background_style = trace["render_spec"]["style"]["background"]["style_spec"]["background_style"]
+    assert trace["render_spec"]["style"]["font_bold"] is False
+    assert trace["render_spec"]["style"]["label_stroke_width"] == 0
     assert technical_style["selection"]["require_grid"] is False
     assert technical_style["grid_style"]["kind"] == "none"
     assert background_style["kind"] != "graph_paper"

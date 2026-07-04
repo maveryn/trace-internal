@@ -244,6 +244,8 @@ def _trace_payload(
             "style": {
                 "technical_diagram": dict(render_context.diagram_style_meta),
                 "background": dict(render_context.background_meta),
+                "font_bold": False,
+                "label_stroke_width": int(render_context.label_stroke_width),
                 "post_image_noise": dict(noise_meta),
             },
             "prompt": {

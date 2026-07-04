@@ -92,9 +92,9 @@ def make_render_context(
         accent_color=tuple(int(v) for v in diagram_style.accent_rgb),
         secondary_accent_color=tuple(int(v) for v in diagram_style.secondary_accent_rgb),
         line_width=max(2, int(line_width)),
-        font=load_font(max(12, font_size), bold=True, font_family=font_family),
-        small_font=load_font(max(10, small_font_size), bold=True, font_family=font_family),
-        tiny_font=load_font(max(8, tiny_font_size), bold=True, font_family=font_family),
+        font=load_font(max(12, font_size), bold=False, font_family=font_family),
+        small_font=load_font(max(10, small_font_size), bold=False, font_family=font_family),
+        tiny_font=load_font(max(8, tiny_font_size), bold=False, font_family=font_family),
         font_family=str(font_family),
         route_style_id=str(_ROUTE_STYLE_IDS[int(route_style_index) % len(_ROUTE_STYLE_IDS)]),
         marker_style=str(_MARKER_STYLES[int(marker_index) % len(_MARKER_STYLES)]),
@@ -111,6 +111,8 @@ def make_render_context(
         "label_font_size": int(font_size),
         "small_label_font_size": int(small_font_size),
         "tiny_label_font_size": int(tiny_font_size),
+        "label_stroke_width": 0,
+        "font_bold": False,
         "style_namespace": str(style_namespace),
     }
     return ctx, render_meta
@@ -123,7 +125,7 @@ def _draw_text(
     *,
     font: Any | None = None,
     fill: Color | None = None,
-    stroke_width: int = 1,
+    stroke_width: int = 0,
 ) -> BBox:
     active_font = font or ctx.small_font
     active_fill = fill or ctx.label_color
@@ -282,10 +284,10 @@ def _draw_compass_rose(ctx: RenderContext, center: Point, *, radius: float) -> B
     ctx.draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=ctx.secondary_color, width=2)
     _draw_arrow_line(ctx.draw, (cx, cy + r * 0.65), (cx, cy - r * 0.78), fill=ctx.secondary_color, width=2, arrow_size=8)
     ctx.draw.line([(cx - r * 0.65, cy), (cx + r * 0.65, cy)], fill=ctx.guide_color, width=2)
-    _draw_text(ctx, "N", (cx, cy - r - 15), font=ctx.tiny_font, stroke_width=1)
-    _draw_text(ctx, "E", (cx + r + 15, cy), font=ctx.tiny_font, stroke_width=1)
-    _draw_text(ctx, "S", (cx, cy + r + 16), font=ctx.tiny_font, stroke_width=1)
-    _draw_text(ctx, "W", (cx - r - 15, cy), font=ctx.tiny_font, stroke_width=1)
+    _draw_text(ctx, "N", (cx, cy - r - 15), font=ctx.tiny_font)
+    _draw_text(ctx, "E", (cx + r + 15, cy), font=ctx.tiny_font)
+    _draw_text(ctx, "S", (cx, cy + r + 16), font=ctx.tiny_font)
+    _draw_text(ctx, "W", (cx - r - 15, cy), font=ctx.tiny_font)
     return pad_bbox((cx - r - 24, cy - r - 26, cx + r + 26, cy + r + 28), 2.0, width=ctx.width, height=ctx.height)
 
 
@@ -319,11 +321,11 @@ def render_final_bearing_scene(ctx: RenderContext, route_case: RouteCase) -> Ren
     _draw_arrow_line(ctx.draw, mid, end, fill=ctx.accent_color, width=ctx.line_width + 1, arrow_size=14)
     north_end = (float(start[0]), float(start[1]) - 58.0)
     _draw_arrow_line(ctx.draw, start, north_end, fill=ctx.guide_color, width=max(2, ctx.line_width - 2), arrow_size=9)
-    north_label_bbox = _draw_text(ctx, "N", (north_end[0], north_end[1] - 18.0), font=ctx.tiny_font, stroke_width=1)
+    north_label_bbox = _draw_text(ctx, "N", (north_end[0], north_end[1] - 18.0), font=ctx.tiny_font)
     start_bbox = _draw_marker(ctx, start, radius=10, color=ctx.secondary_color)
     end_bbox = _draw_marker(ctx, end, radius=10, color=ctx.secondary_accent_color)
-    start_label_bbox = _draw_text(ctx, "S", (start[0] - 20.0, start[1] + 20.0), font=ctx.small_font, stroke_width=1)
-    end_label_bbox = _draw_text(ctx, "F", (end[0] + 20.0, end[1] - 20.0), font=ctx.small_font, stroke_width=1)
+    start_label_bbox = _draw_text(ctx, "S", (start[0] - 20.0, start[1] + 20.0), font=ctx.small_font)
+    end_label_bbox = _draw_text(ctx, "F", (end[0] + 20.0, end[1] - 20.0), font=ctx.small_font)
     label1_bbox = _draw_text(ctx, bearing_label(route_case.bearing_a), _offset_label_point(start, mid, 28.0), font=ctx.small_font)
     label2_bbox = _draw_text(ctx, bearing_label(route_case.bearing_b), _offset_label_point(mid, end, 28.0), font=ctx.small_font)
     first_leg_bbox = _bbox_union(bbox_from_points((start, mid), width=ctx.width, height=ctx.height, pad=16.0), label1_bbox)
@@ -337,9 +339,9 @@ def render_final_bearing_scene(ctx: RenderContext, route_case: RouteCase) -> Ren
     )
     compass_bbox = _draw_compass_rose(ctx, (720.0, 148.0), radius=42.0)
     note_bbox = _draw_panel(ctx, (650.0, 248.0, 780.0, 402.0), fill=ctx.panel_fill)
-    _draw_text(ctx, "bearing", (715.0, 288.0), font=ctx.tiny_font, stroke_width=1)
-    _draw_text(ctx, "clockwise", (715.0, 322.0), font=ctx.tiny_font, stroke_width=1)
-    _draw_text(ctx, "from N", (715.0, 356.0), font=ctx.tiny_font, stroke_width=1)
+    _draw_text(ctx, "bearing", (715.0, 288.0), font=ctx.tiny_font)
+    _draw_text(ctx, "clockwise", (715.0, 322.0), font=ctx.tiny_font)
+    _draw_text(ctx, "from N", (715.0, 356.0), font=ctx.tiny_font)
     turn_bbox = pad_bbox(
         (mid[0] - 6.0, mid[1] - 6.0, mid[0] + 6.0, mid[1] + 6.0),
         4.0,
@@ -464,10 +466,10 @@ def render_endpoint_label_scene(ctx: RenderContext, route_case: RouteCase) -> Re
     instruction_panel = (586.0, 92.0, 782.0, 350.0)
     instruction_bbox = _draw_panel(ctx, instruction_panel, fill=ctx.panel_fill)
     _draw_text(ctx, "route", (684.0, 126.0), font=ctx.small_font)
-    instr1 = _draw_text(ctx, f"1: {bearing_label(route_case.bearing_a)}", (684.0, 158.0), font=ctx.tiny_font, stroke_width=1)
-    instr1_steps = _draw_text(ctx, f"{int(route_case.leg_a)} steps", (684.0, 180.0), font=ctx.tiny_font, stroke_width=1)
-    instr2 = _draw_text(ctx, f"2: {bearing_label(route_case.bearing_b)}", (684.0, 214.0), font=ctx.tiny_font, stroke_width=1)
-    instr2_steps = _draw_text(ctx, f"{int(route_case.leg_b)} steps", (684.0, 236.0), font=ctx.tiny_font, stroke_width=1)
+    instr1 = _draw_text(ctx, f"1: {bearing_label(route_case.bearing_a)}", (684.0, 158.0), font=ctx.tiny_font)
+    instr1_steps = _draw_text(ctx, f"{int(route_case.leg_a)} steps", (684.0, 180.0), font=ctx.tiny_font)
+    instr2 = _draw_text(ctx, f"2: {bearing_label(route_case.bearing_b)}", (684.0, 214.0), font=ctx.tiny_font)
+    instr2_steps = _draw_text(ctx, f"{int(route_case.leg_b)} steps", (684.0, 236.0), font=ctx.tiny_font)
     _draw_compass_rose(ctx, (684.0, 304.0), radius=28.0)
     instruction_annotation_bbox = (
         min(instruction_bbox[0], instr1[0], instr1_steps[0], instr2[0], instr2_steps[0]),

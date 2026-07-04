@@ -4,22 +4,23 @@
 1. Domain: `games`
 2. Scene id: `chess_variant`
 3. Public task id: `task_games__chess_variant__marked_piece_destination_count`
-4. Supported `query_id` values: `marked_piece_move_count`, `marked_piece_capture_count`
+4. Supported `query_id` values: `single`
 5. Answer schema: `integer_count`
 6. Annotation schema: `bbox_set`
-7. Program schema: `count(filter(legal_destinations(marked_piece), destination_filter)); scene=chess_variant; scope=marked_piece_destination_count`
+7. Program schema: `count(empty_legal_destinations(marked_piece)); scene=chess_variant; scope=marked_piece_destination_count`
 
 ## Program Contract
 
-Program: `count(filter(legal_destinations(marked_piece), destination_filter)); scene=chess_variant; scope=marked_piece_destination_count`
+Program: `count(empty_legal_destinations(marked_piece)); scene=chess_variant; scope=marked_piece_destination_count`
 
-Candidate set: the visible game board, pieces, tokens, cards, tiles, marked state, legal-move cues, result panels, and labeled options inside the `marked_piece_destination_count` objective scope.
-Operands: visible scene state and prompt-bound operands named by `filter`, `legal_destinations`, `marked_piece`, `destination_filter`, `chess_variant`, `marked_piece_destination_count` plus the active `query_id` branch.
-Operation: evaluate `count` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
-Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
-Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annotation contract defines the minimal visual witnesses.
-Query ids: `marked_piece_move_count`, `marked_piece_capture_count`.
+Candidate set: empty board squares that the red-outlined marked piece can legally reach under the displayed movement rule.
+Operands: the marked piece, occupied squares, friendly blockers, opponent pieces, the displayed rule family, and the displayed range or jump rule.
+Operation: count legal landing squares that are empty. Opponent-occupied capture squares and friendly-occupied blocked squares are excluded.
+Output binding: `answer` uses the `integer` schema; generation binds a unique final count.
+Annotation witnesses: `annotation` uses the `bbox_set` schema with one square bbox for each counted empty destination.
+Query ids: `single` public query; internal prompt key `marked_piece_destination_count`.
 
 ## Generation Notes
-2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is projected from the same generated game state used for answer verification.
+1. The visible rule card defines the movement geometry for every piece.
+2. The destination count is sampled independently from scene style and clutter axes.
+3. Annotation is projected from the same generated board state used for answer verification.

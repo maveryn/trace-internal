@@ -967,6 +967,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__chess__player_capture_piece_count": _entry(
         "games", "chess", "games", "chess"
     ),
+    "task_games__chess_variant__marked_piece_capture_count": _entry(
+        "games", "chess_variant", "games", "chess_variant"
+    ),
     "task_games__chess_variant__marked_piece_destination_count": _entry(
         "games", "chess_variant", "games", "chess_variant"
     ),
@@ -2982,7 +2985,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_symbolic__spinner__single_attribute_probability": _entry(
         "symbolic", "spinner", "symbolic", "spinner"
     ),
-    "task_symbolic__spinner__spinner_pair_event_value": _entry(
+    "task_symbolic__spinner__pair_color_event_probability": _entry(
         "symbolic", "spinner", "symbolic", "spinner"
     ),
     "task_puzzles__star_battle__remaining_valid_cell_count": _entry(

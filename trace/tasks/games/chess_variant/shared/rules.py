@@ -205,6 +205,9 @@ def with_destination_annotation(
 
     if str(destination_mode) == "move":
         annotation_coords = tuple(evaluation.legal_destinations)
+    elif str(destination_mode) == "empty":
+        capture_set = set(evaluation.capture_coords)
+        annotation_coords = tuple(coord for coord in evaluation.legal_destinations if coord not in capture_set)
     elif str(destination_mode) == "capture":
         annotation_coords = tuple(evaluation.capture_coords)
     else:

@@ -338,8 +338,6 @@ def _construct_move_board(*, rng, axes: ChessVariantSceneAxes, target_answer: in
         for ray, legal_count in zip(rays, counts):
             for index, coord in enumerate(ray):
                 if index < int(legal_count):
-                    if int(rng.randrange(5)) == 0:
-                        _place_variant_piece(rng=rng, mutable=mutable, coord=coord, color=opponent(marked_color))
                     continue
                 if not _place_variant_piece(rng=rng, mutable=mutable, coord=coord, color=marked_color):
                     raise ValueError("failed to place chess-variant range blocker")
@@ -352,9 +350,8 @@ def _construct_move_board(*, rng, axes: ChessVariantSceneAxes, target_answer: in
         legal = set(tuple(coord) for coord in potentials[: int(target_answer)])
         for coord in potentials:
             if tuple(coord) in legal:
-                if int(rng.randrange(5)) == 0:
-                    _place_variant_piece(rng=rng, mutable=mutable, coord=coord, color=opponent(marked_color))
-            elif not _place_variant_piece(rng=rng, mutable=mutable, coord=coord, color=marked_color):
+                continue
+            if not _place_variant_piece(rng=rng, mutable=mutable, coord=coord, color=marked_color):
                 raise ValueError("failed to place chess-variant leaper blocker")
     return freeze_board(mutable), marked
 
@@ -575,7 +572,7 @@ def sample_marked_destination_scene(
 
     for _ in range(240):
         try:
-            if str(destination_mode) == "move":
+            if str(destination_mode) in {"move", "empty"}:
                 board, marked = _construct_move_board(rng=rng, axes=axes, target_answer=int(target_answer))
             elif str(destination_mode) == "capture":
                 board, marked = _construct_capture_board(rng=rng, axes=axes, target_answer=int(target_answer))

@@ -22,12 +22,12 @@
       ]
     },
     "query": {
-      "marked_piece_move_count": [
-        "{rule_text} {marked_piece_rule_text} {landing_rule_text} {block_rule_text} How many legal destination squares does the marked piece have?",
-        "{marked_piece_rule_text} {rule_text} {landing_rule_text} {block_rule_text} Count the marked piece's legal destination squares.",
-        "{rule_text} {landing_rule_text} {block_rule_text} {marked_piece_rule_text} What is the number of legal squares the marked piece can move to?",
-        "{marked_piece_rule_text} Using the displayed movement rule, how many legal movement destinations are available to the marked piece? {landing_rule_text} {block_rule_text}",
-        "{rule_text} {marked_piece_rule_text} {landing_rule_text} Count every legal destination square for that piece."
+      "marked_piece_destination_count": [
+        "{rule_text} {marked_piece_rule_text} {landing_rule_text} {block_rule_text} How many empty legal destination squares does the marked piece have?",
+        "{marked_piece_rule_text} {rule_text} {landing_rule_text} {block_rule_text} Count the marked piece's empty legal destination squares.",
+        "{rule_text} {landing_rule_text} {block_rule_text} {marked_piece_rule_text} What is the number of empty squares the marked piece can move to?",
+        "{marked_piece_rule_text} Using the displayed movement rule, how many empty movement destinations are available to the marked piece? {landing_rule_text} {block_rule_text}",
+        "{rule_text} {marked_piece_rule_text} {landing_rule_text} Count every empty legal destination square for that piece."
       ],
       "marked_piece_capture_count": [
         "{rule_text} {marked_piece_rule_text} {landing_rule_text} {block_rule_text} How many opponent pieces can the marked piece capture?",
@@ -72,7 +72,7 @@
     "scene:chess_variant_board": [
       "object_description"
     ],
-    "query:marked_piece_move_count": [
+    "query:marked_piece_destination_count": [
       "rule_text",
       "marked_piece_rule_text",
       "landing_rule_text",
@@ -135,6 +135,12 @@
     "landing_rule_text": {
       "type": "string"
     },
+    "destination_landing_rule_text": {
+      "type": "string"
+    },
+    "capture_landing_rule_text": {
+      "type": "string"
+    },
     "marked_piece_rule_text": {
       "type": "string"
     },
@@ -160,6 +166,8 @@
     "marked_piece_rule_text": "White pieces are one side and black pieces are the other side. Every piece uses the displayed movement rule. The red outlined square contains the marked piece.",
     "target_square_rule_text": "White pieces are one side and black pieces are the other side. Every piece uses the displayed movement rule. The blue outlined square is the target square.",
     "landing_rule_text": "The marked piece may land on an empty square or an opponent piece, but not on a friendly piece.",
+    "destination_landing_rule_text": "Count only empty squares the marked piece can legally move to; do not count opponent-occupied capture squares.",
+    "capture_landing_rule_text": "Count only opponent-occupied squares the marked piece can capture; do not count empty movement squares.",
     "target_landing_rule_text": "A counted piece may move to the target square if the target is empty or contains an opponent piece, but not if it contains a friendly piece.",
     "slider_block_rule_text": "For range rules, movement stops at the first occupied square in each direction and cannot pass through it.",
     "leaper_block_rule_text": "For jump rules, the marked piece may jump over occupied squares.",
@@ -180,8 +188,8 @@
     "rule_badge_straight_or_diagonal_range": "ANY LINE <= {range_k}",
     "rule_badge_leaper_2_1": "JUMP 2+1",
     "rule_badge_leaper_3_1": "JUMP 3+1",
-    "annotation_hint_marked_piece_move_count": "set \"annotation\" to a JSON array of pixel-space square boxes [x0, y0, x1, y1] for every legal destination square of the marked piece",
-    "answer_hint_marked_piece_move_count": "set \"answer\" to the count of legal destination squares for the marked piece",
+    "annotation_hint_marked_piece_destination_count": "set \"annotation\" to a JSON array of pixel-space square boxes [x0, y0, x1, y1] for every empty legal destination square of the marked piece",
+    "answer_hint_marked_piece_destination_count": "set \"answer\" to the count of empty legal destination squares for the marked piece",
     "annotation_hint_marked_piece_capture_count": "set \"annotation\" to a JSON array of pixel-space square boxes [x0, y0, x1, y1] for every destination square occupied by an opponent piece that the marked piece can capture",
     "answer_hint_marked_piece_capture_count": "set \"answer\" to the count of capture destination squares for the marked piece",
     "annotation_hint_white_piece_reaches_target_count": "set \"annotation\" to a JSON array of pixel-space piece boxes [x0, y0, x1, y1] for every white piece that can legally move to the blue outlined target square",

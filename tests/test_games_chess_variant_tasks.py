@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import trace.tasks  # noqa: F401
 from trace.core.taxonomy import resolve_task_taxonomy
+from trace.tasks.games.chess_variant.marked_piece_capture_count import GamesChessVariantMarkedPieceCaptureCountTask
 from trace.tasks.games.chess_variant.marked_piece_destination_count import GamesChessVariantMarkedPieceDestinationCountTask
 from trace.tasks.games.chess_variant.shared.rules import (
     evaluate_marked_piece_board,
@@ -29,47 +30,39 @@ def _board_from_execution(execution: dict) -> tuple[tuple[ChessPiece | None, ...
     return freeze_board(rows)
 
 
-def _bbox_center(bbox: list[float]) -> list[float]:
-    return [
-        round((float(bbox[0]) + float(bbox[2])) / 2.0, 3),
-        round((float(bbox[1]) + float(bbox[3])) / 2.0, 3),
-    ]
-
-
-def _assert_point_annotation_matches_piece_ids(trace: dict, annotation: list[list[float]]) -> None:
+def _assert_bbox_annotation_matches_piece_ids(trace: dict, annotation: list[list[float]]) -> None:
     execution = trace["execution_trace"]
     expected = [
-        _bbox_center(trace["render_map"]["piece_bboxes_px"][str(entity_id)])
+        trace["render_map"]["piece_bboxes_px"][str(entity_id)]
         for entity_id in execution["annotation_entity_ids"]
     ]
     assert annotation == expected
-    assert trace["projected_annotation"]["type"] == "point_set"
-    assert trace["projected_annotation"]["point_set"] == annotation
-    assert trace["projected_annotation"]["pixel_point_set"] == annotation
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox_set"] == annotation
 
 
-def _assert_point_annotation_matches_entity_ids(trace: dict, annotation: list[list[float]]) -> None:
-    """Verify point annotations use cell centers for cells and piece centers for pieces."""
+def _assert_bbox_annotation_matches_entity_ids(trace: dict, annotation: list[list[float]]) -> None:
+    """Verify bbox annotations use cell boxes for cells and piece boxes for pieces."""
 
     execution = trace["execution_trace"]
     expected: list[list[float]] = []
     for entity_id in execution["annotation_entity_ids"]:
         entity_id = str(entity_id)
         if entity_id.startswith("cell_"):
-            expected.append(_bbox_center(trace["render_map"]["cell_bboxes_px"][entity_id]))
+            expected.append(trace["render_map"]["cell_bboxes_px"][entity_id])
         else:
-            expected.append(_bbox_center(trace["render_map"]["piece_bboxes_px"][entity_id]))
+            expected.append(trace["render_map"]["piece_bboxes_px"][entity_id])
     assert annotation == expected
-    assert trace["projected_annotation"]["type"] == "point_set"
-    assert trace["projected_annotation"]["point_set"] == annotation
-    assert trace["projected_annotation"]["pixel_point_set"] == annotation
+    assert trace["projected_annotation"]["type"] == "bbox_set"
+    assert trace["projected_annotation"]["bbox_set"] == annotation
+    assert trace["projected_annotation"]["pixel_bbox_set"] == annotation
 
 
-def test_games_chess_variant_move_count_contract_and_rule_match() -> None:
+def test_games_chess_variant_destination_count_contract_and_rule_match() -> None:
     out = GamesChessVariantMarkedPieceDestinationCountTask().generate(
         26052401,
         params={
-            "query_id": "marked_piece_move_count",
             "rule_family": "straight_range",
             "range_k": 3,
             "target_answer": 4,
@@ -87,31 +80,31 @@ def test_games_chess_variant_move_count_contract_and_rule_match() -> None:
             rule_family=str(execution["rule_family"]),
             range_k=int(execution["range_k"]),
         ),
-        destination_mode="move",
+        destination_mode="empty",
     )
 
     assert out.scene_id == "chess_variant"
-    assert out.query_id == "marked_piece_move_count"
+    assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == int(evaluated.answer) == 4
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
     assert execution["annotation_kind"] == "cell"
     assert set(execution["annotation_entity_ids"]) == set(evaluated.annotation_entity_ids)
-    _assert_point_annotation_matches_entity_ids(trace, out.annotation_gt.value)
-    assert trace["query_spec"]["query_id"] == "marked_piece_move_count"
-    assert trace["query_spec"]["params"]["query_id"] == "marked_piece_move_count"
+    _assert_bbox_annotation_matches_entity_ids(trace, out.annotation_gt.value)
+    assert execution["internal_query_id"] == "marked_piece_destination_count"
+    assert trace["query_spec"]["query_id"] == "single"
+    assert trace["query_spec"]["params"]["query_id"] == "single"
     assert "panel_scene_style" in trace["render_spec"]
     assert "text_style" in trace["render_spec"]
-    assert "bounding" not in out.prompt.lower()
-    assert "bbox" not in out.prompt.lower()
-    assert "[x0" not in out.prompt.lower()
+    assert "empty" in out.prompt.lower()
+    assert "opponent-occupied capture squares" in out.prompt.lower()
 
 
 def test_games_chess_variant_capture_count_contract_and_rule_match() -> None:
-    out = GamesChessVariantMarkedPieceDestinationCountTask().generate(
+    out = GamesChessVariantMarkedPieceCaptureCountTask().generate(
         26052411,
-        params={"query_id": "marked_piece_capture_count", "rule_family": "leaper_2_1", "target_answer": 3},
+        params={"rule_family": "leaper_2_1", "target_answer": 3},
         max_attempts=128,
     )
     trace = out.trace_payload
@@ -129,16 +122,16 @@ def test_games_chess_variant_capture_count_contract_and_rule_match() -> None:
     )
 
     assert out.scene_id == "chess_variant"
-    assert out.query_id == "marked_piece_capture_count"
-    assert out.annotation_gt.type == "point_set"
+    assert out.query_id == "single"
+    assert out.annotation_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == int(evaluated.answer) == 3
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
     assert execution["annotation_kind"] == "cell"
     assert set(execution["annotation_entity_ids"]) == set(evaluated.annotation_entity_ids)
-    _assert_point_annotation_matches_entity_ids(trace, out.annotation_gt.value)
-    assert "bounding" not in out.prompt.lower()
-    assert "bbox" not in out.prompt.lower()
-    assert "[x0" not in out.prompt.lower()
+    _assert_bbox_annotation_matches_entity_ids(trace, out.annotation_gt.value)
+    assert execution["internal_query_id"] == "marked_piece_capture_count"
+    assert "opponent-occupied squares" in out.prompt.lower()
+    assert "empty movement squares" in out.prompt.lower()
 
 
 def test_games_chess_variant_white_target_square_reacher_count_contract_and_rule_match() -> None:
@@ -167,7 +160,7 @@ def test_games_chess_variant_white_target_square_reacher_count_contract_and_rule
     assert out.scene_id == "chess_variant"
     assert out.query_id == "white_piece_reaches_target_count"
     assert out.answer_gt.type == "integer"
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == int(evaluated.answer) == 3
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
     assert execution["marker_role"] == "target_square"
@@ -176,10 +169,7 @@ def test_games_chess_variant_white_target_square_reacher_count_contract_and_rule
     assert execution["annotation_kind"] == "piece_point"
     assert set(execution["annotation_entity_ids"]) == set(evaluated.annotation_entity_ids)
     assert set(tuple(coord) for coord in execution["annotation_coords"]) == set(evaluated.annotation_coords)
-    _assert_point_annotation_matches_piece_ids(trace, out.annotation_gt.value)
-    assert "bounding" not in out.prompt.lower()
-    assert "bbox" not in out.prompt.lower()
-    assert "[x0" not in out.prompt.lower()
+    _assert_bbox_annotation_matches_piece_ids(trace, out.annotation_gt.value)
 
 
 def test_games_chess_variant_black_target_square_reacher_count_contract_and_rule_match() -> None:
@@ -204,17 +194,14 @@ def test_games_chess_variant_black_target_square_reacher_count_contract_and_rule
     )
 
     assert out.query_id == "black_piece_reaches_target_count"
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert int(out.answer_gt.value) == int(evaluated.answer) == 2
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
     assert execution["target_color"] == "black"
     assert set(execution["annotation_entity_ids"]) == set(evaluated.annotation_entity_ids)
-    assert "bounding" not in out.prompt.lower()
-    assert "bbox" not in out.prompt.lower()
-    assert "[x0" not in out.prompt.lower()
 
 
-def test_games_chess_variant_target_square_zero_count_uses_empty_point_set() -> None:
+def test_games_chess_variant_target_square_zero_count_uses_empty_bbox_set() -> None:
     out = GamesChessVariantTargetSquareReacherCountTask().generate(
         26052441,
         params={
@@ -228,15 +215,16 @@ def test_games_chess_variant_target_square_zero_count_uses_empty_point_set() -> 
     execution = out.trace_payload["execution_trace"]
 
     assert int(out.answer_gt.value) == 0
-    assert out.annotation_gt.type == "point_set"
+    assert out.annotation_gt.type == "bbox_set"
     assert out.annotation_gt.value == []
     assert execution["annotation_entity_ids"] == []
     assert execution["annotation_coords"] == []
-    assert out.trace_payload["projected_annotation"]["point_set"] == []
-    assert out.trace_payload["projected_annotation"]["pixel_point_set"] == []
+    assert out.trace_payload["projected_annotation"]["bbox_set"] == []
+    assert out.trace_payload["projected_annotation"]["pixel_bbox_set"] == []
 
 
 def test_games_chess_variant_taxonomy() -> None:
+    assert resolve_task_taxonomy("task_games__chess_variant__marked_piece_capture_count").scene_id == "chess_variant"
     assert resolve_task_taxonomy("task_games__chess_variant__marked_piece_destination_count").scene_id == "chess_variant"
     assert resolve_task_taxonomy("task_games__chess_variant__target_square_reacher_count").scene_id == "chess_variant"
 
@@ -253,44 +241,28 @@ def test_games_chess_variant_prompt_is_marker_color_neutral() -> None:
     annotation_hints = {key: str(value) for key, value in prompt.items() if str(key).startswith("annotation_hint_")}
     assert annotation_hints
     for hint in annotation_hints.values():
-        assert "pixel-space points" in hint
-        assert "bounding" not in hint.lower()
-        assert "bbox" not in hint.lower()
-        assert "[x0" not in hint.lower()
+        assert "pixel-space" in hint
 
 
 def test_games_chess_variant_boards_are_material_plausible() -> None:
     task_params = (
-        {
-            "query_id": "marked_piece_move_count",
-            "rule_family": "straight_range",
-            "range_k": 3,
-            "target_answer": 3,
-        },
-        {
-            "query_id": "marked_piece_capture_count",
-            "rule_family": "leaper_2_1",
-            "target_answer": 2,
-        },
-        {
-            "query_id": "white_piece_reaches_target_count",
-            "rule_family": "diagonal_range",
-            "range_k": 3,
-            "target_answer": 2,
-        },
-        {
-            "query_id": "black_piece_reaches_target_count",
-            "rule_family": "straight_or_diagonal_range",
-            "range_k": 2,
-            "target_answer": 3,
-        },
+        (GamesChessVariantMarkedPieceDestinationCountTask, {"rule_family": "straight_range", "range_k": 3, "target_answer": 3}),
+        (GamesChessVariantMarkedPieceCaptureCountTask, {"rule_family": "leaper_2_1", "target_answer": 2}),
+        (
+            GamesChessVariantTargetSquareReacherCountTask,
+            {"query_id": "white_piece_reaches_target_count", "rule_family": "diagonal_range", "range_k": 3, "target_answer": 2},
+        ),
+        (
+            GamesChessVariantTargetSquareReacherCountTask,
+            {
+                "query_id": "black_piece_reaches_target_count",
+                "rule_family": "straight_or_diagonal_range",
+                "range_k": 2,
+                "target_answer": 3,
+            },
+        ),
     )
-    for offset, params in enumerate(task_params):
-        task_cls = (
-            GamesChessVariantTargetSquareReacherCountTask
-            if str(params["query_id"]) in {"white_piece_reaches_target_count", "black_piece_reaches_target_count"}
-            else GamesChessVariantMarkedPieceDestinationCountTask
-        )
+    for offset, (task_cls, params) in enumerate(task_params):
         out = task_cls().generate(26052500 + int(offset), params=params, max_attempts=256)
         board = _board_from_execution(out.trace_payload["execution_trace"])
         assert validate_square_chess_material(board)

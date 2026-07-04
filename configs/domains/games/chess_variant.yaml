@@ -32,6 +32,11 @@ generation:
     sparse_max_occupied_count: 12
     crowded_min_occupied_count: 13
     crowded_max_occupied_count: 18
+  task_overrides:
+    task_games__chess_variant__marked_piece_destination_count:
+      marked_piece_destination_count_support: [1, 2, 3, 4]
+    task_games__chess_variant__marked_piece_capture_count:
+      marked_piece_capture_count_support: [0, 1, 2, 3, 4]
 rendering:
   shared:
     canvas_width: 980

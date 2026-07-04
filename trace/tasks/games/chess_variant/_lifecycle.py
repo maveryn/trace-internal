@@ -9,6 +9,7 @@ from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.base import TaskOutput
+from trace.tasks.games.shared.piece_board_rules import piece_name
 from trace.tasks.games.shared.visual_defaults import load_games_scene_noise_defaults
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
@@ -26,7 +27,12 @@ from .shared.rendering import (
     rule_badge_text,
     text_style_metadata,
 )
-from .shared.sampling import resolve_chess_variant_scene_axes, resolve_task_target_answer
+from .shared.sampling import (
+    max_possible_marked_destination_answer,
+    resolve_chess_variant_scene_axes,
+    resolve_task_target_answer,
+    sample_marked_destination_scene,
+)
 from .shared.state import ChessVariantSample, ChessVariantSceneAxes
 
 
@@ -51,6 +57,7 @@ class ChessVariantObjectivePlan:
     construct_attempt: AttemptBuilder
     outline_rgb: tuple[int, int, int]
     target_color: str = ""
+    landing_rule_text: str = ""
     example_answer: int = 3
     execution_extra: Mapping[str, Any] = field(default_factory=dict)
     build_execution_extra: ExecutionExtraBuilder | None = None
@@ -107,6 +114,7 @@ def prepare_chess_variant_count_objective(
     construct_sample: CountAttemptBuilder,
     outline_rgb: tuple[int, int, int],
     target_color: str = "",
+    landing_rule_text: str = "",
     example_answer: int = 3,
     execution_extra: Mapping[str, Any] | None = None,
     build_execution_extra: ExecutionExtraBuilder | None = None,
@@ -132,9 +140,62 @@ def prepare_chess_variant_count_objective(
         construct_attempt=construct_attempt,
         outline_rgb=tuple(int(value) for value in outline_rgb),
         target_color=str(target_color),
+        landing_rule_text=str(landing_rule_text),
         example_answer=int(example_answer),
         execution_extra=dict(execution_extra or {}),
         build_execution_extra=build_execution_extra,
+    )
+
+
+def prepare_marked_piece_count_objective(
+    *,
+    task_id: str,
+    instance_seed: int,
+    task_params: Mapping[str, Any],
+    axes: ChessVariantSceneAxes,
+    query_id: str,
+    support_key: str,
+    fallback_support: tuple[int, ...],
+    destination_mode: str,
+    attempt_namespace: str,
+    landing_rule_text: str,
+    example_answer: int,
+) -> ChessVariantObjectivePlan:
+    """Prepare a marked-piece count using task-owned destination semantics."""
+
+    possible_max = max_possible_marked_destination_answer(
+        destination_mode=str(destination_mode),
+        rule_family=str(axes.rule_family),
+        range_k=int(axes.range_k),
+    )
+
+    def execution_extra(sample: ChessVariantSample) -> Mapping[str, Any]:
+        marked_piece = sample.evaluation.marked_piece
+        return {
+            "marked_piece_name": "" if marked_piece is None else piece_name(marked_piece),
+        }
+
+    return prepare_chess_variant_count_objective(
+        task_id=str(task_id),
+        instance_seed=int(instance_seed),
+        task_params=task_params,
+        query_id=str(query_id),
+        support_key=str(support_key),
+        fallback_support=tuple(int(value) for value in fallback_support),
+        possible_max=int(possible_max),
+        attempt_namespace=str(attempt_namespace),
+        semantic_query_params={"destination_mode": str(destination_mode)},
+        construct_sample=lambda rng, target_answer: sample_marked_destination_scene(
+            rng=rng,
+            axes=axes,
+            destination_mode=str(destination_mode),
+            target_answer=int(target_answer),
+        ),
+        outline_rgb=(220, 38, 38),
+        landing_rule_text=str(landing_rule_text),
+        example_answer=int(example_answer),
+        execution_extra={"destination_mode": str(destination_mode)},
+        build_execution_extra=execution_extra,
     )
 
 
@@ -235,6 +296,7 @@ def run_chess_variant_lifecycle(
         rule_family=str(axes.rule_family),
         range_k=int(axes.range_k),
         target_color=str(objective.target_color),
+        landing_rule_text=str(objective.landing_rule_text),
         point_annotation=False,
         example_answer=int(objective.example_answer),
         instance_seed=int(instance_seed),
@@ -312,6 +374,7 @@ __all__ = [
     "ChessVariantObjectivePlan",
     "ChessVariantTargetAnswerPlan",
     "prepare_chess_variant_count_objective",
+    "prepare_marked_piece_count_objective",
     "resolve_chess_variant_count_target",
     "run_chess_variant_lifecycle",
     "run_chess_variant_public_entry",

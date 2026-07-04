@@ -26,16 +26,18 @@ PROMPT_DYNAMIC_DEFAULT_KEYS: tuple[str, ...] = (
     "marked_piece_rule_text",
     "target_square_rule_text",
     "landing_rule_text",
+    "destination_landing_rule_text",
+    "capture_landing_rule_text",
     "target_landing_rule_text",
     "slider_block_rule_text",
     "leaper_block_rule_text",
     "target_slider_block_rule_text",
     "target_leaper_block_rule_text",
-    "answer_hint_marked_piece_move_count",
+    "answer_hint_marked_piece_destination_count",
     "answer_hint_marked_piece_capture_count",
     "answer_hint_white_piece_reaches_target_count",
     "answer_hint_black_piece_reaches_target_count",
-    "annotation_hint_marked_piece_move_count",
+    "annotation_hint_marked_piece_destination_count",
     "annotation_hint_marked_piece_capture_count",
     "annotation_hint_white_piece_reaches_target_count",
     "annotation_hint_black_piece_reaches_target_count",
@@ -108,6 +110,7 @@ def build_chess_variant_prompt_artifacts(
     rule_family: str,
     range_k: int,
     target_color: str,
+    landing_rule_text: str,
     point_annotation: bool,
     example_answer: int,
     instance_seed: int,
@@ -117,6 +120,7 @@ def build_chess_variant_prompt_artifacts(
     defaults = prompt_defaults()
     is_target_square = bool(target_color)
     example, example_answer_only = json_examples(point_annotation=bool(point_annotation), answer_value=int(example_answer))
+    landing_text = str(landing_rule_text) if str(landing_rule_text) else str(defaults["landing_rule_text"])
     prompt_selection = render_scene_prompt_variants(
         domain=str(domain),
         scene_id=SCENE_ID,
@@ -136,7 +140,7 @@ def build_chess_variant_prompt_artifacts(
             "rule_text": rule_text(str(rule_family), int(range_k), defaults, target_square=is_target_square),
             "marked_piece_rule_text": str(defaults["marked_piece_rule_text"]),
             "target_square_rule_text": str(defaults["target_square_rule_text"]),
-            "landing_rule_text": str(defaults["landing_rule_text"]),
+            "landing_rule_text": str(landing_text),
             "target_landing_rule_text": str(defaults["target_landing_rule_text"]),
             "block_rule_text": block_rule_text(str(rule_family), defaults, target_square=is_target_square),
             "target_color_name": color_name(str(target_color)) if str(target_color) else "",

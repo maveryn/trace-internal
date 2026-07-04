@@ -1,4 +1,4 @@
-"""Count empty destinations for one marked chess-variant piece."""
+"""Count captures for one marked chess-variant piece."""
 
 from __future__ import annotations
 
@@ -15,22 +15,22 @@ from trace.tasks.games.chess_variant.shared.state import ChessVariantSceneAxes
 from trace.tasks.registry import register_task
 
 
-TASK_ID = "task_games__chess_variant__marked_piece_destination_count"
-QUERY_ID = "marked_piece_destination_count"
+TASK_ID = "task_games__chess_variant__marked_piece_capture_count"
+QUERY_ID = "marked_piece_capture_count"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
-MARKED_DESTINATION_SUPPORT = (1, 2, 3, 4)
+MARKED_CAPTURE_SUPPORT = (0, 1, 2, 3, 4)
 
 
-def _prepare_marked_piece_destination_objective(
+def _prepare_marked_piece_capture_objective(
     instance_seed: int,
     task_params: Mapping[str, Any],
     axes: ChessVariantSceneAxes,
     query_id: str,
 ) -> ChessVariantObjectivePlan:
-    """Bind empty-destination counting while excluding capture squares."""
+    """Bind capture counting while excluding empty movement squares."""
 
     if str(query_id) != QUERY_ID:
-        raise ValueError(f"unsupported chess-variant destination query: {query_id}")
+        raise ValueError(f"unsupported chess-variant capture query: {query_id}")
     defaults = prompt_defaults()
     return prepare_marked_piece_count_objective(
         task_id=TASK_ID,
@@ -38,30 +38,30 @@ def _prepare_marked_piece_destination_objective(
         task_params=task_params,
         axes=axes,
         query_id=str(query_id),
-        support_key="marked_piece_destination_count_support",
-        fallback_support=MARKED_DESTINATION_SUPPORT,
-        destination_mode="empty",
-        attempt_namespace="games.chess_variant.marked_piece_destination_count",
-        landing_rule_text=str(defaults["destination_landing_rule_text"]),
-        example_answer=3,
+        support_key="marked_piece_capture_count_support",
+        fallback_support=MARKED_CAPTURE_SUPPORT,
+        destination_mode="capture",
+        attempt_namespace="games.chess_variant.marked_piece_capture_count",
+        landing_rule_text=str(defaults["capture_landing_rule_text"]),
+        example_answer=2,
     )
 
 
 @register_task
-class GamesChessVariantMarkedPieceDestinationCountTask:
-    """Count empty legal destinations for the marked variant piece."""
+class GamesChessVariantMarkedPieceCaptureCountTask:
+    """Count opponent pieces capturable by the marked variant piece."""
 
     task_id = TASK_ID
     domain = "games"
     default_dataset_enabled = True
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_query_id = QUERY_ID
-    prepare_objective = staticmethod(_prepare_marked_piece_destination_objective)
+    prepare_objective = staticmethod(_prepare_marked_piece_capture_objective)
 
     def generate(self, instance_seed: int, *, params: dict, max_attempts: int) -> TaskOutput:
-        """Generate a marked-piece empty-destination count."""
+        """Generate a marked-piece capture count."""
 
         return run_chess_variant_public_entry(self, instance_seed, params=params, max_attempts=max_attempts)
 
 
-__all__ = ["GamesChessVariantMarkedPieceDestinationCountTask"]
+__all__ = ["GamesChessVariantMarkedPieceCaptureCountTask"]

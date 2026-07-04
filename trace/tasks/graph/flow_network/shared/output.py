@@ -112,6 +112,8 @@ def create_flow_network_scene_bundle(
                 background_defaults=background_defaults,
                 noise_defaults=noise_defaults,
             )
+            if int(render.rendered_scene.crossing_count) > int(axes.max_crossing_count):
+                raise ValueError("flow-network render exceeds crossing-count limit")
             projection, segments = project_min_cut_segments(
                 render.rendered_scene,
                 flow_sample.original_min_cut_edges,
@@ -272,6 +274,7 @@ def axis_parameter_fields(bundle: FlowNetworkSceneBundle) -> Dict[str, Any]:
         "edge_routing_variant_probabilities": dict(axes.edge_routing_variant_probabilities),
         "node_color_name": str(axes.node_color_name),
         "node_color_name_probabilities": dict(axes.node_color_name_probabilities),
+        "max_crossing_count": int(axes.max_crossing_count),
     }
 
 

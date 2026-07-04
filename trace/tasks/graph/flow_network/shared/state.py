@@ -33,6 +33,7 @@ class FlowNetworkDefaults:
     distractor_edge_max: int = 2
     max_flow_distractor_edge_min: int = 0
     max_flow_distractor_edge_max: int = 1
+    max_crossing_count: int = 999
     canvas_width: int = 864
     canvas_height: int = 640
     outer_margin_px: int = 28
@@ -75,6 +76,7 @@ class ResolvedFlowNetworkAxes:
     layout_transform_variant: str
     edge_routing_variant: str
     node_color_name: str
+    max_crossing_count: int
     node_count_probabilities: Dict[str, float]
     target_cut_edge_count_probabilities: Dict[str, float]
     target_flow_value_probabilities: Dict[str, float]

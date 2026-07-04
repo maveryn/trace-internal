@@ -38,8 +38,9 @@ Query ids: `single`.
 ## Rendering Contract
 1. The scene shows one directed capacity network with highlighted `S` and `T` nodes.
 2. Every visible directed edge has a readable integer capacity label.
-3. Visual style, fonts, context text, background, layout transform, and post-render noise are non-semantic and recorded in trace metadata.
-4. Annotation projection is computed after final graph layout and image-level variation.
+3. This objective uses a left-to-right identity layout transform and rejects rendered edge crossings so the directed flow channels are clear.
+4. Visual style, fonts, context text, background, and post-render noise are non-semantic and recorded in trace metadata.
+5. Annotation projection is computed after final graph layout and image-level variation.
 
 ## Prompt Contract
 1. Prompt text comes from `prompts/graph/flow_network/graph_flow_network_v1.json`.

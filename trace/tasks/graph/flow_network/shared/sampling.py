@@ -79,10 +79,13 @@ def _resolve_named_axis(
     """Resolve one visual/style axis without depending on public task identity."""
 
     supported_values = tuple(str(value) for value in supported)
+    effective_params = dict(params)
+    if str(explicit_key) not in effective_params and group_default(gen_defaults, str(explicit_key), None) is not None:
+        effective_params[str(explicit_key)] = group_default(gen_defaults, str(explicit_key), None)
     rng = spawn_rng(int(instance_seed), str(namespace))
     selected_variant, probabilities = resolve_variant(
         rng,
-        params=params,
+        params=effective_params,
         gen_defaults=gen_defaults,
         supported_variants=supported_values,
         explicit_key=str(explicit_key),
@@ -90,7 +93,7 @@ def _resolve_named_axis(
     )
     variant = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
-        params=params,
+        params=effective_params,
         gen_defaults=gen_defaults,
         selected_variant=str(selected_variant),
         variant_probabilities=probabilities,
@@ -185,6 +188,12 @@ def resolve_flow_network_axes(
         balance_flag_key="balanced_node_color_name_sampling",
         supported=SUPPORTED_NODE_COLOR_NAMES,
     )
+    max_crossing_count = int(
+        params.get(
+            "max_crossing_count",
+            group_default(gen_defaults, "max_crossing_count", int(defaults.max_crossing_count)),
+        )
+    )
     return ResolvedFlowNetworkAxes(
         node_count=int(node_count),
         target_cut_edge_count=int(target_cut_edge_count),
@@ -194,6 +203,7 @@ def resolve_flow_network_axes(
         layout_transform_variant=str(layout_transform_variant),
         edge_routing_variant=str(edge_routing_variant),
         node_color_name=str(node_color_name),
+        max_crossing_count=max(0, int(max_crossing_count)),
         node_count_probabilities=dict(node_count_probabilities),
         target_cut_edge_count_probabilities=dict(target_cut_edge_count_probabilities),
         target_flow_value_probabilities=dict(target_flow_value_probabilities),

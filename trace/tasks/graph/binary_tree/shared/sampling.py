@@ -582,6 +582,8 @@ def _sample_heap_nodes(
     instance_seed: int,
     *,
     node_count: int,
+    violation_gap_min: int,
+    violation_gap_max: int,
 ) -> Tuple[Dict[str, Dict[str, Any]], Tuple[str, str]]:
     rng = spawn_rng(int(instance_seed), "binary_tree.operation.heap")
     node_ids = [array_index_to_node_id(index) for index in range(int(node_count))]
@@ -589,7 +591,12 @@ def _sample_heap_nodes(
     non_root_ids = [node_id for node_id in node_ids if node_id]
     violation_child_id = str(rng.choice(non_root_ids))
     violation_parent_id = violation_child_id[:-1]
-    base_values[violation_child_id] = int(base_values[violation_parent_id]) - 3
+    parent_value = int(base_values[violation_parent_id])
+    min_gap = max(1, int(violation_gap_min))
+    max_gap = max(min_gap, int(violation_gap_max))
+    max_gap = min(max_gap, max(1, parent_value - 1))
+    gap = int(rng.randint(min_gap, max_gap))
+    base_values[violation_child_id] = parent_value - gap
     used = set()
     for node_id in node_ids:
         value = int(base_values[node_id])
@@ -651,6 +658,8 @@ def sample_search_tree_operation(
     node_count: int,
     key_min: int,
     key_max: int,
+    heap_violation_gap_min: int,
+    heap_violation_gap_max: int,
     max_depth: int,
     max_attempts: int,
 ) -> Tuple[BinaryTreeSample, OperationSelection]:
@@ -661,6 +670,8 @@ def sample_search_tree_operation(
         nodes, (parent_id, child_id) = _sample_heap_nodes(
             int(instance_seed),
             node_count=int(node_count),
+            violation_gap_min=int(heap_violation_gap_min),
+            violation_gap_max=int(heap_violation_gap_max),
         )
         sample = _numeric_sample_from_nodes(nodes)
         parent_label = str(nodes[str(parent_id)]["key"])

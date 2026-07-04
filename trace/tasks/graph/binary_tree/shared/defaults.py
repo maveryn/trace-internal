@@ -29,6 +29,8 @@ class BinaryTreeDefaults:
     max_depth: int = 4
     key_min: int = 10
     key_max: int = 99
+    heap_violation_gap_min: int = 3
+    heap_violation_gap_max: int = 3
     label_max_chars: int = 3
     canvas_width: int = 900
     canvas_height: int = 660

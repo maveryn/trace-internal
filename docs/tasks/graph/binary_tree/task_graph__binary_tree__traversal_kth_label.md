@@ -31,7 +31,7 @@ Query ids: `single`.
 
 ## Generation Notes
 1. The renderer is a top-down ordered binary tree; left and right children are determined by visible position.
-2. Default node count is `7..13`; default requested traversal position is `2..10`.
+2. Default node count is `7..10`; default requested traversal position is `2..6`.
 3. Node labels use graph label variants `letters|numbers|named`.
 4. Title and node labels use the role-appropriate shared font pool and readable text styles with recorded contrast metadata.
 5. Binary-tree rendering includes sampled tree treatments, node shapes/colors, light optional non-answer context text outside the tree content, bounded content jitter before projection, and scene-derived connector styles.

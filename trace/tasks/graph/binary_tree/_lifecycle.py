@@ -964,6 +964,8 @@ def run_binary_tree_operation_plan(
         node_count=int(node_count),
         key_min=int(group_default(gen_defaults, "key_min", defaults.key_min)),
         key_max=int(group_default(gen_defaults, "key_max", defaults.key_max)),
+        heap_violation_gap_min=int(group_default(gen_defaults, "heap_violation_gap_min", defaults.heap_violation_gap_min)),
+        heap_violation_gap_max=int(group_default(gen_defaults, "heap_violation_gap_max", defaults.heap_violation_gap_max)),
         max_depth=int(group_default(gen_defaults, "max_depth", defaults.max_depth)),
         max_attempts=max(1, int(max_attempts)),
     )

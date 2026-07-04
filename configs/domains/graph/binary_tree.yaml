@@ -42,13 +42,19 @@ generation:
       depth_min: 1
       depth_max: 4
     task_graph__binary_tree__heap_property_violation_label:
+      node_count_min: 7
+      node_count_max: 10
       key_min: 10
       key_max: 99
+      heap_violation_gap_min: 8
+      heap_violation_gap_max: 18
     task_graph__binary_tree__local_relative_node_label: {}
     task_graph__binary_tree__lowest_common_ancestor_label: {}
     task_graph__binary_tree__traversal_kth_label:
+      node_count_min: 7
+      node_count_max: 10
       traversal_position_min: 2
-      traversal_position_max: 10
+      traversal_position_max: 6
 
 rendering:
   shared:

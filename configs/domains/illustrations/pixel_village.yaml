@@ -49,7 +49,7 @@ generation:
       territory_object_support:
         - cemetery_grave_marker
         - orchard_tree
-      target_answer_count_max: 9
+      target_answer_count_max: 8
     task_illustrations__pixel_village__river_side_object_count:
       query_id_support:
         - single

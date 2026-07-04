@@ -412,7 +412,7 @@ def test_pixel_village_territory_object_count_targets_are_metadata_grounded() ->
         assert params["territory_id"] == territory_id
         assert out.answer_gt.type == "integer"
         assert out.annotation_gt.type == "bbox_set"
-        assert 0 < int(out.answer_gt.value) <= 9
+        assert 0 < int(out.answer_gt.value) <= 8
         assert int(out.answer_gt.value) == len(counted_ids) == len(out.annotation_gt.value)
         assert sorted(out.annotation_gt.value) == sorted(trace["render_map"]["counted_entity_bboxes_px"])
         assert len(trace["render_map"]["counted_entity_bboxes_px"]) == len(counted_ids)

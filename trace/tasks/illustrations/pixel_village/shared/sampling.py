@@ -144,7 +144,7 @@ class _Defaults:
     path_person_count_max: int = 6
     background_person_path_clearance: int = 1
     object_answer_count_max: int = 8
-    territory_object_answer_count_max: int = 9
+    territory_object_answer_count_max: int = 8
     river_side_answer_count_max: int = 8
     annotation_padding_px: float = 0.0
 

@@ -579,10 +579,10 @@ def _render_base_scene(
     line_color = tuple(int(value) for value in shape_style.line_color)
     label_color = tuple(int(value) for value in shape_style.label_color)
     stroke_color = tuple(int(value) for value in shape_style.label_stroke_color)
-    label_font = load_font(label_font_size_px, bold=True)
-    measurement_font = load_font(measurement_font_size_px, bold=True)
-    label_stroke_width = 1
-    measurement_stroke_width = 1
+    label_font = load_font(label_font_size_px, bold=False)
+    measurement_font = load_font(measurement_font_size_px, bold=False)
+    label_stroke_width = 0
+    measurement_stroke_width = 0
 
     circle_bbox = (
         float(center_px[0] - radius_px),
@@ -835,6 +835,9 @@ def _render_base_scene(
             "point_radius_px": int(point_radius_px),
             "label_font_size_px": int(label_font_size_px),
             "measurement_font_size_px": int(measurement_font_size_px),
+            "font_bold": False,
+            "label_stroke_width": int(label_stroke_width),
+            "measurement_stroke_width": int(measurement_stroke_width),
             "single_object_scene_rotation": scene_transform.metadata(),
             "measurement_label_offset_px": float(measurement_offset_px),
             "point_label_offset_px": float(point_label_offset_px),

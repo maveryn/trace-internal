@@ -467,6 +467,10 @@ def test_geometry_circle_theorem_value_emits_expected_contract(
         == expected_canonical_segment
     )
     assert out.trace_payload["execution_trace"]["target_answer"] == int(expected_answer)
+    render_spec = out.trace_payload["render_spec"]
+    assert render_spec["font_bold"] is False
+    assert int(render_spec["label_stroke_width"]) == 0
+    assert int(render_spec["measurement_stroke_width"]) == 0
     expected_public_query_id = _public_query_id_for_query(requested_query_id)
     query_params = out.trace_payload["query_spec"]["params"]
     assert query_params["query_id"] == expected_public_query_id
@@ -939,41 +943,37 @@ def test_geometry_circle_scene_config_keeps_render_and_prompt_defaults_only() ->
 
     assert generation == {}
     assert int(rendering["line_width"]) > 0
-    assert str(prompt["bundle_id"]) == "geometry_circle_theorem_v0"
+    assert str(prompt["bundle_id"]) == "geometry_circle_theorem_v1"
 
-    for chord_task_id in (
+    for task_id in (
         "task_geometry__circle_theorem__chord_length_from_radius_central_angle_value",
         "task_geometry__circle_theorem__chord_length_from_radius_inscribed_angle_value",
-    ):
-        chord_generation, _, chord_prompt = split_generation_rendering_prompt_defaults(
-            cfg,
-            task_id=chord_task_id,
-        )
-        assert chord_generation == {}
-        assert str(chord_prompt["answer_hint_number"]).strip()
-        assert str(chord_prompt["annotation_hint_chord_length_points"]).strip()
-
-    for tangent_radius_task_id in (
         "task_geometry__circle_theorem__radius_from_external_distance_and_angle_value",
         "task_geometry__circle_theorem__tangent_length_from_radius_and_external_distance_value",
     ):
-        tangent_radius_generation, _, tangent_radius_prompt = (
-            split_generation_rendering_prompt_defaults(
-                cfg,
-                task_id=tangent_radius_task_id,
-            )
+        task_generation, _, task_prompt = split_generation_rendering_prompt_defaults(
+            cfg,
+            task_id=task_id,
         )
-        assert tangent_radius_generation == {}
-        assert str(tangent_radius_prompt["answer_hint_tangent_radius_number"]).strip()
-        assert str(tangent_radius_prompt["annotation_hint_tangent_radius_points"]).strip()
+        assert task_generation == {}
+        assert str(task_prompt["bundle_id"]) == "geometry_circle_theorem_v1"
 
 
 def test_diameter_chord_prompt_names_roles_without_readout_phrase() -> None:
-    prompt_asset = Path("prompts/geometry/circle_theorem/geometry_circle_theorem_v0.json")
+    prompt_asset = Path("prompts/geometry/circle_theorem/geometry_circle_theorem_v1.json")
     bundle = json.loads(prompt_asset.read_text(encoding="utf-8"))
-    templates = bundle["query_templates"]["diameter_perpendicular_chord_length"]
+    templates = bundle["templates"]["query"]["diameter_perpendicular_chord_length"]
+    required_slots = bundle["required_slots_by_key"][
+        "query:diameter_perpendicular_chord_length"
+    ]
 
     assert templates
+    assert required_slots == [
+        "diameter_segment",
+        "chord_segment",
+        "intersection_label",
+        "answer_segment",
+    ]
     for template in templates:
         normalized = str(template).lower()
         assert "measurement readout" not in normalized

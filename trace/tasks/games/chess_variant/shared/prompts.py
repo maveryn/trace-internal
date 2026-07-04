@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 from typing import Any, Mapping
 
-from trace.tasks.games.shared.piece_board_rules import color_name
 from trace.tasks.shared.config_defaults import load_scene_generation_rendering_prompt_defaults, required_group_defaults
 from trace.tasks.shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
 
@@ -24,33 +23,20 @@ PROMPT_DYNAMIC_DEFAULT_KEYS: tuple[str, ...] = (
     "object_description_sparse_board",
     "object_description_crowded_board",
     "marked_piece_rule_text",
-    "target_square_rule_text",
     "landing_rule_text",
     "destination_landing_rule_text",
     "capture_landing_rule_text",
-    "target_landing_rule_text",
     "slider_block_rule_text",
     "leaper_block_rule_text",
-    "target_slider_block_rule_text",
-    "target_leaper_block_rule_text",
     "answer_hint_marked_piece_destination_count",
     "answer_hint_marked_piece_capture_count",
-    "answer_hint_white_piece_reaches_target_count",
-    "answer_hint_black_piece_reaches_target_count",
     "annotation_hint_marked_piece_destination_count",
     "annotation_hint_marked_piece_capture_count",
-    "annotation_hint_white_piece_reaches_target_count",
-    "annotation_hint_black_piece_reaches_target_count",
     "rule_text_straight_range",
     "rule_text_diagonal_range",
     "rule_text_straight_or_diagonal_range",
     "rule_text_leaper_2_1",
     "rule_text_leaper_3_1",
-    "target_rule_text_straight_range",
-    "target_rule_text_diagonal_range",
-    "target_rule_text_straight_or_diagonal_range",
-    "target_rule_text_leaper_2_1",
-    "target_rule_text_leaper_3_1",
     "rule_badge_straight_range",
     "rule_badge_diagonal_range",
     "rule_badge_straight_or_diagonal_range",
@@ -69,20 +55,16 @@ def prompt_defaults() -> dict[str, Any]:
     )
 
 
-def rule_text(rule_family: str, range_k: int, defaults: Mapping[str, Any], *, target_square: bool) -> str:
+def rule_text(rule_family: str, range_k: int, defaults: Mapping[str, Any]) -> str:
     """Return movement-rule text for the active prompt query."""
 
-    prefix = "target_rule_text" if bool(target_square) else "rule_text"
-    return str(defaults[f"{prefix}_{str(rule_family)}"]).format(range_k=int(range_k))
+    return str(defaults[f"rule_text_{str(rule_family)}"]).format(range_k=int(range_k))
 
 
-def block_rule_text(rule_family: str, defaults: Mapping[str, Any], *, target_square: bool) -> str:
+def block_rule_text(rule_family: str, defaults: Mapping[str, Any]) -> str:
     """Return blocking-rule text for the active prompt query."""
 
-    if bool(target_square):
-        key = "target_leaper_block_rule_text" if str(rule_family).startswith("leaper") else "target_slider_block_rule_text"
-    else:
-        key = "leaper_block_rule_text" if str(rule_family).startswith("leaper") else "slider_block_rule_text"
+    key = "leaper_block_rule_text" if str(rule_family).startswith("leaper") else "slider_block_rule_text"
     return str(defaults[key])
 
 
@@ -109,7 +91,6 @@ def build_chess_variant_prompt_artifacts(
     scene_variant: str,
     rule_family: str,
     range_k: int,
-    target_color: str,
     landing_rule_text: str,
     point_annotation: bool,
     example_answer: int,
@@ -118,7 +99,6 @@ def build_chess_variant_prompt_artifacts(
     """Build prompt artifacts from the external chess-variant prompt bundle."""
 
     defaults = prompt_defaults()
-    is_target_square = bool(target_color)
     example, example_answer_only = json_examples(point_annotation=bool(point_annotation), answer_value=int(example_answer))
     landing_text = str(landing_rule_text) if str(landing_rule_text) else str(defaults["landing_rule_text"])
     prompt_selection = render_scene_prompt_variants(
@@ -137,13 +117,10 @@ def build_chess_variant_prompt_artifacts(
             "annotation_hint": str(defaults[f"annotation_hint_{str(prompt_query_key)}"]),
             "json_example": str(example),
             "json_example_answer_only": str(example_answer_only),
-            "rule_text": rule_text(str(rule_family), int(range_k), defaults, target_square=is_target_square),
+            "rule_text": rule_text(str(rule_family), int(range_k), defaults),
             "marked_piece_rule_text": str(defaults["marked_piece_rule_text"]),
-            "target_square_rule_text": str(defaults["target_square_rule_text"]),
             "landing_rule_text": str(landing_text),
-            "target_landing_rule_text": str(defaults["target_landing_rule_text"]),
-            "block_rule_text": block_rule_text(str(rule_family), defaults, target_square=is_target_square),
-            "target_color_name": color_name(str(target_color)) if str(target_color) else "",
+            "block_rule_text": block_rule_text(str(rule_family), defaults),
         },
         instance_seed=int(instance_seed),
     )

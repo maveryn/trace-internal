@@ -56,7 +56,6 @@ class ChessVariantObjectivePlan:
     query_params: Mapping[str, Any]
     construct_attempt: AttemptBuilder
     outline_rgb: tuple[int, int, int]
-    target_color: str = ""
     landing_rule_text: str = ""
     example_answer: int = 3
     execution_extra: Mapping[str, Any] = field(default_factory=dict)
@@ -113,7 +112,6 @@ def prepare_chess_variant_count_objective(
     semantic_query_params: Mapping[str, Any],
     construct_sample: CountAttemptBuilder,
     outline_rgb: tuple[int, int, int],
-    target_color: str = "",
     landing_rule_text: str = "",
     example_answer: int = 3,
     execution_extra: Mapping[str, Any] | None = None,
@@ -139,7 +137,6 @@ def prepare_chess_variant_count_objective(
         query_params={**dict(semantic_query_params), **dict(target_plan.query_params)},
         construct_attempt=construct_attempt,
         outline_rgb=tuple(int(value) for value in outline_rgb),
-        target_color=str(target_color),
         landing_rule_text=str(landing_rule_text),
         example_answer=int(example_answer),
         execution_extra=dict(execution_extra or {}),
@@ -295,7 +292,6 @@ def run_chess_variant_lifecycle(
         scene_variant=str(axes.scene_variant),
         rule_family=str(axes.rule_family),
         range_k=int(axes.range_k),
-        target_color=str(objective.target_color),
         landing_rule_text=str(objective.landing_rule_text),
         point_annotation=False,
         example_answer=int(objective.example_answer),

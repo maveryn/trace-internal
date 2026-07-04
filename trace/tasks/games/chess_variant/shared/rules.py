@@ -10,8 +10,6 @@ from trace.tasks.games.shared.piece_board_rules import (
     Coord,
     coord_to_cell_id,
     in_bounds,
-    occupied_coords,
-    piece_to_entity_id,
 )
 
 from .state import ChessVariantEvaluation
@@ -113,27 +111,6 @@ def destinations_for_piece_under_rule(
     return tuple(sorted(destinations)), tuple(sorted(captures))
 
 
-def source_rays_for_target(rule_family: str, range_k: int, target_coord: Coord) -> tuple[tuple[Coord, ...], ...]:
-    """Return possible source locations grouped by movement ray."""
-
-    if str(rule_family).endswith("_range"):
-        return tuple(
-            ray
-            for ray in (
-                ray_coords(target_coord, direction, max_steps=int(range_k))
-                for direction in directions_for_rule(str(rule_family))
-            )
-            if ray
-        )
-    rays: list[tuple[Coord, ...]] = []
-    target_row, target_col = int(target_coord[0]), int(target_coord[1])
-    for delta_row, delta_col in leaper_offsets(str(rule_family)):
-        coord = (target_row + int(delta_row), target_col + int(delta_col))
-        if in_bounds(*coord):
-            rays.append((coord,))
-    return tuple(sorted(rays))
-
-
 def max_possible_marked_destination_answer(*, destination_mode: str, rule_family: str, range_k: int) -> int:
     """Return the largest feasible answer for a marked-piece count."""
 
@@ -155,19 +132,6 @@ def max_possible_marked_destination_answer(*, destination_mode: str, rule_family
             max_count = max(
                 int(max_count),
                 len(all_empty_board_destinations(str(rule_family), int(range_k), (row, col))),
-            )
-    return int(max_count)
-
-
-def max_possible_target_reacher_answer(*, rule_family: str, range_k: int) -> int:
-    """Return the largest feasible same-side reacher count."""
-
-    max_count = 0
-    for row in range(BOARD_SIZE):
-        for col in range(BOARD_SIZE):
-            max_count = max(
-                int(max_count),
-                len(source_rays_for_target(str(rule_family), int(range_k), (row, col))),
             )
     return int(max_count)
 
@@ -223,54 +187,6 @@ def with_destination_annotation(
         marked_coord=evaluation.marked_coord,
         marked_piece=evaluation.marked_piece,
         marker_role=str(evaluation.marker_role),
-        target_coord=evaluation.target_coord,
-        target_color=str(evaluation.target_color),
-    )
-
-
-def evaluate_target_square_reachers(
-    board: Board,
-    *,
-    target_coord: Coord,
-    target_color: str,
-    rule_family: str,
-    range_k: int,
-) -> ChessVariantEvaluation:
-    """Evaluate same-side pieces that can legally move to one marked target square."""
-
-    target_occupant = board[int(target_coord[0])][int(target_coord[1])]
-    if target_occupant is not None and str(target_occupant.color) == str(target_color):
-        raise ValueError("target square cannot be occupied by the queried side")
-    annotation_coords: list[Coord] = []
-    for coord in occupied_coords(board):
-        piece = board[int(coord[0])][int(coord[1])]
-        if piece is None or str(piece.color) != str(target_color):
-            continue
-        legal_destinations, _capture_coords = destinations_for_piece_under_rule(
-            board,
-            source_coord=coord,
-            rule_family=str(rule_family),
-            range_k=int(range_k),
-        )
-        if tuple(target_coord) in set(legal_destinations):
-            annotation_coords.append(tuple(coord))
-    annotation_coords_tuple = tuple(sorted(annotation_coords))
-    return ChessVariantEvaluation(
-        answer=len(annotation_coords_tuple),
-        legal_destinations=(),
-        capture_coords=(),
-        annotation_coords=annotation_coords_tuple,
-        annotation_entity_ids=tuple(
-            piece_to_entity_id(coord, board[int(coord[0])][int(coord[1])])
-            for coord in annotation_coords_tuple
-            if board[int(coord[0])][int(coord[1])] is not None
-        ),
-        annotation_kind="piece_point",
-        marked_coord=target_coord,
-        marked_piece=None,
-        marker_role="target_square",
-        target_coord=target_coord,
-        target_color=str(target_color),
     )
 
 
@@ -278,24 +194,12 @@ def evaluate_by_semantic_query(
     board: Board,
     *,
     destination_mode: str | None,
-    target_color: str | None,
     marked_coord: Coord | None,
-    target_coord: Coord | None,
     rule_family: str,
     range_k: int,
 ) -> ChessVariantEvaluation:
     """Evaluate a board using semantic task arguments, not public query ids."""
 
-    if target_color is not None:
-        if target_coord is None:
-            raise ValueError("target-square evaluation requires target_coord")
-        return evaluate_target_square_reachers(
-            board,
-            target_coord=target_coord,
-            target_color=str(target_color),
-            rule_family=str(rule_family),
-            range_k=int(range_k),
-        )
     if destination_mode is None or marked_coord is None:
         raise ValueError("marked-piece evaluation requires destination_mode and marked_coord")
     return with_destination_annotation(
@@ -315,11 +219,8 @@ __all__ = [
     "directions_for_rule",
     "evaluate_by_semantic_query",
     "evaluate_marked_piece_board",
-    "evaluate_target_square_reachers",
     "leaper_offsets",
     "max_possible_marked_destination_answer",
-    "max_possible_target_reacher_answer",
     "ray_coords",
-    "source_rays_for_target",
     "with_destination_annotation",
 ]

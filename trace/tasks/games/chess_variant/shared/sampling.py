@@ -36,11 +36,8 @@ from .rules import (
     directions_for_rule,
     evaluate_by_semantic_query,
     evaluate_marked_piece_board,
-    evaluate_target_square_reachers,
     max_possible_marked_destination_answer,
-    max_possible_target_reacher_answer,
     ray_coords,
-    source_rays_for_target,
     with_destination_annotation,
 )
 from .state import ChessVariantSample, ChessVariantSceneAxes
@@ -240,9 +237,7 @@ def _add_required_kings_preserving(
     axes: ChessVariantSceneAxes,
     target_answer: int,
     destination_mode: str | None,
-    target_color: str | None,
     marked: Coord | None,
-    target: Coord | None,
 ) -> Board:
     """Add one king per side without changing the active answer."""
 
@@ -254,7 +249,7 @@ def _add_required_kings_preserving(
             (row, col)
             for row in range(BOARD_SIZE)
             for col in range(BOARD_SIZE)
-            if mutable[row][col] is None and (target is None or (row, col) != tuple(target))
+            if mutable[row][col] is None
         ]
         rng.shuffle(candidates)
         placed = False
@@ -273,9 +268,7 @@ def _add_required_kings_preserving(
                 evaluation = evaluate_by_semantic_query(
                     candidate,
                     destination_mode=destination_mode,
-                    target_color=target_color,
                     marked_coord=marked,
-                    target_coord=target,
                     rule_family=str(axes.rule_family),
                     range_k=int(axes.range_k),
                 )
@@ -402,53 +395,6 @@ def _construct_capture_board(*, rng, axes: ChessVariantSceneAxes, target_answer:
     return freeze_board(mutable), marked
 
 
-def _random_target_coord(rng, *, rule_family: str, range_k: int, minimum_sources: int) -> Coord:
-    coords = [(row, col) for row in range(BOARD_SIZE) for col in range(BOARD_SIZE)]
-    rng.shuffle(coords)
-    for coord in coords:
-        if len(source_rays_for_target(str(rule_family), int(range_k), coord)) >= int(minimum_sources):
-            return tuple(coord)
-    raise ValueError("no target coordinate has enough source rays")
-
-
-def _construct_reacher_board(
-    *,
-    rng,
-    axes: ChessVariantSceneAxes,
-    target_color: str,
-    target_answer: int,
-) -> tuple[Board, Coord]:
-    target = _random_target_coord(
-        rng,
-        rule_family=str(axes.rule_family),
-        range_k=int(axes.range_k),
-        minimum_sources=int(target_answer),
-    )
-    source_rays = list(source_rays_for_target(str(axes.rule_family), int(axes.range_k), target))
-    if len(source_rays) < int(target_answer):
-        raise ValueError("not enough source rays for requested target answer")
-    rng.shuffle(source_rays)
-    selected_rays = source_rays[: int(target_answer)]
-    mutable = [list(row) for row in empty_board()]
-    if int(rng.randrange(3)) == 0:
-        _place_variant_piece(rng=rng, mutable=mutable, coord=target, color=opponent(target_color))
-    for ray in selected_rays:
-        source = tuple(rng.choice(list(ray)))
-        if not _place_variant_piece(rng=rng, mutable=mutable, coord=source, color=target_color):
-            raise ValueError("failed to place chess-variant reacher source")
-    board = freeze_board(mutable)
-    evaluation = evaluate_target_square_reachers(
-        board,
-        target_coord=target,
-        target_color=str(target_color),
-        rule_family=str(axes.rule_family),
-        range_k=int(axes.range_k),
-    )
-    if int(evaluation.answer) != int(target_answer):
-        raise ValueError("constructed reacher board does not match target answer")
-    return board, target
-
-
 def _desired_piece_count(rng, scene_variant: str) -> int:
     if str(scene_variant) == "crowded_board":
         return int(
@@ -510,57 +456,6 @@ def _add_fillers_preserving(
     return freeze_board(mutable)
 
 
-def _add_fillers_preserving_reachers(
-    *,
-    rng,
-    board: Board,
-    target: Coord,
-    axes: ChessVariantSceneAxes,
-    target_color: str,
-    target_answer: int,
-    desired_count: int,
-) -> Board:
-    """Add visual clutter while preserving the target-square reacher answer."""
-
-    mutable = [list(row) for row in board]
-    attempts = 0
-    while occupied_piece_count(mutable) < int(desired_count) and attempts < 960:
-        attempts += 1
-        empties = [
-            (row, col)
-            for row in range(BOARD_SIZE)
-            for col in range(BOARD_SIZE)
-            if mutable[row][col] is None and (row, col) != tuple(target)
-        ]
-        if not empties:
-            break
-        coord = tuple(rng.choice(empties))
-        if not _place_variant_piece(rng=rng, mutable=mutable, coord=coord):
-            break
-        frozen = freeze_board(mutable)
-        if not validate_square_chess_material(
-            frozen,
-            require_both_kings=False,
-            enforce_standard_pawn_rows=True,
-            enforce_non_adjacent_kings=True,
-        ):
-            mutable[int(coord[0])][int(coord[1])] = None
-            continue
-        try:
-            candidate = evaluate_target_square_reachers(
-                frozen,
-                target_coord=target,
-                target_color=str(target_color),
-                rule_family=str(axes.rule_family),
-                range_k=int(axes.range_k),
-            )
-        except ValueError:
-            candidate = None
-        if candidate is None or int(candidate.answer) != int(target_answer):
-            mutable[int(coord[0])][int(coord[1])] = None
-    return freeze_board(mutable)
-
-
 def sample_marked_destination_scene(
     *,
     rng,
@@ -584,9 +479,7 @@ def sample_marked_destination_scene(
                 axes=axes,
                 target_answer=int(target_answer),
                 destination_mode=str(destination_mode),
-                target_color=None,
                 marked=marked,
-                target=None,
             )
             desired_count = max(_desired_piece_count(rng, axes.scene_variant), occupied_piece_count(board))
             board = _add_fillers_preserving(
@@ -624,73 +517,10 @@ def sample_marked_destination_scene(
     raise ValueError("failed to sample requested chess-variant marked-piece board")
 
 
-def sample_target_reacher_scene(
-    *,
-    rng,
-    axes: ChessVariantSceneAxes,
-    target_color: str,
-    target_answer: int,
-) -> ChessVariantSample:
-    """Sample a target-square board, then validate the exact reacher-count answer."""
-
-    for _ in range(240):
-        try:
-            board, target = _construct_reacher_board(
-                rng=rng,
-                axes=axes,
-                target_color=str(target_color),
-                target_answer=int(target_answer),
-            )
-            board = _add_required_kings_preserving(
-                rng=rng,
-                board=board,
-                axes=axes,
-                target_answer=int(target_answer),
-                destination_mode=None,
-                target_color=str(target_color),
-                marked=None,
-                target=target,
-            )
-            desired_count = max(_desired_piece_count(rng, axes.scene_variant), occupied_piece_count(board))
-            board = _add_fillers_preserving_reachers(
-                rng=rng,
-                board=board,
-                target=target,
-                axes=axes,
-                target_color=str(target_color),
-                target_answer=int(target_answer),
-                desired_count=desired_count,
-            )
-            evaluation = evaluate_target_square_reachers(
-                board,
-                target_coord=target,
-                target_color=str(target_color),
-                rule_family=str(axes.rule_family),
-                range_k=int(axes.range_k),
-            )
-            if int(evaluation.answer) != int(target_answer):
-                continue
-            if not validate_square_chess_material(board):
-                continue
-            return ChessVariantSample(
-                board=board,
-                evaluation=evaluation,
-                occupied_count=occupied_piece_count(board),
-                construction_mode="direct_rule_constrained_board",
-                scene_variant=str(axes.scene_variant),
-                style_variant=str(axes.style_variant),
-            )
-        except ValueError:
-            continue
-    raise ValueError("failed to sample requested chess-variant target-reacher board")
-
-
 __all__ = [
     "max_possible_marked_destination_answer",
-    "max_possible_target_reacher_answer",
     "range_support_for_rule",
     "resolve_chess_variant_scene_axes",
     "resolve_task_target_answer",
     "sample_marked_destination_scene",
-    "sample_target_reacher_scene",
 ]

@@ -58,8 +58,6 @@ class ChessVariantEvaluation:
     marked_coord: Coord
     marked_piece: ChessPiece | None
     marker_role: str = "marked_piece"
-    target_coord: Coord | None = None
-    target_color: str = ""
 
 
 @dataclass(frozen=True)

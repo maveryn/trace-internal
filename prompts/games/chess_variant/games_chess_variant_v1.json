@@ -35,20 +35,6 @@
         "{rule_text} {landing_rule_text} {block_rule_text} {marked_piece_rule_text} What is the number of opponent pieces the marked piece can capture?",
         "{marked_piece_rule_text} Using the displayed movement rule, how many opponent pieces are capturable by the marked piece? {landing_rule_text} {block_rule_text}",
         "{rule_text} {marked_piece_rule_text} {landing_rule_text} Count every opponent piece that the marked piece can capture."
-      ],
-      "white_piece_reaches_target_count": [
-        "{target_square_rule_text} {rule_text} {target_landing_rule_text} {block_rule_text} How many {target_color_name} pieces can legally move to the target square?",
-        "{rule_text} {target_square_rule_text} {target_landing_rule_text} {block_rule_text} Count the {target_color_name} pieces that can reach the blue outlined target square.",
-        "{target_square_rule_text} Using the displayed movement rule, how many {target_color_name} pieces can move to that square? {target_landing_rule_text} {block_rule_text}",
-        "{rule_text} {block_rule_text} {target_square_rule_text} Count every {target_color_name} piece that has the target square as a legal destination.",
-        "{target_square_rule_text} {rule_text} How many {target_color_name} pieces could move onto the blue outlined square? {target_landing_rule_text}"
-      ],
-      "black_piece_reaches_target_count": [
-        "{target_square_rule_text} {rule_text} {target_landing_rule_text} {block_rule_text} How many {target_color_name} pieces can legally move to the target square?",
-        "{rule_text} {target_square_rule_text} {target_landing_rule_text} {block_rule_text} Count the {target_color_name} pieces that can reach the blue outlined target square.",
-        "{target_square_rule_text} Using the displayed movement rule, how many {target_color_name} pieces can move to that square? {target_landing_rule_text} {block_rule_text}",
-        "{rule_text} {block_rule_text} {target_square_rule_text} Count every {target_color_name} piece that has the target square as a legal destination.",
-        "{target_square_rule_text} {rule_text} How many {target_color_name} pieces could move onto the blue outlined square? {target_landing_rule_text}"
       ]
     },
     "output": {
@@ -83,20 +69,6 @@
       "marked_piece_rule_text",
       "landing_rule_text",
       "block_rule_text"
-    ],
-    "query:white_piece_reaches_target_count": [
-      "rule_text",
-      "target_square_rule_text",
-      "target_landing_rule_text",
-      "block_rule_text",
-      "target_color_name"
-    ],
-    "query:black_piece_reaches_target_count": [
-      "rule_text",
-      "target_square_rule_text",
-      "target_landing_rule_text",
-      "block_rule_text",
-      "target_color_name"
     ],
     "answer_or_annotation:answer_only": [
       "json_output_contract_answer_only",
@@ -149,40 +121,22 @@
     },
     "rule_text": {
       "type": "string"
-    },
-    "target_color_name": {
-      "type": "string"
-    },
-    "target_landing_rule_text": {
-      "type": "string"
-    },
-    "target_square_rule_text": {
-      "type": "string"
     }
   },
   "code_prompt_defaults": {
     "object_description_sparse_board": "a chess-like 8 by 8 board with a small set of white and black chess pieces and a visible movement rule card",
     "object_description_crowded_board": "a chess-like 8 by 8 board with many white and black chess pieces and a visible movement rule card",
     "marked_piece_rule_text": "White pieces are one side and black pieces are the other side. Every piece uses the displayed movement rule. The red outlined square contains the marked piece.",
-    "target_square_rule_text": "White pieces are one side and black pieces are the other side. Every piece uses the displayed movement rule. The blue outlined square is the target square.",
     "landing_rule_text": "The marked piece may land on an empty square or an opponent piece, but not on a friendly piece.",
     "destination_landing_rule_text": "Count only empty squares the marked piece can legally move to; do not count opponent-occupied capture squares.",
     "capture_landing_rule_text": "Count only opponent-occupied squares the marked piece can capture; do not count empty movement squares.",
-    "target_landing_rule_text": "A counted piece may move to the target square if the target is empty or contains an opponent piece, but not if it contains a friendly piece.",
     "slider_block_rule_text": "For range rules, movement stops at the first occupied square in each direction and cannot pass through it.",
     "leaper_block_rule_text": "For jump rules, the marked piece may jump over occupied squares.",
-    "target_slider_block_rule_text": "For range rules, movement stops at the first occupied square in each direction and cannot pass through it.",
-    "target_leaper_block_rule_text": "For jump rules, pieces may jump over occupied squares.",
     "rule_text_straight_range": "The rule card says the marked piece moves horizontally or vertically up to {range_k} squares.",
     "rule_text_diagonal_range": "The rule card says the marked piece moves diagonally up to {range_k} squares.",
     "rule_text_straight_or_diagonal_range": "The rule card says the marked piece moves horizontally, vertically, or diagonally up to {range_k} squares.",
     "rule_text_leaper_2_1": "The rule card says the marked piece jumps exactly 2 rows and 1 column, or 1 row and 2 columns.",
     "rule_text_leaper_3_1": "The rule card says the marked piece jumps exactly 3 rows and 1 column, or 1 row and 3 columns.",
-    "target_rule_text_straight_range": "The rule card says pieces move horizontally or vertically up to {range_k} squares.",
-    "target_rule_text_diagonal_range": "The rule card says pieces move diagonally up to {range_k} squares.",
-    "target_rule_text_straight_or_diagonal_range": "The rule card says pieces move horizontally, vertically, or diagonally up to {range_k} squares.",
-    "target_rule_text_leaper_2_1": "The rule card says pieces jump exactly 2 rows and 1 column, or 1 row and 2 columns.",
-    "target_rule_text_leaper_3_1": "The rule card says pieces jump exactly 3 rows and 1 column, or 1 row and 3 columns.",
     "rule_badge_straight_range": "STRAIGHT <= {range_k}",
     "rule_badge_diagonal_range": "DIAGONAL <= {range_k}",
     "rule_badge_straight_or_diagonal_range": "ANY LINE <= {range_k}",
@@ -191,10 +145,6 @@
     "annotation_hint_marked_piece_destination_count": "set \"annotation\" to a JSON array of pixel-space square boxes [x0, y0, x1, y1] for every empty legal destination square of the marked piece",
     "answer_hint_marked_piece_destination_count": "set \"answer\" to the count of empty legal destination squares for the marked piece",
     "annotation_hint_marked_piece_capture_count": "set \"annotation\" to a JSON array of pixel-space square boxes [x0, y0, x1, y1] for every destination square occupied by an opponent piece that the marked piece can capture",
-    "answer_hint_marked_piece_capture_count": "set \"answer\" to the count of capture destination squares for the marked piece",
-    "annotation_hint_white_piece_reaches_target_count": "set \"annotation\" to a JSON array of pixel-space piece boxes [x0, y0, x1, y1] for every white piece that can legally move to the blue outlined target square",
-    "answer_hint_white_piece_reaches_target_count": "set \"answer\" to the number of white pieces that can legally move to the blue outlined target square",
-    "annotation_hint_black_piece_reaches_target_count": "set \"annotation\" to a JSON array of pixel-space piece boxes [x0, y0, x1, y1] for every black piece that can legally move to the blue outlined target square",
-    "answer_hint_black_piece_reaches_target_count": "set \"answer\" to the number of black pieces that can legally move to the blue outlined target square"
+    "answer_hint_marked_piece_capture_count": "set \"answer\" to the count of capture destination squares for the marked piece"
   }
 }

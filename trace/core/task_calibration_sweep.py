@@ -1000,15 +1000,33 @@ def _write_status_files(args: argparse.Namespace, status: dict[str, Any]) -> Non
     Path(args.status_md).write_text("\n".join(rows) + "\n", encoding="utf-8")
 
 
-def _prune_unselected_status_tasks(status: dict[str, Any], *, selected_task_ids: Sequence[str]) -> None:
+def _prune_unselected_status_tasks(
+    status: dict[str, Any],
+    *,
+    selected_task_ids: Sequence[str],
+    retain_default_tasks: bool,
+) -> None:
     tasks = status.get("tasks")
     if not isinstance(tasks, dict):
         status["tasks"] = {}
+        return
+    if not bool(retain_default_tasks):
         return
     retained = set(list_default_task_ids()) | {str(task_id) for task_id in selected_task_ids}
     for task_id in list(tasks.keys()):
         if str(task_id) not in retained:
             del tasks[task_id]
+
+
+def _uses_scoped_task_selection(args: argparse.Namespace) -> bool:
+    return bool(
+        str(args.tasks).strip()
+        or args.domain
+        or args.scene
+        or str(args.start_at).strip()
+        or str(args.start_after).strip()
+        or args.limit is not None
+    )
 
 
 def _calibrate_task(
@@ -1140,7 +1158,11 @@ def main() -> int:
         status = {}
     if not status:
         status = {"tasks": {}}
-    _prune_unselected_status_tasks(status, selected_task_ids=task_ids)
+    _prune_unselected_status_tasks(
+        status,
+        selected_task_ids=task_ids,
+        retain_default_tasks=not _uses_scoped_task_selection(args),
+    )
     status["config"] = {
         "sample_count": int(args.sample_count),
         "calibration_baseline": str(args.calibration_baseline),

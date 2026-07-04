@@ -207,14 +207,19 @@ def render_centerline_overlap_scene(
     span_x = max(1.0, float(local_max_x - local_min_x))
     span_y = max(1.0, float(local_max_r * 2.0))
     scale = min((float(ctx.width) - 190.0) / span_x, (float(ctx.height) - 180.0) / span_y)
-    scale *= float(rng.uniform(0.86, 0.95))
+    if spec.show_overlap_dimensions:
+        scale *= float(rng.uniform(0.78, 0.86))
+    else:
+        scale *= float(rng.uniform(0.86, 0.95))
     angle = math.radians(float(rng.uniform(-5.0, 5.0)))
     cos_a = math.cos(angle)
     sin_a = math.sin(angle)
     local_center = ((local_min_x + local_max_x) / 2.0, 0.0)
     target_center = (
         float(ctx.width) / 2.0 + float(rng.uniform(-22.0, 22.0)),
-        float(ctx.height) / 2.0 + float(rng.uniform(-18.0, 18.0)),
+        float(ctx.height) / 2.0
+        + (-34.0 if spec.show_overlap_dimensions else 0.0)
+        + float(rng.uniform(-12.0, 12.0) if spec.show_overlap_dimensions else rng.uniform(-18.0, 18.0)),
     )
 
     def transform(point: Point) -> Point:
@@ -317,12 +322,13 @@ def render_centerline_overlap_scene(
         )
 
     if spec.show_overlap_dimensions:
+        overlap_label_offset = max(96.0, max(radius_px.values()) + 30.0)
         label_bboxes["overlap_ab"] = draw_dimension_line(
             ctx,
             points["P"],
             points["Q"],
             f"PQ={int(case.overlap_ab)}",
-            label_offset=mul(normal, 58.0),
+            label_offset=mul(normal, overlap_label_offset),
             color=ctx.accent_color,
             extra_metadata=readout_metadata,
         )
@@ -332,7 +338,7 @@ def render_centerline_overlap_scene(
                 points["R"],
                 points["S"],
                 f"RS={int(case.overlap_bc)}",
-                label_offset=mul(normal, 58.0),
+                label_offset=mul(normal, overlap_label_offset),
                 color=ctx.accent_color,
                 extra_metadata=readout_metadata,
             )

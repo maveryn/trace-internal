@@ -199,6 +199,31 @@ def test_building_window_default_answer_range_is_capped_at_six() -> None:
         assert 1 <= int(out.answer_gt.value) <= 6
 
 
+def test_feature_relation_default_answer_range_is_one_to_six() -> None:
+    generation_defaults, _rendering_defaults, _prompt_defaults = load_scene_generation_rendering_prompt_defaults(
+        "illustrations",
+        "environment",
+        task_id="task_illustrations__environment__feature_relation_object_count",
+    )
+    assert int(generation_defaults["feature_side_target_count_min"]) == 1
+    assert int(generation_defaults["feature_side_target_count_max"]) == 6
+    assert int(generation_defaults["on_feature_target_count_min"]) == 1
+    assert int(generation_defaults["on_feature_target_count_max"]) == 6
+    scenarios = (
+        ("above_feature", 1, 6),
+        ("below_feature", 1, 6),
+        ("on_feature", 1, 6),
+    )
+    for query_id, low, high in scenarios:
+        for index in range(8):
+            out = create_task("task_illustrations__environment__feature_relation_object_count").generate(
+                hash64(2026070401, f"feature-relation-range:{query_id}", index),
+                params={"query_id": query_id},
+                max_attempts=400,
+            )
+            assert int(low) <= int(out.answer_gt.value) <= int(high)
+
+
 def test_missing_patch_label_contract() -> None:
     out = create_task("task_illustrations__environment__missing_patch_label").generate(
         hash64(2026061401, "environment-missing-patch", 0),
@@ -215,7 +240,7 @@ def test_missing_patch_label_contract() -> None:
     assert out.answer_gt.value == "C"
     assert execution["patch_mode"] == "plain"
     assert execution["selected_transform"] == "none"
-    assert execution["candidate_crop_count"] >= 8
+    assert execution["candidate_crop_count"] == 0
     assert set(annotation) == {"missing_region", "selected_option"}
     assert annotation["missing_region"] == render_map["missing_region_bbox_px"]
     assert annotation["selected_option"] == render_map["selected_option_bbox_px"]

@@ -22,9 +22,9 @@ generation:
         - below
         - "on"
       feature_side_target_count_min: 1
-      feature_side_target_count_max: 18
-      on_feature_target_count_min: 2
-      on_feature_target_count_max: 5
+      feature_side_target_count_max: 6
+      on_feature_target_count_min: 1
+      on_feature_target_count_max: 6
     task_illustrations__environment__crossing_feature_count:
       object_count_min: 12
       object_count_max: 18

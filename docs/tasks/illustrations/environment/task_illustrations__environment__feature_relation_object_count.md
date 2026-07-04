@@ -44,7 +44,7 @@ Query ids: `above_feature`, `below_feature`, `on_feature`.
 - Answer schema: `integer_count`
 - Generator `answer_gt.type`: `integer`
 - The answer value is a non-negative integer derived from the same execution trace as the annotation.
-- `above_feature` and `below_feature` use default side-count support `1..18`; when the sampled side count exceeds `12`, the renderer spreads forced same-side placement over `9..12` objects to preserve visible bbox witnesses and avoid cap pileups, then binds the final rendered relation count. `on_feature` uses exact support `2..5` so road/river placements remain visually separated across all supported canvas profiles.
+- `above_feature`, `below_feature`, and `on_feature` use default count support `1..6` so object placements remain visually countable while preserving enough answer-value variation for calibration distribution checks.
 
 ## Annotation Contract
 - Annotation schema: `bbox_set`

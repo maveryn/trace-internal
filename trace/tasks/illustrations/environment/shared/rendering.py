@@ -899,6 +899,13 @@ def feature_relation_render_overrides(
 
     effective_count = effective_environment_object_count(str(choice.theme_id), int(requested_object_count))
     target_zone = "land_above" if str(choice.relation) == "above" else "land_below"
+    zone_bias_override: Dict[str, float] = {target_zone: 0.0}
+    if str(choice.relation) == "above":
+        zone_bias_override["sky"] = 0.0
+        if str(choice.feature_type) == "river":
+            zone_bias_override["road"] = 0.0
+    elif str(choice.relation) == "below" and str(choice.feature_type) == "road":
+        zone_bias_override["river"] = 0.0
     placement_cap = 12
     forced_side_count = max(1, min(int(target_count), int(effective_count)))
     if forced_side_count > int(placement_cap):
@@ -906,7 +913,10 @@ def feature_relation_render_overrides(
         overflow_span = int(placement_cap) - int(overflow_floor) + 1
         forced_side_count = int(overflow_floor) + int((int(choice.branch_index) + int(target_count)) % int(overflow_span))
         forced_side_count = min(int(forced_side_count), int(effective_count))
-    return {"zone_count_overrides": {target_zone: int(forced_side_count)}}
+    return {
+        "zone_count_overrides": {target_zone: int(forced_side_count)},
+        "zone_bias_override": zone_bias_override,
+    }
 
 
 def on_feature_render_overrides(
@@ -1283,6 +1293,7 @@ def render_environment_object_scene(
     bridge_count_override: int | None = None,
     crosswalk_count_override: int | None = None,
     zone_count_overrides: Mapping[str, int] | None = None,
+    zone_bias_override: Mapping[str, float] | None = None,
     lit_window_count_override: int | None = None,
 ) -> RenderedEnvironmentObjectScene:
     """Render one rich environment illustration with roads/rivers/buildings."""
@@ -1396,6 +1407,10 @@ def render_environment_object_scene(
                 )
             )
 
+    zone_bias = dict(layout.get("zone_bias", {}))
+    for zone_id, multiplier in (zone_bias_override or {}).items():
+        zone_bias[str(zone_id)] = float(zone_bias.get(str(zone_id), 1.0)) * float(multiplier)
+
     placements = _sample_object_placements(
         rng=rng,
         theme_id=theme_id,
@@ -1412,7 +1427,7 @@ def render_environment_object_scene(
         protected_bboxes=[building.bbox_xyxy for building in buildings],
         zone_count_overrides=zone_count_overrides,
         land_top_y_override=land_top,
-        zone_bias=layout.get("zone_bias", {}),
+        zone_bias=zone_bias,
     )
     rendered_objects = []
     for placement in placements:

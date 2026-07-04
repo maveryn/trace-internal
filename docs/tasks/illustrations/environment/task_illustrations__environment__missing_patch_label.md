@@ -52,7 +52,7 @@ Query ids: `single`.
 ## Prompt And Trace Requirements
 - Prompt text must come from the `illustrations_environment_v1` prompt bundle, with scene/task/output layers selected deterministically and recorded in metadata.
 - Render randomness, sampled fonts/styles, option order, crop box, and verifier payloads must be explicit in the instance trace.
-- Source crops are selected from a visually informative candidate crop pool to avoid flat/sky-dominant missing regions and distractor patches.
+- Source and distractor crops use the shared illustration missing-patch crop sampler: crops are sampled from the rendered source image, spatially separated from the missing region when possible, and filtered by the shared visual-detail and patch-difference checks.
 - Option count is sampled from `4` or `6`; all option bboxes use the same pixel width and height as the missing region.
 - Missing-region size is sampled relative to the resolved source image: width `15%-30%`, height `15%-26%`, area at most `6.5%`.
 - The selected option bbox, answer label, and missing-region bbox must all come from the same `compose_patch_options` execution trace.

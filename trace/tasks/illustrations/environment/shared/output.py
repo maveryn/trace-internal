@@ -7,6 +7,7 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from ...shared.object_rendering import serialize_rendered_illustration_object
 
 from .annotations import sort_bbox_centers_by_ids, sort_bboxes_by_ids, target_feature
+from .defaults import FEATURE_RELATION_SIDE_DEFAULTS
 from .labels import CROSSED_FEATURE_NAMES, CROSSING_NAMES, feature_name, feature_relation_phrase
 from .rendering import ANNOTATION_BBOX_MIN_SIDE_PX, RenderedEnvironmentObjectScene
 from .state import BoundCountResult, EnvironmentChoice
@@ -70,6 +71,13 @@ def bind_feature_relation_result(
             feature_id=str(feature.feature_id),
             relation=str(choice.relation),
         )
+        side_answer_min = int(FEATURE_RELATION_SIDE_DEFAULTS.target_count_min)
+        side_answer_max = int(FEATURE_RELATION_SIDE_DEFAULTS.target_count_max)
+        if len(counted_object_ids) < side_answer_min or len(counted_object_ids) > side_answer_max:
+            raise ValueError(
+                f"feature-relation side count {len(counted_object_ids)} outside "
+                f"{side_answer_min}..{side_answer_max}"
+            )
     counted_object_bboxes = sort_bboxes_by_ids(object_bboxes, counted_object_ids)
     _require_min_bbox_sides(label="feature-relation counted object", bboxes=counted_object_bboxes)
     counted_object_points = sort_bbox_centers_by_ids(object_bboxes, counted_object_ids)

@@ -33,7 +33,7 @@ from .defaults import RENDER_FALLBACKS, SCENE_ID
 from .state import BINGO_BOARD_SIZE, BINGO_COLUMN_LABELS, BingoCellInstance
 
 
-SUPPORTED_BINGO_MARK_SHAPES: Tuple[str, ...] = ("ellipse", "cell", "ring", "slash")
+SUPPORTED_BINGO_MARK_SHAPES: Tuple[str, ...] = ("ellipse", "cell", "ring")
 SUPPORTED_BINGO_CELL_FILL_PATTERNS: Tuple[str, ...] = ("solid", "column_tint", "checker_tint")
 POST_IMAGE_NOISE_DEFAULTS = load_games_scene_noise_defaults(scene_id=SCENE_ID, apply_prob=0.0)
 _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = load_scene_generation_rendering_prompt_defaults(
@@ -542,13 +542,13 @@ def render_bingo_card_scene(
     cell_specs: List[RenderedBingoCellSpec] = []
     cell_bbox_map: Dict[str, List[float]] = {}
     cell_mark_center_map: Dict[str, List[float]] = {}
+    number_draw_specs: List[Tuple[str, Tuple[float, float]]] = []
     mark_overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
     mark_draw = ImageDraw.Draw(mark_overlay)
 
     from trace.tasks.games.shared.marking import (
         draw_semantic_bbox_marker,
         draw_semantic_ellipse_marker,
-        draw_semantic_line_marker,
         resolve_semantic_marker_style,
     )
 
@@ -580,17 +580,7 @@ def render_bingo_card_scene(
             float(left + (0.5 * (cell_width - (number_bbox[2] - number_bbox[0])))),
             float(top + (0.5 * (cell_height - (number_bbox[3] - number_bbox[1])))),
         )
-        draw_text_traced(
-            draw,
-            number_origin,
-            number_text,
-            font=number_font,
-            fill=tuple(int(value) for value in theme.number_rgb),
-            stroke_width=1,
-            stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(theme.number_rgb)),
-            role="readout",
-            required=False,
-        )
+        number_draw_specs.append((number_text, number_origin))
 
         if bool(cell.is_marked):
             inset = int(params.mark_inset_px)
@@ -630,20 +620,6 @@ def render_bingo_card_scene(
                     width=5,
                     fill_rgba=(int(marker_style.inner_rgb[0]), int(marker_style.inner_rgb[1]), int(marker_style.inner_rgb[2]), 34),
                     marker_kind="bingo_marked_cell_ring",
-                    extra_metadata={"cell_id": str(cell.cell_id), "mark_shape": str(mark_shape)},
-                )
-            elif mark_shape == "slash":
-                marker_width = max(2, min(3, int(params.mark_inset_px) // 4))
-                draw_semantic_line_marker(
-                    mark_draw,
-                    [(float(mark_bbox[0]), float(mark_bbox[3])), (float(mark_bbox[2]), float(mark_bbox[1]))],
-                    style=marker_style,
-                    width=marker_width,
-                    pattern="dashed",
-                    dash_px=max(7.0, float(marker_width) * 3.5),
-                    gap_px=max(5.0, float(marker_width) * 2.5),
-                    alpha=138,
-                    marker_kind="bingo_marked_cell_dashed_slash",
                     extra_metadata={"cell_id": str(cell.cell_id), "mark_shape": str(mark_shape)},
                 )
             else:
@@ -688,6 +664,19 @@ def render_bingo_card_scene(
         )
 
     image.alpha_composite(mark_overlay)
+    draw = ImageDraw.Draw(image, "RGBA")
+    for number_text, number_origin in number_draw_specs:
+        draw_text_traced(
+            draw,
+            number_origin,
+            number_text,
+            font=number_font,
+            fill=tuple(int(value) for value in theme.number_rgb),
+            stroke_width=1,
+            stroke_fill=tuple(int(value) for value in resolve_text_stroke_fill(theme.number_rgb)),
+            role="readout",
+            required=False,
+        )
     return RenderedBingoCardScene(
         image=image.convert("RGB"),
         cell_specs=tuple(cell_specs),

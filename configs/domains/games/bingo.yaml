@@ -14,7 +14,6 @@ generation:
       ellipse: 1.0
       cell: 1.0
       ring: 1.0
-      slash: 1.0
     cell_fill_pattern_weights:
       solid: 1.0
       column_tint: 1.0

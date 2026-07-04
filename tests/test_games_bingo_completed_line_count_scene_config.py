@@ -43,7 +43,7 @@ def test_games_bingo_completed_column_label_defaults_expose_scene_query_and_targ
         "amber",
         "slate",
     }
-    assert set(generation["mark_shape_weights"].keys()) == {"ellipse", "cell", "ring", "slash"}
+    assert set(generation["mark_shape_weights"].keys()) == {"ellipse", "cell", "ring"}
     assert set(generation["cell_fill_pattern_weights"].keys()) == {"solid", "column_tint", "checker_tint"}
     assert "line_sum_completed_line_count_support" not in generation
     assert "extremum_weights" not in line_sum_generation

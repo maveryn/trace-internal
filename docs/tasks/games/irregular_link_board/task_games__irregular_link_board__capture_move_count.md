@@ -22,6 +22,7 @@ Query ids: `single`.
 ## Contract Notes
 1. The board uses the same Fanorona/Alquerque-style base graph as the destination-count task: orthogonal links plus alternating diagonals, so diagonal lines do not cross unless the crossing is a playable point.
 2. Public `query_id` is always `single`; the prompt template key remains `capture_move_count`.
-3. A legal capture move jumps over one adjacent opposing piece along a straight drawn line and lands on the empty point immediately beyond it.
-4. The capture task uses `5x5` and `6x6` boards so the answer support `0..8` is constructible.
-5. Annotation marks the centers of every legal capture destination point, and an empty annotation list is valid when the answer is `0`.
+3. A legal capture move jumps over one occupied adjacent point along a straight drawn line and lands on the empty point immediately beyond it.
+4. Both links in that straight line must be drawn, and the landing point must be empty.
+5. The capture task uses `5x5` and `6x6` boards with answer support `0..6`.
+6. Annotation marks the centers of every legal capture destination point, and an empty annotation list is valid when the answer is `0`.

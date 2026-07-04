@@ -134,8 +134,8 @@ def sample_destination_scene(
 
     board_size = int(axes.board_size)
     target = int(axes.target_answer)
-    if target < 0 or target > 8:
-        raise ValueError("irregular link board target answer must be in 0..8")
+    if target < 0 or target > 6:
+        raise ValueError("irregular link board target answer must be in 0..6")
     viable = [coord for coord in all_coords(board_size) if len(neighbors(coord, board_size)) >= target]
     if not viable:
         raise ValueError(f"no marked point can realize target answer {target}")
@@ -208,8 +208,8 @@ def sample_capture_scene(
 
     board_size = int(axes.board_size)
     target = int(axes.target_answer)
-    if target < 0 or target > 8:
-        raise ValueError("irregular link capture target answer must be in 0..8")
+    if target < 0 or target > 6:
+        raise ValueError("irregular link capture target answer must be in 0..6")
     viable = [coord for coord in all_coords(board_size) if len(capture_paths(coord, board_size)) >= target]
     if not viable:
         raise ValueError(f"no marked point can realize capture target answer {target}")

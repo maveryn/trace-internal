@@ -24,17 +24,17 @@
     "query": {
       "marked_piece_destination_count": [
         "{movement_rule_text} How many empty points can the X-marked piece move to now?",
-        "{movement_rule_text} Count the legal empty destinations for the X-marked piece.",
-        "{movement_rule_text} What is the number of legal moves for the X-marked piece?",
-        "{movement_rule_text} Count only empty points connected to the X-marked piece by a drawn link.",
-        "{movement_rule_text} How many adjacent empty points are reachable from the X-marked piece?"
+        "{movement_rule_text} Count the empty points that are directly linked to the X-marked piece.",
+        "{movement_rule_text} What is the number of one-step legal moves for the X-marked piece?",
+        "{movement_rule_text} Count only empty points joined to the X-marked piece by one drawn link.",
+        "{movement_rule_text} How many adjacent empty points are reachable by one drawn link from the X-marked piece?"
       ],
       "capture_move_count": [
-        "{capture_rule_text} How many legal moves for the X-marked piece would capture at least one opposing piece?",
-        "{capture_rule_text} Count the legal capture moves for the X-marked piece.",
-        "{capture_rule_text} What is the number of jump-over capture moves for the X-marked piece?",
-        "{capture_rule_text} Count only landing points where the X-marked piece would capture an opposing piece.",
-        "{capture_rule_text} How many empty linked landing points can the X-marked piece reach by a capture jump?"
+        "{capture_rule_text} How many legal capture landing points does the X-marked piece have?",
+        "{capture_rule_text} Count the empty landing points for legal capture jumps by the X-marked piece.",
+        "{capture_rule_text} What is the number of straight jump-over capture moves for the X-marked piece?",
+        "{capture_rule_text} Count only empty landing points reached by jumping over one occupied adjacent point.",
+        "{capture_rule_text} How many empty landing points can the X-marked piece reach by one capture jump?"
       ]
     },
     "output": {
@@ -109,8 +109,8 @@
     "object_description_sparse_links": "a point-and-link movement board with many missing links and several pieces",
     "object_description_mixed_links": "a point-and-link movement board with some missing links and several pieces",
     "object_description_dense_links": "a point-and-link movement board with dense drawn links and several pieces",
-    "movement_rule_text": "A piece can move one step only along a drawn link to an adjacent empty point.",
-    "capture_rule_text": "A capture move jumps over one adjacent opposing piece along a straight drawn line and lands on the empty point immediately beyond it.",
+    "movement_rule_text": "A one-step move must follow one drawn link from the X-marked piece to an adjacent empty point; occupied adjacent points and missing links do not count.",
+    "capture_rule_text": "A capture move must jump in a straight line over one occupied adjacent point and land on the empty point immediately beyond it; both links in that straight line must be drawn.",
     "annotation_hint_marked_piece_destination_count": "set \"annotation\" to [x, y] pixel points at the centers of every empty point the X-marked piece can legally move to; use an empty array if there are none",
     "answer_hint_marked_piece_destination_count": "set \"answer\" to the number of legal destinations for the X-marked piece",
     "annotation_hint_capture_move_count": "set \"annotation\" to [x, y] pixel points at the centers of every empty point where the X-marked piece can move to capture; use an empty array if there are none",

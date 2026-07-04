@@ -21,9 +21,9 @@ Query ids: `single`.
 
 ## Contract Notes
 1. Public `query_id` is always `single`; the prompt template key remains `marked_piece_destination_count`.
-2. A legal destination is an adjacent empty point connected to the X-marked piece by a drawn link.
+2. A legal destination is an adjacent empty point connected to the X-marked piece by exactly one drawn link.
 3. Adjacent occupied points and adjacent points without a drawn link are not legal destinations.
-4. The answer range is `0..8`.
+4. The answer range is `0..6`.
 5. Annotation marks the centers of every legal empty destination point, and an empty annotation list is valid when the answer is `0`.
 
 ## Scene Notes

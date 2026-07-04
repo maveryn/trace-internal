@@ -10,7 +10,7 @@ from typing import Tuple
 class IrregularLinkBoardDefaults:
     """Stable code fallbacks when scene config omits optional knobs."""
 
-    target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 7, 8)
+    target_answer_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
     board_size_support: Tuple[int, ...] = (4, 5, 6)
     capture_board_size_support: Tuple[int, ...] = (5, 6)
     min_total_piece_count: int = 4

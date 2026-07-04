@@ -49,8 +49,8 @@ def test_games_irregular_link_board_defaults_and_prompt_bundle() -> None:
     }
     assert list(generation["board_size_support"]) == [4, 5, 6]
     assert list(capture_generation["capture_board_size_support"]) == [5, 6]
-    assert list(destination_generation["target_answer_support"]) == list(range(9))
-    assert list(capture_generation["target_answer_support"]) == list(range(9))
+    assert list(destination_generation["target_answer_support"]) == list(range(7))
+    assert list(capture_generation["target_answer_support"]) == list(range(7))
     assert int(rendering["max_board_size_px"]) == 560
     assert str(prompt["bundle_id"]) == "games_irregular_link_board_v1"
 
@@ -151,7 +151,7 @@ def test_games_irregular_link_board_capture_answer_matches_trace() -> None:
 
 def test_games_irregular_link_board_support_endpoints_are_constructible() -> None:
     task = create_task(MARKED_DESTINATION_TASK_ID)
-    for target in (0, 8):
+    for target in (0, 6):
         out = task.generate(
             442000 + target,
             params={"target_answer": target, "board_size": 4},
@@ -163,7 +163,7 @@ def test_games_irregular_link_board_support_endpoints_are_constructible() -> Non
 
 def test_games_irregular_link_board_capture_support_endpoints_are_constructible() -> None:
     task = create_task(CAPTURE_MOVE_TASK_ID)
-    for target in (0, 8):
+    for target in (0, 6):
         out = task.generate(
             443500 + target,
             params={"target_answer": target, "board_size": 5},

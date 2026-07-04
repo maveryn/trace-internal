@@ -624,7 +624,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__calendar_event_grid__date_for_category_slot_label": _entry(
         "pages", "calendar_event_grid", "pages", "calendar_event_grid"
     ),
-    "task_pages__calendar_event_grid__date_slot_category_label": _entry(
+    "task_pages__calendar_event_grid__weekday_event_count": _entry(
         "pages", "calendar_event_grid", "pages", "calendar_event_grid"
     ),
     "task_pages__category_grid__category_item_count": _entry(
@@ -951,7 +951,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_games__chess__checkmate_move_label": _entry(
         "games", "chess", "games", "chess"
     ),
-    "task_games__chess__marked_piece_blocker_count": _entry(
+    "task_games__chess__marked_piece_capture_count": _entry(
         "games", "chess", "games", "chess"
     ),
     "task_games__chess__king_escape_square_count": _entry(

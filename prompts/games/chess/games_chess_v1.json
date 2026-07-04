@@ -22,19 +22,19 @@
       ]
     },
     "query": {
-      "marked_piece_move_count": [
-        "{standard_rule_text} {marked_piece_rule_text} How many squares can the marked piece move to in one move?",
-        "{standard_rule_text} {marked_piece_rule_text} Count the squares the marked piece can move to in one move.",
-        "{marked_piece_rule_text} Using normal chess movement, how many destination squares are available to that piece?",
-        "{standard_rule_text} {marked_piece_rule_text} Determine the number of one-move destination squares for the marked piece.",
-        "{marked_piece_rule_text} How many legal movement destinations does the marked piece have?"
+      "marked_piece_destination_count": [
+        "{standard_rule_text} {marked_piece_rule_text} How many empty squares can the marked piece move to in one move?",
+        "{standard_rule_text} {marked_piece_rule_text} Count the empty destination squares the marked piece can move to in one move.",
+        "{standard_rule_text} {marked_piece_rule_text} Using normal chess movement, how many empty destination squares are available to that piece?",
+        "{standard_rule_text} {marked_piece_rule_text} Determine the number of empty one-move destination squares for the marked piece.",
+        "{standard_rule_text} {marked_piece_rule_text} How many empty legal movement destinations does the marked piece have?"
       ],
       "marked_piece_capture_count": [
         "{standard_rule_text} {marked_piece_rule_text} How many opponent pieces can the marked piece capture in one move?",
         "{standard_rule_text} {marked_piece_rule_text} Count the opponent pieces the marked piece can capture.",
-        "{marked_piece_rule_text} Using normal chess movement, how many opponent pieces are capturable by that piece?",
+        "{standard_rule_text} {marked_piece_rule_text} Using normal chess movement, how many opponent pieces are capturable by that piece?",
         "{standard_rule_text} {marked_piece_rule_text} Determine the number of opponent pieces the marked piece can capture.",
-        "{marked_piece_rule_text} How many enemy pieces can the marked piece take in one move?"
+        "{standard_rule_text} {marked_piece_rule_text} How many enemy pieces can the marked piece take in one move?"
       ],
       "player_capture_piece_count": [
         "{standard_rule_text} How many {opponent_color_name} pieces can {player_color_name} capture in one move?",
@@ -63,27 +63,6 @@
         "{standard_rule_text} Determine how many black pieces attack the marked target square.",
         "How many black pieces currently attack the red outlined target square?",
         "{target_square_rule_text} Count the black pieces attacking that target square."
-      ],
-      "rook_line_blocker_count": [
-        "{blocker_rule_text} How many pieces are on the intervening squares along that rook movement line?",
-        "{blocker_rule_text} Count the pieces on the row or column segment from the marked rook to the blue target square.",
-        "Count only the pieces lying on the line segment between the red marked rook and the blue target square.",
-        "{blocker_rule_text} Determine the number of intervening pieces on that rook line.",
-        "How many pieces lie on the row or column path from the marked rook to the blue outlined target square?"
-      ],
-      "bishop_diagonal_blocker_count": [
-        "{blocker_rule_text} How many pieces are on the intervening squares along that bishop diagonal?",
-        "{blocker_rule_text} Count the pieces on the diagonal segment from the marked bishop to the blue target square.",
-        "Count only the pieces lying on the diagonal between the red marked bishop and the blue target square.",
-        "{blocker_rule_text} Determine the number of intervening pieces on that bishop diagonal.",
-        "How many pieces lie on the diagonal path from the marked bishop to the blue outlined target square?"
-      ],
-      "queen_line_blocker_count": [
-        "{blocker_rule_text} How many pieces are on the intervening squares along that queen movement line?",
-        "{blocker_rule_text} Count the pieces on the row, column, or diagonal segment from the marked queen to the blue target square.",
-        "Count only the pieces lying on the row, column, or diagonal between the red marked queen and the blue target square.",
-        "{blocker_rule_text} Determine the number of intervening pieces on that queen line.",
-        "How many pieces lie on the row, column, or diagonal path from the marked queen to the blue outlined target square?"
       ],
       "king_escape_square_count": [
         "{standard_rule_text} {king_escape_rule_text} How many safe squares can the marked king move to?",
@@ -135,16 +114,16 @@
     "scene:visible_chess_board": {
       "object_description": "a partial chess board with white and black pieces"
     },
-    "query:marked_piece_move_count": {
-      "standard_rule_text": "Use normal chess piece movement. Do not use castling, en passant, or promotion.",
+    "query:marked_piece_destination_count": {
+      "standard_rule_text": "Use normal chess piece movement for one move only. Do not use castling, en passant, or promotion. Friendly pieces block movement; opponent pieces are capture targets and are not empty destinations.",
       "marked_piece_rule_text": "The red outlined square contains the marked piece.",
-      "answer_hint": "set \"answer\" to the count of destination squares for the marked piece",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space square boxes [x0, y0, x1, y1] for every destination square the marked piece can move to; use an empty array if none are available",
+      "answer_hint": "set \"answer\" to the count of empty destination squares for the marked piece",
+      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space square boxes [x0, y0, x1, y1] for every empty destination square the marked piece can move to; use an empty array if none are available",
       "json_example": "{\"annotation\":[[108,108,172,172],[268,108,332,172]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:marked_piece_capture_count": {
-      "standard_rule_text": "Use normal chess piece movement. Do not use castling, en passant, or promotion.",
+      "standard_rule_text": "Use normal chess piece movement for one move only. Do not use castling, en passant, or promotion. Friendly pieces block movement; count only opponent-occupied squares the marked piece can capture.",
       "marked_piece_rule_text": "The red outlined square contains the marked piece.",
       "answer_hint": "set \"answer\" to the count of opponent pieces the marked piece can capture in one move",
       "annotation_hint": "set \"annotation\" to a JSON array of pixel-space square boxes [x0, y0, x1, y1] for every capturable destination square occupied by an opponent piece; use an empty array if none are available",
@@ -179,27 +158,6 @@
       "target_square_rule_text": "The red outlined square marks the target square.",
       "answer_hint": "set \"answer\" to the count of black pieces attacking the marked target square",
       "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x0, y0, x1, y1] for every black attacking piece; use an empty array if none are attacking",
-      "json_example": "{\"annotation\":[[116,116,164,164],[276,116,324,164]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
-    },
-    "query:rook_line_blocker_count": {
-      "blocker_rule_text": "The red outlined square contains the source piece. The blue outlined square is the target square. Count only pieces on the intervening squares along the rook's row or column movement line.",
-      "answer_hint": "set \"answer\" to the count of pieces on the intervening squares along the marked rook's movement line to the target square",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x0, y0, x1, y1] for every intervening piece on that rook movement line; use an empty array if none are on the path",
-      "json_example": "{\"annotation\":[[116,116,164,164],[276,116,324,164]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
-    },
-    "query:bishop_diagonal_blocker_count": {
-      "blocker_rule_text": "The red outlined square contains the source piece. The blue outlined square is the target square. Count only pieces on the intervening squares along the bishop's diagonal movement line.",
-      "answer_hint": "set \"answer\" to the count of pieces on the intervening squares along the marked bishop's diagonal to the target square",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x0, y0, x1, y1] for every intervening piece on that bishop diagonal; use an empty array if none are on the path",
-      "json_example": "{\"annotation\":[[116,116,164,164],[276,116,324,164]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
-    },
-    "query:queen_line_blocker_count": {
-      "blocker_rule_text": "The red outlined square contains the source piece. The blue outlined square is the target square. Count only pieces on the intervening squares along the queen's row, column, or diagonal movement line.",
-      "answer_hint": "set \"answer\" to the count of pieces on the intervening squares along the marked queen's movement line to the target square",
-      "annotation_hint": "set \"annotation\" to a JSON array of pixel-space piece boxes [x0, y0, x1, y1] for every intervening piece on that queen movement line; use an empty array if none are on the path",
       "json_example": "{\"annotation\":[[116,116,164,164],[276,116,324,164]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },

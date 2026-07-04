@@ -15,19 +15,19 @@ def test_games_chess_board_defaults_present() -> None:
     assert 'balanced_query_id_sampling' not in generation
     assert 'query_id_weights' not in generation
     assert bool(generation['balanced_marked_piece_kind_sampling']) is True
-    assert list(generation['marked_piece_move_count_support']) == [1, 2, 3, 4, 5, 6, 7, 8]
-    assert list(generation['marked_piece_capture_count_support']) == [0, 1, 2, 3, 4]
+    assert list(generation['marked_piece_destination_count_support']) == [1, 2, 3, 4, 5, 6]
     assert set(generation['marked_piece_kind_weights'].keys()) == {'knight', 'bishop', 'rook', 'queen'}
+    capture_generation, _capture_rendering, _capture_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__chess__marked_piece_capture_count')
     player_generation, _player_rendering, _player_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__chess__player_capture_piece_count')
     attacker_generation, _attacker_rendering, _attacker_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__chess__target_square_attacker_count')
-    blocker_generation, _blocker_rendering, _blocker_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__chess__marked_piece_blocker_count')
     escape_generation, _escape_rendering, _escape_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__chess__king_escape_square_count')
     piece_generation, _piece_rendering, _piece_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__chess__piece_kind_count')
     colored_piece_generation, _colored_piece_rendering, _colored_piece_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__chess__colored_piece_kind_count')
     checkmate_generation, _checkmate_rendering, _checkmate_prompt = split_generation_rendering_prompt_defaults(cfg, task_id='task_games__chess__checkmate_move_label')
+    assert list(capture_generation['marked_piece_capture_count_support']) == [0, 1, 2, 3, 4]
+    assert set(capture_generation['marked_piece_kind_weights'].keys()) == {'knight', 'bishop', 'rook', 'queen'}
     assert list(player_generation['player_capture_piece_count_support']) == [1, 2, 3, 4, 5, 6]
     assert list(attacker_generation['target_square_attacker_count_support']) == [0, 1, 2, 3, 4]
-    assert list(blocker_generation['marked_piece_blocker_count_support']) == [0, 1, 2, 3, 4]
     assert list(escape_generation['king_escape_square_count_support']) == [0, 1, 2, 3, 4, 5]
     assert list(piece_generation['piece_type_count_support']) == [0, 1, 2, 3, 4, 5, 6]
     assert list(piece_generation['piece_count_distractor_count_support']) == [1, 2, 3, 4, 5, 6, 7, 8]

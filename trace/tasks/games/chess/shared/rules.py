@@ -237,7 +237,13 @@ def evaluate_marked_destinations(board: Board, marked_coord: Coord, *, destinati
     if str(destination_mode) == "capture":
         return tuple(sorted(piece_capture_targets(board, marked_coord)))
     if str(destination_mode) == "move":
-        return tuple(sorted(piece_move_destinations(board, marked_coord)))
+        return tuple(
+            sorted(
+                coord
+                for coord in piece_move_destinations(board, marked_coord)
+                if board[int(coord[0])][int(coord[1])] is None
+            )
+        )
     raise ValueError(f"unsupported destination mode: {destination_mode}")
 
 

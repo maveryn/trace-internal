@@ -10,6 +10,7 @@ from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.games.shared.piece_board_rules import coord_to_cell_id
 from trace.tasks.games.shared.piece_board_rules import color_name
+from trace.tasks.games.shared.piece_board_rules import piece_name
 from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
@@ -28,6 +29,7 @@ from .shared.sampling import (
     resolve_integer_axis,
     resolve_string_axis,
     resolve_target_answer,
+    sample_marked_piece_destination_scene,
     sample_piece_count_scene,
 )
 from .shared.state import (
@@ -311,6 +313,65 @@ def prepare_chess_bbox_count_objective(
     )
 
 
+def prepare_marked_piece_destination_family_objective(
+    *,
+    instance_seed: int,
+    task_params: Mapping[str, Any],
+    task_id: str,
+    query_id: str,
+    gen_defaults: Mapping[str, Any],
+    support_key: str,
+    fallback_support: tuple[int, ...],
+    marked_piece_kind_support: tuple[str, ...],
+    destination_mode: str,
+    query_destination_mode: str,
+    attempt_namespace: str,
+) -> ChessObjectivePlan:
+    """Prepare one marked-piece destination-family objective from task-owned constants."""
+
+    marked_piece_kind, marked_piece_kind_probs = resolve_string_axis(
+        instance_seed=int(instance_seed),
+        params=task_params,
+        explicit_key="marked_piece_kind",
+        weights_key="marked_piece_kind_weights",
+        balance_flag_key="balanced_marked_piece_kind_sampling",
+        supported_values=tuple(str(value) for value in marked_piece_kind_support),
+        namespace=f"{task_id}.marked_piece_kind",
+        gen_defaults=gen_defaults,
+    )
+
+    def construct_sample(rng, axes, target_answer):
+        return sample_marked_piece_destination_scene(
+            rng=rng,
+            axes=axes,
+            destination_mode=str(destination_mode),
+            target_answer=int(target_answer),
+            marked_piece_kind=str(marked_piece_kind),
+        )
+
+    return prepare_chess_bbox_count_objective(
+        instance_seed=int(instance_seed),
+        task_params=task_params,
+        task_id=str(task_id),
+        query_id=str(query_id),
+        gen_defaults=gen_defaults,
+        support_key=str(support_key),
+        fallback_support=tuple(int(value) for value in fallback_support),
+        attempt_namespace=str(attempt_namespace),
+        construct_sample=construct_sample,
+        badge_builder=lambda sample: "Marked piece"
+        if sample.marked_piece is None
+        else f"Marked {piece_name(sample.marked_piece)}",
+        witness_type="cell_set",
+        query_params={
+            "destination_mode": str(query_destination_mode),
+            "marked_piece_kind": str(marked_piece_kind),
+            "marked_piece_kind_probabilities": dict(marked_piece_kind_probs),
+        },
+        execution_extra={"marked_piece_kind": str(marked_piece_kind)},
+    )
+
+
 def bbox_set_annotation_for_sample(
     sample: ChessSceneSample,
     rendered_context: RenderedChessTaskContext,
@@ -481,6 +542,7 @@ __all__ = [
     "chess_target_trace_params",
     "keyed_checkmate_annotation_for_sample",
     "prepare_chess_bbox_count_objective",
+    "prepare_marked_piece_destination_family_objective",
     "prepare_chess_piece_count_objective",
     "resolve_chess_task_target",
     "run_chess_public_entry",

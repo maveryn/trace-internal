@@ -14,7 +14,7 @@ from trace.core.config import BuildConfig, BuildTaskConfig
 from trace.tasks.games.chess.checkmate_move_label import GamesChessCheckmateMoveLabelTask
 from trace.tasks.games.chess.colored_piece_kind_count import GamesChessColoredPieceKindCountTask
 from trace.tasks.games.chess.king_escape_square_count import GamesChessKingEscapeSquareCountTask
-from trace.tasks.games.chess.marked_piece_blocker_count import GamesChessMarkedPieceBlockerCountTask
+from trace.tasks.games.chess.marked_piece_capture_count import GamesChessMarkedPieceCaptureCountTask
 from trace.tasks.games.chess.marked_piece_destination_count import GamesChessMarkedPieceDestinationCountTask
 from trace.tasks.games.chess.piece_kind_count import GamesChessPieceKindCountTask
 from trace.tasks.games.chess.player_capture_piece_count import GamesChessPlayerCapturePieceCountTask
@@ -44,13 +44,13 @@ from tests.helpers import read_jsonl
     (
         (
             GamesChessMarkedPieceDestinationCountTask,
-            {"query_id": "marked_piece_move_count", "target_answer": 4, "scene_variant": "sparse_board"},
-            "marked_piece_move_count",
+            {"target_answer": 4, "scene_variant": "sparse_board"},
+            "single",
         ),
         (
-            GamesChessMarkedPieceDestinationCountTask,
-            {"query_id": "marked_piece_capture_count", "target_answer": 2, "scene_variant": "crowded_board"},
-            "marked_piece_capture_count",
+            GamesChessMarkedPieceCaptureCountTask,
+            {"target_answer": 2, "scene_variant": "crowded_board"},
+            "single",
         ),
         (
             GamesChessPlayerCapturePieceCountTask,
@@ -61,11 +61,6 @@ from tests.helpers import read_jsonl
             GamesChessTargetSquareAttackerCountTask,
             {"query_id": "king_square_attacker_count", "target_answer": 2},
             "king_square_attacker_count",
-        ),
-        (
-            GamesChessMarkedPieceBlockerCountTask,
-            {"query_id": "rook_line_blocker_count", "target_answer": 2},
-            "rook_line_blocker_count",
         ),
         (
             GamesChessKingEscapeSquareCountTask,
@@ -112,17 +107,24 @@ def test_games_chess_board_emits_expected_contract(
 def test_games_chess_marked_move_count_matches_rules() -> None:
     out = GamesChessMarkedPieceDestinationCountTask().generate(
         50211,
-        params={"query_id": "marked_piece_move_count", "target_answer": 5},
+        params={"target_answer": 5},
         max_attempts=96,
     )
     execution = out.trace_payload["execution_trace"]
     board = _board_from_execution(execution)
     marked = tuple(int(value) for value in execution["marked_coord"])
-    destinations = tuple(sorted(piece_move_destinations(board, marked)))
+    destinations = tuple(
+        sorted(
+            coord
+            for coord in piece_move_destinations(board, marked)
+            if board[int(coord[0])][int(coord[1])] is None
+        )
+    )
 
     assert len(destinations) == int(out.answer_gt.value) == 5
     assert [list(coord) for coord in destinations] == sorted(execution["destination_coords"])
     assert set(execution["annotation_entity_ids"]) == {coord_to_cell_id(coord) for coord in destinations}
+    assert execution["internal_query_id"] == "marked_piece_destination_count"
 
 
 def test_games_chess_legal_moves_exclude_opponent_king_but_attacks_detect_it() -> None:
@@ -137,9 +139,9 @@ def test_games_chess_legal_moves_exclude_opponent_king_but_attacks_detect_it() -
 
 
 def test_games_chess_marked_capture_count_matches_rules() -> None:
-    out = GamesChessMarkedPieceDestinationCountTask().generate(
+    out = GamesChessMarkedPieceCaptureCountTask().generate(
         50221,
-        params={"query_id": "marked_piece_capture_count", "target_answer": 3},
+        params={"target_answer": 3},
         max_attempts=128,
     )
     execution = out.trace_payload["execution_trace"]
@@ -150,15 +152,16 @@ def test_games_chess_marked_capture_count_matches_rules() -> None:
     assert len(captures) == int(out.answer_gt.value) == 3
     assert [list(coord) for coord in captures] == sorted(execution["capture_coords"])
     assert set(execution["annotation_entity_ids"]) == {coord_to_cell_id(coord) for coord in captures}
+    assert execution["internal_query_id"] == "marked_piece_capture_count"
 
 
 @pytest.mark.parametrize(
     ("query_id", "marked_piece_kind", "target_answer"),
     (
-        ("marked_piece_move_count", "knight", 5),
-        ("marked_piece_move_count", "bishop", 5),
-        ("marked_piece_move_count", "rook", 6),
-        ("marked_piece_move_count", "queen", 8),
+        ("marked_piece_destination_count", "knight", 5),
+        ("marked_piece_destination_count", "bishop", 5),
+        ("marked_piece_destination_count", "rook", 6),
+        ("marked_piece_destination_count", "queen", 6),
         ("marked_piece_capture_count", "knight", 3),
         ("marked_piece_capture_count", "bishop", 2),
         ("marked_piece_capture_count", "rook", 3),
@@ -170,10 +173,14 @@ def test_games_chess_marked_destination_count_supports_multiple_piece_kinds(
     marked_piece_kind: str,
     target_answer: int,
 ) -> None:
-    out = GamesChessMarkedPieceDestinationCountTask().generate(
+    task_cls = (
+        GamesChessMarkedPieceCaptureCountTask
+        if str(query_id) == "marked_piece_capture_count"
+        else GamesChessMarkedPieceDestinationCountTask
+    )
+    out = task_cls().generate(
         61200 + int(target_answer) + len(str(marked_piece_kind)),
         params={
-            "query_id": str(query_id),
             "target_answer": int(target_answer),
             "marked_piece_kind": str(marked_piece_kind),
         },
@@ -187,7 +194,13 @@ def test_games_chess_marked_destination_count_supports_multiple_piece_kinds(
         expected_coords = tuple(sorted(piece_capture_targets(board, marked)))
         trace_key = "capture_coords"
     else:
-        expected_coords = tuple(sorted(piece_move_destinations(board, marked)))
+        expected_coords = tuple(
+            sorted(
+                coord
+                for coord in piece_move_destinations(board, marked)
+                if board[int(coord[0])][int(coord[1])] is None
+            )
+        )
         trace_key = "destination_coords"
 
     assert marked_piece is not None
@@ -197,6 +210,8 @@ def test_games_chess_marked_destination_count_supports_multiple_piece_kinds(
     assert len(expected_coords) == int(out.answer_gt.value) == int(target_answer)
     assert [list(coord) for coord in expected_coords] == sorted(execution[trace_key])
     assert set(execution["annotation_entity_ids"]) == {coord_to_cell_id(coord) for coord in expected_coords}
+    assert out.query_id == "single"
+    assert execution["internal_query_id"] == str(query_id)
 
 
 def test_games_chess_player_capture_count_matches_rules() -> None:
@@ -257,44 +272,6 @@ def test_games_chess_empty_target_square_attacker_count_matches_rules(
     assert set(execution["annotation_entity_ids"]) == {
         piece_to_entity_id(coord, board[int(coord[0])][int(coord[1])])
         for coord in attackers
-    }
-
-
-@pytest.mark.parametrize(
-    ("query_id", "piece_kind", "target_answer"),
-    (
-        ("rook_line_blocker_count", "rook", 3),
-        ("bishop_diagonal_blocker_count", "bishop", 2),
-        ("queen_line_blocker_count", "queen", 4),
-    ),
-)
-def test_games_chess_marked_piece_blocker_count_matches_rules(
-    query_id: str,
-    piece_kind: str,
-    target_answer: int,
-) -> None:
-    out = GamesChessMarkedPieceBlockerCountTask().generate(
-        50270 + int(target_answer),
-        params={"query_id": str(query_id), "target_answer": int(target_answer)},
-        max_attempts=160,
-    )
-    execution = out.trace_payload["execution_trace"]
-    board = _board_from_execution(execution)
-    marked = tuple(int(value) for value in execution["marked_coord"])
-    target = tuple(int(value) for value in execution["target_coord"])
-    marked_piece = board[int(marked[0])][int(marked[1])]
-    target_piece = board[int(target[0])][int(target[1])]
-    blockers = tuple(coord for coord in _coords_between_test(marked, target) if board[int(coord[0])][int(coord[1])] is not None)
-
-    assert marked_piece is not None
-    assert str(marked_piece.kind) == str(piece_kind)
-    assert target_piece is None
-    assert _line_allowed_for_query_test(str(query_id), marked, target)
-    assert len(blockers) == int(out.answer_gt.value) == int(target_answer)
-    assert sorted([list(coord) for coord in blockers]) == sorted(execution["blocker_coords"])
-    assert set(execution["annotation_entity_ids"]) == {
-        piece_to_entity_id(coord, board[int(coord[0])][int(coord[1])])
-        for coord in blockers
     }
 
 
@@ -438,12 +415,11 @@ def test_games_chess_checkmate_move_label_has_unique_mating_option() -> None:
 @pytest.mark.parametrize(
     ("task_cls", "params"),
     (
-        (GamesChessMarkedPieceDestinationCountTask, {"query_id": "marked_piece_move_count", "target_answer": 4}),
-        (GamesChessMarkedPieceDestinationCountTask, {"query_id": "marked_piece_capture_count", "target_answer": 2}),
+        (GamesChessMarkedPieceDestinationCountTask, {"target_answer": 4}),
+        (GamesChessMarkedPieceCaptureCountTask, {"target_answer": 2}),
         (GamesChessPlayerCapturePieceCountTask, {"target_answer": 3, "player_color": "white"}),
         (GamesChessTargetSquareAttackerCountTask, {"query_id": "king_square_attacker_count", "target_answer": 2}),
         (GamesChessTargetSquareAttackerCountTask, {"query_id": "white_piece_attacks_target_square_count", "target_answer": 2}),
-        (GamesChessMarkedPieceBlockerCountTask, {"query_id": "queen_line_blocker_count", "target_answer": 3}),
         (GamesChessKingEscapeSquareCountTask, {"target_answer": 3}),
     ),
 )
@@ -471,15 +447,12 @@ def test_games_chess_checkmate_board_is_material_plausible() -> None:
 @pytest.mark.parametrize(
     ("task_cls", "query_id", "support"),
     (
-        (GamesChessMarkedPieceDestinationCountTask, "marked_piece_move_count", (1, 2, 3, 4, 5, 6, 7, 8)),
-        (GamesChessMarkedPieceDestinationCountTask, "marked_piece_capture_count", (0, 1, 2, 3, 4)),
+        (GamesChessMarkedPieceDestinationCountTask, "marked_piece_destination_count", (1, 2, 3, 4, 5, 6)),
+        (GamesChessMarkedPieceCaptureCountTask, "marked_piece_capture_count", (0, 1, 2, 3, 4)),
         (GamesChessPlayerCapturePieceCountTask, "player_capture_piece_count", (1, 2, 3, 4, 5, 6)),
         (GamesChessTargetSquareAttackerCountTask, "king_square_attacker_count", (0, 1, 2, 3, 4)),
         (GamesChessTargetSquareAttackerCountTask, "white_piece_attacks_target_square_count", (0, 1, 2, 3, 4)),
         (GamesChessTargetSquareAttackerCountTask, "black_piece_attacks_target_square_count", (0, 1, 2, 3, 4)),
-        (GamesChessMarkedPieceBlockerCountTask, "rook_line_blocker_count", (0, 1, 2, 3, 4)),
-        (GamesChessMarkedPieceBlockerCountTask, "bishop_diagonal_blocker_count", (0, 1, 2, 3, 4)),
-        (GamesChessMarkedPieceBlockerCountTask, "queen_line_blocker_count", (0, 1, 2, 3, 4)),
         (GamesChessKingEscapeSquareCountTask, "king_escape_square_count", (0, 1, 2, 3, 4, 5)),
         (GamesChessPieceKindCountTask, "piece_kind_count", (0, 1, 2, 3, 4, 5, 6)),
         (GamesChessColoredPieceKindCountTask, "colored_piece_kind_count", (0, 1, 2, 3, 4, 5, 6)),
@@ -494,6 +467,8 @@ def test_games_chess_public_tasks_cover_declared_integer_answer_support(
     for index, target_answer in enumerate(support):
         params: dict[str, Any] = {"target_answer": int(target_answer)}
         if str(query_id) not in {
+            "marked_piece_destination_count",
+            "marked_piece_capture_count",
             "player_capture_piece_count",
             "king_escape_square_count",
             "piece_kind_count",
@@ -565,13 +540,10 @@ def test_games_chess_board_prompt_bundle_requires_rule_texts() -> None:
     assert bundle["schema_version"] == "v1"
     assert bundle["required_slots_by_key"] == {}
     static = bundle["static_slots_by_key"]
-    assert "normal chess" in static["query:marked_piece_move_count"]["standard_rule_text"].lower()
-    assert "red outlined square" in static["query:marked_piece_move_count"]["marked_piece_rule_text"].lower()
-    assert "blue outlined square" in static["query:rook_line_blocker_count"]["blocker_rule_text"].lower()
-    assert "movement line" in static["query:rook_line_blocker_count"]["blocker_rule_text"].lower()
-    assert "movement line" in static["query:bishop_diagonal_blocker_count"]["blocker_rule_text"].lower()
-    assert "movement line" in static["query:queen_line_blocker_count"]["blocker_rule_text"].lower()
-    assert "strictly between" not in static["query:rook_line_blocker_count"]["blocker_rule_text"].lower()
+    assert "normal chess" in static["query:marked_piece_destination_count"]["standard_rule_text"].lower()
+    assert "red outlined square" in static["query:marked_piece_destination_count"]["marked_piece_rule_text"].lower()
+    assert "empty destination" in static["query:marked_piece_destination_count"]["answer_hint"].lower()
+    assert "opponent-occupied" in static["query:marked_piece_capture_count"]["standard_rule_text"].lower()
     for query_key in ("white_piece_attacks_target_square_count", "black_piece_attacks_target_square_count"):
         assert all("attackers" not in str(template).lower() for template in bundle["templates"]["query"][query_key])
         assert any("pieces attack" in str(template).lower() for template in bundle["templates"]["query"][query_key])
@@ -631,13 +603,15 @@ def test_games_chess_board_build_smoke(tmp_path: Path) -> None:
     assert int(report["accepted_counts_by_task"]["task_games__chess__marked_piece_destination_count"]) == 4
     assert len(rows) == 4
     assert all(row["domain"] == "games" for row in rows)
-    assert all(row.get("scene_id") == "chess" for row in rows)
+    assert all(row["task"] == "task_games__chess__marked_piece_destination_count" for row in rows)
+    assert all(row["query_id"] == "single" for row in rows)
 
 
 def test_games_chess_retries_transient_construction_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    import trace.tasks.games.chess._lifecycle as lifecycle_module
     import trace.tasks.games.chess.marked_piece_destination_count as task_module
 
-    real_sampler = task_module.sample_marked_piece_destination_scene
+    real_sampler = lifecycle_module.sample_marked_piece_destination_scene
     calls = {"count": 0}
 
     def flaky_sampler(*args, **kwargs):
@@ -646,17 +620,18 @@ def test_games_chess_retries_transient_construction_failure(monkeypatch: pytest.
             raise ValueError("forced transient construction failure")
         return real_sampler(*args, **kwargs)
 
-    monkeypatch.setattr(task_module, "sample_marked_piece_destination_scene", flaky_sampler)
+    monkeypatch.setattr(lifecycle_module, "sample_marked_piece_destination_scene", flaky_sampler)
 
     out = task_module.GamesChessMarkedPieceDestinationCountTask().generate(
         50201,
-        params={"query_id": "marked_piece_move_count", "target_answer": 4, "scene_variant": "sparse_board"},
+        params={"target_answer": 4, "scene_variant": "sparse_board"},
         max_attempts=96,
     )
 
     assert calls["count"] >= 2
     assert out.answer_gt.type == "integer"
-    assert out.query_id == "marked_piece_move_count"
+    assert out.query_id == "single"
+    assert out.trace_payload["execution_trace"]["internal_query_id"] == "marked_piece_destination_count"
 
 
 def _board_from_execution(execution: dict):
@@ -673,37 +648,3 @@ def _board_from_execution(execution: dict):
                 parsed_row.append(ChessPiece(color=color, kind=kind))
         rows.append(parsed_row)
     return tuple(tuple(row) for row in rows)
-
-
-def _coords_between_test(a: tuple[int, int], b: tuple[int, int]) -> tuple[tuple[int, int], ...]:
-    ar, ac = int(a[0]), int(a[1])
-    br, bc = int(b[0]), int(b[1])
-    if ar == br:
-        dr, dc = 0, 1 if bc > ac else -1
-    elif ac == bc:
-        dr, dc = 1 if br > ar else -1, 0
-    elif abs(ar - br) == abs(ac - bc):
-        dr, dc = 1 if br > ar else -1, 1 if bc > ac else -1
-    else:
-        return ()
-    coords = []
-    row, col = ar + dr, ac + dc
-    while (row, col) != (br, bc):
-        coords.append((int(row), int(col)))
-        row += dr
-        col += dc
-    return tuple(coords)
-
-
-def _line_allowed_for_query_test(query_id: str, a: tuple[int, int], b: tuple[int, int]) -> bool:
-    ar, ac = int(a[0]), int(a[1])
-    br, bc = int(b[0]), int(b[1])
-    same_line = ar == br or ac == bc
-    same_diag = abs(ar - br) == abs(ac - bc)
-    if str(query_id) == "rook_line_blocker_count":
-        return same_line
-    if str(query_id) == "bishop_diagonal_blocker_count":
-        return same_diag
-    if str(query_id) == "queen_line_blocker_count":
-        return same_line or same_diag
-    return False

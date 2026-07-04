@@ -1026,7 +1026,7 @@ generation:
       target_longest_path_length_max: 6
     task_graph__node_link__mst_weight:
       node_count_min: 4
-      node_count_max: 7
+      node_count_max: 5
       extra_edge_count_min: 1
       extra_edge_count_max: 2
       edge_weight_min: 1

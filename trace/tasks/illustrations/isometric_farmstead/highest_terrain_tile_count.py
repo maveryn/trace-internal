@@ -66,7 +66,7 @@ def _select_target_count(
     params: Mapping[str, Any],
     defaults: Mapping[str, Any],
 ) -> tuple[int, dict[str, float], tuple[int, ...]]:
-    support = _support_ints(params, defaults, support_key="answer_count_support", fallback=tuple(range(4, 13)))
+    support = _support_ints(params, defaults, support_key="answer_count_support", fallback=tuple(range(2, 11)))
     explicit = params.get("target_count", params.get("answer_count"))
     if explicit is not None:
         value = int(explicit)

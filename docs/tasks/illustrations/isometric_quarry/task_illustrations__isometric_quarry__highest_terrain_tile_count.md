@@ -29,7 +29,7 @@ Query ids: `single`.
 ## Program Metadata
 - Program signatures: `count.spatial_elevation_tile_layer`
 - Base program contract: `count(tile where level(tile)=max(levels)); scene=isometric_quarry; scope=highest_terrain_tile_count`
-- Parameter axes: `canvas_profile`, `target_count=4..12`, `active_level_range`, `layout_family=count_plateau`, `highest_layer_shape`
+- Parameter axes: `canvas_profile`, `target_count=2..10`, `active_level_range`, `layout_family=count_plateau`, `highest_layer_shape`
 - Arguments:
   - `tile`: visible top-surface terrain tile; source `scene_ir.tiles`
   - `level`: integer terrain elevation; source `scene_ir.tiles`
@@ -40,7 +40,7 @@ Query ids: `single`.
 ## Answer Contract
 - Answer schema: `integer`
 - Generator `answer_gt.type`: `integer`
-- Answer range: `4..12`
+- Answer range: `2..10`
 
 ## Annotation Contract
 - Annotation schema: `bbox`

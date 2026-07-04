@@ -19,8 +19,8 @@ generation:
     task_icons__reference_canvas__reference_color_match_count:
       object_count_min: 1
       object_count_max: 16
-      target_count_min: 0
-      target_count_max: 8
+      target_count_min: 1
+      target_count_max: 6
       variant_generation_params:
         match_color:
           pool_manifest: all_icons.txt

@@ -23,6 +23,7 @@ from trace.tasks.geometry.shared.measurement_rendering import (
 from trace.tasks.geometry.shared.scene_transform import LazySceneTransform
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
+from trace.tasks.shared.text_legibility import contrast_ratio
 from trace.tasks.shared.text_rendering import load_font
 
 from .relations import centroid, midpoint
@@ -78,16 +79,6 @@ class RenderedAreaPartitionScene:
     witness: AreaPartitionWitness
 
 
-def _offset_point(ctx: AreaPartitionRenderContext, point: Point) -> Point:
-    shifted = (
-        float(point[0]) + float(ctx.layout_offset[0]),
-        float(point[1]) + float(ctx.layout_offset[1]),
-    )
-    if ctx.scene_transform is not None and ctx.scene_transform.resolved:
-        return ctx.scene_transform.point(shifted)
-    return shifted
-
-
 def _offset_points(ctx: AreaPartitionRenderContext, points: Sequence[Point]) -> tuple[Point, ...]:
     shifted = tuple(
         (
@@ -99,17 +90,6 @@ def _offset_points(ctx: AreaPartitionRenderContext, points: Sequence[Point]) -> 
     if ctx.scene_transform is not None:
         return ctx.scene_transform.points(shifted)
     return shifted
-
-
-def _polygon_visual_center(points: Sequence[Point]) -> Point:
-    """Return a stable screen-space center for placing a readout inside a polygon."""
-
-    if not points:
-        return (0.0, 0.0)
-    return (
-        sum(float(point[0]) for point in points) / float(len(points)),
-        sum(float(point[1]) for point in points) / float(len(points)),
-    )
 
 
 def _clamped_readout_center(
@@ -137,6 +117,136 @@ def _clamped_readout_center(
     else:
         y = min(max(float(center[1]), min_y), max_y)
     return (x, y)
+
+
+def _readout_text_size(
+    ctx: AreaPartitionRenderContext,
+    text: str,
+    *,
+    small: bool = True,
+) -> tuple[float, float]:
+    """Return one readout's approximate rendered size."""
+
+    font = ctx.small_font if bool(small) else ctx.font
+    stroke_width = max(0, int(getattr(ctx, "label_stroke_width", 0)))
+    bbox = ctx.draw.textbbox((0, 0), str(text), font=font, stroke_width=stroke_width)
+    return (float(bbox[2] - bbox[0]), float(bbox[3] - bbox[1]))
+
+
+def _readout_stack_centers(
+    *,
+    ctx: AreaPartitionRenderContext,
+    texts: Sequence[str],
+    x_center: float,
+    y_center: float,
+) -> tuple[Point, ...]:
+    sizes = [_readout_text_size(ctx, text, small=True) for text in texts]
+    gap = 12.0
+    total_height = sum(size[1] for size in sizes) + gap * max(0, len(sizes) - 1)
+    top = float(y_center) - total_height / 2.0
+    centers: list[Point] = []
+    cursor = top
+    for _width, height in sizes:
+        centers.append(
+            _clamped_readout_center(
+                ctx,
+                texts[len(centers)],
+                (x_center, cursor + height / 2.0),
+                small=True,
+            )
+        )
+        cursor += height + gap
+    return tuple(centers)
+
+
+def _readout_row_centers(
+    *,
+    ctx: AreaPartitionRenderContext,
+    texts: Sequence[str],
+    x_center: float,
+    y_center: float,
+) -> tuple[Point, ...]:
+    sizes = [_readout_text_size(ctx, text, small=True) for text in texts]
+    gap = 28.0
+    total_width = sum(size[0] for size in sizes) + gap * max(0, len(sizes) - 1)
+    left = float(x_center) - total_width / 2.0
+    centers: list[Point] = []
+    cursor = left
+    for width, _height in sizes:
+        centers.append(
+            _clamped_readout_center(
+                ctx,
+                texts[len(centers)],
+                (cursor + width / 2.0, y_center),
+                small=True,
+            )
+        )
+        cursor += width + gap
+    return tuple(centers)
+
+
+def _external_readout_centers(
+    ctx: AreaPartitionRenderContext,
+    outer_bbox: BBox,
+    texts: Sequence[str],
+) -> tuple[Point, ...]:
+    """Place readouts outside the partition geometry when canvas whitespace allows."""
+
+    x0, y0, x1, y1 = [float(value) for value in outer_bbox]
+    max_text_width = max(_readout_text_size(ctx, text, small=True)[0] for text in texts)
+    max_text_height = max(_readout_text_size(ctx, text, small=True)[1] for text in texts)
+    pad = 28.0
+    right_gap = float(ctx.width) - x1
+    left_gap = x0
+    below_gap = float(ctx.height) - y1
+    above_gap = y0
+    shape_center_y = (y0 + y1) / 2.0
+    shape_center_x = (x0 + x1) / 2.0
+
+    if right_gap >= max_text_width + pad * 2:
+        return _readout_stack_centers(
+            ctx=ctx,
+            texts=texts,
+            x_center=(x1 + float(ctx.width)) / 2.0,
+            y_center=shape_center_y,
+        )
+    if left_gap >= max_text_width + pad * 2:
+        return _readout_stack_centers(
+            ctx=ctx,
+            texts=texts,
+            x_center=x0 / 2.0,
+            y_center=shape_center_y,
+        )
+    if below_gap >= max_text_height + pad:
+        return _readout_row_centers(
+            ctx=ctx,
+            texts=texts,
+            x_center=shape_center_x,
+            y_center=(y1 + float(ctx.height)) / 2.0,
+        )
+    if above_gap >= max_text_height + pad:
+        return _readout_row_centers(
+            ctx=ctx,
+            texts=texts,
+            x_center=shape_center_x,
+            y_center=y0 / 2.0,
+        )
+    return _readout_row_centers(
+        ctx=ctx,
+        texts=texts,
+        x_center=float(ctx.width) / 2.0,
+        y_center=float(ctx.height) - pad,
+    )
+
+
+def _readout_ink_for_background(surfaces: Sequence[Color]) -> Color:
+    """Choose black or white readout ink for the sampled diagram background."""
+
+    candidates: tuple[Color, Color] = ((0, 0, 0), (255, 255, 255))
+    return max(
+        candidates,
+        key=lambda color: min(float(contrast_ratio(color, surface)) for surface in surfaces),
+    )
 
 
 def _draw_equal_ticks(
@@ -367,6 +477,14 @@ def create_area_partition_render_context(
         )
     )
     line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 4)))
+    readout_label_color = _readout_ink_for_background(
+        (
+            tuple(int(value) for value in diagram_style.canvas_rgb),
+            tuple(int(value) for value in diagram_style.paper_rgb),
+            tuple(int(value) for value in diagram_style.panel_fill_rgb),
+            tuple(int(value) for value in diagram_style.panel_alt_fill_rgb),
+        )
+    )
     ctx = AreaPartitionRenderContext(
         rng=rng,
         image=image,
@@ -374,8 +492,8 @@ def create_area_partition_render_context(
         width=int(width),
         height=int(height),
         line_color=shape_style.line_color,
-        label_color=shape_style.label_color,
-        label_stroke_color=shape_style.label_stroke_color,
+        label_color=readout_label_color,
+        label_stroke_color=readout_label_color,
         fill_color=fill_color,
         shaded_color=shaded_color,
         accent_color=accent_color,
@@ -405,6 +523,7 @@ def create_area_partition_render_context(
         "shaded_color": list(shaded_color),
         "accent_color": list(accent_color),
         "muted_color": list(muted_color),
+        "readout_label_color": list(readout_label_color),
         "font_family": font_record.to_trace(),
         "font_asset_version": font_asset_version(),
         "layout_jitter": {
@@ -431,19 +550,24 @@ def render_area_partition_scene(
 
     label_bboxes: Dict[str, BBox] = {}
     shaded_area_text = f"shaded area = {problem.shaded_area}"
+    target_text = "total area = ?"
+    shaded_center, target_center = _external_readout_centers(
+        ctx,
+        outer_bbox,
+        (shaded_area_text, target_text),
+    )
     label_bboxes["given_area"] = draw_readout_centered(
         ctx,
         shaded_area_text,
-        _clamped_readout_center(ctx, shaded_area_text, _polygon_visual_center(shaded_points), small=True),
+        shaded_center,
         small=True,
         required=True,
         backed=False,
     )
-    target_text = "total = ?"
     label_bboxes["target"] = draw_readout_centered(
         ctx,
         target_text,
-        _clamped_readout_center(ctx, target_text, _offset_point(ctx, (570.0, 510.0)), small=True),
+        target_center,
         small=True,
         required=True,
         backed=False,

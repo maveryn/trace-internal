@@ -23,11 +23,11 @@
     },
     "query": {
       "final_bearing_value": [
-        "The bearing labels on both route legs are absolute compass bearings measured clockwise from the same north direction, not turn angles. After locating F, what is the direct bearing from S to F?",
-        "Use each shown leg bearing as an absolute bearing from north, not as a relative turn. What bearing points directly from S to F?",
-        "Follow the shown route using the leg labels as compass bearings clockwise from the same north direction. What is the direct bearing from the start point S to the finish point F?",
-        "The route leg bearings and the answer bearing all use the same north reference. What is the direct bearing from S to F, measured clockwise from north?",
-        "Follow the route from S to F using absolute bearings from north for both legs. What is the final direct bearing from S?"
+        "The bearing labels on both route legs are absolute compass bearings measured clockwise from the same north direction, not turn angles. After locating F, which option gives the direct bearing from S to F?",
+        "Use each shown leg bearing as an absolute bearing from north, not as a relative turn. Which option gives the bearing that points directly from S to F?",
+        "Follow the shown route using the leg labels as compass bearings clockwise from the same north direction. Which option gives the direct bearing from the start point S to the finish point F?",
+        "The route leg bearings and the answer bearing all use the same north reference. Which option gives the direct bearing from S to F, measured clockwise from north?",
+        "Follow the route from S to F using absolute bearings from north for both legs. Which option gives the final direct bearing from S?"
       ],
       "endpoint_position_label": [
         "Which labeled endpoint is reached by following the route instructions from S?",
@@ -57,10 +57,10 @@
   "static_slots_by_key": {
     "query:final_bearing_value": {
       "object_description": "a compass-bearing route diagram from start point S to finish point F, where all route-leg bearing labels are absolute compass bearings measured clockwise from the same north direction",
-      "answer_hint": "set \"answer\" to the direct bearing of S to F as an integer number of degrees clockwise from the same north direction",
+      "answer_hint": "set \"answer\" to the capital option letter shown in the image for the direct bearing of S to F",
       "annotation_hint": "set \"annotation\" to a JSON object mapping the visible point-label keys \"S\" and \"F\" to their pixel points [x,y]",
-      "json_example": "{\"annotation\":{\"S\":[185,405],\"F\":[485,180]},\"answer\":45}",
-      "json_example_answer_only": "{\"answer\":45}"
+      "json_example": "{\"annotation\":{\"S\":[185,405],\"F\":[485,180]},\"answer\":\"C\"}",
+      "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "query:endpoint_position_label": {
       "object_description": "a compass-bearing route instruction panel, a graph-paper candidate grid where each square is one step, the start point marked S, and labeled candidate endpoint points, with bearings measured clockwise from north",

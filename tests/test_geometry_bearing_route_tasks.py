@@ -20,7 +20,7 @@ QUERY_ID_BY_TASK = {
 }
 
 ANSWER_TYPE_BY_TASK = {
-    GeometryBearingRouteFinalBearingValueTask: "integer",
+    GeometryBearingRouteFinalBearingValueTask: "option_letter",
     GeometryBearingRouteEndpointPositionLabelTask: "option_letter",
 }
 
@@ -86,12 +86,19 @@ def test_bearing_route_final_bearing_uses_requested_bearing() -> None:
     out = task.generate(78021, params={"target_bearing": 135}, max_attempts=20)
     trace = out.trace_payload["execution_trace"]
 
-    assert out.answer_gt.value == 135
+    assert out.answer_gt.value == trace["correct_option_label"]
     assert out.annotation_gt.type == "point_map"
     assert set(out.annotation_gt.value) == {"S", "F"}
     assert "compass_rose" not in out.annotation_gt.value
     assert int(trace["final_bearing"]) == 135
-    assert int(trace["answer_value"]) == 135
+    assert int(trace["correct_option_value"]) == 135
+    assert trace["answer_value"] == trace["correct_option_label"]
+    assert trace["option_values"][trace["target_index"]] == 135
+    assert len(trace["option_values"]) == 6
+    assert len(set(trace["option_values"])) == 6
+    assert trace["option_labels"] == ["A", "B", "C", "D", "E", "F"]
+    assert out.answer_gt.value in trace["option_labels"]
+    assert "bearing_options_bbox" in out.trace_payload["render_map"]
     assert int(trace["bearing_a"]) in {90, 180}
     assert int(trace["bearing_b"]) in {90, 180}
 

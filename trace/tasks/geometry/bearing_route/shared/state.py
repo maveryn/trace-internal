@@ -27,6 +27,7 @@ class RouteCase:
     option_count: int
     target_index: int | None
     option_labels: Tuple[str, ...]
+    option_values: Tuple[int, ...] = ()
     final_bearing: int | None = None
 
 

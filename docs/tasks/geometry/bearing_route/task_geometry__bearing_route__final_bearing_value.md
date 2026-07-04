@@ -4,11 +4,11 @@
 1. Domain: `geometry`
 2. Scene id: `bearing_route`
 5. Query id: `single`
-6. Answer schema: `integer`
+6. Answer schema: `option_letter`
 7. Annotation schema: `point_map`
 
 ## Program Contract
-- `solve_formula(visible_bearing_route_measurements, unknown_role=angle_measure, formula_schema=final_bearing_value); scene=bearing_route; scope=final_bearing_value`
+- `solve_formula_then_select_visual_option(visible_bearing_route_measurements, visible_bearing_options, unknown_role=direct_bearing_option, formula_schema=final_bearing_value); scene=bearing_route; scope=final_bearing_value`
 
 ## Prompt Bundle
 - Prompt text is loaded from the geometry prompt bundle configured for this scene/task override.
@@ -16,6 +16,7 @@
 
 ## Annotation
 Prompt-facing annotation uses pixel-space witnesses only. Map annotation is used where witness roles matter; graph coordinates, formulas, labels, and construction metadata remain private verifier metadata unless they are themselves visual witnesses.
+The six visible options are answer choices, not annotation witnesses; annotation marks only the start and finish points needed to ground the direct-bearing relation.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

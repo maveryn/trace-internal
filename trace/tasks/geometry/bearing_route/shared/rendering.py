@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, Mapping, Tuple
+from typing import Any, Dict, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
@@ -291,6 +291,52 @@ def _draw_compass_rose(ctx: RenderContext, center: Point, *, radius: float) -> B
     return pad_bbox((cx - r - 24, cy - r - 26, cx + r + 26, cy + r + 28), 2.0, width=ctx.width, height=ctx.height)
 
 
+def _draw_bearing_option_strip(
+    ctx: RenderContext,
+    *,
+    labels: Sequence[str],
+    values: Sequence[int],
+) -> tuple[BBox, tuple[Dict[str, Any], ...]]:
+    if len(labels) != len(values):
+        raise ValueError("bearing option labels and values must have the same length")
+    if len(labels) != 6:
+        raise ValueError("final bearing MCQ requires exactly six options")
+
+    panel_bbox = _draw_panel(ctx, (56.0, 512.0, 784.0, 568.0), fill=ctx.panel_fill, radius=8)
+    left, top, right, bottom = 68.0, 522.0, 772.0, 558.0
+    cell_w = (right - left) / float(len(labels))
+    option_entities: list[Dict[str, Any]] = []
+    for idx, (label, value) in enumerate(zip(labels, values)):
+        x0 = left + (float(idx) * cell_w)
+        x1 = left + (float(idx + 1) * cell_w) - 8.0
+        option_bbox = (x0, top, x1, bottom)
+        ctx.draw.rounded_rectangle(
+            tuple(float(v) for v in option_bbox),
+            radius=6,
+            fill=ctx.panel_alt_fill,
+            outline=ctx.panel_border,
+            width=2,
+        )
+        text_bbox = _draw_text(
+            ctx,
+            f"{str(label)}: {bearing_label(int(value))}",
+            ((x0 + x1) / 2.0, (top + bottom) / 2.0),
+            font=ctx.tiny_font,
+        )
+        full_bbox = _bbox_union(option_bbox, text_bbox)
+        option_entities.append(
+            {
+                "entity_id": f"bearing_option_{idx}",
+                "entity_type": "bearing_option",
+                "label": str(label),
+                "bearing_degrees": int(value),
+                "bbox": bbox_to_list(full_bbox),
+                "text_bbox": bbox_to_list(text_bbox),
+            }
+        )
+    return panel_bbox, tuple(option_entities)
+
+
 def _offset_label_point(start: Point, end: Point, amount: float) -> Point:
     sx, sy = float(start[0]), float(start[1])
     ex, ey = float(end[0]), float(end[1])
@@ -309,10 +355,14 @@ def render_final_bearing_scene(ctx: RenderContext, route_case: RouteCase) -> Ren
     """
     if route_case.final_bearing is None:
         raise ValueError("final bearing scene requires final_bearing")
+    if route_case.option_count != 6 or len(route_case.option_labels) != 6 or len(route_case.option_values) != 6:
+        raise ValueError("final bearing scene requires six rendered MCQ options")
+    if route_case.target_index is None:
+        raise ValueError("final bearing scene requires a target option index")
     p0, p1, p2 = route_unit_points(route_case)
-    panel_bbox = (60.0, 78.0, 628.0, 504.0)
+    panel_bbox = (60.0, 70.0, 628.0, 494.0)
     route_panel_bbox = _draw_panel(ctx, panel_bbox, fill=ctx.panel_alt_fill)
-    scale, origin = fit_points_to_box((p0, p1, p2), (110.0, 135.0, 560.0, 448.0), min_scale=8.0)
+    scale, origin = fit_points_to_box((p0, p1, p2), (110.0, 128.0, 560.0, 438.0), min_scale=8.0)
     start = project_point(p0, scale=scale, origin=origin)
     mid = project_point(p1, scale=scale, origin=origin)
     end = project_point(p2, scale=scale, origin=origin)
@@ -342,6 +392,11 @@ def render_final_bearing_scene(ctx: RenderContext, route_case: RouteCase) -> Ren
     _draw_text(ctx, "bearing", (715.0, 288.0), font=ctx.tiny_font)
     _draw_text(ctx, "clockwise", (715.0, 322.0), font=ctx.tiny_font)
     _draw_text(ctx, "from N", (715.0, 356.0), font=ctx.tiny_font)
+    options_bbox, option_entities = _draw_bearing_option_strip(
+        ctx,
+        labels=route_case.option_labels,
+        values=route_case.option_values,
+    )
     turn_bbox = pad_bbox(
         (mid[0] - 6.0, mid[1] - 6.0, mid[0] + 6.0, mid[1] + 6.0),
         4.0,
@@ -367,11 +422,18 @@ def render_final_bearing_scene(ctx: RenderContext, route_case: RouteCase) -> Ren
             "entity_type": "compass",
             "bbox": bbox_to_list(compass_bbox),
         },
+        {
+            "entity_id": "bearing_options",
+            "entity_type": "bearing_option_panel",
+            "bbox": bbox_to_list(options_bbox),
+            "option_count": int(route_case.option_count),
+        },
+        *option_entities,
     )
     return RenderedBearingScene(
         image=ctx.image,
-        answer=int(route_case.final_bearing),
-        answer_type="integer",
+        answer=str(route_case.option_labels[int(route_case.target_index)]),
+        answer_type="option_letter",
         annotation_bboxes=(start_bbox, end_bbox),
         annotation_roles=("S", "F"),
         annotation_points=(start, end),
@@ -383,6 +445,8 @@ def render_final_bearing_scene(ctx: RenderContext, route_case: RouteCase) -> Ren
             "north_reference_line_px": [[round(start[0], 3), round(start[1], 3)], [round(north_end[0], 3), round(north_end[1], 3)]],
             "compass_bbox": bbox_to_list(compass_bbox),
             "bearing_note_bbox": bbox_to_list(note_bbox),
+            "bearing_options_bbox": bbox_to_list(options_bbox),
+            "bearing_options": [dict(entity) for entity in option_entities],
             "route_leg_annotation_bboxes": {
                 "first_route_leg": bbox_to_list(label1_bbox),
                 "second_route_leg": bbox_to_list(label2_bbox),
@@ -397,7 +461,13 @@ def render_final_bearing_scene(ctx: RenderContext, route_case: RouteCase) -> Ren
             "turn_direction": str(route_case.turn_direction),
             "displacement": int(route_case.displacement),
             "final_bearing": int(route_case.final_bearing),
-            "answer_value": int(route_case.final_bearing),
+            "option_count": int(route_case.option_count),
+            "target_index": int(route_case.target_index),
+            "option_labels": list(route_case.option_labels),
+            "option_values": list(route_case.option_values),
+            "correct_option_label": str(route_case.option_labels[int(route_case.target_index)]),
+            "correct_option_value": int(route_case.final_bearing),
+            "answer_value": str(route_case.option_labels[int(route_case.target_index)]),
         },
     )
 

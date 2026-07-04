@@ -39,7 +39,7 @@ QUERY_IDS_BY_TASK = {
 EXPECTED_ANNOTATION_KEYS_BY_TASK = {
     GeometryRectangleSemicircleAreaTask: {"A", "B", "C", "D", "O"},
     GeometryRectangleQuarterSectorCutoutAreaTask: {"A", "B", "C", "D", "E", "F"},
-    GeometryRectangleSemicirclePerimeterTask: {"A", "B", "C", "D", "O"},
+    GeometryRectangleSemicirclePerimeterTask: {"A", "B", "C", "D", "E", "F", "O"},
     GeometryRectangleQuarterSectorCutoutPerimeterTask: {"A", "B", "C", "D", "E", "F"},
     GeometryMissingWidthFromSemicircleAreaTask: {"A", "B", "C", "D", "O"},
     GeometrySectorAngleValueTask: {"O", "A", "B"},
@@ -281,8 +281,9 @@ def test_curvilinear_perimeter_omits_derived_boundary_total_labels() -> None:
             )
             support_roles = set(out.trace_payload["render_map"]["support_roles"])
 
-            assert "arc_length_label" not in support_roles
-        assert "straight_boundary_length_label" not in support_roles
+            assert "arc_length_label" in support_roles
+            assert "straight_boundary_length_label" not in support_roles
+            assert "perimeter_total_label" not in support_roles
 
 
 def test_curvilinear_perimeter_prompts_name_curve_type() -> None:

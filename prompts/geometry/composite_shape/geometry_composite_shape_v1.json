@@ -107,11 +107,11 @@
         "What is the perimeter of the outer boundary of pentagon \"ABCDE\"?"
       ],
       "tabbed_rectilinear_perimeter": [
-        "What is the perimeter of the outer boundary of the shaded figure?",
-        "What is the perimeter of the outer boundary of the shaded figure?",
-        "What is the perimeter of the outer boundary of the shaded figure?",
-        "What is the perimeter of the outer boundary of the shaded figure?",
-        "What is the perimeter of the outer boundary of the shaded figure?"
+        "What is the perimeter of the outer boundary of the shaded figure? Add each visible side label once.",
+        "Add each labeled boundary piece once to find the perimeter of the shaded rectilinear figure.",
+        "Using each visible side label once, what is the perimeter of the outer boundary?",
+        "Compute the perimeter of the shaded figure by summing the labeled outside edges once each.",
+        "Determine the perimeter of the outer boundary using each side label shown."
       ],
       "cap_area": [
         "What is the area of the entire shaded region?",
@@ -135,25 +135,25 @@
         "Determine the total shaded area of the figure."
       ],
       "cap_perimeter": [
-        "What is the perimeter of the highlighted boundary? Treat the curved cap as a semicircle and use the visible dimensions.",
-        "Compute the perimeter of the highlighted outside boundary, including the semicircular cap.",
-        "Find the perimeter of the shaded figure, including the semicircle arc.",
-        "Using the shown dimensions and the semicircular cap, what is the perimeter of the highlighted boundary?",
-        "Determine the perimeter of the highlighted boundary from the visible dimensions and semicircle arc."
+        "What is the perimeter of the highlighted boundary? Add each visible side label and the labeled semicircle arc once.",
+        "Compute the perimeter of the highlighted outside boundary by adding each labeled side piece and the semicircle arc once.",
+        "Find the perimeter of the shaded figure, including each labeled straight segment and the labeled semicircle arc.",
+        "Using each shown side label and the semicircle arc label once, what is the perimeter of the highlighted boundary?",
+        "Determine the perimeter of the highlighted boundary from the visible side labels and semicircle arc label; use each listed piece once."
       ],
       "cutout_perimeter": [
-        "What is the perimeter of the highlighted boundary? Treat the curved cutout as a semicircle and use the visible dimensions.",
-        "Compute the perimeter of the highlighted outside and semicircular cutout boundary from the shown dimensions.",
-        "Find the perimeter of the shaded figure, including the semicircle cutout boundary.",
-        "Using the shown dimensions and the semicircular cutout, what is the perimeter of the highlighted boundary?",
-        "Determine the perimeter of the highlighted boundary from the visible dimensions and semicircle arc."
+        "What is the perimeter of the highlighted boundary? Add each visible side label and the labeled semicircle arc once.",
+        "Compute the perimeter of the highlighted outside and semicircle cutout boundary by adding each labeled boundary piece once.",
+        "Find the perimeter of the shaded figure, including each labeled straight segment and the labeled semicircle cutout arc.",
+        "Using each shown side label and the semicircle arc label once, what is the perimeter of the highlighted boundary?",
+        "Determine the perimeter of the highlighted boundary from the visible side labels and semicircle arc label; use each listed piece once."
       ],
       "rectangle_quarter_sector_cutout_perimeter": [
-        "What is the perimeter of the highlighted boundary? Treat the curved cutout as a quarter circle and use the visible dimensions.",
-        "Compute the perimeter of the highlighted outside and quarter-circle cutout boundary from the shown dimensions.",
-        "Find the perimeter of the shaded figure, including the quarter-circle cutout boundary.",
-        "Using the shown dimensions and the quarter-circle cutout, what is the perimeter of the highlighted boundary?",
-        "Determine the perimeter of the highlighted boundary from the visible dimensions and quarter-circle arc."
+        "What is the perimeter of the highlighted boundary? Use the visible side labels and the labeled quarter-circle arc length.",
+        "Compute the perimeter of the highlighted outside and quarter-circle cutout boundary by adding the labeled boundary pieces.",
+        "Find the perimeter of the shaded figure, including the labeled quarter-circle arc.",
+        "Using the shown side labels and quarter-circle arc label, what is the perimeter of the highlighted boundary?",
+        "Determine the perimeter of the highlighted boundary from the visible side labels and quarter-circle arc label."
       ],
       "cap_from_total_area": [
         "The total shaded area is {total_area}. What is the missing rectangle width marked with a question mark?",

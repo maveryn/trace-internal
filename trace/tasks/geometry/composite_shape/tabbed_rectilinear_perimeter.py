@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from trace.tasks.registry import register_task
 
 from ._lifecycle import run_composite_shape_public_entry
@@ -12,36 +14,71 @@ TASK_ID = "task_geometry__composite_shape__tabbed_rectilinear_perimeter"
 QUERY_ID = "tabbed_rectilinear_perimeter"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 
+
+@dataclass(frozen=True)
+class TabbedOutlineCase:
+    """All visible edge lengths needed by the tabbed-outline perimeter objective."""
+
+    total_width: int
+    side_height: int
+    tab_rise: int
+    tab_top_width: int
+
+    @property
+    def shoulder_width(self) -> int:
+        return (int(self.total_width) - int(self.tab_top_width)) // 2
+
+
 _CASES = tuple(
-    (width, height, tab_height)
-    for width in range(9, 47)
+    TabbedOutlineCase(
+        total_width=width,
+        side_height=height,
+        tab_rise=tab_height,
+        tab_top_width=tab_width,
+    )
+    for width in range(12, 47)
     for height in range(6, 35)
     for tab_height in range(2, 21)
+    for tab_width in range(4, width - 3)
+    if (width - tab_width) % 2 == 0
 )
 
 
-def _answer(case: tuple[int, int, int]) -> int:
-    width, height, tab_height = case
-    return (2 * int(width)) + (2 * int(height)) + (2 * int(tab_height))
+def _tabbed_outline_perimeter(case: TabbedOutlineCase) -> int:
+    """Return the perimeter after paired shoulders and the tab top collapse algebraically."""
+
+    return (
+        (2 * int(case.total_width))
+        + (2 * int(case.side_height))
+        + (2 * int(case.tab_rise))
+    )
 
 
-_CASES_BY_ANSWER = group_cases_by_answer(_CASES, answer_fn=_answer)
+def _visible_lengths(case: TabbedOutlineCase) -> dict[str, int]:
+    """Expose the side labels drawn by the renderer for the tabbed polygon."""
+
+    return {
+        "width": int(case.total_width),
+        "height": int(case.side_height),
+        "tab_height": int(case.tab_rise),
+        "tab_width": int(case.tab_top_width),
+        "shoulder_width": int(case.shoulder_width),
+    }
+
+
+_CASES_BY_ANSWER = group_cases_by_answer(_CASES, answer_fn=_tabbed_outline_perimeter)
 
 
 def _resolve_problem(*, selected_query: str, instance_seed, params):
     """Bind a rectilinear tab perimeter from total width, height, and tab height."""
 
-    (
-        width,
-        height,
-        tab_height,
-    ), answer_probabilities = select_answer_balanced_case(
+    case, answer_probabilities = select_answer_balanced_case(
         _CASES_BY_ANSWER,
         instance_seed=int(instance_seed),
         params=params,
         namespace=f"{TASK_ID}.{QUERY_ID}.case",
     )
-    answer = _answer((width, height, tab_height))
+    answer = _tabbed_outline_perimeter(case)
     return CompositeShapeProblem(
         prompt_key=QUERY_ID,
         shape_family="tabbed",
@@ -51,13 +88,16 @@ def _resolve_problem(*, selected_query: str, instance_seed, params):
         reasoning_kind="composite_perimeter",
         scene_kind="geometry_rectilinear_composite_shape",
         witness_type="rectilinear_composite_perimeter_formula",
-        dimensions={"width": width, "height": height, "tab_height": tab_height},
+        dimensions=_visible_lengths(case),
         formula_family="tabbed_rectilinear_outline",
         reasoning_steps=2,
         metadata_fields={
             "target_answer_support_probabilities": dict(answer_probabilities),
         },
-        execution_fields={"perimeter_formula": "2*width + 2*height + 2*tab_height"},
+        execution_fields={
+            "perimeter_formula": "AB + BC + CD + DE + EF + FG + GH + HA",
+            "equivalent_formula": "2*width + 2*height + 2*tab_height",
+        },
     )
 
 

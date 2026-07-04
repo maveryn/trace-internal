@@ -21,8 +21,14 @@ def _answer_for_case(case: tuple[int, int, int]) -> float:
     return semicircle_side_remainder_perimeter(width_units, height_units, radius_units)
 
 
+_PERIMETER_CASES = tuple(
+    case
+    for case in SEMICIRCLE_DIMENSION_CANDIDATES
+    if int(case[1]) > (2 * int(case[2]))
+)
+
 _CASES_BY_ANSWER = group_cases_by_answer(
-    SEMICIRCLE_DIMENSION_CANDIDATES,
+    _PERIMETER_CASES,
     answer_fn=_answer_for_case,
 )
 

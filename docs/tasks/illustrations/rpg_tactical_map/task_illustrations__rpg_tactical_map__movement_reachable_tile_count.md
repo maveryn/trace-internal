@@ -34,7 +34,7 @@ Query ids: `single`.
   - `unit`: blue_unit; the single reference unit visible in the scene; source `scene_ir.units`
   - `tile`: terrain_tile; visible terrain grid tile; source `scene_ir.tiles`
   - `start_tile`: the tile occupied by the blue unit; source `scene_ir.relations.start_tile_id`
-  - `budget`: integer; allowed `2|3|4`; source `query_spec.params.movement_budget`
+  - `budget`: integer; allowed `2|3`; source `query_spec.params.movement_budget`
   - `terrain_costs`: mapping; `grass=1`, `road=1`, `bridge=1`, `forest=2`, `mountain=3`, `water=blocked`; source `scene_ir.relations.terrain_movement_costs`
 - Argument metadata status: `curated`
 - Supported query ids: `single`
@@ -54,5 +54,5 @@ Query ids: `single`.
 - Prompt text must come from `prompts/illustrations/rpg_tactical_map/illustrations_rpg_tactical_map_v0.json`.
 - Public prompts must state the movement budget, that the starting tile is excluded, the orthogonal movement rule, and terrain costs, including mountain cost `3`.
 - The task has no semantic query branch beyond `single`; sampled map layout, water feature style, budget, terrain colors, and canvas profile are trace metadata, not public query ids.
-- The default generated answer range is `3..15` so counted movement areas remain visually manageable.
+- The default generated answer range is `2..8` so counted movement areas remain visually manageable.
 - Counted tile ids, counted tile bboxes, shortest movement costs, movement budget, starting tile id, integer answer, and bbox-set annotation must be recorded in the trace.

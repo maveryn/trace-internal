@@ -24,9 +24,8 @@ generation:
       movement_budget_support:
         - 2
         - 3
-        - 4
-      min_answer_count: 3
-      max_answer_count: 15
+      min_answer_count: 2
+      max_answer_count: 8
     task_illustrations__rpg_tactical_map__terrain_type_tile_count:
       query_id_support:
         - single
@@ -35,12 +34,12 @@ generation:
         - mountain
         - water
       min_answer_count: 1
-      max_answer_count: 18
+      max_answer_count: 8
     task_illustrations__rpg_tactical_map__movement_cost_value:
       query_id_support:
         - single
       min_movement_cost: 3
-      max_movement_cost: 10
+      max_movement_cost: 6
     task_illustrations__rpg_tactical_map__counterfactual_terrain_conversion_cost_value:
       query_id_support:
         - single

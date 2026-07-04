@@ -51,5 +51,5 @@ Query ids: `single`.
 - Prompt text must come from `prompts/illustrations/rpg_tactical_map/illustrations_rpg_tactical_map_v0.json`.
 - Public prompts must name the target terrain type clearly.
 - The task has no semantic query branch beyond `single`; sampled target terrain, map layout, water feature style, terrain colors, and canvas profile are trace metadata, not public query ids.
-- The default generated answer range is `1..18` so count targets are present and large forest-count cases are avoided.
+- The default generated answer range is `1..8` so count targets are present and large forest-count cases are avoided.
 - Counted tile ids, counted tile bboxes, target terrain, integer answer, and bbox-set annotation must be recorded in the trace.

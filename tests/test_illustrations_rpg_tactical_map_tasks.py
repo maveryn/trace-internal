@@ -449,17 +449,17 @@ def test_rpg_tactical_map_movement_distractors_are_plausible_and_spread() -> Non
 def test_rpg_tactical_map_movement_reachable_tile_count_contract() -> None:
     task = create_task(COUNT_TASK_ID)
     out = task.generate(
-        2026062404,
+        2026062400,
         params={
             "canvas_profile": "square",
-            "movement_budget": 3,
+            "movement_budget": 2,
         },
         max_attempts=30,
     )
     assert out.scene_id == "rpg_tactical_map"
     assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
-    assert 3 <= int(out.answer_gt.value) <= 15
+    assert 2 <= int(out.answer_gt.value) <= 8
     assert out.annotation_gt.type == "bbox_set"
     width, height = out.image.size
     for bbox in out.annotation_gt.value:

@@ -41,7 +41,7 @@ Query ids: `single`.
 - Answer schema: `integer`
 - Generator `answer_gt.type`: `integer`
 - The answer is the shortest total movement-point cost from the blue unit's starting tile to the marked target tile.
-- Default answer range is `3..10`.
+- Default answer range is `3..6`.
 
 ## Annotation Contract
 - Annotation schema: `bbox_map`

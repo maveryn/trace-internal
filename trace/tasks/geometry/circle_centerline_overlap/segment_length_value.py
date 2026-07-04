@@ -22,11 +22,13 @@ from .shared.annotations import segment_annotation
 from .shared.construction import (
     boundary_names,
     boundary_segment_answer_support,
+    center_distance_length,
     center_distance_answer_support,
     segment_length,
     select_boundary_pair,
     select_boundary_segment_overlap_case,
     select_boundary_target_role,
+    select_circle_count,
     select_center_distance_overlap_case,
     select_label_mode,
 )
@@ -74,6 +76,8 @@ class _ResolvedSegmentProblem:
     label_mode_probabilities: dict[str, float]
     boundary_pair_probabilities: dict[str, float]
     boundary_target_role_probabilities: dict[str, float]
+    circle_count: int
+    circle_count_probabilities: dict[str, float]
     answer_support_probabilities: dict[str, float]
 
 
@@ -83,15 +87,18 @@ def _center_distance_problem(
     label_mode: str,
     case_probabilities: Mapping[str, float],
     label_mode_probabilities: Mapping[str, float],
+    circle_count_probabilities: Mapping[str, float],
 ) -> _ResolvedSegmentProblem:
     """Bind the full center-distance branch and its minimal witness roles."""
 
-    answer = int(case.distance_ac)
-    target_points = ("A", "C")
+    right_center = "C" if int(case.circle_count) == 3 else "B"
+    target_name = f"A{right_center}"
+    answer = int(center_distance_length(case))
+    target_points = ("A", right_center)
     diagram_spec = CenterlineOverlapDiagramSpec(
         case=case,
         label_mode=str(label_mode),
-        target_name="AC",
+        target_name=target_name,
         known_segment_name="",
         known_segment_value=0,
         target_segment_points=target_points,
@@ -102,7 +109,7 @@ def _center_distance_problem(
     return _ResolvedSegmentProblem(
         diagram_spec=diagram_spec,
         answer=int(answer),
-        target_name="AC",
+        target_name=target_name,
         case=case,
         label_mode=str(label_mode),
         boundary_pair="",
@@ -115,6 +122,8 @@ def _center_distance_problem(
         boundary_target_role_probabilities={
             value: 0.0 for value in BOUNDARY_TARGET_ROLES
         },
+        circle_count=int(case.circle_count),
+        circle_count_probabilities=dict(circle_count_probabilities),
         answer_support_probabilities=center_distance_answer_support(answer),
     )
 
@@ -129,6 +138,7 @@ def _boundary_segment_problem(
     label_mode_probabilities: Mapping[str, float],
     boundary_pair_probabilities: Mapping[str, float],
     boundary_target_role_probabilities: Mapping[str, float],
+    circle_count_probabilities: Mapping[str, float],
 ) -> _ResolvedSegmentProblem:
     """Bind one boundary segment branch and its paired known segment."""
 
@@ -168,6 +178,8 @@ def _boundary_segment_problem(
         label_mode_probabilities=dict(label_mode_probabilities),
         boundary_pair_probabilities=dict(boundary_pair_probabilities),
         boundary_target_role_probabilities=dict(boundary_target_role_probabilities),
+        circle_count=int(case.circle_count),
+        circle_count_probabilities=dict(circle_count_probabilities),
         answer_support_probabilities=boundary_segment_answer_support(answer),
     )
 
@@ -192,6 +204,8 @@ def _trace_payload(
         "query_id_probabilities": dict(query_probabilities),
         "overlap_case_key": str(case.key),
         "overlap_case_probabilities": dict(problem.case_probabilities),
+        "circle_count": int(problem.circle_count),
+        "circle_count_probabilities": dict(problem.circle_count_probabilities),
         "label_mode": str(problem.label_mode),
         "label_mode_probabilities": dict(problem.label_mode_probabilities),
         "boundary_pair": str(problem.boundary_pair),
@@ -222,7 +236,7 @@ def _trace_payload(
             "relations": {
                 "type": "circle_centerline_overlap_chain",
                 "adjacent_overlaps_only": True,
-                "circle_count": 3,
+                "circle_count": int(problem.circle_count),
                 "distance_ab": int(case.distance_ab),
                 "distance_bc": int(case.distance_bc),
                 "distance_ac": int(case.distance_ac),
@@ -271,6 +285,7 @@ def _trace_payload(
             "distance_ac": int(case.distance_ac),
             "overlap_ab": int(case.overlap_ab),
             "overlap_bc": int(case.overlap_bc),
+            "circle_count": int(problem.circle_count),
             "label_mode": str(problem.label_mode),
             "boundary_pair": str(problem.boundary_pair),
             "boundary_target_role": str(problem.boundary_target_role),
@@ -284,20 +299,23 @@ def _trace_payload(
             "scene_id": SCENE_ID,
             "query_id": str(selected_query),
             "formula_family": "circle_centerline_overlap_segment_length",
-            "circle_count": 3,
+            "circle_count": int(problem.circle_count),
             "radii": {
                 "A": int(case.radius_a),
                 "B": int(case.radius_b),
-                "C": int(case.radius_c),
+                **({"C": int(case.radius_c)} if int(problem.circle_count) == 3 else {}),
             },
             "distances": {
                 "AB": int(case.distance_ab),
-                "BC": int(case.distance_bc),
-                "AC": int(case.distance_ac),
+                **(
+                    {"BC": int(case.distance_bc), "AC": int(case.distance_ac)}
+                    if int(problem.circle_count) == 3
+                    else {}
+                ),
             },
             "overlaps": {
-                "XY": int(case.overlap_ab),
-                "UV": int(case.overlap_bc),
+                "PQ": int(case.overlap_ab),
+                **({"RS": int(case.overlap_bc)} if int(problem.circle_count) == 3 else {}),
             },
             "target_name": str(problem.target_name),
             "known_segment_name": str(problem.known_segment_name),
@@ -337,8 +355,14 @@ class GeometryCircleCenterlineOverlapSegmentLengthValueTask:
             instance_seed=int(instance_seed),
             namespace=f"{TASK_ID}.{selected_query}.label_mode",
         )
+        circle_count, circle_count_probabilities = select_circle_count(
+            params=task_params,
+            instance_seed=int(instance_seed),
+            namespace=f"{TASK_ID}.{selected_query}.circle_count",
+        )
         if str(selected_query) == QUERY_ID_CENTER_DISTANCE:
             case, case_probabilities = select_center_distance_overlap_case(
+                circle_count=int(circle_count),
                 instance_seed=int(instance_seed),
                 params=task_params,
                 namespace=f"{TASK_ID}.{selected_query}.overlap_case",
@@ -348,9 +372,11 @@ class GeometryCircleCenterlineOverlapSegmentLengthValueTask:
                 label_mode=str(label_mode),
                 case_probabilities=case_probabilities,
                 label_mode_probabilities=label_mode_probabilities,
+                circle_count_probabilities=circle_count_probabilities,
             )
         elif str(selected_query) == QUERY_ID_BOUNDARY_SEGMENT:
             boundary_pair, boundary_pair_probabilities = select_boundary_pair(
+                circle_count=int(circle_count),
                 params=task_params,
                 instance_seed=int(instance_seed),
                 namespace=f"{TASK_ID}.{selected_query}.boundary_pair",
@@ -365,6 +391,7 @@ class GeometryCircleCenterlineOverlapSegmentLengthValueTask:
             case, case_probabilities = select_boundary_segment_overlap_case(
                 boundary_pair=str(boundary_pair),
                 boundary_target_role=str(boundary_target_role),
+                circle_count=int(circle_count),
                 instance_seed=int(instance_seed),
                 params=task_params,
                 namespace=f"{TASK_ID}.{selected_query}.overlap_case",
@@ -378,6 +405,7 @@ class GeometryCircleCenterlineOverlapSegmentLengthValueTask:
                 label_mode_probabilities=label_mode_probabilities,
                 boundary_pair_probabilities=boundary_pair_probabilities,
                 boundary_target_role_probabilities=boundary_target_role_probabilities,
+                circle_count_probabilities=circle_count_probabilities,
             )
         else:
             raise ValueError(f"unsupported query_id for {TASK_ID}: {selected_query}")
@@ -416,6 +444,7 @@ class GeometryCircleCenterlineOverlapSegmentLengthValueTask:
             prompt_query_key=str(selected_query),
             target_name=str(problem.target_name),
             label_mode=str(problem.label_mode),
+            circle_count=int(problem.circle_count),
             answer_value=int(problem.answer),
             instance_seed=int(instance_seed),
         )

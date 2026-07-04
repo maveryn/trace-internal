@@ -39,6 +39,7 @@ from trace.tasks.geometry.shared.vector2d import (
 
 from .state import (
     BBox,
+    BOUNDARY_POINT_LABELS,
     CENTER_LABELS,
     SCENE_ID,
     CenterlineOverlapDiagramSpec,
@@ -135,6 +136,14 @@ def _circle_measure_label(spec: CenterlineOverlapDiagramSpec, label: str) -> str
     return f"r{label}={radius}"
 
 
+def _active_center_labels(spec: CenterlineOverlapDiagramSpec) -> tuple[str, ...]:
+    return CENTER_LABELS[: int(spec.case.circle_count)]
+
+
+def _active_boundary_labels(spec: CenterlineOverlapDiagramSpec) -> tuple[str, ...]:
+    return BOUNDARY_POINT_LABELS[: 2 if int(spec.case.circle_count) == 2 else 4]
+
+
 def _rgb_tuple(value: Sequence[int] | Any) -> tuple[int, int, int]:
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes)) and len(value) >= 3:
         return tuple(max(0, min(255, int(channel))) for channel in value[:3])  # type: ignore[return-value]
@@ -169,25 +178,29 @@ def render_centerline_overlap_scene(
     instance_seed: int,
     render_namespace: str,
 ) -> RenderedCenterlineOverlapScene:
-    """Draw one collinear three-circle diagram and project annotation roles."""
+    """Draw one collinear overlap diagram and project annotation roles."""
 
     rng = spawn_rng(int(instance_seed), str(render_namespace))
     case = spec.case
     centers_local: dict[str, Point] = {
         "A": (0.0, 0.0),
         "B": (float(case.distance_ab), 0.0),
-        "C": (float(case.distance_ac), 0.0),
     }
-    radii = {"A": int(case.radius_a), "B": int(case.radius_b), "C": int(case.radius_c)}
+    radii = {"A": int(case.radius_a), "B": int(case.radius_b)}
     points_local: dict[str, Point] = {
         "A": centers_local["A"],
         "B": centers_local["B"],
-        "C": centers_local["C"],
-        "X": (centers_local["A"][0] + float(case.radius_a), 0.0),
-        "Y": (centers_local["B"][0] - float(case.radius_b), 0.0),
-        "U": (centers_local["B"][0] + float(case.radius_b), 0.0),
-        "V": (centers_local["C"][0] - float(case.radius_c), 0.0),
+        "P": (centers_local["B"][0] - float(case.radius_b), 0.0),
+        "Q": (centers_local["A"][0] + float(case.radius_a), 0.0),
     }
+    if int(case.circle_count) == 3:
+        centers_local["C"] = (float(case.distance_ac), 0.0)
+        radii["C"] = int(case.radius_c)
+        points_local["C"] = centers_local["C"]
+        points_local["R"] = (centers_local["C"][0] - float(case.radius_c), 0.0)
+        points_local["S"] = (centers_local["B"][0] + float(case.radius_b), 0.0)
+    active_center_labels = _active_center_labels(spec)
+    active_boundary_labels = _active_boundary_labels(spec)
     local_min_x = min(centers_local[key][0] - radii[key] for key in centers_local)
     local_max_x = max(centers_local[key][0] + radii[key] for key in centers_local)
     local_max_r = max(radii.values())
@@ -220,11 +233,12 @@ def render_centerline_overlap_scene(
         key: float(value) * float(ctx.scene_transform.transform.scale)
         for key, value in radius_px.items()
     }
-    centerline = unit(sub(points["C"], points["A"]))
+    rightmost_center = "C" if int(case.circle_count) == 3 else "B"
+    centerline = unit(sub(points[rightmost_center], points["A"]))
     normal = perp(centerline)
 
     circle_bboxes: dict[str, BBox] = {}
-    for index, label in enumerate(CENTER_LABELS):
+    for index, label in enumerate(active_center_labels):
         bbox = _circle_bbox(points[label], radius_px[label])
         circle_bboxes[label] = bbox
         ctx.draw.ellipse(bbox, outline=ctx.line_color, width=ctx.line_width)
@@ -236,7 +250,7 @@ def render_centerline_overlap_scene(
     )
 
     line_start = add(points["A"], mul(centerline, -radius_px["A"] - 16.0))
-    line_end = add(points["C"], mul(centerline, radius_px["C"] + 16.0))
+    line_end = add(points[rightmost_center], mul(centerline, radius_px[rightmost_center] + 16.0))
     ctx.draw.line([line_start, line_end], fill=ctx.secondary_color, width=max(2, ctx.line_width - 1))
 
     label_bboxes: dict[str, BBox] = {}
@@ -253,12 +267,12 @@ def render_centerline_overlap_scene(
         "A": add(mul(normal, -26.0), mul(centerline, -15.0)),
         "B": mul(normal, -30.0),
         "C": add(mul(normal, -26.0), mul(centerline, 15.0)),
-        "X": add(mul(normal, boundary_label_side), mul(centerline, boundary_label_spread)),
-        "Y": add(mul(normal, boundary_label_side), mul(centerline, -boundary_label_spread)),
-        "U": add(mul(normal, boundary_label_side), mul(centerline, boundary_label_spread)),
-        "V": add(mul(normal, boundary_label_side), mul(centerline, -boundary_label_spread)),
+        "P": add(mul(normal, boundary_label_side), mul(centerline, -boundary_label_spread)),
+        "Q": add(mul(normal, boundary_label_side), mul(centerline, boundary_label_spread)),
+        "R": add(mul(normal, boundary_label_side), mul(centerline, -boundary_label_spread)),
+        "S": add(mul(normal, boundary_label_side), mul(centerline, boundary_label_spread)),
     }
-    for label in CENTER_LABELS:
+    for label in active_center_labels:
         point = points[label]
         ctx.draw.ellipse(
             (point[0] - dot_radius, point[1] - dot_radius, point[0] + dot_radius, point[1] + dot_radius),
@@ -272,7 +286,7 @@ def render_centerline_overlap_scene(
             small=True,
             extra_metadata=readout_metadata,
         )
-    for label in ("X", "Y", "U", "V"):
+    for label in active_boundary_labels:
         point = points[label]
         ctx.draw.ellipse(
             (
@@ -292,7 +306,7 @@ def render_centerline_overlap_scene(
             extra_metadata=readout_metadata,
         )
 
-    for label in CENTER_LABELS:
+    for label in active_center_labels:
         text_point = add(points[label], mul(normal, -radius_px[label] - 22.0))
         label_bboxes[f"{label}_measure"] = draw_readout_centered(
             ctx,
@@ -305,27 +319,28 @@ def render_centerline_overlap_scene(
     if spec.show_overlap_dimensions:
         label_bboxes["overlap_ab"] = draw_dimension_line(
             ctx,
-            points["Y"],
-            points["X"],
-            f"XY={int(case.overlap_ab)}",
+            points["P"],
+            points["Q"],
+            f"PQ={int(case.overlap_ab)}",
             label_offset=mul(normal, 58.0),
             color=ctx.accent_color,
             extra_metadata=readout_metadata,
         )
-        label_bboxes["overlap_bc"] = draw_dimension_line(
-            ctx,
-            points["V"],
-            points["U"],
-            f"UV={int(case.overlap_bc)}",
-            label_offset=mul(normal, 58.0),
-            color=ctx.accent_color,
-            extra_metadata=readout_metadata,
-        )
-        label_bboxes["target_ac"] = draw_dimension_line(
+        if int(case.circle_count) == 3:
+            label_bboxes["overlap_bc"] = draw_dimension_line(
+                ctx,
+                points["R"],
+                points["S"],
+                f"RS={int(case.overlap_bc)}",
+                label_offset=mul(normal, 58.0),
+                color=ctx.accent_color,
+                extra_metadata=readout_metadata,
+            )
+        label_bboxes["target_center_distance"] = draw_dimension_line(
             ctx,
             points["A"],
-            points["C"],
-            "AC=?",
+            points[rightmost_center],
+            f"A{rightmost_center}=?",
             label_offset=mul(normal, -62.0),
             color=ctx.secondary_color,
             extra_metadata=readout_metadata,
@@ -358,7 +373,7 @@ def render_centerline_overlap_scene(
         height=ctx.height,
         error_message="circle centerline overlap label too close to canvas edge",
     )
-    role_points = {label: points[label] for label in ("A", "B", "C", "X", "Y", "U", "V")}
+    role_points = {label: points[label] for label in (*active_center_labels, *active_boundary_labels)}
     scene_entities = tuple(
         {
             "entity_id": f"circle_{label.lower()}",
@@ -370,18 +385,19 @@ def render_centerline_overlap_scene(
             "radius_px": round(float(radius_px[label]), 3),
             "bbox": bbox_to_list(circle_bboxes[label]),
         }
-        for label in CENTER_LABELS
+        for label in active_center_labels
     )
     render_map = {
         "coord_space": "pixel",
-        "centers": {label: point_to_list(points[label]) for label in CENTER_LABELS},
-        "boundary_points": {label: point_to_list(points[label]) for label in ("X", "Y", "U", "V")},
-        "circle_bboxes": {label: bbox_to_list(circle_bboxes[label]) for label in CENTER_LABELS},
+        "centers": {label: point_to_list(points[label]) for label in active_center_labels},
+        "boundary_points": {label: point_to_list(points[label]) for label in active_boundary_labels},
+        "circle_bboxes": {label: bbox_to_list(circle_bboxes[label]) for label in active_center_labels},
         "label_bboxes": {key: bbox_to_list(value) for key, value in label_bboxes.items()},
         "scale_px_per_unit": round(float(scale), 3),
         "centerline_angle_degrees": round(math.degrees(angle), 3),
         "target_name": str(spec.target_name),
         "label_mode": str(spec.label_mode),
+        "circle_count": int(case.circle_count),
     }
     return RenderedCenterlineOverlapScene(
         image=ctx.image,

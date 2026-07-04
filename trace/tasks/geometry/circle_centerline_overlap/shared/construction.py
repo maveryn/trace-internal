@@ -5,11 +5,18 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Any, Mapping, Sequence
 
-from trace.core.sampling import integer_range_choice, uniform_choice
+from trace.core.sampling import integer_range_choice, uniform_choice, weighted_support_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.fixed_query import geometry_selected_probability_map
 
-from .state import BOUNDARY_PAIRS, BOUNDARY_TARGET_ROLES, LABEL_MODES, CircleOverlapCase
+from .state import (
+    BOUNDARY_PAIRS,
+    BOUNDARY_TARGET_ROLES,
+    DEFAULT_CIRCLE_COUNT_WEIGHTS,
+    LABEL_MODES,
+    SUPPORTED_CIRCLE_COUNTS,
+    CircleOverlapCase,
+)
 
 RADIUS_A_RANGE: tuple[int, int] = (8, 18)
 RADIUS_B_RANGE: tuple[int, int] = (12, 28)
@@ -64,6 +71,7 @@ def _sample_overlap_for_pair(
 
 def _sample_generated_overlap_case(
     *,
+    circle_count: int,
     instance_seed: int,
     params: Mapping[str, Any],
     namespace: str,
@@ -84,19 +92,30 @@ def _sample_generated_overlap_case(
         low=RADIUS_B_RANGE[0],
         high=RADIUS_B_RANGE[1],
     )
-    radius_c = _select_int_inclusive(
-        instance_seed=int(instance_seed),
-        params=params,
-        namespace=f"{namespace}.radius_c",
-        low=RADIUS_C_RANGE[0],
-        high=RADIUS_C_RANGE[1],
-    )
     overlap_ab = _sample_overlap_for_pair(
         left_radius=radius_a,
         right_radius=radius_b,
         instance_seed=int(instance_seed),
         params=params,
         namespace=f"{namespace}.overlap_ab",
+    )
+    if int(circle_count) == 2:
+        case = CircleOverlapCase(
+            radius_a=int(radius_a),
+            radius_b=int(radius_b),
+            radius_c=0,
+            overlap_ab=int(overlap_ab),
+            overlap_bc=0,
+        )
+        validate_overlap_case(case)
+        return case
+
+    radius_c = _select_int_inclusive(
+        instance_seed=int(instance_seed),
+        params=params,
+        namespace=f"{namespace}.radius_c",
+        low=RADIUS_C_RANGE[0],
+        high=RADIUS_C_RANGE[1],
     )
     overlap_bc = _sample_overlap_for_pair(
         left_radius=radius_b,
@@ -117,14 +136,24 @@ def _sample_generated_overlap_case(
 
 
 @lru_cache(maxsize=1)
-def generated_overlap_cases() -> tuple[CircleOverlapCase, ...]:
+def _all_generated_overlap_cases() -> tuple[CircleOverlapCase, ...]:
     """Return the finite support induced by the broad range sampler."""
 
     cases: list[CircleOverlapCase] = []
     for radius_a in range(RADIUS_A_RANGE[0], RADIUS_A_RANGE[1] + 1):
         for radius_b in range(RADIUS_B_RANGE[0], RADIUS_B_RANGE[1] + 1):
+            max_overlap_ab = _max_overlap_for_pair(radius_a, radius_b)
+            for overlap_ab in range(OVERLAP_RANGE[0], max_overlap_ab + 1):
+                case = CircleOverlapCase(
+                    radius_a=int(radius_a),
+                    radius_b=int(radius_b),
+                    radius_c=0,
+                    overlap_ab=int(overlap_ab),
+                    overlap_bc=0,
+                )
+                validate_overlap_case(case)
+                cases.append(case)
             for radius_c in range(RADIUS_C_RANGE[0], RADIUS_C_RANGE[1] + 1):
-                max_overlap_ab = _max_overlap_for_pair(radius_a, radius_b)
                 max_overlap_bc = _max_overlap_for_pair(radius_b, radius_c)
                 for overlap_ab in range(OVERLAP_RANGE[0], max_overlap_ab + 1):
                     for overlap_bc in range(OVERLAP_RANGE[0], max_overlap_bc + 1):
@@ -138,6 +167,18 @@ def generated_overlap_cases() -> tuple[CircleOverlapCase, ...]:
                         validate_overlap_case(case)
                         cases.append(case)
     return tuple(cases)
+
+
+def generated_overlap_cases(circle_count: int | None = None) -> tuple[CircleOverlapCase, ...]:
+    """Return generated cases, optionally filtered by circle count."""
+
+    cases = _all_generated_overlap_cases()
+    if circle_count is None:
+        return cases
+    normalized = int(circle_count)
+    if normalized not in SUPPORTED_CIRCLE_COUNTS:
+        raise ValueError(f"circle_count must be one of {SUPPORTED_CIRCLE_COUNTS}")
+    return tuple(case for case in cases if int(case.circle_count) == normalized)
 
 
 def segment_length(case: CircleOverlapCase, pair: str, role: str) -> int:
@@ -159,28 +200,74 @@ def segment_length(case: CircleOverlapCase, pair: str, role: str) -> int:
 def validate_overlap_case(case: CircleOverlapCase) -> None:
     """Reject invalid radii/overlap combinations before rendering."""
 
-    radii = (int(case.radius_a), int(case.radius_b), int(case.radius_c))
+    radii = (int(case.radius_a), int(case.radius_b))
+    if int(case.circle_count) == 3:
+        radii = (*radii, int(case.radius_c))
     if min(radii) <= 0:
         raise ValueError("circle radii must be positive")
-    if int(case.overlap_ab) <= 0 or int(case.overlap_bc) <= 0:
+    if int(case.overlap_ab) <= 0:
         raise ValueError("adjacent overlaps must be positive")
     d_ab = int(case.distance_ab)
-    d_bc = int(case.distance_bc)
-    d_ac = int(case.distance_ac)
     if not (abs(case.radius_a - case.radius_b) + 1 < d_ab < case.radius_a + case.radius_b):
         raise ValueError("AB must be a proper adjacent overlap without containment")
-    if not (abs(case.radius_b - case.radius_c) + 1 < d_bc < case.radius_b + case.radius_c):
-        raise ValueError("BC must be a proper adjacent overlap without containment")
-    if d_ac <= int(case.radius_a) + int(case.radius_c) + 1:
-        raise ValueError("non-adjacent circles A and C must not overlap")
-    for pair in BOUNDARY_PAIRS:
+    valid_pairs = ("AB",)
+    if int(case.circle_count) == 3:
+        if int(case.overlap_bc) <= 0:
+            raise ValueError("adjacent overlaps must be positive")
+        d_bc = int(case.distance_bc)
+        d_ac = int(case.distance_ac)
+        if not (abs(case.radius_b - case.radius_c) + 1 < d_bc < case.radius_b + case.radius_c):
+            raise ValueError("BC must be a proper adjacent overlap without containment")
+        if d_ac <= int(case.radius_a) + int(case.radius_c) + 1:
+            raise ValueError("non-adjacent circles A and C must not overlap")
+        valid_pairs = BOUNDARY_PAIRS
+    for pair in valid_pairs:
         for role in BOUNDARY_TARGET_ROLES:
             if segment_length(case, pair, role) < 3:
                 raise ValueError("boundary segment answers must be at least 3")
 
 
+def center_distance_length(case: CircleOverlapCase) -> int:
+    """Return the requested full center-to-center distance for the active chain."""
+
+    return int(case.distance_ab if int(case.circle_count) == 2 else case.distance_ac)
+
+
+def select_circle_count(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> tuple[int, dict[str, float]]:
+    """Select whether this sample uses two or three adjacent overlapping circles."""
+
+    explicit = params.get("circle_count")
+    if explicit is not None:
+        value = int(explicit)
+        if value not in SUPPORTED_CIRCLE_COUNTS:
+            raise ValueError(f"circle_count must be one of {SUPPORTED_CIRCLE_COUNTS}")
+        return value, geometry_selected_probability_map(SUPPORTED_CIRCLE_COUNTS, selected=value)
+    explicit_case = params.get("overlap_case")
+    if explicit_case is not None:
+        if not isinstance(explicit_case, Sequence) or isinstance(explicit_case, (str, bytes)) or len(explicit_case) not in {3, 5}:
+            raise ValueError("overlap_case must be [radius_a, radius_b, overlap_ab] or [radius_a, radius_b, radius_c, overlap_ab, overlap_bc]")
+        value = 2 if len(explicit_case) == 3 else 3
+        return value, geometry_selected_probability_map(SUPPORTED_CIRCLE_COUNTS, selected=value)
+    if str(params.get("boundary_pair", "")) == "BC":
+        return 3, geometry_selected_probability_map(SUPPORTED_CIRCLE_COUNTS, selected=3)
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    selected, probabilities = weighted_support_choice(
+        rng,
+        SUPPORTED_CIRCLE_COUNTS,
+        weights=DEFAULT_CIRCLE_COUNT_WEIGHTS,
+        sort_keys=True,
+    )
+    return int(selected), {str(key): float(value) for key, value in probabilities.items()}
+
+
 def select_overlap_case(
     *,
+    circle_count: int | None = None,
     instance_seed: int,
     params: Mapping[str, Any],
     namespace: str,
@@ -189,12 +276,19 @@ def select_overlap_case(
 
     explicit = params.get("overlap_case")
     if explicit is not None:
-        if not isinstance(explicit, Sequence) or isinstance(explicit, (str, bytes)) or len(explicit) != 5:
-            raise ValueError("overlap_case must be [radius_a, radius_b, radius_c, overlap_ab, overlap_bc]")
-        case = CircleOverlapCase(*(int(value) for value in explicit))
+        if not isinstance(explicit, Sequence) or isinstance(explicit, (str, bytes)) or len(explicit) not in {3, 5}:
+            raise ValueError("overlap_case must be [radius_a, radius_b, overlap_ab] or [radius_a, radius_b, radius_c, overlap_ab, overlap_bc]")
+        if len(explicit) == 3:
+            case = CircleOverlapCase(int(explicit[0]), int(explicit[1]), 0, int(explicit[2]), 0)
+        else:
+            case = CircleOverlapCase(*(int(value) for value in explicit))
         validate_overlap_case(case)
+        if circle_count is not None and int(case.circle_count) != int(circle_count):
+            raise ValueError("overlap_case circle count does not match circle_count")
         return case, {case.key: 1.0}
+    resolved_count = int(circle_count) if circle_count is not None else 3
     case = _sample_generated_overlap_case(
+        circle_count=resolved_count,
         instance_seed=int(instance_seed),
         params=params,
         namespace=str(namespace),
@@ -230,21 +324,23 @@ def _select_case_by_answer(
 
 def select_center_distance_overlap_case(
     *,
+    circle_count: int,
     instance_seed: int,
     params: Mapping[str, Any],
     namespace: str,
 ) -> tuple[CircleOverlapCase, dict[str, float]]:
-    """Select an overlap case by final AC center distance."""
+    """Select an overlap case by final center-to-center distance."""
 
     if params.get("overlap_case") is not None:
         return select_overlap_case(
+            circle_count=int(circle_count),
             instance_seed=int(instance_seed),
             params=params,
             namespace=str(namespace),
         )
     grouped: dict[int, list[CircleOverlapCase]] = {}
-    for case in generated_overlap_cases():
-        grouped.setdefault(int(case.distance_ac), []).append(case)
+    for case in generated_overlap_cases(int(circle_count)):
+        grouped.setdefault(int(center_distance_length(case)), []).append(case)
     return _select_case_by_answer(
         grouped,
         instance_seed=int(instance_seed),
@@ -257,6 +353,7 @@ def select_boundary_segment_overlap_case(
     *,
     boundary_pair: str,
     boundary_target_role: str,
+    circle_count: int,
     instance_seed: int,
     params: Mapping[str, Any],
     namespace: str,
@@ -265,6 +362,7 @@ def select_boundary_segment_overlap_case(
 
     if params.get("overlap_case") is not None:
         return select_overlap_case(
+            circle_count=int(circle_count),
             instance_seed=int(instance_seed),
             params=params,
             namespace=str(namespace),
@@ -272,7 +370,7 @@ def select_boundary_segment_overlap_case(
     pair = str(boundary_pair)
     role = str(boundary_target_role)
     grouped: dict[int, list[CircleOverlapCase]] = {}
-    for case in generated_overlap_cases():
+    for case in generated_overlap_cases(int(circle_count)):
         grouped.setdefault(int(segment_length(case, pair, role)), []).append(case)
     return _select_case_by_answer(
         grouped,
@@ -296,28 +394,29 @@ def select_label_mode(
         if value not in LABEL_MODES:
             raise ValueError(f"label_mode must be one of {LABEL_MODES}")
         return value, geometry_selected_probability_map(LABEL_MODES, selected=value)
-    rng = spawn_rng(int(instance_seed), str(namespace))
-    value = uniform_choice(rng, LABEL_MODES)
+    value = LABEL_MODES[0]
     return str(value), geometry_selected_probability_map(LABEL_MODES)
 
 
 def select_boundary_pair(
     *,
+    circle_count: int,
     params: Mapping[str, Any],
     instance_seed: int,
     namespace: str,
 ) -> tuple[str, dict[str, float]]:
     """Select the adjacent circle pair used by a boundary segment."""
 
+    support = BOUNDARY_PAIRS if int(circle_count) == 3 else ("AB",)
     explicit = params.get("boundary_pair")
     if explicit is not None:
         value = str(explicit)
-        if value not in BOUNDARY_PAIRS:
-            raise ValueError(f"boundary_pair must be one of {BOUNDARY_PAIRS}")
-        return value, geometry_selected_probability_map(BOUNDARY_PAIRS, selected=value)
+        if value not in support:
+            raise ValueError(f"boundary_pair must be one of {support}")
+        return value, geometry_selected_probability_map(support, selected=value)
     rng = spawn_rng(int(instance_seed), str(namespace))
-    value = uniform_choice(rng, BOUNDARY_PAIRS)
-    return str(value), geometry_selected_probability_map(BOUNDARY_PAIRS)
+    value = uniform_choice(rng, support)
+    return str(value), geometry_selected_probability_map(support)
 
 
 def select_boundary_target_role(
@@ -344,22 +443,22 @@ def boundary_names(pair: str, role: str) -> tuple[str, str, tuple[str, str], tup
 
     if str(pair) == "AB":
         left_center, right_center = "A", "B"
-        left_boundary, right_boundary = "X", "Y"
+        left_boundary, right_boundary = "P", "Q"
     elif str(pair) == "BC":
         left_center, right_center = "B", "C"
-        left_boundary, right_boundary = "U", "V"
+        left_boundary, right_boundary = "R", "S"
     else:
         raise ValueError(f"unsupported boundary pair: {pair}")
     if str(role) == "left_center_to_right_boundary":
-        target_name = f"{left_center}{right_boundary}"
-        known_name = f"{left_boundary}{right_center}"
-        target_points = (left_center, right_boundary)
-        known_points = (left_boundary, right_center)
+        target_name = f"{left_center}{left_boundary}"
+        known_name = f"{right_boundary}{right_center}"
+        target_points = (left_center, left_boundary)
+        known_points = (right_boundary, right_center)
     elif str(role) == "left_boundary_to_right_center":
-        target_name = f"{left_boundary}{right_center}"
-        known_name = f"{left_center}{right_boundary}"
-        target_points = (left_boundary, right_center)
-        known_points = (left_center, right_boundary)
+        target_name = f"{right_boundary}{right_center}"
+        known_name = f"{left_center}{left_boundary}"
+        target_points = (right_boundary, right_center)
+        known_points = (left_center, left_boundary)
     else:
         raise ValueError(f"unsupported boundary target role: {role}")
     return target_name, known_name, target_points, known_points
@@ -368,7 +467,7 @@ def boundary_names(pair: str, role: str) -> tuple[str, str, tuple[str, str], tup
 def center_distance_answer_support(selected: int) -> dict[str, float]:
     """Return support probabilities for possible full centerline distances."""
 
-    support = tuple(sorted({int(case.distance_ac) for case in generated_overlap_cases()} | {int(selected)}))
+    support = tuple(sorted({int(center_distance_length(case)) for case in generated_overlap_cases()} | {int(selected)}))
     return geometry_selected_probability_map(support, selected=int(selected))
 
 
@@ -382,6 +481,7 @@ def boundary_segment_answer_support(selected: int) -> dict[str, float]:
                 for case in generated_overlap_cases()
                 for pair in BOUNDARY_PAIRS
                 for role in BOUNDARY_TARGET_ROLES
+                if not (int(case.circle_count) == 2 and str(pair) == "BC")
             }
             | {int(selected)}
         )
@@ -392,12 +492,14 @@ def boundary_segment_answer_support(selected: int) -> dict[str, float]:
 __all__ = [
     "boundary_names",
     "boundary_segment_answer_support",
+    "center_distance_length",
     "center_distance_answer_support",
     "generated_overlap_cases",
     "segment_length",
     "select_boundary_pair",
     "select_boundary_segment_overlap_case",
     "select_boundary_target_role",
+    "select_circle_count",
     "select_center_distance_overlap_case",
     "select_label_mode",
     "select_overlap_case",

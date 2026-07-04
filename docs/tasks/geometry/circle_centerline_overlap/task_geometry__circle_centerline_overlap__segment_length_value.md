@@ -15,10 +15,10 @@
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation
-Prompt-facing annotation uses one pixel-space segment for the requested target segment only: `[[x0,y0],[x1,y1]]`. For example, if the prompt asks for `AC`, the segment endpoints are the visible points `A` and `C`; if it asks for `AY`, the endpoints are `A` and `Y`. Numeric labels, point labels, radius/diameter readouts, and known segments remain visible context plus private verifier metadata.
+Prompt-facing annotation uses one pixel-space segment for the requested target segment only: `[[x0,y0],[x1,y1]]`. For example, if the prompt asks for `AB` or `AC`, the segment endpoints are the visible center points. If it asks for a boundary segment such as `AP` or `QB`, the endpoints are the visible center/boundary points named in the target segment. Numeric labels, point labels, radius readouts, and known segments remain visible context plus private verifier metadata.
 
 ## Sampling
-Default generation samples circle radii and adjacent overlap lengths from deterministic constrained integer ranges instead of a small fixed case bank. The constraints preserve proper adjacent circle overlaps, keep non-adjacent circles separated, and ensure boundary-segment answers remain at least 3.
+Default generation samples two-circle chains 75% of the time and three-circle chains 25% of the time as internal construction metadata. It samples circle radii and adjacent overlap lengths from deterministic constrained integer ranges instead of a small fixed case bank. The constraints preserve proper adjacent circle overlaps, keep non-adjacent circles separated for three-circle chains, and ensure boundary-segment answers remain at least 3. Boundary labels are left-to-right along the centerline: `P,Q` for the first overlap and `R,S` for the second overlap when present. Circle measurement labels are radius labels.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

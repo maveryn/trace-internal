@@ -21,6 +21,7 @@ def circle_centerline_prompt_artifacts(
     prompt_query_key: str,
     target_name: str,
     label_mode: str,
+    circle_count: int,
     answer_value: int,
     instance_seed: int,
 ) -> tuple[dict[str, Any], Any]:
@@ -49,6 +50,7 @@ def circle_centerline_prompt_artifacts(
         query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         dynamic_slots={
+            "circle_count_description": "two" if int(circle_count) == 2 else "three",
             "measure_label_kind": "diameter" if str(label_mode) == "diameter" else "radius",
             "target_name": str(target_name),
             "json_example": str(json_example),

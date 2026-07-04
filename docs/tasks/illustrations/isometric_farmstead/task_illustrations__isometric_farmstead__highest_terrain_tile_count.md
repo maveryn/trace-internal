@@ -29,7 +29,7 @@ Query ids: `single`.
 ## Program Metadata
 - Program signatures: `count.spatial_elevation_tiles`
 - Base program contract: `count(tile, level(tile)=max(level(terrain_tiles)) and tile in visible_top_surface_tiles); scene=isometric_farmstead; scope=highest_terrain_tile_count`
-- Parameter axes: `canvas_profile`, `target_count=2..10`, `highest_layer_shape`, `active_level_range`, `layout_family`
+- Parameter axes: `canvas_profile`, `target_count=4..8`, `highest_layer_shape`, `active_level_range`, `layout_family`
 - Arguments:
   - `terrain_tiles`: all visible terrain tile top faces; source `scene_ir.tiles`
   - `level`: integer terrain elevation; source `scene_ir.tiles`

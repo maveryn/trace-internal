@@ -273,10 +273,10 @@ def test_isometric_farmstead_farmer_same_level_tile_contract() -> None:
 def test_isometric_farmstead_highest_terrain_tile_count_contract() -> None:
     task = create_task(HIGHEST_TILE_COUNT_TASK_ID)
     cases = (
-        ("landscape", 2, 2026062341),
+        ("landscape", 4, 2026062341),
         ("square", 5, 2026062342),
-        ("landscape", 8, 2026062343),
-        ("square", 10, 2026062344),
+        ("landscape", 7, 2026062343),
+        ("square", 8, 2026062344),
     )
     for profile, target_count, seed in cases:
         out = task.generate(
@@ -288,7 +288,7 @@ def test_isometric_farmstead_highest_terrain_tile_count_contract() -> None:
         assert out.query_id == "single"
         assert out.answer_gt.type == "integer"
         assert int(out.answer_gt.value) == int(target_count)
-        assert 2 <= int(out.answer_gt.value) <= 10
+        assert 4 <= int(out.answer_gt.value) <= 8
         assert out.annotation_gt.type == "bbox"
         width, height = out.image.size
         _assert_bbox_inside_canvas(list(out.annotation_gt.value), width=width, height=height)

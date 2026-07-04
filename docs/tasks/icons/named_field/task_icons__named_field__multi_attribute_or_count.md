@@ -74,7 +74,8 @@ answered by attribute filtering rather than row/column stack arithmetic.
 ## Prompt Contract
 - `scene_key = single_scene_counting`
 - `task_key = counting_query`
-- prompts ask for the count of one named shape plus color-or-fill-style
-  Boolean condition
+- prompts ask for the union count of one named shape and one named color
+- prompt wording explicitly states that icons matching both properties are
+  counted once
 - answer-only and answer+annotation modes both include contract-valid JSON
   examples

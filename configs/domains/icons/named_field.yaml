@@ -674,14 +674,15 @@ prompt:
       scene_key: single_scene_counting
       object_description: a panel of colored icons
       question_text_shape_and_color_count: How many icons are "{shape_name}" icons and have {attribute_phrase}?
-      question_text_shape_or_color_count: How many icons are "{shape_name}" icons, have {attribute_phrase}, or both?
+      question_text_shape_or_color_count: Count every icon that is either a "{shape_name}" icon or has {attribute_phrase}. If
+        an icon has both properties, count it once.
       question_text_shape_and_not_color_count: How many icons are "{shape_name}" icons but do not have {attribute_phrase}?
       question_text_color_and_not_shape_count: How many icons have {attribute_phrase} but are not "{shape_name}" icons?
       question_text_neither_shape_nor_color_count: How many icons are neither "{shape_name}" icons nor icons with {attribute_phrase}?
       question_text_exactly_one_shape_or_color_count: 'How many icons have exactly one of these properties: being a "{shape_name}"
         icon or having {attribute_phrase}?'
       annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every icon
-        satisfying the stated shape/attribute condition
+        counted by the OR condition; include icons matching the named shape, icons matching the named color, and icons matching both
       answer_hint: set "answer" to the count as an integer
       json_example: '{"annotation":[[112,124,172,184],[630,298,690,358]],"answer":2}'
       json_example_answer_only: '{"answer":2}'

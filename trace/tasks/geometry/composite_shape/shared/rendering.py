@@ -274,6 +274,46 @@ def _draw_polyline(
     return bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=line_width + 2)
 
 
+def _draw_dashed_line(
+    ctx: CompositeRenderContext,
+    start: Point,
+    end: Point,
+    *,
+    fill: Color | None = None,
+    width: int | None = None,
+    dash: float = 11.0,
+    gap: float = 8.0,
+) -> BBox:
+    """Draw a dashed construction/reference segment after final placement."""
+
+    line_width = int(width if width is not None else max(2, int(ctx.line_width) - 2))
+    line_fill = fill if fill is not None else ctx.line_color
+    x0, y0 = float(start[0]), float(start[1])
+    x1, y1 = float(end[0]), float(end[1])
+    dx = x1 - x0
+    dy = y1 - y0
+    length = math.hypot(dx, dy)
+    if length <= 1e-9:
+        return bbox_from_points((start, end), width=ctx.width, height=ctx.height, pad=line_width + 2)
+    step = float(dash) + float(gap)
+    distance = 0.0
+    while distance < length:
+        seg_start = distance
+        seg_end = min(length, distance + float(dash))
+        a = seg_start / length
+        b = seg_end / length
+        ctx.draw.line(
+            [
+                (x0 + dx * a, y0 + dy * a),
+                (x0 + dx * b, y0 + dy * b),
+            ],
+            fill=line_fill,
+            width=line_width,
+        )
+        distance += step
+    return bbox_from_points((start, end), width=ctx.width, height=ctx.height, pad=line_width + 2)
+
+
 def _fill_polygon(ctx: CompositeRenderContext, points: Sequence[Point], *, fill: Color) -> BBox:
     pts = [(float(x), float(y)) for x, y in points]
     if len(pts) >= 3:
@@ -319,15 +359,19 @@ def _draw_measurement_list(
     *,
     anchor: Point | None = None,
     line_gap: float = 27.0,
+    keys: Sequence[str] | None = None,
 ) -> dict[str, BBox]:
     """Draw a compact visible measurement list away from the shape."""
 
     if anchor is None:
-        anchor = (float(ctx.width) - 120.0, 128.0)
+        anchor = (float(ctx.width) - 70.0, 150.0)
+    if keys is not None and len(keys) != len(labels):
+        raise ValueError("measurement list keys must match labels")
     bboxes: dict[str, BBox] = {}
     for index, label in enumerate(labels):
         text = str(label)
-        bboxes[f"measure_{index}"] = _draw_text(
+        key = str(keys[index]) if keys is not None else f"measure_{index}"
+        bboxes[key] = _draw_text(
             ctx,
             text,
             (float(anchor[0]), float(anchor[1]) + (float(index) * float(line_gap))),
@@ -437,12 +481,16 @@ def _render_rect_cut(ctx: CompositeRenderContext, problem: CompositeShapeProblem
     }
     region_bbox = bbox_from_points(rect, width=ctx.width, height=ctx.height, pad=2.0)
     cutout_bbox = bbox_from_points(tri, width=ctx.width, height=ctx.height, pad=4.0)
-    label_bboxes = {
-        "outer_width": _draw_segment_label(ctx, f"DC={width_value}", rect[3], rect[2], offset=-36.0),
-        "outer_height": _draw_segment_label(ctx, f"AD={height_value}", rect[0], rect[3], offset=-34.0),
-        "cutout_base": _draw_segment_label(ctx, f"EC={cut_base}", tri[1], tri[0], offset=32.0),
-        "cutout_height": _draw_segment_label(ctx, f"CF={cut_height}", tri[0], tri[2], offset=34.0),
-    }
+    label_bboxes = _draw_measurement_list(
+        ctx,
+        (
+            f"DC={width_value}",
+            f"AD={height_value}",
+            f"EC={cut_base}",
+            f"CF={cut_height}",
+        ),
+        keys=("outer_width", "outer_height", "cutout_base", "cutout_height"),
+    )
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,
         {
@@ -516,12 +564,16 @@ def _render_l_profile(ctx: CompositeRenderContext, problem: CompositeShapeProble
     cutout_rect = [pts[3], pts[2], cutout_corner, pts[4]]
     region_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=2.0)
     cutout_bbox = bbox_from_points(cutout_rect, width=ctx.width, height=ctx.height, pad=4.0)
-    label_bboxes = {
-        "outer_width": _draw_segment_label(ctx, f"AB={width_value}", pts[0], pts[1], offset=-36.0),
-        "outer_height": _draw_segment_label(ctx, f"AF={height_value}", pts[0], pts[5], offset=-34.0),
-        "missing_width": _draw_segment_label(ctx, f"DC={cut_width}", pts[3], pts[2], offset=-32.0),
-        "missing_height": _draw_segment_label(ctx, f"DE={cut_height}", pts[3], pts[4], offset=34.0),
-    }
+    label_bboxes = _draw_measurement_list(
+        ctx,
+        (
+            f"AB={width_value}",
+            f"AF={height_value}",
+            f"DC={cut_width}",
+            f"DE={cut_height}",
+        ),
+        keys=("outer_width", "outer_height", "missing_width", "missing_height"),
+    )
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,
         {label: point for label, point in zip(("A", "B", "C", "D", "E", "F"), pts)},
@@ -587,11 +639,23 @@ def _render_house(ctx: CompositeRenderContext, problem: CompositeShapeProblem) -
         "right_roof_equal_tick": _draw_equal_side_ticks(ctx, c, d, count=2),
     }
     target_bbox = bbox_from_points(pts, width=ctx.width, height=ctx.height, pad=4.0)
-    label_bboxes = {
-        "base_length_AB": _draw_segment_label(ctx, f"AB={width_value}", a, b, offset=34.0),
-        "wall_height_AE": _draw_segment_label(ctx, f"AE={wall_height}", a, e, offset=-34.0),
-        "roof_side_CD": _draw_segment_label(ctx, f"CD={roof_side}", d, c, offset=36.0),
-    }
+    label_bboxes = _draw_measurement_list(
+        ctx,
+        (
+            f"AB={width_value}",
+            f"BC={wall_height}",
+            f"CD={roof_side}",
+            f"DE={roof_side}",
+            f"EA={wall_height}",
+        ),
+        keys=(
+            "base_length_AB",
+            "wall_height_BC",
+            "roof_side_CD",
+            "roof_side_DE",
+            "wall_height_EA",
+        ),
+    )
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,
         {"A": a, "B": b, "C": c, "D": d, "E": e},
@@ -667,7 +731,7 @@ def _render_tabbed(ctx: CompositeRenderContext, problem: CompositeShapeProblem) 
             f"GH={shoulder_width}",
             f"HA={height_value}",
         ),
-        anchor=(float(ctx.width) - 124.0, 128.0),
+        anchor=(float(ctx.width) - 70.0, 150.0),
     )
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,
@@ -777,14 +841,6 @@ def _render_semicircle(ctx: CompositeRenderContext, problem: CompositeShapeProbl
     support_bboxes: list[BBox] = []
     if problem.metric_kind == "perimeter":
         remainder_units = round1((float(height_units) - (2.0 * float(radius_units))) / 2.0)
-        arc_label_position = _place_point(
-            ctx,
-            (
-                right + ((radius_px + 64.0) * (1.0 if not cutout else -1.0)),
-                mid_y,
-            ),
-        )
-        arc_bbox = draw_label(ctx, f"arc={fmt_measure(float(values['arc_length']))}", arc_label_position, small=True)
         list_bboxes = _draw_measurement_list(
             ctx,
             (
@@ -795,37 +851,43 @@ def _render_semicircle(ctx: CompositeRenderContext, problem: CompositeShapeProbl
                 f"CD={fmt_measure(width_units)}",
                 f"DA={fmt_measure(height_units)}",
             ),
-            anchor=(float(ctx.width) - 126.0, 130.0),
+            keys=(
+                "top_width_label",
+                "upper_remainder_label",
+                "arc_length_label",
+                "lower_remainder_label",
+                "bottom_width_label",
+                "height_label",
+            ),
         )
-        support_roles.extend(["arc_length_label", *list(list_bboxes)])
-        support_bboxes.extend([arc_bbox, *list_bboxes.values()])
+        support_roles.extend(list(list_bboxes))
+        support_bboxes.extend(list_bboxes.values())
     else:
-        width_dim_y = min(bottom + 44.0, float(ctx.height) - 54.0)
-        width_label_offset_y = -30.0 if width_dim_y >= float(ctx.height) - 62.0 else 30.0
-        width_label = "?" if problem.metric_kind == "missing_width" else f"AB={fmt_measure(width_units)}"
-        width_bbox = _draw_dimension(
-            ctx,
-            _place_point(ctx, (left, width_dim_y)),
-            _place_point(ctx, (right, width_dim_y)),
-            width_label,
-            label_offset=(0.0, width_label_offset_y),
-        )
-        height_bbox = _draw_dimension(
-            ctx,
-            _place_point(ctx, (left - 46.0, top)),
-            _place_point(ctx, (left - 46.0, bottom)),
-            f"AD={fmt_measure(height_units)}",
-            label_offset=(-36.0, 0.0),
-        )
-        radius_bbox = _draw_dimension(
-            ctx,
-            center,
-            _place_point(ctx, (right, mid_y - radius_px)),
-            f"r={fmt_measure(radius_units)}",
-            label_offset=(58.0 if cutout else 66.0, 0.0),
-        )
-        support_roles.extend(["width_label", "height_label", "radius_label"])
-        support_bboxes.extend([width_bbox, height_bbox, radius_bbox])
+        list_labels: list[str] = []
+        list_keys: list[str] = []
+        if problem.metric_kind != "missing_width":
+            list_labels.append(f"AB={fmt_measure(width_units)}")
+            list_keys.append("width_label")
+        list_labels.extend((f"AD={fmt_measure(height_units)}", f"r={fmt_measure(radius_units)}"))
+        list_keys.extend(("height_label", "radius_label"))
+        if problem.metric_kind == "missing_width":
+            list_labels.append(f"Area={float(values['total_area']):.1f}")
+            list_keys.append("total_area_label")
+        list_bboxes = _draw_measurement_list(ctx, tuple(list_labels), keys=tuple(list_keys))
+        support_roles.extend(list(list_bboxes))
+        support_bboxes.extend(list_bboxes.values())
+        if problem.metric_kind == "missing_width":
+            width_dim_y = min(bottom + 44.0, float(ctx.height) - 54.0)
+            width_label_offset_y = -30.0 if width_dim_y >= float(ctx.height) - 62.0 else 30.0
+            width_bbox = _draw_dimension(
+                ctx,
+                _place_point(ctx, (left, width_dim_y)),
+                _place_point(ctx, (right, width_dim_y)),
+                "?",
+                label_offset=(0.0, width_label_offset_y),
+            )
+            support_roles.append("width_label")
+            support_bboxes.append(width_bbox)
     center_marker_bbox = _draw_point_marker(ctx, center)
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,
@@ -846,16 +908,6 @@ def _render_semicircle(ctx: CompositeRenderContext, problem: CompositeShapeProbl
     annotation_roles = tuple(annotation_points)
     if problem.metric_kind == "perimeter":
         annotation_roles = tuple(annotation_points)
-    elif problem.metric_kind == "missing_width":
-        target_center_x = (left + (right if cutout else right + radius_px)) / 2.0
-        total_bbox = draw_label(
-            ctx,
-            f"Area={float(values['total_area']):.1f}",
-            _place_point(ctx, (target_center_x, top - 42.0)),
-            small=True,
-        )
-        support_bboxes.append(total_bbox)
-        support_roles.append("total_area_label")
     return RenderedCompositeShape(
         image=ctx.image,
         answer_value=problem.answer_value,
@@ -931,6 +983,10 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
     _draw_polyline(ctx, [f, c])
     _draw_polyline(ctx, [e, a])
     _draw_polyline(ctx, arc)
+    guide_bboxes = {
+        "original_top_extension_guide": _draw_dashed_line(ctx, e, b),
+        "original_right_extension_guide": _draw_dashed_line(ctx, b, f),
+    }
     if problem.metric_kind == "perimeter":
         highlight_width = _boundary_width(ctx)
         _draw_polyline(ctx, [a, e], fill=ctx.accent_color, width=highlight_width)
@@ -948,17 +1004,9 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
             e,
             f,
         ),
+        **guide_bboxes,
     }
     if problem.metric_kind == "perimeter":
-        arc_mid = math.radians(135.0)
-        arc_label_position = _place_point(
-            ctx,
-            (
-                raw_center[0] + (radius_px + 62.0) * math.cos(arc_mid),
-                raw_center[1] + (radius_px + 62.0) * math.sin(arc_mid),
-            ),
-        )
-        arc_bbox = draw_label(ctx, f"arc={fmt_measure(float(values['arc_length']))}", arc_label_position, small=True)
         list_bboxes = _draw_measurement_list(
             ctx,
             (
@@ -968,29 +1016,28 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
                 f"AD={fmt_measure(height_units)}",
                 f"arc={fmt_measure(float(values['arc_length']))}",
             ),
-            anchor=(float(ctx.width) - 126.0, 130.0),
+            keys=(
+                "top_remainder_label",
+                "right_remainder_label",
+                "bottom_width_label",
+                "left_height_label",
+                "arc_length_label",
+            ),
         )
-        support_bboxes = [arc_bbox, *list_bboxes.values()]
-        support_roles = ["arc_length_label", *list(list_bboxes)]
+        support_bboxes = list(list_bboxes.values())
+        support_roles = list(list_bboxes)
     else:
-        width_dim_y = min(bottom + 44.0, float(ctx.height) - 54.0)
-        width_bbox = _draw_dimension(
+        list_bboxes = _draw_measurement_list(
             ctx,
-            _place_point(ctx, (left, width_dim_y)),
-            _place_point(ctx, (right, width_dim_y)),
-            f"AB={fmt_measure(width_units)}",
-            label_offset=(0.0, 30.0),
+            (
+                f"AB={fmt_measure(width_units)}",
+                f"AD={fmt_measure(height_units)}",
+                f"r={fmt_measure(radius_units)}",
+            ),
+            keys=("width_label", "height_label", "radius_label"),
         )
-        height_bbox = _draw_dimension(
-            ctx,
-            _place_point(ctx, (left - 46.0, top)),
-            _place_point(ctx, (left - 46.0, bottom)),
-            f"AD={fmt_measure(height_units)}",
-            label_offset=(-36.0, 0.0),
-        )
-        radius_bbox = _draw_dimension(ctx, b, e, f"r={fmt_measure(radius_units)}", label_offset=(0.0, -36.0))
-        support_bboxes = [width_bbox, height_bbox, radius_bbox]
-        support_roles = ["width_label", "height_label", "radius_label"]
+        support_bboxes = list(list_bboxes.values())
+        support_roles = list(list_bboxes)
     center_marker_bbox = _draw_point_marker(ctx, b)
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,
@@ -1069,14 +1116,17 @@ def _render_sector(ctx: CompositeRenderContext, problem: CompositeShapeProblem) 
         _place_point(ctx, (raw_center[0] + 54.0 * math.cos(mid_rad), raw_center[1] + 54.0 * math.sin(mid_rad))),
         small=False,
     )
-    radius_bbox = _draw_dimension(ctx, center, p0, f"r={fmt_measure(radius_units)}", label_offset=(-18.0, 22.0))
     if problem.metric_kind == "sector_from_arc":
         measure_text = f"arc={float(values['arc_length']):.1f}"
         measure_role = "arc_length_label"
     else:
         measure_text = f"Area={float(values['sector_area']):.1f}"
         measure_role = "sector_area_label"
-    measure_bbox = draw_label(ctx, measure_text, (560.0, 210.0), small=True)
+    list_bboxes = _draw_measurement_list(
+        ctx,
+        (f"r={fmt_measure(radius_units)}", measure_text),
+        keys=("radius_label", measure_role),
+    )
     sector_bbox = bbox_from_points((center, *arc), width=ctx.width, height=ctx.height, pad=8.0)
     annotation_points, point_label_bboxes = _draw_labeled_points(
         ctx,
@@ -1104,8 +1154,8 @@ def _render_sector(ctx: CompositeRenderContext, problem: CompositeShapeProblem) 
         render_map={
             "target_bbox": bbox_to_list(target_bbox),
             "sector_bbox": bbox_to_list(sector_bbox),
-            "support_bboxes": [bbox_to_list(radius_bbox), bbox_to_list(measure_bbox)],
-            "support_roles": ["radius_label", measure_role],
+            "support_bboxes": [bbox_to_list(bbox) for bbox in list_bboxes.values()],
+            "support_roles": list(list_bboxes),
             "center_marker_bbox": bbox_to_list(center_marker_bbox),
             "point_label_bboxes": {key: bbox_to_list(bbox) for key, bbox in point_label_bboxes.items()},
             "coord_space": "pixel",

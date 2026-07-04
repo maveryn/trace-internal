@@ -207,7 +207,7 @@ def _fit_text(
         text=str(text),
         max_width=max(1.0, float(right - left)),
         max_height=max(1.0, float(bottom - top)),
-        bold=True,
+        bold=False,
         min_size_px=7,
         max_size_px=int(max_size_px),
         fill_ratio=0.74,
@@ -216,7 +216,8 @@ def _fit_text(
     text_bbox = draw.textbbox((0, 0), str(text), font=font)
     text_w = float(text_bbox[2] - text_bbox[0])
     text_h = float(text_bbox[3] - text_bbox[1])
-    draw_text_traced(draw,
+    draw_text_traced(
+        draw,
         (
             float(left + (0.5 * (float(right - left) - text_w)) - float(text_bbox[0])),
             float(top + (0.5 * (float(bottom - top) - text_h)) - float(text_bbox[1])),
@@ -224,7 +225,10 @@ def _fit_text(
         str(text),
         fill=tuple(int(v) for v in fill),
         font=font,
-     role="readout", required=False,)
+        role="context_text",
+        required=False,
+        stroke_width=0,
+    )
 
 
 def _brick_bbox(

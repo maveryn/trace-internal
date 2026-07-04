@@ -344,7 +344,7 @@ def _draw_board(
 
     number_font = load_font(
         int(params.number_font_size_px),
-        bold=True,
+        bold=False,
         font_family=str(params.font_family) or None,
     )
     number_radius = float(sector_outer) + float(max(62, int(params.number_font_size_px) * 1.6))
@@ -358,7 +358,7 @@ def _draw_board(
             font=number_font,
             fill=tuple(int(v) for v in palette["number"]),
             stroke_fill=(20, 24, 28),
-            stroke_width=2,
+            stroke_width=1,
         )
 
     return {

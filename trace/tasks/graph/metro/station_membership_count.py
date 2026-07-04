@@ -22,33 +22,27 @@ from ._lifecycle import (
 )
 from .shared.output import MetroRouteResolvedAxes
 from .shared.state import SCENE_ID
-from .shared.algorithms import feasible_single_route_station_counts, feasible_transfer_station_counts
-from .shared.sampling import sample_single_route_station_network, sample_transfer_station_network
+from .shared.algorithms import feasible_transfer_station_counts
+from .shared.sampling import sample_transfer_station_network
 
 
 TASK_ID = "task_graph__metro__station_membership_count"
 TRANSFER_QUERY_ID = "metro_transfer_station_count"
-SINGLE_ROUTE_QUERY_ID = "metro_single_route_station_count"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (TRANSFER_QUERY_ID, SINGLE_ROUTE_QUERY_ID)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (TRANSFER_QUERY_ID,)
 
 _QUERY_PROMPT_KEYS: Dict[str, Tuple[str, str]] = {
     TRANSFER_QUERY_ID: ("metro_transfer_station_count", "annotation_hint_transfer_station_count"),
-    SINGLE_ROUTE_QUERY_ID: ("metro_single_route_station_count", "annotation_hint_single_route_station_count"),
 }
 
 
 def _branch_params(params: Mapping[str, Any], *, branch_name: str) -> Dict[str, Any]:
     branch = dict(params)
-    if str(branch_name) == SINGLE_ROUTE_QUERY_ID:
-        branch.setdefault("target_count_min", 8)
-        branch.setdefault("target_count_max", 12)
-        branch.setdefault("route_count_min", 2)
-        branch.setdefault("route_count_max", 3)
-    else:
-        branch.setdefault("target_count_min", 1)
-        branch.setdefault("target_count_max", 6)
-        branch.setdefault("route_count_min", 3)
-        branch.setdefault("route_count_max", 5)
+    if str(branch_name) != TRANSFER_QUERY_ID:
+        raise ValueError(f"unsupported metro station-membership query: {branch_name}")
+    branch.setdefault("target_count_min", 1)
+    branch.setdefault("target_count_max", 6)
+    branch.setdefault("route_count_min", 3)
+    branch.setdefault("route_count_max", 5)
     return branch
 
 
@@ -58,12 +52,13 @@ def _resolve_axes(instance_seed: int, params: Mapping[str, Any], *, branch_name:
     gen_defaults, _render_defaults, _prompt_defaults, _background_defaults, _noise_defaults = load_metro_defaults(TASK_ID)
     route_low = int(params.get("route_count_min", gen_defaults.get("route_count_min", FALLBACK_DEFAULTS.route_count_min)))
     route_high = int(params.get("route_count_max", gen_defaults.get("route_count_max", FALLBACK_DEFAULTS.route_count_max)))
-    if str(branch_name) == SINGLE_ROUTE_QUERY_ID:
-        feasible = feasible_single_route_station_counts(route_count_min=route_low, route_count_max=route_high)
-        feasible_for_route = lambda route_count: feasible_single_route_station_counts(route_count_min=int(route_count), route_count_max=int(route_count))
-    else:
-        feasible = feasible_transfer_station_counts(route_count_min=route_low, route_count_max=route_high)
-        feasible_for_route = lambda route_count: feasible_transfer_station_counts(route_count_min=int(route_count), route_count_max=int(route_count))
+    if str(branch_name) != TRANSFER_QUERY_ID:
+        raise ValueError(f"unsupported metro station-membership query: {branch_name}")
+    feasible = feasible_transfer_station_counts(route_count_min=route_low, route_count_max=route_high)
+    feasible_for_route = lambda route_count: feasible_transfer_station_counts(
+        route_count_min=int(route_count),
+        route_count_max=int(route_count),
+    )
     target_support = support_from_bounds(
         params=params,
         gen_defaults=gen_defaults,
@@ -105,12 +100,13 @@ class GraphCountingMetroStationMembershipCountTask:
         forced_params = force_query_id_params(branch_params, query_id=str(branch_name))
         axes = _resolve_axes(int(instance_seed), forced_params, branch_name=str(branch_name))
         sample_rng = spawn_rng(int(instance_seed), f"{TASK_ID}.metro_network")
-        if str(branch_name) == SINGLE_ROUTE_QUERY_ID:
-            sample = sample_single_route_station_network(sample_rng, target_count=int(axes.target_count), route_count=int(axes.route_count), label_variant=str(axes.label_variant))
-            answer_value = int(sample.target_single_route_count)
-        else:
-            sample = sample_transfer_station_network(sample_rng, target_count=int(axes.target_count), route_count=int(axes.route_count), label_variant=str(axes.label_variant))
-            answer_value = int(sample.target_transfer_count)
+        sample = sample_transfer_station_network(
+            sample_rng,
+            target_count=int(axes.target_count),
+            route_count=int(axes.route_count),
+            label_variant=str(axes.label_variant),
+        )
+        answer_value = int(sample.target_transfer_count)
         prompt_query_key, prompt_annotation_key = _QUERY_PROMPT_KEYS[str(branch_name)]
         assets = prepare_metro_assets(
             owner_id=TASK_ID,
@@ -140,6 +136,5 @@ class GraphCountingMetroStationMembershipCountTask:
 
 
 GraphCountingTransferStationCountTask = GraphCountingMetroStationMembershipCountTask
-GraphCountingSingleRouteStationCountTask = GraphCountingMetroStationMembershipCountTask
 
-__all__ = ["GraphCountingMetroStationMembershipCountTask", "GraphCountingTransferStationCountTask", "GraphCountingSingleRouteStationCountTask", "TASK_ID"]
+__all__ = ["GraphCountingMetroStationMembershipCountTask", "GraphCountingTransferStationCountTask", "TASK_ID"]

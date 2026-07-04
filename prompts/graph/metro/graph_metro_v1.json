@@ -29,13 +29,6 @@
         "How many labeled stations are transfer stations?",
         "Count stations that appear on multiple colored routes."
       ],
-      "metro_single_route_station_count": [
-        "How many stations are served by exactly one colored route?",
-        "Count the non-transfer stations that belong to only one route.",
-        "What is the number of stations with exactly one route passing through them?",
-        "How many labeled stations appear on just one colored route?",
-        "Count stations that are not transfer stations because they are on a single route."
-      ],
       "metro_route_transfer_station_count": [
         "On the {route_name} route, how many stations are served by two or more colored routes?",
         "Count the transfer stations on the {route_name} route.",
@@ -164,7 +157,6 @@
     "json_example_shortest_path_length": "{\"annotation\":[[180,220],[310,180]],\"answer\":2}",
     "json_example_answer_only": "{\"answer\":2}",
     "annotation_hint_transfer_station_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all transfer stations",
-    "annotation_hint_single_route_station_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all stations served by exactly one route",
     "annotation_hint_route_transfer_station_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all transfer stations on the {route_name} route; use an empty array when there are none",
     "annotation_hint_route_single_route_station_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all stations served only by the {route_name} route",
     "annotation_hint_exact_distance_count": "set \"annotation\" to an array of [x,y] pixel points at the centers of all stations whose shortest metro-route distance from {query_label} is exactly {query_distance} route segments",

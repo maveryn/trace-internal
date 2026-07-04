@@ -115,10 +115,7 @@ GRAPH_QUERY_IDS = {
         "metro_route_transfer_station_count",
     ),
     "task_graph__metro__shortest_path_length": ("single",),
-    "task_graph__metro__station_membership_count": (
-        "metro_single_route_station_count",
-        "metro_transfer_station_count",
-    ),
+    "task_graph__metro__station_membership_count": ("single",),
     "task_graph__node_link__articulation_point_count": ("single",),
     "task_graph__node_link__bridge_count": ("single",),
     "task_graph__node_link__common_related_node_count": (

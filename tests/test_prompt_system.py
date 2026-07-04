@@ -844,10 +844,6 @@ def test_graph_counting_bundle_supports_metro_transfer_station_count_query() -> 
         len(bundle.query_templates["metro_transfer_station_count"])
         == REQUIRED_PROMPT_VARIANTS
     )
-    assert (
-        len(bundle.query_templates["metro_single_route_station_count"])
-        == REQUIRED_PROMPT_VARIANTS
-    )
 
 
 def test_graph_relation_bundle_supports_metro_exact_distance_count_query() -> None:

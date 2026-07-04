@@ -10,7 +10,8 @@ Candidate set: the visible game board, pieces, tokens, cards, tiles, marked stat
 Operands: visible scene state and prompt-bound operands named by `destination_label`, `where`, `destination_cell`, `advance`, `token_position`, `shown_roll_sequence`, `ludo_board`, `move_result_option_label`.
 Operation: evaluate `select` over the candidate set using the visible game state, rules, legal moves, comparisons, counts, simulations, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
 Output binding: `answer` uses the `option_letter` schema; generation binds a unique final answer.
-Annotation witnesses: `annotation` uses the `bbox` schema; the prompt/annotation contract defines the minimal visual witnesses.
+Annotation schema: `point_map`.
+Annotation witnesses: `annotation` marks the moving token center and the selected destination-cell center.
 Query ids: `single`.
 
 ## Generator

@@ -248,8 +248,6 @@ def render_container_volume_transfer_scene(ctx: RenderContext, problem: Resolved
 
     rng = spawn_rng(int(instance_seed), f"geometry.container_volume_transfer.{problem.objective}.render.scene")
     is_resulting_height = str(problem.diagram_mode) == "resulting_fill_height"
-    is_target_capacity = str(problem.diagram_mode) == "target_capacity_unknown"
-    is_transferred_volume = str(problem.diagram_mode) == "total_transferred_unknown"
     source_center_x = float(ctx.width) * 0.27 + float(rng.uniform(-14.0, 14.0))
     target_center_x = float(ctx.width) * 0.72 + float(rng.uniform(-14.0, 14.0))
     base_y = float(ctx.height) * 0.71 + float(rng.uniform(-8.0, 10.0))
@@ -296,15 +294,13 @@ def render_container_volume_transfer_scene(ctx: RenderContext, problem: Resolved
     label_bboxes["source_base_area"] = draw_text_centered(ctx, f"base area={problem.source_base_area}", (source_center_x, source_bbox[3] + 28.0), small=True)
     label_bboxes["source_height"] = draw_text_centered(ctx, f"height={problem.source_height}", (source_bbox[0] - 56.0, (source_bbox[1] + source_bbox[3]) / 2.0), small=True)
     if problem.target_shape == "cylinder":
-        if not is_target_capacity and not is_transferred_volume:
-            label_bboxes["target_base_area"] = draw_text_centered(ctx, f"base area={problem.target_base_area}", (target_center_x, target_bbox[3] + 28.0), small=True)
-        if not is_resulting_height and not is_target_capacity and not is_transferred_volume:
+        label_bboxes["target_base_area"] = draw_text_centered(ctx, f"base area={problem.target_base_area}", (target_center_x, target_bbox[3] + 28.0), small=True)
+        if not is_resulting_height:
             label_bboxes["target_height"] = draw_text_centered(ctx, f"height={problem.target_height}", (target_bbox[2] + 62.0, (target_bbox[1] + target_bbox[3]) / 2.0), small=True)
     else:
-        if not is_target_capacity and not is_transferred_volume:
-            label_bboxes["target_length"] = draw_text_centered(ctx, f"L={problem.target_length}", (target_center_x - 4.0, target_bbox[3] + 30.0), small=True)
-            label_bboxes["target_width"] = draw_text_centered(ctx, f"W={problem.target_width}", (target_bbox[2] + 38.0, target_bbox[1] + 22.0), small=True)
-        if not is_resulting_height and not is_target_capacity and not is_transferred_volume:
+        label_bboxes["target_length"] = draw_text_centered(ctx, f"L={problem.target_length}", (target_center_x - 4.0, target_bbox[3] + 30.0), small=True)
+        label_bboxes["target_width"] = draw_text_centered(ctx, f"W={problem.target_width}", (target_bbox[2] + 38.0, target_bbox[1] + 22.0), small=True)
+        if not is_resulting_height:
             label_bboxes["target_height"] = draw_text_centered(ctx, f"H={problem.target_height}", (target_bbox[2] + 64.0, (target_bbox[1] + target_bbox[3]) / 2.0 + 22.0), small=True)
     if is_resulting_height:
         label_bboxes["transfer_count"] = draw_value_box(ctx, f"{problem.pour_count} full pours", (ctx.width / 2.0, 78.0 + float(rng.uniform(-4.0, 5.0))))
@@ -313,18 +309,12 @@ def render_container_volume_transfer_scene(ctx: RenderContext, problem: Resolved
         fill_label_x = float(target_bbox[2]) + (72.0 if problem.target_shape == "cuboid" else 64.0)
         label_bboxes["fill_mark_label"] = draw_text_centered(ctx, "height=?", (fill_label_x, (fill_mark_bbox[1] + fill_mark_bbox[3]) / 2.0), small=True)
         fill_mark_bbox = _bbox_union((fill_mark_bbox, label_bboxes["fill_mark_label"]), width=ctx.width, height=ctx.height, pad=5.0)
-    elif is_target_capacity or is_transferred_volume:
-        label_bboxes["transfer_count"] = draw_value_box(ctx, f"{problem.pour_count} full pours", (ctx.width / 2.0, 78.0 + float(rng.uniform(-4.0, 5.0))))
-        question_text = "total volume ?" if is_transferred_volume else "capacity ?"
-        label_bboxes["target_capacity_question"] = draw_text_centered(ctx, question_text, (target_center_x, target_bbox[3] + 28.0), small=True)
     else:
         label_bboxes["question"] = draw_value_box(ctx, "full pours ?", (ctx.width / 2.0, 78.0 + float(rng.uniform(-4.0, 5.0))))
     arrow_bbox = draw_arrow(ctx, (source_bbox[2] + 26.0, (source_bbox[1] + source_bbox[3]) / 2.0 - 8.0), (target_bbox[0] - 26.0, (target_bbox[1] + target_bbox[3]) / 2.0 - 8.0))
     source_dimension_region = _bbox_union((label_bboxes["source_base_area"], label_bboxes["source_height"]), width=ctx.width, height=ctx.height, pad=6.0)
     if is_resulting_height:
         target_dimension_keys = ("target_base_area",) if problem.target_shape == "cylinder" else ("target_length", "target_width")
-    elif is_target_capacity or is_transferred_volume:
-        target_dimension_keys = ()
     else:
         target_dimension_keys = ("target_base_area", "target_height") if problem.target_shape == "cylinder" else ("target_length", "target_width", "target_height")
     target_dimension_region = (
@@ -345,8 +335,6 @@ def render_container_volume_transfer_scene(ctx: RenderContext, problem: Resolved
                 "fill_mark_bbox": fill_mark_bbox if fill_mark_bbox is not None else target_dimension_region,
             }
         )
-    elif is_target_capacity or is_transferred_volume:
-        annotation_bboxes.update({"transfer_count_bbox": label_bboxes["transfer_count"], "transfer_arrow_bbox": arrow_bbox})
     else:
         annotation_bboxes.update(
             {

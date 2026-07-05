@@ -7,7 +7,6 @@ import json
 import pytest
 
 from trace.core.taxonomy import lookup_task_taxonomy
-from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks import TASK_REGISTRY, create_task
 from trace.tasks.geometry.container_volume_transfer.fill_count_value import (
     ANNOTATION_KEYS,
@@ -25,18 +24,6 @@ from trace.tasks.geometry.container_volume_transfer.resulting_height_value impor
     RESULTING_HEIGHT_ANNOTATION_KEYS,
     TASK_ID_RESULTING_HEIGHT,
 )
-from trace.tasks.geometry.container_volume_transfer.target_capacity_value import (
-    GeometryContainerVolumeTransferTargetCapacityValueTask,
-    QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT,
-    TARGET_CAPACITY_ANNOTATION_KEYS,
-    TASK_ID_TARGET_CAPACITY,
-)
-from trace.tasks.geometry.container_volume_transfer.transferred_volume_value import (
-    GeometryContainerVolumeTransferTransferredVolumeValueTask,
-    QUERY_ID_REPEATED_CONE_POURS_TOTAL_VOLUME,
-    TASK_ID_TRANSFERRED_VOLUME,
-    TRANSFERRED_VOLUME_ANNOTATION_KEYS,
-)
 
 
 def _generate(seed: int, *, task_id: str = TASK_ID_FILL_COUNT, **params):
@@ -47,12 +34,8 @@ def _generate(seed: int, *, task_id: str = TASK_ID_FILL_COUNT, **params):
 def test_container_volume_transfer_fill_count_registered() -> None:
     assert TASK_ID_FILL_COUNT in TASK_REGISTRY
     assert TASK_ID_RESULTING_HEIGHT in TASK_REGISTRY
-    assert TASK_ID_TARGET_CAPACITY in TASK_REGISTRY
-    assert TASK_ID_TRANSFERRED_VOLUME in TASK_REGISTRY
     assert TASK_REGISTRY[TASK_ID_FILL_COUNT] is GeometryContainerVolumeTransferFillCountValueTask
     assert TASK_REGISTRY[TASK_ID_RESULTING_HEIGHT] is GeometryContainerVolumeTransferResultingHeightValueTask
-    assert TASK_REGISTRY[TASK_ID_TARGET_CAPACITY] is GeometryContainerVolumeTransferTargetCapacityValueTask
-    assert TASK_REGISTRY[TASK_ID_TRANSFERRED_VOLUME] is GeometryContainerVolumeTransferTransferredVolumeValueTask
     assert TASK_ID == TASK_ID_FILL_COUNT
     taxonomy = lookup_task_taxonomy(TASK_ID_FILL_COUNT)
     assert taxonomy is not None
@@ -64,16 +47,6 @@ def test_container_volume_transfer_fill_count_registered() -> None:
     assert height_taxonomy.domain == "geometry"
     assert height_taxonomy.scene_id == SCENE_ID
     assert height_taxonomy.source_scene_id == "measurement"
-    capacity_taxonomy = lookup_task_taxonomy(TASK_ID_TARGET_CAPACITY)
-    assert capacity_taxonomy is not None
-    assert capacity_taxonomy.domain == "geometry"
-    assert capacity_taxonomy.scene_id == SCENE_ID
-    assert capacity_taxonomy.source_scene_id == "measurement"
-    transferred_taxonomy = lookup_task_taxonomy(TASK_ID_TRANSFERRED_VOLUME)
-    assert transferred_taxonomy is not None
-    assert transferred_taxonomy.domain == "geometry"
-    assert transferred_taxonomy.scene_id == SCENE_ID
-    assert transferred_taxonomy.source_scene_id == "measurement"
 
 
 def test_cone_to_cylinder_fill_count_formula_and_annotation() -> None:
@@ -169,100 +142,6 @@ def test_cylinder_pours_to_cuboid_resulting_height_formula_and_annotation() -> N
     _assert_bbox_map_inside_image(annotation, out.image.size, keys=RESULTING_HEIGHT_ANNOTATION_KEYS)
 
 
-def test_cone_source_target_capacity_formula_and_annotation() -> None:
-    out = _generate(
-        20260634,
-        task_id=TASK_ID_TARGET_CAPACITY,
-        query_id=SINGLE_QUERY_ID,
-        transfer_case=(0, 0, 15, 6, 4),
-    )
-    trace = out.trace_payload
-    execution = trace["execution_trace"]
-
-    assert out.scene_id == SCENE_ID
-    assert out.query_id == SINGLE_QUERY_ID
-    assert execution["internal_query_id"] == QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT
-    assert out.answer_gt.type == "integer"
-    assert out.answer_gt.value == 120 == execution["answer"]
-    assert execution["source_shape"] == "cone"
-    assert execution["target_shape"] == "cylinder"
-    assert execution["source_volume"] == (15 * 6) // 3
-    assert execution["pour_count"] == 4
-    assert execution["target_volume"] == execution["source_volume"] * execution["pour_count"]
-    assert execution["formula_family"] == "container_volume_transfer_target_capacity"
-
-    assert out.annotation_gt.type == "bbox_map"
-    annotation = out.annotation_gt.value
-    assert tuple(annotation.keys()) == TARGET_CAPACITY_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["bbox_map"] == annotation
-    assert trace["projected_annotation"]["pixel_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v1"
-    assert "task_variant" not in json.dumps(trace)
-    _assert_bbox_map_inside_image(annotation, out.image.size, keys=TARGET_CAPACITY_ANNOTATION_KEYS)
-
-
-def test_cylinder_source_target_capacity_formula_and_annotation() -> None:
-    out = _generate(
-        20260635,
-        task_id=TASK_ID_TARGET_CAPACITY,
-        query_id=SINGLE_QUERY_ID,
-        transfer_case=(1, 1, 7, 4, 3),
-    )
-    trace = out.trace_payload
-    execution = trace["execution_trace"]
-
-    assert out.scene_id == SCENE_ID
-    assert out.query_id == SINGLE_QUERY_ID
-    assert execution["internal_query_id"] == QUERY_ID_TARGET_CAPACITY_FROM_SOURCE_AND_COUNT
-    assert out.answer_gt.type == "integer"
-    assert out.answer_gt.value == 84 == execution["answer"]
-    assert execution["source_shape"] == "cylinder"
-    assert execution["target_shape"] == "cuboid"
-    assert execution["source_volume"] == 7 * 4
-    assert execution["pour_count"] == 3
-    assert execution["target_volume"] == execution["source_volume"] * execution["pour_count"]
-    assert execution["formula_family"] == "container_volume_transfer_target_capacity"
-
-    assert out.annotation_gt.type == "bbox_map"
-    annotation = out.annotation_gt.value
-    assert tuple(annotation.keys()) == TARGET_CAPACITY_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v1"
-    assert "task_variant" not in json.dumps(trace)
-    _assert_bbox_map_inside_image(annotation, out.image.size, keys=TARGET_CAPACITY_ANNOTATION_KEYS)
-
-
-def test_cone_repeated_pours_total_volume_formula_and_annotation() -> None:
-    out = _generate(
-        20260636,
-        task_id=TASK_ID_TRANSFERRED_VOLUME,
-        query_id=QUERY_ID_REPEATED_CONE_POURS_TOTAL_VOLUME,
-        transfer_case=(0, 1, 15, 6, 3),
-    )
-    trace = out.trace_payload
-    execution = trace["execution_trace"]
-
-    assert out.scene_id == SCENE_ID
-    assert out.query_id == QUERY_ID_REPEATED_CONE_POURS_TOTAL_VOLUME
-    assert out.answer_gt.type == "integer"
-    assert out.answer_gt.value == 90 == execution["answer"]
-    assert execution["source_shape"] == "cone"
-    assert execution["target_shape"] == "cuboid"
-    assert execution["source_volume"] == (15 * 6) // 3
-    assert execution["pour_count"] == 3
-    assert execution["target_volume"] == execution["source_volume"] * execution["pour_count"]
-    assert execution["formula_family"] == "container_volume_transfer_transferred_volume"
-
-    assert out.annotation_gt.type == "bbox_map"
-    annotation = out.annotation_gt.value
-    assert tuple(annotation.keys()) == TRANSFERRED_VOLUME_ANNOTATION_KEYS
-    assert trace["projected_annotation"]["bbox_map"] == annotation
-    assert trace["projected_annotation"]["pixel_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_container_volume_transfer_v1"
-    assert "task_variant" not in json.dumps(trace)
-    _assert_bbox_map_inside_image(annotation, out.image.size, keys=TRANSFERRED_VOLUME_ANNOTATION_KEYS)
-
-
 def test_cylinder_to_cuboid_fill_count_formula_and_annotation() -> None:
     out = _generate(
         20260631,
@@ -345,34 +224,6 @@ def test_container_volume_transfer_rejects_invalid_params() -> None:
             params={"query_id": QUERY_ID_CONE_POURS_TO_CYLINDER_HEIGHT, "transfer_case": (12, 6, 8, 9, 1), "pour_count": 2},
             max_attempts=1,
         )
-    capacity_task = create_task(TASK_ID_TARGET_CAPACITY)
-    with pytest.raises(ValueError):
-        capacity_task.generate(
-            1,
-            params={"query_id": SINGLE_QUERY_ID, "transfer_case": (0, 0, 12, 6)},
-            max_attempts=1,
-        )
-    with pytest.raises(ValueError):
-        capacity_task.generate(
-            1,
-            params={"query_id": SINGLE_QUERY_ID, "transfer_case": (2, 0, 12, 6, 2)},
-            max_attempts=1,
-        )
-    with pytest.raises(ValueError):
-        capacity_task.generate(
-            1,
-            params={"query_id": SINGLE_QUERY_ID, "transfer_case": (0, 0, 10, 5, 2)},
-            max_attempts=1,
-        )
-    transferred_task = create_task(TASK_ID_TRANSFERRED_VOLUME)
-    with pytest.raises(ValueError):
-        transferred_task.generate(
-            1,
-            params={"query_id": QUERY_ID_REPEATED_CONE_POURS_TOTAL_VOLUME, "transfer_case": (0, 0, 10, 5, 2)},
-            max_attempts=1,
-        )
-
-
 def _assert_bbox_map_inside_image(
     annotation: dict[str, list[float]],
     image_size: tuple[int, int],

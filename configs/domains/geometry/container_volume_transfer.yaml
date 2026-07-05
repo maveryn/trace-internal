@@ -32,18 +32,6 @@ rendering:
       line_width: 3
       label_font_size: 24
       small_label_font_size: 20
-    task_geometry__container_volume_transfer__target_capacity_value:
-      canvas_width: 900
-      canvas_height: 620
-      line_width: 3
-      label_font_size: 24
-      small_label_font_size: 20
-    task_geometry__container_volume_transfer__transferred_volume_value:
-      canvas_width: 900
-      canvas_height: 620
-      line_width: 3
-      label_font_size: 24
-      small_label_font_size: 20
 prompt:
   shared:
     bundle_id: geometry_container_volume_transfer_v1

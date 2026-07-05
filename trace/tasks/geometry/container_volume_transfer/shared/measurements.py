@@ -123,36 +123,6 @@ def validate_cylinder_height_case(case: Sequence[int]) -> None:
     )
 
 
-def validate_target_capacity_case(case: Sequence[int]) -> None:
-    source_kind, target_kind, source_base_area, source_height, pour_count = [int(value) for value in case]
-    if source_kind not in (0, 1):
-        raise ValueError("target-capacity source_kind must be 0 for cone or 1 for cylinder")
-    if target_kind not in (0, 1):
-        raise ValueError("target-capacity target_kind must be 0 for cylinder or 1 for cuboid")
-    if min(source_base_area, source_height, pour_count) <= 0:
-        raise ValueError("target-capacity source dimensions and pour count must be positive")
-    source_volume = cone_source_volume(source_base_area, source_height) if source_kind == 0 else cylinder_source_volume(source_base_area, source_height)
-    target_volume = int(source_volume) * int(pour_count)
-    if not (40 <= int(target_volume) <= 600):
-        raise ValueError("target capacity must be in the v1 support range 40..600")
-
-
-def validate_transferred_volume_case(case: Sequence[int], *, required_source_kind: int) -> None:
-    source_kind, target_kind, source_base_area, source_height, pour_count = [int(value) for value in case]
-    if int(source_kind) != int(required_source_kind):
-        raise ValueError("transferred-volume case uses the wrong source kind")
-    if source_kind not in (0, 1):
-        raise ValueError("transferred-volume source_kind must be 0 for cone or 1 for cylinder")
-    if target_kind not in (0, 1):
-        raise ValueError("transferred-volume target_kind must be 0 for cylinder or 1 for cuboid")
-    if min(source_base_area, source_height, pour_count) <= 0:
-        raise ValueError("transferred-volume source dimensions and pour count must be positive")
-    source_volume = cone_source_volume(source_base_area, source_height) if source_kind == 0 else cylinder_source_volume(source_base_area, source_height)
-    total_volume = int(source_volume) * int(pour_count)
-    if not (60 <= int(total_volume) <= 720):
-        raise ValueError("transferred volume must be in the v1 support range 60..720")
-
-
 def resolve_cone_fill_count(case: Sequence[int]) -> ResolvedProblem:
     validate_cone_fill_case(case)
     source_base_area, source_height, target_base_area, target_height = [int(value) for value in case]
@@ -278,70 +248,6 @@ def resolve_cylinder_resulting_height(case: Sequence[int]) -> ResolvedProblem:
     )
 
 
-def resolve_target_capacity(case: Sequence[int]) -> ResolvedProblem:
-    validate_target_capacity_case(case)
-    source_kind, target_kind, source_base_area, source_height, pour_count = [int(value) for value in case]
-    source_shape = "cone" if source_kind == 0 else "cylinder"
-    target_shape = "cylinder" if target_kind == 0 else "cuboid"
-    source_volume = cone_source_volume(source_base_area, source_height) if source_shape == "cone" else cylinder_source_volume(source_base_area, source_height)
-    target_volume = int(source_volume) * int(pour_count)
-    return ResolvedProblem(
-        objective="target_capacity",
-        diagram_mode="target_capacity_unknown",
-        source_shape=source_shape,
-        target_shape=target_shape,
-        source_base_area=int(source_base_area),
-        source_height=int(source_height),
-        source_volume=int(source_volume),
-        target_base_area=0,
-        target_height=0,
-        target_length=0,
-        target_width=0,
-        target_volume=int(target_volume),
-        fill_count=0,
-        pour_count=int(pour_count),
-        resulting_height=0.0,
-        answer=int(target_volume),
-        formula_family="container_volume_transfer_target_capacity",
-        formula="target_capacity = pour_count * source_volume; source cone volume = base_area*height/3 or source cylinder volume = base_area*height",
-        query_probabilities={},
-        case_probabilities={},
-        answer_support_probabilities={},
-    )
-
-
-def resolve_transferred_volume(case: Sequence[int]) -> ResolvedProblem:
-    source_kind, target_kind, source_base_area, source_height, pour_count = [int(value) for value in case]
-    validate_transferred_volume_case(case, required_source_kind=int(source_kind))
-    source_shape = "cone" if source_kind == 0 else "cylinder"
-    target_shape = "cylinder" if target_kind == 0 else "cuboid"
-    source_volume = cone_source_volume(source_base_area, source_height) if source_shape == "cone" else cylinder_source_volume(source_base_area, source_height)
-    total_volume = int(source_volume) * int(pour_count)
-    return ResolvedProblem(
-        objective="transferred_volume",
-        diagram_mode="total_transferred_unknown",
-        source_shape=source_shape,
-        target_shape=target_shape,
-        source_base_area=int(source_base_area),
-        source_height=int(source_height),
-        source_volume=int(source_volume),
-        target_base_area=0,
-        target_height=0,
-        target_length=0,
-        target_width=0,
-        target_volume=int(total_volume),
-        fill_count=0,
-        pour_count=int(pour_count),
-        resulting_height=0.0,
-        answer=int(total_volume),
-        formula_family="container_volume_transfer_transferred_volume",
-        formula="transferred_volume = pour_count * source_volume; source cone volume = base_area*height/3 or source cylinder volume = base_area*height",
-        query_probabilities={},
-        case_probabilities={},
-        answer_support_probabilities={},
-    )
-
-
 def validate_explicit_pour_params(problem: ResolvedProblem, params: dict[str, Any]) -> None:
     explicit_answer = params.get("fill_count")
     if explicit_answer is not None and int(explicit_answer) != int(problem.fill_count):
@@ -377,8 +283,6 @@ __all__ = [
     "resolve_cone_resulting_height",
     "resolve_cylinder_fill_count",
     "resolve_cylinder_resulting_height",
-    "resolve_target_capacity",
-    "resolve_transferred_volume",
     "support_from_cases",
     "uniform_answer_support",
     "validate_cone_fill_case",
@@ -386,6 +290,4 @@ __all__ = [
     "validate_cylinder_fill_case",
     "validate_cylinder_height_case",
     "validate_explicit_pour_params",
-    "validate_target_capacity_case",
-    "validate_transferred_volume_case",
 ]

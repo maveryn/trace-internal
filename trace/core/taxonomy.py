@@ -1455,12 +1455,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__container_volume_transfer__resulting_height_value": _entry(
         "geometry", "container_volume_transfer", "geometry", "measurement"
     ),
-    "task_geometry__container_volume_transfer__target_capacity_value": _entry(
-        "geometry", "container_volume_transfer", "geometry", "measurement"
-    ),
-    "task_geometry__container_volume_transfer__transferred_volume_value": _entry(
-        "geometry", "container_volume_transfer", "geometry", "measurement"
-    ),
     "task_geometry__coordinate_composite__boundary_point_match_label": _entry(
         "geometry", "coordinate_composite", "geometry", "coordinate"
     ),

@@ -37,11 +37,11 @@
         "Count only the normal pellets before the first ghost along the highlighted route from Pac-Man."
       ],
       "route_score_value": [
-        "{score_rule_text} Following the highlighted route from Pac-Man, what is the total score from collectibles on that route?",
-        "{score_rule_text} Add the scores of the normal pellets and printed-value bonus items on the highlighted route.",
-        "{score_rule_text} What total score is collected along the highlighted route from Pac-Man?",
-        "{score_rule_text} Count only collectibles on the highlighted route and report their total score.",
-        "{score_rule_text} Starting at Pac-Man, follow the highlighted route and compute the collectible score total."
+        "{score_rule_text} Following the highlighted route from Pac-Man, what is the total score from collectibles centered on that route?",
+        "{score_rule_text} Add only the normal pellets and printed-value bonus items whose centers lie on the highlighted route.",
+        "{score_rule_text} What total score is collected from route collectibles, ignoring all off-route items?",
+        "{score_rule_text} Count only collectibles centered on the highlighted route and report their total score.",
+        "{score_rule_text} Starting at Pac-Man, follow the highlighted route and add the scores of collectibles on that route."
       ]
     },
     "output": {
@@ -116,7 +116,7 @@
     "annotation_hint_pellet_count_before_ghost": "set \"annotation\" to {\"counted_pellets\":[[x, y], ...], \"first_ghost\":[[x, y]]}, using center points for pellets before the ghost and the first route ghost",
     "answer_hint_pellet_count_before_ghost": "set \"answer\" to the number of normal pellets reached before the first ghost on the highlighted route",
     "annotation_hint_route_score_value": "set \"annotation\" to [x, y] pixel points at the centers of each normal pellet or printed-value bonus item included in the highlighted-route score",
-    "answer_hint_route_score_value": "set \"answer\" to the integer total score from collectibles on the highlighted route",
-    "score_rule_text": "Pellets score 1; bonus items score their printed value."
+    "answer_hint_route_score_value": "set \"answer\" to the integer total score from collectibles centered on the highlighted route",
+    "score_rule_text": "Normal pellets score 1; bonus items score their printed value. Count only collectibles whose centers lie on the highlighted route. Ignore ghosts and all collectibles away from the highlighted route."
   }
 }

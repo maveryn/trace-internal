@@ -41,9 +41,9 @@ def test_games_pacman_defaults_expose_scene_answer_and_style_axes() -> None:
     assert before_ghost_generation["col_count_support"] == [9, 11, 13]
     assert before_ghost_generation["pellet_count_before_ghost_support"] == [1, 2, 3, 4, 5]
     assert score_generation["route_score_on_route_pellet_count_support"] == [1, 2, 3, 4]
-    assert score_generation["route_score_on_route_bonus_count_support"] == [1, 2, 3]
+    assert score_generation["route_score_on_route_bonus_count_support"] == [1, 2]
     assert score_generation["route_score_off_route_bonus_count_support"] == [1, 2, 3]
-    assert score_generation["route_score_bonus_value_support"] == [2, 3, 5, 10]
+    assert score_generation["route_score_bonus_value_support"] == [2, 3, 4]
     assert next_item_generation["item_count_support"] == [4, 5, 6]
     assert rendering["ghost_radius_px"] == 18
     assert rendering["canvas_width"] == 980

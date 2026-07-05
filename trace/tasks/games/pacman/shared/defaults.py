@@ -37,7 +37,7 @@ PACMAN_GHOST_COLOR_KEYS: Tuple[str, ...] = (
     "orange",
     "purple",
 )
-ROUTE_SCORE_BONUS_VALUE_SUPPORT: Tuple[int, ...] = (2, 3, 5, 10)
+ROUTE_SCORE_BONUS_VALUE_SUPPORT: Tuple[int, ...] = (2, 3, 4)
 
 
 @dataclass(frozen=True)
@@ -48,7 +48,7 @@ class PacmanDefaults:
     col_count_support: Tuple[int, ...] = (9, 11, 13)
     pellet_count_before_ghost_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     route_score_on_route_pellet_count_support: Tuple[int, ...] = (1, 2, 3, 4)
-    route_score_on_route_bonus_count_support: Tuple[int, ...] = (1, 2, 3)
+    route_score_on_route_bonus_count_support: Tuple[int, ...] = (1, 2)
     route_score_off_route_bonus_count_support: Tuple[int, ...] = (1, 2, 3)
     route_score_bonus_value_support: Tuple[int, ...] = ROUTE_SCORE_BONUS_VALUE_SUPPORT
     next_item_label_support: Tuple[str, ...] = PACMAN_ITEM_LABELS

@@ -53,7 +53,6 @@ generation:
       route_score_on_route_bonus_count_support:
       - 1
       - 2
-      - 3
       route_score_off_route_bonus_count_support:
       - 1
       - 2
@@ -61,8 +60,7 @@ generation:
       route_score_bonus_value_support:
       - 2
       - 3
-      - 5
-      - 10
+      - 4
 rendering:
   shared:
     canvas_width: 980

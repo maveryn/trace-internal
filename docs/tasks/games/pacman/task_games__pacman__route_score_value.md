@@ -21,5 +21,6 @@ Query ids: `single`.
 
 ## Generation Notes
 1. Normal pellets on the highlighted route score 1.
-2. Printed-value bonus items on the highlighted route score their printed value.
+2. Printed-value bonus items on the highlighted route score their printed value, sampled from `2, 3, 4`.
 3. Annotation points mark the centers of every normal pellet and printed-value bonus item included in the score.
+4. The route includes one or two printed-value bonus items; off-route bonus items are distractors and are not included.

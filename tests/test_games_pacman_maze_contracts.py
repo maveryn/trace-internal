@@ -145,7 +145,8 @@ def test_games_pacman_route_score_value_annotation_recomputes_score() -> None:
     assert saw_bonus
     assert off_route_items
     assert int(out.answer_gt.value) == scored_total
-    assert "Pellets score 1; bonus items score their printed value." in out.prompt
+    assert "Normal pellets score 1; bonus items score their printed value." in out.prompt
+    assert "Ignore ghosts and all collectibles away from the highlighted route." in out.prompt
 
 
 def test_games_pacman_query_cycle_covers_support() -> None:

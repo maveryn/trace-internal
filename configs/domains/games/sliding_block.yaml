@@ -31,7 +31,7 @@ generation:
       movable_block_count_generation_attempts: 512
     task_games__sliding_block__block_orientation_count:
       block_orientation_count_min: 1
-      block_orientation_count_max: 8
+      block_orientation_count_max: 6
       block_orientation_count_generation_attempts: 512
 rendering:
   shared:

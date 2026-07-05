@@ -25,4 +25,5 @@ Query ids: `horizontal_block_count`, `vertical_block_count`.
 1. The board has no target block or exit arrow for this task.
 2. `horizontal_block_count` counts blocks wider than they are tall.
 3. `vertical_block_count` counts blocks taller than they are wide.
-4. Annotation is the bbox set of all blocks matching the requested orientation.
+4. The generated answer support is `1..6`.
+5. Annotation is the bbox set of all blocks matching the requested orientation.

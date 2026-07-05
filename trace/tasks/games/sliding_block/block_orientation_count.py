@@ -44,7 +44,7 @@ def _prepare_orientation_objective(
         min_key="block_orientation_count_min",
         max_key="block_orientation_count_max",
         fallback_min=1,
-        fallback_max=8,
+        fallback_max=6,
     )
     target = int(
         select_target_from_support(

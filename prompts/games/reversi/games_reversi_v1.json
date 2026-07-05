@@ -135,10 +135,10 @@
   "code_prompt_defaults": {
     "object_description_compact_board": "a 6 by 6 Reversi board with black and white discs",
     "object_description_classic_board": "an 8 by 8 Reversi board with black and white discs",
-    "legal_move_rule_text": "A legal move is an empty square that brackets one or more opponent discs in at least one straight line.",
+    "legal_move_rule_text": "A legal move is an empty square where placing the current player's disc would sandwich one or more opponent discs in a straight row, column, or diagonal between the new disc and another current-player disc.",
     "marked_move_rule_text": "The red marked empty square is the marked move.",
     "flip_rule_text": "The marked move flips every bracketed opponent disc.",
-    "frontier_rule_text": "A frontier disc touches at least one empty square horizontally, vertically, or diagonally.",
+    "frontier_rule_text": "A frontier disc is a disc of the named color that touches at least one empty square in any of the 8 neighboring directions: horizontal, vertical, or diagonal.",
     "annotation_hint_legal_move_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] for every legal move square",
     "annotation_hint_flip_count_for_marked_move": "set \"annotation\" to one pixel point [x,y] at the center of every disc flipped by the marked move",
     "annotation_hint_frontier_disc_count": "set \"annotation\" to one pixel point [x,y] at the center of every counted {query_player} frontier disc",

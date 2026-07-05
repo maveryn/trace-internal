@@ -1,5 +1,14 @@
 # `task_games__reversi__frontier_disc_count`
 
+## Contract
+1. Domain: `games`
+2. Scene id: `reversi`
+3. Public task id: `task_games__reversi__frontier_disc_count`
+4. Supported `query_id` values: `single`
+5. Answer schema: `integer_count`
+6. Annotation schema: `point_set`
+7. Program schema: `count(filter(discs(query_color), touches_empty_neighbor)); scene=reversi; scope=frontier_disc_count`
+
 ## Program Contract
 
 Program: `count(filter(discs(query_color), touches_empty_neighbor)); scene=reversi; scope=frontier_disc_count`
@@ -15,5 +24,6 @@ Query ids: `single`.
 
 - A frontier disc is a queried-color disc adjacent horizontally, vertically, or diagonally to at least one empty board cell.
 - The target disc color is sampled with `target_player` (`black` or `white`).
+- Answer support is `0..5`.
 - Annotation points are the centers of all counted frontier discs.
 - The answer and annotation are bound from the same generated board state.

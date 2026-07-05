@@ -10,9 +10,9 @@ from typing import Tuple
 class ReversiSceneDefaults:
     """Stable fallback defaults when scene config omits optional knobs."""
 
-    legal_move_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
+    legal_move_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     flip_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
-    frontier_disc_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+    frontier_disc_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     canvas_width: int = 900
     canvas_height: int = 900
     panel_margin_px: int = 48

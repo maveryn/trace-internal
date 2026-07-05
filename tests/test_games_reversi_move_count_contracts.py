@@ -158,13 +158,13 @@ def test_games_reversi_legal_destination_cycle_covers_answer_scene_and_style_sup
         scenes.add(str(execution["scene_variant"]))
         styles.add(str(execution["style_variant"]))
 
-    assert answers == {0, 1, 2, 3, 4, 5, 6}
+    assert answers == {0, 1, 2, 3, 4, 5}
     assert scenes == {"compact_board", "classic_board"}
     assert styles == set(SUPPORTED_REVERSI_STYLE_VARIANTS)
 
 
 def test_games_reversi_task_is_deterministic() -> None:
-    params = {"scene_variant": "compact_board", "target_answer": 6}
+    params = {"scene_variant": "compact_board", "target_answer": 5}
     task = GamesReversiLegalDestinationCountTask()
     out_a = task.generate(28031, params=params, max_attempts=64)
     out_b = task.generate(28031, params=params, max_attempts=64)

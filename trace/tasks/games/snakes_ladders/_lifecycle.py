@@ -162,7 +162,7 @@ def resolve_snakes_ladders_render_params(params: Mapping[str, Any], *, instance_
         side_panel_width_px=scale_games_px(params.get("side_panel_width_px", group_default(RENDER_DEFAULTS, "side_panel_width_px", DEFAULTS.side_panel_width_px)), unit_scale, min_px=140),
         cell_gap_px=scale_games_px(params.get("cell_gap_px", group_default(RENDER_DEFAULTS, "cell_gap_px", DEFAULTS.cell_gap_px)), unit_scale, min_px=2),
         cell_radius_px=scale_games_px(params.get("cell_radius_px", group_default(RENDER_DEFAULTS, "cell_radius_px", DEFAULTS.cell_radius_px)), unit_scale, min_px=3),
-        number_font_size_px=scale_games_px(params.get("number_font_size_px", group_default(RENDER_DEFAULTS, "number_font_size_px", DEFAULTS.number_font_size_px)), unit_scale, min_px=14),
+        number_font_size_px=scale_games_px(params.get("number_font_size_px", group_default(RENDER_DEFAULTS, "number_font_size_px", DEFAULTS.number_font_size_px)), unit_scale, min_px=24),
         token_radius_px=scale_games_px(params.get("token_radius_px", group_default(RENDER_DEFAULTS, "token_radius_px", DEFAULTS.token_radius_px)), unit_scale, min_px=10),
         die_size_px=scale_games_px(params.get("die_size_px", group_default(RENDER_DEFAULTS, "die_size_px", DEFAULTS.die_size_px)), unit_scale, min_px=52),
         jump_width_px=scale_games_px(params.get("jump_width_px", group_default(RENDER_DEFAULTS, "jump_width_px", DEFAULTS.jump_width_px)), unit_scale, min_px=3),

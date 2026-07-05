@@ -26,7 +26,7 @@ class SnakesLaddersDefaults:
     side_panel_width_px: int = 200
     cell_gap_px: int = 4
     cell_radius_px: int = 6
-    number_font_size_px: int = 24
+    number_font_size_px: int = 48
     token_radius_px: int = 19
     die_size_px: int = 88
     jump_width_px: int = 6

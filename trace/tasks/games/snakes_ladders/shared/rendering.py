@@ -480,17 +480,20 @@ def render_snakes_ladders_board_scene(
             number_font_cache[max_font] = fit_font_to_box(
                 draw,
                 text=str(int(last_square)),
-                max_width=float(bbox[2] - bbox[0]) * 0.54,
-                max_height=float(bbox[3] - bbox[1]) * 0.35,
-                bold=True,
+                max_width=float(bbox[2] - bbox[0]) * 0.70,
+                max_height=float(bbox[3] - bbox[1]) * 0.52,
+                bold=False,
                 font_family=str(params.font_family),
-                min_size_px=10,
+                min_size_px=18,
                 max_size_px=max_font,
             )
         draw_centered_text(
             draw,
             text=text,
-            center=(float(bbox[0] + 18), float(bbox[1] + 16)),
+            center=(
+                float(bbox[0] + (float(bbox[2] - bbox[0]) * 0.32)),
+                float(bbox[1] + (float(bbox[3] - bbox[1]) * 0.26)),
+            ),
             font=number_font_cache[max_font],
             fill=theme.number_rgb,
             stroke_fill=theme.number_rgb,

@@ -112,7 +112,7 @@ rendering:
     side_panel_width_px: 200
     cell_gap_px: 4
     cell_radius_px: 6
-    number_font_size_px: 24
+    number_font_size_px: 48
     token_radius_px: 19
     die_size_px: 88
     jump_width_px: 6

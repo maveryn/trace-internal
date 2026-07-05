@@ -30,11 +30,11 @@
         "Count all visible note objects in lane {selected_lane_label}."
       ],
       "lane_note_score_value": [
-        "Look only at lane {selected_lane_label}. Use the side score palette to score each note by color. A long vertical note counts once. What is the total score?",
-        "In lane {selected_lane_label}, each note is worth the number shown for its color in the side score palette. A long vertical note counts once. What is the total score?",
-        "Use the side score palette. Add the score for each note object in lane {selected_lane_label}. A long vertical note counts once. What total do you get?",
-        "Only consider lane {selected_lane_label}. For each note object, use the side score palette value for that note's color. A long vertical note counts once. What is the sum?",
-        "What is the total score for lane {selected_lane_label}? Use the side score palette value for each note object. A long vertical note counts once."
+        "Only lane {selected_lane_label} matters. For each note object in that lane, add the number shown for its color in the side POINTS palette. A tall note counts once. What is the total score?",
+        "Look only at lane {selected_lane_label}. Each note object scores the number printed for its color in the side POINTS palette. A tall note counts once. What is the total score?",
+        "Use the side POINTS palette. Add the color value for each note object in lane {selected_lane_label}; a tall note still counts once. What total do you get?",
+        "Only consider lane {selected_lane_label}. For each visible note object in that lane, use the side POINTS palette value for the note's color. A tall note counts once. What is the sum?",
+        "What is the total score for lane {selected_lane_label}? Add the side POINTS palette value for each note object in that lane. A tall note counts once."
       ],
       "most_notes_lane_label": [
         "Which lane number has the most note objects?",
@@ -147,7 +147,7 @@
     "object_description_falling_notes": "a rhythm-game lane grid with colored falling notes, lane numbers, and a bottom hit line",
     "rhythm_motion_rule_text": "Notes fall one row per beat. The bottom line is the hit line. A long vertical note counts as one note.",
     "note_object_rule_text": "A long vertical note counts as one note object.",
-    "score_palette_rule_text": "Use the score palette beside the board: each note scores the number shown for its color, and a long vertical note counts once.",
+    "score_palette_rule_text": "Use the side POINTS palette: each note scores the number shown for its color, and a tall note counts once.",
     "annotation_hint_lane_note_count": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around all note objects in the specified lane",
     "answer_hint_lane_note_count": "set \"answer\" to the integer count",
     "annotation_hint_lane_note_score_value": "set \"annotation\" to bounding boxes [x0, y0, x1, y1] around every note object in the specified lane that is included in the score",

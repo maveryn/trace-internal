@@ -13,7 +13,9 @@ Query ids: `single`.
 
 ## Notes
 - `target_lane` is prompt-bound by lane number.
-- The side score palette maps note colors to integer score values.
+- The side score palette maps three note colors to integer score values `1`, `2`, and `3`.
+- The generated answer support is `1..12`.
+- The target lane contains at most four scoring note objects.
 - A long vertical note scores once.
 - Annotation bboxes are all note objects in the specified lane that contribute to the score.
 - Scalar annotation checked: true.

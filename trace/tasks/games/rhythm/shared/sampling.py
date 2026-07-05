@@ -263,9 +263,11 @@ def _fill_other_lane_distractors(
     axes: RhythmVisualAxes,
     excluded_lane: int,
     per_lane_max: int = 5,
+    colors: Sequence[str] = SUPPORTED_COLOR_KEYS,
 ) -> None:
     """Populate non-target lanes without changing the target lane answer."""
 
+    color_choices = tuple(str(color) for color in colors)
     rows = tuple(range(1, int(axes.row_count) + 1))
     for lane in range(int(axes.lane_count)):
         if int(lane) == int(excluded_lane):
@@ -277,7 +279,7 @@ def _fill_other_lane_distractors(
                 rng=rng,
                 lane=int(lane),
                 target_count=count,
-                colors=SUPPORTED_COLOR_KEYS,
+                colors=color_choices,
             )
         except ValueError:
             continue
@@ -288,7 +290,7 @@ def _fill_other_lane_distractors(
         lane = int(rng.randrange(int(axes.lane_count)))
         if lane == int(excluded_lane):
             continue
-        builder.add_random_note(lanes=(lane,), bottom_rows=rows, colors=SUPPORTED_COLOR_KEYS)
+        builder.add_random_note(lanes=(lane,), bottom_rows=rows, colors=color_choices)
 
 
 def sample_lane_note_count_scene(*, rng: Any, axes: RhythmVisualAxes, selected_lane: int, target_count: int) -> SampledRhythmScene:
@@ -357,11 +359,16 @@ def sample_lane_note_score_scene(
     selected_lane: int,
     target_score: int,
     score_values_by_color: Mapping[str, int],
+    max_target_notes: int = 4,
 ) -> SampledRhythmScene:
     """Construct a lane score scene where color scores sum to the target."""
 
     color_by_score = {int(value): str(color) for color, value in score_values_by_color.items()}
-    score_terms = _score_terms_for_total(int(target_score), tuple(color_by_score.keys()), max_terms=6)
+    score_terms = _score_terms_for_total(
+        int(target_score),
+        tuple(color_by_score.keys()),
+        max_terms=int(max_target_notes),
+    )
     builder = RhythmNoteBuilder(lane_count=int(axes.lane_count), row_count=int(axes.row_count), rng=rng)
     target_notes: list[RhythmNote] = []
     rows = list(range(1, int(axes.row_count) + 1))
@@ -382,6 +389,7 @@ def sample_lane_note_score_scene(
         axes=axes,
         excluded_lane=int(selected_lane),
         per_lane_max=max(2, len(target_notes) + 1),
+        colors=tuple(str(color) for color in score_values_by_color),
     )
     sample = SampledRhythmScene(
         lane_count=int(axes.lane_count),

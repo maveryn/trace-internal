@@ -31,7 +31,7 @@ def test_games_rhythm_lanes_defaults_present() -> None:
     assert list(generation["row_count_support"]) == [10, 11, 12, 13, 14]
     assert list(generation["beat_window_support"]) == [5, 6, 7]
     assert list(generation["note_count_support"]) == [1, 2, 3, 4, 5, 6]
-    assert list(generation["score_total_support"]) == [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+    assert list(generation["score_total_support"]) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     assert int(rendering["canvas_width"]) == 900
     assert int(rendering["canvas_height"]) == 900
     assert str(prompt["bundle_id"]) == "games_rhythm_v1"
@@ -40,5 +40,5 @@ def test_games_rhythm_lanes_defaults_present() -> None:
     prompt_defaults = bundle["code_prompt_defaults"]
     assert "one row per beat" in str(prompt_defaults["rhythm_motion_rule_text"])
     assert "bounding boxes" in str(prompt_defaults["annotation_hint_lane_note_count"])
-    assert "score palette" in str(prompt_defaults["score_palette_rule_text"])
+    assert "POINTS palette" in str(prompt_defaults["score_palette_rule_text"])
     assert "bounding box [x0, y0, x1, y1]" in str(prompt_defaults["annotation_hint_earliest_hit_lane_label"])

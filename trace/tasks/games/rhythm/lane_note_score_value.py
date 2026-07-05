@@ -16,7 +16,9 @@ from .shared.state import SCENE_ID, SCENE_NAMESPACE, SUPPORTED_COLOR_KEYS
 
 TASK_ID = "task_games__rhythm__lane_note_score_value"
 PROMPT_QUERY_KEY = "lane_note_score_value"
-_SCORE_VALUES = (1, 2, 3, 4)
+_SCORE_VALUES = (1, 2, 3)
+_SCORE_COLOR_KEYS = SUPPORTED_COLOR_KEYS[:3]
+_MAX_TARGET_LANE_NOTES = 4
 
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
     "games",
@@ -31,7 +33,7 @@ def _score_values_for_instance(instance_seed: int) -> dict[str, int]:
     values = [int(value) for value in _SCORE_VALUES]
     rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.lane_note_score.score_palette")
     rng.shuffle(values)
-    return {str(color): int(value) for color, value in zip(SUPPORTED_COLOR_KEYS, values)}
+    return {str(color): int(value) for color, value in zip(_SCORE_COLOR_KEYS, values)}
 
 
 def _prepare_lane_note_score_objective(
@@ -61,7 +63,7 @@ def _prepare_lane_note_score_objective(
         annotation_kind="note_bbox_set",
         prompt_rule_keys=("score_palette_rule_text",),
         json_example_annotation=((260, 498, 341, 545), (260, 432, 341, 479)),
-        json_example_answer=7,
+        json_example_answer=5,
         query_params={
             "target_score": int(target_axis.target_count),
             "target_score_support": [int(value) for value in target_axis.target_count_support],
@@ -74,6 +76,7 @@ def _prepare_lane_note_score_objective(
             selected_lane=resolve_selected_lane(rng, lane_count=int(axes.lane_count), params=params),
             target_score=int(target_axis.target_count),
             score_values_by_color=score_values_by_color,
+            max_target_notes=_MAX_TARGET_LANE_NOTES,
         ),
     )
 

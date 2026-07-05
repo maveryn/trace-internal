@@ -58,18 +58,18 @@
         "How many complete pours from the cylinder source match the target rectangular-tank capacity?"
       ],
       "cone_pours_to_cylinder_height": [
-        "After the shown cone pours, what is the target-cylinder liquid height?",
-        "Use the dimensions and pour count to find the target height.",
-        "What height does the fill mark show after the displayed cone pours?",
-        "Compute the target-cylinder height reached by the pours.",
-        "What target-cylinder liquid height replaces the ? height mark?"
+        "After the displayed number of full source-cone pours is poured into the target cylinder, what liquid height is marked by the horizontal fill line?",
+        "Use the source-cone dimensions, target-cylinder base area, and full-pour count to find the marked target liquid height.",
+        "What target-cylinder liquid height does the marked fill line show after the displayed full cone pours?",
+        "Compute the target-cylinder liquid height reached by the shown full cone pours.",
+        "What target-cylinder liquid height replaces the height=? mark?"
       ],
       "cylinder_pours_to_cuboid_height": [
-        "After the shown cylinder pours, what is the target-tank liquid height?",
-        "Use the dimensions and pour count to find the target height.",
-        "What height does the fill mark show after the displayed cylinder pours?",
-        "Compute the target-tank height reached by the pours.",
-        "What target-tank liquid height replaces the ? height mark?"
+        "After the displayed number of full source-cylinder pours is poured into the target rectangular tank, what liquid height is marked by the horizontal fill line?",
+        "Use the source-cylinder dimensions, target-tank length and width, and full-pour count to find the marked target liquid height.",
+        "What target-tank liquid height does the marked fill line show after the displayed full cylinder pours?",
+        "Compute the target-tank liquid height reached by the shown full cylinder pours.",
+        "What target-tank liquid height replaces the height=? mark?"
       ],
       "target_capacity_from_source_and_count": [
         "What capacity replaces the ? label on the target container?",
@@ -112,7 +112,7 @@
   },
   "static_slots_by_key": {
     "scene:container_volume_transfer_scene": {
-      "object_description": "a source container, a target container, visible dimensions, and a marked transfer relationship"
+      "object_description": "a source container, a target container, visible dimensions, and transfer labels"
     },
     "output:answer_only": {
       "json_output_contract_answer_only": "Return a JSON object with exactly one key: \"answer\".",

@@ -12,7 +12,7 @@
 - `solve_formula(visible_source_target_container_transfer, unknown_role=resulting_liquid_height, formula_schema=container_volume_transfer_resulting_height); scene=container_volume_transfer; scope=resulting_height_value`
 
 ## Prompt Bundle
-- Prompt text is loaded from `geometry_container_volume_transfer_v0`.
+- Prompt text is loaded from `geometry_container_volume_transfer_v1`.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation

@@ -52,6 +52,7 @@ class RenderContext:
     liquid_fill: Color
     accent_color: Color
     muted_color: Color
+    panel_fill_color: Color
     line_width: int
     label_stroke_width: int
     font: Any

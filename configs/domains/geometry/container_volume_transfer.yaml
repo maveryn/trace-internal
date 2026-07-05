@@ -8,9 +8,9 @@ rendering:
     label_offset_px: 14
     label_font_size_min: 14
     label_font_size_max: 32
-    label_stroke_width: 1
-    label_stroke_width_min: 1
-    label_stroke_width_max: 1
+    label_stroke_width: 0
+    label_stroke_width_min: 0
+    label_stroke_width_max: 0
     single_object_scene_rotation:
       enabled: true
       probability: 0.5
@@ -21,29 +21,29 @@ rendering:
       max_attempts: 6
   task_overrides:
     task_geometry__container_volume_transfer__fill_count_value:
-      canvas_width: 820
-      canvas_height: 600
+      canvas_width: 900
+      canvas_height: 620
       line_width: 3
-      label_font_size: 22
-      small_label_font_size: 18
+      label_font_size: 24
+      small_label_font_size: 20
     task_geometry__container_volume_transfer__resulting_height_value:
-      canvas_width: 820
-      canvas_height: 600
+      canvas_width: 900
+      canvas_height: 620
       line_width: 3
-      label_font_size: 22
-      small_label_font_size: 18
+      label_font_size: 24
+      small_label_font_size: 20
     task_geometry__container_volume_transfer__target_capacity_value:
-      canvas_width: 820
-      canvas_height: 600
+      canvas_width: 900
+      canvas_height: 620
       line_width: 3
-      label_font_size: 22
-      small_label_font_size: 18
+      label_font_size: 24
+      small_label_font_size: 20
     task_geometry__container_volume_transfer__transferred_volume_value:
-      canvas_width: 820
-      canvas_height: 600
+      canvas_width: 900
+      canvas_height: 620
       line_width: 3
-      label_font_size: 22
-      small_label_font_size: 18
+      label_font_size: 24
+      small_label_font_size: 20
 prompt:
   shared:
     bundle_id: geometry_container_volume_transfer_v1

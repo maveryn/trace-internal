@@ -17,6 +17,12 @@ from trace.tasks.shared.text_rendering import load_font
 from .measurements import fmt_number
 from .state import BBox, Color, Point, RenderContext, RenderedScene, ResolvedProblem
 
+PANEL_FILL_COLOR: Color = (252, 253, 250)
+PANEL_LABEL_COLOR: Color = (10, 14, 22)
+PANEL_LINE_COLOR: Color = (31, 52, 75)
+PANEL_SECONDARY_COLOR: Color = (91, 111, 132)
+PANEL_BORDER_COLOR: Color = (94, 111, 134)
+
 
 def draw_text_centered(ctx: RenderContext, text: str, center: Point, *, small: bool = False) -> BBox:
     font = ctx.small_font if bool(small) else ctx.font
@@ -51,7 +57,7 @@ def draw_value_box(ctx: RenderContext, text: str, center: Point) -> BBox:
     ctx.draw.rounded_rectangle(
         (left, top, right, bottom),
         radius=7,
-        fill=(255, 255, 255),
+        fill=ctx.panel_fill_color,
         outline=ctx.muted_color,
         width=max(1, ctx.line_width - 1),
     )
@@ -205,24 +211,26 @@ def create_render_context(
     font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 22)))
     small_font_size = int(params.get("small_label_font_size", group_default(render_defaults, "small_label_font_size", 18)))
     line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 3)))
+    label_stroke_width = int(params.get("label_stroke_width", group_default(render_defaults, "label_stroke_width", 0)))
     return RenderContext(
         image=image,
         draw=ImageDraw.Draw(image),
         width=int(width),
         height=int(height),
-        line_color=tuple(int(value) for value in diagram_style.stroke_rgb),
-        secondary_color=tuple(int(value) for value in diagram_style.secondary_stroke_rgb),
-        label_color=tuple(int(value) for value in diagram_style.label_rgb),
+        line_color=PANEL_LINE_COLOR,
+        secondary_color=PANEL_SECONDARY_COLOR,
+        label_color=PANEL_LABEL_COLOR,
         label_stroke_color=tuple(int(value) for value in diagram_style.label_stroke_rgb),
         source_fill=source_fill,
         target_fill=target_fill,
         liquid_fill=liquid_fill,
         accent_color=accent_color,
-        muted_color=tuple(int(value) for value in diagram_style.panel_border_rgb),
+        muted_color=PANEL_BORDER_COLOR,
+        panel_fill_color=PANEL_FILL_COLOR,
         line_width=max(2, int(line_width)),
-        label_stroke_width=max(1, int(diagram_style.label_stroke_width_px)),
-        font=load_font(max(12, int(font_size)), bold=True),
-        small_font=load_font(max(10, int(small_font_size)), bold=True),
+        label_stroke_width=max(0, int(label_stroke_width)),
+        font=load_font(max(12, int(font_size)), bold=False),
+        small_font=load_font(max(10, int(small_font_size)), bold=False),
         diagram_style_meta=dict(diagram_style_meta),
         background_meta=dict(background_meta),
     ), {"technical_diagram": dict(diagram_style_meta), "background": dict(background_meta)}
@@ -242,21 +250,21 @@ def render_container_volume_transfer_scene(ctx: RenderContext, problem: Resolved
     is_resulting_height = str(problem.diagram_mode) == "resulting_fill_height"
     is_target_capacity = str(problem.diagram_mode) == "target_capacity_unknown"
     is_transferred_volume = str(problem.diagram_mode) == "total_transferred_unknown"
-    source_center_x = 215.0 + float(rng.uniform(-14.0, 14.0))
-    target_center_x = 595.0 + float(rng.uniform(-14.0, 14.0))
-    base_y = 420.0 + float(rng.uniform(-8.0, 10.0))
+    source_center_x = float(ctx.width) * 0.27 + float(rng.uniform(-14.0, 14.0))
+    target_center_x = float(ctx.width) * 0.72 + float(rng.uniform(-14.0, 14.0))
+    base_y = float(ctx.height) * 0.71 + float(rng.uniform(-8.0, 10.0))
     source_bbox = (source_center_x - 70.0, base_y - 230.0, source_center_x + 70.0, base_y)
     target_bbox = (target_center_x - 90.0, base_y - 245.0, target_center_x + 90.0, base_y + 6.0)
     panel_bbox = (
-        min(source_bbox[0], target_bbox[0]) - 32.0,
+        min(source_bbox[0], target_bbox[0]) - 132.0,
         min(source_bbox[1], target_bbox[1]) - 42.0,
-        max(source_bbox[2], target_bbox[2]) + 32.0,
+        max(source_bbox[2], target_bbox[2]) + 148.0,
         max(source_bbox[3], target_bbox[3]) + 64.0,
     )
     ctx.draw.rounded_rectangle(
         panel_bbox,
         radius=10,
-        fill=(255, 255, 255),
+        fill=ctx.panel_fill_color,
         outline=ctx.muted_color,
         width=max(1, ctx.line_width - 1),
     )
@@ -285,24 +293,25 @@ def render_container_volume_transfer_scene(ctx: RenderContext, problem: Resolved
     label_bboxes: Dict[str, BBox] = {}
     label_bboxes["source_title"] = draw_text_centered(ctx, f"source {problem.source_shape}", (source_center_x, source_bbox[1] - 26.0), small=True)
     label_bboxes["target_title"] = draw_text_centered(ctx, f"target {problem.target_shape}", (target_center_x, target_bbox[1] - 26.0), small=True)
-    label_bboxes["source_base_area"] = draw_text_centered(ctx, f"base area {problem.source_base_area}", (source_center_x, source_bbox[3] + 26.0), small=True)
-    label_bboxes["source_height"] = draw_text_centered(ctx, f"height {problem.source_height}", (source_bbox[0] - 52.0, (source_bbox[1] + source_bbox[3]) / 2.0), small=True)
+    label_bboxes["source_base_area"] = draw_text_centered(ctx, f"base area={problem.source_base_area}", (source_center_x, source_bbox[3] + 28.0), small=True)
+    label_bboxes["source_height"] = draw_text_centered(ctx, f"height={problem.source_height}", (source_bbox[0] - 56.0, (source_bbox[1] + source_bbox[3]) / 2.0), small=True)
     if problem.target_shape == "cylinder":
-        if not is_target_capacity:
-            label_bboxes["target_base_area"] = draw_text_centered(ctx, f"base area {problem.target_base_area}", (target_center_x, target_bbox[3] + 26.0), small=True)
-        if not is_resulting_height and not is_target_capacity:
-            label_bboxes["target_height"] = draw_text_centered(ctx, f"height {problem.target_height}", (target_bbox[2] + 54.0, (target_bbox[1] + target_bbox[3]) / 2.0), small=True)
+        if not is_target_capacity and not is_transferred_volume:
+            label_bboxes["target_base_area"] = draw_text_centered(ctx, f"base area={problem.target_base_area}", (target_center_x, target_bbox[3] + 28.0), small=True)
+        if not is_resulting_height and not is_target_capacity and not is_transferred_volume:
+            label_bboxes["target_height"] = draw_text_centered(ctx, f"height={problem.target_height}", (target_bbox[2] + 62.0, (target_bbox[1] + target_bbox[3]) / 2.0), small=True)
     else:
-        if not is_target_capacity:
-            label_bboxes["target_length"] = draw_text_centered(ctx, f"L {problem.target_length}", (target_center_x, target_bbox[3] + 28.0), small=True)
-            label_bboxes["target_width"] = draw_text_centered(ctx, f"W {problem.target_width}", (target_bbox[2] + 44.0, target_bbox[1] + 58.0), small=True)
-        if not is_resulting_height and not is_target_capacity:
-            label_bboxes["target_height"] = draw_text_centered(ctx, f"H {problem.target_height}", (target_bbox[2] + 46.0, (target_bbox[1] + target_bbox[3]) / 2.0 + 18.0), small=True)
+        if not is_target_capacity and not is_transferred_volume:
+            label_bboxes["target_length"] = draw_text_centered(ctx, f"L={problem.target_length}", (target_center_x - 4.0, target_bbox[3] + 30.0), small=True)
+            label_bboxes["target_width"] = draw_text_centered(ctx, f"W={problem.target_width}", (target_bbox[2] + 38.0, target_bbox[1] + 22.0), small=True)
+        if not is_resulting_height and not is_target_capacity and not is_transferred_volume:
+            label_bboxes["target_height"] = draw_text_centered(ctx, f"H={problem.target_height}", (target_bbox[2] + 64.0, (target_bbox[1] + target_bbox[3]) / 2.0 + 22.0), small=True)
     if is_resulting_height:
         label_bboxes["transfer_count"] = draw_value_box(ctx, f"{problem.pour_count} full pours", (ctx.width / 2.0, 78.0 + float(rng.uniform(-4.0, 5.0))))
         if fill_mark_bbox is None:
             raise ValueError("resulting-height task requires a visible fill mark")
-        label_bboxes["fill_mark_label"] = draw_text_centered(ctx, "height ?", (target_bbox[2] + 54.0, (fill_mark_bbox[1] + fill_mark_bbox[3]) / 2.0), small=True)
+        fill_label_x = float(target_bbox[2]) + (72.0 if problem.target_shape == "cuboid" else 64.0)
+        label_bboxes["fill_mark_label"] = draw_text_centered(ctx, "height=?", (fill_label_x, (fill_mark_bbox[1] + fill_mark_bbox[3]) / 2.0), small=True)
         fill_mark_bbox = _bbox_union((fill_mark_bbox, label_bboxes["fill_mark_label"]), width=ctx.width, height=ctx.height, pad=5.0)
     elif is_target_capacity or is_transferred_volume:
         label_bboxes["transfer_count"] = draw_value_box(ctx, f"{problem.pour_count} full pours", (ctx.width / 2.0, 78.0 + float(rng.uniform(-4.0, 5.0))))
@@ -314,7 +323,7 @@ def render_container_volume_transfer_scene(ctx: RenderContext, problem: Resolved
     source_dimension_region = _bbox_union((label_bboxes["source_base_area"], label_bboxes["source_height"]), width=ctx.width, height=ctx.height, pad=6.0)
     if is_resulting_height:
         target_dimension_keys = ("target_base_area",) if problem.target_shape == "cylinder" else ("target_length", "target_width")
-    elif is_target_capacity:
+    elif is_target_capacity or is_transferred_volume:
         target_dimension_keys = ()
     else:
         target_dimension_keys = ("target_base_area", "target_height") if problem.target_shape == "cylinder" else ("target_length", "target_width", "target_height")

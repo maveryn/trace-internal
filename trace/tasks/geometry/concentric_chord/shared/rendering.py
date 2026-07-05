@@ -61,7 +61,7 @@ def create_render_context(
     font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 22)))
     small_font_size = int(params.get("small_label_font_size", group_default(render_defaults, "small_label_font_size", 18)))
     line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 4)))
-    label_stroke_width = int(params.get("label_stroke_width", group_default(render_defaults, "label_stroke_width", 1)))
+    label_stroke_width = int(params.get("label_stroke_width", group_default(render_defaults, "label_stroke_width", 0)))
     font_family = sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),
@@ -80,8 +80,8 @@ def create_render_context(
         label_stroke_color=shape_style.label_stroke_color,
         accent_color=accent_color,
         line_width=max(2, int(line_width)),
-        font=load_font(max(12, int(font_size)), bold=True, font_family=str(font_family)),
-        small_font=load_font(max(10, int(small_font_size)), bold=True, font_family=str(font_family)),
+        font=load_font(max(12, int(font_size)), bold=False, font_family=str(font_family)),
+        small_font=load_font(max(10, int(small_font_size)), bold=False, font_family=str(font_family)),
         label_stroke_width=max(0, int(label_stroke_width)),
         scene_transform=LazySceneTransform(
             rng,
@@ -157,9 +157,15 @@ def render_concentric_chord_scene(
     raw_tangent = (raw_center[0], raw_chord_y)
     raw_dim_left = (raw_left[0], raw_chord_y - 46.0)
     raw_dim_right = (raw_right[0], raw_chord_y - 46.0)
-    raw_points = (raw_center, raw_left, raw_right, raw_tangent, raw_dim_left, raw_dim_right)
+    raw_outer_bounds = (
+        (raw_center[0] - raw_outer_px, raw_center[1]),
+        (raw_center[0] + raw_outer_px, raw_center[1]),
+        (raw_center[0], raw_center[1] - raw_outer_px),
+        (raw_center[0], raw_center[1] + raw_outer_px),
+    )
+    raw_points = (raw_center, raw_left, raw_right, raw_tangent, raw_dim_left, raw_dim_right, *raw_outer_bounds)
     ctx.scene_transform.resolve(raw_points)
-    center, left, right, tangent, dim_left, dim_right = ctx.scene_transform.points(raw_points)
+    center, left, right, tangent, dim_left, dim_right, *_outer_bounds = ctx.scene_transform.points(raw_points)
     outer_px = raw_outer_px * float(ctx.scene_transform.transform.scale)
     inner_px = raw_inner_px * float(ctx.scene_transform.transform.scale)
 

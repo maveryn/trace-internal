@@ -10,8 +10,8 @@ from trace.core.seed import spawn_rng
 
 from .state import ConcentricChordCase
 
-MIN_INNER_RADIUS_RATIO = 0.25
-MAX_INNER_RADIUS_RATIO = 0.80
+MIN_INNER_RADIUS_RATIO = 0.30
+MAX_INNER_RADIUS_RATIO = 0.75
 MAX_OUTER_RADIUS = 300
 
 IndexedConcentricChordCase = tuple[int, ConcentricChordCase]

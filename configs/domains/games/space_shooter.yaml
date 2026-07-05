@@ -20,6 +20,7 @@ generation:
     - 7
     - 8
     enemy_count_support:
+    - 3
     - 4
     - 5
     - 6
@@ -27,12 +28,6 @@ generation:
     - 8
     - 9
     - 10
-    - 11
-    - 12
-    - 13
-    - 14
-    - 15
-    - 16
     safe_lane_count_support:
     - 1
     - 2
@@ -46,7 +41,6 @@ generation:
     - 3
     - 4
     - 5
-    - 6
     hit_enemy_ship_label_option_support:
     - 0
     - 1

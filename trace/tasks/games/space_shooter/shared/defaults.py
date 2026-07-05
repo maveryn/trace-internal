@@ -16,12 +16,12 @@ from .state import SCENE_ID
 class SpaceShooterDefaults:
     """Stable fallback defaults for visible space-shooter scenes."""
 
-    enemy_ship_hit_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5, 6)
+    enemy_ship_hit_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
     hit_enemy_ship_label_option_support: Tuple[int, ...] = (0, 1, 2, 3)
     first_hit_enemy_ship_label_option_support: Tuple[int, ...] = (0, 1, 2, 3)
     safe_lane_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5)
     lane_count_support: Tuple[int, ...] = (4, 5, 6, 7, 8)
-    enemy_count_support: Tuple[int, ...] = (4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+    enemy_count_support: Tuple[int, ...] = (3, 4, 5, 6, 7, 8, 9, 10)
     canvas_width: int = 1060
     canvas_height: int = 820
     panel_margin_px: int = 42

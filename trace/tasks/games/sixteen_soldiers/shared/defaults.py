@@ -14,7 +14,7 @@ from typing import Tuple
 class SixteenSoldiersDefaults:
     """Stable fallback defaults for shared scene generation and rendering."""
 
-    piece_count_per_side_support: Tuple[int, ...] = (8, 9, 10, 11, 12, 13, 14)
+    piece_count_per_side_support: Tuple[int, ...] = (6, 7, 8, 9, 10)
     canvas_width: int = 760
     canvas_height: int = 900
     panel_margin_px: int = 52

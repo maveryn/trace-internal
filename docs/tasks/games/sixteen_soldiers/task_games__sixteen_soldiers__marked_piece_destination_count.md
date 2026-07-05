@@ -16,5 +16,6 @@ Query ids: `single`.
 - The board is a fixed 37-point Sixteen Soldiers line graph with a 5 by 5 center and two triangular extensions.
 - A simple-move destination is an adjacent empty point connected to the X-marked piece by one drawn line.
 - Jump and capture landing points are excluded; captures are covered by `task_games__sixteen_soldiers__marked_piece_capture_count`.
+- The generated answer support is `0..5`, with `6..10` pieces per side.
 - Annotation marks the centers of every simple-move destination point; an empty annotation list is valid when the answer is `0`.
 - The answer and annotation are bound from the same generated board state.

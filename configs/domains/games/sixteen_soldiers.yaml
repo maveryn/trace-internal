@@ -25,7 +25,6 @@ generation:
     - 3
     - 4
     - 5
-    - 6
     marked_piece_capture_count_support:
     - 0
     - 1
@@ -33,13 +32,11 @@ generation:
     - 3
     - 4
     piece_count_per_side_support:
+    - 6
+    - 7
     - 8
     - 9
     - 10
-    - 11
-    - 12
-    - 13
-    - 14
 rendering:
   shared:
     canvas_width: 760

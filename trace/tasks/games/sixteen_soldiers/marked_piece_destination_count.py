@@ -17,7 +17,7 @@ from .shared.state import SCENE_ID, SCENE_NAMESPACE
 TASK_ID = "task_games__sixteen_soldiers__marked_piece_destination_count"
 PROMPT_QUERY_KEY = "marked_piece_destination_count"
 SUPPORTED_QUERY_IDS = (DEFAULT_QUERY_ID,)
-TARGET_SUPPORT = (0, 1, 2, 3, 4, 5, 6)
+TARGET_SUPPORT = (0, 1, 2, 3, 4, 5)
 
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
     "games",

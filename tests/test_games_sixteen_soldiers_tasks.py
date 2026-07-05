@@ -66,9 +66,9 @@ def test_games_sixteen_soldiers_defaults_expose_axes_and_prompt_bundle() -> None
         "slate_court",
         "sand_court",
     }
-    assert list(generation["marked_piece_destination_count_support"]) == [0, 1, 2, 3, 4, 5, 6]
+    assert list(generation["marked_piece_destination_count_support"]) == [0, 1, 2, 3, 4, 5]
     assert list(generation["marked_piece_capture_count_support"]) == [0, 1, 2, 3, 4]
-    assert list(generation["piece_count_per_side_support"]) == [8, 9, 10, 11, 12, 13, 14]
+    assert list(generation["piece_count_per_side_support"]) == [6, 7, 8, 9, 10]
     assert int(rendering["max_board_height_px"]) > int(rendering["max_board_width_px"])
     assert str(prompt["bundle_id"]) == "games_sixteen_soldiers_v1"
 
@@ -87,7 +87,7 @@ def test_games_sixteen_soldiers_prompt_bundle_has_queries() -> None:
 def test_games_sixteen_soldiers_marked_destination_answer_matches_trace() -> None:
     out = create_task(MARKED_DESTINATION_TASK_ID).generate(
         81701,
-        params={"target_answer": 6, "piece_count_per_side": 10},
+        params={"target_answer": 5, "piece_count_per_side": 10},
         max_attempts=80,
     )
     board = _board_from_trace(out)
@@ -99,7 +99,7 @@ def test_games_sixteen_soldiers_marked_destination_answer_matches_trace() -> Non
     assert out.scene_id == "sixteen_soldiers"
     assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
-    assert int(out.answer_gt.value) == 6
+    assert int(out.answer_gt.value) == 5
     assert out.annotation_gt.type == "point_set"
     assert execution["annotation_point_ids"] == expected_ids
     assert execution["prompt_query_key"] == "marked_piece_destination_count"
@@ -111,7 +111,7 @@ def test_games_sixteen_soldiers_marked_destination_answer_matches_trace() -> Non
 def test_games_sixteen_soldiers_marked_capture_answer_matches_trace() -> None:
     out = create_task(MARKED_CAPTURE_TASK_ID).generate(
         81702,
-        params={"target_answer": 4, "piece_count_per_side": 11},
+        params={"target_answer": 4, "piece_count_per_side": 10},
         max_attempts=100,
     )
     board = _board_from_trace(out)

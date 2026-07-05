@@ -77,7 +77,7 @@ def create_render_context(
     font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 22)))
     small_font_size = int(params.get("small_label_font_size", group_default(render_defaults, "small_label_font_size", 18)))
     line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 4)))
-    label_stroke_width = int(params.get("label_stroke_width", group_default(render_defaults, "label_stroke_width", 1)))
+    label_stroke_width = int(params.get("label_stroke_width", group_default(render_defaults, "label_stroke_width", 0)))
     font_family = sample_font_family(
         role="readout",
         instance_seed=int(instance_seed),
@@ -98,8 +98,8 @@ def create_render_context(
         cone_fill_color=cone_fill_color,
         accent_color=accent_color,
         line_width=max(2, int(line_width)),
-        font=load_font(max(12, int(font_size)), bold=True, font_family=str(font_family)),
-        small_font=load_font(max(10, int(small_font_size)), bold=True, font_family=str(font_family)),
+        font=load_font(max(12, int(font_size)), bold=False, font_family=str(font_family)),
+        small_font=load_font(max(10, int(small_font_size)), bold=False, font_family=str(font_family)),
         label_stroke_width=max(0, int(label_stroke_width)),
     )
     render_meta = {
@@ -158,6 +158,7 @@ def _draw_dimension(
     label: str,
     *,
     label_offset: Point = (0.0, 0.0),
+    label_center: Point | None = None,
     color: Color | None = None,
 ) -> BBox:
     draw_color = color if color is not None else ctx.label_color
@@ -178,11 +179,35 @@ def _draw_dimension(
                 fill=draw_color,
                 width=max(2, ctx.line_width - 1),
             )
-    center = (
-        (float(start[0]) + float(end[0])) / 2.0 + float(label_offset[0]),
-        (float(start[1]) + float(end[1])) / 2.0 + float(label_offset[1]),
-    )
+    if label_center is not None:
+        center = (float(label_center[0]), float(label_center[1]))
+    else:
+        center = (
+            (float(start[0]) + float(end[0])) / 2.0 + float(label_offset[0]),
+            (float(start[1]) + float(end[1])) / 2.0 + float(label_offset[1]),
+        )
     return draw_label(ctx, label, center, small=True)
+
+
+def _segment_label_center(
+    start: Point,
+    end: Point,
+    *,
+    along: float,
+    normal_offset: float,
+    side: float = 1.0,
+) -> Point:
+    dx = float(end[0]) - float(start[0])
+    dy = float(end[1]) - float(start[1])
+    length = math.hypot(dx, dy)
+    if length <= 1e-9:
+        return ((float(start[0]) + float(end[0])) / 2.0, (float(start[1]) + float(end[1])) / 2.0)
+    nx = -dy / length
+    ny = dx / length
+    return (
+        float(start[0]) + dx * float(along) + nx * float(normal_offset) * float(side),
+        float(start[1]) + dy * float(along) + ny * float(normal_offset) * float(side),
+    )
 
 
 def _point_on_circle(center: Point, radius: float, degrees: float) -> Point:
@@ -211,10 +236,10 @@ def _draw_arrow(ctx: RenderContext, start: Point, end: Point) -> None:
 
 def _draw_target_label(ctx: RenderContext, spec: ConeNetDiagramSpec, base_center: Point, base_right: Point, apex: Point) -> BBox:
     if spec.target_label_anchor == "radius_segment":
-        center = ((float(base_center[0]) + float(base_right[0])) / 2.0, float(base_center[1]) + 34.0)
+        center = ((float(base_center[0]) + float(base_right[0])) / 2.0, float(base_center[1]) + 42.0)
         return draw_label(ctx, spec.target_label, center, small=True)
     if spec.target_label_anchor == "height_segment":
-        center = (float(base_center[0]) - 34.0, (float(apex[1]) + float(base_center[1])) / 2.0)
+        center = (float(base_center[0]) + 44.0, (float(apex[1]) + float(base_center[1])) / 2.0)
         return draw_label(ctx, spec.target_label, center, small=True)
     raise ValueError(f"unsupported cone-net target label anchor: {spec.target_label_anchor}")
 
@@ -222,8 +247,8 @@ def _draw_target_label(ctx: RenderContext, spec: ConeNetDiagramSpec, base_center
 def render_cone_net_scene(ctx: RenderContext, spec: ConeNetDiagramSpec) -> RenderedConeNetScene:
     """Draw one sector net, the folded cone, and the requested missing measure."""
 
-    sector_center = (245.0, 310.0)
-    sector_radius_px = 172.0
+    sector_center = (250.0, 318.0)
+    sector_radius_px = 166.0
     start_deg = -136.0
     end_deg = start_deg + float(spec.theta_degrees)
     mid_deg = (start_deg + end_deg) / 2.0
@@ -257,7 +282,7 @@ def render_cone_net_scene(ctx: RenderContext, spec: ConeNetDiagramSpec) -> Rende
         sector_center,
         p0,
         f"l={fmt_measure(spec.slant_height)}",
-        label_offset=(-18.0, 28.0),
+        label_center=_segment_label_center(sector_center, p0, along=0.46, normal_offset=42.0, side=-1.0),
     )
     angle_radius = 58.0
     angle_box = (
@@ -273,10 +298,10 @@ def render_cone_net_scene(ctx: RenderContext, spec: ConeNetDiagramSpec) -> Rende
     )
     label_bboxes["sector_angle"] = draw_label(ctx, f"θ={spec.theta_degrees}°", angle_center, small=True)
 
-    cone_apex = (584.0, 122.0)
-    cone_base_center = (584.0, 414.0)
-    cone_base_left = (486.0, 414.0)
-    cone_base_right = (682.0, 414.0)
+    cone_apex = (620.0, 112.0)
+    cone_base_center = (620.0, 428.0)
+    cone_base_left = (508.0, 428.0)
+    cone_base_right = (732.0, 428.0)
     cone_base_box = (
         cone_base_left[0],
         cone_base_center[1] - 22.0,
@@ -300,13 +325,13 @@ def render_cone_net_scene(ctx: RenderContext, spec: ConeNetDiagramSpec) -> Rende
         fill=ctx.line_color,
         width=2,
     )
-    draw_label(
+    label_bboxes["cone_slant_height"] = draw_label(
         ctx,
-        "l",
-        ((cone_apex[0] + cone_base_right[0]) / 2.0 + 20.0, (cone_apex[1] + cone_base_right[1]) / 2.0),
+        f"l={fmt_measure(spec.slant_height)}",
+        _segment_label_center(cone_apex, cone_base_right, along=0.52, normal_offset=46.0, side=-1.0),
         small=True,
     )
-    _draw_arrow(ctx, (405.0, 252.0), (492.0, 342.0))
+    _draw_arrow(ctx, (432.0, 258.0), (510.0, 352.0))
     label_bboxes["target"] = _draw_target_label(ctx, spec, cone_base_center, cone_base_right, cone_apex)
 
     all_points: Dict[str, Point] = {

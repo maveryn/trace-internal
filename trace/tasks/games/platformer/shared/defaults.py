@@ -32,9 +32,9 @@ class PlatformerDefaults:
     target_platform_label_support: Tuple[str, ...] = PLATFORM_LABELS
     target_collectible_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6, 7)
     score_on_arc_coin_count_support: Tuple[int, ...] = (1, 2, 3, 4)
-    score_on_arc_bonus_count_support: Tuple[int, ...] = (1, 2, 3)
+    score_on_arc_bonus_count_support: Tuple[int, ...] = (1, 2)
     score_off_arc_bonus_count_support: Tuple[int, ...] = (1, 2, 3)
-    score_bonus_value_support: Tuple[int, ...] = (2, 3, 5, 10)
+    score_bonus_value_support: Tuple[int, ...] = (2, 3, 4)
     jump_visible_after_peak_min: float = 0.08
     jump_visible_after_peak_max: float = 0.14
     canvas_width: int = 1000

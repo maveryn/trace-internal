@@ -142,6 +142,7 @@ def test_games_platformer_score_value_matches_on_arc_collectibles() -> None:
     )
     assert int(out.answer_gt.value) == score
     assert "Coins score 1; bonus items score their printed value." in out.prompt
+    assert "Ignore hazards and all collectibles away from the dashed arc." in out.prompt
 
 
 def test_games_platformer_build_smoke(tmp_path: Path) -> None:

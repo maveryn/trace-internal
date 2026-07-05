@@ -62,7 +62,6 @@ generation:
       score_on_arc_bonus_count_support:
       - 1
       - 2
-      - 3
       score_off_arc_bonus_count_support:
       - 1
       - 2
@@ -70,8 +69,7 @@ generation:
       score_bonus_value_support:
       - 2
       - 3
-      - 5
-      - 10
+      - 4
 rendering:
   shared:
     canvas_width: 1000

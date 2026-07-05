@@ -37,11 +37,11 @@
         "{platformer_full_arc_rule_text} Count only the coins lying on the dashed arc."
       ],
       "jump_collectible_score_value": [
-        "{platformer_full_arc_rule_text} {platformer_score_rule_text} What is the total score from collectibles on the arc?",
-        "Follow the dashed jump arc. {platformer_score_rule_text} Add the scores of collectibles on that arc.",
-        "{platformer_score_rule_text} Report the total score collected along the dashed jump arc.",
-        "{platformer_full_arc_rule_text} {platformer_score_rule_text} Count only collectibles on the dashed arc and compute their total score.",
-        "{platformer_score_rule_text} The character follows the dashed arc. What score is collected on that path?"
+        "{platformer_full_arc_rule_text} {platformer_score_rule_text} What is the total score from collectibles centered on the dashed arc?",
+        "Follow the dashed jump arc. {platformer_score_rule_text} Add only collectibles whose centers lie on that arc.",
+        "{platformer_score_rule_text} Report the total score from dashed-arc collectibles, ignoring all off-arc items.",
+        "{platformer_full_arc_rule_text} {platformer_score_rule_text} Count only collectibles centered on the dashed arc and compute their total score.",
+        "{platformer_score_rule_text} The character follows the dashed arc. What score is collected from collectibles on that path?"
       ]
     },
     "output": {
@@ -123,12 +123,12 @@
     "object_description_side_scroller": "a side-scroller platformer level with a player character, platforms, hazards, coins, bonus items, and a dashed jump arc",
     "platformer_short_arc_rule_text": "The dashed arc shows the first part of the jump; extend the same smooth arc forward.",
     "platformer_full_arc_rule_text": "The dashed arc shows the jump path to follow.",
-    "platformer_score_rule_text": "Coins score 1; bonus items score their printed value.",
+    "platformer_score_rule_text": "Coins score 1; bonus items score their printed value. Count only collectibles whose centers lie on the dashed arc. Ignore hazards and all collectibles away from the dashed arc.",
     "annotation_hint_jump_landing_label": "set \"annotation\" to one bounding box [x0, y0, x1, y1] around the labeled platform where the jump lands",
     "answer_hint_jump_landing_label": "set \"answer\" to the selected platform label as a string",
     "annotation_hint_collectible_count": "set \"annotation\" to [x, y] pixel points at the centers of each coin lying on the dashed jump arc",
     "answer_hint_collectible_count": "set \"answer\" to the number of coins lying on the dashed jump arc as an integer",
     "annotation_hint_jump_collectible_score_value": "set \"annotation\" to [x, y] pixel points at the centers of each coin or printed-value bonus item included in the dashed-arc score",
-    "answer_hint_jump_collectible_score_value": "set \"answer\" to the integer total score from collectibles on the dashed jump arc"
+    "answer_hint_jump_collectible_score_value": "set \"answer\" to the integer total score from collectibles centered on the dashed jump arc"
   }
 }

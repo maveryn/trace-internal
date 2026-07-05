@@ -39,9 +39,9 @@ def test_games_platformer_level_defaults_present() -> None:
     assert list(count_generation["target_collectible_count_support"]) == [2, 3, 4, 5, 6, 7]
     assert bool(count_generation["balanced_target_collectible_count_sampling"]) is True
     assert list(score_generation["score_on_arc_coin_count_support"]) == [1, 2, 3, 4]
-    assert list(score_generation["score_on_arc_bonus_count_support"]) == [1, 2, 3]
+    assert list(score_generation["score_on_arc_bonus_count_support"]) == [1, 2]
     assert list(score_generation["score_off_arc_bonus_count_support"]) == [1, 2, 3]
-    assert list(score_generation["score_bonus_value_support"]) == [2, 3, 5, 10]
+    assert list(score_generation["score_bonus_value_support"]) == [2, 3, 4]
     assert float(landing_generation["jump_visible_after_peak_min"]) == 0.08
     assert float(landing_generation["jump_visible_after_peak_max"]) == 0.14
     assert int(rendering["canvas_width"]) == 1000

@@ -21,6 +21,9 @@ Annotation witnesses: `annotation` uses the `point_set` schema; the prompt/annot
 Query ids: `single`.
 
 ## Generation Notes
-2. Query ids are internal replay/sampling keys and do not define public task units.
-3. Annotation is projected from the same generated game state used for answer verification.
-4. Annotation points mark the centers of the scored collectibles on the shown jump arc.
+1. Coins on the dashed jump arc score 1.
+2. Printed-value bonus items on the dashed jump arc score their printed value, sampled from `2, 3, 4`.
+3. The dashed arc includes one or two printed-value bonus items; off-arc bonus items are distractors and are not included.
+4. Query ids are internal replay/sampling keys and do not define public task units.
+5. Annotation is projected from the same generated game state used for answer verification.
+6. Annotation points mark the centers of the scored collectibles on the shown jump arc.

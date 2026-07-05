@@ -30,6 +30,17 @@ from .defaults import SCENE_ID
 from .state import BBox, Color, CompositeRenderContext, CompositeShapeProblem, Point, RenderedCompositeShape
 from .styles import resolve_composite_shape_style
 
+_DIAGRAM_LEFT = 84.0
+_READOUT_STRIP_WIDTH = 250.0
+_MIN_DIAGRAM_WIDTH = 320.0
+
+
+def _diagram_width(ctx: CompositeRenderContext) -> float:
+    """Width available for the geometric drawing before the right readout strip."""
+
+    diagram_right = max(_DIAGRAM_LEFT + _MIN_DIAGRAM_WIDTH, float(ctx.width) - _READOUT_STRIP_WIDTH)
+    return max(_MIN_DIAGRAM_WIDTH, diagram_right - _DIAGRAM_LEFT)
+
 
 def create_composite_render_context(
     *,
@@ -385,13 +396,13 @@ def _draw_measurement_list(
     labels: Sequence[str],
     *,
     anchor: Point | None = None,
-    line_gap: float = 27.0,
+    line_gap: float = 30.0,
     keys: Sequence[str] | None = None,
 ) -> dict[str, BBox]:
     """Draw a compact visible measurement list away from the shape."""
 
     if anchor is None:
-        anchor = (float(ctx.width) - 70.0, 150.0)
+        anchor = (float(ctx.width) - 96.0, 150.0)
     if keys is not None and len(keys) != len(labels):
         raise ValueError("measurement list keys must match labels")
     bboxes: dict[str, BBox] = {}
@@ -802,16 +813,17 @@ def _render_semicircle(ctx: CompositeRenderContext, problem: CompositeShapeProbl
     radius_units = int(values["radius_units"])
     total_width_units = float(width_units + radius_units)
     total_height_units = max(float(height_units), float(2 * radius_units))
+    diagram_width = _diagram_width(ctx)
     scale = min(
         22.0,
-        (float(ctx.width) - 210.0) / max(1.0, total_width_units),
-        (float(ctx.height) - 180.0) / max(1.0, total_height_units),
+        diagram_width / max(1.0, total_width_units),
+        (float(ctx.height) - 200.0) / max(1.0, total_height_units),
     )
     scale = max(7.0, float(scale))
     rect_w = float(width_units) * scale
     rect_h = float(height_units) * scale
     radius_px = float(radius_units) * scale
-    left = (float(ctx.width) - (total_width_units * scale)) / 2.0
+    left = _DIAGRAM_LEFT + ((diagram_width - (total_width_units * scale)) / 2.0)
     top = max(112.0, (float(ctx.height) - rect_h) / 2.0)
     right = left + rect_w
     bottom = top + rect_h
@@ -986,9 +998,7 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
     width_units = int(values["width_units"])
     height_units = int(values["height_units"])
     radius_units = int(values["radius_units"])
-    diagram_left = 84.0
-    diagram_right = max(diagram_left + 320.0, float(ctx.width) - 250.0)
-    diagram_width = max(320.0, diagram_right - diagram_left)
+    diagram_width = _diagram_width(ctx)
     scale = min(
         22.0,
         diagram_width / max(1.0, float(width_units)),
@@ -998,7 +1008,7 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
     rect_w = float(width_units) * scale
     rect_h = float(height_units) * scale
     radius_px = float(radius_units) * scale
-    left = diagram_left + ((diagram_width - rect_w) / 2.0)
+    left = _DIAGRAM_LEFT + ((diagram_width - rect_w) / 2.0)
     top = max(112.0, (float(ctx.height) - rect_h) / 2.0)
     right = left + rect_w
     bottom = top + rect_h
@@ -1168,8 +1178,8 @@ def _render_sector(ctx: CompositeRenderContext, problem: CompositeShapeProblem) 
         measure_role = "sector_area_label"
     list_bboxes = _draw_measurement_list(
         ctx,
-        (f"OA=OB={fmt_measure(radius_units)}", measure_text),
-        keys=("radius_label", measure_role),
+        (f"OA={fmt_measure(radius_units)}", f"OB={fmt_measure(radius_units)}", measure_text),
+        keys=("radius_OA_label", "radius_OB_label", measure_role),
     )
     sector_bbox = bbox_from_points((center, *arc), width=ctx.width, height=ctx.height, pad=8.0)
     annotation_points, point_label_bboxes = _draw_labeled_points(

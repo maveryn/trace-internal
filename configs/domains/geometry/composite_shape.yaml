@@ -47,8 +47,8 @@ rendering:
       small_label_font_size: 22
       point_label_font_size: 22
     task_geometry__composite_shape__rectangle_quarter_sector_cutout_area:
-      canvas_width: 760
-      canvas_height: 560
+      canvas_width: 820
+      canvas_height: 580
       label_font_size: 24
       small_label_font_size: 22
     task_geometry__composite_shape__rectangle_semicircle_area:
@@ -57,8 +57,8 @@ rendering:
       label_font_size: 24
       small_label_font_size: 22
     task_geometry__composite_shape__rectangle_quarter_sector_cutout_perimeter:
-      canvas_width: 760
-      canvas_height: 560
+      canvas_width: 820
+      canvas_height: 580
       label_font_size: 24
       small_label_font_size: 22
     task_geometry__composite_shape__rectangle_semicircle_perimeter:

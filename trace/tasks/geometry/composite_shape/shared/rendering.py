@@ -986,16 +986,19 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
     width_units = int(values["width_units"])
     height_units = int(values["height_units"])
     radius_units = int(values["radius_units"])
+    diagram_left = 84.0
+    diagram_right = max(diagram_left + 320.0, float(ctx.width) - 250.0)
+    diagram_width = max(320.0, diagram_right - diagram_left)
     scale = min(
-        23.0,
-        (float(ctx.width) - 210.0) / max(1.0, float(width_units)),
-        (float(ctx.height) - 180.0) / max(1.0, float(height_units)),
+        22.0,
+        diagram_width / max(1.0, float(width_units)),
+        (float(ctx.height) - 200.0) / max(1.0, float(height_units)),
     )
     scale = max(8.0, float(scale))
     rect_w = float(width_units) * scale
     rect_h = float(height_units) * scale
     radius_px = float(radius_units) * scale
-    left = (float(ctx.width) - rect_w) / 2.0
+    left = diagram_left + ((diagram_width - rect_w) / 2.0)
     top = max(112.0, (float(ctx.height) - rect_h) / 2.0)
     right = left + rect_w
     bottom = top + rect_h
@@ -1059,6 +1062,8 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
                 "left_height_label",
                 "arc_length_label",
             ),
+            anchor=(float(ctx.width) - 98.0, 150.0),
+            line_gap=30.0,
         )
         support_bboxes = list(list_bboxes.values())
         support_roles = list(list_bboxes)
@@ -1068,10 +1073,12 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
             (
                 f"AB={fmt_measure(width_units)}",
                 f"AD={fmt_measure(height_units)}",
-                f"BE=BF={fmt_measure(radius_units)}",
+                f"BE={fmt_measure(radius_units)}",
+                f"BF={fmt_measure(radius_units)}",
             ),
-            keys=("width_label", "height_label", "radius_label"),
-            anchor=(float(ctx.width) - 56.0, 225.0),
+            keys=("width_label", "height_label", "radius_horizontal_label", "radius_vertical_label"),
+            anchor=(float(ctx.width) - 94.0, 198.0),
+            line_gap=30.0,
         )
         support_bboxes = list(list_bboxes.values())
         support_roles = list(list_bboxes)

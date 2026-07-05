@@ -114,14 +114,47 @@ def _draw_dimension(
     label: str,
     *,
     label_offset: Point = (0.0, 0.0),
+    label_center: Point | None = None,
+    gap_for_label: bool = False,
     color: Color | None = None,
 ) -> BBox:
     draw_color = color if color is not None else ctx.label_color
-    ctx.draw.line([start, end], fill=draw_color, width=max(2, ctx.line_width - 1))
     tick = 7.0
     dx = float(end[0]) - float(start[0])
     dy = float(end[1]) - float(start[1])
     length = math.hypot(dx, dy)
+    if label_center is not None:
+        center = (float(label_center[0]), float(label_center[1]))
+    else:
+        center = (
+            (float(start[0]) + float(end[0])) / 2.0 + float(label_offset[0]),
+            (float(start[1]) + float(end[1])) / 2.0 + float(label_offset[1]),
+        )
+    line_width = max(2, ctx.line_width - 1)
+    if bool(gap_for_label) and length > 1e-9:
+        ux = dx / length
+        uy = dy / length
+        projection = ((center[0] - float(start[0])) * ux) + ((center[1] - float(start[1])) * uy)
+        label_bbox = _prospective_label_bbox(ctx, label, center)
+        label_w = float(label_bbox[2]) - float(label_bbox[0])
+        label_h = float(label_bbox[3]) - float(label_bbox[1])
+        half_gap = max(18.0, (math.hypot(label_w, label_h) / 2.0) + 8.0)
+        before = max(0.0, min(float(length), projection - half_gap))
+        after = max(0.0, min(float(length), projection + half_gap))
+        if before > 2.0:
+            ctx.draw.line(
+                [start, (float(start[0]) + ux * before, float(start[1]) + uy * before)],
+                fill=draw_color,
+                width=line_width,
+            )
+        if after < float(length) - 2.0:
+            ctx.draw.line(
+                [(float(start[0]) + ux * after, float(start[1]) + uy * after), end],
+                fill=draw_color,
+                width=line_width,
+            )
+    else:
+        ctx.draw.line([start, end], fill=draw_color, width=line_width)
     if length > 1e-9:
         nx = -dy / length
         ny = dx / length
@@ -132,13 +165,73 @@ def _draw_dimension(
                     (float(point[0]) + tick * nx, float(point[1]) + tick * ny),
                 ],
                 fill=draw_color,
-                width=max(2, ctx.line_width - 1),
+                width=line_width,
             )
-    center = (
-        (float(start[0]) + float(end[0])) / 2.0 + float(label_offset[0]),
-        (float(start[1]) + float(end[1])) / 2.0 + float(label_offset[1]),
-    )
     return draw_label(ctx, label, center, small=True)
+
+
+def _prospective_label_bbox(ctx: RenderContext, label: str, center: Point) -> BBox:
+    bbox = ctx.draw.textbbox((0, 0), str(label), font=ctx.small_font, stroke_width=ctx.label_stroke_width)
+    text_w = float(bbox[2] - bbox[0])
+    text_h = float(bbox[3] - bbox[1])
+    x0 = float(center[0]) - (text_w / 2.0) - 4.0
+    y0 = float(center[1]) - (text_h / 2.0) - 4.0
+    x1 = float(center[0]) + (text_w / 2.0) + 4.0
+    y1 = float(center[1]) + (text_h / 2.0) + 4.0
+    return (
+        max(0.0, min(float(ctx.width), x0)),
+        max(0.0, min(float(ctx.height), y0)),
+        max(0.0, min(float(ctx.width), x1)),
+        max(0.0, min(float(ctx.height), y1)),
+    )
+
+
+def _bbox_intersection_area(a: BBox, b: BBox) -> float:
+    x0 = max(float(a[0]), float(b[0]))
+    y0 = max(float(a[1]), float(b[1]))
+    x1 = min(float(a[2]), float(b[2]))
+    y1 = min(float(a[3]), float(b[3]))
+    if x1 <= x0 or y1 <= y0:
+        return 0.0
+    return (x1 - x0) * (y1 - y0)
+
+
+def _outer_radius_label_center(
+    ctx: RenderContext,
+    start: Point,
+    end: Point,
+    label: str,
+    avoid_bboxes: Tuple[BBox, ...],
+) -> Point:
+    dx = float(end[0]) - float(start[0])
+    dy = float(end[1]) - float(start[1])
+    length = math.hypot(dx, dy)
+    if length <= 1e-9:
+        return ((float(start[0]) + float(end[0])) / 2.0, (float(start[1]) + float(end[1])) / 2.0)
+    ux = dx / length
+    uy = dy / length
+    nx = -uy
+    ny = ux
+    candidates: list[tuple[float, Point]] = []
+    for along in (0.48, 0.56, 0.64):
+        base = (float(start[0]) + dx * along, float(start[1]) + dy * along)
+        for distance in (44.0, 56.0, 68.0):
+            for side in (1.0, -1.0):
+                center = (base[0] + nx * distance * side, base[1] + ny * distance * side)
+                bbox = _prospective_label_bbox(ctx, label, center)
+                overflow = (
+                    max(0.0, -float(center[0]))
+                    + max(0.0, float(center[0]) - float(ctx.width))
+                    + max(0.0, -float(center[1]))
+                    + max(0.0, float(center[1]) - float(ctx.height))
+                )
+                edge_penalty = 0.0
+                if bbox[0] <= 2.0 or bbox[1] <= 2.0 or bbox[2] >= float(ctx.width) - 2.0 or bbox[3] >= float(ctx.height) - 2.0:
+                    edge_penalty = 5000.0
+                overlap = sum(_bbox_intersection_area(bbox, other) for other in avoid_bboxes)
+                preference = abs(along - 0.58) * 50.0 + abs(distance - 56.0) * 1.5
+                candidates.append((overflow * 10000.0 + edge_penalty + overlap * 25.0 + preference, center))
+    return min(candidates, key=lambda item: item[0])[1]
 
 
 def render_concentric_chord_scene(
@@ -186,26 +279,40 @@ def render_concentric_chord_scene(
     m3 = (m0[0] + radius_unit[0] * marker, m0[1] + radius_unit[1] * marker)
     ctx.draw.line([m0, m1, m2, m3], fill=ctx.line_color, width=2)
 
+    point_label_bboxes: list[BBox] = []
     for label, point in (("O", center), ("A", left), ("B", right), ("T", tangent)):
         px, py = float(point[0]), float(point[1])
         ctx.draw.ellipse((px - 4.0, py - 4.0, px + 4.0, py + 4.0), fill=ctx.line_color)
         offset = {"O": (0.0, 24.0), "A": (-18.0, -18.0), "B": (18.0, -18.0), "T": (20.0, 20.0)}[label]
-        draw_label(ctx, label, (px + offset[0], py + offset[1]), small=True)
+        point_label_bboxes.append(draw_label(ctx, label, (px + offset[0], py + offset[1]), small=True))
 
     label_bboxes: Dict[str, BBox] = {}
-    label_bboxes["outer_radius"] = _draw_dimension(
-        ctx,
-        center,
-        right,
-        spec.outer_radius_label,
-        label_offset=(38.0, 8.0),
-    )
     label_bboxes["inner_radius"] = _draw_dimension(
         ctx,
         center,
         tangent,
         spec.inner_radius_label,
         label_offset=(-38.0, -4.0),
+    )
+    right_angle_bbox = bbox_from_points(
+        (tangent, (tangent[0] + marker, tangent[1]), (tangent[0] + marker, tangent[1] + marker), (tangent[0], tangent[1] + marker)),
+        width=ctx.width,
+        height=ctx.height,
+        pad=5.0,
+    )
+    label_bboxes["outer_radius"] = _draw_dimension(
+        ctx,
+        center,
+        right,
+        spec.outer_radius_label,
+        label_center=_outer_radius_label_center(
+            ctx,
+            center,
+            right,
+            spec.outer_radius_label,
+            tuple(point_label_bboxes + [label_bboxes["inner_radius"], right_angle_bbox]),
+        ),
+        gap_for_label=True,
     )
     label_bboxes["chord"] = _draw_dimension(
         ctx,
@@ -215,12 +322,7 @@ def render_concentric_chord_scene(
         label_offset=(0.0, -18.0),
         color=ctx.accent_color,
     )
-    label_bboxes["right_angle"] = bbox_from_points(
-        (tangent, (tangent[0] + marker, tangent[1]), (tangent[0] + marker, tangent[1] + marker), (tangent[0], tangent[1] + marker)),
-        width=ctx.width,
-        height=ctx.height,
-        pad=5.0,
-    )
+    label_bboxes["right_angle"] = right_angle_bbox
 
     annotation_keyed_points = {"O": center, "A": left, "B": right, "T": tangent}
     chord_bbox = bbox_from_points((left, right), width=ctx.width, height=ctx.height, pad=18.0)

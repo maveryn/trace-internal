@@ -81,7 +81,7 @@ def resolve_composite_shape_style(
         instance_seed=int(instance_seed),
         namespace=f"{render_namespace}.composite_shape_text",
         role="composite_shape_readout",
-        surface_rgbs=(*anchors, primary, secondary),
+        surface_rgbs=anchors,
         preferred_rgbs=(
             tuple(int(value) for value in diagram_style.label_rgb),
             tuple(int(value) for value in diagram_style.stroke_rgb),

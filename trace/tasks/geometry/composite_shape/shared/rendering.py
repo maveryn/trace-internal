@@ -314,6 +314,33 @@ def _draw_dashed_line(
     return bbox_from_points((start, end), width=ctx.width, height=ctx.height, pad=line_width + 2)
 
 
+def _draw_radius_witness(
+    ctx: CompositeRenderContext,
+    center: Point,
+    endpoint: Point,
+    *,
+    label: str = "r",
+) -> dict[str, BBox]:
+    """Draw a visual radius witness without making it part of annotation."""
+
+    line_width = max(1, int(ctx.line_width) - 2)
+    line_bbox = _draw_polyline(ctx, [center, endpoint], width=line_width)
+    dx = float(endpoint[0]) - float(center[0])
+    dy = float(endpoint[1]) - float(center[1])
+    length = max(1.0, math.hypot(dx, dy))
+    nx = -dy / length
+    ny = dx / length
+    label_center = (
+        float(center[0]) + dx * 0.58 + nx * 16.0,
+        float(center[1]) + dy * 0.58 + ny * 16.0,
+    )
+    label_bbox = _draw_text(ctx, label, label_center, font=ctx.small_font)
+    return {
+        "radius_witness_segment": line_bbox,
+        "radius_witness_label": label_bbox,
+    }
+
+
 def _fill_polygon(ctx: CompositeRenderContext, points: Sequence[Point], *, fill: Color) -> BBox:
     pts = [(float(x), float(y)) for x, y in points]
     if len(pts) >= 3:
@@ -819,6 +846,13 @@ def _render_semicircle(ctx: CompositeRenderContext, problem: CompositeShapeProbl
     if cap_end_y < bottom - 1.0:
         _draw_polyline(ctx, [cap_end, p_right_bottom])
     _draw_polyline(ctx, arc)
+    radius_midpoint = _place_point(
+        ctx,
+        (
+            right + (radius_px * (-1.0 if cutout else 1.0)),
+            mid_y,
+        ),
+    )
     top_right_reference = cap_start if cap_start_y > top + 1.0 else p_right_bottom
     bottom_right_reference = cap_end if cap_end_y < bottom - 1.0 else p_right_top
     notation_bboxes = {
@@ -827,6 +861,8 @@ def _render_semicircle(ctx: CompositeRenderContext, problem: CompositeShapeProbl
         "top_right_right_angle": _draw_right_angle_notation(ctx, p_right_top, p_left_top, top_right_reference),
         "bottom_right_right_angle": _draw_right_angle_notation(ctx, p_right_bottom, bottom_right_reference, p_left_bottom),
     }
+    if problem.metric_kind != "perimeter":
+        notation_bboxes.update(_draw_radius_witness(ctx, center, radius_midpoint))
     if problem.metric_kind == "perimeter":
         highlight_width = _boundary_width(ctx)
         _draw_polyline(ctx, [p_left_top, p_right_top], fill=ctx.accent_color, width=highlight_width)
@@ -1032,9 +1068,10 @@ def _render_quarter_sector(ctx: CompositeRenderContext, problem: CompositeShapeP
             (
                 f"AB={fmt_measure(width_units)}",
                 f"AD={fmt_measure(height_units)}",
-                f"r={fmt_measure(radius_units)}",
+                f"BE=BF={fmt_measure(radius_units)}",
             ),
             keys=("width_label", "height_label", "radius_label"),
+            anchor=(float(ctx.width) - 56.0, 225.0),
         )
         support_bboxes = list(list_bboxes.values())
         support_roles = list(list_bboxes)
@@ -1124,7 +1161,7 @@ def _render_sector(ctx: CompositeRenderContext, problem: CompositeShapeProblem) 
         measure_role = "sector_area_label"
     list_bboxes = _draw_measurement_list(
         ctx,
-        (f"r={fmt_measure(radius_units)}", measure_text),
+        (f"OA=OB={fmt_measure(radius_units)}", measure_text),
         keys=("radius_label", measure_role),
     )
     sector_bbox = bbox_from_points((center, *arc), width=ctx.width, height=ctx.height, pad=8.0)

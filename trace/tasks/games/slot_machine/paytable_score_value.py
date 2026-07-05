@@ -70,7 +70,8 @@ def _prepare_paytable_score_objective(
         prompt_query_key=PROMPT_QUERY_KEY,
         query_probabilities=query_probabilities,
         query_params=target_params,
-        example_answer_value=14,
+        example_answer_value=4,
+        payline_annotation_schema="segment",
         prompt_extra_slots={
             "object_description": "a toy slot machine with three reels, three visible rows, simple symbol icons, and a side paytable of symbol scores",
         },

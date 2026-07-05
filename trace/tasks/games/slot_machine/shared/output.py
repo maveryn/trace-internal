@@ -77,7 +77,7 @@ def build_slot_machine_trace_payload(
             **dict(execution_extra or {}),
         },
         "witness_symbolic": {
-            "type": "payline_segment_set",
+            "type": f"payline_{str(annotation_artifacts.annotation_type)}",
             "payline_ids": [str(payline_id) for payline_id in annotation_payline_ids],
         },
         "projected_annotation": dict(annotation_artifacts.projected_annotation),

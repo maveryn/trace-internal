@@ -60,7 +60,7 @@ def test_games_slot_machine_winning_payline_count_support_and_taxonomy() -> None
 def test_games_slot_machine_paytable_score_value_contract() -> None:
     out = GamesSlotMachinePaytableScoreValueTask().generate(
         26062501,
-        params={"target_score_winning_payline_count": 2},
+        params={"target_score_winning_payline_count": 1},
         max_attempts=64,
     )
     execution = out.trace_payload["execution_trace"]
@@ -69,18 +69,18 @@ def test_games_slot_machine_paytable_score_value_contract() -> None:
         out.trace_payload["render_map"]["payline_segments_px"][f"payline_{payline_id}"]
         for payline_id in winning_payline_ids
     ]
-    expected_score = sum(int(detail["score_value"]) for detail in execution["winning_payline_score_details"])
+    expected_score = int(execution["winning_payline_score_details"][0]["score_value"])
 
     assert out.scene_id == "slot_machine"
     assert out.query_id == "single"
     assert out.answer_gt.type == "integer"
     assert int(out.answer_gt.value) == expected_score
-    assert len(winning_payline_ids) == 2
-    assert out.annotation_gt.type == "segment_set"
-    assert out.annotation_gt.value == expected_segments
+    assert len(winning_payline_ids) == 1
+    assert out.annotation_gt.type == "segment"
+    assert out.annotation_gt.value == expected_segments[0]
     assert len(execution["paytable_scores"]) == 6
-    assert out.trace_payload["query_spec"]["params"]["target_score_winning_payline_count"] == 2
-    assert out.trace_payload["query_spec"]["params"]["score_task_winning_payline_count_support"] == [1, 2]
+    assert out.trace_payload["query_spec"]["params"]["target_score_winning_payline_count"] == 1
+    assert out.trace_payload["query_spec"]["params"]["score_task_winning_payline_count_support"] == [1]
     assert execution["prompt_query_key"] == "paytable_score_value"
 
 

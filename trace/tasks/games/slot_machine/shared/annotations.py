@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, bbox_annotation_artifacts, segment_set_annotation_artifacts
+from trace.tasks.shared.annotation_artifacts import (
+    AnnotationArtifacts,
+    bbox_annotation_artifacts,
+    segment_annotation_artifacts,
+    segment_set_annotation_artifacts,
+)
 
 from .rendering import RenderedSlotMachineScene
 from .state import payline_entity_id
@@ -23,6 +28,16 @@ def payline_segment_set_annotation(
     return segment_set_annotation_artifacts(segments)
 
 
+def payline_segment_annotation(
+    rendered_scene: RenderedSlotMachineScene,
+    payline_key: str,
+) -> AnnotationArtifacts:
+    """Build a scalar segment annotation for one conceptual payline."""
+
+    segment = rendered_scene.render_map["payline_segments_px"][payline_entity_id(str(payline_key))]
+    return segment_annotation_artifacts(segment)
+
+
 def option_bbox_annotation(
     rendered_scene: RenderedSlotMachineScene,
     option_label: str,
@@ -36,4 +51,4 @@ def option_bbox_annotation(
     return bbox_annotation_artifacts(bboxes[label])
 
 
-__all__ = ["option_bbox_annotation", "payline_segment_set_annotation"]
+__all__ = ["option_bbox_annotation", "payline_segment_annotation", "payline_segment_set_annotation"]

@@ -13,10 +13,15 @@ from trace.tasks.shared.fixed_query import DEFAULT_QUERY_ID, select_task_query_i
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.annotations import payline_segment_set_annotation
+from .shared.annotations import payline_segment_annotation, payline_segment_set_annotation
 from .shared.defaults import SCENE_ID, SCENE_NAMESPACE
 from .shared.output import build_slot_machine_common_trace_params, build_slot_machine_trace_payload
-from .shared.prompts import build_slot_machine_prompt_artifacts, slot_integer_segment_set_json_examples, slot_output_slots
+from .shared.prompts import (
+    build_slot_machine_prompt_artifacts,
+    slot_integer_segment_json_examples,
+    slot_integer_segment_set_json_examples,
+    slot_output_slots,
+)
 from .shared.rendering import resolve_slot_machine_render_params, render_slot_machine_scene
 from .shared.sampling import resolve_slot_machine_axes
 from .shared.state import SlotMachineAxes, SlotMachineScene
@@ -48,6 +53,7 @@ class SlotMachineObjectivePlan:
     prompt_query_key: str
     query_params: Mapping[str, Any]
     prompt_dynamic_slots: Mapping[str, Any]
+    payline_annotation_schema: str
     construct_attempt: AttemptBuilder
 
 
@@ -77,13 +83,22 @@ def build_fixed_query_objective_plan(
     query_params: Mapping[str, Any],
     construct_attempt: AttemptBuilder,
     example_answer_value: int,
+    payline_annotation_schema: str = "segment_set",
     prompt_extra_slots: Mapping[str, Any] | None = None,
 ) -> SlotMachineObjectivePlan:
     """Assemble repeated prompt/query plumbing for fixed-query objectives."""
 
-    json_example, json_example_answer_only = slot_integer_segment_set_json_examples(
-        answer_value=int(example_answer_value)
-    )
+    annotation_schema = str(payline_annotation_schema)
+    if annotation_schema == "segment":
+        json_example, json_example_answer_only = slot_integer_segment_json_examples(
+            answer_value=int(example_answer_value)
+        )
+    elif annotation_schema == "segment_set":
+        json_example, json_example_answer_only = slot_integer_segment_set_json_examples(
+            answer_value=int(example_answer_value)
+        )
+    else:
+        raise ValueError(f"unsupported slot-machine payline annotation schema: {annotation_schema}")
     return SlotMachineObjectivePlan(
         attempt_namespace=str(attempt_namespace),
         prompt_query_key=str(prompt_query_key),
@@ -97,6 +112,7 @@ def build_fixed_query_objective_plan(
             json_example_answer_only=json_example_answer_only,
             extra_slots=prompt_extra_slots,
         ),
+        payline_annotation_schema=annotation_schema,
         construct_attempt=construct_attempt,
     )
 
@@ -165,10 +181,18 @@ def run_slot_machine_lifecycle(
                 render_params=render_params,
                 instance_seed=int(instance_seed),
             )
-            annotation_artifacts: AnnotationArtifacts = payline_segment_set_annotation(
-                rendered_scene,
-                attempt_result.annotation_payline_ids,
-            )
+            if objective.payline_annotation_schema == "segment":
+                if len(attempt_result.annotation_payline_ids) != 1:
+                    raise ValueError("scalar segment annotation requires exactly one payline id")
+                annotation_artifacts: AnnotationArtifacts = payline_segment_annotation(
+                    rendered_scene,
+                    attempt_result.annotation_payline_ids[0],
+                )
+            else:
+                annotation_artifacts = payline_segment_set_annotation(
+                    rendered_scene,
+                    attempt_result.annotation_payline_ids,
+                )
             trace_payload = build_slot_machine_trace_payload(
                 axes=axes,
                 scene=attempt_result.scene,

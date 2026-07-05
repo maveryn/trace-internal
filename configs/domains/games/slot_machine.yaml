@@ -23,7 +23,6 @@ generation:
       balanced_score_task_winning_payline_count_sampling: true
       score_task_winning_payline_count_support:
       - 1
-      - 2
 rendering:
   shared:
     canvas_width: 760

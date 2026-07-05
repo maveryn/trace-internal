@@ -30,11 +30,11 @@
         "How many paylines win, where paylines are the full rows plus the two long diagonals and a win has three identical symbols?"
       ],
       "paytable_score_value": [
-        "Here, a payline is any full row or either long diagonal. Each winning payline scores the side paytable value for its matching symbol. What is the total score?",
-        "Use the side paytable. For every full row or long diagonal with three matching symbols, add that symbol's score. What total score is shown?",
-        "A winning payline is a full row or long diagonal with the same symbol in all three cells. Add the side-paytable scores for all winning paylines.",
-        "Using only the three rows and two long diagonals as paylines, total the paytable values for the paylines whose three symbols match.",
-        "Each row or long diagonal with three identical symbols scores the value printed for that symbol in the side paytable. What is the total score?"
+        "Find the row or long diagonal where all three symbols match, then use the side paytable to read that symbol's score. What score is shown?",
+        "A payline is a full row or either long diagonal. Find the matching-symbol payline, then give its score from the side paytable.",
+        "Use only the three rows and two long diagonals as paylines. Which one has three matching symbols, and what score does that symbol have in the paytable?",
+        "Find the single winning payline: a full row or long diagonal with the same symbol in all three cells. Report that symbol's side-paytable score.",
+        "Look for the row or long diagonal with three identical symbols. Use the side paytable to give the score for that symbol."
       ],
       "reel_completion_label": [
         "A payline is any full row or either long diagonal. The first two reels are fixed. Which labeled option for the third reel completes a payline?",
@@ -106,8 +106,8 @@
     "json_output_contract_answer_only": "Return JSON with exactly one key: \"answer\".",
     "annotation_hint_winning_payline_count": "set \"annotation\" to a JSON array of image-pixel segments, each using two endpoint points [x, y] in [[x0, y0], [x1, y1]] form; include one segment along each winning row or diagonal payline; use [] if no payline wins",
     "answer_hint_winning_payline_count": "set \"answer\" to the integer count of winning paylines",
-    "annotation_hint_paytable_score_value": "set \"annotation\" to a JSON array of image-pixel segments, each using two endpoint points [x, y] in [[x0, y0], [x1, y1]] form; include one segment along each winning row or diagonal payline that contributes to the score",
-    "answer_hint_paytable_score_value": "set \"answer\" to the integer total score from the side paytable",
+    "annotation_hint_paytable_score_value": "set \"annotation\" to one image-pixel segment in [[x0, y0], [x1, y1]] form along the winning row or diagonal payline that determines the score",
+    "answer_hint_paytable_score_value": "set \"answer\" to the integer score read from the side paytable for the matching symbol on the winning payline",
     "annotation_hint_reel_completion_label": "set \"annotation\" to the image-pixel bounding box [x0, y0, x1, y1] around the selected third-reel option",
     "answer_hint_reel_completion_label": "set \"answer\" to the selected option letter"
   }

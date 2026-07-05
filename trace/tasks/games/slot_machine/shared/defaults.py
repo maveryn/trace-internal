@@ -21,7 +21,7 @@ PAYLINE_COORDS: Tuple[Tuple[Tuple[int, int], ...], ...] = (
     ((2, 0), (1, 1), (0, 2)),
 )
 SYMBOL_KEYS: Tuple[str, ...] = ("seven", "bar", "gem", "star", "cherry", "coin")
-PAYTABLE_SCORE_VALUES: Tuple[int, ...] = (2, 3, 4, 5, 6, 8)
+PAYTABLE_SCORE_VALUES: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = ("front_cabinet",)
 SUPPORTED_STYLE_VARIANTS: Tuple[str, ...] = (
     "classic_red",

@@ -7,9 +7,9 @@ rendering:
     line_width: 3
     label_font_size: 22
     small_label_font_size: 18
-    label_stroke_width: 1
-    label_stroke_width_min: 1
-    label_stroke_width_max: 1
+    label_stroke_width: 0
+    label_stroke_width_min: 0
+    label_stroke_width_max: 0
     single_object_scene_rotation:
       enabled: true
       probability: 0.5

@@ -16,6 +16,7 @@ from trace.tasks.geometry.shared.measurement_rendering import (
     bbox_to_list,
     draw_label_backplate,
     pad_bbox,
+    readout_text_fill,
     readout_text_metadata,
 )
 from trace.tasks.geometry.shared.vector2d import (
@@ -125,18 +126,20 @@ def _draw_text_centered(ctx: RenderContext, text: str, center: Point, *, small: 
         stroke_width=max(0, int(ctx.label_stroke_width)),
     )
     draw_label_backplate(ctx, bbox)
+    fill = readout_text_fill(ctx, ctx.label_color)
+    stroke_fill = readout_text_fill(ctx, ctx.label_stroke_color)
     draw_text_traced(
         ctx.draw,
         (float(center[0]), float(center[1])),
         str(text),
         anchor="mm",
         font=font,
-        fill=ctx.label_color,
+        fill=fill,
         stroke_width=max(0, int(ctx.label_stroke_width)),
-        stroke_fill=ctx.label_stroke_color,
+        stroke_fill=stroke_fill,
         role="readout",
         required=True,
-        extra_metadata=readout_text_metadata(ctx, ctx.label_color),
+        extra_metadata=readout_text_metadata(ctx, fill),
     )
     return pad_bbox(bbox, 4.0, width=ctx.width, height=ctx.height)
 
@@ -155,22 +158,24 @@ def _draw_value_box(ctx: RenderContext, text: str, center: Point) -> BBox:
     ctx.draw.rounded_rectangle(
         (left, top, right, bottom),
         radius=6,
-        fill=(255, 255, 255),
+        fill=ctx.label_backing_color,
         outline=ctx.muted_color,
         width=max(1, ctx.line_width - 1),
     )
+    fill = readout_text_fill(ctx, ctx.label_color)
+    stroke_fill = readout_text_fill(ctx, ctx.label_stroke_color)
     draw_text_traced(
         ctx.draw,
         ((left + right) / 2.0, (top + bottom) / 2.0),
         str(text),
         anchor="mm",
         font=font,
-        fill=ctx.label_color,
+        fill=fill,
         stroke_width=max(0, int(ctx.label_stroke_width)),
-        stroke_fill=ctx.label_stroke_color,
+        stroke_fill=stroke_fill,
         role="readout",
         required=True,
-        extra_metadata=readout_text_metadata(ctx, ctx.label_color),
+        extra_metadata=readout_text_metadata(ctx, fill),
     )
     return pad_bbox((left, top, right, bottom), 2.0, width=ctx.width, height=ctx.height)
 
@@ -215,6 +220,16 @@ def _assert_bboxes_inside(bboxes: Sequence[BBox], *, width: int, height: int) ->
         x0, y0, x1, y1 = [float(value) for value in bbox]
         if x0 <= 3.0 or y0 <= 3.0 or x1 >= float(width) - 3.0 or y1 >= float(height) - 3.0:
             raise ValueError("rectangular-solid label too close to canvas edge")
+
+
+def _mix_colors(foreground: Color, background: Color, foreground_weight: float) -> Color:
+    """Blend two RGB colors with an explicit foreground weight."""
+
+    weight = max(0.0, min(1.0, float(foreground_weight)))
+    return tuple(
+        int(round(float(foreground[index]) * weight + float(background[index]) * (1.0 - weight)))
+        for index in range(3)
+    )
 
 
 def _segment_bbox(start: Point, end: Point, *, width: int, height: int, pad: float = 8.0) -> BBox:
@@ -505,24 +520,40 @@ def render_cube_frame_scene(
         highlighted_edges = tuple(edge_defs.keys())
 
     full_frame_bbox = bbox_from_points(tuple(points.values()), width=ctx.width, height=ctx.height, pad=10.0)
+    faint_frame_color = _mix_colors(ctx.secondary_color, ctx.label_backing_color, 0.20)
+    highlight_halo_color = ctx.label_backing_color
     ctx.draw.rounded_rectangle(
         (full_frame_bbox[0] - 18.0, full_frame_bbox[1] - 18.0, full_frame_bbox[2] + 18.0, full_frame_bbox[3] + 18.0),
         radius=8,
-        fill=(255, 255, 255),
-        outline=ctx.muted_color,
+        fill=ctx.label_backing_color,
+        outline=faint_frame_color,
         width=max(1, ctx.line_width - 2),
     )
     for edge_name in draw_order:
+        if edge_name in highlighted_edges:
+            continue
         start_key, end_key = edge_defs[edge_name]
-        edge_color = ctx.muted_color if edge_name not in highlighted_edges else ctx.accent_color
-        edge_width = max(2, ctx.line_width - 1) if edge_name not in highlighted_edges else max(9, ctx.line_width + 6)
-        ctx.draw.line([points[start_key], points[end_key]], fill=edge_color, width=edge_width)
+        ctx.draw.line([points[start_key], points[end_key]], fill=faint_frame_color, width=max(1, ctx.line_width - 1))
+    for edge_name in draw_order:
+        if edge_name not in highlighted_edges:
+            continue
+        start_key, end_key = edge_defs[edge_name]
+        ctx.draw.line(
+            [points[start_key], points[end_key]],
+            fill=highlight_halo_color,
+            width=max(14, ctx.line_width + 10),
+        )
+    for edge_name in draw_order:
+        if edge_name not in highlighted_edges:
+            continue
+        start_key, end_key = edge_defs[edge_name]
+        ctx.draw.line([points[start_key], points[end_key]], fill=ctx.accent_color, width=max(9, ctx.line_width + 6))
     for point in points.values():
-        radius = 4.0
+        radius = 3.5
         ctx.draw.ellipse(
             (point[0] - radius, point[1] - radius, point[0] + radius, point[1] + radius),
-            fill=ctx.line_color,
-            outline=(255, 255, 255),
+            fill=faint_frame_color,
+            outline=ctx.label_backing_color,
             width=1,
         )
     highlighted_endpoint_keys = {

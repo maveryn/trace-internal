@@ -27,11 +27,11 @@
         "Use the visible cuboid side dimensions."
       ],
       "cube_edge_from_frame_length_value": [
-        "Use the visible cube wire-frame length information.",
-        "Use the cube frame and the marked unknown edge.",
-        "Use the frame-length readout and the cube edge marker.",
-        "Use the shown cube wire-frame measurement.",
-        "Use the visible cube-frame edges."
+        "Use the bright highlighted cube-frame edges and their total length.",
+        "Use only the bright highlighted edges of the cube frame; the pale edges show the rest of the cube.",
+        "Use the highlighted frame-length readout and the marked cube edge.",
+        "Use the shown highlighted cube wire-frame measurement.",
+        "Use the bright highlighted cube-frame path."
       ],
       "open_box_net_dimension_value": [
         "Use the corner-cut sheet net.",
@@ -71,11 +71,11 @@
         "Determine the cuboid surface area from L, W, and H."
       ],
       "cube_edge_from_partial_frame": [
-        "The highlighted part of the cube frame has the shown length. What is the cube edge length?",
-        "Using only the highlighted frame length, find the edge length.",
-        "What integer value should replace ? on the marked edge?",
-        "The highlighted cube-frame edges have the shown total length. What is the edge length?",
-        "Determine the cube edge length from the highlighted frame length."
+        "The bright highlighted part of the cube frame has the shown total length. What is one cube edge length?",
+        "Using the total length of the bright highlighted frame path, find one cube edge length.",
+        "What integer value should replace ? on the marked cube edge?",
+        "The bright highlighted cube-frame edges have the shown total length. What is one edge length?",
+        "Determine one cube edge length from the bright highlighted frame length."
       ],
       "open_box_dimension_from_corner_cut": [
         "The square corner cutouts are removed and the sides fold up to form an open-top box. What resulting base dimension is marked with ??",

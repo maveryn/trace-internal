@@ -13,7 +13,7 @@
 - `solve_formula(cube_wire_frame_length_measurement, unknown_role=cube_edge, formula_schema=edge_length_from_frame_edge_count); scene=rectangular_solid; scope=cube_edge_from_frame_length_value`
 
 ## Query Semantics
-- `single` asks for the cube edge length from the highlighted portion of the cube frame.
+- `single` asks for the cube edge length from the bright highlighted portion of the cube frame; pale frame edges are visual context only.
 - The sampled edge length, highlighted path, highlighted edge count, style, font, and layout jitter are internal replay metadata.
 
 ## Prompt Bundle

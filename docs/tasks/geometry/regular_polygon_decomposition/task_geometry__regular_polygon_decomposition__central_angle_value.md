@@ -13,8 +13,8 @@
 - `solve_formula(regular_polygon_equal_wedge_decomposition, target=marked_central_angle, formula_schema=marked_wedge_count_times_360_degrees_divided_by_side_count); scene=regular_polygon_decomposition; scope=central_angle_value`
 
 ## Query Semantics
-- `single` asks for the measure of marked central angle `AOB` by counting the equal center wedges in the polygon and the marked wedges between `OA` and `OB`.
-- The number of polygon sides, selected wedge start, marked wedge count, style, font, layout jitter, and rotation are internal replay metadata.
+- `single` asks for the measure of marked central angle `AOB` by counting the equal center wedges in the polygon and the one or two marked wedges between `OA` and `OB`.
+- The number of polygon sides, selected wedge start, marked wedge count, style, font, layout jitter, and rotation are internal replay metadata; central-angle samples use one or two marked wedges.
 
 ## Prompt Bundle
 - Prompt text is loaded from `prompts/geometry/regular_polygon_decomposition/geometry_regular_polygon_decomposition_v1.json`.

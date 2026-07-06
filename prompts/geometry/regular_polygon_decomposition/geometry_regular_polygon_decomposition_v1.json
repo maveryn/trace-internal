@@ -65,11 +65,11 @@
         "Use the marked regular-polygon wedge. What is the area of \"{target_name}\"?"
       ],
       "marked_wedges_central_angle": [
-        "Count the equal center wedges in the whole polygon and the shaded wedges between OA and OB. What is the measure of angle {target_name} in degrees?",
-        "Use the equal center wedges of the regular polygon: count all wedges, then count the shaded wedges forming angle {target_name}. What is its measure in degrees?",
-        "The marked central angle {target_name} spans the shaded center wedges. What is its measure in degrees?",
+        "Count the equal center wedges in the whole polygon and the shaded wedge or wedges between OA and OB. What is the measure of angle {target_name} in degrees?",
+        "Use the equal center wedges of the regular polygon: count all wedges, then count the shaded wedge or wedges forming angle {target_name}. What is its measure in degrees?",
+        "The marked central angle {target_name} spans the shaded wedge or wedges. What is its measure in degrees?",
         "Based on the regular-polygon decomposition and the shaded wedge count, find the degree measure of angle {target_name}.",
-        "What is the measure of the marked central angle {target_name} formed by the shaded wedges?"
+        "What is the measure of the marked central angle {target_name} formed by the shaded wedge or wedges?"
       ],
       "perimeter_from_total_area_and_apothem": [
         "Use the labeled total area and apothem of the regular polygon. What is the total perimeter of \"{target_name}\"?",

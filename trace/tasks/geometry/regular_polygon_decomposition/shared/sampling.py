@@ -141,10 +141,10 @@ def angle_for_marked_pieces(instance_seed: int, params: Mapping[str, Any], *, se
     rng = _rng(instance_seed, seed_namespace)
     n_sides = _n_sides(rng, params)
     central_angle = int(round(360.0 / float(n_sides)))
-    max_marked = max(1, min(4, int(n_sides) // 2))
+    max_marked = max(1, min(2, int(n_sides) // 2))
     wedge_count = int(params.get("wedge_count", rng.randrange(1, max_marked + 1)))
     if int(wedge_count) < 1 or int(wedge_count) > int(max_marked):
-        raise ValueError(f"wedge_count must be between 1 and {max_marked} for n_sides={n_sides}")
+        raise ValueError(f"central-angle wedge_count must be between 1 and {max_marked} for n_sides={n_sides}")
     return _base_problem(
         rng=rng,
         params={**dict(params), "n_sides": n_sides},

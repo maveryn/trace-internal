@@ -55,6 +55,7 @@ class _RenderContext:
     line_color: Color
     label_color: Color
     label_stroke_color: Color
+    label_stroke_width: int
     fill_color: Color
     secondary_fill_color: Color
     muted_color: Color
@@ -136,12 +137,13 @@ def _make_render_context(
         line_color=shape_style.line_color,
         label_color=shape_style.label_color,
         label_stroke_color=shape_style.label_stroke_color,
+        label_stroke_width=0,
         fill_color=fill_color,
         secondary_fill_color=secondary_fill_color,
         muted_color=muted_color,
         line_width=max(2, int(line_width)),
-        font=load_font(max(12, int(font_size)), bold=True),
-        small_font=load_font(max(10, int(small_font_size)), bold=True),
+        font=load_font(max(12, int(font_size)), bold=False),
+        small_font=load_font(max(10, int(small_font_size)), bold=False),
     )
     render_meta = {
         "background_style": dict(background_meta),

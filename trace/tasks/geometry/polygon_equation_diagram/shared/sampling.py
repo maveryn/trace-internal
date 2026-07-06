@@ -61,6 +61,10 @@ def _choose_distractor_count(*, rng: Any, available_count: int) -> int:
     return int(rng.choice((1, 2)))
 
 
+def _use_distractors(*, rng: Any, include_distractors: bool) -> bool:
+    return bool(include_distractors) and bool(rng.randrange(2))
+
+
 def _sample_distractor_value(*, rng: Any, lower: int, upper: int, forbidden: set[int]) -> int:
     for _ in range(300):
         value = int(rng.randint(int(lower), int(upper)))
@@ -260,8 +264,9 @@ def sample_equal_angle_relation(
         str(first_angle): 2,
         str(second_angle): 2,
     }
+    distractor_mode = _use_distractors(rng=rng, include_distractors=include_distractors)
     angle_distractors: list[dict[str, Any]] = []
-    if bool(include_distractors):
+    if bool(distractor_mode):
         available_angles = [str(label) for label in labels if str(label) not in {str(first_angle), str(second_angle)}]
         rng.shuffle(available_angles)
         mark_counts = [1, 3]
@@ -310,6 +315,7 @@ def sample_equal_angle_relation(
         "angle_mark_counts": dict(angle_mark_counts),
         "equal_angles": (str(first_angle), str(second_angle)),
         "angle_distractors": list(angle_distractors),
+        "distractor_mode": bool(distractor_mode),
         "witness": {
             "polygon_kind": polygon_kind(side_count),
             "variable_value": int(variable_value),
@@ -317,6 +323,8 @@ def sample_equal_angle_relation(
             "equation": f"{angle_labels[first_angle]} = {angle_labels[second_angle]}",
             "angle_mark_counts": dict(angle_mark_counts),
             "angle_distractors": list(angle_distractors),
+            "distractor_mode": bool(distractor_mode),
+            "distractor_count": len(angle_distractors),
         },
     }
 
@@ -404,7 +412,12 @@ def sample_equal_side_perimeter_relation(
     side_mark_counts = dict(relation["side_mark_counts"])
     available_sides = [side_label for side_label in _side_names(labels) if str(side_label) not in equal_sides]
     rng.shuffle(available_sides)
-    marked_distractor_sides = set(available_sides[: _choose_distractor_count(rng=rng, available_count=len(available_sides))])
+    distractor_mode = _use_distractors(rng=rng, include_distractors=True)
+    marked_distractor_sides = (
+        set(available_sides[: _choose_distractor_count(rng=rng, available_count=len(available_sides))])
+        if bool(distractor_mode)
+        else set()
+    )
     mark_counts = [1, 3]
     rng.shuffle(mark_counts)
     side_distractors: list[dict[str, Any]] = []
@@ -414,13 +427,16 @@ def sample_equal_side_perimeter_relation(
         side_value = int(rng.randint(12, 86))
         side_values[str(side_label)] = int(side_value)
         force_expression = str(side_label) in marked_distractor_sides
-        side_labels[str(side_label)] = _sample_side_expression_label(
-            rng=rng,
-            side_value=int(side_value),
-            variable_name=variable_name,
-            variable_value=int(variable_value),
-            force_expression=bool(force_expression),
-        )
+        if bool(force_expression):
+            side_labels[str(side_label)] = _sample_side_expression_label(
+                rng=rng,
+                side_value=int(side_value),
+                variable_name=variable_name,
+                variable_value=int(variable_value),
+                force_expression=True,
+            )
+        else:
+            side_labels[str(side_label)] = _format_side_measure(int(side_value))
         if str(side_label) in marked_distractor_sides:
             mark_count = int(mark_counts.pop(0))
             side_mark_counts[str(side_label)] = int(mark_count)
@@ -438,15 +454,18 @@ def sample_equal_side_perimeter_relation(
         **dict(relation["witness"]),
         "side_mark_counts": dict(side_mark_counts),
         "side_distractors": list(side_distractors),
+        "distractor_mode": bool(distractor_mode),
         "perimeter_side_values": dict(side_values),
         "perimeter_value": int(perimeter_value),
         "perimeter_equation": " + ".join(str(side_labels[side_label]) for side_label in _side_names(labels)),
+        "distractor_count": len(side_distractors),
     }
     return {
         **dict(relation),
         "side_labels": dict(side_labels),
         "side_mark_counts": dict(side_mark_counts),
         "side_distractors": list(side_distractors),
+        "distractor_mode": bool(distractor_mode),
         "side_values": dict(side_values),
         "perimeter_value": int(perimeter_value),
         "witness": dict(witness),

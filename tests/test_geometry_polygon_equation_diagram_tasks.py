@@ -91,7 +91,12 @@ def test_polygon_equation_diagram_generates_each_side_count(task_id: str, side_c
             ) == side_value
         for side_label in execution["equal_sides"]:
             assert execution["side_mark_counts"][side_label] == 2
-        assert execution["side_distractors"]
+        assert execution["distractor_mode"] == bool(execution["side_distractors"])
+        for side_label, side_label_text in execution["side_labels"].items():
+            if side_label not in execution["equal_sides"] and side_label not in {
+                distractor["side"] for distractor in execution["side_distractors"]
+            }:
+                assert side_label_text.isdigit()
     if "equal_side" in task_id:
         for side_label in execution["equal_sides"]:
             assert execution["side_mark_counts"][side_label] == 2
@@ -109,7 +114,7 @@ def test_polygon_equation_diagram_generates_each_side_count(task_id: str, side_c
     if "equal_angle" in task_id:
         for vertex_label in execution["equal_angles"]:
             assert execution["angle_mark_counts"][vertex_label] == 2
-        assert execution["angle_distractors"]
+        assert execution["distractor_mode"] == bool(execution["angle_distractors"])
         for distractor in execution["angle_distractors"]:
             assert execution["angle_mark_counts"][distractor["vertex"]] in {1, 3}
             assert execution["angle_mark_counts"][distractor["vertex"]] != 2

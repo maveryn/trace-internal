@@ -13,7 +13,7 @@ from trace.tasks.shared.fixed_query import (
 
 CUBE_EDGE_VALUES: Tuple[int, ...] = tuple(range(2, 52))
 CUBOID_MISSING_DIMENSION_VALUES: Tuple[int, ...] = tuple(range(3, 53))
-PARTIAL_FRAME_EDGE_COUNTS: Tuple[int, ...] = (4, 5, 6, 7, 8)
+PARTIAL_FRAME_EDGE_COUNTS: Tuple[int, ...] = (4, 5, 6)
 OPEN_BOX_BASE_DIMENSION_VALUES: Tuple[int, ...] = tuple(range(4, 54))
 OPEN_BOX_DIMENSION_ROLES: Tuple[str, ...] = ("base_length", "base_width")
 _KNOWN_CUBOID_DIMENSION_VALUES: Tuple[int, ...] = tuple(range(4, 19))
@@ -296,7 +296,7 @@ def select_partial_frame_edge_count(
     if explicit_count is not None:
         count = int(explicit_count)
         if count not in PARTIAL_FRAME_EDGE_COUNTS:
-            raise ValueError("highlighted_edge_count must be one of 4, 5, 6, 7, or 8")
+            raise ValueError("highlighted_edge_count must be one of 4, 5, or 6")
         return count, {str(count): 1.0}
     rng = spawn_rng(int(instance_seed), f"{sampling_label}.partial_frame_edge_count")
     count = int(uniform_choice(rng, PARTIAL_FRAME_EDGE_COUNTS))

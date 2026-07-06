@@ -515,7 +515,7 @@ def render_cube_frame_scene(
     for edge_name in draw_order:
         start_key, end_key = edge_defs[edge_name]
         edge_color = ctx.muted_color if edge_name not in highlighted_edges else ctx.accent_color
-        edge_width = max(3, ctx.line_width) if edge_name not in highlighted_edges else max(7, ctx.line_width + 4)
+        edge_width = max(2, ctx.line_width - 1) if edge_name not in highlighted_edges else max(9, ctx.line_width + 6)
         ctx.draw.line([points[start_key], points[end_key]], fill=edge_color, width=edge_width)
     for point in points.values():
         radius = 4.0
@@ -524,6 +524,20 @@ def render_cube_frame_scene(
             fill=ctx.line_color,
             outline=(255, 255, 255),
             width=1,
+        )
+    highlighted_endpoint_keys = {
+        endpoint_key
+        for edge_name in highlighted_edges
+        for endpoint_key in edge_defs[edge_name]
+    }
+    for point_key in highlighted_endpoint_keys:
+        point = points[point_key]
+        radius = 7.0
+        ctx.draw.ellipse(
+            (point[0] - radius, point[1] - radius, point[0] + radius, point[1] + radius),
+            fill=ctx.accent_color,
+            outline=ctx.label_backing_color,
+            width=2,
         )
 
     target_start_key, target_end_key = edge_defs["front_bottom"]

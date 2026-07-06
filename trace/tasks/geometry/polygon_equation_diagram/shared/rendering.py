@@ -64,8 +64,8 @@ def make_render_context(
         accent_color=tuple(int(value) for value in diagram_style.accent_rgb),
         line_width=max(2, int(line_width)),
         label_stroke_width=max(0, int(label_stroke_width)),
-        font=load_font(int(label_size)),
-        small_font=load_font(int(small_label_size)),
+        font=load_font(int(label_size), bold=False),
+        small_font=load_font(int(small_label_size), bold=False),
         diagram_style_meta=dict(diagram_style_meta),
         background_meta=dict(background_meta),
         scene_transform=LazySceneTransform(

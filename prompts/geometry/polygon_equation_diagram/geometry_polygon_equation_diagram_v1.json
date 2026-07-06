@@ -65,11 +65,11 @@
         "Solve for the measure of {target_name}."
       ],
       "side_expression_perimeter_value": [
-        "Find the perimeter.",
-        "Find the perimeter of the polygon.",
-        "What is the perimeter?",
-        "Determine the polygon perimeter.",
-        "Solve for the perimeter."
+        "Find the perimeter of the {shape_name}.",
+        "What is the perimeter of the {shape_name}?",
+        "Determine the perimeter of the {shape_name}.",
+        "Solve for the perimeter of the {shape_name}.",
+        "Give the perimeter of the {shape_name}."
       ]
     },
     "output": {
@@ -97,12 +97,13 @@
     "query:equal_angle_measure_value": ["target_name"],
     "query:interior_angle_sum_variable_value": ["variable_name"],
     "query:interior_angle_sum_angle_value": ["target_name"],
+    "query:side_expression_perimeter_value": ["shape_name"],
     "output:answer_only": ["json_output_contract_answer_only", "answer_hint", "json_example_answer_only"],
     "output:answer_and_annotation": ["json_output_contract", "annotation_hint", "answer_hint", "json_example"]
   },
   "static_slots_by_key": {
     "scene:polygon_equation_diagram_scene": {
-      "object_description": "a labeled polygon with algebraic side or angle labels and any relevant geometric markings"
+      "object_description": "a labeled polygon diagram"
     },
     "task:equal_side_variable_value": {
       "answer_hint": "set \"answer\" to the value of the variable as an integer"
@@ -136,6 +137,7 @@
     "annotation_hint": {"type": "string"},
     "json_example": {"type": "string"},
     "json_example_answer_only": {"type": "string"},
+    "shape_name": {"type": "string"},
     "target_name": {"type": "string"},
     "variable_name": {"type": "string"}
   }

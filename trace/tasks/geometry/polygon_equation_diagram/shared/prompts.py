@@ -23,6 +23,7 @@ def polygon_equation_prompt_artifacts(
     annotation_keys: Sequence[str],
     target_name: str,
     variable_name: str,
+    shape_name: str,
     answer: int,
     instance_seed: int,
 ) -> tuple[dict[str, Any], PromptTraceArtifacts]:
@@ -53,6 +54,7 @@ def polygon_equation_prompt_artifacts(
             ),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
+            "shape_name": str(shape_name),
             "target_name": str(target_name),
             "variable_name": str(variable_name),
         },

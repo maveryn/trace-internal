@@ -18,7 +18,7 @@ from .shared.defaults import DOMAIN, POST_IMAGE_NOISE_DEFAULTS, SCENE_DEFAULTS, 
 from .shared.output import render_map, trace_common
 from .shared.prompts import polygon_equation_prompt_artifacts
 from .shared.rendering import make_render_context, render_polygon_equation_case
-from .shared.state import PolygonEquationCase
+from .shared.state import PolygonEquationCase, polygon_kind
 
 BuildCase = Callable[..., PolygonEquationCase]
 
@@ -92,6 +92,7 @@ def run_polygon_equation_task(
         annotation_keys=tuple(annotation_artifacts.value.keys()),
         target_name=str(case.target_name),
         variable_name=str(case.variable_name),
+        shape_name=polygon_kind(int(case.side_count)),
         answer=int(case.answer),
         instance_seed=int(instance_seed),
     )

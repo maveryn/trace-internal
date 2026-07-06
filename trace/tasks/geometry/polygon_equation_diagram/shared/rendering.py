@@ -173,7 +173,7 @@ def _side_normal(points: Sequence[Point], side: tuple[int, int]) -> Point:
 def _draw_side_label(ctx: RenderContext, points: Sequence[Point], side: tuple[int, int], text: str) -> BBox:
     a = points[int(side[0])]
     b = points[int(side[1])]
-    return _draw_text_centered(ctx, str(text), add_scaled(mid(a, b), _side_normal(points, side), 38.0), small=True)
+    return _draw_text_centered(ctx, str(text), add_scaled(mid(a, b), _side_normal(points, side), 54.0), small=True)
 
 
 def _draw_side_tick(ctx: RenderContext, points: Sequence[Point], side: tuple[int, int], *, count: int) -> BBox:
@@ -224,11 +224,11 @@ def _draw_angle_marker(
     next_point = points[(int(vertex_index) + 1) % len(points)]
     drawn: list[Point] = []
     for arc_index in range(max(1, int(count))):
-        arc = _angle_arc_points(vertex, previous, next_point, 32.0 + (arc_index * 8.0))
+        arc = _angle_arc_points(vertex, previous, next_point, 22.0 + (arc_index * 6.0))
         ctx.draw.line(arc, fill=ctx.accent_color, width=max(2, ctx.line_width - 1), joint="curve")
         drawn.extend(arc)
     center_direction = unit(sub(_center(points), vertex))
-    label_bbox = _draw_text_centered(ctx, str(text), add_scaled(vertex, center_direction, 64.0), small=True)
+    label_bbox = _draw_text_centered(ctx, str(text), add_scaled(vertex, center_direction, 84.0), small=True)
     arc_bbox = bbox_from_points(drawn, width=ctx.width, height=ctx.height, pad=5.0)
     return arc_bbox, label_bbox
 
@@ -246,11 +246,7 @@ def render_polygon_equation_case(
     _draw_polygon(ctx, points)
     point_label_bboxes = _draw_vertex_labels(ctx, points, labels)
 
-    side_label_bboxes: dict[str, BBox] = {}
     marker_bboxes: dict[str, BBox] = {}
-    for side_label, text in sorted(case.side_labels.items()):
-        side = _side_indices(labels, str(side_label))
-        side_label_bboxes[str(side_label)] = _draw_side_label(ctx, points, side, str(text))
     side_mark_counts = {
         str(side_label): int(count)
         for side_label, count in (
@@ -262,6 +258,10 @@ def render_polygon_equation_case(
     for side_label, mark_count in sorted(side_mark_counts.items()):
         side = _side_indices(labels, str(side_label))
         marker_bboxes[f"equal_side_{side_label}"] = _draw_side_tick(ctx, points, side, count=int(mark_count))
+    side_label_bboxes: dict[str, BBox] = {}
+    for side_label, text in sorted(case.side_labels.items()):
+        side = _side_indices(labels, str(side_label))
+        side_label_bboxes[str(side_label)] = _draw_side_label(ctx, points, side, str(text))
 
     angle_label_bboxes: dict[str, BBox] = {}
     angle_mark_counts = {

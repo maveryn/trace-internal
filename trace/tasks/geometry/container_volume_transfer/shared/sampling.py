@@ -12,6 +12,8 @@ from .measurements import (
     case_probability_map,
     cone_source_volume,
     cylinder_source_volume,
+    FILL_COUNT_MAX,
+    FILL_COUNT_MIN,
     json_answer_value,
     resolve_cone_fill_count,
     resolve_cone_resulting_height,
@@ -58,7 +60,7 @@ def _flatten_grouped(grouped: Mapping[str, Sequence[Sequence[int]]]) -> Tuple[Tu
 
 def _generate_cone_fill_cases() -> Tuple[Tuple[int, int, int, int], ...]:
     grouped: dict[str, list[Tuple[int, ...]]] = defaultdict(list)
-    for fill_count in range(2, 21):
+    for fill_count in range(FILL_COUNT_MIN, FILL_COUNT_MAX + 1):
         for source_base_area in range(6, 61):
             for source_height in range(3, 31):
                 if int(source_base_area * source_height) % 3:
@@ -88,7 +90,7 @@ def _generate_cone_fill_cases() -> Tuple[Tuple[int, int, int, int], ...]:
 
 def _generate_cylinder_fill_cases() -> Tuple[Tuple[int, int, int, int, int], ...]:
     grouped: dict[str, list[Tuple[int, ...]]] = defaultdict(list)
-    for fill_count in range(2, 21):
+    for fill_count in range(FILL_COUNT_MIN, FILL_COUNT_MAX + 1):
         for source_base_area in range(4, 61):
             for source_height in range(2, 31):
                 source_volume = cylinder_source_volume(source_base_area, source_height)

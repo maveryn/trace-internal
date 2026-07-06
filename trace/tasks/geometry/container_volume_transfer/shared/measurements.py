@@ -7,6 +7,9 @@ from typing import Any, Callable, Dict, Sequence
 
 from .state import ResolvedProblem
 
+FILL_COUNT_MIN = 2
+FILL_COUNT_MAX = 60
+
 
 def case_probability_map(case_keys: Sequence[str], selected: str) -> Dict[str, float]:
     return {key: (1.0 if key == str(selected) else 0.0) for key in case_keys}
@@ -65,8 +68,8 @@ def validate_fill_count(source_volume: int, target_volume: int) -> int:
     if int(target_volume) % int(source_volume) != 0:
         raise ValueError("target volume must be an exact multiple of source volume")
     fill_count = int(target_volume) // int(source_volume)
-    if not (2 <= int(fill_count) <= 20):
-        raise ValueError("fill_count must be in the v1 support range 2..20")
+    if not (FILL_COUNT_MIN <= int(fill_count) <= FILL_COUNT_MAX):
+        raise ValueError(f"fill_count must be in the v1 support range {FILL_COUNT_MIN}..{FILL_COUNT_MAX}")
     return int(fill_count)
 
 
@@ -277,6 +280,8 @@ def bind_sampling_metadata(
 __all__ = [
     "case_probability_map",
     "bind_sampling_metadata",
+    "FILL_COUNT_MAX",
+    "FILL_COUNT_MIN",
     "fmt_number",
     "json_answer_value",
     "resolve_cone_fill_count",

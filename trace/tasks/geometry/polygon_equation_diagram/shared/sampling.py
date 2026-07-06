@@ -392,6 +392,7 @@ def sample_equal_side_perimeter_relation(
     instance_seed: int,
     params: Mapping[str, Any],
     namespace: str,
+    include_distractors: bool = True,
 ) -> dict[str, Any]:
     """Sample side labels where equal-side algebra gives x before summing perimeter."""
 
@@ -412,7 +413,7 @@ def sample_equal_side_perimeter_relation(
     side_mark_counts = dict(relation["side_mark_counts"])
     available_sides = [side_label for side_label in _side_names(labels) if str(side_label) not in equal_sides]
     rng.shuffle(available_sides)
-    distractor_mode = _use_distractors(rng=rng, include_distractors=True)
+    distractor_mode = _use_distractors(rng=rng, include_distractors=include_distractors)
     marked_distractor_sides = (
         set(available_sides[: _choose_distractor_count(rng=rng, available_count=len(available_sides))])
         if bool(distractor_mode)

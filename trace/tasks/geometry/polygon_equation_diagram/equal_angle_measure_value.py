@@ -21,7 +21,7 @@ def _build_case(*, instance_seed: int, params: Mapping[str, Any], generation_def
         instance_seed=int(instance_seed),
         params=params,
         namespace="polygon_equation.equal_angle.angle_measure_value",
-        include_distractors=True,
+        include_distractors=False,
     )
     labels = tuple(chr(ord("A") + index) for index in range(int(relation["side_count"])))
     target_index = labels.index(str(relation["target_angle"]))

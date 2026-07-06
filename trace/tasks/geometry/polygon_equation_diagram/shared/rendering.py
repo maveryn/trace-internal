@@ -228,7 +228,7 @@ def _draw_angle_marker(
         ctx.draw.line(arc, fill=ctx.accent_color, width=max(2, ctx.line_width - 1), joint="curve")
         drawn.extend(arc)
     center_direction = unit(sub(_center(points), vertex))
-    label_bbox = _draw_text_centered(ctx, str(text), add_scaled(vertex, center_direction, 84.0), small=True)
+    label_bbox = _draw_text_centered(ctx, str(text), add_scaled(vertex, center_direction, 74.0), small=True)
     arc_bbox = bbox_from_points(drawn, width=ctx.width, height=ctx.height, pad=5.0)
     return arc_bbox, label_bbox
 

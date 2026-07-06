@@ -25,10 +25,9 @@ The public task has no semantic query branch. The sampled polygon side count is 
 ## Annotation
 Prompt-facing annotation uses a `point_map` keyed by the visible polygon vertex labels, such as `A`, `B`, `C`, and any additional visible vertices. Each value is that labeled vertex's pixel coordinate after final layout and rotation.
 
-The target equal-side pair uses matching two-tick side marks. The diagram may also include non-target
-side-expression distractors with one-tick or three-tick marks; those distractors are trace metadata, not
-semantic query branches. The answer is the sum of all polygon side lengths after solving the marked
-equal-side equation.
+The target equal-side pair uses matching two-tick side marks. This task does not add non-target
+side-expression distractors; remaining polygon side lengths are shown directly. The answer is the sum of
+all polygon side lengths after solving the marked equal-side equation.
 
 ## Determinism
 Generation is deterministic for a fixed seed, params, config, and prompt bundle version.

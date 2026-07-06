@@ -20,6 +20,7 @@ def _build_case(*, instance_seed: int, params: Mapping[str, Any], generation_def
         instance_seed=int(instance_seed),
         params=params,
         namespace="polygon_equation.side_expression.perimeter_value",
+        include_distractors=False,
     )
     return PolygonEquationCase(
         side_count=int(relation["side_count"]),

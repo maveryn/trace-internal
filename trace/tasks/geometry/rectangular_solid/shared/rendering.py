@@ -106,8 +106,8 @@ def create_render_context(
         muted_color=tuple(int(value) for value in diagram_style.secondary_stroke_rgb),
         line_width=max(2, int(line_width)),
         label_stroke_width=max(0, int(label_stroke_width)),
-        font=load_font(max(12, int(font_size))),
-        small_font=load_font(max(10, int(small_font_size))),
+        font=load_font(max(12, int(font_size)), bold=False),
+        small_font=load_font(max(10, int(small_font_size)), bold=False),
         diagram_style_meta=dict(diagram_style_meta),
         background_meta=dict(background_meta),
     )

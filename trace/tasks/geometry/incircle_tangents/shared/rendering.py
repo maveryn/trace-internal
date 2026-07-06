@@ -26,7 +26,7 @@ from trace.tasks.geometry.shared.shape_style import (
     sample_geometry_shape_style,
 )
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.text_rendering import load_font
+from trace.tasks.shared.text_rendering import load_font, symbol_safe_font_for_text
 
 from .defaults import SCENE_ID
 from .measurements import triangle_layout
@@ -93,6 +93,73 @@ def _draw_contact_point_label(ctx: RenderContext, *, label: str, point: Point, i
     draw_label(ctx, label, label_center, small=True)
 
 
+def _text_bbox_at(ctx: RenderContext, text: str, center: Point, *, small: bool = True) -> tuple[float, float, float, float]:
+    """Return the unclamped padded bbox for centered label text."""
+
+    font = symbol_safe_font_for_text(str(text), ctx.small_font if bool(small) else ctx.font)
+    stroke_width = max(0, int(ctx.label_stroke_width))
+    bbox = ctx.draw.textbbox((0, 0), str(text), font=font, stroke_width=stroke_width)
+    text_w = float(bbox[2] - bbox[0])
+    text_h = float(bbox[3] - bbox[1])
+    left = float(center[0]) - text_w / 2.0
+    top = float(center[1]) - text_h / 2.0
+    return (left - 4.0, top - 4.0, left + text_w + 4.0, top + text_h + 4.0)
+
+
+def _bbox_inside_canvas(ctx: RenderContext, bbox: tuple[float, float, float, float], *, margin: float = 8.0) -> bool:
+    """Return whether a label bbox fits inside the canvas with a small margin."""
+
+    return (
+        float(bbox[0]) >= float(margin)
+        and float(bbox[1]) >= float(margin)
+        and float(bbox[2]) <= float(ctx.width) - float(margin)
+        and float(bbox[3]) <= float(ctx.height) - float(margin)
+    )
+
+
+def _clamp_label_center(ctx: RenderContext, text: str, center: Point, *, small: bool = True, margin: float = 12.0) -> Point:
+    """Move a label center just enough that the rendered label remains on-canvas."""
+
+    bbox = _text_bbox_at(ctx, text, center, small=small)
+    dx = 0.0
+    dy = 0.0
+    if bbox[0] < margin:
+        dx = float(margin) - bbox[0]
+    elif bbox[2] > float(ctx.width) - margin:
+        dx = float(ctx.width) - float(margin) - bbox[2]
+    if bbox[1] < margin:
+        dy = float(margin) - bbox[1]
+    elif bbox[3] > float(ctx.height) - margin:
+        dy = float(ctx.height) - float(margin) - bbox[3]
+    return (float(center[0]) + dx, float(center[1]) + dy)
+
+
+def _draw_measure_label_near_vertex(
+    ctx: RenderContext,
+    *,
+    text: str,
+    vertex: Point,
+    centroid: Point,
+) -> tuple[float, float, float, float]:
+    """Draw one required tangent readout near a vertex without clipping."""
+
+    outward = _unit_vector(centroid, vertex)
+    perp = (-outward[1], outward[0])
+    offsets = (
+        (outward[0] * 56.0, outward[1] * 56.0),
+        (-outward[0] * 56.0, -outward[1] * 56.0),
+        (perp[0] * 58.0, perp[1] * 58.0),
+        (-perp[0] * 58.0, -perp[1] * 58.0),
+        (outward[0] * 38.0 + perp[0] * 30.0, outward[1] * 38.0 + perp[1] * 30.0),
+        (outward[0] * 38.0 - perp[0] * 30.0, outward[1] * 38.0 - perp[1] * 30.0),
+    )
+    candidates = [(float(vertex[0]) + dx, float(vertex[1]) + dy) for dx, dy in offsets]
+    for candidate in candidates:
+        if _bbox_inside_canvas(ctx, _text_bbox_at(ctx, text, candidate, small=True)):
+            return draw_label(ctx, text, candidate, small=True)
+    return draw_label(ctx, text, _clamp_label_center(ctx, text, candidates[0], small=True), small=True)
+
+
 def _make_render_context(
     *,
     random_namespace: str,
@@ -149,6 +216,10 @@ def _make_render_context(
         accent_color=accent_color,
         fill_color=fill_color,
         line_width=max(2, int(line_width)),
+        label_stroke_width=max(
+            0,
+            int(params.get("label_stroke_width", group_default(render_defaults, "label_stroke_width", 0))),
+        ),
         font=load_font(max(12, int(font_size)), bold=False),
         small_font=load_font(max(10, int(small_font_size)), bold=False),
         scene_transform=LazySceneTransform(
@@ -165,6 +236,7 @@ def _make_render_context(
         "technical_diagram_style_resolution": dict(diagram_style_meta),
         "shape_style": shape_style.to_trace_dict(),
         "line_width": int(ctx.line_width),
+        "label_stroke_width": int(ctx.label_stroke_width),
         "label_font_size": int(font_size),
         "small_label_font_size": int(small_font_size),
         "accent_color": list(accent_color),
@@ -218,11 +290,14 @@ def _render_incircle_scene(ctx: RenderContext, spec: IncircleDiagramSpec) -> Ren
     _draw_tick(ctx, c, e, count=3, color=ctx.accent_color)
     _draw_tick(ctx, c, f, count=3, color=ctx.accent_color)
 
-    label_bboxes: Dict[str, tuple[float, float, float, float]] = {
-        "AD": draw_label(ctx, f"AD={fmt_measure(spec.tangent_a)}", (a[0] - 4.0, a[1] + 54.0), small=True),
-        "BE": draw_label(ctx, f"BE={fmt_measure(spec.tangent_b)}", (b[0] + 8.0, b[1] + 54.0), small=True),
-        "CF": draw_label(ctx, f"CF={fmt_measure(spec.tangent_c)}", (c[0], c[1] - 52.0), small=True),
-    }
+    centroid = ((a[0] + b[0] + c[0]) / 3.0, (a[1] + b[1] + c[1]) / 3.0)
+    label_bboxes: Dict[str, tuple[float, float, float, float]] = {}
+    for key, text, vertex in (
+        ("AD", f"AD={fmt_measure(spec.tangent_a)}", a),
+        ("BE", f"BE={fmt_measure(spec.tangent_b)}", b),
+        ("CF", f"CF={fmt_measure(spec.tangent_c)}", c),
+    ):
+        label_bboxes[key] = _draw_measure_label_near_vertex(ctx, text=text, vertex=vertex, centroid=centroid)
     if spec.show_area_label:
         label_bboxes["area"] = draw_label(ctx, f"Area={fmt_measure(spec.displayed_area)}", (596.0, 96.0), small=True)
     if spec.show_radius_segment:

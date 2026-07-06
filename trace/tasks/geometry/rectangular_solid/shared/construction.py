@@ -6,13 +6,15 @@ from typing import Any, Dict, Mapping
 
 from .sampling import (
     CUBE_EDGE_VALUES,
-    OPEN_BOX_CASES,
-    CUBOID_DIMENSION_CASES,
+    CUBOID_MISSING_DIMENSION_VALUES,
+    OPEN_BOX_BASE_DIMENSION_VALUES,
+    CUBOID_SURFACE_AREA_VALUES,
     open_box_values_for_case,
     probability_map_for_support,
     select_cube_edge,
-    select_cuboid_case,
-    select_open_box_case,
+    select_cuboid_case_for_missing_dimension,
+    select_cuboid_case_for_surface_area,
+    select_open_box_case_for_dimension,
     select_open_box_dimension_role,
     select_partial_frame_edge_count,
     surface_area_for_case,
@@ -32,16 +34,15 @@ OPEN_BOX_NET_FORMULA = (
 def cuboid_dimension_answer_support(*, selected: int, target_role: str) -> Dict[str, float]:
     """Return answer support for one cuboid missing-dimension role."""
 
-    role_index = {"length": 0, "width": 1, "height": 2}[str(target_role)]
-    support = tuple(sorted({int(case[role_index]) for case in CUBOID_DIMENSION_CASES}))
-    return probability_map_for_support(support, selected=int(selected))
+    if str(target_role) not in {"length", "width", "height"}:
+        raise ValueError("target_role must be length, width, or height")
+    return probability_map_for_support(CUBOID_MISSING_DIMENSION_VALUES, selected=int(selected))
 
 
 def cuboid_surface_area_answer_support(*, selected: int) -> Dict[str, float]:
     """Return answer support for cuboid surface-area values."""
 
-    support = tuple(sorted({surface_area_for_case(case) for case in CUBOID_DIMENSION_CASES}))
-    return probability_map_for_support(support, selected=int(selected))
+    return probability_map_for_support(CUBOID_SURFACE_AREA_VALUES, selected=int(selected))
 
 
 def cube_edge_answer_support(*, selected: int) -> Dict[str, float]:
@@ -53,13 +54,9 @@ def cube_edge_answer_support(*, selected: int) -> Dict[str, float]:
 def open_box_answer_support(*, selected: int, target_role: str) -> Dict[str, float]:
     """Return answer support for one open-box target role."""
 
-    if str(target_role) == "base_length":
-        support = tuple(sorted({open_box_values_for_case(case)[3] for case in OPEN_BOX_CASES}))
-    elif str(target_role) == "base_width":
-        support = tuple(sorted({open_box_values_for_case(case)[4] for case in OPEN_BOX_CASES}))
-    else:
-        support = tuple(sorted({value for case in OPEN_BOX_CASES for value in open_box_values_for_case(case)[3:5]}))
-    return probability_map_for_support(support, selected=int(selected))
+    if str(target_role) not in {"base_length", "base_width"}:
+        raise ValueError("target_role must be base_length or base_width")
+    return probability_map_for_support(OPEN_BOX_BASE_DIMENSION_VALUES, selected=int(selected))
 
 
 def resolve_cuboid_missing_dimension(
@@ -73,10 +70,11 @@ def resolve_cuboid_missing_dimension(
 
     if str(target_role) not in {"length", "width", "height"}:
         raise ValueError("target_role must be length, width, or height")
-    case, case_probabilities = select_cuboid_case(
+    case, case_probabilities = select_cuboid_case_for_missing_dimension(
         instance_seed=int(instance_seed),
         params=params,
         sampling_label=str(sampling_label),
+        target_role=str(target_role),
     )
     length, width, height = [int(value) for value in case]
     volume = int(length * width * height)
@@ -110,7 +108,7 @@ def resolve_cuboid_surface_area(
 ) -> CuboidMeasureProblem:
     """Resolve a cuboid total-surface-area problem."""
 
-    case, case_probabilities = select_cuboid_case(
+    case, case_probabilities = select_cuboid_case_for_surface_area(
         instance_seed=int(instance_seed),
         params=params,
         sampling_label=str(sampling_label),
@@ -201,17 +199,18 @@ def resolve_open_box_dimension(
 ) -> OpenBoxNetProblem:
     """Resolve the marked base dimension of one open-box net."""
 
-    case, case_probabilities = select_open_box_case(
-        instance_seed=int(instance_seed),
-        params=params,
-        sampling_label=str(sampling_label),
-    )
-    sheet_length, sheet_width, cut_size, base_length, base_width, volume = open_box_values_for_case(case)
     target_role, role_probabilities = select_open_box_dimension_role(
         instance_seed=int(instance_seed),
         params=params,
         sampling_label=str(sampling_label),
     )
+    case, case_probabilities = select_open_box_case_for_dimension(
+        instance_seed=int(instance_seed),
+        params=params,
+        sampling_label=str(sampling_label),
+        target_role=str(target_role),
+    )
+    sheet_length, sheet_width, cut_size, base_length, base_width, volume = open_box_values_for_case(case)
     answer = base_length if target_role == "base_length" else base_width
     if len(role_probabilities) > 1:
         case_probabilities = {

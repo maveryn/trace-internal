@@ -88,9 +88,9 @@ def make_context(
         accent_color=tuple(int(v) for v in diagram_style.accent_rgb),
         secondary_accent_color=tuple(int(v) for v in diagram_style.secondary_accent_rgb),
         line_width=max(2, line_width),
-        font=load_font(max(12, font_size), bold=True),
-        small_font=load_font(max(10, small_font_size), bold=True),
-        tiny_font=load_font(max(8, tiny_font_size), bold=True),
+        font=load_font(max(12, font_size), bold=False),
+        small_font=load_font(max(10, small_font_size), bold=False),
+        tiny_font=load_font(max(8, tiny_font_size), bold=False),
     )
     render_meta = {
         "background_style": dict(background_meta),
@@ -111,7 +111,7 @@ def draw_text(
     *,
     font: Any | None = None,
     fill: Color | None = None,
-    stroke_width: int = 1,
+    stroke_width: int = 0,
 ) -> BBox:
     """Draw centered text and return its padded bbox."""
 
@@ -204,12 +204,12 @@ def draw_rotated_ruler(
         ctx.draw.line([p_start, p_end], fill=ctx.secondary_color, width=2 if major else 1)
         if major:
             label_center = add(tick_center, scale(ruler_normal, half_width + 13.0))
-            draw_text(ctx, str(int(cm_value)), label_center, font=ctx.tiny_font, stroke_width=1)
+            draw_text(ctx, str(int(cm_value)), label_center, font=ctx.tiny_font, stroke_width=0)
     unit_label = add(
         add(zero_point, scale(axis, float(ruler_max_cm) * float(unit_px) - 18.0)),
         scale(ruler_normal, 13.0),
     )
-    draw_text(ctx, "cm", unit_label, font=ctx.tiny_font, stroke_width=1)
+    draw_text(ctx, "cm", unit_label, font=ctx.tiny_font, stroke_width=0)
     highlight_start = add(zero_point, scale(axis, float(highlight_start_cm) * float(unit_px)))
     highlight_end = add(zero_point, scale(axis, float(highlight_end_cm) * float(unit_px)))
     ctx.draw.line(
@@ -441,7 +441,7 @@ def render_angle_measurement_scene(
         ctx.draw.line([p0, p1], fill=ctx.secondary_color, width=2 if degree % 10 == 0 else 1)
     for degree in range(0, 181, 30):
         label_center = protractor_point(center, outer_radius - 48.0, degree)
-        draw_text(ctx, str(degree), label_center, font=ctx.tiny_font, stroke_width=1)
+        draw_text(ctx, str(degree), label_center, font=ctx.tiny_font, stroke_width=0)
 
     # Keep the measuring tool behind the measured shape; otherwise the filled
     # protractor body hides the triangle/quadrilateral in review samples.

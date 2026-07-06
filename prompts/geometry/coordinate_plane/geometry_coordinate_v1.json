@@ -51,11 +51,11 @@
         "Count the dot points that share a quadrant with the X-marked point."
       ],
       "point_in_shape_count": [
-        "How many integer lattice points lie strictly inside the shown polygon?",
-        "Count the integer graph-paper points that are strictly inside the polygon.",
-        "How many integer lattice points are strictly inside the polygon?",
-        "Count the integer lattice points that lie inside the polygon, not on its boundary.",
-        "How many integer graph-paper points lie in the interior of the polygon?"
+        "How many integer grid-intersection points lie strictly inside the polygon, not on its boundary?",
+        "Count the integer lattice points at grid intersections that are strictly inside the polygon, excluding boundary points.",
+        "How many graph-paper grid intersections with integer coordinates are strictly inside the polygon?",
+        "Count only the integer grid-intersection points inside the polygon; do not count points on the polygon boundary.",
+        "How many integer-coordinate grid intersections lie in the interior of the polygon, excluding the boundary?"
       ]
     },
     "output": {

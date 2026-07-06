@@ -22,7 +22,7 @@ from trace.tasks.shared.text_rendering import load_font, resolve_text_label_cent
         (COLLINEAR_TASK_ID, {"query_id": "single", "target_count": 3}, "integer", "point_set", 3),
         (SAME_QUADRANT_TASK_ID, {"query_id": "single", "target_count": 3}, "integer", "point_set", 3),
         (POINT_IN_POLYGON_TASK_ID, {"query_id": "single", "target_count": 2}, "integer", "point_set", 2),
-        (POINT_IN_POLYGON_TASK_ID, {"query_id": "single", "target_count": 8}, "integer", "point_set", 8),
+        (POINT_IN_POLYGON_TASK_ID, {"query_id": "single", "target_count": 6}, "integer", "point_set", 6),
     ),
 )
 def test_geometry_coordinate_relation_emits_expected_contract(
@@ -54,6 +54,15 @@ def test_geometry_coordinate_single_query_task_rejects_legacy_internal_query() -
         create_task(SAME_QUADRANT_TASK_ID).generate(
             23312,
             params={"query_id": "same_quadrant_count"},
+            max_attempts=20,
+        )
+
+
+def test_geometry_coordinate_point_in_polygon_rejects_retired_count_support() -> None:
+    with pytest.raises(ValueError, match="unsupported target_count"):
+        create_task(POINT_IN_POLYGON_TASK_ID).generate(
+            23310,
+            params={"query_id": "single", "target_count": 8},
             max_attempts=20,
         )
 

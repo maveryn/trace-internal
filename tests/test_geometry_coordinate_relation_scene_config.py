@@ -24,8 +24,8 @@ def test_geometry_coordinate_plane_defaults_expose_task_generation_knobs_without
     assert int(generation["collinear_point_abs_max"]) == 8
     assert list(generation["collinear_target_support"]) == [0, 1, 2, 3, 4, 5, 6]
     assert list(generation["same_quadrant_target_support"]) == [0, 1, 2, 3, 4, 5, 6]
-    assert list(generation["point_in_shape_target_support"]) == [0, 1, 2, 3, 4, 5, 6, 7, 8]
-    assert str(prompt["bundle_id"]) == "geometry_coordinate_v0"
+    assert list(generation["point_in_shape_target_support"]) == [1, 2, 3, 4, 5, 6]
+    assert str(prompt["bundle_id"]) == "geometry_coordinate_v1"
     assert str(prompt["scene_key"]) == "coordinate_graph_scene"
     assert str(prompt["task_key"]) == "coordinate_query"
     assert int(rendering["line_width"]) > 0

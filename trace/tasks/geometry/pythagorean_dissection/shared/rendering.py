@@ -20,6 +20,7 @@ from trace.tasks.geometry.shared.measurement_rendering import (
     draw_readout_centered,
     draw_right_angle_marker,
 )
+from trace.tasks.geometry.shared.readout_fill_style import resolve_readout_fill_style
 from trace.tasks.geometry.shared.scene_transform import LazySceneTransform
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
@@ -95,8 +96,15 @@ def make_render_context(
             tuple(int(v) for v in diagram_style.panel_alt_fill_rgb),
         ),
     )
-    palette_rng = spawn_rng(int(instance_seed), f"geometry.{SCENE_ID}.fill_palette")
-    leg_fill, other_leg_fill, central_fill = uniform_choice(palette_rng, palettes)
+    readout_style = resolve_readout_fill_style(
+        instance_seed=int(instance_seed),
+        namespace=f"geometry.{SCENE_ID}.readout_fill",
+        diagram_style=diagram_style,
+        background_meta=background_meta,
+        candidate_palettes=palettes,
+        params=params,
+    )
+    leg_fill, other_leg_fill, central_fill = readout_style.fill_colors
     orientation_key, orientation_sign_x, orientation_sign_y = _select_orientation(
         params=params,
         instance_seed=int(instance_seed),
@@ -135,8 +143,8 @@ def make_render_context(
         height=int(height),
         line_color=shape_style.line_color,
         secondary_color=tuple(int(v) for v in diagram_style.secondary_stroke_rgb),
-        label_color=shape_style.label_color,
-        label_stroke_color=shape_style.label_stroke_color,
+        label_color=readout_style.label_color,
+        label_stroke_color=readout_style.label_stroke_color,
         leg_fill_color=leg_fill,
         other_leg_fill_color=other_leg_fill,
         central_fill_color=central_fill,
@@ -144,6 +152,7 @@ def make_render_context(
         label_stroke_width=max(0, min(1, int(label_stroke_width))),
         font=load_font(max(12, int(font_size)), bold=False, font_family=str(font_family)),
         small_font=load_font(max(10, int(small_font_size)), bold=False, font_family=str(font_family)),
+        readout_text_metadata=dict(readout_style.metadata["readout_text_style"]),
         orientation_key=str(orientation_key),
         orientation_sign_x=int(orientation_sign_x),
         orientation_sign_y=int(orientation_sign_y),
@@ -175,6 +184,7 @@ def make_render_context(
             "leg_b": list(other_leg_fill),
             "central_square": list(central_fill),
         },
+        "readout_fill_style": dict(readout_style.metadata),
         "font_asset_version": font_asset_version(),
         "orientation": str(orientation_key),
         "orientation_sign_x": int(orientation_sign_x),
@@ -183,7 +193,14 @@ def make_render_context(
 
 
 def _draw_label(ctx: RenderContext, text: str, center: Point) -> BBox:
-    return draw_readout_centered(ctx, str(text), center, small=True, backed=False)
+    return draw_readout_centered(
+        ctx,
+        str(text),
+        center,
+        small=True,
+        backed=False,
+        extra_metadata=ctx.readout_text_metadata,
+    )
 
 
 def _offset_from_center(point: Point, center: Point, distance: float) -> Point:

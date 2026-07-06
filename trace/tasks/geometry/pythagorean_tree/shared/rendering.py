@@ -10,10 +10,10 @@ from PIL import ImageDraw
 from trace.core.seed import spawn_rng
 from trace.tasks.geometry.shared.diagram_style import prepare_geometry_diagram_style_and_background
 from trace.tasks.geometry.shared.measurement_rendering import bbox_from_points, bbox_to_list, pad_bbox
+from trace.tasks.geometry.shared.readout_fill_style import resolve_readout_fill_style
 from trace.tasks.geometry.shared.scene_transform import LazySceneTransform
 from trace.tasks.geometry.shared.vector2d import add, mul, sub, unit
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
 from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import load_font
@@ -63,12 +63,15 @@ def make_render_context(
             tuple(int(value) for value in diagram_style.muted_fill_rgb),
         ),
     )
-    palette_index = resolve_selection_index(
-        params=params,
+    readout_style = resolve_readout_fill_style(
         instance_seed=int(instance_seed),
-        namespace=f"geometry.{SCENE_ID}.fill_palette",
+        namespace=f"geometry.{SCENE_ID}.readout_fill",
+        diagram_style=diagram_style,
+        background_meta=background_meta,
+        candidate_palettes=fills,
+        params=params,
     )
-    triangle_fill, leg_fill, other_leg_fill, hyp_fill = fills[int(palette_index) % len(fills)]
+    triangle_fill, leg_fill, other_leg_fill, hyp_fill = readout_style.fill_colors
     font_family = str(
         params.get(
             "readout_font_family",
@@ -106,8 +109,8 @@ def make_render_context(
             height=int(height),
             line_color=tuple(int(value) for value in diagram_style.stroke_rgb),
             secondary_color=tuple(int(value) for value in diagram_style.secondary_stroke_rgb),
-            label_color=tuple(int(value) for value in diagram_style.label_rgb),
-            label_stroke_color=tuple(int(value) for value in diagram_style.label_stroke_rgb),
+            label_color=tuple(int(value) for value in readout_style.label_color),
+            label_stroke_color=tuple(int(value) for value in readout_style.label_stroke_color),
             triangle_fill=tuple(int(value) for value in triangle_fill),
             leg_square_fill=tuple(int(value) for value in leg_fill),
             other_leg_square_fill=tuple(int(value) for value in other_leg_fill),
@@ -117,6 +120,7 @@ def make_render_context(
             label_stroke_width=max(0, int(label_stroke_width)),
             font=load_font(max(12, int(font_size)), bold=False, font_family=str(font_family)),
             small_font=load_font(max(10, int(small_font_size)), bold=False, font_family=str(font_family)),
+            readout_text_metadata=dict(readout_style.metadata["readout_text_style"]),
             diagram_style_meta=dict(diagram_style_meta),
             background_meta=dict(background_meta),
             font_meta=dict(font_meta),
@@ -132,6 +136,7 @@ def make_render_context(
             "diagram_style": dict(diagram_style_meta),
             "background": dict(background_meta),
             "font": dict(font_meta),
+            "readout_fill_style": dict(readout_style.metadata),
         },
     )
 
@@ -150,6 +155,7 @@ def _draw_text_centered(ctx: RenderContext, text: str, center: Point, *, small: 
         stroke_fill=ctx.label_stroke_color,
         role="readout",
         required=True,
+        extra_metadata=ctx.readout_text_metadata,
     )
     bbox = ctx.draw.textbbox(
         (x, y),

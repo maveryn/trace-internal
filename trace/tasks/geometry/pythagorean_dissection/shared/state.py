@@ -65,6 +65,7 @@ class RenderContext:
     label_stroke_width: int
     font: Any
     small_font: Any
+    readout_text_metadata: Dict[str, Any]
     orientation_key: str
     orientation_sign_x: int
     orientation_sign_y: int

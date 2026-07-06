@@ -68,6 +68,7 @@ class RenderContext:
     label_stroke_width: int
     font: Any
     small_font: Any
+    readout_text_metadata: dict[str, Any]
     diagram_style_meta: dict[str, Any]
     background_meta: dict[str, Any]
     font_meta: dict[str, Any]

@@ -236,7 +236,7 @@ def _draw_apothem(ctx: RenderContext, center: Point, side_start: Point, side_end
 def _readout_lines(problem: RegularPolygonProblem) -> tuple[str, ...]:
     lines: list[str] = []
     if problem.show_total_area_readout and problem.total_area is not None:
-        lines.append(f"Total area = {fmt_measure(float(problem.total_area))}")
+        lines.append(f"Total polygon area = {fmt_measure(float(problem.total_area))}")
     if problem.show_perimeter_readout and problem.perimeter is not None:
         lines.append(f"Perimeter = {fmt_measure(float(problem.perimeter))}")
     if problem.show_wedge_area_readout and problem.wedge_area is not None:
@@ -259,6 +259,7 @@ def render_regular_polygon_scene(
     rotation = -90.0 + (180.0 / float(problem.n_sides)) + rng.uniform(-8.0, 8.0)
     vertices = _polygon_vertices(center, radius, problem.n_sides, rotation)
     selected_indices = tuple(range(int(problem.start_index), int(problem.start_index + problem.wedge_count)))
+    end_index = (int(problem.start_index) + int(problem.wedge_count)) % int(problem.n_sides)
     start_degrees = rotation + (360.0 * float(problem.start_index) / float(problem.n_sides))
     angle_span = 360.0 * float(problem.wedge_count) / float(problem.n_sides)
     target_midpoint = _point_on_ray(center, radius * 0.54, start_degrees + (angle_span / 2.0))
@@ -279,11 +280,13 @@ def render_regular_polygon_scene(
     ctx.draw.line((*polygon_points, polygon_points[0]), fill=ctx.line_color, width=ctx.line_width, joint="curve")
     for vertex in vertices:
         ctx.draw.line((center, vertex), fill=ctx.secondary_color, width=max(1, ctx.line_width - 1))
+    selected_boundary_vertices = (vertices[problem.start_index], vertices[end_index])
+    for boundary_vertex in selected_boundary_vertices:
+        ctx.draw.line((center, boundary_vertex), fill=ctx.accent_color, width=max(3, ctx.line_width + 1))
     center_dot = max(4, ctx.line_width + 2)
     ctx.draw.ellipse((center[0] - center_dot, center[1] - center_dot, center[0] + center_dot, center[1] + center_dot), fill=ctx.line_color)
 
     construction_bboxes["regular_polygon"] = bbox_from_points(vertices, width=ctx.width, height=ctx.height, pad=ctx.line_width + 4)
-    end_index = (int(problem.start_index) + int(problem.wedge_count)) % int(problem.n_sides)
     side_start = vertices[problem.start_index]
     side_end = vertices[(problem.start_index + 1) % problem.n_sides]
     side_mid = mid(side_start, side_end)
@@ -295,8 +298,8 @@ def render_regular_polygon_scene(
     )
 
     if problem.show_angle_unknown:
-        construction_bboxes["marked_angle_arc"] = _draw_arc_polyline(ctx, center, radius * 0.27, start_degrees, angle_span)
-        readout_bboxes["unknown_angle_label"] = _draw_text_centered(ctx, "?", _point_on_ray(center, radius * 0.34, start_degrees + (angle_span / 2.0)), small=False)
+        construction_bboxes["marked_angle_arc"] = _draw_arc_polyline(ctx, center, radius * 0.31, start_degrees, angle_span)
+        readout_bboxes["unknown_angle_label"] = _draw_text_centered(ctx, "?", _point_on_ray(center, radius * 0.43, start_degrees + (angle_span / 2.0)), small=False)
     side_label_distance = 66.0 if problem.show_midpoint_label else 36.0
     if problem.show_known_side_length and problem.side_length is not None:
         readout_bboxes["side_length_label"] = _draw_dimension_label(

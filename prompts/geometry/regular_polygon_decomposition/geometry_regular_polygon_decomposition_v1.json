@@ -51,11 +51,11 @@
     },
     "query": {
       "marked_wedges_area_from_total": [
-        "The regular polygon is cut into equal center wedges. What is the area of \"{target_name}\"?",
-        "Use the equal wedge decomposition of the regular polygon. What is the area of \"{target_name}\"?",
-        "The total area is labeled and one or more adjacent wedges are shaded. What is the area of \"{target_name}\"?",
-        "Based on the equal center wedges, what is the area of \"{target_name}\"?",
-        "Find the area of \"{target_name}\" from the visible regular-polygon decomposition."
+        "Count the equal center wedges in the whole polygon and the shaded wedges. Using the total polygon area, what is the area of \"{target_name}\"?",
+        "Use the equal wedge decomposition: count all center wedges, then count the shaded wedges. What is the area of \"{target_name}\"?",
+        "The total polygon area is labeled and one or more adjacent wedges are shaded. What is the area of \"{target_name}\"?",
+        "Based on the equal center wedges and the shaded wedge count, what is the area of \"{target_name}\"?",
+        "Find the area of \"{target_name}\" from the visible equal-wedge decomposition and total polygon area."
       ],
       "wedge_area_from_side_and_apothem": [
         "Use the labeled side length and apothem of the shaded wedge. What is the area of \"{target_name}\"?",
@@ -65,11 +65,11 @@
         "Use the marked regular-polygon wedge. What is the area of \"{target_name}\"?"
       ],
       "marked_wedges_central_angle": [
-        "The shaded center wedges form angle {target_name}. What is the measure of angle {target_name} in degrees?",
-        "Use the equal center wedges of the regular polygon. What is the measure of angle {target_name} in degrees?",
-        "The marked central angle is labeled {target_name}. What is its measure in degrees?",
-        "Based on the regular-polygon decomposition, find the degree measure of angle {target_name}.",
-        "What is the measure of the marked central angle {target_name}?"
+        "Count the equal center wedges in the whole polygon and the shaded wedges between OA and OB. What is the measure of angle {target_name} in degrees?",
+        "Use the equal center wedges of the regular polygon: count all wedges, then count the shaded wedges forming angle {target_name}. What is its measure in degrees?",
+        "The marked central angle {target_name} spans the shaded center wedges. What is its measure in degrees?",
+        "Based on the regular-polygon decomposition and the shaded wedge count, find the degree measure of angle {target_name}.",
+        "What is the measure of the marked central angle {target_name} formed by the shaded wedges?"
       ],
       "perimeter_from_total_area_and_apothem": [
         "Use the labeled total area and apothem of the regular polygon. What is the total perimeter of \"{target_name}\"?",

@@ -14,7 +14,7 @@
 - `solve_formula(regular_polygon_equal_wedge_decomposition, target=marked_wedge_group_area, formula_schema=total_area_divided_by_side_count_times_marked_wedge_count); scene=regular_polygon_decomposition; scope=marked_piece_area_value`
 
 ## Query Semantics
-- `single` asks for the area of the shaded wedge or adjacent shaded wedge group from the total area of an equal-wedge regular polygon.
+- `single` asks for the area of the shaded wedge or adjacent shaded wedge group from the total polygon area by counting all equal center wedges and the shaded wedges.
 - The semantic prompt branch uses `marked_wedges_area_from_total`; the public query id remains `single`.
 - The number of polygon sides, selected wedge start, marked wedge count, style, font, layout jitter, and rotation are internal replay metadata.
 

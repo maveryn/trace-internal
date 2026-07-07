@@ -14,7 +14,7 @@ from typing import Any, Iterable, Mapping, Sequence
 from PIL import Image
 
 from trace.core.json_io import write_json_file
-from trace.core.scene_package_migration import SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES
+from trace.core.source_layout_policy import SCENE_PACKAGE_REVIEW_TARGET_SCENES
 
 
 DEFAULT_DOMAINS = (
@@ -130,7 +130,7 @@ def collect_bbox_min_side_audit(
     }
 
     for domain in domains:
-        scenes = sorted(SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES.get(domain, frozenset()))
+        scenes = sorted(SCENE_PACKAGE_REVIEW_TARGET_SCENES.get(domain, frozenset()))
         for scene_id in scenes:
             totals["scene_count"] += 1
             task_ids = _task_ids_for_scene(docs_root=docs_root, domain=domain, scene_id=scene_id)

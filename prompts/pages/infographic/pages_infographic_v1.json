@@ -105,27 +105,6 @@
         "After summing {comparison_icon_kind}-icon cards within each section, what section has the {rank_direction} total?",
         "Which section label has the {rank_direction} total among cards marked with the {comparison_icon_kind} icon?",
         "Compare section totals using only {comparison_icon_kind}-icon cards. Which section is {rank_direction}?"
-      ],
-      "value_for_named_item": [
-        "In section {target_section}, what value is printed on the card labeled {target_label}?",
-        "Look in section {target_section}. What printed value belongs to {target_label}?",
-        "What is the visible value on the {target_label} card in section {target_section}?",
-        "Find card {target_label} within section {target_section}. What value is printed on it?",
-        "Within section {target_section}, read the value shown for {target_label}."
-      ],
-      "item_for_named_value": [
-        "In section {target_section}, which card label has the printed value {target_value}?",
-        "Look in section {target_section}. What label belongs to the card with value {target_value}?",
-        "Which metric card in section {target_section} shows the value {target_value}?",
-        "Find the card showing {target_value} in section {target_section}. What is its label?",
-        "Within section {target_section}, read the label on the card whose value is {target_value}."
-      ],
-      "detail_for_named_item": [
-        "In section {target_section}, what reference code is printed on the card labeled {target_label}?",
-        "In section {target_section}, what Ref code is printed on the {target_label} card?",
-        "What reference code appears on the {target_label} metric card in section {target_section}?",
-        "Find card {target_label} within section {target_section}. What reference code is shown?",
-        "Within section {target_section}, read the Ref code printed on {target_label}."
       ]
     },
     "output": {
@@ -221,24 +200,6 @@
       "json_example_answer_only": "{\"answer\":\"Program Totals\"}",
       "answer_hint": "set \"answer\" to the exact visible section label requested by the question",
       "annotation_hint": "set \"annotation\" to the answer section panel [x0, y0, x1, y1] pixel bounding box"
-    },
-    "query:value_for_named_item": {
-      "json_example": "{\"annotation\":[108,164,248,258],\"answer\":\"64\"}",
-      "json_example_answer_only": "{\"answer\":\"64\"}",
-      "answer_hint": "set \"answer\" to the exact visible value requested by the question",
-      "annotation_hint": "set \"annotation\" to the supporting metric card [x0, y0, x1, y1] pixel bounding box"
-    },
-    "query:item_for_named_value": {
-      "json_example": "{\"annotation\":[108,164,248,258],\"answer\":\"Atlas\"}",
-      "json_example_answer_only": "{\"answer\":\"Atlas\"}",
-      "answer_hint": "set \"answer\" to the exact visible metric-card label requested by the question",
-      "annotation_hint": "set \"annotation\" to the supporting metric card [x0, y0, x1, y1] pixel bounding box"
-    },
-    "query:detail_for_named_item": {
-      "json_example": "{\"annotation\":[108,164,248,258],\"answer\":\"Ref 42\"}",
-      "json_example_answer_only": "{\"answer\":\"Ref 42\"}",
-      "answer_hint": "set \"answer\" to the exact visible reference code requested by the question",
-      "annotation_hint": "set \"annotation\" to the supporting metric card [x0, y0, x1, y1] pixel bounding box"
     }
   },
   "dynamic_slots": {
@@ -361,18 +322,6 @@
     "query:section_icon_extremum_label": [
       "comparison_icon_kind",
       "rank_direction"
-    ],
-    "query:value_for_named_item": [
-      "target_section",
-      "target_label"
-    ],
-    "query:item_for_named_value": [
-      "target_section",
-      "target_value"
-    ],
-    "query:detail_for_named_item": [
-      "target_section",
-      "target_label"
     ],
     "output:answer_only": [
       "json_output_contract_answer_only",

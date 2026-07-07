@@ -1,0 +1,796 @@
+{
+  "2048": {
+    "config_path": "configs/domains/games/2048.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/2048",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/2048",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__2048__max_tile_value",
+      "task_games__2048__merge_count",
+      "task_games__2048__move_result_board_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "backgammon": {
+    "config_path": "configs/domains/games/backgammon.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/backgammon",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/backgammon",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__backgammon__destination_count",
+      "task_games__backgammon__pip_count_value",
+      "task_games__backgammon__point_state_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "battleship": {
+    "config_path": "configs/domains/games/battleship.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/battleship",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/battleship",
+    "task_count": 4,
+    "task_ids": [
+      "task_games__battleship__last_ship_cell_label",
+      "task_games__battleship__remaining_ship_shape_label",
+      "task_games__battleship__ship_cell_status_count",
+      "task_games__battleship__ship_status_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "bingo": {
+    "config_path": "configs/domains/games/bingo.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/bingo",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/bingo",
+    "task_count": 4,
+    "task_ids": [
+      "task_games__bingo__called_number_match_count",
+      "task_games__bingo__completed_column_label",
+      "task_games__bingo__completed_line_sum_value",
+      "task_games__bingo__near_complete_line_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "bowling": {
+    "config_path": "configs/domains/games/bowling.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/bowling",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/bowling",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__bowling__first_pin_hit_label",
+      "task_games__bowling__path_hit_count",
+      "task_games__bowling__spare_path_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "brick_breaker": {
+    "config_path": "configs/domains/games/brick_breaker.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/brick_breaker",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/brick_breaker",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__brick_breaker__hit_row_remaining_count",
+      "task_games__brick_breaker__next_hit_label",
+      "task_games__brick_breaker__paddle_catch_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "bubble_shooter": {
+    "config_path": "configs/domains/games/bubble_shooter.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/bubble_shooter",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/bubble_shooter",
+    "task_count": 4,
+    "task_ids": [
+      "task_games__bubble_shooter__drop_count",
+      "task_games__bubble_shooter__pop_color_label",
+      "task_games__bubble_shooter__pop_count",
+      "task_games__bubble_shooter__pop_target_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "cards": {
+    "config_path": "configs/domains/games/cards.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/cards",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/cards",
+    "task_count": 10,
+    "task_ids": [
+      "task_games__cards__blackjack_best_hand_label",
+      "task_games__cards__exact_triple_count",
+      "task_games__cards__higher_than_reference_count",
+      "task_games__cards__longest_run_length",
+      "task_games__cards__missing_card_to_complete_hand_label",
+      "task_games__cards__poker_best_hand_label",
+      "task_games__cards__poker_draw_card_label",
+      "task_games__cards__same_suit_as_reference_count",
+      "task_games__cards__trick_taking_winner_label",
+      "task_games__cards__trick_winning_play_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "checkers": {
+    "config_path": "configs/domains/games/checkers.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/checkers",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/checkers",
+    "task_count": 4,
+    "task_ids": [
+      "task_games__checkers__max_capture_chain_length",
+      "task_games__checkers__move_count",
+      "task_games__checkers__piece_mobility_count",
+      "task_games__checkers__piece_state_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "chess": {
+    "config_path": "configs/domains/games/chess.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/chess",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/chess",
+    "task_count": 8,
+    "task_ids": [
+      "task_games__chess__checkmate_move_label",
+      "task_games__chess__colored_piece_kind_count",
+      "task_games__chess__king_escape_square_count",
+      "task_games__chess__marked_piece_capture_count",
+      "task_games__chess__marked_piece_destination_count",
+      "task_games__chess__piece_kind_count",
+      "task_games__chess__player_capture_piece_count",
+      "task_games__chess__target_square_attacker_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "chess_variant": {
+    "config_path": "configs/domains/games/chess_variant.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/chess_variant",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/chess_variant",
+    "task_count": 2,
+    "task_ids": [
+      "task_games__chess_variant__marked_piece_destination_count",
+      "task_games__chess_variant__target_square_reacher_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "circular_chess": {
+    "config_path": "configs/domains/games/circular_chess.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/circular_chess",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/circular_chess",
+    "task_count": 2,
+    "task_ids": [
+      "task_games__circular_chess__marked_piece_destination_count",
+      "task_games__circular_chess__target_cell_reacher_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "connect_four": {
+    "config_path": "configs/domains/games/connect_four.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/connect_four",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/connect_four",
+    "task_count": 4,
+    "task_ids": [
+      "task_games__connect_four__blocking_move_column_label",
+      "task_games__connect_four__column_disc_profile_label",
+      "task_games__connect_four__winning_move_column_label",
+      "task_games__connect_four__winning_move_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "counterfactual_board": {
+    "config_path": "configs/domains/games/counterfactual_board.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/counterfactual_board",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/counterfactual_board",
+    "task_count": 2,
+    "task_ids": [
+      "task_games__counterfactual_board__board_dimension_count",
+      "task_games__counterfactual_board__board_line_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "crossing": {
+    "config_path": "configs/domains/games/crossing.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/crossing",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/crossing",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__crossing__first_exit_object_label",
+      "task_games__crossing__hit_object_label",
+      "task_games__crossing__moving_object_direction_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "darts": {
+    "config_path": "configs/domains/games/darts.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/darts",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/darts",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__darts__bullseye_membership_count",
+      "task_games__darts__dart_score_value",
+      "task_games__darts__highest_scoring_dart_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "dominoes": {
+    "config_path": "configs/domains/games/dominoes.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/dominoes",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/dominoes",
+    "task_count": 6,
+    "task_ids": [
+      "task_games__dominoes__double_count",
+      "task_games__dominoes__higher_sum_than_reference_count",
+      "task_games__dominoes__invalid_join_label",
+      "task_games__dominoes__longest_chain_length_value",
+      "task_games__dominoes__matching_end_count",
+      "task_games__dominoes__sum_to_target_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "dots_and_boxes": {
+    "config_path": "configs/domains/games/dots_and_boxes.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/dots_and_boxes",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/dots_and_boxes",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__dots_and_boxes__completable_box_label",
+      "task_games__dots_and_boxes__owned_box_count",
+      "task_games__dots_and_boxes__three_sided_box_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "go": {
+    "config_path": "configs/domains/games/go.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/go",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/go",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__go__group_adjacent_enemy_count",
+      "task_games__go__group_liberty_count",
+      "task_games__go__marked_group_stone_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "hex": {
+    "config_path": "configs/domains/games/hex.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/hex",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/hex",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__hex__candidate_neighbor_count",
+      "task_games__hex__connection_gap_count",
+      "task_games__hex__winning_move_cell_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "irregular_link_board": {
+    "config_path": "configs/domains/games/irregular_link_board.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/irregular_link_board",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/irregular_link_board",
+    "task_count": 2,
+    "task_ids": [
+      "task_games__irregular_link_board__capture_move_count",
+      "task_games__irregular_link_board__marked_piece_destination_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "lane_runner": {
+    "config_path": "configs/domains/games/lane_runner.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/lane_runner",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/lane_runner",
+    "task_count": 2,
+    "task_ids": [
+      "task_games__lane_runner__path_coin_count",
+      "task_games__lane_runner__safe_path_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "ludo_board": {
+    "config_path": "configs/domains/games/ludo_board.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/ludo_board",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/ludo_board",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__ludo_board__capture_roll_option_label",
+      "task_games__ludo_board__move_result_option_label",
+      "task_games__ludo_board__winning_roll_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "mancala_pit_board": {
+    "config_path": "configs/domains/games/mancala_pit_board.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/mancala_pit_board",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/mancala_pit_board",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__mancala_pit_board__max_post_sow_option_label",
+      "task_games__mancala_pit_board__post_sow_pit_count_value",
+      "task_games__mancala_pit_board__sowing_landing_option_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "marble_chain": {
+    "config_path": "configs/domains/games/marble_chain.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/marble_chain",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/marble_chain",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__marble_chain__closure_match_direction_label",
+      "task_games__marble_chain__max_pop_direction_label",
+      "task_games__marble_chain__shot_effect_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "match3": {
+    "config_path": "configs/domains/games/match3.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/match3",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/match3",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__match3__gem_count",
+      "task_games__match3__max_clear_swap_label",
+      "task_games__match3__swap_clear_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "minecraft": {
+    "config_path": "configs/domains/games/minecraft.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/minecraft",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/minecraft",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__minecraft__resource_route_cost",
+      "task_games__minecraft__stack_height_condition_count",
+      "task_games__minecraft__top_ore_stack_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "minesweeper": {
+    "config_path": "configs/domains/games/minesweeper.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/minesweeper",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/minesweeper",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__minesweeper__forced_cell_count",
+      "task_games__minesweeper__forced_mine_cell_label",
+      "task_games__minesweeper__remaining_mine_count_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "minigolf": {
+    "config_path": "configs/domains/games/minigolf.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/minigolf",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/minigolf",
+    "task_count": 2,
+    "task_ids": [
+      "task_games__minigolf__first_obstacle_label",
+      "task_games__minigolf__shot_path_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "nine_mens_morris": {
+    "config_path": "configs/domains/games/nine_mens_morris.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/nine_mens_morris",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/nine_mens_morris",
+    "task_count": 2,
+    "task_ids": [
+      "task_games__nine_mens_morris__mill_completion_point_count",
+      "task_games__nine_mens_morris__pieces_in_mill_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "pacman": {
+    "config_path": "configs/domains/games/pacman.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/pacman",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/pacman",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__pacman__next_item_label",
+      "task_games__pacman__pellet_count_before_ghost",
+      "task_games__pacman__route_score_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "pinball_table": {
+    "config_path": "configs/domains/games/pinball_table.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/pinball_table",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/pinball_table",
+    "task_count": 2,
+    "task_ids": [
+      "task_games__pinball_table__first_hit_object_label",
+      "task_games__pinball_table__scoreable_object_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "platformer": {
+    "config_path": "configs/domains/games/platformer.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/platformer",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/platformer",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__platformer__collectible_count",
+      "task_games__platformer__jump_collectible_score_value",
+      "task_games__platformer__jump_landing_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "pool": {
+    "config_path": "configs/domains/games/pool.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/pool",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/pool",
+    "task_count": 2,
+    "task_ids": [
+      "task_games__pool__blocking_ball_count",
+      "task_games__pool__group_ball_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "racing_track": {
+    "config_path": "configs/domains/games/racing_track.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/racing_track",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/racing_track",
+    "task_count": 2,
+    "task_ids": [
+      "task_games__racing_track__ahead_object_count",
+      "task_games__racing_track__finish_distance_extremum_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "radial_hunt_board": {
+    "config_path": "configs/domains/games/radial_hunt_board.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/radial_hunt_board",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/radial_hunt_board",
+    "task_count": 2,
+    "task_ids": [
+      "task_games__radial_hunt_board__capture_move_count",
+      "task_games__radial_hunt_board__marked_piece_destination_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "reversi": {
+    "config_path": "configs/domains/games/reversi.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/reversi",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/reversi",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__reversi__frontier_disc_count",
+      "task_games__reversi__legal_destination_count",
+      "task_games__reversi__marked_move_flip_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "rhythm": {
+    "config_path": "configs/domains/games/rhythm.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/rhythm",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/rhythm",
+    "task_count": 4,
+    "task_ids": [
+      "task_games__rhythm__earliest_hit_lane_label",
+      "task_games__rhythm__lane_note_count",
+      "task_games__rhythm__lane_note_score_value",
+      "task_games__rhythm__most_notes_lane_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "rule_override_board": {
+    "config_path": "configs/domains/games/rule_override_board.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/rule_override_board",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/rule_override_board",
+    "task_count": 2,
+    "task_ids": [
+      "task_games__rule_override_board__line_result_count",
+      "task_games__rule_override_board__piece_result_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "sixteen_soldiers": {
+    "config_path": "configs/domains/games/sixteen_soldiers.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/sixteen_soldiers",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/sixteen_soldiers",
+    "task_count": 2,
+    "task_ids": [
+      "task_games__sixteen_soldiers__marked_piece_capture_count",
+      "task_games__sixteen_soldiers__marked_piece_destination_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "sliding_block": {
+    "config_path": "configs/domains/games/sliding_block.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/sliding_block",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/sliding_block",
+    "task_count": 4,
+    "task_ids": [
+      "task_games__sliding_block__block_orientation_count",
+      "task_games__sliding_block__movable_block_count",
+      "task_games__sliding_block__sliding_block_blocker_count",
+      "task_games__sliding_block__sliding_block_move_result_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "slot_machine": {
+    "config_path": "configs/domains/games/slot_machine.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/slot_machine",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/slot_machine",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__slot_machine__paytable_score_value",
+      "task_games__slot_machine__reel_completion_label",
+      "task_games__slot_machine__winning_payline_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "snake": {
+    "config_path": "configs/domains/games/snake.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/snake",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/snake",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__snake__path_outcome_option_label",
+      "task_games__snake__safe_direction_count",
+      "task_games__snake__snake_length_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "snakes_ladders": {
+    "config_path": "configs/domains/games/snakes_ladders.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/snakes_ladders",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/snakes_ladders",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__snakes_ladders__move_outcome_value",
+      "task_games__snakes_ladders__remaining_to_finish_value",
+      "task_games__snakes_ladders__special_square_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "sokoban": {
+    "config_path": "configs/domains/games/sokoban.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/sokoban",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/sokoban",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__sokoban__box_goal_status_count",
+      "task_games__sokoban__closest_box_goal_label",
+      "task_games__sokoban__push_stand_cell_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "solitaire": {
+    "config_path": "configs/domains/games/solitaire.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/solitaire",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/solitaire",
+    "task_count": 5,
+    "task_ids": [
+      "task_games__solitaire__cascade_card_at_depth_label",
+      "task_games__solitaire__column_card_count_value",
+      "task_games__solitaire__foundation_ready_count",
+      "task_games__solitaire__move_legality_label",
+      "task_games__solitaire__tableau_movable_card_count_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "space_shooter": {
+    "config_path": "configs/domains/games/space_shooter.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/space_shooter",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/space_shooter",
+    "task_count": 5,
+    "task_ids": [
+      "task_games__space_shooter__enemy_ship_count",
+      "task_games__space_shooter__enemy_ship_hit_count",
+      "task_games__space_shooter__first_hit_enemy_ship_label",
+      "task_games__space_shooter__hit_enemy_ship_label",
+      "task_games__space_shooter__safe_lane_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "tetris": {
+    "config_path": "configs/domains/games/tetris.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/tetris",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/tetris",
+    "task_count": 5,
+    "task_ids": [
+      "task_games__tetris__active_piece_shape_label",
+      "task_games__tetris__drop_collision_time_value",
+      "task_games__tetris__drop_result_label",
+      "task_games__tetris__line_clear_count",
+      "task_games__tetris__row_occupancy_status_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "tic_tac_toe_3d": {
+    "config_path": "configs/domains/games/tic_tac_toe_3d.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/tic_tac_toe_3d",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/tic_tac_toe_3d",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__tic_tac_toe_3d__blocking_move_cell_label",
+      "task_games__tic_tac_toe_3d__layer_piece_count",
+      "task_games__tic_tac_toe_3d__winning_move_cell_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "tower_defense": {
+    "config_path": "configs/domains/games/tower_defense.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/tower_defense",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/tower_defense",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__tower_defense__best_tower_position_label",
+      "task_games__tower_defense__covered_path_segment_count",
+      "task_games__tower_defense__nearest_exit_enemy_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "tower_draughts_board": {
+    "config_path": "configs/domains/games/tower_draughts_board.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/tower_draughts_board",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/tower_draughts_board",
+    "task_count": 2,
+    "task_ids": [
+      "task_games__tower_draughts_board__controlled_stack_count",
+      "task_games__tower_draughts_board__marked_stack_capture_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "ultimate_tictactoe": {
+    "config_path": "configs/domains/games/ultimate_tictactoe.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/games/ultimate_tictactoe",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/games/ultimate_tictactoe",
+    "task_count": 3,
+    "task_ids": [
+      "task_games__ultimate_tictactoe__line_completion_move_label",
+      "task_games__ultimate_tictactoe__macro_threat_board_count",
+      "task_games__ultimate_tictactoe__small_board_status_count"
+    ],
+    "taxonomy_review_pass": true
+  }
+}

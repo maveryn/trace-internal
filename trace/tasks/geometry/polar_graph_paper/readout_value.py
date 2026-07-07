@@ -13,7 +13,7 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.output import point_annotation_from_render, projected_point_annotation
+from .shared.output import point_annotation_from_render, point_witness, projected_point_annotation
 from .shared.prompts import polar_graph_prompt_artifacts
 from .shared.rendering import render_polar_graph_paper_scene
 from .shared.sampling import select_polar_readout_case
@@ -80,6 +80,7 @@ def _trace_payload(
             "theta_degrees": case.theta_degrees,
             "correct_value": case.correct_value,
         },
+        "witness_symbolic": point_witness("P"),
         "projected_annotation": projected_point_annotation(annotation_value),
     }
 

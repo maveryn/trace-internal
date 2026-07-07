@@ -20,7 +20,17 @@ MODEL_RESPONSE_CAP_THRESHOLDS: Dict[str, float] = {
 }
 CURRENT_CALIBRATION_MODEL_SLUGS = {"qwen25vl7b"}
 CURRENT_CALIBRATION_BASELINE = "v0"
+CURRENT_CALIBRATION_RUN_DIR = Path("review/calibration/50x8_qwen25vl3b_prompt_pilot_seed20260703")
+CURRENT_CALIBRATION_LEDGER_NAME = "task_status_records.json"
 DIFFICULTY_TAIL_THRESHOLD = 0.50
+ACCEPTED_TASK_STATUS_RECORD_STATUSES = {
+    "accepted",
+    "baseline_passed_current_gates",
+    "calibrated_passed_current_gates",
+    "manual_accepted",
+    "manual_resolved",
+    "manually_accepted",
+}
 
 
 def scene_status_candidates(out_root: Path) -> List[Path]:
@@ -40,6 +50,203 @@ def scene_status_candidates(out_root: Path) -> List[Path]:
         seen.add(key)
         unique.append(candidate)
     return unique
+
+
+def task_status_record_candidates(out_root: Path) -> List[Path]:
+    """Return candidate authoritative calibration task-status ledgers."""
+
+    root = Path(out_root)
+    candidates = [
+        root.parent / "calibration" / CURRENT_CALIBRATION_RUN_DIR.name / CURRENT_CALIBRATION_LEDGER_NAME,
+    ]
+    unique: List[Path] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        key = str(candidate.resolve()) if candidate.exists() else str(candidate)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(candidate)
+    return unique
+
+
+def _as_repo_path(path_text: str, *, repo_root: Path | None = None) -> Path:
+    path = Path(str(path_text))
+    if path.is_absolute():
+        return path
+    return Path(repo_root or Path.cwd()) / path
+
+
+def _minimal_stats_from_task_status_record(record: Mapping[str, Any], *, repo_root: Path | None = None) -> Dict[str, Any]:
+    stats_summary = record.get("stats", {})
+    if not isinstance(stats_summary, Mapping):
+        stats_summary = {}
+
+    stats_path_text = str(stats_summary.get("stats_path", "") or "")
+    if stats_path_text.endswith("calibration_stats.json"):
+        stats_path = _as_repo_path(stats_path_text, repo_root=repo_root)
+        if stats_path.exists():
+            try:
+                loaded = json.loads(stats_path.read_text(encoding="utf-8"))
+            except Exception:
+                loaded = None
+            if isinstance(loaded, Mapping):
+                return dict(loaded)
+
+    hard_frac = stats_summary.get("zero_solve_rate")
+    easy_frac = stats_summary.get("perfect_solve_rate")
+    mean_solve_rate = stats_summary.get("mean_solve_rate")
+    prompt_count = stats_summary.get("prompt_count")
+    rollout_count = stats_summary.get("rollout_count")
+    band_frac = None
+    if hard_frac is not None and easy_frac is not None:
+        band_frac = max(0.0, 1.0 - float(hard_frac) - float(easy_frac))
+
+    return {
+        "overall": {
+            "name": "overall",
+            "hard_frac": hard_frac,
+            "easy_frac": easy_frac,
+            "band_frac": band_frac,
+            "mean_solve_rate": mean_solve_rate,
+            "prompt_count": prompt_count,
+            "rollout_count": rollout_count,
+        },
+        "prompt_token_stats": {"over_limit_count": 0},
+        "response_token_stats": {"cap_rate": 0.0},
+        "artifacts": {
+            "calibration_stats": stats_path_text,
+        },
+        "config": {
+            "calibration_baseline": CURRENT_CALIBRATION_BASELINE,
+            "source": stats_summary.get("source", ""),
+        },
+    }
+
+
+def _accepted_status_from_task_status_record(record: Mapping[str, Any]) -> str:
+    if bool(record.get("in_current_failure_queue")):
+        return "needs_manual_tuning"
+    if bool(record.get("covered_by_calibration_record")) and (
+        bool(record.get("passes_current_gates"))
+        or bool(record.get("accepted_by_record"))
+        or str(record.get("status", "")) in ACCEPTED_TASK_STATUS_RECORD_STATUSES
+    ):
+        return "accepted"
+    status = str(record.get("status", "") or "")
+    if status in ACCEPTED_TASK_STATUS_RECORD_STATUSES:
+        return "accepted"
+    if "failed" in status:
+        return "needs_manual_tuning"
+    return status or "needs_manual_tuning"
+
+
+def _compat_record_from_task_status_record(record: Mapping[str, Any], *, repo_root: Path | None = None) -> Dict[str, Any]:
+    task_id = str(record.get("task_id", ""))
+    status = _accepted_status_from_task_status_record(record)
+    ledger_status = str(record.get("status", "") or status)
+    stats = _minimal_stats_from_task_status_record(record, repo_root=repo_root)
+    stats_summary = record.get("stats", {}) if isinstance(record.get("stats"), Mapping) else {}
+    stats_path = str(stats_summary.get("stats_path", "") or "")
+    output_dir = ""
+    if stats_path.endswith("calibration_stats.json"):
+        output_dir = str(Path(stats_path).parent)
+    reasons = [] if status == "accepted" else list(record.get("failure_reasons", []) or [])
+    model_record: Dict[str, Any] = {
+        "model_id": MODEL_IDS["qwen25vl7b"],
+        "status": status,
+        "ledger_status": ledger_status,
+        "reasons": reasons,
+        "stats": stats,
+        "calibration_stats": stats_path,
+        "output_dir": output_dir,
+        "reviewer_override": True,
+    }
+    artifacts = stats.get("artifacts", {}) if isinstance(stats.get("artifacts"), Mapping) else {}
+    if artifacts.get("solve_workbook"):
+        model_record["solve_workbook"] = str(artifacts["solve_workbook"])
+
+    return {
+        "task_id": task_id,
+        "domain": str(record.get("domain", "")),
+        "scene_id": str(record.get("scene_id", "")),
+        "calibration_baseline": CURRENT_CALIBRATION_BASELINE,
+        "status": status,
+        "ledger_status": ledger_status,
+        "status_source": str(record.get("status_source", "")),
+        "source_of_truth": CURRENT_CALIBRATION_LEDGER_NAME,
+        "reviewer_override": True,
+        "accepted_by_record": bool(record.get("accepted_by_record")),
+        "passes_current_gates": bool(record.get("passes_current_gates")),
+        "covered_by_calibration_record": bool(record.get("covered_by_calibration_record")),
+        "models": {"qwen25vl7b": model_record},
+    }
+
+
+def load_task_status_record_map(
+    *,
+    out_root: Path = Path("review/task-reviews"),
+    repo_root: Path | None = None,
+) -> Dict[str, Dict[str, Any]]:
+    """Load the authoritative current calibration ledger keyed by task id."""
+
+    for candidate in task_status_record_candidates(Path(out_root)):
+        if not candidate.exists():
+            continue
+        try:
+            payload = json.loads(candidate.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        records = payload.get("live_registry_records") if isinstance(payload, Mapping) else None
+        if not isinstance(records, Sequence):
+            continue
+        result: Dict[str, Dict[str, Any]] = {}
+        for record in records:
+            if not isinstance(record, Mapping):
+                continue
+            task_id = str(record.get("task_id", "") or "")
+            if task_id:
+                result[task_id] = _compat_record_from_task_status_record(record, repo_root=repo_root)
+        if result:
+            return result
+    return {}
+
+
+def load_calibration_status_records(
+    *,
+    out_root: Path = Path("review/task-reviews"),
+    repo_root: Path | None = None,
+    calibration_baseline: str = CURRENT_CALIBRATION_BASELINE,
+    include_legacy_fallback: bool = True,
+) -> Dict[str, Dict[str, Any]]:
+    """Load current calibration records, preferring the authoritative ledger.
+
+    ``review/calibration/.../task_status_records.json`` is the source of truth
+    for the current 50x8 pass.  The older top-level
+    ``review/calibration_sweep_status.json`` is a compatibility export and may
+    contain stale single-run rows, so it is only used as a fallback.
+    """
+
+    records = load_task_status_record_map(out_root=Path(out_root), repo_root=repo_root)
+    if records or not include_legacy_fallback:
+        return records
+
+    for candidate in scene_status_candidates(Path(out_root)):
+        if not candidate.exists():
+            continue
+        try:
+            loaded = json.loads(candidate.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if not isinstance(loaded, Mapping):
+            continue
+        status_config = loaded.get("config", {}) if isinstance(loaded.get("config"), Mapping) else {}
+        if str(status_config.get("calibration_baseline", "")).strip() != str(calibration_baseline):
+            continue
+        legacy_records = loaded.get("tasks", {})
+        if isinstance(legacy_records, Mapping):
+            return {str(task_id): dict(record) for task_id, record in legacy_records.items() if isinstance(record, Mapping)}
+    return {}
 
 
 def status_reasons_from_stats(
@@ -212,7 +419,7 @@ def latest_stats_files_by_task_model(
         return {}
     selected: Dict[tuple[str, str], Path] = {}
     priorities: Dict[tuple[str, str], tuple[bool, int, float]] = {}
-    pattern = f"*/{str(domain)}/{str(scene_id)}/task_*/100x*_seed*/calibration_stats.json"
+    pattern = f"*/{str(domain)}/{str(scene_id)}/task_*/*x*_seed*/calibration_stats.json"
     for stats_path in root.glob(pattern):
         try:
             rel = stats_path.relative_to(root)
@@ -224,13 +431,14 @@ def latest_stats_files_by_task_model(
         task_id = str(rel.parts[3])
         if task_id not in task_set:
             continue
-        rollout_match = re.match(r"100x(?P<rollouts>\d+)_seed", str(rel.parts[4]))
+        rollout_match = re.match(r"(?P<samples>\d+)x(?P<rollouts>\d+)_seed", str(rel.parts[4]))
         if rollout_match is None:
             continue
+        sample_count = int(rollout_match.group("samples"))
         rollout_count = int(rollout_match.group("rollouts"))
         key = (task_id, model_slug)
         mtime = float(stats_path.stat().st_mtime)
-        priority = (int(rollout_count) == 24, int(rollout_count), mtime)
+        priority = (sample_count == 50 and rollout_count == 8, sample_count, rollout_count, mtime)
         if key not in selected or priority >= priorities.get(key, (False, -1, 0.0)):
             selected[key] = stats_path
             priorities[key] = priority
@@ -254,23 +462,10 @@ def load_scene_model_stats_rows(
 
     allowed_model_slugs = set(current_model_slugs or CURRENT_CALIBRATION_MODEL_SLUGS)
     resolved_model_ids = model_ids or MODEL_IDS
-    status: Dict[str, Any] = {}
-    for candidate in scene_status_candidates(Path(out_root)):
-        if not candidate.exists():
-            continue
-        try:
-            loaded = json.loads(candidate.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-        if isinstance(loaded, Mapping):
-            status = dict(loaded)
-            break
-    status_config = status.get("config", {}) if isinstance(status.get("config"), Mapping) else {}
-    if str(status_config.get("calibration_baseline", "")).strip() != str(calibration_baseline):
-        status = {}
-    records = status.get("tasks", {})
-    if not isinstance(records, Mapping):
-        records = {}
+    records = load_calibration_status_records(
+        out_root=Path(out_root),
+        calibration_baseline=str(calibration_baseline),
+    )
 
     row_map: Dict[tuple[str, str], Dict[str, Any]] = {}
     combined_status_by_task: Dict[str, str] = {}
@@ -364,14 +559,19 @@ def load_scene_model_stats_rows(
 
 __all__ = [
     "CURRENT_CALIBRATION_BASELINE",
+    "CURRENT_CALIBRATION_LEDGER_NAME",
+    "CURRENT_CALIBRATION_RUN_DIR",
     "CURRENT_CALIBRATION_MODEL_SLUGS",
     "DIFFICULTY_TAIL_THRESHOLD",
     "MODEL_IDS",
     "MODEL_RESPONSE_CAP_THRESHOLDS",
     "latest_stats_files_by_task_model",
+    "load_calibration_status_records",
     "load_scene_model_stats_rows",
+    "load_task_status_record_map",
     "model_stats_row_from_record",
     "model_stats_row_from_stats_file",
     "scene_status_candidates",
     "status_reasons_from_stats",
+    "task_status_record_candidates",
 ]

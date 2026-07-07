@@ -46,6 +46,18 @@ def build_largest_component_case(
         max_key="target_largest_component_size_max",
     )
     rng = spawn_rng(int(instance_seed), "puzzles.cell_board.largest_component.case")
+    target_filler_min_color_distance = float(
+        params.get(
+            "target_filler_min_color_distance",
+            gen_defaults.get("target_filler_min_color_distance", 0.0),
+        )
+    )
+    color_distance_space = str(
+        params.get(
+            "target_filler_color_distance_space",
+            gen_defaults.get("target_filler_color_distance_space", "lab"),
+        )
+    )
     sample = sample_unique_largest_component_board(
         rng=rng,
         rows=int(rows),
@@ -59,6 +71,8 @@ def build_largest_component_case(
             fallback_max=3,
         ),
         largest_size=int(answer),
+        target_filler_min_color_distance=float(target_filler_min_color_distance),
+        color_distance_space=str(color_distance_space),
     )
     return CellBoardCase(
         rows=int(rows),
@@ -72,6 +86,10 @@ def build_largest_component_case(
         prompt_slots={"query_color": str(sample.target_color[0])},
         execution_trace={
             "query_color": str(sample.target_color[0]),
+            "target_filler_min_color_distance": float(
+                target_filler_min_color_distance
+            ),
+            "target_filler_color_distance_space": str(color_distance_space),
             "components": [
                 [[int(r), int(c)] for r, c in sort_coords(component)]
                 for component in sample.components

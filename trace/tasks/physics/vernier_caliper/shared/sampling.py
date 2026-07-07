@@ -7,9 +7,14 @@ from typing import Any, Dict, Mapping, Sequence, Tuple
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.deterministic_sampling import uniform_probability_map
+from trace.tasks.shared.variant_sampling import (
+    apply_balanced_variant_sampling,
+    resolve_variant,
+)
 
 from .state import (
     DEFAULTS,
+    OPTION_LETTERS,
     SCENE_NAMESPACE,
     VERNIER_DIVISIONS,
     CaliperScenario,
@@ -64,6 +69,113 @@ def aligned_tick_support(defaults: Mapping[str, Any]) -> Tuple[int, ...]:
     return support
 
 
+def _resolve_correct_option_letter(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    defaults: Mapping[str, Any],
+    namespace: str,
+) -> Tuple[str, Dict[str, float]]:
+    """Resolve the visual MCQ option letter while preserving balanced sampling."""
+
+    selected, probabilities = resolve_variant(
+        spawn_rng(int(instance_seed), f"{namespace}.correct_option_letter.raw"),
+        params=params,
+        gen_defaults=defaults,
+        supported_variants=OPTION_LETTERS,
+        explicit_key="correct_option_letter",
+        weights_key="correct_option_letter_weights",
+    )
+    selected = apply_balanced_variant_sampling(
+        instance_seed=int(instance_seed),
+        params=params,
+        gen_defaults=defaults,
+        selected_variant=str(selected),
+        variant_probabilities=probabilities,
+        supported_variants=OPTION_LETTERS,
+        balance_flag_key="balanced_correct_option_letter_sampling",
+        explicit_key="correct_option_letter",
+        weights_key="correct_option_letter_weights",
+        sampling_namespace=f"{namespace}.correct_option_letter",
+    )
+    return str(selected), {str(key): float(value) for key, value in probabilities.items()}
+
+
+def _option_values_mm(
+    *,
+    instance_seed: int,
+    namespace: str,
+    correct_tenths: int,
+    main_support: Sequence[int],
+    tick_support: Sequence[int],
+    correct_option_letter: str,
+) -> Dict[str, float]:
+    """Return one correct and five plausible nearby numeric options."""
+
+    support_tenths = sorted(
+        {
+            int(main_mm) * 10 + int(tick)
+            for main_mm in main_support
+            for tick in tick_support
+        }
+    )
+    support_set = set(support_tenths)
+    if int(correct_tenths) not in support_set:
+        raise ValueError(f"correct_tenths={correct_tenths} is outside caliper support")
+
+    rng = spawn_rng(int(instance_seed), f"{namespace}.option_values")
+    nearby_offsets = [
+        -1,
+        1,
+        -2,
+        2,
+        -3,
+        3,
+        -4,
+        4,
+        -5,
+        5,
+        -9,
+        9,
+        -10,
+        10,
+        -11,
+        11,
+        -19,
+        19,
+        -20,
+        20,
+    ]
+    rng.shuffle(nearby_offsets)
+    distractors: list[int] = []
+    for offset in nearby_offsets:
+        value = int(correct_tenths) + int(offset)
+        if value in support_set and value != int(correct_tenths) and value not in distractors:
+            distractors.append(int(value))
+        if len(distractors) >= len(OPTION_LETTERS) - 1:
+            break
+    if len(distractors) < len(OPTION_LETTERS) - 1:
+        fallback_pool = [
+            int(value)
+            for value in support_tenths
+            if int(value) != int(correct_tenths) and int(value) not in set(distractors)
+        ]
+        rng.shuffle(fallback_pool)
+        distractors.extend(fallback_pool[: len(OPTION_LETTERS) - 1 - len(distractors)])
+    if len(distractors) < len(OPTION_LETTERS) - 1:
+        raise ValueError("not enough Vernier option distractors for six-option MCQ")
+
+    option_values: Dict[str, float] = {}
+    distractor_iter = iter(distractors)
+    for letter in OPTION_LETTERS:
+        if str(letter) == str(correct_option_letter):
+            value_tenths = int(correct_tenths)
+        else:
+            value_tenths = int(next(distractor_iter))
+        option_values[str(letter)] = round(float(value_tenths) / 10.0, 1)
+    return dict(option_values)
+
+
 def resolve_caliper_scenario(
     *,
     instance_seed: int,
@@ -75,9 +187,24 @@ def resolve_caliper_scenario(
 
     main_support = main_mm_support(defaults)
     tick_support = aligned_tick_support(defaults)
+    effective_params = dict(params)
+    raw_target_answer = effective_params.get("target_answer")
+    target_answer_is_option_letter = (
+        isinstance(raw_target_answer, str)
+        and str(raw_target_answer).strip().upper() in set(OPTION_LETTERS)
+    )
+    if target_answer_is_option_letter:
+        effective_params.setdefault(
+            "correct_option_letter",
+            str(raw_target_answer).strip().upper(),
+        )
     explicit_main = params.get("main_mm")
     explicit_tick = params.get("aligned_vernier_tick", params.get("vernier_tick"))
-    explicit_answer = params.get("target_answer", params.get("answer_mm"))
+    explicit_answer = (
+        params.get("answer_mm")
+        if target_answer_is_option_letter
+        else params.get("target_answer", params.get("answer_mm"))
+    )
     if explicit_answer is not None:
         answer_tenths = int(round(float(explicit_answer) * 10.0))
         inferred_main_mm = int(answer_tenths // 10)
@@ -114,6 +241,20 @@ def resolve_caliper_scenario(
 
     answer_tenths = int(main_mm * 10 + aligned_tick)
     answer_mm = round(float(answer_tenths) / 10.0, 1)
+    correct_option_letter, correct_option_probs = _resolve_correct_option_letter(
+        instance_seed=int(instance_seed),
+        params=effective_params,
+        defaults=defaults,
+        namespace=str(namespace),
+    )
+    option_values = _option_values_mm(
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+        correct_tenths=int(answer_tenths),
+        main_support=main_support,
+        tick_support=tick_support,
+        correct_option_letter=str(correct_option_letter),
+    )
     answer_support = [
         int(main * 10 + tick)
         for main in main_support
@@ -124,6 +265,9 @@ def resolve_caliper_scenario(
         main_mm=int(main_mm),
         aligned_vernier_tick=int(aligned_tick),
         answer_mm=float(answer_mm),
+        option_values_mm=dict(option_values),
+        correct_option_letter=str(correct_option_letter),
+        correct_option_letter_probabilities=dict(correct_option_probs),
         target_answer_probabilities={
             f"{value / 10.0:.1f}": (1.0 if int(value) == selected else 0.0)
             for value in answer_support
@@ -140,6 +284,7 @@ __all__ = [
     "aligned_tick_support",
     "integer_support",
     "main_mm_support",
+    "OPTION_LETTERS",
     "probability_map",
     "resolve_caliper_scenario",
 ]

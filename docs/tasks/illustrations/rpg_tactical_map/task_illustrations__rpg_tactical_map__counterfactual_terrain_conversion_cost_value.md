@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `rpg_tactical_map`
-- Implementation scene package: `rpg_tactical_map`
+- Implementation source scene: `rpg_tactical_map`
 - Implementation source: `trace/tasks/illustrations/rpg_tactical_map/counterfactual_terrain_conversion_cost_value.py`
 
 ## Task Contract

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
@@ -125,6 +125,7 @@ def draw_clock_geometry(
     alarm_hour_12: int | None = None,
     alarm_hand_color_rgb: Tuple[int, int, int] = (210, 40, 40),
     alarm_hand_width_px: int | None = None,
+    force_show_minor_ticks: bool = False,
 ) -> RenderedClockGeometry:
     """Draw one analog clock into an existing image and return its geometry."""
 
@@ -138,6 +139,8 @@ def draw_clock_geometry(
         float(center[1] + face_radius),
     )
     style = _variant_style(str(scene_variant), render_params, visual_theme)
+    if bool(force_show_minor_ticks):
+        style["show_minor_ticks"] = True
 
     if style["face_fill_rgb"] is not None:
         draw.ellipse(
@@ -403,6 +406,8 @@ def render_clock_scene(
     alarm_hour_12: int | None = None,
     alarm_hand_color_rgb: Tuple[int, int, int] = (210, 40, 40),
     alarm_hand_width_px: int | None = None,
+    center_px: Tuple[float, float] | None = None,
+    force_show_minor_ticks: bool = False,
 ) -> RenderedClockScene:
     """Render one analog clock and return witness geometry."""
 
@@ -415,7 +420,14 @@ def render_clock_scene(
     )
     geometry = draw_clock_geometry(
         image,
-        center_px=(0.5 * float(render_params.canvas_width), 0.5 * float(render_params.canvas_height)),
+        center_px=(
+            tuple(float(value) for value in center_px)
+            if center_px is not None
+            else (
+                0.5 * float(render_params.canvas_width),
+                0.5 * float(render_params.canvas_height),
+            )
+        ),
         face_radius_px=float(render_params.face_radius_px),
         scene_variant=str(scene_variant),
         shown_total_minutes=int(shown_total_minutes),
@@ -431,6 +443,7 @@ def render_clock_scene(
         alarm_hour_12=(int(alarm_hour_12) if alarm_hour_12 is not None else None),
         alarm_hand_color_rgb=tuple(int(value) for value in alarm_hand_color_rgb),
         alarm_hand_width_px=(int(alarm_hand_width_px) if alarm_hand_width_px is not None else None),
+        force_show_minor_ticks=bool(force_show_minor_ticks),
     )
     return RenderedClockScene(
         image=image,
@@ -465,7 +478,153 @@ def render_clock_scene(
     )
 
 
+def text_option_card_bboxes(
+    *,
+    canvas_width: int,
+    canvas_height: int,
+    labels: Sequence[str],
+    outer_margin_px: int = 24,
+    gap_px: int = 8,
+    card_height_px: int = 66,
+    y0_px: int | None = None,
+) -> Dict[str, Tuple[float, float, float, float]]:
+    """Return one row of fixed-width text option card boxes."""
+
+    option_labels = tuple(str(label) for label in labels)
+    if not option_labels:
+        raise ValueError("at least one option label is required")
+    card_count = len(option_labels)
+    total_gap = float(max(0, card_count - 1) * int(gap_px))
+    available_width = float(canvas_width) - (2.0 * float(outer_margin_px)) - total_gap
+    if available_width <= 0:
+        raise ValueError("canvas is too narrow for option cards")
+    card_width = available_width / float(card_count)
+    y0 = (
+        float(y0_px)
+        if y0_px is not None
+        else float(canvas_height) - float(outer_margin_px) - float(card_height_px)
+    )
+    return {
+        str(label): (
+            float(outer_margin_px) + float(index) * (card_width + float(gap_px)),
+            float(y0),
+            float(outer_margin_px) + float(index) * (card_width + float(gap_px)) + card_width,
+            float(y0) + float(card_height_px),
+        )
+        for index, label in enumerate(option_labels)
+    }
+
+
+def option_cards_y_below_bbox(
+    content_bbox_px: Sequence[float],
+    *,
+    canvas_height: int,
+    gap_px: int = 24,
+    card_height_px: int = 66,
+    bottom_margin_px: int = 24,
+) -> int:
+    """Place text option cards under the clock content instead of page-bottom pinning."""
+
+    proposed = int(round(float(content_bbox_px[3]) + float(gap_px)))
+    max_y = int(canvas_height) - int(bottom_margin_px) - int(card_height_px)
+    return max(0, min(int(proposed), int(max_y)))
+
+
+def _text_width(draw: ImageDraw.ImageDraw, text: str, font) -> float:
+    bbox = draw.textbbox((0, 0), str(text), font=font)
+    return float(bbox[2] - bbox[0])
+
+
+def _fit_option_font(draw: ImageDraw.ImageDraw, texts: Sequence[str], *, max_width: float, start_size: int) -> Any:
+    """Load the largest option font that fits all option values."""
+
+    size = int(start_size)
+    while size > 10:
+        font = load_font(int(size), bold=False)
+        if all(_text_width(draw, str(text), font) <= float(max_width) for text in texts):
+            return font
+        size -= 1
+    return load_font(10, bold=False)
+
+
+def draw_text_option_cards(
+    image: Image.Image,
+    *,
+    text_by_label: Mapping[str, str],
+    correct_label: str,
+    y0_px: int | None = None,
+    outer_margin_px: int = 24,
+    gap_px: int = 8,
+    card_height_px: int = 66,
+    option_font_size_px: int = 18,
+    label_font_size_px: int = 16,
+) -> tuple[Dict[str, Tuple[float, float, float, float]], List[Dict[str, Any]]]:
+    """Draw labeled text option cards and return their boxes/entities."""
+
+    labels = tuple(str(label) for label in text_by_label)
+    bboxes = text_option_card_bboxes(
+        canvas_width=int(image.width),
+        canvas_height=int(image.height),
+        labels=labels,
+        outer_margin_px=int(outer_margin_px),
+        gap_px=int(gap_px),
+        card_height_px=int(card_height_px),
+        y0_px=y0_px,
+    )
+    draw = ImageDraw.Draw(image)
+    max_text_width = min(float(box[2] - box[0]) - 12.0 for box in bboxes.values())
+    option_font = _fit_option_font(
+        draw,
+        [str(text_by_label[str(label)]) for label in labels],
+        max_width=float(max_text_width),
+        start_size=int(option_font_size_px),
+    )
+    label_font = load_font(int(label_font_size_px), bold=True)
+    entities: List[Dict[str, Any]] = []
+    for label in labels:
+        bbox = tuple(float(value) for value in bboxes[str(label)])
+        draw.rounded_rectangle(
+            bbox,
+            radius=12,
+            fill=(252, 252, 249),
+            outline=(124, 132, 144),
+            width=2,
+        )
+        label_box = (bbox[0] + 7.0, bbox[1] + 7.0, bbox[0] + 29.0, bbox[1] + 29.0)
+        draw.rounded_rectangle(label_box, radius=6, fill=(46, 54, 66))
+        draw_text_centered(
+            draw,
+            text=str(label),
+            center=((label_box[0] + label_box[2]) / 2.0, (label_box[1] + label_box[3]) / 2.0),
+            font=label_font,
+            fill=(255, 255, 255),
+        )
+        draw_text_centered(
+            draw,
+            text=str(text_by_label[str(label)]),
+            center=((bbox[0] + bbox[2]) / 2.0, bbox[1] + 43.0),
+            font=option_font,
+            fill=(30, 36, 44),
+        )
+        entities.append(
+            {
+                "entity_id": f"option_{str(label).lower()}",
+                "entity_kind": "answer_option",
+                "bbox_px": [float(value) for value in bbox],
+                "attrs": {
+                    "option_label": str(label),
+                    "option_text": str(text_by_label[str(label)]),
+                    "is_correct": bool(str(label) == str(correct_label)),
+                },
+            }
+        )
+    return bboxes, entities
+
+
 __all__ = [
     "draw_clock_geometry",
+    "draw_text_option_cards",
+    "option_cards_y_below_bbox",
     "render_clock_scene",
+    "text_option_card_bboxes",
 ]

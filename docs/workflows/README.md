@@ -24,11 +24,8 @@ RLVR training/export/validation docs live under:
 - `BUILD_VALIDATION.md` — build/test/review workflow.
 - `../review/README.md` — human/agent review procedures for task, scene, and
   domain audits, including annotation review.
-- `../SCENE_PACKAGE_MIGRATION/README.md` — tracked scene-package migration
-  workflow for retiring legacy scene packages, enforcing objective
-  ownership, and validating domain/scene/task packages.
-- `../domain-finalization-review/DOMAIN_FINALIZATION_CHECKLIST.md` —
-  post-migration release-readiness review for final domain task surfaces.
+- `../review/DOMAIN_RELEASE_READINESS.md` — release-readiness review for
+  complete domain task surfaces.
 - `TASK_REVIEW_WEB_APP.md` — browser app workflow for inspecting active
   task-review sidecars and collecting sample-level reviewer issues.
 - `BENCHMARK_REVIEW_WEB_APP.md` — separate browser app workflow for inspecting

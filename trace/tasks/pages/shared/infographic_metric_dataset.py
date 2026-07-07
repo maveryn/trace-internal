@@ -10,7 +10,6 @@ from trace.tasks.shared.deterministic_sampling import resolve_selection_index
 from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from trace.tasks.pages.shared.page_text_resources import page_text_resource_metadata, sample_page_label_batch
 from trace.tasks.pages.shared.infographic_metric_common import (
-    FACT_LOOKUP_VARIANTS,
     METRIC_RANKED_ITEM_VARIANTS,
     SUPPORTED_QUERY_IDS,
     TASK_ID,
@@ -25,7 +24,6 @@ from trace.tasks.pages.shared.infographic_metric_common import (
     _MetricCard,
     _adjust_section_total,
     _adjust_value_to_break_tie,
-    _caption_text,
     _labels_by_section,
     _partition_cards,
     _section_totals,
@@ -208,11 +206,7 @@ def _build_cards(
             else:
                 icon_kind = _ICON_KINDS[(label_index + int(rng.randrange(len(_ICON_KINDS)))) % len(_ICON_KINDS)]
             caption_number = 10 + int(rng.randrange(80))
-            caption_text = (
-                f"Ref {int(caption_number)}"
-                if str(query_id) == "detail_for_named_item"
-                else _caption_tag_for_index(int(label_index))
-            )
+            caption_text = _caption_tag_for_index(int(label_index))
             cards.append(
                 _MetricCard(
                     card_id=f"metric_{label_index}",
@@ -696,76 +690,6 @@ def _sample_section_icon_extremum_query(
     return dict(candidates[int(rng.randrange(len(candidates)))])
 
 
-def _sample_fact_lookup_query(
-    *,
-    query_id: str,
-    cards: Sequence[_MetricCard],
-    instance_seed: int,
-) -> Dict[str, Any]:
-    """Select one direct lookup target from a dense infographic."""
-
-    rng = spawn_rng(int(instance_seed), f"{TASK_ID}.fact_lookup.{query_id}")
-    ordered_cards = list(cards)
-    if not ordered_cards:
-        raise ValueError("cannot build infographic fact lookup without cards")
-
-    if str(query_id) == "value_for_named_item":
-        card = ordered_cards[int(rng.randrange(len(ordered_cards)))]
-        return {
-            "target_label": str(card.label),
-            "target_section": str(card.section),
-            "target_value_text": str(card.display_text),
-            "answer_value": str(card.display_text),
-            "annotation_targets": [{"label": str(card.label), "bbox_kind": "card"}],
-        }
-
-    if str(query_id) == "item_for_named_value":
-        counts_by_section_value: Dict[Tuple[str, str], int] = {}
-        for card in ordered_cards:
-            key = (str(card.section), str(card.display_text))
-            counts_by_section_value[key] = int(counts_by_section_value.get(key, 0)) + 1
-        candidates = [
-            card
-            for card in ordered_cards
-            if counts_by_section_value[(str(card.section), str(card.display_text))] == 1
-        ]
-        if not candidates:
-            raise ValueError("could not build item lookup with a unique value within its section")
-        card = candidates[int(rng.randrange(len(candidates)))]
-        return {
-            "target_label": str(card.label),
-            "target_section": str(card.section),
-            "target_value_text": str(card.display_text),
-            "answer_value": str(card.label),
-            "annotation_targets": [{"label": str(card.label), "bbox_kind": "card"}],
-        }
-
-    if str(query_id) == "detail_for_named_item":
-        caption_counts: Dict[str, int] = {}
-        for card in ordered_cards:
-            caption = _caption_text(card)
-            caption_counts[caption] = int(caption_counts.get(caption, 0)) + 1
-        candidates = [
-            card
-            for card in ordered_cards
-            if caption_counts[_caption_text(card)] == 1
-        ]
-        if not candidates:
-            raise ValueError("could not build reference-code lookup with a unique visible code")
-        card = candidates[int(rng.randrange(len(candidates)))]
-        answer = _caption_text(card)
-        return {
-            "target_label": str(card.label),
-            "target_section": str(card.section),
-            "target_value_text": str(card.display_text),
-            "target_detail_text": str(answer),
-            "answer_value": str(answer),
-            "annotation_targets": [{"label": str(card.label), "bbox_kind": "card"}],
-        }
-
-    raise ValueError(f"unsupported fact lookup query_id: {query_id}")
-
-
 def _build_dataset(
     *,
     query_id: str,
@@ -1193,38 +1117,6 @@ def _build_dataset(
             )
         annotation_targets.append({"key": "target_card", "label": str(target_label), "bbox_kind": "card"})
         arithmetic_expression = f"rank_{rank_position}_{rank_direction}_metric(scope={rank_scope})"
-    elif str(query_id) in FACT_LOOKUP_VARIANTS:
-        prebuilt_cards = _build_cards(
-            query_id=str(query_id),
-            card_count=int(card_count),
-            section_titles=section_titles,
-            section_card_counts=section_card_counts,
-            values_by_label=values_by_label,
-            percent_mode=bool(percent_mode),
-            instance_seed=int(instance_seed),
-        )
-        lookup_query = _sample_fact_lookup_query(
-            query_id=str(query_id),
-            cards=prebuilt_cards,
-            instance_seed=int(instance_seed),
-        )
-        target_label = str(lookup_query["target_label"])
-        target_sections = [str(lookup_query["target_section"])]
-        target_groups = {"lookup_card": [str(target_label)]}
-        target_labels = [str(target_label)]
-        target_values = [int(values_by_label[str(target_label)])]
-        target_operand_count = 1
-        operand_count_range = (1, 1)
-        operand_count_probabilities = {"1": 1.0}
-        answer_value = str(lookup_query["answer_value"])
-        answer_type = "string"
-        lookup_target_value = str(lookup_query.get("target_value_text", ""))
-        lookup_target_detail = str(lookup_query.get("target_detail_text", ""))
-        annotation_targets = [
-            {"label": str(item["label"]), "bbox_kind": str(item["bbox_kind"])}
-            for item in list(lookup_query["annotation_targets"])
-        ]
-        arithmetic_expression = f"lookup({query_id}, {target_label})"
     else:
         raise ValueError(f"unsupported query_id: {query_id}")
 

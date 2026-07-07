@@ -18,12 +18,6 @@ _REQUIRED_PROMPT_DEFAULT_KEYS = (
     "task_key",
     "json_output_contract",
     "json_output_contract_answer_only",
-    "object_description",
-    "question_text",
-    "annotation_hint",
-    "answer_hint",
-    "json_example",
-    "json_example_answer_only",
 )
 
 
@@ -58,14 +52,8 @@ def render_mirror_grid_prompt_artifacts(
         task_key=str(prompt_defaults["task_key"]),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         dynamic_slots={
-            "object_description": str(prompt_defaults["object_description"]),
-            "question_text": str(prompt_defaults["question_text"]),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(prompt_defaults["annotation_hint"]),
-            "answer_hint": str(prompt_defaults["answer_hint"]),
-            "json_example": str(prompt_defaults["json_example"]),
-            "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
         },
         instance_seed=int(instance_seed),
     )

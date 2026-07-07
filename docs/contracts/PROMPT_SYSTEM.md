@@ -4,25 +4,24 @@ Prompt text is externalized, deterministic, and traceable.
 
 ## 1) Core Contract
 1. Task modules must not hardcode user-facing prompt text.
-2. Migrated and review-candidate scene packages use prompt bundles under
+2. Active source-layout scenes use prompt bundles under
    `prompts/<domain>/<scene_id>/<bundle_id>.json`.
-3. Transitional prompt bundle locations may remain only for unmigrated scenes.
-4. Composition layers are:
+3. Composition layers are:
    - scene,
    - task,
    - optional query,
    - output mode (`answer_only`, `answer_and_annotation`).
-5. Selection is deterministic from seed namespaces.
-6. Required template lists contain exactly 5 high-quality variants unless the
+4. Selection is deterministic from seed namespaces.
+5. Required template lists contain exactly 5 high-quality variants unless the
    schema declares an approved exception.
-7. All active tasks must provide task-specific JSON-format guidance in both
+6. All active tasks must provide task-specific JSON-format guidance in both
    output modes:
    - `answer_only` uses `{"answer": ...}`
    - `answer_and_annotation` uses `{"annotation": ..., "answer": ...}`
-8. Output-mode instructions should keep task-specific `answer_hint`,
+7. Output-mode instructions should keep task-specific `answer_hint`,
    `annotation_hint`, and JSON examples. The generic final JSON-object
    instruction belongs in the RLVR system prompt layer.
-9. For named colors, include the canonical hex code in the prompt-facing color
+8. For named colors, include the canonical hex code in the prompt-facing color
    label using `<color_name> [#RRGGBB]`.
 10. If the query layer already contains the full question, the task layer may be
     empty only when the bundle declares `allow_empty_task_templates: true`.

@@ -300,12 +300,12 @@ def _prompt_artifacts(*, sample: _SampleSpec, prompt_defaults: Mapping[str, Any]
             ),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(prompt_defaults["annotation_hint"]).format(
+            "annotation_hint": str(prompt_defaults["nearest_marker_annotation_hint"]).format(
                 target_shape_name=str(sample.plan.target_shape_name)
             ),
-            "answer_hint": str(prompt_defaults["answer_hint"]),
-            "json_example": str(prompt_defaults["json_example"]),
-            "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
+            "answer_hint": str(prompt_defaults["nearest_marker_answer_hint"]),
+            "json_example": str(prompt_defaults["nearest_marker_json_example"]),
+            "json_example_answer_only": str(prompt_defaults["nearest_marker_json_example_answer_only"]),
         },
         instance_seed=int(instance_seed),
     )
@@ -367,10 +367,10 @@ class IconsNamedRingNearestMarkerTargetCountTask:
                 "json_output_contract_answer_only",
                 "object_description",
                 "question_text",
-                "annotation_hint",
-                "answer_hint",
-                "json_example",
-                "json_example_answer_only",
+                "nearest_marker_annotation_hint",
+                "nearest_marker_answer_hint",
+                "nearest_marker_json_example",
+                "nearest_marker_json_example_answer_only",
             ),
             context=f"prompt defaults for {self.task_id}",
         )

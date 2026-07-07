@@ -92,6 +92,7 @@ def filter_label_values(
     return tuple(filtered)
 
 
+@lru_cache(maxsize=128)
 def load_label_manifest(
     manifest_name: str = _DEFAULT_LABEL_MANIFEST,
     *,

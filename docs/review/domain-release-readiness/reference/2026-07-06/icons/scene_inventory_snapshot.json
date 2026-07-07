@@ -1,0 +1,256 @@
+{
+  "icon_cutout": {
+    "config_path": "configs/domains/icons/icon_cutout.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/icon_cutout",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/icon_cutout",
+    "task_count": 1,
+    "task_ids": [
+      "task_icons__icon_cutout__partial_match_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "icon_field": {
+    "config_path": "configs/domains/icons/icon_field.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/icon_field",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/icon_field",
+    "task_count": 3,
+    "task_ids": [
+      "task_icons__icon_field__frequency_extreme_type_label",
+      "task_icons__icon_field__most_frequent_type_count",
+      "task_icons__icon_field__singleton_type_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "icon_grid": {
+    "config_path": "configs/domains/icons/icon_grid.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/icon_grid",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/icon_grid",
+    "task_count": 2,
+    "task_ids": [
+      "task_icons__icon_grid__distinct_color_count",
+      "task_icons__icon_grid__distinct_type_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "mirror_grid": {
+    "config_path": "configs/domains/icons/mirror_grid.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/mirror_grid",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/mirror_grid",
+    "task_count": 2,
+    "task_ids": [
+      "task_icons__mirror_grid__mirror_symmetry_match_label",
+      "task_icons__mirror_grid__missing_mirror_cell_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "named_field": {
+    "config_path": "configs/domains/icons/named_field.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/named_field",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/named_field",
+    "task_count": 11,
+    "task_ids": [
+      "task_icons__named_field__closer_to_reference_count",
+      "task_icons__named_field__counterfactual_attribute_count",
+      "task_icons__named_field__counterfactual_total_count",
+      "task_icons__named_field__multi_attribute_and_count",
+      "task_icons__named_field__multi_attribute_complement_count",
+      "task_icons__named_field__multi_attribute_exclusion_count",
+      "task_icons__named_field__multi_attribute_or_count",
+      "task_icons__named_field__multi_attribute_xor_count",
+      "task_icons__named_field__reference_distance_rank_label",
+      "task_icons__named_field__scoped_attribute_count",
+      "task_icons__named_field__single_attribute_membership_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "named_grid": {
+    "config_path": "configs/domains/icons/named_grid.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/named_grid",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/named_grid",
+    "task_count": 4,
+    "task_ids": [
+      "task_icons__named_grid__group_predicate_count",
+      "task_icons__named_grid__line_adjacency_pair_count",
+      "task_icons__named_grid__row_column_shape_extreme_number",
+      "task_icons__named_grid__scoped_attribute_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "named_path": {
+    "config_path": "configs/domains/icons/named_path.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/named_path",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/named_path",
+    "task_count": 2,
+    "task_ids": [
+      "task_icons__named_path__path_distance_value",
+      "task_icons__named_path__path_neighbor_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "named_ring": {
+    "config_path": "configs/domains/icons/named_ring.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/named_ring",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/named_ring",
+    "task_count": 2,
+    "task_ids": [
+      "task_icons__named_ring__nearest_marker_target_count",
+      "task_icons__named_ring__scoped_attribute_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "named_strip": {
+    "config_path": "configs/domains/icons/named_strip.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/named_strip",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/named_strip",
+    "task_count": 2,
+    "task_ids": [
+      "task_icons__named_strip__shape_run_count",
+      "task_icons__named_strip__shape_run_length"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "overlap_grid": {
+    "config_path": "configs/domains/icons/overlap_grid.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/overlap_grid",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/overlap_grid",
+    "task_count": 1,
+    "task_ids": [
+      "task_icons__overlap_grid__occlusion_order_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "pair_grid": {
+    "config_path": "configs/domains/icons/pair_grid.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/pair_grid",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/pair_grid",
+    "task_count": 2,
+    "task_ids": [
+      "task_icons__pair_grid__reference_color_pair_match_label",
+      "task_icons__pair_grid__reference_transform_match_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "paired_canvas": {
+    "config_path": "configs/domains/icons/paired_canvas.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/paired_canvas",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/paired_canvas",
+    "task_count": 3,
+    "task_ids": [
+      "task_icons__paired_canvas__color_change_count",
+      "task_icons__paired_canvas__panel_set_relation_count",
+      "task_icons__paired_canvas__rotation_change_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "reference_canvas": {
+    "config_path": "configs/domains/icons/reference_canvas.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/reference_canvas",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/reference_canvas",
+    "task_count": 6,
+    "task_ids": [
+      "task_icons__reference_canvas__anchor_position_count",
+      "task_icons__reference_canvas__reference_color_match_count",
+      "task_icons__reference_canvas__reference_metric_relation_count",
+      "task_icons__reference_canvas__reference_rotation_match_count",
+      "task_icons__reference_canvas__reference_type_color_rotation_match_count",
+      "task_icons__reference_canvas__reference_type_match_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "sequence_strip": {
+    "config_path": "configs/domains/icons/sequence_strip.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/sequence_strip",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/sequence_strip",
+    "task_count": 3,
+    "task_ids": [
+      "task_icons__sequence_strip__count_progression_completion_label",
+      "task_icons__sequence_strip__rotation_progression_completion_label",
+      "task_icons__sequence_strip__size_progression_completion_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "single_transform_options": {
+    "config_path": "configs/domains/icons/single_transform_options.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/single_transform_options",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/single_transform_options",
+    "task_count": 2,
+    "task_ids": [
+      "task_icons__single_transform_options__geometric_transform_result_label",
+      "task_icons__single_transform_options__inverse_geometric_transform_source_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "venn_field": {
+    "config_path": "configs/domains/icons/venn_field.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/venn_field",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/venn_field",
+    "task_count": 2,
+    "task_ids": [
+      "task_icons__venn_field__same_region_as_reference_count",
+      "task_icons__venn_field__scoped_attribute_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "wallpaper_panels": {
+    "config_path": "configs/domains/icons/wallpaper_panels.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/icons/wallpaper_panels",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/icons/wallpaper_panels",
+    "task_count": 2,
+    "task_ids": [
+      "task_icons__wallpaper_panels__motif_violation_label",
+      "task_icons__wallpaper_panels__same_pattern_as_reference_label"
+    ],
+    "taxonomy_review_pass": true
+  }
+}

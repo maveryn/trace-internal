@@ -26,7 +26,7 @@ from .identity import compute_instance_id
 from .json_io import write_json_file
 from .reward_contracts import resolve_reward_contract
 from .sampling import normalize_positive_weights, weighted_choice
-from .scene_package_migration import is_scene_package_task
+from .source_layout_policy import is_scene_package_task
 from .seed import SEED_DERIVATION_VERSION, hash64
 from .strict_repro import compare_staging_dirs
 from .taxonomy import (
@@ -112,7 +112,7 @@ _BUILD_PROGRESS_ENABLED = (
 
 
 def _registered_scene_id(task_id: str, task: Any) -> str | None:
-    """Return the legacy scene for unmigrated tasks, otherwise None."""
+    """Return the legacy scene for unsource-layout tasks, otherwise None."""
 
     if is_scene_package_task(str(task_id), domain=str(getattr(task, "domain", ""))):
         return None
@@ -405,7 +405,7 @@ def _finalize_generated_output(
             source_scene_id=str(scene_id or ""),
         )
         taxonomy = replace(taxonomy, scene_id=scene_id)
-    migrated_task = is_scene_package_task(str(task.task_id), domain=canonical_domain)
+    source_layout_task = is_scene_package_task(str(task.task_id), domain=canonical_domain)
     query_id = str(
         getattr(generated, "query_id", "")
         or resolve_task_query_id(
@@ -461,7 +461,7 @@ def _finalize_generated_output(
             "code_hash": code_hash,
         },
     }
-    if not migrated_task:
+    if not source_layout_task:
         partial_record["scene_id"] = scene_id
     instance_id = compute_instance_id(partial_record)
 

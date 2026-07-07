@@ -8,7 +8,14 @@ from trace.tasks.base import TaskOutput
 from trace.tasks.charts.contour_density._lifecycle import ContourTaskPlan, contour_task_output_fields, run_contour_public_task
 from trace.tasks.charts.contour_density.shared.defaults import DOMAIN, SCENE_NAMESPACE
 from trace.tasks.charts.contour_density.shared.prompts import build_prompt_artifacts
-from trace.tasks.charts.contour_density.shared.sampling import balanced_choice, build_regions, region_count, region_labels, scene_variant
+from trace.tasks.charts.contour_density.shared.sampling import (
+    balanced_choice,
+    build_regions,
+    density_from_level,
+    region_count,
+    region_labels,
+    scene_variant,
+)
 from trace.tasks.charts.contour_density.shared.state import ContourDataset, QuerySelection
 from trace.tasks.registry import register_task
 from trace.tasks.shared.fixed_query import select_task_query_id
@@ -54,22 +61,24 @@ class ChartsContourDensityDensityExtremumRegionLabelTask:
                 namespace=f"{SCENE_NAMESPACE}.density_extremum.answer",
             )
         )
-        densities = [0.42 + (0.05 * index) for index in range(int(count))]
+        density_levels = [2 + (index % 2) for index in range(int(count))]
         if str(extremum) == "highest":
-            densities[int(answer_index)] = 0.98
+            density_levels[int(answer_index)] = 5
             for index in range(int(count)):
                 if int(index) != int(answer_index):
-                    densities[int(index)] = min(0.78, densities[int(index)])
+                    density_levels[int(index)] = 2 + (int(index) % 2)
         else:
-            densities[int(answer_index)] = 0.28
+            density_levels[int(answer_index)] = 1
             for index in range(int(count)):
                 if int(index) != int(answer_index):
-                    densities[int(index)] = max(0.48, densities[int(index)])
+                    density_levels[int(index)] = 3 + (int(index) % 2)
+        densities = [density_from_level(int(level)) for level in density_levels]
         regions = build_regions(
             count=int(count),
             labels=labels,
             option_labels=(),
             densities=densities,
+            density_levels=density_levels,
             params=params,
             instance_seed=int(instance_seed),
             namespace=f"{SCENE_NAMESPACE}.density_extremum.regions",

@@ -3,7 +3,7 @@
 Repo-local skills are workflow overlays for Codex agents. They route the agent
 to the right source-of-truth docs, enforce a short execution sequence, and
 define handoff expectations. They are not a second copy of domain policy,
-taxonomy rules, task inventories, or migration docs.
+taxonomy rules, task inventories, or historical workflow docs.
 
 Use `docs/README.md` as the canonical documentation navigation entry point.
 Documentation placement rules live in `docs/workflows/DOC_STRUCTURE.md`.
@@ -23,7 +23,7 @@ Documentation placement rules live in `docs/workflows/DOC_STRUCTURE.md`.
 2. A skill may route to docs, list ordered actions, define stop conditions, and
    define handoff fields.
 3. A skill must not duplicate domain policy, enumerate active tasks, or restate
-   detailed taxonomy/migration rules.
+   detailed taxonomy/source-layout rules.
 4. Domain-specific policy belongs in `docs/domains/<domain>.md`; workflow
    skills should tell the agent to read that file when domain behavior matters.
 5. Do not add domain-specific skill mirrors. If a domain needs new policy,

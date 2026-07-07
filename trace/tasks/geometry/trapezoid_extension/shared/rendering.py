@@ -277,6 +277,7 @@ def create_render_context(
     font_size = int(params.get("label_font_size", group_default(render_defaults, "label_font_size", 22)))
     small_font_size = int(params.get("small_label_font_size", group_default(render_defaults, "small_label_font_size", 18)))
     line_width = int(params.get("line_width", group_default(render_defaults, "line_width", 4)))
+    label_stroke_width = int(params.get("label_stroke_width", group_default(render_defaults, "label_stroke_width", 0)))
     ctx = RenderContext(
         rng=rng,
         image=image,
@@ -291,8 +292,9 @@ def create_render_context(
         accent_color=accent_color,
         muted_color=muted_color,
         line_width=max(2, int(line_width)),
-        font=load_font(max(12, int(font_size)), bold=True),
-        small_font=load_font(max(10, int(small_font_size)), bold=True),
+        label_stroke_width=max(0, int(label_stroke_width)),
+        font=load_font(max(12, int(font_size)), bold=False),
+        small_font=load_font(max(10, int(small_font_size)), bold=False),
         scene_transform=LazySceneTransform(
             rng,
             params=params,

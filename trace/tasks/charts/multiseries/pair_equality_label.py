@@ -15,9 +15,9 @@ from ...registry import register_task
 
 TASK_PARAM_DEFAULTS: dict[str, Any] = {
     "equality_category_count_min": 6,
-    "equality_category_count_max": 12,
+    "equality_category_count_max": 9,
     "equality_series_count_min": 3,
-    "equality_series_count_max": 5,
+    "equality_series_count_max": 4,
     "equality_value_min": 1,
     "equality_value_max": 99,
 }

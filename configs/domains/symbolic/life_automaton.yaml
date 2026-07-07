@@ -37,12 +37,12 @@ generation:
       balanced_life_board_style_sampling: true
       balanced_life_cell_palette_sampling: true
       life_grid_size_min: 3
-      life_grid_size_max: 5
+      life_grid_size_max: 3
       life_rows_min: 3
-      life_rows_max: 5
+      life_rows_max: 3
       life_cols_min: 3
-      life_cols_max: 5
-      live_density: 0.36
+      life_cols_max: 3
+      live_density: 0.45
       scene_variant_weights:
         clean_grid: 1.0
         lab_panel: 1.0

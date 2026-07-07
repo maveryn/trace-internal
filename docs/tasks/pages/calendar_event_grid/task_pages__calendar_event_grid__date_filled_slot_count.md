@@ -16,7 +16,7 @@
 7. Query argument axes: sampled date number.
 
 ## Program Contract
-- `calendar_event_grid_date_filled_slot_count(date_number); output=integer_value; annotation=bbox_set(date_event_chips); scene=calendar_event_grid; scope=one month calendar with Top/Mid/End event slots`
+- `calendar_event_grid_date_filled_slot_count(date_number); output=integer_value; annotation=bbox_set(date_event_chips); scene=calendar_event_grid; scope=one month calendar with Top/Mid/Bottom event slots`
 
 ## Prompt + Trace
 1. Prompt bundle: `pages_calendar_event_grid_v1`

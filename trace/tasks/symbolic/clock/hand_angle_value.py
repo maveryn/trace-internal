@@ -25,7 +25,15 @@ from ._lifecycle import (
 )
 from .shared.annotations import clock_hand_segment_annotations
 from .shared.defaults import DEFAULTS
-from .shared.sampling import feasible_clock_times, resolve_clock_time_support
+from .shared.sampling import (
+    feasible_clock_times,
+    nearby_integer_distractors,
+    option_value_map,
+    resolve_clock_time_support,
+    resolve_text_option_labels,
+    sample_correct_option_label,
+)
+from .shared.state import ClockTextOptionSpec
 
 
 TASK_ID = "task_symbolic__clock__hand_angle_value"
@@ -116,20 +124,42 @@ def _build_hand_angle_plan(*, params, gen_defaults, instance_seed):
 
     answer_angle = _integer_angle(int(shown_total))
     shown_hour, shown_minute = split_clock_total_minutes(int(shown_total))
+    option_labels = resolve_text_option_labels(params, gen_defaults=gen_defaults)
+    correct_label, label_probs = sample_correct_option_label(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        seed_namespace=TASK_ID,
+        labels=option_labels,
+    )
+    answer_min = _get_int(params, gen_defaults, "hand_angle_answer_min", 15)
+    answer_max = _get_int(params, gen_defaults, "hand_angle_answer_max", 180)
+    answer_step = _get_int(params, gen_defaults, "hand_angle_answer_step", 5)
+    angle_support = tuple(range(int(answer_min), int(answer_max) + 1, int(answer_step)))
+    distractors = nearby_integer_distractors(
+        correct_value=int(answer_angle),
+        support_values=angle_support,
+        preferred_offsets=(5, 10, 15, 20, 30, 45, 60, 90),
+        min_value=int(answer_min),
+        max_value=int(answer_max),
+    )
+    option_values = option_value_map(
+        labels=option_labels,
+        correct_label=str(correct_label),
+        correct_value=int(answer_angle),
+        distractors=distractors,
+    )
     json_example = json.dumps(
         {
-            "annotation": [
-                [[320, 320], [430, 350]],
-                [[320, 320], [484, 461]],
-            ],
-            "answer": 45,
+            "annotation": [224, 770, 316, 836],
+            "answer": "C",
         },
         separators=(",", ":"),
     )
-    json_example_answer_only = json.dumps({"answer": 45}, separators=(",", ":"))
+    json_example_answer_only = json.dumps({"answer": "C"}, separators=(",", ":"))
     return SingleClockPlan(
         shown_total_minutes=int(shown_total),
-        answer_gt=TypedValue(type="integer", value=int(answer_angle)),
+        answer_gt=TypedValue(type="option_letter", value=str(correct_label)),
         query_id="single",
         question_format="hand_angle_value",
         query_params={
@@ -137,6 +167,8 @@ def _build_hand_angle_plan(*, params, gen_defaults, instance_seed):
             "hour_support": [int(hour_support[0]), int(hour_support[1])],
             "minute_support": [int(value) for value in minute_support],
             "min_hand_angle_gap_deg": float(min_gap),
+            "option_labels": [str(label) for label in option_labels],
+            "correct_label_probabilities": {str(key): float(value) for key, value in label_probs.items()},
         },
         execution_fields={
             "shown_total_minutes": int(shown_total),
@@ -144,10 +176,19 @@ def _build_hand_angle_plan(*, params, gen_defaults, instance_seed):
             "shown_minute": int(shown_minute),
             "shown_time_text": str(format_clock_hhmm(int(shown_total))),
             "hand_angle_deg": int(answer_angle),
-            "answer_type": "integer",
+            "answer_value": int(answer_angle),
+            "answer_label": str(correct_label),
+            "option_values_by_label": {str(key): int(value) for key, value in option_values.items()},
+            "answer_type": "option_letter",
         },
         json_example=str(json_example),
         json_example_answer_only=str(json_example_answer_only),
+        answer_options=ClockTextOptionSpec(
+            labels=tuple(str(label) for label in option_labels),
+            correct_label=str(correct_label),
+            text_by_label={str(key): str(value) for key, value in option_values.items()},
+            value_by_label={str(key): int(value) for key, value in option_values.items()},
+        ),
     )
 
 

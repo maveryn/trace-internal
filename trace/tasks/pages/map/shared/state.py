@@ -17,8 +17,8 @@ Cell = Tuple[int, int]
 class MapDefaults:
     """Default generation bounds for printed map route tasks."""
 
-    landmark_count_min: int = 10
-    landmark_count_max: int = 14
+    landmark_count_min: int = 8
+    landmark_count_max: int = 12
     direction_step_count_min: int = 2
     direction_step_count_max: int = 4
     highlighted_route_step_min: int = 2

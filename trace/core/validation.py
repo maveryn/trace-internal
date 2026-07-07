@@ -17,7 +17,7 @@ from .identity import compute_instance_id
 from .prompts import load_prompt_bundle, load_scene_prompt_bundle
 from .prompts.schema import REQUIRED_PROMPT_VARIANTS
 from .reward_contracts import validate_reward_contract_payload
-from .scene_package_migration import is_scene_package_task
+from .source_layout_policy import is_scene_package_task
 from .trace_store import read_trace_shard
 
 
@@ -911,8 +911,8 @@ def _validate_text_legibility_contract(
     """Validate rendered text-legibility metadata when a renderer records it.
 
     The first rollout is intentionally compatibility-safe: absence of
-    text_legibility metadata is handled by the static migration audit, while
-    malformed or failing metadata on migrated renderers fails dataset
+    text_legibility metadata is handled by static source checks, while
+    malformed or failing metadata on source-layout renderers fails dataset
     validation here.
     """
 

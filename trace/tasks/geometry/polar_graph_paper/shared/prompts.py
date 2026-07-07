@@ -25,6 +25,8 @@ def polar_graph_prompt_artifacts(
     answer_hint_key: str = "answer_hint_integer",
     annotation_hint_key: str = "annotation_hint_point_p",
     answer_type: str = "integer",
+    extra_dynamic_slots: Mapping[str, Any] | None = None,
+    json_examples: tuple[str, str] | None = None,
 ) -> PromptTraceArtifacts:
     """Render v1 prompt variants from task-selected readout semantics."""
 
@@ -42,11 +44,24 @@ def polar_graph_prompt_artifacts(
         ),
         context=f"prompt defaults for {scene_id}",
     )
-    json_example, json_example_answer_only = resolve_prompt_json_examples(
-        prompt_defaults_all,
-        annotation_value=annotation_value,
-        answer_type=str(answer_type),
-    )
+    if json_examples is None:
+        json_example, json_example_answer_only = resolve_prompt_json_examples(
+            prompt_defaults_all,
+            annotation_value=annotation_value,
+            answer_type=str(answer_type),
+        )
+    else:
+        json_example, json_example_answer_only = json_examples
+    dynamic_slots = {
+        "json_output_contract": str(prompt_defaults["json_output_contract"]),
+        "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
+        "annotation_hint": str(prompt_defaults[str(annotation_hint_key)]),
+        "answer_hint": str(prompt_defaults[str(answer_hint_key)]),
+        "json_example": str(json_example),
+        "json_example_answer_only": str(json_example_answer_only),
+    }
+    dynamic_slots.update({str(key): value for key, value in dict(extra_dynamic_slots or {}).items()})
+
     prompt_selection = render_scene_prompt_variants(
         domain="geometry",
         scene_id=str(scene_id),
@@ -55,14 +70,7 @@ def polar_graph_prompt_artifacts(
         task_key=str(prompt_defaults["task_key"]),
         query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        dynamic_slots={
-            "json_output_contract": str(prompt_defaults["json_output_contract"]),
-            "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(prompt_defaults[str(annotation_hint_key)]),
-            "answer_hint": str(prompt_defaults[str(answer_hint_key)]),
-            "json_example": str(json_example),
-            "json_example_answer_only": str(json_example_answer_only),
-        },
+        dynamic_slots=dynamic_slots,
         instance_seed=int(instance_seed),
     )
     return build_prompt_trace_artifacts(prompt_selection)

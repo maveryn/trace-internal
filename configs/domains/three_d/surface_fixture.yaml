@@ -26,8 +26,8 @@ generation:
         bracket_panel: 1.0
         u_bolt_plate: 1.0
         pipe_rack: 1.0
-      target_count_min: 8
-      target_count_max: 24
+      target_count_min: 6
+      target_count_max: 15
       balanced_scene_variant_sampling: true
     task_three_d__surface_fixture__element_count_extremum_label:
       scene_variant_weights:

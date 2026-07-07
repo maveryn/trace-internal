@@ -181,7 +181,7 @@ class SymbolicSpinnerSingleAttributeProbabilityTask:
             bundle.rendered_scene.item_bbox_map,
             item_id="spinner_panel",
         )
-        answer_gt = TypedValue(type="string", value=str(dataset["answer_value"]))
+        answer_gt = TypedValue(type="option_letter", value=str(bundle.answer_options["correct_label"]))
         output_parts = prepare_spinner_task_output_parts(
             public_query_id=str(public_query_id),
             prompt_query_key=str(public_query_id),

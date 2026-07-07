@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List
 
 from .reward_contracts import RewardContract
-from .scene_package_migration import is_scene_package_task
+from .source_layout_policy import is_scene_package_task
 
 
 @dataclass(frozen=True)

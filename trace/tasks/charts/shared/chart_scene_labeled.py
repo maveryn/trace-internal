@@ -86,7 +86,7 @@ def render_labeled_chart_scene(
         value_axis_window_enabled = False
 
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
-    label_font = load_font(int(render_params.label_font_size_px), bold=True)
+    label_font = load_font(int(render_params.label_font_size_px), bold=bool(render_params.label_bold))
     axis_color = tuple(int(value) for value in render_params.axis_color_rgb)
     grid_color = tuple(int(value) for value in render_params.grid_color_rgb)
 

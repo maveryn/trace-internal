@@ -18,6 +18,14 @@ class AbacusColumnSpec:
 
 
 @dataclass(frozen=True)
+class AbacusReadoutOptionSpec:
+    label: str
+    text: str
+    value: int
+    is_correct: bool
+
+
+@dataclass(frozen=True)
 class AbacusReadoutRenderParams:
     canvas_width: int = 980
     canvas_height: int = 760
@@ -32,6 +40,12 @@ class AbacusReadoutRenderParams:
     title_font_size_px: int = 25
     label_font_size_px: int = 23
     small_font_size_px: int = 16
+    readout_option_card_width_px: int = 130
+    readout_option_card_height_px: int = 58
+    readout_option_card_gap_px: int = 12
+    readout_option_card_margin_top_px: int = 24
+    readout_option_label_font_size_px: int = 22
+    readout_option_value_font_size_px: int = 24
 
 
 @dataclass(frozen=True)
@@ -69,6 +83,9 @@ class RenderedAbacusReadoutScene:
     active_bead_ids_by_column: dict[str, list[str]]
     column_bboxes: dict[str, list[float]]
     label_bboxes: dict[str, list[float]]
+    option_card_bboxes: dict[str, list[float]]
+    option_values_by_label: dict[str, int]
+    selected_option_card_bbox: list[float] | None
     scene_bbox_px: list[float]
     style_metadata: dict[str, Any]
 
@@ -91,6 +108,7 @@ __all__ = [
     "AbacusColumnSpec",
     "AbacusOptionPanelRenderParams",
     "AbacusOptionSpec",
+    "AbacusReadoutOptionSpec",
     "AbacusReadoutRenderParams",
     "RenderedAbacusOptionPanelScene",
     "RenderedAbacusReadoutScene",

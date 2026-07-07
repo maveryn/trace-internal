@@ -296,7 +296,7 @@ def test_elongated_indoor_vector_objects_have_countable_short_side() -> None:
         assert min(x1_box - x0_box, y1_box - y0_box) >= 24.0
 
 
-def test_migrated_scene_person_renderers_do_not_keep_local_duplicate_drawers() -> None:
+def test_source_layout_scene_person_renderers_do_not_keep_local_duplicate_drawers() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     banned = {
         "trace/tasks/illustrations/park_playground/shared/rendering.py": (

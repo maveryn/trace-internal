@@ -1,8 +1,17 @@
 from __future__ import annotations
 
-import trace.tasks  # noqa: F401
-from trace.tasks.registry import create_task
+import math
 
+import pytest
+
+import trace.tasks  # noqa: F401
+from trace.tasks.geometry.triangle_relations.shared.construction import (
+    altitude_from_two_projections_cases,
+    leg_from_projection_cases,
+    projection_from_altitude_cases,
+    projection_from_leg_cases,
+)
+from trace.tasks.registry import create_task
 
 TASK_QUERIES = {
     "task_geometry__triangle_relations__altitude_to_hypotenuse_value": (
@@ -47,8 +56,13 @@ def test_triangle_relations_altitude_queries_emit_keyed_point_annotation() -> No
             assert trace["execution_trace"]["query_id"] == query_id
             assert trace["execution_trace"]["answer"] == output.answer_gt.value
             assert trace["projected_annotation"]["type"] == "point_map"
-            assert trace["projected_annotation"]["point_map"] == output.annotation_gt.value
-            assert trace["projected_annotation"]["pixel_point_map"] == output.annotation_gt.value
+            assert (
+                trace["projected_annotation"]["point_map"] == output.annotation_gt.value
+            )
+            assert (
+                trace["projected_annotation"]["pixel_point_map"]
+                == output.annotation_gt.value
+            )
             assert "task_variant" not in trace["query_spec"]["params"]
             assert "query_variant" not in trace["query_spec"]["params"]
 
@@ -83,6 +97,60 @@ def test_triangle_relations_altitude_measurements_match_trace_values() -> None:
                 raise AssertionError(f"unexpected target_role={target_role}")
 
 
+def _angle_degrees(
+    points: dict[str, tuple[float, float]] | dict[str, list[float]],
+    *,
+    vertex: str,
+    arm_a: str,
+    arm_b: str,
+) -> float:
+    v = points[vertex]
+    a = points[arm_a]
+    b = points[arm_b]
+    va = (float(a[0]) - float(v[0]), float(a[1]) - float(v[1]))
+    vb = (float(b[0]) - float(v[0]), float(b[1]) - float(v[1]))
+    dot = va[0] * vb[0] + va[1] * vb[1]
+    denom = math.hypot(*va) * math.hypot(*vb)
+    assert denom > 0.0
+    return math.degrees(math.acos(max(-1.0, min(1.0, dot / denom))))
+
+
+def test_triangle_relations_altitude_right_angle_markers_match_geometry() -> None:
+    for cases in (
+        altitude_from_two_projections_cases(),
+        projection_from_altitude_cases(),
+        leg_from_projection_cases(),
+        projection_from_leg_cases(),
+    ):
+        for case in cases[:80]:
+            for marker in case.right_angles:
+                angle = _angle_degrees(
+                    case.vertices,
+                    vertex=marker.vertex,
+                    arm_a=marker.arm_a,
+                    arm_b=marker.arm_b,
+                )
+                assert angle == pytest.approx(90.0, abs=1e-6)
+
+
+def test_triangle_relations_altitude_rendered_right_angles_survive_rotation() -> None:
+    for task_id, query_ids in TASK_QUERIES.items():
+        for index, query_id in enumerate(query_ids):
+            task = create_task(task_id)
+            output = task.generate(
+                91031 + index,
+                params={"query_id": query_id, "scene_rotation_degrees": 37},
+                max_attempts=3,
+            )
+            vertices = output.trace_payload["render_map"]["vertices"]
+            assert _angle_degrees(
+                vertices, vertex="A", arm_a="B", arm_b="C"
+            ) == pytest.approx(90.0, abs=1e-3)
+            assert _angle_degrees(
+                vertices, vertex="D", arm_a="A", arm_b="C"
+            ) == pytest.approx(90.0, abs=1e-3)
+
+
 def test_triangle_relations_altitude_generation_is_deterministic() -> None:
     task_id = "task_geometry__triangle_relations__leg_projection_length_value"
     query_id = "projection_from_leg_and_hypotenuse"
@@ -90,4 +158,7 @@ def test_triangle_relations_altitude_generation_is_deterministic() -> None:
     second = _generate(task_id, query_id, seed=817)
     assert first.answer_gt == second.answer_gt
     assert first.annotation_gt == second.annotation_gt
-    assert first.trace_payload["execution_trace"] == second.trace_payload["execution_trace"]
+    assert (
+        first.trace_payload["execution_trace"]
+        == second.trace_payload["execution_trace"]
+    )

@@ -16,6 +16,12 @@ def counted_control_bboxes(case: ControlBoardCase, rendered: RenderedControlBoar
     ]
 
 
+def target_group_bbox(case: ControlBoardCase, rendered: RenderedControlBoard) -> List[float]:
+    """Return the full group panel box for the selected target group."""
+
+    return list(rendered.group_bboxes_by_name[str(case.target_group_name)])
+
+
 def group_records(case: ControlBoardCase, rendered: RenderedControlBoard) -> List[Dict[str, Any]]:
     """Return group membership and pixel boxes for trace metadata."""
 

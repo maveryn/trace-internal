@@ -5,7 +5,7 @@ from ._lifecycle import build_count_plan as B, run_single_series_lifecycle as R
 from .shared.state import DOMAIN
 from trace.tasks.registry import register_task
 T = "task_charts__single_series__interval_value_count"
-D = dict(mark_count_max=20)
+D = dict(mark_count_max=16)
 PGM = "count(filter(marks, lower_bound <= value(mark) <= upper_bound)); output=integer_count; annotation=point_set(matching_marks); scene=single_series; scope=interval_value_count"
 def _build_plan(params, seed, query_id, _):
     if query_id != SINGLE_QUERY_ID: raise ValueError(f"unsupported query_id for {T}: {query_id}")

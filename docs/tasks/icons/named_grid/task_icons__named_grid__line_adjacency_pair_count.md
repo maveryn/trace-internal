@@ -14,6 +14,7 @@ Operands: visible scene state and prompt-bound operands named by `named_grid`, `
 Operation: count every adjacent two-cell window in the selected row or column whose two shape ids match the requested unordered pair. Direction does not matter, so `A-B` and `B-A` both match. Overlapping windows count separately, so `A-B-A` contributes two matching adjacent pairs.
 Output binding: `answer` uses the `integer` schema; generation binds a unique final answer.
 Annotation witnesses: `annotation` uses the `segment_set` schema; each segment connects the centers of one counted adjacent pair.
+Annotation schema: `segment_set`.
 Query ids: `row_unordered_adjacent_pair_count`, `column_unordered_adjacent_pair_count`.
 
 ## Query IDs

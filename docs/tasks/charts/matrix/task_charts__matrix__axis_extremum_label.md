@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `matrix`
-3. Source implementation scene package: `charts/matrix`
+3. Source implementation scene: `charts/matrix`
 4. Supported `query_id` values: `row_highest_axis_extremum_label`, `row_lowest_axis_extremum_label`, `column_highest_axis_extremum_label`, `column_lowest_axis_extremum_label`
 5. Query ids bind the prompt-visible row/column axis and highest/lowest direction. The selected row/column label and numeric matrix values are sampled generation metadata.
 

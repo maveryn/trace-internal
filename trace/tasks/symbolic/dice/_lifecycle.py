@@ -5,11 +5,12 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
 
+from ....core.seed import spawn_rng
 from ....core.scene_config import get_scene_defaults
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
-from ...shared.config_defaults import required_group_defaults
+from ...shared.config_defaults import group_default, required_group_defaults
 from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import PROMPT_OUTPUT_MODES, build_prompt_trace_artifacts, render_scene_prompt_variants
@@ -25,9 +26,12 @@ from .shared.rendering import (
     SUPPORTED_DICE_SCENE_VARIANTS,
     SUPPORTED_DICE_VISUAL_STYLES,
     DiceRenderParams,
+    RenderedDiceScene,
+    draw_probability_option_cards,
+    option_cards_y_for_scene,
     render_dice_probability_scene,
 )
-from .shared.rules import normalize_int_with_bounds
+from .shared.rules import PROBABILITY_OPTION_LABELS, build_probability_option_set, normalize_int_with_bounds
 
 
 SCENE_ID = "dice"
@@ -193,6 +197,38 @@ def _resolve_render_params(render_defaults: Mapping[str, Any]) -> DiceRenderPara
     )
 
 
+def _resolve_probability_option_labels(
+    params: Mapping[str, Any],
+    *,
+    gen_defaults: Mapping[str, Any],
+) -> Tuple[str, ...]:
+    raw_labels = params.get(
+        "option_label_support",
+        group_default(gen_defaults, "option_label_support", PROBABILITY_OPTION_LABELS),
+    )
+    labels = tuple(str(label) for label in raw_labels)
+    option_count = int(params.get("option_count", group_default(gen_defaults, "option_count", 6)))
+    if int(option_count) != 6:
+        raise ValueError("dice probability tasks require exactly six visible options")
+    if len(labels) < int(option_count):
+        raise ValueError("dice probability option label support must contain at least six labels")
+    labels = labels[: int(option_count)]
+    if len(set(labels)) != len(labels):
+        raise ValueError("dice probability option labels must be unique")
+    return tuple(str(label) for label in labels)
+
+
+def _union_bbox(*bboxes: Sequence[float]) -> List[float]:
+    if not bboxes:
+        raise ValueError("at least one bbox is required")
+    return [
+        round(min(float(bbox[0]) for bbox in bboxes), 3),
+        round(min(float(bbox[1]) for bbox in bboxes), 3),
+        round(max(float(bbox[2]) for bbox in bboxes), 3),
+        round(max(float(bbox[3]) for bbox in bboxes), 3),
+    ]
+
+
 def _build_prompt(
     *,
     prompt_query_key: str,
@@ -302,13 +338,52 @@ def build_dice_probability_output(
             scene_style=scene_style,
             visual_style=str(dice_visual_style),
         )
+    event = dict(dataset["event"])
+    option_labels = _resolve_probability_option_labels(params, gen_defaults=gen_defaults)
+    option_rng = spawn_rng(int(instance_seed), f"{public_task_id}.dice_probability_options")
+    answer_options = build_probability_option_set(
+        favorable=int(event["favorable_outcome_count"]),
+        total=int(event["total_outcome_count"]),
+        rng=option_rng,
+        labels=option_labels,
+        correct_label=(
+            str(params.get("answer_label", params.get("correct_label")))
+            if params.get("answer_label", params.get("correct_label")) is not None
+            else None
+        ),
+    )
+    option_y0_px = option_cards_y_for_scene(
+        rendered_scene.scene_bbox_px,
+        canvas_height=int(render_params.canvas_height),
+    )
+    raw_option_bboxes, option_entities = draw_probability_option_cards(
+        rendered_scene.image,
+        text_by_label=dict(answer_options["text_by_label"]),
+        correct_label=str(answer_options["correct_label"]),
+        y0_px=int(option_y0_px),
+    )
+    option_bboxes_px = {
+        str(label): [round(float(value), 3) for value in bbox]
+        for label, bbox in raw_option_bboxes.items()
+    }
+    rendered_scene = RenderedDiceScene(
+        image=rendered_scene.image,
+        entities=[*rendered_scene.entities, *[dict(entity) for entity in option_entities]],
+        item_bbox_map=dict(rendered_scene.item_bbox_map),
+        die_bbox_map=dict(rendered_scene.die_bbox_map),
+        tray_bbox_map=dict(rendered_scene.tray_bbox_map),
+        scene_bbox_px=_union_bbox(
+            rendered_scene.scene_bbox_px,
+            *[tuple(float(value) for value in bbox) for bbox in raw_option_bboxes.values()],
+        ),
+    )
+
     image, post_noise_meta = apply_post_image_noise(
         rendered_scene.image,
         instance_seed=int(instance_seed),
         params=params,
         default_config=POST_IMAGE_NOISE_DEFAULTS,
     )
-    event = dict(dataset["event"])
     prompt, prompt_variants, prompt_meta = _build_prompt(
         prompt_query_key=str(prompt_query_key),
         scene_variant=str(scene_variant),
@@ -329,8 +404,9 @@ def build_dice_probability_output(
     if len(annotation_bboxes) != len(annotation_role_item_ids):
         raise ValueError("dice probability annotation projection dropped tray boxes")
 
-    answer_value = str(dataset["answer_value"])
-    answer_gt = TypedValue(type="string", value=str(answer_value))
+    probability_fraction = str(dataset["answer_value"])
+    answer_value = str(answer_options["correct_label"])
+    answer_gt = TypedValue(type="option_letter", value=str(answer_value))
     if str(dataset["mode"]) == "pair":
         annotation_gt = TypedValue(type="bbox_map", value=dict(annotation_bboxes))
         projected_annotation = {
@@ -396,6 +472,9 @@ def build_dice_probability_output(
                 "given_description": str(event.get("given_description", "")),
                 "favorable_outcome_count": int(event["favorable_outcome_count"]),
                 "total_outcome_count": int(event["total_outcome_count"]),
+                "probability_fraction": str(probability_fraction),
+                "option_labels": [str(label) for label in answer_options["labels"]],
+                "correct_label": str(answer_options["correct_label"]),
             },
         },
         "render_spec": {
@@ -421,12 +500,20 @@ def build_dice_probability_output(
             },
             "scene_bbox_px": list(rendered_scene.scene_bbox_px),
             "layout": str(mode),
+            "option_card_layout": {
+                "option_labels": [str(label) for label in answer_options["labels"]],
+                "option_y0_px": int(option_y0_px),
+                "option_count": int(len(answer_options["labels"])),
+            },
         },
         "render_map": {
             "image_id": "img0",
             "scene_bbox_px": list(rendered_scene.scene_bbox_px),
             "die_bboxes_px": {str(key): list(value) for key, value in rendered_scene.die_bbox_map.items()},
             "tray_bboxes_px": {str(key): list(value) for key, value in rendered_scene.tray_bbox_map.items()},
+            "option_bboxes_px": dict(option_bboxes_px),
+            "selected_option_label": str(answer_options["correct_label"]),
+            "selected_option_bbox_px": list(option_bboxes_px[str(answer_options["correct_label"])]),
             "item_bboxes_px": {str(key): list(value) for key, value in rendered_scene.item_bbox_map.items()},
             "annotation_source": str(annotation_source),
         },
@@ -452,6 +539,22 @@ def build_dice_probability_output(
             "favorable_outcome_count": int(event["favorable_outcome_count"]),
             "total_outcome_count": int(event["total_outcome_count"]),
             "answer_value": str(answer_value),
+            "answer_label": str(answer_options["correct_label"]),
+            "answer_type": "option_letter",
+            "probability_fraction": str(probability_fraction),
+            "option_labels": [str(label) for label in answer_options["labels"]],
+            "option_text_by_label": {
+                str(label): str(text)
+                for label, text in dict(answer_options["text_by_label"]).items()
+            },
+            "option_values_by_label": {
+                str(label): str(text)
+                for label, text in dict(answer_options["value_by_label"]).items()
+            },
+            "correct_label_probabilities": {
+                str(label): float(probability)
+                for label, probability in dict(answer_options["correct_label_probabilities"]).items()
+            },
             "annotation_item_ids": list(annotation_item_ids),
             "annotation_role_item_ids": dict(annotation_role_item_ids),
             "calculation_supporting_item_ids": list(calculation_supporting_item_ids),

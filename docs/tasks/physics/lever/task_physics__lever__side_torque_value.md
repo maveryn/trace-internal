@@ -38,6 +38,7 @@ Query ids: `single`.
 - Answer schema: `integer_value`
 - Generator `answer_gt.type`: `integer`
 - The answer value is an exact integer produced by the symbolic physics construction.
+- Current tuned side-weight cap: at most `3` visible weight blocks are sampled on the queried side.
 
 ## Annotation Contract
 - Annotation schema: `bbox_set`

@@ -6,7 +6,8 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from trace.core.seed import hash64
+from trace.core.sampling import uniform_choice
+from trace.core.seed import hash64, spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.charts.waterfall.shared.annotations import bbox_map_artifacts
@@ -57,6 +58,12 @@ def build_counterfactual_plan(
     counterfactual_phrase: str,
     answer_from_final_and_delta: CounterfactualValue,
     query_probabilities: Mapping[str, float],
+    step_count_min: int | None = None,
+    step_count_max: int | None = None,
+    target_delta_abs_min: int | None = None,
+    target_delta_abs_max: int | None = None,
+    answer_min: int | None = None,
+    answer_max: int | None = None,
 ) -> WaterfallTaskPlan:
     """Build a counterfactual plan from semantic operation arguments.
 
@@ -65,15 +72,45 @@ def build_counterfactual_plan(
     binds the shared visual witnesses used by both counterfactual objectives.
     """
 
-    dataset = sample_waterfall_dataset(params, instance_seed=int(instance_seed))
-    target_index = choose_step_index(
-        params=params,
+    dataset = sample_waterfall_dataset(
+        params,
         instance_seed=int(instance_seed),
-        namespace=f"{operation_name}.target_step",
-        step_count=len(dataset.steps),
+        step_count_min=step_count_min,
+        step_count_max=step_count_max,
     )
+    feasible_target_indices: list[int] = []
+    for step_index, step in enumerate(dataset.steps):
+        delta_abs = abs(int(step.delta))
+        if target_delta_abs_min is not None and delta_abs < int(target_delta_abs_min):
+            continue
+        if target_delta_abs_max is not None and delta_abs > int(target_delta_abs_max):
+            continue
+        candidate_answer = int(answer_from_final_and_delta(int(dataset.final_value), int(step.delta)))
+        if answer_min is not None and candidate_answer < int(answer_min):
+            continue
+        if answer_max is not None and candidate_answer > int(answer_max):
+            continue
+        feasible_target_indices.append(int(step_index))
+    if feasible_target_indices:
+        rng = spawn_rng(int(instance_seed), f"{operation_name}.target_step.constrained")
+        target_index = int(uniform_choice(rng, tuple(feasible_target_indices)))
+    else:
+        target_index = choose_step_index(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace=f"{operation_name}.target_step",
+            step_count=len(dataset.steps),
+        )
     target_step = dataset.steps[int(target_index)]
     answer_value = int(answer_from_final_and_delta(int(dataset.final_value), int(target_step.delta)))
+    if target_delta_abs_min is not None and abs(int(target_step.delta)) < int(target_delta_abs_min):
+        raise ValueError("no waterfall target step satisfies minimum delta magnitude")
+    if target_delta_abs_max is not None and abs(int(target_step.delta)) > int(target_delta_abs_max):
+        raise ValueError("no waterfall target step satisfies maximum delta magnitude")
+    if answer_min is not None and int(answer_value) < int(answer_min):
+        raise ValueError("counterfactual waterfall answer is below requested range")
+    if answer_max is not None and int(answer_value) > int(answer_max):
+        raise ValueError("counterfactual waterfall answer is above requested range")
 
     def _bind_annotation(rendered: RenderedWaterfall) -> AnnotationArtifacts:
         return bbox_map_artifacts(
@@ -91,6 +128,8 @@ def build_counterfactual_plan(
         dynamic_slots={
             "target_step_label": str(target_step.label),
             "counterfactual_phrase": str(counterfactual_phrase),
+            "target_delta_text": f"{int(target_step.delta):+d}",
+            "reversed_delta_text": f"{-int(target_step.delta):+d}",
         },
         query_params={
             "target_step_id": str(target_step.step_id),

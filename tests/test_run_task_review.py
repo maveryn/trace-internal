@@ -167,7 +167,7 @@ def test_review_cli_uses_shared_distribution_helpers() -> None:
     assert review._build_distribution_review_report is task_review_distribution.build_distribution_review_report
 
 
-def test_review_generation_refuses_unregistered_migration_review_scene(tmp_path: Path, monkeypatch) -> None:
+def test_review_generation_refuses_unregistered_review_target_scene(tmp_path: Path, monkeypatch) -> None:
     dummy_task = _DummyVariantTask()
     monkeypatch.setattr(review, "create_task", lambda task_id: dummy_task)
     monkeypatch.setattr(
@@ -211,10 +211,10 @@ def _write_scene_gate_statuses(
     task_ids: list[str],
     include_manual: bool = True,
     include_taxonomy: bool = True,
-    include_migration: bool = True,
+    include_source_layout: bool = True,
     scalar_annotation_checked: bool | None = True,
 ) -> None:
-    """Write passing migration gate sidecars for review-runner tests."""
+    """Write passing source-layout gate sidecars for review-runner tests."""
 
     scene_dir = out_root / domain / scene_id
     scene_dir.mkdir(parents=True, exist_ok=True)
@@ -260,26 +260,26 @@ def _write_scene_gate_statuses(
             ),
             encoding="utf-8",
         )
-    if include_migration:
-        (scene_dir / "migration_test_status.json").write_text(
+    if include_source_layout:
+        (scene_dir / "source_layout_test_status.json").write_text(
             json.dumps(
                 {
-                    "schema": "trace_scene_migration_test_status_v1",
+                    "schema": "trace_scene_source_layout_test_status_v1",
                     "domain": domain,
                     "scene_id": scene_id,
                     "passed": True,
                     "status": "passed",
-                    "summary": "scene-scoped migration tests passed",
+                    "summary": "scene-scoped source-layout checks passed",
                     "command": (
                         f"TRACE_SCENE_PACKAGE_REVIEW_SCENE={domain}/{scene_id} "
                         "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -q "
                         "tests/test_review_app.py tests/test_run_task_review.py "
-                        "tests/test_scene_package_migration_contracts.py"
+                        "tests/test_source_layout_contracts.py"
                     ),
                     "test_files": [
                         "tests/test_review_app.py",
                         "tests/test_run_task_review.py",
-                        "tests/test_scene_package_migration_contracts.py",
+                        "tests/test_source_layout_contracts.py",
                     ],
                 }
             ),
@@ -315,7 +315,7 @@ def test_review_generation_refuses_missing_taxonomy_review_for_registered_scene(
         )
 
 
-def test_review_generation_refuses_missing_migration_test_status_for_registered_scene(
+def test_review_generation_refuses_missing_source_layout_test_status_for_registered_scene(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -333,10 +333,10 @@ def test_review_generation_refuses_missing_migration_test_status_for_registered_
         domain="charts",
         scene_id="bar_3d",
         task_ids=["task_charts__bar_3d__category_total_value"],
-        include_migration=False,
+        include_source_layout=False,
     )
 
-    with pytest.raises(ValueError, match="scene-scoped migration tests pass"):
+    with pytest.raises(ValueError, match="scene-scoped source-layout checks pass"):
         review._validate_tasks_may_write_review_artifacts(
             task_ids=["task_charts__bar_3d__category_total_value"],
             out_root=out_root,
@@ -357,7 +357,7 @@ def test_review_generation_refuses_taxonomy_status_without_requested_task(
     monkeypatch.setattr(review, "is_scene_package_review_target_scene", lambda domain, scene_id: True)
     monkeypatch.setattr(
         review,
-        "audit_scene_package_review_candidate",
+        "audit_scene_package_review_target",
         lambda domain, scene_id: {"passed": True, "failures": []},
     )
     out_root = tmp_path / "review" / "task-reviews"
@@ -389,7 +389,7 @@ def test_review_generation_refuses_taxonomy_status_without_scalar_annotation_che
     monkeypatch.setattr(review, "is_scene_package_review_target_scene", lambda domain, scene_id: True)
     monkeypatch.setattr(
         review,
-        "audit_scene_package_review_candidate",
+        "audit_scene_package_review_target",
         lambda domain, scene_id: {"passed": True, "failures": []},
     )
     out_root = tmp_path / "review" / "task-reviews"
@@ -422,7 +422,7 @@ def test_review_generation_refuses_false_scalar_annotation_check(
     monkeypatch.setattr(review, "is_scene_package_review_target_scene", lambda domain, scene_id: True)
     monkeypatch.setattr(
         review,
-        "audit_scene_package_review_candidate",
+        "audit_scene_package_review_target",
         lambda domain, scene_id: {"passed": True, "failures": []},
     )
     out_root = tmp_path / "review" / "task-reviews"
@@ -455,7 +455,7 @@ def test_review_generation_refuses_remaining_scalar_annotation_candidate(
     monkeypatch.setattr(review, "is_scene_package_review_target_scene", lambda domain, scene_id: True)
     monkeypatch.setattr(
         review,
-        "audit_scene_package_review_candidate",
+        "audit_scene_package_review_target",
         lambda domain, scene_id: {"passed": True, "failures": []},
     )
     monkeypatch.setattr(
@@ -478,7 +478,7 @@ def test_review_generation_refuses_remaining_scalar_annotation_candidate(
         )
 
 
-def test_review_generation_allows_passing_scene_migration_gates_for_registered_scene(
+def test_review_generation_allows_passing_scene_source_layout_gates_for_registered_scene(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -492,7 +492,7 @@ def test_review_generation_allows_passing_scene_migration_gates_for_registered_s
     monkeypatch.setattr(review, "is_scene_package_review_target_scene", lambda domain, scene_id: True)
     monkeypatch.setattr(
         review,
-        "audit_scene_package_review_candidate",
+        "audit_scene_package_review_target",
         lambda domain, scene_id: {"passed": True, "failures": []},
     )
     out_root = tmp_path / "review" / "task-reviews"
@@ -523,7 +523,7 @@ def test_review_generation_refuses_failed_automated_scene_source_audit(
     monkeypatch.setattr(review, "is_scene_package_review_target_scene", lambda domain, scene_id: True)
     monkeypatch.setattr(
         review,
-        "audit_scene_package_review_candidate",
+        "audit_scene_package_review_target",
         lambda domain, scene_id: {
             "passed": False,
             "failures": [
@@ -539,7 +539,7 @@ def test_review_generation_refuses_failed_automated_scene_source_audit(
         task_ids=["task_charts__bar_3d__category_total_value"],
     )
 
-    with pytest.raises(ValueError, match="automated scene-package source audit failed"):
+    with pytest.raises(ValueError, match="automated source-layout source audit failed"):
         review._validate_tasks_may_write_review_artifacts(
             task_ids=["task_charts__bar_3d__category_total_value"],
             out_root=out_root,

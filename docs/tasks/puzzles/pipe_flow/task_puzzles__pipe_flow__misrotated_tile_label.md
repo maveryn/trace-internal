@@ -3,7 +3,7 @@
 ## Public Taxonomy
 1. Domain: `puzzles`
 2. Scene id: `pipe_flow`
-3. Source scene package: `pipe_flow`
+3. Source scene: `pipe_flow`
 4. Task id: `task_puzzles__pipe_flow__misrotated_tile_label`
 
 ## Query Contract

@@ -13,9 +13,7 @@ generation:
     task_geometry__angle_relations__parallel_transversal_triangle_angle_value:
       lower_triangle_base_angle_min: 35
       lower_triangle_base_angle_max: 75
-      lower_triangle_base_angle_step: 5
-      displayed_exterior_angle_min: 105
-      displayed_exterior_angle_max: 145
+      lower_triangle_base_angle_step: 1
       target_angle_min: 45
       target_angle_max: 110
 rendering:
@@ -27,9 +25,9 @@ rendering:
     line_width_max: 5
     label_font_size: 22
     point_label_font_size: 18
-    label_stroke_width: 1
-    label_stroke_width_min: 1
-    label_stroke_width_max: 1
+    label_stroke_width: 0
+    label_stroke_width_min: 0
+    label_stroke_width_max: 0
     single_object_scene_rotation:
       enabled: true
       probability: 0.5

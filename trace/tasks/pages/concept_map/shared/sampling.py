@@ -286,7 +286,7 @@ def _build_scene_and_selection(
         target_marker_max = int(marker_max)
         distractor_child_min = max(2, min(int(child_min), 4))
         distractor_child_max = min(int(child_max), 4)
-    target_child_min = min(int(child_min), int(target_child_max))
+    target_child_min = max(1, min(int(child_min), int(target_child_max)))
     target_marker_min = min(int(marker_min), int(target_marker_max))
     distractor_child_max = max(int(distractor_child_min), int(distractor_child_max))
     branch_count = int(rng.randint(int(branch_min), int(branch_max)))
@@ -294,7 +294,18 @@ def _build_scene_and_selection(
     branch_items = list(context["branches"].items())
     branch_offset = int(rng.randrange(len(branch_items)))
     selected_branch_items = [branch_items[(branch_offset + idx) % len(branch_items)] for idx in range(branch_count)]
-    sampling_index = abs(int(instance_seed))
+    sampling_index = abs(
+        int(
+            params.get(
+                "_sample_cursor",
+                resolve_selection_index(
+                    params=params,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{NAMESPACE_ROOT}.answer",
+                ),
+            )
+        )
+    )
     forced_branch_index: int | None = None
     forced_count: int | None = None
     forced_marker = MARKERS[abs(int(sampling_index)) % len(MARKERS)]
@@ -392,6 +403,10 @@ def _build_scene_and_selection(
         branches=branches,
         answer_index=int(sampling_index),
         marker=forced_marker,
+        child_min=int(target_child_min),
+        child_max=int(target_child_max),
+        marker_min=int(target_marker_min),
+        marker_max=int(target_marker_max),
     )
     scene = {
         "scene_id": SCENE,
@@ -623,6 +638,10 @@ def _build_selection(
     branches: list[Dict[str, Any]],
     answer_index: int,
     marker: Mapping[str, Any],
+    child_min: int,
+    child_max: int,
+    marker_min: int,
+    marker_max: int,
 ) -> Dict[str, Any]:
     """Select the task target after layout so annotations refer to final node ids."""
 
@@ -630,8 +649,8 @@ def _build_selection(
         branch_index, _target = _select_branch_by_answer_index(
             branches=branches,
             answer_index=int(answer_index),
-            min_count=2,
-            max_count=8,
+            min_count=int(child_min),
+            max_count=int(child_max),
         )
         branch = branches[int(branch_index)]
         return {
@@ -664,7 +683,7 @@ def _build_selection(
         }
     if str(case_kind) != MARKED_TOTAL_KIND:
         raise ValueError(f"unsupported concept-map case kind: {case_kind}")
-    target = 1 + (abs(int(answer_index)) % 5)
+    target = int(marker_min) + (abs(int(answer_index)) % (int(marker_max) - int(marker_min) + 1))
     eligible = [
         branch for branch in branches
         if sum(1 for child in branch["children"] if str(child["marker_id"]) == str(marker["marker_id"])) == int(target)

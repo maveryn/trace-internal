@@ -18,6 +18,18 @@ class AnnotationArtifacts:
     projected_annotation: dict[str, Any]
 
 
+def annotation_cardinality(value: Any, *, annotation_type: str = "") -> int:
+    """Return the number of visual witnesses represented by an annotation."""
+
+    if str(annotation_type) in {"bbox", "point", "segment"}:
+        return 1 if value is not None else 0
+    if isinstance(value, Mapping):
+        return len(value)
+    if isinstance(value, (list, tuple)):
+        return len(value)
+    return 1 if value is not None else 0
+
+
 def _round_point(point: Sequence[float], *, ndigits: int = 3) -> list[float]:
     return [
         round(float(point[0]), int(ndigits)),
@@ -220,6 +232,7 @@ def segment_annotation_artifacts(
 
 __all__ = [
     "AnnotationArtifacts",
+    "annotation_cardinality",
     "bbox_annotation_artifacts",
     "bbox_map_annotation_artifacts",
     "bbox_set_annotation_artifacts",

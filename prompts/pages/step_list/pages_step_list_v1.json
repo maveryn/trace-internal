@@ -22,40 +22,26 @@
       ]
     },
     "query": {
-      "nth_step_title": [
-        "What title is shown on the {step_reference} step?",
-        "Read the title on the {step_reference} step.",
-        "What is the visible title for the {step_reference} step?",
-        "Find the {step_reference} step. What title is printed on it?",
-        "Which title appears on the {step_reference} step?"
+      "offset_after_named_step": [
+        "What step title is {relative_offset_phrase} the step titled {source_step_title}?",
+        "Find {source_step_title}. What title is printed {relative_offset_phrase} it?",
+        "Starting at {source_step_title}, move {relative_offset_phrase}. What step title do you reach?",
+        "Which title appears {relative_offset_phrase} the step titled {source_step_title}?",
+        "Read the title of the step {relative_offset_phrase} {source_step_title}."
       ],
-      "nth_step_detail": [
-        "What detail text is shown in the {step_reference} step?",
-        "Read the detail line on the {step_reference} step.",
-        "What is the visible detail text for the {step_reference} step?",
-        "Find the {step_reference} step. What detail is printed on it?",
-        "Which detail line appears in the {step_reference} step?"
+      "offset_before_named_step": [
+        "What step title is {relative_offset_phrase} the step titled {source_step_title}?",
+        "Find {source_step_title}. What title is printed {relative_offset_phrase} it?",
+        "Starting at {source_step_title}, move {relative_offset_phrase}. What step title do you reach?",
+        "Which title appears {relative_offset_phrase} the step titled {source_step_title}?",
+        "Read the title of the step {relative_offset_phrase} {source_step_title}."
       ],
-      "step_after_named_step": [
-        "What step title comes immediately after {source_step_title}?",
-        "Find {source_step_title}. What is the title of the next step?",
-        "Which step title appears directly after {source_step_title}?",
-        "Read the title on the step immediately following {source_step_title}.",
-        "After {source_step_title}, what title is printed on the next numbered step?"
-      ],
-      "step_title_for_detail": [
-        "Which step title contains the detail {source_step_detail}?",
-        "Find the detail {source_step_detail}. What title is shown on that step?",
-        "What is the title of the step whose detail line reads {source_step_detail}?",
-        "Use the detail {source_step_detail}. Which step title owns it?",
-        "Read the card containing {source_step_detail}. What title is printed on that card?"
-      ],
-      "step_number_for_detail": [
-        "Which step number contains the detail {source_step_detail}?",
-        "Find the detail {source_step_detail}. What number is shown on that step?",
-        "What is the step number for the card whose detail line reads {source_step_detail}?",
-        "Use the detail {source_step_detail}. Which numbered step owns it?",
-        "Read the card containing {source_step_detail}. What number is printed on that card?"
+      "between_named_steps_count": [
+        "How many numbered steps are strictly between {first_step_title} and {second_step_title}?",
+        "Count the steps between the step titled {first_step_title} and the step titled {second_step_title}.",
+        "What is the number of steps separating {first_step_title} from {second_step_title}, excluding those two steps?",
+        "Between {first_step_title} and {second_step_title}, how many other steps are listed?",
+        "Find {first_step_title} and {second_step_title}. How many step cards lie between them?"
       ]
     },
     "output": {
@@ -81,62 +67,49 @@
       "json_output_contract_answer_only": "Return a JSON object with \"answer\" only."
     },
     "scene:step_list": {
-      "object_description": "a numbered step list with a title and detail line on each step card"
+      "object_description": "a numbered workflow step list where each step card has labeled Title and Detail fields plus other small fields"
     },
-    "query:nth_step_title": {
-      "answer_hint": "set \"answer\" to the exact visible step title requested by the question",
-      "annotation_hint": "set \"annotation\" to one [x0, y0, x1, y1] box around the requested step title",
-      "json_example": "{\"annotation\":[220,216,340,244],\"answer\":\"Review\"}",
-      "json_example_answer_only": "{\"answer\":\"Review\"}"
-    },
-    "query:nth_step_detail": {
-      "answer_hint": "set \"answer\" to the exact visible step detail text requested by the question",
-      "annotation_hint": "set \"annotation\" to one [x0, y0, x1, y1] box around the requested step detail text",
-      "json_example": "{\"annotation\":[220,250,370,278],\"answer\":\"Review packet\"}",
-      "json_example_answer_only": "{\"answer\":\"Review packet\"}"
-    },
-    "query:step_after_named_step": {
-      "answer_hint": "set \"answer\" to the exact visible title of the step immediately after the named source step",
+    "query:offset_after_named_step": {
+      "answer_hint": "set \"answer\" to the exact visible title of the step reached by the requested offset",
       "annotation_hint": "set \"annotation\" to one [x0, y0, x1, y1] box around the answer step title",
       "json_example": "{\"annotation\":[220,216,300,244],\"answer\":\"Approve\"}",
       "json_example_answer_only": "{\"answer\":\"Approve\"}"
     },
-    "query:step_title_for_detail": {
-      "answer_hint": "set \"answer\" to the exact visible title of the step containing the named detail text",
+    "query:offset_before_named_step": {
+      "answer_hint": "set \"answer\" to the exact visible title of the step reached by the requested offset",
       "annotation_hint": "set \"annotation\" to one [x0, y0, x1, y1] box around the answer step title",
-      "json_example": "{\"annotation\":[220,216,340,244],\"answer\":\"Review\"}",
-      "json_example_answer_only": "{\"answer\":\"Review\"}"
+      "json_example": "{\"annotation\":[220,216,300,244],\"answer\":\"Approve\"}",
+      "json_example_answer_only": "{\"answer\":\"Approve\"}"
     },
-    "query:step_number_for_detail": {
-      "answer_hint": "set \"answer\" to the step number as visible text",
-      "annotation_hint": "set \"annotation\" to one [x0, y0, x1, y1] box around the answer step number badge",
-      "json_example": "{\"annotation\":[164,208,206,250],\"answer\":\"3\"}",
-      "json_example_answer_only": "{\"answer\":\"3\"}"
+    "query:between_named_steps_count": {
+      "answer_hint": "set \"answer\" to the count as an integer",
+      "annotation_hint": "set \"annotation\" to an object with keys \"first_named_title\" and \"second_named_title\", each containing one [x0, y0, x1, y1] box around the corresponding named step title",
+      "json_example": "{\"annotation\":{\"first_named_title\":[220,216,340,244],\"second_named_title\":[220,492,320,520]},\"answer\":4}",
+      "json_example_answer_only": "{\"answer\":4}"
     }
   },
   "dynamic_slots": {
-    "step_reference": {"type": "string"},
     "source_step_title": {"type": "string"},
-    "source_step_detail": {"type": "string"}
+    "target_step_title": {"type": "string"},
+    "first_step_title": {"type": "string"},
+    "second_step_title": {"type": "string"},
+    "relative_offset_phrase": {"type": "string"}
   },
   "required_slots_by_key": {
     "scene:step_list": [
       "object_description"
     ],
-    "query:nth_step_title": [
-      "step_reference"
+    "query:offset_after_named_step": [
+      "source_step_title",
+      "relative_offset_phrase"
     ],
-    "query:nth_step_detail": [
-      "step_reference"
+    "query:offset_before_named_step": [
+      "source_step_title",
+      "relative_offset_phrase"
     ],
-    "query:step_after_named_step": [
-      "source_step_title"
-    ],
-    "query:step_title_for_detail": [
-      "source_step_detail"
-    ],
-    "query:step_number_for_detail": [
-      "source_step_detail"
+    "query:between_named_steps_count": [
+      "first_step_title",
+      "second_step_title"
     ],
     "output:answer_only": [
       "json_output_contract_answer_only",

@@ -342,6 +342,10 @@ class IconsCountingNamedGridRowColumnShapeCountTask:
                 "line_number": int(sample.queried_index) + 1,
             },
             instance_seed=int(instance_seed),
+            annotation_hint_key="scoped_annotation_hint",
+            answer_hint_key="scoped_answer_hint",
+            json_example_key="scoped_json_example",
+            json_example_answer_only_key="scoped_json_example_answer_only",
         )
 
         serialized_icons = [serialize_named_grid_icon(icon) for icon in scene.icons]

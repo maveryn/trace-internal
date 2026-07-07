@@ -22,10 +22,6 @@ _COMMON_PROMPT_KEYS = (
     "json_output_contract",
     "json_output_contract_answer_only",
     "object_description",
-    "annotation_hint",
-    "answer_hint",
-    "json_example",
-    "json_example_answer_only",
 )
 
 
@@ -40,10 +36,26 @@ def build_named_grid_prompt_artifacts(
     answer_slots: Mapping[str, Any] | None = None,
     instance_seed: int,
     extra_required_keys: Sequence[str] = (),
+    annotation_hint_key: str = "annotation_hint",
+    answer_hint_key: str = "answer_hint",
+    json_example_key: str = "json_example",
+    json_example_answer_only_key: str = "json_example_answer_only",
 ) -> tuple[PromptTraceArtifacts, Mapping[str, Any]]:
     """Build prompt artifacts from task-owned prompt keys and slots."""
 
-    required_keys = tuple(dict.fromkeys((*_COMMON_PROMPT_KEYS, str(question_key), *tuple(str(key) for key in extra_required_keys))))
+    required_keys = tuple(
+        dict.fromkeys(
+            (
+                *_COMMON_PROMPT_KEYS,
+                str(question_key),
+                str(annotation_hint_key),
+                str(answer_hint_key),
+                str(json_example_key),
+                str(json_example_answer_only_key),
+                *tuple(str(key) for key in extra_required_keys),
+            )
+        )
+    )
     prompt_defaults = required_group_defaults(
         dict(prompt_defaults_map),
         required_keys,
@@ -56,15 +68,15 @@ def build_named_grid_prompt_artifacts(
         scene_key=str(prompt_defaults["scene_key"]),
         task_key=str(prompt_defaults["task_key"]),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        slots={
+        dynamic_slots={
             "object_description": str(prompt_defaults["object_description"]),
             "question_text": str(prompt_defaults[str(question_key)]).format(**dict(question_slots)),
             "json_output_contract": str(prompt_defaults["json_output_contract"]),
             "json_output_contract_answer_only": str(prompt_defaults["json_output_contract_answer_only"]),
-            "annotation_hint": str(prompt_defaults["annotation_hint"]).format(**dict(annotation_slots)),
-            "answer_hint": str(prompt_defaults["answer_hint"]).format(**dict(answer_slots or {})),
-            "json_example": str(prompt_defaults["json_example"]),
-            "json_example_answer_only": str(prompt_defaults["json_example_answer_only"]),
+            "annotation_hint": str(prompt_defaults[str(annotation_hint_key)]).format(**dict(annotation_slots)),
+            "answer_hint": str(prompt_defaults[str(answer_hint_key)]).format(**dict(answer_slots or {})),
+            "json_example": str(prompt_defaults[str(json_example_key)]),
+            "json_example_answer_only": str(prompt_defaults[str(json_example_answer_only_key)]),
         },
         instance_seed=int(instance_seed),
     )

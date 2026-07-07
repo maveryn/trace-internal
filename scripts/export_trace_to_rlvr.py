@@ -53,6 +53,15 @@ def main() -> int:
         default=None,
         help="Parquet write CPU count (0=all visible CPUs, default: PyArrow default).",
     )
+    parser.add_argument(
+        "--max-embedded-image-pixels",
+        type=int,
+        default=None,
+        help=(
+            "Resize embedded parquet images to this pixel cap and scale annotation_gt "
+            "into exported-image coordinates."
+        ),
+    )
     args = parser.parse_args()
 
     result = export_trace_dataset_to_rlvr(
@@ -63,6 +72,7 @@ def main() -> int:
         image_path_mode=args.image_path_mode,
         image_storage_mode=args.image_storage_mode,
         parquet_cpu_count=args.parquet_cpu_count,
+        max_embedded_image_pixels=args.max_embedded_image_pixels,
     )
     print(
         str(result.output_path),

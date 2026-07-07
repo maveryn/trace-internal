@@ -52,7 +52,7 @@ PROMPT_SCENE_KEY = "workspace"
 PROMPT_TASK_KEY = "workspace_control_query"
 PROMPT_CONTROL_LABEL_KEY = "target_control_lookup"
 PROMPT_CONTEXT_COUNT_KEY = "row_state_filter_count"
-PROMPT_DUAL_GUIDE_LABEL_KEY = "dual_guide_control_lookup"
+PROMPT_CONTEXT_GUIDE_LABEL_KEY = "context_guide_control_lookup"
 _GUIDE_CODES: Tuple[str, ...] = ("K1", "M2", "R3", "T4", "V5")
 _CONTEXT_CUE_CODES: Tuple[str, ...] = ("Q1", "S2", "D3", "F4", "L5")
 _ACTION_SYMBOLS: Tuple[str, ...] = ("@", "%", "&", "#", "*")
@@ -620,7 +620,10 @@ def _resolve_query(
     spawn_rng(int(instance_seed), f"{task_namespace}.guide_order.{workspace_variant}").shuffle(guide_order)
     context_guide_order = list(range(len(contexts)))
     spawn_rng(int(instance_seed), f"{task_namespace}.context_guide_order.{workspace_variant}").shuffle(context_guide_order)
-    instruction_templates = _DUAL_GUIDE_INSTRUCTIONS if str(objective) == PROMPT_DUAL_GUIDE_LABEL_KEY else spec.instruction_templates
+    if str(objective) == PROMPT_CONTEXT_GUIDE_LABEL_KEY:
+        instruction_templates = _CONTEXT_GUIDE_INSTRUCTIONS
+    else:
+        instruction_templates = spec.instruction_templates
     template_index = _support_selection_index(
         params,
         task_id=task_namespace,
@@ -761,7 +764,8 @@ def _draw_professional_scene(
     control_bboxes: Dict[str, List[float]] = {}
     badge_bboxes: Dict[str, List[float]] = {}
 
-    has_context_guide = str(query.objective_key) == PROMPT_DUAL_GUIDE_LABEL_KEY
+    has_context_guide = str(query.objective_key) == PROMPT_CONTEXT_GUIDE_LABEL_KEY
+    show_action_guide = str(query.objective_key) != PROMPT_CONTEXT_GUIDE_LABEL_KEY
     guide_y1 = workspace[1] + 14.0
     guide_h = 58.0 if has_context_guide else 72.0
     guide_x1 = workspace[0] + 205.0
@@ -812,40 +816,41 @@ def _draw_professional_scene(
             )
         guide_y1 = guide_y1 + guide_h + 10.0
 
-    _draw_text_left(
-        draw,
-        text=str(spec.guide_title),
-        bbox=(workspace[0] + 18.0, guide_y1, workspace[0] + 190.0, guide_y1 + 30.0),
-        fill=theme.control_text,
-        max_size_px=int(render_params.body_font_size_px),
-        bold=True,
-    )
     guide_w = (guide_x2 - guide_x1) / 5.0
     actions = sorted({(int(control.action_index), str(control.action_label), str(control.cue_label), str(control.code_label)) for control in query.controls})
-    for visual_index, action_index in enumerate(query.guide_order):
-        action_tuple = actions[int(action_index)]
-        _idx, action_label, cue_label, code_label = action_tuple
-        bbox = (
-            guide_x1 + visual_index * guide_w,
-            guide_y1,
-            guide_x1 + (visual_index + 1) * guide_w - 8.0,
-            guide_y1 + guide_h,
-        )
-        fill = _ACCENT_FILLS[int(action_index) % len(_ACCENT_FILLS)]
-        outline = _ACCENT_LINES[int(action_index) % len(_ACCENT_LINES)]
-        _rounded_rect(draw, bbox, radius=8, fill=fill, outline=outline, width=2)
-        guide_text_fill = _text_on_fill(fill, theme)
-        _draw_text_center_fit(
+    if show_action_guide:
+        _draw_text_left(
             draw,
-            text=f"{cue_label}\nKey {code_label}",
-            bbox=(bbox[0] + 8.0, bbox[1] + 6.0, bbox[2] - 8.0, bbox[3] - 6.0),
-            fill=guide_text_fill,
-            max_size_px=int(render_params.small_font_size_px),
+            text=str(spec.guide_title),
+            bbox=(workspace[0] + 18.0, guide_y1, workspace[0] + 190.0, guide_y1 + 30.0),
+            fill=theme.control_text,
+            max_size_px=int(render_params.body_font_size_px),
             bold=True,
         )
-        _add_support(support_bboxes, support_records, f"guide_{action_index}", str(spec.guide_kind), f"{cue_label} -> {code_label}", bbox)
+        for visual_index, action_index in enumerate(query.guide_order):
+            action_tuple = actions[int(action_index)]
+            _idx, action_label, cue_label, code_label = action_tuple
+            bbox = (
+                guide_x1 + visual_index * guide_w,
+                guide_y1,
+                guide_x1 + (visual_index + 1) * guide_w - 8.0,
+                guide_y1 + guide_h,
+            )
+            fill = _ACCENT_FILLS[int(action_index) % len(_ACCENT_FILLS)]
+            outline = _ACCENT_LINES[int(action_index) % len(_ACCENT_LINES)]
+            _rounded_rect(draw, bbox, radius=8, fill=fill, outline=outline, width=2)
+            guide_text_fill = _text_on_fill(fill, theme)
+            _draw_text_center_fit(
+                draw,
+                text=f"{cue_label}\nKey {code_label}",
+                bbox=(bbox[0] + 8.0, bbox[1] + 6.0, bbox[2] - 8.0, bbox[3] - 6.0),
+                fill=guide_text_fill,
+                max_size_px=int(render_params.small_font_size_px),
+                bold=True,
+            )
+            _add_support(support_bboxes, support_records, f"guide_{action_index}", str(spec.guide_kind), f"{cue_label} -> {code_label}", bbox)
 
-    body_y1 = guide_y1 + guide_h + 14.0
+    body_y1 = guide_y1 + (guide_h + 14.0 if show_action_guide else 14.0)
     body_y2 = workspace[3] - 18.0
     context_x1 = workspace[0] + 18.0
     context_x2 = workspace[0] + 300.0
@@ -971,7 +976,7 @@ def _draw_professional_scene(
             _draw_text_center_fit(
                 draw,
                 text=str(control.display_text),
-                bbox=(bbox[0] + 31.0, bbox[1] + 5.0, bbox[2] - 8.0, bbox[3] - 5.0),
+                bbox=(bbox[0] + 46.0, bbox[1] + 5.0, bbox[2] - 8.0, bbox[3] - 5.0),
                 fill=control_text,
                 max_size_px=int(render_params.small_font_size_px),
                 bold=True,
@@ -1021,10 +1026,9 @@ def _annotation_support_ids(query: _ResolvedQuery) -> Tuple[str, str, str]:
     return (f"guide_{int(target.action_index)}", f"context_{int(target.context_index)}", f"header_{int(target.action_index)}")
 
 
-def _dual_guide_annotation_support_ids(query: _ResolvedQuery) -> Tuple[str, str, str, str]:
+def _context_guide_annotation_support_ids(query: _ResolvedQuery) -> Tuple[str, str, str]:
     target = next(control for control in query.controls if str(control.control_id) == str(query.target_control_id))
     return (
-        f"guide_{int(target.action_index)}",
         f"context_guide_{int(target.context_index)}",
         f"context_{int(target.context_index)}",
         f"header_{int(target.action_index)}",
@@ -1048,7 +1052,7 @@ def _prompt_json_examples(query: _ResolvedQuery) -> Tuple[str, str]:
             "answer": 2,
         }
         answer_only = {"answer": 2}
-    elif str(query.objective_key) == PROMPT_DUAL_GUIDE_LABEL_KEY:
+    elif str(query.objective_key) == PROMPT_CONTEXT_GUIDE_LABEL_KEY:
         answer_and_annotation = {
             "annotation": [520, 360, 690, 444],
             "answer": "G",
@@ -1084,7 +1088,7 @@ SUPPORTED_WORKSPACE_VARIANTS = (
 SUPPORTED_PROMPT_QUERY_KEYS = (
     PROMPT_CONTROL_LABEL_KEY,
     PROMPT_CONTEXT_COUNT_KEY,
-    PROMPT_DUAL_GUIDE_LABEL_KEY,
+    PROMPT_CONTEXT_GUIDE_LABEL_KEY,
 )
 
 
@@ -1133,12 +1137,12 @@ _DEFAULT_INSTRUCTIONS = (
     'Use "{cue_label}" for the visible context "{context_label}".',
     'Select the labeled control for "{cue_label}" in "{context_label}".',
 )
-_DUAL_GUIDE_INSTRUCTIONS = (
-    'Use context cue "{context_cue_label}" and action cue "{cue_label}".',
-    'Match "{context_cue_label}" in the context guide and "{cue_label}" in the action guide.',
-    'Find the row for "{context_cue_label}" and the coded column for "{cue_label}".',
-    'Resolve context cue "{context_cue_label}" and action cue "{cue_label}".',
-    'Choose the control at the row from "{context_cue_label}" and the column from "{cue_label}".',
+_CONTEXT_GUIDE_INSTRUCTIONS = (
+    'Use context cue "{context_cue_label}" and Key {code_label}.',
+    'Find the row for "{context_cue_label}", then use Key {code_label}.',
+    'Choose the control in the row from "{context_cue_label}" and column Key {code_label}.',
+    'Map "{context_cue_label}" to its row and use Key {code_label}.',
+    'Resolve context cue "{context_cue_label}" and the stated Key {code_label}.',
 )
 
 
@@ -1312,25 +1316,23 @@ class WorkspaceTargetTaskBase:
                 "pixel_bbox_set": list(annotation_bboxes),
             }
             target_record = dict(control_record_by_id[str(query.target_control_id)])
-        elif str(query.objective_key) == PROMPT_DUAL_GUIDE_LABEL_KEY:
+        elif str(query.objective_key) == PROMPT_CONTEXT_GUIDE_LABEL_KEY:
             target_record = dict(control_record_by_id[str(query.target_control_id)])
-            annotation_support_ids = _dual_guide_annotation_support_ids(query)
+            annotation_support_ids = _context_guide_annotation_support_ids(query)
             annotation_support_records = [
                 next(record for record in support_records if str(record["support_id"]) == str(support_id))
                 for support_id in annotation_support_ids
             ]
             support_bbox_map = {
-                "action_cue_guide": list(annotation_support_records[0]["bbox_px"]),
-                "context_cue_guide": list(annotation_support_records[1]["bbox_px"]),
-                "context_row": list(annotation_support_records[2]["bbox_px"]),
-                "action_code_header": list(annotation_support_records[3]["bbox_px"]),
+                "context_cue_guide": list(annotation_support_records[0]["bbox_px"]),
+                "context_row": list(annotation_support_records[1]["bbox_px"]),
+                "action_code_header": list(annotation_support_records[2]["bbox_px"]),
                 "target_control": list(target_record["bbox_px"]),
             }
             annotation_role_support_ids = {
-                "action_cue_guide": str(annotation_support_ids[0]),
-                "context_cue_guide": str(annotation_support_ids[1]),
-                "context_row": str(annotation_support_ids[2]),
-                "action_code_header": str(annotation_support_ids[3]),
+                "context_cue_guide": str(annotation_support_ids[0]),
+                "context_row": str(annotation_support_ids[1]),
+                "action_code_header": str(annotation_support_ids[2]),
                 "target_control": str(query.target_control_id),
             }
             target_annotation_bbox = list(target_record["bbox_px"])
@@ -1609,6 +1611,6 @@ __all__ = [
     "SUPPORTED_WORKSPACE_VARIANTS",
     "PROMPT_CONTROL_LABEL_KEY",
     "PROMPT_CONTEXT_COUNT_KEY",
-    "PROMPT_DUAL_GUIDE_LABEL_KEY",
+    "PROMPT_CONTEXT_GUIDE_LABEL_KEY",
     "build_workspace_response",
 ]

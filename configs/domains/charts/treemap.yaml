@@ -20,9 +20,9 @@ rendering:
     plot_margin_top_px: 78
     plot_margin_bottom_px: 56
     title_font_size_px: 26
-    parent_font_size_px: 18
-    leaf_font_size_px: 15
-    value_font_size_px: 16
+    parent_font_size_px: 20
+    leaf_font_size_px: 17
+    value_font_size_px: 20
     note_font_size_px: 14
     panel_fill_rgb_options:
       - [252, 253, 250]

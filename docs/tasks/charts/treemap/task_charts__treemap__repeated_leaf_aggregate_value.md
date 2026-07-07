@@ -21,4 +21,4 @@ Query ids: `treemap_repeated_leaf_sum_value`, `treemap_repeated_leaf_average_val
 
 ## Review Notes
 
-This task uses the scene-package layout. Query ids select the aggregate operation; target child-label sampling remains objective-owned in the public task file and is recorded in trace params.
+This task uses the current source layout. Query ids select the aggregate operation; target child-label sampling remains objective-owned in the public task file and is recorded in trace params.

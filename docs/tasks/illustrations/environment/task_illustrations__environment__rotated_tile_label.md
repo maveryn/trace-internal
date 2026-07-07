@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `environment`
-- Implementation scene package: `environment`
+- Implementation source scene: `environment`
 - Implementation source: `trace/tasks/illustrations/environment/rotated_tile_label.py`
 
 ## Task Contract

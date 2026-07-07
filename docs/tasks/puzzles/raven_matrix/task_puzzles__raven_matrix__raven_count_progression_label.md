@@ -3,7 +3,7 @@
 ## Public Taxonomy
 1. Domain: `puzzles`
 2. Scene id: `raven_matrix`
-3. Source scene package: `raven_matrix`
+3. Source scene: `raven_matrix`
 4. Task id: `task_puzzles__raven_matrix__raven_count_progression_label`
 
 ## Query Contract

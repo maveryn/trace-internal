@@ -36,12 +36,12 @@
         "Read the \"{section_label}\" section and compute \"{first_label}\" minus \"{second_label}\".",
         "Find \"{first_label}\" and \"{second_label}\" in \"{section_label}\" and compute the resulting difference."
       ],
-      "sum_minus_amount_in_section_value": [
-        "In the \"{section_label}\" section, what is \"{first_label}\" plus \"{second_label}\" minus \"{third_label}\"? Use currency notation with exactly two digits after the decimal point.",
-        "Using only the \"{section_label}\" section, add \"{first_label}\" and \"{second_label}\", then subtract \"{third_label}\". What amount results?",
-        "What is \"{first_label}\" plus \"{second_label}\" minus \"{third_label}\" in the \"{section_label}\" section?",
-        "Read the \"{section_label}\" section and compute \"{first_label}\" plus \"{second_label}\" minus \"{third_label}\".",
-        "Find \"{first_label}\", \"{second_label}\", and \"{third_label}\" in \"{section_label}\" and compute the final amount."
+      "ranked_amount_field_label": [
+        "In the \"{section_label}\" section, which field label has the {rank_phrase} amount?",
+        "Using only the \"{section_label}\" section, find the field with the {rank_phrase} currency amount. What is its field label?",
+        "What field label corresponds to the {rank_phrase} amount in the \"{section_label}\" section?",
+        "Read the currency fields in \"{section_label}\" and identify the label for the {rank_phrase} amount.",
+        "Among the amounts in \"{section_label}\", which field label is attached to the {rank_phrase} amount?"
       ]
     },
     "output": {
@@ -80,19 +80,20 @@
       "json_example": "{\"annotation\":{\"first_operand\":[120,248,420,306],\"second_operand\":[120,308,420,366]},\"answer\":\"$42.50\"}",
       "json_example_answer_only": "{\"answer\":\"$42.50\"}"
     },
-    "query:sum_minus_amount_in_section_value": {
+    "query:ranked_amount_field_label": {
       "object_description": "a structured document with visible section headers and labeled currency fields",
-      "answer_hint": "set \"answer\" to the computed amount formatted as a currency string with exactly two digits after the decimal point",
-      "annotation_hint": "set \"annotation\" to an object mapping \"first_operand\", \"second_operand\", and \"third_operand\" to the referenced operand field boxes [x0, y0, x1, y1], including each field label and value",
-      "json_example": "{\"annotation\":{\"first_operand\":[120,248,420,306],\"second_operand\":[120,308,420,366],\"third_operand\":[120,368,420,426]},\"answer\":\"$133.30\"}",
-      "json_example_answer_only": "{\"answer\":\"$133.30\"}"
+      "answer_hint": "set \"answer\" to the exact field label string",
+      "annotation_hint": "set \"annotation\" to the selected field row box [x0, y0, x1, y1], including its label and value",
+      "json_example": "{\"annotation\":[120,248,420,306],\"answer\":\"Service Fee\"}",
+      "json_example_answer_only": "{\"answer\":\"Service Fee\"}"
     }
   },
   "dynamic_slots": {
     "section_label": {"type": "string"},
     "first_label": {"type": "string"},
     "second_label": {"type": "string"},
-    "third_label": {"type": "string"}
+    "third_label": {"type": "string"},
+    "rank_phrase": {"type": "string"}
   },
   "required_slots_by_key": {
     "scene:structured_document_sections": [
@@ -108,11 +109,9 @@
       "first_label",
       "second_label"
     ],
-    "query:sum_minus_amount_in_section_value": [
+    "query:ranked_amount_field_label": [
       "section_label",
-      "first_label",
-      "second_label",
-      "third_label"
+      "rank_phrase"
     ],
     "output:answer_only": [
       "json_output_contract_answer_only",

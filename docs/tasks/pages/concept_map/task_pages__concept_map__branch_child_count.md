@@ -13,7 +13,7 @@
 4. Answer type: `integer`
 5. Annotation schema: `bbox_set`
 6. Annotation witness: counted child-item-node boxes under the requested branch.
-7. Query argument axes: target branch label, context topic, branch count, child-count support, layout variant, style variant, and node shape profile.
+7. Query argument axes: target branch label, context topic, branch count, task-local child-count support `4..7`, layout variant, style variant, and node shape profile.
 
 ## Program Contract
 - `concept_map_branch_child_count(branch_label); output=integer_value; annotation=bbox_set(counted_child_item_nodes); scene=concept_map; scope=one concept-map diagram`

@@ -43,26 +43,25 @@ def resolve_wire_render_defaults(
     }
 
 
-def _phys_to_screen_vector(vector: Tuple[int, int], length: float) -> Tuple[float, float]:
-    return (float(vector[0] * length), float(-vector[1] * length))
-
-
-def _draw_field_symbol(
+def _draw_page_current_symbol(
     draw: ImageDraw.ImageDraw,
     *,
     center: Tuple[float, float],
-    direction: str,
+    current_direction: str,
     style: Any,
+    radius: float = 42.0,
 ) -> None:
     x, y = float(center[0]), float(center[1])
     stroke = tuple(int(value) for value in style.stroke_rgb)
     fill = tuple(int(value) for value in style.panel_alt_fill_rgb)
-    draw.ellipse((x - 17.0, y - 17.0, x + 17.0, y + 17.0), fill=fill, outline=stroke, width=3)
-    if direction == "out_of_page":
-        draw.ellipse((x - 5.0, y - 5.0, x + 5.0, y + 5.0), fill=stroke)
+    r = float(radius)
+    draw.ellipse((x - r, y - r, x + r, y + r), fill=fill, outline=stroke, width=5)
+    draw.ellipse((x - (r * 0.72), y - (r * 0.72), x + (r * 0.72), y + (r * 0.72)), outline=stroke, width=2)
+    if current_direction == "out_of_page":
+        draw.ellipse((x - 10.0, y - 10.0, x + 10.0, y + 10.0), fill=stroke)
     else:
-        draw.line((x - 9.0, y - 9.0, x + 9.0, y + 9.0), fill=stroke, width=4)
-        draw.line((x - 9.0, y + 9.0, x + 9.0, y - 9.0), fill=stroke, width=4)
+        draw.line((x - 18.0, y - 18.0, x + 18.0, y + 18.0), fill=stroke, width=7)
+        draw.line((x - 18.0, y + 18.0, x + 18.0, y - 18.0), fill=stroke, width=7)
 
 
 def _draw_option_symbol(
@@ -73,9 +72,6 @@ def _draw_option_symbol(
     style: Any,
 ) -> None:
     x, y = float(center[0]), float(center[1])
-    if direction in {"out_of_page", "into_page"}:
-        _draw_field_symbol(draw, center=(x, y), direction=str(direction), style=style)
-        return
     vectors = {
         "north": (0.0, -1.0),
         "south": (0.0, 1.0),
@@ -108,6 +104,7 @@ def render_wire_magnetism_scene(
     title_font = load_font(27, bold=True, font_family=font_family)
     label_font = load_font(25, bold=True, font_family=font_family)
     option_font = load_font(20, bold=True, font_family=font_family)
+    small_font = load_font(17, bold=False, font_family=font_family)
     text_rgb = tuple(int(value) for value in style.label_rgb)
     stroke = tuple(int(value) for value in style.stroke_rgb)
     accent = tuple(int(value) for value in style.accent_rgb)
@@ -130,7 +127,7 @@ def render_wire_magnetism_scene(
     )
     draw_centered_text(
         draw,
-        text="current-carrying wire",
+        text="wire through page",
         center=(main_panel[0] + (0.5 * (main_panel[2] - main_panel[0])), main_panel[1] + 32.0),
         font=title_font,
         fill=text_rgb,
@@ -139,7 +136,7 @@ def render_wire_magnetism_scene(
     )
     draw_centered_text(
         draw,
-        text="Field at P",
+        text="Field direction at P",
         center=(option_panel[0] + (0.5 * (option_panel[2] - option_panel[0])), option_panel[1] + 34.0),
         font=title_font,
         fill=text_rgb,
@@ -148,31 +145,39 @@ def render_wire_magnetism_scene(
     )
 
     wire_center = (390.0, 352.0)
-    wire_half = 215.0
-    if scenario.orientation == "horizontal":
-        wire_start = (wire_center[0] - wire_half, wire_center[1])
-        wire_end = (wire_center[0] + wire_half, wire_center[1])
-    else:
-        wire_start = (wire_center[0], wire_center[1] + wire_half)
-        wire_end = (wire_center[0], wire_center[1] - wire_half)
-
-    arrow_vec = _phys_to_screen_vector(scenario.current_vector_phys, 132.0)
-    arrow_start = (wire_center[0] - (arrow_vec[0] * 0.5), wire_center[1] - (arrow_vec[1] * 0.5))
-    arrow_end = (wire_center[0] + (arrow_vec[0] * 0.5), wire_center[1] + (arrow_vec[1] * 0.5))
-    point_vec = _phys_to_screen_vector(scenario.point_offset_phys, 138.0)
+    guide_radius = 166.0
+    draw.ellipse(
+        (
+            wire_center[0] - guide_radius,
+            wire_center[1] - guide_radius,
+            wire_center[0] + guide_radius,
+            wire_center[1] + guide_radius,
+        ),
+        outline=tuple(int(value) for value in style.panel_border_rgb),
+        width=2,
+    )
+    point_vec = (float(scenario.point_offset_phys[0]) * guide_radius, float(-scenario.point_offset_phys[1]) * guide_radius)
     point_p = (wire_center[0] + point_vec[0], wire_center[1] + point_vec[1])
 
-    draw.line((wire_start, wire_end), fill=stroke, width=16)
-    draw.line((wire_start, wire_end), fill=tuple(int(value) for value in style.panel_alt_fill_rgb), width=8)
-    draw_arrow(draw, start=arrow_start, end=arrow_end, fill=accent, width=9, head_length_px=26, head_width_px=24)
+    _draw_page_current_symbol(draw, center=wire_center, current_direction=str(scenario.current_direction), style=style)
     draw_centered_text(
         draw,
         text="I",
-        center=(arrow_end[0] + 28.0, arrow_end[1] - 24.0),
+        center=(wire_center[0], wire_center[1] - 68.0),
         font=label_font,
         fill=accent,
         stroke_fill=resolve_text_stroke_fill(accent),
         stroke_width=2,
+    )
+    convention_text = "dot = current out" if scenario.current_direction == "out_of_page" else "cross = current in"
+    draw_centered_text(
+        draw,
+        text=convention_text,
+        center=(wire_center[0], wire_center[1] + 78.0),
+        font=small_font,
+        fill=text_rgb,
+        stroke_fill=resolve_text_stroke_fill(text_rgb),
+        stroke_width=1,
     )
 
     draw.ellipse(
@@ -181,24 +186,29 @@ def render_wire_magnetism_scene(
         outline=stroke,
         width=4,
     )
+    label_offsets = {
+        "north": (0.0, -38.0),
+        "south": (0.0, 38.0),
+        "east": (38.0, -2.0),
+        "west": (-38.0, -2.0),
+    }
+    label_offset = label_offsets[str(scenario.point_position)]
     draw_centered_text(
         draw,
         text="P",
-        center=(point_p[0], point_p[1] - 36.0),
+        center=(point_p[0] + label_offset[0], point_p[1] + label_offset[1]),
         font=label_font,
         fill=text_rgb,
         stroke_fill=resolve_text_stroke_fill(text_rgb),
         stroke_width=1,
     )
-    draw.line((point_p[0], point_p[1], wire_center[0], wire_center[1]), fill=tuple(int(value) for value in style.guide_rgb), width=2)
-
     option_bboxes: Dict[str, List[float]] = {}
-    box_w = 96.0
-    box_h = 86.0
-    gap_x = 20.0
-    gap_y = 28.0
-    start_x = option_panel[0] + 28.0
-    start_y = option_panel[1] + 92.0
+    box_w = 116.0
+    box_h = 108.0
+    gap_x = 28.0
+    gap_y = 34.0
+    start_x = option_panel[0] + 32.0
+    start_y = option_panel[1] + 112.0
     for index, (label, direction) in enumerate(sorted(scenario.option_map.items())):
         col = int(index) % 2
         row = int(index) // 2
@@ -221,18 +231,18 @@ def render_wire_magnetism_scene(
             stroke_fill=resolve_text_stroke_fill(text_rgb),
             stroke_width=1,
         )
-        _draw_option_symbol(draw, center=(box[0] + 63.0, box[1] + 43.0), direction=str(direction), style=style)
+        _draw_option_symbol(draw, center=(box[0] + 72.0, box[1] + 54.0), direction=str(direction), style=style)
         option_bboxes[str(label)] = bbox(box)
 
-    wire_bbox = bbox(
+    wire_bbox = bbox((wire_center[0] - 58.0, wire_center[1] - 84.0, wire_center[0] + 58.0, wire_center[1] + 98.0))
+    point_bbox = bbox(
         (
-            min(wire_start[0], wire_end[0], arrow_start[0], arrow_end[0]) - 28.0,
-            min(wire_start[1], wire_end[1], arrow_start[1], arrow_end[1]) - 36.0,
-            max(wire_start[0], wire_end[0], arrow_start[0], arrow_end[0]) + 40.0,
-            max(wire_start[1], wire_end[1], arrow_start[1], arrow_end[1]) + 36.0,
+            min(point_p[0] - 26.0, point_p[0] + label_offset[0] - 18.0),
+            min(point_p[1] - 26.0, point_p[1] + label_offset[1] - 18.0),
+            max(point_p[0] + 26.0, point_p[0] + label_offset[0] + 18.0),
+            max(point_p[1] + 26.0, point_p[1] + label_offset[1] + 18.0),
         )
     )
-    point_bbox = bbox((point_p[0] - 26.0, point_p[1] - 48.0, point_p[0] + 26.0, point_p[1] + 24.0))
     annotation_bboxes = {"wire_current": wire_bbox, "point_p": point_bbox}
     scene_entities = [
         {
@@ -240,8 +250,8 @@ def render_wire_magnetism_scene(
             "entity_type": "current_carrying_wire",
             "bbox_px": list(wire_bbox),
             "meta": {
-                "orientation": str(scenario.orientation),
                 "current_direction": str(scenario.current_direction),
+                "current_z_sign": int(scenario.current_z_sign),
             },
         },
         {
@@ -249,15 +259,16 @@ def render_wire_magnetism_scene(
             "entity_type": "marked_point",
             "bbox_px": list(point_bbox),
             "meta": {
-                "point_side": str(scenario.point_side),
+                "point_position": str(scenario.point_position),
                 "point_offset_phys": list(scenario.point_offset_phys),
             },
         },
     ]
     render_map = {
-        "wire_start": [round(float(wire_start[0]), 3), round(float(wire_start[1]), 3)],
-        "wire_end": [round(float(wire_end[0]), 3), round(float(wire_end[1]), 3)],
+        "wire_center": [round(float(wire_center[0]), 3), round(float(wire_center[1]), 3)],
+        "current_direction": str(scenario.current_direction),
         "point_p": [round(float(point_p[0]), 3), round(float(point_p[1]), 3)],
+        "point_position": str(scenario.point_position),
         "option_bboxes": option_bboxes,
         "option_map": dict(scenario.option_map),
         "correct_label": str(scenario.correct_label),

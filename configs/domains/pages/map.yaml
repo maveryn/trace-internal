@@ -292,8 +292,8 @@ visual:
         - 0.035
 generation:
   shared:
-    landmark_count_min: 10
-    landmark_count_max: 14
+    landmark_count_min: 8
+    landmark_count_max: 12
     direction_step_count_min: 2
     direction_step_count_max: 4
     highlighted_route_step_min: 2

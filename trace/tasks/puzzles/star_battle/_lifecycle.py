@@ -55,6 +55,7 @@ class BoundStarBattleOutput:
     """Task-owned answer, annotation, and trace fields after rendering."""
 
     prompt_query_key: str
+    prompt_dynamic_slots: Dict[str, Any]
     query_params: Dict[str, Any]
     answer_gt: TypedValue
     annotation_artifacts: AnnotationArtifacts
@@ -224,6 +225,7 @@ def bind_valid_cell_label_output(
     query_params["scope_kind"] = str(scope_kind)
     return BoundStarBattleOutput(
         prompt_query_key=str(query_id),
+        prompt_dynamic_slots={},
         query_params=query_params,
         answer_gt=TypedValue(type="option_letter", value=str(dataset.answer_value)),
         annotation_artifacts=annotation,
@@ -270,8 +272,14 @@ def bind_remaining_count_output(
         context=context,
     )
     query_params["scope_kind"] = str(scope_kind)
+    prompt_dynamic_slots: Dict[str, Any] = {}
+    if str(scope_kind) == "marked_row":
+        prompt_dynamic_slots["row_index"] = int(dataset.marked_row_index) + 1
+    elif str(scope_kind) == "marked_column":
+        prompt_dynamic_slots["column_index"] = int(dataset.marked_col_index) + 1
     return BoundStarBattleOutput(
         prompt_query_key=str(query_id),
+        prompt_dynamic_slots=prompt_dynamic_slots,
         query_params=query_params,
         answer_gt=TypedValue(type="integer", value=int(dataset.answer_value)),
         annotation_artifacts=annotation,
@@ -300,6 +308,7 @@ def finalize_star_battle_output(
     prompt_defaults: Mapping[str, Any],
     prompt_task_key: str,
     prompt_query_key: str,
+    prompt_dynamic_slots: Mapping[str, Any],
     query_id: str,
     query_params: Mapping[str, Any],
     answer_gt: TypedValue,
@@ -316,6 +325,7 @@ def finalize_star_battle_output(
         prompt_defaults=prompt_defaults,
         prompt_task_key=str(prompt_task_key),
         prompt_query_key=str(prompt_query_key),
+        dynamic_slots=dict(prompt_dynamic_slots),
         instance_seed=int(instance_seed),
     )
     trace_payload = build_trace_payload(
@@ -431,6 +441,7 @@ def run_star_battle_public_task(
         prompt_defaults=prompt_defaults,
         prompt_task_key=str(prompt_task_key),
         prompt_query_key=str(bound.prompt_query_key),
+        prompt_dynamic_slots=bound.prompt_dynamic_slots,
         query_id=str(query_id),
         query_params=bound.query_params,
         answer_gt=bound.answer_gt,

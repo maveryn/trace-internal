@@ -1,7 +1,7 @@
 """Run the current TRACE task calibration sweep.
 
 The sweep is intentionally task-at-a-time and resumable.  It builds one fixed
-100-sample dataset per task, exports the matching task-review workbook, probes
+50-sample dataset per task, exports the matching task-review workbook, probes
 each calibration model, exports solve-rate workbooks, and writes an aggregate
 status file under review/.
 """
@@ -12,7 +12,8 @@ import argparse
 from contextlib import contextmanager
 from dataclasses import dataclass
 import fcntl
-import math
+from functools import lru_cache
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -60,14 +61,17 @@ MODEL_SPECS: dict[str, ModelSpec] = {
 }
 
 
-HARD_FRACTION_THRESHOLD = 0.30
-EASY_FRACTION_THRESHOLD = 0.20
-MEAN_SOLVE_RATE_MIN = 0.15
-MEAN_SOLVE_RATE_MAX = 0.75
-EASY_SOLVE_RATE_THRESHOLD = 0.75
+HARD_FRACTION_THRESHOLD = 0.50
+EASY_FRACTION_THRESHOLD = 0.25
+MEAN_SOLVE_RATE_MIN = 0.10
+MEAN_SOLVE_RATE_MAX = 0.80
 SAMPLE_DISTRIBUTION_MIN_UNIQUE_ANSWERS = 4
 SAMPLE_DISTRIBUTION_MAX_ANSWER_FREQUENCY = 1.0 / 3.0
 SAMPLE_DISTRIBUTION_VALIDATION_MAX_ATTEMPTS = 5
+CALIBRATION_SOURCE_FINGERPRINT_VERSION = "v1"
+CALIBRATION_FINGERPRINT_SKIP_DIRS = frozenset({"__pycache__", ".pytest_cache", ".mypy_cache"})
+CALIBRATION_FINGERPRINT_SKIP_SUFFIXES = frozenset({".pyc", ".pyo", ".tmp", ".swp"})
+CURRENT_CALIBRATION_REVIEW_DIR = "review/calibration/50x8_qwen25vl3b_prompt_pilot_seed20260703"
 
 SERVER_BASE_URL_DEFAULTS: dict[str, str] = {
     "qwen25vl7b": "http://127.0.0.1:8002/v1",
@@ -103,16 +107,16 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--limit", type=int, default=0, help="Maximum number of tasks to process.")
     parser.add_argument("--models", default="qwen25vl7b", help="Comma-separated model aliases or HF ids.")
     parser.add_argument("--seed", type=int, default=20260507)
-    parser.add_argument("--sample-count", type=int, default=100)
-    parser.add_argument("--rollouts-per-prompt", type=int, default=24)
-    parser.add_argument("--batch-size", type=int, default=1600)
-    parser.add_argument("--retry-batch-size", type=int, default=800)
+    parser.add_argument("--sample-count", type=int, default=50)
+    parser.add_argument("--rollouts-per-prompt", type=int, default=8)
+    parser.add_argument("--batch-size", type=int, default=400)
+    parser.add_argument("--retry-batch-size", type=int, default=200)
     parser.add_argument("--max-prompt-length", type=int, default=2048)
     parser.add_argument("--max-tokens", type=int, default=0)
     parser.add_argument("--max-model-len", type=int, default=0)
     parser.add_argument("--max-num-batched-tokens", type=int, default=24576)
     parser.add_argument("--max-num-seqs", type=int, default=1600)
-    parser.add_argument("--max-pixels", type=int, default=4194304)
+    parser.add_argument("--max-pixels", type=int, default=1280000)
     parser.add_argument("--gpu", default=os.environ.get("CUDA_VISIBLE_DEVICES", "0").split(",")[0] or "0")
     parser.add_argument("--gpu-memory-utilization", type=float, default=0.90)
     parser.add_argument("--gpu-wait-interval", type=int, default=60)
@@ -137,8 +141,16 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--output-root", default="out/calibration/current")
     parser.add_argument("--probe-root", default="rlvr/outputs/calibration/current")
     parser.add_argument("--review-root", default="review/task-reviews")
-    parser.add_argument("--status-json", default="review/calibration_sweep_status.json")
-    parser.add_argument("--status-md", default="review/calibration_sweep_status.md")
+    parser.add_argument(
+        "--status-json",
+        default=f"{CURRENT_CALIBRATION_REVIEW_DIR}/latest_single_task_calibration_sweep_status.json",
+        help="Single-sweep status output. The global calibration status is derived from task_status_records.json.",
+    )
+    parser.add_argument(
+        "--status-md",
+        default=f"{CURRENT_CALIBRATION_REVIEW_DIR}/latest_single_task_calibration_sweep_status.md",
+        help="Single-sweep Markdown output. The global calibration status is derived from task_status_records.json.",
+    )
     parser.add_argument(
         "--calibration-baseline",
         default="v0",
@@ -154,7 +166,24 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--force-review", action="store_true")
     parser.add_argument("--force-models", action="store_true")
     parser.add_argument("--force-stats", action="store_true")
-    parser.add_argument("--skip-review", action="store_true")
+    review_export_group = parser.add_mutually_exclusive_group()
+    review_export_group.add_argument(
+        "--export-review",
+        dest="skip_review",
+        action="store_false",
+        help=(
+            "Also export the 50-row calibration sample into review/task-reviews. "
+            "This replaces app review images/data and is not used for the normal "
+            "browser review workflow."
+        ),
+    )
+    review_export_group.add_argument(
+        "--skip-review",
+        dest="skip_review",
+        action="store_true",
+        help="Do not replace browser review artifacts with calibration samples. This is the default.",
+    )
+    parser.set_defaults(skip_review=True)
     parser.add_argument("--skip-models", action="store_true")
     parser.add_argument("--skip-scene-workbooks", action="store_true")
     parser.add_argument(
@@ -185,8 +214,8 @@ def _now() -> str:
 
 
 def _easy_threshold_for_rollouts(rollout_count: int) -> int:
-    """Minimum solved rollouts for the strict >75% easy tail."""
-    return int(math.floor(float(rollout_count) * EASY_SOLVE_RATE_THRESHOLD)) + 1
+    """Minimum solved rollouts for the perfect-solve tail."""
+    return int(rollout_count)
 
 
 def _rel(path: Path) -> str:
@@ -246,6 +275,189 @@ def _json_file_matches_baseline(path: Path, baseline: str) -> bool:
     except Exception:
         return False
     return _metadata_matches_baseline(payload, baseline)
+
+
+def _repo_relative(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def _fingerprint_roots_for_task(task_id: str) -> list[Path]:
+    taxonomy = resolve_task_taxonomy(task_id)
+    domain = str(taxonomy.domain)
+    scene_id = str(taxonomy.scene_id)
+    candidates = [
+        REPO_ROOT / "trace" / "tasks" / domain / scene_id,
+        REPO_ROOT / "trace" / "tasks" / domain / "shared",
+        REPO_ROOT / "trace" / "tasks" / domain / "__init__.py",
+        REPO_ROOT / "trace" / "tasks" / "shared",
+        REPO_ROOT / "trace" / "tasks" / "__init__.py",
+        REPO_ROOT / "trace" / "tasks" / "registry.py",
+        REPO_ROOT / "trace" / "core",
+        REPO_ROOT / "trace" / "configs",
+        REPO_ROOT / "configs" / "domains" / domain / "base.yaml",
+        REPO_ROOT / "configs" / "domains" / domain / f"{scene_id}.yaml",
+        REPO_ROOT / "prompts" / domain,
+        REPO_ROOT / "assets",
+        REPO_ROOT / "requirements.txt",
+        REPO_ROOT / "pyproject.toml",
+    ]
+    roots: list[Path] = []
+    seen: set[Path] = set()
+    for candidate in candidates:
+        if not candidate.exists():
+            continue
+        resolved = candidate.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        roots.append(candidate)
+    return roots
+
+
+def _should_fingerprint_file(path: Path) -> bool:
+    if any(part in CALIBRATION_FINGERPRINT_SKIP_DIRS for part in path.parts):
+        return False
+    if path.suffix in CALIBRATION_FINGERPRINT_SKIP_SUFFIXES:
+        return False
+    return path.is_file()
+
+
+def _iter_fingerprint_files(root: Path) -> Iterable[Path]:
+    if root.is_file():
+        if _should_fingerprint_file(root):
+            yield root
+        return
+    if not root.is_dir():
+        return
+    for path in sorted(root.rglob("*"), key=lambda item: _repo_relative(item)):
+        if _should_fingerprint_file(path):
+            yield path
+
+
+@lru_cache(maxsize=None)
+def _fingerprint_file_digest(path_text: str) -> str:
+    return hashlib.sha256(Path(path_text).read_bytes()).hexdigest()
+
+
+@lru_cache(maxsize=None)
+def _fingerprint_root_entries(root_text: str) -> tuple[tuple[str, str], ...]:
+    root = Path(root_text)
+    entries: list[tuple[str, str]] = []
+    for path in _iter_fingerprint_files(root):
+        entries.append((_repo_relative(path), _fingerprint_file_digest(str(path.resolve()))))
+    return tuple(sorted(entries))
+
+
+def _calibration_source_fingerprint(task_id: str) -> dict[str, Any]:
+    roots = _fingerprint_roots_for_task(task_id)
+    entries: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for root in roots:
+        for rel, file_digest in _fingerprint_root_entries(str(root.resolve())):
+            if rel in seen:
+                continue
+            seen.add(rel)
+            entries.append((rel, file_digest))
+
+    digest = hashlib.sha256()
+    digest.update(CALIBRATION_SOURCE_FINGERPRINT_VERSION.encode("utf-8"))
+    digest.update(b"\0")
+    for rel, file_digest in sorted(entries):
+        digest.update(rel.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(file_digest.encode("ascii"))
+        digest.update(b"\0")
+
+    return {
+        "version": CALIBRATION_SOURCE_FINGERPRINT_VERSION,
+        "digest": digest.hexdigest(),
+        "file_count": len(entries),
+        "roots": [_repo_relative(root) for root in roots],
+    }
+
+
+def _fingerprint_digest(payload: dict[str, Any] | None) -> str:
+    if not isinstance(payload, dict):
+        return ""
+    return str(payload.get("digest") or "")
+
+
+def _fingerprints_match(left: dict[str, Any] | None, right: dict[str, Any] | None) -> bool:
+    if not isinstance(left, dict) or not isinstance(right, dict):
+        return False
+    return (
+        str(left.get("version") or "") == str(right.get("version") or "")
+        and _fingerprint_digest(left) == _fingerprint_digest(right)
+    )
+
+
+def _parquet_manifest_path(parquet: Path) -> Path:
+    return parquet.with_suffix(parquet.suffix + ".manifest.json")
+
+
+def _parquet_source_fingerprint(parquet: Path) -> dict[str, Any]:
+    manifest = _load_json(_parquet_manifest_path(parquet))
+    value = manifest.get("calibration_source_fingerprint")
+    return dict(value) if isinstance(value, dict) else {}
+
+
+def _probe_run_manifest_path(output_dir: Path) -> Path:
+    return output_dir / "calibration_probe_manifest.json"
+
+
+def _probe_manifest_matches_parquet(path: Path, parquet: Path, baseline: str) -> bool:
+    payload = _load_json(path)
+    if not _metadata_matches_baseline(payload, baseline):
+        return False
+    expected_fingerprint = _parquet_source_fingerprint(parquet)
+    payload_fingerprint = payload.get("calibration_source_fingerprint")
+    if not _fingerprints_match(
+        payload_fingerprint if isinstance(payload_fingerprint, dict) else {},
+        expected_fingerprint,
+    ):
+        return False
+    try:
+        if Path(str(payload.get("parquet") or "")).resolve() != parquet.resolve():
+            return False
+    except OSError:
+        return False
+    return True
+
+
+def _write_probe_run_manifest(output_dir: Path, parquet: Path, baseline: str, *, batch_size: int) -> None:
+    payload = {
+        "calibration_baseline": str(baseline),
+        "parquet": str(parquet),
+        "calibration_source_fingerprint": _parquet_source_fingerprint(parquet),
+        "batch_size": int(batch_size),
+        "updated_at": _now(),
+    }
+    _write_json(_probe_run_manifest_path(output_dir), payload)
+
+
+def _stats_match_parquet(stats_path: Path, parquet: Path, baseline: str) -> bool:
+    stats = _load_json(stats_path)
+    if not _metadata_matches_baseline(stats, baseline):
+        return False
+    config = stats.get("config")
+    if not isinstance(config, dict):
+        return False
+    expected_fingerprint = _parquet_source_fingerprint(parquet)
+    stats_fingerprint = config.get("calibration_source_fingerprint")
+    if not _fingerprints_match(
+        stats_fingerprint if isinstance(stats_fingerprint, dict) else {},
+        expected_fingerprint,
+    ):
+        return False
+    try:
+        if Path(str(config.get("parquet") or "")).resolve() != parquet.resolve():
+            return False
+    except OSError:
+        return False
+    return True
 
 
 def _line_count(path: Path) -> int:
@@ -439,15 +651,36 @@ def _build_sample(
         sample_count=int(active_sample_count),
         dataset_suffix=str(dataset_suffix),
     )
-    manifest = parquet.with_suffix(parquet.suffix + ".manifest.json")
-    manifest_matches_baseline = _json_file_matches_baseline(manifest, str(args.calibration_baseline))
+    manifest = _parquet_manifest_path(parquet)
+    current_fingerprint = _calibration_source_fingerprint(task_id)
+    manifest_payload = _load_json(manifest)
+    manifest_matches_baseline = _metadata_matches_baseline(manifest_payload, str(args.calibration_baseline))
+    manifest_matches_source = _fingerprints_match(
+        manifest_payload.get("calibration_source_fingerprint")
+        if isinstance(manifest_payload.get("calibration_source_fingerprint"), dict)
+        else {},
+        current_fingerprint,
+    )
     should_reset = (
-        (args.force or args.force_build or not manifest_matches_baseline)
+        (args.force or args.force_build or not manifest_matches_baseline or not manifest_matches_source)
         if reset is None
         else bool(reset)
     )
     if parquet.exists() and manifest.exists() and not bool(should_reset):
-        return parquet, Path(_load_json(manifest).get("trace_dataset_root") or dataset_root)
+        return parquet, Path(manifest_payload.get("trace_dataset_root") or dataset_root)
+    if parquet.exists() and manifest.exists() and bool(should_reset) and not (args.force or args.force_build):
+        reasons: list[str] = []
+        if not manifest_matches_baseline:
+            reasons.append("baseline changed/missing")
+        if not manifest_matches_source:
+            old_digest = _fingerprint_digest(
+                manifest_payload.get("calibration_source_fingerprint")
+                if isinstance(manifest_payload.get("calibration_source_fingerprint"), dict)
+                else {}
+            )
+            new_digest = _fingerprint_digest(current_fingerprint)
+            reasons.append(f"source fingerprint changed {old_digest or '<missing>'}->{new_digest}")
+        print(f"[build] rebuilding stale calibration dataset for {task_id}: {', '.join(reasons)}")
 
     cmd = [
         sys.executable,
@@ -487,6 +720,7 @@ def _build_sample(
     manifest_payload["calibration_sample_count"] = int(active_sample_count)
     manifest_payload["calibration_seed"] = int(active_seed)
     manifest_payload["calibration_code_revision"] = str(code_revision)
+    manifest_payload["calibration_source_fingerprint"] = current_fingerprint
     _write_json(manifest, manifest_payload)
     return parquet, Path(manifest_payload["trace_dataset_root"])
 
@@ -724,7 +958,7 @@ def _probe_command(
         "--trace-reward-mode",
         "answer",
         "--trace-answer-scoring",
-        "exact_json",
+        "legacy_strict",
         "--trace-format-weight",
         "0.0",
         "--batch-size",
@@ -799,18 +1033,32 @@ def _run_probe(args: argparse.Namespace, task_id: str, model: ModelSpec, parquet
     output_dir = _probe_output_dir(args, task_id, model)
     stats_path = output_dir / "calibration_stats.json"
     per_instance = output_dir / "per_instance.jsonl"
+    probe_manifest = _probe_run_manifest_path(output_dir)
     expected_rows = int(args.sample_count)
     default_endpoint = _server_base_url_for_model(args, model) if str(args.probe_backend) == "openai_server" else None
     if output_dir.exists() and (args.force or args.force_models):
         shutil.rmtree(output_dir, ignore_errors=True)
-    elif stats_path.exists() and not _json_file_matches_baseline(stats_path, str(args.calibration_baseline)):
+    elif stats_path.exists() and not _stats_match_parquet(stats_path, parquet, str(args.calibration_baseline)):
         shutil.rmtree(output_dir, ignore_errors=True)
-    elif per_instance.exists() and not stats_path.exists():
+    elif per_instance.exists() and not stats_path.exists() and not _probe_manifest_matches_parquet(
+        probe_manifest,
+        parquet,
+        str(args.calibration_baseline),
+    ):
         shutil.rmtree(output_dir, ignore_errors=True)
 
-    if stats_path.exists() and _json_file_matches_baseline(stats_path, str(args.calibration_baseline)) and not (args.force or args.force_models or args.force_stats):
+    if (
+        stats_path.exists()
+        and _stats_match_parquet(stats_path, parquet, str(args.calibration_baseline))
+        and not (args.force or args.force_models or args.force_stats)
+    ):
         return output_dir, int(_load_json(stats_path).get("config", {}).get("batch_size", args.batch_size)), default_endpoint
-    if per_instance.exists() and _line_count(per_instance) == expected_rows and not (args.force or args.force_models):
+    if (
+        per_instance.exists()
+        and _line_count(per_instance) == expected_rows
+        and _probe_manifest_matches_parquet(probe_manifest, parquet, str(args.calibration_baseline))
+        and not (args.force or args.force_models)
+    ):
         return output_dir, int(args.batch_size), default_endpoint
 
     batch_sizes = [int(args.batch_size)]
@@ -834,6 +1082,13 @@ def _run_probe(args: argparse.Namespace, task_id: str, model: ModelSpec, parquet
             )
             try:
                 _run_command(cmd, env=_probe_env(args), log_path=log_path, dry_run=bool(args.dry_run))
+                if not args.dry_run:
+                    _write_probe_run_manifest(
+                        output_dir,
+                        parquet,
+                        str(args.calibration_baseline),
+                        batch_size=int(batch_size),
+                    )
                 return output_dir, batch_size, str(claimed_endpoint) if str(claimed_endpoint).strip() else None
             except subprocess.CalledProcessError as exc:
                 last_error = exc
@@ -847,7 +1102,11 @@ def _run_probe(args: argparse.Namespace, task_id: str, model: ModelSpec, parquet
 
 def _export_stats(args: argparse.Namespace, task_id: str, model: ModelSpec, parquet: Path, output_dir: Path) -> dict[str, Any]:
     stats_path = output_dir / "calibration_stats.json"
-    if stats_path.exists() and _json_file_matches_baseline(stats_path, str(args.calibration_baseline)) and not (args.force or args.force_stats):
+    if (
+        stats_path.exists()
+        and _stats_match_parquet(stats_path, parquet, str(args.calibration_baseline))
+        and not (args.force or args.force_stats)
+    ):
         return _load_json(stats_path)
     label = (
         f"{model.slug}_{str(args.calibration_baseline)}_"
@@ -880,7 +1139,13 @@ def _export_stats(args: argparse.Namespace, task_id: str, model: ModelSpec, parq
         "query_id",
     ]
     _run_command(cmd, dry_run=bool(args.dry_run))
-    return _load_json(stats_path) if stats_path.exists() else {}
+    stats = _load_json(stats_path) if stats_path.exists() else {}
+    if stats:
+        config = stats.setdefault("config", {})
+        if isinstance(config, dict):
+            config["calibration_source_fingerprint"] = _parquet_source_fingerprint(parquet)
+            _write_json(stats_path, stats)
+    return stats
 
 
 def _model_status(stats: dict[str, Any], *, cap_threshold: float) -> tuple[str, list[str]]:
@@ -898,9 +1163,9 @@ def _model_status(stats: dict[str, Any], *, cap_threshold: float) -> tuple[str, 
         return "blocked", reasons
 
     difficulty_reasons: list[str] = []
-    if float(overall.get("hard_frac") or 0.0) >= HARD_FRACTION_THRESHOLD:
+    if float(overall.get("hard_frac") or 0.0) > HARD_FRACTION_THRESHOLD:
         difficulty_reasons.append("hard_frac")
-    if float(overall.get("easy_frac") or 0.0) >= EASY_FRACTION_THRESHOLD:
+    if float(overall.get("easy_frac") or 0.0) > EASY_FRACTION_THRESHOLD:
         difficulty_reasons.append("easy_frac")
     mean = float(overall.get("mean_solve_rate") or 0.0)
     if mean < MEAN_SOLVE_RATE_MIN or mean > MEAN_SOLVE_RATE_MAX:
@@ -944,8 +1209,32 @@ def _prompt_max(stats: dict[str, Any]) -> str:
 
 
 def _write_status_files(args: argparse.Namespace, status: dict[str, Any]) -> None:
+    status_json_path = Path(args.status_json)
+    current_tasks: dict[str, Any] = {}
+    if status_json_path.exists():
+        try:
+            current_status = json.loads(status_json_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            current_status = {}
+        if isinstance(current_status, dict) and isinstance(current_status.get("tasks"), dict):
+            current_tasks = {
+                str(task_id): record
+                for task_id, record in current_status["tasks"].items()
+                if isinstance(record, dict)
+            }
+    if current_tasks:
+        tasks = status.setdefault("tasks", {})
+        if isinstance(tasks, dict):
+            for task_id, record in current_tasks.items():
+                tasks.setdefault(str(task_id), record)
+    tasks = status.get("tasks")
+    if isinstance(tasks, dict):
+        active_task_ids = set(list_default_task_ids())
+        for task_id in list(tasks.keys()):
+            if str(task_id) not in active_task_ids:
+                del tasks[task_id]
     status["updated_at"] = _now()
-    _write_json(Path(args.status_json), status)
+    _write_json(status_json_path, status)
 
     rows: list[str] = []
     rows.append("# TRACE Calibration Sweep Status")

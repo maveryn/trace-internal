@@ -1,4 +1,4 @@
-"""Behavior tests for chart heatmap scene-package tasks."""
+"""Behavior tests for chart heatmap source-layout tasks."""
 
 from __future__ import annotations
 

@@ -14,6 +14,29 @@ from trace.tasks.shared.prompt_variants import (
 from .state import DOMAIN, PROMPT_BUNDLE_ID, SCENE_ID, SCENE_PROMPT_KEY
 
 
+_CONSTRUCTION_DESCRIPTION_BY_TASK_KEY = {
+    "angle_bisector_segment_value_query": "In the triangle, AD bisects angle BAC.",
+    "angle_bisector_variable_value_query": "In the triangle, AD bisects angle BAC.",
+    "altitude_to_hypotenuse_value_query": "A right triangle has an altitude drawn to the hypotenuse.",
+    "centroid_median_segment_value_query": "In the triangle, G is the centroid and D is the midpoint of BC.",
+    "parallel_section_segment_value_query": "In the triangle, DE is parallel to BC.",
+    "pythagorean_length_value_chained_rectangle_diagonal_length_query": "A rectangle is split by a vertical segment; AE, EB, the left diagonal DE, and the whole diagonal DB are labeled.",
+    "pythagorean_length_value_rectangle_triangle_shared_height_length_query": "A rectangle and a right triangle share the same height.",
+    "leg_projection_length_value_query": "A right triangle has an altitude drawn to the hypotenuse.",
+    "right_triangle_missing_side_value_query": "A right triangle has one marked angle and labeled side lengths.",
+    "similar_triangles_side_length_query": "In the triangle, DE is parallel to BC.",
+    "split_triangle_angle_value_query": "A split triangle has marked angles.",
+    "split_triangle_trig_side_length_value_query": "A split triangle has standard marked angles and labeled segments.",
+}
+
+
+def _construction_description(task_prompt_key: str) -> str:
+    try:
+        return _CONSTRUCTION_DESCRIPTION_BY_TASK_KEY[str(task_prompt_key)]
+    except KeyError as exc:
+        raise ValueError(f"missing construction description for triangle-relations prompt key: {task_prompt_key}") from exc
+
+
 def _examples(annotation_mode: str, answer: Any, annotation_roles: tuple[str, ...]) -> tuple[str, str]:
     if annotation_mode == "segment":
         annotation: Any = [[120, 260], [280, 260]]
@@ -61,6 +84,7 @@ def build_triangle_relations_prompt_artifacts(
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         dynamic_slots={
             "annotation_instruction": _annotation_instruction(str(annotation_mode), tuple(annotation_roles)),
+            "construction_description": _construction_description(str(task_prompt_key)),
             "json_example": str(json_example),
             "json_example_answer_only": str(json_example_answer_only),
             "target_name": str(target_name),

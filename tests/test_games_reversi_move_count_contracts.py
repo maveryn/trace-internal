@@ -1,4 +1,4 @@
-"""Contract tests for games Reversi scene-package tasks."""
+"""Contract tests for games Reversi source-layout tasks."""
 
 from __future__ import annotations
 

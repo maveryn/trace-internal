@@ -307,9 +307,9 @@ class SceneRecord:
     preview_uid: str = ""
     tasks: List[str] = field(default_factory=list)
     model_stats_count: int = 0
-    migration_test_status_rel_path: str = ""
-    migration_test_pass: bool | None = None
-    migration_test_summary: Dict[str, Any] = field(default_factory=dict)
+    source_layout_test_status_rel_path: str = ""
+    source_layout_test_pass: bool | None = None
+    source_layout_test_summary: Dict[str, Any] = field(default_factory=dict)
     manual_code_audit_status_rel_path: str = ""
     manual_code_audit_pass: bool | None = None
     manual_code_audit_summary: Dict[str, Any] = field(default_factory=dict)

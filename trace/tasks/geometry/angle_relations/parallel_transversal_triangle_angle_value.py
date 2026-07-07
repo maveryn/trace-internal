@@ -28,8 +28,8 @@ _GEN_DEFAULTS_UNUSED, _RENDER_DEFAULTS, _PROMPT_DEFAULTS_UNUSED = (
 
 PARALLEL_TRANSVERSAL_TRIANGLE_CASES = tuple(
     make_parallel_transversal_triangle_case(left_angle, right_angle)
-    for left_angle in range(35, 76, 5)
-    for right_angle in range(35, 76, 5)
+    for left_angle in range(35, 76)
+    for right_angle in range(35, 76)
     if 45 <= (180 - left_angle - right_angle) <= 110
 )
 ANSWER_SUPPORT = tuple(sorted(set(case.answer for case in PARALLEL_TRANSVERSAL_TRIANGLE_CASES)))
@@ -90,30 +90,21 @@ class GeometryAngleRelationsParallelTransversalTriangleAngleValueTask:
             },
             scene_relation_fields={
                 "relation_id": "parallel_transversal_opposite_triangle_supplement_angle_sum",
-                "displayed_exterior_angles": list(
-                    runtime.rendered_context.rendered_scene.witness["displayed_exterior_angles"]
-                ),
-                "derived_lower_triangle_base_angles": list(
-                    runtime.rendered_context.rendered_scene.witness["derived_lower_triangle_base_angles"]
+                "displayed_lower_triangle_base_angles": list(
+                    runtime.rendered_context.rendered_scene.witness["displayed_lower_triangle_base_angles"]
                 ),
             },
             execution_fields_extra={
                 "internal_query_id": PROMPT_QUERY_KEY,
-                "displayed_exterior_angles": list(
-                    runtime.rendered_context.rendered_scene.witness["displayed_exterior_angles"]
-                ),
-                "derived_lower_triangle_base_angles": list(
-                    runtime.rendered_context.rendered_scene.witness["derived_lower_triangle_base_angles"]
+                "displayed_lower_triangle_base_angles": list(
+                    runtime.rendered_context.rendered_scene.witness["displayed_lower_triangle_base_angles"]
                 ),
                 "answer_angle_PQR": int(answer_value),
             },
             witness_fields_extra={
                 "internal_query_id": PROMPT_QUERY_KEY,
-                "displayed_exterior_angles": list(
-                    runtime.rendered_context.rendered_scene.witness["displayed_exterior_angles"]
-                ),
-                "derived_lower_triangle_base_angles": list(
-                    runtime.rendered_context.rendered_scene.witness["derived_lower_triangle_base_angles"]
+                "displayed_lower_triangle_base_angles": list(
+                    runtime.rendered_context.rendered_scene.witness["displayed_lower_triangle_base_angles"]
                 ),
                 "answer_angle_PQR": int(answer_value),
             },

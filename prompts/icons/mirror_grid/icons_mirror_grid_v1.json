@@ -52,14 +52,8 @@
     }
   },
   "dynamic_slots": {
-    "object_description": {"type": "string"},
-    "question_text": {"type": "string"},
     "json_output_contract": {"type": "string"},
-    "json_output_contract_answer_only": {"type": "string"},
-    "annotation_hint": {"type": "string"},
-    "answer_hint": {"type": "string"},
-    "json_example": {"type": "string"},
-    "json_example_answer_only": {"type": "string"}
+    "json_output_contract_answer_only": {"type": "string"}
   },
   "required_slots_by_key": {
     "scene:reference_mirror_grid": [
@@ -85,6 +79,28 @@
       "answer_hint",
       "json_example"
     ]
+  },
+  "static_slots_by_key": {
+    "scene:reference_mirror_grid": {
+      "object_description": "a Reference cell beside labeled option cells containing icons"
+    },
+    "scene:missing_mirror_grid": {
+      "object_description": "a mirror-symmetry icon grid with one question-mark cell and labeled option icons"
+    },
+    "task:mirror_symmetry_match_label": {
+      "question_text": "Which labeled option cell has the same mirror symmetry as the Reference cell?",
+      "annotation_hint": "set \"annotation\" to a JSON object with keys \"reference_cell\" and \"matching_option_cell\", each mapped to a [x0, y0, x1, y1] box in image pixel coordinates",
+      "answer_hint": "set \"answer\" to the matching option letter",
+      "json_example": "{\"annotation\":{\"reference_cell\":[44,190,268,414],\"matching_option_cell\":[590,120,790,320]},\"answer\":\"C\"}",
+      "json_example_answer_only": "{\"answer\":\"C\"}"
+    },
+    "task:missing_mirror_cell_label": {
+      "question_text": "Which labeled option should replace the question mark to complete the mirror symmetry?",
+      "annotation_hint": "set \"annotation\" to one [x0, y0, x1, y1] box in image pixel coordinates for the correct option cell",
+      "answer_hint": "set \"answer\" to the correct option letter",
+      "json_example": "{\"annotation\":[600,120,760,280],\"answer\":\"C\"}",
+      "json_example_answer_only": "{\"answer\":\"C\"}"
+    }
   },
   "code_prompt_defaults": {
     "object_description": "a Reference cell beside labeled option cells containing icons",

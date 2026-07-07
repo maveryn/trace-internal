@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `matrix`
-3. Source implementation scene package: `charts/matrix`
+3. Source implementation scene: `charts/matrix`
 4. Supported `query_id` values: `row_at_least_threshold_cell_count`, `row_at_most_threshold_cell_count`, `column_at_least_threshold_cell_count`, `column_at_most_threshold_cell_count`
 5. Query ids bind the prompt-visible row/column axis and at-least/at-most comparison. The threshold value and selected row/column label are sampled generation metadata.
 

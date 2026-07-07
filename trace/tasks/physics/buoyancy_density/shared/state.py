@@ -18,7 +18,6 @@ SCENE_VARIANTS: Tuple[str, ...] = (
 OBJECT_SHAPES: Tuple[str, ...] = (
     "block",
     "rounded_block",
-    "capsule_block",
 )
 DEFAULT_FRACTIONS: Tuple[Tuple[int, int], ...] = (
     (1, 4),

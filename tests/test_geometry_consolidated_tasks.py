@@ -24,6 +24,7 @@ from trace.tasks.geometry.graph_paper.polygon_area_value import GeometryGraphPap
 from trace.tasks.geometry.graph_paper.polygon_convexity_count import GeometryGraphPaperPolygonConvexityCountTask
 from trace.tasks.geometry.graph_paper.polygon_perimeter_value import GeometryGraphPaperPolygonPerimeterValueTask
 from trace.tasks.geometry.graph_paper.quadrilateral_type_count import GeometryGraphPaperQuadrilateralTypeCountTask
+from trace.tasks.geometry.graph_paper.right_angle_vertex_count import GeometryGraphPaperRightAngleVertexCountTask
 from trace.tasks.geometry.graph_paper.shared.construction import (
     concave_polygon,
     irregular_convex_polygon,
@@ -522,6 +523,7 @@ def test_geometry_graph_paper_shape_extremum_objects_do_not_overlap(
         (GeometryGraphPaperEllipseAreaValueTask, "ellipse A"),
         (GeometryGraphPaperPolygonAreaValueTask, "polygon A"),
         (GeometryGraphPaperPolygonPerimeterValueTask, "polygon A"),
+        (GeometryGraphPaperRightAngleVertexCountTask, "polygon A"),
     ),
 )
 def test_geometry_graph_paper_single_measurement_tasks_do_not_label_single_object(
@@ -541,6 +543,7 @@ def test_geometry_graph_paper_single_measurement_tasks_do_not_label_single_objec
         GeometryGraphPaperLineSlopeValueTask,
         GeometryGraphPaperPolygonAreaValueTask,
         GeometryGraphPaperPolygonPerimeterValueTask,
+        GeometryGraphPaperRightAngleVertexCountTask,
         GeometryGraphPaperAreaExtremumLabelTask,
         GeometryGraphPaperPerimeterExtremumLabelTask,
     ),
@@ -574,6 +577,30 @@ def test_geometry_graph_paper_circle_and_ellipse_axis_witnesses_are_lattice(task
             _assert_lattice_point(point)
         for point in witness["minor_axis"]:
             _assert_lattice_point(point)
+
+
+@pytest.mark.parametrize("target_count", (1, 2, 3, 4, 5))
+def test_geometry_graph_paper_right_angle_vertex_count_matches_trace(
+    target_count: int,
+) -> None:
+    out = GeometryGraphPaperRightAngleVertexCountTask().generate(
+        23161 + target_count,
+        params={"target_count": target_count},
+        max_attempts=40,
+    )
+    witness = out.trace_payload["witness_symbolic"]
+    vertices = witness["vertices"]
+    right_indices = graph_paper_lifecycle._right_angle_vertex_indices(vertices)
+    assert out.answer_gt.type == "integer"
+    assert out.annotation_gt.type == "point_set"
+    assert int(out.answer_gt.value) == target_count
+    assert len(right_indices) == target_count
+    assert len(out.annotation_gt.value) == target_count
+    assert 6 <= int(witness["vertex_count"]) <= 12
+    assert len(witness["vertex_label_points_px"]) == int(witness["vertex_count"])
+    assert len(witness["right_angle_vertex_labels"]) == target_count
+    assert "right-angle vertices" in out.prompt or "right angles" in out.prompt
+    _assert_all_graph_points_are_lattice(out)
 
 
 def test_geometry_graph_paper_ellipse_area_does_not_draw_axis_guides(monkeypatch) -> None:

@@ -258,8 +258,8 @@ def create_render_context(
         accent_color=accent_color,
         muted_color=muted_color,
         line_width=max(2, int(line_width)),
-        font=load_font(max(12, int(font_size)), bold=True),
-        small_font=load_font(max(10, int(small_font_size)), bold=True),
+        font=load_font(max(12, int(font_size)), bold=False),
+        small_font=load_font(max(10, int(small_font_size)), bold=False),
         scene_transform=LazySceneTransform(
             rng,
             params=params,

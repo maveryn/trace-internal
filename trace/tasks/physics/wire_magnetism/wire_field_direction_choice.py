@@ -34,7 +34,7 @@ from .shared.state import (
 TASK_ID = "task_physics__wire_magnetism__wire_field_direction_choice"
 TASK_NAMESPACE = "physics_wire_magnetism_wire_field_direction_choice"
 TASK_PROMPT_KEY = "wire_field_direction_choice_query"
-INTERNAL_QUERY_ID = "field_direction_at_point"
+INTERNAL_QUERY_ID = "perpendicular_wire_field_direction_at_point"
 SUPPORTED_QUERY_IDS: Tuple[str, ...] = (SINGLE_QUERY_ID,)
 
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = load_scene_generation_rendering_prompt_defaults(
@@ -64,7 +64,7 @@ def _font_trace(font_family: str, font_record: Any) -> dict[str, Any]:
 
 @register_task
 class PhysicsWireMagnetismFieldDirectionChoiceTask:
-    """Choose the magnetic-field direction at a marked point near a straight current-carrying wire."""
+    """Choose the magnetic-field direction around a wire perpendicular to the page."""
 
     task_id = TASK_ID
     domain = "physics"
@@ -146,9 +146,8 @@ class PhysicsWireMagnetismFieldDirectionChoiceTask:
         answer_support = list(OPTION_LABELS)
         sampling_probabilities = {
             "query_id": dict(query_probabilities),
-            "orientation": dict(scenario.orientation_probabilities),
             "current_direction": dict(scenario.current_direction_probabilities),
-            "point_side": dict(scenario.point_side_probabilities),
+            "point_position": dict(scenario.point_position_probabilities),
             "target_answer": dict(scenario.target_answer_probabilities),
         }
         query_spec = build_prompt_query_spec(
@@ -157,31 +156,30 @@ class PhysicsWireMagnetismFieldDirectionChoiceTask:
             params={
                 "query_id": str(selected_query),
                 "internal_query_id": INTERNAL_QUERY_ID,
-                "orientation": str(scenario.orientation),
                 "current_direction": str(scenario.current_direction),
-                "point_side": str(scenario.point_side),
+                "current_z_sign": int(scenario.current_z_sign),
+                "point_position": str(scenario.point_position),
                 "point_offset_phys": list(scenario.point_offset_phys),
                 "field_direction": str(scenario.field_direction),
                 "correct_option_letter": str(scenario.correct_label),
                 "target_answer": str(scenario.correct_label),
                 "answer_support": answer_support,
                 "query_id_probabilities": dict(query_probabilities),
-                "orientation_probabilities": dict(scenario.orientation_probabilities),
                 "current_direction_probabilities": dict(scenario.current_direction_probabilities),
-                "point_side_probabilities": dict(scenario.point_side_probabilities),
+                "point_position_probabilities": dict(scenario.point_position_probabilities),
                 "target_answer_probabilities": dict(scenario.target_answer_probabilities),
             },
         )
         trace_payload: Mapping[str, Any] = {
             "scene_ir": {
-                "scene_kind": "physics_wire_magnetism_straight_wire",
+                "scene_kind": "physics_wire_magnetism_perpendicular_wire",
                 "entities": [dict(entity) for entity in rendered.scene_entities],
                 "relations": {
                     "query_id": str(selected_query),
                     "internal_query_id": INTERNAL_QUERY_ID,
-                    "orientation": str(scenario.orientation),
                     "current_direction": str(scenario.current_direction),
-                    "point_side": str(scenario.point_side),
+                    "current_z_sign": int(scenario.current_z_sign),
+                    "point_position": str(scenario.point_position),
                     "point_offset_phys": list(scenario.point_offset_phys),
                     "field_direction": str(scenario.field_direction),
                     "correct_option_letter": str(scenario.correct_label),
@@ -203,9 +201,9 @@ class PhysicsWireMagnetismFieldDirectionChoiceTask:
             "execution_trace": {
                 "query_id": str(selected_query),
                 "internal_query_id": INTERNAL_QUERY_ID,
-                "orientation": str(scenario.orientation),
                 "current_direction": str(scenario.current_direction),
-                "point_side": str(scenario.point_side),
+                "current_z_sign": int(scenario.current_z_sign),
+                "point_position": str(scenario.point_position),
                 "point_offset_phys": list(scenario.point_offset_phys),
                 "field_direction": str(scenario.field_direction),
                 "option_map": dict(scenario.option_map),

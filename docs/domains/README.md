@@ -4,7 +4,7 @@ Use this folder for domain-specific contracts only, including domain scene
 boundaries, annotation conventions, prompt constraints, and rendering/style
 rules that are not shared across every domain.
 
-Active contract docs should stay narrow and current. Planning notes, migration
+Active contract docs should stay narrow and current. Planning notes, transition
 notes, external benchmark inventories, task lists, and generated coverage
 reports do not belong in this folder.
 
@@ -27,6 +27,5 @@ contracts live here.
 ## What Belongs Elsewhere
 - Active scene/task counts: `docs/ACTIVE_TASK_INVENTORY.md`.
 - Cross-domain task-boundary policy: `docs/contracts/TASK_UNIT_POLICY.md`.
+- Source layout and shared-code ownership: `docs/contracts/SOURCE_LAYOUT.md`.
 - Task authoring workflow: `docs/workflows/TASK_AUTHORING.md`.
-- Scene-package migration work: `docs/SCENE_PACKAGE_MIGRATION/` and
-  review workspace notes.

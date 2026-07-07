@@ -91,7 +91,7 @@ operation.
 
 ## Review Guidance
 
-When reviewing a scene-package migration:
+When reviewing a task contract:
 
 1. Start with the concrete task behavior, not the old task name.
 2. Pick the most specific reusable schema above.

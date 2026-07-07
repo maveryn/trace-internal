@@ -1,4 +1,4 @@
-"""Scene-package-v2 contracts for geometry angle-relations tasks."""
+"""source-layout contracts for geometry angle-relations tasks."""
 
 from __future__ import annotations
 
@@ -127,6 +127,25 @@ def test_parallel_supplement_uses_aef_given_angle_and_cfe_target() -> None:
     assert "given_angle_BEF" not in output.trace_payload["execution_trace"]
     assert "What is the measure of angle \"CFE\"?" in output.prompt
     assert "Lines \"AB\" and \"CD\" are parallel" not in output.prompt
+
+
+@pytest.mark.parametrize("case_index", (90, 91, 120, 121, 178, 179))
+def test_parallel_supplement_obtuse_cases_keep_annotation_in_canvas(case_index: int) -> None:
+    """Obtuse supplement cases must preserve the transversal direction when laying out point F."""
+
+    task = create_task("task_geometry__angle_relations__parallel_supplement_angle")
+    output = task.generate(
+        20260612 + int(case_index),
+        params={"query_id": "single", "case_index": int(case_index)},
+        max_attempts=20,
+    )
+
+    width, height = output.image.size
+    assert output.answer_gt.value >= 90
+    for point in output.annotation_gt.value.values():
+        assert len(point) == 2
+        assert 0.0 <= float(point[0]) <= float(width)
+        assert 0.0 <= float(point[1]) <= float(height)
 
 
 def test_parallel_supplement_samples_two_or_three_parallel_lines() -> None:

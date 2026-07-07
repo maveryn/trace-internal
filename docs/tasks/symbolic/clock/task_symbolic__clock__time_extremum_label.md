@@ -10,7 +10,7 @@
 ## Program Contract
 Program: `clock.time_extremum_label(scene=clock, scope=labeled_analog_grid, query=earliest_time_label|latest_time_label, output=clock_label)`
 
-Candidate set: the six to twelve visible labeled analog clocks.
+Candidate set: the six visible labeled analog clocks.
 Operands: the displayed time on each clock and the requested extremum direction.
 Operation: compare all shown times and select the unique earliest or latest clock.
 Output binding: `answer` is the selected visible clock label.
@@ -29,7 +29,7 @@ Query ids: `earliest_time_label`, `latest_time_label`.
 6. `annotation_gt.type`: `bbox`
 7. Annotation schema: scalar `bbox`
 8. Scene contract:
-   - six to twelve analog clocks are labeled with unique letters,
+   - six analog clocks are labeled with unique letters,
    - exactly one clock has the requested extremum time,
    - the extremum clock is separated by at least the configured comparison gap.
 

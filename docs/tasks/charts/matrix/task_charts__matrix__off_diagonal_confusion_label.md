@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `matrix`
-3. Source implementation scene package: `charts/matrix`
+3. Source implementation scene: `charts/matrix`
 4. Supported `query_id` values: `single`
 5. The task always asks for the largest off-diagonal predicted column for one actual-class row.
 

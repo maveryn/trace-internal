@@ -26,16 +26,21 @@ from .shared.state import DOMAIN, SMALL_MULTIPLE_SCENE_VARIANT
 TASK_ID = "task_charts__radar__matching_condition_panel_count"
 QUERY_ID = SINGLE_QUERY_ID
 PROMPT_QUERY_KEY = "matching_condition_panel_count"
+TASK_PANEL_COUNT_MIN = 4
+TASK_PANEL_COUNT_MAX = 6
 
 
 def _build_plan(params: dict[str, Any], instance_seed: int, selected: str, probabilities: dict[str, float]):
     """Construct panels so exactly the target panels meet the multi-metric condition."""
 
-    non_answer_params = without_sample_cursor(params)
+    task_params = dict(params)
+    task_params["panel_count_min"] = TASK_PANEL_COUNT_MIN
+    task_params["panel_count_max"] = TASK_PANEL_COUNT_MAX
+    non_answer_params = without_sample_cursor(task_params)
     threshold = threshold_value(non_answer_params, instance_seed=int(instance_seed), namespace=f"{TASK_ID}.threshold")
     target_count = balanced_choice(
-        target_count_support(params, upper=min(6, resolve_gen_int(params, "panel_count_max", 8) - 1)),
-        params,
+        target_count_support(task_params, upper=min(6, resolve_gen_int(task_params, "panel_count_max", 8) - 1)),
+        task_params,
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}.target_count",
     )
@@ -60,7 +65,7 @@ def _build_plan(params: dict[str, Any], instance_seed: int, selected: str, proba
         namespace=f"{TASK_ID}.minimum_metric_count",
     )
     frame = sample_small_multiple_frame(
-        params=params,
+        params=task_params,
         metric_count=int(resolved_metric_count),
         panel_count=int(resolved_panel_count),
         instance_seed=int(instance_seed),
@@ -99,7 +104,7 @@ def _build_plan(params: dict[str, Any], instance_seed: int, selected: str, proba
     )
     dataset = build_radar_dataset_from_components(
         metrics=tuple(metrics),
-        panels=make_single_profile_panels(panel_labels=panel_labels, values_by_panel=values, params=params),
+        panels=make_single_profile_panels(panel_labels=panel_labels, values_by_panel=values, params=task_params),
         scene_variant=SMALL_MULTIPLE_SCENE_VARIANT,
         branch_id=str(selected),
         branch_probabilities=dict(probabilities),

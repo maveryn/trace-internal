@@ -40,7 +40,7 @@ SUPPORTED_EVENT_GRID_TEXT_COLOR_MODES: Tuple[str, ...] = SUPPORTED_TIME_ARTIFACT
 EVENT_SLOT_SPECS: Tuple[Tuple[str, str], ...] = (
     ("top", "Top"),
     ("mid", "Mid"),
-    ("end", "End"),
+    ("end", "Bottom"),
 )
 EVENT_CATEGORY_LABELS: Tuple[str, ...] = (
     "Arts",
@@ -80,6 +80,10 @@ class EventGridDefaults:
     year_max: int = 2030
     target_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6)
     date_filled_slot_count_support: Tuple[int, ...] = (0, 1, 2, 3)
+    weekday_column_count_support: Tuple[int, ...] = (1, 2, 3, 4)
+    weekday_column_distractor_support: Tuple[int, ...] = (3, 4, 5, 6)
+    busiest_two_chip_distractor_date_count_support: Tuple[int, ...] = (5, 6, 7, 8)
+    busiest_single_chip_distractor_date_count_support: Tuple[int, ...] = (8, 9, 10, 11, 12)
     min_random_extra_chips: int = 10
     max_random_extra_chips: int = 18
     canvas_width: int = 980

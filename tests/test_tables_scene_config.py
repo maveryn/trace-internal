@@ -35,7 +35,7 @@ def test_charts_table_defaults_loaded_for_public_tasks() -> None:
         task_id="task_charts__table__absolute_difference_between_rows_over_year_interval",
     )
     assert int(generation_defaults["numeric_column_count_min"]) == 8
-    assert int(generation_defaults["numeric_column_count_max"]) == 16
+    assert int(generation_defaults["numeric_column_count_max"]) == 12
     assert int(generation_defaults["interval_length_min"]) == 4
     assert int(generation_defaults["interval_length_max"]) == 5
     assert int(rendering_defaults["canvas_width"]) == 1360

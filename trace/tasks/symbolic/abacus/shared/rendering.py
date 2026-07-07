@@ -10,9 +10,9 @@ from ...shared.drawing import draw_centered_text, draw_rounded_rect
 from ...shared.scene_style import SymbolicSceneStyle
 from ....shared.text_rendering import load_font
 
-from .layout import bbox_center, bead_bbox, rounded_bbox
+from .layout import bbox_center, bead_bbox, readout_option_bboxes, rounded_bbox
 from .rules import ABACUS_ANNOTATION_KEYS, ABACUS_COLUMN_ROLES, digit_active_counts
-from .state import AbacusColumnSpec, AbacusReadoutRenderParams, RenderedAbacusReadoutScene
+from .state import AbacusColumnSpec, AbacusReadoutOptionSpec, AbacusReadoutRenderParams, RenderedAbacusReadoutScene
 from .styles import variant_colors
 
 
@@ -37,11 +37,23 @@ def render_abacus_single_board_scene(
     params: AbacusReadoutRenderParams,
     scene_variant: str,
     style: SymbolicSceneStyle,
+    options: Sequence[AbacusReadoutOptionSpec] | None = None,
+    correct_label: str | None = None,
 ) -> RenderedAbacusReadoutScene:
     """Render one three-column abacus readout scene."""
 
     if len(columns) != 3:
         raise ValueError("symbolic abacus readout currently renders exactly three columns")
+    if options is not None:
+        if len(options) != 6:
+            raise ValueError("abacus readout option row requires exactly six options")
+        option_labels = tuple(str(option.label) for option in options)
+        if len(set(option_labels)) != len(option_labels):
+            raise ValueError("abacus readout option labels must be unique")
+        if correct_label is None or str(correct_label) not in set(option_labels):
+            raise ValueError("correct_label must be one of the visible readout options")
+    else:
+        option_labels = ()
     draw = ImageDraw.Draw(image)
     colors = variant_colors(str(scene_variant), style)
     width, height = int(params.canvas_width), int(params.canvas_height)
@@ -122,6 +134,9 @@ def render_abacus_single_board_scene(
     active_bead_bboxes_by_column: dict[str, list[list[float]]] = {}
     active_bead_points_by_column: dict[str, list[list[float]]] = {}
     active_bead_ids_by_column: dict[str, list[str]] = {}
+    option_card_boxes: dict[str, list[float]] = {}
+    option_values_by_label: dict[str, int] = {}
+    selected_option_card_bbox: list[float] | None = None
 
     for index, column in enumerate(columns):
         role = str(column.role)
@@ -218,7 +233,75 @@ def render_abacus_single_board_scene(
             }
         )
 
-    scene_bbox = rounded_bbox((panel_bbox[0] - 8.0, panel_bbox[1] - 8.0, panel_bbox[2] + 10.0, panel_bbox[3] + 12.0))
+    if options is not None:
+        option_card_boxes = readout_option_bboxes(option_labels=option_labels, params=params, panel_bbox=panel_bbox)
+        label_font = load_font(int(params.readout_option_label_font_size_px), bold=True)
+        value_font = load_font(int(params.readout_option_value_font_size_px), bold=True)
+        for option in options:
+            label = str(option.label)
+            value_text = str(option.text)
+            value = int(option.value)
+            option_bbox = list(option_card_boxes[label])
+            x0, y0, x1, y1 = (float(v) for v in option_bbox)
+            shadow_bbox = (x0 + 3.0, y0 + 4.0, x1 + 3.0, y1 + 4.0)
+            draw_rounded_rect(
+                draw,
+                shadow_bbox,
+                radius=12,
+                fill=colors["shadow"],
+                outline=colors["shadow"],
+                width=1,
+            )
+            draw_rounded_rect(
+                draw,
+                (x0, y0, x1, y1),
+                radius=12,
+                fill=colors["panel_fill"],
+                outline=colors["panel_outline"],
+                width=2,
+            )
+            label_bbox = draw_centered_text(
+                draw,
+                text=f"{label}.",
+                center=(x0 + 24.0, 0.5 * (y0 + y1)),
+                font=label_font,
+                fill=colors["label"],
+                stroke_fill=colors["panel_fill"],
+                stroke_width=1,
+            )
+            value_bbox = draw_centered_text(
+                draw,
+                text=value_text,
+                center=(x0 + 80.0, 0.5 * (y0 + y1)),
+                font=value_font,
+                fill=colors["label"],
+                stroke_fill=colors["panel_fill"],
+                stroke_width=1,
+            )
+            item_bboxes[f"option_{label}_card"] = list(option_bbox)
+            label_bboxes[f"option_{label}_label"] = list(label_bbox)
+            label_bboxes[f"option_{label}_value"] = list(value_bbox)
+            option_values_by_label[label] = int(value)
+            if str(label) == str(correct_label):
+                selected_option_card_bbox = list(option_bbox)
+            entities.append(
+                {
+                    "item_id": f"option_{label}_card",
+                    "entity_type": "abacus_readout_option_card",
+                    "option_label": str(label),
+                    "text": str(value_text),
+                    "value": int(value),
+                    "is_correct": bool(option.is_correct),
+                    "bbox_px": list(option_bbox),
+                    "label_bbox_px": list(label_bbox),
+                    "value_bbox_px": list(value_bbox),
+                }
+            )
+
+    scene_bottom = panel_bbox[3] + 12.0
+    if option_card_boxes:
+        scene_bottom = max(float(scene_bottom), max(float(bbox[3]) for bbox in option_card_boxes.values()) + 12.0)
+    scene_bbox = rounded_bbox((panel_bbox[0] - 8.0, panel_bbox[1] - 8.0, panel_bbox[2] + 10.0, scene_bottom))
     return RenderedAbacusReadoutScene(
         image=image,
         entities=tuple(entities),
@@ -229,11 +312,16 @@ def render_abacus_single_board_scene(
         active_bead_ids_by_column=active_bead_ids_by_column,
         column_bboxes=column_bboxes,
         label_bboxes=label_bboxes,
+        option_card_bboxes={str(key): list(value) for key, value in option_card_boxes.items()},
+        option_values_by_label=dict(option_values_by_label),
+        selected_option_card_bbox=(list(selected_option_card_bbox) if selected_option_card_bbox is not None else None),
         scene_bbox_px=list(scene_bbox),
         style_metadata={
             "renderer": "abacus_single_board_v1",
             "scene_variant": str(scene_variant),
             "column_roles": [str(role) for role in ABACUS_COLUMN_ROLES],
+            "option_labels": [str(label) for label in option_labels],
+            "readout_options_visible": bool(options is not None),
             "annotation_keys": [str(key) for key in ABACUS_ANNOTATION_KEYS],
             "active_beads_touch_center_beam": True,
             "active_inactive_bead_color_shared": tuple(colors["active_bead"]) == tuple(colors["inactive_bead"]),

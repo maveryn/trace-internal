@@ -233,7 +233,7 @@ def annotate_pages_scene_font_assets(
     task_id: str,
     scene_id: str,
 ) -> None:
-    """Record the pages default font family in migrated scene render metadata."""
+    """Record the pages default font family in source-layout scene render metadata."""
 
     _annotate_pages_font_assets_for_route(
         output,
@@ -1465,6 +1465,12 @@ def _collect_occupied_bboxes(trace_payload: Mapping[str, Any]) -> list[BBox]:
             "node_bboxes_px",
             "node_label_bboxes_px",
             "edge_bboxes_px",
+            "card_bboxes_px",
+            "label_bboxes_px",
+            "value_bboxes_px",
+            "caption_bboxes_px",
+            "section_bboxes_px",
+            "section_title_bboxes_px",
         ):
             bbox_map = render_map.get(str(map_key))
             if isinstance(bbox_map, Mapping):
@@ -1477,6 +1483,7 @@ def _collect_occupied_bboxes(trace_payload: Mapping[str, Any]) -> list[BBox]:
             "calendar_panel_bbox_px",
             "panel_bbox_px",
             "title_bbox_px",
+            "subtitle_bbox_px",
             "content_bbox_px",
         )
         if containers_are_background:

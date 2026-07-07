@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `park_playground`
-- Implementation scene package: `park_playground`
+- Implementation source scene: `park_playground`
 - Implementation source: `trace/tasks/illustrations/park_playground/jigsaw_arrangement_label.py`
 
 ## Task Contract

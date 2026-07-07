@@ -11,7 +11,7 @@ do and where to verify it.
 4. `docs/contracts/PROMPT_SYSTEM.md`
 5. `docs/contracts/ANNOTATION_AND_REWARD_CONTRACTS.md`
 6. The matching domain contract in `docs/domains/`
-7. `docs/SCENE_PACKAGE_MIGRATION/README.md` for scene-package migrations
+7. `docs/contracts/SOURCE_LAYOUT.md`
 
 ## Before Coding
 1. Confirm `domain`, `scene_id`, and public `task_id`.
@@ -31,8 +31,7 @@ do and where to verify it.
    reuse or an approved domain shared boundary.
 
 ## Implementation Checklist
-1. Put the public task module in the documented layout. Review-candidate
-   scene-package tasks use
+1. Put the public task module in the documented layout:
    `trace/tasks/<domain>/<scene_id>/<objective_contract>.py`.
 2. Register the task with `@register_task` and make sure the module is imported
    through the active task registration path.
@@ -65,7 +64,7 @@ do and where to verify it.
    configs, stale prompt branches, and stale review paths in the same change.
 
 ## Prompt Checklist
-1. Use prompt bundles under `prompts/<domain>/<scene_id>/` for migrated scenes.
+1. Use prompt bundles under `prompts/<domain>/<scene_id>/`.
 2. Use the standard layers: scene, task, optional query, and output mode.
 3. Record prompt bundle id, selected keys, variant indices, output mode, and
    required slot values in trace metadata.
@@ -147,6 +146,9 @@ do and where to verify it.
    - `docs/resources/SHARED_FONT_ASSETS.md`
    - `docs/resources/SHARED_LABEL_ASSETS.md`
    - `docs/resources/SHARED_CONTEXT_TEXT_ASSETS.md`
+   For text centered inside circular markers, badges, option chips, or node
+   labels, use the shared bbox-aware centered text helper instead of manually
+   offsetting by measured width and height.
 2. Sample non-semantic visual variety before projection so annotation
    coordinates remain valid.
 3. When assigning visual attributes such as colors, styles, shapes, fonts,

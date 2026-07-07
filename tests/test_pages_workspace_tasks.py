@@ -15,16 +15,16 @@ from trace.tasks.pages.workspace.context_control_count import (
 )
 from trace.tasks.pages.workspace.context_control_count import TASK_ID as COUNT_TASK_ID
 from trace.tasks.pages.workspace.context_control_count import PagesWorkspaceContextControlCountTask
+from trace.tasks.pages.workspace.context_guide_control_label import (
+    OBJECTIVE_KEY as CONTEXT_GUIDE_OBJECTIVE_KEY,
+)
+from trace.tasks.pages.workspace.context_guide_control_label import TASK_ID as CONTEXT_GUIDE_TASK_ID
+from trace.tasks.pages.workspace.context_guide_control_label import PagesWorkspaceContextGuideControlLabelTask
 from trace.tasks.pages.workspace.control_label import (
     OBJECTIVE_KEY as CONTROL_OBJECTIVE_KEY,
 )
 from trace.tasks.pages.workspace.control_label import TASK_ID as CONTROL_TASK_ID
 from trace.tasks.pages.workspace.control_label import PagesWorkspaceControlLabelTask
-from trace.tasks.pages.workspace.dual_guide_control_label import (
-    OBJECTIVE_KEY as DUAL_GUIDE_OBJECTIVE_KEY,
-)
-from trace.tasks.pages.workspace.dual_guide_control_label import TASK_ID as DUAL_GUIDE_TASK_ID
-from trace.tasks.pages.workspace.dual_guide_control_label import PagesWorkspaceDualGuideControlLabelTask
 from trace.tasks.pages.workspace._lifecycle import SUPPORTED_WORKSPACE_VARIANTS
 
 from tests.helpers import extract_prompt_json_example, read_jsonl
@@ -87,9 +87,9 @@ def test_pages_workspace_context_control_count_contract_matches_trace() -> None:
     assert execution["target_state_phrase"] == "orange warning"
 
 
-def test_pages_workspace_dual_guide_control_label_contract_matches_trace() -> None:
-    task = PagesWorkspaceDualGuideControlLabelTask()
-    out = task.generate(89320, params={"workspace_variant": "property_panel"}, max_attempts=20)
+def test_pages_workspace_context_guide_control_label_contract_matches_trace() -> None:
+    task = PagesWorkspaceContextGuideControlLabelTask()
+    out = task.generate(89330, params={"workspace_variant": "property_panel"}, max_attempts=20)
     execution = out.trace_payload["execution_trace"]
     query_spec = out.trace_payload["query_spec"]
     witness = out.trace_payload["witness_symbolic"]
@@ -103,17 +103,18 @@ def test_pages_workspace_dual_guide_control_label_contract_matches_trace() -> No
     assert witness["type"] == "bbox"
     assert witness["value"] == out.annotation_gt.value
     assert set(witness["support_bbox_map"].keys()) == {
-        "action_cue_guide",
         "context_cue_guide",
         "context_row",
         "action_code_header",
         "target_control",
     }
-    assert execution["prompt_query_key"] == DUAL_GUIDE_OBJECTIVE_KEY
-    assert execution["source_query_id"] == DUAL_GUIDE_OBJECTIVE_KEY
+    assert execution["prompt_query_key"] == CONTEXT_GUIDE_OBJECTIVE_KEY
+    assert execution["source_query_id"] == CONTEXT_GUIDE_OBJECTIVE_KEY
     assert execution["context_cue_label"]
-    assert query_spec["params"]["prompt_query_key"] == DUAL_GUIDE_OBJECTIVE_KEY
+    assert int(execution["context_count"]) == 3
+    assert query_spec["params"]["prompt_query_key"] == CONTEXT_GUIDE_OBJECTIVE_KEY
     assert "context_cue_guide" in execution["annotation_role_support_ids"]
+    assert "action_cue_guide" not in execution["annotation_role_support_ids"]
 
 
 def test_pages_workspace_context_control_count_allows_zero_annotation() -> None:
@@ -130,7 +131,7 @@ def test_pages_workspace_context_control_count_allows_zero_annotation() -> None:
 def test_pages_workspace_prompt_examples_match_annotation_contract() -> None:
     control_out = PagesWorkspaceControlLabelTask().generate(89400, params={}, max_attempts=20)
     count_out = PagesWorkspaceContextControlCountTask().generate(89401, params={}, max_attempts=20)
-    dual_out = PagesWorkspaceDualGuideControlLabelTask().generate(89402, params={}, max_attempts=20)
+    context_guide_out = PagesWorkspaceContextGuideControlLabelTask().generate(89403, params={}, max_attempts=20)
 
     assert extract_prompt_json_example(control_out.prompt_variants["answer_and_annotation"]) == {
         "annotation": [520, 360, 690, 444],
@@ -142,17 +143,17 @@ def test_pages_workspace_prompt_examples_match_annotation_contract() -> None:
         "answer": 2,
     }
     assert extract_prompt_json_example(count_out.prompt_variants["answer_only"]) == {"answer": 2}
-    assert extract_prompt_json_example(dual_out.prompt_variants["answer_and_annotation"]) == {
+    assert extract_prompt_json_example(context_guide_out.prompt_variants["answer_and_annotation"]) == {
         "annotation": [520, 360, 690, 444],
         "answer": "G",
     }
-    assert extract_prompt_json_example(dual_out.prompt_variants["answer_only"]) == {"answer": "G"}
+    assert extract_prompt_json_example(context_guide_out.prompt_variants["answer_only"]) == {"answer": "G"}
 
 
 def test_pages_workspace_sampling_defaults_cover_axes_and_answers() -> None:
     control_task = PagesWorkspaceControlLabelTask()
     count_task = PagesWorkspaceContextControlCountTask()
-    dual_task = PagesWorkspaceDualGuideControlLabelTask()
+    context_guide_task = PagesWorkspaceContextGuideControlLabelTask()
     scene_variants: Counter[str] = Counter()
     workspace_variants: Counter[str] = Counter()
     information_treatments: Counter[str] = Counter()
@@ -174,9 +175,9 @@ def test_pages_workspace_sampling_defaults_cover_axes_and_answers() -> None:
         count_execution = count_out.trace_payload["execution_trace"]
         count_answers[int(count_execution["answer_value"])] += 1
 
-        dual_out = dual_task.generate(hash64(89502, DUAL_GUIDE_TASK_ID, index), params={}, max_attempts=20)
-        dual_execution = dual_out.trace_payload["execution_trace"]
-        label_answers[str(dual_execution["target_label"])] += 1
+        context_guide_out = context_guide_task.generate(hash64(89503, CONTEXT_GUIDE_TASK_ID, index), params={}, max_attempts=20)
+        context_guide_execution = context_guide_out.trace_payload["execution_trace"]
+        label_answers[str(context_guide_execution["target_label"])] += 1
 
     assert set(scene_variants.keys()) == {
         "office_document",
@@ -189,7 +190,7 @@ def test_pages_workspace_sampling_defaults_cover_axes_and_answers() -> None:
     assert set(workspace_variants.keys()) == set(SUPPORTED_WORKSPACE_VARIANTS)
     assert any(value.startswith("dark_") for value in information_treatments)
     assert any(not value.startswith("dark_") for value in information_treatments)
-    assert set(context_counts.keys()) == {3, 4, 5}
+    assert set(context_counts.keys()) == {3, 4}
     assert len(label_answers) >= 12
     assert set(count_answers.keys()) == {0, 1, 2, 3, 4, 5}
 
@@ -223,7 +224,7 @@ def test_pages_workspace_build_smoke(tmp_path: Path) -> None:
         tasks=[
             BuildTaskConfig(task_id=CONTROL_TASK_ID, count=2, params={}),
             BuildTaskConfig(task_id=COUNT_TASK_ID, count=2, params={}),
-            BuildTaskConfig(task_id=DUAL_GUIDE_TASK_ID, count=2, params={}),
+            BuildTaskConfig(task_id=CONTEXT_GUIDE_TASK_ID, count=2, params={}),
         ],
         strict_repro=False,
         max_attempts_per_instance=20,
@@ -237,12 +238,12 @@ def test_pages_workspace_build_smoke(tmp_path: Path) -> None:
     assert {str(record["task"]) for record in train_records} == {
         CONTROL_TASK_ID,
         COUNT_TASK_ID,
-        DUAL_GUIDE_TASK_ID,
+        CONTEXT_GUIDE_TASK_ID,
     }
     assert all(record["query_id"] == SINGLE_QUERY_ID for record in train_records)
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"][CONTROL_TASK_ID]) == 2
     assert int(build_report["accepted_counts_by_task"][COUNT_TASK_ID]) == 2
-    assert int(build_report["accepted_counts_by_task"][DUAL_GUIDE_TASK_ID]) == 2
+    assert int(build_report["accepted_counts_by_task"][CONTEXT_GUIDE_TASK_ID]) == 2
     validation = json.loads((final_path / "validation_report.json").read_text(encoding="utf-8"))
     assert validation["total_errors"] == 0

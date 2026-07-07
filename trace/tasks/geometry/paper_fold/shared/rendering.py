@@ -108,9 +108,10 @@ def make_render_context(
         crease_color=crease_color,
         dashed_color=dashed_color,
         line_width=max(2, int(line_width)),
-        font=load_font(max(12, int(font_size)), bold=True),
-        small_font=load_font(max(10, int(small_font_size)), bold=True),
-        point_font=load_font(max(10, int(point_font_size)), bold=True),
+        label_stroke_width=0,
+        font=load_font(max(12, int(font_size)), bold=False),
+        small_font=load_font(max(10, int(small_font_size)), bold=False),
+        point_font=load_font(max(10, int(point_font_size)), bold=False),
         scene_transform=LazySceneTransform(
             rng,
             params=params,
@@ -125,6 +126,8 @@ def make_render_context(
         "technical_diagram_style_resolution": dict(diagram_style_meta),
         "shape_style": shape_style.to_trace_dict(),
         "line_width": int(ctx.line_width),
+        "label_bold": False,
+        "label_stroke_width": int(ctx.label_stroke_width),
         "label_font_size": int(font_size),
         "small_label_font_size": int(small_font_size),
         "point_label_font_size": int(point_font_size),
@@ -138,7 +141,8 @@ def make_render_context(
 
 def _draw_point_label(ctx: RenderContext, label: str, point: Point, offset: Point) -> BBox:
     center = (float(point[0]) + float(offset[0]), float(point[1]) + float(offset[1]))
-    bbox = ctx.draw.textbbox((0, 0), str(label), font=ctx.point_font, stroke_width=1)
+    stroke_width = max(0, int(ctx.label_stroke_width))
+    bbox = ctx.draw.textbbox((0, 0), str(label), font=ctx.point_font, stroke_width=stroke_width)
     text_w = float(bbox[2] - bbox[0])
     text_h = float(bbox[3] - bbox[1])
     left = float(center[0]) - (text_w / 2.0)
@@ -149,7 +153,7 @@ def _draw_point_label(ctx: RenderContext, label: str, point: Point, offset: Poin
         str(label),
         font=ctx.point_font,
         fill=ctx.label_color,
-        stroke_width=1,
+        stroke_width=stroke_width,
         stroke_fill=ctx.label_stroke_color,
         role="readout",
         required=False,

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Inventory tasks for scalar point/bbox annotation migration.
+"""Inventory tasks for scalar point/bbox annotation review.
 
 The inventory is static-first by design. It reads docs/ACTIVE_TASK_INVENTORY.md
 and task docs without importing the global task registry, because global
-inventory imports may be blocked by unrelated broken task modules during
-scene-package migration.
+inventory imports may be blocked by unrelated broken task modules.
 """
 
 from __future__ import annotations
@@ -96,10 +95,10 @@ class InventoryRecord:
     annotation_type_generated: str
     answer_schema_doc: str
     scene_package_registered: bool
-    review_candidate_scene: bool
+    review_target_scene: bool
     manual_code_audit: StatusSummary
     taxonomy_review: StatusSummary
-    migration_test: StatusSummary
+    source_layout_test: StatusSummary
     classification: str
     rationale: str
     classification_sources: list[str]
@@ -368,13 +367,13 @@ def _smoke_task(task_id: str, *, max_attempts: int) -> dict[str, Any]:
 
 
 def _scene_package_maps() -> tuple[dict[str, set[str]], dict[str, set[str]]]:
-    from trace.core.scene_package_migration import (
-        MIGRATED_SCENE_PACKAGE_SCENES,
-        SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES,
+    from trace.core.source_layout_policy import (
+        SCENE_PACKAGE_SOURCE_LAYOUT_SCENES,
+        SCENE_PACKAGE_REVIEW_TARGET_SCENES,
     )
 
-    migrated = {str(domain): {str(scene) for scene in scenes} for domain, scenes in MIGRATED_SCENE_PACKAGE_SCENES.items()}
-    review = {str(domain): {str(scene) for scene in scenes} for domain, scenes in SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES.items()}
+    migrated = {str(domain): {str(scene) for scene in scenes} for domain, scenes in SCENE_PACKAGE_SOURCE_LAYOUT_SCENES.items()}
+    review = {str(domain): {str(scene) for scene in scenes} for domain, scenes in SCENE_PACKAGE_REVIEW_TARGET_SCENES.items()}
     return migrated, review
 
 
@@ -434,10 +433,10 @@ def build_inventory(
                 annotation_type_generated=generated_annotation_type,
                 answer_schema_doc=doc_answer_schema,
                 scene_package_registered=task.scene_id in migrated_scenes.get(task.domain, set()),
-                review_candidate_scene=task.scene_id in review_scenes.get(task.domain, set()),
+                review_target_scene=task.scene_id in review_scenes.get(task.domain, set()),
                 manual_code_audit=_status_summary(scene_dir / "manual_code_audit_status.json"),
                 taxonomy_review=_status_summary(scene_dir / "taxonomy_review_status.json"),
-                migration_test=_status_summary(scene_dir / "migration_test_status.json"),
+                source_layout_test=_status_summary(scene_dir / "source_layout_test_status.json"),
                 classification=classification,
                 rationale=rationale,
                 classification_sources=classification_sources,

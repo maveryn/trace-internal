@@ -11,38 +11,213 @@ from .sampling import support_probabilities
 from .state import OptionSpec, ResolvedProblem, SolidSpec
 
 OPTION_LABELS: tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
+CYLINDER_OPTION_BASE_AREAS: tuple[int, ...] = tuple(range(4, 25))
+CONE_OPTION_BASE_AREAS: tuple[int, ...] = tuple(range(9, 43))
+OPTION_HEIGHT_MIN = 2
+OPTION_HEIGHT_MAX = 32
 
-CUBOID_TO_CYLINDER_LENGTH_CASES: tuple[tuple[int, int, int, int], ...] = (
-    (6, 4, 5, 12),
-    (8, 5, 3, 10),
-    (9, 4, 5, 10),
-    (10, 6, 4, 12),
-    (7, 6, 4, 21),
-    (12, 5, 3, 30),
+
+def _set_best_case(
+    best: dict[int, tuple[tuple[int, ...], tuple[int, ...]]],
+    *,
+    answer: int,
+    score: tuple[int, ...],
+    case: tuple[int, ...],
+) -> None:
+    if int(answer) not in best or tuple(score) < best[int(answer)][0]:
+        best[int(answer)] = (tuple(score), tuple(case))
+
+
+def _spread_answer_cases(
+    best: Mapping[int, tuple[tuple[int, ...], tuple[int, ...]]],
+    *,
+    answer_min: int,
+    answer_max: int,
+    target_count: int,
+) -> tuple[tuple[int, ...], ...]:
+    answer_keys = [
+        answer for answer in sorted(best) if answer_min <= int(answer) <= answer_max
+    ]
+    if len(answer_keys) < int(target_count):
+        raise ValueError(
+            f"not enough generated volume-equivalence cases in [{answer_min}, {answer_max}]: "
+            f"{len(answer_keys)} < {target_count}"
+        )
+    selected: list[int] = []
+    used: set[int] = set()
+    for index in range(int(target_count)):
+        target = float(answer_min) + (
+            float(answer_max - answer_min) * float(index)
+        ) / float(max(1, target_count - 1))
+        answer = min(
+            (candidate for candidate in answer_keys if candidate not in used),
+            key=lambda value: (abs(value - target), value),
+        )
+        used.add(int(answer))
+        selected.append(int(answer))
+    return tuple(tuple(best[answer][1]) for answer in sorted(selected))
+
+
+def _generate_cuboid_to_cylinder_length_cases() -> tuple[tuple[int, ...], ...]:
+    best: dict[int, tuple[tuple[int, ...], tuple[int, ...]]] = {}
+    for length in range(5, 45):
+        for width in range(4, 37):
+            for height in range(3, 31):
+                source_volume = int(length) * int(width) * int(height)
+                for target_base_area in range(8, 301):
+                    if source_volume % int(target_base_area) != 0:
+                        continue
+                    answer = source_volume // int(target_base_area)
+                    if not (6 <= int(answer) <= 300):
+                        continue
+                    if int(answer) in (
+                        int(length),
+                        int(width),
+                        int(height),
+                        int(target_base_area),
+                    ):
+                        continue
+                    _set_best_case(
+                        best,
+                        answer=int(answer),
+                        score=(
+                            abs(int(target_base_area) - 84),
+                            abs(int(length) - int(width)),
+                            abs(int(height) - 14),
+                            length + width + height + target_base_area,
+                        ),
+                        case=(
+                            int(length),
+                            int(width),
+                            int(height),
+                            int(target_base_area),
+                        ),
+                    )
+    return _spread_answer_cases(best, answer_min=121, answer_max=240, target_count=70)
+
+
+def _generate_cylinder_to_cone_height_cases() -> tuple[tuple[int, ...], ...]:
+    best: dict[int, tuple[tuple[int, ...], tuple[int, ...]]] = {}
+    for source_base_area in range(8, 421):
+        for source_height in range(4, 61):
+            numerator = 3 * int(source_base_area) * int(source_height)
+            for target_base_area in range(8, 361):
+                if numerator % int(target_base_area) != 0:
+                    continue
+                answer = numerator // int(target_base_area)
+                if not (8 <= int(answer) <= 500):
+                    continue
+                if int(answer) in (
+                    int(source_base_area),
+                    int(source_height),
+                    int(target_base_area),
+                ):
+                    continue
+                if int(target_base_area) in (
+                    int(source_base_area),
+                    3 * int(source_base_area),
+                ):
+                    continue
+                _set_best_case(
+                    best,
+                    answer=int(answer),
+                    score=(
+                        abs(int(target_base_area) - 96),
+                        abs(int(source_base_area) - 72),
+                        abs(int(source_height) - 24),
+                        source_base_area + source_height + target_base_area,
+                    ),
+                    case=(
+                        int(source_base_area),
+                        int(source_height),
+                        int(target_base_area),
+                    ),
+                )
+    return _spread_answer_cases(best, answer_min=241, answer_max=420, target_count=100)
+
+
+def _generate_cone_to_cuboid_height_cases() -> tuple[tuple[int, ...], ...]:
+    best: dict[int, tuple[tuple[int, ...], tuple[int, ...]]] = {}
+    for source_base_area in range(12, 421):
+        for source_height in range(6, 73):
+            if (int(source_base_area) * int(source_height)) % 3 != 0:
+                continue
+            source_volume = (int(source_base_area) * int(source_height)) // 3
+            for target_length in range(3, 37):
+                if source_volume % int(target_length) != 0:
+                    continue
+                width_factor = source_volume // int(target_length)
+                for target_width in range(3, 37):
+                    if width_factor % int(target_width) != 0:
+                        continue
+                    answer = width_factor // int(target_width)
+                    if not (2 <= int(answer) <= 200):
+                        continue
+                    if int(answer) in (
+                        int(source_base_area),
+                        int(source_height),
+                        int(target_length),
+                        int(target_width),
+                    ):
+                        continue
+                    _set_best_case(
+                        best,
+                        answer=int(answer),
+                        score=(
+                            abs(int(source_base_area) - 120),
+                            abs(int(source_height) - 30),
+                            abs(int(target_length) - int(target_width)),
+                            source_base_area
+                            + source_height
+                            + target_length
+                            + target_width,
+                        ),
+                        case=(
+                            int(source_base_area),
+                            int(source_height),
+                            int(target_length),
+                            int(target_width),
+                        ),
+                    )
+    return _spread_answer_cases(best, answer_min=2, answer_max=120, target_count=100)
+
+
+CUBOID_TO_CYLINDER_LENGTH_CASES: tuple[tuple[int, ...], ...] = (
+    _generate_cuboid_to_cylinder_length_cases()
 )
-CYLINDER_TO_CONE_HEIGHT_CASES: tuple[tuple[int, int, int], ...] = (
-    (12, 5, 10),
-    (8, 6, 12),
-    (9, 8, 24),
-    (10, 6, 18),
-    (14, 5, 15),
-    (16, 6, 18),
+CYLINDER_TO_CONE_HEIGHT_CASES: tuple[tuple[int, ...], ...] = (
+    _generate_cylinder_to_cone_height_cases()
 )
-CONE_TO_CUBOID_HEIGHT_CASES: tuple[tuple[int, int, int, int], ...] = (
-    (18, 6, 6, 3),
-    (24, 9, 6, 4),
-    (30, 12, 10, 3),
-    (36, 15, 9, 4),
-    (54, 9, 9, 3),
-    (42, 14, 7, 4),
+CONE_TO_CUBOID_HEIGHT_CASES: tuple[tuple[int, ...], ...] = (
+    _generate_cone_to_cuboid_height_cases()
 )
-CONE_SOURCE_OPTION_CASES: tuple[tuple[int, int], ...] = ((18, 6), (24, 6), (30, 9), (36, 5))
-CYLINDER_SOURCE_OPTION_CASES: tuple[tuple[int, int], ...] = ((12, 4), (9, 6), (15, 4), (18, 5))
+CONE_SOURCE_OPTION_CASES: tuple[tuple[int, int], ...] = (
+    (42, 9),
+    (66, 8),
+    (84, 6),
+    (48, 12),
+    (54, 10),
+    (60, 12),
+    (72, 9),
+)
+CYLINDER_SOURCE_OPTION_CASES: tuple[tuple[int, int], ...] = (
+    (24, 6),
+    (26, 8),
+    (27, 7),
+    (28, 9),
+    (30, 8),
+    (32, 9),
+    (35, 6),
+)
 CUBOID_SOURCE_OPTION_CASES: tuple[tuple[int, int, int], ...] = (
-    (6, 4, 4),
-    (8, 3, 5),
-    (8, 4, 3),
-    (10, 4, 3),
+    (9, 8, 6),
+    (10, 9, 4),
+    (12, 7, 5),
+    (13, 7, 4),
+    (14, 8, 3),
+    (11, 6, 5),
+    (16, 5, 5),
+    (13, 8, 4),
 )
 
 
@@ -59,6 +234,108 @@ def solid_volume(spec: SolidSpec) -> int:
     raise ValueError(f"unsupported solid shape: {spec.shape}")
 
 
+def _solid_with_base_height(shape: str, *, base_area: int, height: int) -> SolidSpec:
+    if str(shape) == "cylinder":
+        return SolidSpec("cylinder", base_area=int(base_area), height=int(height))
+    if str(shape) == "cone":
+        return SolidSpec("cone", base_area=int(base_area), height=int(height))
+    raise ValueError(f"unsupported option shape: {shape}")
+
+
+def _matching_option_solids(
+    *,
+    shape: str,
+    source_volume: int,
+    base_areas: Sequence[int],
+    min_height: int = OPTION_HEIGHT_MIN,
+    max_height: int = OPTION_HEIGHT_MAX,
+) -> tuple[SolidSpec, ...]:
+    matches: list[SolidSpec] = []
+    for base_area in base_areas:
+        for height in range(int(min_height), int(max_height) + 1):
+            solid = _solid_with_base_height(
+                shape, base_area=int(base_area), height=int(height)
+            )
+            try:
+                volume = solid_volume(solid)
+            except ValueError:
+                continue
+            if int(volume) == int(source_volume):
+                matches.append(solid)
+    if not matches:
+        raise ValueError(
+            f"no equal-volume {shape} options available for volume={source_volume}"
+        )
+    return tuple(matches)
+
+
+def _select_correct_option_solid(
+    *,
+    shape: str,
+    source_volume: int,
+    base_areas: Sequence[int],
+    instance_seed: int,
+    namespace: str,
+) -> SolidSpec:
+    matches = _matching_option_solids(
+        shape=str(shape),
+        source_volume=int(source_volume),
+        base_areas=base_areas,
+    )
+    rng = spawn_rng(int(instance_seed), str(namespace))
+    return matches[int(rng.randrange(len(matches)))]
+
+
+def _near_volume_distractors(
+    *,
+    shape: str,
+    source_volume: int,
+    correct: SolidSpec,
+    base_areas: Sequence[int],
+    count: int,
+    min_height: int = OPTION_HEIGHT_MIN,
+    max_height: int = OPTION_HEIGHT_MAX,
+) -> tuple[SolidSpec, ...]:
+    candidates: list[tuple[tuple[int, ...], SolidSpec]] = []
+    for base_area in base_areas:
+        for height in range(int(min_height), int(max_height) + 1):
+            solid = _solid_with_base_height(
+                shape, base_area=int(base_area), height=int(height)
+            )
+            try:
+                volume = solid_volume(solid)
+            except ValueError:
+                continue
+            if solid == correct or int(volume) == int(source_volume):
+                continue
+            candidates.append(
+                (
+                    (
+                        abs(int(volume) - int(source_volume)),
+                        abs(int(base_area) - int(correct.base_area)),
+                        abs(int(height) - int(correct.height)),
+                        int(base_area),
+                        int(height),
+                    ),
+                    solid,
+                )
+            )
+    selected: list[SolidSpec] = []
+    seen_volumes: set[int] = set()
+    for _score, solid in sorted(candidates, key=lambda item: item[0]):
+        volume = solid_volume(solid)
+        if int(volume) in seen_volumes:
+            continue
+        seen_volumes.add(int(volume))
+        selected.append(solid)
+        if len(selected) >= int(count):
+            return tuple(selected)
+    raise ValueError(
+        f"not enough near-volume {shape} distractors for volume={source_volume}: "
+        f"{len(selected)} < {count}"
+    )
+
+
 def resolve_cuboid_to_cylinder_length(case: Sequence[int]) -> ResolvedProblem:
     length, width, height, target_base_area = [int(value) for value in case]
     source = SolidSpec("cuboid", height=height, length=length, width=width)
@@ -72,14 +349,16 @@ def resolve_cuboid_to_cylinder_length(case: Sequence[int]) -> ResolvedProblem:
         answer=int(answer),
         answer_schema="integer",
         formula_family="volume_equivalence_missing_dimension",
-        formula="target_length = source_cuboid_volume / cylinder_base_area",
-        target_unknown_role="cylinder_length",
+        formula="target_height = source_cuboid_volume / cylinder_base_area",
+        target_unknown_role="cylinder_height",
     )
 
 
 def resolve_cylinder_to_cone_height(case: Sequence[int]) -> ResolvedProblem:
     source_base_area, source_height, target_base_area = [int(value) for value in case]
-    source = SolidSpec("cylinder", base_area=int(source_base_area), height=int(source_height))
+    source = SolidSpec(
+        "cylinder", base_area=int(source_base_area), height=int(source_height)
+    )
     answer = (3 * solid_volume(source)) // int(target_base_area)
     if int(target_base_area) * int(answer) != 3 * solid_volume(source):
         raise ValueError("cylinder-to-cone case must yield integer target height")
@@ -96,13 +375,19 @@ def resolve_cylinder_to_cone_height(case: Sequence[int]) -> ResolvedProblem:
 
 
 def resolve_cone_to_cuboid_height(case: Sequence[int]) -> ResolvedProblem:
-    source_base_area, source_height, target_length, target_width = [int(value) for value in case]
-    source = SolidSpec("cone", base_area=int(source_base_area), height=int(source_height))
+    source_base_area, source_height, target_length, target_width = [
+        int(value) for value in case
+    ]
+    source = SolidSpec(
+        "cone", base_area=int(source_base_area), height=int(source_height)
+    )
     target_base = int(target_length) * int(target_width)
     answer = solid_volume(source) // target_base
     if target_base * int(answer) != solid_volume(source):
         raise ValueError("cone-to-cuboid case must yield integer target height")
-    target = SolidSpec("cuboid", height=int(answer), length=int(target_length), width=int(target_width))
+    target = SolidSpec(
+        "cuboid", height=int(answer), length=int(target_length), width=int(target_width)
+    )
     return ResolvedProblem(
         source=source,
         target=target,
@@ -188,7 +473,17 @@ def _option_problem(
         shuffle_namespace=str(shuffle_namespace),
         label_namespace=str(label_namespace),
     )
-    selected = next(option.solid for option in option_specs if option.label == selected_label)
+    selected = next(
+        option.solid for option in option_specs if option.label == selected_label
+    )
+    source_volume = solid_volume(source)
+    matching_options = [
+        option for option in option_specs if int(option.volume) == int(source_volume)
+    ]
+    if len(matching_options) != 1 or matching_options[0].solid != correct:
+        raise ValueError(
+            "equal-volume option task must expose exactly one matching visual option"
+        )
     labels = tuple(option.label for option in option_specs)
     return ResolvedProblem(
         source=source,
@@ -215,13 +510,19 @@ def resolve_cone_matching_cylinder_option(
 ) -> ResolvedProblem:
     source = SolidSpec("cone", base_area=int(case[0]), height=int(case[1]))
     source_volume = solid_volume(source)
-    correct = SolidSpec("cylinder", base_area=6, height=source_volume // 6)
-    distractors = (
-        SolidSpec("cylinder", base_area=4, height=max(2, source_volume // 6)),
-        SolidSpec("cylinder", base_area=9, height=max(2, source_volume // 6 + 1)),
-        SolidSpec("cylinder", base_area=12, height=max(2, source_volume // 6 - 1)),
-        SolidSpec("cylinder", base_area=15, height=max(2, source_volume // 6 + 2)),
-        SolidSpec("cylinder", base_area=18, height=max(2, source_volume // 6 + 3)),
+    correct = _select_correct_option_solid(
+        shape="cylinder",
+        source_volume=int(source_volume),
+        base_areas=CYLINDER_OPTION_BASE_AREAS,
+        instance_seed=int(instance_seed),
+        namespace=f"{shuffle_namespace}.correct_option",
+    )
+    distractors = _near_volume_distractors(
+        shape="cylinder",
+        source_volume=int(source_volume),
+        correct=correct,
+        base_areas=CYLINDER_OPTION_BASE_AREAS,
+        count=5,
     )
     return _option_problem(
         source=source,
@@ -246,13 +547,20 @@ def resolve_cylinder_matching_cone_option(
 ) -> ResolvedProblem:
     source = SolidSpec("cylinder", base_area=int(case[0]), height=int(case[1]))
     source_volume = solid_volume(source)
-    correct = SolidSpec("cone", base_area=18, height=source_volume // 6)
-    distractors = (
-        SolidSpec("cone", base_area=12, height=max(3, source_volume // 6)),
-        SolidSpec("cone", base_area=24, height=max(3, source_volume // 6 + 1)),
-        SolidSpec("cone", base_area=15, height=max(3, source_volume // 6 + 2)),
-        SolidSpec("cone", base_area=21, height=max(3, source_volume // 6 + 1)),
-        SolidSpec("cone", base_area=30, height=max(3, source_volume // 6 + 2)),
+    correct = _select_correct_option_solid(
+        shape="cone",
+        source_volume=int(source_volume),
+        base_areas=CONE_OPTION_BASE_AREAS,
+        instance_seed=int(instance_seed),
+        namespace=f"{shuffle_namespace}.correct_option",
+    )
+    distractors = _near_volume_distractors(
+        shape="cone",
+        source_volume=int(source_volume),
+        correct=correct,
+        base_areas=CONE_OPTION_BASE_AREAS,
+        count=5,
+        min_height=3,
     )
     return _option_problem(
         source=source,
@@ -275,15 +583,23 @@ def resolve_cuboid_matching_cylinder_option(
     shuffle_namespace: str,
     label_namespace: str,
 ) -> ResolvedProblem:
-    source = SolidSpec("cuboid", height=int(case[2]), length=int(case[0]), width=int(case[1]))
+    source = SolidSpec(
+        "cuboid", height=int(case[2]), length=int(case[0]), width=int(case[1])
+    )
     source_volume = solid_volume(source)
-    correct = SolidSpec("cylinder", base_area=8, height=source_volume // 8)
-    distractors = (
-        SolidSpec("cylinder", base_area=6, height=max(2, source_volume // 8)),
-        SolidSpec("cylinder", base_area=10, height=max(2, source_volume // 8 + 1)),
-        SolidSpec("cylinder", base_area=12, height=max(2, source_volume // 8 - 1)),
-        SolidSpec("cylinder", base_area=14, height=max(2, source_volume // 8 + 2)),
-        SolidSpec("cylinder", base_area=16, height=max(2, source_volume // 8 + 3)),
+    correct = _select_correct_option_solid(
+        shape="cylinder",
+        source_volume=int(source_volume),
+        base_areas=CYLINDER_OPTION_BASE_AREAS,
+        instance_seed=int(instance_seed),
+        namespace=f"{shuffle_namespace}.correct_option",
+    )
+    distractors = _near_volume_distractors(
+        shape="cylinder",
+        source_volume=int(source_volume),
+        correct=correct,
+        base_areas=CYLINDER_OPTION_BASE_AREAS,
+        count=5,
     )
     return _option_problem(
         source=source,

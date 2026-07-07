@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from .state import AbacusOptionPanelRenderParams
+from .state import AbacusOptionPanelRenderParams, AbacusReadoutRenderParams
 
 
 def rounded_bbox(values: Sequence[float]) -> list[float]:
@@ -61,9 +61,36 @@ def option_card_bboxes(
     return bboxes
 
 
+def readout_option_bboxes(
+    *,
+    option_labels: Sequence[str],
+    params: AbacusReadoutRenderParams,
+    panel_bbox: Sequence[float],
+) -> dict[str, list[float]]:
+    """Return one horizontal row of six text option cards below the abacus panel."""
+
+    labels = tuple(str(label) for label in option_labels)
+    if len(labels) != 6:
+        raise ValueError("abacus readout option row requires exactly six option labels")
+    card_w = float(params.readout_option_card_width_px)
+    card_h = float(params.readout_option_card_height_px)
+    gap = float(params.readout_option_card_gap_px)
+    total_w = (6.0 * card_w) + (5.0 * gap)
+    start_x = float(round(0.5 * (float(params.canvas_width) - total_w)))
+    y0 = float(panel_bbox[3]) + float(params.readout_option_card_margin_top_px)
+    max_y0 = float(params.canvas_height) - card_h - 18.0
+    y0 = min(float(y0), float(max_y0))
+    bboxes: dict[str, list[float]] = {}
+    for index, label in enumerate(labels):
+        x0 = float(start_x + (int(index) * (card_w + gap)))
+        bboxes[str(label)] = rounded_bbox((x0, y0, x0 + card_w, y0 + card_h))
+    return bboxes
+
+
 __all__ = [
     "bbox_center",
     "bead_bbox",
     "option_card_bboxes",
+    "readout_option_bboxes",
     "rounded_bbox",
 ]

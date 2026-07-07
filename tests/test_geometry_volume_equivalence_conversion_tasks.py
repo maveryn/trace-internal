@@ -10,6 +10,8 @@ from trace.core.taxonomy import lookup_task_taxonomy
 from trace.tasks import TASK_REGISTRY, create_task
 from trace.tasks.geometry.volume_equivalence_conversion.equal_volume_option_label import (
     QUERY_ID_CONE_MATCHES_CYLINDER_OPTION,
+    QUERY_ID_CUBOID_MATCHES_CYLINDER_OPTION,
+    QUERY_ID_CYLINDER_MATCHES_CONE_OPTION,
     TASK_ID_EQUAL_VOLUME_OPTION,
     GeometryVolumeEquivalenceConversionEqualVolumeOptionLabelTask,
 )
@@ -21,6 +23,7 @@ from trace.tasks.geometry.volume_equivalence_conversion.missing_dimension_value 
     GeometryVolumeEquivalenceConversionMissingDimensionValueTask,
 )
 
+
 def _generate(seed: int, *, task_id: str = TASK_ID_MISSING_DIMENSION, **params):
     task = create_task(task_id)
     return task.generate(seed, params=dict(params), max_attempts=80)
@@ -29,8 +32,14 @@ def _generate(seed: int, *, task_id: str = TASK_ID_MISSING_DIMENSION, **params):
 def test_volume_equivalence_conversion_tasks_registered() -> None:
     assert TASK_ID_MISSING_DIMENSION in TASK_REGISTRY
     assert TASK_ID_EQUAL_VOLUME_OPTION in TASK_REGISTRY
-    assert TASK_REGISTRY[TASK_ID_MISSING_DIMENSION] is GeometryVolumeEquivalenceConversionMissingDimensionValueTask
-    assert TASK_REGISTRY[TASK_ID_EQUAL_VOLUME_OPTION] is GeometryVolumeEquivalenceConversionEqualVolumeOptionLabelTask
+    assert (
+        TASK_REGISTRY[TASK_ID_MISSING_DIMENSION]
+        is GeometryVolumeEquivalenceConversionMissingDimensionValueTask
+    )
+    assert (
+        TASK_REGISTRY[TASK_ID_EQUAL_VOLUME_OPTION]
+        is GeometryVolumeEquivalenceConversionEqualVolumeOptionLabelTask
+    )
     for task_id in (TASK_ID_MISSING_DIMENSION, TASK_ID_EQUAL_VOLUME_OPTION):
         taxonomy = lookup_task_taxonomy(task_id)
         assert taxonomy is not None
@@ -63,10 +72,15 @@ def test_cuboid_to_cylinder_missing_dimension_formula_and_annotation() -> None:
     assert tuple(annotation.keys()) == MISSING_DIMENSION_ANNOTATION_KEYS
     assert trace["projected_annotation"]["bbox_map"] == annotation
     assert trace["projected_annotation"]["pixel_bbox_map"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_volume_equivalence_conversion_v1"
+    assert (
+        trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"]
+        == "geometry_volume_equivalence_conversion_v1"
+    )
     assert trace["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
     assert "task_variant" not in json.dumps(trace)
-    _assert_bbox_map_inside_image(annotation, out.image.size, keys=MISSING_DIMENSION_ANNOTATION_KEYS)
+    _assert_bbox_map_inside_image(
+        annotation, out.image.size, keys=MISSING_DIMENSION_ANNOTATION_KEYS
+    )
 
 
 def test_equal_volume_option_formula_and_annotation() -> None:
@@ -94,10 +108,40 @@ def test_equal_volume_option_formula_and_annotation() -> None:
     annotation = out.annotation_gt.value
     assert trace["projected_annotation"]["bbox"] == annotation
     assert trace["projected_annotation"]["pixel_bbox"] == annotation
-    assert trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"] == "geometry_volume_equivalence_conversion_v1"
+    assert (
+        trace["render_spec"]["prompt"]["prompt_variant"]["prompt_bundle_id"]
+        == "geometry_volume_equivalence_conversion_v1"
+    )
     assert trace["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
     assert "task_variant" not in json.dumps(trace)
     _assert_bbox_inside_image(annotation, out.image.size)
+
+
+def test_equal_volume_option_has_unique_matching_option() -> None:
+    task = create_task(TASK_ID_EQUAL_VOLUME_OPTION)
+    for seed, query_id in enumerate(
+        (
+            QUERY_ID_CONE_MATCHES_CYLINDER_OPTION,
+            QUERY_ID_CYLINDER_MATCHES_CONE_OPTION,
+            QUERY_ID_CUBOID_MATCHES_CYLINDER_OPTION,
+        ),
+        start=91000,
+    ):
+        for offset in range(12):
+            out = task.generate(
+                seed + offset,
+                params={"query_id": query_id, "option_count": 6},
+                max_attempts=80,
+            )
+            trace = out.trace_payload
+            source_volume = trace["execution_trace"]["source_volume"]
+            matching = [
+                option
+                for option in trace["execution_trace"]["options"]
+                if option["volume"] == source_volume
+            ]
+            assert len(matching) == 1
+            assert matching[0]["label"] == out.answer_gt.value
 
 
 def test_volume_equivalence_conversion_generation_is_deterministic() -> None:
@@ -112,7 +156,10 @@ def test_volume_equivalence_conversion_generation_is_deterministic() -> None:
     assert first.answer_gt.value == 12
     assert first.answer_gt == second.answer_gt
     assert first.annotation_gt == second.annotation_gt
-    assert first.trace_payload["execution_trace"] == second.trace_payload["execution_trace"]
+    assert (
+        first.trace_payload["execution_trace"]
+        == second.trace_payload["execution_trace"]
+    )
     assert first.image.tobytes() == second.image.tobytes()
 
 
@@ -123,12 +170,17 @@ def test_volume_equivalence_conversion_rejects_invalid_params() -> None:
     with pytest.raises(ValueError):
         task.generate(
             1,
-            params={"query_id": QUERY_ID_CUBOID_TO_CYLINDER_LENGTH, "conversion_case": (6, 4, 5, 7)},
+            params={
+                "query_id": QUERY_ID_CUBOID_TO_CYLINDER_LENGTH,
+                "conversion_case": (6, 4, 5, 7),
+            },
             max_attempts=1,
         )
     option_task = create_task(TASK_ID_EQUAL_VOLUME_OPTION)
     with pytest.raises(ValueError):
-        option_task.generate(1, params={"query_id": QUERY_ID_CUBOID_TO_CYLINDER_LENGTH}, max_attempts=1)
+        option_task.generate(
+            1, params={"query_id": QUERY_ID_CUBOID_TO_CYLINDER_LENGTH}, max_attempts=1
+        )
 
 
 def _assert_bbox_map_inside_image(

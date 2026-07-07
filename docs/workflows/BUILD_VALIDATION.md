@@ -66,12 +66,14 @@ For new or distribution-changing task logic:
      escalation report with the domain audit.
 4. Solve-rate calibration must also gate the exact exported calibration parquet,
    not only a separately sampled review stream. `scripts/run_task_calibration_sweep.py`
-   runs `scripts/check_rlvr_probe_distribution.py` on the realized `100` rows
+   runs `scripts/check_rlvr_probe_distribution.py` on the realized `50` rows
    first; if the answer-frequency gate fails, it may generate up to four
-   additional same-sampler validation shards of 100 rows each and validate the
-   cumulative distribution. Browser review samples and solve-rate runs still use the
-   original 100-row shard. Any remaining validation failure blocks the task until the
-   sampler is fixed.
+   additional same-sampler validation shards of 50 rows each and validate the
+   cumulative distribution. Browser review artifacts still use the default
+   100-sample inspection set unless a review escalation explicitly requests a
+   different size; solve-rate calibration uses the fixed 50-row calibration
+   shard. Any remaining validation failure blocks the task until the sampler is
+   fixed.
 5. Numeric answer-distribution summaries still report `max_five_bin_frequency` and the 5 equal-width bin counts over the observed numeric range, but these are informational review metrics rather than hard pass/fail gates.
 6. For quick distribution-only runs (without inspection sidecar generation), the dedicated checker remains available:
    - `PYTHONPATH=. python scripts/check_task_answer_distribution.py --tasks <task_id>`

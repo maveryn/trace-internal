@@ -107,6 +107,6 @@ Query ids: `single`.
   `tests/test_icons_counting_named_shape_venn_region_count.py`
 - Config tests: `tests/test_icons_scene_config.py`
 - Prompt bundle tests: `tests/test_prompt_system.py`
-- Scene-package migration gates:
-  `tests/test_scene_package_migration_contracts.py`,
-  `tests/test_scene_package_review_candidate_contracts.py`
+- Source-layout contract checks:
+  `tests/test_source_layout_contracts.py`,
+  `tests/test_scene_package_review_target_contracts.py`

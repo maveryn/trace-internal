@@ -1,11 +1,9 @@
 """Step-list page scene package."""
 
-from .nth_step_field_label import PagesStepListNthStepFieldLabelTask
-from .step_after_named_step_label import PagesStepListStepAfterNamedStepLabelTask
-from .step_for_detail_label import PagesStepListStepForDetailLabelTask
+from .between_named_steps_count import PagesStepListBetweenNamedStepsCountTask
+from .relative_offset_step_label import PagesStepListRelativeOffsetStepLabelTask
 
 __all__ = [
-    "PagesStepListNthStepFieldLabelTask",
-    "PagesStepListStepAfterNamedStepLabelTask",
-    "PagesStepListStepForDetailLabelTask",
+    "PagesStepListBetweenNamedStepsCountTask",
+    "PagesStepListRelativeOffsetStepLabelTask",
 ]

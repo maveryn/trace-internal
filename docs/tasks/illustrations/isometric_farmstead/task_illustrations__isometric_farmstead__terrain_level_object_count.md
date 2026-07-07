@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `isometric_farmstead`
-- Implementation scene package: `isometric_farmstead`
+- Implementation source scene: `isometric_farmstead`
 - Implementation source: `trace/tasks/illustrations/isometric_farmstead/terrain_level_object_count.py`
 
 ## Task Contract

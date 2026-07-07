@@ -16,7 +16,7 @@ TASK_ID = "task_geometry__solid_formula__cylinder_cone_radius_from_volume_height
 QUERY_ID = "single"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 DEFAULT_QUERY_ID = QUERY_ID
-PROMPT_KEY = QUERY_ID
+PROMPT_KEY = "cylinder_cone_radius_from_volume_heights"
 ANSWER_SUPPORT = decimal_support(2, 61, step=1)
 CONSTRUCTION_OPTIONS = (
     (6.0, 3.0),

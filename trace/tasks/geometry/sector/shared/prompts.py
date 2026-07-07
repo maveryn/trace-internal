@@ -41,7 +41,7 @@ def sector_prompt_artifacts(
         bundle_id=str(defaults["bundle_id"]),
         scene_key=str(defaults["scene_key"]),
         task_key=str(prompt_task_key),
-        query_key=None,
+        query_key=str(prompt_branch_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
         dynamic_slots={
             "json_example": str(json_example),

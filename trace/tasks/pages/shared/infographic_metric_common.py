@@ -44,11 +44,6 @@ METRIC_RANKED_ITEM_VARIANTS: Tuple[str, ...] = (
     *GLOBAL_METRIC_RANKED_ITEM_VARIANTS,
     *SECTION_METRIC_RANKED_ITEM_VARIANTS,
 )
-FACT_LOOKUP_VARIANTS: Tuple[str, ...] = (
-    "value_for_named_item",
-    "item_for_named_value",
-    "detail_for_named_item",
-)
 ALL_QUERY_IDS: Tuple[str, ...] = (
     *SUPPORTED_QUERY_IDS,
     *SECTION_RANKED_TOTAL_VARIANTS,
@@ -56,7 +51,6 @@ ALL_QUERY_IDS: Tuple[str, ...] = (
     *COLUMN_PROFILE_COMPARISON_VARIANTS,
     *FILTERED_SECTION_EXTREMUM_VARIANTS,
     *METRIC_RANKED_ITEM_VARIANTS,
-    *FACT_LOOKUP_VARIANTS,
 )
 _TASK_GROUP_DEFAULTS = get_scene_defaults("pages", "infographic")
 _GEN_DEFAULTS, _RENDER_DEFAULTS, _PROMPT_DEFAULTS = split_generation_rendering_prompt_defaults(
@@ -90,9 +84,6 @@ _REASONING_LOAD_BY_VARIANT: Dict[str, float] = {
     "nth_lowest_metric_label": 0.70,
     "nth_highest_metric_in_section_label": 0.66,
     "nth_lowest_metric_in_section_label": 0.66,
-    "value_for_named_item": 0.42,
-    "item_for_named_value": 0.52,
-    "detail_for_named_item": 0.46,
 }
 _EXTREMUM_KINDS: Tuple[str, ...] = ("maximum", "minimum")
 _EXTREMA_OPERATIONS: Tuple[str, ...] = ("sum", "absolute_difference")
@@ -140,6 +131,9 @@ class _RenderedInfographic:
     image: Image.Image
     entities: List[Dict[str, Any]]
     card_traces: List[Dict[str, Any]]
+    page_bbox: List[float]
+    document_title_bbox: List[float]
+    document_subtitle_bbox: List[float]
     section_bboxes: Dict[str, List[float]]
     section_title_bboxes: Dict[str, List[float]]
     layout_jitter_meta: Dict[str, Any]
@@ -158,10 +152,6 @@ def _quoted_label_list(labels: Sequence[str]) -> str:
     if len(quoted) == 2:
         return f"{quoted[0]} and {quoted[1]}"
     return f"{', '.join(quoted[:-1])}, and {quoted[-1]}"
-
-
-def _caption_text(card: _MetricCard) -> str:
-    return str(card.caption_text)
 
 
 def _labels_by_section(

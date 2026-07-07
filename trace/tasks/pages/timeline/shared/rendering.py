@@ -341,7 +341,6 @@ def render_timeline_scene(
             card_text = visual_theme.event_text_rgb
         text_stroke_fill = resolve_text_stroke_fill(card_text)
         label_stroke_width = 2 if is_reference else None
-        date_stroke_width = 2 if is_reference else None
 
         _rounded(
             draw,
@@ -369,7 +368,7 @@ def render_timeline_scene(
             font=date_font,
             fill=visual_theme.event_subtext_rgb if not is_reference else card_text,
             stroke_fill=text_stroke_fill if is_reference else resolve_text_stroke_fill(visual_theme.event_subtext_rgb),
-            stroke_width=date_stroke_width,
+            stroke_width=0,
         )
 
         _draw_marker(

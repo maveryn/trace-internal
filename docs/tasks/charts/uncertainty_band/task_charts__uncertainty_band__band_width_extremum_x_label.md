@@ -21,7 +21,7 @@ Query ids: `narrowest_band_x_label`, `widest_band_x_label`.
 
 ## Review Notes
 
-This task uses the scene-package layout. The public task file owns target-series selection, extremum direction, answer binding, annotation binding, query metadata, and prompt slots; scene-local shared code only provides uncertainty-band data structures, rendering, prompt, and projection primitives.
+This task uses the current source layout. The public task file owns target-series selection, extremum direction, answer binding, annotation binding, query metadata, and prompt slots; scene-local shared code only provides uncertainty-band data structures, rendering, prompt, and projection primitives.
 
 ## Query Details
 

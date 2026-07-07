@@ -21,6 +21,18 @@ from .shared.rendering import create_composite_render_context, render_composite_
 from .shared.state import CompositeShapeProblem, RenderedCompositeShape
 
 
+def _json_safe(value: Any) -> Any:
+    """Convert scene-internal tuples to JSON-safe values before trace export."""
+
+    if isinstance(value, Mapping):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, list):
+        return [_json_safe(item) for item in value]
+    return value
+
+
 @dataclass(frozen=True)
 class PreparedCompositeShapeScene:
     """Rendered image plus prompt and annotation artifacts."""
@@ -109,9 +121,9 @@ def composite_shape_trace_payload(
     prompt_metadata_fields: Dict[str, Any] = {
         "scene_id": SCENE_ID,
         "query_id": str(branch_name),
-        "query_id_probabilities": dict(branch_probabilities),
+        "query_id_probabilities": _json_safe(dict(branch_probabilities)),
         "answer_value": problem.answer_value,
-        **dict(problem.metadata_fields),
+        **_json_safe(dict(problem.metadata_fields)),
     }
     prompt_query_spec = build_prompt_query_spec(
         prompt_artifacts=prepared.prompt_artifacts,
@@ -126,7 +138,7 @@ def composite_shape_trace_payload(
             "task_id": str(task_id),
             "query_id": str(branch_name),
             "scene_kind": str(problem.scene_kind),
-            "entities": [dict(entity) for entity in rendered.scene_entities],
+            "entities": [_json_safe(dict(entity)) for entity in rendered.scene_entities],
             "relations": {
                 "shape_family": str(problem.shape_family),
                 "metric_kind": str(problem.metric_kind),
@@ -141,27 +153,27 @@ def composite_shape_trace_payload(
             "query_id": str(branch_name),
             "canvas_size": [int(prepared.image.size[0]), int(prepared.image.size[1])],
             "coord_space": "pixel",
-            "post_image_noise": dict(prepared.noise_meta),
-            **dict(prepared.render_meta),
+            "post_image_noise": _json_safe(dict(prepared.noise_meta)),
+            **_json_safe(dict(prepared.render_meta)),
             "prompt": {
-                "prompt_variant": dict(prepared.prompt_artifacts.prompt_variant),
+                "prompt_variant": _json_safe(dict(prepared.prompt_artifacts.prompt_variant)),
                 "prompt_variant_active_key": str(prepared.prompt_artifacts.prompt_variant_active_key),
-                "prompt_variants": dict(prepared.prompt_artifacts.prompt_variants_for_trace),
+                "prompt_variants": _json_safe(dict(prepared.prompt_artifacts.prompt_variants_for_trace)),
             },
         },
-        "render_map": dict(rendered.render_map),
+        "render_map": _json_safe(dict(rendered.render_map)),
         "execution_trace": {
             "scene_id": SCENE_ID,
             "task_id": str(task_id),
             "query_id": str(branch_name),
-            "query_id_probabilities": dict(branch_probabilities),
+            "query_id_probabilities": _json_safe(dict(branch_probabilities)),
             "answer_type": str(problem.answer_type),
             "answer_value": problem.answer_value,
             "reasoning_kind": str(problem.reasoning_kind),
             "reasoning_steps": int(problem.reasoning_steps),
             "annotation_roles": list(rendered.annotation_roles),
-            **dict(problem.execution_fields),
-            **dict(rendered.witness),
+            **_json_safe(dict(problem.execution_fields)),
+            **_json_safe(dict(rendered.witness)),
         },
         "witness_symbolic": {
             "type": str(problem.witness_type),
@@ -171,9 +183,9 @@ def composite_shape_trace_payload(
             "answer_value": problem.answer_value,
             "source_witness_type": str(prepared.annotation_artifacts.annotation_type),
             "original_annotation_value": list(rendered.annotation_roles),
-            **dict(rendered.witness),
+            **_json_safe(dict(rendered.witness)),
         },
-        "projected_annotation": dict(prepared.annotation_artifacts.projected_annotation),
+        "projected_annotation": _json_safe(dict(prepared.annotation_artifacts.projected_annotation)),
     }
 
 

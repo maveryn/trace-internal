@@ -12,6 +12,9 @@ from trace.core.seed import hash64
 from trace.tasks.pages.control_board.control_state_condition_count import (
     PagesControlBoardControlStateConditionCountTask,
 )
+from trace.tasks.pages.control_board.state_extremum_group_label import (
+    PagesControlBoardStateExtremumGroupLabelTask,
+)
 from trace.tasks.pages.record_table.enabled_action_for_type_count import (
     PagesRecordTableEnabledActionForTypeCountTask,
 )
@@ -48,6 +51,41 @@ def test_control_board_count_contract_matches_trace() -> None:
         assert output.trace_payload["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
 
 
+def test_control_board_state_extremum_group_contract_matches_trace() -> None:
+    task = PagesControlBoardStateExtremumGroupLabelTask()
+    for prompt_key in task.supported_query_ids:
+        output = task.generate(55208, params={"query_id": prompt_key}, max_attempts=20)
+        execution = output.trace_payload["execution_trace"]
+        render_map = output.trace_payload["render_map"]
+        answer_group = str(output.answer_gt.value)
+
+        assert output.scene_id == "control_board"
+        assert output.query_id == prompt_key
+        assert output.answer_gt.type == "string"
+        assert output.annotation_gt.type == "bbox"
+        assert execution["query_id"] == prompt_key
+        assert execution["prompt_query_key"] == prompt_key
+        assert answer_group in render_map["group_bboxes_by_name"]
+        assert output.annotation_gt.value == render_map["group_bboxes_by_name"][answer_group]
+        assert output.trace_payload["projected_annotation"] == {"bbox": output.annotation_gt.value}
+        assert output.trace_payload["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
+
+        counts: Counter[str] = Counter()
+        for control in execution["controls"]:
+            disabled = not bool(control["enabled"])
+            selected_enabled = bool(control["selected"]) and bool(control["enabled"])
+            if prompt_key == "disabled_extremum_group_label" and disabled:
+                counts[str(control["group_name"])] += 1
+            if prompt_key == "selected_enabled_extremum_group_label" and selected_enabled:
+                counts[str(control["group_name"])] += 1
+        for group in render_map["group_bboxes_by_name"]:
+            counts.setdefault(str(group), 0)
+        max_count = max(counts.values())
+        assert counts[answer_group] == max_count
+        assert sum(1 for value in counts.values() if int(value) == int(max_count)) == 1
+        assert int(execution["target_state_count"]) == max_count
+
+
 def test_record_table_count_contract_matches_trace() -> None:
     cases = (
         (PagesRecordTableEnabledActionForTypeCountTask(), "enabled_action_for_type_count"),
@@ -76,6 +114,16 @@ def test_control_board_prompt_examples_match_integer_contract() -> None:
         "answer": 3,
     }
     assert extract_prompt_json_example(out.prompt_variants["answer_only"]) == {"answer": 3}
+
+
+def test_control_board_state_extremum_prompt_examples_match_string_bbox_contract() -> None:
+    task = PagesControlBoardStateExtremumGroupLabelTask()
+    out = task.generate(55208, params={"query_id": "disabled_extremum_group_label"}, max_attempts=20)
+    assert extract_prompt_json_example(out.prompt_variants["answer_and_annotation"]) == {
+        "annotation": [[72, 190, 612, 430]],
+        "answer": "Review",
+    }
+    assert extract_prompt_json_example(out.prompt_variants["answer_only"]) == {"answer": "Review"}
 
 
 def test_control_board_balanced_sampling_defaults_cover_axes_and_answers() -> None:
@@ -108,6 +156,37 @@ def test_control_board_balanced_sampling_defaults_cover_axes_and_answers() -> No
     assert set(answers_by_prompt_key["disabled_controls_in_group_count"].keys()).issubset({2, 3, 4, 5, 6, 7})
     assert set(answers_by_prompt_key["selected_enabled_controls_in_group_count"].keys()).issubset({2, 3, 4, 5, 6, 7})
     assert all(len(values) >= 5 for values in answers_by_prompt_key.values())
+
+
+def test_control_board_state_extremum_defaults_cover_branches_groups_and_answers() -> None:
+    task = PagesControlBoardStateExtremumGroupLabelTask()
+    scene_variants: Counter[str] = Counter()
+    answers_by_prompt_key: defaultdict[str, Counter[str]] = defaultdict(Counter)
+    target_counts_by_prompt_key: defaultdict[str, Counter[int]] = defaultdict(Counter)
+    for index in range(120):
+        out = task.generate(hash64(55308, task.task_id, index), params={}, max_attempts=20)
+        execution = out.trace_payload["execution_trace"]
+        prompt_key = str(execution["prompt_query_key"])
+        assert execution["query_id"] in task.supported_query_ids
+        assert execution["prompt_query_key"] == execution["query_id"]
+        scene_variants[str(execution["scene_variant"])] += 1
+        answers_by_prompt_key[prompt_key][str(execution["answer_value"])] += 1
+        target_counts_by_prompt_key[prompt_key][int(execution["target_state_count"])] += 1
+    assert set(scene_variants.keys()) == {
+        "office_document",
+        "creative_workspace",
+        "developer_ide",
+        "cad_workspace",
+        "scientific_plotter",
+        "os_file_manager",
+    }
+    assert set(answers_by_prompt_key) == {
+        "disabled_extremum_group_label",
+        "selected_enabled_extremum_group_label",
+    }
+    assert all(set(values.keys()) == {"Layout", "Editing", "Review", "Output"} for values in answers_by_prompt_key.values())
+    assert all(set(values.keys()).issubset({3, 4, 5}) for values in target_counts_by_prompt_key.values())
+    assert all(len(values) == 3 for values in target_counts_by_prompt_key.values())
 
 
 def test_record_table_balanced_sampling_defaults_cover_branches_and_answers() -> None:

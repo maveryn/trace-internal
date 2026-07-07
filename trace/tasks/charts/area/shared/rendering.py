@@ -124,16 +124,7 @@ def resolve_area_render_params(params: Mapping[str, Any], *, instance_seed: int)
         tick_font_size_px=int(params.get("tick_font_size_px", scene_default(params, RENDERING_DEFAULTS, "tick_font_size_px", 16))),
         value_font_size_px=int(params.get("value_font_size_px", scene_default(params, RENDERING_DEFAULTS, "value_font_size_px", 14))),
         legend_font_size_px=int(params.get("legend_font_size_px", scene_default(params, RENDERING_DEFAULTS, "legend_font_size_px", 17))),
-        label_stroke_width_px=int(
-            resolve_render_int(
-                params,
-                RENDERING_DEFAULTS,
-                "label_stroke_width_px",
-                2,
-                instance_seed=int(instance_seed),
-                namespace=SCENE_NAMESPACE,
-            )
-        ),
+        label_stroke_width_px=int(params.get("label_stroke_width_px", scene_default(params, RENDERING_DEFAULTS, "label_stroke_width_px", 0))),
         area_outline_width_px=int(
             resolve_render_int(
                 params,
@@ -301,7 +292,7 @@ def render_area_panel(
     y_ticks = tuple(range(0, int(y_axis_max) + 1, max(1, int(tick_step))))
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
     label_font = load_font(int(render_params.label_font_size_px), bold=True)
-    value_font = load_font(int(render_params.value_font_size_px), bold=True)
+    value_font = load_font(int(render_params.value_font_size_px), bold=False)
     legend_font = load_font(int(render_params.legend_font_size_px), bold=True)
 
     for tick in y_ticks:

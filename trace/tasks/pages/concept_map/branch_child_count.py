@@ -53,13 +53,16 @@ class PagesConceptMapBranchChildCountTask:
             default=SINGLE_QUERY_ID,
             public_task=TASK_ID,
         )
+        task_params = dict(task_params)
+        task_params["child_count_min"] = 4
+        task_params["child_count_max"] = 7
         return _lifecycle.render_bound_concept_map(
             instance_seed=int(instance_seed),
             params=task_params,
             selected_branch=str(selected_branch),
             branch_probabilities=branch_probabilities,
             case_kind=CHILDREN_TOTAL_KIND,
-            case_defaults={},
+            case_defaults={"child_count_min": 4, "child_count_max": 7},
             binding_factory=_bind_branch_child_count,
         )
 

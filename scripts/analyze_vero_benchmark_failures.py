@@ -406,7 +406,7 @@ def trace_mapping(benchmark_key: str, intent: str, label: str) -> dict[str, Any]
                 "task_pages__web_action__guide_code_target_count",
                 "task_pages__workspace__control_label",
                 "task_pages__workspace__context_control_count",
-                "task_pages__workspace__dual_guide_control_label",
+                "task_pages__workspace__context_guide_control_label",
                 "task_pages__schema__field_role_count",
             ]
         )

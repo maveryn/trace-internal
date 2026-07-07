@@ -48,9 +48,9 @@ Update docs and skills in the same patch when changing any of these surfaces:
 3. Prompt-system changes -> `docs/contracts/PROMPT_SYSTEM.md`.
 4. Public answer/annotation reward-contract changes ->
    `docs/contracts/ANNOTATION_AND_REWARD_CONTRACTS.md`.
-5. Shared-helper placement/API changes -> `docs/contracts/SYSTEM_ARCHITECTURE.md`,
-   the relevant domain setup doc, or the relevant
-   `docs/SCENE_PACKAGE_MIGRATION/*_SHARED_BOUNDARY.md` file.
+5. Shared-helper placement/API changes -> `docs/contracts/SOURCE_LAYOUT.md`,
+   `docs/contracts/SYSTEM_ARCHITECTURE.md`, or the relevant domain contract
+   in `docs/domains/`.
 6. Validation/build behavior changes -> `docs/workflows/BUILD_VALIDATION.md`
    and `docs/contracts/VALIDATION_ERROR_CODES.md`.
 7. Task behavior changes -> the affected

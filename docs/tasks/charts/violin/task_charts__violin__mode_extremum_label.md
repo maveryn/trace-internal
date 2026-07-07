@@ -21,7 +21,7 @@ Query ids: `highest_mode`, `lowest_mode`.
 
 ## Review Notes
 
-This task uses the scene-package layout. The public task file owns extremum direction selection, answer binding, annotation binding, prompt branch selection, and task-specific trace fields; scene-local shared code only provides violin sampling, rendering, prompt, and annotation primitives.
+This task uses the current source layout. The public task file owns extremum direction selection, answer binding, annotation binding, prompt branch selection, and task-specific trace fields; scene-local shared code only provides violin sampling, rendering, prompt, and annotation primitives.
 
 ## Query Details
 

@@ -11,7 +11,7 @@ from importlib import import_module
 from importlib.util import find_spec
 from pathlib import Path
 
-from trace.core.scene_package_migration import parse_public_task_id
+from trace.core.source_layout_policy import parse_public_task_id
 
 
 _TASKS_ROOT = Path(__file__).resolve().parent

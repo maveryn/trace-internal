@@ -29,6 +29,10 @@ from .state import (
 from .styles import make_puzzle_scene_background, resolve_arithmetic_panel_style
 
 ARITHMETIC_NOISE_FALLBACK = default_noise_fallback(apply_prob=0.12)
+TARGET_SLOT_FILL_RGB = (255, 228, 225)
+TARGET_SLOT_OUTLINE_RGB = (190, 38, 38)
+TARGET_SLOT_TEXT_RGB = (125, 18, 18)
+TARGET_SLOT_TEXT_STROKE_RGB = (255, 246, 244)
 
 
 @dataclass(frozen=True)
@@ -99,9 +103,9 @@ def _draw_value_box(
     """Draw one rectangular arithmetic slot and record its bbox/entity trace."""
 
     box = _as_bbox(bbox)
-    fill = style.option_fill_rgb if is_target else style.panel_fill_rgb
-    outline = style.mark_rgb if is_target else style.grid_rgb
-    width = max(2, int(render_params.panel_border_width_px + (1 if is_target else 0)))
+    fill = TARGET_SLOT_FILL_RGB if is_target else style.panel_fill_rgb
+    outline = TARGET_SLOT_OUTLINE_RGB if is_target else style.grid_rgb
+    width = max(2, int(render_params.panel_border_width_px + (2 if is_target else 0)))
     draw_rounded_rect(
         draw,
         tuple(box),
@@ -115,8 +119,8 @@ def _draw_value_box(
         text=str(text),
         center=(0.5 * (box[0] + box[2]), 0.5 * (box[1] + box[3])),
         font=font,
-        fill=style.text_rgb,
-        stroke_fill=style.text_stroke_rgb,
+        fill=TARGET_SLOT_TEXT_RGB if is_target else style.text_rgb,
+        stroke_fill=TARGET_SLOT_TEXT_STROKE_RGB if is_target else style.text_stroke_rgb,
         stroke_width=1,
     )
     item_bboxes[str(entity_id)] = box
@@ -151,14 +155,14 @@ def _draw_value_node(
 
     cx, cy = float(center[0]), float(center[1])
     bbox = _expanded_bbox(cx, cy, float(radius), float(radius))
-    fill = style.option_fill_rgb if bool(is_target) else style.panel_fill_rgb
-    outline = style.mark_rgb if bool(is_target) else style.grid_rgb
+    fill = TARGET_SLOT_FILL_RGB if bool(is_target) else style.panel_fill_rgb
+    outline = TARGET_SLOT_OUTLINE_RGB if bool(is_target) else style.grid_rgb
     draw.ellipse(
         tuple(bbox),
         fill=tuple(int(value) for value in fill),
         outline=tuple(int(value) for value in outline),
         width=max(
-            2, int(render_params.panel_border_width_px + (1 if is_target else 0))
+            2, int(render_params.panel_border_width_px + (2 if is_target else 0))
         ),
     )
     draw_centered_text(
@@ -166,8 +170,8 @@ def _draw_value_node(
         text=str(text),
         center=(cx, cy),
         font=font,
-        fill=style.text_rgb,
-        stroke_fill=style.text_stroke_rgb,
+        fill=TARGET_SLOT_TEXT_RGB if is_target else style.text_rgb,
+        stroke_fill=TARGET_SLOT_TEXT_STROKE_RGB if is_target else style.text_stroke_rgb,
         stroke_width=1,
     )
     item_bboxes[str(entity_id)] = bbox
@@ -620,6 +624,9 @@ def render_arithmetic_case(
     style, style_meta = resolve_arithmetic_panel_style(
         instance_seed=int(instance_seed), params=params
     )
+    style_meta["target_slot_fill_rgb"] = list(TARGET_SLOT_FILL_RGB)
+    style_meta["target_slot_outline_rgb"] = list(TARGET_SLOT_OUTLINE_RGB)
+    style_meta["target_slot_text_rgb"] = list(TARGET_SLOT_TEXT_RGB)
     background, background_meta = make_puzzle_scene_background(
         canvas_width=int(render_params.canvas_width),
         canvas_height=int(render_params.canvas_height),

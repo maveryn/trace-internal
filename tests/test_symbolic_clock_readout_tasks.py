@@ -57,11 +57,10 @@ def test_symbolic_clock_readout_contract_matches_trace() -> None:
             scene_entities = trace["scene_ir"]["entities"]
             hand_entities = [entity for entity in scene_entities if entity["entity_kind"] == "clock_hand"]
 
-            assert out.answer_gt.type == "string"
-            assert out.annotation_gt.type == "segment_set"
+            assert out.answer_gt.type == "option_letter"
+            assert out.annotation_gt.type == "bbox"
             assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
             expected_hand_count = 2
-            assert len(out.annotation_gt.value) == 2
             assert trace["scene_ir"]["scene_kind"] == "symbolic_clock_single"
             assert out.query_id == expected_query_id
             assert str(execution["query_id"]) == out.query_id
@@ -74,11 +73,14 @@ def test_symbolic_clock_readout_contract_matches_trace() -> None:
             shown_total_minutes = int(execution["shown_total_minutes"])
             shown_text = str(format_clock_hhmm(int(shown_total_minutes)))
             assert str(execution["shown_time_text"]) == shown_text
-            assert trace["projected_annotation"]["segment_set"] == out.annotation_gt.value
-            assert trace["projected_annotation"]["pixel_segment_set"] == out.annotation_gt.value
+            assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+            assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
             assert len(execution["supporting_segments"]) == 2
             assert len(trace["render_map"]["hand_bboxes_px"]) == expected_hand_count
-            assert trace["render_map"]["annotation_source"] == "center_px_and_hand_tip_segments_px"
+            assert trace["render_map"]["annotation_source"] == "selected_answer_option_bbox_px"
+            assert execution["selected_option_bbox_px"] == out.annotation_gt.value
+            assert trace["render_map"]["selected_option_bbox_px"] == out.annotation_gt.value
+            assert execution["answer_label"] == out.answer_gt.value
             assert trace["render_spec"]["clock_style"]["font"]["source"] == "global_font_pool"
             assert trace["render_spec"]["clock_style"]["font"]["font_family"]
             assert str(trace["render_spec"]["clock_style"]["accent_color_name"]) == str(accent_colors[scene_index])
@@ -89,24 +91,26 @@ def test_symbolic_clock_readout_contract_matches_trace() -> None:
 
             if expected_direction == "after":
                 expected = format_clock_hhmm(add_clock_minutes(int(shown_total_minutes), 25))
-                assert str(out.answer_gt.value) == str(expected)
+                assert str(execution["answer_value"]) == str(expected)
+                assert str(execution["option_text_by_label"][out.answer_gt.value]) == str(expected)
                 assert int(execution["delta_minutes"]) == 25
             else:
                 expected = format_clock_hhmm(add_clock_minutes(int(shown_total_minutes), -25))
-                assert str(out.answer_gt.value) == str(expected)
+                assert str(execution["answer_value"]) == str(expected)
+                assert str(execution["option_text_by_label"][out.answer_gt.value]) == str(expected)
                 assert int(execution["delta_minutes"]) == 25
 
 
 def test_symbolic_clock_prompt_examples_match_variant_offsets() -> None:
-    minutes_example = [[[320, 320], [430, 350]], [[320, 320], [484, 461]]]
+    option_example = [224, 770, 316, 836]
     expected = (
         (SymbolicClockOffsetReadoutTask(), "minutes_after", (
-            {"annotation": minutes_example, "answer": "03:50"},
-            {"answer": "03:50"},
+            {"annotation": option_example, "answer": "C"},
+            {"answer": "C"},
         )),
         (SymbolicClockOffsetReadoutTask(), "minutes_before", (
-            {"annotation": minutes_example, "answer": "03:00"},
-            {"answer": "03:00"},
+            {"annotation": option_example, "answer": "C"},
+            {"answer": "C"},
         )),
     )
     for index, (task, query_id, (expected_answer_and_annotation, expected_answer_only)) in enumerate(expected, start=20340):
@@ -180,18 +184,18 @@ def test_symbolic_clock_hand_angle_contract_matches_trace() -> None:
     execution = trace["execution_trace"]
     shown_total_minutes = int(execution["shown_total_minutes"])
 
-    assert out.answer_gt.type == "integer"
-    assert out.answer_gt.value == 90
-    assert out.annotation_gt.type == "segment_set"
-    assert len(out.annotation_gt.value) == 2
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "bbox"
     assert out.query_id == "single"
     assert trace["scene_ir"]["scene_kind"] == "symbolic_clock_single"
     assert str(execution["shown_time_text"]) == "03:00"
     assert int(execution["hand_angle_deg"]) == int(round(clock_hand_angle_gap_deg(shown_total_minutes)))
     assert int(execution["answer_value"]) == int(execution["hand_angle_deg"])
-    assert trace["projected_annotation"]["segment_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_segment_set"] == out.annotation_gt.value
-    assert trace["render_map"]["annotation_source"] == "center_px_and_hand_tip_segments_px"
+    assert int(execution["answer_value"]) == 90
+    assert str(execution["option_values_by_label"][out.answer_gt.value]) == str(execution["answer_value"])
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
+    assert trace["render_map"]["annotation_source"] == "selected_answer_option_bbox_px"
     assert len(trace["render_map"]["hand_tips_px"]) == 2
     assert len(execution["supporting_segments"]) == 2
 
@@ -205,10 +209,10 @@ def test_symbolic_clock_hand_angle_prompt_examples_match_contract() -> None:
     answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
     assert answer_and_annotation == {
-        "annotation": [[[320, 320], [430, 350]], [[320, 320], [484, 461]]],
-        "answer": 45,
+        "annotation": [224, 770, 316, 836],
+        "answer": "C",
     }
-    assert answer_only == {"answer": 45}
+    assert answer_only == {"answer": "C"}
 
 
 def test_symbolic_clock_hand_angle_sampling_covers_integer_angles() -> None:
@@ -222,13 +226,14 @@ def test_symbolic_clock_hand_angle_sampling_covers_integer_angles() -> None:
             max_attempts=20,
         )
         execution = out.trace_payload["execution_trace"]
-        answer = int(out.answer_gt.value)
+        answer = int(execution["answer_value"])
         answers[answer] += 1
         scene_variants[str(execution["scene_variant"])] += 1
         assert 15 <= answer <= 180
         assert answer % 5 == 0
         assert answer == int(execution["hand_angle_deg"])
-        assert out.annotation_gt.type == "segment_set"
+        assert out.answer_gt.type == "option_letter"
+        assert out.annotation_gt.type == "bbox"
     assert len(answers) >= 8
     assert set(scene_variants.keys()) == {"classic", "minimal", "outline"}
 
@@ -256,10 +261,8 @@ def test_symbolic_clock_full_time_readout_contract_matches_trace() -> None:
         if entity["entity_kind"] == "clock_hand"
     ]
 
-    assert out.answer_gt.type == "string"
-    assert out.answer_gt.value == "03:25:40"
-    assert out.annotation_gt.type == "segment_set"
-    assert len(out.annotation_gt.value) == 3
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "bbox"
     assert out.query_id == "single"
     assert trace["scene_ir"]["scene_kind"] == "symbolic_clock_single"
     assert len(hand_entities) == 3
@@ -270,15 +273,12 @@ def test_symbolic_clock_full_time_readout_contract_matches_trace() -> None:
     }
     assert int(execution["shown_total_seconds"]) == shown_total_seconds
     assert str(execution["shown_time_text"]) == "03:25:40"
-    assert str(out.answer_gt.value) == format_clock_hhmmss(shown_total_seconds)
-    assert trace["projected_annotation"]["segment_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_segment_set"] == out.annotation_gt.value
+    assert str(execution["answer_value"]) == format_clock_hhmmss(shown_total_seconds)
+    assert str(execution["option_text_by_label"][out.answer_gt.value]) == "03:25:40"
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
     assert len(execution["supporting_segments"]) == 3
-    assert execution["supporting_parts"] == [
-        "hour_hand",
-        "minute_hand",
-        "second_hand",
-    ]
+    assert execution["supporting_parts"] == ["selected_answer_option"]
     assert len(trace["render_map"]["hand_bboxes_px"]) == 3
     assert len(trace["render_map"]["hand_tips_px"]) == 3
     assert bool(trace["render_spec"]["clock_style"]["show_second_hand"]) is True
@@ -300,14 +300,10 @@ def test_symbolic_clock_full_time_readout_prompt_examples_match_contract() -> No
     )
     answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
     assert answer_and_annotation == {
-        "annotation": [
-            [[320, 320], [447, 349]],
-            [[320, 320], [405, 493]],
-            [[320, 320], [140, 424]],
-        ],
-        "answer": "03:25:40",
+        "annotation": [224, 770, 316, 836],
+        "answer": "C",
     }
-    assert answer_only == {"answer": "03:25:40"}
+    assert answer_only == {"answer": "C"}
 
 
 def test_symbolic_clock_full_time_readout_sampling_covers_seconds_and_styles() -> None:
@@ -323,9 +319,8 @@ def test_symbolic_clock_full_time_readout_sampling_covers_seconds_and_styles() -
         execution = out.trace_payload["execution_trace"]
         seconds[int(execution["shown_second"])] += 1
         scene_variants[str(execution["scene_variant"])] += 1
-        assert out.answer_gt.type == "string"
-        assert out.annotation_gt.type == "segment_set"
-        assert len(out.annotation_gt.value) == 3
+        assert out.answer_gt.type == "option_letter"
+        assert out.annotation_gt.type == "bbox"
         assert int(execution["shown_second"]) % 5 == 0
     assert len(seconds) >= 6
     assert set(scene_variants.keys()) == {"classic", "minimal", "outline"}
@@ -356,10 +351,8 @@ def test_symbolic_clock_alarm_wait_time_contract_matches_trace() -> None:
     clock_colors = trace["render_spec"]["clock_style"]["resolved_colors_rgb"]
     prompt_lower = str(out.prompt).lower()
 
-    assert out.answer_gt.type == "integer"
-    assert out.answer_gt.value == 215
-    assert out.annotation_gt.type == "segment_set"
-    assert len(out.annotation_gt.value) == 3
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "bbox"
     assert out.query_id == "single"
     assert trace["scene_ir"]["scene_kind"] == "symbolic_clock_alarm"
     assert hand_kinds == {"hour", "minute", "alarm"}
@@ -368,17 +361,18 @@ def test_symbolic_clock_alarm_wait_time_contract_matches_trace() -> None:
     assert str(execution["alarm_time_text"]) == "07:00"
     assert int(execution["wait_minutes"]) == 215
     assert int(execution["answer_value"]) == 215
+    assert str(execution["option_text_by_label"][out.answer_gt.value]) == "215"
     assert str(execution["alarm_hand_scale"]) == "hour"
     assert min(float(value) for value in execution["alarm_hand_angle_gaps_deg"]) >= 20.0
     assert float(execution["current_hand_angle_gap_deg"]) >= 10.0
     assert list(clock_colors["alarm_hand"]) == list(ALARM_HAND_COLOR_RGB)
     assert list(clock_colors["hour_hand"]) != list(ALARM_HAND_COLOR_RGB)
     assert list(clock_colors["minute_hand"]) != list(ALARM_HAND_COLOR_RGB)
-    assert trace["projected_annotation"]["segment_set"] == out.annotation_gt.value
-    assert trace["projected_annotation"]["pixel_segment_set"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
     assert len(trace["render_map"]["hand_bboxes_px"]) == 3
     assert len(trace["render_map"]["hand_tips_px"]) == 3
-    assert execution["supporting_parts"] == ["hour_hand", "minute_hand", "alarm_hand"]
+    assert execution["supporting_parts"] == ["selected_answer_option"]
     assert "red alarm hand" in prompt_lower
     assert ":00" in out.prompt
     assert "hour scale" in prompt_lower or "hour-scale" in prompt_lower
@@ -393,14 +387,10 @@ def test_symbolic_clock_alarm_wait_time_prompt_examples_match_contract() -> None
     answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
     assert answer_and_annotation == {
-        "annotation": [
-            [[320, 320], [430, 350]],
-            [[320, 320], [405, 493]],
-            [[320, 320], [220, 493]],
-        ],
-        "answer": 215,
+        "annotation": [224, 770, 316, 836],
+        "answer": "C",
     }
-    assert answer_only == {"answer": 215}
+    assert answer_only == {"answer": "C"}
 
 
 def test_symbolic_clock_alarm_wait_time_sampling_respects_visual_constraints() -> None:
@@ -416,13 +406,12 @@ def test_symbolic_clock_alarm_wait_time_sampling_respects_visual_constraints() -
         )
         execution = out.trace_payload["execution_trace"]
         alarm_hours[int(execution["alarm_hour"])] += 1
-        answers[int(out.answer_gt.value)] += 1
+        answers[int(execution["answer_value"])] += 1
         accent_colors[str(execution["accent_color_name"])] += 1
-        assert out.answer_gt.type == "integer"
-        assert out.annotation_gt.type == "segment_set"
-        assert len(out.annotation_gt.value) == 3
-        assert 1 <= int(out.answer_gt.value) <= 720
-        assert int(out.answer_gt.value) == int(execution["wait_minutes"])
+        assert out.answer_gt.type == "option_letter"
+        assert out.annotation_gt.type == "bbox"
+        assert 1 <= int(execution["answer_value"]) <= 720
+        assert int(execution["answer_value"]) == int(execution["wait_minutes"])
         assert int(execution["alarm_minute"]) == 0
         assert str(execution["alarm_hand_scale"]) == "hour"
         assert min(float(value) for value in execution["alarm_hand_angle_gaps_deg"]) >= float(execution["min_alarm_hand_gap_deg"])

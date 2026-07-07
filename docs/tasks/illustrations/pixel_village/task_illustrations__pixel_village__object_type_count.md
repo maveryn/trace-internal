@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `pixel_village`
-- Implementation scene package: `pixel_village`
+- Implementation source scene: `pixel_village`
 - Implementation source: `trace/tasks/illustrations/pixel_village/object_type_count.py`
 
 ## Task Contract

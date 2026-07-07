@@ -22,9 +22,9 @@ QUERY_ID = SINGLE_QUERY_ID
 SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
 PROMPT_QUERY_KEY = "module_field_total_value"
 GEN_DEFAULTS = task_generation_defaults(
-    module_count_support=(7, 8, 9),
-    item_count_support=(2, 3, 4),
-    field_count_support=(2, 3),
+    module_count_support=(8, 9),
+    item_count_support=(3, 4),
+    field_count_support=(3,),
 )
 RENDER_DEFAULTS = task_render_defaults()
 

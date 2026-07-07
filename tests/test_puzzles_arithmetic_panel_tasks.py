@@ -1,4 +1,4 @@
-"""Contracts for arithmetic-constraint puzzle scene-package tasks."""
+"""Contracts for arithmetic-constraint puzzle source-layout tasks."""
 
 from __future__ import annotations
 

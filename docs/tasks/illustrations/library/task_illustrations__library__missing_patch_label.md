@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `library`
-- Implementation scene package: `library`
+- Implementation source scene: `library`
 - Implementation source: `trace/tasks/illustrations/library/missing_patch_label.py`
 
 ## Task Contract

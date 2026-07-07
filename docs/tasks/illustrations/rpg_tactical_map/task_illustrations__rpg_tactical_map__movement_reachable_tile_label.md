@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `rpg_tactical_map`
-- Implementation scene package: `rpg_tactical_map`
+- Implementation source scene: `rpg_tactical_map`
 - Implementation source: `trace/tasks/illustrations/rpg_tactical_map/movement_reachable_tile_label.py`
 
 ## Task Contract

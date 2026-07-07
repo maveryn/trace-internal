@@ -20,6 +20,7 @@ from trace.tasks.pages.shared.page_text_resources import (
 from .defaults import GENERATION_DEFAULTS, NAMESPACE_ROOT
 from .state import (
     ACCENTS,
+    PROFILE_FILTER_FIELDS,
     PROFILE_NUMERIC_FIELDS,
     PROFILE_RANK_ORDINALS,
     PROFILE_RANK_POSITION_SUPPORT,
@@ -91,6 +92,19 @@ def profile_numeric_field_labels() -> Tuple[str, ...]:
     return tuple(str(label) for label, _values in PROFILE_NUMERIC_FIELDS)
 
 
+def profile_filter_field_labels() -> Tuple[str, ...]:
+    """Return visible categorical field labels that support filtered tasks."""
+
+    return tuple(str(label) for label, _values in PROFILE_FILTER_FIELDS)
+
+
+def _filter_values_for_field(field_label: str) -> Tuple[str, ...]:
+    for label, values in PROFILE_FILTER_FIELDS:
+        if str(label) == str(field_label):
+            return tuple(str(value) for value in values)
+    raise ValueError(f"filter field {field_label!r} is not supported")
+
+
 def resolve_profile_numeric_field(
     *,
     params: Mapping[str, Any],
@@ -110,6 +124,29 @@ def resolve_profile_numeric_field(
         params=params,
         instance_seed=int(instance_seed),
         namespace=f"{NAMESPACE_ROOT}.{namespace}.numeric_field_label",
+    ) % len(field_labels)
+    return str(field_labels[int(field_index)])
+
+
+def resolve_profile_filter_field(
+    *,
+    params: Mapping[str, Any],
+    instance_seed: int,
+    namespace: str,
+) -> str:
+    """Select one repeated categorical profile-card field."""
+
+    field_labels = profile_filter_field_labels()
+    explicit_field = params.get("filter_field_label")
+    if explicit_field is not None:
+        target_field = str(explicit_field)
+        if target_field not in set(field_labels):
+            raise ValueError(f"filter_field_label must be one of {list(field_labels)}")
+        return str(target_field)
+    field_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{NAMESPACE_ROOT}.{namespace}.filter_field_label",
     ) % len(field_labels)
     return str(field_labels[int(field_index)])
 
@@ -147,6 +184,7 @@ def build_profile_card_spec(
     card_count: int,
     instance_seed: int,
     include_numeric_fields: bool,
+    filter_field_label: str = "",
 ) -> ProfileCardGridSpec:
     """Build visible profile cards with unique labels and field values."""
 
@@ -175,11 +213,19 @@ def build_profile_card_spec(
     )
     names = list(name_batch.values)
     field_values_by_label: Dict[str, List[str]] = {}
-    profile_field_specs = PROFILE_TEXT_FIELDS[:2] if bool(include_numeric_fields) else PROFILE_TEXT_FIELDS
+    profile_field_specs = () if str(filter_field_label) else (PROFILE_TEXT_FIELDS[:2] if bool(include_numeric_fields) else PROFILE_TEXT_FIELDS)
     for field_label, values in profile_field_specs:
         shuffled = list(values)
         rng.shuffle(shuffled)
         field_values_by_label[str(field_label)] = shuffled
+    filter_values_by_card: List[str] = []
+    if str(filter_field_label):
+        filter_values = list(_filter_values_for_field(str(filter_field_label)))
+        rng.shuffle(filter_values)
+        group_count = min(3, len(filter_values), int(card_count))
+        selected_groups = filter_values[: int(group_count)]
+        filter_values_by_card = [str(selected_groups[index % int(group_count)]) for index in range(int(card_count))]
+        rng.shuffle(filter_values_by_card)
     numeric_values_by_label: Dict[str, List[int]] = {}
     if bool(include_numeric_fields):
         for field_label, values in PROFILE_NUMERIC_FIELDS:
@@ -193,6 +239,8 @@ def build_profile_card_spec(
             str(field_label): str(field_values_by_label[str(field_label)][int(index)])
             for field_label, _values in profile_field_specs
         }
+        if str(filter_field_label):
+            fields[str(filter_field_label)] = str(filter_values_by_card[int(index)])
         numeric_fields = {
             str(field_label): int(values[int(index)])
             for field_label, values in numeric_values_by_label.items()
@@ -212,6 +260,7 @@ def build_profile_card_spec(
         title=str(title_batch.values[0]),
         subtitle=str(subtitle_batch.values[0]),
         text_resource_metadata=page_text_resource_metadata(title_batch, subtitle_batch, name_batch),
+        filter_field_label=str(filter_field_label),
     )
 
 
@@ -220,6 +269,7 @@ def build_profile_card_case(
     *,
     params: Mapping[str, Any],
     include_numeric_fields: bool,
+    include_filter_field: bool = False,
 ) -> ProfileCardGridCase:
     """Sample the scene-level profile-card grid state."""
 
@@ -240,10 +290,20 @@ def build_profile_card_case(
         instance_seed=int(instance_seed),
         namespace="card_count",
     )
+    filter_field_label = (
+        resolve_profile_filter_field(
+            params=params,
+            instance_seed=int(instance_seed),
+            namespace="filter_field",
+        )
+        if bool(include_filter_field)
+        else ""
+    )
     spec = build_profile_card_spec(
         card_count=int(card_count),
         instance_seed=int(instance_seed),
         include_numeric_fields=bool(include_numeric_fields),
+        filter_field_label=str(filter_field_label),
     )
     return ProfileCardGridCase(
         spec=spec,

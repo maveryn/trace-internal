@@ -9,8 +9,8 @@ from PIL import Image, ImageDraw
 from trace.core.visual.background import make_background_canvas
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.text_legibility import draw_text_traced
 from trace.tasks.shared.text_rendering import fit_font_to_box, load_font
+from trace.tasks.pages.shared.legible_text import draw_required_page_text
 
 from .defaults import POST_IMAGE_BACKGROUND_DEFAULTS, POST_IMAGE_NOISE_DEFAULTS, RENDER_FALLBACKS, RENDERING_DEFAULTS
 from .state import (
@@ -68,17 +68,23 @@ def _draw_text(
     fill: Tuple[int, int, int],
     *,
     role: str = "readout",
+    surface_rgbs: Sequence[Sequence[int]],
+    instance_seed: int,
+    namespace: str,
 ) -> List[float]:
-    draw_text_traced(
+    return draw_required_page_text(
         draw,
         (float(xy[0]), float(xy[1])),
         str(text),
-        fill=fill,
-        font=font,
+        font,
         role=str(role),
+        surface_rgbs=surface_rgbs,
+        instance_seed=int(instance_seed),
+        namespace=str(namespace),
+        preferred_rgbs=(fill,),
+        stroke_width=1,
         required=True,
     )
-    return _text_bbox(draw, xy, str(text), font)
 
 
 def _blend_rgb(color_a: Sequence[int], color_b: Sequence[int], weight_b: float) -> Tuple[int, int, int]:
@@ -147,7 +153,10 @@ def _draw_panel_header(
     render_params: ProfileCardRenderParams,
     page_title: str,
     page_subtitle: str,
+    instance_seed: int,
 ) -> Tuple[ImageDraw.ImageDraw, List[float], List[float]]:
+    """Draw the page frame/header; required text must stay contrast-safe against the panel fill."""
+
     draw = ImageDraw.Draw(image)
     margin = int(render_params.outer_margin_px)
     panel_bbox = [
@@ -156,17 +165,28 @@ def _draw_panel_header(
         float(render_params.canvas_width - margin),
         float(render_params.canvas_height - margin),
     ]
+    panel_fill = (249, 250, 250)
     draw.rounded_rectangle(
         tuple(panel_bbox),
         radius=18,
-        fill=(249, 250, 250),
+        fill=panel_fill,
         outline=(205, 212, 220),
         width=2,
     )
     title_font = load_font(int(render_params.title_font_size_px), bold=True)
     subtitle_font = load_font(int(render_params.subtitle_font_size_px), bold=False)
     title_xy = (float(margin + 24), float(margin + 18))
-    title_bbox = _draw_text(draw, title_xy, str(page_title), title_font, (35, 42, 50), role="page_title")
+    title_bbox = _draw_text(
+        draw,
+        title_xy,
+        str(page_title),
+        title_font,
+        (35, 42, 50),
+        role="page_title",
+        surface_rgbs=(panel_fill,),
+        instance_seed=int(instance_seed),
+        namespace="pages.profile_card_grid.header.title",
+    )
     _draw_text(
         draw,
         (title_xy[0], title_xy[1] + 38.0),
@@ -174,6 +194,9 @@ def _draw_panel_header(
         subtitle_font,
         (91, 101, 113),
         role="page_subtitle",
+        surface_rgbs=(panel_fill,),
+        instance_seed=int(instance_seed),
+        namespace="pages.profile_card_grid.header.subtitle",
     )
     return draw, panel_bbox, title_bbox
 
@@ -186,6 +209,7 @@ def render_profile_cards(
     page_subtitle: str,
     scene_variant: str,
     render_params: ProfileCardRenderParams,
+    instance_seed: int,
 ) -> RenderedProfileCardGrid:
     """Draw the full profile-card grid and retain all card/field boxes."""
 
@@ -195,6 +219,7 @@ def render_profile_cards(
         render_params=render_params,
         page_title=str(page_title),
         page_subtitle=str(page_subtitle),
+        instance_seed=int(instance_seed),
     )
     columns = 3 if str(scene_variant) == "directory_grid" else 2
     card_bboxes, layout_meta = _layout_grid(count=len(cards), columns=int(columns), render_params=render_params)
@@ -209,10 +234,11 @@ def render_profile_cards(
     for card, bbox in zip(cards, card_bboxes):
         x0, y0, x1, y1 = [float(value) for value in bbox]
         accent = tuple(int(channel) for channel in card.accent_rgb)
+        card_fill = _blend_rgb((255, 255, 255), accent, 0.035)
         draw.rounded_rectangle(
             (x0, y0, x1, y1),
             radius=int(render_params.corner_radius_px),
-            fill=_blend_rgb((255, 255, 255), accent, 0.035),
+            fill=card_fill,
             outline=(205, 212, 220),
             width=int(render_params.outline_width_px),
         )
@@ -227,7 +253,18 @@ def render_profile_cards(
             max_size_px=int(render_params.card_title_font_size_px),
             fill_ratio=0.97,
         )
-        name_bbox = _draw_text(draw, (x0 + 16.0, y0 + 22.0), str(card.name), name_font, text_rgb, role="profile_name")
+        profile_id = str(card.profile_id)
+        name_bbox = _draw_text(
+            draw,
+            (x0 + 16.0, y0 + 22.0),
+            str(card.name),
+            name_font,
+            text_rgb,
+            role="profile_name",
+            surface_rgbs=(card_fill,),
+            instance_seed=int(instance_seed),
+            namespace=f"pages.profile_card_grid.{profile_id}.name",
+        )
         row_top, row_gap, row_text_height = _vertical_text_rows(
             y0=y0,
             y1=y1,
@@ -269,6 +306,9 @@ def render_profile_cards(
                 label_font,
                 muted_rgb,
                 role="field_label",
+                surface_rgbs=(card_fill,),
+                instance_seed=int(instance_seed),
+                namespace=f"pages.profile_card_grid.{profile_id}.field_label.{row_index}",
             )
             value_bbox = _draw_text(
                 draw,
@@ -277,10 +317,12 @@ def render_profile_cards(
                 value_font,
                 text_rgb,
                 role="field_value",
+                surface_rgbs=(card_fill,),
+                instance_seed=int(instance_seed),
+                namespace=f"pages.profile_card_grid.{profile_id}.field_value.{row_index}",
             )
             label_bboxes[str(field_label)] = [float(value) for value in label_bbox]
             value_bboxes[str(field_label)] = [float(value) for value in value_bbox]
-        profile_id = str(card.profile_id)
         trace = {
             "profile_id": profile_id,
             "name": str(card.name),
@@ -341,6 +383,7 @@ def render_profile_card_case(
         page_subtitle=str(case.spec.subtitle),
         scene_variant=str(case.scene_variant),
         render_params=render_params,
+        instance_seed=int(instance_seed),
     )
     image, post_noise_meta = apply_post_image_noise(
         rendered_grid.image,

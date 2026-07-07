@@ -8,6 +8,16 @@ from .rendering import SCENE_ID
 from .state import RpgDungeonScene
 
 
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, list):
+        return [_json_safe(item) for item in value]
+    return value
+
+
 def rpg_dungeon_scene_ir(
     *,
     domain: str,
@@ -20,13 +30,13 @@ def rpg_dungeon_scene_ir(
     return {
         "domain": str(domain),
         "scene_id": str(scene_id),
-        "chambers": [chamber.as_dict() for chamber in scene.chambers],
+        "chambers": [_json_safe(chamber.as_dict()) for chamber in scene.chambers],
         "floor_tiles": [[int(x), int(y)] for x, y in scene.floor_tiles],
         "corridor_tiles": [[int(x), int(y)] for x, y in scene.corridor_tiles],
         "blocked_tiles": [[int(x), int(y)] for x, y in scene.blocked_tiles],
-        "blockers": [blocker.as_dict() for blocker in scene.blockers],
-        "entities": [entity.as_dict() for entity in scene.entities],
-        "relations": dict(relations),
+        "blockers": [_json_safe(blocker.as_dict()) for blocker in scene.blockers],
+        "entities": [_json_safe(entity.as_dict()) for entity in scene.entities],
+        "relations": _json_safe(dict(relations)),
     }
 
 
@@ -45,11 +55,11 @@ def rpg_dungeon_render_spec(scene: RpgDungeonScene, *, scene_id: str = SCENE_ID)
             "grid_cols": int(scene.trace.get("grid_cols", 0)),
             "grid_rows": int(scene.trace.get("grid_rows", 0)),
             "layout_orientation": str(scene.trace.get("layout_orientation", "")),
-            "side_counts": dict(scene.trace.get("side_counts", {})),
+            "side_counts": _json_safe(dict(scene.trace.get("side_counts", {}))),
             "total_chest_count": int(scene.trace.get("total_chest_count", 0)),
             "monster_count": int(scene.trace.get("monster_count", 0)),
             "canvas_profile": str(scene.trace.get("canvas_profile", "")),
-            "canvas_profile_probabilities": dict(scene.trace.get("canvas_profile_probabilities", {})),
+            "canvas_profile_probabilities": _json_safe(dict(scene.trace.get("canvas_profile_probabilities", {}))),
         },
     }
 

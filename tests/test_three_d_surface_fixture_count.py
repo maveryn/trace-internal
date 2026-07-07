@@ -8,7 +8,7 @@ from statistics import mean
 
 import pytest
 import trace.tasks  # noqa: F401 - registers tasks.
-from trace.core.scene_package_migration import parse_public_task_id
+from trace.core.source_layout_policy import parse_public_task_id
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks import create_task
 from trace.tasks.registry import TASK_REGISTRY, ensure_scene_tasks_registered
@@ -222,7 +222,7 @@ def test_surface_fixture_repeated_element_count_variants() -> None:
     task = create_task(TASK_ID)
 
     for index, (scene_variant, element_type) in enumerate(ELEMENT_TYPE_BY_SCENE_VARIANT.items()):
-        count = 8 + (index % 9)
+        count = 6 + (index % 10)
         output = task.generate(
             20260604 + index,
             params={

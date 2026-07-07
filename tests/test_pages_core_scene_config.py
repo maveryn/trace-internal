@@ -193,9 +193,10 @@ def test_pages_timeline_defaults_loaded() -> None:
     assert "balanced_query_id_sampling" not in generation_defaults
     assert "interval_relation_weights" not in generation_defaults
     assert list(generation_defaults["event_count_support"]) == [6, 7, 8, 9, 10, 11, 12]
-    assert list(generation_defaults["between_count_support"]) == [0, 1, 2, 3, 4, 5]
-    assert list(generation_defaults["outside_count_support"]) == [2, 3, 4, 5, 6, 7, 8]
-    assert list(generation_defaults["date_gap_support"]) == [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 24]
+    assert list(generation_defaults["between_count_support"]) == [1, 2, 3, 4]
+    assert list(generation_defaults["outside_count_support"]) == [1, 2, 3, 4]
+    assert list(generation_defaults["threshold_count_support"]) == [1, 2, 3, 4, 5, 6]
+    assert list(generation_defaults["relative_offset_support"]) == [1, 2, 3, 4]
 
     assert int(rendering_defaults["canvas_width"]) == 1120
     assert int(rendering_defaults["canvas_height"]) == 700
@@ -212,7 +213,6 @@ def test_pages_timeline_defaults_loaded() -> None:
     assert str(prompt_defaults["bundle_id"]).strip() == "pages_timeline_v1"
     assert "scene_key" not in prompt_defaults
     assert "task_key" not in prompt_defaults
-    assert "annotation_hint_event_date_gap_value" not in prompt_defaults
 
 
 def test_pages_infographic_defaults_loaded() -> None:
@@ -306,12 +306,14 @@ def test_pages_step_list_defaults_loaded() -> None:
         "two_column_cards",
         "vertical_cards",
     ]
-    assert sorted(generation_defaults["ordinal_reference_weights"].keys()) == ["final", "first", "interior"]
-    assert list(generation_defaults["step_count_support"]) == [5, 6, 7, 8]
+    assert list(generation_defaults["step_count_support"]) == [10, 11, 12, 13, 14, 15, 16]
+    assert list(generation_defaults["relative_offset_support"]) == [2, 3]
+    assert list(generation_defaults["between_count_support"]) == [2, 3, 4, 5, 6, 7, 8]
 
-    assert int(rendering_defaults["canvas_width"]) == 1000
-    assert int(rendering_defaults["canvas_height"]) == 820
-    assert int(rendering_defaults["number_badge_size_px"]) == 38
+    assert int(rendering_defaults["canvas_width"]) == 1120
+    assert int(rendering_defaults["canvas_height"]) == 980
+    assert int(rendering_defaults["number_badge_size_px"]) == 30
+    assert int(rendering_defaults["step_meta_font_size_px"]) == 11
 
     assert str(prompt_defaults["bundle_id"]).strip() == "pages_step_list_v1"
     assert "scene_key" not in prompt_defaults
@@ -351,7 +353,7 @@ def test_pages_profile_card_grid_defaults_loaded() -> None:
     assert "query_id_weights" not in generation_defaults
     assert "balanced_query_id_sampling" not in generation_defaults
     assert sorted(generation_defaults["scene_variant_weights"].keys()) == ["compact_cards", "directory_grid"]
-    assert list(generation_defaults["card_count_support"]) == [6, 9]
+    assert list(generation_defaults["card_count_support"]) == [9, 12]
     assert list(generation_defaults["rank_position_support"]) == [2, 3]
     assert bool(generation_defaults["balanced_scene_variant_sampling"]) is True
     assert int(rendering_defaults["canvas_width"]) == 1120
@@ -474,15 +476,16 @@ def test_pages_paired_forms_defaults_loaded() -> None:
     assert "balanced_query_id_sampling" not in generation_defaults
     assert bool(generation_defaults["balanced_scene_variant_sampling"]) is True
     assert sorted(generation_defaults["scene_variant_weights"].keys()) == ["purchase_receipt_pair"]
-    assert int(generation_defaults["item_count_min"]) == 6
-    assert int(generation_defaults["item_count_max"]) == 9
-    assert int(generation_defaults["quantity_max"]) == 99
-    assert int(generation_defaults["unit_value_min"]) == 5
-    assert int(generation_defaults["unit_value_max"]) == 30
-    assert int(generation_defaults["discrepancy_min"]) == 2
-    assert int(generation_defaults["discrepancy_max"]) == 10
-    assert int(generation_defaults["mismatch_count_min"]) == 3
-    assert int(generation_defaults["mismatch_count_max"]) == 5
+    assert int(generation_defaults["item_count_min"]) == 4
+    assert int(generation_defaults["item_count_max"]) == 6
+    assert int(generation_defaults["quantity_min"]) == 10
+    assert int(generation_defaults["quantity_max"]) == 49
+    assert int(generation_defaults["unit_value_min"]) == 2
+    assert int(generation_defaults["unit_value_max"]) == 12
+    assert int(generation_defaults["discrepancy_min"]) == 1
+    assert int(generation_defaults["discrepancy_max"]) == 6
+    assert int(generation_defaults["mismatch_count_min"]) == 2
+    assert int(generation_defaults["mismatch_count_max"]) == 3
     assert int(generation_defaults["direction_count_min"]) == 1
 
     assert int(rendering_defaults["canvas_width"]) == 1392
@@ -532,8 +535,8 @@ def test_pages_map_defaults_loaded() -> None:
     assert "query_id_weights" not in generation_defaults
     assert "balanced_query_id_sampling" not in generation_defaults
     assert "task_overrides" not in generation_defaults
-    assert int(generation_defaults["landmark_count_min"]) == 10
-    assert int(generation_defaults["landmark_count_max"]) == 14
+    assert int(generation_defaults["landmark_count_min"]) == 8
+    assert int(generation_defaults["landmark_count_max"]) == 12
     assert int(generation_defaults["direction_step_count_min"]) == 2
     assert int(generation_defaults["direction_step_count_max"]) == 4
     assert int(generation_defaults["highlighted_route_step_min"]) == 2

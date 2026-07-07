@@ -49,6 +49,7 @@ def draw_required_page_text(
     namespace: str,
     preferred_rgbs: Sequence[Sequence[int]] | None = None,
     stroke_width: int = 1,
+    required: bool = True,
 ) -> list[float]:
     """Draw required page text and record contrast against known semantic surfaces."""
 
@@ -59,7 +60,7 @@ def draw_required_page_text(
         surface_rgbs=surface_rgbs,
         preferred_rgbs=preferred_rgbs,
         min_contrast_ratio=READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
-        required=True,
+        required=bool(required),
     )
     record = draw_readable_text(
         draw,

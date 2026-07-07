@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections import Counter
 
 from trace.core.seed import hash64
-from trace.tasks.pages.form_section.sum_minus_amount_in_section_value import (
-    PagesFormSectionSumMinusAmountInSectionValueTask,
+from trace.tasks.pages.form_section.ranked_amount_field_label import (
+    PagesFormSectionRankedAmountFieldLabelTask,
 )
 from trace.tasks.pages.form_section.two_amount_arithmetic_value import (
     PagesFormSectionTwoAmountArithmeticValueTask,
@@ -28,13 +28,6 @@ TASK_CASES = (
         "difference_two_amounts_in_section_value",
         ("-",),
         ("first_operand", "second_operand"),
-    ),
-    (
-        PagesFormSectionSumMinusAmountInSectionValueTask,
-        "sum_minus_amount_in_section_value",
-        "single",
-        ("+", "-"),
-        ("first_operand", "second_operand", "third_operand"),
     ),
 )
 SCENE_VARIANTS = ("form_sheet", "invoice_sheet", "receipt_sheet")
@@ -132,6 +125,52 @@ def test_pages_form_section_arithmetic_contract_matches_trace() -> None:
             assert float(section_label_bbox[3]) <= min(query_section_field_tops)
 
 
+def test_pages_form_section_ranked_amount_field_label_contract_matches_trace() -> None:
+    task = PagesFormSectionRankedAmountFieldLabelTask()
+    query_ids = (
+        "second_highest_amount_field_label",
+        "second_lowest_amount_field_label",
+    )
+
+    for query_index, query_id in enumerate(query_ids):
+        for scene_index, scene_variant in enumerate(SCENE_VARIANTS):
+            seed = 38420 + (query_index * 20) + scene_index
+            out = task.generate(seed, params={"query_id": query_id, "scene_variant": scene_variant}, max_attempts=10)
+            trace = out.trace_payload
+            execution = trace["execution_trace"]
+            render_map = trace["render_map"]
+
+            assert out.scene_id == "form_section"
+            assert out.query_id == query_id
+            assert out.answer_gt.type == "string"
+            assert out.annotation_gt.type == "bbox"
+            assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
+            assert str(trace["query_spec"]["query_id"]) == query_id
+            assert str(trace["query_spec"]["scene_id"]) == "form_section"
+            assert str(execution["query_id"]) == query_id
+            assert str(execution["prompt_query_key"]) == "ranked_amount_field_label"
+            assert str(execution["scene_variant"]) == str(scene_variant)
+            assert str(execution["question_format"]) == "form_section_ranked_amount_field_label"
+            assert str(out.answer_gt.value) == str(execution["selected_field_label"])
+            assert list(out.annotation_gt.value) == render_map["field_box_bboxes_px"][str(execution["selected_field_id"])]
+            assert trace["projected_annotation"]["type"] == "bbox"
+            assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+            assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
+            assert trace["witness_symbolic"]["selected_field_id"] == str(execution["selected_field_id"])
+
+            candidate_values = [
+                int(str(value).replace("$", "").replace(".", ""))
+                for value in execution["target_amount_candidate_field_values"]
+            ]
+            assert len(candidate_values) == len(set(candidate_values))
+            ranked = sorted(
+                zip(candidate_values, execution["target_amount_candidate_field_labels"], strict=True),
+                reverse=(str(execution["rank_from"]) == "highest"),
+            )
+            expected_label = str(ranked[int(execution["rank_position"]) - 1][1])
+            assert str(out.answer_gt.value) == expected_label
+
+
 def test_pages_form_section_prompt_examples_match_task_contract() -> None:
     expected = {
         (PagesFormSectionTwoAmountArithmeticValueTask, "sum_two_amounts_in_section_value"): (
@@ -154,16 +193,12 @@ def test_pages_form_section_prompt_examples_match_task_contract() -> None:
             },
             {"answer": "$42.50"},
         ),
-        (PagesFormSectionSumMinusAmountInSectionValueTask, "single"): (
+        (PagesFormSectionRankedAmountFieldLabelTask, "second_highest_amount_field_label"): (
             {
-                "annotation": {
-                    "first_operand": [120, 248, 420, 306],
-                    "second_operand": [120, 308, 420, 366],
-                    "third_operand": [120, 368, 420, 426],
-                },
-                "answer": "$133.30",
+                "annotation": [120, 248, 420, 306],
+                "answer": "Service Fee",
             },
-            {"answer": "$133.30"},
+            {"answer": "Service Fee"},
         ),
     }
 
@@ -179,8 +214,8 @@ def test_pages_form_section_prompt_examples_match_task_contract() -> None:
 
 
 def test_pages_form_section_arithmetic_task_is_deterministic() -> None:
-    task = PagesFormSectionSumMinusAmountInSectionValueTask()
-    params = {"query_id": "single", "scene_variant": "invoice_sheet"}
+    task = PagesFormSectionRankedAmountFieldLabelTask()
+    params = {"query_id": "second_highest_amount_field_label", "scene_variant": "invoice_sheet"}
     out_a = task.generate(38320, params=params, max_attempts=10)
     out_b = task.generate(38320, params=params, max_attempts=10)
 

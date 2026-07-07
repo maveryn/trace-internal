@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
 from .query_ids import LEGACY_DEFAULT_QUERY_ID, SINGLE_QUERY_ID
-from .scene_package_migration import is_scene_package_task, parse_public_task_id
+from .source_layout_policy import is_scene_package_task, parse_public_task_id
 
 
 @dataclass(frozen=True)
@@ -618,6 +618,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__calendar_event_grid__category_slot_day_count": _entry(
         "pages", "calendar_event_grid", "pages", "calendar_event_grid"
     ),
+    "task_pages__calendar_event_grid__busiest_date_label": _entry(
+        "pages", "calendar_event_grid", "pages", "calendar_event_grid"
+    ),
     "task_pages__calendar_event_grid__date_filled_slot_count": _entry(
         "pages", "calendar_event_grid", "pages", "calendar_event_grid"
     ),
@@ -645,8 +648,11 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__control_board__control_state_condition_count": _entry(
         "pages", "control_board", "pages", "control_board"
     ),
+    "task_pages__control_board__state_extremum_group_label": _entry(
+        "pages", "control_board", "pages", "control_board"
+    ),
     "task_pages__cycle__offset_stage_label": _entry("pages", "cycle", "pages", "cycle"),
-    "task_pages__form_section__sum_minus_amount_in_section_value": _entry(
+    "task_pages__form_section__ranked_amount_field_label": _entry(
         "pages", "form_section", "pages", "form_section"
     ),
     "task_pages__form_section__two_amount_arithmetic_value": _entry(
@@ -662,9 +668,6 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
         "pages", "hierarchy", "pages", "hierarchy"
     ),
     "task_pages__infographic__global_metric_ranked_item_label": _entry(
-        "pages", "infographic", "pages", "infographic"
-    ),
-    "task_pages__infographic__metric_card_field_lookup": _entry(
         "pages", "infographic", "pages", "infographic"
     ),
     "task_pages__infographic__section_extrema_arithmetic_value": _entry(
@@ -715,7 +718,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__mixed_infographic_page__two_module_field_total_comparison_module_label": _entry(
         "pages", "mixed_infographic_page", "pages", "mixed_infographic_page"
     ),
-    "task_pages__hero_callout_infographic__callout_field_value_label": _entry(
+    "task_pages__hero_callout_infographic__callout_composite_metric_extremum_label": _entry(
         "pages", "hero_callout_infographic", "pages", "hero_callout_infographic"
     ),
     "task_pages__hero_callout_infographic__callout_metric_extremum_label": _entry(
@@ -763,10 +766,7 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__profile_card_grid__field_ranked_profile_label": _entry(
         "pages", "profile_card_grid", "pages", "profile_card_grid"
     ),
-    "task_pages__profile_card_grid__profile_for_field_value": _entry(
-        "pages", "profile_card_grid", "pages", "profile_card_grid"
-    ),
-    "task_pages__profile_card_grid__value_for_named_profile_field": _entry(
+    "task_pages__profile_card_grid__filtered_ranked_profile_label": _entry(
         "pages", "profile_card_grid", "pages", "profile_card_grid"
     ),
     "task_pages__record_table__enabled_action_for_type_count": _entry(
@@ -808,19 +808,19 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__instruction_panel__step_for_control_pair_label": _entry(
         "pages", "instruction_panel", "pages", "instruction_panel"
     ),
-    "task_pages__step_list__nth_step_field_label": _entry(
+    "task_pages__step_list__between_named_steps_count": _entry(
         "pages", "step_list", "pages", "step_list"
     ),
-    "task_pages__step_list__step_after_named_step_label": _entry(
+    "task_pages__step_list__relative_offset_step_label": _entry(
         "pages", "step_list", "pages", "step_list"
     ),
-    "task_pages__step_list__step_for_detail_label": _entry(
-        "pages", "step_list", "pages", "step_list"
-    ),
-    "task_pages__timeline__event_date_gap_value": _entry(
+    "task_pages__timeline__date_threshold_event_count": _entry(
         "pages", "timeline", "pages", "timeline"
     ),
     "task_pages__timeline__interval_membership_count": _entry(
+        "pages", "timeline", "pages", "timeline"
+    ),
+    "task_pages__timeline__relative_position_event_label": _entry(
         "pages", "timeline", "pages", "timeline"
     ),
     "task_pages__web_action__action_target_label": _entry(
@@ -832,10 +832,10 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_pages__workspace__context_control_count": _entry(
         "pages", "workspace", "pages", "workspace"
     ),
-    "task_pages__workspace__control_label": _entry(
+    "task_pages__workspace__context_guide_control_label": _entry(
         "pages", "workspace", "pages", "workspace"
     ),
-    "task_pages__workspace__dual_guide_control_label": _entry(
+    "task_pages__workspace__control_label": _entry(
         "pages", "workspace", "pages", "workspace"
     ),
     # Games.
@@ -1581,6 +1581,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     "task_geometry__graph_paper__quadrilateral_type_count": _entry(
         "geometry", "graph_paper", "geometry", "counting"
     ),
+    "task_geometry__graph_paper__right_angle_vertex_count": _entry(
+        "geometry", "graph_paper", "geometry", "counting"
+    ),
     "task_geometry__graph_paper__shape_type_count": _entry(
         "geometry", "graph_paper", "geometry", "counting"
     ),
@@ -1607,6 +1610,9 @@ TASK_TAXONOMY: dict[str, TaxonomyEntry] = {
     ),
     "task_geometry__polar_graph_paper__coordinate_difference_value": _entry(
         "geometry", "polar_graph_paper", "geometry", "coordinate"
+    ),
+    "task_geometry__polar_graph_paper__coordinate_value_point_count": _entry(
+        "geometry", "polar_graph_paper", "geometry", "counting"
     ),
     "task_geometry__polar_graph_paper__readout_value": _entry(
         "geometry", "polar_graph_paper", "geometry", "coordinate"
@@ -3192,7 +3198,7 @@ def inject_taxonomy_metadata(
     payload = deepcopy(dict(trace_payload))
     public_task_id = str(task_id)
     public_query_id = str(query_id).strip()
-    migrated_domain = is_scene_package_task(public_task_id, domain=str(taxonomy.domain))
+    source_layout_domain = is_scene_package_task(public_task_id, domain=str(taxonomy.domain))
     registered_domain_text = _string_or_empty(registered_domain) or taxonomy.domain
     registered_scene_id_text = (
         _string_or_empty(registered_scene_id) or taxonomy.source_scene_id
@@ -3229,7 +3235,7 @@ def inject_taxonomy_metadata(
         "task_id": public_task_id,
         "domain": registered_domain_text,
     }
-    if not migrated_domain:
+    if not source_layout_domain:
         registered_metadata["scene_id"] = registered_scene_id_text
     source_metadata = {
         "implementation_task_id": source_task_id,
@@ -3237,7 +3243,7 @@ def inject_taxonomy_metadata(
         "config_domain": registered_domain_text,
         "prompt_domain": prompt_domain,
     }
-    if not migrated_domain:
+    if not source_layout_domain:
         source_metadata.update(
             {
                 "implementation_scene_id": source_scene_id,

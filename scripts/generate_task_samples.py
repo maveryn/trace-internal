@@ -25,7 +25,7 @@ from trace.core.annotation_sanitization import sanitize_trace_payload_for_public
 from trace.core.json_io import write_json_file
 from trace.core.review_overlays import render_annotation_overlay, resolve_overlay_annotation
 from trace.core.query_ids import SINGLE_QUERY_ID
-from trace.core.scene_package_migration import is_scene_package_task
+from trace.core.source_layout_policy import is_scene_package_task
 from trace.core.seed import hash64
 from trace.core.task_review_paths import task_review_dir
 from trace.core.taxonomy import resolve_task_taxonomy
@@ -143,7 +143,7 @@ def _task_review_dir(*, out_root: Path, task: Any) -> Path:
 
 
 def _registered_scene_id(task_id: str, task: Any) -> str | None:
-    """Return legacy scene routing for unmigrated tasks."""
+    """Return legacy scene routing for unsource-layout tasks."""
 
     if is_scene_package_task(str(task_id), domain=str(getattr(task, "domain", ""))):
         return None

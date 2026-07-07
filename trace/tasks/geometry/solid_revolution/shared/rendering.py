@@ -102,7 +102,7 @@ def create_render_context(
         line_width=max(2, int(params.get("line_width", group_default(rendering_defaults, "line_width", 4)))),
         font=font,
         small_font=small_font,
-        label_stroke_width=1,
+        label_stroke_width=0,
         diagram_style_meta=dict(diagram_style_meta),
         background_meta=dict(background_meta),
         font_meta=font_role_trace(str(font_family), role="readout"),
@@ -206,6 +206,7 @@ def _draw_dimension(
         label,
         label_offset=label_offset,
         color=ctx.accent_color if bool(target) else ctx.label_color,
+        backed=True,
     )
 
 
@@ -431,6 +432,7 @@ def _draw_common_cues(ctx: RenderContext, *, axis_start: Point, axis_end: Point,
         (float(preview_center[0]), float(preview_center[1]) - 168.0),
         small=True,
         required=True,
+        backed=True,
     )
     return axis_bbox
 
@@ -474,7 +476,7 @@ def render_cylinder_revolution(
             ctx,
             (rect_left_x, top_y),
             (rect_right_x, bottom_y),
-            f"q={format_measure(problem.diagonal or 0)}",
+            f"diag={format_measure(problem.diagonal or 0)}",
             label_offset=(34.0, -16.0),
         )
     else:
@@ -532,7 +534,7 @@ def render_cone_revolution(
             ctx,
             (left_x, top_y),
             (right_x, bottom_y),
-            f"l={format_measure(problem.slant_height or 0)}",
+            f"slant={format_measure(problem.slant_height or 0)}",
             label_offset=(30.0, -16.0),
         ),
     }
@@ -634,14 +636,14 @@ def render_frustum_revolution(
             ctx,
             (left_x, top_y - 34.0),
             (top_right, top_y - 34.0),
-            f"r={format_measure(problem.top_radius or 0)}",
+            f"small r={format_measure(problem.top_radius or 0)}",
             label_offset=(0.0, -24.0),
         ),
         "bottom_radius_label": _draw_dimension(
             ctx,
             (left_x, bottom_y + 34.0),
             (bottom_right, bottom_y + 34.0),
-            f"R={format_measure(problem.bottom_radius or 0)}",
+            f"large R={format_measure(problem.bottom_radius or 0)}",
             label_offset=(0.0, 26.0),
         ),
     }

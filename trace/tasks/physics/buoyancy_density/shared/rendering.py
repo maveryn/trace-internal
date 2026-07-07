@@ -100,8 +100,6 @@ def _draw_floating_object(
     radius = 8
     if str(scenario.object_shape) == "rounded_block":
         radius = 18
-    elif str(scenario.object_shape) == "capsule_block":
-        radius = int(min(float(geometry["width"]) / 2.0, 32.0))
 
     outline = tuple(int(value) for value in style.stroke_rgb)
     submerged_rgb = tuple(max(0, int(value) - 38) for value in object_rgb)

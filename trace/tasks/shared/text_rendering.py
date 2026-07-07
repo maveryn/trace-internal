@@ -429,8 +429,17 @@ def draw_text_centered(
     fill: Color = (30, 30, 30),
     stroke_fill: Color = (255, 255, 255),
     stroke_width: int | None = None,
-) -> None:
-    """Draw text centered around a point with optional outline stroke."""
+    role: str = "visible_text",
+    required: bool = False,
+    trace: bool = True,
+) -> BBox:
+    """Draw text centered around a point with optional outline stroke.
+
+    PIL text bboxes often have non-zero top/left offsets relative to the draw
+    origin.  Center using the full rendered bbox, not just width/height, so
+    glyphs stay visually centered inside badges, circular markers, and option
+    chips across fonts.
+    """
     effective_font = symbol_safe_font_for_text(str(text), font)
     size_hint = int(getattr(effective_font, "size", 14))
     outline_width = int(stroke_width) if stroke_width is not None else max(1, int(round(0.08 * float(size_hint))))
@@ -438,14 +447,31 @@ def draw_text_centered(
     center_x, center_y = float(center[0]), float(center[1])
     tx = center_x - (0.5 * float(bbox[0] + bbox[2]))
     ty = center_y - (0.5 * float(bbox[1] + bbox[3]))
-    draw_traced_text(
-        draw,
-        xy=(float(tx), float(ty)),
-        text=str(text),
-        font=effective_font,
-        fill_rgb=tuple(int(value) for value in fill),
-        stroke_rgb=tuple(int(value) for value in stroke_fill),
-        stroke_width=max(0, int(outline_width)),
-        role="visible_text",
-        required=False,
+    rendered_bbox = (
+        float(tx + bbox[0]),
+        float(ty + bbox[1]),
+        float(tx + bbox[2]),
+        float(ty + bbox[3]),
     )
+    if bool(trace):
+        draw_traced_text(
+            draw,
+            xy=(float(tx), float(ty)),
+            text=str(text),
+            font=effective_font,
+            fill_rgb=tuple(int(value) for value in fill),
+            stroke_rgb=tuple(int(value) for value in stroke_fill),
+            stroke_width=max(0, int(outline_width)),
+            role=str(role),
+            required=bool(required),
+        )
+    else:
+        draw.text(
+            (float(tx), float(ty)),
+            str(text),
+            font=effective_font,
+            fill=tuple(int(value) for value in fill),
+            stroke_width=max(0, int(outline_width)),
+            stroke_fill=tuple(int(value) for value in stroke_fill),
+        )
+    return rendered_bbox

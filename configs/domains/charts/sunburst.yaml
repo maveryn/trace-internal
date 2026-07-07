@@ -1,8 +1,8 @@
 generation:
   shared:
     sunburst_parent_count_min: 4
-    sunburst_parent_count_max: 5
-    sunburst_subgroup_count_min: 3
+    sunburst_parent_count_max: 4
+    sunburst_subgroup_count_min: 2
     sunburst_subgroup_count_max: 3
     sunburst_leaf_count_min: 2
     sunburst_leaf_count_max: 2
@@ -17,7 +17,6 @@ generation:
     - 2
     - 3
     - 4
-    - 5
 rendering:
   shared:
     canvas_width: 1224
@@ -33,8 +32,8 @@ rendering:
     leaf_outer_radius_px: 456
     parent_font_size_px: 18
     subgroup_font_size_px: 16
-    leaf_font_size_px: 14
-    value_font_size_px: 15
+    leaf_font_size_px: 15
+    value_font_size_px: 17
     label_stroke_width_px: 0
     chart_context_profile: dense_clean_minimal
     chart_font_family_weights:

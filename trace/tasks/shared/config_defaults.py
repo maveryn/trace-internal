@@ -173,7 +173,7 @@ def load_scene_generation_rendering_prompt_defaults(
     *,
     task_id: str | None = None,
 ) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
-    """Load and split scene-based defaults for migrated scene-package tasks."""
+    """Load and split scene-based defaults for source-layout scene-package tasks."""
 
     mapping = get_scene_defaults(str(domain), str(scene_id))
     return split_scene_generation_rendering_prompt_defaults(

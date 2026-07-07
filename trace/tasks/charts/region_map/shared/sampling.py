@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
-from .....core.sampling import uniform_choice
 from .....core.seed import spawn_rng
 from ....shared.deterministic_sampling import uniform_probability_map
 from ....shared.config_defaults import resolve_required_int_bounds
@@ -888,15 +887,11 @@ def _synthetic_adjacent_base(
     )
     if not feasible_counts:
         raise ValueError("no feasible adjacent-region count in selected map")
-    target_count = int(
-        uniform_choice(
-            spawn_rng(
-                int(instance_seed),
-                f"{SCENE_NAMESPACE}.{namespace_suffix}.adjacent_target_count",
-            ),
-            tuple(feasible_counts),
-            sort_keys=True,
-        )
+    target_count = _balanced_int(
+        feasible_counts,
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.{namespace_suffix}.adjacent_target_count",
     )
     target_count_probabilities = uniform_probability_map(tuple(feasible_counts))
     reference_candidates = [

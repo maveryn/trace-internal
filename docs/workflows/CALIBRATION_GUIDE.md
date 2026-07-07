@@ -40,11 +40,28 @@ review/feedback/review_feedback.sqlite
 The review app UI calls reviewer comments **issues**. The underlying path and
 schema retain the `feedback` name for compatibility.
 
-Aggregate solve-rate status defaults to:
+The authoritative calibration status ledger for the current 50x8 pass is:
+
+```text
+review/calibration/50x8_qwen25vl3b_prompt_pilot_seed20260703/task_status_records.json
+review/calibration/50x8_qwen25vl3b_prompt_pilot_seed20260703/task_status_records.md
+```
+
+Use that ledger for claims such as pending task count, accepted task count,
+manual acceptance, and live registry coverage. The older top-level files are a
+derived compatibility export only:
 
 ```text
 review/calibration_sweep_status.json
 review/calibration_sweep_status.md
+```
+
+Do not edit the compatibility export by hand, and do not treat a single
+calibration sweep output as global truth. After updating the current
+calibration ledger, regenerate the compatibility export with:
+
+```bash
+PYTHONPATH=. python scripts/sync_calibration_status_from_task_records.py
 ```
 
 ## Freshness
@@ -63,20 +80,35 @@ task, prompt, renderer, config, verifier, or annotation contract changes, delete
 or regenerate that task's current review and solve-rate artifacts before using
 them for acceptance.
 
+Calibration dataset manifests also carry a task source fingerprint covering the
+task source directory, domain/shared task helpers, global task/core helpers,
+domain configs, prompt assets, and rendering assets. The calibration sweep must
+rebuild the task parquet whenever that fingerprint differs, even when the user
+only requested `--force-models`. Probe output and `calibration_stats.json` must
+carry the same fingerprint as the parquet they were run against; otherwise the
+model output directory is stale and must be regenerated.
+
+Use `--force-build` or `--force` when intentionally rebuilding a calibration
+sample. `--force-models` is only for re-probing a still-current parquet; the
+runner will now override stale reuse and rebuild automatically if source files
+changed.
+
 ## Acceptance Gates
 
-Each task is accepted only on the same `100` sampled task instances with `24`
+Each task is accepted only on the same `50` sampled task instances with `8`
 rollouts per instance.
 
 Required gates for `qwen25vl7b`:
 
-1. `0 / 100` sampled prompts exceed `2048` prompt tokens.
+1. `0 / 50` sampled prompts exceed `2048` prompt tokens.
 2. Response cap rate is `<= 0.25`.
-3. Hard-question fraction is `< 0.30`, where hard means `0 / 24` successful
+3. Hard-question fraction is `<= 0.50`, where hard means `0 / 8` successful
    rollouts for that question.
-4. Easy-question fraction is `< 0.20`, where easy means `> 18 / 24`
+4. Easy-question fraction is `<= 0.25`, where easy means `8 / 8`
    successful rollouts for that question.
-5. Mean solve rate is `0.15 <= mean <= 0.75` over all `2400` rollouts.
+5. Mean solve rate is `0.10 <= mean <= 0.80` over all `400` rollouts.
+6. Exact calibration parquet answer distribution passes: at least `4` unique
+   answers and no answer above `1/3` frequency.
 
 A task that fails prompt length or response cap is blocked until prompt,
 rendering, density, or output-format issues are fixed. A task that passes those

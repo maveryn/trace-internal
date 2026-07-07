@@ -159,7 +159,7 @@ def draw_candlesticks(
 
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
     label_font = load_font(int(render_params.label_font_size_px), bold=True)
-    value_font = load_font(int(render_params.value_font_size_px), bold=True)
+    value_font = load_font(int(render_params.value_font_size_px), bold=False)
 
     y_min = int(render_params.y_axis_min)
     y_max = int(render_params.y_axis_max)
@@ -238,7 +238,7 @@ def draw_candlesticks(
             ("close", f"C{int(candle.close_value)}", (cx + body_w / 2.0 + side_label_offset, close_y)),
         ]
         for value_kind, text, center in label_specs:
-            box = _text_bbox_at(draw, text=str(text), center=center, font=value_font, stroke_width=2)
+            box = _text_bbox_at(draw, text=str(text), center=center, font=value_font, stroke_width=0)
             draw_text_centered(
                 draw,
                 text=str(text),
@@ -246,7 +246,7 @@ def draw_candlesticks(
                 font=value_font,
                 fill=tuple(render_params.text_color_rgb),
                 stroke_fill=tuple(render_params.text_stroke_rgb),
-                stroke_width=2,
+                stroke_width=0,
             )
             value_label_bboxes[f"{candle.candle_id}:{value_kind}"] = list(box)
 

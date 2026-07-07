@@ -31,7 +31,7 @@ class EquivalentCircuitDefaults:
     component_symbol_width_px: int = 118
     component_symbol_height_px: int = 56
     component_label_font_size_px: int = 20
-    label_stroke_width_px: int = 3
+    label_stroke_width_px: int = 0
     parallel_rail_left_x_px: int = 268
     parallel_branch_top_y_px: int = 180
     parallel_branch_bottom_y_px: int = 470

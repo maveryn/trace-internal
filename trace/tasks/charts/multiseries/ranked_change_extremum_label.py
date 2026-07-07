@@ -31,8 +31,8 @@ from .shared.sampling import (
 TASK_PARAM_DEFAULTS: dict[str, Any] = {
     "value_window_span_min": 24,
     "value_window_span_max": 25,
-    "delta_category_count_min": 10,
-    "delta_category_count_max": 15,
+    "delta_category_count_min": 7,
+    "delta_category_count_max": 10,
     "delta_series_count_min": 3,
     "delta_series_count_max": 4,
     "delta_value_min": 1,

@@ -22,12 +22,12 @@
       ]
     },
     "query": {
-      "callout_field_value_label": [
-        "In callout {callout_title}, what value is shown for field {field_label}?",
-        "Find callout {callout_title}. What visible value is paired with field {field_label}?",
-        "Within {callout_title}, read the value shown in field {field_label}.",
-        "Using the {field_label} field in callout {callout_title}, what value is listed?",
-        "What value appears beside field {field_label} in callout {callout_title}?"
+      "callout_composite_metric_extremum_label": [
+        "Across the callout cards, which callout has the {rank_direction} total from {first_field_label} plus {second_field_label}?",
+        "For each callout, add {first_field_label} and {second_field_label}. Which callout title has the {rank_direction} total?",
+        "Using the visible numbers for {first_field_label} and {second_field_label}, identify the callout with the {rank_direction} combined value.",
+        "When {first_field_label} plus {second_field_label} is compared across cards, which callout title is {rank_direction}?",
+        "Order the callouts by {first_field_label} plus {second_field_label}, {rank_order_phrase}. Which callout title is first?"
       ],
       "callout_metric_extremum_label": [
         "Across the callout cards, which callout has the {rank_direction} visible value for field {field_label}?",
@@ -66,12 +66,12 @@
       "json_output_contract": "Return a JSON object with \"annotation\" and \"answer\".",
       "json_output_contract_answer_only": "Return a JSON object with \"answer\" only."
     },
-    "query:callout_field_value_label": {
+    "query:callout_composite_metric_extremum_label": {
       "object_description": "titled callout cards with field labels, visible values, badges, and connector lines",
-      "answer_hint": "set \"answer\" to the exact visible value requested by the question",
-      "annotation_hint": "set \"annotation\" to an object mapping \"target_callout_card\" and \"target_field_row\" to [x0, y0, x1, y1] pixel bounding boxes",
-      "json_example": "{\"annotation\":{\"target_callout_card\":[80,210,360,350],\"target_field_row\":[96,280,344,318]},\"answer\":\"42k\"}",
-      "json_example_answer_only": "{\"answer\":\"42k\"}"
+      "answer_hint": "set \"answer\" to the exact visible callout title requested by the question",
+      "annotation_hint": "set \"annotation\" to an object mapping \"winning_callout_card\" and each compared \"candidate_N_first_field_row\" and \"candidate_N_second_field_row\" to [x0, y0, x1, y1] pixel bounding boxes",
+      "json_example": "{\"annotation\":{\"winning_callout_card\":[80,210,360,350],\"candidate_1_first_field_row\":[96,250,344,288],\"candidate_1_second_field_row\":[96,290,344,328]},\"answer\":\"Atlas\"}",
+      "json_example_answer_only": "{\"answer\":\"Atlas\"}"
     },
     "query:callout_metric_extremum_label": {
       "object_description": "titled callout cards with field labels, visible values, badges, and connector lines",
@@ -89,8 +89,9 @@
     }
   },
   "dynamic_slots": {
-    "callout_title": {"type": "string"},
     "field_label": {"type": "string"},
+    "first_field_label": {"type": "string"},
+    "second_field_label": {"type": "string"},
     "rank_direction": {"type": "string"},
     "rank_order_phrase": {"type": "string"},
     "condition_phrase": {"type": "string"},
@@ -100,9 +101,11 @@
     "scene:hero_callout_infographic": [
       "object_description"
     ],
-    "query:callout_field_value_label": [
-      "callout_title",
-      "field_label"
+    "query:callout_composite_metric_extremum_label": [
+      "first_field_label",
+      "second_field_label",
+      "rank_direction",
+      "rank_order_phrase"
     ],
     "query:callout_metric_extremum_label": [
       "field_label",

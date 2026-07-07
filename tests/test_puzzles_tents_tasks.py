@@ -1,4 +1,4 @@
-"""Contracts for scene-packaged Tents puzzle tasks."""
+"""Contracts for source-layoutd Tents puzzle tasks."""
 
 from __future__ import annotations
 

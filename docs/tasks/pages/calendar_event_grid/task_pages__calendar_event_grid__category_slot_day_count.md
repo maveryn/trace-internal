@@ -16,7 +16,7 @@
 7. Query argument axes: sampled category label and event slot label.
 
 ## Program Contract
-- `calendar_event_grid_category_slot_day_count(category_label, slot_id); output=integer_value; annotation=bbox_set(matching_event_chips); scene=calendar_event_grid; scope=one month calendar with Top/Mid/End event slots`
+- `calendar_event_grid_category_slot_day_count(category_label, slot_id); output=integer_value; annotation=bbox_set(matching_event_chips); scene=calendar_event_grid; scope=one month calendar with Top/Mid/Bottom event slots`
 
 ## Prompt + Trace
 1. Prompt bundle: `pages_calendar_event_grid_v1`

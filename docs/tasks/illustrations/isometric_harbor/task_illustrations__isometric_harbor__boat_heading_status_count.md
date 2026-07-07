@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `isometric_harbor`
-- Implementation scene package: `isometric_harbor`
+- Implementation source scene: `isometric_harbor`
 - Implementation source: `trace/tasks/illustrations/isometric_harbor/boat_heading_status_count.py`
 
 ## Task Contract

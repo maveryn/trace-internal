@@ -1,0 +1,378 @@
+{
+  "calendar": {
+    "config_path": "configs/domains/pages/calendar.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/calendar",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/calendar",
+    "task_count": 5,
+    "task_ids": [
+      "task_pages__calendar__date_range_day_class_count",
+      "task_pages__calendar__date_weekday_label",
+      "task_pages__calendar__marked_day_class_count",
+      "task_pages__calendar__weekday_occurrence_date",
+      "task_pages__calendar__workday_offset_date"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "calendar_event_grid": {
+    "config_path": "configs/domains/pages/calendar_event_grid.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/calendar_event_grid",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/calendar_event_grid",
+    "task_count": 4,
+    "task_ids": [
+      "task_pages__calendar_event_grid__category_slot_day_count",
+      "task_pages__calendar_event_grid__date_filled_slot_count",
+      "task_pages__calendar_event_grid__date_for_category_slot_label",
+      "task_pages__calendar_event_grid__weekday_event_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "category_grid": {
+    "config_path": "configs/domains/pages/category_grid.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/category_grid",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/category_grid",
+    "task_count": 2,
+    "task_ids": [
+      "task_pages__category_grid__category_item_count",
+      "task_pages__category_grid__category_slot_item_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "concept_map": {
+    "config_path": "configs/domains/pages/concept_map.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/concept_map",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/concept_map",
+    "task_count": 3,
+    "task_ids": [
+      "task_pages__concept_map__branch_child_count",
+      "task_pages__concept_map__marked_child_count",
+      "task_pages__concept_map__ordered_child_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "control_board": {
+    "config_path": "configs/domains/pages/control_board.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/control_board",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/control_board",
+    "task_count": 1,
+    "task_ids": [
+      "task_pages__control_board__control_state_condition_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "cycle": {
+    "config_path": "configs/domains/pages/cycle.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/cycle",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/cycle",
+    "task_count": 1,
+    "task_ids": [
+      "task_pages__cycle__offset_stage_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "form_section": {
+    "config_path": "configs/domains/pages/form_section.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/form_section",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/form_section",
+    "task_count": 2,
+    "task_ids": [
+      "task_pages__form_section__ranked_amount_field_label",
+      "task_pages__form_section__two_amount_arithmetic_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "hero_callout_infographic": {
+    "config_path": "configs/domains/pages/hero_callout_infographic.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/hero_callout_infographic",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/hero_callout_infographic",
+    "task_count": 3,
+    "task_ids": [
+      "task_pages__hero_callout_infographic__callout_condition_count",
+      "task_pages__hero_callout_infographic__callout_composite_metric_extremum_label",
+      "task_pages__hero_callout_infographic__callout_metric_extremum_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "hierarchy": {
+    "config_path": "configs/domains/pages/hierarchy.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/hierarchy",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/hierarchy",
+    "task_count": 3,
+    "task_ids": [
+      "task_pages__hierarchy__manager_most_direct_reports_label",
+      "task_pages__hierarchy__manager_most_total_reports_label",
+      "task_pages__hierarchy__subtree_descendant_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "infographic": {
+    "config_path": "configs/domains/pages/infographic.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/infographic",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/infographic",
+    "task_count": 10,
+    "task_ids": [
+      "task_pages__infographic__global_metric_ranked_item_label",
+      "task_pages__infographic__section_extrema_arithmetic_value",
+      "task_pages__infographic__section_icon_extremum_label",
+      "task_pages__infographic__section_icon_total_difference_value",
+      "task_pages__infographic__section_icon_total_value",
+      "task_pages__infographic__section_metric_ranked_item_label",
+      "task_pages__infographic__section_ranked_total_label",
+      "task_pages__infographic__section_total_except_named_value",
+      "task_pages__infographic__section_total_extrema_difference_value",
+      "task_pages__infographic__sum_named_metrics_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "instruction_panel": {
+    "config_path": "configs/domains/pages/instruction_panel.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/instruction_panel",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/instruction_panel",
+    "task_count": 2,
+    "task_ids": [
+      "task_pages__instruction_panel__shared_control_for_step_set_label",
+      "task_pages__instruction_panel__step_for_control_pair_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "map": {
+    "config_path": "configs/domains/pages/map.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/map",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/map",
+    "task_count": 2,
+    "task_ids": [
+      "task_pages__map__destination_after_directions_label",
+      "task_pages__map__landmark_after_route_step_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "mixed_infographic_page": {
+    "config_path": "configs/domains/pages/mixed_infographic_page.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/mixed_infographic_page",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/mixed_infographic_page",
+    "task_count": 7,
+    "task_ids": [
+      "task_pages__mixed_infographic_page__module_condition_item_count",
+      "task_pages__mixed_infographic_page__module_field_ranked_item_label",
+      "task_pages__mixed_infographic_page__module_field_total_value",
+      "task_pages__mixed_infographic_page__module_field_value_label",
+      "task_pages__mixed_infographic_page__module_two_field_condition_item_label",
+      "task_pages__mixed_infographic_page__page_field_extremum_module_label",
+      "task_pages__mixed_infographic_page__two_module_field_total_comparison_module_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "navigation_flow": {
+    "config_path": "configs/domains/pages/navigation_flow.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/navigation_flow",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/navigation_flow",
+    "task_count": 2,
+    "task_ids": [
+      "task_pages__navigation_flow__navigation_path_target_label",
+      "task_pages__navigation_flow__same_group_target_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "paired_forms": {
+    "config_path": "configs/domains/pages/paired_forms.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/paired_forms",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/paired_forms",
+    "task_count": 3,
+    "task_ids": [
+      "task_pages__paired_forms__shortfall_minus_overage_value",
+      "task_pages__paired_forms__sum_absolute_quantity_differences_value",
+      "task_pages__paired_forms__total_amount_delta_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "process_flow": {
+    "config_path": "configs/domains/pages/process_flow.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/process_flow",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/process_flow",
+    "task_count": 3,
+    "task_ids": [
+      "task_pages__process_flow__condition_path_endpoint_label",
+      "task_pages__process_flow__filtered_node_count",
+      "task_pages__process_flow__lane_filtered_handoff_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "profile_card_grid": {
+    "config_path": "configs/domains/pages/profile_card_grid.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/profile_card_grid",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/profile_card_grid",
+    "task_count": 2,
+    "task_ids": [
+      "task_pages__profile_card_grid__field_ranked_profile_label",
+      "task_pages__profile_card_grid__filtered_ranked_profile_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "record_table": {
+    "config_path": "configs/domains/pages/record_table.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/record_table",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/record_table",
+    "task_count": 3,
+    "task_ids": [
+      "task_pages__record_table__enabled_action_for_type_count",
+      "task_pages__record_table__selected_rows_with_status_count",
+      "task_pages__record_table__value_threshold_in_group_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "schedule": {
+    "config_path": "configs/domains/pages/schedule.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/schedule",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/schedule",
+    "task_count": 3,
+    "task_ids": [
+      "task_pages__schedule__longer_than_reference_count",
+      "task_pages__schedule__maximum_non_overlapping_count",
+      "task_pages__schedule__overlap_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "schema": {
+    "config_path": "configs/domains/pages/schema.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/schema",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/schema",
+    "task_count": 5,
+    "task_ids": [
+      "task_pages__schema__field_role_count",
+      "task_pages__schema__join_path_length_value",
+      "task_pages__schema__relationship_cardinality_label",
+      "task_pages__schema__relationship_count",
+      "task_pages__schema__relationship_endpoint_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "sectioned_infographic": {
+    "config_path": "configs/domains/pages/sectioned_infographic.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/sectioned_infographic",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/sectioned_infographic",
+    "task_count": 2,
+    "task_ids": [
+      "task_pages__sectioned_infographic__section_filtered_item_label",
+      "task_pages__sectioned_infographic__section_item_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "step_list": {
+    "config_path": "configs/domains/pages/step_list.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/step_list",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/step_list",
+    "task_count": 2,
+    "task_ids": [
+      "task_pages__step_list__between_named_steps_count",
+      "task_pages__step_list__relative_offset_step_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "timeline": {
+    "config_path": "configs/domains/pages/timeline.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/timeline",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/timeline",
+    "task_count": 2,
+    "task_ids": [
+      "task_pages__timeline__event_date_gap_value",
+      "task_pages__timeline__interval_membership_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "web_action": {
+    "config_path": "configs/domains/pages/web_action.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/web_action",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/web_action",
+    "task_count": 2,
+    "task_ids": [
+      "task_pages__web_action__action_target_label",
+      "task_pages__web_action__guide_code_target_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "workspace": {
+    "config_path": "configs/domains/pages/workspace.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/pages/workspace",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/pages/workspace",
+    "task_count": 3,
+    "task_ids": [
+      "task_pages__workspace__context_control_count",
+      "task_pages__workspace__control_label"
+    ],
+    "taxonomy_review_pass": true
+  }
+}

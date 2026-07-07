@@ -11,7 +11,7 @@ from trace.core.prompt_annotation_contract_audit import (
     _normalize_jsonable,
     _validate_annotation_value,
 )
-from trace.core.scene_package_migration import is_scene_package_task
+from trace.core.source_layout_policy import is_scene_package_task
 from trace.core.seed import hash64
 from trace.core.taxonomy import (
     ACTIVE_DOMAINS,

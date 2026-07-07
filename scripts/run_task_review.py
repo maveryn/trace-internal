@@ -15,8 +15,8 @@ from uuid import uuid4
 from trace.core.annotation_sanitization import sanitize_trace_payload_for_public_annotation
 from trace.core.json_io import write_json_file
 from trace.core.review_overlays import resolve_overlay_annotation
-from trace.core.scene_package_migration import is_scene_package_review_target_scene, is_scene_package_task
-from trace.core.scene_package_review_gate import audit_scene_package_review_candidate
+from trace.core.source_layout_policy import is_scene_package_review_target_scene, is_scene_package_task
+from trace.core.scene_package_review_gate import audit_scene_package_review_target
 from trace.core.seed import hash64
 from trace.core.taxonomy import inject_taxonomy_metadata, resolve_task_query_id, resolve_task_taxonomy
 from trace.core.task_review_distribution import (
@@ -41,17 +41,17 @@ from scripts.inventory_scalar_annotations import scalar_annotation_review_failur
 
 
 _SCENE_PREVIEW_ROWS_PER_TASK = 100
-_REQUIRED_MIGRATION_TEST_FILES = frozenset(
+_REQUIRED_SOURCE_LAYOUT_TEST_FILES = frozenset(
     {
         "tests/test_review_app.py",
         "tests/test_run_task_review.py",
-        "tests/test_scene_package_migration_contracts.py",
+        "tests/test_source_layout_contracts.py",
     }
 )
 
 
 def _registered_scene_id(task_id: str, task: Any) -> str | None:
-    """Return legacy scene routing for unmigrated tasks."""
+    """Return legacy scene routing for non-source-layout tasks."""
 
     if is_scene_package_task(str(task_id), domain=str(getattr(task, "domain", ""))):
         return None
@@ -71,23 +71,23 @@ def _resolve_task_ids(raw_tasks: str) -> List[str]:
     return sorted(dict.fromkeys(task_ids))
 
 
-def _is_migration_review_root(path: Path) -> bool:
-    """Return whether the output root is the gated migration review workspace."""
+def _is_review_artifact_root(path: Path) -> bool:
+    """Return whether the output root is the gated review artifact workspace."""
 
     parts = path.resolve().parts
     return len(parts) >= 2 and parts[-2:] == ("review", "task-reviews")
 
 
 def _validate_tasks_may_write_review_artifacts(*, task_ids: Sequence[str], out_root: Path) -> None:
-    """Refuse migration-review artifacts for scenes outside the central registry."""
+    """Refuse review artifacts for scenes outside the central review registry."""
 
-    if not _is_migration_review_root(out_root):
+    if not _is_review_artifact_root(out_root):
         return
 
     failures: list[str] = []
     manual_audit_failures: list[str] = []
     taxonomy_audit_failures: list[str] = []
-    migration_test_failures: list[str] = []
+    source_layout_test_failures: list[str] = []
     structural_audit_failures: list[str] = []
     checked_scenes: set[tuple[str, str]] = set()
     requested_by_scene: dict[tuple[str, str], list[str]] = {}
@@ -118,19 +118,19 @@ def _validate_tasks_may_write_review_artifacts(*, task_ids: Sequence[str], out_r
         if not isinstance(taxonomy_status, Mapping) or not bool(taxonomy_status.get("passed")):
             taxonomy_audit_failures.append(f"{domain}/{scene_id} -> {taxonomy_path.relative_to(out_root)}")
             continue
-        migration_path = _scene_status_path(out_root, domain, scene_id, "migration_test_status.json")
-        migration_status = _load_status_file(migration_path)
-        if not isinstance(migration_status, Mapping) or not bool(migration_status.get("passed")):
-            migration_test_failures.append(f"{domain}/{scene_id} -> {migration_path.relative_to(out_root)}")
+        source_layout_path = _scene_status_path(out_root, domain, scene_id, "source_layout_test_status.json")
+        source_layout_status = _load_status_file(source_layout_path)
+        if not isinstance(source_layout_status, Mapping) or not bool(source_layout_status.get("passed")):
+            source_layout_test_failures.append(f"{domain}/{scene_id} -> {source_layout_path.relative_to(out_root)}")
             continue
-        missing_migration_tests = _missing_required_migration_tests(migration_status)
-        if missing_migration_tests:
-            migration_test_failures.append(
-                f"{domain}/{scene_id} -> {migration_path.relative_to(out_root)} missing tests: "
-                + ", ".join(sorted(missing_migration_tests))
+        missing_source_layout_checks = _missing_required_source_layout_checks(source_layout_status)
+        if missing_source_layout_checks:
+            source_layout_test_failures.append(
+                f"{domain}/{scene_id} -> {source_layout_path.relative_to(out_root)} missing tests: "
+                + ", ".join(sorted(missing_source_layout_checks))
             )
             continue
-        structural_audit = audit_scene_package_review_candidate(domain, scene_id)
+        structural_audit = audit_scene_package_review_target(domain, scene_id)
         if not bool(structural_audit.get("passed")):
             scene_failures = structural_audit.get("failures")
             if not isinstance(scene_failures, list):
@@ -154,7 +154,7 @@ def _validate_tasks_may_write_review_artifacts(*, task_ids: Sequence[str], out_r
     if failures:
         raise ValueError(
             "refusing to write review/task-reviews artifacts for scenes that are not "
-            "centrally registered as scene-package review candidates:\n  "
+            "centrally registered for current source-layout review:\n  "
             + "\n  ".join(sorted(failures))
         )
     if manual_audit_failures:
@@ -172,24 +172,24 @@ def _validate_tasks_may_write_review_artifacts(*, task_ids: Sequence[str], out_r
             "program contracts, query ids, prompts, and annotation schemas:\n  "
             + "\n  ".join(sorted(taxonomy_audit_failures))
         )
-    if migration_test_failures:
+    if source_layout_test_failures:
         raise ValueError(
-            "refusing to write review/task-reviews artifacts before scene-scoped migration "
-            "tests pass. Create review/task-reviews/<domain>/<scene_id>/"
-            "migration_test_status.json with passed: true after running the required "
+            "refusing to write review/task-reviews artifacts before scene-scoped source-layout "
+            "checks pass. Create review/task-reviews/<domain>/<scene_id>/"
+            "source_layout_test_status.json with passed: true after running the required "
             "scene-scoped tests:\n  "
-            + "\n  ".join(sorted(migration_test_failures))
+            + "\n  ".join(sorted(source_layout_test_failures))
         )
     if structural_audit_failures:
         raise ValueError(
-            "refusing to write review/task-reviews artifacts because automated scene-package "
+            "refusing to write review/task-reviews artifacts because automated source-layout "
             "source audit failed:\n  "
             + "\n  ".join(sorted(structural_audit_failures))
         )
 
 
 def _scene_status_path(out_root: Path, domain: str, scene_id: str, filename: str) -> Path:
-    """Return the scene-level review status path for one migration gate."""
+    """Return the scene-level review status path for one source-layout gate."""
 
     return out_root / str(domain) / str(scene_id) / str(filename)
 
@@ -320,9 +320,14 @@ def _validate_staged_task_artifacts(
         image_rel = str(image_payload.get("path", ""))
         if not image_rel:
             raise ValueError(f"staged sample lacks image path: {data_path}")
-        final_image_path = (out_root / image_rel).resolve()
+        # Use abspath rather than resolve here. Existing live review images can
+        # be symlinks into calibration output; validation should check that the
+        # published path is under the review task directory, not follow an old
+        # symlink target before the staged replacement is published.
+        final_image_path = Path(os.path.abspath(out_root / image_rel))
+        final_task_dir_abs = Path(os.path.abspath(final_task_dir))
         try:
-            image_suffix = final_image_path.relative_to(final_task_dir.resolve())
+            image_suffix = final_image_path.relative_to(final_task_dir_abs)
         except ValueError as exc:
             raise ValueError(f"staged sample image path escapes final task dir: {data_path}") from exc
         if not (stage_task_dir / image_suffix).exists():
@@ -339,17 +344,17 @@ def _load_json_object_or_raise(path: Path) -> Mapping[str, Any]:
     return payload
 
 
-def _missing_required_migration_tests(migration_status: Mapping[str, Any]) -> set[str]:
-    """Return required migration test files absent from the status payload."""
+def _missing_required_source_layout_checks(source_layout_status: Mapping[str, Any]) -> set[str]:
+    """Return required source-layout check files absent from the status payload."""
 
-    test_files = migration_status.get("test_files", [])
+    test_files = source_layout_status.get("test_files", [])
     if isinstance(test_files, str):
         observed = {test_files}
     elif isinstance(test_files, Sequence) and not isinstance(test_files, (str, bytes)):
         observed = {str(item) for item in test_files if str(item).strip()}
     else:
         observed = set()
-    return set(_REQUIRED_MIGRATION_TEST_FILES - observed)
+    return set(_REQUIRED_SOURCE_LAYOUT_TEST_FILES - observed)
 
 
 def _taxonomy_status_contract_failures(

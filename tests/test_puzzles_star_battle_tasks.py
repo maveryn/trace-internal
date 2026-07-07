@@ -1,4 +1,4 @@
-"""Contracts for Star Battle scene-package puzzle tasks."""
+"""Contracts for Star Battle source-layout puzzle tasks."""
 
 from __future__ import annotations
 
@@ -59,10 +59,6 @@ def test_star_battle_prompt_bundle_supports_scene_package_variants() -> None:
     assert len(bundle.task_templates["star_battle_remaining_count_query"]) == REQUIRED_PROMPT_VARIANTS
     assert len(bundle.query_templates["valid_cell_anywhere_label"]) == REQUIRED_PROMPT_VARIANTS
     assert (
-        len(bundle.query_templates["remaining_valid_cells_in_marked_region_count"])
-        == REQUIRED_PROMPT_VARIANTS
-    )
-    assert (
         len(bundle.query_templates["remaining_valid_cells_in_marked_row_count"])
         == REQUIRED_PROMPT_VARIANTS
     )
@@ -109,6 +105,28 @@ def test_star_battle_remaining_count_emits_bbox_set_contract() -> None:
     assert out.annotation_gt.type == "bbox_set"
     assert len(out.annotation_gt.value) == int(out.answer_gt.value)
     assert out.trace_payload["projected_annotation"]["type"] == "bbox_set"
+
+
+@pytest.mark.parametrize(
+    ("query_id", "expected_text"),
+    [
+        ("remaining_valid_cells_in_marked_row_count", "from the top"),
+        ("remaining_valid_cells_in_marked_column_count", "from the left"),
+    ],
+)
+def test_star_battle_remaining_count_prompt_names_highlighted_axis(query_id: str, expected_text: str) -> None:
+    task = PuzzlesStarBattleRemainingValidCellCountTask()
+    out = task.generate(83103, params={"query_id": query_id}, max_attempts=80)
+
+    prompt = out.prompt.lower()
+    assert "highlighted" in prompt
+    assert expected_text in prompt
+    if query_id.endswith("_row_count"):
+        row_index = int(out.trace_payload["execution_trace"]["marked_row_index"]) + 1
+        assert f"row {row_index}" in prompt
+    else:
+        col_index = int(out.trace_payload["execution_trace"]["marked_col_index"]) + 1
+        assert f"column {col_index}" in prompt
 
 
 @pytest.mark.parametrize(

@@ -9,7 +9,13 @@ from typing import Any, Callable, Iterable, Mapping
 from trace.tasks.geometry.shared.measurement_rendering import fmt_measure, round1
 from trace.tasks.geometry.shared.vector2d import mid
 
-from .state import AngleLabel, RightAngleMark, SegmentLabel, TickGroup, TriangleRelationsCase
+from .state import (
+    AngleLabel,
+    RightAngleMark,
+    SegmentLabel,
+    TickGroup,
+    TriangleRelationsCase,
+)
 
 DEGREE_SYMBOL = chr(176)
 
@@ -58,7 +64,9 @@ def _is_valid_triangle(a: float, b: float, c: float) -> bool:
     return (a + b > c) and (a + c > b) and (b + c > a)
 
 
-def _segment_length(vertices: Mapping[str, tuple[float, float]], segment: tuple[str, str]) -> float:
+def _segment_length(
+    vertices: Mapping[str, tuple[float, float]], segment: tuple[str, str]
+) -> float:
     start = vertices[str(segment[0])]
     end = vertices[str(segment[1])]
     return math.hypot(float(start[0]) - float(end[0]), float(start[1]) - float(end[1]))
@@ -67,9 +75,15 @@ def _segment_length(vertices: Mapping[str, tuple[float, float]], segment: tuple[
 def _case_has_readable_labeled_geometry(case: TriangleRelationsCase) -> bool:
     """Reject constructions where faithful proportions make labeled support unreadable."""
 
-    if any(_segment_length(case.vertices, label.segment) < 52.0 for label in case.segment_labels):
+    if any(
+        _segment_length(case.vertices, label.segment) < 52.0
+        for label in case.segment_labels
+    ):
         return False
-    if str(case.formula_family).startswith("angle_bisector") and _angle_bisector_split_fraction(case) < 0.2:
+    if (
+        str(case.formula_family).startswith("angle_bisector")
+        and _angle_bisector_split_fraction(case) < 0.2
+    ):
         return False
     return True
 
@@ -78,7 +92,9 @@ def _case_has_no_visible_answer_collision(case: TriangleRelationsCase) -> bool:
     """Reject cases where a non-target visible label directly equals the answer."""
 
     answer_key = _answer_key(case.answer)
-    target_segment = tuple(case.target_segment) if case.target_segment is not None else None
+    target_segment = (
+        tuple(case.target_segment) if case.target_segment is not None else None
+    )
     for label in case.segment_labels:
         if target_segment is not None and tuple(label.segment) == target_segment:
             continue
@@ -140,7 +156,9 @@ def _expression_value(expression: object, x_value: object) -> int | None:
 
 
 @cache
-def _pythagorean_triples(*, max_leg: int = 180, max_hypotenuse: int = 260) -> tuple[tuple[int, int, int], ...]:
+def _pythagorean_triples(
+    *, max_leg: int = 180, max_hypotenuse: int = 260
+) -> tuple[tuple[int, int, int], ...]:
     """Return oriented integer right-triangle triples within a compact render range."""
 
     triples: list[tuple[int, int, int]] = []
@@ -185,13 +203,20 @@ def _case(
 
     return TriangleRelationsCase(
         case_kind=str(case_kind),
-        answer=int(answer) if str(answer_type) == "integer" else float(round1(float(answer))),
+        answer=(
+            int(answer)
+            if str(answer_type) == "integer"
+            else float(round1(float(answer)))
+        ),
         answer_type=str(answer_type),
         answer_rounding=str(answer_rounding),
         formula_family=str(formula_family),
         formula_text=str(formula_text),
         reasoning_steps=int(reasoning_steps),
-        vertices={str(key): (float(value[0]), float(value[1])) for key, value in vertices.items()},
+        vertices={
+            str(key): (float(value[0]), float(value[1]))
+            for key, value in vertices.items()
+        },
         edges=tuple((str(a), str(b)) for a, b in edges),
         polygons=tuple(tuple(str(label) for label in polygon) for polygon in polygons),
         segment_labels=tuple(segment_labels),
@@ -202,7 +227,9 @@ def _case(
         angle_labels=tuple(angle_labels),
         right_angles=tuple(right_angles),
         tick_groups=tuple(tick_groups),
-        filled_polygons=tuple(tuple(str(label) for label in polygon) for polygon in filled_polygons),
+        filled_polygons=tuple(
+            tuple(str(label) for label in polygon) for polygon in filled_polygons
+        ),
         trace_values=dict(trace_values or {}),
     )
 
@@ -342,8 +369,13 @@ def parallel_section_base_cases() -> tuple[TriangleRelationsCase, ...]:
 def chained_rectangle_diagonal_cases() -> tuple[TriangleRelationsCase, ...]:
     """Build two-step Pythagorean cases over one split rectangle diagram."""
 
+    max_visible_diagonal = 180
     triples_by_height: dict[int, list[tuple[int, int]]] = {}
-    for width, height, diagonal in _pythagorean_triples(max_leg=320, max_hypotenuse=480):
+    for width, height, diagonal in _pythagorean_triples(
+        max_leg=320, max_hypotenuse=480
+    ):
+        if int(diagonal) > max_visible_diagonal:
+            continue
         triples_by_height.setdefault(height, []).append((width, diagonal))
     cases: list[TriangleRelationsCase] = []
     for height, entries in sorted(triples_by_height.items()):
@@ -353,6 +385,8 @@ def chained_rectangle_diagonal_cases() -> tuple[TriangleRelationsCase, ...]:
                 if not 3 <= right_w <= 280:
                     continue
                 if not 8 <= total_w <= 300:
+                    continue
+                if int(target_diag) > max_visible_diagonal:
                     continue
                 _append_chained_rectangle_case(
                     cases,
@@ -393,7 +427,15 @@ def _append_chained_rectangle_case(
             formula_text="height from left diagonal, then target diagonal from total width",
             reasoning_steps=4,
             vertices={"A": a, "B": b, "C": c, "D": d, "E": e, "F": f},
-            edges=(("A", "B"), ("B", "C"), ("C", "D"), ("D", "A"), ("E", "F"), ("D", "E"), ("D", "B")),
+            edges=(
+                ("A", "B"),
+                ("B", "C"),
+                ("C", "D"),
+                ("D", "A"),
+                ("E", "F"),
+                ("D", "E"),
+                ("D", "B"),
+            ),
             polygons=(("A", "B", "C", "D"),),
             segment_labels=(
                 SegmentLabel(("A", "E"), str(left_w), 28.0, "AE"),
@@ -421,7 +463,9 @@ def rectangle_triangle_shared_height_cases() -> tuple[TriangleRelationsCase, ...
     """Build cases where a rectangle diagonal exposes the adjacent triangle height."""
 
     triples_by_height: dict[int, list[tuple[int, int]]] = {}
-    for width, height, diagonal in _pythagorean_triples(max_leg=160, max_hypotenuse=240):
+    for width, height, diagonal in _pythagorean_triples(
+        max_leg=160, max_hypotenuse=240
+    ):
         triples_by_height.setdefault(height, []).append((width, diagonal))
     cases: list[TriangleRelationsCase] = []
     for height, entries in sorted(triples_by_height.items()):
@@ -466,7 +510,15 @@ def _append_rectangle_triangle_shared_height_case(
             formula_text="shared height from rectangle diagonal, then triangle hypotenuse",
             reasoning_steps=4,
             vertices={"A": a, "B": b, "C": c, "D": d, "E": e},
-            edges=(("A", "B"), ("B", "D"), ("D", "E"), ("E", "A"), ("B", "C"), ("C", "D"), ("A", "D")),
+            edges=(
+                ("A", "B"),
+                ("B", "D"),
+                ("D", "E"),
+                ("E", "A"),
+                ("B", "C"),
+                ("C", "D"),
+                ("A", "D"),
+            ),
             polygons=(("A", "B", "D", "E"), ("B", "C", "D")),
             segment_labels=(
                 SegmentLabel(("A", "B"), str(rect_w), 28.0, "AB"),
@@ -477,12 +529,20 @@ def _append_rectangle_triangle_shared_height_case(
             target_segment=("C", "D"),
             right_angles=(RightAngleMark("B", "A", "D"),),
             filled_polygons=(("A", "B", "D", "E"), ("B", "C", "D")),
-            trace_values={"AB": rect_w, "AD": rect_diag, "BD": height, "BC": base, "CD": hyp},
+            trace_values={
+                "AB": rect_w,
+                "AD": rect_diag,
+                "BD": height,
+                "BC": base,
+                "CD": hyp,
+            },
         )
     )
 
 
-def _bisector_points(ab: int, ac: int, bd: int, dc: int) -> dict[str, tuple[float, float]]:
+def _bisector_points(
+    ab: int, ac: int, bd: int, dc: int
+) -> dict[str, tuple[float, float]]:
     bc = bd + dc
     scale = min(28.0, 430.0 / bc, 310.0 / max(ab, ac))
     base_width = bc * scale
@@ -522,8 +582,13 @@ def _bisector_case(
         polygons=(("A", "B", "C"),),
         segment_labels=labels,
         target_segment=target,
-        angle_labels=(AngleLabel("A", "B", "D", "", 34.0), AngleLabel("A", "D", "C", "", 34.0)),
-        tick_groups=(TickGroup((("A", "B"), ("A", "C")), count=0, kind="angle_bisector"),),
+        angle_labels=(
+            AngleLabel("A", "B", "D", "", 34.0),
+            AngleLabel("A", "D", "C", "", 34.0),
+        ),
+        tick_groups=(
+            TickGroup((("A", "B"), ("A", "C")), count=0, kind="angle_bisector"),
+        ),
         trace_values=trace_values,
     )
 
@@ -540,7 +605,9 @@ def angle_bisector_split_cases() -> tuple[TriangleRelationsCase, ...]:
                 if numerator % ratio_right != 0:
                     continue
                 bd = numerator // ratio_right
-                side_scale = max(2, math.ceil((bd + dc + 2) / float(ratio_left + ratio_right)))
+                side_scale = max(
+                    2, math.ceil((bd + dc + 2) / float(ratio_left + ratio_right))
+                )
                 ab = ratio_left * side_scale
                 ac = ratio_right * side_scale
                 if not _is_valid_triangle(ab, ac, bd + dc):
@@ -554,9 +621,27 @@ def angle_bisector_split_cases() -> tuple[TriangleRelationsCase, ...]:
                         bd=bd,
                         dc=dc,
                         labels=(
-                            SegmentLabel(("A", "B"), str(ab), -32.0, "AB", placement="side_readout"),
-                            SegmentLabel(("A", "C"), str(ac), 32.0, "AC", placement="side_readout"),
-                            SegmentLabel(("B", "D"), str(bd), 28.0, "BD", placement="side_readout"),
+                            SegmentLabel(
+                                ("A", "B"),
+                                str(ab),
+                                -32.0,
+                                "AB",
+                                placement="side_readout",
+                            ),
+                            SegmentLabel(
+                                ("A", "C"),
+                                str(ac),
+                                32.0,
+                                "AC",
+                                placement="side_readout",
+                            ),
+                            SegmentLabel(
+                                ("B", "D"),
+                                str(bd),
+                                28.0,
+                                "BD",
+                                placement="side_readout",
+                            ),
                             SegmentLabel(("D", "C"), "DC=?", 28.0, "DC"),
                         ),
                         target=("D", "C"),
@@ -566,7 +651,9 @@ def angle_bisector_split_cases() -> tuple[TriangleRelationsCase, ...]:
     return _trim_answer_variants(cases, max_answers=220, max_variants_per_answer=3)
 
 
-def _angle_bisector_base_dimensions(answer: int) -> tuple[tuple[int, int, int, int], ...]:
+def _angle_bisector_base_dimensions(
+    answer: int,
+) -> tuple[tuple[int, int, int, int], ...]:
     """Return valid dimensions for base-length targets with the given base."""
 
     dimensions: list[tuple[int, int, int, int]] = []
@@ -608,7 +695,13 @@ def angle_bisector_base_cases() -> tuple[TriangleRelationsCase, ...]:
                         SegmentLabel(("B", "C"), "BC=?", 44.0, "BC"),
                     ),
                     target=("B", "C"),
-                    trace_values={"AB": ab, "AC": ac, "BD": bd, "derived_DC": dc, "BC": bc},
+                    trace_values={
+                        "AB": ab,
+                        "AC": ac,
+                        "BD": bd,
+                        "derived_DC": dc,
+                        "BC": bc,
+                    },
                 )
             )
     return _trim_answer_variants(cases, max_answers=220, max_variants_per_answer=3)
@@ -616,12 +709,16 @@ def angle_bisector_base_cases() -> tuple[TriangleRelationsCase, ...]:
 
 @cache
 def centroid_vertex_cases() -> tuple[TriangleRelationsCase, ...]:
-    return tuple(_centroid_case(given=value, target_whole=False) for value in range(4, 124))
+    return tuple(
+        _centroid_case(given=value, target_whole=False) for value in range(4, 124)
+    )
 
 
 @cache
 def centroid_whole_cases() -> tuple[TriangleRelationsCase, ...]:
-    return tuple(_centroid_case(given=value, target_whole=True) for value in range(8, 248, 2))
+    return tuple(
+        _centroid_case(given=value, target_whole=True) for value in range(8, 248, 2)
+    )
 
 
 def _centroid_case(*, given: int, target_whole: bool) -> TriangleRelationsCase:
@@ -630,13 +727,19 @@ def _centroid_case(*, given: int, target_whole: bool) -> TriangleRelationsCase:
     g = (a[0] + (d[0] - a[0]) * (2.0 / 3.0), a[1] + (d[1] - a[1]) * (2.0 / 3.0))
     if target_whole:
         answer = (3 * given) // 2
-        labels = (SegmentLabel(("A", "G"), str(given), -30.0, "AG"), SegmentLabel(("A", "D"), "AD=?", 30.0, "AD"))
+        labels = (
+            SegmentLabel(("A", "G"), str(given), -30.0, "AG"),
+            SegmentLabel(("A", "D"), "AD=?", 30.0, "AD"),
+        )
         target = ("A", "D")
         values = {"AG": given, "GD": given // 2, "AD": answer}
         kind = "centroid_whole_median"
     else:
         answer = 2 * given
-        labels = (SegmentLabel(("G", "D"), str(given), 30.0, "GD"), SegmentLabel(("A", "G"), "AG=?", -30.0, "AG"))
+        labels = (
+            SegmentLabel(("G", "D"), str(given), 30.0, "GD"),
+            SegmentLabel(("A", "G"), "AG=?", -30.0, "AG"),
+        )
         target = ("A", "G")
         values = {"GD": given, "AG": answer, "AD": answer + given}
         kind = "centroid_vertex_segment"
@@ -678,15 +781,27 @@ def _right_triangle_case(
     a = (140.0, 430.0)
     c = (140.0 + adjacent * scale, 430.0)
     b = (c[0], 430.0 - opposite * scale)
-    side_segments = {"adjacent": ("A", "C"), "opposite": ("B", "C"), "hypotenuse": ("A", "B")}
+    side_segments = {
+        "adjacent": ("A", "C"),
+        "opposite": ("B", "C"),
+        "hypotenuse": ("A", "B"),
+    }
     labels: list[SegmentLabel] = []
     for side in visible_sides:
         segment_name = "".join(side_segments[side])
-        value = {"adjacent": adjacent, "opposite": opposite, "hypotenuse": hypotenuse}[side]
-        labels.append(SegmentLabel(side_segments[side], fmt_measure(value), 32.0, segment_name))
+        value = {"adjacent": adjacent, "opposite": opposite, "hypotenuse": hypotenuse}[
+            side
+        ]
+        labels.append(
+            SegmentLabel(side_segments[side], fmt_measure(value), 32.0, segment_name)
+        )
     if target_side is not None:
         segment_name = "".join(side_segments[target_side])
-        labels.append(SegmentLabel(side_segments[target_side], f"{segment_name}=?", -34.0, segment_name))
+        labels.append(
+            SegmentLabel(
+                side_segments[target_side], f"{segment_name}=?", -34.0, segment_name
+            )
+        )
     angle_text = "?" if target_side is None else f"θ={fmt_measure(theta)}°"
     answer_type = "number"
     rounding = "one_decimal"
@@ -722,11 +837,19 @@ def _right_triangle_case(
     )
 
 
-def _missing_side_cases(kind: str, builder: Callable[[float, float], tuple[float, float, float, float, tuple[str, ...], str, str, str]]) -> tuple[TriangleRelationsCase, ...]:
+def _missing_side_cases(
+    kind: str,
+    builder: Callable[
+        [float, float],
+        tuple[float, float, float, float, tuple[str, ...], str, str, str],
+    ],
+) -> tuple[TriangleRelationsCase, ...]:
     cases: list[TriangleRelationsCase] = []
     for theta in range(15, 76, 2):
         for known in range(5, 91):
-            adjacent, opposite, hypotenuse, answer, visible, target, family, formula = builder(float(theta), float(known))
+            adjacent, opposite, hypotenuse, answer, visible, target, family, formula = (
+                builder(float(theta), float(known))
+            )
             cases.append(
                 _right_triangle_case(
                     case_kind=kind,
@@ -746,27 +869,87 @@ def _missing_side_cases(kind: str, builder: Callable[[float, float], tuple[float
 
 @cache
 def height_from_angle_ground_cases() -> tuple[TriangleRelationsCase, ...]:
-    return _missing_side_cases("height_from_tangent", lambda theta, known: (known, known * math.tan(math.radians(theta)), math.hypot(known, known * math.tan(math.radians(theta))), known * math.tan(math.radians(theta)), ("adjacent",), "opposite", "right_triangle_tangent", "height = ground * tan(theta)"))
+    return _missing_side_cases(
+        "height_from_tangent",
+        lambda theta, known: (
+            known,
+            known * math.tan(math.radians(theta)),
+            math.hypot(known, known * math.tan(math.radians(theta))),
+            known * math.tan(math.radians(theta)),
+            ("adjacent",),
+            "opposite",
+            "right_triangle_tangent",
+            "height = ground * tan(theta)",
+        ),
+    )
 
 
 @cache
 def ground_from_angle_height_cases() -> tuple[TriangleRelationsCase, ...]:
-    return _missing_side_cases("ground_from_tangent", lambda theta, known: (known / math.tan(math.radians(theta)), known, math.hypot(known / math.tan(math.radians(theta)), known), known / math.tan(math.radians(theta)), ("opposite",), "adjacent", "right_triangle_tangent", "ground = height / tan(theta)"))
+    return _missing_side_cases(
+        "ground_from_tangent",
+        lambda theta, known: (
+            known / math.tan(math.radians(theta)),
+            known,
+            math.hypot(known / math.tan(math.radians(theta)), known),
+            known / math.tan(math.radians(theta)),
+            ("opposite",),
+            "adjacent",
+            "right_triangle_tangent",
+            "ground = height / tan(theta)",
+        ),
+    )
 
 
 @cache
 def hypotenuse_from_angle_height_cases() -> tuple[TriangleRelationsCase, ...]:
-    return _missing_side_cases("hypotenuse_from_sine", lambda theta, known: (known / math.tan(math.radians(theta)), known, known / math.sin(math.radians(theta)), known / math.sin(math.radians(theta)), ("opposite",), "hypotenuse", "right_triangle_sine", "hypotenuse = height / sin(theta)"))
+    return _missing_side_cases(
+        "hypotenuse_from_sine",
+        lambda theta, known: (
+            known / math.tan(math.radians(theta)),
+            known,
+            known / math.sin(math.radians(theta)),
+            known / math.sin(math.radians(theta)),
+            ("opposite",),
+            "hypotenuse",
+            "right_triangle_sine",
+            "hypotenuse = height / sin(theta)",
+        ),
+    )
 
 
 @cache
 def height_from_angle_hypotenuse_cases() -> tuple[TriangleRelationsCase, ...]:
-    return _missing_side_cases("height_from_sine", lambda theta, known: (known * math.cos(math.radians(theta)), known * math.sin(math.radians(theta)), known, known * math.sin(math.radians(theta)), ("hypotenuse",), "opposite", "right_triangle_sine", "height = hypotenuse * sin(theta)"))
+    return _missing_side_cases(
+        "height_from_sine",
+        lambda theta, known: (
+            known * math.cos(math.radians(theta)),
+            known * math.sin(math.radians(theta)),
+            known,
+            known * math.sin(math.radians(theta)),
+            ("hypotenuse",),
+            "opposite",
+            "right_triangle_sine",
+            "height = hypotenuse * sin(theta)",
+        ),
+    )
 
 
 @cache
 def ground_from_angle_hypotenuse_cases() -> tuple[TriangleRelationsCase, ...]:
-    return _missing_side_cases("ground_from_cosine", lambda theta, known: (known * math.cos(math.radians(theta)), known * math.sin(math.radians(theta)), known, known * math.cos(math.radians(theta)), ("hypotenuse",), "adjacent", "right_triangle_cosine", "ground = hypotenuse * cos(theta)"))
+    return _missing_side_cases(
+        "ground_from_cosine",
+        lambda theta, known: (
+            known * math.cos(math.radians(theta)),
+            known * math.sin(math.radians(theta)),
+            known,
+            known * math.cos(math.radians(theta)),
+            ("hypotenuse",),
+            "adjacent",
+            "right_triangle_cosine",
+            "ground = hypotenuse * cos(theta)",
+        ),
+    )
 
 
 @cache
@@ -785,7 +968,9 @@ def angle_bisector_variable_cases() -> tuple[TriangleRelationsCase, ...]:
                     if numerator % ratio_right != 0:
                         continue
                     bd = numerator // ratio_right
-                    side_scale = max(2, math.ceil((bd + dc + 2) / float(ratio_left + ratio_right)))
+                    side_scale = max(
+                        2, math.ceil((bd + dc + 2) / float(ratio_left + ratio_right))
+                    )
                     ab = ratio_left * side_scale
                     ac = ratio_right * side_scale
                     if not _is_valid_triangle(ab, ac, bd + dc):
@@ -797,8 +982,25 @@ def angle_bisector_variable_cases() -> tuple[TriangleRelationsCase, ...]:
                         SegmentLabel(("B", "D"), str(bd), 28.0, "BD"),
                         SegmentLabel(("D", "C"), str(dc_label), 28.0, "DC"),
                     )
-                    trace = {"AB": ab, "AC": ac, "BD": bd, "DC_expression": dc_label, "x": answer}
-                    cases.append(_angle_bisector_variable_case("split_ratio_variable", answer, ab, ac, bd, dc, labels, trace))
+                    trace = {
+                        "AB": ab,
+                        "AC": ac,
+                        "BD": bd,
+                        "DC_expression": dc_label,
+                        "x": answer,
+                    }
+                    cases.append(
+                        _angle_bisector_variable_case(
+                            "split_ratio_variable",
+                            answer,
+                            ab,
+                            ac,
+                            bd,
+                            dc,
+                            labels,
+                            trace,
+                        )
+                    )
 
         for offset in range(1, 11):
             ab = answer + offset
@@ -818,8 +1020,25 @@ def angle_bisector_variable_cases() -> tuple[TriangleRelationsCase, ...]:
                         SegmentLabel(("B", "D"), str(bd), 28.0, "BD"),
                         SegmentLabel(("D", "C"), str(dc), 28.0, "DC"),
                     )
-                    trace = {"AB_expression": ab_label, "AC": ac, "BD": bd, "DC": dc, "x": answer}
-                    cases.append(_angle_bisector_variable_case("adjacent_ratio_variable", answer, ab, ac, bd, dc, labels, trace))
+                    trace = {
+                        "AB_expression": ab_label,
+                        "AC": ac,
+                        "BD": bd,
+                        "DC": dc,
+                        "x": answer,
+                    }
+                    cases.append(
+                        _angle_bisector_variable_case(
+                            "adjacent_ratio_variable",
+                            answer,
+                            ab,
+                            ac,
+                            bd,
+                            dc,
+                            labels,
+                            trace,
+                        )
+                    )
     return _trim_answer_variants(cases, max_answers=220, max_variants_per_answer=3)
 
 
@@ -845,8 +1064,13 @@ def _angle_bisector_variable_case(
         polygons=(("A", "B", "C"),),
         segment_labels=labels,
         point_annotation_labels=("A", "B", "C", "D"),
-        angle_labels=(AngleLabel("A", "B", "D", "", 34.0), AngleLabel("A", "D", "C", "", 34.0)),
-        tick_groups=(TickGroup((("A", "B"), ("A", "C")), count=0, kind="angle_bisector"),),
+        angle_labels=(
+            AngleLabel("A", "B", "D", "", 34.0),
+            AngleLabel("A", "D", "C", "", 34.0),
+        ),
+        tick_groups=(
+            TickGroup((("A", "B"), ("A", "C")), count=0, kind="angle_bisector"),
+        ),
         trace_values={**trace, "internal_case_family": str(family)},
     )
 
@@ -872,8 +1096,21 @@ def split_triangle_angle_cases() -> tuple[TriangleRelationsCase, ...]:
                 AngleLabel("B", "A", "D", f"{angle_b}{DEGREE_SYMBOL}", 48.0, "given_B"),
                 AngleLabel("D", "A", "B", "?", 58.0, "target_angle"),
             )
-            trace = {"angle_a": int(angle_a), "angle_b": int(angle_b), "answer": int(answer)}
-            cases.append(_split_triangle_angle_case(vertices, "single_cevian_triangle_angle_sum", answer, labels, trace, 1))
+            trace = {
+                "angle_a": int(angle_a),
+                "angle_b": int(angle_b),
+                "answer": int(answer),
+            }
+            cases.append(
+                _split_triangle_angle_case(
+                    vertices,
+                    "single_cevian_triangle_angle_sum",
+                    answer,
+                    labels,
+                    trace,
+                    1,
+                )
+            )
 
         for angle_a in range(25, 96):
             for angle_d in range(25, 96):
@@ -882,9 +1119,15 @@ def split_triangle_angle_cases() -> tuple[TriangleRelationsCase, ...]:
                     continue
                 left_missing = 180 - int(angle_a) - int(angle_d)
                 labels = (
-                    AngleLabel("A", "B", "D", f"{angle_a}{DEGREE_SYMBOL}", 48.0, "given_A"),
-                    AngleLabel("D", "A", "B", f"{angle_d}{DEGREE_SYMBOL}", 58.0, "given_D_left"),
-                    AngleLabel("C", "B", "D", f"{angle_c}{DEGREE_SYMBOL}", 48.0, "given_C"),
+                    AngleLabel(
+                        "A", "B", "D", f"{angle_a}{DEGREE_SYMBOL}", 48.0, "given_A"
+                    ),
+                    AngleLabel(
+                        "D", "A", "B", f"{angle_d}{DEGREE_SYMBOL}", 58.0, "given_D_left"
+                    ),
+                    AngleLabel(
+                        "C", "B", "D", f"{angle_c}{DEGREE_SYMBOL}", 48.0, "given_C"
+                    ),
                     AngleLabel("D", "B", "C", "?", 58.0, "target_angle"),
                 )
                 trace = {
@@ -895,7 +1138,16 @@ def split_triangle_angle_cases() -> tuple[TriangleRelationsCase, ...]:
                     "straight_angle_supplement": 180 - int(left_missing),
                     "answer": int(answer),
                 }
-                cases.append(_split_triangle_angle_case(vertices, "two_step_adjacent_triangle_angle_sum", answer, labels, trace, 3))
+                cases.append(
+                    _split_triangle_angle_case(
+                        vertices,
+                        "two_step_adjacent_triangle_angle_sum",
+                        answer,
+                        labels,
+                        trace,
+                        3,
+                    )
+                )
     return _trim_answer_variants(cases, max_answers=220, max_variants_per_answer=3)
 
 
@@ -935,6 +1187,7 @@ def split_triangle_trig_side_cases() -> tuple[TriangleRelationsCase, ...]:
         return str(fmt_measure(float(value)))
 
     cases: list[TriangleRelationsCase] = []
+    standard_angles = (30, 45, 60)
     vertices = {
         "A": (365.0, 135.0),
         "B": (145.0, 430.0),
@@ -971,14 +1224,27 @@ def split_triangle_trig_side_cases() -> tuple[TriangleRelationsCase, ...]:
                 right_angles=(RightAngleMark("D", "A", "C"),),
                 tick_groups=ticks,
                 filled_polygons=(("A", "B", "D"), ("A", "D", "C")),
-                trace_values={**dict(trace), "internal_construction_family": str(family), "answer": round1(float(answer))},
+                trace_values={
+                    **dict(trace),
+                    "internal_construction_family": str(family),
+                    "answer": round1(float(answer)),
+                },
             )
         )
 
-    for known_base in range(7, 26):
-        for left_angle in range(32, 68, 3):
-            for right_angle in range(35, 68, 4):
-                if len([case for case in cases if case.case_kind == "shared_altitude_two_angles_side"]) >= 80:
+    for known_base in range(6, 31):
+        for left_angle in standard_angles:
+            for right_angle in standard_angles:
+                if (
+                    len(
+                        [
+                            case
+                            for case in cases
+                            if case.case_kind == "shared_altitude_two_angles_side"
+                        ]
+                    )
+                    >= 80
+                ):
                     break
                 altitude = float(known_base) * math.tan(math.radians(float(left_angle)))
                 answer = altitude / math.sin(math.radians(float(right_angle)))
@@ -988,10 +1254,27 @@ def split_triangle_trig_side_cases() -> tuple[TriangleRelationsCase, ...]:
                     family="shared_altitude_two_angles_side",
                     answer=answer,
                     target=("A", "C"),
-                    labels=(SegmentLabel(("B", "D"), _num(known_base), 32.0, "BD"), SegmentLabel(("A", "C"), "AC=?", 36.0, "AC")),
+                    labels=(
+                        SegmentLabel(("B", "D"), _num(known_base), 32.0, "BD"),
+                        SegmentLabel(("A", "C"), "AC=?", 36.0, "AC"),
+                    ),
                     angles=(
-                        AngleLabel("B", "A", "D", f"{left_angle}{DEGREE_SYMBOL}", 52.0, "angle_B"),
-                        AngleLabel("C", "D", "A", f"{right_angle}{DEGREE_SYMBOL}", 52.0, "angle_C"),
+                        AngleLabel(
+                            "B",
+                            "A",
+                            "D",
+                            f"{left_angle}{DEGREE_SYMBOL}",
+                            52.0,
+                            "angle_B",
+                        ),
+                        AngleLabel(
+                            "C",
+                            "D",
+                            "A",
+                            f"{right_angle}{DEGREE_SYMBOL}",
+                            52.0,
+                            "angle_C",
+                        ),
                     ),
                     trace={
                         "known_segment": "BD",
@@ -1002,15 +1285,42 @@ def split_triangle_trig_side_cases() -> tuple[TriangleRelationsCase, ...]:
                         "target_side": "AC",
                     },
                 )
-            if len([case for case in cases if case.case_kind == "shared_altitude_two_angles_side"]) >= 80:
+            if (
+                len(
+                    [
+                        case
+                        for case in cases
+                        if case.case_kind == "shared_altitude_two_angles_side"
+                    ]
+                )
+                >= 80
+            ):
                 break
-        if len([case for case in cases if case.case_kind == "shared_altitude_two_angles_side"]) >= 80:
+        if (
+            len(
+                [
+                    case
+                    for case in cases
+                    if case.case_kind == "shared_altitude_two_angles_side"
+                ]
+            )
+            >= 80
+        ):
             break
 
-    for known_side in range(10, 34):
-        for left_angle in range(32, 69, 4):
-            for right_angle in range(35, 69, 5):
-                if len([case for case in cases if case.case_kind == "shared_altitude_side_then_hypotenuse"]) >= 80:
+    for known_side in range(8, 41):
+        for left_angle in standard_angles:
+            for right_angle in standard_angles:
+                if (
+                    len(
+                        [
+                            case
+                            for case in cases
+                            if case.case_kind == "shared_altitude_side_then_hypotenuse"
+                        ]
+                    )
+                    >= 80
+                ):
                     break
                 altitude = float(known_side) * math.sin(math.radians(float(left_angle)))
                 answer = altitude / math.sin(math.radians(float(right_angle)))
@@ -1020,10 +1330,27 @@ def split_triangle_trig_side_cases() -> tuple[TriangleRelationsCase, ...]:
                     family="shared_altitude_side_then_hypotenuse",
                     answer=answer,
                     target=("A", "C"),
-                    labels=(SegmentLabel(("A", "B"), _num(known_side), -36.0, "AB"), SegmentLabel(("A", "C"), "AC=?", 36.0, "AC")),
+                    labels=(
+                        SegmentLabel(("A", "B"), _num(known_side), -36.0, "AB"),
+                        SegmentLabel(("A", "C"), "AC=?", 36.0, "AC"),
+                    ),
                     angles=(
-                        AngleLabel("B", "A", "D", f"{left_angle}{DEGREE_SYMBOL}", 52.0, "angle_B"),
-                        AngleLabel("C", "D", "A", f"{right_angle}{DEGREE_SYMBOL}", 52.0, "angle_C"),
+                        AngleLabel(
+                            "B",
+                            "A",
+                            "D",
+                            f"{left_angle}{DEGREE_SYMBOL}",
+                            52.0,
+                            "angle_B",
+                        ),
+                        AngleLabel(
+                            "C",
+                            "D",
+                            "A",
+                            f"{right_angle}{DEGREE_SYMBOL}",
+                            52.0,
+                            "angle_C",
+                        ),
                     ),
                     trace={
                         "known_segment": "AB",
@@ -1034,14 +1361,41 @@ def split_triangle_trig_side_cases() -> tuple[TriangleRelationsCase, ...]:
                         "target_side": "AC",
                     },
                 )
-            if len([case for case in cases if case.case_kind == "shared_altitude_side_then_hypotenuse"]) >= 80:
+            if (
+                len(
+                    [
+                        case
+                        for case in cases
+                        if case.case_kind == "shared_altitude_side_then_hypotenuse"
+                    ]
+                )
+                >= 80
+            ):
                 break
-        if len([case for case in cases if case.case_kind == "shared_altitude_side_then_hypotenuse"]) >= 80:
+        if (
+            len(
+                [
+                    case
+                    for case in cases
+                    if case.case_kind == "shared_altitude_side_then_hypotenuse"
+                ]
+            )
+            >= 80
+        ):
             break
 
-    for half_base in range(5, 28):
-        for base_angle in range(34, 69, 3):
-            if len([case for case in cases if case.case_kind == "isosceles_altitude_trig_side"]) >= 80:
+    for half_base in range(4, 31):
+        for base_angle in standard_angles:
+            if (
+                len(
+                    [
+                        case
+                        for case in cases
+                        if case.case_kind == "isosceles_altitude_trig_side"
+                    ]
+                )
+                >= 80
+            ):
                 break
             answer = float(half_base) / math.cos(math.radians(float(base_angle)))
             if not 6.0 <= answer <= 75.0:
@@ -1050,9 +1404,19 @@ def split_triangle_trig_side_cases() -> tuple[TriangleRelationsCase, ...]:
                 family="isosceles_altitude_trig_side",
                 answer=answer,
                 target=("A", "B"),
-                labels=(SegmentLabel(("B", "D"), _num(half_base), 32.0, "BD"), SegmentLabel(("A", "B"), "AB=?", -36.0, "AB")),
-                angles=(AngleLabel("B", "A", "D", f"{base_angle}{DEGREE_SYMBOL}", 52.0, "angle_B"),),
-                ticks=(TickGroup((("A", "B"), ("A", "C")), count=1), TickGroup((("B", "D"), ("D", "C")), count=2)),
+                labels=(
+                    SegmentLabel(("B", "D"), _num(half_base), 32.0, "BD"),
+                    SegmentLabel(("A", "B"), "AB=?", -36.0, "AB"),
+                ),
+                angles=(
+                    AngleLabel(
+                        "B", "A", "D", f"{base_angle}{DEGREE_SYMBOL}", 52.0, "angle_B"
+                    ),
+                ),
+                ticks=(
+                    TickGroup((("A", "B"), ("A", "C")), count=1),
+                    TickGroup((("B", "D"), ("D", "C")), count=2),
+                ),
                 trace={
                     "known_segment": "BD",
                     "known_value": int(half_base),
@@ -1061,7 +1425,16 @@ def split_triangle_trig_side_cases() -> tuple[TriangleRelationsCase, ...]:
                     "target_side": "AB",
                 },
             )
-        if len([case for case in cases if case.case_kind == "isosceles_altitude_trig_side"]) >= 80:
+        if (
+            len(
+                [
+                    case
+                    for case in cases
+                    if case.case_kind == "isosceles_altitude_trig_side"
+                ]
+            )
+            >= 80
+        ):
             break
     return _trim_answer_variants(cases, max_answers=240, max_variants_per_answer=3)
 
@@ -1083,7 +1456,9 @@ def _right_triangle_altitude_rows() -> tuple[tuple[int, int, int, int, int], ...
             if left_projection + right_projection > 6000:
                 continue
             rows.add((left_projection, right_projection, altitude, left_leg, right_leg))
-    return tuple(sorted(rows, key=lambda item: (item[2], item[0], item[1], item[3], item[4])))
+    return tuple(
+        sorted(rows, key=lambda item: (item[2], item[0], item[1], item[3], item[4]))
+    )
 
 
 @cache
@@ -1097,15 +1472,27 @@ def _right_triangle_altitude_cases(mode: str) -> tuple[TriangleRelationsCase, ..
         "right_leg": ("A", "C"),
     }
     cases: list[TriangleRelationsCase] = []
-    for left_projection, right_projection, altitude, left_leg, right_leg in _right_triangle_altitude_rows():
+    for (
+        left_projection,
+        right_projection,
+        altitude,
+        left_leg,
+        right_leg,
+    ) in _right_triangle_altitude_rows():
         hypotenuse = int(left_projection) + int(right_projection)
+        scale = 430.0 / float(hypotenuse)
+        base_x = 130.0
+        base_y = 420.0
+        foot_x = base_x + float(left_projection) * scale
         vertices = {
-            "B": (130.0, 420.0),
-            "D": (130.0 + 430.0 * (float(left_projection) / float(hypotenuse)), 420.0),
-            "C": (560.0, 420.0),
-            "A": (130.0 + 430.0 * (float(left_projection) / float(hypotenuse)), 170.0),
+            "B": (base_x, base_y),
+            "D": (foot_x, base_y),
+            "C": (base_x + float(hypotenuse) * scale, base_y),
+            "A": (foot_x, base_y - float(altitude) * scale),
         }
-        branch_cases: list[tuple[str, int, tuple[SegmentLabel, ...], Mapping[str, Any]]] = []
+        branch_cases: list[
+            tuple[str, int, tuple[SegmentLabel, ...], Mapping[str, Any]]
+        ] = []
         if mode == "altitude_from_two_projections":
             branch_cases.append(
                 (
@@ -1144,7 +1531,11 @@ def _right_triangle_altitude_cases(mode: str) -> tuple[TriangleRelationsCase, ..
                     ),
                 )
             )
-        elif mode == "leg_projection_relation" and left_leg is not None and right_leg is not None:
+        elif (
+            mode == "leg_projection_relation"
+            and left_leg is not None
+            and right_leg is not None
+        ):
             branch_cases.extend(
                 (
                     (
@@ -1169,7 +1560,11 @@ def _right_triangle_altitude_cases(mode: str) -> tuple[TriangleRelationsCase, ..
                     ),
                 )
             )
-        elif mode == "projection_leg_relation" and left_leg is not None and right_leg is not None:
+        elif (
+            mode == "projection_leg_relation"
+            and left_leg is not None
+            and right_leg is not None
+        ):
             branch_cases.extend(
                 (
                     (
@@ -1209,7 +1604,10 @@ def _right_triangle_altitude_cases(mode: str) -> tuple[TriangleRelationsCase, ..
                     segment_labels=labels,
                     target_segment=target_segments[str(target_role)],
                     point_annotation_labels=("A", "B", "C", "D"),
-                    right_angles=(RightAngleMark("A", "B", "C"), RightAngleMark("D", "A", "C")),
+                    right_angles=(
+                        RightAngleMark("A", "B", "C"),
+                        RightAngleMark("D", "A", "C"),
+                    ),
                     filled_polygons=(("A", "B", "C"),),
                     trace_values={
                         "left_projection": int(left_projection),

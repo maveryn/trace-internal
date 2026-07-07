@@ -18,7 +18,7 @@ TASK_ID = "task_geometry__solid_formula__prism_pyramid_height_from_volume"
 QUERY_ID = "single"
 SUPPORTED_QUERY_IDS = (QUERY_ID,)
 DEFAULT_QUERY_ID = QUERY_ID
-PROMPT_KEY = QUERY_ID
+PROMPT_KEY = "prism_pyramid_height_from_volume"
 ANSWER_SUPPORT = decimal_support(2, 61, step=1)
 CONSTRUCTION_OPTIONS = (
     (5.0, 4.0, 3.0),

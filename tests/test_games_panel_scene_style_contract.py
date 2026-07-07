@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from trace.core.scene_package_migration import SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES
+from trace.core.source_layout_policy import SCENE_PACKAGE_REVIEW_TARGET_SCENES
 from trace.tasks.shared.visual_style.panel import PANEL_SCENE_TREATMENTS
 
 
@@ -22,10 +22,10 @@ def _scene_source(scene_id: str) -> str:
     )
 
 
-def test_games_review_candidate_scenes_use_shared_panel_style() -> None:
+def test_games_review_target_scenes_use_shared_panel_style() -> None:
     """Every migrated games scene should route through the shared panel style layer."""
 
-    scenes = sorted(SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES.get("games", frozenset()))
+    scenes = sorted(SCENE_PACKAGE_REVIEW_TARGET_SCENES.get("games", frozenset()))
     assert scenes
     missing: list[str] = []
     for scene_id in scenes:

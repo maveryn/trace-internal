@@ -21,4 +21,4 @@ Query ids: `largest_parent_total`, `smallest_parent_total`.
 
 ## Review Notes
 
-This task uses the scene-package layout. Query ids select the extremum direction; public task code owns the parent-total comparison, answer binding, annotation leaf ids, prompt slots, and task-specific trace fields.
+This task uses the current source layout. Query ids select the extremum direction; public task code owns the parent-total comparison, answer binding, annotation leaf ids, prompt slots, and task-specific trace fields.

@@ -32,7 +32,7 @@
       "resource_route_cost": [
         "{minecraft_route_cost_rule_text} How many raised blocks are on the track?",
         "Count the raised stone or dirt blocks sitting on the visible track.",
-        "{minecraft_route_cost_rule_text} Return the number of raised blocks on that track.",
+        "{minecraft_route_cost_rule_text} How many raised blocks are on that track?",
         "Along the visible track, how many stone or dirt blocks are raised?",
         "How many raised stone or dirt blocks lie on the shown track?"
       ],

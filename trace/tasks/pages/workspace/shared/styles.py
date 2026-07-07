@@ -92,16 +92,17 @@ def _draw_badge(
         outline=theme.control_outline,
         width=1,
     )
-    max_label_size = max(10, min(int(render_params.label_font_size_px), int(round(float(size) * 0.46))))
+    label_box = float(size) * 0.58
+    max_label_size = max(10, min(int(render_params.label_font_size_px), int(round(label_box))))
     font = fit_font_to_box(
         draw,
         text=str(label),
-        max_width=float(size) * 0.46,
-        max_height=float(size) * 0.46,
+        max_width=label_box,
+        max_height=label_box,
         bold=False,
         min_size_px=8,
         max_size_px=int(max_label_size),
-        fill_ratio=0.82,
+        fill_ratio=0.9,
     )
     draw_text_centered(
         draw,

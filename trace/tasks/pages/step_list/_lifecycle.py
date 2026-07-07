@@ -24,7 +24,7 @@ from ...shared.prompt_variants import (
     build_prompt_trace_artifacts,
     render_task_prompt_variants,
 )
-from ...shared.text_rendering import fit_font_to_box, load_font
+from ...shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
 from ...shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 from ...shared.text_legibility import draw_text_traced
 from ..shared.page_text_resources import page_text_resource_metadata, sample_page_context_batch, sample_page_label_batch
@@ -42,6 +42,9 @@ ORDINAL_DETAIL_MODE = "ordinal_detail"
 AFTER_NAMED_TITLE_MODE = "after_named_title"
 DETAIL_TO_TITLE_MODE = "detail_to_title"
 DETAIL_TO_NUMBER_MODE = "detail_to_number"
+OFFSET_AFTER_TITLE_MODE = "offset_after_title"
+OFFSET_BEFORE_TITLE_MODE = "offset_before_title"
+BETWEEN_NAMED_STEPS_COUNT_MODE = "boundary_title_gap_count"
 SUPPORTED_SCENE_VARIANTS: Tuple[str, ...] = (
     "vertical_cards",
     "horizontal_cards",
@@ -73,6 +76,7 @@ class _RenderParams:
     subtitle_font_size_px: int
     step_title_font_size_px: int
     step_detail_font_size_px: int
+    step_meta_font_size_px: int
 
 
 @dataclass(frozen=True)
@@ -82,6 +86,10 @@ class _StepSpec:
     step_number: int
     title: str
     detail: str
+    owner: str
+    status: str
+    due_date: str
+    tag: str
     accent_rgb: Tuple[int, int, int]
 
 
@@ -156,7 +164,7 @@ def _resolve_step_count(
     *,
     instance_seed: int,
 ) -> Tuple[int, Tuple[int, ...], Dict[str, float]]:
-    support = _resolve_int_support(params, "step_count_support", (5, 6, 7, 8))
+    support = _resolve_int_support(params, "step_count_support", (10, 11, 12, 13, 14, 15, 16))
     explicit = params.get("step_count")
     if explicit is not None:
         selected = int(explicit)
@@ -192,7 +200,7 @@ def _resolve_target_index(
     params: Mapping[str, Any],
     step_count: int,
     instance_seed: int,
-) -> Tuple[int, int | None, str, Dict[str, float]]:
+) -> Tuple[int, int | None, str, Dict[str, float], Dict[str, Any]]:
     """Select the rendered step operand for one neutral lookup mode.
 
     Public task files own query-id semantics. This helper only chooses the
@@ -217,7 +225,137 @@ def _resolve_target_index(
                 )
                 % (int(max_source) + 1)
             )
-        return int(source_index) + 1, int(source_index), "after_named", {"after_named": 1.0}
+        return int(source_index) + 1, int(source_index), "after_named", {"after_named": 1.0}, {}
+
+    if str(lookup_mode) in {OFFSET_AFTER_TITLE_MODE, OFFSET_BEFORE_TITLE_MODE}:
+        support = tuple(
+            int(value)
+            for value in _resolve_int_support(params, "relative_offset_support", (2, 3))
+            if 1 <= int(value) < int(step_count)
+        )
+        if not support:
+            raise ValueError("relative_offset_support must contain at least one value below step_count")
+        explicit_offset = params.get("relative_offset")
+        if explicit_offset is not None:
+            relative_offset = int(explicit_offset)
+            if int(relative_offset) not in set(support):
+                raise ValueError(f"relative_offset must be in {support}")
+            offset_probabilities = {str(int(relative_offset)): 1.0}
+        else:
+            offset_index = int(
+                resolve_selection_index(
+                    params=params,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{TASK_NAMESPACE}.relative_offset.{lookup_mode}.{step_count}",
+                )
+                % len(support)
+            )
+            relative_offset = int(support[offset_index])
+            offset_probabilities = {str(value): 1.0 / float(len(support)) for value in support}
+
+        if str(lookup_mode) == OFFSET_AFTER_TITLE_MODE:
+            max_source = int(step_count) - int(relative_offset) - 1
+            if max_source < 0:
+                raise ValueError("offset-after queries require source room after applying offset")
+            explicit_source = params.get("source_step_index")
+            if explicit_source is not None:
+                source_index = int(explicit_source)
+                if source_index < 0 or source_index > int(max_source):
+                    raise ValueError(f"source_step_index must be in 0..{max_source}")
+            else:
+                source_index = int(
+                    resolve_selection_index(
+                        params=params,
+                        instance_seed=int(instance_seed),
+                        namespace=f"{TASK_NAMESPACE}.offset_source_index.after.{step_count}.{relative_offset}",
+                    )
+                    % (int(max_source) + 1)
+                )
+            target_index = int(source_index) + int(relative_offset)
+            relation = "after"
+        else:
+            min_source = int(relative_offset)
+            max_source = int(step_count) - 1
+            explicit_source = params.get("source_step_index")
+            if explicit_source is not None:
+                source_index = int(explicit_source)
+                if source_index < int(min_source) or source_index > int(max_source):
+                    raise ValueError(f"source_step_index must be in {min_source}..{max_source}")
+            else:
+                source_index = int(min_source) + int(
+                    resolve_selection_index(
+                        params=params,
+                        instance_seed=int(instance_seed),
+                        namespace=f"{TASK_NAMESPACE}.offset_source_index.before.{step_count}.{relative_offset}",
+                    )
+                    % (int(max_source) - int(min_source) + 1)
+                )
+            target_index = int(source_index) - int(relative_offset)
+            relation = "before"
+        phrase_unit = "step" if int(relative_offset) == 1 else "steps"
+        return (
+            int(target_index),
+            int(source_index),
+            f"{int(relative_offset)} {phrase_unit} {relation}",
+            dict(offset_probabilities),
+            {
+                "relative_offset": int(relative_offset),
+                "relative_offset_support": [int(value) for value in support],
+                "offset_relation": str(relation),
+            },
+        )
+
+    if str(lookup_mode) == BETWEEN_NAMED_STEPS_COUNT_MODE:
+        support = tuple(
+            int(value)
+            for value in _resolve_int_support(params, "between_count_support", (2, 3, 4, 5, 6, 7, 8))
+            if 0 <= int(value) <= int(step_count) - 2
+        )
+        if not support:
+            raise ValueError("between_count_support must contain at least one feasible value for step_count")
+        explicit_between_count = params.get("between_count")
+        if explicit_between_count is not None:
+            between_count = int(explicit_between_count)
+            if int(between_count) not in set(support):
+                raise ValueError(f"between_count must be in {support}")
+            count_probabilities = {str(int(between_count)): 1.0}
+        else:
+            count_index = int(
+                resolve_selection_index(
+                    params=params,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{TASK_NAMESPACE}.between_count.{step_count}",
+                )
+                % len(support)
+            )
+            between_count = int(support[count_index])
+            count_probabilities = {str(value): 1.0 / float(len(support)) for value in support}
+        max_source = int(step_count) - int(between_count) - 2
+        explicit_source = params.get("source_step_index")
+        if explicit_source is not None:
+            source_index = int(explicit_source)
+            if source_index < 0 or source_index > int(max_source):
+                raise ValueError(f"source_step_index must be in 0..{max_source}")
+        else:
+            source_index = int(
+                resolve_selection_index(
+                    params=params,
+                    instance_seed=int(instance_seed),
+                    namespace=f"{TASK_NAMESPACE}.between_source_index.{step_count}.{between_count}",
+                )
+                % (int(max_source) + 1)
+            )
+        target_index = int(source_index) + int(between_count) + 1
+        return (
+            int(target_index),
+            int(source_index),
+            f"{int(between_count)} between",
+            dict(count_probabilities),
+            {
+                "between_count": int(between_count),
+                "between_count_support": [int(value) for value in support],
+            },
+        )
 
     explicit_index = params.get("target_step_index")
     if explicit_index is not None:
@@ -225,7 +363,7 @@ def _resolve_target_index(
         if target_index < 0 or target_index >= int(step_count):
             raise ValueError(f"target_step_index must be in 0..{int(step_count) - 1}")
         reference = _ordinal_label(int(target_index), final_index=int(step_count) - 1)
-        return int(target_index), None, str(reference), {str(reference): 1.0}
+        return int(target_index), None, str(reference), {str(reference): 1.0}, {}
 
     if str(lookup_mode) in {DETAIL_TO_TITLE_MODE, DETAIL_TO_NUMBER_MODE}:
         target_index = int(
@@ -242,6 +380,7 @@ def _resolve_target_index(
             None,
             _ordinal_label(int(target_index), final_index=int(step_count) - 1),
             dict(probabilities),
+            {},
         )
 
     ordinal_reference, ordinal_probabilities = _resolve_named_variant(
@@ -272,6 +411,7 @@ def _resolve_target_index(
         None,
         _ordinal_label(int(target_index), final_index=int(step_count) - 1),
         dict(ordinal_probabilities),
+        {},
     )
 
 
@@ -280,18 +420,19 @@ def _resolve_render_params(params: Mapping[str, Any]) -> _RenderParams:
         return max(int(minimum), int(params.get(key, group_default(_RENDER_DEFAULTS, key, fallback))))
 
     return _RenderParams(
-        canvas_width=_int_value("canvas_width", 1000, minimum=320),
-        canvas_height=_int_value("canvas_height", 820, minimum=320),
-        outer_margin_px=_int_value("outer_margin_px", 34, minimum=0),
-        header_height_px=_int_value("header_height_px", 86, minimum=40),
-        card_gap_px=_int_value("card_gap_px", 14, minimum=4),
-        card_corner_radius_px=_int_value("card_corner_radius_px", 14, minimum=0),
+        canvas_width=_int_value("canvas_width", 1120, minimum=320),
+        canvas_height=_int_value("canvas_height", 980, minimum=320),
+        outer_margin_px=_int_value("outer_margin_px", 30, minimum=0),
+        header_height_px=_int_value("header_height_px", 74, minimum=40),
+        card_gap_px=_int_value("card_gap_px", 8, minimum=4),
+        card_corner_radius_px=_int_value("card_corner_radius_px", 10, minimum=0),
         card_outline_width_px=_int_value("card_outline_width_px", 2, minimum=1),
-        number_badge_size_px=_int_value("number_badge_size_px", 38, minimum=20),
-        title_font_size_px=_int_value("title_font_size_px", 30, minimum=14),
-        subtitle_font_size_px=_int_value("subtitle_font_size_px", 17, minimum=10),
-        step_title_font_size_px=_int_value("step_title_font_size_px", 22, minimum=12),
-        step_detail_font_size_px=_int_value("step_detail_font_size_px", 17, minimum=10),
+        number_badge_size_px=_int_value("number_badge_size_px", 30, minimum=20),
+        title_font_size_px=_int_value("title_font_size_px", 28, minimum=14),
+        subtitle_font_size_px=_int_value("subtitle_font_size_px", 15, minimum=10),
+        step_title_font_size_px=_int_value("step_title_font_size_px", 18, minimum=12),
+        step_detail_font_size_px=_int_value("step_detail_font_size_px", 14, minimum=10),
+        step_meta_font_size_px=_int_value("step_meta_font_size_px", 11, minimum=8),
     )
 
 
@@ -317,9 +458,39 @@ def _draw_text(
     text: str,
     font: Any,
     fill: Tuple[int, int, int],
+    *,
+    trace: bool = True,
 ) -> List[float]:
-    draw_text_traced(draw,(float(xy[0]), float(xy[1])), str(text), fill=fill, font=font, role="readout", required=False)
+    if bool(trace):
+        draw_text_traced(draw,(float(xy[0]), float(xy[1])), str(text), fill=fill, font=font, role="readout", required=False)
+    else:
+        draw.text((float(xy[0]), float(xy[1])), str(text), fill=fill, font=font)
     return _text_bbox(draw, xy, str(text), font)
+
+
+def _draw_inline_field(
+    draw: ImageDraw.ImageDraw,
+    *,
+    label: str,
+    value: str,
+    x: float,
+    y: float,
+    width: float,
+    label_font: Any,
+    value_font: Any,
+    label_fill: Tuple[int, int, int],
+    value_fill: Tuple[int, int, int],
+    trace_label: bool = False,
+    trace_value: bool = True,
+) -> Tuple[List[float], List[float]]:
+    label_text = f"{str(label)}:"
+    label_bbox = _draw_text(draw, (float(x), float(y)), label_text, label_font, label_fill, trace=bool(trace_label))
+    label_w = max(0.0, float(label_bbox[2]) - float(label_bbox[0]))
+    value_x = float(x) + label_w + 5.0
+    value_bbox = _draw_text(draw, (value_x, float(y)), str(value), value_font, value_fill, trace=bool(trace_value))
+    if float(value_bbox[2]) > float(x) + float(width):
+        value_bbox[2] = float(x) + float(width)
+    return label_bbox, value_bbox
 
 
 def _blend_rgb(color_a: Sequence[int], color_b: Sequence[int], weight_b: float) -> Tuple[int, int, int]:
@@ -359,8 +530,8 @@ def _layout_card_bboxes(
         columns = 2
         rows = int((int(step_count) + 1) // 2)
     else:
-        rows = 2 if int(step_count) > 4 else 1
-        columns = int((int(step_count) + int(rows) - 1) // int(rows))
+        columns = 3 if int(step_count) <= 12 else 4
+        rows = int((int(step_count) + int(columns) - 1) // int(columns))
 
     card_w = (inner_w - (float(columns - 1) * float(gap))) / float(columns)
     card_h = (inner_h - (float(rows - 1) * float(gap))) / float(rows)
@@ -371,6 +542,20 @@ def _layout_card_bboxes(
         y0 = top + (float(row) * (card_h + float(gap)))
         bboxes.append([x0, y0, x0 + card_w, y0 + card_h])
     return bboxes, {"layout_columns": int(columns), "layout_rows": int(rows)}
+
+
+def _sample_due_dates(rng: Any, *, count: int) -> Tuple[List[str], Dict[str, Any]]:
+    months = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+    candidates = [f"{month} {day:02d}" for month in months for day in range(2, 29)]
+    indices = list(range(len(candidates)))
+    rng.shuffle(indices)
+    selected = [str(candidates[index]) for index in indices[: int(count)]]
+    return selected, {
+        "role": "step_list_due_date",
+        "source_kind": "synthetic_calendar_date",
+        "candidate_count": len(candidates),
+        "values": list(selected),
+    }
 
 
 def _build_steps(*, step_count: int, instance_seed: int) -> Tuple[List[_StepSpec], str, str, Dict[str, Any]]:
@@ -413,8 +598,42 @@ def _build_steps(*, step_count: int, instance_seed: int) -> Tuple[List[_StepSpec
         manifest_names=("phrases/callout_phrases.txt",),
         max_chars=16,
     )
+    owner_batch = sample_page_label_batch(
+        rng,
+        role="step_list_owner",
+        count=int(step_count),
+        manifest_name="people/first_names_ssa.txt",
+        min_chars=3,
+        max_chars=9,
+        allow_spaces=False,
+        allow_punctuation=False,
+    )
+    status_batch = sample_page_label_batch(
+        rng,
+        role="step_list_status",
+        count=int(step_count),
+        manifest_name="categories/status_labels.txt",
+        min_chars=4,
+        max_chars=11,
+        allow_spaces=True,
+        allow_punctuation=False,
+    )
+    tag_batch = sample_page_label_batch(
+        rng,
+        role="step_list_tag",
+        count=int(step_count),
+        manifest_name="categories/priority_labels.txt",
+        min_chars=3,
+        max_chars=9,
+        allow_spaces=True,
+        allow_punctuation=False,
+    )
+    due_dates, due_date_meta = _sample_due_dates(rng, count=int(step_count))
     titles = list(step_title_batch.values)
     details = list(detail_batch.values)
+    owners = list(owner_batch.values)
+    statuses = list(status_batch.values)
+    tags = list(tag_batch.values)
     panel_title = str(title_batch.values[0])
     panel_subtitle = str(subtitle_batch.values[0])
     steps: List[_StepSpec] = []
@@ -428,6 +647,10 @@ def _build_steps(*, step_count: int, instance_seed: int) -> Tuple[List[_StepSpec
                 step_number=int(index) + 1,
                 title=str(titles[int(index)]),
                 detail=str(details[int(index)]),
+                owner=str(owners[int(index)]),
+                status=str(statuses[int(index)]),
+                due_date=str(due_dates[int(index)]),
+                tag=str(tags[int(index)]),
                 accent_rgb=tuple(int(channel) for channel in accent),
             )
         )
@@ -435,7 +658,18 @@ def _build_steps(*, step_count: int, instance_seed: int) -> Tuple[List[_StepSpec
         steps,
         panel_title,
         panel_subtitle,
-        page_text_resource_metadata(title_batch, subtitle_batch, step_title_batch, detail_batch),
+        {
+            **page_text_resource_metadata(
+                title_batch,
+                subtitle_batch,
+                step_title_batch,
+                detail_batch,
+                owner_batch,
+                status_batch,
+                tag_batch,
+            ),
+            "synthetic_due_dates": dict(due_date_meta),
+        },
     )
 
 
@@ -447,6 +681,9 @@ def _render_step_list(
     panel_subtitle: str,
     scene_variant: str,
     render_params: _RenderParams,
+    trace_title_step_ids: Sequence[str] = (),
+    trace_detail_step_ids: Sequence[str] = (),
+    trace_number_step_ids: Sequence[str] = (),
 ) -> _RenderedStepList:
     """Draw the shared step-list page and collect final visual witnesses.
 
@@ -477,17 +714,23 @@ def _render_step_list(
     title_font = load_font(int(render_params.title_font_size_px), bold=True)
     subtitle_font = load_font(int(render_params.subtitle_font_size_px), bold=False)
     title_xy = (float(margin + 24), float(margin + 18))
-    title_bbox = _draw_text(draw, title_xy, str(panel_title), title_font, text_rgb)
-    _draw_text(draw, (title_xy[0], title_xy[1] + 38.0), str(panel_subtitle), subtitle_font, muted_rgb)
+    title_bbox = _draw_text(draw, title_xy, str(panel_title), title_font, text_rgb, trace=False)
+    _draw_text(draw, (title_xy[0], title_xy[1] + 38.0), str(panel_subtitle), subtitle_font, muted_rgb, trace=False)
 
     card_bboxes, layout_meta = _layout_card_bboxes(
         scene_variant=str(scene_variant),
         step_count=len(steps),
         render_params=render_params,
     )
+    traced_title_ids = {str(value) for value in trace_title_step_ids}
+    traced_detail_ids = {str(value) for value in trace_detail_step_ids}
+    traced_number_ids = {str(value) for value in trace_number_step_ids}
     card_traces: List[Dict[str, Any]] = []
     entities: List[Dict[str, Any]] = []
     for step, card_bbox in zip(steps, card_bboxes):
+        trace_title = str(step.step_id) in traced_title_ids
+        trace_detail = str(step.step_id) in traced_detail_ids
+        trace_number = str(step.step_id) in traced_number_ids
         x0, y0, x1, y1 = [float(value) for value in card_bbox]
         accent = tuple(int(channel) for channel in step.accent_rgb)
         local_fill = _blend_rgb(card_fill, accent, 0.035)
@@ -504,9 +747,11 @@ def _render_step_list(
             fill=accent,
         )
 
-        badge_size = float(render_params.number_badge_size_px)
+        card_h = max(1.0, float(y1) - float(y0))
+        compact_row = str(scene_variant) == "vertical_cards" or float(card_h) < 112.0
+        badge_size = float(render_params.number_badge_size_px if not compact_row else max(24, render_params.number_badge_size_px - 4))
         badge_x0 = x0 + 16.0
-        badge_y0 = y0 + 22.0
+        badge_y0 = y0 + max(7.0, (float(card_h) - float(badge_size)) * 0.5)
         badge_bbox = [badge_x0, badge_y0, badge_x0 + badge_size, badge_y0 + badge_size]
         draw.ellipse(tuple(badge_bbox), fill=accent, outline=_blend_rgb(accent, (0, 0, 0), 0.18), width=2)
         number_font = fit_font_to_box(
@@ -519,42 +764,399 @@ def _render_step_list(
             max_size_px=22,
             fill_ratio=0.95,
         )
-        number_bbox_measure = _text_bbox(draw, (0.0, 0.0), str(step.step_number), number_font)
-        number_w = number_bbox_measure[2] - number_bbox_measure[0]
-        number_h = number_bbox_measure[3] - number_bbox_measure[1]
-        number_xy = (
-            badge_x0 + ((badge_size - number_w) * 0.5),
-            badge_y0 + ((badge_size - number_h) * 0.46) - 1.0,
+        number_bbox = list(
+            draw_text_centered(
+                draw,
+                text=str(step.step_number),
+                center=(badge_x0 + (badge_size * 0.5), badge_y0 + (badge_size * 0.5)),
+                font=number_font,
+                fill=(255, 255, 255),
+                stroke_width=0,
+                role="readout",
+                required=False,
+                trace=trace_number,
+            )
         )
-        number_bbox = _draw_text(draw, number_xy, str(step.step_number), number_font, (255, 255, 255))
 
         text_left = badge_x0 + badge_size + 16.0
         text_right = x1 - 18.0
-        title_font = fit_font_to_box(
-            draw,
-            text=str(step.title),
-            max_width=max(30.0, text_right - text_left),
-            max_height=30.0,
-            bold=True,
-            min_size_px=12,
-            max_size_px=int(render_params.step_title_font_size_px),
-            fill_ratio=0.97,
-        )
-        detail_font = fit_font_to_box(
-            draw,
-            text=str(step.detail),
-            max_width=max(30.0, text_right - text_left),
-            max_height=26.0,
-            bold=False,
-            min_size_px=10,
-            max_size_px=int(render_params.step_detail_font_size_px),
-            fill_ratio=0.97,
-        )
-        text_top = y0 + 21.0
-        if (y1 - y0) > 115.0:
-            text_top = y0 + 36.0
-        title_bbox_step = _draw_text(draw, (text_left, text_top), str(step.title), title_font, text_rgb)
-        detail_bbox = _draw_text(draw, (text_left, text_top + 34.0), str(step.detail), detail_font, muted_rgb)
+        field_label_font = load_font(int(render_params.step_meta_font_size_px), bold=True)
+        meta_value_font = load_font(int(render_params.step_meta_font_size_px), bold=False)
+        field_label_rgb = (77, 88, 101)
+        meta_rgb = (67, 78, 91)
+
+        if compact_row:
+            available_w = max(120.0, float(text_right) - float(text_left))
+            if str(scene_variant) == "vertical_cards":
+                title_w = available_w * 0.22
+                detail_w = available_w * 0.24
+                owner_w = available_w * 0.13
+                status_w = available_w * 0.14
+                due_w = available_w * 0.11
+                tag_w = max(58.0, available_w - title_w - detail_w - owner_w - status_w - due_w)
+                line_y = y0 + max(7.0, (float(card_h) - 15.0) * 0.5)
+                title_font = fit_font_to_box(
+                    draw,
+                    text=str(step.title),
+                    max_width=max(35.0, title_w - 42.0),
+                    max_height=18.0,
+                    bold=True,
+                    min_size_px=10,
+                    max_size_px=max(11, int(render_params.step_title_font_size_px) - 2),
+                    fill_ratio=0.95,
+                )
+                detail_font = fit_font_to_box(
+                    draw,
+                    text=str(step.detail),
+                    max_width=max(35.0, detail_w - 46.0),
+                    max_height=16.0,
+                    bold=False,
+                    min_size_px=9,
+                    max_size_px=max(10, int(render_params.step_detail_font_size_px) - 1),
+                    fill_ratio=0.95,
+                )
+                _, title_bbox_step = _draw_inline_field(
+                    draw,
+                    label="Title",
+                    value=str(step.title),
+                    x=text_left,
+                    y=line_y,
+                    width=title_w,
+                    label_font=field_label_font,
+                    value_font=title_font,
+                    label_fill=field_label_rgb,
+                    value_fill=text_rgb,
+                    trace_value=trace_title,
+                )
+                _, detail_bbox = _draw_inline_field(
+                    draw,
+                    label="Detail",
+                    value=str(step.detail),
+                    x=text_left + title_w,
+                    y=line_y,
+                    width=detail_w,
+                    label_font=field_label_font,
+                    value_font=detail_font,
+                    label_fill=field_label_rgb,
+                    value_fill=muted_rgb,
+                    trace_value=trace_detail,
+                )
+                _, owner_bbox = _draw_inline_field(
+                    draw,
+                    label="Owner",
+                    value=str(step.owner),
+                    x=text_left + title_w + detail_w,
+                    y=line_y,
+                    width=owner_w,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+                _, status_bbox = _draw_inline_field(
+                    draw,
+                    label="Status",
+                    value=str(step.status),
+                    x=text_left + title_w + detail_w + owner_w,
+                    y=line_y,
+                    width=status_w,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+                _, due_bbox = _draw_inline_field(
+                    draw,
+                    label="Due",
+                    value=str(step.due_date),
+                    x=text_left + title_w + detail_w + owner_w + status_w,
+                    y=line_y,
+                    width=due_w,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+                _, tag_bbox = _draw_inline_field(
+                    draw,
+                    label="Tag",
+                    value=str(step.tag),
+                    x=text_left + title_w + detail_w + owner_w + status_w + due_w,
+                    y=line_y,
+                    width=tag_w,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+            else:
+                title_w = available_w * 0.48
+                detail_w = available_w - title_w
+                meta_w = available_w * 0.25
+                line_y = y0 + max(18.0, (float(card_h) - 32.0) * 0.5)
+                meta_y = line_y + 20.0
+                title_font = fit_font_to_box(
+                    draw,
+                    text=str(step.title),
+                    max_width=max(35.0, title_w - 42.0),
+                    max_height=18.0,
+                    bold=True,
+                    min_size_px=10,
+                    max_size_px=max(11, int(render_params.step_title_font_size_px) - 2),
+                    fill_ratio=0.95,
+                )
+                detail_font = fit_font_to_box(
+                    draw,
+                    text=str(step.detail),
+                    max_width=max(35.0, detail_w - 46.0),
+                    max_height=16.0,
+                    bold=False,
+                    min_size_px=9,
+                    max_size_px=max(10, int(render_params.step_detail_font_size_px) - 1),
+                    fill_ratio=0.95,
+                )
+                _, title_bbox_step = _draw_inline_field(
+                    draw,
+                    label="Title",
+                    value=str(step.title),
+                    x=text_left,
+                    y=line_y,
+                    width=title_w,
+                    label_font=field_label_font,
+                    value_font=title_font,
+                    label_fill=field_label_rgb,
+                    value_fill=text_rgb,
+                    trace_value=trace_title,
+                )
+                _, detail_bbox = _draw_inline_field(
+                    draw,
+                    label="Detail",
+                    value=str(step.detail),
+                    x=text_left + title_w,
+                    y=line_y,
+                    width=detail_w,
+                    label_font=field_label_font,
+                    value_font=detail_font,
+                    label_fill=field_label_rgb,
+                    value_fill=muted_rgb,
+                    trace_value=trace_detail,
+                )
+                _, owner_bbox = _draw_inline_field(
+                    draw,
+                    label="Owner",
+                    value=str(step.owner),
+                    x=text_left,
+                    y=meta_y,
+                    width=meta_w,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+                _, status_bbox = _draw_inline_field(
+                    draw,
+                    label="Status",
+                    value=str(step.status),
+                    x=text_left + meta_w,
+                    y=meta_y,
+                    width=meta_w,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+                _, due_bbox = _draw_inline_field(
+                    draw,
+                    label="Due",
+                    value=str(step.due_date),
+                    x=text_left + (2.0 * meta_w),
+                    y=meta_y,
+                    width=meta_w,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+                _, tag_bbox = _draw_inline_field(
+                    draw,
+                    label="Tag",
+                    value=str(step.tag),
+                    x=text_left + (3.0 * meta_w),
+                    y=meta_y,
+                    width=meta_w,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+        else:
+            available_w = max(80.0, float(text_right) - float(text_left))
+            narrow_card = available_w < 300.0
+            title_font = fit_font_to_box(
+                draw,
+                text=str(step.title),
+                max_width=max(30.0, available_w - 44.0),
+                max_height=25.0,
+                bold=True,
+                min_size_px=11,
+                max_size_px=int(render_params.step_title_font_size_px),
+                fill_ratio=0.97,
+            )
+            detail_font = fit_font_to_box(
+                draw,
+                text=str(step.detail),
+                max_width=max(30.0, available_w - 50.0),
+                max_height=22.0,
+                bold=False,
+                min_size_px=9,
+                max_size_px=int(render_params.step_detail_font_size_px),
+                fill_ratio=0.97,
+            )
+            text_top = y0 + 17.0
+            if float(card_h) > 150.0:
+                text_top = y0 + 24.0
+            _, title_bbox_step = _draw_inline_field(
+                draw,
+                label="Title",
+                value=str(step.title),
+                x=text_left,
+                y=text_top,
+                width=available_w,
+                label_font=field_label_font,
+                value_font=title_font,
+                label_fill=field_label_rgb,
+                value_fill=text_rgb,
+                trace_value=trace_title,
+            )
+            _, detail_bbox = _draw_inline_field(
+                draw,
+                label="Detail",
+                value=str(step.detail),
+                x=text_left,
+                y=text_top + 24.0,
+                width=available_w,
+                label_font=field_label_font,
+                value_font=detail_font,
+                label_fill=field_label_rgb,
+                value_fill=muted_rgb,
+                trace_value=trace_detail,
+            )
+            meta_y = text_top + 50.0
+            if narrow_card:
+                _, owner_bbox = _draw_inline_field(
+                    draw,
+                    label="Owner",
+                    value=str(step.owner),
+                    x=text_left,
+                    y=meta_y,
+                    width=available_w,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+                _, status_bbox = _draw_inline_field(
+                    draw,
+                    label="Status",
+                    value=str(step.status),
+                    x=text_left,
+                    y=meta_y + 18.0,
+                    width=available_w,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+                _, due_bbox = _draw_inline_field(
+                    draw,
+                    label="Due",
+                    value=str(step.due_date),
+                    x=text_left,
+                    y=meta_y + 36.0,
+                    width=available_w,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+                _, tag_bbox = _draw_inline_field(
+                    draw,
+                    label="Tag",
+                    value=str(step.tag),
+                    x=text_left,
+                    y=meta_y + 54.0,
+                    width=available_w,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+            else:
+                half_w = available_w * 0.5
+                _, owner_bbox = _draw_inline_field(
+                    draw,
+                    label="Owner",
+                    value=str(step.owner),
+                    x=text_left,
+                    y=meta_y,
+                    width=half_w - 8.0,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+                _, status_bbox = _draw_inline_field(
+                    draw,
+                    label="Status",
+                    value=str(step.status),
+                    x=text_left + half_w,
+                    y=meta_y,
+                    width=half_w,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+                _, due_bbox = _draw_inline_field(
+                    draw,
+                    label="Due",
+                    value=str(step.due_date),
+                    x=text_left,
+                    y=meta_y + 20.0,
+                    width=half_w - 8.0,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
+                _, tag_bbox = _draw_inline_field(
+                    draw,
+                    label="Tag",
+                    value=str(step.tag),
+                    x=text_left + half_w,
+                    y=meta_y + 20.0,
+                    width=half_w,
+                    label_font=field_label_font,
+                    value_font=meta_value_font,
+                    label_fill=field_label_rgb,
+                    value_fill=meta_rgb,
+                    trace_value=False,
+                )
 
         trace = {
             "step_id": str(step.step_id),
@@ -562,11 +1164,19 @@ def _render_step_list(
             "step_number": int(step.step_number),
             "title": str(step.title),
             "detail": str(step.detail),
+            "owner": str(step.owner),
+            "status": str(step.status),
+            "due_date": str(step.due_date),
+            "tag": str(step.tag),
             "card_bbox_px": [float(value) for value in card_bbox],
             "number_badge_bbox_px": [float(value) for value in badge_bbox],
             "number_bbox_px": [float(value) for value in number_bbox],
             "title_bbox_px": [float(value) for value in title_bbox_step],
             "detail_bbox_px": [float(value) for value in detail_bbox],
+            "owner_bbox_px": [float(value) for value in owner_bbox],
+            "status_bbox_px": [float(value) for value in status_bbox],
+            "due_date_bbox_px": [float(value) for value in due_bbox],
+            "tag_bbox_px": [float(value) for value in tag_bbox],
             "accent_rgb": [int(channel) for channel in accent],
         }
         entity = {
@@ -578,6 +1188,10 @@ def _render_step_list(
                 "step_number": int(step.step_number),
                 "title": str(step.title),
                 "detail": str(step.detail),
+                "owner": str(step.owner),
+                "status": str(step.status),
+                "due_date": str(step.due_date),
+                "tag": str(step.tag),
             },
         }
         card_traces.append(trace)
@@ -611,12 +1225,20 @@ def _bbox_maps(
 
 
 def _target_annotation_role(lookup_mode: str) -> str:
-    if str(lookup_mode) in {ORDINAL_TITLE_MODE, AFTER_NAMED_TITLE_MODE, DETAIL_TO_TITLE_MODE}:
+    if str(lookup_mode) in {
+        ORDINAL_TITLE_MODE,
+        AFTER_NAMED_TITLE_MODE,
+        DETAIL_TO_TITLE_MODE,
+        OFFSET_AFTER_TITLE_MODE,
+        OFFSET_BEFORE_TITLE_MODE,
+    }:
         return "target_title"
     if str(lookup_mode) == ORDINAL_DETAIL_MODE:
         return "target_detail"
     if str(lookup_mode) == DETAIL_TO_NUMBER_MODE:
         return "target_number"
+    if str(lookup_mode) == BETWEEN_NAMED_STEPS_COUNT_MODE:
+        return "boundary_titles"
     raise ValueError(f"unsupported lookup_mode: {lookup_mode}")
 
 
@@ -628,7 +1250,13 @@ def _target_annotation_bbox(
     title_bbox_map: Mapping[str, Sequence[float]],
     detail_bbox_map: Mapping[str, Sequence[float]],
 ) -> List[float]:
-    if str(lookup_mode) in {ORDINAL_TITLE_MODE, AFTER_NAMED_TITLE_MODE, DETAIL_TO_TITLE_MODE}:
+    if str(lookup_mode) in {
+        ORDINAL_TITLE_MODE,
+        AFTER_NAMED_TITLE_MODE,
+        DETAIL_TO_TITLE_MODE,
+        OFFSET_AFTER_TITLE_MODE,
+        OFFSET_BEFORE_TITLE_MODE,
+    }:
         return [float(value) for value in title_bbox_map[str(target_step_id)]]
     if str(lookup_mode) == ORDINAL_DETAIL_MODE:
         return [float(value) for value in detail_bbox_map[str(target_step_id)]]
@@ -646,6 +1274,12 @@ def _annotation_bbox_map(
     title_bbox_map: Mapping[str, Sequence[float]],
     detail_bbox_map: Mapping[str, Sequence[float]],
 ) -> Dict[str, List[float]]:
+    """Bind visual title/detail/number witnesses for each neutral lookup mode.
+
+    The private lifecycle branches only on scene-internal modes; public task and
+    query identities stay in the wrapper files that select those modes.
+    """
+
     if str(lookup_mode) == ORDINAL_TITLE_MODE:
         return {"target_title": [float(value) for value in title_bbox_map[str(target_step_id)]]}
     if str(lookup_mode) == ORDINAL_DETAIL_MODE:
@@ -656,6 +1290,20 @@ def _annotation_bbox_map(
         return {
             "source_title": [float(value) for value in title_bbox_map[str(source_step_id)]],
             "target_title": [float(value) for value in title_bbox_map[str(target_step_id)]],
+        }
+    if str(lookup_mode) in {OFFSET_AFTER_TITLE_MODE, OFFSET_BEFORE_TITLE_MODE}:
+        if source_step_id is None:
+            raise ValueError("offset lookups require source_step_id")
+        return {
+            "source_title": [float(value) for value in title_bbox_map[str(source_step_id)]],
+            "target_title": [float(value) for value in title_bbox_map[str(target_step_id)]],
+        }
+    if str(lookup_mode) == BETWEEN_NAMED_STEPS_COUNT_MODE:
+        if source_step_id is None:
+            raise ValueError("between-count lookups require source_step_id")
+        return {
+            "first_named_title": [float(value) for value in title_bbox_map[str(source_step_id)]],
+            "second_named_title": [float(value) for value in title_bbox_map[str(target_step_id)]],
         }
     if str(lookup_mode) == DETAIL_TO_TITLE_MODE:
         return {
@@ -690,13 +1338,23 @@ def select_public_branch(
     return str(branch), dict(probabilities), dict(task_params)
 
 
-def _answer_value_for_mode(lookup_mode: str, target_step: _StepSpec) -> str:
-    if str(lookup_mode) in {ORDINAL_TITLE_MODE, AFTER_NAMED_TITLE_MODE, DETAIL_TO_TITLE_MODE}:
+def _answer_value_for_mode(lookup_mode: str, target_step: _StepSpec, source_step: _StepSpec | None = None) -> str | int:
+    if str(lookup_mode) in {
+        ORDINAL_TITLE_MODE,
+        AFTER_NAMED_TITLE_MODE,
+        DETAIL_TO_TITLE_MODE,
+        OFFSET_AFTER_TITLE_MODE,
+        OFFSET_BEFORE_TITLE_MODE,
+    }:
         return str(target_step.title)
     if str(lookup_mode) == DETAIL_TO_NUMBER_MODE:
         return str(target_step.step_number)
     if str(lookup_mode) == ORDINAL_DETAIL_MODE:
         return str(target_step.detail)
+    if str(lookup_mode) == BETWEEN_NAMED_STEPS_COUNT_MODE:
+        if source_step is None:
+            raise ValueError("between-count answers require source_step")
+        return abs(int(target_step.order_index) - int(source_step.order_index)) - 1
     raise ValueError(f"unsupported lookup_mode: {lookup_mode}")
 
 
@@ -707,6 +1365,10 @@ def _step_payload(step: _StepSpec) -> Dict[str, Any]:
         "step_number": int(step.step_number),
         "title": str(step.title),
         "detail": str(step.detail),
+        "owner": str(step.owner),
+        "status": str(step.status),
+        "due_date": str(step.due_date),
+        "tag": str(step.tag),
     }
 
 
@@ -738,7 +1400,7 @@ def build_step_list_response(
         params,
         instance_seed=int(instance_seed),
     )
-    target_index, source_index, step_reference, ordinal_reference_probabilities = _resolve_target_index(
+    target_index, source_index, step_reference, operand_probabilities, operand_params = _resolve_target_index(
         lookup_mode=str(lookup_mode),
         params=params,
         step_count=int(step_count),
@@ -750,7 +1412,28 @@ def build_step_list_response(
     )
     target_step = steps[int(target_index)]
     source_step = steps[int(source_index)] if source_index is not None else None
-    answer_value = _answer_value_for_mode(str(lookup_mode), target_step)
+    answer_value = _answer_value_for_mode(str(lookup_mode), target_step, source_step)
+    trace_title_step_ids: List[str] = []
+    trace_detail_step_ids: List[str] = []
+    trace_number_step_ids: List[str] = []
+    if str(lookup_mode) == ORDINAL_TITLE_MODE:
+        trace_title_step_ids.append(str(target_step.step_id))
+    elif str(lookup_mode) == ORDINAL_DETAIL_MODE:
+        trace_detail_step_ids.append(str(target_step.step_id))
+    elif str(lookup_mode) == AFTER_NAMED_TITLE_MODE:
+        if source_step is not None:
+            trace_title_step_ids.append(str(source_step.step_id))
+        trace_title_step_ids.append(str(target_step.step_id))
+    elif str(lookup_mode) in {OFFSET_AFTER_TITLE_MODE, OFFSET_BEFORE_TITLE_MODE, BETWEEN_NAMED_STEPS_COUNT_MODE}:
+        if source_step is not None:
+            trace_title_step_ids.append(str(source_step.step_id))
+        trace_title_step_ids.append(str(target_step.step_id))
+    elif str(lookup_mode) == DETAIL_TO_TITLE_MODE:
+        trace_detail_step_ids.append(str(target_step.step_id))
+        trace_title_step_ids.append(str(target_step.step_id))
+    elif str(lookup_mode) == DETAIL_TO_NUMBER_MODE:
+        trace_detail_step_ids.append(str(target_step.step_id))
+        trace_number_step_ids.append(str(target_step.step_id))
 
     render_params = _resolve_render_params(params)
     background, background_meta = make_background_canvas(
@@ -767,6 +1450,9 @@ def build_step_list_response(
         panel_subtitle=str(panel_subtitle),
         scene_variant=str(scene_variant),
         render_params=render_params,
+        trace_title_step_ids=tuple(trace_title_step_ids),
+        trace_detail_step_ids=tuple(trace_detail_step_ids),
+        trace_number_step_ids=tuple(trace_number_step_ids),
     )
     image, post_noise_meta = apply_post_image_noise(
         rendered.image,
@@ -784,18 +1470,22 @@ def build_step_list_response(
         detail_bbox_map=detail_bbox_map,
     )
     annotation_role = _target_annotation_role(str(lookup_mode))
-    annotation_bbox = _target_annotation_bbox(
-        lookup_mode=str(lookup_mode),
-        target_step_id=str(target_step.step_id),
-        number_badge_bbox_map=number_badge_bbox_map,
-        title_bbox_map=title_bbox_map,
-        detail_bbox_map=detail_bbox_map,
-    )
+    scalar_annotation_bbox: List[float] | None = None
+    if str(lookup_mode) != BETWEEN_NAMED_STEPS_COUNT_MODE:
+        scalar_annotation_bbox = _target_annotation_bbox(
+            lookup_mode=str(lookup_mode),
+            target_step_id=str(target_step.step_id),
+            number_badge_bbox_map=number_badge_bbox_map,
+            title_bbox_map=title_bbox_map,
+            detail_bbox_map=detail_bbox_map,
+        )
 
     dynamic_slots = {
-        "step_reference": str(step_reference),
         "source_step_title": f'"{str(source_step.title)}"' if source_step is not None else "",
-        "source_step_detail": f'"{str(target_step.detail)}"',
+        "target_step_title": f'"{str(target_step.title)}"',
+        "first_step_title": f'"{str(source_step.title)}"' if source_step is not None else "",
+        "second_step_title": f'"{str(target_step.title)}"',
+        "relative_offset_phrase": str(step_reference),
     }
     prompt_selection = render_task_prompt_variants(
         domain=DOMAIN,
@@ -810,8 +1500,30 @@ def build_step_list_response(
     )
     prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-    answer_gt = TypedValue(type="string", value=str(answer_value))
-    annotation_gt = TypedValue(type="bbox", value=list(annotation_bbox))
+    if str(lookup_mode) == BETWEEN_NAMED_STEPS_COUNT_MODE:
+        answer_gt = TypedValue(type="integer", value=int(answer_value))
+        annotation_gt = TypedValue(type="bbox_map", value=dict(reasoning_bbox_map))
+        projected_annotation: Dict[str, Any] = {
+            "type": "bbox_map",
+            "bbox_map": dict(reasoning_bbox_map),
+            "pixel_bbox_map": dict(reasoning_bbox_map),
+            "target_step_id": str(target_step.step_id),
+            "source_step_id": str(source_step.step_id) if source_step is not None else "",
+        }
+        witness_value: Any = dict(reasoning_bbox_map)
+    else:
+        if scalar_annotation_bbox is None:
+            raise ValueError("scalar step-list annotation bbox missing")
+        answer_gt = TypedValue(type="string", value=str(answer_value))
+        annotation_gt = TypedValue(type="bbox", value=list(scalar_annotation_bbox))
+        projected_annotation = {
+            "type": "bbox",
+            "bbox": list(scalar_annotation_bbox),
+            "pixel_bbox": list(scalar_annotation_bbox),
+            "target_step_id": str(target_step.step_id),
+            "source_step_id": str(source_step.step_id) if source_step is not None else "",
+        }
+        witness_value = list(scalar_annotation_bbox)
     source_step_payload = _step_payload(source_step) if source_step is not None else None
     target_step_payload = _step_payload(target_step)
     probabilities = {str(key): float(value) for key, value in branch_probabilities.items()}
@@ -826,11 +1538,12 @@ def build_step_list_response(
         "source_step_detail": str(target_step.detail),
         "target_step_index": int(target_index),
         "source_step_index": int(source_index) if source_index is not None else None,
-        "target_answer": str(answer_value),
+        "target_answer": int(answer_value) if str(lookup_mode) == BETWEEN_NAMED_STEPS_COUNT_MODE else str(answer_value),
         "query_id_probabilities": dict(probabilities),
         "scene_variant_probabilities": dict(scene_variant_probabilities),
-        "ordinal_reference_probabilities": dict(ordinal_reference_probabilities),
+        "operand_probabilities": dict(operand_probabilities),
         "step_count_probabilities": dict(step_count_probabilities),
+        **dict(operand_params),
     }
     query_spec = build_prompt_query_spec(
         prompt_artifacts=prompt_artifacts,
@@ -853,7 +1566,9 @@ def build_step_list_response(
                 "step_count": int(step_count),
                 "target_step": dict(target_step_payload),
                 "source_step": dict(source_step_payload) if source_step_payload is not None else None,
-                "answer_value": str(answer_value),
+                "answer_value": int(answer_value)
+                if str(lookup_mode) == BETWEEN_NAMED_STEPS_COUNT_MODE
+                else str(answer_value),
             },
         },
         "query_spec": query_spec,
@@ -871,6 +1586,12 @@ def build_step_list_response(
                 "title_font_size_px": int(render_params.title_font_size_px),
                 "step_title_font_size_px": int(render_params.step_title_font_size_px),
                 "step_detail_font_size_px": int(render_params.step_detail_font_size_px),
+                "step_meta_font_size_px": int(render_params.step_meta_font_size_px),
+            },
+            "traced_text_fields": {
+                "title_step_ids": [str(value) for value in trace_title_step_ids],
+                "detail_step_ids": [str(value) for value in trace_detail_step_ids],
+                "number_step_ids": [str(value) for value in trace_number_step_ids],
             },
             "page_text_resources": dict(page_text_resources),
         },
@@ -885,7 +1606,10 @@ def build_step_list_response(
             "detail_bboxes_px": dict(detail_bbox_map),
             "reasoning_bboxes_px": dict(reasoning_bbox_map),
             "target_annotation_role": str(annotation_role),
-            "target_annotation_bbox_px": list(annotation_bbox),
+            "target_annotation_bbox_px": list(scalar_annotation_bbox) if scalar_annotation_bbox is not None else [],
+            "target_annotation_bbox_map_px": dict(reasoning_bbox_map)
+            if str(lookup_mode) == BETWEEN_NAMED_STEPS_COUNT_MODE
+            else {},
         },
         "execution_trace": {
             **dict(common_params),
@@ -893,30 +1617,29 @@ def build_step_list_response(
             "step_count_support": [int(value) for value in step_count_support],
             "target_step": dict(target_step_payload),
             "source_step": dict(source_step_payload) if source_step_payload is not None else None,
-            "answer_value": str(answer_value),
+            "answer_value": int(answer_value)
+            if str(lookup_mode) == BETWEEN_NAMED_STEPS_COUNT_MODE
+            else str(answer_value),
             "steps": [dict(card) for card in rendered.card_traces],
             "page_text_resources": dict(page_text_resources),
             "reasoning_bbox_roles": sorted(str(key) for key in reasoning_bbox_map.keys()),
             "reasoning_bboxes_px": dict(reasoning_bbox_map),
             "target_annotation_role": str(annotation_role),
-            "target_annotation_bbox_px": list(annotation_bbox),
+            "target_annotation_bbox_px": list(scalar_annotation_bbox) if scalar_annotation_bbox is not None else [],
+            "target_annotation_bbox_map_px": dict(reasoning_bbox_map)
+            if str(lookup_mode) == BETWEEN_NAMED_STEPS_COUNT_MODE
+            else {},
         },
         "witness_symbolic": {
-            "type": "bbox",
+            "type": "bbox_map" if str(lookup_mode) == BETWEEN_NAMED_STEPS_COUNT_MODE else "bbox",
             "target_step_id": str(target_step.step_id),
             "source_step_id": str(source_step.step_id) if source_step is not None else "",
-            "answer_value": str(answer_value),
+            "answer_value": int(answer_value) if str(lookup_mode) == BETWEEN_NAMED_STEPS_COUNT_MODE else str(answer_value),
             "annotation_role": str(annotation_role),
             "reasoning_roles": sorted(str(key) for key in reasoning_bbox_map.keys()),
-            "value": list(annotation_bbox),
+            "value": witness_value,
         },
-        "projected_annotation": {
-            "type": "bbox",
-            "bbox": list(annotation_bbox),
-            "pixel_bbox": list(annotation_bbox),
-            "target_step_id": str(target_step.step_id),
-            "source_step_id": str(source_step.step_id) if source_step is not None else "",
-        },
+        "projected_annotation": dict(projected_annotation),
     }
     return TaskOutput(
         prompt=str(prompt_artifacts.prompt),
@@ -933,9 +1656,12 @@ def build_step_list_response(
 
 __all__ = [
     "AFTER_NAMED_TITLE_MODE",
+    "BETWEEN_NAMED_STEPS_COUNT_MODE",
     "DETAIL_TO_NUMBER_MODE",
     "DETAIL_TO_TITLE_MODE",
     "DOMAIN",
+    "OFFSET_AFTER_TITLE_MODE",
+    "OFFSET_BEFORE_TITLE_MODE",
     "ORDINAL_DETAIL_MODE",
     "ORDINAL_TITLE_MODE",
     "SCENE",

@@ -1,4 +1,4 @@
-"""Solve an algebraic angle relation for either angle ABC or x."""
+"""Solve an algebraic angle relation for angle ABC."""
 
 from __future__ import annotations
 
@@ -21,13 +21,12 @@ from .shared.state import DOMAIN, SCENE_ID, AngleRelationCase
 
 TASK_ID = "task_geometry__angle_relations__algebraic_angle_value"
 TARGET_ANGLE_VALUE_QUERY_ID = "target_angle_value"
-VARIABLE_X_VALUE_QUERY_ID = "variable_x_value"
-SUPPORTED_QUERY_IDS: Tuple[str, ...] = (TARGET_ANGLE_VALUE_QUERY_ID, VARIABLE_X_VALUE_QUERY_ID)
+SUPPORTED_QUERY_IDS: Tuple[str, ...] = (TARGET_ANGLE_VALUE_QUERY_ID,)
 TASK_PROMPT_KEY = "algebraic_angle_value"
 
 SINGLE_EXTENSION_CASE = "single_extension"
 DOUBLE_EXTENSION_CASE = "double_extension"
-EXTENSION_CASE_SUPPORT: Tuple[str, ...] = (SINGLE_EXTENSION_CASE, DOUBLE_EXTENSION_CASE)
+EXTENSION_CASE_SUPPORT: Tuple[str, ...] = (SINGLE_EXTENSION_CASE,)
 
 ALGEBRAIC_SINGLE_EXTENSION_CASE_SUPPORT: Tuple[Tuple[int, int, int, int, int], ...] = tuple(
     algebraic_case_parameters_for_answer(answer_value, variant_index=3) for answer_value in range(35, 104)
@@ -70,8 +69,6 @@ def _answer_for_query(*, selected_query: str, witness: Mapping[str, Any]) -> tup
 
     if str(selected_query) == TARGET_ANGLE_VALUE_QUERY_ID:
         return int(witness["answer_angle_ABC"]), "target_angle_value"
-    if str(selected_query) == VARIABLE_X_VALUE_QUERY_ID:
-        return int(witness["x"]), "variable_x_value"
     raise ValueError(f"unsupported query_id for {TASK_ID}: {selected_query}")
 
 

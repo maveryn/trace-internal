@@ -391,6 +391,7 @@ def _select_ranked_target(
     spec: _MixedInfographicSpec,
     params: Mapping[str, Any],
     instance_seed: int,
+    module_predicate: Callable[[_MixedModule], bool] | None = None,
 ) -> Tuple[
     _MixedModule,
     _MixedField,
@@ -429,9 +430,10 @@ def _select_ranked_target(
         params=params,
         instance_seed=int(instance_seed),
         allowed_field_labels=NUMERIC_FIELD_LABELS,
-        predicate=lambda candidate_module, candidate_field: len(
-            _ranked_numeric_values(candidate_module, candidate_field, direction=str(direction))
+        predicate=lambda candidate_module, candidate_field: (
+            module_predicate is None or bool(module_predicate(candidate_module))
         )
+        and len(_ranked_numeric_values(candidate_module, candidate_field, direction=str(direction)))
         >= int(rank_position),
     )
     ranked_values = _ranked_numeric_values(module, field, direction=str(direction))

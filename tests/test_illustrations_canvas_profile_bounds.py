@@ -115,7 +115,7 @@ def _entity_type(parent: Mapping[str, Any]) -> str:
 
 @pytest.mark.parametrize("task_id", MIGRATED_ILLUSTRATION_TASK_IDS)
 @pytest.mark.parametrize("canvas_profile", CANVAS_PROFILES)
-def test_migrated_illustration_tasks_keep_foreground_bboxes_inside_canvas(
+def test_source_layout_illustration_tasks_keep_foreground_bboxes_inside_canvas(
     task_id: str,
     canvas_profile: str,
 ) -> None:

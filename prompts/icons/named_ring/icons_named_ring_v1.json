@@ -82,6 +82,10 @@
     "question_text_counterclockwise_arc_shape_count": "Starting at marker A and moving counterclockwise to marker B, how many \"{target_shape_name}\" icons are strictly between A and B?",
     "question_text": "How many \"{target_shape_name}\" icons are closer to marker A than to marker B? Do not count icons equally far from A and B.",
     "annotation_hint": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every counted \"{target_shape_name}\" icon strictly between A and B along the {direction} arc",
+    "nearest_marker_annotation_hint": "set \"annotation\" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every counted \"{target_shape_name}\" icon closer to marker A than marker B",
+    "nearest_marker_answer_hint": "set \"answer\" to the count as an integer",
+    "nearest_marker_json_example": "{\"annotation\":[[176,168,236,228],[384,298,444,358]],\"answer\":2}",
+    "nearest_marker_json_example_answer_only": "{\"answer\":2}",
     "answer_hint": "set \"answer\" to the count as an integer",
     "json_example": "{\"annotation\":[[176,168,236,228],[384,298,444,358]],\"answer\":2}",
     "json_example_answer_only": "{\"answer\":2}"

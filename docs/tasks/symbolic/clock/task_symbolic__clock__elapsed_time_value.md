@@ -8,13 +8,13 @@
 5. Objective: compute the forward elapsed minutes from clock A to clock B.
 
 ## Program Contract
-Program: `clock.elapsed_time_value(scene=clock, scope=two_labeled_analog_clocks, output=integer_minutes)`
+Program: `clock.elapsed_time_value(scene=clock, scope=two_labeled_analog_clocks_with_minute_options, output=option_letter)`
 
-Candidate set: the two visible analog clock faces labeled `A` and `B`.
+Candidate set: the six labeled minute answer cards below the two visible analog clock faces labeled `A` and `B`.
 Operands: the displayed start time on clock `A` and displayed end time on clock `B`.
 Operation: compute the forward elapsed time from `A` to `B` around the 12-hour clock.
-Output binding: `answer` is the elapsed time in minutes as an integer.
-Annotation witnesses: a `bbox_map` with `start_clock` and `end_clock` face bboxes.
+Output binding: `answer` is the option label whose card shows the elapsed minutes.
+Annotation witnesses: the scalar `bbox` of the selected answer card.
 Query ids: `single`.
 
 ## 2) Scene + Task Contract
@@ -24,13 +24,14 @@ Query ids: `single`.
    - `scene_variant`: `classic|minimal|outline`
    - `style_variant`: `accented|marker|studio`
    - `accent_color_name`: shared symbolic clock colors
-4. `answer_gt.type`: `integer`
-5. Answer schema: elapsed minutes as an integer.
-6. `annotation_gt.type`: `bbox_map`
-7. Annotation schema: `bbox_map` with roles `start_clock` and `end_clock`
+4. `answer_gt.type`: `option_letter`
+5. Answer schema: one visible option label from `A` through `F`.
+6. `annotation_gt.type`: `bbox`
+7. Annotation schema: scalar `bbox` for the selected answer card.
 8. Scene contract:
    - two labeled analog clocks are shown side by side,
    - clock A is the starting time and clock B is the ending time,
+   - six labeled minute answer cards are shown below the clocks,
    - the prompt explicitly asks for the forward elapsed time around the 12-hour clock,
    - the configured elapsed-minute support excludes zero and full-cycle ambiguities.
 
@@ -46,14 +47,14 @@ Query ids: `single`.
 6. Modes: `answer_only`, `answer_and_annotation`
 
 ## 4) Annotation + Trace Contract
-1. Prompt-facing annotation is a role-bound `bbox_map`.
-2. `start_clock` marks the clock A face; `end_clock` marks the clock B face.
-3. Clock labels and caption text are not prompt-facing annotation.
-4. `projected_annotation` includes `bbox_map` and `pixel_bbox_map`.
-5. `execution_trace` records both displayed times, elapsed minutes, and resolved visual axes.
+1. Prompt-facing annotation is the scalar `bbox` of the selected answer card.
+2. Clock faces, clock labels, and caption text are not prompt-facing annotation.
+3. `projected_annotation` includes `bbox` and `pixel_bbox`.
+4. `render_map` includes source clock bboxes, option bboxes, and selected option bbox.
+5. `execution_trace` records both displayed times, raw elapsed minutes, answer label, option values, and resolved visual axes.
 
 ## 5) Determinism + Tests
 1. Deterministic sampling/rendering from `instance_seed`.
 2. Answers and annotation come from the finalized rendered start/end clocks.
 3. Behavior/trace/prompt tests: `tests/test_symbolic_clock_elapsed_sequence_tasks.py`
-4. Scene-package migration tests: `tests/test_scene_package_migration_contracts.py`, `tests/test_scene_package_review_candidate_contracts.py`
+4. Source-layout contract tests: `tests/test_source_layout_contracts.py`, `tests/test_scene_package_review_target_contracts.py`

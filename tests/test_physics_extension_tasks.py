@@ -580,6 +580,24 @@ def test_physics_gear_train_direction_contracts() -> None:
     assert "counterclockwise" in five_gears.prompt_variants["answer_only"]
 
 
+def test_physics_gear_train_direction_option_letters_balance_with_sample_cursor() -> None:
+    task = PhysicsGearTrainOutputDirectionLabelTask()
+    answer_counts = {"A": 0, "B": 0, "C": 0, "D": 0}
+    direction_counts = {"clockwise": 0, "counterclockwise": 0}
+
+    for index in range(40):
+        out = task.generate(
+            80311 + int(index),
+            params={"_sample_cursor": int(index)},
+            max_attempts=20,
+        )
+        answer_counts[str(out.answer_gt.value)] += 1
+        direction_counts[str(out.trace_payload["execution_trace"]["target_direction"])] += 1
+
+    assert answer_counts == {"A": 10, "B": 10, "C": 10, "D": 10}
+    assert direction_counts == {"clockwise": 20, "counterclockwise": 20}
+
+
 def test_physics_gear_train_speed_contracts() -> None:
     task = PhysicsGearTrainOutputSpeedValueTask()
     slower = task.generate(
@@ -811,7 +829,7 @@ def test_physics_thermal_mixing_final_temperature_contract() -> None:
 def test_physics_vernier_caliper_length_readout_contract() -> None:
     out = PhysicsVernierCaliperLengthReadoutValueTask().generate(
         80304,
-        params={"main_mm": 23, "aligned_vernier_tick": 4},
+        params={"main_mm": 23, "aligned_vernier_tick": 4, "correct_option_letter": "D"},
         max_attempts=20,
     )
     execution = out.trace_payload["execution_trace"]
@@ -819,45 +837,62 @@ def test_physics_vernier_caliper_length_readout_contract() -> None:
 
     assert out.scene_id == "vernier_caliper"
     assert out.query_id == "single"
-    assert out.answer_gt.type == "number"
-    assert math.isclose(float(out.answer_gt.value), 23.4, abs_tol=1e-9)
+    assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value == "D"
     assert execution["main_mm"] == 23
     assert execution["aligned_vernier_tick"] == 4
-    assert math.isclose(float(execution["target_answer"]), 23.4, abs_tol=1e-9)
+    assert math.isclose(float(execution["target_readout_mm"]), 23.4, abs_tol=1e-9)
+    assert execution["target_answer"] == "D"
+    assert execution["correct_option_letter"] == "D"
     assert math.isclose(float(render_map["answer_mm"]), 23.4, abs_tol=1e-9)
+    assert math.isclose(float(render_map["option_values_mm"]["D"]), 23.4, abs_tol=1e-9)
+    assert render_map["correct_option_letter"] == "D"
+    assert set(render_map["option_bboxes_px"]) == {"A", "B", "C", "D", "E", "F"}
     assert render_map["nearest_aligned_main_tick"] == 27
     sampling_axes = extract_sampling_axes(out)
     assert sampling_axes["aligned_vernier_tick"]["observed"] == "4"
+    assert sampling_axes["correct_option_letter"]["observed"] == "D"
     assert "aligned_tick" not in sampling_axes
     assert render_map["main_scale_max_mm"] == 62
-    assert render_map["annotation_source"] == "vernier_tick_center_points_px"
-    assert set(out.annotation_gt.value) == {
+    assert render_map["annotation_source"] == "selected_option_bbox_px"
+    assert set(render_map["readout_witness_point_map_px"]) == {
         "vernier_zero_tick",
         "aligned_vernier_tick",
     }
-    _assert_point_map_in_bounds(out)
-    assert out.annotation_gt.value == render_map["annotation_point_map_px"]
+    assert out.annotation_gt.type == "bbox"
+    assert out.annotation_gt.value == render_map["correct_option_bbox_px"]
+    _assert_bbox_in_bounds(out)
     assert set(render_map["context_bbox_map_px"]) == {
         "main_scale_region",
         "vernier_zero",
         "vernier_scale_region",
         "aligned_vernier_tick",
     }
-    assert out.trace_payload["projected_annotation"]["point_map"] == out.annotation_gt.value
+    assert out.trace_payload["projected_annotation"]["bbox"] == out.annotation_gt.value
     assert out.prompt_variants["answer_only"]
     assert out.prompt_variants["answer_and_annotation"]
 
 
 def test_physics_wire_magnetism_contract() -> None:
-    out = PhysicsWireMagnetismFieldDirectionChoiceTask().generate(80301, params={"orientation": "horizontal"}, max_attempts=20)
+    out = PhysicsWireMagnetismFieldDirectionChoiceTask().generate(
+        80301,
+        params={"current_direction": "out_of_page", "point_position": "east", "target_label": "B"},
+        max_attempts=20,
+    )
     execution = out.trace_payload["execution_trace"]
 
     assert out.scene_id == "wire_magnetism"
     assert out.query_id == "single"
-    assert execution["internal_query_id"] == "field_direction_at_point"
+    assert execution["internal_query_id"] == "perpendicular_wire_field_direction_at_point"
     assert out.answer_gt.type == "option_letter"
+    assert out.answer_gt.value == "B"
     assert out.annotation_gt.type == "bbox_map"
     assert set(out.annotation_gt.value) == {"wire_current", "point_p"}
+    assert execution["current_direction"] == "out_of_page"
+    assert execution["point_position"] == "east"
+    assert execution["field_direction"] == "north"
+    assert set(execution["answer_option_labels"]) == {"A", "B", "C", "D"}
+    assert set(execution["option_map"].values()) == {"north", "south", "east", "west"}
     assert execution["option_map"][out.answer_gt.value] == execution["field_direction"]
     assert out.annotation_gt.value["wire_current"] not in out.trace_payload["render_map"]["option_bboxes"].values()
     _assert_bbox_map_in_bounds(out)
@@ -1307,7 +1342,7 @@ def test_physics_extension_defaults_expose_prompt_and_rendering_contracts() -> N
     )
     assert "query_id_weights" not in buoyancy_generation
     assert set(buoyancy_generation["scene_variant_weights"]) == {"rectangular_tank", "beaker_tank", "wide_tank"}
-    assert set(buoyancy_generation["object_shape_weights"]) == {"block", "rounded_block", "capsule_block"}
+    assert set(buoyancy_generation["object_shape_weights"]) == {"block", "rounded_block"}
     assert int(buoyancy_rendering["canvas_height"]) == 720
     assert str(buoyancy_prompt["bundle_id"]) == "physics_buoyancy_density_v1"
     assert str(buoyancy_prompt["task_key"]) == "object_density_value_query"
@@ -1341,7 +1376,8 @@ def test_physics_extension_defaults_expose_prompt_and_rendering_contracts() -> N
     )
     assert "query_id_weights" not in wire_generation
     assert "balanced_query_id_sampling" not in wire_generation
-    assert set(wire_generation["orientation_weights"]) == {"horizontal", "vertical"}
+    assert set(wire_generation["current_direction_weights"]) == {"out_of_page", "into_page"}
+    assert set(wire_generation["point_position_weights"]) == {"north", "south", "east", "west"}
     assert int(wire_rendering["canvas_width"]) == 1080
     assert str(wire_prompt["bundle_id"]) == "physics_wire_magnetism_v1"
     assert str(wire_prompt["task_key"]) == "wire_field_direction_choice_query"

@@ -7,9 +7,10 @@ rendering:
     line_width: 4
     label_font_size: 22
     small_label_font_size: 18
+    label_stroke_width: 0
     single_object_scene_rotation:
       enabled: true
-      probability: 0.5
+      probability: 0.2
       angle_abs_min: 15
       angle_abs_max: 75
       margin_px: 48

@@ -14,8 +14,8 @@ generation:
     gap_threshold_min: 12
     gap_threshold_max: 28
     gap_threshold_step: 4
-    gap_threshold_count_min: 2
-    gap_threshold_count_max: 10
+    gap_threshold_count_min: 1
+    gap_threshold_count_max: 8
 rendering:
   shared:
     chart_context_profile: report_paragraph

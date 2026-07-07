@@ -19,7 +19,6 @@ from trace.tasks.shared.prompt_variants import (
 )
 from trace.tasks.pages.shared.page_semantic_assets import page_semantic_asset_label, page_semantic_asset_manifest_metadata
 from trace.tasks.pages.shared.infographic_metric_common import (
-    FACT_LOOKUP_VARIANTS,
     GLOBAL_METRIC_RANKED_ITEM_VARIANTS,
     POST_IMAGE_BACKGROUND_DEFAULTS,
     POST_IMAGE_NOISE_DEFAULTS,
@@ -49,7 +48,6 @@ def _source_branch(*parts: str) -> str:
 
 
 SCALAR_BBOX_SOURCE_BRANCHES = (
-    *FACT_LOOKUP_VARIANTS,
     *GLOBAL_METRIC_RANKED_ITEM_VARIANTS,
     *SECTION_METRIC_RANKED_ITEM_VARIANTS,
     _source_branch("section", "icon", "extremum", "label"),
@@ -369,10 +367,17 @@ class InfographicMetricCardRuntime:
             str(card["label"]): [float(value) for value in card["caption_bbox_px"]]
             for card in rendered.card_traces
         }
+        section_bbox_map = {
+            str(section): [float(value) for value in bbox]
+            for section, bbox in rendered.section_bboxes.items()
+        }
         section_title_bbox_map = {
             str(section): [float(value) for value in bbox]
             for section, bbox in rendered.section_title_bboxes.items()
         }
+        page_bbox = [float(value) for value in rendered.page_bbox]
+        document_title_bbox = [float(value) for value in rendered.document_title_bbox]
+        document_subtitle_bbox = [float(value) for value in rendered.document_subtitle_bbox]
 
         if str(annotation_type) == "bbox":
             projected_annotation = {
@@ -532,7 +537,10 @@ class InfographicMetricCardRuntime:
                 "background_style": dict(background_meta),
                 "post_image_noise": dict(post_noise_meta),
                 "layout_jitter": dict(rendered.layout_jitter_meta),
-                "section_bboxes_px": dict(rendered.section_bboxes),
+                "page_bbox_px": list(page_bbox),
+                "title_bbox_px": list(document_title_bbox),
+                "subtitle_bbox_px": list(document_subtitle_bbox),
+                "section_bboxes_px": dict(section_bbox_map),
                 "section_title_bboxes_px": dict(section_title_bbox_map),
                 "text_style": {
                     "title_font_size_px": int(group_default(_RENDER_DEFAULTS, "title_font_size_px", 30)),
@@ -551,6 +559,10 @@ class InfographicMetricCardRuntime:
                 "label_bboxes_px": dict(label_bbox_map),
                 "value_bboxes_px": dict(value_bbox_map),
                 "caption_bboxes_px": dict(caption_bbox_map),
+                "page_bbox_px": list(page_bbox),
+                "title_bbox_px": list(document_title_bbox),
+                "subtitle_bbox_px": list(document_subtitle_bbox),
+                "section_bboxes_px": dict(section_bbox_map),
                 "section_title_bboxes_px": dict(section_title_bbox_map),
             },
             "execution_trace": {

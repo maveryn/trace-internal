@@ -19,6 +19,7 @@ def build_star_battle_prompt_artifacts(
     prompt_defaults: Mapping[str, Any],
     prompt_task_key: str,
     prompt_query_key: str,
+    dynamic_slots: Mapping[str, Any] | None = None,
     instance_seed: int,
 ) -> tuple[Dict[str, Any], Any]:
     """Render Star Battle prompt variants from the scene prompt bundle."""
@@ -36,7 +37,7 @@ def build_star_battle_prompt_artifacts(
         task_key=str(prompt_task_key),
         query_key=str(prompt_query_key),
         answer_or_annotation_keys=PROMPT_OUTPUT_MODES,
-        dynamic_slots={},
+        dynamic_slots=dict(dynamic_slots or {}),
         instance_seed=int(instance_seed),
     )
     return dict(prompt_values), build_prompt_trace_artifacts(prompt_selection)

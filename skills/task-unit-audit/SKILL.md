@@ -12,7 +12,7 @@ rename follows the current TRACE taxonomy rules.
 1. `docs/contracts/TAXONOMY.md`
 2. `docs/contracts/TASK_UNIT_POLICY.md`
 3. `docs/contracts/PROGRAM_SCHEMA_CATALOG.md`
-4. `docs/SCENE_PACKAGE_MIGRATION/TAXONOMY_REVIEW_CHECKLIST.md` for scene-package work
+4. `docs/contracts/SOURCE_LAYOUT.md`
 5. The relevant domain contract in `docs/domains/`
 
 ## Workflow

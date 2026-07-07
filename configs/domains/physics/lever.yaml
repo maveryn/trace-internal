@@ -68,6 +68,9 @@ generation:
     missing_weight_max_side_weights: 2
     missing_weight_scene_variant_weights:
       textured_beam: 1.0
+  task_overrides:
+    task_physics__lever__side_torque_value:
+      max_side_weights: 3
 
 rendering:
   shared:

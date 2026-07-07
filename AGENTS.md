@@ -35,9 +35,9 @@ Each generated instance should include:
 
 ## Core engineering rules
 - Use public taxonomy consistently: `domain -> scene_id -> task_id`; `scene_id` is the visible rendering grammar, not a source-routing or config grouping layer.
-- Task ids use taxonomy-v0 public form `task_<domain>__<scene_id>__<objective_contract>` (lowercase snake_case inside each segment). Active/default public tasks must use that public id form. The target scene-package source layout is `trace/tasks/<domain>/<scene_id>/<objective_contract>.py`; transitional source routing is implementation metadata only, not a task-id format.
+- Task ids use taxonomy-v0 public form `task_<domain>__<scene_id>__<objective_contract>` (lowercase snake_case inside each segment). Active/default public tasks must use that public id form. The current source layout is `trace/tasks/<domain>/<scene_id>/<objective_contract>.py`; source routing is implementation metadata only, not a task-id format.
 - Keep intra-task mirrors and branch diagnostics in `query_id`; query ids are internal replay/review metadata, not public taxonomy nodes or sampling units.
-- Sampling policy is task-level globally (equal task weights by default); domain/scene_id probabilities are derived by aggregation, and query sampling happens inside each task. Query ids are uniform by default, and review-candidate migrated scenes must not use config-level query weights unless a later global policy explicitly allows them.
+- Sampling policy is task-level globally (equal task weights by default); domain/scene_id probabilities are derived by aggregation, and query sampling happens inside each task. Query ids are uniform by default and must not use config-level weights unless a later global policy explicitly allows them.
 - Domain/scene defaults (generation/rendering/visual variation) should follow precedence `domain -> scene_id -> task/params`: shared domain defaults under `configs/domains/<domain>/base.yaml`, group overrides under `configs/domains/<domain>/<scene_id>.yaml`, then optional task-level overrides.
 - Do not hardcode user-facing prompt text in task modules; prompts must come from external template assets.
 - Prompt composition must be reusable: one scene layer and one task layer (plus optional query layer), each with deterministic template selection.
@@ -57,13 +57,12 @@ Each generated instance should include:
 - Keep helper placement at the narrowest reusable layer that fits: `trace/core`,
   `trace/tasks/shared`, `trace/tasks/<domain>/shared`, scene-local `shared/`,
   then task-local code.
-- For scene-package migration work, follow
-  `docs/SCENE_PACKAGE_MIGRATION/README.md` and
-  `docs/SCENE_PACKAGE_MIGRATION/SCENE_MIGRATION_GUIDE.md`; domain-specific
-  shared-boundary docs under `docs/SCENE_PACKAGE_MIGRATION/` apply when present.
+- For task source-layout and shared-code ownership, follow
+  `docs/contracts/SOURCE_LAYOUT.md`; domain-specific refinements live in
+  `docs/domains/`.
 - Before introducing or moving helpers, review
   `docs/workflows/CODE_REVIEW_GUIDELINES.md` for current source-boundary and
-  migration red flags.
+  ownership red flags.
 
 ## Documentation discipline
 - After any change to architecture, module boundaries, shared utilities, or helper placement, update the relevant docs above in the same change.

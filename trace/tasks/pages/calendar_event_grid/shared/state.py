@@ -32,8 +32,11 @@ class EventGridCase:
     target_count: int | None
     event_chips: Tuple[CalendarEventChipSpec, ...]
     matching_chip_keys: Tuple[str, ...]
+    weekday_index: int | None
+    weekday_label: str | None
     category_probabilities: Dict[str, float]
     slot_probabilities: Dict[str, float]
+    weekday_probabilities: Dict[str, float]
     target_count_probabilities: Dict[str, float]
     scene_variant_probabilities: Dict[str, float]
     style_variant_probabilities: Dict[str, float]

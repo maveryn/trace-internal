@@ -1,5 +1,14 @@
 # `task_games__reversi__marked_move_flip_count`
 
+## Contract
+1. Domain: `games`
+2. Scene id: `reversi`
+3. Public task id: `task_games__reversi__marked_move_flip_count`
+4. Supported `query_id` values: `single`
+5. Answer schema: `integer_count`
+6. Annotation schema: `point_set`
+7. Program schema: `count(flipped_discs(apply(marked_legal_move))); scene=reversi; scope=marked_move_flip_count`
+
 ## Program Contract
 
 Program: `count(flipped_discs(apply(marked_legal_move))); scene=reversi; scope=marked_move_flip_count`

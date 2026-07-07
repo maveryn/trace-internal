@@ -1,8 +1,8 @@
-"""Global runtime-record contracts for scene-package migration.
+"""Global runtime-record contracts for source-layout source layout.
 
 These checks are intentionally not part of the per-scene handoff gate in
-``tests/test_scene_package_migration_contracts.py``. They cover dataset ABI
-shape across exported records, so a failure here should block global migration
+``tests/test_source_layout_contracts.py``. They cover dataset ABI
+shape across exported records, so a failure here should block global source-layout
 cleanup, not review artifact generation for one otherwise isolated scene.
 """
 
@@ -10,19 +10,19 @@ from __future__ import annotations
 
 import pytest
 
-import trace.core.scene_package_migration as scene_package_migration
+import trace.core.source_layout_policy as source_layout_policy
 from trace.core.reward_contracts import resolve_reward_contract
 from trace.core.taxonomy import TaxonomyEntry, inject_taxonomy_metadata
 from trace.core.types import CurriculumIndex, ImageRecord, TraceRef, TrainInstance, TypedValue
 
 
-FORBIDDEN_MIGRATED_KEYS = ("scene_id", "source_scene_id", "scene_sampling_probabilities")
+FORBIDDEN_SOURCE_LAYOUT_EXPORT_KEYS = ("scene_id", "source_scene_id", "scene_sampling_probabilities")
 
 
 def test_scene_package_runtime_records_omit_scene_id_fields(monkeypatch: pytest.MonkeyPatch) -> None:
     task_id = "task_dummy__scene_package_demo__integer_count"
-    monkeypatch.setattr(scene_package_migration, "MIGRATED_SCENE_PACKAGE_DOMAINS", frozenset({"dummy"}))
-    assert scene_package_migration.is_scene_package_task(task_id, domain="dummy")
+    monkeypatch.setattr(source_layout_policy, "SCENE_PACKAGE_SOURCE_LAYOUT_DOMAINS", frozenset({"dummy"}))
+    assert source_layout_policy.is_scene_package_task(task_id, domain="dummy")
     train_record = TrainInstance(
         instance_version="v0",
         instance_id="dummy_instance",
@@ -67,7 +67,7 @@ def test_scene_package_runtime_records_omit_scene_id_fields(monkeypatch: pytest.
         registered_scene_id=None,
     )
     for record in (train_record, curriculum_record, trace_record):
-        for key in FORBIDDEN_MIGRATED_KEYS:
+        for key in FORBIDDEN_SOURCE_LAYOUT_EXPORT_KEYS:
             assert key not in record
     taxonomy = trace_record["taxonomy"]
     assert "scene_id" not in taxonomy["registered"]

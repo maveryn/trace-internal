@@ -11,8 +11,9 @@ import re
 from typing import Any, Dict, Iterable, Mapping
 
 from trace.core.query_ids import SINGLE_QUERY_ID
-from trace.core.scene_package_migration import is_scene_package_review_target_scene
+from trace.core.source_layout_policy import is_scene_package_review_target_scene
 from trace.core.taxonomy import ACTIVE_DOMAINS
+from trace.core.task_review_calibration import load_calibration_status_records as load_authoritative_calibration_status_records
 
 from .locks import review_file_lock_active, scene_publish_lock_path
 from .models import DomainRecord, ReviewIndex, SampleRecord, SceneRecord, SolveStats, TaskRecord
@@ -38,7 +39,7 @@ def build_review_index(
     review_root: Path | str,
     *,
     repo_root: Path | str | None = None,
-    enforce_migration_registry: bool = True,
+    enforce_review_target_registry: bool = True,
 ) -> ReviewIndex:
     """Build an in-memory review index from ``review/task-reviews`` artifacts."""
 
@@ -60,7 +61,7 @@ def build_review_index(
         domain_record = DomainRecord(domain=domain)
         for scene_dir in sorted(path for path in domain_dir.iterdir() if path.is_dir()):
             scene_id = scene_dir.name
-            if bool(enforce_migration_registry) and not is_scene_package_review_target_scene(domain, scene_id):
+            if bool(enforce_review_target_registry) and not is_scene_package_review_target_scene(domain, scene_id):
                 continue
             index.domains.setdefault(domain, domain_record)
             _scan_scene(index=index, domain=domain, scene_id=scene_id, scene_dir=scene_dir)
@@ -76,7 +77,7 @@ def build_review_scene_index(
     domain: str,
     scene_id: str,
     repo_root: Path | str | None = None,
-    enforce_migration_registry: bool = True,
+    enforce_review_target_registry: bool = True,
 ) -> ReviewIndex:
     """Build an index containing only one review scene, if it is currently eligible."""
 
@@ -96,7 +97,7 @@ def build_review_scene_index(
     if domain_name not in ACTIVE_DOMAINS:
         index.errors.append(f"unknown active domain: {domain_name}")
         return index
-    if bool(enforce_migration_registry) and not is_scene_package_review_target_scene(domain_name, scene_name):
+    if bool(enforce_review_target_registry) and not is_scene_package_review_target_scene(domain_name, scene_name):
         return index
 
     scene_dir = root / domain_name / scene_name
@@ -195,8 +196,8 @@ def _scan_scene(*, index: ReviewIndex, domain: str, scene_id: str, scene_dir: Pa
     scene_key = ReviewIndex.scene_key(domain, scene_id)
     scene_manifest_path = scene_dir / "scene_review_manifest.json"
     scene_manifest = _load_json_safe(scene_manifest_path, index.errors)
-    migration_test_status_path = scene_dir / "migration_test_status.json"
-    migration_test_status = _load_json_safe(migration_test_status_path, index.errors)
+    source_layout_test_status_path = scene_dir / "source_layout_test_status.json"
+    source_layout_test_status = _load_json_safe(source_layout_test_status_path, index.errors)
     manual_code_audit_status_path = scene_dir / "manual_code_audit_status.json"
     manual_code_audit_status = _load_json_safe(manual_code_audit_status_path, index.errors)
     taxonomy_review_status_path = scene_dir / "taxonomy_review_status.json"
@@ -207,15 +208,15 @@ def _scan_scene(*, index: ReviewIndex, domain: str, scene_id: str, scene_dir: Pa
         manifest_rel_path=_rel_or_empty(scene_manifest_path, index.root),
         workbook_rel_path=str(scene_manifest.get("workbook", "") if isinstance(scene_manifest, Mapping) else ""),
         model_stats_count=int(scene_manifest.get("model_stats_count", 0) if isinstance(scene_manifest, Mapping) else 0),
-        migration_test_status_rel_path=(
-            _rel_or_empty(migration_test_status_path, index.root) if migration_test_status_path.exists() else ""
+        source_layout_test_status_rel_path=(
+            _rel_or_empty(source_layout_test_status_path, index.root) if source_layout_test_status_path.exists() else ""
         ),
-        migration_test_pass=(
-            bool(migration_test_status.get("passed"))
-            if isinstance(migration_test_status, Mapping) and "passed" in migration_test_status
+        source_layout_test_pass=(
+            bool(source_layout_test_status.get("passed"))
+            if isinstance(source_layout_test_status, Mapping) and "passed" in source_layout_test_status
             else None
         ),
-        migration_test_summary=_migration_test_summary(migration_test_status),
+        source_layout_test_summary=_source_layout_test_summary(source_layout_test_status),
         manual_code_audit_status_rel_path=(
             _rel_or_empty(manual_code_audit_status_path, index.root) if manual_code_audit_status_path.exists() else ""
         ),
@@ -253,8 +254,8 @@ def _scan_scene(*, index: ReviewIndex, domain: str, scene_id: str, scene_dir: Pa
     )
 
 
-def _migration_test_summary(status: Any) -> Dict[str, Any]:
-    """Normalize a scene migration test-status artifact for template rendering."""
+def _source_layout_test_summary(status: Any) -> Dict[str, Any]:
+    """Normalize a scene source-layout check-status artifact for template rendering."""
 
     if not isinstance(status, Mapping):
         return {}
@@ -700,10 +701,12 @@ def _attach_solve_stats(index: ReviewIndex) -> None:
     fallback_stats = _latest_stats_files_by_task_model(index)
     for task_key, task in index.tasks.items():
         rows: Dict[tuple[str, str], SolveStats] = {}
+        reviewer_override_models: set[tuple[str, str]] = set()
         status_record = status_records.get(task.task_id, {})
         combined_status = ""
         if isinstance(status_record, Mapping) and status_record.get("domain") == task.domain and status_record.get("scene_id") == task.scene_id:
             combined_status = str(status_record.get("status", ""))
+            record_has_reviewer_override = bool(status_record.get("reviewer_override"))
             models = status_record.get("models", {})
             if isinstance(models, Mapping):
                 for model_slug, model_record in sorted(models.items()):
@@ -717,9 +720,13 @@ def _attach_solve_stats(index: ReviewIndex) -> None:
                     )
                     if row is not None:
                         rows[(task.task_id, str(model_slug))] = row
+                        if record_has_reviewer_override or bool(model_record.get("reviewer_override")):
+                            reviewer_override_models.add((task.task_id, str(model_slug)))
 
         for (task_id, model_slug), stats_path in fallback_stats.items():
             if task_id != task.task_id:
+                continue
+            if (task_id, model_slug) in reviewer_override_models:
                 continue
             row = _solve_stats_from_stats_file(
                 stats_path=stats_path,
@@ -732,24 +739,11 @@ def _attach_solve_stats(index: ReviewIndex) -> None:
 
 
 def _load_calibration_status_records(index: ReviewIndex) -> Mapping[str, Any]:
-    candidates = [
-        index.root.parent / "calibration_sweep_status.json",
-        index.repo_root / "review" / "calibration_sweep_status.json",
-    ]
-    for candidate in candidates:
-        if not candidate.exists():
-            continue
-        try:
-            payload = _load_json(candidate)
-        except Exception:
-            continue
-        config = payload.get("config", {}) if isinstance(payload, Mapping) else {}
-        if isinstance(config, Mapping) and str(config.get("calibration_baseline", "")) != CURRENT_CALIBRATION_BASELINE:
-            continue
-        tasks = payload.get("tasks", {}) if isinstance(payload, Mapping) else {}
-        if isinstance(tasks, Mapping):
-            return tasks
-    return {}
+    return load_authoritative_calibration_status_records(
+        out_root=index.root,
+        repo_root=index.repo_root,
+        calibration_baseline=CURRENT_CALIBRATION_BASELINE,
+    )
 
 
 def _latest_stats_files_by_task_model(index: ReviewIndex) -> Dict[tuple[str, str], Path]:
@@ -759,17 +753,24 @@ def _latest_stats_files_by_task_model(index: ReviewIndex) -> Dict[tuple[str, str
     task_ids = {task.task_id for task in index.tasks.values()}
     selected: Dict[tuple[str, str], Path] = {}
     priorities: Dict[tuple[str, str], tuple[bool, int, float]] = {}
-    for stats_path in probe_root.glob("*/*/*/task_*/100x*_seed*/calibration_stats.json"):
+    for stats_path in probe_root.glob("*/*/*/task_*/*x*_seed*/calibration_stats.json"):
         rel = stats_path.relative_to(probe_root)
         model_slug = str(rel.parts[0])
         task_id = str(rel.parts[3])
         if model_slug not in CURRENT_MODEL_SLUGS or task_id not in task_ids:
             continue
-        rollout_match = re.match(r"100x(?P<rollouts>\d+)_seed", str(rel.parts[4]))
+        rollout_match = re.match(r"(?P<samples>\d+)x(?P<rollouts>\d+)_seed", str(rel.parts[4]))
         if rollout_match is None:
             continue
         key = (task_id, model_slug)
-        priority = (int(rollout_match.group("rollouts")) == 24, int(rollout_match.group("rollouts")), stats_path.stat().st_mtime)
+        sample_count = int(rollout_match.group("samples"))
+        rollout_count = int(rollout_match.group("rollouts"))
+        priority = (
+            sample_count == 50 and rollout_count == 8,
+            sample_count,
+            rollout_count,
+            stats_path.stat().st_mtime,
+        )
         if key not in selected or priority >= priorities.get(key, (False, -1, 0.0)):
             selected[key] = stats_path
             priorities[key] = priority

@@ -1,4 +1,4 @@
-"""Contract tests for toggle-grid puzzle scene-package tasks."""
+"""Contract tests for toggle-grid puzzle source-layout tasks."""
 
 from __future__ import annotations
 

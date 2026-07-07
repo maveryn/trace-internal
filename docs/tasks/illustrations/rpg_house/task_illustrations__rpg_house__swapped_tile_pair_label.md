@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `rpg_house`
-- Implementation scene package: `rpg_house`
+- Implementation source scene: `rpg_house`
 - Implementation source: `trace/tasks/illustrations/rpg_house/swapped_tile_pair_label.py`
 
 ## Task Contract

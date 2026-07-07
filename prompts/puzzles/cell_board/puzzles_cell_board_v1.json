@@ -37,11 +37,11 @@
         "Count the cells in the largest connected group of {query_color} cells."
       ],
       "reachable_region_size": [
-        "Dark cells are walls and light cells are passable. Starting from the green S cell, how many passable cells are reachable by side-adjacent moves, including S?",
-        "From the green S cell, count every reachable light passable cell, including S; dark wall cells block movement.",
-        "How many light passable cells can be reached from the green S cell using only up/down/left/right moves, including S?",
-        "Using side-adjacent moves from S, count the reachable passable cells; dark cells are walls and S is included.",
-        "Count the light-cell reachable region from the green S cell, including the start cell; do not cross dark walls."
+        "Dark cells are walls. The passable cells are the light cells plus the green S cell. Starting from S, how many passable cells are reachable by side-adjacent moves, including S?",
+        "From the green S cell, count every reachable passable cell, including S. Light cells are passable, dark wall cells block movement, and separated light cells do not count.",
+        "How many passable cells can be reached from the green S cell using only up/down/left/right moves? Include S, count light reachable cells, and do not count separated light cells.",
+        "Using side-adjacent moves from S, count the reachable passable cells. Dark cells are walls, light cells are passable, and S is included.",
+        "Count the reachable region from the green S cell, including the start cell S. Move only through light cells and do not cross dark walls."
       ],
       "shortest_path_length_value": [
         "Dark cells are walls and light cells are passable. What is the shortest path length from the green S cell to the red G cell?",
@@ -83,7 +83,7 @@
       "json_example_answer_only": "{\"answer\":3}"
     },
     "query:reachable_region_size": {
-      "answer_hint": "Set answer to the number of light passable cells reachable from S by side-adjacent moves, including S.",
+      "answer_hint": "Set answer to the number of passable cells reachable from S by side-adjacent moves, including S.",
       "annotation_hint": "Set annotation to a bbox_set containing image-pixel cell boxes [x0, y0, x1, y1] for all reachable passable cells, including S.",
       "json_example": "{\"annotation\":[[100,100,136,136],[148,100,184,136],[148,148,184,184]],\"answer\":3}",
       "json_example_answer_only": "{\"answer\":3}"

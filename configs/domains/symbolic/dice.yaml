@@ -1,4 +1,13 @@
 generation:
+  shared:
+    option_label_support:
+    - A
+    - B
+    - C
+    - D
+    - E
+    - F
+    option_count: 6
   task_overrides:
     task_symbolic__dice__single_attribute_probability:
       single_dice_count_min: 6

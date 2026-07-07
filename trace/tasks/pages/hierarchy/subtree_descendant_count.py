@@ -15,6 +15,8 @@ TASK_ID = "task_pages__hierarchy__subtree_descendant_count"
 SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
 PROMPT_QUERY_KEY = "subtree_descendant_count"
 QUESTION_FORMAT = "hierarchy_org_chart"
+TARGET_DESCENDANT_COUNT_MIN = 3
+TARGET_DESCENDANT_COUNT_MAX = 7
 
 
 def _build_descendant_objective() -> _lifecycle.HierarchyObjectiveBinding:
@@ -49,6 +51,11 @@ class PagesHierarchySubtreeDescendantCountTask:
             default=SINGLE_QUERY_ID,
             public_task=TASK_ID,
         )
+        task_params = {
+            **task_params,
+            "subtree_descendant_count_min": TARGET_DESCENDANT_COUNT_MIN,
+            "subtree_descendant_count_max": TARGET_DESCENDANT_COUNT_MAX,
+        }
         objective = _build_descendant_objective()
         return _lifecycle.render_bound_hierarchy(
             instance_seed=int(instance_seed),

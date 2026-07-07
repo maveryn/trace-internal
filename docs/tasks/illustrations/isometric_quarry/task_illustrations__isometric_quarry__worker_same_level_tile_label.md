@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `isometric_quarry`
-- Implementation scene package: `isometric_quarry`
+- Implementation source scene: `isometric_quarry`
 - Implementation source: `trace/tasks/illustrations/isometric_quarry/worker_same_level_tile_label.py`
 
 ## Task Contract

@@ -1,17 +1,15 @@
 generation:
   shared:
-    bin_count_min: 12
-    bin_count_max: 20
+    bin_count_min: 8
+    bin_count_max: 15
     bin_width_min: 1
     bin_width_max: 1
     bin_start_min: 1
     bin_start_max: 99
     bin_frequency_min: 1
-    bin_frequency_max: 24
-    interval_bin_span_min: 8
-    interval_bin_span_max: 16
-    outside_interval_bin_count_min: 6
-    outside_interval_bin_count_max: 12
+    bin_frequency_max: 15
+    interval_bin_span_min: 3
+    interval_bin_span_max: 6
 rendering:
   shared:
     canvas_width: 860
@@ -25,7 +23,7 @@ rendering:
     tick_length_px: 8
     label_font_size_px: 22
     tick_font_size_px: 18
-    label_stroke_width_px: 2
+    label_stroke_width_px: 0
     mark_outline_width_px: 2
     line_width_px: 4
     point_radius_px: 8
@@ -34,6 +32,12 @@ rendering:
     mark_color_channel_max: 220
     mark_color_min_distance: 40.0
     mark_color_distance_space: lab
+    value_axis_window_enabled: true
+    value_axis_span_min: 15
+    value_axis_span_max: 15
+    value_axis_hard_max: 15
+    value_axis_major_tick_step: 5
+    value_axis_minor_tick_step: 1
     value_axis_allow_nonzero_min: false
     guide_line_mode: always
 prompt:

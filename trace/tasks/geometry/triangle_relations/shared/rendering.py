@@ -189,7 +189,7 @@ def create_render_context(
         fill_color=tuple(int(value) for value in diagram_style.panel_alt_fill_rgb),
         alt_fill_color=tuple(int(value) for value in diagram_style.option_fill_rgb),
         line_width=max(2, int(line_width)),
-        label_stroke_width=max(1, min(1, int(label_stroke_width))),
+        label_stroke_width=max(0, int(label_stroke_width)),
         readout_text_metadata=dict(readout_metadata),
         font=load_font(max(12, int(font_size)), bold=False, font_family=str(font_family)),
         small_font=load_font(max(10, int(small_font_size)), bold=False, font_family=str(font_family)),

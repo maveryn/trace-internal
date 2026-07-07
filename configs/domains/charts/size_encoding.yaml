@@ -1,13 +1,13 @@
 generation:
   shared:
-    item_count_min: 20
-    item_count_max: 30
-    total_item_count_min: 20
-    total_item_count_max: 30
+    item_count_min: 16
+    item_count_max: 24
+    total_item_count_min: 16
+    total_item_count_max: 24
     panel_count_min: 2
     panel_count_max: 4
-    panel_item_count_min: 7
-    panel_item_count_max: 10
+    panel_item_count_min: 5
+    panel_item_count_max: 7
     category_count_min: 3
     category_count_max: 5
     value_min: 12

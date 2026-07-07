@@ -13,7 +13,20 @@ SCENE_VARIANTS: Tuple[str, ...] = ("directory_grid", "compact_cards")
 PROFILE_TEXT_FIELDS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     (
         "Role",
-        ("Analyst", "Curator", "Planner", "Auditor", "Designer", "Coordinator", "Navigator", "Archivist", "Reviewer"),
+        (
+            "Analyst",
+            "Curator",
+            "Planner",
+            "Auditor",
+            "Designer",
+            "Coordinator",
+            "Navigator",
+            "Archivist",
+            "Reviewer",
+            "Strategist",
+            "Operator",
+            "Liaison",
+        ),
     ),
     (
         "Region",
@@ -27,15 +40,26 @@ PROFILE_TEXT_FIELDS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
             "Hill Yard",
             "Lake Point",
             "Mesa Park",
+            "Harbor Row",
+            "Pine Flats",
+            "Stone Quay",
         ),
     ),
-    ("Signal", ("Amber", "Cobalt", "Indigo", "Violet", "Copper", "Silver", "Teal", "Crimson", "Olive")),
-    ("Code", ("K-17", "M-42", "R-08", "T-63", "V-29", "X-54", "B-31", "D-76", "H-90")),
+    (
+        "Signal",
+        ("Amber", "Cobalt", "Indigo", "Violet", "Copper", "Silver", "Teal", "Crimson", "Olive", "Maroon", "Saffron", "Azure"),
+    ),
+    ("Code", ("K-17", "M-42", "R-08", "T-63", "V-29", "X-54", "B-31", "D-76", "H-90", "J-21", "L-68", "Q-35")),
 )
 PROFILE_NUMERIC_FIELDS: Tuple[Tuple[str, Tuple[int, ...]], ...] = (
-    ("Score", (42, 55, 61, 68, 73, 81, 89, 94, 101)),
-    ("Cases", (6, 9, 12, 15, 18, 22, 26, 31, 35)),
-    ("Hours", (18, 24, 29, 34, 41, 47, 53, 58, 64)),
+    ("Score", (42, 55, 61, 68, 73, 81, 89, 94, 101, 108, 116, 123)),
+    ("Cases", (6, 9, 12, 15, 18, 22, 26, 31, 35, 39, 44, 50)),
+    ("Hours", (18, 24, 29, 34, 41, 47, 53, 58, 64, 70, 76, 82)),
+)
+PROFILE_FILTER_FIELDS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
+    ("Team", ("Atlas", "Beacon", "Cedar", "Delta", "Ember", "Harbor")),
+    ("Track", ("North", "East", "South", "West", "Central", "Coastal")),
+    ("Unit", ("Aster", "Birch", "Canyon", "Dune", "Elm", "Fjord")),
 )
 PROFILE_RANK_POSITION_SUPPORT: Tuple[int, ...] = (2, 3)
 PROFILE_RANK_ORDINALS: Dict[int, str] = {
@@ -58,7 +82,7 @@ ACCENTS: Tuple[Color, ...] = (
 class ProfileCardGridDefaults:
     """Stable fallback defaults for profile-card-grid pages."""
 
-    card_count_support: Tuple[int, ...] = (6, 9)
+    card_count_support: Tuple[int, ...] = (9, 12)
     rank_position_support: Tuple[int, ...] = PROFILE_RANK_POSITION_SUPPORT
     canvas_width: int = 1120
     canvas_height: int = 860
@@ -105,6 +129,7 @@ class ProfileCardGridSpec:
     title: str
     subtitle: str
     text_resource_metadata: Dict[str, Any]
+    filter_field_label: str = ""
 
 
 @dataclass(frozen=True)

@@ -36,12 +36,33 @@
         "How many milestone cards fall before the first highlighted reference or after the second one?",
         "Count the milestones in the two outer timeline ranges, excluding the highlighted endpoints."
       ],
-      "event_date_gap_value": [
-        "How many calendar days are between {endpoint_pair_description}?",
-        "Find the day difference between {endpoint_pair_description}.",
-        "What is the calendar-day gap between {endpoint_pair_description}?",
-        "Using the dates on the milestone cards, how many days separate {endpoint_pair_description}?",
-        "How many days apart are {endpoint_pair_description}?"
+      "before_threshold_date_count": [
+        "How many event cards are before {threshold_date_text}?",
+        "Count the event cards dated before {threshold_date_text}.",
+        "Among the visible milestone cards, how many occur before {threshold_date_text}?",
+        "How many milestones have dates earlier than {threshold_date_text}?",
+        "Count the labeled event cards with dates before {threshold_date_text}."
+      ],
+      "after_threshold_date_count": [
+        "How many event cards are after {threshold_date_text}?",
+        "Count the event cards dated after {threshold_date_text}.",
+        "Among the visible milestone cards, how many occur after {threshold_date_text}?",
+        "How many milestones have dates later than {threshold_date_text}?",
+        "Count the labeled event cards with dates after {threshold_date_text}."
+      ],
+      "event_before_dated_event_label": [
+        "Find the event dated {reference_date_text}. In timeline order, which event is {relative_offset_phrase} before it?",
+        "Which event card is {relative_offset_phrase} before the event dated {reference_date_text} in timeline order?",
+        "Starting from the event dated {reference_date_text}, move {relative_offset_phrase} earlier along the timeline. Which event label is there?",
+        "In the sequence of event cards, which event is {relative_offset_phrase} before the event dated {reference_date_text}?",
+        "Look at the event dated {reference_date_text}. Which labeled event is {relative_offset_phrase} before it on the timeline?"
+      ],
+      "event_after_dated_event_label": [
+        "Find the event dated {reference_date_text}. In timeline order, which event is {relative_offset_phrase} after it?",
+        "Which event card is {relative_offset_phrase} after the event dated {reference_date_text} in timeline order?",
+        "Starting from the event dated {reference_date_text}, move {relative_offset_phrase} later along the timeline. Which event label is there?",
+        "In the sequence of event cards, which event is {relative_offset_phrase} after the event dated {reference_date_text}?",
+        "Look at the event dated {reference_date_text}. Which labeled event is {relative_offset_phrase} after it on the timeline?"
       ]
     },
     "output": {
@@ -67,7 +88,7 @@
       "json_output_contract_answer_only": "Return a JSON object with \"answer\" only."
     },
     "scene:milestone_timeline": {
-      "object_description": "one labeled milestone timeline with dated event cards and highlighted reference events"
+      "object_description": "one labeled milestone timeline with dated event cards"
     },
     "query:between_reference_events_count": {
       "answer_hint": "set \"answer\" to the integer count of events strictly between the two highlighted reference events",
@@ -81,22 +102,53 @@
       "json_example": "{\"annotation\":[[160,158,264,228],[790,410,894,480]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
-    "query:event_date_gap_value": {
-      "answer_hint": "set \"answer\" to the nonnegative integer number of calendar days between the two named events",
-      "annotation_hint": "set \"annotation\" to an object with keys \"earlier_event\" and \"later_event\", each mapped to the [x0, y0, x1, y1] box of that endpoint event card",
-      "json_example": "{\"annotation\":{\"earlier_event\":[160,158,264,228],\"later_event\":[538,158,642,228]},\"answer\":9}",
-      "json_example_answer_only": "{\"answer\":9}"
+    "query:before_threshold_date_count": {
+      "answer_hint": "set \"answer\" to the integer count of event cards dated before the named date",
+      "annotation_hint": "set \"annotation\" to an array of [x0, y0, x1, y1] boxes for all counted event cards",
+      "json_example": "{\"annotation\":[[160,158,264,228],[286,410,390,480]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    },
+    "query:after_threshold_date_count": {
+      "answer_hint": "set \"answer\" to the integer count of event cards dated after the named date",
+      "annotation_hint": "set \"annotation\" to an array of [x0, y0, x1, y1] boxes for all counted event cards",
+      "json_example": "{\"annotation\":[[664,410,768,480],[790,158,894,228]],\"answer\":2}",
+      "json_example_answer_only": "{\"answer\":2}"
+    },
+    "query:event_before_dated_event_label": {
+      "answer_hint": "set \"answer\" to the target event label string",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] box of the target event card",
+      "json_example": "{\"annotation\":[286,410,390,480],\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
+    },
+    "query:event_after_dated_event_label": {
+      "answer_hint": "set \"answer\" to the target event label string",
+      "annotation_hint": "set \"annotation\" to the [x0, y0, x1, y1] box of the target event card",
+      "json_example": "{\"annotation\":[664,410,768,480],\"answer\":\"E\"}",
+      "json_example_answer_only": "{\"answer\":\"E\"}"
     }
   },
   "dynamic_slots": {
-    "endpoint_pair_description": {"type": "string"}
+    "threshold_date_text": {"type": "string"},
+    "reference_date_text": {"type": "string"},
+    "relative_offset_phrase": {"type": "string"}
   },
   "required_slots_by_key": {
     "scene:milestone_timeline": [
       "object_description"
     ],
-    "query:event_date_gap_value": [
-      "endpoint_pair_description"
+    "query:before_threshold_date_count": [
+      "threshold_date_text"
+    ],
+    "query:after_threshold_date_count": [
+      "threshold_date_text"
+    ],
+    "query:event_before_dated_event_label": [
+      "reference_date_text",
+      "relative_offset_phrase"
+    ],
+    "query:event_after_dated_event_label": [
+      "reference_date_text",
+      "relative_offset_phrase"
     ],
     "output:answer_only": [
       "json_output_contract_answer_only",

@@ -15,7 +15,7 @@
 - `single`: given the center-to-exterior distance and the exterior angle to the tangent point, solve the circle radius.
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry circle prompt bundle configured for this scene package/task override.
+- Prompt text is loaded from the geometry circle prompt bundle configured for this scene/task override.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation

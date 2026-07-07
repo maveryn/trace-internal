@@ -12,7 +12,12 @@ from trace.tasks.charts.shared.information_style import prepare_chart_informatio
 from trace.core.visual.noise import apply_post_image_noise
 from trace.tasks.charts.shared.visual_defaults import chart_font_asset_metadata, sample_chart_font_family
 from trace.tasks.shared.bbox_projection import bbox_union_raw
-from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.shared.text_legibility import (
+    READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+    READ_REQUIRED_TEXT_MIN_LAB_DISTANCE,
+    draw_text_traced,
+    resolve_readable_text_style,
+)
 from trace.tasks.shared.text_rendering import load_font, temporary_default_font_family
 
 from .defaults import POST_IMAGE_NOISE_DEFAULTS, canvas_size, generation_value, render_int, render_rgb, rendering_value
@@ -145,13 +150,7 @@ def _render_sunburst(
         for node in [item for item in tree.nodes if item.level == level]:
             start, end = spans[str(node.node_id)]
             inner_radius, outer_radius = _ring_for_level(render_params, str(level))
-            fill = tuple(int(channel) for channel in node.color_rgb)
-            if str(level) == "parent":
-                fill = lighten(fill, 0.18)
-            elif str(level) == "subgroup":
-                fill = lighten(fill, 0.26)
-            elif str(level) == "leaf":
-                fill = lighten(fill, 0.34)
+            fill = _display_fill_for_node(node)
             _draw_ring_wedge(
                 draw,
                 center=center,
@@ -207,6 +206,9 @@ def _render_sunburst(
             stroke_fill=SUNBURST_LABEL_STROKE_RGB,
             stroke_width=0,
             line_gap_px=2,
+            surface_rgb=_display_fill_for_node(node),
+            instance_seed=int(instance_seed),
+            namespace=f"charts.sunburst.label.{node.node_id}",
         )
         text_bbox = _bbox_union(text_boxes)
         value_bbox = list(text_boxes[-1]) if node.level == "leaf" and text_boxes else list(text_bbox)
@@ -263,7 +265,7 @@ def _render_sunburst(
             },
             "value_display_policy": "outer_leaf_values_only",
             "label_text_style": {
-                "fill_rgb": list(SUNBURST_LABEL_FILL_RGB),
+                "fill_policy": "per_wedge_readable_text_style",
                 "stroke_width_px": 0,
                 "font_weight": "regular",
             },
@@ -382,6 +384,9 @@ def _draw_multiline_centered_text(
     stroke_fill: RGB,
     stroke_width: int,
     line_gap_px: int = 2,
+    surface_rgb: RGB = (255, 255, 255),
+    instance_seed: int = 0,
+    namespace: str = "charts.sunburst.label",
 ) -> list[BBox]:
     clean_lines = [str(line) for line in lines if str(line)]
     if not clean_lines:
@@ -391,23 +396,45 @@ def _draw_multiline_centered_text(
     total_h = sum(heights) + max(0, len(clean_lines) - 1) * int(line_gap_px)
     y = float(center[1]) - total_h / 2.0
     boxes: list[BBox] = []
-    for line, height in zip(clean_lines, heights):
+    for line_index, (line, height) in enumerate(zip(clean_lines, heights)):
         xy = (float(center[0]), float(y + height / 2.0))
+        style = resolve_readable_text_style(
+            instance_seed=int(instance_seed),
+            namespace=f"{namespace}.{line_index}",
+            role="readout",
+            surface_rgbs=(tuple(int(channel) for channel in surface_rgb),),
+            preferred_rgbs=(tuple(int(channel) for channel in fill), tuple(int(channel) for channel in stroke_fill)),
+            min_contrast_ratio=READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+            min_lab_distance=READ_REQUIRED_TEXT_MIN_LAB_DISTANCE,
+            required=True,
+        )
         record = draw_text_traced(
             draw,
             xy,
             line,
             font=font,
-            fill=fill,
+            fill=style.fill_rgb,
             anchor="mm",
-            stroke_fill=stroke_fill,
+            stroke_fill=style.stroke_rgb,
             stroke_width=max(0, int(stroke_width)),
             role="readout",
             required=True,
+            extra_metadata={**style.metadata(), "surface_rgb": [int(channel) for channel in surface_rgb]},
         )
         boxes.append([round(float(value), 3) for value in record["bbox_px"]])
         y += float(height) + int(line_gap_px)
     return boxes
+
+
+def _display_fill_for_node(node: SunburstNode) -> RGB:
+    fill = tuple(int(channel) for channel in node.color_rgb)
+    if str(node.level) == "parent":
+        return lighten(fill, 0.55)
+    if str(node.level) == "subgroup":
+        return lighten(fill, 0.62)
+    if str(node.level) == "leaf":
+        return lighten(fill, 0.70)
+    return fill
 
 
 def _truncate_label(label: str, *, max_chars: int) -> str:

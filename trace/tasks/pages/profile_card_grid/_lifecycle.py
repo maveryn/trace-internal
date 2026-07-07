@@ -176,7 +176,9 @@ def numeric_ordering_binding(
         "rank_position": int(rank_position),
         "rank_ordinal": str(rank_ordinal),
         "rank_position_support": [int(value) for value in rank_support],
-        "rank_position_probabilities": dict(rank_probabilities),
+        "rank_position_probabilities": {
+            str(int(key)): float(value) for key, value in dict(rank_probabilities).items()
+        },
     }
     dynamic_slots = {"field_label": str(target_field)}
     if bool(ranked):
@@ -342,6 +344,7 @@ def render_bound_profile_card_grid(
     selected_branch: str,
     branch_probabilities: Mapping[str, float],
     include_numeric_fields: bool,
+    include_filter_field: bool = False,
     binding_factory: BindingFactory,
 ) -> TaskOutput:
     """Resolve scene state, bind task-owned answer data, and assemble response."""
@@ -350,6 +353,7 @@ def render_bound_profile_card_grid(
         int(instance_seed),
         params=params,
         include_numeric_fields=bool(include_numeric_fields),
+        include_filter_field=bool(include_filter_field),
     )
     rendered = render_profile_card_case(
         instance_seed=int(instance_seed),

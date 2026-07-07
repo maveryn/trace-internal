@@ -8,13 +8,13 @@
 5. Objective: compute the smaller angle between the two hands on one analog clock.
 
 ## Program Contract
-Program: `clock.hand_angle_value(scene=clock, scope=single_two_hand_analog_clock, output=integer_degrees)`
+Program: `clock.hand_angle_value(scene=clock, scope=single_two_hand_analog_clock_with_degree_options, output=option_letter)`
 
-Candidate set: the hour-hand and minute-hand segments on the single visible analog clock.
+Candidate set: the six labeled degree answer cards below the single visible analog clock.
 Operands: the finalized clock center and both hand-tip positions.
 Operation: compute the smaller angle between the two hand segments.
-Output binding: `answer` is the smaller angle in degrees as an integer.
-Annotation witnesses: a two-item `segment_set` containing the hour and minute hand segments.
+Output binding: `answer` is the option label whose card shows the smaller angle in degrees.
+Annotation witnesses: the scalar `bbox` of the selected answer card.
 Query ids: `single`.
 
 ## 2) Scene + Task Contract
@@ -24,15 +24,16 @@ Query ids: `single`.
    - `scene_variant`: `classic|minimal|outline`
    - `style_variant`: `accented|marker|studio`
    - `accent_color_name`: shared symbolic clock colors
-4. `answer_gt.type`: `integer`
-5. Answer schema: smaller hand-to-hand angle in degrees.
-6. `annotation_gt.type`: `segment_set`
-7. Annotation schema: `segment_set`
+4. `answer_gt.type`: `option_letter`
+5. Answer schema: one visible option label from `A` through `F`.
+6. `annotation_gt.type`: `bbox`
+7. Annotation schema: scalar `bbox` for the selected answer card.
 8. Scene contract:
    - one two-hand analog clock is shown,
+   - six labeled degree answer cards are shown below the clock,
    - the answer is the smaller angle between the hour and minute hands,
    - sampled times are constrained so the answer is an integer number of degrees,
-   - annotation marks the hour and minute hand segments only.
+   - annotation marks the selected answer card only.
 
 ## 3) Prompt Contract
 1. Bundle: `symbolic_clock_v1`
@@ -45,11 +46,10 @@ Query ids: `single`.
 5. Modes: `answer_only`, `answer_and_annotation`
 
 ## 4) Annotation + Trace Contract
-1. Prompt-facing annotation is a two-item `segment_set`.
-2. Segment endpoint order is not semantically meaningful.
-3. `projected_annotation` includes `segment_set` and `pixel_segment_set`.
-4. `render_map` includes the clock center, hand tips, hand bboxes, and face bbox.
-5. `execution_trace` records the shown time, smaller angle, and resolved visual axes.
+1. Prompt-facing annotation is the scalar `bbox` of the selected answer card.
+2. `projected_annotation` includes `bbox` and `pixel_bbox`.
+3. `render_map` includes the clock center, hand tips, hand bboxes, face bbox, option bboxes, and selected option bbox.
+4. `execution_trace` records the shown time, raw smaller angle, answer label, option values, and resolved visual axes.
 
 ## 5) Determinism + Tests
 1. Deterministic sampling/rendering from `instance_seed`.

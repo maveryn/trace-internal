@@ -62,12 +62,12 @@ class ReviewAppState:
         review_root: Path,
         repo_root: Path,
         feedback_db: Path,
-        enforce_migration_registry: bool = True,
+        enforce_review_target_registry: bool = True,
         defer_initial_index: bool = False,
     ) -> None:
         self.review_root = Path(review_root).resolve()
         self.repo_root = Path(repo_root).resolve()
-        self.enforce_migration_registry = bool(enforce_migration_registry)
+        self.enforce_review_target_registry = bool(enforce_review_target_registry)
         self.feedback = FeedbackStore(feedback_db)
         self._lock = threading.RLock()
         if defer_initial_index:
@@ -77,7 +77,7 @@ class ReviewAppState:
             self._index = build_review_index(
                 self.review_root,
                 repo_root=self.repo_root,
-                enforce_migration_registry=self.enforce_migration_registry,
+                enforce_review_target_registry=self.enforce_review_target_registry,
             )
             self._review_mtime_snapshot_ns = _max_review_file_mtime_ns(self.review_root)
         self._stale_cache = False
@@ -106,7 +106,7 @@ class ReviewAppState:
         fresh = build_review_index(
             self.review_root,
             repo_root=self.repo_root,
-            enforce_migration_registry=self.enforce_migration_registry,
+            enforce_review_target_registry=self.enforce_review_target_registry,
         )
         fresh_mtime = _max_review_file_mtime_ns(self.review_root)
         with self._lock:
@@ -205,14 +205,14 @@ class ReviewAppState:
                     domain=domain,
                     scene_id=scene_id,
                     repo_root=self.repo_root,
-                    enforce_migration_registry=self.enforce_migration_registry,
+                    enforce_review_target_registry=self.enforce_review_target_registry,
                 )
                 fresh = merge_review_scene_index(current, scene_fresh, domain=domain, scene_id=scene_id)
             else:
                 fresh = build_review_index(
                     self.review_root,
                     repo_root=self.repo_root,
-                    enforce_migration_registry=self.enforce_migration_registry,
+                    enforce_review_target_registry=self.enforce_review_target_registry,
                 )
             fresh = preserve_locked_scenes(current, fresh)
             publish_in_progress = any("review artifact publish in progress" in str(error) for error in fresh.errors)
@@ -356,7 +356,7 @@ def create_app(
     feedback_db: Path | str | None = None,
     token: str | None = None,
     base_url: str = "",
-    enforce_migration_registry: bool = True,
+    enforce_review_target_registry: bool = True,
     defer_initial_index: bool = False,
     allow_full_reload: bool | None = None,
 ) -> FastAPI:
@@ -379,7 +379,7 @@ def create_app(
         review_root=resolved_review_root,
         repo_root=resolved_repo_root,
         feedback_db=resolved_feedback_db,
-        enforce_migration_registry=bool(enforce_migration_registry),
+        enforce_review_target_registry=bool(enforce_review_target_registry),
         defer_initial_index=bool(defer_initial_index),
     )
 
@@ -2727,7 +2727,7 @@ def _iter_review_marker_files(root: Path):
         "scene_review_manifest.json",
         "manual_code_audit_status.json",
         "taxonomy_review_status.json",
-        "migration_test_status.json",
+        "source_layout_test_status.json",
     )
     task_markers = (
         "manifest.json",

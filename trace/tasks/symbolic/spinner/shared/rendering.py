@@ -379,6 +379,150 @@ def _style_for_variant(
     return base
 
 
+def _text_width(draw: ImageDraw.ImageDraw, text: str, font) -> float:
+    bbox = draw.textbbox((0, 0), str(text), font=font)
+    return float(bbox[2] - bbox[0])
+
+
+def _fit_option_font(draw: ImageDraw.ImageDraw, texts: Sequence[str], *, max_width: float, start_size: int):
+    size = int(start_size)
+    while int(size) > 10:
+        font = load_font(int(size), bold=False)
+        if all(_text_width(draw, str(text), font) <= float(max_width) for text in texts):
+            return font
+        size -= 1
+    return load_font(10, bold=False)
+
+
+def option_cards_y_for_scene(
+    scene_bbox_px: Sequence[float],
+    *,
+    canvas_height: int,
+    gap_px: int = 28,
+    card_height_px: int = 66,
+    bottom_margin_px: int = 28,
+) -> int:
+    """Place answer cards below the rendered spinner panels."""
+
+    proposed = int(round(float(scene_bbox_px[3]) + float(gap_px)))
+    max_y = int(canvas_height) - int(bottom_margin_px) - int(card_height_px)
+    return max(0, min(int(proposed), int(max_y)))
+
+
+def probability_option_card_bboxes(
+    *,
+    canvas_width: int,
+    labels: Sequence[str],
+    y0_px: int,
+    outer_margin_px: int = 44,
+    gap_px: int = 10,
+    card_height_px: int = 66,
+) -> Dict[str, Tuple[float, float, float, float]]:
+    """Return one fixed A-F row of reduced-fraction option cards."""
+
+    option_labels = tuple(str(label) for label in labels)
+    if len(option_labels) != 6:
+        raise ValueError("spinner probability option cards require exactly six labels")
+    total_gap = float(max(0, len(option_labels) - 1) * int(gap_px))
+    available_width = float(canvas_width) - (2.0 * float(outer_margin_px)) - total_gap
+    if available_width <= 0.0:
+        raise ValueError("canvas is too narrow for spinner probability option cards")
+    card_width = float(available_width) / float(len(option_labels))
+    return {
+        str(label): (
+            float(outer_margin_px) + float(index) * (card_width + float(gap_px)),
+            float(y0_px),
+            float(outer_margin_px) + float(index) * (card_width + float(gap_px)) + card_width,
+            float(y0_px) + float(card_height_px),
+        )
+        for index, label in enumerate(option_labels)
+    }
+
+
+def draw_probability_option_cards(
+    image: Image.Image,
+    *,
+    text_by_label: Mapping[str, str],
+    correct_label: str,
+    y0_px: int,
+    outer_margin_px: int = 44,
+    gap_px: int = 10,
+    card_height_px: int = 66,
+    option_font_size_px: int = 24,
+    label_font_size_px: int = 16,
+) -> Tuple[Dict[str, Tuple[float, float, float, float]], List[Dict[str, Any]]]:
+    """Draw visible A-F fraction answer cards below the spinner panels."""
+
+    labels = tuple(str(label) for label in text_by_label)
+    bboxes = probability_option_card_bboxes(
+        canvas_width=int(image.width),
+        labels=labels,
+        y0_px=int(y0_px),
+        outer_margin_px=int(outer_margin_px),
+        gap_px=int(gap_px),
+        card_height_px=int(card_height_px),
+    )
+    draw = ImageDraw.Draw(image, "RGBA")
+    option_font = _fit_option_font(
+        draw,
+        [str(text_by_label[str(label)]) for label in labels],
+        max_width=min(float(box[2] - box[0]) - 14.0 for box in bboxes.values()),
+        start_size=int(option_font_size_px),
+    )
+    label_font = load_font(int(label_font_size_px), bold=True)
+    entities: List[Dict[str, Any]] = []
+    for label in labels:
+        bbox = tuple(float(value) for value in bboxes[str(label)])
+        draw_rounded_rect(
+            draw,
+            bbox,
+            radius=11,
+            fill=(253, 252, 248),
+            outline=(104, 112, 126),
+            width=2,
+        )
+        label_box = (bbox[0] + 7.0, bbox[1] + 8.0, bbox[0] + 31.0, bbox[1] + 32.0)
+        draw_rounded_rect(
+            draw,
+            label_box,
+            radius=6,
+            fill=(42, 50, 63),
+            outline=(42, 50, 63),
+            width=1,
+        )
+        draw_centered_text(
+            draw,
+            text=str(label),
+            center=((label_box[0] + label_box[2]) / 2.0, (label_box[1] + label_box[3]) / 2.0),
+            font=label_font,
+            fill=(255, 255, 255),
+            stroke_fill=(42, 50, 63),
+            stroke_width=0,
+        )
+        draw_centered_text(
+            draw,
+            text=str(text_by_label[str(label)]),
+            center=((bbox[0] + bbox[2]) / 2.0, bbox[1] + 44.0),
+            font=option_font,
+            fill=(28, 34, 44),
+            stroke_fill=(253, 252, 248),
+            stroke_width=0,
+        )
+        entities.append(
+            {
+                "entity_id": f"option_{str(label).lower()}",
+                "entity_type": "answer_option",
+                "bbox_px": [round(float(value), 3) for value in bbox],
+                "attrs": {
+                    "option_label": str(label),
+                    "option_text": str(text_by_label[str(label)]),
+                    "is_correct": bool(str(label) == str(correct_label)),
+                },
+            }
+        )
+    return bboxes, entities
+
+
 def render_spinner_scene(
     image: Image.Image,
     *,
@@ -472,5 +616,7 @@ __all__ = [
     "RenderedSpinnerScene",
     "SUPPORTED_SPINNER_SCENE_VARIANTS",
     "SpinnerRenderParams",
+    "draw_probability_option_cards",
+    "option_cards_y_for_scene",
     "render_spinner_scene",
 ]

@@ -4,7 +4,7 @@
 
 1. Domain: `charts`
 2. Scene id: `population_pyramid`
-3. Source implementation scene package: `charts/population_pyramid`
+3. Source implementation scene: `charts/population_pyramid`
 4. Public task id: `task_charts__population_pyramid__age_group_threshold_count`
 
 ## Implementation

@@ -15,3 +15,10 @@ domain-wide consistency:
 - `RENDERER_REVIEW.md` — how to review prompt-render consistency, semantic
   marker colors/styles, layout, labels, options, visual variety, and annotation
   projection onto final pixels.
+- `DOMAIN_RELEASE_READINESS.md` — how to review a domain as a complete
+  training/release surface, including scene/task uniqueness, prompts,
+  annotation, renderer quality, artifacts, docs, and remaining blockers.
+
+Dated domain release-readiness snapshots that are worth keeping as references
+live under `domain-release-readiness/reference/`. They are historical reports,
+not active policy.

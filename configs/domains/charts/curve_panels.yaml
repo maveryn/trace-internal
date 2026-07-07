@@ -1,7 +1,7 @@
 generation:
   shared:
     panel_count_min: 4
-    panel_count_max: 9
+    panel_count_max: 6
     method_count_min: 3
     method_count_max: 6
     x_tick_count_min: 4

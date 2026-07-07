@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `construction_site`
-- Implementation scene package: `construction_site`
+- Implementation source scene: `construction_site`
 - Implementation source: `trace/tasks/illustrations/construction_site/rotated_tile_label.py`
 
 ## Task Contract

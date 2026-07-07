@@ -44,11 +44,11 @@
         "Use the final-total bar and contribution \"{target_step_label}\". If that contribution were {counterfactual_phrase}, what is the new final total?"
       ],
       "reverse_step_final_total": [
-        "If contribution \"{target_step_label}\" were {counterfactual_phrase}, what would the final total be?",
-        "The final bar includes every signed contribution. If \"{target_step_label}\" were {counterfactual_phrase}, what final total would result?",
-        "Reverse the sign of contribution \"{target_step_label}\" while keeping all other contributions the same. What is the final total?",
-        "What would the final total be if contribution \"{target_step_label}\" changed from positive to negative or negative to positive?",
-        "Use the final-total bar and contribution \"{target_step_label}\". If that contribution were {counterfactual_phrase}, what is the new final total?"
+        "Contribution \"{target_step_label}\" is {target_delta_text}. If it changed sign to {reversed_delta_text} while all other contributions stayed the same, what would the final total be?",
+        "The final bar includes every signed contribution. If \"{target_step_label}\" changed from {target_delta_text} to {reversed_delta_text}, what final total would result?",
+        "Reverse only contribution \"{target_step_label}\" from {target_delta_text} to {reversed_delta_text}. Keeping all other contributions the same, what is the final total?",
+        "What would the final total be if contribution \"{target_step_label}\" changed sign from {target_delta_text} to {reversed_delta_text}?",
+        "Use the final-total bar and contribution \"{target_step_label}\". If that contribution changed from {target_delta_text} to {reversed_delta_text}, what is the new final total?"
       ]
     },
     "output": {
@@ -103,6 +103,12 @@
     },
     "target_step_label": {
       "type": "string"
+    },
+    "target_delta_text": {
+      "type": "string"
+    },
+    "reversed_delta_text": {
+      "type": "string"
     }
   },
   "required_slots_by_key": {
@@ -118,7 +124,9 @@
     ],
     "query:reverse_step_final_total": [
       "target_step_label",
-      "counterfactual_phrase"
+      "counterfactual_phrase",
+      "target_delta_text",
+      "reversed_delta_text"
     ],
     "answer_or_annotation:answer_only": [
       "answer_hint",

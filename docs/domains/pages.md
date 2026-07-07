@@ -28,9 +28,8 @@ That baseline mirrors the Charts 25-treatment pool: 20 light treatments and 5
 dark treatments. Scene-specific renderers may map those shared roles into their
 own calendar, table, form, timeline, hierarchy, or infographic grammar, but
 they should not invent parallel theme axes for the same non-semantic style
-role. During migration, the Pages render-audit wrapper records the selected
-shared style and applies fallback outer chrome for legacy scenes that do not
-yet map the style directly.
+role. The Pages render-audit wrapper records the selected shared style and
+applies fallback outer chrome for scenes that do not map the style directly.
 GUI/control scenes that have completed first-class style mapping, including
 `control_board`, `navigation_flow`, `web_action`, and `workspace`, must not
 expose a separate `style_variant` sampling axis for

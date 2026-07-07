@@ -284,7 +284,7 @@ def _run_cylinder_diagonal(
         generating_shape="rectangle",
         answer=round_volume(volume_cylinder(diameter=case.diameter, height=case.height)),
         formula_family="cylinder_volume_from_diagonal_rectangle",
-        formula="d^2 = q^2 - h^2, then V = pi (d/2)^2 h",
+        formula="d^2 = diag^2 - h^2, then V = pi (d/2)^2 h",
         radius=float(case.diameter) / 2.0,
         diameter=float(case.diameter),
         radial_input_kind="diagonal",

@@ -173,6 +173,49 @@ def resolve_date_filled_slot_count(instance_seed: int, params: Mapping[str, Any]
     return int(support[int(index) % len(support)]), uniform_probability(support)
 
 
+def resolve_weekday_index(instance_seed: int, params: Mapping[str, Any]) -> Tuple[int, Dict[str, float]]:
+    """Resolve the requested weekday index where Monday is 0."""
+
+    support = resolve_int_support(params, "weekday_column_index_support", tuple(range(7)))
+    if any(int(value) < 0 or int(value) > 6 for value in support):
+        raise ValueError("weekday_column_index_support values must be between 0 and 6")
+    explicit = params.get("weekday_index", params.get("target_weekday_index"))
+    if explicit is not None:
+        value = int(explicit)
+        if value not in set(support):
+            raise ValueError(f"weekday_index must be in {list(support)}")
+        return int(value), {str(value): 1.0}
+    index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{NAMESPACE_ROOT}.weekday_column_count.weekday_index",
+    )
+    return int(support[int(index) % len(support)]), uniform_probability(support)
+
+
+def resolve_weekday_event_count(instance_seed: int, params: Mapping[str, Any]) -> Tuple[int, Dict[str, float]]:
+    """Resolve the target number of chips in one weekday column."""
+
+    support = resolve_int_support(params, "weekday_column_count_support", DEFAULTS.weekday_column_count_support)
+    if any(int(value) < 0 for value in support):
+        raise ValueError("weekday_column_count_support values must be non-negative")
+    explicit = params.get("weekday_column_count")
+    if explicit is not None:
+        value = int(explicit)
+        if value not in set(support):
+            raise ValueError(f"weekday_column_count must be in {list(support)}")
+        return int(value), {str(value): 1.0}
+    sampling_index = params.get("_sample_cursor")
+    if sampling_index is not None:
+        return int(support[abs(int(sampling_index)) % len(support)]), uniform_probability(support)
+    index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{NAMESPACE_ROOT}.weekday_column_count.target_count",
+    )
+    return int(support[int(index) % len(support)]), uniform_probability(support)
+
+
 def resolve_year_month(instance_seed: int, params: Mapping[str, Any]) -> Tuple[int, int, int, int]:
     """Resolve a calendar month and return year, month, days, and row count."""
 
@@ -213,7 +256,13 @@ def chip_fill(category_label: str, *, instance_seed: int) -> Tuple[int, int, int
     return tuple(int(value) for value in CHIP_FILL_PALETTE[int(index) % len(CHIP_FILL_PALETTE)])
 
 
-def make_chip(*, day: int, slot_id: str, category_label: str, instance_seed: int) -> CalendarEventChipSpec:
+def make_chip(
+    *,
+    day: int,
+    slot_id: str,
+    category_label: str,
+    instance_seed: int,
+) -> CalendarEventChipSpec:
     """Create one visible event chip spec."""
 
     return CalendarEventChipSpec(
@@ -362,6 +411,162 @@ def build_date_filled_slot_count_chips(
     return chips, matching_keys
 
 
+def build_weekday_event_count_chips(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    year: int,
+    month: int,
+    days_in_month: int,
+    weekday_index: int,
+    target_count: int,
+    category_labels: Sequence[str],
+) -> Tuple[Tuple[CalendarEventChipSpec, ...], Tuple[str, ...]]:
+    """Build chips with exactly `target_count` chips in one weekday column."""
+
+    rng = spawn_rng(int(instance_seed), f"{NAMESPACE_ROOT}.weekday_column_count_chips")
+    slots = tuple(str(slot) for slot, _label in EVENT_SLOT_SPECS)
+    categories = tuple(str(value) for value in category_labels)
+    if not categories:
+        raise ValueError("category_labels must not be empty")
+    first_weekday_index, _days = calendar.monthrange(int(year), int(month))
+    target_dates = tuple(
+        int(day)
+        for day in range(1, int(days_in_month) + 1)
+        if int((int(first_weekday_index) + int(day) - 1) % 7) == int(weekday_index)
+    )
+    target_pairs = [(int(day), str(slot)) for day in target_dates for slot in slots]
+    if int(target_count) > len(target_pairs):
+        raise ValueError("weekday column count exceeds available weekday event slots")
+
+    rng.shuffle(target_pairs)
+    selected_pairs = set(target_pairs[: int(target_count)])
+    chip_by_day_slot: Dict[Tuple[int, str], str] = {
+        (int(day), str(slot)): str(rng.choice(categories))
+        for day, slot in selected_pairs
+    }
+
+    distractor_support = resolve_int_support(
+        params,
+        "weekday_column_distractor_support",
+        DEFAULTS.weekday_column_distractor_support,
+    )
+    distractor_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{NAMESPACE_ROOT}.weekday_column_count.distractor_count",
+    )
+    distractor_count = int(distractor_support[int(distractor_index) % len(distractor_support)])
+    outside_pairs = [
+        (int(day), str(slot))
+        for day in range(1, int(days_in_month) + 1)
+        if int((int(first_weekday_index) + int(day) - 1) % 7) != int(weekday_index)
+        for slot in slots
+    ]
+    rng.shuffle(outside_pairs)
+    for day, slot in outside_pairs[: min(int(distractor_count), len(outside_pairs))]:
+        chip_by_day_slot[(int(day), str(slot))] = str(rng.choice(categories))
+
+    slot_order = {str(slot): index for index, slot in enumerate(slots)}
+    chips = tuple(
+        make_chip(
+            day=int(day),
+            slot_id=str(slot),
+            category_label=str(category),
+            instance_seed=int(instance_seed),
+        )
+        for (day, slot), category in sorted(
+            chip_by_day_slot.items(),
+            key=lambda item: (int(item[0][0]), int(slot_order[str(item[0][1])])),
+        )
+    )
+    matching_keys = tuple(
+        chip_key(int(day), str(slot))
+        for day, slot in sorted(selected_pairs, key=lambda item: (int(item[0]), int(slot_order[str(item[1])])))
+    )
+    return chips, matching_keys
+
+
+def build_busiest_date_label_chips(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    days_in_month: int,
+    target_date: int,
+    category_labels: Sequence[str],
+) -> Tuple[Tuple[CalendarEventChipSpec, ...], Tuple[str, ...], Dict[str, int]]:
+    """Build chips where one date uniquely has all visible event slots filled."""
+
+    rng = spawn_rng(int(instance_seed), f"{NAMESPACE_ROOT}.busiest_date_label_chips")
+    slots = tuple(str(slot) for slot, _label in EVENT_SLOT_SPECS)
+    categories = tuple(str(value) for value in category_labels)
+    if not categories:
+        raise ValueError("category_labels must not be empty")
+    if int(target_date) < 1 or int(target_date) > int(days_in_month):
+        raise ValueError("target_date must be within the sampled month")
+
+    slot_order = {str(slot): index for index, slot in enumerate(slots)}
+    chip_by_day_slot: Dict[Tuple[int, str], str] = {}
+    for slot in slots:
+        chip_by_day_slot[(int(target_date), str(slot))] = str(rng.choice(categories))
+
+    two_chip_support = resolve_int_support(
+        params,
+        "busiest_two_chip_distractor_date_count_support",
+        DEFAULTS.busiest_two_chip_distractor_date_count_support,
+    )
+    single_chip_support = resolve_int_support(
+        params,
+        "busiest_single_chip_distractor_date_count_support",
+        DEFAULTS.busiest_single_chip_distractor_date_count_support,
+    )
+    two_chip_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{NAMESPACE_ROOT}.busiest_date_label.two_chip_distractor_dates",
+    )
+    single_chip_index = resolve_selection_index(
+        params=params,
+        instance_seed=int(instance_seed),
+        namespace=f"{NAMESPACE_ROOT}.busiest_date_label.single_chip_distractor_dates",
+    )
+    two_chip_count = int(two_chip_support[int(two_chip_index) % len(two_chip_support)])
+    single_chip_count = int(single_chip_support[int(single_chip_index) % len(single_chip_support)])
+
+    day_pool = [int(day) for day in range(1, int(days_in_month) + 1) if int(day) != int(target_date)]
+    rng.shuffle(day_pool)
+    two_chip_days = tuple(day_pool[: min(int(two_chip_count), len(day_pool))])
+    remaining_days = day_pool[len(two_chip_days) :]
+    single_chip_days = tuple(remaining_days[: min(int(single_chip_count), len(remaining_days))])
+
+    for day in two_chip_days:
+        selected_slots = list(slots)
+        rng.shuffle(selected_slots)
+        for slot in selected_slots[:2]:
+            chip_by_day_slot[(int(day), str(slot))] = str(rng.choice(categories))
+    for day in single_chip_days:
+        chip_by_day_slot[(int(day), str(rng.choice(slots)))] = str(rng.choice(categories))
+
+    chips = tuple(
+        make_chip(
+            day=int(day),
+            slot_id=str(slot),
+            category_label=str(category),
+            instance_seed=int(instance_seed),
+        )
+        for (day, slot), category in sorted(
+            chip_by_day_slot.items(),
+            key=lambda item: (int(item[0][0]), int(slot_order[str(item[0][1])])),
+        )
+    )
+    matching_keys = tuple(chip_key(int(target_date), str(slot)) for slot in slots)
+    date_chip_counts: Dict[str, int] = {}
+    for day, _slot in chip_by_day_slot:
+        date_key = str(int(day))
+        date_chip_counts[date_key] = int(date_chip_counts.get(date_key, 0)) + 1
+    return chips, matching_keys, dict(sorted(date_chip_counts.items(), key=lambda item: int(item[0])))
+
+
 def build_common_case(
     *,
     instance_seed: int,
@@ -435,13 +640,16 @@ def build_common_case(
         namespace="text_color_mode",
     )
     category_labels = resolve_category_labels(params)
+    supported_slots = tuple(str(slot) for slot, _ in EVENT_SLOT_SPECS)
+    if not supported_slots:
+        raise ValueError("slot_support must contain at least one slot id")
     slot_id, slot_probs = resolve_named_axis(
         instance_seed=int(instance_seed),
         params=params,
         explicit_key="slot_id",
         weights_key="slot_id_weights",
         balance_flag_key="balanced_slot_id_sampling",
-        supported=tuple(slot for slot, _ in EVENT_SLOT_SPECS),
+        supported=tuple(str(slot) for slot in supported_slots),
         namespace="slot_id",
     )
     category_label, category_probs = resolve_choice(
@@ -485,8 +693,11 @@ def build_common_case(
         target_count=(int(target_count) if target_date is None else None),
         event_chips=tuple(event_chips),
         matching_chip_keys=tuple(str(key) for key in matching_keys),
+        weekday_index=None,
+        weekday_label=None,
         category_probabilities=dict(category_probs),
         slot_probabilities=dict(slot_probs),
+        weekday_probabilities={},
         target_count_probabilities=dict(target_count_probs),
         scene_variant_probabilities=dict(scene_probs),
         style_variant_probabilities=dict(style_probs),
@@ -518,20 +729,6 @@ def resolve_target_date(instance_seed: int, params: Mapping[str, Any], days_in_m
     return int(value)
 
 
-def build_date_slot_category_case(instance_seed: int, *, params: Mapping[str, Any]) -> EventGridCase:
-    """Build a case for reading one category label from a date slot."""
-
-    year, month, days_in_month, _row_count = resolve_year_month(int(instance_seed), params)
-    del year, month
-    target_date = resolve_target_date(int(instance_seed), params, int(days_in_month))
-    return build_common_case(
-        instance_seed=int(instance_seed),
-        params=params,
-        target_date=int(target_date),
-        unique_category_slot=False,
-    )
-
-
 def build_category_slot_day_count_case(instance_seed: int, *, params: Mapping[str, Any]) -> EventGridCase:
     """Build a case for counting dates with a requested category in one slot."""
 
@@ -540,6 +737,41 @@ def build_category_slot_day_count_case(instance_seed: int, *, params: Mapping[st
         params=params,
         target_date=None,
         unique_category_slot=True,
+    )
+
+
+def build_weekday_event_count_case(instance_seed: int, *, params: Mapping[str, Any]) -> EventGridCase:
+    """Build a case for counting all event chips in one weekday column."""
+
+    base_params = dict(params)
+    base_params.pop("target_count", None)
+    base_case = build_common_case(
+        instance_seed=int(instance_seed),
+        params=base_params,
+        target_date=None,
+        unique_category_slot=False,
+    )
+    weekday_index, weekday_probs = resolve_weekday_index(int(instance_seed), params)
+    target_count, count_probs = resolve_weekday_event_count(int(instance_seed), params)
+    chips, matching_keys = build_weekday_event_count_chips(
+        instance_seed=int(instance_seed),
+        params=params,
+        year=int(base_case.year),
+        month=int(base_case.month),
+        days_in_month=int(base_case.days_in_month),
+        weekday_index=int(weekday_index),
+        target_count=int(target_count),
+        category_labels=tuple(base_case.event_category_labels),
+    )
+    return replace(
+        base_case,
+        target_count=int(target_count),
+        event_chips=tuple(chips),
+        matching_chip_keys=tuple(str(key) for key in matching_keys),
+        weekday_index=int(weekday_index),
+        weekday_label=str(calendar.day_name[int(weekday_index)]),
+        weekday_probabilities=dict(weekday_probs),
+        target_count_probabilities=dict(count_probs),
     )
 
 
@@ -583,4 +815,32 @@ def build_date_filled_slot_count_case(instance_seed: int, *, params: Mapping[str
         event_chips=tuple(chips),
         matching_chip_keys=tuple(str(key) for key in matching_keys),
         target_count_probabilities=dict(count_probs),
+    )
+
+
+def build_busiest_date_label_case(instance_seed: int, *, params: Mapping[str, Any]) -> EventGridCase:
+    """Build a case whose answer is the unique date with the most event chips."""
+
+    year, month, days_in_month, _row_count = resolve_year_month(int(instance_seed), params)
+    del year, month
+    target_date = resolve_target_date(int(instance_seed), params, int(days_in_month))
+    base_case = build_common_case(
+        instance_seed=int(instance_seed),
+        params=params,
+        target_date=int(target_date),
+        unique_category_slot=False,
+    )
+    chips, matching_keys, _date_chip_counts = build_busiest_date_label_chips(
+        instance_seed=int(instance_seed),
+        params=params,
+        days_in_month=int(base_case.days_in_month),
+        target_date=int(target_date),
+        category_labels=tuple(base_case.event_category_labels),
+    )
+    return replace(
+        base_case,
+        event_chips=tuple(chips),
+        matching_chip_keys=tuple(str(key) for key in matching_keys),
+        target_count=3,
+        target_count_probabilities={"3": 1.0},
     )

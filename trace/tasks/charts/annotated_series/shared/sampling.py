@@ -17,7 +17,7 @@ from trace.tasks.charts.annotated_series.shared.defaults import (
 )
 from trace.tasks.charts.annotated_series.shared.state import SeriesSample
 from trace.tasks.charts.shared.label_assets import sample_chart_labels
-from trace.tasks.charts.shared.labeled_chart_values import balanced_choice_from_values
+from trace.tasks.charts.shared.labeled_chart_values import balanced_choice_from_values, resolve_value_bounds
 
 
 def _probability_map_from_weights(weights: Mapping[str, float]) -> dict[str, float]:
@@ -110,12 +110,12 @@ def sample_values(
     count: int,
     instance_seed: int,
 ) -> tuple[int, ...]:
-    value_min, value_max = generation_bounds(
+    value_min, value_max = resolve_value_bounds(
         params,
-        "value_min",
-        "value_max",
-        FALLBACK_CHART_DEFAULTS.value_min,
-        FALLBACK_CHART_DEFAULTS.value_max,
+        gen_defaults=GENERATION_DEFAULTS,
+        defaults=FALLBACK_CHART_DEFAULTS,
+        task_id=SCENE_NAMESPACE,
+        instance_seed=int(instance_seed),
     )
     if value_max - value_min + 1 < count:
         value_max = value_min + count + 10

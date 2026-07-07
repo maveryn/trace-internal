@@ -23,11 +23,11 @@
     },
     "query": {
       "module_field_value_label": [
-        "In module \"{module_title}\", what value is shown for item \"{item_label}\" under field \"{field_label}\"?",
-        "Find module \"{module_title}\". For \"{item_label}\", read the value in the \"{field_label}\" field.",
-        "Within \"{module_title}\", what visible value is paired with \"{item_label}\" and \"{field_label}\"?",
-        "Using the \"{field_label}\" field in module \"{module_title}\", what value is listed for \"{item_label}\"?",
-        "Read the value where item \"{item_label}\" and field \"{field_label}\" meet in module \"{module_title}\"."
+        "In module \"{module_title}\", order items by \"{selector_field_label}\" from {rank_order_phrase}. What value is shown under \"{answer_field_label}\" for the {rank_ordinal} item?",
+        "Find module \"{module_title}\". Rank its items by \"{selector_field_label}\" from {rank_order_phrase}; read \"{answer_field_label}\" for the {rank_ordinal} item.",
+        "Within \"{module_title}\", use \"{selector_field_label}\" to identify the {rank_ordinal} item in {rank_order_phrase} order. What is its \"{answer_field_label}\" value?",
+        "Using \"{selector_field_label}\" in module \"{module_title}\", find the {rank_ordinal} item when ordered {rank_order_phrase}. What value appears in \"{answer_field_label}\"?",
+        "Read the \"{answer_field_label}\" value for the item ranked {rank_ordinal} by \"{selector_field_label}\" from {rank_order_phrase} in module \"{module_title}\"."
       ],
       "module_field_ranked_item_label": [
         "In module \"{module_title}\", order field \"{field_label}\" from {rank_order_phrase}. Which item is {rank_ordinal}?",
@@ -140,8 +140,11 @@
   },
   "dynamic_slots": {
     "module_title": {"type": "string"},
+    "module_position_phrase": {"type": "string"},
     "item_label": {"type": "string"},
     "field_label": {"type": "string"},
+    "selector_field_label": {"type": "string"},
+    "answer_field_label": {"type": "string"},
     "rank_direction": {"type": "string"},
     "rank_order_phrase": {"type": "string"},
     "rank_ordinal": {"type": "string"},
@@ -159,8 +162,10 @@
     ],
     "query:module_field_value_label": [
       "module_title",
-      "item_label",
-      "field_label"
+      "selector_field_label",
+      "rank_ordinal",
+      "rank_order_phrase",
+      "answer_field_label"
     ],
     "query:module_field_ranked_item_label": [
       "module_title",

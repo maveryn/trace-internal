@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `contour_density`
-3. Source implementation scene package: `charts/contour_density`
+3. Source implementation scene: `charts/contour_density`
 4. Query ids: `highest_density_region_label`, `lowest_density_region_label`
 5. Semantic query details are recorded in `query_id` and trace params.
 

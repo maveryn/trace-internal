@@ -20,7 +20,7 @@ from .shared.prompts import PROMPT_BUNDLE_ID as DEFAULT_PROMPT_BUNDLE_ID
 from .shared.prompts import build_caliper_prompt_artifacts
 from .shared.rendering import render_caliper
 from .shared.sampling import resolve_caliper_scenario
-from .shared.state import SCENE_ID, SCENE_NAMESPACE, VERNIER_RESOLUTION_MM
+from .shared.state import OPTION_LETTERS, SCENE_ID, SCENE_NAMESPACE, VERNIER_RESOLUTION_MM
 
 
 TASK_ID = "task_physics__vernier_caliper__length_readout_value"
@@ -106,13 +106,13 @@ class PhysicsVernierCaliperLengthReadoutValueTask:
             dynamic_slots={},
             instance_seed=int(instance_seed),
         )
-        answer_gt = TypedValue(type="number", value=float(scenario.answer_mm))
+        answer_gt = TypedValue(
+            type="option_letter",
+            value=str(scenario.correct_option_letter),
+        )
         annotation_gt = TypedValue(
-            type="point_map",
-            value={
-                str(key): list(value)
-                for key, value in rendered.annotation_point_map.items()
-            },
+            type="bbox",
+            value=list(rendered.render_map["correct_option_bbox_px"]),
         )
         query_spec = build_prompt_query_spec(
             prompt_artifacts=prompt_artifacts,
@@ -120,16 +120,26 @@ class PhysicsVernierCaliperLengthReadoutValueTask:
             params={
                 "query_id": str(query_id),
                 "internal_query_id": INTERNAL_QUERY_ID,
+                "answer_support": list(OPTION_LETTERS),
                 "main_mm": int(scenario.main_mm),
                 "aligned_vernier_tick": int(scenario.aligned_vernier_tick),
-                "target_answer": float(scenario.answer_mm),
+                "target_readout_mm": float(scenario.answer_mm),
+                "target_answer": str(scenario.correct_option_letter),
+                "correct_option_letter": str(scenario.correct_option_letter),
+                "option_values_mm": dict(scenario.option_values_mm),
                 "query_id_probabilities": dict(query_probabilities),
                 "main_mm_probabilities": dict(scenario.main_mm_probabilities),
                 "aligned_vernier_tick_probabilities": dict(
                     scenario.aligned_vernier_tick_probabilities
                 ),
-                "target_answer_probabilities": dict(
+                "numeric_readout_probabilities": dict(
                     scenario.target_answer_probabilities
+                ),
+                "target_answer_probabilities": dict(
+                    scenario.correct_option_letter_probabilities
+                ),
+                "correct_option_letter_probabilities": dict(
+                    scenario.correct_option_letter_probabilities
                 ),
             },
         )
@@ -145,6 +155,8 @@ class PhysicsVernierCaliperLengthReadoutValueTask:
                     "aligned_vernier_tick": int(scenario.aligned_vernier_tick),
                     "vernier_resolution_mm": float(VERNIER_RESOLUTION_MM),
                     "answer_mm": float(scenario.answer_mm),
+                    "correct_option_letter": str(scenario.correct_option_letter),
+                    "option_values_mm": dict(scenario.option_values_mm),
                 },
             },
             "query_spec": query_spec,
@@ -170,18 +182,26 @@ class PhysicsVernierCaliperLengthReadoutValueTask:
                 "main_mm": int(scenario.main_mm),
                 "aligned_vernier_tick": int(scenario.aligned_vernier_tick),
                 "vernier_resolution_mm": float(VERNIER_RESOLUTION_MM),
-                "target_answer": float(scenario.answer_mm),
+                "target_readout_mm": float(scenario.answer_mm),
+                "target_answer": str(scenario.correct_option_letter),
+                "correct_option_letter": str(scenario.correct_option_letter),
+                "answer_support": list(OPTION_LETTERS),
+                "option_values_mm": dict(scenario.option_values_mm),
                 "answer_rounding": "one_decimal",
-                "annotation_entity_ids": sorted(annotation_gt.value.keys()),
+                "annotation_entity_ids": [f"option_{scenario.correct_option_letter}"],
+                "readout_witness_entity_ids": sorted(rendered.annotation_point_map.keys()),
+                "correct_option_letter_probabilities": dict(
+                    scenario.correct_option_letter_probabilities
+                ),
             },
             "witness_symbolic": {
-                "type": "point_map",
-                "ids": sorted(annotation_gt.value.keys()),
+                "type": "bbox",
+                "entity_id": f"option_{scenario.correct_option_letter}",
             },
             "projected_annotation": {
-                "type": "point_map",
-                "point_map": dict(annotation_gt.value),
-                "pixel_point_map": dict(annotation_gt.value),
+                "type": "bbox",
+                "bbox": list(annotation_gt.value),
+                "pixel_bbox": list(annotation_gt.value),
             },
             "background": dict(rendered.render_map["background_style"]),
             "post_image_noise": dict(rendered.render_map["post_image_noise"]),

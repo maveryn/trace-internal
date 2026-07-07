@@ -12,8 +12,9 @@
 3. `answer_gt.type`: `option_letter`.
 4. Answer precision/format, if narrower than the registered answer type: one visible option label from the rendered options, sampled from `A..D` or `A..F`.
 5. Default `annotation_gt.type`: `bbox`.
-6. Alternate annotation forms: none.
-7. Annotation witness policy:
+6. Annotation schema: `bbox`.
+7. Alternate annotation forms: none.
+8. Annotation witness policy:
    - task family for annotation review: `direct_visible_answer`
    - minimal visual answer-verification witnesses: the selected option cell that supplies the missing icon.
    - derivation/proof details kept in trace metadata: mirror axis, missing cell location, mirrored counterpart cell location, grid cells, option cells, and icon placements.
@@ -21,7 +22,7 @@
    - map annotation role names, if used: none.
    - numeric/readout annotation handling: not applicable.
    - answer-option annotation policy: the answer is a complete visual option image, so annotation marks the selected option cell.
-8. Overlap/touch policy, if applicable: not applicable.
+9. Overlap/touch policy, if applicable: not applicable.
 
 ## Program Contract
 

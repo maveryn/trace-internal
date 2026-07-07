@@ -16,6 +16,7 @@ from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.illustrations.shared.rpg_tile_profiles import resolve_rpg_tile_render_params
 
 from .shared.output import (
+    _json_safe,
     bbox_set_projection,
     rounded_bbox_set,
     rpg_dungeon_render_spec,
@@ -459,7 +460,7 @@ def count_trace_payload(
                 "operation": str(operation),
                 "query_id": str(query_identifier),
                 "prompt_query_key": str(prompt_query_key),
-                **dict(relations),
+                **_json_safe(dict(relations)),
             },
         ),
         "query_spec": {
@@ -467,22 +468,22 @@ def count_trace_payload(
             "query_id": str(query_identifier),
             "prompt_query_key": str(prompt_query_key),
             "prompt_variant_active_key": prompt_artifacts.prompt_variant_active_key,
-            "prompt_variant": dict(prompt_artifacts.prompt_variant),
-            "prompt_variants": dict(prompt_artifacts.prompt_variants_for_trace),
-            "params": dict(query_params),
+            "prompt_variant": _json_safe(dict(prompt_artifacts.prompt_variant)),
+            "prompt_variants": _json_safe(dict(prompt_artifacts.prompt_variants_for_trace)),
+            "params": _json_safe(dict(query_params)),
         },
         "render_spec": rpg_dungeon_render_spec(scene, scene_id=SCENE_ID),
-        "render_map": dict(render_map),
+        "render_map": _json_safe(dict(render_map)),
         "execution_trace": {
             "query_id": str(query_identifier),
             "prompt_query_key": str(prompt_query_key),
             "scene_id": SCENE_ID,
             "operation": str(operation),
-            **dict(execution_fields),
-            "renderer": dict(scene.trace),
+            **_json_safe(dict(execution_fields)),
+            "renderer": _json_safe(dict(scene.trace)),
         },
-        "witness_symbolic": dict(witness_fields),
-        "projected_annotation": bbox_set_projection(annotation),
+        "witness_symbolic": _json_safe(dict(witness_fields)),
+        "projected_annotation": _json_safe(bbox_set_projection(annotation)),
     }
 
 

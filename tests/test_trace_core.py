@@ -247,6 +247,12 @@ def test_canonical_non_finite_rejected() -> None:
     assert exc_info.value.code == "schema_non_finite_number"
 
 
+def test_canonical_json_normalizes_tuples_as_arrays() -> None:
+    assert canonical_json_bytes({"x": (1, "a", (2, 3))}) == canonical_json_bytes(
+        {"x": [1, "a", [2, 3]]}
+    )
+
+
 def test_cell_board_shortest_path_deterministic() -> None:
     task = TileShortestPathTask()
     params = {

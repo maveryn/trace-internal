@@ -15,13 +15,11 @@ from .shared.state import DOMAIN, SCENE_ID, StarBattleDataset
 
 TASK_ID = "task_puzzles__star_battle__remaining_valid_cell_count"
 SUPPORTED_QUERY_IDS = (
-    "remaining_valid_cells_in_marked_region_count",
     "remaining_valid_cells_in_marked_row_count",
     "remaining_valid_cells_in_marked_column_count",
 )
 PROMPT_TASK_KEY = "star_battle_remaining_count_query"
 SCOPE_KIND_BY_QUERY = {
-    "remaining_valid_cells_in_marked_region_count": "marked_region",
     "remaining_valid_cells_in_marked_row_count": "marked_row",
     "remaining_valid_cells_in_marked_column_count": "marked_column",
 }
@@ -69,7 +67,7 @@ def _bind_output(
 
 @register_task
 class PuzzlesStarBattleRemainingValidCellCountTask:
-    """Count legal remaining Star Battle cells in a marked row, column, or region."""
+    """Count legal remaining Star Battle cells in a marked row or column."""
 
     task_id = TASK_ID
     domain = DOMAIN

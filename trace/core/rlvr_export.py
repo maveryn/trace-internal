@@ -6,14 +6,16 @@ import json
 import os
 import math
 import re
+from io import BytesIO
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Literal, Mapping
 
 from tqdm.auto import tqdm
+from PIL import Image
 
-from .scene_package_migration import is_scene_package_task
+from .source_layout_policy import is_scene_package_task
 from .taxonomy import resolve_task_query_id, resolve_task_taxonomy
 
 
@@ -60,6 +62,32 @@ class RLVRExportResult:
     prompt_variant: PromptVariantMode
     image_path_mode: ImagePathMode
     row_count: int
+
+
+@dataclass(frozen=True)
+class ExportedImageInfo:
+    """Export-time image geometry needed to keep annotations in image space."""
+
+    original_width: int
+    original_height: int
+    exported_width: int
+    exported_height: int
+
+    @property
+    def scale_x(self) -> float:
+        return float(self.exported_width) / float(max(1, self.original_width))
+
+    @property
+    def scale_y(self) -> float:
+        return float(self.exported_height) / float(max(1, self.original_height))
+
+    def to_dict(self) -> dict[str, int]:
+        return {
+            "original_width": int(self.original_width),
+            "original_height": int(self.original_height),
+            "exported_width": int(self.exported_width),
+            "exported_height": int(self.exported_height),
+        }
 
 
 def _normalize_prompt_variant(prompt_variant: str) -> PromptVariantMode:
@@ -293,6 +321,53 @@ def _format_image_path(
     return str(Path(relative).as_posix())
 
 
+def _resize_image_bytes_to_pixel_cap(
+    image_path: Path,
+    *,
+    max_pixels: int | None,
+) -> tuple[bytes, str, ExportedImageInfo]:
+    """Read one image, optionally resize it, and return bytes plus geometry."""
+
+    suffix_format = image_path.suffix.lower().lstrip(".") or "png"
+    with Image.open(image_path) as image:
+        image.load()
+        original_width, original_height = int(image.width), int(image.height)
+        exported = image
+        if max_pixels is not None and int(max_pixels) > 0:
+            pixel_count = int(image.width) * int(image.height)
+            if pixel_count > int(max_pixels):
+                resize_factor = math.sqrt(float(max_pixels) / float(pixel_count))
+                exported_width = max(1, int(image.width * resize_factor))
+                exported_height = max(1, int(image.height * resize_factor))
+                while exported_width * exported_height > int(max_pixels):
+                    if exported_width >= exported_height:
+                        exported_width -= 1
+                    else:
+                        exported_height -= 1
+                exported = image.resize((exported_width, exported_height), Image.Resampling.LANCZOS)
+
+        if exported.mode not in {"RGB", "RGBA", "L"}:
+            exported = exported.convert("RGB")
+        buffer = BytesIO()
+        save_format = "PNG" if suffix_format in {"", "png"} else suffix_format.upper()
+        if save_format == "JPG":
+            save_format = "JPEG"
+        try:
+            exported.save(buffer, format=save_format)
+        except KeyError:
+            save_format = "PNG"
+            suffix_format = "png"
+            exported.save(buffer, format=save_format)
+
+        info = ExportedImageInfo(
+            original_width=original_width,
+            original_height=original_height,
+            exported_width=int(exported.width),
+            exported_height=int(exported.height),
+        )
+        return buffer.getvalue(), suffix_format, info
+
+
 def _build_exported_images(
     train_record: Mapping[str, Any],
     *,
@@ -300,16 +375,23 @@ def _build_exported_images(
     output_parent: Path,
     image_path_mode: ImagePathMode,
     image_storage_mode: ImageStorageMode,
-) -> list[dict[str, Any]]:
+    max_embedded_image_pixels: int | None = None,
+) -> tuple[list[dict[str, Any]], list[ExportedImageInfo]]:
     """Build RLVR image records in the path-dict shape that the loader normalizes."""
 
     exported: list[dict[str, Any]] = []
+    image_infos: list[ExportedImageInfo] = []
     for image_path in _iter_image_paths(train_record, dataset_root):
         if image_storage_mode == "embedded_bytes":
+            image_bytes, image_format, image_info = _resize_image_bytes_to_pixel_cap(
+                image_path,
+                max_pixels=max_embedded_image_pixels,
+            )
+            image_infos.append(image_info)
             exported.append(
                 {
-                    "bytes": image_path.read_bytes(),
-                    "format": image_path.suffix.lower().lstrip(".") or "png",
+                    "bytes": image_bytes,
+                    "format": image_format,
                 }
             )
             continue
@@ -325,7 +407,104 @@ def _build_exported_images(
                 )
             }
         )
-    return exported
+    return exported, image_infos
+
+
+def _scale_point(value: Any, *, scale_x: float, scale_y: float) -> list[float]:
+    if not isinstance(value, (list, tuple)) or len(value) != 2:
+        raise ValueError(f"expected point [x,y], got {value!r}")
+    return [round(float(value[0]) * float(scale_x), 3), round(float(value[1]) * float(scale_y), 3)]
+
+
+def _scale_bbox(value: Any, *, scale_x: float, scale_y: float) -> list[float]:
+    if not isinstance(value, (list, tuple)) or len(value) != 4:
+        raise ValueError(f"expected bbox [x0,y0,x1,y1], got {value!r}")
+    return [
+        round(float(value[0]) * float(scale_x), 3),
+        round(float(value[1]) * float(scale_y), 3),
+        round(float(value[2]) * float(scale_x), 3),
+        round(float(value[3]) * float(scale_y), 3),
+    ]
+
+
+def _scale_segment(value: Any, *, scale_x: float, scale_y: float) -> list[list[float]]:
+    if not isinstance(value, (list, tuple)) or len(value) != 2:
+        raise ValueError(f"expected segment [[x0,y0],[x1,y1]], got {value!r}")
+    return [
+        _scale_point(value[0], scale_x=scale_x, scale_y=scale_y),
+        _scale_point(value[1], scale_x=scale_x, scale_y=scale_y),
+    ]
+
+
+def _scale_annotation_value(
+    annotation_type: str,
+    value: Any,
+    *,
+    scale_x: float,
+    scale_y: float,
+) -> Any:
+    """Scale one public annotation value into exported-image pixel space."""
+
+    if annotation_type == "point":
+        return _scale_point(value, scale_x=scale_x, scale_y=scale_y)
+    if annotation_type in {"point_set", "point_sequence"}:
+        return [_scale_point(item, scale_x=scale_x, scale_y=scale_y) for item in value]
+    if annotation_type == "point_map":
+        return {str(key): _scale_point(item, scale_x=scale_x, scale_y=scale_y) for key, item in value.items()}
+    if annotation_type == "point_set_map":
+        return {
+            str(key): [_scale_point(item, scale_x=scale_x, scale_y=scale_y) for item in items]
+            for key, items in value.items()
+        }
+    if annotation_type == "bbox":
+        return _scale_bbox(value, scale_x=scale_x, scale_y=scale_y)
+    if annotation_type in {"bbox_set", "bbox_sequence"}:
+        return [_scale_bbox(item, scale_x=scale_x, scale_y=scale_y) for item in value]
+    if annotation_type == "bbox_map":
+        return {str(key): _scale_bbox(item, scale_x=scale_x, scale_y=scale_y) for key, item in value.items()}
+    if annotation_type == "bbox_set_map":
+        return {
+            str(key): [_scale_bbox(item, scale_x=scale_x, scale_y=scale_y) for item in items]
+            for key, items in value.items()
+        }
+    if annotation_type == "segment":
+        return _scale_segment(value, scale_x=scale_x, scale_y=scale_y)
+    if annotation_type == "segment_set":
+        return [_scale_segment(item, scale_x=scale_x, scale_y=scale_y) for item in value]
+    raise ValueError(f"unsupported annotation type for image scaling: {annotation_type}")
+
+
+def _scale_annotation_gt_for_export(
+    annotation_gt: Mapping[str, Any],
+    *,
+    image_infos: list[ExportedImageInfo],
+) -> dict[str, Any]:
+    """Return annotation_gt in exported-image pixel coordinates."""
+
+    if not image_infos:
+        return dict(annotation_gt)
+    if len(image_infos) != 1:
+        if any((info.exported_width, info.exported_height) != (info.original_width, info.original_height) for info in image_infos):
+            raise ValueError("cannot scale annotation_gt for multi-image rows without per-image annotation ownership")
+        return dict(annotation_gt)
+
+    info = image_infos[0]
+    annotation_type = str(annotation_gt.get("type", "")).strip()
+    if not annotation_type:
+        raise ValueError("annotation_gt.type is required for image scaling")
+    scale_x = info.scale_x
+    scale_y = info.scale_y
+    if abs(scale_x - 1.0) < 1e-12 and abs(scale_y - 1.0) < 1e-12:
+        return dict(annotation_gt)
+    return {
+        **dict(annotation_gt),
+        "value": _scale_annotation_value(
+            annotation_type,
+            annotation_gt.get("value"),
+            scale_x=scale_x,
+            scale_y=scale_y,
+        ),
+    }
 
 
 def _build_curriculum_assignments(records: list[Mapping[str, Any]]) -> dict[str, dict[str, Any]]:
@@ -516,6 +695,7 @@ def build_rlvr_row(
     prompt_variant: PromptVariantInput = "answer_and_annotation",
     image_path_mode: ImagePathMode = "relative",
     image_storage_mode: ImageStorageMode = "path_dict",
+    max_embedded_image_pixels: int | None = None,
 ) -> dict[str, Any]:
     """Convert one TRACE train record into an RLVR-ready row."""
 
@@ -534,13 +714,15 @@ def build_rlvr_row(
         raise ValueError(f"TRACE RLVR export requires annotation_gt on {instance_id}")
     if not isinstance(reward_contract, Mapping):
         raise ValueError(f"TRACE RLVR export requires reward_contract on {instance_id}")
-    exported_images = _build_exported_images(
+    exported_images, image_infos = _build_exported_images(
         train_record,
         dataset_root=dataset_root,
         output_parent=output_parent,
         image_path_mode=image_path_mode,
         image_storage_mode=image_storage_mode,
+        max_embedded_image_pixels=max_embedded_image_pixels,
     )
+    exported_annotation_gt = _scale_annotation_gt_for_export(annotation_gt, image_infos=image_infos)
     prompt_columns = _build_prompt_columns(train_record, image_count=len(exported_images))
     prompt = {
         "active": prompt_columns["prompt_active"],
@@ -566,8 +748,16 @@ def build_rlvr_row(
         **prompt_columns,
         "prompt_mode": prompt_variant,
         "images": exported_images,
+        "image_sizes_original": [
+            {"width": info.original_width, "height": info.original_height}
+            for info in image_infos
+        ],
+        "image_sizes_exported": [
+            {"width": info.exported_width, "height": info.exported_height}
+            for info in image_infos
+        ],
         "answer_gt": dict(answer_gt),
-        "annotation_gt": dict(annotation_gt),
+        "annotation_gt": exported_annotation_gt,
         "reward_contract": dict(reward_contract),
         "trace_ref": dict(train_record.get("trace_ref", {}))
         if isinstance(train_record.get("trace_ref"), Mapping)
@@ -607,26 +797,34 @@ def _write_parquet_rows(
 
     path.parent.mkdir(parents=True, exist_ok=True)
     progress_enabled = _EXPORT_PROGRESS_ENABLED
-    parquet_rows = []
-    with tqdm(
-        total=len(rows),
-        desc="Prepare parquet rows",
-        unit="row",
-        dynamic_ncols=True,
-        disable=not progress_enabled,
-    ) as progress_bar:
-        for row in rows:
-            parquet_row = dict(row)
-            for key in _PARQUET_JSON_COLUMNS:
-                if key in parquet_row:
-                    parquet_row[key] = json.dumps(
-                        parquet_row[key],
-                        ensure_ascii=False,
-                        allow_nan=False,
-                        sort_keys=True,
+    if image_storage_mode not in {"path_dict", "embedded_bytes"}:
+        raise ValueError(f"unsupported image-storage mode: {image_storage_mode}")
+
+    def prepare_parquet_row(row: dict[str, Any]) -> dict[str, Any]:
+        parquet_row = dict(row)
+        if image_storage_mode == "embedded_bytes":
+            image_entries = []
+            for image_entry in parquet_row.get("images") or []:
+                if isinstance(image_entry, Mapping) and image_entry.get("bytes") is not None:
+                    image_entries.append(
+                        {
+                            "bytes": image_entry.get("bytes"),
+                            "path": image_entry.get("path"),
+                        }
                     )
-            parquet_rows.append(parquet_row)
-            progress_bar.update(1)
+                    continue
+                image_entries.append(image_entry)
+            parquet_row["images"] = image_entries
+        for key in _PARQUET_JSON_COLUMNS:
+            if key in parquet_row:
+                parquet_row[key] = json.dumps(
+                    parquet_row[key],
+                    ensure_ascii=False,
+                    allow_nan=False,
+                    sort_keys=True,
+                )
+        return parquet_row
+
     requested_cpu_count = _resolve_parquet_cpu_count(parquet_cpu_count)
     prior_cpu_count = pa.cpu_count()
     prior_io_thread_count = pa.io_thread_count()
@@ -635,24 +833,11 @@ def _write_parquet_rows(
             pa.set_cpu_count(int(requested_cpu_count))
             pa.set_io_thread_count(int(requested_cpu_count))
 
-        if image_storage_mode == "embedded_bytes":
-            from datasets import Dataset, Sequence
-            from datasets import Image as HFImage
-
-            if progress_enabled:
-                tqdm.write("Writing parquet via datasets backend")
-            dataset = Dataset.from_list(parquet_rows)
-            dataset = dataset.cast_column("images", Sequence(HFImage()))
-            dataset.to_parquet(str(path))
-            return
-
-        if image_storage_mode != "path_dict":
-            raise ValueError(f"unsupported image-storage mode: {image_storage_mode}")
-
         import pyarrow.parquet as pq
 
         writer = None
-        chunk_count = max(1, math.ceil(len(parquet_rows) / _PARQUET_WRITE_CHUNK_SIZE))
+        features = None
+        chunk_count = max(1, math.ceil(len(rows) / _PARQUET_WRITE_CHUNK_SIZE))
         try:
             with tqdm(
                 total=chunk_count,
@@ -661,11 +846,22 @@ def _write_parquet_rows(
                 dynamic_ncols=True,
                 disable=not progress_enabled,
             ) as progress_bar:
-                for chunk_rows in _iter_chunks(parquet_rows, _PARQUET_WRITE_CHUNK_SIZE):
-                    table = pa.Table.from_pylist(chunk_rows)
+                for chunk_rows in _iter_chunks(rows, _PARQUET_WRITE_CHUNK_SIZE):
+                    parquet_chunk_rows = [prepare_parquet_row(row) for row in chunk_rows]
+                    if not parquet_chunk_rows:
+                        continue
+                    table = pa.Table.from_pylist(parquet_chunk_rows)
+                    if image_storage_mode == "embedded_bytes":
+                        if features is None:
+                            from datasets import Features, Sequence
+                            from datasets import Image as HFImage
+
+                            features = Features.from_arrow_schema(table.schema)
+                            features["images"] = Sequence(HFImage())
+                        table = table.cast(features.arrow_schema)
                     if writer is None:
                         writer = pq.ParquetWriter(path, table.schema, compression="snappy")
-                    writer.write_table(table, row_group_size=len(chunk_rows))
+                    writer.write_table(table, row_group_size=len(parquet_chunk_rows))
                     progress_bar.update(1)
         finally:
             if writer is not None:
@@ -684,6 +880,7 @@ def export_trace_dataset_to_rlvr(
     image_path_mode: ImagePathMode = "relative",
     image_storage_mode: ImageStorageMode = "path_dict",
     parquet_cpu_count: int | None = None,
+    max_embedded_image_pixels: int | None = None,
 ) -> RLVRExportResult:
     """Export one TRACE dataset to an RLVR-ready JSONL or parquet file."""
 
@@ -692,6 +889,11 @@ def export_trace_dataset_to_rlvr(
         raise ValueError(f"unsupported image-path mode: {image_path_mode}")
     if image_storage_mode not in {"path_dict", "embedded_bytes"}:
         raise ValueError(f"unsupported image-storage mode: {image_storage_mode}")
+    if max_embedded_image_pixels is not None:
+        if int(max_embedded_image_pixels) <= 0:
+            raise ValueError("max_embedded_image_pixels must be > 0 when provided")
+        if image_storage_mode != "embedded_bytes":
+            raise ValueError("max_embedded_image_pixels requires image_storage_mode='embedded_bytes'")
 
     dataset_root, train_instances_path = resolve_train_instances_source(source_path)
     final_output_path, final_format = resolve_export_output_path(output_path, output_format=output_format)
@@ -724,6 +926,7 @@ def export_trace_dataset_to_rlvr(
                         prompt_variant=prompt_variant,
                         image_path_mode=image_path_mode,
                         image_storage_mode=image_storage_mode,
+                        max_embedded_image_pixels=max_embedded_image_pixels,
                     ),
                     **query_assignments[str(record.get("instance_id", "")).strip()],
                     **curriculum_assignments[str(record.get("instance_id", "")).strip()],

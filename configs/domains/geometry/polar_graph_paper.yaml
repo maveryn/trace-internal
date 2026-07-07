@@ -3,6 +3,14 @@ generation:
     radius_min: 1
     radius_max: 10
     sample_angle_step_degrees: 30
+    coordinate_count_min: 1
+    coordinate_count_max: 5
+    coordinate_count_total_min: 8
+    coordinate_count_total_max: 12
+  task_overrides:
+    task_geometry__polar_graph_paper__coordinate_value_point_count:
+      radius_min: 2
+      radius_max: 8
 
 rendering:
   shared:
@@ -14,6 +22,10 @@ rendering:
     radius_label_step: 1
     marker_radius_px: 9
     label_font_size: 28
+  task_overrides:
+    task_geometry__polar_graph_paper__coordinate_value_point_count:
+      polar_radius_max: 8
+      marker_radius_px: 10
 
 prompt:
   shared:

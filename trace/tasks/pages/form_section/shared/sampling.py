@@ -36,6 +36,16 @@ class ExpressionPlan:
     sort_operands_descending: bool = False
 
 
+@dataclass(frozen=True)
+class RankPlan:
+    """Task-owned rank selection passed into the shared sampler."""
+
+    operation_name: str
+    rank_from: str
+    rank_position: int
+    rank_phrase: str
+
+
 def _apply_expression(*, start_value: int, operators: Sequence[str], remaining_values: Sequence[int]) -> int:
     """Return the integer-cent result of the configured left-to-right expression."""
 
@@ -191,9 +201,93 @@ def build_section_expression_case(
     raise ValueError("failed to build a section-expression document scene with unique visible values")
 
 
+def build_section_rank_case(
+    *,
+    rank_plan: RankPlan,
+    scene_variant: str,
+    instance_seed: int,
+    sampling_namespace: str,
+) -> Dict[str, Any]:
+    """Build a section-local amount ranking case with a unique selected field."""
+
+    templates = list(SECTIONED_DOCUMENT_FIELD_TEMPLATES_BY_SCENE[str(scene_variant)])
+    target_section_id, target_section_label = SECTIONED_DOCUMENT_AMOUNT_SECTION_BY_SCENE[str(scene_variant)]
+    rank_from = str(rank_plan.rank_from)
+    if rank_from not in {"highest", "lowest"}:
+        raise ValueError(f"unsupported rank_from={rank_from!r}")
+    rank_position = int(rank_plan.rank_position)
+    if rank_position <= 0:
+        raise ValueError("rank_position must be positive")
+
+    # Values are already deterministic for the scene attempt through the caller's seed.
+    # Iterate only to preserve the same uniqueness contract as arithmetic cases.
+    for attempt in range(96):
+        value_rng = spawn_rng(int(instance_seed), f"{sampling_namespace}.values", index=int(attempt))
+        visible_values, amount_cents = build_sectioned_document_values(str(scene_variant), value_rng)
+        field_specs = build_document_field_specs(templates, visible_values=visible_values)
+        if field_specs is None or len(field_specs) != len(templates):
+            continue
+        candidate_specs = [
+            spec
+            for spec in field_specs
+            if str(spec["section_id"]) == str(target_section_id)
+            and str(spec["comparison_kind"]) == "amount"
+        ]
+        if len(candidate_specs) < rank_position:
+            raise ValueError(
+                f"scene_variant='{scene_variant}' has too few amount fields for rank_position={rank_position}"
+            )
+        candidate_values = [int(amount_cents[str(spec["field_id"])]) for spec in candidate_specs]
+        if len(candidate_values) != len(set(candidate_values)):
+            continue
+
+        ranked_specs = sorted(
+            [dict(spec) for spec in candidate_specs],
+            key=lambda spec: int(amount_cents[str(spec["field_id"])]),
+            reverse=(rank_from == "highest"),
+        )
+        selected_spec = dict(ranked_specs[rank_position - 1])
+        selected_field_id = str(selected_spec["field_id"])
+        selected_amount_cents = int(amount_cents[selected_field_id])
+        section_specs = build_document_section_specs(field_specs)
+        prompt_slots = {
+            "section_label": str(target_section_label),
+            "rank_phrase": str(rank_plan.rank_phrase),
+        }
+        return {
+            "scene_variant": str(scene_variant),
+            "operation_name": str(rank_plan.operation_name),
+            "scene_title": str(DOCUMENT_SCENE_TITLES[str(scene_variant)]),
+            "prompt_slots": dict(prompt_slots),
+            "question_format": "form_section_ranked_amount_field_label",
+            "view_family": "structured_document",
+            "field_specs": list(field_specs),
+            "section_specs": list(section_specs),
+            "field_count": int(len(field_specs)),
+            "field_count_range": list(SECTIONED_DOCUMENT_FIELD_COUNT_RANGE),
+            "query_section_id": str(target_section_id),
+            "query_section_label": str(target_section_label),
+            "target_amount_candidate_count": int(len(candidate_specs)),
+            "target_amount_candidate_field_ids": [str(spec["field_id"]) for spec in candidate_specs],
+            "target_amount_candidate_field_labels": [str(spec["field_label"]) for spec in candidate_specs],
+            "target_amount_candidate_field_values": [str(spec["field_value"]) for spec in candidate_specs],
+            "rank_from": str(rank_from),
+            "rank_position": int(rank_position),
+            "rank_phrase": str(rank_plan.rank_phrase),
+            "selected_field_id": str(selected_field_id),
+            "selected_field_label": str(selected_spec["field_label"]),
+            "selected_field_value": str(selected_spec["field_value"]),
+            "selected_amount_cents": int(selected_amount_cents),
+            "answer_value": str(selected_spec["field_label"]),
+        }
+    raise ValueError("failed to build a section-rank document scene with unique visible values")
+
+
 __all__ = [
     "ExpressionPlan",
+    "RankPlan",
     "SCENE_VARIANTS",
+    "build_section_rank_case",
     "build_section_expression_case",
     "resolve_scene_variant",
 ]

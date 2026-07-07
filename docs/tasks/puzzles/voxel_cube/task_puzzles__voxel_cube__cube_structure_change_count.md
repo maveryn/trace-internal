@@ -3,7 +3,7 @@
 ## Public Taxonomy
 1. Domain: `puzzles`
 2. Scene id: `voxel_cube`
-3. Source scene package: `voxel_cube`
+3. Source scene: `voxel_cube`
 4. Task id: `task_puzzles__voxel_cube__cube_structure_change_count`
 
 ## Query Contract

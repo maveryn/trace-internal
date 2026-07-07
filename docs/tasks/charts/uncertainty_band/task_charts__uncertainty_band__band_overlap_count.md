@@ -21,7 +21,7 @@ Query ids: `single`.
 
 ## Review Notes
 
-This task uses the scene-package layout. The public task file owns overlap construction, answer binding, annotation binding, query metadata, and prompt slots; scene-local shared code only provides uncertainty-band data structures, rendering, prompt, and projection primitives.
+This task uses the current source layout. The public task file owns overlap construction, answer binding, annotation binding, query metadata, and prompt slots; scene-local shared code only provides uncertainty-band data structures, rendering, prompt, and projection primitives.
 
 ## Query Details
 

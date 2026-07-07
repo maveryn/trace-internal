@@ -12,6 +12,7 @@ SCENE_ID = "vernier_caliper"
 SCENE_NAMESPACE = "physics.vernier_caliper"
 VERNIER_DIVISIONS = 10
 VERNIER_RESOLUTION_MM = 0.1
+OPTION_LETTERS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 
 
 @dataclass(frozen=True)
@@ -21,6 +22,9 @@ class CaliperScenario:
     main_mm: int
     aligned_vernier_tick: int
     answer_mm: float
+    option_values_mm: Dict[str, float]
+    correct_option_letter: str
+    correct_option_letter_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
     main_mm_probabilities: Dict[str, float]
     aligned_vernier_tick_probabilities: Dict[str, float]
@@ -56,6 +60,8 @@ class TaskDefaults:
     title_font_size_px: int = 28
     jaw_top_px: int = 170
     jaw_bottom_px: int = 510
+    option_panel_top_px: int = 565
+    option_cell_height_px: int = 42
     main_mm_support: Tuple[int, ...] = tuple(range(8, 56))
     aligned_vernier_tick_support: Tuple[int, ...] = tuple(range(1, VERNIER_DIVISIONS))
 

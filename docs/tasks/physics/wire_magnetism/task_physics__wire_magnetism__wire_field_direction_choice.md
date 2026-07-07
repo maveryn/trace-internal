@@ -8,31 +8,31 @@
 
 ## Program Contract
 
-Program: `option_letter(direction(right_hand_rule_around_current_wire(current_direction, point_p_side))); scene=wire_magnetism; scope=wire_field_direction_choice`
+Program: `option_letter(direction(right_hand_rule_around_page_perpendicular_wire(current_page_direction, point_p_position))); scene=wire_magnetism; scope=wire_field_direction_choice`
 
-Candidate set: the visible current-carrying wire, current direction cue, point marker, and magnetic-field direction options inside the `wire_field_direction_choice` objective scope.
-Operands: `current_direction` (semantic_role, allowed `visible_current_arrow_on_wire`, source `program_schema_concrete`); `point_p_side` (semantic_role, allowed `visible_marked_point_side_relative_to_wire`, source `program_schema_concrete`).
+Candidate set: the visible page-perpendicular current-carrying wire, dot/cross current cue, point marker, and magnetic-field arrow options inside the `wire_field_direction_choice` objective scope.
+Operands: `current_page_direction` (semantic_role, allowed `visible_dot_or_cross_current_symbol`, source `program_schema_concrete`); `point_p_position` (semantic_role, allowed `visible_marked_point_position_around_wire`, source `program_schema_concrete`).
 Operation: evaluate `option_letter` over the candidate set using the visible quantities, relations, branch semantics, and formulas encoded in the program expression; generation enforces a unique final answer.
 Output binding: `answer` uses the `option_letter` schema; The answer value is the selected visible option letter.
 Annotation witnesses: `bbox_map` witnesses from the finalized render. Annotation is keyed because witness roles are distinct; keys include `wire_current` and `point_p`. Annotation must mark minimal visual witnesses from the final rendered diagram, not answer labels, option choices, decorative chrome, or derived numeric annotations unless those are the queried visual witnesses.
 Query ids: `single`.
 
 ## Task Contract
-Selects the magnetic-field direction at a marked point near a straight current-carrying wire.
+Selects the in-plane magnetic-field arrow direction at a marked point near a wire carrying current into or out of the page.
 
 ## Query Branches
 
 | Query id | Program schema |
 | --- | --- |
-| `single` | `option_letter(direction(right_hand_rule_around_current_wire(current_direction, point_p_side))); scene=wire_magnetism; scope=wire_field_direction_choice` |
+| `single` | `option_letter(direction(right_hand_rule_around_page_perpendicular_wire(current_page_direction, point_p_position))); scene=wire_magnetism; scope=wire_field_direction_choice` |
 
 ## Program Metadata
 - Program signatures: `physics.wire_field_direction_choice`
-- Base program contract: `option_letter(direction(right_hand_rule_around_current_wire(current_direction, point_p_side))); scene=wire_magnetism; scope=wire_field_direction_choice`
+- Base program contract: `option_letter(direction(right_hand_rule_around_page_perpendicular_wire(current_page_direction, point_p_position))); scene=wire_magnetism; scope=wire_field_direction_choice`
 - Parameter axes: `fixed_query`
 - Arguments:
-  - `current_direction`: semantic_role; allowed `visible_current_arrow_on_wire`; source `program_schema_concrete`
-  - `point_p_side`: semantic_role; allowed `visible_marked_point_side_relative_to_wire`; source `program_schema_concrete`
+  - `current_page_direction`: semantic_role; allowed `visible_dot_or_cross_current_symbol`; source `program_schema_concrete`
+  - `point_p_position`: semantic_role; allowed `visible_marked_point_position_around_wire`; source `program_schema_concrete`
 - Argument metadata status: `curated`
 - Supported query ids: `single`
 

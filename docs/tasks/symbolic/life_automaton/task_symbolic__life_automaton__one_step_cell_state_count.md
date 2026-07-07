@@ -7,7 +7,7 @@
 4. Goal: apply one cellular-life update to the grid marked `START` and count cells in a requested future state.
 
 ## Program Contract
-Program: `life_automaton.one_step_cell_state_count(scene=life_automaton, scope=marked_start_grid, grid_size=3x3|4x4|5x5, target_state=alive|dead, update_steps=one, output=integer)`
+Program: `life_automaton.one_step_cell_state_count(scene=life_automaton, scope=marked_start_grid, grid_size=3x3, target_state=alive|dead, update_steps=one, output=integer)`
 
 Candidate set: all cells in the visible `START` grid.
 Operands: the current alive/dead state of every cell and the requested future state.

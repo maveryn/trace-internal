@@ -12,7 +12,7 @@ import sqlite3
 from typing import Any, Iterable
 
 from scripts.inventory_scalar_annotations import TaskRef, parse_active_inventory
-from trace.core.scene_package_migration import SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES
+from trace.core.source_layout_policy import SCENE_PACKAGE_REVIEW_TARGET_SCENES
 
 
 DEFAULT_ACTIVE_INVENTORY = Path("docs/ACTIVE_TASK_INVENTORY.md")
@@ -26,12 +26,12 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
-def _review_candidate_tasks(active_inventory: Path) -> list[TaskRef]:
+def _review_target_tasks(active_inventory: Path) -> list[TaskRef]:
     records = parse_active_inventory(active_inventory.read_text(encoding="utf-8"))
     return [
         record
         for record in records
-        if record.scene_id in SCENE_PACKAGE_REVIEW_CANDIDATE_SCENES.get(record.domain, frozenset())
+        if record.scene_id in SCENE_PACKAGE_REVIEW_TARGET_SCENES.get(record.domain, frozenset())
     ]
 
 
@@ -80,14 +80,14 @@ def reset_annotation_reviews(
     backup: bool = True,
     updated_by: str = DEFAULT_UPDATED_BY,
 ) -> dict[str, Any]:
-    """Reset annotation_pass for review-candidate tasks, preserving other gates."""
+    """Reset annotation_pass for active public tasks, preserving other gates."""
 
     active_inventory = Path(active_inventory)
     feedback_db = Path(feedback_db)
     output_root = Path(output_root)
     generated_at = _now()
     timestamp_slug = generated_at.replace(":", "").replace("+", "Z").replace("-", "").replace(".", "")
-    targets = _review_candidate_tasks(active_inventory)
+    targets = _review_target_tasks(active_inventory)
     target_keys = {(record.domain, record.scene_id, record.task_id) for record in targets}
 
     with _connect_existing_feedback_db(feedback_db) as conn:
@@ -221,7 +221,7 @@ def write_report(report: dict[str, Any], *, output_root: Path) -> tuple[Path, Pa
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Reset scalar annotation manual review state for migrated tasks")
+    parser = argparse.ArgumentParser(description="Reset scalar annotation manual review state for source-layout tasks")
     parser.add_argument("--active-inventory", type=Path, default=DEFAULT_ACTIVE_INVENTORY)
     parser.add_argument("--feedback-db", type=Path, default=DEFAULT_FEEDBACK_DB)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)

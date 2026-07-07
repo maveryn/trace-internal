@@ -8,17 +8,20 @@ from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default
 from trace.tasks.shared.variant_sampling import apply_balanced_variant_sampling, resolve_variant
 
-from .state import OPTION_LABELS, SUPPORTED_ORIENTATIONS, WireScenario
+from .state import OPTION_LABELS, SUPPORTED_CURRENT_DIRECTIONS, SUPPORTED_POINT_POSITIONS, WireScenario
 
 
-CURRENT_OPTIONS: Dict[str, Tuple[Tuple[str, Tuple[int, int]], ...]] = {
-    "horizontal": (("right", (1, 0)), ("left", (-1, 0))),
-    "vertical": (("up", (0, 1)), ("down", (0, -1))),
+CURRENT_Z_SIGN: Dict[str, int] = {
+    "out_of_page": 1,
+    "into_page": -1,
 }
-POINT_SIDE_OPTIONS: Dict[str, Tuple[Tuple[str, Tuple[int, int]], ...]] = {
-    "horizontal": (("above", (0, 1)), ("below", (0, -1))),
-    "vertical": (("right", (1, 0)), ("left", (-1, 0))),
+POINT_OFFSETS: Dict[str, Tuple[int, int]] = {
+    "east": (1, 0),
+    "north": (0, 1),
+    "west": (-1, 0),
+    "south": (0, -1),
 }
+FIELD_DIRECTIONS: Tuple[str, ...] = ("north", "south", "east", "west")
 
 
 def probability_map(values: Sequence[str], selected: str | None = None) -> Dict[str, float]:
@@ -31,31 +34,25 @@ def probability_map(values: Sequence[str], selected: str | None = None) -> Dict[
     return {value: float(probability) for value in supported}
 
 
-def _options_for_orientation(
-    options_by_orientation: Mapping[str, Tuple[Tuple[str, Tuple[int, int]], ...]],
-    orientation: str,
-) -> Tuple[Tuple[str, Tuple[int, int]], ...]:
-    options = tuple(options_by_orientation.get(str(orientation), ()))
-    if not options:
-        raise ValueError(f"unsupported wire orientation: {orientation}")
-    return options
-
-
-def _resolve_orientation(
+def _resolve_weighted_label(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
     defaults: Mapping[str, Any],
+    supported_values: Tuple[str, ...],
+    explicit_key: str,
+    weights_key: str,
+    balance_flag_key: str,
     namespace: str,
 ) -> Tuple[str, Dict[str, float]]:
-    rng = spawn_rng(int(instance_seed), f"{namespace}.orientation")
+    rng = spawn_rng(int(instance_seed), f"{namespace}.choice")
     selected, probabilities = resolve_variant(
         rng,
         params=params,
         gen_defaults=defaults,
-        supported_variants=SUPPORTED_ORIENTATIONS,
-        explicit_key="orientation",
-        weights_key="orientation_weights",
+        supported_variants=supported_values,
+        explicit_key=str(explicit_key),
+        weights_key=str(weights_key),
     )
     selected = apply_balanced_variant_sampling(
         instance_seed=int(instance_seed),
@@ -63,39 +60,53 @@ def _resolve_orientation(
         gen_defaults=defaults,
         selected_variant=str(selected),
         variant_probabilities=probabilities,
-        supported_variants=SUPPORTED_ORIENTATIONS,
-        balance_flag_key="balanced_orientation_sampling",
-        explicit_key="orientation",
-        weights_key="orientation_weights",
-        sampling_namespace=f"{namespace}.orientation",
+        supported_variants=supported_values,
+        balance_flag_key=str(balance_flag_key),
+        explicit_key=str(explicit_key),
+        weights_key=str(weights_key),
+        sampling_namespace=f"{namespace}.choice",
     )
     return str(selected), {str(key): float(value) for key, value in sorted(probabilities.items())}
 
 
-def _resolve_named_vector(
+def _resolve_current_direction(
     *,
     instance_seed: int,
     params: Mapping[str, Any],
-    support: Tuple[Tuple[str, Tuple[int, int]], ...],
-    explicit_key: str,
+    defaults: Mapping[str, Any],
+    namespace: str,
+) -> Tuple[str, int, Dict[str, float]]:
+    selected, probabilities = _resolve_weighted_label(
+        instance_seed=int(instance_seed),
+        params=params,
+        defaults=defaults,
+        supported_values=SUPPORTED_CURRENT_DIRECTIONS,
+        explicit_key="current_direction",
+        weights_key="current_direction_weights",
+        balance_flag_key="balanced_current_direction_sampling",
+        namespace=f"{namespace}.current_direction",
+    )
+    return str(selected), int(CURRENT_Z_SIGN[str(selected)]), dict(probabilities)
+
+
+def _resolve_point_position(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    defaults: Mapping[str, Any],
     namespace: str,
 ) -> Tuple[str, Tuple[int, int], Dict[str, float]]:
-    labels = tuple(str(label) for label, _ in support)
-    explicit = params.get(str(explicit_key))
-    if explicit is not None:
-        selected = str(explicit)
-        if selected not in labels:
-            raise ValueError(f"unsupported wire {explicit_key}: {selected}; supported: {labels}")
-        vector = next(vector for label, vector in support if str(label) == selected)
-        return selected, tuple(int(value) for value in vector), probability_map(labels, selected=selected)
-
-    sample_cursor = params.get("_sample_cursor")
-    choice_namespace = str(namespace) if sample_cursor is None else f"{namespace}.cursor.{int(sample_cursor)}"
-    rng = spawn_rng(int(instance_seed), choice_namespace)
-    selected_index = int(rng.randrange(len(labels)))
-    selected = str(labels[selected_index])
-    vector = tuple(int(value) for value in support[selected_index][1])
-    return selected, vector, probability_map(labels)
+    selected, probabilities = _resolve_weighted_label(
+        instance_seed=int(instance_seed),
+        params=params,
+        defaults=defaults,
+        supported_values=SUPPORTED_POINT_POSITIONS,
+        explicit_key="point_position",
+        weights_key="point_position_weights",
+        balance_flag_key="balanced_point_position_sampling",
+        namespace=f"{namespace}.point_position",
+    )
+    return str(selected), tuple(int(value) for value in POINT_OFFSETS[str(selected)]), dict(probabilities)
 
 
 def _resolve_target_label(
@@ -121,11 +132,42 @@ def _resolve_target_label(
     return selected, probability_map(OPTION_LABELS)
 
 
-def _field_direction_for(current_vector: Tuple[int, int], point_offset: Tuple[int, int]) -> str:
-    z_sign = int((int(current_vector[0]) * int(point_offset[1])) - (int(current_vector[1]) * int(point_offset[0])))
-    if z_sign == 0:
-        raise ValueError("wire current and point offset vectors must not be parallel")
-    return "out_of_page" if z_sign > 0 else "into_page"
+def _field_direction_for(current_z_sign: int, point_offset: Tuple[int, int]) -> str:
+    # With +z current out of the page, B is tangent to the counterclockwise circle.
+    x, y = int(point_offset[0]), int(point_offset[1])
+    bx = int(current_z_sign) * (-y)
+    by = int(current_z_sign) * x
+    direction_by_vector = {
+        (0, 1): "north",
+        (0, -1): "south",
+        (1, 0): "east",
+        (-1, 0): "west",
+    }
+    direction = direction_by_vector.get((bx, by))
+    if direction is None:
+        raise ValueError(f"unsupported field vector from current={current_z_sign}, point_offset={point_offset}")
+    return str(direction)
+
+
+def _build_option_map(
+    *,
+    instance_seed: int,
+    field_direction: str,
+    correct_label: str,
+    namespace: str,
+) -> Dict[str, str]:
+    remaining = [direction for direction in FIELD_DIRECTIONS if str(direction) != str(field_direction)]
+    rng = spawn_rng(int(instance_seed), f"{namespace}.option_map")
+    rng.shuffle(remaining)
+    option_map: Dict[str, str] = {}
+    distractor_cursor = 0
+    for label in OPTION_LABELS:
+        if str(label) == str(correct_label):
+            option_map[str(label)] = str(field_direction)
+        else:
+            option_map[str(label)] = str(remaining[distractor_cursor])
+            distractor_cursor += 1
+    return option_map
 
 
 def build_wire_scenario(
@@ -137,57 +179,41 @@ def build_wire_scenario(
 ) -> WireScenario:
     """Resolve one physical wire scenario and unique option-letter answer."""
 
-    orientation, orientation_probs = _resolve_orientation(
+    current_name, current_z_sign, current_probs = _resolve_current_direction(
         instance_seed=int(instance_seed),
         params=params,
         defaults=defaults,
         namespace=str(namespace),
     )
-    current_options = _options_for_orientation(CURRENT_OPTIONS, orientation)
-    side_options = _options_for_orientation(POINT_SIDE_OPTIONS, orientation)
-    current_name, current_vector, current_probs = _resolve_named_vector(
+    point_position, point_offset, point_probs = _resolve_point_position(
         instance_seed=int(instance_seed),
         params=params,
-        support=current_options,
-        explicit_key="current_direction",
-        namespace=f"{namespace}.current_direction.{orientation}",
+        defaults=defaults,
+        namespace=str(namespace),
     )
-    point_side, point_offset, point_probs = _resolve_named_vector(
-        instance_seed=int(instance_seed),
-        params=params,
-        support=side_options,
-        explicit_key="point_side",
-        namespace=f"{namespace}.point_side.{orientation}",
-    )
-    field_direction = _field_direction_for(current_vector, point_offset)
+    field_direction = _field_direction_for(int(current_z_sign), point_offset)
     correct_label, target_probs = _resolve_target_label(
         instance_seed=int(instance_seed),
         params=params,
         defaults=defaults,
         namespace=str(namespace),
     )
-    distractors = ["north", "south", "east", "west"]
-    distractors.append("into_page" if field_direction == "out_of_page" else "out_of_page")
-    option_map: Dict[str, str] = {}
-    distractor_cursor = 0
-    for label in OPTION_LABELS:
-        if str(label) == str(correct_label):
-            option_map[str(label)] = str(field_direction)
-        else:
-            option_map[str(label)] = str(distractors[distractor_cursor])
-            distractor_cursor += 1
+    option_map = _build_option_map(
+        instance_seed=int(instance_seed),
+        field_direction=str(field_direction),
+        correct_label=str(correct_label),
+        namespace=str(namespace),
+    )
     return WireScenario(
-        orientation=str(orientation),
         current_direction=str(current_name),
-        point_side=str(point_side),
-        current_vector_phys=tuple(int(value) for value in current_vector),
+        current_z_sign=int(current_z_sign),
+        point_position=str(point_position),
         point_offset_phys=tuple(int(value) for value in point_offset),
         field_direction=str(field_direction),
         option_map=dict(option_map),
         correct_label=str(correct_label),
-        orientation_probabilities=dict(orientation_probs),
         current_direction_probabilities=dict(current_probs),
-        point_side_probabilities=dict(point_probs),
+        point_position_probabilities=dict(point_probs),
         target_answer_probabilities=dict(target_probs),
     )
 

@@ -12,7 +12,7 @@ from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
-from ...shared.annotation_artifacts import segment_set_annotation_artifacts
+from ...shared.annotation_artifacts import bbox_annotation_artifacts, segment_set_annotation_artifacts
 from ...shared.config_defaults import (
     group_default,
     load_scene_generation_rendering_prompt_defaults,
@@ -43,8 +43,15 @@ from ..shared.common import resolve_symbolic_axis_variant
 from ..shared.scene_style import make_symbolic_scene_background, resolve_symbolic_scene_style
 
 from .shared.defaults import DEFAULTS, POST_IMAGE_NOISE_DEFAULTS
-from .shared.rendering import render_clock_scene
-from .shared.sampling import feasible_clock_times, resolve_clock_time_support
+from .shared.rendering import draw_text_option_cards, option_cards_y_below_bbox, render_clock_scene
+from .shared.sampling import (
+    feasible_clock_times,
+    nearby_integer_distractors,
+    option_value_map,
+    resolve_clock_time_support,
+    resolve_text_option_labels,
+    sample_correct_option_label,
+)
 from .shared.state import SUPPORTED_SYMBOLIC_CLOCK_SCENE_VARIANTS, ClockStyleResolution
 from .shared.styles import resolve_clock_render_params
 
@@ -352,14 +359,10 @@ def _prompt_examples() -> Tuple[str, str]:
     """Return stable JSON examples for the alarm wait-time task."""
 
     answer_and_annotation = {
-        "annotation": [
-            [[320, 320], [430, 350]],
-            [[320, 320], [405, 493]],
-            [[320, 320], [220, 493]],
-        ],
-        "answer": 215,
+        "annotation": [224, 770, 316, 836],
+        "answer": "C",
     }
-    answer_only = {"answer": 215}
+    answer_only = {"answer": "C"}
     return (
         json.dumps(answer_and_annotation, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
@@ -484,6 +487,63 @@ class SymbolicClockAlarmWaitTimeValueTask:
                 alarm_hour_12=int(query.alarm_hour),
                 alarm_hand_color_rgb=tuple(int(value) for value in ALARM_HAND_COLOR_RGB),
                 alarm_hand_width_px=int(alarm_hand_width_px),
+                center_px=(0.5 * float(render_params.canvas_width), 300.0),
+            )
+            option_labels = resolve_text_option_labels(task_params, gen_defaults=_GEN_DEFAULTS)
+            correct_label, label_probs = sample_correct_option_label(
+                params=task_params,
+                gen_defaults=_GEN_DEFAULTS,
+                instance_seed=int(instance_seed),
+                seed_namespace=TASK_ID,
+                labels=option_labels,
+            )
+            distractors = nearby_integer_distractors(
+                correct_value=int(query.wait_minutes),
+                support_values=range(5, int(MINUTES_PER_CLOCK_CYCLE) + 1, 5),
+                preferred_offsets=(5, 10, 15, 30, 60, 120, 180),
+                min_value=1,
+                max_value=int(MINUTES_PER_CLOCK_CYCLE),
+            )
+            option_values = option_value_map(
+                labels=option_labels,
+                correct_label=str(correct_label),
+                correct_value=int(query.wait_minutes),
+                distractors=distractors,
+            )
+            option_text = {str(label): str(value) for label, value in option_values.items()}
+            raw_option_bboxes, option_entities = draw_text_option_cards(
+                rendered_scene.image,
+                text_by_label=option_text,
+                correct_label=str(correct_label),
+                y0_px=option_cards_y_below_bbox(
+                    rendered_scene.scene_bbox_px,
+                    canvas_height=int(render_params.canvas_height),
+                ),
+            )
+            option_bboxes_px = {
+                str(label): [round(float(value), 3) for value in bbox]
+                for label, bbox in raw_option_bboxes.items()
+            }
+            selected_option_bbox_px = list(option_bboxes_px[str(correct_label)])
+            rendered_scene = rendered_scene.__class__(
+                image=rendered_scene.image,
+                scene_bbox_px=(
+                    min(float(rendered_scene.scene_bbox_px[0]), min(float(b[0]) for b in raw_option_bboxes.values())),
+                    min(float(rendered_scene.scene_bbox_px[1]), min(float(b[1]) for b in raw_option_bboxes.values())),
+                    max(float(rendered_scene.scene_bbox_px[2]), max(float(b[2]) for b in raw_option_bboxes.values())),
+                    max(float(rendered_scene.scene_bbox_px[3]), max(float(b[3]) for b in raw_option_bboxes.values())),
+                ),
+                face_bbox_px=rendered_scene.face_bbox_px,
+                center_px=rendered_scene.center_px,
+                hour_hand_bbox_px=rendered_scene.hour_hand_bbox_px,
+                minute_hand_bbox_px=rendered_scene.minute_hand_bbox_px,
+                second_hand_bbox_px=rendered_scene.second_hand_bbox_px,
+                alarm_hand_bbox_px=rendered_scene.alarm_hand_bbox_px,
+                hour_hand_tip_px=rendered_scene.hour_hand_tip_px,
+                minute_hand_tip_px=rendered_scene.minute_hand_tip_px,
+                second_hand_tip_px=rendered_scene.second_hand_tip_px,
+                alarm_hand_tip_px=rendered_scene.alarm_hand_tip_px,
+                entities=[*rendered_scene.entities, *option_entities],
             )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -497,8 +557,9 @@ class SymbolicClockAlarmWaitTimeValueTask:
             style=style,
             instance_seed=int(instance_seed),
         )
-        annotation_artifacts = _alarm_segment_annotations(rendered_scene)
-        answer_gt = TypedValue(type="integer", value=int(query.wait_minutes))
+        hand_annotation_artifacts = _alarm_segment_annotations(rendered_scene)
+        annotation_artifacts = bbox_annotation_artifacts(selected_option_bbox_px)
+        answer_gt = TypedValue(type="option_letter", value=str(correct_label))
         hand_bboxes_px = {
             "hour": [round(float(value), 3) for value in rendered_scene.hour_hand_bbox_px],
             "minute": [round(float(value), 3) for value in rendered_scene.minute_hand_bbox_px],
@@ -528,6 +589,9 @@ class SymbolicClockAlarmWaitTimeValueTask:
             "alarm_hand_color": "red",
             "min_hand_angle_gap_deg": float(query.min_hand_angle_gap_deg),
             "min_alarm_hand_gap_deg": float(query.min_alarm_hand_gap_deg),
+            "option_labels": [str(label) for label in option_labels],
+            "correct_label": str(correct_label),
+            "correct_label_probabilities": {str(key): float(value) for key, value in label_probs.items()},
         }
         prompt_query_spec = build_prompt_query_spec(
             prompt_artifacts=prompt_artifacts,
@@ -549,6 +613,7 @@ class SymbolicClockAlarmWaitTimeValueTask:
                     "alarm_minute": 0,
                     "alarm_time_text": str(query.alarm_time_text),
                     "wait_minutes": int(query.wait_minutes),
+                    "answer_label": str(correct_label),
                     "alarm_hand_scale": "hour",
                 },
             },
@@ -607,7 +672,10 @@ class SymbolicClockAlarmWaitTimeValueTask:
                 "center_px": [round(float(value), 3) for value in rendered_scene.center_px],
                 "hand_bboxes_px": dict(hand_bboxes_px),
                 "hand_tips_px": dict(hand_tips_px),
-                "annotation_source": "center_px_and_hand_tip_segments_px",
+                "annotation_source": "selected_answer_option_bbox_px",
+                "option_bboxes_px": dict(option_bboxes_px),
+                "selected_option_label": str(correct_label),
+                "selected_option_bbox_px": list(selected_option_bbox_px),
             },
             "execution_trace": {
                 **dict(query_params),
@@ -620,11 +688,15 @@ class SymbolicClockAlarmWaitTimeValueTask:
                 "alarm_time_text": str(query.alarm_time_text),
                 "wait_minutes": int(query.wait_minutes),
                 "answer_value": int(query.wait_minutes),
-                "answer_type": "integer",
+                "answer_label": str(correct_label),
+                "option_values_by_label": {str(key): int(value) for key, value in option_values.items()},
+                "option_text_by_label": dict(option_text),
+                "answer_type": "option_letter",
                 "alarm_hand_angle_gaps_deg": [float(value) for value in query.alarm_hand_angle_gaps_deg],
                 "current_hand_angle_gap_deg": round(float(clock_hand_angle_gap_deg(int(query.shown_total_minutes))), 6),
-                "supporting_parts": ["hour_hand", "minute_hand", "alarm_hand"],
-                "supporting_segments": list(annotation_artifacts.value),
+                "supporting_parts": ["selected_answer_option"],
+                "supporting_segments": list(hand_annotation_artifacts.value),
+                "selected_option_bbox_px": list(selected_option_bbox_px),
             },
             "witness_symbolic": {
                 "type": str(annotation_artifacts.annotation_type),

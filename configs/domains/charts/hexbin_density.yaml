@@ -1,15 +1,15 @@
 generation:
   shared:
-    row_count_min: 5
-    row_count_max: 7
-    column_count_min: 7
-    column_count_max: 10
-    occupied_bin_count_min: 24
-    occupied_bin_count_max: 42
-    density_threshold_level_min: 2
-    density_threshold_level_max: 5
-    threshold_count_answer_min: 4
-    threshold_count_answer_max: 18
+    row_count_min: 4
+    row_count_max: 5
+    column_count_min: 5
+    column_count_max: 7
+    occupied_bin_count_min: 12
+    occupied_bin_count_max: 24
+    density_threshold_level_min: 3
+    density_threshold_level_max: 4
+    threshold_count_answer_min: 2
+    threshold_count_answer_max: 8
 rendering:
   shared:
     chart_context_profile: report_paragraph

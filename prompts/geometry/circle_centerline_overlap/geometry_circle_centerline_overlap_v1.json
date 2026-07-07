@@ -39,17 +39,17 @@
     },
     "output": {
       "answer_only": [
-        "Return a JSON object with an \"answer\" field only.\nAnswer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}",
-        "Return only a JSON object containing \"answer\".\nRequired answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}",
-        "Respond with JSON only.\nFormat for the \"answer\" field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}",
-        "Return a JSON object.\nAnswer field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}",
+        "Answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}",
+        "Format for the \"answer\" field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}",
+        "Answer field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}",
         "Use JSON only.\nFinal answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example_answer_only}"
       ],
       "answer_and_annotation": [
-        "Return a JSON object with \"annotation\" and \"answer\" fields.\nAnnotation format: set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] for the requested segment {target_name}.\nAnswer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
-        "Return only JSON with \"annotation\" and \"answer\".\nAnnotation format: set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] for the requested segment {target_name}.\nRequired answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
-        "Respond with JSON only.\nAnnotation format: set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] for the requested segment {target_name}.\nFormat for the \"answer\" field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
-        "Return a JSON object.\nAnnotation format: set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] for the requested segment {target_name}.\nAnswer field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Annotation format: set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] for the requested segment {target_name}.\nAnswer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Annotation format: set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] for the requested segment {target_name}.\nRequired answer format: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Annotation format: set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] for the requested segment {target_name}.\nFormat for the \"answer\" field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
+        "Annotation format: set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] for the requested segment {target_name}.\nAnswer field: set \"answer\" to the requested segment length as an integer.\nExample JSON:\n{json_example}",
         "Use JSON only.\nFinal answer format: set \"answer\" to the requested segment length as an integer.\nAnnotation format: set \"annotation\" to the pixel segment [[x0,y0],[x1,y1]] for the requested segment {target_name}.\nExample JSON:\n{json_example}"
       ]
     }

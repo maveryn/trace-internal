@@ -1,34 +1,31 @@
 # `task_symbolic__spinner__multi_attribute_and_probability`
 
-## Summary
-- Domain: `symbolic`
-- Scene: `spinner`
-- Task id: `task_symbolic__spinner__multi_attribute_and_probability`
-- Goal: compute the reduced-fraction probability that one equal-sector spinner lands on a sector matching both a resolved color and a resolved shape marker.
+## Public Taxonomy
+1. Domain: `symbolic`
+2. Scene id: `spinner`
+3. Task id: `task_symbolic__spinner__multi_attribute_and_probability`
+4. Objective: color-and-shape spinner probability.
 
 ## Program Contract
-Program: `probability.attribute_conjunction_event(scene=spinner, scope=one_equal_sector_spinner, attributes=color_and_shape, sample_space=visible_sectors, output=reduced_fraction)`
+Program: `spinner.color_shape_and_probability(scene=spinner, scope=one_equal_sector_spinner, predicate=color_and_shape, sample_space=visible_sectors, output=probability_option_letter)`
 
 Candidate set: all equal-area visible sectors on the spinner.
-Operands: each sector's color and shape marker, plus the resolved target color and resolved target shape.
-Operation: count sectors matching both target attributes and reduce `matching_sectors / total_sectors`.
-Output binding: `answer` is the reduced fraction string.
+Operands: each sector's color and shape marker, plus the resolved target color and target shape.
+Operation: count sectors satisfying both target attributes and reduce `matching_sectors / total_sectors`.
+Output binding: `answer` is the letter of the visible A-F option whose reduced fraction is the requested probability.
+Annotation schema: `bbox`.
 Annotation witnesses: the scalar bbox of the full spinner panel.
 Query ids: `single`.
 
-## Query Contract
-- `single`: no public semantic query branch. The conjunction predicate is the fixed objective contract.
+## Generation And Trace
+1. The task samples one color-shape conjunction with a nontrivial favorable count.
+2. The execution trace records sector specs, favorable outcome counts, total outcome counts, the exact reduced fraction, visible option fractions, and the selected answer label.
+3. Scene variants are `spinner_clean`, `spinner_card`, and `spinner_notebook`.
+4. Annotation is projected from finalized spinner-panel geometry, not from pixels.
+5. Scalar annotation checked: true.
 
-## Answer And Annotation
-- `answer_gt.type`: `string`
-- `answer_gt.value`: reduced fraction such as `"1/8"`
-- Annotation schema: `bbox`
-- `annotation_gt.type`: `bbox`
-- Annotation target: full spinner panel bounding box.
-
-## Implementation Notes
-- Source package: `trace.tasks.symbolic.spinner`
-- Prompt bundle: `symbolic_spinner_v1`
-- Scene variants: `spinner_clean|spinner_card|spinner_notebook`
-- Internal trace metadata records `event_key=single_color_and_shape_probability`.
-- Generation is deterministic from seed, params, config, prompt bundle, and code versions.
+## Implementation
+1. Registered class: `trace.tasks.symbolic.spinner.multi_attribute_and_probability.SymbolicSpinnerMultiAttributeAndProbabilityTask`
+2. Config: `configs/domains/symbolic/spinner.yaml`
+3. Prompt asset: `prompts/symbolic/spinner/symbolic_spinner_v1.json`
+4. Focused tests: `tests/test_symbolic_probability_spinner_tasks.py`

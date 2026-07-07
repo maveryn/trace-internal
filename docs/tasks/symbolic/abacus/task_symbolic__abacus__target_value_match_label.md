@@ -46,4 +46,4 @@ Query ids: `single`.
 ## 5) Tests
 1. Behavior/trace/prompt tests: `tests/test_symbolic_abacus_tasks.py`
 2. Prompt/config tests: `tests/test_prompt_system.py`, `tests/test_symbolic_core_scene_config.py`
-3. Scene-package migration tests: `tests/test_scene_package_migration_contracts.py`
+3. Source-layout contract tests: `tests/test_source_layout_contracts.py`

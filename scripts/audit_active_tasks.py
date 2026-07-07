@@ -17,6 +17,7 @@ from typing import Any, Iterable, Mapping
 
 import trace.tasks  # noqa: F401 - registers task classes.
 from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.core.task_review_calibration import load_calibration_status_records
 from trace.core.seed import hash64
 from trace.core.taxonomy import (
     ACTIVE_DOMAINS,
@@ -80,6 +81,10 @@ def _read_text(path: Path) -> str:
 
 def _parse_calibration_status(path: Path) -> dict[str, dict[str, Any]]:
     """Return task records from the current calibration status JSON."""
+
+    records = load_calibration_status_records(out_root=Path("review/task-reviews"))
+    if records:
+        return records
 
     if not path.exists():
         return {}
@@ -501,7 +506,7 @@ def _build_audit(args: argparse.Namespace) -> dict[str, Any]:
             "gap_counts": dict(sorted(gap_counter.items())),
             "blocking_counts": dict(sorted(blocking_counter.items())),
         },
-        "calibration_status_path": "review/calibration_sweep_status.json",
+        "calibration_status_path": "review/calibration/50x8_qwen25vl3b_prompt_pilot_seed20260703/task_status_records.json",
         "domains": by_domain,
         "tasks": tasks,
     }
@@ -538,7 +543,9 @@ def _render_markdown(audit: Mapping[str, Any]) -> str:
         (
             "`review/task-reviews/` is the required manual-review artifact root for this audit. "
             f"Review manifests must carry `calibration_baseline={CURRENT_CALIBRATION_BASELINE}` and calibration "
-            f"status comes from `review/calibration_sweep_status.json` for `{CURRENT_CALIBRATION_MODEL_SLUG}`. "
+            "status comes from "
+            "`review/calibration/50x8_qwen25vl3b_prompt_pilot_seed20260703/task_status_records.json` "
+            f"for `{CURRENT_CALIBRATION_MODEL_SLUG}`. "
             "A root-level `task-reviews/` tree is not counted as an active-review requirement."
         ),
         "",

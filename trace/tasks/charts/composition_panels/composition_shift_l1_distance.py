@@ -7,18 +7,32 @@ from trace.core.seed import spawn_rng
 from trace.tasks.charts.shared.composition.values import int_sum
 from trace.tasks.charts.composition_panels._lifecycle import package_composition_panels_plan as P, run_composition_panels_lifecycle as R
 from trace.tasks.charts.composition_panels.shared.defaults import resolve_scene_variant as V
-from trace.tasks.charts.composition_panels.shared.sampling import build_base_panels, package_dataset, sample_scene_frame
+from trace.tasks.charts.composition_panels.shared.sampling import balanced_int, build_base_panels, package_dataset, sample_scene_frame
 from trace.tasks.charts.composition_panels.shared.state import AnnotationRole, DOMAIN, CompositionPanelsSelection
 from trace.tasks.registry import register_task
 
 
 T = "task_charts__composition_panels__composition_shift_l1_distance"
-TASK_PARAM_DEFAULTS = {"segment_count_min": 5, "segment_count_max": 5}
+TASK_PARAM_DEFAULTS = {
+    "panel_count_min": 4,
+    "panel_count_max": 6,
+    "segment_count_min": 4,
+    "segment_count_max": 4,
+}
 PGM = "sum(abs(share(end_panel,segment)-share(start_panel,segment)) for segment in segments); output=integer_value; annotation=bbox_set(compared_panels); scene=composition_panels; scope=composition_shift_l1_distance"
 PROMPT_KEY = "composition_shift_l1_distance"
 ANNOTATION_HINT = 'set "annotation" to an array of two [x0,y0,x1,y1] pixel boxes around the full compared panels'
-JSON_EXAMPLE = '{"annotation":[[120,90,380,520],[460,90,720,520]],"answer":28}'
-JSON_EXAMPLE_ANSWER_ONLY = '{"answer":28}'
+JSON_EXAMPLE = '{"annotation":[[120,90,380,520],[460,90,720,520]],"answer":50}'
+JSON_EXAMPLE_ANSWER_ONLY = '{"answer":50}'
+
+SHIFT_SHARE_PRESETS = (
+    ((40, 30, 20, 10), (30, 30, 30, 10)),
+    ((40, 30, 20, 10), (25, 30, 35, 10)),
+    ((45, 25, 20, 10), (25, 25, 40, 10)),
+    ((45, 25, 20, 10), (20, 25, 20, 35)),
+    ((50, 20, 20, 10), (20, 35, 35, 10)),
+    ((55, 25, 10, 10), (20, 30, 35, 15)),
+)
 
 
 def _build_plan(params, seed, _query_id, _probs):
@@ -31,6 +45,25 @@ def _build_plan(params, seed, _query_id, _probs):
     panels = build_base_panels(frame=frame, instance_seed=seed)
     dataset = package_dataset(frame, panels)
     start_label, end_label = rng.sample(list(frame.panel_labels), 2)
+    preset_index = balanced_int(
+        range(len(SHIFT_SHARE_PRESETS)),
+        params=task_params,
+        instance_seed=seed,
+        namespace=f"{T}.shift_answer",
+    )
+    start_shares, end_shares = SHIFT_SHARE_PRESETS[int(preset_index)]
+    fixed_by_panel = {
+        str(start_label): {
+            str(segment): int(value)
+            for segment, value in zip(frame.segment_labels, start_shares)
+        },
+        str(end_label): {
+            str(segment): int(value)
+            for segment, value in zip(frame.segment_labels, end_shares)
+        },
+    }
+    panels = build_base_panels(frame=frame, instance_seed=seed, fixed_by_panel=fixed_by_panel)
+    dataset = package_dataset(frame, panels)
     by_label = {str(panel.label): panel for panel in panels}
     start_panel = by_label[str(start_label)]
     end_panel = by_label[str(end_label)]

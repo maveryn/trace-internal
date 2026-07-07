@@ -27,11 +27,11 @@
         "Find the length of the dashed extension BE."
       ],
       "trapezoid_area_from_parallelogram_perimeter_query": [
-        "What is the area of the original trapezoid?",
-        "Find the area of the original trapezoid.",
-        "Determine the area of the trapezoid.",
-        "What is the trapezoid's area?",
-        "Find the area of the solid trapezoid."
+        "The completed parallelogram is ADCE. What is the area of the original trapezoid?",
+        "The completed parallelogram is ADCE. Find the area of the original trapezoid.",
+        "The completed parallelogram is ADCE. Determine the area of the trapezoid.",
+        "Use the completed parallelogram ADCE. What is the trapezoid's area?",
+        "Use the completed parallelogram ADCE. Find the area of the solid trapezoid."
       ],
       "trapezoid_area_from_extension_and_height_query": [
         "What is the area of the original trapezoid?",

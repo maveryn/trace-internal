@@ -7,19 +7,19 @@
 4. Objective: two-tray attribute-combination probability.
 
 ## Program Contract
-Program: `dice.pair_attribute_combo_probability(scene=dice, scope=two_visible_trays, predicate=parity_combo|color_value_combo, output=reduced_fraction_string)`
+Program: `dice.pair_attribute_combo_probability(scene=dice, scope=two_visible_trays, predicate=parity_combo|color_value_combo, output=probability_option_letter)`
 
 Candidate set: the cartesian product of one die from tray `A` and one die from tray `B`.
 Operands: each die's color and top-face value in both trays, plus the paired parity or color/value predicate.
 Operation: count ordered tray-pair outcomes satisfying the paired attribute predicate and reduce `favorable / total_outcomes`.
-Output binding: `answer` is the reduced fraction string.
+Output binding: `answer` is the letter of the visible A-F option whose reduced fraction is the requested probability.
 Annotation schema: `bbox_map`.
 Annotation witnesses: a `bbox_map` with `tray_a` and `tray_b` bboxes.
 Query ids: `pair_parity_combo_probability`, `pair_color_value_combo_probability`.
 
 ## Generation And Trace
 1. The task asks for a probability over one die selected from each tray under a sampled paired predicate.
-2. The execution trace records tray specs, die colors, die values, favorable outcome counts, total outcome counts, and the reduced fraction answer.
+2. The execution trace records tray specs, die colors, die values, favorable outcome counts, total outcome counts, the exact reduced fraction, visible option fractions, and the selected answer label.
 3. Scene variants are `dice_tray_clean`, `dice_tray_felt`, and `dice_tray_notebook`; dice visual style is non-semantic rendering metadata.
 4. Annotation is projected from finalized tray geometry, not from pixels.
 5. Scalar annotation checked: true.

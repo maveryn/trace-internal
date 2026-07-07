@@ -1,0 +1,686 @@
+{
+  "annotated_series": {
+    "config_path": "configs/domains/charts/annotated_series.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/annotated_series",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/annotated_series",
+    "task_count": 1,
+    "task_ids": [
+      "task_charts__annotated_series__callout_endpoint_change_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "area": {
+    "config_path": "configs/domains/charts/area.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/area",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/area",
+    "task_count": 3,
+    "task_ids": [
+      "task_charts__area__interval_area_value",
+      "task_charts__area__stacked_band_dominance_label",
+      "task_charts__area__stacked_band_interval_sum_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "bar_3d": {
+    "config_path": "configs/domains/charts/bar_3d.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/bar_3d",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/bar_3d",
+    "task_count": 8,
+    "task_ids": [
+      "task_charts__bar_3d__category_extremum_gap_value",
+      "task_charts__bar_3d__category_threshold_count",
+      "task_charts__bar_3d__category_total_gap_value",
+      "task_charts__bar_3d__category_total_value",
+      "task_charts__bar_3d__pairwise_comparison_count",
+      "task_charts__bar_3d__series_category_scope_total_value",
+      "task_charts__bar_3d__series_threshold_count",
+      "task_charts__bar_3d__series_total_gap_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "boxplot": {
+    "config_path": "configs/domains/charts/boxplot.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/boxplot",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/boxplot",
+    "task_count": 3,
+    "task_ids": [
+      "task_charts__boxplot__iqr_extremum_label",
+      "task_charts__boxplot__median_rank_difference_value",
+      "task_charts__boxplot__paired_median_shift_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "candlestick": {
+    "config_path": "configs/domains/charts/candlestick.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/candlestick",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/candlestick",
+    "task_count": 2,
+    "task_ids": [
+      "task_charts__candlestick__counterfactual_close_value",
+      "task_charts__candlestick__range_extremum_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "combo_mark": {
+    "config_path": "configs/domains/charts/combo_mark.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/combo_mark",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/combo_mark",
+    "task_count": 8,
+    "task_ids": [
+      "task_charts__combo_mark__absolute_gap_extremum_label",
+      "task_charts__combo_mark__conditioned_line_extremum_label",
+      "task_charts__combo_mark__conditioned_primary_extremum_label",
+      "task_charts__combo_mark__cross_mark_difference_value",
+      "task_charts__combo_mark__directional_gap_extremum_label",
+      "task_charts__combo_mark__dual_threshold_condition_count",
+      "task_charts__combo_mark__interval_threshold_condition_count",
+      "task_charts__combo_mark__series_threshold_crossing_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "composition_panels": {
+    "config_path": "configs/domains/charts/composition_panels.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/composition_panels",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/composition_panels",
+    "task_count": 6,
+    "task_ids": [
+      "task_charts__composition_panels__composition_shift_l1_distance",
+      "task_charts__composition_panels__conditioned_panel_sum_from_percent",
+      "task_charts__composition_panels__segment_count_extremum_panel_label",
+      "task_charts__composition_panels__segment_count_nearest_target_panel_label",
+      "task_charts__composition_panels__segment_pair_count_gap_extremum_panel_label",
+      "task_charts__composition_panels__top_k_by_segment_then_sum_other_segment_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "contour_density": {
+    "config_path": "configs/domains/charts/contour_density.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/contour_density",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/contour_density",
+    "task_count": 4,
+    "task_ids": [
+      "task_charts__contour_density__density_extremum_region_label",
+      "task_charts__contour_density__density_threshold_region_count",
+      "task_charts__contour_density__reference_distance_extremum_label",
+      "task_charts__contour_density__spread_extremum_region_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "curve_panels": {
+    "config_path": "configs/domains/charts/curve_panels.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/curve_panels",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/curve_panels",
+    "task_count": 10,
+    "task_ids": [
+      "task_charts__curve_panels__cross_panel_delta_extremum_label",
+      "task_charts__curve_panels__cross_panel_threshold_earliest_label",
+      "task_charts__curve_panels__curve_at_x_extremum_label",
+      "task_charts__curve_panels__curve_intersection_count",
+      "task_charts__curve_panels__earliest_maximum_panel_label",
+      "task_charts__curve_panels__endpoint_rank_panel_label",
+      "task_charts__curve_panels__global_value_extremum_panel_label",
+      "task_charts__curve_panels__panel_curve_threshold_crossing_count",
+      "task_charts__curve_panels__panel_spread_extremum_label",
+      "task_charts__curve_panels__threshold_series_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "dashboard": {
+    "config_path": "configs/domains/charts/dashboard.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/dashboard",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/dashboard",
+    "task_count": 9,
+    "task_ids": [
+      "task_charts__dashboard__category_extremum_panel_label",
+      "task_charts__dashboard__category_panel_condition_count",
+      "task_charts__dashboard__category_total_extremum_label",
+      "task_charts__dashboard__global_value_extremum_category_label",
+      "task_charts__dashboard__panel_total_extremum_label",
+      "task_charts__dashboard__panel_value_range_extremum_label",
+      "task_charts__dashboard__panel_value_range_value",
+      "task_charts__dashboard__source_rank_target_value",
+      "task_charts__dashboard__statement_option_selection_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "density_curve": {
+    "config_path": "configs/domains/charts/density_curve.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/density_curve",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/density_curve",
+    "task_count": 4,
+    "task_ids": [
+      "task_charts__density_curve__density_at_x_extremum_label",
+      "task_charts__density_curve__interval_mass_extremum_label",
+      "task_charts__density_curve__mean_extremum_label",
+      "task_charts__density_curve__mode_location_extremum_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "dumbbell": {
+    "config_path": "configs/domains/charts/dumbbell.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/dumbbell",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/dumbbell",
+    "task_count": 3,
+    "task_ids": [
+      "task_charts__dumbbell__absolute_gap_threshold_count",
+      "task_charts__dumbbell__gap_rank_row_label",
+      "task_charts__dumbbell__side_winner_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "error_interval": {
+    "config_path": "configs/domains/charts/error_interval.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/error_interval",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/error_interval",
+    "task_count": 3,
+    "task_ids": [
+      "task_charts__error_interval__interval_width_rank_label",
+      "task_charts__error_interval__reference_containment_count",
+      "task_charts__error_interval__reference_exclusion_side_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "errorbar_series": {
+    "config_path": "configs/domains/charts/errorbar_series.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/errorbar_series",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/errorbar_series",
+    "task_count": 2,
+    "task_ids": [
+      "task_charts__errorbar_series__bound_extremum_x_label",
+      "task_charts__errorbar_series__same_x_interval_overlap_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "heatmap": {
+    "config_path": "configs/domains/charts/heatmap.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/heatmap",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/heatmap",
+    "task_count": 5,
+    "task_ids": [
+      "task_charts__heatmap__axis_cell_extremum_label",
+      "task_charts__heatmap__axis_condition_extremum_label",
+      "task_charts__heatmap__colorbar_interval_cell_count",
+      "task_charts__heatmap__colorbar_threshold_cell_count",
+      "task_charts__heatmap__condition_run_extremum_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "hexbin_density": {
+    "config_path": "configs/domains/charts/hexbin_density.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/hexbin_density",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/hexbin_density",
+    "task_count": 1,
+    "task_ids": [
+      "task_charts__hexbin_density__threshold_bin_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "histogram": {
+    "config_path": "configs/domains/charts/histogram.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/histogram",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/histogram",
+    "task_count": 2,
+    "task_ids": [
+      "task_charts__histogram__cumulative_rank_bin_label",
+      "task_charts__histogram__interval_mass"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "matrix": {
+    "config_path": "configs/domains/charts/matrix.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/matrix",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/matrix",
+    "task_count": 3,
+    "task_ids": [
+      "task_charts__matrix__axis_extremum_label",
+      "task_charts__matrix__off_diagonal_confusion_label",
+      "task_charts__matrix__threshold_cell_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "multiseries": {
+    "config_path": "configs/domains/charts/multiseries.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/multiseries",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/multiseries",
+    "task_count": 6,
+    "task_ids": [
+      "task_charts__multiseries__category_total_extremum_label",
+      "task_charts__multiseries__pair_equality_label",
+      "task_charts__multiseries__ranked_change_extremum_label",
+      "task_charts__multiseries__ranked_pair_ratio_extremum_label",
+      "task_charts__multiseries__ranked_series_share_extremum_label",
+      "task_charts__multiseries__series_rank_at_category_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "parallel_coords": {
+    "config_path": "configs/domains/charts/parallel_coords.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/parallel_coords",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/parallel_coords",
+    "task_count": 3,
+    "task_ids": [
+      "task_charts__parallel_coords__all_crossings_between_adjacent_axes",
+      "task_charts__parallel_coords__axis_condition_count",
+      "task_charts__parallel_coords__axis_delta_extremum_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "part_whole": {
+    "config_path": "configs/domains/charts/part_whole.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/part_whole",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/part_whole",
+    "task_count": 4,
+    "task_ids": [
+      "task_charts__part_whole__adjacent_transfer_gap_value",
+      "task_charts__part_whole__contiguous_chart_order_sum",
+      "task_charts__part_whole__sector_share_to_angle",
+      "task_charts__part_whole__subset_denominator_share_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "pictogram": {
+    "config_path": "configs/domains/charts/pictogram.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/pictogram",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/pictogram",
+    "task_count": 5,
+    "task_ids": [
+      "task_charts__pictogram__category_total_extremum_label",
+      "task_charts__pictogram__category_total_value",
+      "task_charts__pictogram__group_difference_value",
+      "task_charts__pictogram__target_value_nearest_category_label",
+      "task_charts__pictogram__threshold_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "population_pyramid": {
+    "config_path": "configs/domains/charts/population_pyramid.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/population_pyramid",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/population_pyramid",
+    "task_count": 4,
+    "task_ids": [
+      "task_charts__population_pyramid__age_group_threshold_count",
+      "task_charts__population_pyramid__dominant_side_count",
+      "task_charts__population_pyramid__side_gap_extremum_label",
+      "task_charts__population_pyramid__side_value_extremum_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "radar": {
+    "config_path": "configs/domains/charts/radar.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/radar",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/radar",
+    "task_count": 4,
+    "task_ids": [
+      "task_charts__radar__highlighted_metric_threshold_panel_count",
+      "task_charts__radar__matching_condition_panel_count",
+      "task_charts__radar__profile_advantage_count",
+      "task_charts__radar__threshold_metric_count_for_panel"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "radial_progress": {
+    "config_path": "configs/domains/charts/radial_progress.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/radial_progress",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/radial_progress",
+    "task_count": 3,
+    "task_ids": [
+      "task_charts__radial_progress__extremum_remaining_label",
+      "task_charts__radial_progress__progress_interval_count",
+      "task_charts__radial_progress__progress_threshold_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "radial_sankey": {
+    "config_path": "configs/domains/charts/radial_sankey.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/radial_sankey",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/radial_sankey",
+    "task_count": 2,
+    "task_ids": [
+      "task_charts__radial_sankey__dominant_endpoint_label",
+      "task_charts__radial_sankey__transfer_total_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "region_map": {
+    "config_path": "configs/domains/charts/region_map.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/region_map",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/region_map",
+    "task_count": 10,
+    "task_ids": [
+      "task_charts__region_map__adjacent_category_count",
+      "task_charts__region_map__adjacent_numeric_threshold_count",
+      "task_charts__region_map__adjacent_same_category_count",
+      "task_charts__region_map__categorical_region_count",
+      "task_charts__region_map__group_category_region_count",
+      "task_charts__region_map__marker_region_extremum_label",
+      "task_charts__region_map__marker_region_threshold_count",
+      "task_charts__region_map__named_region_set_total_value",
+      "task_charts__region_map__numeric_interval_region_count",
+      "task_charts__region_map__numeric_threshold_region_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "sankey": {
+    "config_path": "configs/domains/charts/sankey.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/sankey",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/sankey",
+    "task_count": 3,
+    "task_ids": [
+      "task_charts__sankey__node_side_total_value",
+      "task_charts__sankey__path_bottleneck_value",
+      "task_charts__sankey__source_to_target_total_flow"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "scatter_cluster": {
+    "config_path": "configs/domains/charts/scatter_cluster.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/scatter_cluster",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/scatter_cluster",
+    "task_count": 4,
+    "task_ids": [
+      "task_charts__scatter_cluster__centroid_option_selection_label",
+      "task_charts__scatter_cluster__cluster_area_rank_label",
+      "task_charts__scatter_cluster__cluster_spread_extremum_label",
+      "task_charts__scatter_cluster__cluster_trend_direction_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "scatter_points": {
+    "config_path": "configs/domains/charts/scatter_points.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/scatter_points",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/scatter_points",
+    "task_count": 3,
+    "task_ids": [
+      "task_charts__scatter_points__axis_threshold_point_count",
+      "task_charts__scatter_points__category_axis_mean_extremum_label",
+      "task_charts__scatter_points__category_threshold_point_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "scatter_readout": {
+    "config_path": "configs/domains/charts/scatter_readout.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/scatter_readout",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/scatter_readout",
+    "task_count": 5,
+    "task_ids": [
+      "task_charts__scatter_readout__series_pair_value_gap_at_x",
+      "task_charts__scatter_readout__series_value_at_x_value",
+      "task_charts__scatter_readout__series_x_extremum_label",
+      "task_charts__scatter_readout__series_y_anchor_other_series_value",
+      "task_charts__scatter_readout__x_value_rank_series_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "scientific_axis_frame": {
+    "config_path": "configs/domains/charts/scientific_axis_frame.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/scientific_axis_frame",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/scientific_axis_frame",
+    "task_count": 2,
+    "task_ids": [
+      "task_charts__scientific_axis_frame__axis_span_value",
+      "task_charts__scientific_axis_frame__tick_spacing_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "single_series": {
+    "config_path": "configs/domains/charts/single_series.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/single_series",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/single_series",
+    "task_count": 11,
+    "task_ids": [
+      "task_charts__single_series__endpoint_change_value",
+      "task_charts__single_series__interval_rate_value",
+      "task_charts__single_series__interval_value_count",
+      "task_charts__single_series__monotone_streak_length",
+      "task_charts__single_series__observed_threshold_crossing_label",
+      "task_charts__single_series__order_statistic_label",
+      "task_charts__single_series__order_statistic_value",
+      "task_charts__single_series__remaining_mean_after_removal",
+      "task_charts__single_series__target_share_after_removal",
+      "task_charts__single_series__threshold_value_count",
+      "task_charts__single_series__turning_point_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "size_encoding": {
+    "config_path": "configs/domains/charts/size_encoding.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/size_encoding",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/size_encoding",
+    "task_count": 4,
+    "task_ids": [
+      "task_charts__size_encoding__category_relative_size_count",
+      "task_charts__size_encoding__filtered_item_extremum_label",
+      "task_charts__size_encoding__global_item_extremum_category_label",
+      "task_charts__size_encoding__panel_category_extremum_panel_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "style_legend": {
+    "config_path": "configs/domains/charts/style_legend.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/style_legend",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/style_legend",
+    "task_count": 3,
+    "task_ids": [
+      "task_charts__style_legend__series_extremum_x_label",
+      "task_charts__style_legend__threshold_series_count",
+      "task_charts__style_legend__x_position_extremum_series_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "sunburst": {
+    "config_path": "configs/domains/charts/sunburst.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/sunburst",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/sunburst",
+    "task_count": 4,
+    "task_ids": [
+      "task_charts__sunburst__leaf_range_count_under_parent",
+      "task_charts__sunburst__leaf_threshold_count_under_parent",
+      "task_charts__sunburst__parent_total_extremum_label",
+      "task_charts__sunburst__parent_total_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "surface_3d": {
+    "config_path": "configs/domains/charts/surface_3d.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/surface_3d",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/surface_3d",
+    "task_count": 3,
+    "task_ids": [
+      "task_charts__surface_3d__panel_variation_label",
+      "task_charts__surface_3d__reference_nearest_label",
+      "task_charts__surface_3d__series_trend_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "table": {
+    "config_path": "configs/domains/charts/table.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/table",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/table",
+    "task_count": 8,
+    "task_ids": [
+      "task_charts__table__absolute_difference_between_rows_over_year_interval",
+      "task_charts__table__categorical_value_count",
+      "task_charts__table__column_rank_label",
+      "task_charts__table__column_summary_value",
+      "task_charts__table__filtered_column_mean",
+      "task_charts__table__interval_value_count",
+      "task_charts__table__sum_absolute_differences_between_rows_over_year_interval",
+      "task_charts__table__threshold_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "treemap": {
+    "config_path": "configs/domains/charts/treemap.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/treemap",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/treemap",
+    "task_count": 3,
+    "task_ids": [
+      "task_charts__treemap__group_total_value",
+      "task_charts__treemap__parent_total_extremum_label",
+      "task_charts__treemap__repeated_leaf_aggregate_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "uncertainty_band": {
+    "config_path": "configs/domains/charts/uncertainty_band.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/uncertainty_band",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/uncertainty_band",
+    "task_count": 2,
+    "task_ids": [
+      "task_charts__uncertainty_band__band_overlap_count",
+      "task_charts__uncertainty_band__band_width_extremum_x_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "violin": {
+    "config_path": "configs/domains/charts/violin.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/violin",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/violin",
+    "task_count": 3,
+    "task_ids": [
+      "task_charts__violin__modality_label",
+      "task_charts__violin__mode_extremum_label",
+      "task_charts__violin__support_width_extremum_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "waterfall": {
+    "config_path": "configs/domains/charts/waterfall.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/charts/waterfall",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/charts/waterfall",
+    "task_count": 4,
+    "task_ids": [
+      "task_charts__waterfall__remove_step_final_total",
+      "task_charts__waterfall__reverse_step_final_total",
+      "task_charts__waterfall__running_total_extremum_value",
+      "task_charts__waterfall__running_total_value"
+    ],
+    "taxonomy_review_pass": true
+  }
+}

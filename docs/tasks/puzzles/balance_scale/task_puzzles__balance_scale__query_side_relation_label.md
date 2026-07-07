@@ -42,5 +42,5 @@ Query ids: `single`.
 ## 5) Tests
 1. Determinism test: `tests/test_puzzles_balance_scale_tasks.py::test_query_side_relation_task_is_deterministic`
 2. Answer/annotation consistency test: `tests/test_puzzles_balance_scale_tasks.py::test_query_side_relation_task_emits_public_contract`
-3. Prompt metadata/placeholder test: covered by scene-package review gates and prompt-system tests.
+3. Prompt metadata/placeholder test: covered by source-layout review gates and prompt-system tests.
 4. Constraint-specific tests: `tests/test_puzzles_balance_scale_tasks.py::test_query_side_relation_targets_are_valid_and_balanced`

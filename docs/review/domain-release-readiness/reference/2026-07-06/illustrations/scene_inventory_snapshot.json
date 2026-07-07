@@ -1,0 +1,206 @@
+{
+  "construction_site": {
+    "config_path": "configs/domains/illustrations/construction_site.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/illustrations/construction_site",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/illustrations/construction_site",
+    "task_count": 4,
+    "task_ids": [
+      "task_illustrations__construction_site__equipment_zone_count",
+      "task_illustrations__construction_site__missing_patch_label",
+      "task_illustrations__construction_site__rotated_tile_label",
+      "task_illustrations__construction_site__worker_attribute_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "environment": {
+    "config_path": "configs/domains/illustrations/environment.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/illustrations/environment",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/illustrations/environment",
+    "task_count": 5,
+    "task_ids": [
+      "task_illustrations__environment__crossing_feature_count",
+      "task_illustrations__environment__feature_relation_object_count",
+      "task_illustrations__environment__lit_window_count",
+      "task_illustrations__environment__missing_patch_label",
+      "task_illustrations__environment__rotated_tile_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "indoor_room": {
+    "config_path": "configs/domains/illustrations/indoor_room.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/illustrations/indoor_room",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/illustrations/indoor_room",
+    "task_count": 5,
+    "task_ids": [
+      "task_illustrations__indoor_room__furniture_side_count",
+      "task_illustrations__indoor_room__missing_patch_label",
+      "task_illustrations__indoor_room__rotated_tile_label",
+      "task_illustrations__indoor_room__surface_object_count",
+      "task_illustrations__indoor_room__swapped_tile_pair_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "isometric_farmstead": {
+    "config_path": "configs/domains/illustrations/isometric_farmstead.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/illustrations/isometric_farmstead",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/illustrations/isometric_farmstead",
+    "task_count": 4,
+    "task_ids": [
+      "task_illustrations__isometric_farmstead__farmer_same_level_tile_label",
+      "task_illustrations__isometric_farmstead__highest_terrain_tile_count",
+      "task_illustrations__isometric_farmstead__terrain_elevation_extremum_label",
+      "task_illustrations__isometric_farmstead__terrain_level_object_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "isometric_harbor": {
+    "config_path": "configs/domains/illustrations/isometric_harbor.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/illustrations/isometric_harbor",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/illustrations/isometric_harbor",
+    "task_count": 4,
+    "task_ids": [
+      "task_illustrations__isometric_harbor__boat_heading_status_count",
+      "task_illustrations__isometric_harbor__boat_mooring_status_count",
+      "task_illustrations__isometric_harbor__boat_side_count",
+      "task_illustrations__isometric_harbor__shoreline_nearest_boat_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "isometric_quarry": {
+    "config_path": "configs/domains/illustrations/isometric_quarry.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/illustrations/isometric_quarry",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/illustrations/isometric_quarry",
+    "task_count": 4,
+    "task_ids": [
+      "task_illustrations__isometric_quarry__highest_terrain_tile_count",
+      "task_illustrations__isometric_quarry__terrain_elevation_extremum_label",
+      "task_illustrations__isometric_quarry__terrain_level_object_count",
+      "task_illustrations__isometric_quarry__worker_same_level_tile_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "library": {
+    "config_path": "configs/domains/illustrations/library.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/illustrations/library",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/illustrations/library",
+    "task_count": 5,
+    "task_ids": [
+      "task_illustrations__library__books_in_section_count",
+      "task_illustrations__library__filtered_book_in_section_count",
+      "task_illustrations__library__missing_patch_label",
+      "task_illustrations__library__rotated_tile_label",
+      "task_illustrations__library__swapped_tile_pair_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "park_playground": {
+    "config_path": "configs/domains/illustrations/park_playground.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/illustrations/park_playground",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/illustrations/park_playground",
+    "task_count": 6,
+    "task_ids": [
+      "task_illustrations__park_playground__jigsaw_arrangement_label",
+      "task_illustrations__park_playground__missing_patch_label",
+      "task_illustrations__park_playground__person_count",
+      "task_illustrations__park_playground__playground_equipment_count",
+      "task_illustrations__park_playground__rotated_tile_label",
+      "task_illustrations__park_playground__swapped_tile_pair_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "pixel_village": {
+    "config_path": "configs/domains/illustrations/pixel_village.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/illustrations/pixel_village",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/illustrations/pixel_village",
+    "task_count": 7,
+    "task_ids": [
+      "task_illustrations__pixel_village__missing_patch_label",
+      "task_illustrations__pixel_village__object_type_count",
+      "task_illustrations__pixel_village__person_path_count",
+      "task_illustrations__pixel_village__river_side_object_count",
+      "task_illustrations__pixel_village__rotated_tile_label",
+      "task_illustrations__pixel_village__swapped_tile_pair_label",
+      "task_illustrations__pixel_village__territory_object_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "rpg_dungeon": {
+    "config_path": "configs/domains/illustrations/rpg_dungeon.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/illustrations/rpg_dungeon",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/illustrations/rpg_dungeon",
+    "task_count": 4,
+    "task_ids": [
+      "task_illustrations__rpg_dungeon__missing_patch_label",
+      "task_illustrations__rpg_dungeon__monster_chamber_count",
+      "task_illustrations__rpg_dungeon__reachable_chest_count",
+      "task_illustrations__rpg_dungeon__safe_reachable_chest_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "rpg_house": {
+    "config_path": "configs/domains/illustrations/rpg_house.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/illustrations/rpg_house",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/illustrations/rpg_house",
+    "task_count": 5,
+    "task_ids": [
+      "task_illustrations__rpg_house__door_state_count",
+      "task_illustrations__rpg_house__missing_patch_label",
+      "task_illustrations__rpg_house__reachable_room_count",
+      "task_illustrations__rpg_house__room_count",
+      "task_illustrations__rpg_house__swapped_tile_pair_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "rpg_tactical_map": {
+    "config_path": "configs/domains/illustrations/rpg_tactical_map.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/illustrations/rpg_tactical_map",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/illustrations/rpg_tactical_map",
+    "task_count": 7,
+    "task_ids": [
+      "task_illustrations__rpg_tactical_map__counterfactual_terrain_conversion_cost_value",
+      "task_illustrations__rpg_tactical_map__movement_cost_value",
+      "task_illustrations__rpg_tactical_map__movement_reachable_tile_count",
+      "task_illustrations__rpg_tactical_map__movement_reachable_tile_label",
+      "task_illustrations__rpg_tactical_map__movement_sequence_endpoint_label",
+      "task_illustrations__rpg_tactical_map__terrain_type_tile_count",
+      "task_illustrations__rpg_tactical_map__water_barrier_unreachable_tile_label"
+    ],
+    "taxonomy_review_pass": true
+  }
+}

@@ -11,6 +11,7 @@ from ....core.sampling import uniform_choice_with_probabilities
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
+from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...registry import register_task
 from ...shared.config_defaults import (
     group_default,
@@ -44,7 +45,12 @@ from ..shared.scene_style import make_symbolic_scene_background, resolve_symboli
 
 from .shared.annotations import clock_hand_segment_annotations
 from .shared.defaults import DEFAULTS, POST_IMAGE_NOISE_DEFAULTS
-from .shared.rendering import render_clock_scene
+from .shared.rendering import draw_text_option_cards, option_cards_y_below_bbox, render_clock_scene
+from .shared.sampling import (
+    option_value_map,
+    resolve_text_option_labels,
+    sample_correct_option_label,
+)
 from .shared.state import SUPPORTED_SYMBOLIC_CLOCK_SCENE_VARIANTS, ClockStyleResolution
 from .shared.styles import resolve_clock_render_params
 
@@ -73,6 +79,7 @@ class _ResolvedQuery:
     shown_hour: int
     shown_minute: int
     delta_minutes: int
+    answer_total_minutes: int
     answer_time_text: str
     hour_support: Tuple[int, int]
     minute_support: Tuple[int, int, int]
@@ -314,6 +321,7 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> tuple[_R
             shown_hour=int(shown_hour),
             shown_minute=int(shown_minute),
             delta_minutes=int(delta_minutes),
+            answer_total_minutes=int(answer_total_minutes),
             answer_time_text=str(format_clock_hhmm(int(answer_total_minutes))),
             hour_support=(int(hour_support[0]), int(hour_support[-1])),
             minute_support=(int(minute_support[0]), int(minute_support[-1]), int(minute_step)),
@@ -328,17 +336,11 @@ def _resolve_query(instance_seed: int, *, params: Mapping[str, Any]) -> tuple[_R
 def _prompt_examples(*, offset_direction: str, delta_minutes: int) -> tuple[str, str]:
     """Return prompt JSON examples that match the selected offset direction."""
 
-    center = [320, 320]
-    hour_tip = [430, 350]
-    minute_tip = [484, 461]
-    shown_total_minutes = clock_total_minutes(3, 25)
-    signed_delta = int(delta_minutes) if str(offset_direction) == "after" else -int(delta_minutes)
-    answer_text = str(format_clock_hhmm(add_clock_minutes(int(shown_total_minutes), int(signed_delta))))
     answer_and_annotation = {
-        "annotation": [[center, hour_tip], [center, minute_tip]],
-        "answer": str(answer_text),
+        "annotation": [224, 770, 316, 836],
+        "answer": "C",
     }
-    answer_only = {"answer": str(answer_text)}
+    answer_only = {"answer": "C"}
     return (
         json.dumps(answer_and_annotation, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
@@ -449,6 +451,63 @@ class SymbolicClockOffsetReadoutTask:
                 shown_total_minutes=int(query.shown_total_minutes),
                 render_params=render_params,
                 visual_theme=clock_theme,
+                center_px=(0.5 * float(render_params.canvas_width), 300.0),
+            )
+            option_labels = resolve_text_option_labels(task_params, gen_defaults=_GEN_DEFAULTS)
+            correct_label, label_probs = sample_correct_option_label(
+                params=task_params,
+                gen_defaults=_GEN_DEFAULTS,
+                instance_seed=int(instance_seed),
+                seed_namespace=TASK_ID,
+                labels=option_labels,
+            )
+            candidate_totals = [
+                add_clock_minutes(int(query.answer_total_minutes), int(offset))
+                for offset in (5, -5, 10, -10, 15, -15, 30, -30, 60, -60, int(query.delta_minutes), -int(query.delta_minutes))
+            ]
+            option_values = option_value_map(
+                labels=option_labels,
+                correct_label=str(correct_label),
+                correct_value=int(query.answer_total_minutes),
+                distractors=candidate_totals,
+            )
+            option_text = {
+                str(label): str(format_clock_hhmm(int(value)))
+                for label, value in option_values.items()
+            }
+            raw_option_bboxes, option_entities = draw_text_option_cards(
+                rendered_scene.image,
+                text_by_label=option_text,
+                correct_label=str(correct_label),
+                y0_px=option_cards_y_below_bbox(
+                    rendered_scene.scene_bbox_px,
+                    canvas_height=int(render_params.canvas_height),
+                ),
+            )
+            option_bboxes_px = {
+                str(label): [round(float(value), 3) for value in bbox]
+                for label, bbox in raw_option_bboxes.items()
+            }
+            selected_option_bbox_px = list(option_bboxes_px[str(correct_label)])
+            rendered_scene = rendered_scene.__class__(
+                image=rendered_scene.image,
+                scene_bbox_px=(
+                    min(float(rendered_scene.scene_bbox_px[0]), min(float(b[0]) for b in raw_option_bboxes.values())),
+                    min(float(rendered_scene.scene_bbox_px[1]), min(float(b[1]) for b in raw_option_bboxes.values())),
+                    max(float(rendered_scene.scene_bbox_px[2]), max(float(b[2]) for b in raw_option_bboxes.values())),
+                    max(float(rendered_scene.scene_bbox_px[3]), max(float(b[3]) for b in raw_option_bboxes.values())),
+                ),
+                face_bbox_px=rendered_scene.face_bbox_px,
+                center_px=rendered_scene.center_px,
+                hour_hand_bbox_px=rendered_scene.hour_hand_bbox_px,
+                minute_hand_bbox_px=rendered_scene.minute_hand_bbox_px,
+                second_hand_bbox_px=rendered_scene.second_hand_bbox_px,
+                alarm_hand_bbox_px=rendered_scene.alarm_hand_bbox_px,
+                hour_hand_tip_px=rendered_scene.hour_hand_tip_px,
+                minute_hand_tip_px=rendered_scene.minute_hand_tip_px,
+                second_hand_tip_px=rendered_scene.second_hand_tip_px,
+                alarm_hand_tip_px=rendered_scene.alarm_hand_tip_px,
+                entities=[*rendered_scene.entities, *option_entities],
             )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -463,8 +522,9 @@ class SymbolicClockOffsetReadoutTask:
             query=query,
             instance_seed=int(instance_seed),
         )
-        annotation_artifacts = clock_hand_segment_annotations(rendered_scene)
-        answer_gt = TypedValue(type="string", value=str(query.answer_time_text))
+        hand_annotation_artifacts = clock_hand_segment_annotations(rendered_scene)
+        annotation_artifacts = bbox_annotation_artifacts(selected_option_bbox_px)
+        answer_gt = TypedValue(type="option_letter", value=str(correct_label))
         shown_time_text = str(format_clock_hhmm(int(query.shown_total_minutes)))
         hand_bboxes_px = {
             "hour": [round(float(value), 3) for value in rendered_scene.hour_hand_bbox_px],
@@ -491,6 +551,9 @@ class SymbolicClockOffsetReadoutTask:
             "minute_support": [int(value) for value in query.minute_support],
             "delta_minutes_support": [int(value) for value in query.delta_minutes_support],
             "min_hand_angle_gap_deg": float(query.min_hand_angle_gap_deg),
+            "option_labels": [str(label) for label in option_labels],
+            "correct_label": str(correct_label),
+            "correct_label_probabilities": {str(key): float(value) for key, value in label_probs.items()},
         }
         prompt_query_spec = build_prompt_query_spec(
             prompt_artifacts=prompt_artifacts,
@@ -511,7 +574,9 @@ class SymbolicClockOffsetReadoutTask:
                     "shown_total_minutes": int(query.shown_total_minutes),
                     "shown_time_text": str(shown_time_text),
                     "delta_minutes": int(query.delta_minutes),
+                    "answer_total_minutes": int(query.answer_total_minutes),
                     "answer_time_text": str(query.answer_time_text),
+                    "answer_label": str(correct_label),
                 },
             },
             "query_spec": {
@@ -569,7 +634,10 @@ class SymbolicClockOffsetReadoutTask:
                 "center_px": [round(float(value), 3) for value in rendered_scene.center_px],
                 "hand_bboxes_px": dict(hand_bboxes_px),
                 "hand_tips_px": dict(hand_tips_px),
-                "annotation_source": "center_px_and_hand_tip_segments_px",
+                "annotation_source": "selected_answer_option_bbox_px",
+                "option_bboxes_px": dict(option_bboxes_px),
+                "selected_option_label": str(correct_label),
+                "selected_option_bbox_px": list(selected_option_bbox_px),
             },
             "execution_trace": {
                 **dict(query_params),
@@ -578,10 +646,16 @@ class SymbolicClockOffsetReadoutTask:
                 "shown_minute": int(query.shown_minute),
                 "shown_time_text": str(shown_time_text),
                 "delta_minutes": int(query.delta_minutes),
+                "answer_total_minutes": int(query.answer_total_minutes),
                 "answer_time_text": str(query.answer_time_text),
-                "answer_type": "string",
-                "supporting_parts": ["hour_hand", "minute_hand"],
-                "supporting_segments": list(annotation_artifacts.value),
+                "answer_value": str(query.answer_time_text),
+                "answer_label": str(correct_label),
+                "option_values_by_label": {str(key): int(value) for key, value in option_values.items()},
+                "option_text_by_label": dict(option_text),
+                "answer_type": "option_letter",
+                "supporting_parts": ["selected_answer_option"],
+                "supporting_segments": list(hand_annotation_artifacts.value),
+                "selected_option_bbox_px": list(selected_option_bbox_px),
             },
             "witness_symbolic": {
                 "type": str(annotation_artifacts.annotation_type),

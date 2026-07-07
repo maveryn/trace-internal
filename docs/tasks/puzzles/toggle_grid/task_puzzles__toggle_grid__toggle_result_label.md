@@ -3,7 +3,7 @@
 ## Public Taxonomy
 1. Domain: `puzzles`
 2. Scene id: `toggle_grid`
-3. Source scene package: `toggle_grid`
+3. Source scene: `toggle_grid`
 4. Task id: `task_puzzles__toggle_grid__toggle_result_label`
 
 ## Query Contract

@@ -24,11 +24,12 @@ Query ids: `single`.
 3. Internal `mirror_signature` values: `mirror_vertical`, `mirror_horizontal`, `mirror_diagonal_main`, `mirror_diagonal_anti`, `mirror_both_axes`.
 4. Answer type: `answer_gt.type = option_letter`.
 5. Annotation type: `annotation_gt.type = bbox_map` with keys `reference_cell` and `matching_option_cell`.
-6. Option policy: option count is sampled from `4` or `6`; labels are fixed row-major as `A..D` or `A..F`.
-7. Unique-answer policy: exactly one option cell has the same exact mirror-symmetry signature as the Reference cell.
-8. Asset policy: cells use the curated asymmetric icon subset from `assets/icons/non_symmetry.txt`; icon identity is not part of the query.
-9. Symmetry policy: matching requires the same exact symmetry signature as the Reference cell; distractors are exact other-symmetry cells or cells with no supported mirror symmetry.
-10. Noise policy: mirrored counterparts are derived from the edited seed sprite, so per-icon visual noise does not break the exact symmetry contract.
+6. Annotation schema: `bbox_map`.
+7. Option policy: option count is sampled from `4` or `6`; labels are fixed row-major as `A..D` or `A..F`.
+8. Unique-answer policy: exactly one option cell has the same exact mirror-symmetry signature as the Reference cell.
+9. Asset policy: cells use the curated asymmetric icon subset from `assets/icons/non_symmetry.txt`; icon identity is not part of the query.
+10. Symmetry policy: matching requires the same exact symmetry signature as the Reference cell; distractors are exact other-symmetry cells or cells with no supported mirror symmetry.
+11. Noise policy: mirrored counterparts are derived from the edited seed sprite, so per-icon visual noise does not break the exact symmetry contract.
 
 ## 3) Prompt contract
 1. `prompt_bundle_id`: `icons_mirror_grid_v1`

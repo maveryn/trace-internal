@@ -1,4 +1,4 @@
-"""Behavior tests for puzzle maze scene-package tasks."""
+"""Behavior tests for puzzle maze source-layout tasks."""
 
 from __future__ import annotations
 

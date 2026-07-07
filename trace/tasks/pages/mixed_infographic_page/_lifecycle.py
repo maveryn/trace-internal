@@ -59,6 +59,20 @@ from .shared.state import (
 
 
 MIN_PUBLIC_BBOX_ANNOTATION_SIDE_PX = 24.0
+_ORDINAL_WORDS = {
+    1: "first",
+    2: "second",
+    3: "third",
+    4: "fourth",
+    5: "fifth",
+    6: "sixth",
+    7: "seventh",
+    8: "eighth",
+    9: "ninth",
+    10: "tenth",
+    11: "eleventh",
+    12: "twelfth",
+}
 
 
 @dataclass(frozen=True)
@@ -232,6 +246,50 @@ def _build_modules_payload(
             }
         )
     return tuple(modules_payload)
+
+
+def _ordinal_word(value: int) -> str:
+    """Return a compact ordinal phrase for page-position prompt slots."""
+
+    ivalue = int(value)
+    if ivalue in _ORDINAL_WORDS:
+        return _ORDINAL_WORDS[ivalue]
+    suffix = "th"
+    if ivalue % 100 not in (11, 12, 13):
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(ivalue % 10, "th")
+    return f"{ivalue}{suffix}"
+
+
+def _module_reading_order(
+    *,
+    ctx: MixedSceneContext,
+) -> Tuple[str, ...]:
+    """Order modules by visual reading order from top to bottom, then left to right."""
+
+    entries: List[Tuple[float, float, str]] = []
+    for module in ctx.spec.modules:
+        module_id = str(module.module_id)
+        bbox = ctx.rendered.module_bboxes_px[module_id]
+        cx = (float(bbox[0]) + float(bbox[2])) / 2.0
+        cy = (float(bbox[1]) + float(bbox[3])) / 2.0
+        entries.append((cy, cx, module_id))
+    return tuple(module_id for _, _, module_id in sorted(entries))
+
+
+def _module_position_descriptor(
+    *,
+    ctx: MixedSceneContext,
+    module_id: str,
+) -> Tuple[str, int, Tuple[str, ...]]:
+    """Build the visible-position locator used by the value lookup prompt."""
+
+    order = _module_reading_order(ctx=ctx)
+    position_index = order.index(str(module_id)) + 1
+    descriptor = (
+        f"{_ordinal_word(position_index)} module in reading order "
+        "(top to bottom, left to right)"
+    )
+    return descriptor, position_index, order
 
 
 def build_scene_context(
@@ -853,6 +911,9 @@ def module_field_value_payload(
     module_id = str(target_module.module_id)
     item_id = str(target_item.item_id)
     field_id = str(target_field.field_id)
+    module_position_phrase, module_position_index, module_reading_order = (
+        _module_position_descriptor(ctx=ctx, module_id=module_id)
+    )
     annotation_value = {
         "module_title": [float(value) for value in ctx.rendered.module_title_bboxes_px[module_id]],
         "item_label": [
@@ -876,13 +937,16 @@ def module_field_value_payload(
         annotation_type="bbox",
         annotation_value=list(annotation_value["value_cell"]),
         prompt_slots={
-            "module_title": str(target_module.title),
+            "module_position_phrase": str(module_position_phrase),
             "item_label": str(target_item.label),
             "field_label": str(target_field.label),
         },
         target_payload={
             "module_id": str(target_module.module_id),
             "module_title": str(target_module.title),
+            "module_position_phrase": str(module_position_phrase),
+            "module_position_index": int(module_position_index),
+            "module_reading_order": list(module_reading_order),
             "module_kind": str(target_module.kind),
             "item_id": str(target_item.item_id),
             "item_label": str(target_item.label),
@@ -896,7 +960,115 @@ def module_field_value_payload(
             "target_item_index_probabilities": dict(item_probs),
             "target_field_index_probabilities": dict(field_probs),
         },
-        execution_extra={},
+        execution_extra={
+            "module_position_phrase": str(module_position_phrase),
+            "module_position_index": int(module_position_index),
+            "module_reading_order": list(module_reading_order),
+        },
+        witness_type=str(prompt_key),
+        diagnostic_bbox_map=dict(annotation_value),
+    )
+
+
+def module_ranked_field_value_payload(
+    *,
+    ctx: MixedSceneContext,
+    target_module: Any,
+    selector_field: Any,
+    answer_field: Any,
+    target: Mapping[str, Any],
+    module_probs: Mapping[str, float],
+    selector_field_probs: Mapping[str, float],
+    answer_field_probs: Mapping[str, float],
+    direction_probs: Mapping[str, float],
+    rank_probs: Mapping[str, float],
+    prompt_key: str,
+) -> BoundTaskPayload:
+    """Bind a ranked-item field lookup; public annotation marks the answer value cell."""
+
+    module_id = str(target_module.module_id)
+    item_id = str(target["item_id"])
+    selector_field_id = str(selector_field.field_id)
+    answer_field_id = str(answer_field.field_id)
+    answer_value = str(target["answer_value"])
+    module_position_phrase, module_position_index, module_reading_order = (
+        _module_position_descriptor(ctx=ctx, module_id=module_id)
+    )
+    annotation_value = {
+        "module_title": [float(value) for value in ctx.rendered.module_title_bboxes_px[module_id]],
+        "selector_field_label": [
+            float(value)
+            for value in ctx.rendered.field_label_bboxes_px[module_id][selector_field_id]
+        ],
+        "answer_field_label": [
+            float(value)
+            for value in ctx.rendered.field_label_bboxes_px[module_id][answer_field_id]
+        ],
+        "ranked_item_container": [
+            float(value)
+            for value in ctx.rendered.item_container_bboxes_px[module_id][item_id]
+        ],
+        "ranked_item_label": [
+            float(value) for value in ctx.rendered.item_label_bboxes_px[module_id][item_id]
+        ],
+        "ranked_selector_value": [
+            float(value)
+            for value in ctx.rendered.value_cell_bboxes_px[module_id][item_id][selector_field_id]
+        ],
+        "answer_value_cell": [
+            float(value)
+            for value in ctx.rendered.value_cell_bboxes_px[module_id][item_id][answer_field_id]
+        ],
+    }
+    for index, candidate in enumerate(target["candidate_values"], start=1):
+        annotation_value[f"rank_candidate_{index}"] = [
+            float(value)
+            for value in ctx.rendered.value_cell_bboxes_px[module_id][
+                str(candidate["item_id"])
+            ][selector_field_id]
+        ]
+    target_payload = dict(target)
+    target_payload.update(
+        {
+            "module_position_phrase": str(module_position_phrase),
+            "module_position_index": int(module_position_index),
+            "module_reading_order": list(module_reading_order),
+            "selector_field_id": str(selector_field_id),
+            "selector_field_label": str(selector_field.label),
+            "answer_field_id": str(answer_field_id),
+            "answer_field_label": str(answer_field.label),
+            "answer_value": str(answer_value),
+        }
+    )
+    return BoundTaskPayload(
+        answer_type="string",
+        answer_value=str(answer_value),
+        annotation_type="bbox",
+        annotation_value=list(annotation_value["answer_value_cell"]),
+        prompt_slots={
+            "module_title": str(target_module.title),
+            "selector_field_label": str(selector_field.label),
+            "rank_ordinal": str(target["rank_ordinal"]),
+            "rank_order_phrase": str(target["rank_order_phrase"]),
+            "answer_field_label": str(answer_field.label),
+        },
+        target_payload=target_payload,
+        annotation_keys=("answer_value_cell",),
+        task_params_extra={
+            "target_module_index_probabilities": dict(module_probs),
+            "selector_field_index_probabilities": dict(selector_field_probs),
+            "answer_field_index_probabilities": dict(answer_field_probs),
+            "rank_direction_probabilities": dict(direction_probs),
+            "rank_position_probabilities": dict(rank_probs),
+        },
+        execution_extra={
+            "module_position_phrase": str(module_position_phrase),
+            "module_position_index": int(module_position_index),
+            "module_reading_order": list(module_reading_order),
+            "rank_direction": str(target["rank_direction"]),
+            "rank_position": int(target["rank_position"]),
+            "rank_ordinal": str(target["rank_ordinal"]),
+        },
         witness_type=str(prompt_key),
         diagnostic_bbox_map=dict(annotation_value),
     )

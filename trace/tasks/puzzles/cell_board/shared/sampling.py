@@ -7,7 +7,8 @@ from typing import Any, Iterable, List, Mapping, Sequence
 
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import resolve_required_int_bounds
-from trace.tasks.shared.named_colors import sample_named_color_palette
+from trace.tasks.shared.color_distance import color_distance
+from trace.tasks.shared.named_colors import available_named_colors, sample_named_color_palette
 
 from .state import Coord, NamedColor
 from .topology import connected_components, coords_with_neighbors, four_neighbors, sort_coords
@@ -99,6 +100,55 @@ def sample_palette(
         (str(name), (int(rgb[0]), int(rgb[1]), int(rgb[2])))
         for name, rgb in palette
     ]
+
+
+def sample_target_separated_palette(
+    *,
+    rng,
+    palette_size: int,
+    min_target_filler_distance: float,
+    distance_space: str,
+) -> list[NamedColor]:
+    """Sample a named palette whose filler colors are separated from the target."""
+
+    candidates = [
+        (str(name), (int(rgb[0]), int(rgb[1]), int(rgb[2])))
+        for name, rgb in available_named_colors()
+    ]
+    if not candidates:
+        raise ValueError("no named colors available")
+    size = max(1, min(int(palette_size), len(candidates)))
+    target = rng.choice(candidates)
+    threshold = max(0.0, float(min_target_filler_distance))
+    separated = [
+        entry
+        for entry in candidates
+        if str(entry[0]) != str(target[0])
+        and float(
+            color_distance(
+                target[1],
+                entry[1],
+                distance_space=str(distance_space),
+            )
+        )
+        >= threshold
+    ]
+    if len(separated) < size - 1:
+        separated = sorted(
+            (entry for entry in candidates if str(entry[0]) != str(target[0])),
+            key=lambda entry: float(
+                color_distance(
+                    target[1],
+                    entry[1],
+                    distance_space=str(distance_space),
+                )
+            ),
+            reverse=True,
+        )
+    if len(separated) < size - 1:
+        raise ValueError("not enough named colors for requested separated palette")
+    fillers = list(rng.sample(separated, k=size - 1))
+    return [target, *fillers]
 
 
 def sample_palette_size(
@@ -260,10 +310,20 @@ def sample_unique_largest_component_board(
     cols: int,
     palette_size: int,
     largest_size: int,
+    target_filler_min_color_distance: float = 0.0,
+    color_distance_space: str = "lab",
 ) -> ComponentBoardSample:
     """Build a target-color board with one unique largest component."""
 
-    palette = sample_palette(rng=rng, palette_size=int(palette_size))
+    if float(target_filler_min_color_distance) > 0.0:
+        palette = sample_target_separated_palette(
+            rng=rng,
+            palette_size=int(palette_size),
+            min_target_filler_distance=float(target_filler_min_color_distance),
+            distance_space=str(color_distance_space),
+        )
+    else:
+        palette = sample_palette(rng=rng, palette_size=int(palette_size))
     target_color = palette[0]
     largest = grow_connected_region(
         rng=rng,
@@ -314,6 +374,7 @@ __all__ = [
     "sample_dimensions",
     "sample_palette",
     "sample_palette_size",
+    "sample_target_separated_palette",
     "sample_unique_largest_component_board",
     "target_color_cells",
 ]

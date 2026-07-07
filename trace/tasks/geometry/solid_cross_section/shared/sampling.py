@@ -20,19 +20,27 @@ from .state import ConeSliceCase, PyramidSliceCase
 
 CaseT = TypeVar("CaseT", ConeSliceCase, PyramidSliceCase)
 
+CLEAN_SIMILARITY_RATIOS: tuple[tuple[int, int], ...] = (
+    (1, 3),
+    (2, 5),
+    (1, 2),
+    (3, 5),
+    (2, 3),
+    (3, 4),
+)
+HEIGHT_MULTIPLIERS: tuple[int, ...] = (4, 5, 6, 7)
+
 CONE_SLICE_CASES: tuple[ConeSliceCase, ...] = tuple(
-    ConeSliceCase(int(base_radius), int(solid_height), int(slice_distance))
-    for base_radius in range(4, 29)
-    for solid_height in range(10, 39)
-    for slice_distance in range(3, int(solid_height) - 2)
-    if 0.28 <= float(slice_distance) / float(solid_height) <= 0.78
+    ConeSliceCase(int(base_radius), int(ratio_den * height_multiplier), int(ratio_num * height_multiplier))
+    for base_radius in range(4, 17)
+    for ratio_num, ratio_den in CLEAN_SIMILARITY_RATIOS
+    for height_multiplier in HEIGHT_MULTIPLIERS
 )
 PYRAMID_SLICE_CASES: tuple[PyramidSliceCase, ...] = tuple(
-    PyramidSliceCase(int(base_side), int(solid_height), int(slice_distance))
-    for base_side in range(6, 35)
-    for solid_height in range(10, 39)
-    for slice_distance in range(3, int(solid_height) - 2)
-    if 0.28 <= float(slice_distance) / float(solid_height) <= 0.82
+    PyramidSliceCase(int(base_side), int(ratio_den * height_multiplier), int(ratio_num * height_multiplier))
+    for base_side in range(6, 21)
+    for ratio_num, ratio_den in CLEAN_SIMILARITY_RATIOS
+    for height_multiplier in HEIGHT_MULTIPLIERS
 )
 
 

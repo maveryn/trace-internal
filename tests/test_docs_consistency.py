@@ -29,11 +29,8 @@ ALLOWED_DOCS_TOP_LEVEL = {
     "README.md",
     "RLVR_TRAINING_STRATEGY.md",
     "RLVR_TASK_SPLIT_PLAN.md",
-    "SCENE_PACKAGE_MIGRATION",
     "TODO.md",
     "contracts",
-    "domain-finalization-review",
-    "domain-migration-report",
     "domains",
     "review",
     "resources",
@@ -43,6 +40,9 @@ ALLOWED_DOCS_TOP_LEVEL = {
 BANNED_DOC_ROOTS = (
     ROOT / "docs" / "core",
     ROOT / "docs" / "project",
+    ROOT / "docs" / "domain-migration-report",
+    ROOT / "docs" / "domain-finalization-review",
+    ROOT / "docs" / "SCENE_PACKAGE_MIGRATION",
     ROOT / "plans",
     ROOT / "review" / "docs",
     ROOT / "review" / "code-review",
@@ -52,11 +52,20 @@ BANNED_DOC_ROOTS = (
 BANNED_REFERENCE_FRAGMENTS = (
     "docs/core/",
     "docs/project/",
+    "docs/domain-migration-report/",
+    "docs/domain-finalization-review/",
     "plans/",
     "review/docs/",
     "review/code-review/",
     "review/taxonomy-audit/",
     "review/trace-extension/",
+)
+STALE_DOC_PHRASES = (
+    "Scene-package migration gates",
+    "Scene-package migration checks",
+    "Scene-package migration contract tests",
+    '"source_layout_status": "scene_package"',
+    "| scene_package |",
 )
 DOC_STRUCTURE_SCANNED_ROOTS = (
     ROOT / "AGENTS.md",
@@ -130,6 +139,16 @@ def test_source_docs_do_not_reference_banned_legacy_roots() -> None:
         for fragment in BANNED_REFERENCE_FRAGMENTS:
             if fragment in text:
                 failures.append(f"{path.relative_to(ROOT)} references banned path {fragment}")
+    assert not failures, "\n".join(failures)
+
+
+def test_docs_and_skills_do_not_use_stale_migration_wording() -> None:
+    failures: list[str] = []
+    for path in _iter_text_files((ROOT / "docs", ROOT / "skills")):
+        text = path.read_text(encoding="utf-8")
+        for phrase in STALE_DOC_PHRASES:
+            if phrase in text:
+                failures.append(f"{path.relative_to(ROOT)} contains stale wording {phrase!r}")
     assert not failures, "\n".join(failures)
 
 
@@ -239,12 +258,12 @@ def test_code_review_guidelines_required_sections_are_present() -> None:
     for heading in (
         "## Read First",
         "## Core Checklist",
-        "## Scene-Package Migration Red Flags",
+        "## Source-Layout Red Flags",
         "## Handoff",
     ):
         assert heading in text
 
-    for heading in ("Core Checklist", "Scene-Package Migration Red Flags", "Handoff"):
+    for heading in ("Core Checklist", "Source-Layout Red Flags", "Handoff"):
         match = re.search(rf"^## {re.escape(heading)}\n(?P<body>.*?)(?=^## |\Z)", text, flags=re.M | re.S)
         assert match is not None
         numbers = [int(value) for value in re.findall(r"^(\d+)\. ", match.group("body"), flags=re.M)]

@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `area`
-3. Source scene package: `charts/area`
+3. Source scene: `charts/area`
 4. Query id: `single`
 5. Semantic query details are recorded in trace params.
 

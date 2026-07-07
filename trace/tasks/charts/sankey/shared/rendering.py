@@ -140,7 +140,7 @@ def _value_label_size(
     text: str,
     render_params: FlowRenderParams,
 ) -> Tuple[float, float]:
-    font = load_font(int(render_params.value_label_font_size_px), bold=True)
+    font = load_font(int(render_params.value_label_font_size_px), bold=False)
     text_bbox = draw.textbbox((0, 0), str(text), font=font)
     text_width = float(text_bbox[2] - text_bbox[0])
     text_height = float(text_bbox[3] - text_bbox[1])
@@ -171,7 +171,7 @@ def _draw_value_label(
     center: Point,
     render_params: FlowRenderParams,
 ) -> List[float]:
-    font = load_font(int(render_params.value_label_font_size_px), bold=True)
+    font = load_font(int(render_params.value_label_font_size_px), bold=False)
     bbox = _value_label_bbox(draw, text=str(text), center=center, render_params=render_params)
     cx, cy = float(center[0]), float(center[1])
     draw.rounded_rectangle(
@@ -188,7 +188,7 @@ def _draw_value_label(
         font=font,
         fill=render_params.value_label_text_rgb,
         stroke_fill=render_params.value_label_fill_rgb,
-        stroke_width=1,
+        stroke_width=0,
     )
     return _round_bbox(bbox)
 
@@ -509,10 +509,10 @@ def _render_sankey(
         draw,
         text=str(scene_title),
         center=(0.5 * (title_bbox[0] + title_bbox[2]), 0.5 * (title_bbox[1] + title_bbox[3])),
-        font=load_font(int(render_params.title_font_size_px), bold=True),
+        font=load_font(int(render_params.title_font_size_px), bold=False),
         fill=render_params.title_color_rgb,
         stroke_fill=render_params.panel_fill_rgb,
-        stroke_width=1,
+        stroke_width=0,
     )
 
     value_label_specs: List[Dict[str, Any]] = []
@@ -587,7 +587,7 @@ def _render_sankey(
             text=str(node["label"]),
             max_width=float(bbox[2] - bbox[0] - 12.0),
             max_height=float(bbox[3] - bbox[1] - 8.0),
-            bold=True,
+            bold=False,
             min_size_px=12,
             max_size_px=int(render_params.node_label_font_size_px),
             fill_ratio=0.9,
@@ -599,7 +599,7 @@ def _render_sankey(
             font=label_font,
             fill=render_params.node_text_rgb,
             stroke_fill=render_params.node_fill_rgb,
-            stroke_width=1,
+            stroke_width=0,
         )
         node_label_bbox_map[node_id] = list(label_bbox)
         entities.append(

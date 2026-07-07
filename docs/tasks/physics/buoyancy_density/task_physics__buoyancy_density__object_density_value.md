@@ -29,7 +29,7 @@ Query ids: `single`.
 ## Program Metadata
 - Program signatures: `physics.buoyancy_density.object_density`
 - Base program contract: `liquid_density * submerged_fraction(floating_object, waterline, equal_part_marker); scene=buoyancy_density; scope=object_density_value`
-- Parameter axes: `scene_variant`, `object_shape`, `submerged_fraction`, `liquid_density`, `target_answer`
+- Parameter axes: `scene_variant`, `object_shape` (`block`, `rounded_block`), `submerged_fraction`, `liquid_density`, `target_answer`
 - Arguments:
   - `floating_object`: semantic_role; allowed `visible_divided_floating_body`; source `program_schema_concrete`
   - `waterline`: semantic_role; allowed `visible_liquid_surface_crossing_object`; source `program_schema_concrete`

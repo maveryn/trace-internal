@@ -16,7 +16,7 @@ HEIGHT_TASK_ID = "task_geometry__solid_formula__cylinder_cone_height_from_volume
 HEIGHT_QUERY_ID = "single"
 HEIGHT_QUERY_IDS = (HEIGHT_QUERY_ID,)
 HEIGHT_DEFAULT_QUERY_ID = HEIGHT_QUERY_ID
-HEIGHT_PROMPT_KEY = HEIGHT_QUERY_ID
+HEIGHT_PROMPT_KEY = "cylinder_cone_height_from_volume_radius"
 HEIGHT_SUPPORT_VALUES = decimal_support(2, 61, step=1)
 HEIGHT_CONSTRUCTION_CHOICES = (
     (3.0, 3.0),

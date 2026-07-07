@@ -84,9 +84,9 @@ rendering:
     component_symbol_width_px: 118
     component_symbol_height_px: 56
     component_label_font_size_px: 20
-    label_stroke_width_px: 3
-    label_stroke_width_px_min: 2
-    label_stroke_width_px_max: 4
+    label_stroke_width_px: 0
+    label_stroke_width_px_min: 0
+    label_stroke_width_px_max: 0
     parallel_rail_left_x_px: 268
     parallel_branch_top_y_px: 180
     parallel_branch_bottom_y_px: 470

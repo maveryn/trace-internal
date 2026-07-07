@@ -1,8 +1,8 @@
 generation:
   shared:
-    readout_series_count_min: 5
+    readout_series_count_min: 4
     readout_series_count_max: 5
-    readout_x_count_min: 9
+    readout_x_count_min: 6
     readout_x_count_max: 10
     readout_y_value_min: 10
     readout_y_value_max: 90

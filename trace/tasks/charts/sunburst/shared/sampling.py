@@ -292,6 +292,7 @@ def threshold_leaf_case(
     rng = spawn_rng(int(instance_seed), f"charts.sunburst.threshold.{comparator}")
     count_support = [int(value) for value in int_sequence(params, "sunburst_condition_count_support", (1, 2, 3, 4, 5))]
     ordered_counts = _ordered_count_support(count_support, params=params, rng=rng)
+    max_requested_count = max(count_support) if count_support else 0
     parent_order = list(str(parent_id) for parent_id in tree.parent_ids)
     rng.shuffle(parent_order)
     comparison = str(comparator)
@@ -300,7 +301,7 @@ def threshold_leaf_case(
     for parent_id in parent_order:
         leaf_ids = descendant_leaf_ids(node_lookup, str(parent_id))
         values = [int(node_lookup[leaf_id].value) for leaf_id in leaf_ids]
-        if len(values) < 3:
+        if len(values) < 3 or len(values) <= int(max_requested_count):
             continue
         candidates_by_count: dict[int, list[int]] = defaultdict(list)
         for threshold in range(min(values), max(values) + 1):
@@ -340,13 +341,14 @@ def range_leaf_case(
     rng = spawn_rng(int(instance_seed), "charts.sunburst.range")
     count_support = [int(value) for value in int_sequence(params, "sunburst_condition_count_support", (1, 2, 3, 4, 5))]
     ordered_counts = _ordered_count_support(count_support, params=params, rng=rng)
+    max_requested_count = max(count_support) if count_support else 0
     parent_order = list(str(parent_id) for parent_id in tree.parent_ids)
     rng.shuffle(parent_order)
     for parent_id in parent_order:
         leaf_ids = descendant_leaf_ids(node_lookup, str(parent_id))
         values = sorted(int(node_lookup[leaf_id].value) for leaf_id in leaf_ids)
         unique_values = sorted(set(values))
-        if len(unique_values) < 3:
+        if len(unique_values) < 3 or len(values) <= int(max_requested_count):
             continue
         candidates_by_count: dict[int, list[tuple[int, int]]] = defaultdict(list)
         for low_index, low in enumerate(unique_values):

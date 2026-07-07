@@ -205,12 +205,11 @@ def build_category_mean_dataset(
     colors = palette(params)
     target_index = int(rng.randrange(int(category_count)))
     target_label = str(labels[target_index])
-    margin = max(3.0, gen_float(params, "mean_extremum_margin_min", 8.0))
-    target_center = float(rng.uniform(72.0, 88.0) if str(mean_extremum) == "largest" else rng.uniform(12.0, 28.0))
-    distractor_low = 10.0 if str(mean_extremum) == "largest" else min(96.0, target_center + margin)
-    distractor_high = max(4.0, target_center - margin) if str(mean_extremum) == "largest" else 90.0
-    if distractor_low > distractor_high:
-        distractor_low, distractor_high = min(distractor_low, distractor_high), max(distractor_low, distractor_high)
+    margin_min = max(3.0, gen_float(params, "mean_extremum_margin_min", 5.0))
+    margin_max = max(margin_min, gen_float(params, "mean_extremum_margin_max", 9.0))
+    target_center = float(rng.uniform(60.0, 82.0) if str(mean_extremum) == "largest" else rng.uniform(18.0, 40.0))
+    close_competitor_index = int(rng.choice([index for index in range(int(category_count)) if index != int(target_index)]))
+    close_gap = float(rng.uniform(float(margin_min), float(margin_max)))
 
     points: list[Point] = []
     categories: list[Category] = []
@@ -219,10 +218,22 @@ def build_category_mean_dataset(
 
     for category_index, label in enumerate(labels):
         is_target = int(category_index) == int(target_index)
+        is_close_competitor = int(category_index) == int(close_competitor_index)
         marker_shape = MARKER_SHAPES[int(category_index)]
         color_rgb = colors[int(category_index)]
         point_ids: list[str] = []
-        queried_center = target_center if is_target else float(rng.uniform(distractor_low, distractor_high))
+        if is_target:
+            queried_center = float(target_center)
+        elif is_close_competitor:
+            queried_center = (
+                float(target_center - close_gap)
+                if str(mean_extremum) == "largest"
+                else float(target_center + close_gap)
+            )
+        elif str(mean_extremum) == "largest":
+            queried_center = float(rng.uniform(10.0, max(10.0, target_center - margin_max - 2.0)))
+        else:
+            queried_center = float(rng.uniform(min(90.0, target_center + margin_max + 2.0), 90.0))
         other_center = float(rng.uniform(18.0, 82.0))
         xs: list[float] = []
         ys: list[float] = []
@@ -261,6 +272,8 @@ def build_category_mean_dataset(
         "mean_axis": str(mean_axis),
         "mean_extremum": str(mean_extremum),
         "target_category_label": str(target_label),
+        "close_competitor_label": str(labels[int(close_competitor_index)]),
+        "sampled_center_gap": round(float(close_gap), 4),
         "category_means": dict(means),
         "mean_margin": round(float(actual_margin), 4),
         "label_resolution": label_metadata(label_resolution),

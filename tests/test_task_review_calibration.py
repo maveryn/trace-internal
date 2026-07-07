@@ -82,6 +82,80 @@ def test_load_scene_model_stats_rows_reads_review_status(tmp_path: Path) -> None
     assert rows[0]["solve_workbook"] == "solve.xlsx"
 
 
+def test_load_scene_model_stats_rows_prefers_authoritative_task_status_records(tmp_path: Path) -> None:
+    out_root = tmp_path / "review" / "task-reviews"
+    out_root.mkdir(parents=True)
+    task_id = "task_dummy__scene__foo"
+    stale_status_path = out_root.parent / "calibration_sweep_status.json"
+    stale_status_path.write_text(
+        json.dumps(
+            {
+                "config": {"calibration_baseline": "v0"},
+                "tasks": {
+                    task_id: {
+                        "domain": "dummy",
+                        "scene_id": "scene",
+                        "status": "blocked",
+                        "reasons": ["sample_distribution_check_failed"],
+                        "models": {},
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    ledger_path = (
+        out_root.parent
+        / "calibration"
+        / "50x8_qwen25vl3b_prompt_pilot_seed20260703"
+        / "task_status_records.json"
+    )
+    ledger_path.parent.mkdir(parents=True)
+    ledger_path.write_text(
+        json.dumps(
+            {
+                "live_registry_records": [
+                    {
+                        "accepted_by_record": False,
+                        "covered_by_calibration_record": True,
+                        "domain": "dummy",
+                        "failure_reasons": [],
+                        "in_current_failure_queue": False,
+                        "passes_current_gates": True,
+                        "scene_id": "scene",
+                        "stats": {
+                            "mean_solve_rate": 0.35,
+                            "perfect_solve_rate": 0.02,
+                            "prompt_count": 50,
+                            "rollout_count": 400,
+                            "source": "per_task_summary.json",
+                            "zero_solve_rate": 0.20,
+                        },
+                        "status": "baseline_passed_current_gates",
+                        "status_source": "per_task_summary.json",
+                        "task_id": task_id,
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    rows = load_scene_model_stats_rows(
+        out_root=out_root,
+        domain="dummy",
+        scene_id="scene",
+        task_ids=[task_id],
+        probe_root=tmp_path / "missing-probes",
+    )
+
+    assert len(rows) == 1
+    assert rows[0]["task"] == task_id
+    assert rows[0]["combined_status"] == "accepted"
+    assert rows[0]["model_status"] == "accepted"
+    assert rows[0]["mean_solve_rate"] == 0.35
+
+
 def test_load_scene_model_stats_rows_uses_latest_probe_fallback(tmp_path: Path) -> None:
     out_root = tmp_path / "review" / "task-reviews"
     out_root.mkdir(parents=True)

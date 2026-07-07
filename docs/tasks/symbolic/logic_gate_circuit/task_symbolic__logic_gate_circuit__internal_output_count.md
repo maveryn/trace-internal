@@ -48,7 +48,7 @@ Query ids: `internal_output_one_count`, `internal_output_zero_count`.
 4. No-auto-relaxation guarantee: semantic constraints are validated and never relaxed after sampling.
 
 ## 5) Tests
-1. Determinism test: covered by scene package review-candidate generation tests.
+1. Determinism test: covered by source-layout review generation tests.
 2. Answer/annotation consistency test: `tests/test_symbolic_logic_gate_tasks.py`
 3. Prompt metadata/placeholder test: `tests/test_prompt_system.py`
 4. Constraint-specific tests: focused logic-gate task tests assert per-gate output counts and `bbox_set` annotation cardinality.

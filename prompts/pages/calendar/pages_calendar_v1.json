@@ -58,11 +58,11 @@
         "What date falls on the {ordinal} {weekday_name} in this month?"
       ],
       "date_weekday_label": [
-        "Which weekday header is above date {target_date}? Answer with the exact short header label shown in the calendar, such as Mon, Tue, Wed, Thu, Fri, Sat, or Sun.",
+        "Which exact short weekday header is above date {target_date}, such as Mon, Tue, Wed, Thu, Fri, Sat, or Sun?",
         "Find date {target_date} on the calendar. What exact three-letter weekday header is above its column?",
-        "Using the visible weekday headers, what is the header label above date {target_date}? Answer only with Mon, Tue, Wed, Thu, Fri, Sat, or Sun.",
+        "Using the visible weekday headers, which one of Mon, Tue, Wed, Thu, Fri, Sat, or Sun is above date {target_date}?",
         "What short weekday header appears above the column containing date {target_date}?",
-        "Look at date {target_date}; return the exact weekday abbreviation printed at the top of that column."
+        "Look at date {target_date}; what exact weekday abbreviation is printed at the top of that column?"
       ],
       "marked_day_class_count": [
         "How many marked dates fall on {marked_day_class_phrase}?",
@@ -72,18 +72,18 @@
         "Count only the marked dates that fall on {marked_day_class_phrase}."
       ],
       "workday_after_offset_date": [
-        "Starting from the marked reference date, what date is {workday_offset} workdays after it?",
-        "Move forward {workday_offset} workdays from the marked reference date. What date do you reach?",
-        "What date number is reached {workday_offset} workdays after the marked reference date?",
-        "Counting only workdays, which date is {workday_offset} workdays after the marked reference date?",
-        "From the marked date, go {workday_offset} workdays later. What date number is that?"
+        "Workdays are Monday through Friday; skip Saturday and Sunday. Starting from the marked reference date, what date is {workday_offset} workdays after it?",
+        "Workdays are Monday through Friday; skip Saturday and Sunday. Move forward {workday_offset} workdays from the marked reference date. What date do you reach?",
+        "Workdays are Monday through Friday; skip Saturday and Sunday. What date number is reached {workday_offset} workdays after the marked reference date?",
+        "Workdays are Monday through Friday; skip Saturday and Sunday. Which date is {workday_offset} workdays after the marked reference date?",
+        "Workdays are Monday through Friday; skip Saturday and Sunday. From the marked date, go {workday_offset} workdays later. What date number is that?"
       ],
       "workday_before_offset_date": [
-        "Starting from the marked reference date, what date is {workday_offset} workdays before it?",
-        "Move backward {workday_offset} workdays from the marked reference date. What date do you reach?",
-        "What date number is reached {workday_offset} workdays before the marked reference date?",
-        "Counting only workdays, which date is {workday_offset} workdays before the marked reference date?",
-        "From the marked date, go {workday_offset} workdays earlier. What date number is that?"
+        "Workdays are Monday through Friday; skip Saturday and Sunday. Starting from the marked reference date, what date is {workday_offset} workdays before it?",
+        "Workdays are Monday through Friday; skip Saturday and Sunday. Move backward {workday_offset} workdays from the marked reference date. What date do you reach?",
+        "Workdays are Monday through Friday; skip Saturday and Sunday. What date number is reached {workday_offset} workdays before the marked reference date?",
+        "Workdays are Monday through Friday; skip Saturday and Sunday. Which date is {workday_offset} workdays before the marked reference date?",
+        "Workdays are Monday through Friday; skip Saturday and Sunday. From the marked date, go {workday_offset} workdays earlier. What date number is that?"
       ],
       "weekday_range_count": [
         "The two marked dates define an inclusive range. How many Monday-through-Friday dates are in that range?",

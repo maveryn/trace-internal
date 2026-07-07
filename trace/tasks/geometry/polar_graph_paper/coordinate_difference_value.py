@@ -13,7 +13,11 @@ from trace.tasks.shared.fixed_query import select_task_query_id
 from trace.tasks.shared.output_metadata import default_task_versions
 from trace.tasks.shared.prompt_variants import build_prompt_query_spec
 
-from .shared.output import point_map_annotation_from_render, projected_point_map_annotation
+from .shared.output import (
+    point_map_annotation_from_render,
+    point_map_witness,
+    projected_point_map_annotation,
+)
 from .shared.prompts import polar_graph_prompt_artifacts
 from .shared.rendering import render_polar_graph_paper_difference_scene
 from .shared.sampling import select_polar_difference_case
@@ -127,6 +131,7 @@ class PolarGraphPaperCoordinateDifferenceValueTask(Task):
                     **point_trace,
                     "correct_value": case.correct_value,
                 },
+                "witness_symbolic": point_map_witness(("P", "Q")),
                 "projected_annotation": projected_point_map_annotation(annotation_value),
             },
             task_versions=default_task_versions(),

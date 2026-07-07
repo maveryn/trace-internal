@@ -1,4 +1,4 @@
-"""Contract tests for the games cards scene-package tasks."""
+"""Contract tests for the games cards source-layout tasks."""
 
 from __future__ import annotations
 

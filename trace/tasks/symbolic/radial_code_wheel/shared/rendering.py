@@ -127,7 +127,7 @@ def _draw_text_centered(
     fill: Sequence[int],
     stroke_fill: Sequence[int],
     stroke_width: int = 1,
-    bold: bool = True,
+    bold: bool = False,
 ) -> list[float]:
     font = load_font(int(font_size), bold=bool(bold))
     bbox = draw.textbbox((float(center[0]), float(center[1])), str(text), font=font, anchor="mm", stroke_width=int(stroke_width))
@@ -176,7 +176,7 @@ def _draw_reference_card(
         draw,
         text=str(reference.title),
         center=(0.5 * (card_bbox[0] + card_bbox[2]), card_bbox[1] + 27),
-        font=load_font(int(params.source_title_font_size_px), bold=True),
+        font=load_font(int(params.source_title_font_size_px), bold=False),
         fill=text_rgb,
         stroke_fill=text_rgb,
         stroke_width=1,
@@ -185,7 +185,7 @@ def _draw_reference_card(
         draw,
         text=str(reference.value),
         center=(0.5 * (card_bbox[0] + card_bbox[2]), card_bbox[1] + 72),
-        font=load_font(int(params.source_value_font_size_px), bold=True),
+        font=load_font(int(params.source_value_font_size_px), bold=False),
         fill=text_rgb,
         stroke_fill=text_rgb,
         stroke_width=1,
@@ -214,7 +214,7 @@ def _draw_option_card(
         draw,
         text=str(option.label),
         center=(card_bbox[0] + 22, card_bbox[1] + 24),
-        font=load_font(int(params.option_label_font_size_px), bold=True),
+        font=load_font(int(params.option_label_font_size_px), bold=False),
         fill=text_rgb,
         stroke_fill=text_rgb,
         stroke_width=1,
@@ -223,7 +223,7 @@ def _draw_option_card(
         draw,
         text=str(option.value),
         center=(0.5 * (card_bbox[0] + card_bbox[2]) + 10, 0.5 * (card_bbox[1] + card_bbox[3]) + 8),
-        font=load_font(int(params.option_value_font_size_px), bold=True),
+        font=load_font(int(params.option_value_font_size_px), bold=False),
         fill=text_rgb,
         stroke_fill=text_rgb,
         stroke_width=1,
@@ -323,7 +323,7 @@ def _draw_wheel(
                 fill=label_rgb,
                 stroke_fill=label_rgb,
                 stroke_width=1,
-                bold=True,
+                bold=False,
             )
 
     for terminal in terminals:
@@ -338,7 +338,7 @@ def _draw_wheel(
             fill=terminal_rgb,
             stroke_fill=terminal_rgb,
             stroke_width=1,
-            bold=True,
+            bold=False,
         )
         item_bboxes[str(terminal.item_id)] = bbox
         entities.append(

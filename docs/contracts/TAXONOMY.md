@@ -37,7 +37,7 @@ program schema. The detailed boundary rules live in
 Public taxonomy is not source layout. Implementation routing is source/debug
 metadata only.
 
-Target scene-package layout is:
+Current source layout is:
 
 ```text
 trace/tasks/<domain>/<scene_id>/<objective_contract>.py
@@ -46,11 +46,9 @@ configs/domains/<domain>/<scene_id>.yaml
 prompts/<domain>/<scene_id>/<bundle_id>.json
 ```
 
-Transitional source routing fields, including registered class domain/scene,
-`task_group`, `source_domain`, and `source_scene_id`, may remain in unmigrated
-code, configs, prompt assets, or trace `taxonomy.source` metadata until their
-scene is migrated. They are not public taxonomy nodes. New review-candidate
-migrated scenes must not depend on source routing.
+Source routing/debug fields, including registered class domain/scene,
+`source_domain`, and `source_scene_id`, are implementation metadata only. They
+are not public taxonomy nodes, config grouping layers, or task-id formats.
 
 ## 4) Trace Metadata Shape
 Sidecar traces store taxonomy metadata under `trace_payload["taxonomy"]`.
@@ -71,8 +69,8 @@ derived by aggregating active public tasks unless a build config explicitly says
 otherwise.
 
 Query sampling happens inside the selected task. Query ids should be uniform by
-default and should not have config-level weights in review-candidate migrated
-scenes.
+default and should not have config-level weights unless a later global policy
+explicitly allows them.
 
 Uniform or equal-weight task-internal sampling means a seeded RNG draw over an
 explicit probability map. Do not use seed modulo, hash modulo, cursor cycling,

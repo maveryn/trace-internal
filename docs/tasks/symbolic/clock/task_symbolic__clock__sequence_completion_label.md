@@ -60,4 +60,4 @@ Query ids: `single`.
 1. Deterministic sampling/rendering from `instance_seed`.
 2. Answers and annotation come from the finalized rendered sequence and option panel.
 3. Behavior/trace/prompt tests: `tests/test_symbolic_clock_elapsed_sequence_tasks.py`
-4. Scene-package migration tests: `tests/test_scene_package_migration_contracts.py`, `tests/test_scene_package_review_candidate_contracts.py`
+4. Source-layout contract tests: `tests/test_source_layout_contracts.py`, `tests/test_scene_package_review_target_contracts.py`

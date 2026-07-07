@@ -7,7 +7,6 @@ generation:
     object_shape_weights:
       block: 1.0
       rounded_block: 1.0
-      capsule_block: 1.0
     balanced_scene_variant_sampling: true
     balanced_object_shape_sampling: true
     balanced_target_answer_sampling: true
@@ -17,7 +16,6 @@ generation:
     - 2/3
     - 3/4
     - 4/5
-    - 9/10
     liquid_density_tenths_support:
     - 8
     - 9
@@ -28,20 +26,8 @@ generation:
     - 14
     - 15
     - 16
-    - 17
     - 18
-    - 19
     - 20
-    - 21
-    - 22
-    - 23
-    - 24
-    - 25
-    - 26
-    - 27
-    - 28
-    - 29
-    - 30
 
 rendering:
   shared:

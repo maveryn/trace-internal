@@ -26,21 +26,24 @@ def test_symbolic_abacus_displayed_value_contract_matches_trace() -> None:
         out = task.generate(50100 + value, params={'answer_value': value, 'scene_variant': 'clean_card'}, max_attempts=5)
         trace = out.trace_payload
         execution = trace['execution_trace']
-        assert out.answer_gt.type == 'integer'
-        assert int(out.answer_gt.value) == value
-        assert out.annotation_gt.type == 'point_set_map'
+        assert out.answer_gt.type == 'option_letter'
+        assert out.annotation_gt.type == 'bbox'
         assert out.scene_id == 'abacus'
         assert out.query_id == SINGLE_QUERY_ID
         assert str(execution['query_id']) == SINGLE_QUERY_ID
         assert str(execution['internal_query_id']) == 'displayed_value_readout'
         assert str(execution['question_format']) == 'displayed_value_readout'
         assert int(execution['answer_value']) == value
-        assert dict(trace['projected_annotation']['point_set_map']) == out.annotation_gt.value
-        assert dict(trace['projected_annotation']['pixel_point_set_map']) == out.annotation_gt.value
+        assert str(execution['correct_label']) == str(out.answer_gt.value)
+        assert int(execution['option_values_by_label'][str(out.answer_gt.value)]) == value
+        assert list(trace['projected_annotation']['bbox']) == out.annotation_gt.value
+        assert list(trace['projected_annotation']['pixel_bbox']) == out.annotation_gt.value
+        assert trace['render_map']['selected_option_card_bbox_px'] == out.annotation_gt.value
         assert trace['render_spec']['abacus_style']['renderer'] == 'abacus_single_board_v1'
+        active_points_by_column = trace['render_map']['active_bead_points_by_column_px']
         for role, digit in execution['digits_by_role'].items():
             key = f'{role}_active_beads'
-            assert len(out.annotation_gt.value[key]) == _active_count_for_digit(int(digit))
+            assert len(active_points_by_column[key]) == _active_count_for_digit(int(digit))
 
 def test_symbolic_abacus_lower_inactive_beads_are_visually_separated_from_active_group() -> None:
     task = SymbolicAbacusDisplayedValueReadoutTask()
@@ -48,7 +51,7 @@ def test_symbolic_abacus_lower_inactive_beads_are_visually_separated_from_active
     trace = out.trace_payload
     bead_bboxes = trace['render_map']['bead_bboxes_px']
     active_by_column = trace['render_map']['active_bead_ids_by_column']
-    assert out.image.size == (980, 760)
+    assert out.image.size == (980, 860)
     assert active_by_column['tens'] == ['column_tens_lower_1']
     assert active_by_column['hundreds'] == ['column_hundreds_lower_1', 'column_hundreds_lower_2', 'column_hundreds_lower_3']
     assert _vertical_gap(bead_bboxes['column_tens_lower_1'], bead_bboxes['column_tens_lower_2']) >= 60.0
@@ -60,9 +63,9 @@ def test_symbolic_abacus_prompt_examples_match_contract() -> None:
     answer_and_annotation = extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
     answer_only = extract_prompt_json_example(out.prompt_variants['answer_only'])
     assert set(answer_and_annotation.keys()) == {'annotation', 'answer'}
-    assert set(answer_and_annotation['annotation'].keys()) == {'hundreds_active_beads', 'tens_active_beads', 'ones_active_beads'}
-    assert answer_and_annotation['answer'] == 603
-    assert answer_only == {'answer': 603}
+    assert isinstance(answer_and_annotation['annotation'], list)
+    assert answer_and_annotation['answer'] == 'C'
+    assert answer_only == {'answer': 'C'}
 
 def test_symbolic_abacus_balanced_sampling_defaults_cover_scene_axis() -> None:
     task = SymbolicAbacusDisplayedValueReadoutTask()
@@ -73,6 +76,7 @@ def test_symbolic_abacus_balanced_sampling_defaults_cover_scene_axis() -> None:
         execution = out.trace_payload['execution_trace']
         scene_variants[str(execution['scene_variant'])] += 1
         answers.add(int(execution['answer_value']))
+        assert int(execution['option_values_by_label'][str(execution['correct_label'])]) == int(execution['answer_value'])
         assert str(execution['query_id']) == SINGLE_QUERY_ID
         assert str(execution['internal_query_id']) == 'displayed_value_readout'
         assert 0 <= int(execution['answer_value']) <= 999
@@ -84,9 +88,8 @@ def test_symbolic_abacus_place_digit_contract_matches_trace() -> None:
     out = task.generate(52100, params={'displayed_value': 603, 'target_column_role': 'hundreds', 'scene_variant': 'clean_card'}, max_attempts=5)
     trace = out.trace_payload
     execution = trace['execution_trace']
-    assert out.answer_gt.type == 'integer'
-    assert out.answer_gt.value == 6
-    assert out.annotation_gt.type == 'point_set'
+    assert out.answer_gt.type == 'option_letter'
+    assert out.annotation_gt.type == 'bbox'
     assert out.scene_id == 'abacus'
     assert out.query_id == SINGLE_QUERY_ID
     assert str(execution['query_id']) == SINGLE_QUERY_ID
@@ -96,15 +99,18 @@ def test_symbolic_abacus_place_digit_contract_matches_trace() -> None:
     assert str(execution['target_place_label']) == '100'
     assert int(execution['target_place_value']) == 100
     assert int(execution['displayed_value']) == 603
+    assert int(execution['answer_digit']) == 6
+    assert str(execution['correct_label']) == str(out.answer_gt.value)
+    assert int(execution['option_values_by_label'][str(out.answer_gt.value)]) == 6
     assert execution['digits_by_role'] == {'hundreds': 6, 'tens': 0, 'ones': 3}
     assert execution['annotation_key'] == 'hundreds_active_beads'
     expected_points = trace['render_map']['active_bead_points_by_column_px']['hundreds_active_beads']
-    assert out.annotation_gt.value == expected_points
-    assert trace['projected_annotation']['point_set'] == out.annotation_gt.value
-    assert trace['projected_annotation']['pixel_point_set'] == out.annotation_gt.value
-    assert trace['render_map']['target_active_bead_points_px'] == out.annotation_gt.value
+    assert trace['render_map']['target_active_bead_points_px'] == expected_points
+    assert list(trace['projected_annotation']['bbox']) == out.annotation_gt.value
+    assert list(trace['projected_annotation']['pixel_bbox']) == out.annotation_gt.value
+    assert trace['render_map']['selected_option_card_bbox_px'] == out.annotation_gt.value
     assert trace['render_spec']['abacus_style']['renderer'] == 'abacus_single_board_v1'
-    assert len(out.annotation_gt.value) == _active_count_for_digit(6)
+    assert len(expected_points) == _active_count_for_digit(6)
     assert '100' in out.prompt
 
 def test_symbolic_abacus_place_digit_zero_uses_empty_point_set() -> None:
@@ -112,10 +118,10 @@ def test_symbolic_abacus_place_digit_zero_uses_empty_point_set() -> None:
     out = task.generate(52101, params={'displayed_value': 603, 'column_role': 'tens', 'scene_variant': 'worksheet'}, max_attempts=5)
     trace = out.trace_payload
     execution = trace['execution_trace']
-    assert out.answer_gt.value == 0
-    assert out.annotation_gt.type == 'point_set'
-    assert out.annotation_gt.value == []
-    assert trace['projected_annotation']['point_set'] == []
+    assert out.annotation_gt.type == 'bbox'
+    assert int(execution['answer_digit']) == 0
+    assert int(execution['option_values_by_label'][str(out.answer_gt.value)]) == 0
+    assert trace['render_map']['target_active_bead_points_px'] == []
     assert str(execution['target_column_role']) == 'tens'
     assert str(execution['target_place_label']) == '10'
     assert execution['annotation_key'] == 'tens_active_beads'
@@ -127,8 +133,8 @@ def test_symbolic_abacus_place_digit_prompt_examples_match_contract() -> None:
     answer_only = extract_prompt_json_example(out.prompt_variants['answer_only'])
     assert set(answer_and_annotation.keys()) == {'annotation', 'answer'}
     assert isinstance(answer_and_annotation['annotation'], list)
-    assert answer_and_annotation['answer'] == 6
-    assert answer_only == {'answer': 6}
+    assert answer_and_annotation['answer'] == 'C'
+    assert answer_only == {'answer': 'C'}
     assert '1' in out.prompt
 
 def test_symbolic_abacus_place_digit_balanced_sampling_defaults_cover_axes() -> None:
@@ -142,6 +148,7 @@ def test_symbolic_abacus_place_digit_balanced_sampling_defaults_cover_axes() -> 
         scene_variants[str(execution['scene_variant'])] += 1
         target_columns[str(execution['target_column_role'])] += 1
         answer_digits.add(int(execution['answer_digit']))
+        assert int(execution['option_values_by_label'][str(execution['correct_label'])]) == int(execution['answer_digit'])
         assert 0 <= int(execution['answer_digit']) <= 9
         assert int(execution['answer_digit']) == int(execution['digits_by_role'][str(execution['target_column_role'])])
     assert set(scene_variants.keys()) == {'clean_card', 'wood_frame', 'worksheet'}

@@ -4,7 +4,7 @@
 
 1. Domain: `charts`
 2. Scene id: `radar`
-3. Source implementation scene package: `charts/radar`
+3. Source implementation scene: `charts/radar`
 4. Public task id: `task_charts__radar__matching_condition_panel_count`
 
 ## Implementation

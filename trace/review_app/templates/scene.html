@@ -10,8 +10,8 @@
   <div class="metric"><span>{{ scene.task_count }}</span><label>tasks</label></div>
   <div class="metric"><span>{{ scene.sample_count }}</span><label>samples</label></div>
   <div class="metric">
-    <span>{% if scene.migration_test_pass %}PASS{% elif scene.migration_test_pass is none %}MISSING{% else %}FAIL{% endif %}</span>
-    <label>migration tests</label>
+    <span>{% if scene.source_layout_test_pass %}PASS{% elif scene.source_layout_test_pass is none %}MISSING{% else %}FAIL{% endif %}</span>
+    <label>source-layout checks</label>
   </div>
   <div class="metric">
     <span>{% if scene.manual_code_audit_pass %}PASS{% elif scene.manual_code_audit_pass is none %}MISSING{% else %}FAIL{% endif %}</span>
@@ -34,9 +34,9 @@
 </section>
 
 {% set taxonomy_review = scene.taxonomy_review_summary %}
-<section class="table-panel compact migration-test-panel">
+<section class="table-panel compact source-layout-panel">
   <h2>Taxonomy Review</h2>
-  <div class="migration-test-summary">
+  <div class="source-layout-summary">
     <span class="{% if scene.taxonomy_review_pass %}status ok{% else %}status warn{% endif %}">
       {% if scene.taxonomy_review_pass %}PASS{% elif scene.taxonomy_review_pass is none %}MISSING{% else %}FAIL{% endif %}
     </span>
@@ -72,9 +72,9 @@
 </section>
 
 {% set manual_code_audit = scene.manual_code_audit_summary %}
-<section class="table-panel compact migration-test-panel">
+<section class="table-panel compact source-layout-panel">
   <h2>Manual Code Audit</h2>
-  <div class="migration-test-summary">
+  <div class="source-layout-summary">
     <span class="{% if scene.manual_code_audit_pass %}status ok{% else %}status warn{% endif %}">
       {% if scene.manual_code_audit_pass %}PASS{% elif scene.manual_code_audit_pass is none %}MISSING{% else %}FAIL{% endif %}
     </span>
@@ -109,29 +109,29 @@
   {% endif %}
 </section>
 
-{% set migration_tests = scene.migration_test_summary %}
-<section class="table-panel compact migration-test-panel">
-  <h2>Migration Tests</h2>
-  <div class="migration-test-summary">
-    <span class="{% if scene.migration_test_pass %}status ok{% else %}status warn{% endif %}">
-      {% if scene.migration_test_pass %}PASS{% elif scene.migration_test_pass is none %}MISSING{% else %}FAIL{% endif %}
+{% set source_layout_checks = scene.source_layout_test_summary %}
+<section class="table-panel compact source-layout-panel">
+  <h2>Source-Layout Checks</h2>
+  <div class="source-layout-summary">
+    <span class="{% if scene.source_layout_test_pass %}status ok{% else %}status warn{% endif %}">
+      {% if scene.source_layout_test_pass %}PASS{% elif scene.source_layout_test_pass is none %}MISSING{% else %}FAIL{% endif %}
     </span>
-    {% if migration_tests %}
-      <span class="muted">{{ migration_tests.summary or 'no summary recorded' }}</span>
-      <span class="muted">{{ migration_tests.checked_at or 'no timestamp' }}</span>
-      {% if scene.migration_test_status_rel_path %}
-        <span class="muted">{{ scene.migration_test_status_rel_path }}</span>
+    {% if source_layout_checks %}
+      <span class="muted">{{ source_layout_checks.summary or 'no summary recorded' }}</span>
+      <span class="muted">{{ source_layout_checks.checked_at or 'no timestamp' }}</span>
+      {% if scene.source_layout_test_status_rel_path %}
+        <span class="muted">{{ scene.source_layout_test_status_rel_path }}</span>
       {% endif %}
     {% else %}
-      <span class="muted">No migration_test_status.json was indexed for this scene.</span>
+      <span class="muted">No source_layout_test_status.json was indexed for this scene.</span>
     {% endif %}
   </div>
-  {% if migration_tests %}
-    {% if migration_tests.command %}
-      <p class="migration-test-command"><code>{{ migration_tests.command }}</code></p>
+  {% if source_layout_checks %}
+    {% if source_layout_checks.command %}
+      <p class="source-layout-command"><code>{{ source_layout_checks.command }}</code></p>
     {% endif %}
-    {% if migration_tests.test_files %}
-      <p class="muted">Test files: {{ migration_tests.test_files|join(', ') }}</p>
+    {% if source_layout_checks.test_files %}
+      <p class="muted">Test files: {{ source_layout_checks.test_files|join(', ') }}</p>
     {% endif %}
   {% endif %}
 </section>

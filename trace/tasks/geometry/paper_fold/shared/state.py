@@ -91,6 +91,7 @@ class RenderContext:
     crease_color: Color
     dashed_color: Color
     line_width: int
+    label_stroke_width: int
     font: Any
     small_font: Any
     point_font: Any

@@ -11,9 +11,7 @@ contracts.
 4. `docs/contracts/TASK_UNIT_POLICY.md`
 5. `docs/workflows/TASK_AUTHORING.md`
 6. Relevant domain setup doc in `docs/domains/`
-7. For scene-package migration work:
-   `docs/SCENE_PACKAGE_MIGRATION/README.md` and
-   `docs/SCENE_PACKAGE_MIGRATION/SCENE_MIGRATION_GUIDE.md`
+7. `docs/contracts/SOURCE_LAYOUT.md`
 
 ## Core Checklist
 1. Scope is correct: changes stay in the assigned domain/scene unless shared
@@ -31,7 +29,7 @@ contracts.
    objective contract, public task name, registered class name, or sibling task
    identity.
 6. No wrapper-only public task files, copy-split legacy bodies, task-named shared
-   runtimes, or shared multi-task generators remain in migrated scenes.
+   runtimes, or shared multi-task generators remain in active scenes.
 7. Helper placement is at the narrowest reusable layer that fits:
    `core -> tasks/shared -> domain/shared -> scene/shared -> task-local`.
    Promote only after real multi-consumer reuse or an approved domain shared
@@ -55,7 +53,10 @@ contracts.
 15. Rendering changes preserve annotation coordinates: sample layout/style before
     projection and use only coordinate-preserving post-image noise.
 16. Required/readout text and semantic markers use the shared legibility and
-    contrast helpers or a documented domain wrapper.
+    contrast helpers or a documented domain wrapper. Text centered inside
+    badges, circular markers, option chips, or node labels should use the
+    shared bbox-aware centered text helper, not hand-written width/height
+    offsets.
 17. Tests cover behavior and contracts, not stale literal defaults or retired
     task ids.
 18. Task docs, domain docs, prompt assets, configs, taxonomy metadata, tests, and
@@ -66,15 +67,15 @@ contracts.
 20. Reviewer issues remain open until human verification. Agents add repair
     notes after fixes and do not resolve issues unless explicitly instructed.
 
-## Scene-Package Migration Red Flags
+## Source-Layout Red Flags
 1. A public task file only sets constants and calls a shared generator.
 2. A scene shared helper receives `task_id`, `query_id`, or objective names.
 3. A shared module computes final answers or `annotation_gt` for multiple public
    objectives.
-4. The scene is marked review-ready without manual source audit, taxonomy audit,
-   focused tests, fresh artifacts, and app reload.
-5. Tests were weakened, allowlists expanded, or status files written to make an
-   incomplete migration appear valid.
+4. Review artifacts were generated without current source, taxonomy, prompt,
+   annotation, distribution, and focused-test checks.
+5. Tests were weakened, allowlists expanded, or stale artifacts reused to make
+   incomplete source ownership appear valid.
 
 ## Handoff
 Report:

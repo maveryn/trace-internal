@@ -7,7 +7,8 @@ from typing import Mapping
 from trace.tasks import create_task
 
 
-DATE_SLOT_TASK_ID = "task_pages__calendar_event_grid__date_slot_category_label"
+BUSIEST_DATE_TASK_ID = "task_pages__calendar_event_grid__busiest_date_label"
+WEEKDAY_COUNT_TASK_ID = "task_pages__calendar_event_grid__weekday_event_count"
 CATEGORY_COUNT_TASK_ID = "task_pages__calendar_event_grid__category_slot_day_count"
 DATE_FILLED_SLOT_COUNT_TASK_ID = "task_pages__calendar_event_grid__date_filled_slot_count"
 DATE_FOR_CATEGORY_SLOT_TASK_ID = "task_pages__calendar_event_grid__date_for_category_slot_label"
@@ -18,25 +19,55 @@ def _event_records(output) -> list[Mapping[str, object]]:
     return [dict(record) for record in execution["event_chip_records"]]
 
 
-def test_calendar_event_grid_date_slot_lookup_contract() -> None:
-    output = create_task(DATE_SLOT_TASK_ID).generate(51001, params={}, max_attempts=1)
+def test_calendar_event_grid_weekday_event_count_matches_rendered_chips() -> None:
+    output = create_task(WEEKDAY_COUNT_TASK_ID).generate(51001, params={}, max_attempts=1)
 
     assert output.scene_id == "calendar_event_grid"
     assert output.query_id == "single"
-    assert output.answer_gt.type == "string"
-    assert output.annotation_gt.type == "bbox"
+    assert output.answer_gt.type == "integer"
+    assert output.annotation_gt.type == "bbox_set"
     assert output.trace_payload["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
-    assert output.trace_payload["query_spec"]["params"]["prompt_query_key"] == "date_slot_category_label"
+    assert output.trace_payload["query_spec"]["params"]["prompt_query_key"] == "weekday_event_count"
 
     trace = output.trace_payload["execution_trace"]
-    assert f'"{trace["slot_label"]}"' in output.prompt
-    target_key = f"date_{int(trace['target_date'])}__slot_{trace['slot_id']}"
-    matching_records = [record for record in _event_records(output) if record["chip_key"] == target_key]
-    assert len(matching_records) == 1
-    assert output.answer_gt.value == matching_records[0]["category_label"]
-    assert output.annotation_gt.value == matching_records[0]["bbox_px"]
+    assert str(trace["weekday_label"]) in output.prompt
+    matching_keys = [str(key) for key in trace["matching_chip_keys"]]
+    matching_records = [record for record in _event_records(output) if str(record["chip_key"]) in set(matching_keys)]
+    assert output.answer_gt.value == len(matching_records)
+    assert output.answer_gt.value == int(trace["weekday_event_count"])
+    assert output.annotation_gt.value == [record["bbox_px"] for record in matching_records]
     assert output.trace_payload["render_map"]["calendar_panel_bbox_px"]
     assert output.trace_payload["render_spec"]["calendar_event_grid_style"]["panel_layout"]["layout_placement"]["mode"] == "fractional_free_area"
+
+
+def test_calendar_event_grid_busiest_date_label_matches_rendered_chips() -> None:
+    output = create_task(BUSIEST_DATE_TASK_ID).generate(51006, params={}, max_attempts=1)
+
+    assert output.scene_id == "calendar_event_grid"
+    assert output.query_id == "single"
+    assert output.answer_gt.type == "integer"
+    assert output.annotation_gt.type == "bbox_set"
+    assert output.trace_payload["query_spec"]["prompt_variant"]["prompt_schema_version"] == "v1"
+    assert output.trace_payload["query_spec"]["params"]["prompt_query_key"] == "busiest_date_label"
+
+    trace = output.trace_payload["execution_trace"]
+    target_date = int(trace["busiest_date"])
+    records = _event_records(output)
+    counts: dict[int, int] = {}
+    for record in records:
+        date_number = int(record["date_number"])
+        counts[date_number] = int(counts.get(date_number, 0)) + 1
+    assert output.answer_gt.value == target_date
+    assert target_date in counts
+    assert counts[target_date] == 3
+    assert len([date for date, count in counts.items() if int(count) == max(counts.values())]) == 1
+    assert int(trace["busiest_date_event_count"]) == counts[target_date]
+    assert {str(key): int(value) for key, value in trace["date_event_counts"].items()} == {
+        str(date): int(count) for date, count in counts.items()
+    }
+    matching_records = [record for record in records if int(record["date_number"]) == target_date]
+    assert output.annotation_gt.value == [record["bbox_px"] for record in matching_records]
+    assert trace["matching_chip_keys"] == [record["chip_key"] for record in matching_records]
 
 
 def test_calendar_event_grid_category_slot_count_matches_rendered_chips() -> None:

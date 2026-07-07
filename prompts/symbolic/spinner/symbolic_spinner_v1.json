@@ -52,18 +52,18 @@
     },
     "task": {
       "single_probability_query": [
-        "Treat each sector as equally likely for one spin.",
-        "Use the equal sectors to compute the requested one-spin probability.",
-        "Answer from the visible sector colors and shape markers.",
-        "Compute the requested probability from the shown equal-sector spinner.",
-        "Use one random spin of the spinner for the probability question."
+        "Treat each sector as equally likely for one spin, compute the probability, then choose the matching visible A-F fraction option.",
+        "Use the equal sectors to compute the requested one-spin probability, then answer with the matching option letter.",
+        "Answer from the visible sector colors and shape markers by choosing the matching A-F fraction option.",
+        "Compute the requested probability from the shown equal-sector spinner and select the visible option with that fraction.",
+        "Use one random spin of the spinner for the probability question, then choose the matching visible A-F option."
       ],
       "pair_probability_query": [
-        "Treat one spin of Spinner A and one spin of Spinner B as independent.",
-        "Use the product space formed by one equal-likelihood sector from each spinner.",
-        "Compute the requested probability from the two visible spinners.",
-        "Answer using one independent spin of each shown spinner.",
-        "Use Spinner A and Spinner B as the two independent sources for the event."
+        "Treat one spin of Spinner A and one spin of Spinner B as independent, compute the probability, then choose the matching visible A-F fraction option.",
+        "Use the product space formed by one equal-likelihood sector from each spinner, then answer with the matching option letter.",
+        "Compute the requested probability from the two visible spinners and select the visible option with that fraction.",
+        "Answer using one independent spin of each shown spinner, then choose the matching visible A-F option.",
+        "Use Spinner A and Spinner B as the two independent sources for the event, and answer with the matching option letter."
       ]
     },
     "query": {
@@ -146,7 +146,7 @@
     "global": {
       "json_output_contract": "Use a valid JSON object with keys \"annotation\" and \"answer\" in that order for the final answer.",
       "json_output_contract_answer_only": "Use a valid JSON object with key \"answer\" for the final answer.",
-      "answer_hint": "set \"answer\" to the probability as a reduced fraction string like \"3/8\"",
+      "answer_hint": "set \"answer\" to the letter of the visible option (A, B, C, D, E, or F) whose fraction matches the probability",
       "object_description_single_probability_query_spinner_clean": "one equal-sector spinner. Each sector has a color and a shape marker",
       "object_description_single_probability_query_spinner_card": "one card-style equal-sector spinner. Each sector has a color and a shape marker",
       "object_description_single_probability_query_spinner_notebook": "one notebook-style equal-sector spinner. Each sector has a color and a shape marker",
@@ -156,38 +156,38 @@
     },
     "query:single_color_probability": {
       "annotation_hint": "set \"annotation\" to the full spinner panel bounding box [x0, y0, x1, y1]",
-      "json_example": "{\"annotation\":[281,47,819,629],\"answer\":\"2/7\"}",
-      "json_example_answer_only": "{\"answer\":\"2/7\"}"
+      "json_example": "{\"annotation\":[281,47,819,629],\"answer\":\"C\"}",
+      "json_example_answer_only": "{\"answer\":\"C\"}"
     },
     "query:single_shape_probability": {
       "annotation_hint": "set \"annotation\" to the full spinner panel bounding box [x0, y0, x1, y1]",
-      "json_example": "{\"annotation\":[281,47,819,629],\"answer\":\"3/8\"}",
-      "json_example_answer_only": "{\"answer\":\"3/8\"}"
+      "json_example": "{\"annotation\":[281,47,819,629],\"answer\":\"D\"}",
+      "json_example_answer_only": "{\"answer\":\"D\"}"
     },
     "query:single_color_and_shape_probability": {
       "annotation_hint": "set \"annotation\" to the full spinner panel bounding box [x0, y0, x1, y1]",
-      "json_example": "{\"annotation\":[281,47,819,629],\"answer\":\"1/8\"}",
-      "json_example_answer_only": "{\"answer\":\"1/8\"}"
+      "json_example": "{\"annotation\":[281,47,819,629],\"answer\":\"B\"}",
+      "json_example_answer_only": "{\"answer\":\"B\"}"
     },
     "query:single_color_or_shape_probability": {
       "annotation_hint": "set \"annotation\" to the full spinner panel bounding box [x0, y0, x1, y1]",
-      "json_example": "{\"annotation\":[281,47,819,629],\"answer\":\"1/3\"}",
-      "json_example_answer_only": "{\"answer\":\"1/3\"}"
+      "json_example": "{\"annotation\":[281,47,819,629],\"answer\":\"F\"}",
+      "json_example_answer_only": "{\"answer\":\"F\"}"
     },
     "query:pair_both_target_color_probability": {
       "annotation_hint": "set \"annotation\" to an object with keys \"spinner_a\" and \"spinner_b\", each mapped to that spinner panel bounding box [x0, y0, x1, y1]",
-      "json_example": "{\"annotation\":{\"spinner_a\":[136,102,564,574],\"spinner_b\":[536,102,964,574]},\"answer\":\"1/12\"}",
-      "json_example_answer_only": "{\"answer\":\"1/12\"}"
+      "json_example": "{\"annotation\":{\"spinner_a\":[136,102,564,574],\"spinner_b\":[536,102,964,574]},\"answer\":\"A\"}",
+      "json_example_answer_only": "{\"answer\":\"A\"}"
     },
     "query:pair_at_least_one_target_color_probability": {
       "annotation_hint": "set \"annotation\" to an object with keys \"spinner_a\" and \"spinner_b\", each mapped to that spinner panel bounding box [x0, y0, x1, y1]",
-      "json_example": "{\"annotation\":{\"spinner_a\":[136,102,564,574],\"spinner_b\":[536,102,964,574]},\"answer\":\"5/12\"}",
-      "json_example_answer_only": "{\"answer\":\"5/12\"}"
+      "json_example": "{\"annotation\":{\"spinner_a\":[136,102,564,574],\"spinner_b\":[536,102,964,574]},\"answer\":\"E\"}",
+      "json_example_answer_only": "{\"answer\":\"E\"}"
     },
     "query:pair_same_color_probability": {
       "annotation_hint": "set \"annotation\" to an object with keys \"spinner_a\" and \"spinner_b\", each mapped to that spinner panel bounding box [x0, y0, x1, y1]",
-      "json_example": "{\"annotation\":{\"spinner_a\":[136,102,564,574],\"spinner_b\":[536,102,964,574]},\"answer\":\"5/24\"}",
-      "json_example_answer_only": "{\"answer\":\"5/24\"}"
+      "json_example": "{\"annotation\":{\"spinner_a\":[136,102,564,574],\"spinner_b\":[536,102,964,574]},\"answer\":\"D\"}",
+      "json_example_answer_only": "{\"answer\":\"D\"}"
     }
   }
 }

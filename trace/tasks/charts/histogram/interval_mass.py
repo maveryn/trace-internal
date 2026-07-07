@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.tasks.charts.histogram._lifecycle import (
     make_histogram_task_plan,
     run_histogram_lifecycle,
@@ -15,30 +16,20 @@ from trace.tasks.registry import register_task
 TASK_ID = "task_charts__histogram__interval_mass"
 OBJECTIVE_CONTRACT = "interval_mass"
 PROMPT_QUERY_KEY = "interval_mass"
-INSIDE_QUERY_ID = "inside_interval_mass"
-OUTSIDE_QUERY_ID = "outside_interval_mass"
-SUPPORTED_QUERY_IDS = (INSIDE_QUERY_ID, OUTSIDE_QUERY_ID)
-DEFAULT_QUERY_ID = INSIDE_QUERY_ID
-DATASET_VARIANT_BY_QUERY_ID = {
-    INSIDE_QUERY_ID: "interval_mass",
-    OUTSIDE_QUERY_ID: "outside_interval_mass",
-}
-RELATION_BY_QUERY_ID = {
-    INSIDE_QUERY_ID: "inside",
-    OUTSIDE_QUERY_ID: "outside",
-}
+DATASET_VARIANT = "interval_mass"
+INTERVAL_RELATION = "inside"
+SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
+DEFAULT_QUERY_ID = SINGLE_QUERY_ID
 
 
 def _build_interval_mass_plan(params, instance_seed, selected_query_id, query_probabilities):
     """Bind the interval-mass objective before neutral rendering."""
 
-    if str(selected_query_id) not in DATASET_VARIANT_BY_QUERY_ID:
+    if str(selected_query_id) != SINGLE_QUERY_ID:
         raise ValueError(f"unsupported query_id for {TASK_ID}: {selected_query_id}")
-    dataset_variant = str(DATASET_VARIANT_BY_QUERY_ID[str(selected_query_id)])
-    interval_relation = str(RELATION_BY_QUERY_ID[str(selected_query_id)])
     mark_style = resolve_mark_style(params, instance_seed=int(instance_seed), mark_count=1)
     bins, answer_value, annotation_labels, trace_extras = build_histogram_dataset(
-        dataset_variant=dataset_variant,
+        dataset_variant=DATASET_VARIANT,
         params=dict(params),
         instance_seed=int(instance_seed),
         mark_style=mark_style,
@@ -56,13 +47,15 @@ def _build_interval_mass_plan(params, instance_seed, selected_query_id, query_pr
         annotation_type="bbox_set",
         annotation_labels=tuple(str(label) for label in annotation_labels),
         prompt_query_key=PROMPT_QUERY_KEY,
-        dataset_variant=dataset_variant,
-        trace_extras={**dict(trace_extras), "interval_relation": interval_relation},
+        dataset_variant=DATASET_VARIANT,
+        trace_extras={**dict(trace_extras), "interval_relation": INTERVAL_RELATION},
         query_probabilities=query_probabilities,
         objective_contract=OBJECTIVE_CONTRACT,
         dynamic_slots={
             "query_interval_label": str(trace_extras.get("query_interval_label", "")),
-            "interval_relation_phrase": interval_relation,
+            "query_interval_start_value": str(trace_extras.get("query_interval_start_value", "")),
+            "query_interval_end_value": str(trace_extras.get("query_interval_end_value", "")),
+            "interval_relation_phrase": INTERVAL_RELATION,
         },
         instance_seed=int(instance_seed),
     )

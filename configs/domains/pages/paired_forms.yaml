@@ -3,16 +3,16 @@ generation:
     balanced_scene_variant_sampling: true
     scene_variant_weights:
       purchase_receipt_pair: 1.0
-    item_count_min: 6
-    item_count_max: 9
-    quantity_min: 30
-    quantity_max: 99
-    unit_value_min: 5
-    unit_value_max: 30
-    discrepancy_min: 2
-    discrepancy_max: 10
-    mismatch_count_min: 3
-    mismatch_count_max: 5
+    item_count_min: 4
+    item_count_max: 6
+    quantity_min: 10
+    quantity_max: 49
+    unit_value_min: 2
+    unit_value_max: 12
+    discrepancy_min: 1
+    discrepancy_max: 6
+    mismatch_count_min: 2
+    mismatch_count_max: 3
     direction_count_min: 1
 rendering:
   shared:

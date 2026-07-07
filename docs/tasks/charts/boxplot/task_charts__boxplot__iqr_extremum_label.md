@@ -3,13 +3,13 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `boxplot`
-3. Source implementation scene package: `charts/boxplot`
+3. Source implementation scene: `charts/boxplot`
 4. Query ids: `largest_iqr_label`, `smallest_iqr_label`
 5. Semantic query details are recorded in `query_id` and trace params.
 
 ## Implementation
 1. Registered class: `trace.tasks.charts.boxplot.iqr_extremum_label.ChartsDistributionBoxplotIqrExtremumLabelTask`
-2. Prompt lookup scene package: `charts/boxplot`
+2. Prompt lookup source scene: `charts/boxplot`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
 

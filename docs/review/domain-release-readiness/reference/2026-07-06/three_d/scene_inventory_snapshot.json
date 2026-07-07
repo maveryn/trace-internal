@@ -1,0 +1,158 @@
+{
+  "carousel": {
+    "config_path": "configs/domains/three_d/carousel.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/three_d/carousel",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/three_d/carousel",
+    "task_count": 10,
+    "task_ids": [
+      "task_three_d__carousel__belt_object_type_count_arithmetic_value",
+      "task_three_d__carousel__belt_total_object_count",
+      "task_three_d__carousel__between_object_type_anchors_count",
+      "task_three_d__carousel__color_ordered_adjacent_pair_count",
+      "task_three_d__carousel__color_transfer_total_count",
+      "task_three_d__carousel__object_type_ordered_adjacent_pair_count",
+      "task_three_d__carousel__object_type_transfer_total_count",
+      "task_three_d__carousel__scoped_belt_color_count",
+      "task_three_d__carousel__scoped_belt_object_type_count",
+      "task_three_d__carousel__scoped_color_type_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "conveyor": {
+    "config_path": "configs/domains/three_d/conveyor.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/three_d/conveyor",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/three_d/conveyor",
+    "task_count": 10,
+    "task_ids": [
+      "task_three_d__conveyor__belt_total_object_count",
+      "task_three_d__conveyor__between_object_type_anchors_count",
+      "task_three_d__conveyor__color_ordered_adjacent_pair_count",
+      "task_three_d__conveyor__color_transfer_total_count",
+      "task_three_d__conveyor__lane_object_type_count_arithmetic_value",
+      "task_three_d__conveyor__object_type_ordered_adjacent_pair_count",
+      "task_three_d__conveyor__object_type_transfer_total_count",
+      "task_three_d__conveyor__scoped_belt_color_count",
+      "task_three_d__conveyor__scoped_belt_object_type_count",
+      "task_three_d__conveyor__scoped_color_type_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "object_cluster": {
+    "config_path": "configs/domains/three_d/object_cluster.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/three_d/object_cluster",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/three_d/object_cluster",
+    "task_count": 10,
+    "task_ids": [
+      "task_three_d__object_cluster__color_count_arithmetic",
+      "task_three_d__object_cluster__color_membership_count",
+      "task_three_d__object_cluster__counterfactual_count",
+      "task_three_d__object_cluster__multi_attribute_and_count",
+      "task_three_d__object_cluster__multi_attribute_exclusion_count",
+      "task_three_d__object_cluster__multi_attribute_or_count",
+      "task_three_d__object_cluster__multi_attribute_xor_count",
+      "task_three_d__object_cluster__object_type_count",
+      "task_three_d__object_cluster__object_type_count_arithmetic",
+      "task_three_d__object_cluster__total_object_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "object_scene": {
+    "config_path": "configs/domains/three_d/object_scene.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/three_d/object_scene",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/three_d/object_scene",
+    "task_count": 15,
+    "task_ids": [
+      "task_three_d__object_scene__between_references_label",
+      "task_three_d__object_scene__camera_depth_relation_count",
+      "task_three_d__object_scene__camera_distance_extremum_label",
+      "task_three_d__object_scene__height_extremum_label",
+      "task_three_d__object_scene__image_plane_lateral_relation_count",
+      "task_three_d__object_scene__line_side_label",
+      "task_three_d__object_scene__marked_point_depth_extremum_label",
+      "task_three_d__object_scene__marked_point_vertical_relation_label",
+      "task_three_d__object_scene__multiview_object_match_label",
+      "task_three_d__object_scene__object_relation_label",
+      "task_three_d__object_scene__occlusion_order_label",
+      "task_three_d__object_scene__point_camera_distance_order_label",
+      "task_three_d__object_scene__point_on_object_line_label",
+      "task_three_d__object_scene__reference_nearest_label",
+      "task_three_d__object_scene__reference_triangle_inside_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "room": {
+    "config_path": "configs/domains/three_d/room.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/three_d/room",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/three_d/room",
+    "task_count": 3,
+    "task_ids": [
+      "task_three_d__room__wall_object_camera_distance_label",
+      "task_three_d__room__wall_object_same_wall_reference_label",
+      "task_three_d__room__wall_object_side_relation_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "street": {
+    "config_path": "configs/domains/three_d/street.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/three_d/street",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/three_d/street",
+    "task_count": 3,
+    "task_ids": [
+      "task_three_d__street__intersection_nearest_label",
+      "task_three_d__street__lane_ahead_object_label",
+      "task_three_d__street__same_road_arm_reference_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "surface_fixture": {
+    "config_path": "configs/domains/three_d/surface_fixture.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/three_d/surface_fixture",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/three_d/surface_fixture",
+    "task_count": 7,
+    "task_ids": [
+      "task_three_d__surface_fixture__color_count_after_operations_value",
+      "task_three_d__surface_fixture__color_frequency_option_label",
+      "task_three_d__surface_fixture__colored_element_count",
+      "task_three_d__surface_fixture__element_count_extremum_label",
+      "task_three_d__surface_fixture__recolor_board_match_label",
+      "task_three_d__surface_fixture__repeated_element_count",
+      "task_three_d__surface_fixture__scoped_colored_element_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "warehouse": {
+    "config_path": "configs/domains/three_d/warehouse.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/three_d/warehouse",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/three_d/warehouse",
+    "task_count": 2,
+    "task_ids": [
+      "task_three_d__warehouse__nearest_candidate_to_reference_label",
+      "task_three_d__warehouse__robot_forward_path_label"
+    ],
+    "taxonomy_review_pass": true
+  }
+}

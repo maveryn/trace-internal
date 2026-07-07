@@ -3,7 +3,7 @@
 ## Public Taxonomy
 1. Domain: `puzzles`
 2. Scene id: `rubiks_net`
-3. Source scene package: `rubiks_net`
+3. Source scene: `rubiks_net`
 4. Task id: `task_puzzles__rubiks_net__post_move_sticker_color_label`
 
 ## Query Contract

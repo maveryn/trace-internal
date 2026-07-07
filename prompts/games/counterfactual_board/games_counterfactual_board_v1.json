@@ -53,18 +53,18 @@
     },
     "output": {
       "answer_only": [
-        "{answer_hint}\nReturn JSON like {json_example_answer_only}.",
-        "{answer_hint}\nUse the answer-only JSON shape shown here: {json_example_answer_only}.",
-        "{answer_hint}\nWrite only a JSON object like {json_example_answer_only}.",
-        "{answer_hint}\nReturn the integer answer in JSON: {json_example_answer_only}.",
-        "{answer_hint}\nUse this JSON shape for the final response: {json_example_answer_only}."
+        "Answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Final answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Required answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Use this answer format: {answer_hint}.\nExample JSON:\n{json_example_answer_only}",
+        "Answer field: {answer_hint}.\nExample JSON:\n{json_example_answer_only}"
       ],
       "answer_and_annotation": [
-        "{answer_hint}\n{annotation_hint}\nReturn JSON like {json_example}.",
-        "{answer_hint}\n{annotation_hint}\nUse the answer-and-annotation JSON shape shown here: {json_example}.",
-        "{answer_hint}\n{annotation_hint}\nWrite only a JSON object like {json_example}.",
-        "{answer_hint}\n{annotation_hint}\nReturn both fields in JSON: {json_example}.",
-        "{answer_hint}\n{annotation_hint}\nUse this JSON shape for the final response: {json_example}."
+        "Annotation format: {annotation_hint}.\nAnswer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Final annotation format: {annotation_hint}.\nFinal answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Required annotation format: {annotation_hint}.\nRequired answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Use this annotation format: {annotation_hint}.\nUse this answer format: {answer_hint}.\nExample JSON:\n{json_example}",
+        "Annotation field: {annotation_hint}.\nAnswer field: {answer_hint}.\nExample JSON:\n{json_example}"
       ]
     }
   },

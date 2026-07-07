@@ -21,4 +21,4 @@ Query ids: `single`.
 
 ## Review Notes
 
-This task uses the scene-package layout. The public task file owns target parent selection, answer binding, annotation binding, and prompt slots; scene-local shared code only provides treemap data, rendering, prompt, and projection primitives.
+This task uses the current source layout. The public task file owns target parent selection, answer binding, annotation binding, and prompt slots; scene-local shared code only provides treemap data, rendering, prompt, and projection primitives.

@@ -36,7 +36,8 @@ rendering:
     tick_length_px: 8
     label_font_size_px: 20
     tick_font_size_px: 17
-    label_stroke_width_px: 2
+    label_bold: false
+    label_stroke_width_px: 0
     mark_outline_width_px: 2
     line_width_px: 4
     point_radius_px: 8

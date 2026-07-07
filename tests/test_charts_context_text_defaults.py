@@ -76,7 +76,7 @@ def test_chart_context_clean_mode_records_empty_layer() -> None:
     assert layer["elements"] == []
 
 
-def test_migrated_chart_context_profiles_are_explicit() -> None:
+def test_source_layout_chart_context_profiles_are_explicit() -> None:
     for scene_id in REPORT_PARAGRAPH_SCENE_TASKS:
         rendering = _rendering_defaults(str(scene_id))
         assert rendering["chart_context_profile"] == "report_paragraph"

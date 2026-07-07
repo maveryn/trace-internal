@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from trace.core.scene_package_migration import parse_public_task_id
+from trace.core.source_layout_policy import parse_public_task_id
 
 _mechanics = import_module("trace.tasks.games.2048.shared.rules")
 _state = import_module("trace.tasks.games.2048.shared.state")

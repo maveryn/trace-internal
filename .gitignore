@@ -208,6 +208,7 @@ __marimo__/
 
 # TRACE generated previews/summaries
 tmp/
+.tmp/
 out_*/
 out/
 nohup.out
@@ -217,6 +218,15 @@ external/
 logs/
 runs/
 samples/
+
+# Local/generated RLVR datasets and paper dumps
+rlvr/dataset/prompt_pilot/
+rlvr/dataset/solve_rate/
+paper/*.zip
+paper/minerva/
+paper/sphinx/
+paper/trace/
+paper/ml-codex-skills/
 /review/
 
 # Local scratch artifacts

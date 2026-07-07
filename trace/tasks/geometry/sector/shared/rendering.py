@@ -25,7 +25,6 @@ from trace.tasks.shared.text_rendering import load_font
 from .defaults import SCENE_ID
 from .state import BBox, Color, Point, RenderContext, RenderedSectorScene, SectorProblem
 
-BETA_SYMBOL = "\u03b2"
 DEGREE_SYMBOL = "\N{DEGREE SIGN}"
 
 
@@ -60,6 +59,12 @@ def create_render_context(
     readout_font_family = str(params.get("readout_font_family", rendering_defaults.get("readout_font_family", "roboto")))
     diagram_style_trace = dict(diagram_style_meta)
     diagram_style_trace["readout_font_family"] = readout_font_family
+    diagram_style_trace["label_stroke_width_override_px"] = 0
+    if isinstance(diagram_style_trace.get("stroke_widths"), dict):
+        diagram_style_trace["stroke_widths"] = {
+            **dict(diagram_style_trace["stroke_widths"]),
+            "label_stroke_px": 0,
+        }
     image = background.convert("RGB")
     return RenderContext(
         image=image,
@@ -73,7 +78,7 @@ def create_render_context(
         secondary_fill_color=secondary_fill_color,
         accent_color=accent_color,
         line_width=max(2, int(params.get("line_width", rendering_defaults.get("line_width", 4)))),
-        label_stroke_width=max(0, min(1, int(diagram_style.label_stroke_width_px))),
+        label_stroke_width=0,
         font=load_font(
             int(params.get("label_font_size", rendering_defaults.get("label_font_size", 22))),
             bold=False,
@@ -378,7 +383,7 @@ def _draw_sector_angle_cue(
     start_deg: float,
     end_deg: float,
     *,
-    label: str,
+    label: str | None,
 ) -> BBox:
     angle_radius = min(94.0, max(54.0, float(radius_px) * 0.46))
     bbox = _draw_angle_arc(
@@ -390,7 +395,8 @@ def _draw_sector_angle_cue(
         color=ctx.label_color,
         pad=14.0,
     )
-    draw_label(ctx, label, _angle_label_point(center, angle_radius * 0.7, start_deg, end_deg), small=False)
+    if label:
+        draw_label(ctx, str(label), _angle_label_point(center, angle_radius * 0.7, start_deg, end_deg), small=False)
     return bbox_from_points(
         (center, *_arc_points(center, angle_radius, start_deg, end_deg, steps=18)),
         width=ctx.width,
@@ -485,7 +491,7 @@ def render_sector_scene(
         "complement_relation",
         "supplement_relation",
     }:
-        angle_text = "?" if problem.target_kind == "sector_angle" else BETA_SYMBOL
+        angle_text = "?" if problem.target_kind == "sector_angle" else None
         sector_angle_bbox = _draw_sector_angle_cue(
             ctx,
             center,

@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `region_map`
-3. Source implementation scene package: `charts/region_map`
+3. Source implementation scene: `charts/region_map`
 4. Query ids: `largest_marker_region_extremum_label`, `smallest_marker_region_extremum_label`
 5. Semantic query details are recorded in `query_id` and trace params.
 

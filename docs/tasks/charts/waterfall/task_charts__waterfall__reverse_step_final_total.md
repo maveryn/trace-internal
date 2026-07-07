@@ -12,6 +12,7 @@
 2. Prompt bundle: `prompts/charts/waterfall/charts_waterfall_v1.json`
 3. Generation is deterministic from `instance_seed`, explicit params, prompt bundle, renderer config, and code versions.
 4. Answers and annotation are produced from the same metadata execution trace.
+5. Calibration sampling constrains the target contribution magnitude and counterfactual final total so the reversed total remains inside the visible chart scale.
 
 ## Annotation Contract
 1. Answer schema: `integer_value`.

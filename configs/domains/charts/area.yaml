@@ -28,10 +28,9 @@ rendering:
     tick_length_px: 8
     label_font_size_px: 19
     tick_font_size_px: 16
-    value_font_size_px: 14
+    value_font_size_px: 16
     legend_font_size_px: 17
-    label_stroke_width_px_min: 1
-    label_stroke_width_px_max: 2
+    label_stroke_width_px: 0
     area_outline_width_px_min: 2
     area_outline_width_px_max: 3
     point_radius_px_min: 4

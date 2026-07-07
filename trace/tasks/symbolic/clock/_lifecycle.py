@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, Mapping, Sequence
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
+from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults, required_group_defaults
 from ...shared.font_assets import font_asset_version, sample_font_family
 from ...shared.output_metadata import default_task_versions
@@ -22,8 +23,13 @@ from ..shared.common import resolve_symbolic_axis_variant
 from ..shared.scene_style import make_symbolic_scene_background, resolve_symbolic_scene_style
 
 from .shared.defaults import DEFAULTS, POST_IMAGE_NOISE_DEFAULTS
-from .shared.rendering import render_clock_scene
-from .shared.state import SUPPORTED_SYMBOLIC_CLOCK_SCENE_VARIANTS, ClockStyleResolution, RenderedClockScene
+from .shared.rendering import draw_text_option_cards, option_cards_y_below_bbox, render_clock_scene
+from .shared.state import (
+    SUPPORTED_SYMBOLIC_CLOCK_SCENE_VARIANTS,
+    ClockStyleResolution,
+    ClockTextOptionSpec,
+    RenderedClockScene,
+)
 from .shared.styles import resolve_clock_render_params
 
 
@@ -41,6 +47,7 @@ class SingleClockPlan:
     json_example_answer_only: str
     shown_total_seconds: int | None = None
     show_second_hand: bool = False
+    answer_options: ClockTextOptionSpec | None = None
 
 
 @dataclass(frozen=True)
@@ -252,7 +259,51 @@ def run_single_clock_task(binding: SingleClockBinding, *, instance_seed: int, pa
             show_second_hand=bool(plan.show_second_hand),
             render_params=render_params,
             visual_theme=clock_theme,
+            center_px=(
+                (0.5 * float(render_params.canvas_width), 300.0)
+                if plan.answer_options is not None
+                else None
+            ),
+            force_show_minor_ticks=bool(plan.show_second_hand and plan.answer_options is not None),
         )
+        option_bboxes_px: dict[str, list[float]] = {}
+        selected_option_bbox_px: list[float] | None = None
+        option_entities: list[dict[str, Any]] = []
+        if plan.answer_options is not None:
+            raw_option_bboxes, option_entities = draw_text_option_cards(
+                rendered_scene.image,
+                text_by_label=dict(plan.answer_options.text_by_label),
+                correct_label=str(plan.answer_options.correct_label),
+                y0_px=option_cards_y_below_bbox(
+                    rendered_scene.scene_bbox_px,
+                    canvas_height=int(render_params.canvas_height),
+                ),
+            )
+            option_bboxes_px = {
+                str(label): [round(float(value), 3) for value in bbox]
+                for label, bbox in raw_option_bboxes.items()
+            }
+            selected_option_bbox_px = list(option_bboxes_px[str(plan.answer_options.correct_label)])
+            rendered_scene = RenderedClockScene(
+                image=rendered_scene.image,
+                scene_bbox_px=(
+                    min(float(rendered_scene.scene_bbox_px[0]), min(float(b[0]) for b in raw_option_bboxes.values())),
+                    min(float(rendered_scene.scene_bbox_px[1]), min(float(b[1]) for b in raw_option_bboxes.values())),
+                    max(float(rendered_scene.scene_bbox_px[2]), max(float(b[2]) for b in raw_option_bboxes.values())),
+                    max(float(rendered_scene.scene_bbox_px[3]), max(float(b[3]) for b in raw_option_bboxes.values())),
+                ),
+                face_bbox_px=rendered_scene.face_bbox_px,
+                center_px=rendered_scene.center_px,
+                hour_hand_bbox_px=rendered_scene.hour_hand_bbox_px,
+                minute_hand_bbox_px=rendered_scene.minute_hand_bbox_px,
+                second_hand_bbox_px=rendered_scene.second_hand_bbox_px,
+                alarm_hand_bbox_px=rendered_scene.alarm_hand_bbox_px,
+                hour_hand_tip_px=rendered_scene.hour_hand_tip_px,
+                minute_hand_tip_px=rendered_scene.minute_hand_tip_px,
+                second_hand_tip_px=rendered_scene.second_hand_tip_px,
+                alarm_hand_tip_px=rendered_scene.alarm_hand_tip_px,
+                entities=[*rendered_scene.entities, *option_entities],
+            )
     image, post_noise_meta = apply_post_image_noise(
         rendered_scene.image,
         instance_seed=int(instance_seed),
@@ -267,6 +318,29 @@ def run_single_clock_task(binding: SingleClockBinding, *, instance_seed: int, pa
         instance_seed=int(instance_seed),
     )
     objective = binding.build_objective(plan, rendered_scene)
+    if plan.answer_options is not None:
+        if selected_option_bbox_px is None:
+            raise ValueError("selected option bbox missing for option task")
+        option_annotation = bbox_annotation_artifacts(selected_option_bbox_px)
+        objective = SingleClockObjective(
+            annotation_gt=option_annotation.annotation_gt,
+            witness_symbolic={
+                "type": str(option_annotation.annotation_type),
+                "value": list(option_annotation.value),
+            },
+            projected_annotation=dict(option_annotation.projected_annotation),
+            execution_fields={
+                **dict(objective.execution_fields),
+                "supporting_parts": ["selected_answer_option"],
+                "selected_option_bbox_px": list(selected_option_bbox_px),
+            },
+            render_map_extra={
+                **dict(objective.render_map_extra),
+                "option_bboxes_px": dict(option_bboxes_px),
+                "selected_option_label": str(plan.answer_options.correct_label),
+                "selected_option_bbox_px": list(selected_option_bbox_px),
+            },
+        )
     query_params = {
         "query_id": str(plan.query_id),
         "query_id_probabilities": {str(plan.query_id): 1.0},
@@ -278,8 +352,15 @@ def run_single_clock_task(binding: SingleClockBinding, *, instance_seed: int, pa
         "scene_variant_probabilities": dict(style.scene_variant_probabilities),
         "style_variant_probabilities": dict(style.style_variant_probabilities),
         "accent_color_name_probabilities": dict(style.accent_color_name_probabilities),
-        **dict(plan.query_params),
-    }
+            **dict(plan.query_params),
+        }
+    if plan.answer_options is not None:
+        query_params.update(
+            {
+                "option_labels": [str(label) for label in plan.answer_options.labels],
+                "correct_label": str(plan.answer_options.correct_label),
+            }
+        )
     prompt_query_spec = build_prompt_query_spec(
         prompt_artifacts=prompt_artifacts,
         query_id=str(plan.query_id),
@@ -346,7 +427,11 @@ def run_single_clock_task(binding: SingleClockBinding, *, instance_seed: int, pa
             "center_px": [round(float(value), 3) for value in rendered_scene.center_px],
             "hand_bboxes_px": dict(hand_bboxes_px),
             "hand_tips_px": dict(hand_tips_px),
-            "annotation_source": "center_px_and_hand_tip_segments_px",
+            "annotation_source": (
+                "selected_answer_option_bbox_px"
+                if plan.answer_options is not None
+                else "center_px_and_hand_tip_segments_px"
+            ),
             **dict(objective.render_map_extra),
         },
         "execution_trace": {

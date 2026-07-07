@@ -1,40 +1,58 @@
 generation:
   shared:
     step_count_support:
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+    - 16
+    relative_offset_support:
+    - 2
+    - 3
+    between_count_support:
+    - 2
+    - 3
+    - 4
     - 5
     - 6
     - 7
     - 8
     balanced_scene_variant_sampling: true
-    balanced_ordinal_reference_sampling: true
     scene_variant_weights:
       vertical_cards: 1.0
       horizontal_cards: 1.0
       two_column_cards: 1.0
-    ordinal_reference_weights:
-      first: 1.0
-      interior: 1.0
-      final: 1.0
 rendering:
   shared:
-    canvas_width: 1000
-    canvas_height: 820
-    outer_margin_px: 34
-    header_height_px: 86
-    card_gap_px: 14
-    card_corner_radius_px: 14
+    canvas_width: 1120
+    canvas_height: 980
+    outer_margin_px: 30
+    header_height_px: 74
+    card_gap_px: 8
+    card_corner_radius_px: 10
     card_outline_width_px: 2
-    number_badge_size_px: 38
-    title_font_size_px: 30
-    subtitle_font_size_px: 17
-    step_title_font_size_px: 22
-    step_detail_font_size_px: 17
+    number_badge_size_px: 30
+    title_font_size_px: 28
+    subtitle_font_size_px: 15
+    step_title_font_size_px: 18
+    step_detail_font_size_px: 14
+    step_meta_font_size_px: 11
 prompt:
   shared:
     bundle_id: pages_step_list_v1
 visual:
   noise:
     apply_prob: 0.4
+    edit_types:
+    - blur
+    - downsample
+    - jpeg
+    - brightness_contrast
+    - gamma_shift
+    - low_contrast_fade
+    - unsharp_mask
     edit_count_range:
     - 1
     - 1

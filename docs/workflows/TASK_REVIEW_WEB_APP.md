@@ -18,18 +18,18 @@ PYTHONPATH=. python scripts/run_task_review.py --tasks <task_id> --mode full --o
 
 Then use this review loop:
 
-1. For scene-package migration scenes, generate review artifacts only after
+1. Generate review artifacts only after
    `manual_code_audit_status.json` exists for the scene and has `passed: true`.
    This file records the agent-side manual source audit for role boundaries and
    the app shows it as the scene-level code audit status.
-   Scene-package migration also requires `taxonomy_review_status.json` for the
-   scene with `passed: true`; the app shows it as the scene-level taxonomy
+   Current source-layout review also requires `taxonomy_review_status.json` for
+   the scene with `passed: true`; the app shows it as the scene-level taxonomy
    audit status only when every task in that scene also has a concrete
    app-visible `## Program Contract` in its task doc.
-   It also requires `migration_test_status.json` with `passed: true` after the
-   scene-scoped command in `docs/SCENE_PACKAGE_MIGRATION/ENFORCEMENT_TESTS.md`
-   has passed. The review runner refuses scene-package review artifacts until
-   all three scene-level status files pass.
+   It also requires the current source-layout test status file,
+   `source_layout_test_status.json`, with `passed: true` after the scene-scoped
+   review tests have passed. The review runner refuses artifacts for
+   source-layout-gated scenes until all three scene-level status files pass.
 2. Generate review artifacts under `review/task-reviews` as usual. The review
    runner stages each task first and publishes it under a scene-level lock; do
    not manually delete or rewrite live `data/` or `images/` directories while
@@ -236,10 +236,9 @@ exact generated sample.
 
 The separate **Taxonomy** link opens `/taxonomy`, which browses the current
 taxonomy audit artifacts when a taxonomy-review package is present. The
-taxonomy browser is a review surface, not the migration source of truth. Current
-task-boundary rules live in `docs/contracts/` and current scene status lives under
-`review/task-reviews/<domain>/<scene_id>/`; migration taxonomy review rules live
-in `docs/SCENE_PACKAGE_MIGRATION/TAXONOMY_REVIEW_CHECKLIST.md`.
+taxonomy browser is a review surface, not the source of truth. Current
+task-boundary rules live in `docs/contracts/` and current scene status lives
+under `review/task-reviews/<domain>/<scene_id>/`.
 
 The taxonomy overview shows decision-review progress and open taxonomy issues.
 Each taxonomy task detail page has an **Approve Decision** control for accepting
@@ -282,13 +281,14 @@ Excel files remain useful for download or archival inspection, but the browser
 app does not scrape them. If review sidecars are regenerated, press **Reload
 Index**. If app code changed, restart the app.
 
-Solve-rate summaries are best-effort. The app reads the same current locations
-used by scene review/status generation when available:
+Solve-rate summaries are best-effort display data derived from the current
+calibration ledger when available:
 
-- `review/calibration_sweep_status.json`
-- `rlvr/outputs/calibration/current/.../calibration_stats.json`
+- `review/calibration/50x8_qwen25vl3b_prompt_pilot_seed20260703/task_status_records.json`
 
-If those artifacts are absent, task rows show `No solve-rate artifact`.
+The top-level `review/calibration_sweep_status.*` files are derived
+compatibility exports, not the source of truth. If current calibration artifacts
+are absent, task rows show `No solve-rate artifact`.
 
 ## Issues and Feedback Storage
 

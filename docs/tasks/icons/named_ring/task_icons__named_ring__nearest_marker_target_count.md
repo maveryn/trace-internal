@@ -19,6 +19,7 @@ Output binding: `answer` uses the `integer` schema; generation binds a unique
 count by construction.
 Annotation witnesses: `annotation` uses the `bbox_set` schema over counted
 target icons.
+Annotation schema: `bbox_set`.
 Query ids: `single`.
 
 ## Contract

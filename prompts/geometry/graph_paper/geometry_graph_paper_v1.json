@@ -147,6 +147,13 @@
         "How many shown polygons are {target_text}?",
         "Find the number of {target_text} in the diagram.",
         "What is the count of {target_text}?"
+      ],
+      "right_angle_vertex_count": [
+        "How many right-angle vertices does the polygon have?",
+        "Count the vertices where adjacent polygon sides form a right angle.",
+        "How many corners of the polygon are right angles?",
+        "Find the number of right-angle vertices in the polygon.",
+        "Use the grid to count the polygon vertices with 90-degree angles."
       ]
     },
     "output": {

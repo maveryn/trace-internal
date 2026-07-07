@@ -11,6 +11,7 @@ from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
 from ...registry import register_task
+from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...shared.config_defaults import load_scene_generation_rendering_prompt_defaults, required_group_defaults
 from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
@@ -24,6 +25,7 @@ from ..shared.common import resolve_symbolic_axis_variant
 from ..shared.scene_style import make_symbolic_scene_background, resolve_symbolic_scene_style
 
 from .shared.defaults import POST_IMAGE_NOISE_DEFAULTS
+from .shared.sampling import choose_value_options, resolve_six_option_labels
 from .shared.rendering import render_abacus_single_board_scene
 from .shared.rules import (
     ABACUS_ANNOTATION_KEYS,
@@ -31,7 +33,7 @@ from .shared.rules import (
     SUPPORTED_ABACUS_SCENE_VARIANTS,
     digits_for_abacus_value,
 )
-from .shared.state import AbacusColumnSpec
+from .shared.state import AbacusColumnSpec, AbacusReadoutOptionSpec
 from .shared.styles import resolve_readout_render_params
 
 
@@ -57,7 +59,11 @@ class _Dataset:
     columns: tuple[AbacusColumnSpec, ...]
     digits_by_role: dict[str, int]
     place_values_by_role: dict[str, int]
+    option_labels: tuple[str, ...]
+    correct_label: str
+    option_values_by_label: dict[str, int]
     scene_variant_probabilities: dict[str, float]
+    correct_label_probabilities: dict[str, float]
 
 
 def _resolve_scene_variant(
@@ -79,6 +85,30 @@ def _resolve_scene_variant(
     )
 
 
+def _resolve_correct_label(
+    params: Mapping[str, Any],
+    *,
+    gen_defaults: Mapping[str, Any],
+    instance_seed: int,
+    option_labels: tuple[str, ...],
+) -> Tuple[str, Dict[str, float]]:
+    axis_params = dict(params)
+    if "correct_label" in params and "answer_label" not in params:
+        axis_params["answer_label"] = params["correct_label"]
+    selected, probabilities = resolve_symbolic_axis_variant(
+        params=axis_params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        supported_variants=option_labels,
+        task_id=TASK_ID,
+        explicit_key="answer_label",
+        weights_key="correct_option_label_weights",
+        balance_flag_key="balanced_correct_option_label_sampling",
+        axis_namespace="correct_option_label",
+    )
+    return str(selected), dict(probabilities)
+
+
 def _build_dataset(
     *,
     instance_seed: int,
@@ -89,6 +119,13 @@ def _build_dataset(
     """Sample the displayed value and construct the three place-value columns."""
 
     rng = spawn_rng(int(instance_seed), f"{TASK_ID}.dataset")
+    option_labels = resolve_six_option_labels(params, gen_defaults)
+    correct_label, correct_label_probabilities = _resolve_correct_label(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        option_labels=option_labels,
+    )
     answer_min, answer_max = _get_range(
         params,
         gen_defaults,
@@ -123,6 +160,15 @@ def _build_dataset(
     )
     digits_by_role = {str(column.role): int(column.digit) for column in columns}
     place_values_by_role = {str(column.role): int(column.place_value) for column in columns}
+    option_values_by_label = choose_value_options(
+        instance_seed=int(instance_seed),
+        seed_namespace=TASK_ID,
+        target_value=int(answer_value),
+        option_labels=option_labels,
+        correct_label=str(correct_label),
+        min_value=int(answer_min),
+        max_value=int(answer_max),
+    )
     return _Dataset(
         scene_variant=str(scene_variant),
         answer_value=int(answer_value),
@@ -130,7 +176,11 @@ def _build_dataset(
         columns=tuple(columns),
         digits_by_role=dict(digits_by_role),
         place_values_by_role=dict(place_values_by_role),
+        option_labels=tuple(str(label) for label in option_labels),
+        correct_label=str(correct_label),
+        option_values_by_label=dict(option_values_by_label),
         scene_variant_probabilities={},
+        correct_label_probabilities=dict(correct_label_probabilities),
     )
 
 
@@ -218,7 +268,11 @@ class SymbolicAbacusDisplayedValueReadoutTask:
                     columns=tuple(dataset.columns),
                     digits_by_role=dict(dataset.digits_by_role),
                     place_values_by_role=dict(dataset.place_values_by_role),
+                    option_labels=tuple(str(label) for label in dataset.option_labels),
+                    correct_label=str(dataset.correct_label),
+                    option_values_by_label=dict(dataset.option_values_by_label),
                     scene_variant_probabilities=dict(scene_variant_probabilities),
+                    correct_label_probabilities=dict(dataset.correct_label_probabilities),
                 )
                 break
             except Exception as exc:
@@ -242,6 +296,16 @@ class SymbolicAbacusDisplayedValueReadoutTask:
             params=render_params,
             scene_variant=str(dataset.scene_variant),
             style=scene_style,
+            options=tuple(
+                AbacusReadoutOptionSpec(
+                    label=str(label),
+                    text=str(dataset.option_values_by_label[str(label)]),
+                    value=int(dataset.option_values_by_label[str(label)]),
+                    is_correct=bool(str(label) == str(dataset.correct_label)),
+                )
+                for label in dataset.option_labels
+            ),
+            correct_label=str(dataset.correct_label),
         )
         image, post_noise_meta = apply_post_image_noise(
             rendered_scene.image,
@@ -255,18 +319,17 @@ class SymbolicAbacusDisplayedValueReadoutTask:
             instance_seed=int(instance_seed),
         )
 
+        if rendered_scene.selected_option_card_bbox is None:
+            raise RuntimeError("abacus displayed-value option rendering did not return a selected option bbox")
+        annotation_payload = bbox_annotation_artifacts(rendered_scene.selected_option_card_bbox)
+        annotation_bbox = list(annotation_payload.value)
         keyed_points = {
             str(key): [list(point) for point in rendered_scene.active_bead_points_by_column.get(str(key), [])]
             for key in ABACUS_ANNOTATION_KEYS
         }
-        annotation_gt = TypedValue(type="point_set_map", value=dict(keyed_points))
-        answer_gt = TypedValue(type="integer", value=int(dataset.answer_value))
-        projected_annotation = {
-            "type": "point_set_map",
-            "point_set_map": dict(keyed_points),
-            "pixel_point_set_map": dict(keyed_points),
-            "value": dict(keyed_points),
-        }
+        annotation_gt = annotation_payload.annotation_gt
+        answer_gt = TypedValue(type="option_letter", value=str(dataset.correct_label))
+        projected_annotation = dict(annotation_payload.projected_annotation)
         query_params = {
             "query_id": SINGLE_QUERY_ID,
             "query_id_probabilities": {SINGLE_QUERY_ID: 1.0},
@@ -275,6 +338,8 @@ class SymbolicAbacusDisplayedValueReadoutTask:
             "scene_variant": str(dataset.scene_variant),
             "scene_variant_probabilities": dict(dataset.scene_variant_probabilities),
             "target_answer_support": [int(dataset.target_answer_support[0]), int(dataset.target_answer_support[1])],
+            "option_labels": [str(label) for label in dataset.option_labels],
+            "correct_label_probabilities": dict(dataset.correct_label_probabilities),
             "column_roles": [str(role) for role in ABACUS_COLUMN_ROLES],
             "annotation_keys": [str(key) for key in ABACUS_ANNOTATION_KEYS],
             "question_format": QUESTION_FORMAT,
@@ -294,6 +359,8 @@ class SymbolicAbacusDisplayedValueReadoutTask:
                     "scene_id": SCENE_ID,
                     "scene_variant": str(dataset.scene_variant),
                     "answer_value": int(dataset.answer_value),
+                    "correct_label": str(dataset.correct_label),
+                    "option_values_by_label": dict(dataset.option_values_by_label),
                     "digits_by_role": dict(dataset.digits_by_role),
                     "place_values_by_role": dict(dataset.place_values_by_role),
                 },
@@ -319,17 +386,22 @@ class SymbolicAbacusDisplayedValueReadoutTask:
                 "scene_bbox_px": list(rendered_scene.scene_bbox_px),
                 "item_bboxes_px": dict(rendered_scene.item_bboxes),
                 "bead_bboxes_px": dict(rendered_scene.bead_bboxes),
+                "option_card_bboxes_px": dict(rendered_scene.option_card_bboxes),
+                "selected_option_card_bbox_px": list(annotation_bbox),
+                "correct_label": str(dataset.correct_label),
                 "active_bead_bboxes_by_column_px": dict(rendered_scene.active_bead_bboxes_by_column),
                 "active_bead_points_by_column_px": dict(keyed_points),
                 "active_bead_ids_by_column": dict(rendered_scene.active_bead_ids_by_column),
                 "column_bboxes_px": dict(rendered_scene.column_bboxes),
                 "label_bboxes_px": dict(rendered_scene.label_bboxes),
-                "annotation_source": "active_bead_points_by_column_px",
+                "annotation_source": "selected_option_card_bbox_px",
             },
             "execution_trace": {
                 **dict(query_params),
                 "answer_value": int(dataset.answer_value),
-                "answer_type": "integer",
+                "answer_type": "option_letter",
+                "correct_label": str(dataset.correct_label),
+                "option_values_by_label": dict(dataset.option_values_by_label),
                 "digits_by_role": dict(dataset.digits_by_role),
                 "place_values_by_role": dict(dataset.place_values_by_role),
                 "columns": [
@@ -343,11 +415,12 @@ class SymbolicAbacusDisplayedValueReadoutTask:
                     }
                     for column in dataset.columns
                 ],
-                "supporting_point_roles": [str(key) for key in ABACUS_ANNOTATION_KEYS],
+                "supporting_bbox_roles": ["selected_option_card"],
+                "active_bead_points_by_column_px": dict(keyed_points),
             },
             "witness_symbolic": {
-                "type": "point_set_map",
-                "value": dict(keyed_points),
+                "type": "bbox",
+                "value": list(annotation_bbox),
             },
             "projected_annotation": dict(projected_annotation),
             "answer_gt": answer_gt.to_dict(),

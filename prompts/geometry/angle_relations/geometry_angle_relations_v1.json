@@ -58,18 +58,11 @@
         "What is the measure of angle \"CFE\"?"
       ],
       "target_angle_value": [
-        "Use the displayed angle expressions to solve for x. What is the measure of angle \"ABC\"?",
-        "Use the displayed angle expressions to solve for x. What is the measure of angle \"ABC\"?",
-        "Use the displayed angle expressions to solve for x. What is the measure of angle \"ABC\"?",
-        "Use the displayed angle expressions to solve for x. What is the measure of angle \"ABC\"?",
-        "Use the displayed angle expressions to solve for x. What is the measure of angle \"ABC\"?"
-      ],
-      "variable_x_value": [
-        "Use the displayed angle expressions. What is the value of x?",
-        "Use the displayed angle expressions. What is the value of x?",
-        "Use the displayed angle expressions. What is the value of x?",
-        "Use the displayed angle expressions. What is the value of x?",
-        "Use the displayed angle expressions. What is the value of x?"
+        "Use the displayed angle expressions. What is the measure of angle \"ABC\"?",
+        "Use the displayed angle expressions. Find the measure of angle \"ABC\".",
+        "Use the displayed angle expressions. Determine the measure of angle \"ABC\".",
+        "Use the displayed angle expressions. What is angle \"ABC\"?",
+        "Use the displayed angle expressions. Solve for the measure of angle \"ABC\"."
       ],
       "parallel_target_angle_value": [
         "Use the displayed angle expressions to solve for x. What is the measure of angle \"FRQ\"?",
@@ -79,11 +72,11 @@
         "Use the displayed angle expressions to solve for x. Solve for the measure of angle \"FRQ\"."
       ],
       "parallel_transversal_triangle_angle_value": [
-        "What is the measure of angle \"PQR\"?",
-        "Find the measure of angle \"PQR\".",
-        "Determine the measure of angle \"PQR\".",
-        "What is angle \"PQR\"?",
-        "Solve for the measure of angle \"PQR\"."
+        "Use the displayed lower-triangle angles and the parallel lines. What is the measure of angle \"PQR\"?",
+        "Use the displayed lower-triangle angles and the parallel lines. Find the measure of angle \"PQR\".",
+        "Use the displayed lower-triangle angles and the parallel lines. Determine the measure of angle \"PQR\".",
+        "Use the displayed lower-triangle angles and the parallel lines. What is angle \"PQR\"?",
+        "Use the displayed lower-triangle angles and the parallel lines. Solve for the measure of angle \"PQR\"."
       ]
     },
     "output": {

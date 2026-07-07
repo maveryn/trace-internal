@@ -25,7 +25,13 @@ from ._lifecycle import (
 )
 from .shared.annotations import clock_hand_segment_annotations
 from .shared.defaults import DEFAULTS
-from .shared.sampling import resolve_clock_time_support
+from .shared.sampling import (
+    option_value_map,
+    resolve_clock_time_support,
+    resolve_text_option_labels,
+    sample_correct_option_label,
+)
+from .shared.state import ClockTextOptionSpec
 
 
 TASK_ID = "task_symbolic__clock__full_time_readout"
@@ -167,26 +173,43 @@ def _build_full_time_plan(*, params, gen_defaults, instance_seed):
         int(shown_total_seconds)
     )
     answer_text = format_clock_hhmmss(int(shown_total_seconds))
+    option_labels = resolve_text_option_labels(params, gen_defaults=gen_defaults)
+    correct_label, label_probs = sample_correct_option_label(
+        params=params,
+        gen_defaults=gen_defaults,
+        instance_seed=int(instance_seed),
+        seed_namespace=TASK_ID,
+        labels=option_labels,
+    )
+    cycle_seconds = 12 * 60 * 60
+    preferred_offsets = (5, -5, 10, -10, 15, -15, 30, -30, 60, -60, 300, -300, 3600, -3600)
+    candidate_values = [
+        int((int(shown_total_seconds) + int(offset)) % int(cycle_seconds))
+        for offset in preferred_offsets
+    ]
+    candidate_values.extend(int(value) for value in feasible if int(value) != int(shown_total_seconds))
+    option_values = option_value_map(
+        labels=option_labels,
+        correct_label=str(correct_label),
+        correct_value=int(shown_total_seconds),
+        distractors=candidate_values,
+    )
     json_example = json.dumps(
         {
-            "annotation": [
-                [[320, 320], [447, 349]],
-                [[320, 320], [405, 493]],
-                [[320, 320], [140, 424]],
-            ],
-            "answer": "03:25:40",
+            "annotation": [224, 770, 316, 836],
+            "answer": "C",
         },
         separators=(",", ":"),
     )
     json_example_answer_only = json.dumps(
-        {"answer": "03:25:40"},
+        {"answer": "C"},
         separators=(",", ":"),
     )
     return SingleClockPlan(
         shown_total_minutes=int(shown_total_seconds // 60),
         shown_total_seconds=int(shown_total_seconds),
         show_second_hand=True,
-        answer_gt=TypedValue(type="string", value=str(answer_text)),
+        answer_gt=TypedValue(type="option_letter", value=str(correct_label)),
         query_id="single",
         question_format="full_time_readout",
         query_params={
@@ -195,6 +218,8 @@ def _build_full_time_plan(*, params, gen_defaults, instance_seed):
             "minute_support": [int(value) for value in minute_support],
             "second_support": [int(value) for value in second_support],
             "min_hand_angle_gap_deg": float(min_gap),
+            "option_labels": [str(label) for label in option_labels],
+            "correct_label_probabilities": {str(key): float(value) for key, value in label_probs.items()},
         },
         execution_fields={
             "shown_total_seconds": int(shown_total_seconds),
@@ -203,14 +228,31 @@ def _build_full_time_plan(*, params, gen_defaults, instance_seed):
             "shown_minute": int(shown_minute),
             "shown_second": int(shown_second),
             "shown_time_text": str(answer_text),
+            "answer_value": str(answer_text),
+            "answer_total_seconds": int(shown_total_seconds),
+            "answer_label": str(correct_label),
+            "option_values_by_label": {str(key): int(value) for key, value in option_values.items()},
+            "option_text_by_label": {
+                str(key): str(format_clock_hhmmss(int(value)))
+                for key, value in option_values.items()
+            },
             "hand_angle_gaps_deg": [
                 round(float(value), 6)
                 for value in clock_hand_pair_angle_gaps_deg(int(shown_total_seconds))
             ],
-            "answer_type": "string",
+            "answer_type": "option_letter",
         },
         json_example=str(json_example),
         json_example_answer_only=str(json_example_answer_only),
+        answer_options=ClockTextOptionSpec(
+            labels=tuple(str(label) for label in option_labels),
+            correct_label=str(correct_label),
+            text_by_label={
+                str(key): str(format_clock_hhmmss(int(value)))
+                for key, value in option_values.items()
+            },
+            value_by_label={str(key): int(value) for key, value in option_values.items()},
+        ),
     )
 
 

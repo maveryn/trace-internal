@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `bar_3d`
-3. Source implementation scene package: `charts/bar_3d`
+3. Source implementation scene: `charts/bar_3d`
 4. Query id: `single`
 5. Semantic query details are recorded in `query_id` and trace params.
 

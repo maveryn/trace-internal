@@ -7,21 +7,17 @@ import json
 import pytest
 
 from trace.core.query_ids import SINGLE_QUERY_ID
+from trace.tasks.pages.profile_card_grid.filtered_ranked_profile_label import (
+    SUPPORTED_QUERY_IDS as FILTERED_RANKED_PROFILE_QUERY_IDS,
+    PagesProfileCardGridFilteredRankedProfileLabelTask,
+)
 from trace.tasks.pages.profile_card_grid.field_ranked_profile_label import (
     EXTREMUM_QUERY_IDS as FIELD_EXTREMUM_PROFILE_QUERY_IDS,
     NTH_RANK_QUERY_IDS as FIELD_NTH_RANK_PROFILE_QUERY_IDS,
     SUPPORTED_QUERY_IDS as FIELD_RANKED_PROFILE_QUERY_IDS,
     PagesProfileCardGridFieldRankedProfileLabelTask,
 )
-from trace.tasks.pages.profile_card_grid.profile_for_field_value import (
-    PROMPT_QUERY_KEY as PROFILE_FOR_FIELD_VALUE_PROMPT_QUERY_KEY,
-    PagesProfileCardGridProfileForFieldValueTask,
-)
 from trace.tasks.pages.profile_card_grid.shared.state import SCENE_VARIANTS as PROFILE_SCENE_VARIANTS
-from trace.tasks.pages.profile_card_grid.value_for_named_profile_field import (
-    PROMPT_QUERY_KEY as VALUE_FOR_NAMED_PROFILE_FIELD_PROMPT_QUERY_KEY,
-    PagesProfileCardGridValueForNamedProfileFieldTask,
-)
 from trace.tasks.pages.category_grid.category_item_count import (
     PROMPT_QUERY_KEY as CATEGORY_ITEM_COUNT_PROMPT_QUERY_KEY,
     TASK_ID as CATEGORY_ITEM_COUNT_TASK_ID,
@@ -35,9 +31,8 @@ from trace.tasks.pages.category_grid.category_slot_item_label import (
 )
 
 PROFILE_QUERY_IDS = (
-    PROFILE_FOR_FIELD_VALUE_PROMPT_QUERY_KEY,
-    VALUE_FOR_NAMED_PROFILE_FIELD_PROMPT_QUERY_KEY,
     *FIELD_RANKED_PROFILE_QUERY_IDS,
+    *FILTERED_RANKED_PROFILE_QUERY_IDS,
 )
 
 
@@ -55,12 +50,10 @@ def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) ->
 
 
 def _profile_task_for_query(query_id: str):
-    if str(query_id) == "profile_for_field_value":
-        return PagesProfileCardGridProfileForFieldValueTask()
-    if str(query_id) == "value_for_named_profile_field":
-        return PagesProfileCardGridValueForNamedProfileFieldTask()
     if str(query_id) in set(FIELD_RANKED_PROFILE_QUERY_IDS):
         return PagesProfileCardGridFieldRankedProfileLabelTask()
+    if str(query_id) in set(FILTERED_RANKED_PROFILE_QUERY_IDS):
+        return PagesProfileCardGridFilteredRankedProfileLabelTask()
     raise AssertionError(f"unexpected profile-card query id: {query_id}")
 
 
@@ -202,14 +195,10 @@ def test_category_grid_scene_variants_render_inside_canvas(scene_variant: str) -
 @pytest.mark.parametrize("query_id", PROFILE_QUERY_IDS)
 def test_profile_card_grid_lookup_variants_match_contract(query_id: str) -> None:
     task = _profile_task_for_query(query_id)
-    task_query_id = (
-        SINGLE_QUERY_ID
-        if query_id in {PROFILE_FOR_FIELD_VALUE_PROMPT_QUERY_KEY, VALUE_FOR_NAMED_PROFILE_FIELD_PROMPT_QUERY_KEY}
-        else query_id
-    )
+    task_query_id = query_id
     out = task.generate(
         77100 + PROFILE_QUERY_IDS.index(query_id),
-        params={"query_id": task_query_id, "card_count": 6, "pages_context_text_enabled": False},
+        params={"query_id": task_query_id, "card_count": 9, "pages_context_text_enabled": False},
         max_attempts=10,
     )
     trace = out.trace_payload
@@ -226,44 +215,66 @@ def test_profile_card_grid_lookup_variants_match_contract(query_id: str) -> None
     assert trace["query_spec"]["params"]["prompt_query_key"] == query_id
     assert sorted(out.prompt_variants.keys()) == ["answer_and_annotation", "answer_only"]
     assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
-    assert int(execution["card_count"]) == 6
-    assert len(execution["cards"]) == 6
+    assert int(execution["card_count"]) == 9
+    assert len(execution["cards"]) == 9
 
-    expected = (
-        str(target["field_value"])
-        if query_id == VALUE_FOR_NAMED_PROFILE_FIELD_PROMPT_QUERY_KEY
-        else str(target["profile_name"])
-    )
+    expected = str(target["profile_name"])
     assert str(out.answer_gt.value) == expected
     assert str(execution["answer_value"]) == expected
     assert str(trace["query_spec"]["params"]["target_answer"]) == expected
     assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
     assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
 
+    is_filtered_query = query_id in set(FILTERED_RANKED_PROFILE_QUERY_IDS)
     is_extremum_query = query_id in set(FIELD_EXTREMUM_PROFILE_QUERY_IDS)
     is_ranked_query = query_id in set(FIELD_NTH_RANK_PROFILE_QUERY_IDS)
+    is_filtered_extremum_query = is_filtered_query and "nth" not in str(query_id)
+    is_filtered_ranked_query = is_filtered_query and "nth" in str(query_id)
     is_order_query = bool(is_extremum_query or is_ranked_query)
+    is_filtered_order_query = bool(is_filtered_extremum_query or is_filtered_ranked_query)
     _assert_bbox_inside_canvas(out.annotation_gt.value, width=int(render["canvas_width"]), height=int(render["canvas_height"]))
     supporting_bboxes = trace["projected_annotation"]["supporting_bboxes"]
-    if is_order_query:
+    if is_order_query or is_filtered_order_query:
         assert out.annotation_gt.value == trace["render_map"]["card_bboxes_px"][profile_id]
-        assert sorted(supporting_bboxes) == ["field_label", "target_profile", "target_value"]
-        assert supporting_bboxes["target_profile"] == trace["render_map"]["name_bboxes_px"][profile_id]
-        assert supporting_bboxes["field_label"] == trace["render_map"]["field_label_bboxes_px"][profile_id][field_label]
-        assert supporting_bboxes["target_value"] == trace["render_map"]["field_value_bboxes_px"][profile_id][field_label]
+        if is_filtered_query:
+            filter_field = str(target["filter_field_label"])
+            assert sorted(supporting_bboxes) == [
+                "filter_field_label",
+                "filter_value",
+                "rank_field_label",
+                "target_profile",
+                "target_rank_value",
+            ]
+            assert supporting_bboxes["target_profile"] == trace["render_map"]["name_bboxes_px"][profile_id]
+            assert supporting_bboxes["filter_field_label"] == trace["render_map"]["field_label_bboxes_px"][profile_id][filter_field]
+            assert supporting_bboxes["filter_value"] == trace["render_map"]["field_value_bboxes_px"][profile_id][filter_field]
+            assert supporting_bboxes["rank_field_label"] == trace["render_map"]["field_label_bboxes_px"][profile_id][field_label]
+            assert supporting_bboxes["target_rank_value"] == trace["render_map"]["field_value_bboxes_px"][profile_id][field_label]
+        else:
+            assert sorted(supporting_bboxes) == ["field_label", "target_profile", "target_value"]
+            assert supporting_bboxes["target_profile"] == trace["render_map"]["name_bboxes_px"][profile_id]
+            assert supporting_bboxes["field_label"] == trace["render_map"]["field_label_bboxes_px"][profile_id][field_label]
+            assert supporting_bboxes["target_value"] == trace["render_map"]["field_value_bboxes_px"][profile_id][field_label]
         candidates = list(execution["candidate_profiles"])
         values = [int(candidate["numeric_value"]) for candidate in candidates]
-        assert len(candidates) == 6
+        if is_filtered_query:
+            assert len(candidates) == int(execution["filter_group_size"])
+            cards_by_id = {str(card["profile_id"]): dict(card) for card in execution["cards"]}
+            filter_field = str(execution["filter_field_label"])
+            filter_value = str(execution["filter_field_value"])
+            assert int(execution["filter_group_size"]) in {3, 4}
+            for candidate in candidates:
+                assert str(cards_by_id[str(candidate["profile_id"])]["fields"][filter_field]) == filter_value
+        else:
+            assert len(candidates) == int(execution["card_count"])
         assert len(values) == len(set(values))
         target_numeric_value = int(target["field_numeric_value"])
         rank_direction = (
-            "highest"
-            if query_id in {"highest_field_profile_label", "nth_highest_field_profile_label"}
-            else "lowest"
+            "highest" if "highest" in str(query_id) else "lowest"
         )
         sorted_values = sorted(values, reverse=(rank_direction == "highest"))
         assert values == sorted_values
-        if is_extremum_query:
+        if is_extremum_query or is_filtered_extremum_query:
             assert target_numeric_value == sorted_values[0]
             assert str(execution["extremum_direction"]) == rank_direction
             assert int(execution["rank_position"]) == 1
@@ -298,15 +309,6 @@ def test_profile_card_grid_lookup_variants_match_contract(query_id: str) -> None
                 width=int(render["canvas_width"]),
                 height=int(render["canvas_height"]),
             )
-    else:
-        assert sorted(supporting_bboxes) == ["field_label", "field_value", "profile_name"]
-        assert supporting_bboxes["profile_name"] == trace["render_map"]["name_bboxes_px"][profile_id]
-        assert supporting_bboxes["field_label"] == trace["render_map"]["field_label_bboxes_px"][profile_id][field_label]
-        assert supporting_bboxes["field_value"] == trace["render_map"]["field_value_bboxes_px"][profile_id][field_label]
-        if query_id == PROFILE_FOR_FIELD_VALUE_PROMPT_QUERY_KEY:
-            assert out.annotation_gt.value == trace["render_map"]["card_bboxes_px"][profile_id]
-        else:
-            assert out.annotation_gt.value == trace["render_map"]["field_value_bboxes_px"][profile_id][field_label]
 
     example = _extract_prompt_json_example(out.prompt)
     assert list(example.keys()) == ["annotation", "answer"]
@@ -316,13 +318,13 @@ def test_profile_card_grid_lookup_variants_match_contract(query_id: str) -> None
 
 @pytest.mark.parametrize("scene_variant", PROFILE_SCENE_VARIANTS)
 def test_profile_card_grid_scene_variants_render_inside_canvas(scene_variant: str) -> None:
-    task = PagesProfileCardGridValueForNamedProfileFieldTask()
+    task = PagesProfileCardGridFilteredRankedProfileLabelTask()
     out = task.generate(
         77220 + PROFILE_SCENE_VARIANTS.index(scene_variant),
         params={
-            "query_id": SINGLE_QUERY_ID,
+            "query_id": "filtered_nth_highest_profile_label",
             "scene_variant": scene_variant,
-            "card_count": 9,
+            "card_count": 12,
             "pages_context_text_enabled": False,
         },
         max_attempts=10,
@@ -351,15 +353,8 @@ def test_profile_card_grid_scene_variants_render_inside_canvas(scene_variant: st
 
 def test_pages_lookup_tasks_are_deterministic() -> None:
     category_task = PagesCategoryGridCategorySlotItemLabelTask()
-    profile_task = PagesProfileCardGridProfileForFieldValueTask()
     profile_ranked_task = PagesProfileCardGridFieldRankedProfileLabelTask()
-    profile_params = {
-        "query_id": SINGLE_QUERY_ID,
-        "card_count": 9,
-        "profile_index": 3,
-        "field_label": "Code",
-        "pages_context_text_enabled": False,
-    }
+    filtered_ranked_task = PagesProfileCardGridFilteredRankedProfileLabelTask()
     extremum_params = {
         "query_id": "highest_field_profile_label",
         "card_count": 9,
@@ -371,6 +366,14 @@ def test_pages_lookup_tasks_are_deterministic() -> None:
         "card_count": 9,
         "field_label": "Cases",
         "rank_position": 3,
+        "pages_context_text_enabled": False,
+    }
+    filtered_ranked_params = {
+        "query_id": "filtered_nth_highest_profile_label",
+        "card_count": 12,
+        "filter_field_label": "Team",
+        "field_label": "Score",
+        "rank_position": 2,
         "pages_context_text_enabled": False,
     }
     category_params = {
@@ -386,21 +389,17 @@ def test_pages_lookup_tasks_are_deterministic() -> None:
     }
     category_a = category_task.generate(77900, params=category_params, max_attempts=10)
     category_b = category_task.generate(77900, params=category_params, max_attempts=10)
-    profile_a = profile_task.generate(77901, params=profile_params, max_attempts=10)
-    profile_b = profile_task.generate(77901, params=profile_params, max_attempts=10)
     extremum_a = profile_ranked_task.generate(77903, params=extremum_params, max_attempts=10)
     extremum_b = profile_ranked_task.generate(77903, params=extremum_params, max_attempts=10)
     profile_ranked_a = profile_ranked_task.generate(77904, params=profile_ranked_params, max_attempts=10)
     profile_ranked_b = profile_ranked_task.generate(77904, params=profile_ranked_params, max_attempts=10)
+    filtered_ranked_a = filtered_ranked_task.generate(77905, params=filtered_ranked_params, max_attempts=10)
+    filtered_ranked_b = filtered_ranked_task.generate(77905, params=filtered_ranked_params, max_attempts=10)
 
     assert category_a.prompt == category_b.prompt
     assert category_a.answer_gt.to_dict() == category_b.answer_gt.to_dict()
     assert category_a.annotation_gt.to_dict() == category_b.annotation_gt.to_dict()
     assert category_a.trace_payload["execution_trace"] == category_b.trace_payload["execution_trace"]
-    assert profile_a.prompt == profile_b.prompt
-    assert profile_a.answer_gt.to_dict() == profile_b.answer_gt.to_dict()
-    assert profile_a.annotation_gt.to_dict() == profile_b.annotation_gt.to_dict()
-    assert profile_a.trace_payload["execution_trace"] == profile_b.trace_payload["execution_trace"]
     assert extremum_a.prompt == extremum_b.prompt
     assert extremum_a.answer_gt.to_dict() == extremum_b.answer_gt.to_dict()
     assert extremum_a.annotation_gt.to_dict() == extremum_b.annotation_gt.to_dict()
@@ -409,3 +408,7 @@ def test_pages_lookup_tasks_are_deterministic() -> None:
     assert profile_ranked_a.answer_gt.to_dict() == profile_ranked_b.answer_gt.to_dict()
     assert profile_ranked_a.annotation_gt.to_dict() == profile_ranked_b.annotation_gt.to_dict()
     assert profile_ranked_a.trace_payload["execution_trace"] == profile_ranked_b.trace_payload["execution_trace"]
+    assert filtered_ranked_a.prompt == filtered_ranked_b.prompt
+    assert filtered_ranked_a.answer_gt.to_dict() == filtered_ranked_b.answer_gt.to_dict()
+    assert filtered_ranked_a.annotation_gt.to_dict() == filtered_ranked_b.annotation_gt.to_dict()
+    assert filtered_ranked_a.trace_payload["execution_trace"] == filtered_ranked_b.trace_payload["execution_trace"]

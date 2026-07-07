@@ -23,11 +23,11 @@
     },
     "query": {
       "single": [
-        "What is the area of the marked cross-section?",
-        "Find the area of the shaded cross-section.",
-        "Determine the marked cross-section area.",
-        "What area is marked by A?",
-        "Find the value of A for the cross-section."
+        "The cut is parallel to the base, so the cross-section is similar to the base. Use the scale d/H from the apex, then find the marked area.",
+        "Use the labeled distance d from the apex and full height H to scale the base radius or side length. What is the area of the marked cross-section?",
+        "Because the slice is parallel to the base, its linear size is d/H of the base linear size. Find the shaded cross-section area.",
+        "First scale the base radius or side length by d/H from the apex. Then determine the marked cross-section area.",
+        "The marked slice is parallel to the base. Use similar solids with scale d/H to find the value of A for the cross-section."
       ]
     },
     "output": {

@@ -29,17 +29,18 @@ def test_symbolic_clock_elapsed_time_contract_matches_trace() -> None:
     execution = trace["execution_trace"]
 
     assert out.query_id == "single"
-    assert out.answer_gt.type == "integer"
-    assert out.answer_gt.value == 75
-    assert out.annotation_gt.type == "bbox_map"
-    assert set(out.annotation_gt.value.keys()) == {"start_clock", "end_clock"}
+    assert out.answer_gt.type == "option_letter"
+    assert out.annotation_gt.type == "bbox"
     assert trace["scene_ir"]["scene_kind"] == "symbolic_clock_elapsed_time_pair"
     assert int(execution["elapsed_minutes"]) == 75
+    assert int(execution["answer_value"]) == 75
+    assert int(execution["option_values_by_label"][out.answer_gt.value]) == 75
     assert str(execution["start_time_text"]) == "02:15"
     assert str(execution["end_time_text"]) == str(format_clock_hhmm(add_clock_minutes(int(execution["start_total_minutes"]), 75)))
-    assert trace["projected_annotation"]["bbox_map"] == out.annotation_gt.value
-    assert trace["render_map"]["start_clock_bbox_px"] == out.annotation_gt.value["start_clock"]
-    assert trace["render_map"]["end_clock_bbox_px"] == out.annotation_gt.value["end_clock"]
+    assert trace["projected_annotation"]["bbox"] == out.annotation_gt.value
+    assert trace["projected_annotation"]["pixel_bbox"] == out.annotation_gt.value
+    assert trace["render_map"]["selected_option_bbox_px"] == out.annotation_gt.value
+    assert set(execution["source_clock_bboxes_px"].keys()) == {"start_clock", "end_clock"}
     assert trace["render_spec"]["clock_style"]["font"]["source"] == "global_font_pool"
 
 
@@ -49,13 +50,10 @@ def test_symbolic_clock_elapsed_time_prompt_examples_match_contract() -> None:
     answer_and_annotation = extract_prompt_json_example(out.prompt_variants["answer_and_annotation"])
     answer_only = extract_prompt_json_example(out.prompt_variants["answer_only"])
     assert answer_and_annotation == {
-        "annotation": {
-            "start_clock": [136, 186, 372, 422],
-            "end_clock": [508, 186, 744, 422],
-        },
-        "answer": 45,
+        "annotation": [304, 670, 436, 736],
+        "answer": "C",
     }
-    assert answer_only == {"answer": 45}
+    assert answer_only == {"answer": "C"}
 
 
 def test_symbolic_clock_elapsed_time_sampling_covers_answers_and_styles() -> None:

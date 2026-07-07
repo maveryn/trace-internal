@@ -1,9 +1,9 @@
 generation:
   shared:
-    row_count_min: 6
-    row_count_max: 12
-    column_count_min: 6
-    column_count_max: 12
+    row_count_min: 4
+    row_count_max: 8
+    column_count_min: 4
+    column_count_max: 8
     scene_variant_weights:
       confusion_matrix_counts: 1.0
       annotated_heatmap_table: 1.0

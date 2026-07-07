@@ -11,7 +11,7 @@ pip install -r requirements.txt
 ```
 
 2. Implement focused changes in the correct locations:
-- task code: `trace/tasks/<domain>/...`; for migrated scenes use `trace/tasks/<domain>/<scene_id>/<objective_contract>.py`
+- task code: `trace/tasks/<domain>/<scene_id>/<objective_contract>.py`
 - prompt bundles: `prompts/<domain>/...`
 - domain config: `configs/domains/<domain>/...`
 - task docs: `docs/tasks/<domain>/<scene_id>/<task_id>.md`
@@ -23,9 +23,9 @@ pip install -r requirements.txt
 - scene-local `shared/` packages
 - `docs/contracts/SYSTEM_ARCHITECTURE.md`
 
-4. Follow current review and migration boundaries while implementing:
+4. Follow current source-layout and review boundaries while implementing:
 - `docs/workflows/CODE_REVIEW_GUIDELINES.md`
-- `docs/SCENE_PACKAGE_MIGRATION/SCENE_MIGRATION_GUIDE.md` for scene-package migration work
+- `docs/contracts/SOURCE_LAYOUT.md`
 
 5. Keep prompts externalized (no hardcoded prompt strings in task modules).
 

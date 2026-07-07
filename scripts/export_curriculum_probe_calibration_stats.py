@@ -193,6 +193,15 @@ def _load_dataset_root(parquet: Path, dataset_root: str | None) -> Path:
     return Path(data["trace_dataset_root"])
 
 
+def _load_calibration_source_fingerprint(parquet: Path) -> dict[str, Any]:
+    manifest = parquet.with_suffix(parquet.suffix + ".manifest.json")
+    if not manifest.exists():
+        return {}
+    data = json.loads(manifest.read_text())
+    value = data.get("calibration_source_fingerprint")
+    return dict(value) if isinstance(value, dict) else {}
+
+
 def export_stats(
     *,
     task_id: str,
@@ -269,6 +278,7 @@ def export_stats(
             "easy_definition": f"solved_rollouts >= {easy_threshold}",
             "max_prompt_length": int(max_prompt_length),
             "max_response_length": int(max_response_length),
+            "calibration_source_fingerprint": _load_calibration_source_fingerprint(parquet),
         },
         "overall": _summarize(rows, hard_threshold=hard_threshold, easy_threshold=easy_threshold),
         "prompt_token_stats": _token_stats(

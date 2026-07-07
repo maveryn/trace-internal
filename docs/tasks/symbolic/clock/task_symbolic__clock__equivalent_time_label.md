@@ -55,4 +55,4 @@ Query ids: `analog_reference_digital_options`, `digital_reference_analog_options
 1. Deterministic sampling/rendering from `instance_seed`.
 2. Answers and annotation come from the finalized rendered reference and options.
 3. Behavior/trace/prompt tests: `tests/test_symbolic_clock_equivalent_time_tasks.py`
-4. Scene-package migration tests: `tests/test_scene_package_migration_contracts.py`, `tests/test_scene_package_review_candidate_contracts.py`
+4. Source-layout contract tests: `tests/test_source_layout_contracts.py`, `tests/test_scene_package_review_target_contracts.py`

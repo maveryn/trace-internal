@@ -274,7 +274,7 @@ def _render_bar_grid(
 
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
     label_font = load_font(int(render_params.label_font_size_px), bold=True)
-    value_font = load_font(int(render_params.value_font_size_px), bold=True)
+    value_font = load_font(int(render_params.value_font_size_px), bold=False)
     legend_font = load_font(int(render_params.legend_font_size_px), bold=True)
 
     max_value = max(int(bar.value) for bar in dataset.bars)
@@ -405,13 +405,12 @@ def _render_bar_grid(
         draw.line(top + [top[0]], fill=render_params.bar_edge_rgb, width=edge_width)
         label_xy = (float(bx + face_dx * 0.5), float(top_y - face_dy - 6.0))
         value_text = str(int(bar.value))
-        value_stroke_width = max(1, int(render_params.label_stroke_width_px) + 1)
         value_bbox = _text_bbox(
             draw,
             label_xy,
             value_text,
             value_font,
-            stroke_width=int(value_stroke_width),
+            stroke_width=0,
             anchor="mb",
         )
         value_label_specs.append((label_xy, value_text, list(value_bbox)))
@@ -450,7 +449,7 @@ def _render_bar_grid(
             font=value_font,
             fill=render_params.text_color_rgb,
             stroke_fill=render_params.text_stroke_rgb,
-            stroke_width=max(1, int(render_params.label_stroke_width_px) + 1),
+            stroke_width=0,
             anchor="mb",
         )
 

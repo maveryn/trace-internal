@@ -10,7 +10,7 @@ Use this for implementation reviews, refactor reviews, and pre-merge checks.
 ## Read first
 1. `docs/workflows/CODE_REVIEW_GUIDELINES.md`
 2. `docs/contracts/SYSTEM_ARCHITECTURE.md`
-3. `docs/SCENE_PACKAGE_MIGRATION/SCENE_MIGRATION_GUIDE.md` when reviewing scene-package migration work
+3. `docs/contracts/SOURCE_LAYOUT.md`
 4. `docs/contracts/BLUEPRINT.md`
 
 ## Review checklist

@@ -14,6 +14,7 @@ from ....core.sampling import uniform_choice_with_probabilities
 from ....core.types import TypedValue
 from ....core.visual.noise import apply_post_image_noise
 from ...base import TaskOutput
+from ...shared.annotation_artifacts import bbox_annotation_artifacts
 from ...registry import register_task
 from ...shared.config_defaults import group_default, load_scene_generation_rendering_prompt_defaults, required_group_defaults
 from ...shared.fixed_query import select_task_query_id
@@ -30,8 +31,15 @@ from ...shared.time_artifact_task_support import resolve_time_artifact_named_var
 from ...shared.time_format import add_clock_minutes, clock_total_minutes, format_clock_hhmm, split_clock_total_minutes
 from ..shared.scene_style import make_symbolic_scene_background, resolve_symbolic_scene_style
 from ..shared.visual_defaults import load_symbolic_background_defaults, load_symbolic_noise_defaults
-from .shared.rendering import draw_clock_geometry
-from .shared.sampling import feasible_clock_times, resolve_clock_time_support
+from .shared.rendering import draw_clock_geometry, draw_text_option_cards, option_cards_y_below_bbox
+from .shared.sampling import (
+    feasible_clock_times,
+    nearby_integer_distractors,
+    option_value_map,
+    resolve_clock_time_support,
+    resolve_text_option_labels,
+    sample_correct_option_label,
+)
 from .shared.state import SUPPORTED_SYMBOLIC_CLOCK_SCENE_VARIANTS, ClockRenderParams
 from .shared.styles import resolve_clock_render_params, scale_clock_render_params_for_radius
 
@@ -315,13 +323,10 @@ def _build_prompt_json_examples() -> tuple[str, str]:
     """Return prompt JSON examples for elapsed-time value."""
 
     answer_and_annotation = {
-        "annotation": {
-            "start_clock": [136, 186, 372, 422],
-            "end_clock": [508, 186, 744, 422],
-        },
-        "answer": 45,
+        "annotation": [304, 670, 436, 736],
+        "answer": "C",
     }
-    answer_only = {"answer": 45}
+    answer_only = {"answer": "C"}
     return (
         json.dumps(answer_and_annotation, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
         json.dumps(answer_only, ensure_ascii=False, allow_nan=False, separators=(",", ":")),
@@ -429,6 +434,47 @@ class SymbolicClockElapsedTimeValueTask:
                 face_bboxes[str(label)] = _round_bbox(tuple(float(value) for value in geometry.face_bbox_px))
                 scene_entities.extend([dict(entity) for entity in geometry.entities])
 
+            option_labels = resolve_text_option_labels(params, gen_defaults=_GEN_DEFAULTS)
+            correct_label, label_probs = sample_correct_option_label(
+                params=params,
+                gen_defaults=_GEN_DEFAULTS,
+                instance_seed=int(instance_seed),
+                seed_namespace=TASK_ID,
+                labels=option_labels,
+            )
+            distractors = nearby_integer_distractors(
+                correct_value=int(query.elapsed_minutes),
+                support_values=query.elapsed_minutes_support,
+                preferred_offsets=(15, 30, 45, 60, 90, 120),
+                min_value=min(int(value) for value in query.elapsed_minutes_support),
+                max_value=max(int(value) for value in query.elapsed_minutes_support),
+            )
+            option_values = option_value_map(
+                labels=option_labels,
+                correct_label=str(correct_label),
+                correct_value=int(query.elapsed_minutes),
+                distractors=distractors,
+            )
+            option_text = {str(label): str(value) for label, value in option_values.items()}
+            clock_panel_bbox = _union_bbox(
+                [tuple(float(value) for value in box) for box in card_bboxes.values()]
+            )
+            raw_option_bboxes, option_entities = draw_text_option_cards(
+                image,
+                text_by_label=option_text,
+                correct_label=str(correct_label),
+                y0_px=option_cards_y_below_bbox(
+                    clock_panel_bbox,
+                    canvas_height=int(render_params.canvas_height),
+                ),
+            )
+            option_bboxes_px = {
+                str(label): _round_bbox(tuple(float(value) for value in bbox))
+                for label, bbox in raw_option_bboxes.items()
+            }
+            selected_option_bbox_px = list(option_bboxes_px[str(correct_label)])
+            scene_entities.extend([dict(entity) for entity in option_entities])
+
         image, post_noise_meta = apply_post_image_noise(
             image,
             instance_seed=int(instance_seed),
@@ -479,9 +525,15 @@ class SymbolicClockElapsedTimeValueTask:
             "start_clock": list(face_bboxes["A"]),
             "end_clock": list(face_bboxes["B"]),
         }
-        answer_gt = TypedValue(type="integer", value=int(query.elapsed_minutes))
-        annotation_gt = TypedValue(type="bbox_map", value=dict(annotation_bboxes))
-        scene_bbox = _union_bbox([tuple(float(value) for value in box) for box in card_bboxes.values()])
+        answer_gt = TypedValue(type="option_letter", value=str(correct_label))
+        annotation_payload = bbox_annotation_artifacts(selected_option_bbox_px)
+        annotation_gt = annotation_payload.annotation_gt
+        scene_bbox = _union_bbox(
+            [
+                *[tuple(float(value) for value in box) for box in card_bboxes.values()],
+                *[tuple(float(value) for value in box) for box in raw_option_bboxes.values()],
+            ]
+        )
         start_hour, start_minute = split_clock_total_minutes(int(query.start_total_minutes))
         end_hour, end_minute = split_clock_total_minutes(int(query.end_total_minutes))
 
@@ -494,6 +546,7 @@ class SymbolicClockElapsedTimeValueTask:
                     "start_clock_label": "A",
                     "end_clock_label": "B",
                     "elapsed_minutes": int(query.elapsed_minutes),
+                    "answer_label": str(correct_label),
                 },
             },
             "query_spec": {
@@ -509,6 +562,9 @@ class SymbolicClockElapsedTimeValueTask:
                     "style_variant": str(query.style_variant),
                     "accent_color_name": str(query.accent_color_name),
                     "elapsed_minutes_support": [int(value) for value in query.elapsed_minutes_support],
+                    "option_labels": [str(label) for label in option_labels],
+                    "correct_label": str(correct_label),
+                    "correct_label_probabilities": {str(key): float(value) for key, value in label_probs.items()},
                     "hour_support": [int(query.hour_support[0]), int(query.hour_support[1])],
                     "minute_support": [int(value) for value in query.minute_support],
                     "min_hand_angle_gap_deg": float(query.min_hand_angle_gap_deg),
@@ -556,6 +612,10 @@ class SymbolicClockElapsedTimeValueTask:
                 "clock_face_bboxes_px": dict(face_bboxes),
                 "start_clock_bbox_px": list(annotation_bboxes["start_clock"]),
                 "end_clock_bbox_px": list(annotation_bboxes["end_clock"]),
+                "option_bboxes_px": dict(option_bboxes_px),
+                "selected_option_label": str(correct_label),
+                "selected_option_bbox_px": list(selected_option_bbox_px),
+                "annotation_source": "selected_answer_option_bbox_px",
             },
             "execution_trace": {
                 "query_id": str(query.query_id),
@@ -572,23 +632,26 @@ class SymbolicClockElapsedTimeValueTask:
                 "end_minute": int(end_minute),
                 "end_time_text": str(format_clock_hhmm(int(query.end_total_minutes))),
                 "elapsed_minutes": int(query.elapsed_minutes),
+                "answer_value": int(query.elapsed_minutes),
+                "answer_label": str(correct_label),
+                "option_values_by_label": {str(key): int(value) for key, value in option_values.items()},
+                "option_text_by_label": dict(option_text),
+                "answer_type": "option_letter",
                 "elapsed_minutes_support": [int(value) for value in query.elapsed_minutes_support],
                 "hour_support": [int(query.hour_support[0]), int(query.hour_support[1])],
                 "minute_support": [int(value) for value in query.minute_support],
                 "min_hand_angle_gap_deg": float(query.min_hand_angle_gap_deg),
                 "question_format": PROMPT_QUERY_KEY,
-                "supporting_bbox_roles": ["start_clock", "end_clock"],
+                "supporting_bbox_roles": ["selected_answer_option"],
+                "source_clock_bboxes_px": dict(annotation_bboxes),
             },
             "witness_symbolic": {
-                "type": "bbox_map",
-                "value": dict(annotation_bboxes),
+                "type": str(annotation_payload.annotation_type),
+                "value": list(annotation_payload.value),
             },
-            "projected_annotation": {
-                "type": "bbox_map",
-                "bbox_map": dict(annotation_bboxes),
-                "pixel_bbox_map": dict(annotation_bboxes),
-                "value": dict(annotation_bboxes),
-            },
+            "projected_annotation": dict(annotation_payload.projected_annotation),
+            "answer_gt": answer_gt.to_dict(),
+            "annotation_gt": annotation_gt.to_dict(),
         }
 
         return TaskOutput(

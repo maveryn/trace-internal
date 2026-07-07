@@ -54,9 +54,9 @@ def _make_review_fixture(
         },
     )
     _write_json(
-        root / "pages" / scene_id / "migration_test_status.json",
+        root / "pages" / scene_id / "source_layout_test_status.json",
         {
-            "schema": "trace_scene_migration_test_status_v1",
+            "schema": "trace_scene_source_layout_test_status_v1",
             "domain": "pages",
             "scene_id": scene_id,
             "passed": True,
@@ -361,7 +361,7 @@ def test_review_index_scans_domain_scene_task_query_samples(tmp_path: Path) -> N
         {"domain": "scratch_domain", "scene_id": "scratch_scene", "task_count": 99},
     )
 
-    index = build_review_index(root, repo_root=tmp_path, enforce_migration_registry=False)
+    index = build_review_index(root, repo_root=tmp_path, enforce_review_target_registry=False)
 
     assert sorted(index.domains) == ["pages"]
     assert sorted(index.scenes) == ["pages/workspace"]
@@ -371,9 +371,9 @@ def test_review_index_scans_domain_scene_task_query_samples(tmp_path: Path) -> N
     assert task.query_counts == {"lookup": 1}
     assert task.distribution_pass is True
     scene = index.scenes["pages/workspace"]
-    assert scene.migration_test_pass is True
-    assert scene.migration_test_summary["summary"] == "3 passed"
-    assert scene.migration_test_status_rel_path == "pages/workspace/migration_test_status.json"
+    assert scene.source_layout_test_pass is True
+    assert scene.source_layout_test_summary["summary"] == "3 passed"
+    assert scene.source_layout_test_status_rel_path == "pages/workspace/source_layout_test_status.json"
     assert scene.manual_code_audit_pass is True
     assert scene.manual_code_audit_summary["summary"] == "role-boundary audit passed"
     assert scene.manual_code_audit_status_rel_path == "pages/workspace/manual_code_audit_status.json"
@@ -416,7 +416,7 @@ def test_review_index_rejects_passed_taxonomy_status_without_program_contract(tm
         encoding="utf-8",
     )
 
-    index = build_review_index(root, repo_root=tmp_path, enforce_migration_registry=False)
+    index = build_review_index(root, repo_root=tmp_path, enforce_review_target_registry=False)
 
     scene = index.scenes["pages/workspace"]
     assert scene.taxonomy_review_pass is False
@@ -454,7 +454,7 @@ def test_review_index_accepts_program_schema_after_contract_metadata(tmp_path: P
         encoding="utf-8",
     )
 
-    index = build_review_index(root, repo_root=tmp_path, enforce_migration_registry=False)
+    index = build_review_index(root, repo_root=tmp_path, enforce_review_target_registry=False)
 
     scene = index.scenes["pages/workspace"]
     task = index.tasks[f"pages/workspace/{TASK_ID}"]
@@ -466,7 +466,7 @@ def test_review_index_accepts_program_schema_after_contract_metadata(tmp_path: P
     assert not any("taxonomy_review_status.json claims passed" in error for error in index.errors)
 
 
-def test_review_index_default_hides_unregistered_migration_scenes(tmp_path: Path) -> None:
+def test_review_index_default_hides_unregistered_review_target_scenes(tmp_path: Path) -> None:
     root = _make_review_fixture(
         tmp_path,
         scene_id="unregistered_workspace",
@@ -483,17 +483,17 @@ def test_review_index_default_hides_unregistered_migration_scenes(tmp_path: Path
 
 def test_review_sample_uid_changes_when_sample_content_changes(tmp_path: Path) -> None:
     root = _make_review_fixture(tmp_path, prompt="First prompt")
-    first_uid = next(iter(build_review_index(root, repo_root=tmp_path, enforce_migration_registry=False).samples))
+    first_uid = next(iter(build_review_index(root, repo_root=tmp_path, enforce_review_target_registry=False).samples))
 
     _make_review_fixture(tmp_path, prompt="Changed prompt")
-    second_uid = next(iter(build_review_index(root, repo_root=tmp_path, enforce_migration_registry=False).samples))
+    second_uid = next(iter(build_review_index(root, repo_root=tmp_path, enforce_review_target_registry=False).samples))
 
     assert first_uid != second_uid
 
 
 def test_feedback_store_persists_and_updates_records(tmp_path: Path) -> None:
     root = _make_review_fixture(tmp_path)
-    sample = next(iter(build_review_index(root, repo_root=tmp_path, enforce_migration_registry=False).samples.values()))
+    sample = next(iter(build_review_index(root, repo_root=tmp_path, enforce_review_target_registry=False).samples.values()))
     store = FeedbackStore(tmp_path / "feedback.sqlite")
 
     created = store.add_feedback(sample=sample, comment="Annotation box is too broad.", category="annotation")
@@ -618,7 +618,7 @@ def test_feedback_store_migrates_task_audit_code_review_gate(tmp_path: Path) -> 
         )
 
     store = FeedbackStore(db_path)
-    migrated = store.update_task_audit(
+    updated = store.update_task_audit(
         domain="pages",
         scene_id="workspace",
         task_id=TASK_ID,
@@ -631,9 +631,9 @@ def test_feedback_store_migrates_task_audit_code_review_gate(tmp_path: Path) -> 
         solve_rate_pass=True,
     )
 
-    assert migrated.code_review_pass is True
-    assert migrated.taxonomy_review_pass is True
-    assert migrated.review_pass is True
+    assert updated.code_review_pass is True
+    assert updated.taxonomy_review_pass is True
+    assert updated.review_pass is True
     with sqlite3.connect(db_path) as conn:
         columns = {row[1] for row in conn.execute("PRAGMA table_info(task_audit)").fetchall()}
     assert "code_review_pass" in columns
@@ -732,7 +732,7 @@ def test_review_app_requires_token_and_serves_index(tmp_path: Path) -> None:
 
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -770,7 +770,7 @@ def test_review_app_returns_503_for_missing_sample_payload_during_regeneration(t
     root = _make_review_fixture(tmp_path)
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -801,7 +801,7 @@ def test_review_app_supports_proxy_base_url(tmp_path: Path) -> None:
 
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1261,7 +1261,7 @@ def test_review_app_browses_taxonomy_audit_with_feedback(tmp_path: Path) -> None
 
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
     )
@@ -1376,7 +1376,7 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
 
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1459,7 +1459,7 @@ def test_review_app_supports_scene_review_and_scene_level_issues(tmp_path: Path)
 
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1472,7 +1472,7 @@ def test_review_app_supports_scene_review_and_scene_level_issues(tmp_path: Path)
     scene_page = client.get("/domains/pages/scenes/workspace", headers=headers)
     assert scene_page.status_code == 200
     assert "Open Scene Review" in scene_page.text
-    assert "Migration Tests" in scene_page.text
+    assert "Source-Layout Checks" in scene_page.text
     assert "Taxonomy Review" in scene_page.text
     assert "3 passed" in scene_page.text
     assert "taxonomy contract audit passed" in scene_page.text
@@ -1537,7 +1537,7 @@ def test_review_app_warns_when_review_artifacts_are_stale(tmp_path: Path) -> Non
 
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1580,7 +1580,7 @@ def test_review_app_full_reload_disabled_by_default(tmp_path: Path) -> None:
 
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1603,7 +1603,7 @@ def test_review_app_reload_keeps_serving_current_index_while_rebuilding(tmp_path
 
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1658,7 +1658,7 @@ def test_review_app_scene_reload_updates_one_scene_without_full_rebuild(tmp_path
 
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1705,7 +1705,7 @@ def test_review_app_queues_overlapping_reload_requests(tmp_path: Path, monkeypat
 
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1765,7 +1765,7 @@ def test_review_app_preserves_scene_during_publish_lock(tmp_path: Path) -> None:
 
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1821,7 +1821,7 @@ def test_review_app_prunes_inactive_publish_issue_without_reload(tmp_path: Path)
 
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1866,7 +1866,7 @@ def test_review_app_deferred_initial_index_binds_before_index_scan(tmp_path: Pat
     began = time.monotonic()
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1901,7 +1901,7 @@ def test_review_app_adds_feedback_via_api(tmp_path: Path) -> None:
 
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",
@@ -1930,7 +1930,7 @@ def test_review_app_reviews_three_d_object_profiles(tmp_path: Path) -> None:
 
     app = create_app(
         review_root=root,
-        enforce_migration_registry=False,
+        enforce_review_target_registry=False,
         repo_root=tmp_path,
         feedback_db=tmp_path / "feedback.sqlite",
         token="secret",

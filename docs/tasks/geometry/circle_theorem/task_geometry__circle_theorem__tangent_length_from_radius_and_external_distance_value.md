@@ -15,7 +15,7 @@
 - `single`: given the radius and center-to-exterior distance, solve the tangent segment length.
 
 ## Prompt Bundle
-- Prompt text is loaded from the geometry circle prompt bundle configured for this scene package/task override.
+- Prompt text is loaded from the geometry circle prompt bundle configured for this scene/task override.
 - Prompt modes: `answer_only` and `answer_and_annotation`.
 
 ## Annotation

@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `rpg_dungeon`
-- Implementation scene package: `rpg_dungeon`
+- Implementation source scene: `rpg_dungeon`
 - Implementation source: `trace/tasks/illustrations/rpg_dungeon/missing_patch_label.py`
 
 ## Task Contract

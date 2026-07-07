@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `candlestick`
-3. Source implementation scene package: `charts/candlestick`
+3. Source implementation scene: `charts/candlestick`
 4. Query ids: `largest_wick_range_label`, `smallest_wick_range_label`, `largest_body_range_label`, `smallest_body_range_label`
 5. Semantic query details are recorded in `query_id` and trace params.
 

@@ -18,7 +18,7 @@ def test_buoyancy_density_scene_uses_single_query_contract() -> None:
         params={
             "query_id": "single",
             "scene_variant": "beaker_tank",
-            "object_shape": "capsule_block",
+            "object_shape": "rounded_block",
             "submerged_fraction": "3/4",
             "liquid_density_tenths": 16,
             "target_answer": 1.2,

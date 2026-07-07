@@ -31,8 +31,11 @@ def test_symbolic_clock_readout_deterministic() -> None:
     assert out_a.trace_payload["query_spec"]["prompt_variant"] == out_b.trace_payload["query_spec"]["prompt_variant"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert out_a.answer_gt.type == "string"
-    assert out_a.annotation_gt.type == "segment_set"
+    assert out_a.answer_gt.type == "option_letter"
+    assert out_a.annotation_gt.type == "bbox"
+    execution = out_a.trace_payload["execution_trace"]
+    assert execution["answer_label"] == out_a.answer_gt.value
+    assert execution["option_text_by_label"][out_a.answer_gt.value] == execution["answer_value"]
 
 
 def test_symbolic_clock_hand_angle_deterministic() -> None:
@@ -51,8 +54,11 @@ def test_symbolic_clock_hand_angle_deterministic() -> None:
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert out_a.answer_gt.type == "integer"
-    assert out_a.annotation_gt.type == "segment_set"
+    assert out_a.answer_gt.type == "option_letter"
+    assert out_a.annotation_gt.type == "bbox"
+    execution = out_a.trace_payload["execution_trace"]
+    assert execution["answer_label"] == out_a.answer_gt.value
+    assert int(execution["option_values_by_label"][out_a.answer_gt.value]) == int(execution["answer_value"])
 
 
 def test_symbolic_clock_full_time_readout_deterministic() -> None:
@@ -72,10 +78,12 @@ def test_symbolic_clock_full_time_readout_deterministic() -> None:
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert out_a.answer_gt.type == "string"
-    assert out_a.answer_gt.value == "03:25:40"
-    assert out_a.annotation_gt.type == "segment_set"
-    assert len(out_a.annotation_gt.value) == 3
+    assert out_a.answer_gt.type == "option_letter"
+    assert out_a.annotation_gt.type == "bbox"
+    execution = out_a.trace_payload["execution_trace"]
+    assert execution["answer_value"] == "03:25:40"
+    assert execution["answer_label"] == out_a.answer_gt.value
+    assert execution["option_text_by_label"][out_a.answer_gt.value] == "03:25:40"
 
 
 def test_symbolic_clock_alarm_wait_time_deterministic() -> None:
@@ -95,10 +103,12 @@ def test_symbolic_clock_alarm_wait_time_deterministic() -> None:
     assert out_a.trace_payload["execution_trace"] == out_b.trace_payload["execution_trace"]
     assert out_a.prompt == out_b.prompt
     assert out_a.image.tobytes() == out_b.image.tobytes()
-    assert out_a.answer_gt.type == "integer"
-    assert out_a.answer_gt.value == 215
-    assert out_a.annotation_gt.type == "segment_set"
-    assert len(out_a.annotation_gt.value) == 3
+    assert out_a.answer_gt.type == "option_letter"
+    assert out_a.annotation_gt.type == "bbox"
+    execution = out_a.trace_payload["execution_trace"]
+    assert int(execution["answer_value"]) == 215
+    assert execution["answer_label"] == out_a.answer_gt.value
+    assert int(execution["option_values_by_label"][out_a.answer_gt.value]) == 215
 
 
 def test_symbolic_clock_offset_readout_build_smoke(tmp_path: Path) -> None:
@@ -124,7 +134,7 @@ def test_symbolic_clock_offset_readout_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "symbolic" for record in train_records)
-    assert all(record["scene_id"] == "clock" for record in train_records)
+    assert all(record["task"] == "task_symbolic__clock__offset_readout" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_symbolic__clock__offset_readout"]) == 4
@@ -156,7 +166,7 @@ def test_symbolic_clock_alarm_wait_time_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "symbolic" for record in train_records)
-    assert all(record["scene_id"] == "clock" for record in train_records)
+    assert all(record["task"] == "task_symbolic__clock__alarm_wait_time_value" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_symbolic__clock__alarm_wait_time_value"]) == 4
@@ -188,7 +198,7 @@ def test_symbolic_clock_full_time_readout_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "symbolic" for record in train_records)
-    assert all(record["scene_id"] == "clock" for record in train_records)
+    assert all(record["task"] == "task_symbolic__clock__full_time_readout" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_symbolic__clock__full_time_readout"]) == 4
@@ -220,7 +230,7 @@ def test_symbolic_clock_hand_angle_build_smoke(tmp_path: Path) -> None:
     train_records = read_jsonl(final_path / "train_instances.jsonl")
     assert len(train_records) == 4
     assert all(record["domain"] == "symbolic" for record in train_records)
-    assert all(record["scene_id"] == "clock" for record in train_records)
+    assert all(record["task"] == "task_symbolic__clock__hand_angle_value" for record in train_records)
 
     build_report = json.loads((final_path / "build_report.json").read_text(encoding="utf-8"))
     assert int(build_report["accepted_counts_by_task"]["task_symbolic__clock__hand_angle_value"]) == 4

@@ -15,6 +15,10 @@ TASK_ID = "task_pages__infographic__section_icon_total_difference_value"
 SUPPORTED_QUERY_IDS = (SINGLE_QUERY_ID,)
 SOURCE_BRANCH_KEYS = ("section_icon_total_difference_value",)
 PROMPT_QUERY_KEY = SOURCE_BRANCH_KEYS[0]
+CARD_COUNT_MIN = 10
+CARD_COUNT_MAX = 20
+SECTION_COUNT_MIN = 3
+SECTION_COUNT_MAX = 5
 
 
 def _build_objective() -> _lifecycle.InfographicObjectiveBinding:
@@ -32,6 +36,10 @@ def _runtime_params(params: Dict[str, Any], objective: _lifecycle.InfographicObj
     runtime_params = dict(params)
     runtime_params["_supported_query_ids"] = tuple(objective.source_branch_keys)
     runtime_params["query_id"] = PROMPT_QUERY_KEY
+    runtime_params["card_count_min"] = CARD_COUNT_MIN
+    runtime_params["card_count_max"] = CARD_COUNT_MAX
+    runtime_params["section_count_min"] = SECTION_COUNT_MIN
+    runtime_params["section_count_max"] = SECTION_COUNT_MAX
     runtime_params.pop("query_variant", None)
     runtime_params.pop("query_id_weights", None)
     runtime_params.pop("query_variant_weights", None)

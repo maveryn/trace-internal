@@ -5,7 +5,7 @@ from .shared.state import DOMAIN
 from trace.tasks.registry import register_task
 T = "task_charts__single_series__order_statistic_label"
 Q = {"median_order_statistic_label":"median", "nth_highest_order_statistic_label":"nth_highest", "nth_lowest_order_statistic_label":"nth_lowest"}
-D = dict(mark_count_min=15, mark_count_max=17, value_max=99, value_window_enabled=True, value_window_span_min=24, value_window_span_max=25, rank_n_min=3, rank_n_max=3, scene_variant_weights={"area":0.0,"bar":1.0,"line":1.0,"scatter":0.0,"horizontal_bar":0.0,"dot_plot":1.0,"lollipop":0.0})
+D = dict(mark_count_min=13, mark_count_max=15, value_max=99, value_window_enabled=True, value_window_span_min=24, value_window_span_max=25, rank_n_min=3, rank_n_max=3, scene_variant_weights={"area":0.0,"bar":1.0,"line":1.0,"scatter":0.0,"horizontal_bar":0.0,"dot_plot":1.0,"lollipop":0.0})
 PGM = "label(select_ranked_mark(marks, statistic_kind)); output=string_label; annotation=point(selected_mark); scene=single_series; scope=order_statistic_label"
 def _build_plan(params, seed, query_id, _):
     return B(params=params, seed=seed, namespace=T, statistic_kind=Q[str(query_id)], prompt_key=query_id, answer_target="label", program_code=PGM, reasoning_load=0.62)

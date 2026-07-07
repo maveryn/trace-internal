@@ -8,11 +8,14 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
+from ....core.types import TypedValue
 from ....core.seed import spawn_rng
 from ....core.scene_config import get_scene_defaults
 from ....core.visual.noise import apply_post_image_noise
+from ...base import TaskOutput
 from ...shared.config_defaults import split_scene_generation_rendering_prompt_defaults
 from ...shared.deterministic_sampling import resolve_selection_index
+from ...shared.output_metadata import default_task_versions
 from ...shared.prompt_variants import (
     PROMPT_OUTPUT_MODES,
     build_prompt_trace_artifacts,
@@ -272,6 +275,7 @@ def _build_spec(
     *,
     callout_count: int,
     field_count_support: Sequence[int],
+    required_field_labels: Sequence[str] = (),
     instance_seed: int,
 ) -> _HeroCalloutSpec:
     """Build deterministic callout data while keeping field values unique per label."""
@@ -306,13 +310,25 @@ def _build_spec(
     used_values: set[str] = set()
     fallback_counter = 1
     callouts: List[_Callout] = []
+    required_labels = [
+        str(label)
+        for label in required_field_labels
+        if str(label) in set(FIELD_LABELS)
+    ]
     for callout_index in range(int(callout_count)):
         field_count = int(field_count_support[int(rng.randrange(len(field_count_support)))])
+        if len(required_labels) > field_count:
+            field_count = len(required_labels)
         field_labels = list(FIELD_LABELS)
         rng.shuffle(field_labels)
-        if "Score" not in field_labels[:field_count]:
-            field_labels[0] = "Score"
-        selected_labels = field_labels[:field_count]
+        if required_labels:
+            remaining_labels = [label for label in field_labels if str(label) not in set(required_labels)]
+            selected_labels = list(required_labels) + remaining_labels[: max(0, field_count - len(required_labels))]
+            rng.shuffle(selected_labels)
+        else:
+            if "Score" not in field_labels[:field_count]:
+                field_labels[0] = "Score"
+            selected_labels = field_labels[:field_count]
         fields: List[_FieldValue] = []
         for field_index, field_label in enumerate(selected_labels):
             values = list(_VALUE_BANKS[str(field_label)])
@@ -794,9 +810,11 @@ def resolve_scene_context(
         key="field_count_support",
         fallback=(2, 3),
     )
+    required_field_labels = tuple(str(value) for value in params.get("required_field_labels", ()))
     spec = _build_spec(
         callout_count=int(callout_count),
         field_count_support=field_count_support,
+        required_field_labels=required_field_labels,
         instance_seed=int(instance_seed),
     )
     render_params = _resolve_render_params(params, RENDER_DEFAULTS)
@@ -975,6 +993,111 @@ def select_extremum_target(
         "answer_value": str(callout.title),
     }
     return callout, field, target, _uniform_probs(labels, str(selected_label), locked=requested_field_label is not None)
+
+
+def select_composite_extremum_target(
+    *,
+    spec: _HeroCalloutSpec,
+    params: Mapping[str, Any],
+    instance_seed: int,
+) -> Tuple[_Callout, Dict[str, Any], Dict[str, float]]:
+    """Select a unique callout extremum by the sum of two visible field values."""
+
+    direction = str(params.get("rank_direction", ""))
+    if direction not in {"highest", "lowest"}:
+        raise ValueError(f"unsupported hero callout composite rank_direction: {direction}")
+    requested_labels = tuple(str(value) for value in params.get("target_field_labels", ("Score", "Count")))
+    if len(requested_labels) != 2:
+        raise ValueError("target_field_labels must contain exactly two field labels")
+    field_a, field_b = requested_labels
+    candidates: List[Dict[str, Any]] = []
+    for callout_index, callout in enumerate(spec.callouts):
+        by_label = {str(field.label): field for field in callout.fields}
+        if field_a not in by_label or field_b not in by_label:
+            continue
+        first = by_label[field_a]
+        second = by_label[field_b]
+        composite_value = int(first.numeric_value) + int(second.numeric_value)
+        candidates.append(
+            {
+                "callout_index": int(callout_index),
+                "callout_id": str(callout.callout_id),
+                "callout_title": str(callout.title),
+                "first_field_id": str(first.field_id),
+                "first_field_label": str(first.label),
+                "first_visible_value": str(first.visible_value),
+                "first_numeric_value": int(first.numeric_value),
+                "second_field_id": str(second.field_id),
+                "second_field_label": str(second.label),
+                "second_visible_value": str(second.visible_value),
+                "second_numeric_value": int(second.numeric_value),
+                "composite_value": int(composite_value),
+            }
+        )
+    if len(candidates) < 3:
+        raise ValueError("not enough callouts contain both fields for composite extremum")
+    numeric_values = [int(candidate["composite_value"]) for candidate in candidates]
+    target_value = max(numeric_values) if direction == "highest" else min(numeric_values)
+    winners = [dict(candidate) for candidate in candidates if int(candidate["composite_value"]) == int(target_value)]
+    if len(winners) != 1:
+        raise ValueError("composite extremum is not unique")
+    winner = dict(winners[0])
+    callout = spec.callouts[int(winner["callout_index"])]
+    target = {
+        "callout_id": str(callout.callout_id),
+        "callout_title": str(callout.title),
+        "first_field_label": str(field_a),
+        "second_field_label": str(field_b),
+        "rank_direction": str(direction),
+        "rank_order_phrase": "highest to lowest" if direction == "highest" else "lowest to highest",
+        "candidate_values": [dict(candidate) for candidate in candidates],
+        "winner": dict(winner),
+        "composite_value": int(winner["composite_value"]),
+        "answer_value": str(callout.title),
+    }
+    pair_key = f"{field_a}+{field_b}"
+    return callout, target, {pair_key: 1.0}
+
+
+def _composite_prompt_slots(target: Mapping[str, Any]) -> Dict[str, str]:
+    return {
+        "first_field_label": f'"{target["first_field_label"]}"',
+        "second_field_label": f'"{target["second_field_label"]}"',
+        "rank_direction": str(target["rank_direction"]),
+        "rank_order_phrase": str(target["rank_order_phrase"]),
+    }
+
+
+def _composite_extremum_annotation(
+    *,
+    ctx: _HeroSceneContext,
+    callout: _Callout,
+    target: Mapping[str, Any],
+) -> Dict[str, List[float]]:
+    callout_id = str(callout.callout_id)
+    annotation: Dict[str, List[float]] = {
+        "winning_callout_card": [float(value) for value in ctx.rendered.callout_bboxes_px[callout_id]],
+    }
+    for index, candidate in enumerate(target["candidate_values"], start=1):
+        candidate_callout = str(candidate["callout_id"])
+        first_field = str(candidate["first_field_id"])
+        second_field = str(candidate["second_field_id"])
+        annotation[f"candidate_{index}_first_field_row"] = [
+            float(value) for value in ctx.rendered.field_row_bboxes_px[candidate_callout][first_field]
+        ]
+        annotation[f"candidate_{index}_second_field_row"] = [
+            float(value) for value in ctx.rendered.field_row_bboxes_px[candidate_callout][second_field]
+        ]
+    return annotation
+
+
+def _composite_rank_audit(target: Mapping[str, Any]) -> List[Dict[str, Any]]:
+    reverse_sort = str(target["rank_direction"]) == "highest"
+    rows = [dict(candidate) for candidate in target["candidate_values"]]
+    rows.sort(key=lambda row: (int(row["composite_value"]), str(row["callout_title"])), reverse=reverse_sort)
+    for row in rows:
+        row["is_answer"] = str(row["callout_id"]) == str(target["callout_id"])
+    return rows
 
 
 def _condition_phrase(operator: str) -> str:
@@ -1228,6 +1351,34 @@ def _trace_payload(
     }
 
 
+def build_string_bbox_map_output(
+    *,
+    ctx: _HeroSceneContext,
+    prompt_artifacts: Any,
+    answer_value: str,
+    annotation: Mapping[str, Sequence[float]],
+    trace_payload: Mapping[str, Any],
+) -> TaskOutput:
+    """Return the shared string-answer output shape for hero-callout label tasks."""
+
+    annotation_value = {
+        str(key): [float(value) for value in bbox]
+        for key, bbox in dict(annotation).items()
+    }
+    return TaskOutput(
+        prompt=str(prompt_artifacts.prompt),
+        answer_gt=TypedValue(type="string", value=str(answer_value)),
+        annotation_gt=TypedValue(type="bbox_map", value=dict(annotation_value)),
+        image=ctx.image,
+        image_id="img0",
+        trace_payload=dict(trace_payload),
+        task_versions=default_task_versions(),
+        scene_id=SCENE_ID,
+        query_id=str(ctx.selected_branch),
+        prompt_variants=dict(prompt_artifacts.prompt_variants),
+    )
+
+
 __all__ = [
     "CONDITION_OPERATORS",
     "FIELD_LABELS",
@@ -1237,7 +1388,9 @@ __all__ = [
     "resolve_scene_context",
     "select_lookup_target",
     "select_extremum_target",
+    "select_composite_extremum_target",
     "select_condition_target",
     "render_prompt",
     "_trace_payload",
+    "build_string_bbox_map_output",
 ]

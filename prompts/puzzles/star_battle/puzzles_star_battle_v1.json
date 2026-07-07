@@ -35,26 +35,19 @@
         "A star can be added to exactly one labeled candidate cell. Which label is it?",
         "Which labeled cell is a valid place for another star?"
       ],
-      "remaining_valid_cells_in_marked_region_count": [
-        "How many cells in the marked colored region can still hold a star?",
-        "Count the legal remaining star cells inside the marked region.",
-        "How many cells in the marked region are still valid for a star?",
-        "Within the marked region, count every cell where another star could be placed.",
-        "How many possible star placements remain in the marked colored region?"
-      ],
       "remaining_valid_cells_in_marked_row_count": [
-        "How many cells in the marked row can still hold a star?",
-        "Count the legal remaining star cells inside the marked row.",
-        "How many cells in the marked row are still valid for a star?",
-        "Within the marked row, count every cell where another star could be placed.",
-        "How many possible star placements remain in the marked row?"
+        "The highlighted row is row {row_index} from the top. How many empty cells in that row could legally hold a new star?",
+        "Count the empty cells where another star can still legally be placed in the highlighted row, row {row_index} from the top.",
+        "Row {row_index} from the top is highlighted. How many cells in that row are empty and still valid for a star?",
+        "In the highlighted row, row {row_index} from the top, how many empty cells are valid places for a new star?",
+        "In the highlighted row, row {row_index} from the top, how many empty cells would satisfy all Star Battle rules?"
       ],
       "remaining_valid_cells_in_marked_column_count": [
-        "How many cells in the marked column can still hold a star?",
-        "Count the legal remaining star cells inside the marked column.",
-        "How many cells in the marked column are still valid for a star?",
-        "Within the marked column, count every cell where another star could be placed.",
-        "How many possible star placements remain in the marked column?"
+        "The highlighted column is column {column_index} from the left. How many empty cells in that column could legally hold a new star?",
+        "Count the empty cells where another star can still legally be placed in the highlighted column, column {column_index} from the left.",
+        "Column {column_index} from the left is highlighted. How many cells in that column are empty and still valid for a star?",
+        "In the highlighted column, column {column_index} from the left, how many empty cells are valid places for a new star?",
+        "In the highlighted column, column {column_index} from the left, how many empty cells would satisfy all Star Battle rules?"
       ]
     },
     "output": {
@@ -79,7 +72,7 @@
       "object_description": "a partially filled Star Battle grid with colored regions, visible stars, and labeled candidate cells"
     },
     "task:star_battle_remaining_count_query": {
-      "object_description": "a partially filled Star Battle grid with colored regions, visible stars, and one marked row, column, or region"
+      "object_description": "a partially filled Star Battle grid with colored regions, visible stars, and one highlighted row or column"
     },
     "query:valid_cell_anywhere_label": {
       "answer_hint": "the legal candidate letter",
@@ -87,29 +80,36 @@
       "json_example": "{\"annotation\":[402,276,466,340],\"answer\":\"C\"}",
       "json_example_answer_only": "{\"answer\":\"C\"}"
     },
-    "query:remaining_valid_cells_in_marked_region_count": {
-      "answer_hint": "the count of legal star cells in the marked region",
-      "annotation_hint": "a JSON array of image-pixel bboxes [x0,y0,x1,y1], one for each counted legal cell in the marked region",
-      "json_example": "{\"annotation\":[[402,276,466,340],[466,340,530,404]],\"answer\":2}",
-      "json_example_answer_only": "{\"answer\":2}"
-    },
     "query:remaining_valid_cells_in_marked_row_count": {
-      "answer_hint": "the count of legal star cells in the marked row",
-      "annotation_hint": "a JSON array of image-pixel bboxes [x0,y0,x1,y1], one for each counted legal cell in the marked row",
+      "answer_hint": "the number of empty cells in the highlighted row where a new star could legally be placed",
+      "annotation_hint": "a JSON array of image-pixel bboxes [x0,y0,x1,y1], one for each empty cell in the highlighted row where a new star could legally be placed",
       "json_example": "{\"annotation\":[[402,276,466,340],[530,276,594,340]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     },
     "query:remaining_valid_cells_in_marked_column_count": {
-      "answer_hint": "the count of legal star cells in the marked column",
-      "annotation_hint": "a JSON array of image-pixel bboxes [x0,y0,x1,y1], one for each counted legal cell in the marked column",
+      "answer_hint": "the number of empty cells in the highlighted column where a new star could legally be placed",
+      "annotation_hint": "a JSON array of image-pixel bboxes [x0,y0,x1,y1], one for each empty cell in the highlighted column where a new star could legally be placed",
       "json_example": "{\"annotation\":[[402,276,466,340],[402,468,466,532]],\"answer\":2}",
       "json_example_answer_only": "{\"answer\":2}"
     }
   },
-  "dynamic_slots": {},
+  "dynamic_slots": {
+    "row_index": {
+      "type": "integer"
+    },
+    "column_index": {
+      "type": "integer"
+    }
+  },
   "required_slots_by_key": {
     "scene:star_battle": [
       "object_description"
+    ],
+    "query:remaining_valid_cells_in_marked_row_count": [
+      "row_index"
+    ],
+    "query:remaining_valid_cells_in_marked_column_count": [
+      "column_index"
     ],
     "output:answer_only": [
       "answer_hint",

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ....core.types import TypedValue
 from ...registry import register_task
-from ._lifecycle import MarkerMapBoundObjective, run_marker_layer_lifecycle
+from ._lifecycle import MarkerMapBoundObjective, run_marker_layer_lifecycle, semantic_axis_probabilities
 from .shared.annotations import marker_point_set_bundle
 from .shared.defaults import resolve_scene_variant
 from .shared.sampling import construct_marker_threshold_dataset
@@ -17,13 +17,8 @@ THRESHOLD_DIRECTION_BY_QUERY_ID = {
     GREATER_THAN_QUERY_ID: "greater_than",
     LESS_THAN_QUERY_ID: "less_than",
 }
-
-
-def _threshold_direction_probabilities(query_probabilities):
-    return {
-        THRESHOLD_DIRECTION_BY_QUERY_ID[str(query_id)]: float(probability)
-        for query_id, probability in query_probabilities.items()
-    }
+TASK_COUNT_ANSWER_MIN = 1
+TASK_COUNT_ANSWER_MAX = 4
 
 
 @register_task
@@ -45,7 +40,10 @@ class ChartsRegionMapMarkerRegionThresholdCountTask:
         dataset = construct_marker_threshold_dataset(
             scene_variant=scene_variant,
             threshold_direction=THRESHOLD_DIRECTION_BY_QUERY_ID[str(selected_query_id)],
-            threshold_direction_probabilities=_threshold_direction_probabilities(query_probabilities),
+            threshold_direction_probabilities=semantic_axis_probabilities(
+                query_probabilities,
+                THRESHOLD_DIRECTION_BY_QUERY_ID,
+            ),
             params=params,
             instance_seed=instance_seed,
         )
@@ -79,7 +77,11 @@ class ChartsRegionMapMarkerRegionThresholdCountTask:
         return run_marker_layer_lifecycle(
             task=self,
             instance_seed=instance_seed,
-            params=params,
+            params={
+                **dict(params),
+                "count_answer_min": TASK_COUNT_ANSWER_MIN,
+                "count_answer_max": TASK_COUNT_ANSWER_MAX,
+            },
             max_attempts=max_attempts,
             default_query_id=DEFAULT_QUERY_ID,
             prompt_query_key="marker_region_threshold_count",

@@ -1,4 +1,4 @@
-"""Behavior tests for scene-package nonogram puzzle tasks."""
+"""Behavior tests for source-layout nonogram puzzle tasks."""
 
 from __future__ import annotations
 

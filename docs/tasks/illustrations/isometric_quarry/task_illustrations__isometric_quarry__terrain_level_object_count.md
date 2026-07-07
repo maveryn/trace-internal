@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `isometric_quarry`
-- Implementation scene package: `isometric_quarry`
+- Implementation source scene: `isometric_quarry`
 - Implementation source: `trace/tasks/illustrations/isometric_quarry/terrain_level_object_count.py`
 
 ## Task Contract

@@ -43,6 +43,7 @@ def test_pages_control_board_scene_defaults_loaded() -> None:
     assert 'balanced_style_variant_sampling' not in generation_defaults
     assert list(generation_defaults['group_name_pool']) == ['Layout', 'Editing', 'Review', 'Output']
     assert list(generation_defaults['state_count_support']) == [2, 3, 4, 5, 6, 7]
+    assert list(generation_defaults['extremum_state_count_support']) == [3, 4, 5]
     assert len(generation_defaults['candidate_label_pool']) == 26
     assert int(rendering_defaults['canvas_width']) == 1280
     assert int(rendering_defaults['canvas_height']) == 800
@@ -145,10 +146,10 @@ def test_pages_workspace_scene_defaults_loaded() -> None:
     assert bool(generation_defaults['balanced_scene_variant_sampling']) is True
     assert 'balanced_style_variant_sampling' not in generation_defaults
     assert int(generation_defaults['context_count_min']) == 3
-    assert int(generation_defaults['context_count_max']) == 5
+    assert int(generation_defaults['context_count_max']) == 4
     assert int(rendering_defaults['canvas_width']) == 1280
     assert int(rendering_defaults['canvas_height']) == 800
-    assert int(rendering_defaults['badge_size_px']) == 30
-    assert int(rendering_defaults['label_font_size_px']) == 14
+    assert int(rendering_defaults['badge_size_px']) == 34
+    assert int(rendering_defaults['label_font_size_px']) == 18
     _assert_pages_information_style_defaults(rendering_defaults)
     assert str(prompt_defaults['bundle_id']).strip() == 'pages_workspace_v1'

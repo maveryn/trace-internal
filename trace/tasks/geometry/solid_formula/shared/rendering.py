@@ -196,6 +196,7 @@ def _draw_dimension(
         label,
         label_offset=label_offset,
         color=ctx.accent_color if bool(target) else ctx.label_color,
+        backed=True,
     )
 
 
@@ -410,8 +411,8 @@ def render_cylinder_cone_radius(ctx: RenderContext, problem: SolidFormulaProblem
     dimension_segments: dict[str, list[list[float]]] = {}
     label_bboxes["volume_label"] = draw_readout_centered(
         ctx,
-        f"V={format_pi_multiple(problem.volume_pi_multiple or 0)}",
-        (166.0, 92.0),
+        f"V = {format_pi_multiple(problem.volume_pi_multiple or 0)}",
+        (120.0, 92.0),
         small=False,
         backed=True,
     )
@@ -424,7 +425,7 @@ def render_cylinder_cone_radius(ctx: RenderContext, problem: SolidFormulaProblem
         witness_key="total_height_segment",
         start=(points["bottom_left"][0] - 50.0, points["apex"][1]),
         end=(points["bottom_left"][0] - 50.0, points["bottom_left"][1]),
-        label=f"H={format_measure(problem.total_height or 0)}",
+        label=f"H = {format_measure(problem.total_height or 0)}",
         label_offset=(-42.0, 0.0),
     )
     _add_dimension(
@@ -436,7 +437,7 @@ def render_cylinder_cone_radius(ctx: RenderContext, problem: SolidFormulaProblem
         witness_key="cone_height_segment",
         start=(points["cyl_top_right"][0] + 38.0, points["apex"][1]),
         end=(points["cyl_top_right"][0] + 38.0, points["cyl_top_right"][1]),
-        label=f"c={format_measure(problem.cone_height or 0)}",
+        label=f"c = {format_measure(problem.cone_height or 0)}",
         label_offset=(36.0, 0.0),
     )
     _add_dimension(
@@ -448,8 +449,8 @@ def render_cylinder_cone_radius(ctx: RenderContext, problem: SolidFormulaProblem
         witness_key="target_radius_segment",
         start=points["base_center"],
         end=points["base_right"],
-        label="r=?",
-        label_offset=(0.0, 36.0),
+        label="r = ?",
+        label_offset=(0.0, 72.0),
         target=True,
     )
     return _with_scene_payload(
@@ -476,8 +477,8 @@ def render_cylinder_cone_height(ctx: RenderContext, problem: SolidFormulaProblem
     dimension_segments: dict[str, list[list[float]]] = {}
     label_bboxes["volume_label"] = draw_readout_centered(
         ctx,
-        f"V={format_pi_multiple(problem.volume_pi_multiple or 0)}",
-        (164.0, 92.0),
+        f"V = {format_pi_multiple(problem.volume_pi_multiple or 0)}",
+        (120.0, 92.0),
         small=False,
         backed=True,
     )
@@ -490,8 +491,8 @@ def render_cylinder_cone_height(ctx: RenderContext, problem: SolidFormulaProblem
         witness_key="radius_segment",
         start=points["base_center"],
         end=points["base_right"],
-        label=f"r={format_measure(problem.radius or 0)}",
-        label_offset=(0.0, 36.0),
+        label=f"r = {format_measure(problem.radius or 0)}",
+        label_offset=(0.0, 72.0),
     )
     _add_dimension(
         ctx,
@@ -502,7 +503,7 @@ def render_cylinder_cone_height(ctx: RenderContext, problem: SolidFormulaProblem
         witness_key="cone_height_segment",
         start=(points["cyl_top_right"][0] + 38.0, points["apex"][1]),
         end=(points["cyl_top_right"][0] + 38.0, points["cyl_top_right"][1]),
-        label=f"c={format_measure(problem.cone_height or 0)}",
+        label=f"c = {format_measure(problem.cone_height or 0)}",
         label_offset=(36.0, 0.0),
     )
     _add_dimension(
@@ -514,7 +515,7 @@ def render_cylinder_cone_height(ctx: RenderContext, problem: SolidFormulaProblem
         witness_key="target_cylinder_height_segment",
         start=(points["bottom_right"][0] + 42.0, points["cyl_top_right"][1]),
         end=(points["bottom_right"][0] + 42.0, points["bottom_right"][1]),
-        label="x=?",
+        label="x = ?",
         label_offset=(38.0, 0.0),
         target=True,
     )
@@ -586,7 +587,7 @@ def render_prism_pyramid(ctx: RenderContext, problem: SolidFormulaProblem) -> Re
     dimension_segments: dict[str, list[list[float]]] = {}
     label_bboxes["volume_label"] = draw_readout_centered(
         ctx,
-        f"V={format_measure(problem.volume or 0)}",
+        f"V = {format_measure(problem.volume or 0)}",
         (154.0, 94.0),
         small=False,
         backed=True,
@@ -600,7 +601,7 @@ def render_prism_pyramid(ctx: RenderContext, problem: SolidFormulaProblem) -> Re
         witness_key="base_length_segment",
         start=(front_bl[0], front_bl[1] + 36.0),
         end=(front_br[0], front_br[1] + 36.0),
-        label=f"l={format_measure(problem.side_a or 0)}",
+        label=f"l = {format_measure(problem.side_a or 0)}",
         label_offset=(0.0, 28.0),
     )
     _add_dimension(
@@ -612,7 +613,7 @@ def render_prism_pyramid(ctx: RenderContext, problem: SolidFormulaProblem) -> Re
         witness_key="base_width_segment",
         start=(front_br[0] + 18.0, front_br[1] + 18.0),
         end=(back_br[0] + 18.0, back_br[1] + 18.0),
-        label=f"w={format_measure(problem.side_b or 0)}",
+        label=f"w = {format_measure(problem.side_b or 0)}",
         label_offset=(30.0, 20.0),
     )
     _add_dimension(
@@ -624,7 +625,7 @@ def render_prism_pyramid(ctx: RenderContext, problem: SolidFormulaProblem) -> Re
         witness_key="pyramid_height_segment",
         start=(roof_center[0] + 32.0, roof_apex[1]),
         end=(roof_center[0] + 32.0, roof_center[1]),
-        label=f"p={format_measure(problem.pyramid_height or 0)}",
+        label=f"p = {format_measure(problem.pyramid_height or 0)}",
         label_offset=(36.0, 0.0),
     )
     _add_dimension(
@@ -636,7 +637,7 @@ def render_prism_pyramid(ctx: RenderContext, problem: SolidFormulaProblem) -> Re
         witness_key="target_prism_height_segment",
         start=(front_tl[0] - 34.0, front_tl[1]),
         end=(front_bl[0] - 34.0, front_bl[1]),
-        label="x=?",
+        label="x = ?",
         label_offset=(-34.0, 0.0),
         target=True,
     )
@@ -704,7 +705,7 @@ def render_house_prism(ctx: RenderContext, problem: SolidFormulaProblem) -> Rend
     dimension_segments: dict[str, list[list[float]]] = {}
     label_bboxes["volume_label"] = draw_readout_centered(
         ctx,
-        f"V={format_measure(problem.volume or 0)}",
+        f"V = {format_measure(problem.volume or 0)}",
         (154.0, 94.0),
         small=False,
         backed=True,
@@ -718,7 +719,7 @@ def render_house_prism(ctx: RenderContext, problem: SolidFormulaProblem) -> Rend
         witness_key="base_width_segment",
         start=(front_a[0], front_a[1] + 34.0),
         end=(front_b[0], front_b[1] + 34.0),
-        label=f"b={format_measure(problem.triangle_base or 0)}",
+        label=f"b = {format_measure(problem.triangle_base or 0)}",
         label_offset=(0.0, 28.0),
     )
     _add_dimension(
@@ -730,7 +731,7 @@ def render_house_prism(ctx: RenderContext, problem: SolidFormulaProblem) -> Rend
         witness_key="wall_height_segment",
         start=(front_a[0] - 34.0, front_e[1]),
         end=(front_a[0] - 34.0, front_a[1]),
-        label=f"h={format_measure(problem.wall_height or 0)}",
+        label=f"h = {format_measure(problem.wall_height or 0)}",
         label_offset=(-36.0, 0.0),
     )
     _add_dimension(
@@ -742,7 +743,7 @@ def render_house_prism(ctx: RenderContext, problem: SolidFormulaProblem) -> Rend
         witness_key="roof_height_segment",
         start=(roof_foot[0] + 34.0, front_d[1]),
         end=(roof_foot[0] + 34.0, roof_foot[1]),
-        label=f"t={format_measure(problem.roof_height or 0)}",
+        label=f"t = {format_measure(problem.roof_height or 0)}",
         label_offset=(64.0, 0.0),
     )
     _add_dimension(
@@ -754,7 +755,7 @@ def render_house_prism(ctx: RenderContext, problem: SolidFormulaProblem) -> Rend
         witness_key="target_length_segment",
         start=(front_b[0] + 20.0, front_b[1] + 16.0),
         end=(back_b[0] + 20.0, back_b[1] + 16.0),
-        label="L=?",
+        label="L = ?",
         label_offset=(34.0, 20.0),
         target=True,
     )

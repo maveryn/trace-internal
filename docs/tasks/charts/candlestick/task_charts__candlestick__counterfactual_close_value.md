@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `candlestick`
-3. Source implementation scene package: `charts/candlestick`
+3. Source implementation scene: `charts/candlestick`
 4. Query ids: `close_after_body_increase_value`, `close_after_body_decrease_value`
 5. Semantic query details are recorded in `query_id` and trace params.
 

@@ -22,6 +22,7 @@ COLOR_PALETTE: Tuple[Tuple[str, Tuple[int, int, int]], ...] = (
     ("pink", (207, 88, 143)),
 )
 SHAPE_POOL: Tuple[str, ...] = ("circle", "triangle", "square", "diamond", "star")
+PROBABILITY_OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
 
 
 def format_fraction(numerator: int, denominator: int) -> str:
@@ -31,6 +32,127 @@ def format_fraction(numerator: int, denominator: int) -> str:
         raise ValueError("probability denominator must be positive")
     common = gcd(abs(int(numerator)), abs(int(denominator)))
     return f"{int(numerator) // common}/{int(denominator) // common}"
+
+
+def parse_fraction_label(value: str) -> Tuple[int, int]:
+    """Parse one reduced probability fraction label into integer counts."""
+
+    raw = str(value).strip()
+    if "/" not in raw:
+        raise ValueError(f"probability option must be a fraction label: {value!r}")
+    numerator_text, denominator_text = raw.split("/", 1)
+    numerator = int(numerator_text.strip())
+    denominator = int(denominator_text.strip())
+    if int(denominator) <= 0:
+        raise ValueError("probability denominator must be positive")
+    return int(numerator), int(denominator)
+
+
+def _fraction_value(label: str) -> float:
+    numerator, denominator = parse_fraction_label(str(label))
+    return float(numerator) / float(denominator)
+
+
+def _candidate_fraction_labels(favorable: int, total: int) -> List[str]:
+    """Return plausible reduced-fraction distractors for one spinner event."""
+
+    favorable = int(favorable)
+    total = int(total)
+    correct = format_fraction(favorable, total)
+    labels: List[str] = []
+
+    def add(numerator: int, denominator: int) -> None:
+        if int(denominator) <= 1:
+            return
+        if not (0 < int(numerator) < int(denominator)):
+            return
+        label = format_fraction(int(numerator), int(denominator))
+        if label == correct or label in labels:
+            return
+        labels.append(str(label))
+
+    for delta in (-2, -1, 1, 2):
+        add(favorable + int(delta), total)
+    add(total - favorable, total)
+    for denominator_delta in (-2, -1, 1, 2, 3):
+        add(favorable, total + int(denominator_delta))
+        add(favorable - 1, total + int(denominator_delta))
+        add(favorable + 1, total + int(denominator_delta))
+    add(total - favorable - 1, total)
+    add(total - favorable + 1, total)
+
+    correct_value = _fraction_value(correct)
+    global_candidates: List[str] = []
+    max_denominator = max(12, min(64, int(total) + 24))
+    for denominator in range(2, int(max_denominator) + 1):
+        for numerator in range(1, int(denominator)):
+            label = format_fraction(int(numerator), int(denominator))
+            if label == correct or label in labels or label in global_candidates:
+                continue
+            global_candidates.append(str(label))
+    global_candidates.sort(
+        key=lambda label: (
+            abs(_fraction_value(str(label)) - float(correct_value)),
+            parse_fraction_label(str(label))[1],
+            parse_fraction_label(str(label))[0],
+        )
+    )
+    labels.extend(global_candidates)
+    return labels
+
+
+def build_probability_option_set(
+    *,
+    favorable: int,
+    total: int,
+    rng,
+    labels: Sequence[str] = PROBABILITY_OPTION_LABELS,
+    correct_label: str | None = None,
+) -> Dict[str, Any]:
+    """Bind one exact reduced probability fraction to fixed visible option labels."""
+
+    option_labels = tuple(str(label) for label in labels)
+    if len(option_labels) != 6:
+        raise ValueError("spinner probability MCQ tasks require exactly six option labels")
+    if len(set(option_labels)) != len(option_labels):
+        raise ValueError("spinner probability option labels must be unique")
+    correct_fraction = format_fraction(int(favorable), int(total))
+    requested_label = str(correct_label).strip().upper() if correct_label is not None else ""
+    if requested_label:
+        if requested_label not in option_labels:
+            raise ValueError("explicit correct_label is outside spinner probability option labels")
+        selected_label = str(requested_label)
+    else:
+        selected_label = str(uniform_choice(rng, option_labels))
+
+    candidates = _candidate_fraction_labels(int(favorable), int(total))
+    if len(candidates) < len(option_labels) - 1:
+        raise RuntimeError("failed to build enough spinner probability distractors")
+    nearby_pool = list(candidates[: min(30, len(candidates))])
+    rng.shuffle(nearby_pool)
+    distractors = list(nearby_pool[: len(option_labels) - 1])
+    if len(distractors) < len(option_labels) - 1:
+        raise RuntimeError("failed to sample enough spinner probability distractors")
+
+    text_by_label: Dict[str, str] = {}
+    distractor_index = 0
+    for label in option_labels:
+        if str(label) == str(selected_label):
+            text_by_label[str(label)] = str(correct_fraction)
+        else:
+            text_by_label[str(label)] = str(distractors[distractor_index])
+            distractor_index += 1
+
+    return {
+        "labels": [str(label) for label in option_labels],
+        "correct_label": str(selected_label),
+        "correct_fraction": str(correct_fraction),
+        "text_by_label": dict(text_by_label),
+        "value_by_label": dict(text_by_label),
+        "correct_label_probabilities": {
+            str(label): (1.0 / float(len(option_labels))) for label in option_labels
+        },
+    }
 
 
 def normalize_int_with_bounds(value: int, bounds: Sequence[int]) -> float:
@@ -317,7 +439,9 @@ def build_pair_spinner_dataset(
 
 __all__ = [
     "COLOR_PALETTE",
+    "PROBABILITY_OPTION_LABELS",
     "SHAPE_POOL",
+    "build_probability_option_set",
     "build_pair_spinner_dataset",
     "build_single_spinner_dataset",
     "color_names",
@@ -325,6 +449,7 @@ __all__ = [
     "configured_single_count_limits",
     "format_fraction",
     "normalize_int_with_bounds",
+    "parse_fraction_label",
     "select_event_candidate",
     "shape_names",
     "valid_favorable_count",

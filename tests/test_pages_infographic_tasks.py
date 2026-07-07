@@ -7,10 +7,9 @@ from trace.core.seed import hash64
 from trace.core.query_ids import SINGLE_QUERY_ID
 from trace.core.taxonomy import resolve_task_taxonomy
 from trace.tasks.pages.hero_callout_infographic.callout_condition_count import ABOVE_THRESHOLD_QUERY_ID as HERO_CALLOUT_ABOVE_THRESHOLD_QUERY_ID, BELOW_THRESHOLD_QUERY_ID as HERO_CALLOUT_BELOW_THRESHOLD_QUERY_ID, TASK_ID as HERO_CALLOUT_CONDITION_COUNT_TASK_ID, PagesHeroCalloutConditionCountTask
-from trace.tasks.pages.hero_callout_infographic.callout_field_value_label import TASK_ID as HERO_CALLOUT_FIELD_VALUE_TASK_ID, PagesHeroCalloutFieldValueLabelTask
+from trace.tasks.pages.hero_callout_infographic.callout_composite_metric_extremum_label import HIGHEST_COMPOSITE_QUERY_ID as HERO_CALLOUT_HIGHEST_COMPOSITE_QUERY_ID, LOWEST_COMPOSITE_QUERY_ID as HERO_CALLOUT_LOWEST_COMPOSITE_QUERY_ID, TASK_ID as HERO_CALLOUT_COMPOSITE_EXTREMUM_TASK_ID, PagesHeroCalloutCompositeMetricExtremumLabelTask
 from trace.tasks.pages.hero_callout_infographic.callout_metric_extremum_label import HIGHEST_FIELD_VALUE_QUERY_ID as HERO_CALLOUT_HIGHEST_FIELD_VALUE_QUERY_ID, LOWEST_FIELD_VALUE_QUERY_ID as HERO_CALLOUT_LOWEST_FIELD_VALUE_QUERY_ID, TASK_ID as HERO_CALLOUT_METRIC_EXTREMUM_TASK_ID, PagesHeroCalloutMetricExtremumLabelTask
 from trace.tasks.pages.infographic.global_metric_ranked_item_label import PagesInfographicGlobalMetricRankedItemLabelTask
-from trace.tasks.pages.infographic.metric_card_field_lookup import PagesInfographicMetricCardFieldLookupTask
 from trace.tasks.pages.infographic.section_extrema_arithmetic_value import PagesInfographicSectionExtremaArithmeticValueTask
 from trace.tasks.pages.infographic.section_icon_extremum_label import PagesInfographicSectionIconExtremumLabelTask
 from trace.tasks.pages.infographic.section_icon_total_difference_value import PagesInfographicSectionIconTotalDifferenceValueTask
@@ -20,7 +19,7 @@ from trace.tasks.pages.infographic.section_ranked_total_label import PagesInfogr
 from trace.tasks.pages.infographic.section_total_except_named_value import PagesInfographicSectionTotalExceptNamedValueTask
 from trace.tasks.pages.infographic.section_total_extrema_difference_value import PagesInfographicSectionTotalExtremaDifferenceValueTask
 from trace.tasks.pages.infographic.sum_named_metrics_value import PagesInfographicSumNamedMetricsValueTask
-from trace.tasks.pages.shared.infographic_metric_common import COLUMN_PROFILE_COMPARISON_VARIANTS, FACT_LOOKUP_VARIANTS, FILTERED_SECTION_EXTREMUM_VARIANTS, FILTERED_METRIC_TOTAL_VARIANTS, GLOBAL_METRIC_RANKED_ITEM_VARIANTS, SECTION_METRIC_RANKED_ITEM_VARIANTS, SECTION_RANKED_TOTAL_VARIANTS, SUPPORTED_QUERY_IDS
+from trace.tasks.pages.shared.infographic_metric_common import COLUMN_PROFILE_COMPARISON_VARIANTS, FILTERED_SECTION_EXTREMUM_VARIANTS, FILTERED_METRIC_TOTAL_VARIANTS, GLOBAL_METRIC_RANKED_ITEM_VARIANTS, SECTION_METRIC_RANKED_ITEM_VARIANTS, SECTION_RANKED_TOTAL_VARIANTS, SUPPORTED_QUERY_IDS
 from trace.tasks.pages.mixed_infographic_page import CONDITION_COUNT_QUERY_ID as MIXED_INFOGRAPHIC_CONDITION_COUNT_QUERY_ID, FIELD_RANKED_QUERY_ID as MIXED_INFOGRAPHIC_FIELD_RANKED_QUERY_ID, FIELD_TOTAL_QUERY_ID as MIXED_INFOGRAPHIC_FIELD_TOTAL_QUERY_ID, PAGE_FIELD_EXTREMUM_QUERY_ID as MIXED_INFOGRAPHIC_PAGE_FIELD_EXTREMUM_QUERY_ID, TWO_FIELD_CONDITION_QUERY_ID as MIXED_INFOGRAPHIC_TWO_FIELD_CONDITION_QUERY_ID, TWO_MODULE_TOTAL_COMPARISON_QUERY_ID as MIXED_INFOGRAPHIC_TWO_MODULE_TOTAL_COMPARISON_QUERY_ID, MIXED_INFOGRAPHIC_CONDITION_COUNT_TASK_ID, MIXED_INFOGRAPHIC_FIELD_RANKED_TASK_ID, MIXED_INFOGRAPHIC_FIELD_TOTAL_TASK_ID, MIXED_INFOGRAPHIC_PAGE_FIELD_EXTREMUM_TASK_ID, MIXED_INFOGRAPHIC_TWO_FIELD_CONDITION_TASK_ID, MIXED_INFOGRAPHIC_TWO_MODULE_TOTAL_COMPARISON_TASK_ID, MIXED_INFOGRAPHIC_TASK_ID, NATIVE_LAYOUT_MODES as MIXED_INFOGRAPHIC_NATIVE_LAYOUT_MODES, QUERY_ID as MIXED_INFOGRAPHIC_QUERY_ID, SCENE_VARIANTS as MIXED_INFOGRAPHIC_SCENE_VARIANTS, PagesMixedInfographicModuleConditionItemCountTask, PagesMixedInfographicModuleFieldRankedItemLabelTask, PagesMixedInfographicModuleFieldTotalValueTask, PagesMixedInfographicModuleFieldValueLabelTask, PagesMixedInfographicModuleTwoFieldConditionItemLabelTask, PagesMixedInfographicPageFieldExtremumModuleLabelTask, PagesMixedInfographicTwoModuleFieldTotalComparisonModuleLabelTask
 from trace.tasks.pages.sectioned_infographic.section_filtered_item_label import PROMPT_QUERY_KEY as SECTIONED_FILTERED_PROMPT_QUERY_KEY, TASK_ID as SECTIONED_INFOGRAPHIC_FILTERED_ITEM_TASK_ID, PagesSectionedInfographicSectionFilteredItemLabelTask
 from trace.tasks.pages.sectioned_infographic.section_item_count import PROMPT_QUERY_KEY as SECTIONED_PROMPT_QUERY_KEY, SCENE_VARIANTS as SECTIONED_SCENE_VARIANTS, TASK_ID as SECTIONED_INFOGRAPHIC_ITEM_COUNT_TASK_ID, PagesSectionedInfographicSectionItemCountTask
@@ -42,7 +41,6 @@ SECTION_RANK_QUERY_IDS = (*SECTION_RANKED_TOTAL_VARIANTS, *FILTERED_SECTION_EXTR
 GLOBAL_METRIC_RANKED_ITEM_QUERY_IDS = GLOBAL_METRIC_RANKED_ITEM_VARIANTS
 SECTION_METRIC_RANKED_ITEM_QUERY_IDS = SECTION_METRIC_RANKED_ITEM_VARIANTS
 METRIC_RANKED_ITEM_QUERY_IDS = (*GLOBAL_METRIC_RANKED_ITEM_QUERY_IDS, *SECTION_METRIC_RANKED_ITEM_QUERY_IDS)
-FACT_LOOKUP_QUERY_IDS = FACT_LOOKUP_VARIANTS
 
 def _metric_value_task_for_query(query_id: str):
     return {'sum_named_metrics': PagesInfographicSumNamedMetricsValueTask, 'section_extrema_arithmetic': PagesInfographicSectionExtremaArithmeticValueTask, 'section_total_extrema_difference': PagesInfographicSectionTotalExtremaDifferenceValueTask, 'section_total_except_named': PagesInfographicSectionTotalExceptNamedValueTask, 'section_icon_total_value': PagesInfographicSectionIconTotalValueTask, 'section_icon_total_difference_value': PagesInfographicSectionIconTotalDifferenceValueTask}[str(query_id)]()
@@ -58,11 +56,6 @@ def _metric_ranked_item_task_for_query(query_id: str):
     if str(query_id) not in set(METRIC_RANKED_ITEM_QUERY_IDS):
         raise ValueError(f'unsupported metric ranked item query: {query_id}')
     raise AssertionError(f'unreachable metric ranked item query: {query_id}')
-
-def _fact_lookup_task_for_query(query_id: str):
-    if str(query_id) not in set(FACT_LOOKUP_QUERY_IDS):
-        raise ValueError(f'unsupported fact lookup query: {query_id}')
-    return PagesInfographicMetricCardFieldLookupTask()
 
 def _extract_prompt_json_example(prompt: str) -> dict:
     marker = 'Example JSON:\n'
@@ -108,13 +101,6 @@ def _expected_answer(trace: dict) -> int | str:
     if variant in set(METRIC_RANKED_ITEM_QUERY_IDS):
         ranked = [dict(candidate) for candidate in trace['ranked_candidates']]
         return str(ranked[int(trace['rank_position']) - 1]['label'])
-    if variant == 'value_for_named_item':
-        return str(values_by_label[target_labels[0]])
-    if variant == 'item_for_named_value':
-        return str(target_labels[0])
-    if variant == 'detail_for_named_item':
-        cards = {str(card['label']): dict(card) for card in trace['cards']}
-        return str(cards[target_labels[0]]['caption_text'])
     raise AssertionError(f'unsupported variant: {variant}')
 
 def _assert_bbox_inside_canvas(bbox: list[float], *, width: int, height: int) -> None:
@@ -195,38 +181,59 @@ def _visible_int(value: str) -> int:
     assert digits
     return int(digits)
 
-def test_pages_hero_callout_field_value_label_contract() -> None:
-    task = PagesHeroCalloutFieldValueLabelTask()
-    out = task.generate(99101, params={'query_id': SINGLE_QUERY_ID, 'scene_variant': 'radial_halo', 'callout_count': 6, 'target_field_label': 'Score', 'pages_context_text_enabled': False}, max_attempts=10)
-    trace = out.trace_payload
-    execution = trace['execution_trace']
-    render = trace['render_spec']
-    target = execution['target']
-    callout_id = str(target['callout_id'])
-    field_id = str(target['field_id'])
-    assert task.task_id == HERO_CALLOUT_FIELD_VALUE_TASK_ID
-    assert resolve_task_taxonomy(task.task_id).scene_id == 'hero_callout_infographic'
-    assert out.scene_id == 'hero_callout_infographic'
-    assert out.query_id == SINGLE_QUERY_ID
-    assert str(execution['prompt_query_key']) == 'callout_field_value_label'
-    assert out.answer_gt.type == 'string'
-    assert out.annotation_gt.type == 'bbox'
-    assert str(out.answer_gt.value) == str(target['visible_value']) == str(target['answer_value'])
-    assert list(out.annotation_gt.value) == ['target_callout_card', 'target_field_row']
-    assert trace['projected_annotation']['bbox_map'] == out.annotation_gt.value
-    assert out.annotation_gt.value['target_callout_card'] == trace['render_map']['callout_bboxes_px'][callout_id]
-    assert out.annotation_gt.value['target_field_row'] == trace['render_map']['field_row_bboxes_px'][callout_id][field_id]
-    assert str(render['layout']['scene_variant']) == 'radial_halo'
-    assert render['page_visual_assets']['asset_root'] == 'assets/pages/visual_assets'
-    assert render['page_visual_assets']['semantic_policy'] == 'non_answer_visual_context'
-    assert render.get('context_text_layer', {}).get('enabled') is False
-    for bbox in out.annotation_gt.value.values():
-        _assert_bbox_inside_canvas(bbox, width=int(render['canvas_width']), height=int(render['canvas_height']))
-    example = _extract_prompt_json_example(out.prompt)
-    assert list(example.keys()) == ['annotation', 'answer']
-    assert isinstance(example['answer'], str)
-    assert list(example['annotation']) == ['target_callout_card', 'target_field_row']
-    assert 'hero visual' not in out.prompt.lower()
+def test_pages_hero_callout_composite_metric_extremum_label_contract() -> None:
+    task = PagesHeroCalloutCompositeMetricExtremumLabelTask()
+    assert tuple(task.supported_query_ids) == (
+        HERO_CALLOUT_HIGHEST_COMPOSITE_QUERY_ID,
+        HERO_CALLOUT_LOWEST_COMPOSITE_QUERY_ID,
+    )
+    cases = (
+        (HERO_CALLOUT_HIGHEST_COMPOSITE_QUERY_ID, 'highest', max),
+        (HERO_CALLOUT_LOWEST_COMPOSITE_QUERY_ID, 'lowest', min),
+    )
+    for index, (query_id, rank_direction, extremum_fn) in enumerate(cases):
+        out = task.generate(99101 + index, params={'query_id': query_id, 'scene_variant': 'radial_halo', 'callout_count': 6, 'pages_context_text_enabled': False}, max_attempts=10)
+        trace = out.trace_payload
+        execution = trace['execution_trace']
+        render = trace['render_spec']
+        target = execution['target']
+        callout_id = str(target['callout_id'])
+        candidates = [dict(candidate) for candidate in target['candidate_values']]
+        expected = extremum_fn(candidates, key=lambda candidate: int(candidate['composite_value']))
+        assert task.task_id == HERO_CALLOUT_COMPOSITE_EXTREMUM_TASK_ID
+        assert resolve_task_taxonomy(task.task_id).scene_id == 'hero_callout_infographic'
+        assert out.scene_id == 'hero_callout_infographic'
+        assert out.query_id == query_id
+        assert str(execution['prompt_query_key']) == 'callout_composite_metric_extremum_label'
+        assert out.answer_gt.type == 'string'
+        assert out.annotation_gt.type == 'bbox_map'
+        assert str(target['rank_direction']) == rank_direction
+        assert str(target['first_field_label']) == 'Score'
+        assert str(target['second_field_label']) == 'Count'
+        assert all(
+            int(candidate['composite_value']) == int(candidate['first_numeric_value']) + int(candidate['second_numeric_value'])
+            for candidate in candidates
+        )
+        assert len([candidate for candidate in candidates if int(candidate['composite_value']) == int(expected['composite_value'])]) == 1
+        assert str(out.answer_gt.value) == str(expected['callout_title']) == str(target['answer_value'])
+        assert trace['projected_annotation']['bbox_map'] == out.annotation_gt.value
+        assert out.annotation_gt.value['winning_callout_card'] == trace['render_map']['callout_bboxes_px'][callout_id]
+        for candidate_index, candidate in enumerate(candidates, start=1):
+            assert out.annotation_gt.value[f'candidate_{candidate_index}_first_field_row'] == trace['render_map']['field_row_bboxes_px'][str(candidate['callout_id'])][str(candidate['first_field_id'])]
+            assert out.annotation_gt.value[f'candidate_{candidate_index}_second_field_row'] == trace['render_map']['field_row_bboxes_px'][str(candidate['callout_id'])][str(candidate['second_field_id'])]
+        assert str(render['layout']['scene_variant']) == 'radial_halo'
+        assert render['page_visual_assets']['asset_root'] == 'assets/pages/visual_assets'
+        assert render['page_visual_assets']['semantic_policy'] == 'non_answer_visual_context'
+        assert render.get('context_text_layer', {}).get('enabled') is False
+        for bbox in out.annotation_gt.value.values():
+            _assert_bbox_inside_canvas(bbox, width=int(render['canvas_width']), height=int(render['canvas_height']))
+        example = _extract_prompt_json_example(out.prompt)
+        assert list(example.keys()) == ['annotation', 'answer']
+        assert isinstance(example['answer'], str)
+        assert 'winning_callout_card' in example['annotation']
+        assert 'candidate_1_first_field_row' in example['annotation']
+        assert 'candidate_1_second_field_row' in example['annotation']
+        assert 'hero visual' not in out.prompt.lower()
 
 def test_pages_hero_callout_metric_extremum_label_contract() -> None:
     task = PagesHeroCalloutMetricExtremumLabelTask()
@@ -316,36 +323,41 @@ def test_pages_hero_callout_condition_count_contract() -> None:
 
 def test_pages_mixed_infographic_module_field_value_contract() -> None:
     task = PagesMixedInfographicModuleFieldValueLabelTask()
-    out = task.generate(98100, params={'query_id': MIXED_INFOGRAPHIC_QUERY_ID, 'scene_variant': 'dashboard_blocks', 'module_count': 8, 'target_module_index': 1, 'target_item_index': 0, 'target_field_index': 1, 'native_layout_mode': 'top_right_callout', 'pages_context_text_enabled': False}, max_attempts=10)
+    out = task.generate(98100, params={'query_id': MIXED_INFOGRAPHIC_QUERY_ID, 'scene_variant': 'dashboard_blocks', 'module_count': 9, 'native_layout_mode': 'top_right_callout', 'pages_context_text_enabled': False}, max_attempts=10)
     trace = out.trace_payload
     execution = trace['execution_trace']
     render = trace['render_spec']
     target = execution['target']
     module_id = str(target['module_id'])
     item_id = str(target['item_id'])
-    field_id = str(target['field_id'])
+    selector_field_id = str(target['selector_field_id'])
+    answer_field_id = str(target['answer_field_id'])
     assert task.task_id == MIXED_INFOGRAPHIC_TASK_ID
     assert not hasattr(task, 'scene_id')
     assert resolve_task_taxonomy(MIXED_INFOGRAPHIC_TASK_ID).scene_id == 'mixed_infographic_page'
     assert out.scene_id == 'mixed_infographic_page'
     assert out.query_id == MIXED_INFOGRAPHIC_QUERY_ID
     assert str(execution['prompt_query_key']) == 'module_field_value_label'
+    assert 'module in reading order' in str(target['module_position_phrase'])
+    assert int(target['module_position_index']) >= 1
     assert out.answer_gt.type == 'string'
     assert out.annotation_gt.type == 'bbox'
-    assert str(out.answer_gt.value) == str(target['value'])
-    assert str(execution['answer_value']) == str(target['value'])
+    assert str(out.answer_gt.value) == str(target['answer_value'])
+    assert str(execution['answer_value']) == str(target['answer_value'])
     assert out.image.size == (int(render['canvas_width']), int(render['canvas_height']))
-    assert int(execution['module_count']) == 8
-    assert len(execution['modules']) == 8
+    assert int(execution['module_count']) == 9
+    assert len(execution['modules']) == 9
     assert trace['projected_annotation']['bbox'] == out.annotation_gt.value
-    assert out.annotation_gt.value == trace['render_map']['value_cell_bboxes_px'][module_id][item_id][field_id]
+    assert out.annotation_gt.value == trace['render_map']['value_cell_bboxes_px'][module_id][item_id][answer_field_id]
     _assert_bbox_min_side(out.annotation_gt.value)
     diagnostic = trace['projected_annotation']['bbox_map']
     assert diagnostic['module_title'] == trace['render_map']['module_title_bboxes_px'][module_id]
-    assert diagnostic['item_label'] == trace['render_map']['item_label_bboxes_px'][module_id][item_id]
-    assert diagnostic['item_container'] == trace['render_map']['item_container_bboxes_px'][module_id][item_id]
-    assert diagnostic['field_label'] == trace['render_map']['field_label_bboxes_px'][module_id][field_id]
-    assert diagnostic['value_cell'] == out.annotation_gt.value
+    assert diagnostic['ranked_item_label'] == trace['render_map']['item_label_bboxes_px'][module_id][item_id]
+    assert diagnostic['ranked_item_container'] == trace['render_map']['item_container_bboxes_px'][module_id][item_id]
+    assert diagnostic['selector_field_label'] == trace['render_map']['field_label_bboxes_px'][module_id][selector_field_id]
+    assert diagnostic['answer_field_label'] == trace['render_map']['field_label_bboxes_px'][module_id][answer_field_id]
+    assert diagnostic['ranked_selector_value'] == trace['render_map']['value_cell_bboxes_px'][module_id][item_id][selector_field_id]
+    assert diagnostic['answer_value_cell'] == out.annotation_gt.value
     assert str(render['background_style']['style_spec']['kind']) == 'information_scene_style'
     assert str(render['information_scene_style']['kind']) == 'information_scene_style'
     assert int(render['information_scene_style']['layout_style']['shadow_offset_px']) == 0
@@ -357,7 +369,7 @@ def test_pages_mixed_infographic_module_field_value_contract() -> None:
     assert render['layout']['page_backdrops']
     for backdrop in render['layout']['page_backdrops']:
         assert float(backdrop['blend_scale']) == pytest.approx(0.35)
-    assert len(render['module_kinds']) == 8
+    assert len(render['module_kinds']) == 9
     visual_assets = render['page_visual_assets']
     assert visual_assets['asset_root'] == 'assets/pages/visual_assets'
     assert visual_assets['semantic_policy'] == 'non_answer_visual_context'
@@ -655,7 +667,7 @@ def test_pages_mixed_infographic_native_text_blocks_and_font_profile_default() -
 @pytest.mark.parametrize('native_layout_mode', MIXED_INFOGRAPHIC_NATIVE_LAYOUT_MODES)
 def test_pages_mixed_infographic_native_layout_modes_render_inside_canvas(native_layout_mode: str) -> None:
     task = PagesMixedInfographicModuleFieldValueLabelTask()
-    out = task.generate(98270 + MIXED_INFOGRAPHIC_NATIVE_LAYOUT_MODES.index(native_layout_mode), params={'query_id': MIXED_INFOGRAPHIC_QUERY_ID, 'scene_variant': 'dashboard_blocks', 'module_count': 8, 'native_layout_mode': native_layout_mode, 'pages_context_text_enabled': False}, max_attempts=10)
+    out = task.generate(98270 + MIXED_INFOGRAPHIC_NATIVE_LAYOUT_MODES.index(native_layout_mode), params={'query_id': MIXED_INFOGRAPHIC_QUERY_ID, 'scene_variant': 'dashboard_blocks', 'module_count': 9, 'native_layout_mode': native_layout_mode, 'pages_context_text_enabled': False}, max_attempts=10)
     trace = out.trace_payload
     render = trace['render_spec']
     render_map = trace['render_map']
@@ -663,7 +675,7 @@ def test_pages_mixed_infographic_native_layout_modes_render_inside_canvas(native
     assert str(render['native_layout_mode']) == str(native_layout_mode)
     assert str(layout['native_layout_mode']) == str(native_layout_mode)
     assert str(trace['execution_trace']['native_layout_mode']) == str(native_layout_mode)
-    assert len(layout['slot_bboxes_px']) == 8
+    assert len(layout['slot_bboxes_px']) == 9
     _assert_bbox_inside_canvas(layout['content_bbox_px'], width=int(render['canvas_width']), height=int(render['canvas_height']))
     _assert_bbox_inside_canvas(layout['native_text_footer_bbox_px'], width=int(render['canvas_width']), height=int(render['canvas_height']))
     hero_bboxes = render_map['visual_asset_bboxes_px']['hero_anchor']
@@ -688,11 +700,11 @@ def test_pages_mixed_infographic_native_layout_modes_render_inside_canvas(native
 @pytest.mark.parametrize('scene_variant', MIXED_INFOGRAPHIC_SCENE_VARIANTS)
 def test_pages_mixed_infographic_scene_variants_render_inside_canvas(scene_variant: str) -> None:
     task = PagesMixedInfographicModuleFieldValueLabelTask()
-    out = task.generate(98140 + MIXED_INFOGRAPHIC_SCENE_VARIANTS.index(scene_variant), params={'query_id': MIXED_INFOGRAPHIC_QUERY_ID, 'scene_variant': scene_variant, 'module_count': 7, 'pages_context_text_enabled': False}, max_attempts=10)
+    out = task.generate(98140 + MIXED_INFOGRAPHIC_SCENE_VARIANTS.index(scene_variant), params={'query_id': MIXED_INFOGRAPHIC_QUERY_ID, 'scene_variant': scene_variant, 'module_count': 9, 'pages_context_text_enabled': False}, max_attempts=10)
     render = out.trace_payload['render_spec']
     assert str(render['layout']['scene_variant']) == str(scene_variant)
-    assert len(render['layout']['slot_bboxes_px']) == 7
-    assert int(out.trace_payload['execution_trace']['module_count']) == 7
+    assert len(render['layout']['slot_bboxes_px']) == 9
+    assert int(out.trace_payload['execution_trace']['module_count']) == 9
     _assert_radial_modules_have_separate_text_bands(out.trace_payload)
     for bbox in _annotation_bboxes(out.annotation_gt.value):
         _assert_bbox_inside_canvas(bbox, width=int(render['canvas_width']), height=int(render['canvas_height']))
@@ -1078,61 +1090,13 @@ def test_pages_infographic_metric_ranked_item_label_tie_breaking_is_retry_free(i
     values = [int(candidate['value']) for candidate in ranked]
     assert len(values) == len(set(values))
 
-@pytest.mark.parametrize('query_id', FACT_LOOKUP_QUERY_IDS)
-def test_pages_infographic_fact_lookup_variants_match_contract(query_id: str) -> None:
-    task = _fact_lookup_task_for_query(query_id)
-    out = task.generate(100731 + FACT_LOOKUP_QUERY_IDS.index(query_id), params={'query_id': query_id, 'card_count': 24, 'section_count': 4}, max_attempts=10)
-    trace = out.trace_payload
-    execution = trace['execution_trace']
-    render = trace['render_spec']
-    assert out.query_id == query_id
-    assert execution['source_query_id'] == query_id
-    assert out.scene_id == 'infographic'
-    assert out.answer_gt.type == 'string'
-    assert out.annotation_gt.type == 'bbox'
-    assert execution['answer_type'] == 'string'
-    assert execution['question_format'] == 'label_open'
-    assert execution['target_labels']
-    assert execution['target_sections']
-    expected = _expected_answer(execution)
-    assert str(out.answer_gt.value) == str(expected)
-    assert str(execution['answer_value']) == str(expected)
-    assert str(trace['query_spec']['params']['target_answer']) == str(expected)
-    annotation_targets = [dict(item) for item in execution['annotation_targets']]
-    assert annotation_targets
-    assert len(annotation_targets) == 1
-    assert trace['projected_annotation']['bbox'] == out.annotation_gt.value
-    assert trace['projected_annotation']['annotation_targets'] == annotation_targets
-    _assert_bbox_inside_canvas(out.annotation_gt.value, width=int(render['canvas_width']), height=int(render['canvas_height']))
-    target = annotation_targets[0]
-    label = str(target['label'])
-    if query_id == 'value_for_named_item':
-        assert annotation_targets == [{'label': label, 'bbox_kind': 'card'}]
-        assert trace['projected_annotation']['card_bbox_map'][label] == out.annotation_gt.value
-    elif query_id == 'item_for_named_value':
-        assert annotation_targets == [{'label': label, 'bbox_kind': 'card'}]
-        assert trace['projected_annotation']['card_bbox_map'][label] == out.annotation_gt.value
-        assert execution['target_value_text']
-    else:
-        assert query_id == 'detail_for_named_item'
-        assert annotation_targets == [{'label': label, 'bbox_kind': 'card'}]
-        assert trace['projected_annotation']['card_bbox_map'][label] == out.annotation_gt.value
-        assert str(out.answer_gt.value).startswith('Ref ')
-        assert any(
-            str(card.get('caption_text')) == str(out.answer_gt.value)
-            for card in execution['cards']
-        )
-    example = _extract_prompt_json_example(out.prompt)
-    assert list(example.keys()) == ['annotation', 'answer']
-    assert isinstance(example['answer'], str)
-    assert isinstance(example['annotation'], list)
-
 def test_pages_infographic_retired_public_modules_are_removed() -> None:
     retired_modules = [
         'trace.tasks.pages.infographic.value_for_named_item',
         'trace.tasks.pages.infographic.item_for_named_value',
         'trace.tasks.pages.infographic.detail_for_named_item',
         'trace.tasks.pages.infographic.metric_ranked_item_label',
+        'trace.tasks.pages.infographic.metric_card_field_lookup',
     ]
     for module_name in retired_modules:
         with pytest.raises(ModuleNotFoundError):

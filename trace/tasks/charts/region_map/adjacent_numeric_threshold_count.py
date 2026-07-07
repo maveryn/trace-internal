@@ -14,6 +14,8 @@ LESS_THAN_QUERY_ID = "less_than_adjacent_numeric_threshold_count"
 SUPPORTED_QUERY_IDS = (GREATER_THAN_QUERY_ID, LESS_THAN_QUERY_ID)
 DEFAULT_QUERY_ID = GREATER_THAN_QUERY_ID
 THRESHOLD_DIRECTION_BY_QUERY_ID = {GREATER_THAN_QUERY_ID: "greater_than", LESS_THAN_QUERY_ID: "less_than"}
+TASK_COUNT_ANSWER_MIN = 1
+TASK_COUNT_ANSWER_MAX = 4
 
 
 @register_task
@@ -64,7 +66,12 @@ class ChartsMapAdjacentNumericThresholdCountTask:
         return run_region_map_lifecycle(
             task=self,
             instance_seed=instance_seed,
-            params={**dict(params), "scene_variant": "synthetic_region_map"},
+            params={
+                **dict(params),
+                "scene_variant": "synthetic_region_map",
+                "count_answer_min": TASK_COUNT_ANSWER_MIN,
+                "count_answer_max": TASK_COUNT_ANSWER_MAX,
+            },
             max_attempts=max_attempts,
             default_query_id=DEFAULT_QUERY_ID,
             prompt_query_key="adjacent_numeric_threshold_count",

@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from trace.tasks.charts.combo_mark.shared.state import ComboRenderArtifacts
-from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts
+from trace.tasks.shared.annotation_artifacts import AnnotationArtifacts, annotation_cardinality
 
 
 def build_trace_scaffold(
@@ -61,7 +61,12 @@ def build_trace_scaffold(
         },
         "witness_symbolic": {
             "type": str(annotation.annotation_type),
-            "count": int(len(annotation.value)),
+            "count": int(
+                annotation_cardinality(
+                    annotation.value,
+                    annotation_type=str(annotation.annotation_type),
+                )
+            ),
         },
         "projected_annotation": dict(annotation.projected_annotation),
         "background": dict(artifacts.background_style),

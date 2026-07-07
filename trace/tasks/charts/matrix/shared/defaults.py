@@ -289,14 +289,14 @@ def _matrix_size_support(params: Mapping[str, Any]) -> Tuple[int, int]:
         _GEN_DEFAULTS,
         min_key="row_count_min",
         max_key="row_count_max",
-        fallback_min=6,
-        fallback_max=12,
+        fallback_min=4,
+        fallback_max=8,
         context=f"generation defaults for {SCENE_NAMESPACE}",
     )
-    row_min = max(6, int(row_min))
-    row_max = min(12, int(row_max))
+    row_min = max(4, int(row_min))
+    row_max = min(8, int(row_max))
     if row_min > row_max:
-        raise ValueError("matrix row_count support must overlap 6..12")
+        raise ValueError("matrix row_count support must overlap 4..8")
     return int(row_min), int(row_max)
 
 
@@ -306,14 +306,14 @@ def _column_size_support(params: Mapping[str, Any]) -> Tuple[int, int]:
         _GEN_DEFAULTS,
         min_key="column_count_min",
         max_key="column_count_max",
-        fallback_min=6,
-        fallback_max=12,
+        fallback_min=4,
+        fallback_max=8,
         context=f"generation defaults for {SCENE_NAMESPACE}",
     )
-    col_min = max(6, int(col_min))
-    col_max = min(12, int(col_max))
+    col_min = max(4, int(col_min))
+    col_max = min(8, int(col_max))
     if col_min > col_max:
-        raise ValueError("matrix column_count support must overlap 6..12")
+        raise ValueError("matrix column_count support must overlap 4..8")
     return int(col_min), int(col_max)
 
 

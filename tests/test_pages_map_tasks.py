@@ -59,7 +59,7 @@ def test_pages_map_navigation_label_contract_matches_annotation_bboxes() -> None
         assert str(execution["view_family"]) == "printed_campus_map"
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert str(out.answer_gt.value) == str(execution["answer_label"])
-        assert 10 <= int(execution["landmark_count"]) <= 14
+        assert 8 <= int(execution["landmark_count"]) <= 12
         assert len(execution["landmark_specs"]) == int(execution["landmark_count"])
         assert len(render_map["landmark_bboxes_px"]) == int(execution["landmark_count"])
         assert len(render_map["zone_label_bboxes_px"]) == 4

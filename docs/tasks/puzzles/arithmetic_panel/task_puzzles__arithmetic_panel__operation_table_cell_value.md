@@ -52,5 +52,5 @@ Query ids: `single`.
 ## 5) Tests
 1. Determinism test: `tests/test_puzzles_arithmetic_panel_tasks.py::test_arithmetic_panel_task_is_deterministic`
 2. Answer/annotation consistency test: `tests/test_puzzles_arithmetic_panel_tasks.py::test_arithmetic_panel_scene_tasks_use_scalar_target_bbox_annotation`
-3. Prompt metadata/placeholder test: covered by scene-package review gates and prompt-system tests.
+3. Prompt metadata/placeholder test: covered by source-layout review gates and prompt-system tests.
 4. Constraint-specific tests: `tests/test_puzzles_arithmetic_panel_tasks.py::test_forced_arithmetic_panel_branches_are_valid`

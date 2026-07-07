@@ -1,4 +1,4 @@
-"""Pre-review source checks for scene-package candidates.
+"""Pre-review source checks for active source-layout scenes.
 
 These checks run before task-review artifacts are written. They are intentionally
 stricter than a manual status flag: a scene can be listed for review only after
@@ -18,7 +18,7 @@ import token
 import tokenize
 from typing import Any
 
-from trace.core.scene_package_migration import (
+from trace.core.source_layout_policy import (
     is_scene_package_review_target_scene,
     parse_public_task_id,
 )
@@ -57,8 +57,8 @@ def _task_registry(*, domain: str | None = None, scene_id: str | None = None) ->
     return TASK_REGISTRY
 
 
-def review_candidate_task_files_by_scene(domain: str, scene_id: str) -> dict[Path, list[str]]:
-    """Return active public task files for one scene-package review candidate."""
+def review_target_task_files_by_scene(domain: str, scene_id: str) -> dict[Path, list[str]]:
+    """Return active public task files for one source-layout scene."""
 
     grouped: dict[Path, list[str]] = defaultdict(list)
     for task_id, cls in sorted(dict.items(_task_registry(domain=domain, scene_id=scene_id))):
@@ -192,8 +192,8 @@ def _shared_identity_failures(*, domain: str, scene_id: str, task_ids: set[str])
     return failures
 
 
-def audit_scene_package_review_candidate(domain: str, scene_id: str) -> dict[str, Any]:
-    """Return a fail-closed structural audit for one review-candidate scene."""
+def audit_scene_package_review_target(domain: str, scene_id: str) -> dict[str, Any]:
+    """Return a fail-closed structural audit for one source-layout scene."""
 
     domain = str(domain)
     scene_id = str(scene_id)
@@ -201,7 +201,7 @@ def audit_scene_package_review_candidate(domain: str, scene_id: str) -> dict[str
     metrics: list[dict[str, Any]] = []
 
     if not is_scene_package_review_target_scene(domain, scene_id):
-        failures.append(f"{domain}/{scene_id}: scene is not registered as a review candidate")
+        failures.append(f"{domain}/{scene_id}: scene is not registered for source-layout review")
         return {
             "passed": False,
             "domain": domain,
@@ -210,7 +210,7 @@ def audit_scene_package_review_candidate(domain: str, scene_id: str) -> dict[str
             "metrics": metrics,
         }
 
-    files = review_candidate_task_files_by_scene(domain, scene_id)
+    files = review_target_task_files_by_scene(domain, scene_id)
     if not files:
         failures.append(f"{domain}/{scene_id}: no active public task files found")
         return {

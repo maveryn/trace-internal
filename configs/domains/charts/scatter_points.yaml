@@ -8,8 +8,8 @@ generation:
     scatter_points_per_category_max: 10
     category_threshold_points_per_category_min: 7
     category_threshold_points_per_category_max: 12
-    axis_threshold_answer_min: 4
-    axis_threshold_answer_max: 12
+    axis_threshold_answer_min: 1
+    axis_threshold_answer_max: 10
     category_threshold_answer_min: 2
     category_threshold_answer_max: 9
     threshold_values:
@@ -20,7 +20,8 @@ generation:
     - 60
     - 70
     - 80
-    mean_extremum_margin_min: 8.0
+    mean_extremum_margin_min: 5.0
+    mean_extremum_margin_max: 9.0
     category_label_min_chars: 3
     category_label_max_chars: 12
     category_label_allow_spaces: true

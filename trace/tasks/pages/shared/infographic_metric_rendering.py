@@ -305,6 +305,8 @@ def _render_infographic(
     )
     draw_text_traced(draw,(title_x, title_y), title_text, fill=text_rgb, font=title_font, role="readout", required=False)
     draw_text_traced(draw,(title_x, title_y + 36), subtitle_text, fill=muted_rgb, font=subtitle_font, role="readout", required=False)
+    document_title_bbox = _text_bbox(draw, (title_x, title_y), str(title_text), title_font)
+    document_subtitle_bbox = _text_bbox(draw, (title_x, title_y + 36), str(subtitle_text), subtitle_font)
 
     section_count = len(section_titles)
     layout_mode = "stacked"
@@ -400,6 +402,9 @@ def _render_infographic(
             image=image,
             entities=entities,
             card_traces=card_traces,
+            page_bbox=[float(value) for value in page_bbox],
+            document_title_bbox=[float(value) for value in document_title_bbox],
+            document_subtitle_bbox=[float(value) for value in document_subtitle_bbox],
             section_bboxes=section_bboxes,
             section_title_bboxes=section_title_bboxes,
             layout_jitter_meta={
@@ -564,6 +569,9 @@ def _render_infographic(
             image=image,
             entities=entities,
             card_traces=card_traces,
+            page_bbox=[float(value) for value in page_bbox],
+            document_title_bbox=[float(value) for value in document_title_bbox],
+            document_subtitle_bbox=[float(value) for value in document_subtitle_bbox],
             section_bboxes=section_bboxes,
             section_title_bboxes=section_title_bboxes,
             layout_jitter_meta={
@@ -654,6 +662,9 @@ def _render_infographic(
             image=image,
             entities=entities,
             card_traces=card_traces,
+            page_bbox=[float(value) for value in page_bbox],
+            document_title_bbox=[float(value) for value in document_title_bbox],
+            document_subtitle_bbox=[float(value) for value in document_subtitle_bbox],
             section_bboxes=section_bboxes,
             section_title_bboxes=section_title_bboxes,
             layout_jitter_meta={
@@ -726,6 +737,9 @@ def _render_infographic(
         image=image,
         entities=entities,
         card_traces=card_traces,
+        page_bbox=[float(value) for value in page_bbox],
+        document_title_bbox=[float(value) for value in document_title_bbox],
+        document_subtitle_bbox=[float(value) for value in document_subtitle_bbox],
         section_bboxes=section_bboxes,
         section_title_bboxes=section_title_bboxes,
         layout_jitter_meta={

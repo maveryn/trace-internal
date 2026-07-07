@@ -234,7 +234,7 @@ def _render_matrix(
                     max_width=float(cell_w),
                     max_height=float(cell_h),
                     bold=dense_fit_bold(),
-                    min_size_px=9,
+                    min_size_px=13,
                     max_size_px=p.cell_font_size_px,
                     fill_ratio=0.72,
                     font_family=p.font_family,

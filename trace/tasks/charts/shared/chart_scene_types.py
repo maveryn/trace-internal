@@ -120,6 +120,7 @@ class ChartRenderParams:
     label_font_size_px: int
     tick_font_size_px: int
     label_stroke_width_px: int
+    label_bold: bool
     mark_outline_width_px: int
     line_width_px: int
     point_radius_px: int

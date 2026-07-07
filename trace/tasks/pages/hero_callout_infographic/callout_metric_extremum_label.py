@@ -4,10 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
-from trace.core.types import TypedValue
-from trace.tasks.base import TaskOutput
 from trace.tasks.registry import register_task
-from trace.tasks.shared.output_metadata import default_task_versions
 
 from . import _lifecycle
 
@@ -101,7 +98,7 @@ class PagesHeroCalloutMetricExtremumLabelTask:
     supported_query_ids = SUPPORTED_QUERY_IDS
     default_dataset_enabled = True
 
-    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int) -> TaskOutput:
+    def generate(self, instance_seed: int, *, params: Dict[str, Any], max_attempts: int):
         """Generate one unique-extremum comparison and bind all compared values."""
 
         del max_attempts
@@ -146,17 +143,12 @@ class PagesHeroCalloutMetricExtremumLabelTask:
             query_params_extra=query_params_extra,
             execution_extra=execution_extra,
         )
-        return TaskOutput(
-            prompt=str(prompt_artifacts.prompt),
-            answer_gt=TypedValue(type="string", value=str(target["answer_value"])),
-            annotation_gt=TypedValue(type="bbox_map", value=dict(annotation)),
-            image=ctx.image,
-            image_id="img0",
+        return _lifecycle.build_string_bbox_map_output(
+            ctx=ctx,
+            prompt_artifacts=prompt_artifacts,
+            answer_value=str(target["answer_value"]),
+            annotation=annotation,
             trace_payload=trace_payload,
-            task_versions=default_task_versions(),
-            scene_id=_lifecycle.SCENE_ID,
-            query_id=str(ctx.selected_branch),
-            prompt_variants=dict(prompt_artifacts.prompt_variants),
         )
 
 

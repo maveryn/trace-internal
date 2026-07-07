@@ -7,21 +7,21 @@
 4. Task id: `task_pages__mixed_infographic_page__module_field_value_label`
 
 ## Contract
-1. Objective: read the visible value at the intersection of one titled module, one item label, and one field label.
+1. Objective: rank items in one titled module by a selector field, then read a second field value for the ranked item.
 2. Public task contract: `module_field_value_label`
 3. Supported `query_id` values: `single`
 4. Answer type: `string`
 5. Annotation schema: `bbox`
 6. Annotation witness: the answer `value_cell`; lookup role boxes are retained in trace diagnostics.
-7. Query argument axes: target module, item, field, module count, item/field supports, scene variant, and native layout mode.
+7. Query argument axes: target module, selector field, rank direction, rank position, answer field, module count, item/field supports, scene variant, and native layout mode.
 
 ## Program Contract
-- `module_field_value(module_title, item_label, field_label); output=string_visible_value; annotation=bbox(value_cell); scene=mixed_infographic_page; scope=one dense mixed infographic page`
+- `ranked_module_field_value(module_title, selector_field_label, rank_direction, rank_position, answer_field_label); output=string_visible_value; annotation=bbox(answer_value_cell); scene=mixed_infographic_page; scope=one dense mixed infographic page`
 
 ## Prompt + Trace
 1. Prompt bundle: `pages_mixed_infographic_page_v1`
 2. Scene key: `mixed_infographic_page`
 3. Task key: `mixed_infographic_lookup_query`
 4. Prompt query key: `module_field_value_label`
-5. Trace records module/item/field ids, visible labels and values, final bboxes, style metadata, and layout geometry.
+5. Trace records module/item/selector-field/answer-field ids, visible labels and values, final bboxes, style metadata, and layout geometry.
 6. Generation is deterministic from `instance_seed`; answers and annotation come from finalized render metadata.

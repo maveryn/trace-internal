@@ -97,6 +97,31 @@ def test_export_trace_dataset_to_rlvr_parquet_supports_embedded_images(tmp_path:
     assert loaded_row['prompt_answer_only'] == '<image>Count the marked dots.\nRequired answer format: set "answer" to the requested integer value.\nExample JSON:\n{"answer":3}'
     assert isinstance(loaded_row['images'][0], Image.Image)
 
+def test_export_trace_dataset_to_rlvr_embedded_image_cap_scales_annotation(tmp_path: Path) -> None:
+    from io import BytesIO
+    dataset_root, train_record = _write_trace_dataset(tmp_path)
+    image_path = dataset_root / 'images' / 'geometry' / 'task_geometry__coordinate_plane__segment_relation_count' / '000000.png'
+    Image.new('RGB', (20, 10), (255, 255, 255)).save(image_path)
+    train_record['annotation_gt'] = {'type': 'point_set', 'value': [[2, 4], [10, 8]]}
+    (dataset_root / 'train_instances.jsonl').write_text(json.dumps(train_record) + '\n', encoding='utf-8')
+    parquet_path = tmp_path / 'exports' / 'trace_train_embedded_resized.parquet'
+    result = export_trace_dataset_to_rlvr(
+        dataset_root,
+        parquet_path,
+        output_format='parquet',
+        prompt_variant='answer_and_annotation',
+        image_storage_mode='embedded_bytes',
+        parquet_cpu_count=1,
+        max_embedded_image_pixels=50,
+    )
+    rows = pq.read_table(result.output_path).to_pylist()
+    assert len(rows) == 1
+    resized = Image.open(BytesIO(rows[0]['images'][0]['bytes']))
+    assert resized.size == (10, 5)
+    assert rows[0]['image_sizes_original'] == [{'width': 20, 'height': 10}]
+    assert rows[0]['image_sizes_exported'] == [{'width': 10, 'height': 5}]
+    assert json.loads(rows[0]['annotation_gt']) == {'type': 'point_set', 'value': [[1.0, 2.0], [5.0, 4.0]]}
+
 def test_export_trace_dataset_to_rlvr_parquet_supports_mixed_trace_contract_types(tmp_path: Path) -> None:
     dataset_root = tmp_path / 'trace_dataset_mixed'
     image_dir = dataset_root / 'images'

@@ -8,7 +8,7 @@ from trace.core.seed import spawn_rng
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.charts.dashboard._lifecycle import DashboardTaskPlan, MaterializedDashboardTask, dashboard_task_output_fields, run_dashboard_public_task
-from trace.tasks.charts.dashboard.shared.metrics import category_by_id, panel_by_id, rank_phrase, rank_support, ranked_category_id
+from trace.tasks.charts.dashboard.shared.metrics import category_by_id, panel_by_id, rank_phrase, ranked_category_id
 from trace.tasks.charts.dashboard.shared.prompts import build_prompt_artifacts, build_prompt_slots
 from trace.tasks.charts.dashboard.shared.sampling import build_dashboard_base_sample
 from trace.tasks.charts.dashboard.shared.state import DOMAIN, SCENE_ID, SCENE_VARIANT, DashboardDataset, DashboardQuery
@@ -61,10 +61,7 @@ def _build_source_target_transfer_plan(instance_seed: int, params: dict[str, Any
         "target": panel_by_id(base_sample.panels, target_id),
     }
     direction = RANK_DIRECTION_BY_QUERY_ID[str(selected_query_id)]
-    feasible_ranks = tuple(value for value in rank_support(params) if int(value) <= len(base_sample.categories))
-    if not feasible_ranks:
-        raise ValueError("rank support has no feasible values for category count")
-    rank_n = int(feasible_ranks[int(rng.randrange(len(feasible_ranks)))])
+    rank_n = 1
     chosen_category_id = ranked_category_id(categories=base_sample.categories, panel=panels["source"], direction=direction, rank_n=rank_n)
     chosen_category = category_by_id(base_sample.categories, chosen_category_id)
     mark_values = {role: int(panel.values_by_category_id[str(chosen_category_id)]) for role, panel in panels.items()}

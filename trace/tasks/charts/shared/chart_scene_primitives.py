@@ -539,6 +539,7 @@ def resolve_chart_render_params(params: Mapping[str, Any]) -> ChartRenderParams:
         label_font_size_px=int(params["label_font_size_px"]),
         tick_font_size_px=int(params["tick_font_size_px"]),
         label_stroke_width_px=int(params["label_stroke_width_px"]),
+        label_bold=_bool_value("label_bold", True),
         mark_outline_width_px=int(params["mark_outline_width_px"]),
         line_width_px=int(params["line_width_px"]),
         point_radius_px=int(params["point_radius_px"]),

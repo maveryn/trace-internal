@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Mapping, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Sequence, Tuple
 
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default
@@ -208,6 +208,122 @@ def _group_count_state_sets(
     return disabled, selected
 
 
+def _group_state_sets_from_counts(
+    *,
+    instance_seed: int,
+    count_mode: str,
+    group_sizes: Sequence[int],
+    group_state_counts: Sequence[int],
+) -> Tuple[set[Tuple[int, int]], set[Tuple[int, int]]]:
+    """Place requested matching-state counts in every group.
+
+    The caller owns the objective-specific meaning of the per-group counts.
+    This helper only turns semantic state counts into disabled/selected flags
+    for the shared control-board renderer.
+    """
+
+    if len(group_state_counts) != len(group_sizes):
+        raise ValueError("group_state_counts must match group_sizes length")
+    disabled: set[Tuple[int, int]] = set()
+    selected: set[Tuple[int, int]] = set()
+    for group_index, (group_size, state_count) in enumerate(zip(group_sizes, group_state_counts)):
+        count = int(state_count)
+        if count < 0 or count > int(group_size):
+            raise ValueError("group_state_counts values must fit each group size")
+        selected_indices = _select_indices(
+            instance_seed=int(instance_seed) + (211 * int(group_index)),
+            namespace=f"group_state_count.{count_mode}.{group_index}.{count}",
+            count=int(count),
+            size=int(group_size),
+        )
+        for idx in selected_indices:
+            key = (int(group_index), int(idx))
+            if str(count_mode) == DISABLED_MODE:
+                disabled.add(key)
+            elif str(count_mode) == SELECTED_ENABLED_MODE:
+                selected.add(key)
+            else:
+                raise ValueError(f"unsupported control state count mode: {count_mode}")
+
+    for group_index, group_size in enumerate(group_sizes):
+        group_keys = [(int(group_index), int(idx)) for idx in range(int(group_size))]
+        if str(count_mode) == DISABLED_MODE:
+            remaining = [key for key in group_keys if key not in disabled]
+            if remaining:
+                selected_only_count = min(1 + (int(group_index) % 2), len(remaining))
+                for key in _select_values(
+                    instance_seed=int(instance_seed) + (307 * int(group_index)),
+                    namespace=f"selected_distractors.{group_index}",
+                    values=remaining,
+                    count=int(selected_only_count),
+                ):
+                    selected.add(key)
+        elif str(count_mode) == SELECTED_ENABLED_MODE:
+            remaining = [key for key in group_keys if key not in selected]
+            if remaining:
+                selected_disabled_count = min(1, len(remaining))
+                for key in _select_values(
+                    instance_seed=int(instance_seed) + (401 * int(group_index)),
+                    namespace=f"selected_disabled_distractors.{group_index}",
+                    values=remaining,
+                    count=int(selected_disabled_count),
+                ):
+                    selected.add(key)
+                    disabled.add(key)
+    return disabled, selected
+
+
+def _assemble_controls(
+    *,
+    instance_seed: int,
+    group_names: Sequence[str],
+    group_sizes: Sequence[int],
+    candidate_label_pool: Sequence[str],
+    disabled_set: set[Tuple[int, int]],
+    selected_set: set[Tuple[int, int]],
+    annotation_predicate: Callable[[int, int, bool, bool], bool],
+) -> Tuple[Tuple[ControlSpec, ...], Tuple[str, ...]]:
+    """Create visible controls and annotation ids from final state sets."""
+
+    total_controls = int(sum(int(value) for value in group_sizes))
+    if total_controls > len(candidate_label_pool):
+        raise ValueError("candidate_label_pool must cover all rendered GUI controls")
+    if total_controls > len(COMMAND_OPTIONS):
+        raise ValueError("not enough command options for rendered GUI controls")
+
+    command_rng = spawn_rng(int(instance_seed), f"{NAMESPACE_ROOT}.commands")
+    command_options = list(COMMAND_OPTIONS)
+    command_rng.shuffle(command_options)
+
+    controls: List[ControlSpec] = []
+    label_index = 0
+    annotation_ids: List[str] = []
+    for group_index, group_name in enumerate(group_names):
+        for order_in_group in range(int(group_sizes[int(group_index)])):
+            label = str(candidate_label_pool[int(label_index)])
+            control_ref = f"control_{str(label).lower()}"
+            disabled = (int(group_index), int(order_in_group)) in disabled_set
+            selected = (int(group_index), int(order_in_group)) in selected_set
+            if annotation_predicate(int(group_index), int(order_in_group), bool(disabled), bool(selected)):
+                annotation_ids.append(str(control_ref))
+            controls.append(
+                ControlSpec(
+                    control_id=str(control_ref),
+                    candidate_label=str(label),
+                    group_name=str(group_name),
+                    group_index=int(group_index),
+                    order_in_group=int(order_in_group),
+                    global_order_index=int(label_index),
+                    command=command_options[int(label_index)],
+                    enabled=not bool(disabled),
+                    selected=bool(selected),
+                    is_reference=False,
+                )
+            )
+            label_index += 1
+    return tuple(controls), tuple(str(value) for value in annotation_ids)
+
+
 def build_control_board_case(
     *,
     instance_seed: int,
@@ -275,15 +391,6 @@ def build_control_board_case(
             group_sizes.append(6)
         else:
             group_sizes.append(5)
-    total_controls = int(sum(group_sizes))
-    if total_controls > len(candidate_label_pool):
-        raise ValueError("candidate_label_pool must cover all rendered GUI controls")
-    if total_controls > len(COMMAND_OPTIONS):
-        raise ValueError("not enough command options for rendered GUI controls")
-
-    command_rng = spawn_rng(int(instance_seed), f"{NAMESPACE_ROOT}.commands")
-    command_options = list(COMMAND_OPTIONS)
-    command_rng.shuffle(command_options)
     disabled_set, selected_set = _group_count_state_sets(
         instance_seed=int(instance_seed),
         count_mode=str(count_mode),
@@ -293,37 +400,24 @@ def build_control_board_case(
         group_sizes=group_sizes,
     )
 
-    controls: List[ControlSpec] = []
-    label_index = 0
-    annotation_ids: List[str] = []
-    for group_index, group_name in enumerate(group_names):
-        for order_in_group in range(int(group_sizes[int(group_index)])):
-            label = str(candidate_label_pool[int(label_index)])
-            control_ref = f"control_{str(label).lower()}"
-            disabled = (int(group_index), int(order_in_group)) in disabled_set
-            selected = (int(group_index), int(order_in_group)) in selected_set
-            if str(count_mode) == DISABLED_MODE:
-                if int(group_index) == int(target_group_index) and bool(disabled):
-                    annotation_ids.append(str(control_ref))
-            elif str(count_mode) == SELECTED_ENABLED_MODE:
-                if int(group_index) == int(target_group_index) and bool(selected) and not bool(disabled):
-                    annotation_ids.append(str(control_ref))
+    def _count_annotation_predicate(group_index: int, _order: int, disabled: bool, selected: bool) -> bool:
+        if int(group_index) != int(target_group_index):
+            return False
+        if str(count_mode) == DISABLED_MODE:
+            return bool(disabled)
+        if str(count_mode) == SELECTED_ENABLED_MODE:
+            return bool(selected) and not bool(disabled)
+        return False
 
-            controls.append(
-                ControlSpec(
-                    control_id=str(control_ref),
-                    candidate_label=str(label),
-                    group_name=str(group_name),
-                    group_index=int(group_index),
-                    order_in_group=int(order_in_group),
-                    global_order_index=int(label_index),
-                    command=command_options[int(label_index)],
-                    enabled=not bool(disabled),
-                    selected=bool(selected),
-                    is_reference=False,
-                )
-            )
-            label_index += 1
+    controls, annotation_ids = _assemble_controls(
+        instance_seed=int(instance_seed),
+        group_names=group_names,
+        group_sizes=group_sizes,
+        candidate_label_pool=candidate_label_pool,
+        disabled_set=disabled_set,
+        selected_set=selected_set,
+        annotation_predicate=_count_annotation_predicate,
+    )
 
     if len(annotation_ids) != int(answer_value):
         raise RuntimeError(
@@ -331,6 +425,81 @@ def build_control_board_case(
             f"{len(annotation_ids)} != {answer_value}"
         )
 
+    return ControlBoardCase(
+        count_mode=str(count_mode),
+        scene_variant=str(scene_variant),
+        controls=tuple(controls),
+        group_names=tuple(str(value) for value in group_names),
+        target_group_name=str(group_names[int(target_group_index)]),
+        target_group_index=int(target_group_index),
+        answer_value=int(answer_value),
+        annotation_control_ids=tuple(str(value) for value in annotation_ids),
+        answer_support=tuple(int(value) for value in answer_support),
+        candidate_label_pool=tuple(str(value) for value in candidate_label_pool),
+        scene_variant_probabilities=dict(scene_variant_probabilities),
+    )
+
+
+def build_control_board_case_from_group_state_counts(
+    *,
+    instance_seed: int,
+    params: Mapping[str, Any],
+    count_mode: str,
+    target_group_index: int,
+    group_state_counts: Sequence[int],
+    answer_support: Sequence[int],
+) -> ControlBoardCase:
+    """Build one control board from explicit per-group state counts."""
+
+    rng = spawn_rng(int(instance_seed), f"{NAMESPACE_ROOT}.scene")
+    scene_variant, scene_variant_probabilities = _resolve_axis(
+        rng,
+        instance_seed=int(instance_seed),
+        params=params,
+        supported=SCENE_VARIANTS,
+        explicit_key="scene_variant",
+        weights_key="scene_variant_weights",
+        balance_flag_key="balanced_scene_variant_sampling",
+        namespace="scene_variant",
+    )
+    group_names = _normalize_str_support(params, "group_name_pool", DEFAULTS.group_name_pool)
+    if len(group_names) != 4:
+        raise ValueError("control-board sampling requires exactly four group names")
+    if len(group_state_counts) != len(group_names):
+        raise ValueError("group_state_counts must contain one count per group")
+    candidate_label_pool = _normalize_str_support(params, "candidate_label_pool", DEFAULTS.candidate_label_pool)
+    group_sizes = [6 for _ in group_names]
+    disabled_set, selected_set = _group_state_sets_from_counts(
+        instance_seed=int(instance_seed),
+        count_mode=str(count_mode),
+        group_sizes=group_sizes,
+        group_state_counts=tuple(int(value) for value in group_state_counts),
+    )
+
+    def _target_state_predicate(group_index: int, _order: int, disabled: bool, selected: bool) -> bool:
+        if int(group_index) != int(target_group_index):
+            return False
+        if str(count_mode) == DISABLED_MODE:
+            return bool(disabled)
+        if str(count_mode) == SELECTED_ENABLED_MODE:
+            return bool(selected) and not bool(disabled)
+        return False
+
+    controls, annotation_ids = _assemble_controls(
+        instance_seed=int(instance_seed),
+        group_names=group_names,
+        group_sizes=group_sizes,
+        candidate_label_pool=candidate_label_pool,
+        disabled_set=disabled_set,
+        selected_set=selected_set,
+        annotation_predicate=_target_state_predicate,
+    )
+    answer_value = int(group_state_counts[int(target_group_index)])
+    if len(annotation_ids) != int(answer_value):
+        raise RuntimeError(
+            "control-board target state count does not match annotation ids: "
+            f"{len(annotation_ids)} != {answer_value}"
+        )
     return ControlBoardCase(
         count_mode=str(count_mode),
         scene_variant=str(scene_variant),

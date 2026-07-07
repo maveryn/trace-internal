@@ -70,7 +70,7 @@ def render_histogram_scene(
         render_params=render_params,
     )
     tick_font = load_font(int(render_params.tick_font_size_px), bold=False)
-    label_font = load_font(int(render_params.label_font_size_px), bold=True)
+    label_stroke_width = max(0, int(render_params.label_stroke_width_px))
     axis_color = tuple(int(value) for value in render_params.axis_color_rgb)
     grid_color = tuple(int(value) for value in render_params.grid_color_rgb)
 
@@ -107,7 +107,7 @@ def render_histogram_scene(
                 font=tick_font,
                 fill=render_params.text_color_rgb,
                 stroke_fill=render_params.text_stroke_rgb,
-                stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+                stroke_width=label_stroke_width,
             )
 
     draw.line(
@@ -185,7 +185,7 @@ def render_histogram_scene(
             font=tick_font,
             fill=render_params.text_color_rgb,
             stroke_fill=render_params.text_stroke_rgb,
-            stroke_width=max(1, int(round(0.06 * float(render_params.tick_font_size_px)))),
+            stroke_width=label_stroke_width,
         )
         label_bbox = _text_bbox(draw, text=str(bin_spec.label), center=label_center, font=tick_font)
         mark_center = (float(x_center), float(0.5 * (float(top) + float(plot_bottom))))

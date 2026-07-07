@@ -70,7 +70,7 @@ def test_pages_paired_forms_contract_matches_trace() -> None:
         assert out.image.size == (int(render["canvas_width"]), int(render["canvas_height"]))
         assert int(out.answer_gt.value) == int(execution["answer_value"])
         assert int(out.answer_gt.value) == _answer_from_trace(str(prompt_query_key), item_specs)
-        assert 6 <= int(execution["item_count"]) <= 9
+        assert 4 <= int(execution["item_count"]) <= 6
         assert len(item_specs) == int(execution["item_count"])
         assert set(execution["receiving_item_order_ids"]) == {str(spec["item_id"]) for spec in item_specs}
         assert [str(item) for item in execution["receiving_item_order_ids"]] != [
@@ -97,7 +97,7 @@ def test_pages_paired_forms_contract_matches_trace() -> None:
         }
         assert int(out.answer_gt.value) not in visible_numbers
 
-        assert 3 <= len(execution["mismatch_item_ids"]) <= 5
+        assert 2 <= len(execution["mismatch_item_ids"]) <= 3
         assert len(annotation_bbox_ids) == len(execution["mismatch_item_ids"])
         if str(prompt_query_key) == SHORTFALL_PROMPT_QUERY_KEY:
             assert len(execution["shortfall_item_ids"]) >= 1

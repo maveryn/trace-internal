@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `histogram`
-3. Source implementation scene package: `charts/histogram`
+3. Source implementation scene: `charts/histogram`
 4. Query id: `single`
 5. Semantic query details are recorded in trace params.
 

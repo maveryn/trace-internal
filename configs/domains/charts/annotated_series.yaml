@@ -4,6 +4,10 @@ generation:
     mark_count_max: 14
     value_min: 10
     value_max: 90
+    value_window_enabled: true
+    value_window_span_min: 25
+    value_window_span_max: 25
+    value_hard_max: 90
     scene_variant_weights:
       line: 1.0
       bar: 1.0

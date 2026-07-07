@@ -11,14 +11,14 @@ Use this when turning a TRACE task design into code.
 1. `docs/contracts/SYSTEM_ARCHITECTURE.md`
 2. `docs/workflows/TASK_AUTHORING.md`
 3. `docs/workflows/DOC_STRUCTURE.md`
-4. `docs/SCENE_PACKAGE_MIGRATION/SCENE_MIGRATION_GUIDE.md` when working on scene-package migration
+4. `docs/contracts/SOURCE_LAYOUT.md`
 5. `docs/workflows/DOCS_AND_SKILLS_MAINTENANCE.md`
 
 If domain behavior matters, also open the matching `docs/domains/<domain>.md`.
 
 ## Implementation workflow
 1. Choose module placement before writing code.
-   - Scene-package task layout:
+   - Current source layout:
      `trace/tasks/<domain>/<scene_id>/<objective_contract>.py`
    - Scene-local reusable code belongs under
      `trace/tasks/<domain>/<scene_id>/shared/`.

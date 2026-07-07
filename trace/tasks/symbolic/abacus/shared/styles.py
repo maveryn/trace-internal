@@ -26,6 +26,12 @@ def resolve_readout_render_params(defaults: Mapping[str, Any]) -> AbacusReadoutR
         title_font_size_px=int(defaults.get("title_font_size_px", 25)),
         label_font_size_px=int(defaults.get("label_font_size_px", 23)),
         small_font_size_px=int(defaults.get("small_font_size_px", 16)),
+        readout_option_card_width_px=int(defaults.get("readout_option_card_width_px", 130)),
+        readout_option_card_height_px=int(defaults.get("readout_option_card_height_px", 58)),
+        readout_option_card_gap_px=int(defaults.get("readout_option_card_gap_px", 12)),
+        readout_option_card_margin_top_px=int(defaults.get("readout_option_card_margin_top_px", 24)),
+        readout_option_label_font_size_px=int(defaults.get("readout_option_label_font_size_px", 22)),
+        readout_option_value_font_size_px=int(defaults.get("readout_option_value_font_size_px", 24)),
     )
 
 

@@ -1,4 +1,4 @@
-"""Domain-specific file policies for scene-package migration gates."""
+"""Domain-specific file policies for current source-layout gates."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ScenePackageFilePolicy:
-    """Allowed source layout for one domain's scene-package review candidates."""
+    """Allowed source layout for one domain's active public task scenes."""
 
     domain: str
     role_shared_files: frozenset[str]
@@ -381,7 +381,7 @@ SCENE_PACKAGE_FILE_POLICIES: dict[str, ScenePackageFilePolicy] = {
 
 
 def scene_package_file_policy(domain: str) -> ScenePackageFilePolicy | None:
-    """Return the migration file policy for ``domain`` when one is defined."""
+    """Return the source-layout file policy for ``domain`` when one is defined."""
 
     return SCENE_PACKAGE_FILE_POLICIES.get(str(domain))
 

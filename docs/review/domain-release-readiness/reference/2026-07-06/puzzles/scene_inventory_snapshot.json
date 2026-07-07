@@ -1,0 +1,302 @@
+{
+  "arithmetic_panel": {
+    "config_path": "configs/domains/puzzles/arithmetic_panel.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/arithmetic_panel",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/arithmetic_panel",
+    "task_count": 5,
+    "task_ids": [
+      "task_puzzles__arithmetic_panel__equal_sum_line_constraint_value",
+      "task_puzzles__arithmetic_panel__number_wall_value",
+      "task_puzzles__arithmetic_panel__operation_table_cell_value",
+      "task_puzzles__arithmetic_panel__row_column_total_missing_value",
+      "task_puzzles__arithmetic_panel__vertical_arithmetic_hidden_digit_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "balance_scale": {
+    "config_path": "configs/domains/puzzles/balance_scale.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/balance_scale",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/balance_scale",
+    "task_count": 4,
+    "task_ids": [
+      "task_puzzles__balance_scale__equivalent_object_count_value",
+      "task_puzzles__balance_scale__missing_object_weight_value",
+      "task_puzzles__balance_scale__query_side_relation_label",
+      "task_puzzles__balance_scale__weight_order_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "cell_board": {
+    "config_path": "configs/domains/puzzles/cell_board.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/cell_board",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/cell_board",
+    "task_count": 4,
+    "task_ids": [
+      "task_puzzles__cell_board__largest_component_size",
+      "task_puzzles__cell_board__reachable_region_size",
+      "task_puzzles__cell_board__shortest_path_length_value",
+      "task_puzzles__cell_board__symmetry_violation_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "color_gradient": {
+    "config_path": "configs/domains/puzzles/color_gradient.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/color_gradient",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/color_gradient",
+    "task_count": 2,
+    "task_ids": [
+      "task_puzzles__color_gradient__color_gradient_completion_label",
+      "task_puzzles__color_gradient__color_gradient_violation_cell_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "cube_net": {
+    "config_path": "configs/domains/puzzles/cube_net.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/cube_net",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/cube_net",
+    "task_count": 3,
+    "task_ids": [
+      "task_puzzles__cube_net__equivalent_net_label",
+      "task_puzzles__cube_net__marked_edge_neighbor_face_label",
+      "task_puzzles__cube_net__opposite_face_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "cyclic_order": {
+    "config_path": "configs/domains/puzzles/cyclic_order.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/cyclic_order",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/cyclic_order",
+    "task_count": 3,
+    "task_ids": [
+      "task_puzzles__cyclic_order__cyclic_order_equivalent_label",
+      "task_puzzles__cyclic_order__insertion_position_label",
+      "task_puzzles__cyclic_order__swap_repair_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "matchstick": {
+    "config_path": "configs/domains/puzzles/matchstick.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/matchstick",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/matchstick",
+    "task_count": 3,
+    "task_ids": [
+      "task_puzzles__matchstick__equation_repair_stick_label",
+      "task_puzzles__matchstick__matchstick_number_transform_label",
+      "task_puzzles__matchstick__max_square_count_after_additions_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "maze": {
+    "config_path": "configs/domains/puzzles/maze.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/maze",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/maze",
+    "task_count": 2,
+    "task_ids": [
+      "task_puzzles__maze__exit_reachability_label",
+      "task_puzzles__maze__nearest_exit_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "nonogram": {
+    "config_path": "configs/domains/puzzles/nonogram.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/nonogram",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/nonogram",
+    "task_count": 2,
+    "task_ids": [
+      "task_puzzles__nonogram__candidate_solution_label",
+      "task_puzzles__nonogram__line_completion_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "pipe_flow": {
+    "config_path": "configs/domains/puzzles/pipe_flow.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/pipe_flow",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/pipe_flow",
+    "task_count": 2,
+    "task_ids": [
+      "task_puzzles__pipe_flow__misrotated_tile_label",
+      "task_puzzles__pipe_flow__pipe_flow_repair_tile_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "polyomino_assembly": {
+    "config_path": "configs/domains/puzzles/polyomino_assembly.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/polyomino_assembly",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/polyomino_assembly",
+    "task_count": 3,
+    "task_ids": [
+      "task_puzzles__polyomino_assembly__composition_result_label",
+      "task_puzzles__polyomino_assembly__decomposition_pair_label",
+      "task_puzzles__polyomino_assembly__hole_fill_piece_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "raven_matrix": {
+    "config_path": "configs/domains/puzzles/raven_matrix.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/raven_matrix",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/raven_matrix",
+    "task_count": 6,
+    "task_ids": [
+      "task_puzzles__raven_matrix__raven_analogical_transform_label",
+      "task_puzzles__raven_matrix__raven_count_progression_label",
+      "task_puzzles__raven_matrix__raven_feature_binding_label",
+      "task_puzzles__raven_matrix__raven_position_progression_label",
+      "task_puzzles__raven_matrix__raven_set_operation_label",
+      "task_puzzles__raven_matrix__raven_spatial_transform_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "rubiks_net": {
+    "config_path": "configs/domains/puzzles/rubiks_net.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/rubiks_net",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/rubiks_net",
+    "task_count": 3,
+    "task_ids": [
+      "task_puzzles__rubiks_net__post_move_face_color_count_label",
+      "task_puzzles__rubiks_net__post_move_sticker_color_label",
+      "task_puzzles__rubiks_net__rubiks_move_result_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "sheet_transform": {
+    "config_path": "configs/domains/puzzles/sheet_transform.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/sheet_transform",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/sheet_transform",
+    "task_count": 3,
+    "task_ids": [
+      "task_puzzles__sheet_transform__fold_cut_result_label",
+      "task_puzzles__sheet_transform__fold_projection_result_label",
+      "task_puzzles__sheet_transform__overlay_union_result_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "star_battle": {
+    "config_path": "configs/domains/puzzles/star_battle.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/star_battle",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/star_battle",
+    "task_count": 2,
+    "task_ids": [
+      "task_puzzles__star_battle__remaining_valid_cell_count",
+      "task_puzzles__star_battle__valid_cell_anywhere_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "sudoku": {
+    "config_path": "configs/domains/puzzles/sudoku.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/sudoku",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/sudoku",
+    "task_count": 3,
+    "task_ids": [
+      "task_puzzles__sudoku__marked_cell_candidate_count",
+      "task_puzzles__sudoku__marked_cell_value",
+      "task_puzzles__sudoku__mistake_cell_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "tents": {
+    "config_path": "configs/domains/puzzles/tents.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/tents",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/tents",
+    "task_count": 2,
+    "task_ids": [
+      "task_puzzles__tents__missing_tent_cell_label",
+      "task_puzzles__tents__violating_tent_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "toggle_grid": {
+    "config_path": "configs/domains/puzzles/toggle_grid.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/toggle_grid",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/toggle_grid",
+    "task_count": 2,
+    "task_ids": [
+      "task_puzzles__toggle_grid__toggle_repair_switch_label",
+      "task_puzzles__toggle_grid__toggle_result_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "voxel_cube": {
+    "config_path": "configs/domains/puzzles/voxel_cube.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/voxel_cube",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/voxel_cube",
+    "task_count": 4,
+    "task_ids": [
+      "task_puzzles__voxel_cube__cube_count",
+      "task_puzzles__voxel_cube__cube_projection_match_label",
+      "task_puzzles__voxel_cube__cube_structure_change_count",
+      "task_puzzles__voxel_cube__cube_visible_projection_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "word_search": {
+    "config_path": "configs/domains/puzzles/word_search.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/puzzles/word_search",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/puzzles/word_search",
+    "task_count": 2,
+    "task_ids": [
+      "task_puzzles__word_search__present_word_option_label",
+      "task_puzzles__word_search__search_location_label"
+    ],
+    "taxonomy_review_pass": true
+  }
+}

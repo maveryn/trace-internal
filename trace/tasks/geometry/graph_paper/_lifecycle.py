@@ -6,6 +6,7 @@ from dataclasses import dataclass, field, replace
 from math import isclose, sqrt
 from typing import Any, Callable, Mapping, Sequence
 
+from trace.core.sampling import uniform_choice
 from trace.core.types import TypedValue
 from trace.tasks.base import TaskOutput
 from trace.tasks.shared.fixed_query import select_task_query_id
@@ -24,7 +25,7 @@ from .shared.construction import (
     polygon_area,
     polygon_perimeter,
 )
-from .shared.defaults import split_defaults_for
+from .shared.defaults import int_default, split_defaults_for
 from .shared.prompts import prompt_defaults as resolve_prompt_defaults
 from .shared.prompts import render_prompt_artifacts
 from .shared.rendering import (
@@ -34,6 +35,7 @@ from .shared.rendering import (
     draw_measurement_guide,
     draw_polygon,
     draw_segment,
+    draw_vertex_labels,
     make_context,
     object_color,
     random_center_for_radii,
@@ -51,7 +53,17 @@ from .shared.sampling import (
     rng_for,
     unique_metric_values,
 )
-from .shared.state import GraphObject, GraphPaperContext, Point, PromptPlan, SCENE_ID
+from .shared.state import GraphObject, GraphPaperContext, Point, POINT_LABELS, PromptPlan, SCENE_ID
+
+
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, list):
+        return [_json_safe(item) for item in value]
+    return value
 
 
 @dataclass(frozen=True)
@@ -208,6 +220,14 @@ def build_graph_paper_components(
     probabilities = {
         str(key): float(value) for key, value in branch_probabilities.items()
     }
+    safe_semantic_args = _json_safe(dict(semantic_args))
+    safe_task_params = _json_safe(
+        {
+            str(key): value
+            for key, value in task_params.items()
+            if not str(key).startswith("_")
+        }
+    )
     query_spec = build_prompt_query_spec(
         prompt_artifacts=prompt_artifacts,
         query_id=str(branch_name),
@@ -216,28 +236,28 @@ def build_graph_paper_components(
             "query_id_probabilities": dict(probabilities),
             "prompt_key": str(prompt_key),
             "program_code": str(program_code),
-            **{str(key): value for key, value in semantic_args.items()},
+            **safe_semantic_args,
         },
     )
-    render_spec = render_metadata(ctx)
+    render_spec = _json_safe(render_metadata(ctx))
     trace_payload = {
         "scene_ir": {
             "scene_id": SCENE_ID,
             "scene_kind": str(scene_kind),
-            "entities": [object_trace(entity) for entity in objects],
+            "entities": [_json_safe(object_trace(entity)) for entity in objects],
             "relations": {
                 "answer_value": answer_value,
                 "answer_type": str(answer_type),
                 "annotation_type": str(annotation_type),
                 "program_code": str(program_code),
-                **{str(key): value for key, value in semantic_args.items()},
+                **safe_semantic_args,
             },
         },
         "query_spec": query_spec,
         "render_spec": render_spec,
-        "render_map": dict(render_map or {}),
-        "projected_annotation": dict(projected_annotation),
-        "witness_symbolic": dict(witness_symbolic),
+        "render_map": _json_safe(dict(render_map or {})),
+        "projected_annotation": _json_safe(dict(projected_annotation)),
+        "witness_symbolic": _json_safe(dict(witness_symbolic)),
         "execution_trace": {
             "scene_id": SCENE_ID,
             "query_id": str(branch_name),
@@ -247,12 +267,8 @@ def build_graph_paper_components(
             "answer_type": str(answer_type),
             "answer_value": answer_value,
             "annotation_type": str(annotation_type),
-            "task_params": {
-                str(key): value
-                for key, value in task_params.items()
-                if not str(key).startswith("_")
-            },
-            **{str(key): value for key, value in semantic_args.items()},
+            "task_params": safe_task_params,
+            **safe_semantic_args,
         },
     }
     return GraphPaperComponents(
@@ -960,6 +976,198 @@ def _build_polygon_perimeter_value(
     )
 
 
+def _right_angle_base_polygon(corner_count: int) -> tuple[Point, ...]:
+    """Return a rectilinear lattice polygon with the requested corner count."""
+
+    if int(corner_count) == 4:
+        return ((0, 0), (8, 0), (8, 6), (0, 6))
+    if int(corner_count) == 6:
+        return ((0, 0), (8, 0), (8, 4), (5, 4), (5, 7), (0, 7))
+    if int(corner_count) == 8:
+        return ((0, 0), (9, 0), (9, 3), (6, 3), (6, 6), (3, 6), (3, 9), (0, 9))
+    raise ValueError(f"unsupported base corner count: {corner_count}")
+
+
+def _chamfer_right_angle_corners(
+    points: Sequence[Point], *, keep_indices: set[int], chamfer_units: float = 1.0
+) -> tuple[Point, ...]:
+    """Replace selected rectilinear corners with short diagonal chamfers.
+
+    Retained corners remain right angles. Chamfered corners become two
+    non-right-angle vertices, which lets the task control the final right-angle
+    count while still drawing one simple lattice polygon.
+    """
+
+    pts = tuple((float(x), float(y)) for x, y in points)
+    resolved: list[Point] = []
+    for index, vertex in enumerate(pts):
+        if index in keep_indices:
+            resolved.append(vertex)
+            continue
+        previous = pts[(index - 1) % len(pts)]
+        following = pts[(index + 1) % len(pts)]
+        prev_vector = (previous[0] - vertex[0], previous[1] - vertex[1])
+        next_vector = (following[0] - vertex[0], following[1] - vertex[1])
+        prev_length = max(abs(prev_vector[0]), abs(prev_vector[1]))
+        next_length = max(abs(next_vector[0]), abs(next_vector[1]))
+        if prev_length <= chamfer_units or next_length <= chamfer_units:
+            raise ValueError("base polygon edge is too short for chamfer")
+        prev_unit = (
+            0.0 if prev_vector[0] == 0 else prev_vector[0] / prev_length,
+            0.0 if prev_vector[1] == 0 else prev_vector[1] / prev_length,
+        )
+        next_unit = (
+            0.0 if next_vector[0] == 0 else next_vector[0] / next_length,
+            0.0 if next_vector[1] == 0 else next_vector[1] / next_length,
+        )
+        resolved.append(
+            (
+                vertex[0] + prev_unit[0] * float(chamfer_units),
+                vertex[1] + prev_unit[1] * float(chamfer_units),
+            )
+        )
+        resolved.append(
+            (
+                vertex[0] + next_unit[0] * float(chamfer_units),
+                vertex[1] + next_unit[1] * float(chamfer_units),
+            )
+        )
+    return tuple(resolved)
+
+
+def _right_angle_count_polygon_points(
+    rng: Any,
+    *,
+    target_count: int,
+    vertex_count: int | None = None,
+) -> tuple[Point, ...]:
+    """Construct one polygon with exactly the requested right-angle vertices."""
+
+    target = int(target_count)
+    recipes = [
+        (base_count, base_count - target)
+        for base_count in (4, 6, 8)
+        if 0 <= base_count - target <= base_count
+        and 6 <= (base_count + (base_count - target)) <= 12
+    ]
+    if vertex_count is not None:
+        recipes = [
+            recipe for recipe in recipes if recipe[0] + recipe[1] == int(vertex_count)
+        ]
+    if not recipes:
+        raise ValueError("no right-angle polygon recipe matches requested support")
+
+    base_count, _chamfer_count = uniform_choice(rng, tuple(recipes))
+    base_points = _right_angle_base_polygon(int(base_count))
+    corner_indices = list(range(int(base_count)))
+    rng.shuffle(corner_indices)
+    keep_indices = set(corner_indices[:target])
+    points = _chamfer_right_angle_corners(
+        base_points,
+        keep_indices=keep_indices,
+        chamfer_units=1.0,
+    )
+    points = _lattice_transform_points(points, rng)
+    right_indices = _right_angle_vertex_indices(points)
+    if len(points) < 6 or len(points) > 12 or len(right_indices) != target:
+        raise ValueError("right-angle polygon construction invariant failed")
+    return tuple(points)
+
+
+def _build_right_angle_vertex_count(
+    context: Mapping[str, Any], plan: GraphPaperTaskPlan
+) -> tuple[GraphPaperComponents, TypedValue]:
+    """Build one polygon and count its right-angle vertices."""
+
+    task_params = dict(context["task_params"])
+    generation_defaults = context["generation_defaults"]
+    rng, ctx = _new_context(context, plan.salt)
+    if "target_count" in task_params:
+        target_count = int(task_params["target_count"])
+    else:
+        count_min = int_default(
+            task_params, generation_defaults, "right_angle_count_min", 1
+        )
+        count_max = int_default(
+            task_params, generation_defaults, "right_angle_count_max", 5
+        )
+        target_count = int(
+            uniform_choice(rng, tuple(range(int(count_min), int(count_max) + 1)))
+        )
+    target_count = max(1, min(5, int(target_count)))
+    vertex_count = (
+        int(task_params["vertex_count"]) if "vertex_count" in task_params else None
+    )
+    points = _right_angle_count_polygon_points(
+        rng,
+        target_count=int(target_count),
+        vertex_count=vertex_count,
+    )
+    points = _integer_shift_points(ctx, points, rng, margin_units=1.2)
+    right_indices = _right_angle_vertex_indices(points)
+    polygon = draw_polygon(
+        ctx,
+        "",
+        points,
+        class_name="right_angle_polygon",
+        color=ctx.accent_color,
+        filled=False,
+    )
+    vertex_label_points = draw_vertex_labels(ctx, points)
+    right_points_px = [polygon.points_px[index] for index in right_indices]
+    right_labels = [POINT_LABELS[index] for index in right_indices]
+    annotation_value, projected = point_set_artifacts(right_points_px)
+    prompt_plan = _make_prompt(
+        context["prompt_defaults"],
+        prompt_key=plan.prompt_key_for(str(context["branch_name"])),
+        answer_hint='set "answer" to the integer count',
+        annotation_hint=(
+            'set "annotation" to pixel points at every polygon vertex whose two '
+            "adjacent sides form a right angle"
+        ),
+        json_example='{"annotation":[[250,420],[460,420]],"answer":2}',
+        json_example_answer_only='{"answer":2}',
+        target_text="right-angle vertices",
+        metric_text="count",
+    )
+    return _component_payload(
+        context,
+        ctx=ctx,
+        prompt_plan=prompt_plan,
+        answer_type="integer",
+        answer_value=len(right_indices),
+        annotation_type="point_set",
+        annotation_value=annotation_value,
+        projected_annotation=projected,
+        witness_symbolic={
+            "vertices": points,
+            "right_angle_vertex_indices": list(right_indices),
+            "right_angle_vertex_labels": list(right_labels),
+            "right_angle_vertices": [points[index] for index in right_indices],
+            "vertex_label_points_px": dict(vertex_label_points),
+            "vertex_count": len(points),
+        },
+        objects=(
+            replace(
+                polygon,
+                metric_value=float(len(right_indices)),
+                extra={
+                    **dict(polygon.extra),
+                    "vertex_labels": list(POINT_LABELS[: len(points)]),
+                    "right_angle_vertex_labels": list(right_labels),
+                },
+            ),
+        ),
+        prompt_key=plan.prompt_key_for(str(context["branch_name"])),
+        program_code="single_lattice_polygon.right_angle_vertex_count",
+        scene_kind="geometry_graph_paper_single_polygon",
+        semantic_args={
+            "target_count": int(target_count),
+            "vertex_count": len(points),
+        },
+    )
+
+
 def _build_angle_extremum_label(
     context: Mapping[str, Any], plan: GraphPaperTaskPlan
 ) -> tuple[GraphPaperComponents, TypedValue]:
@@ -1373,13 +1581,22 @@ def _dot_at(vertex: Point, first: Point, second: Point) -> float:
 def _has_right_angle(points: Sequence[Point], *, tolerance: float = 1e-3) -> bool:
     """Return whether any polygon vertex is right angled."""
 
+    return bool(_right_angle_vertex_indices(points, tolerance=float(tolerance)))
+
+
+def _right_angle_vertex_indices(
+    points: Sequence[Point], *, tolerance: float = 1e-3
+) -> tuple[int, ...]:
+    """Return indices of vertices whose adjacent sides form a right angle."""
+
     pts = tuple(points)
+    right_indices: list[int] = []
     for index, vertex in enumerate(pts):
         previous = pts[(index - 1) % len(pts)]
         following = pts[(index + 1) % len(pts)]
         if isclose(_dot_at(vertex, previous, following), 0.0, abs_tol=float(tolerance)):
-            return True
-    return False
+            right_indices.append(int(index))
+    return tuple(right_indices)
 
 
 def _parallel_vectors(

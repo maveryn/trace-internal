@@ -12,13 +12,13 @@ Implementation map for the contracts in `docs/contracts/BLUEPRINT.md`.
 5. `trace/tasks/shared/` — cross-domain task helpers.
 6. `trace/tasks/<domain>/shared/` — domain-wide helpers only when reused across
    multiple scenes in that domain.
-7. `trace/tasks/<domain>/<scene_id>/` — scene-package task files and
-   scene-local `shared/` helpers for migrated and review-candidate scenes.
+7. `trace/tasks/<domain>/<scene_id>/` — current-layout task files and
+   scene-local `shared/` helpers.
 8. `prompts/` — external prompt assets.
 9. `configs/` — generation, rendering, prompt, and build configs.
 
-Unmigrated scene packages may remain during migration. New review-candidate work
-uses scene-package layout.
+All active task work uses the current source layout described in
+`docs/contracts/SOURCE_LAYOUT.md`.
 
 ## 2) Runtime Data Flow
 1. Load build config and type registry.
@@ -57,8 +57,7 @@ uses scene-package layout.
 13. `trace/core/taxonomy.py` — public taxonomy and implementation/source
     routing metadata.
 14. `trace/core/strict_repro.py` — strict reproducibility comparisons.
-15. `trace/core/scene_config.py` — config resolver for unmigrated scene
-    packages and compatibility paths.
+15. `trace/core/scene_config.py` — config resolver for scene defaults.
 16. `trace/core/sampling.py` — shared sampling primitives.
 17. `trace/core/json_io.py` — deterministic JSON writing.
 
@@ -77,7 +76,7 @@ uses scene-package layout.
 3. `trace/tasks/shared/*` — cross-domain query, layout, annotation, config,
    prompt, and output helpers.
 4. `trace/tasks/<domain>/<scene_id>/<objective_contract>.py` — one public task
-   file per migrated or review-candidate task.
+   file per active task.
 5. `trace/tasks/<domain>/<scene_id>/shared/*` — scene-local reusable state,
    sampling, rendering, prompt-slot, annotation, and output helpers.
 6. `trace/tasks/<domain>/shared/*` — helpers reused by multiple scenes in one

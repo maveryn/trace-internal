@@ -28,6 +28,12 @@ def _build_plan(params, instance_seed, selected_branch, query_probabilities):
         counterfactual_phrase="reversed",
         answer_from_final_and_delta=lambda final_value, delta: int(final_value) - (2 * int(delta)),
         query_probabilities=query_probabilities,
+        step_count_min=5,
+        step_count_max=7,
+        target_delta_abs_min=5,
+        target_delta_abs_max=15,
+        answer_min=0,
+        answer_max=100,
     )
 
 

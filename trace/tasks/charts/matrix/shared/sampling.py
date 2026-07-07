@@ -199,7 +199,7 @@ def _threshold_options(values: Sequence[int], *, comparison: str) -> List[Tuple[
             count = sum(1 for value in values if int(value) >= int(threshold))
         else:
             count = sum(1 for value in values if int(value) <= int(threshold))
-        if 2 <= int(count) <= max(2, min(9, len(values) - 1)):
+        if 1 <= int(count) <= min(8, len(values)):
             options.append((int(threshold), int(count)))
     return options
 
@@ -217,15 +217,20 @@ def _choose_threshold_count(
     """Choose one row/column threshold query with a bounded nontrivial count."""
 
     line_count = len(values) if str(query_axis) == "row" else len(values[0])
-    candidates: List[Tuple[int, int, int, List[str]]] = []
+    candidates_by_count: Dict[int, List[Tuple[int, int, int, List[str]]]] = {}
     for axis_index in range(int(line_count)):
         cell_ids = _line_cell_ids(values, query_axis=str(query_axis), axis_index=int(axis_index))
         line_values = [int(cells_by_id[cell_id]["value"]) for cell_id in cell_ids]
         for threshold, count in _threshold_options(line_values, comparison=str(comparison)):
-            candidates.append((int(axis_index), int(threshold), int(count), list(cell_ids)))
-    if not candidates:
+            candidates_by_count.setdefault(int(count), []).append(
+                (int(axis_index), int(threshold), int(count), list(cell_ids))
+            )
+    if not candidates_by_count:
         raise ValueError("could not find threshold-count candidate")
     rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.threshold_count")
+    count_choices = sorted(candidates_by_count)
+    selected_count = int(count_choices[int(rng.randrange(len(count_choices)))])
+    candidates = candidates_by_count[int(selected_count)]
     axis_index, threshold, count, cell_ids = candidates[int(rng.randrange(len(candidates)))]
     if str(comparison) == "at_least":
         matching = [cell_id for cell_id in cell_ids if int(cells_by_id[cell_id]["value"]) >= int(threshold)]

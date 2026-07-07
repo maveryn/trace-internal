@@ -212,6 +212,7 @@ def _draw_fitted_text(
     align: str = "left",
     stroke_width: int = 1,
     font_family: str | None = None,
+    required: bool = True,
 ) -> List[float]:
     """Draw one required text witness fitted to its bbox and return the text bbox."""
 
@@ -248,6 +249,7 @@ def _draw_fitted_text(
         namespace=str(namespace),
         preferred_rgbs=(tuple(int(value) for value in fill_rgb),),
         stroke_width=max(0, int(stroke_width)),
+        required=bool(required),
     )
 
 
@@ -422,6 +424,7 @@ def _draw_wrapped_fitted_text(
     role: str,
     stroke_width: int = 1,
     font_family: str | None = None,
+    required: bool = True,
 ) -> List[float]:
     """Draw wrapped context text inside one box while preserving visible text bounds."""
 
@@ -468,6 +471,7 @@ def _draw_wrapped_fitted_text(
             namespace=f"{namespace}.line_{line_index}",
             preferred_rgbs=(tuple(int(value) for value in fill_rgb),),
             stroke_width=max(0, int(stroke_width)),
+            required=bool(required),
         )
         drawn_bboxes.append([float(value) for value in bbox])
         current_y = float(bbox[3]) + selected_line_gap
@@ -555,6 +559,7 @@ def _draw_native_text_blocks(
                 role="mixed_infographic_native_context_text",
                 stroke_width=1,
                 font_family=block_font_family,
+                required=False,
             )
         elif native_layout.hero_block_id == str(block.block_id) and native_layout.hero_slot_px is not None:
             decorative_asset_bboxes["hero_anchor"] = _draw_visual_asset(
@@ -580,6 +585,7 @@ def _draw_native_text_blocks(
                 align="left",
                 stroke_width=1,
                 font_family=block_font_family,
+                required=False,
             )
         elif str(block.kind) == "badge_note":
             draw.ellipse(
@@ -602,6 +608,7 @@ def _draw_native_text_blocks(
                 align="center",
                 stroke_width=1,
                 font_family=block_font_family,
+                required=False,
             )
         else:
             draw.rectangle((slot[0] + 7.0, slot[1] + 7.0, slot[0] + 10.0, slot[3] - 7.0), fill=accent)
@@ -621,6 +628,7 @@ def _draw_native_text_blocks(
                 align="left",
                 stroke_width=1,
                 font_family=block_font_family,
+                required=False,
             )
         bbox = [float(value) for value in slot]
         text_block_bboxes[str(block.block_id)] = list(bbox)
@@ -661,7 +669,10 @@ def _draw_module_shell(
     fill = _module_surface_rgb(style, accent_rgb, str(module_id))
     border = tuple(int(value) for value in style.panel_border_rgb)
     header_h = min(46.0, max(34.0, (y1 - y0) * 0.16))
-    header_fill = darken_surface_for_light_text(_blend_rgb(style.header_rgb, accent_rgb, 0.22))
+    header_fill = darken_surface_for_light_text(
+        _blend_rgb(style.header_rgb, accent_rgb, 0.22),
+        min_contrast_ratio=7.6,
+    )
 
     if str(module_kind) in {"radial_bubbles", "ring_summary"}:
         draw.ellipse(
@@ -907,6 +918,19 @@ def _draw_card_like_module(
     card_top = top + chip_h + 8.0
     cols = 2 if len(module.items) > 2 and (right - left) > 250.0 else 1
     rows = max(1, int(math.ceil(float(len(module.items)) / float(cols))))
+    min_card_content_h = chip_h + 8.0 + float(rows) * 32.0 + float(max(0, rows - 1)) * 8.0
+    if (bottom - top) < min_card_content_h:
+        return _draw_table_like_module(
+            image,
+            draw,
+            module=module,
+            bbox=bbox,
+            header_height=header_height,
+            style=style,
+            render_params=render_params,
+            instance_seed=instance_seed,
+            font_profile=font_profile,
+        )
     card_w = (right - left - (cols - 1) * 8.0) / float(cols)
     card_h = max(22.0, (bottom - card_top - (rows - 1) * 8.0) / float(rows))
     for item_index, item in enumerate(module.items):

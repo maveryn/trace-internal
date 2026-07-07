@@ -21,6 +21,6 @@ Annotation witnesses: `annotation` uses the `bbox_set` schema; the prompt/annota
 Query ids: `single`.
 
 ## Generation Notes
-1. This task is owned by the scene-package public file `trace/tasks/games/bubble_shooter/pop_count.py`.
+1. This task is owned by the current-layout public file `trace/tasks/games/bubble_shooter/pop_count.py`.
 2. The public task id selects the objective; `query_id` is `single`.
 3. Annotation is projected from the same generated game state used for answer verification.

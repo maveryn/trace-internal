@@ -8,6 +8,7 @@ from PIL import ImageDraw
 
 from trace.core.seed import spawn_rng
 from trace.core.visual.noise import apply_post_image_noise
+from trace.tasks.shared.color_distance import color_distance
 from trace.tasks.physics.shared.diagram_style import (
     prepare_physics_diagram_style_and_background,
 )
@@ -19,12 +20,18 @@ from trace.tasks.shared.font_assets import (
     get_font_family_record,
     sample_font_family,
 )
-from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.shared.text_legibility import (
+    READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+    READ_REQUIRED_TEXT_MIN_LAB_DISTANCE,
+    contrast_ratio,
+    draw_text_traced,
+)
 from trace.tasks.shared.text_rendering import load_font, resolve_text_stroke_fill
 
 from .annotations import bbox, normalize_annotation_point_map
 from .state import (
     DEFAULTS,
+    OPTION_LETTERS,
     SCENE_ID,
     SCENE_NAMESPACE,
     VERNIER_DIVISIONS,
@@ -35,6 +42,32 @@ from .state import (
 
 
 POST_IMAGE_NOISE_DEFAULTS = load_physics_noise_defaults(scene_id=SCENE_ID, apply_prob=0.5)
+
+
+def _precomputed_text_contrast_metadata(
+    *,
+    fill_rgb: Tuple[int, int, int],
+    surface_rgb: Tuple[int, int, int],
+    surface_sample_method: str,
+) -> Dict[str, Any]:
+    """Return validation-ready contrast metadata for text on a known fill."""
+
+    ratio = float(contrast_ratio(fill_rgb, surface_rgb))
+    lab_distance = float(
+        color_distance(fill_rgb, surface_rgb, distance_space="lab")
+    )
+    return {
+        "surface_rgbs": [[int(value) for value in surface_rgb]],
+        "surface_sample_method": str(surface_sample_method),
+        "min_contrast_ratio": round(float(ratio), 3),
+        "min_lab_distance": round(float(lab_distance), 3),
+        "min_contrast_required": round(float(READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO), 3),
+        "min_lab_distance_required": round(float(READ_REQUIRED_TEXT_MIN_LAB_DISTANCE), 3),
+        "passes": bool(
+            ratio >= float(READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO)
+            and lab_distance >= float(READ_REQUIRED_TEXT_MIN_LAB_DISTANCE)
+        ),
+    }
 
 
 def _draw_label(
@@ -50,6 +83,7 @@ def _draw_label(
     """Draw one required readout label and return its pixel box."""
 
     stroke_width = 1
+    backing_bbox = None
     if backing_fill is not None:
         text_bbox = draw.textbbox(
             (float(xy[0]), float(xy[1])),
@@ -73,6 +107,25 @@ def _draw_label(
             outline=tuple(int(value) for value in backing_fill),
             width=1,
         )
+    extra_metadata: Dict[str, Any] = {}
+    if backing_bbox is not None:
+        extra_metadata["glyph_bbox_px"] = [
+            round(float(value), 3)
+            for value in draw.textbbox(
+                (float(xy[0]), float(xy[1])),
+                str(text),
+                font=font,
+                stroke_width=stroke_width,
+                anchor=anchor,
+            )
+        ]
+        extra_metadata.update(
+            _precomputed_text_contrast_metadata(
+                fill_rgb=tuple(int(value) for value in fill),
+                surface_rgb=tuple(int(value) for value in backing_fill),
+                surface_sample_method="declared_label_backing_fill",
+            )
+        )
     record = draw_text_traced(
         draw,
         (float(xy[0]), float(xy[1])),
@@ -84,6 +137,7 @@ def _draw_label(
         role="readout",
         required=True,
         anchor=anchor,
+        extra_metadata=extra_metadata,
     )
     return bbox(record["bbox_px"])
 
@@ -173,6 +227,141 @@ def draw_main_scale(
     )
     scale_bbox = bbox(_bbox_union_many(*(tick_bboxes + label_bboxes + [unit_bbox]), padding=8.0))
     return tick_bbox_map, tick_xs, scale_bbox
+
+
+def draw_option_panel(
+    draw: ImageDraw.ImageDraw,
+    *,
+    scenario: CaliperScenario,
+    font_family: str,
+    style: Any,
+    render_defaults: Mapping[str, Any],
+) -> Dict[str, Any]:
+    """Draw six visible numeric answer choices and return their boxes."""
+
+    canvas_width = int(render_defaults.get("canvas_width", DEFAULTS.canvas_width))
+    canvas_height = int(render_defaults.get("canvas_height", DEFAULTS.canvas_height))
+    panel_left = float(render_defaults.get("panel_left_px", DEFAULTS.panel_left_px))
+    panel_right = float(
+        canvas_width
+        - int(render_defaults.get("panel_right_margin_px", DEFAULTS.panel_right_margin_px))
+    )
+    option_top = float(
+        render_defaults.get("option_panel_top_px", DEFAULTS.option_panel_top_px)
+    )
+    cell_height = float(
+        render_defaults.get("option_cell_height_px", DEFAULTS.option_cell_height_px)
+    )
+    cell_gap_x = 16.0
+    cell_gap_y = 10.0
+    outer_pad = 22.0
+    columns = 3
+    cell_width = float(
+        (panel_right - panel_left - 2.0 * outer_pad - (columns - 1) * cell_gap_x)
+        / columns
+    )
+    stroke = tuple(int(value) for value in style.stroke_rgb)
+    label_rgb = tuple(int(value) for value in style.label_rgb)
+    fill = tuple(int(value) for value in style.panel_alt_fill_rgb)
+    letter_fill = tuple(int(value) for value in style.panel_fill_rgb)
+    value_font = load_font(
+        int(render_defaults.get("small_font_size_px", DEFAULTS.small_font_size_px)) + 3,
+        bold=False,
+        font_family=font_family,
+    )
+    letter_font = load_font(
+        int(render_defaults.get("small_font_size_px", DEFAULTS.small_font_size_px)) + 3,
+        bold=True,
+        font_family=font_family,
+    )
+
+    option_bboxes: Dict[str, List[float]] = {}
+    option_letter_bboxes: Dict[str, List[float]] = {}
+    option_text_bboxes: Dict[str, List[float]] = {}
+    for index, letter in enumerate(OPTION_LETTERS):
+        row = int(index // columns)
+        col = int(index % columns)
+        x0 = float(panel_left + outer_pad + col * (cell_width + cell_gap_x))
+        y0 = float(option_top + row * (cell_height + cell_gap_y))
+        x1 = float(x0 + cell_width)
+        y1 = float(y0 + cell_height)
+        cell_bbox = bbox(
+            (
+                max(0.0, x0),
+                max(0.0, y0),
+                min(float(canvas_width), x1),
+                min(float(canvas_height), y1),
+            )
+        )
+        draw.rounded_rectangle(
+            tuple(cell_bbox),
+            radius=8,
+            fill=fill,
+            outline=stroke,
+            width=2,
+        )
+        letter_center = (float(cell_bbox[0] + 27.0), float((cell_bbox[1] + cell_bbox[3]) / 2.0))
+        draw.ellipse(
+            (
+                letter_center[0] - 15.0,
+                letter_center[1] - 15.0,
+                letter_center[0] + 15.0,
+                letter_center[1] + 15.0,
+            ),
+            fill=letter_fill,
+            outline=stroke,
+            width=2,
+        )
+        letter_bbox = draw_centered_text(
+            draw,
+            text=str(letter),
+            center=letter_center,
+            font=letter_font,
+            fill=label_rgb,
+            stroke_fill=resolve_text_stroke_fill(label_rgb),
+            stroke_width=1,
+        )
+        value_text = f"{float(scenario.option_values_mm[str(letter)]):.1f} mm"
+        value_record = draw_text_traced(
+            draw,
+            (float(cell_bbox[0] + 54.0), float((cell_bbox[1] + cell_bbox[3]) / 2.0)),
+            value_text,
+            font=value_font,
+            fill=label_rgb,
+            stroke_width=1,
+            stroke_fill=resolve_text_stroke_fill(label_rgb),
+            role="option_value",
+            required=True,
+            anchor="lm",
+            extra_metadata=_precomputed_text_contrast_metadata(
+                fill_rgb=label_rgb,
+                surface_rgb=fill,
+                surface_sample_method="declared_option_cell_fill",
+            ),
+        )
+        option_bboxes[str(letter)] = list(cell_bbox)
+        option_letter_bboxes[str(letter)] = bbox(letter_bbox)
+        option_text_bboxes[str(letter)] = bbox(value_record["bbox_px"])
+
+    panel_bbox = bbox(
+        _bbox_union_many(*option_bboxes.values(), padding=8.0)
+    )
+    return {
+        "option_values_mm": {
+            str(letter): float(scenario.option_values_mm[str(letter)])
+            for letter in OPTION_LETTERS
+        },
+        "option_bboxes_px": {str(key): list(value) for key, value in option_bboxes.items()},
+        "option_letter_bboxes_px": {
+            str(key): list(value) for key, value in option_letter_bboxes.items()
+        },
+        "option_text_bboxes_px": {
+            str(key): list(value) for key, value in option_text_bboxes.items()
+        },
+        "option_panel_bbox_px": list(panel_bbox),
+        "correct_option_letter": str(scenario.correct_option_letter),
+        "correct_option_bbox_px": list(option_bboxes[str(scenario.correct_option_letter)]),
+    }
 
 
 def draw_caliper(
@@ -374,6 +563,13 @@ def draw_caliper(
             "aligned_vernier_tick": vernier_tick_points[int(scenario.aligned_vernier_tick)],
         }
     )
+    option_map = draw_option_panel(
+        draw,
+        scenario=scenario,
+        font_family=str(font_family),
+        style=style,
+        render_defaults=render_defaults,
+    )
     context_bbox_map = {
         "main_scale_region": list(main_scale_region),
         "vernier_zero": list(vernier_zero_bbox),
@@ -394,8 +590,8 @@ def draw_caliper(
         "vernier_zero_x_px": round(float(vernier_zero_x), 3),
         "aligned_vernier_tick_x_px": round(float(aligned_tick_x), 3),
         "nearest_aligned_main_tick": int(nearest_main_tick),
-        "annotation_source": "vernier_tick_center_points_px",
-        "annotation_point_map_px": {str(key): list(value) for key, value in annotation_map.items()},
+        "annotation_source": "selected_option_bbox_px",
+        "readout_witness_point_map_px": {str(key): list(value) for key, value in annotation_map.items()},
         "vernier_tick_points_px": {str(key): list(value) for key, value in vernier_tick_points.items()},
         "vernier_tick_segments_px": {
             str(key): [list(point) for point in value]
@@ -406,6 +602,7 @@ def draw_caliper(
         "title_bbox_px": list(title_bbox),
         "measured_object_bbox_px": measured_object_bbox,
     }
+    render_map.update(option_map)
     return annotation_map, render_map, scene_entities
 
 
@@ -500,5 +697,6 @@ def render_caliper(
 __all__ = [
     "draw_caliper",
     "draw_main_scale",
+    "draw_option_panel",
     "render_caliper",
 ]

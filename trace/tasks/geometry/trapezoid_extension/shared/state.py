@@ -87,6 +87,7 @@ class RenderContext:
     accent_color: Color
     muted_color: Color
     line_width: int
+    label_stroke_width: int
     font: Any
     small_font: Any
     scene_transform: Any

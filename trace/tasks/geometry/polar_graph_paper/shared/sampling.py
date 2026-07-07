@@ -6,7 +6,15 @@ from collections.abc import Mapping
 import random
 from typing import Any
 
-from .state import PolarDifferenceCase, PolarPointSpec, PolarReadoutCase, ReadoutComponent
+from .state import (
+    PolarCoordinateCountCase,
+    PolarDifferenceCase,
+    PolarPointSpec,
+    PolarReadoutCase,
+    ReadoutComponent,
+)
+
+POINT_LABELS = tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 
 def _int_param(
@@ -176,4 +184,159 @@ def select_polar_difference_case(
         point_p=PolarPointSpec(label="P", radius=int(radius_p), theta_degrees=int(theta_p)),
         point_q=PolarPointSpec(label="Q", radius=int(radius_q), theta_degrees=int(theta_q)),
         correct_value=int(correct_value),
+    )
+
+
+def _sample_count_param(
+    *,
+    rng: random.Random,
+    params: Mapping[str, Any],
+    name: str,
+    minimum: int,
+    maximum: int,
+) -> int:
+    if name in params:
+        return _int_param(params, name, default=minimum, minimum=minimum, maximum=maximum)
+    return int(rng.randint(int(minimum), int(maximum)))
+
+
+def _sample_unique_grid_points(
+    rng: random.Random,
+    candidates: list[tuple[int, int]],
+    *,
+    count: int,
+    excluded: set[tuple[int, int]] | None = None,
+) -> list[tuple[int, int]]:
+    available = [candidate for candidate in candidates if candidate not in (excluded or set())]
+    if len(available) < count:
+        raise ValueError(f"not enough unique polar grid points to sample {count} points")
+    return [(int(radius), int(theta)) for radius, theta in rng.sample(available, int(count))]
+
+
+def select_polar_coordinate_count_case(
+    *,
+    rng: random.Random,
+    component: ReadoutComponent,
+    params: Mapping[str, Any],
+    generation_defaults: Mapping[str, Any],
+) -> PolarCoordinateCountCase:
+    """Sample 8-12 marked points with an exact radius/angle match count."""
+
+    radius_min = _int_param(generation_defaults, "radius_min", default=1, minimum=1)
+    radius_max = _int_param(
+        generation_defaults,
+        "radius_max",
+        default=10,
+        minimum=radius_min,
+    )
+    angle_step = _int_param(
+        generation_defaults,
+        "sample_angle_step_degrees",
+        default=30,
+        minimum=1,
+        maximum=180,
+    )
+    answer_min = _int_param(generation_defaults, "coordinate_count_min", default=1, minimum=1)
+    answer_max = _int_param(
+        generation_defaults,
+        "coordinate_count_max",
+        default=5,
+        minimum=answer_min,
+    )
+    total_min = _int_param(generation_defaults, "coordinate_count_total_min", default=8, minimum=answer_min)
+    total_max = _int_param(
+        generation_defaults,
+        "coordinate_count_total_max",
+        default=12,
+        minimum=total_min,
+        maximum=len(POINT_LABELS),
+    )
+
+    angle_support = _angle_support(angle_step)
+    radius_support = tuple(range(radius_min, radius_max + 1))
+    answer_count = _sample_count_param(
+        rng=rng,
+        params=params,
+        name="answer_count",
+        minimum=answer_min,
+        maximum=min(answer_max, total_max),
+    )
+    total_count = _sample_count_param(
+        rng=rng,
+        params=params,
+        name="total_point_count",
+        minimum=max(total_min, answer_count),
+        maximum=total_max,
+    )
+
+    if component == "radius":
+        if "target_radius" in params:
+            target_value = _int_param(
+                params,
+                "target_radius",
+                default=radius_min,
+                minimum=radius_min,
+                maximum=radius_max,
+            )
+        else:
+            target_value = int(rng.choice(radius_support))
+        matching_coords = [
+            (int(target_value), int(theta))
+            for theta in rng.sample(list(angle_support), int(answer_count))
+        ]
+        distractor_candidates = [
+            (int(radius), int(theta))
+            for radius in radius_support
+            if int(radius) != int(target_value)
+            for theta in angle_support
+        ]
+    elif component == "angle_degrees":
+        if "target_angle_degrees" in params:
+            target_value = _int_param(params, "target_angle_degrees", default=0, minimum=0, maximum=359)
+            if target_value not in angle_support:
+                raise ValueError("target_angle_degrees must lie on the configured angular support")
+        else:
+            target_value = int(rng.choice(angle_support))
+        matching_coords = [
+            (int(radius), int(target_value))
+            for radius in rng.sample(list(radius_support), int(answer_count))
+        ]
+        distractor_candidates = [
+            (int(radius), int(theta))
+            for radius in radius_support
+            for theta in angle_support
+            if int(theta) != int(target_value)
+        ]
+    else:  # pragma: no cover - typing guard
+        raise ValueError(f"unknown count component: {component}")
+
+    distractor_coords = _sample_unique_grid_points(
+        rng,
+        distractor_candidates,
+        count=int(total_count) - int(answer_count),
+        excluded=set(matching_coords),
+    )
+    all_coords = [*matching_coords, *distractor_coords]
+    rng.shuffle(all_coords)
+
+    points: list[PolarPointSpec] = []
+    matching_labels: list[str] = []
+    for index, (radius, theta) in enumerate(all_coords):
+        label = POINT_LABELS[index]
+        point = PolarPointSpec(label=label, radius=int(radius), theta_degrees=int(theta))
+        points.append(point)
+        if (component == "radius" and int(radius) == int(target_value)) or (
+            component == "angle_degrees" and int(theta) == int(target_value)
+        ):
+            matching_labels.append(label)
+
+    if len(matching_labels) != int(answer_count):
+        raise RuntimeError("sampled polar coordinate count does not match target answer")
+
+    return PolarCoordinateCountCase(
+        component=component,
+        target_value=int(target_value),
+        points=tuple(points),
+        matching_labels=tuple(matching_labels),
+        correct_value=int(answer_count),
     )

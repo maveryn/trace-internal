@@ -41,14 +41,14 @@
         "The lower pan is heavier and a level scale means equal weight. Which bottom option shows the correct lightest-to-heaviest order? Use equals signs for equal weights.",
         "The lower pan is heavier and a level scale means equal weight. Read the three scales and select the option that gives the object-weight order from lightest to heaviest.",
         "The lower pan is heavier and a level scale means equal weight. Which option shows the correct order?",
-        "The lower pan is heavier and a level scale means equal weight. Infer the full weight order of the three objects and answer with the matching option label."
+        "The lower pan is heavier and a level scale means equal weight. Infer the full weight order of the three objects. Which option label matches?"
       ],
       "query_side_relation_label": [
         "Each reference scale is balanced. For the query comparison, choose whether the left side is heavier, the right side is heavier, the two sides balance, or the relation cannot be determined.",
         "Use only the three balanced reference scales. Which option correctly describes the query comparison: left heavier, right heavier, balanced, or cannot determine?",
         "Read the three balanced scales, then answer which relation must hold for the query row.",
         "The reference scales are balanced. For the query row, select the option that follows from the references; choose Cannot determine if more than one relation is possible.",
-        "Use the balanced scales to decide the query comparison. Answer with the option label for left heavier, right heavier, balanced, or Cannot determine."
+        "Use the balanced scales to decide the query comparison. Which option label corresponds to left heavier, right heavier, balanced, or Cannot determine?"
       ]
     },
     "output": {

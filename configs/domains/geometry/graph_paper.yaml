@@ -3,6 +3,8 @@ generation:
     object_count: 6
     target_count_min: 1
     target_count_max: 5
+    right_angle_count_min: 1
+    right_angle_count_max: 5
 
 rendering:
   shared:

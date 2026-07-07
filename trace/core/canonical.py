@@ -46,7 +46,7 @@ def _normalize(obj: Any) -> Any:
                 )
             out[key] = _normalize(value)
         return out
-    if isinstance(obj, list):
+    if isinstance(obj, (list, tuple)):
         return [_normalize(item) for item in obj]
     raise CanonicalizationError(
         error_codes.SCHEMA_UNSUPPORTED_TYPE,

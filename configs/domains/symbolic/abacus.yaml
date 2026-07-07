@@ -9,6 +9,22 @@ generation:
     task_symbolic__abacus__displayed_value_readout:
       target_answer_min: 0
       target_answer_max: 999
+      option_label_support:
+      - A
+      - B
+      - C
+      - D
+      - E
+      - F
+      option_count: 6
+      balanced_correct_option_label_sampling: true
+      correct_option_label_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
     task_symbolic__abacus__place_digit_readout:
       target_value_min: 0
       target_value_max: 999
@@ -17,6 +33,22 @@ generation:
         hundreds: 1.0
         tens: 1.0
         ones: 1.0
+      option_label_support:
+      - A
+      - B
+      - C
+      - D
+      - E
+      - F
+      option_count: 6
+      balanced_correct_option_label_sampling: true
+      correct_option_label_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
     task_symbolic__abacus__target_value_match_label:
       option_label_support:
       - A
@@ -65,7 +97,7 @@ rendering:
   task_overrides:
     task_symbolic__abacus__displayed_value_readout:
       canvas_width: 980
-      canvas_height: 760
+      canvas_height: 860
       panel_width_px: 800
       panel_height_px: 540
       panel_corner_radius_px: 24
@@ -77,9 +109,15 @@ rendering:
       title_font_size_px: 25
       label_font_size_px: 23
       small_font_size_px: 16
+      readout_option_card_width_px: 130
+      readout_option_card_height_px: 58
+      readout_option_card_gap_px: 12
+      readout_option_card_margin_top_px: 24
+      readout_option_label_font_size_px: 22
+      readout_option_value_font_size_px: 24
     task_symbolic__abacus__place_digit_readout:
       canvas_width: 980
-      canvas_height: 760
+      canvas_height: 860
       panel_width_px: 800
       panel_height_px: 540
       panel_corner_radius_px: 24
@@ -91,6 +129,12 @@ rendering:
       title_font_size_px: 25
       label_font_size_px: 23
       small_font_size_px: 16
+      readout_option_card_width_px: 130
+      readout_option_card_height_px: 58
+      readout_option_card_gap_px: 12
+      readout_option_card_margin_top_px: 24
+      readout_option_label_font_size_px: 22
+      readout_option_value_font_size_px: 24
     task_symbolic__abacus__target_value_match_label:
       canvas_width: 1200
       canvas_height: 760

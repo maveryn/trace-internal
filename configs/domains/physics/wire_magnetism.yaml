@@ -1,9 +1,15 @@
 generation:
   shared:
-    orientation_weights:
-      horizontal: 1.0
-      vertical: 1.0
-    balanced_orientation_sampling: true
+    current_direction_weights:
+      out_of_page: 1.0
+      into_page: 1.0
+    point_position_weights:
+      north: 1.0
+      south: 1.0
+      east: 1.0
+      west: 1.0
+    balanced_current_direction_sampling: true
+    balanced_point_position_sampling: true
     balanced_target_answer_sampling: true
 
 rendering:

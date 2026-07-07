@@ -1,6 +1,6 @@
 generation:
   shared:
-    category_count_min: 6
+    category_count_min: 4
     category_count_max: 10
     mark_count_min: 4
     mark_count_max: 16
@@ -9,7 +9,6 @@ generation:
     - 2
     - 3
     - 4
-    - 5
     difference_mark_min: 2
     difference_mark_max: 10
     threshold_answer_min: 1

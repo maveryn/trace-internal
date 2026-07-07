@@ -6,7 +6,7 @@ import math
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from .....core.sampling import uniform_choice
-from .....core.seed import spawn_rng
+from .....core.seed import hash64, spawn_rng
 from ....shared.bbox_projection import round_bbox as _round_bbox
 
 
@@ -140,6 +140,10 @@ def _balanced_int(
     ordered = [int(value) for value in support]
     if not ordered:
         raise ValueError(f"empty support for {namespace}")
+    sample_cursor = params.get("_sample_cursor")
+    if sample_cursor is not None:
+        offset = abs(int(hash64(0, f"{namespace}.cursor_offset", 0))) % len(ordered)
+        return int(ordered[(abs(int(sample_cursor)) + int(offset)) % len(ordered)])
     return int(
         uniform_choice(
             spawn_rng(int(instance_seed), str(namespace)),

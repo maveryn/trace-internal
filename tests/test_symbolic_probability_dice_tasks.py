@@ -96,7 +96,7 @@ def test_dice_probability_tasks_emit_contracts() -> None:
 
         assert out.scene_id == "dice"
         assert out.query_id in queries
-        assert out.answer_gt.type == "string"
+        assert out.answer_gt.type == "option_letter"
         assert trace["query_spec"]["params"]["query_id"] == out.query_id
         assert trace["render_spec"]["scene_id"] == "dice"
         assert trace["render_spec"]["label_style"]["font"]["source"] == "global_font_pool"
@@ -111,10 +111,22 @@ def test_dice_probability_tasks_emit_contracts() -> None:
             int(trace["render_spec"]["canvas_width"]),
             int(trace["render_spec"]["canvas_height"]),
         )
-        assert str(out.answer_gt.value) == _reduced_fraction(
+        expected_fraction = _reduced_fraction(
             int(event["favorable_outcome_count"]),
             int(event["total_outcome_count"]),
         )
+        assert execution["probability_fraction"] == expected_fraction
+        assert out.answer_gt.value in execution["option_labels"]
+        assert execution["answer_label"] == out.answer_gt.value
+        assert execution["answer_value"] == out.answer_gt.value
+        assert execution["option_text_by_label"][str(out.answer_gt.value)] == expected_fraction
+        assert len(execution["option_text_by_label"]) == 6
+        assert len(set(execution["option_text_by_label"].values())) == 6
+        assert trace["query_spec"]["params"]["probability_fraction"] == expected_fraction
+        assert trace["query_spec"]["params"]["correct_label"] == out.answer_gt.value
+        assert trace["render_spec"]["option_card_layout"]["option_count"] == 6
+        assert set(trace["render_map"]["option_bboxes_px"]) == set(execution["option_labels"])
+        assert trace["render_map"]["selected_option_label"] == out.answer_gt.value
         assert 0 < int(event["favorable_outcome_count"]) < int(event["total_outcome_count"])
         if execution["mode"] == "pair":
             assert out.annotation_gt.type == "bbox_map"

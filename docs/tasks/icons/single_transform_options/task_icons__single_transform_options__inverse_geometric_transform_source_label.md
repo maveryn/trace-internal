@@ -76,5 +76,5 @@ Query ids: `rotate_90_clockwise_source_label`,
 - Behavior and trace tests:
   `tests/test_icons_transformation_single_transform_options_tasks.py`
 - Config and prompt bundle tests: `tests/test_icons_scene_config.py`
-- Scene-package migration gates:
-  `tests/test_scene_package_migration_contracts.py`
+- Source-layout contract checks:
+  `tests/test_source_layout_contracts.py`

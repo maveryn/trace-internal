@@ -24,6 +24,7 @@ from ...shared.prompt_variants import (
   build_prompt_trace_artifacts,
   render_task_prompt_variants,
 )
+from ...shared.support_sampling import resolve_integer_choice
 from ...shared.time_artifact_style import (
   SUPPORTED_TIME_ARTIFACT_COLOR_NAMES,
   SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS,
@@ -48,15 +49,12 @@ PROMPT_BUNDLE = "pages_timeline_v1"
 PROMPT_SCENE_KEY = "milestone_timeline"
 PROMPT_TASK_KEY = "timeline_milestone_query"
 INTERVAL_EVENT_MODE = "events_inside_or_outside_reference_span"
-DAY_DELTA_MODE = "calendar_day_delta_between_events"
+THRESHOLD_EVENT_COUNT_MODE = "events_before_or_after_threshold_date"
+RELATIVE_POSITION_EVENT_LABEL_MODE = "event_label_at_relative_timeline_position"
 _SUPPORTED_INTERVAL_RELATIONS: Tuple[str, ...] = ("between", "outside")
-_DATE_GAP_RELATION = "date_gap"
+_SUPPORTED_THRESHOLD_RELATIONS: Tuple[str, ...] = ("before", "after")
+_SUPPORTED_RELATIVE_POSITION_RELATIONS: Tuple[str, ...] = ("before", "after")
 
-_TIMELINE_ORDER_BASE_BY_RELATION = {
-  "between": 0.56,
-  "outside": 0.62,
-  "date_gap": 0.66,
-}
 _VISUAL_SCAN_BASE_BY_SCENE = {
   "classic": 0.40,
   "roadmap": 0.48,
@@ -87,9 +85,10 @@ class _TaskDefaults:
   year_min: int = 2024
   year_max: int = 2030
   event_count_support: Tuple[int, ...] = (6, 7, 8, 9, 10, 11, 12)
-  between_count_support: Tuple[int, ...] = (0, 1, 2, 3, 4, 5)
-  outside_count_support: Tuple[int, ...] = (2, 3, 4, 5, 6, 7, 8)
-  date_gap_support: Tuple[int, ...] = (2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 24)
+  between_count_support: Tuple[int, ...] = (1, 2, 3, 4)
+  outside_count_support: Tuple[int, ...] = (1, 2, 3, 4)
+  threshold_count_support: Tuple[int, ...] = (1, 2, 3, 4, 5, 6)
+  relative_offset_support: Tuple[int, ...] = (1, 2, 3, 4)
   event_label_pool: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L")
   canvas_width: int = 1120
   canvas_height: int = 700
@@ -147,15 +146,23 @@ class _ResolvedQuery:
   title_text: str
   subtitle_text: str
   raw_events: Tuple[_RawTimelineEvent, ...]
-  answer_value: int
+  answer_value: int | None
+  answer_label: str
   answer_event_ids: Tuple[str, ...]
   reference_event_ids: Tuple[str, ...]
   endpoint_event_ids: Tuple[str, ...]
   prompt_endpoint_event_ids: Tuple[str, ...]
+  prompt_reference_event_ids: Tuple[str, ...]
+  threshold_day: int | None
+  threshold_date_text: str
+  reference_date_text: str
+  relative_offset: int | None
+  relative_offset_phrase: str
   event_count_support: Tuple[int, ...]
   between_count_support: Tuple[int, ...]
   outside_count_support: Tuple[int, ...]
-  date_gap_support: Tuple[int, ...]
+  threshold_count_support: Tuple[int, ...]
+  relative_offset_support: Tuple[int, ...]
   query_id_probabilities: Dict[str, float]
   interval_relation_probabilities: Dict[str, float]
   scene_variant_probabilities: Dict[str, float]
@@ -282,6 +289,24 @@ def _normalize_interval_relation(value: Any) -> str:
   raise ValueError(f"unsupported interval_relation: {value}")
 
 
+def _normalize_threshold_relation(value: Any) -> str:
+  """Normalize one one-sided threshold-count relation."""
+
+  normalized = str(value).strip().lower()
+  if normalized in _SUPPORTED_THRESHOLD_RELATIONS:
+    return normalized
+  raise ValueError(f"unsupported threshold_relation: {value}")
+
+
+def _normalize_relative_position_relation(value: Any) -> str:
+  """Normalize one relative-position label relation."""
+
+  normalized = str(value).strip().lower()
+  if normalized in _SUPPORTED_RELATIVE_POSITION_RELATIONS:
+    return normalized
+  raise ValueError(f"unsupported relative_position_relation: {value}")
+
+
 def _resolve_support_selection_index(
   *,
   params: Mapping[str, Any],
@@ -399,18 +424,17 @@ def _sample_interval_query(
     feasible_answers = [int(value) for value in between_count_support if 0 <= int(value) <= int(max_event_count - 2)]
     if not feasible_answers:
       raise ValueError("between_count_support has no feasible values for page timelines")
-    answer_value = int(
-      feasible_answers[
-        int(
-          _resolve_support_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_NAMESPACE}:between_answer",
-          )
-          % len(feasible_answers)
-        )
-      ]
+    answer_value, _answer_probabilities = resolve_integer_choice(
+      instance_seed=int(instance_seed),
+      params={**dict(params), "between_count_support": tuple(feasible_answers)},
+      gen_defaults=_GEN_DEFAULTS,
+      support_key="between_count_support",
+      explicit_key="answer_value",
+      fallback_support=feasible_answers,
+      namespace=f"{TASK_NAMESPACE}:between_answer",
+      balanced_flag_key="balanced_between_count_sampling",
     )
+    answer_value = int(answer_value)
     feasible_event_counts = [int(value) for value in event_count_support if int(answer_value + 2) <= int(value) <= int(max_event_count)]
     event_count = int(
       feasible_event_counts[
@@ -443,18 +467,17 @@ def _sample_interval_query(
     feasible_answers = [int(value) for value in outside_count_support if 1 <= int(value) <= int(max_event_count - 2)]
     if not feasible_answers:
       raise ValueError("outside_count_support has no feasible values for page timelines")
-    answer_value = int(
-      feasible_answers[
-        int(
-          _resolve_support_selection_index(
-            params=params,
-            instance_seed=int(instance_seed),
-            namespace=f"{TASK_NAMESPACE}:outside_answer",
-          )
-          % len(feasible_answers)
-        )
-      ]
+    answer_value, _answer_probabilities = resolve_integer_choice(
+      instance_seed=int(instance_seed),
+      params={**dict(params), "outside_count_support": tuple(feasible_answers)},
+      gen_defaults=_GEN_DEFAULTS,
+      support_key="outside_count_support",
+      explicit_key="answer_value",
+      fallback_support=feasible_answers,
+      namespace=f"{TASK_NAMESPACE}:outside_answer",
+      balanced_flag_key="balanced_outside_count_sampling",
     )
+    answer_value = int(answer_value)
     feasible_event_counts = [int(value) for value in event_count_support if int(answer_value + 2) <= int(value) <= int(max_event_count)]
     event_count = int(
       feasible_event_counts[
@@ -496,67 +519,182 @@ def _sample_interval_query(
   )
 
 
-def _sample_date_gap_query(
+def _sample_threshold_query(
   *,
   instance_seed: int,
   params: Mapping[str, Any],
+  threshold_relation: str,
   days_in_month: int,
   event_count_support: Tuple[int, ...],
-  date_gap_support: Tuple[int, ...],
+  threshold_count_support: Tuple[int, ...],
   event_label_pool: Tuple[str, ...],
-) -> Tuple[int, int, int, int, Tuple[int, ...]]:
-  """Sample a date-gap query and return event/date support."""
+) -> Tuple[int, int, int, Tuple[int, ...], Tuple[int, ...]]:
+  """Sample a before/after threshold-date count query.
+
+  The threshold date is a prompt-only operand, not a highlighted event. It is
+  chosen so it is not equal to any event-card date and exactly ``answer_value``
+  event cards lie on the requested side.
+  """
 
   max_event_count = min(int(days_in_month), len(event_label_pool), max(int(value) for value in event_count_support))
   feasible_event_counts = [int(value) for value in event_count_support if 2 <= int(value) <= int(max_event_count)]
   if not feasible_event_counts:
-    raise ValueError("event_count_support has no feasible values for timeline date-gap tasks")
-  feasible_gaps = [int(value) for value in date_gap_support if 1 <= int(value) <= int(days_in_month - 1)]
-  if not feasible_gaps:
-    raise ValueError("date_gap_support has no feasible values for page timelines")
-  date_gap_value = int(
-    feasible_gaps[
-      int(
-        _resolve_support_selection_index(
-          params=params,
-          instance_seed=int(instance_seed),
-          namespace=f"{TASK_NAMESPACE}:date_gap_value",
-        )
-        % len(feasible_gaps)
-      )
-    ]
+    raise ValueError("event_count_support has no feasible values for timeline threshold-count tasks")
+  threshold_relation = _normalize_threshold_relation(threshold_relation)
+
+  event_count, _event_count_probabilities = resolve_integer_choice(
+    instance_seed=int(instance_seed),
+    params=params,
+    gen_defaults=_GEN_DEFAULTS,
+    support_key="event_count_support",
+    explicit_key="event_count",
+    fallback_support=feasible_event_counts,
+    namespace=f"{TASK_NAMESPACE}:threshold_event_count",
+    balanced_flag_key="balanced_event_count_sampling",
   )
-  event_count = int(
-    feasible_event_counts[
-      int(
-        _resolve_support_selection_index(
-          params=params,
-          instance_seed=int(instance_seed),
-          namespace=f"{TASK_NAMESPACE}:date_gap_event_count",
-        )
-        % len(feasible_event_counts)
-      )
-    ]
+  event_count = int(event_count)
+  if int(event_count) not in set(feasible_event_counts):
+    feasible_event_counts = [int(value) for value in feasible_event_counts if int(value) >= 2]
+    if int(event_count) not in set(feasible_event_counts):
+      raise ValueError("selected event_count is not feasible for timeline threshold-count tasks")
+
+  feasible_answers = [
+    int(value)
+    for value in threshold_count_support
+    if 1 <= int(value) <= int(event_count - 1)
+  ]
+  if not feasible_answers:
+    raise ValueError("threshold_count_support has no feasible values for page timelines")
+  answer_value, _answer_probabilities = resolve_integer_choice(
+    instance_seed=int(instance_seed),
+    params={**dict(params), "threshold_count_support": tuple(feasible_answers)},
+    gen_defaults=_GEN_DEFAULTS,
+    support_key="threshold_count_support",
+    explicit_key="answer_value",
+    fallback_support=feasible_answers,
+    namespace=f"{TASK_NAMESPACE}:threshold_answer:{threshold_relation}",
+    balanced_flag_key="balanced_threshold_count_sampling",
   )
-  start_day_support = tuple(range(1, int(days_in_month - date_gap_value + 1)))
-  earlier_day = int(
-    start_day_support[
-      int(
-        _resolve_support_selection_index(
-          params=params,
-          instance_seed=int(instance_seed),
-          namespace=f"{TASK_NAMESPACE}:date_gap_start_day",
-        )
-        % len(start_day_support)
-      )
-    ]
+  answer_value = int(answer_value)
+
+  before_count = int(answer_value) if threshold_relation == "before" else int(event_count - answer_value)
+  after_count = int(event_count - answer_value) if threshold_relation == "before" else int(answer_value)
+  threshold_support = tuple(
+    int(day)
+    for day in range(1, int(days_in_month) + 1)
+    if int(day - 1) >= int(before_count) and int(days_in_month - day) >= int(after_count)
   )
-  later_day = int(earlier_day + date_gap_value)
-  remaining_day_pool = [int(day) for day in range(1, int(days_in_month) + 1) if int(day) not in {int(earlier_day), int(later_day)}]
-  rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.date_gap_days")
-  sampled_remaining = rng.sample(remaining_day_pool, k=int(event_count - 2))
-  day_values = tuple(sorted([int(earlier_day), int(later_day), *[int(value) for value in sampled_remaining]]))
-  return int(event_count), int(date_gap_value), int(earlier_day), int(later_day), tuple(int(value) for value in day_values)
+  if not threshold_support:
+    raise ValueError("timeline threshold-count query cannot place a feasible threshold date")
+  rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.threshold_days:{threshold_relation}")
+  threshold_day = int(rng.choice(list(threshold_support)))
+  before_pool = list(range(1, int(threshold_day)))
+  after_pool = list(range(int(threshold_day + 1), int(days_in_month) + 1))
+  day_values = tuple(
+    sorted(
+      [
+        *[int(value) for value in rng.sample(before_pool, k=int(before_count))],
+        *[int(value) for value in rng.sample(after_pool, k=int(after_count))],
+      ]
+    )
+  )
+  if len(day_values) != int(event_count):
+    raise ValueError("timeline threshold-count day construction produced the wrong event count")
+  if int(threshold_day) in set(int(value) for value in day_values):
+    raise ValueError("threshold date must not be reused as an event date")
+  if threshold_relation == "before":
+    answer_indices = tuple(index for index, day in enumerate(day_values) if int(day) < int(threshold_day))
+  else:
+    answer_indices = tuple(index for index, day in enumerate(day_values) if int(day) > int(threshold_day))
+  if len(answer_indices) != int(answer_value):
+    raise ValueError("timeline threshold-count construction did not match the target answer")
+  return int(event_count), int(answer_value), int(threshold_day), tuple(int(value) for value in day_values), tuple(int(index) for index in answer_indices)
+
+
+def _sample_relative_position_query(
+  *,
+  instance_seed: int,
+  params: Mapping[str, Any],
+  relative_relation: str,
+  days_in_month: int,
+  event_count_support: Tuple[int, ...],
+  relative_offset_support: Tuple[int, ...],
+  event_label_pool: Tuple[str, ...],
+) -> Tuple[int, int, int, int, Tuple[int, ...]]:
+  """Sample a label target at a fixed offset from a prompt-dated event."""
+
+  max_event_count = min(int(days_in_month), len(event_label_pool), max(int(value) for value in event_count_support))
+  relative_relation = _normalize_relative_position_relation(relative_relation)
+  feasible_offsets = [
+    int(value)
+    for value in relative_offset_support
+    if 1 <= int(value) <= int(max_event_count - 1)
+  ]
+  if not feasible_offsets:
+    raise ValueError("relative_offset_support has no feasible values for page timelines")
+  relative_offset, _offset_probabilities = resolve_integer_choice(
+    instance_seed=int(instance_seed),
+    params={**dict(params), "relative_offset_support": tuple(feasible_offsets)},
+    gen_defaults=_GEN_DEFAULTS,
+    support_key="relative_offset_support",
+    explicit_key="relative_offset",
+    fallback_support=feasible_offsets,
+    namespace=f"{TASK_NAMESPACE}:relative_offset:{relative_relation}",
+    balanced_flag_key="balanced_relative_offset_sampling",
+  )
+  relative_offset = int(relative_offset)
+
+  feasible_event_counts = [
+    int(value)
+    for value in event_count_support
+    if int(value) >= int(relative_offset + 1) and int(value) <= int(max_event_count)
+  ]
+  if not feasible_event_counts:
+    raise ValueError("event_count_support cannot support the selected relative offset")
+  event_count, _event_count_probabilities = resolve_integer_choice(
+    instance_seed=int(instance_seed),
+    params={**dict(params), "event_count_support": tuple(feasible_event_counts)},
+    gen_defaults=_GEN_DEFAULTS,
+    support_key="event_count_support",
+    explicit_key="event_count",
+    fallback_support=feasible_event_counts,
+    namespace=f"{TASK_NAMESPACE}:relative_event_count",
+    balanced_flag_key="balanced_event_count_sampling",
+  )
+  event_count = int(event_count)
+
+  if relative_relation == "after":
+    reference_index_support = tuple(range(0, int(event_count - relative_offset)))
+    target_index_delta = int(relative_offset)
+  else:
+    reference_index_support = tuple(range(int(relative_offset), int(event_count)))
+    target_index_delta = -int(relative_offset)
+  rng = spawn_rng(int(instance_seed), f"{TASK_NAMESPACE}.relative_position:{relative_relation}")
+  reference_index = int(rng.choice(list(reference_index_support)))
+  target_index = int(reference_index + target_index_delta)
+  if not (0 <= target_index < event_count):
+    raise ValueError("relative-position timeline target index is out of range")
+
+  day_values = tuple(
+    sorted(
+      int(value)
+      for value in rng.sample(list(range(1, int(days_in_month) + 1)), k=int(event_count))
+    )
+  )
+  return (
+    int(event_count),
+    int(reference_index),
+    int(target_index),
+    int(relative_offset),
+    tuple(int(value) for value in day_values),
+  )
+
+
+def _relative_offset_phrase(relative_offset: int) -> str:
+  """Return a natural prompt phrase for one card offset."""
+
+  offset = int(relative_offset)
+  return "1 card" if offset == 1 else f"{offset} cards"
 
 
 def _resolve_query(
@@ -574,10 +712,24 @@ def _resolve_query(
     str(key): float(value)
     for key, value in branch_probabilities.items()
   }
-  if str(program_mode) == DAY_DELTA_MODE:
-    interval_relation = _DATE_GAP_RELATION
-    interval_relation_probabilities = {str(_DATE_GAP_RELATION): 1.0}
+  if str(program_mode) == THRESHOLD_EVENT_COUNT_MODE:
+    threshold_relation = _normalize_threshold_relation(interval_relation)
+    interval_relation = str(threshold_relation)
+    interval_relation_probabilities = {
+      key: (1.0 if key == str(threshold_relation) else 0.0)
+      for key in _SUPPORTED_THRESHOLD_RELATIONS
+    }
+  elif str(program_mode) == RELATIVE_POSITION_EVENT_LABEL_MODE:
+    relative_position_relation = _normalize_relative_position_relation(interval_relation)
+    interval_relation = str(relative_position_relation)
+    threshold_relation = ""
+    interval_relation_probabilities = {
+      key: (1.0 if key == str(relative_position_relation) else 0.0)
+      for key in _SUPPORTED_RELATIVE_POSITION_RELATIONS
+    }
   else:
+    threshold_relation = ""
+    relative_position_relation = ""
     interval_relation = _normalize_interval_relation(interval_relation)
     interval_relation_probabilities = {
       key: (1.0 if key == str(interval_relation) else 0.0)
@@ -627,22 +779,42 @@ def _resolve_query(
   event_count_support = _resolve_int_support(params, "event_count_support", _DEFAULTS.event_count_support)
   between_count_support = _resolve_int_support(params, "between_count_support", _DEFAULTS.between_count_support)
   outside_count_support = _resolve_int_support(params, "outside_count_support", _DEFAULTS.outside_count_support)
-  date_gap_support = _resolve_int_support(params, "date_gap_support", _DEFAULTS.date_gap_support)
+  threshold_count_support = _resolve_int_support(params, "threshold_count_support", _DEFAULTS.threshold_count_support)
+  relative_offset_support = _resolve_int_support(params, "relative_offset_support", _DEFAULTS.relative_offset_support)
   event_label_pool = _resolve_str_support(params, "event_label_pool", _DEFAULTS.event_label_pool)
 
-  if str(program_mode) == DAY_DELTA_MODE:
-    event_count, answer_value, earlier_day, later_day, day_values = _sample_date_gap_query(
+  threshold_day: int | None = None
+  prompt_reference_index: int | None = None
+  relative_offset: int | None = None
+  answer_value: int | None
+  if str(program_mode) == THRESHOLD_EVENT_COUNT_MODE:
+    event_count, answer_value, threshold_day, day_values, answer_indices = _sample_threshold_query(
       instance_seed=int(instance_seed),
       params=params,
+      threshold_relation=str(threshold_relation),
       days_in_month=int(days_in_month),
       event_count_support=tuple(event_count_support),
-      date_gap_support=tuple(date_gap_support),
+      threshold_count_support=tuple(threshold_count_support),
       event_label_pool=tuple(event_label_pool),
     )
-    primary_reference_index = int(tuple(day_values).index(int(earlier_day)))
-    secondary_reference_index = int(tuple(day_values).index(int(later_day)))
-    answer_indices: Tuple[int, ...] = tuple()
-    endpoint_indices = (int(primary_reference_index), int(secondary_reference_index))
+    primary_reference_index = None
+    secondary_reference_index = None
+    endpoint_indices: Tuple[int, ...] = tuple()
+  elif str(program_mode) == RELATIVE_POSITION_EVENT_LABEL_MODE:
+    event_count, prompt_reference_index, target_index, relative_offset, day_values = _sample_relative_position_query(
+      instance_seed=int(instance_seed),
+      params=params,
+      relative_relation=str(relative_position_relation),
+      days_in_month=int(days_in_month),
+      event_count_support=tuple(event_count_support),
+      relative_offset_support=tuple(relative_offset_support),
+      event_label_pool=tuple(event_label_pool),
+    )
+    primary_reference_index = None
+    secondary_reference_index = None
+    endpoint_indices = tuple()
+    answer_indices = (int(target_index),)
+    answer_value = None
   else:
     event_count, primary_reference_index, secondary_reference_index, answer_indices, endpoint_indices = _sample_interval_query(
       instance_seed=int(instance_seed),
@@ -670,24 +842,24 @@ def _resolve_query(
     secondary_reference_index=(int(secondary_reference_index) if secondary_reference_index is not None else None),
   )
   answer_event_ids = tuple(str(raw_events[index].event_id) for index in answer_indices)
+  answer_label = str(raw_events[answer_indices[0]].label) if len(answer_indices) == 1 else ""
   reference_event_ids = tuple(
     str(raw_events[index].event_id)
     for index in (primary_reference_index, secondary_reference_index)
     if index is not None
   )
   endpoint_event_ids = tuple(str(raw_events[index].event_id) for index in endpoint_indices)
-  if str(program_mode) == DAY_DELTA_MODE:
-    endpoint_order = "later_first" if int(
-      _resolve_support_selection_index(
-        params=params,
-        instance_seed=int(instance_seed),
-        namespace=f"{TASK_NAMESPACE}:date_gap_prompt_order",
-      )
-      % 2
-    ) else "earlier_first"
-    prompt_endpoint_event_ids = tuple(reversed(endpoint_event_ids)) if endpoint_order == "later_first" else tuple(endpoint_event_ids)
-  else:
-    prompt_endpoint_event_ids = tuple(endpoint_event_ids)
+  prompt_endpoint_event_ids = tuple(endpoint_event_ids)
+  prompt_reference_event_ids = (
+    (str(raw_events[int(prompt_reference_index)].event_id),)
+    if prompt_reference_index is not None
+    else tuple()
+  )
+  reference_date_text = (
+    str(format_month_day_label(int(month), int(raw_events[int(prompt_reference_index)].day_of_month)))
+    if prompt_reference_index is not None
+    else ""
+  )
 
   return _ResolvedQuery(
     query_id=str(branch_name),
@@ -701,15 +873,31 @@ def _resolve_query(
     title_text="Milestone timeline",
     subtitle_text=f"{month_name(int(month))} {int(year)}",
     raw_events=tuple(raw_events),
-    answer_value=int(answer_value),
+    answer_value=(int(answer_value) if answer_value is not None else None),
+    answer_label=str(answer_label),
     answer_event_ids=tuple(answer_event_ids),
     reference_event_ids=tuple(reference_event_ids),
     endpoint_event_ids=tuple(endpoint_event_ids),
     prompt_endpoint_event_ids=tuple(prompt_endpoint_event_ids),
+    prompt_reference_event_ids=tuple(prompt_reference_event_ids),
+    threshold_day=(int(threshold_day) if threshold_day is not None else None),
+    threshold_date_text=(
+      str(format_month_day_label(int(month), int(threshold_day)))
+      if threshold_day is not None
+      else ""
+    ),
+    reference_date_text=str(reference_date_text),
+    relative_offset=(int(relative_offset) if relative_offset is not None else None),
+    relative_offset_phrase=(
+      _relative_offset_phrase(int(relative_offset))
+      if relative_offset is not None
+      else ""
+    ),
     event_count_support=tuple(int(value) for value in event_count_support),
     between_count_support=tuple(int(value) for value in between_count_support),
     outside_count_support=tuple(int(value) for value in outside_count_support),
-    date_gap_support=tuple(int(value) for value in date_gap_support),
+    threshold_count_support=tuple(int(value) for value in threshold_count_support),
+    relative_offset_support=tuple(int(value) for value in relative_offset_support),
     query_id_probabilities=dict(branch_probabilities_map),
     interval_relation_probabilities=dict(interval_relation_probabilities),
     scene_variant_probabilities=dict(scene_variant_probabilities),
@@ -807,15 +995,11 @@ def build_timeline_response(
   )
 
   dynamic_slots: Dict[str, str] = {}
-  if str(program_mode) == DAY_DELTA_MODE:
-    endpoint_labels = {
-      str(event.event_id): str(event.label)
-      for event in query.raw_events
-    }
-    dynamic_slots["endpoint_pair_description"] = " and ".join(
-      f"event {endpoint_labels[str(event_id)]}"
-      for event_id in query.prompt_endpoint_event_ids
-    )
+  if str(program_mode) == THRESHOLD_EVENT_COUNT_MODE:
+    dynamic_slots["threshold_date_text"] = str(query.threshold_date_text)
+  elif str(program_mode) == RELATIVE_POSITION_EVENT_LABEL_MODE:
+    dynamic_slots["reference_date_text"] = str(query.reference_date_text)
+    dynamic_slots["relative_offset_phrase"] = str(query.relative_offset_phrase)
 
   prompt_selection = render_task_prompt_variants(
     domain=DOMAIN,
@@ -830,18 +1014,19 @@ def build_timeline_response(
   )
   prompt_artifacts = build_prompt_trace_artifacts(prompt_selection)
 
-  answer_gt = TypedValue(type="integer", value=int(query.answer_value))
-  if str(program_mode) == DAY_DELTA_MODE:
-    annotation_value: Dict[str, List[float]] = {
-      role: [round(float(value), 3) for value in rendered_scene.event_bboxes_by_id[str(event_id)]]
-      for role, event_id in zip(("earlier_event", "later_event"), query.endpoint_event_ids)
-    }
-    annotation_gt = TypedValue(type="bbox_map", value=dict(annotation_value))
+  annotation_bboxes = [
+    [round(float(value), 3) for value in rendered_scene.event_bboxes_by_id[str(event_id)]]
+    for event_id in query.answer_event_ids
+  ]
+  if str(program_mode) == RELATIVE_POSITION_EVENT_LABEL_MODE:
+    if len(annotation_bboxes) != 1:
+      raise ValueError("relative-position timeline task must bind exactly one target event bbox")
+    answer_gt = TypedValue(type="string", value=str(query.answer_label))
+    annotation_gt = TypedValue(type="bbox", value=list(annotation_bboxes[0]))
   else:
-    annotation_bboxes = [
-      [round(float(value), 3) for value in rendered_scene.event_bboxes_by_id[str(event_id)]]
-      for event_id in query.answer_event_ids
-    ]
+    if query.answer_value is None:
+      raise ValueError("timeline count tasks must bind an integer answer")
+    answer_gt = TypedValue(type="integer", value=int(query.answer_value))
     annotation_gt = TypedValue(type="bbox_set", value=[list(box) for box in annotation_bboxes])
 
   event_records = [
@@ -883,7 +1068,13 @@ def build_timeline_response(
     "event_count_support": [int(value) for value in query.event_count_support],
     "between_count_support": [int(value) for value in query.between_count_support],
     "outside_count_support": [int(value) for value in query.outside_count_support],
-    "date_gap_support": [int(value) for value in query.date_gap_support],
+    "threshold_count_support": [int(value) for value in query.threshold_count_support],
+    "relative_offset_support": [int(value) for value in query.relative_offset_support],
+    "threshold_day": int(query.threshold_day) if query.threshold_day is not None else None,
+    "threshold_date_text": str(query.threshold_date_text),
+    "reference_date_text": str(query.reference_date_text),
+    "relative_offset": int(query.relative_offset) if query.relative_offset is not None else None,
+    "relative_offset_phrase": str(query.relative_offset_phrase),
     "query_id_probabilities": dict(probabilities),
     "interval_relation_probabilities": dict(query.interval_relation_probabilities),
     "scene_variant_probabilities": dict(query.scene_variant_probabilities),
@@ -915,6 +1106,11 @@ def build_timeline_response(
         "month": int(query.month),
         "month_name": str(query.month_name),
         "reference_event_ids": [str(value) for value in query.reference_event_ids],
+        "prompt_reference_event_ids": [str(value) for value in query.prompt_reference_event_ids],
+        "threshold_day": int(query.threshold_day) if query.threshold_day is not None else None,
+        "threshold_date_text": str(query.threshold_date_text),
+        "reference_date_text": str(query.reference_date_text),
+        "relative_offset": int(query.relative_offset) if query.relative_offset is not None else None,
       },
     },
     "query_spec": query_spec,
@@ -962,17 +1158,28 @@ def build_timeline_response(
         for event_id, bbox in rendered_scene.event_bboxes_by_id.items()
       },
       "reference_event_ids": [str(value) for value in query.reference_event_ids],
+      "prompt_reference_event_ids": [str(value) for value in query.prompt_reference_event_ids],
       "answer_event_ids": [str(value) for value in query.answer_event_ids],
       "endpoint_event_ids": [str(value) for value in query.endpoint_event_ids],
+      "threshold_day": int(query.threshold_day) if query.threshold_day is not None else None,
+      "threshold_date_text": str(query.threshold_date_text),
+      "reference_date_text": str(query.reference_date_text),
+      "relative_offset": int(query.relative_offset) if query.relative_offset is not None else None,
     },
     "execution_trace": {
       **dict(common_params),
       "event_count": len(query.raw_events),
-      "answer_value": int(query.answer_value),
+      "answer_value": int(query.answer_value) if query.answer_value is not None else None,
+      "answer_label": str(query.answer_label),
       "answer_event_ids": [str(value) for value in query.answer_event_ids],
       "reference_event_ids": [str(value) for value in query.reference_event_ids],
+      "prompt_reference_event_ids": [str(value) for value in query.prompt_reference_event_ids],
       "endpoint_event_ids": [str(value) for value in query.endpoint_event_ids],
       "prompt_endpoint_event_ids": [str(value) for value in query.prompt_endpoint_event_ids],
+      "threshold_day": int(query.threshold_day) if query.threshold_day is not None else None,
+      "threshold_date_text": str(query.threshold_date_text),
+      "reference_date_text": str(query.reference_date_text),
+      "relative_offset": int(query.relative_offset) if query.relative_offset is not None else None,
       "events": event_records,
     },
     "witness_symbolic": {
@@ -998,9 +1205,10 @@ def build_timeline_response(
 
 
 __all__ = [
-  "DAY_DELTA_MODE",
   "DOMAIN",
   "INTERVAL_EVENT_MODE",
+  "RELATIVE_POSITION_EVENT_LABEL_MODE",
   "SCENE",
+  "THRESHOLD_EVENT_COUNT_MODE",
   "build_timeline_response",
 ]

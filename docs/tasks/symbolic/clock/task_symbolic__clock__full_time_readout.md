@@ -8,13 +8,13 @@
 5. Objective: read the exact time from one three-hand analog clock.
 
 ## Program Contract
-Program: `clock.full_time_readout(scene=clock, scope=single_three_hand_analog_clock, output=string_hhmmss)`
+Program: `clock.full_time_readout(scene=clock, scope=single_three_hand_analog_clock_with_time_options, output=option_letter)`
 
-Candidate set: the hour-hand, minute-hand, and second-hand segments on the single visible analog clock.
+Candidate set: the six labeled `HH:MM:SS` answer cards below the single visible analog clock.
 Operands: the finalized clock center and the three hand-tip positions.
 Operation: read the displayed hour, minute, and second values from the analog clock.
-Output binding: `answer` is the displayed time as zero-padded `HH:MM:SS`.
-Annotation witnesses: a three-item `segment_set` containing the hour, minute, and second hand segments.
+Output binding: `answer` is the option label whose card shows the displayed zero-padded `HH:MM:SS` time.
+Annotation witnesses: the scalar `bbox` of the selected answer card.
 Query ids: `single`.
 
 ## 2) Scene + Task Contract
@@ -24,15 +24,16 @@ Query ids: `single`.
    - `scene_variant`: `classic|minimal|outline`
    - `style_variant`: `accented|marker|studio`
    - `accent_color_name`: shared symbolic clock colors
-4. `answer_gt.type`: `string`
-5. Answer schema: zero-padded 12-hour `HH:MM:SS`.
-6. `annotation_gt.type`: `segment_set`
-7. Annotation schema: `segment_set`
+4. `answer_gt.type`: `option_letter`
+5. Answer schema: one visible option label from `A` through `F`.
+6. `annotation_gt.type`: `bbox`
+7. Annotation schema: scalar `bbox` for the selected answer card.
 8. Scene contract:
    - one three-hand analog clock is shown,
+   - six labeled `HH:MM:SS` answer cards are shown below the clock,
    - the answer is the exact displayed hour, minute, and second time,
    - sampled times are constrained so the three hands are separated by at least the configured angle gap,
-   - annotation marks the hour, minute, and second hand segments only.
+   - annotation marks the selected answer card only.
 
 ## 3) Prompt Contract
 1. Bundle: `symbolic_clock_v1`
@@ -46,11 +47,10 @@ Query ids: `single`.
 6. Modes: `answer_only`, `answer_and_annotation`
 
 ## 4) Annotation + Trace Contract
-1. Prompt-facing annotation is a three-item `segment_set`.
-2. Segment endpoint order is not semantically meaningful.
-3. `projected_annotation` includes `segment_set` and `pixel_segment_set`.
-4. `render_map` includes the clock center, hand tips, hand bboxes, and face bbox.
-5. `execution_trace` records the displayed time, hand angle gaps, second support, and resolved visual axes.
+1. Prompt-facing annotation is the scalar `bbox` of the selected answer card.
+2. `projected_annotation` includes `bbox` and `pixel_bbox`.
+3. `render_map` includes the clock center, hand tips, hand bboxes, face bbox, option bboxes, and selected option bbox.
+4. `execution_trace` records the displayed time, raw answer time, answer label, option values, hand angle gaps, second support, and resolved visual axes.
 
 ## 5) Determinism + Tests
 1. Deterministic sampling/rendering from `instance_seed`.

@@ -23,7 +23,7 @@ from trace.tasks.geometry.shared.single_object_scene import (
 from trace.tasks.shared.text_rendering import load_font
 
 from .defaults import int_default
-from .state import BBox, Color, GraphObject, GraphPaperContext, Point, SCENE_ID
+from .state import BBox, Color, GraphObject, GraphPaperContext, Point, POINT_LABELS, SCENE_ID
 
 _BACKGROUND_DEFAULTS = load_geometry_background_defaults(scene_id=SCENE_ID)
 _NOISE_DEFAULTS = load_geometry_noise_defaults(scene_id=SCENE_ID)
@@ -322,6 +322,89 @@ def draw_label(
         stroke_width=1,
         stroke_fill=ctx.label_stroke_color,
     )
+
+
+def _point_inside_polygon(point: Point, polygon: Sequence[Point]) -> bool:
+    """Return whether a graph-space point lies inside a simple polygon."""
+
+    x, y = float(point[0]), float(point[1])
+    inside = False
+    pts = tuple((float(px), float(py)) for px, py in polygon)
+    for index, first in enumerate(pts):
+        second = pts[(index + 1) % len(pts)]
+        y_crosses = (first[1] > y) != (second[1] > y)
+        if y_crosses:
+            x_at_y = first[0] + (y - first[1]) * (second[0] - first[0]) / (
+                second[1] - first[1]
+            )
+            if x < x_at_y:
+                inside = not inside
+    return inside
+
+
+def _outside_label_point(
+    polygon: Sequence[Point], vertex: Point, *, offset_units: float
+) -> Point:
+    """Choose a nearby graph point outside the polygon for a vertex label."""
+
+    pts = tuple((float(x), float(y)) for x, y in polygon)
+    centroid = (
+        sum(point[0] for point in pts) / max(1, len(pts)),
+        sum(point[1] for point in pts) / max(1, len(pts)),
+    )
+    away = (float(vertex[0]) - centroid[0], float(vertex[1]) - centroid[1])
+    away_length = max(1e-6, sqrt((away[0] * away[0]) + (away[1] * away[1])))
+    candidate_dirs = [
+        (away[0] / away_length, away[1] / away_length),
+        (1.0, 0.0),
+        (-1.0, 0.0),
+        (0.0, 1.0),
+        (0.0, -1.0),
+        (0.707, 0.707),
+        (-0.707, 0.707),
+        (0.707, -0.707),
+        (-0.707, -0.707),
+    ]
+    scored_dirs = sorted(
+        candidate_dirs,
+        key=lambda direction: (
+            (direction[0] * away[0]) + (direction[1] * away[1]),
+            -abs(direction[0]),
+            -abs(direction[1]),
+        ),
+        reverse=True,
+    )
+    for dx, dy in scored_dirs:
+        candidate = (
+            float(vertex[0]) + float(dx) * float(offset_units),
+            float(vertex[1]) + float(dy) * float(offset_units),
+        )
+        if not _point_inside_polygon(candidate, pts):
+            return candidate
+    return (
+        float(vertex[0]) + (away[0] / away_length) * float(offset_units),
+        float(vertex[1]) + (away[1] / away_length) * float(offset_units),
+    )
+
+
+def draw_vertex_labels(
+    ctx: GraphPaperContext,
+    points: Sequence[Point],
+    *,
+    labels: Sequence[str] = POINT_LABELS,
+    offset_units: float = 0.72,
+) -> dict[str, Point]:
+    """Draw A/B/C... labels just outside polygon vertices and return pixels."""
+
+    label_points: dict[str, Point] = {}
+    for label, vertex in zip(labels, points, strict=False):
+        label_graph_point = _outside_label_point(
+            points, vertex, offset_units=float(offset_units)
+        )
+        label_px = project(ctx, label_graph_point)
+        draw_label(ctx, str(label), label_px, anchor="mm")
+        label_points[str(label)] = label_px
+    return label_points
 
 
 def draw_point_marker(

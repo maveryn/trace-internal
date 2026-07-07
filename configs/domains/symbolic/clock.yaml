@@ -37,16 +37,61 @@ generation:
         min: 5
         max: 600
         step: 5
+      option_label_support:
+      - A
+      - B
+      - C
+      - D
+      - E
+      - F
+      option_count: 6
+      correct_option_label_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
     task_symbolic__clock__hand_angle_value:
       minute_step: 10
       min_hand_angle_gap_deg: 15.0
       hand_angle_answer_min: 15
       hand_angle_answer_max: 180
       hand_angle_answer_step: 5
+      option_label_support:
+      - A
+      - B
+      - C
+      - D
+      - E
+      - F
+      option_count: 6
+      correct_option_label_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
     task_symbolic__clock__full_time_readout:
       minute_step: 5
       second_step: 5
       min_hand_angle_gap_deg: 15.0
+      option_label_support:
+      - A
+      - B
+      - C
+      - D
+      - E
+      - F
+      option_count: 6
+      correct_option_label_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
     task_symbolic__clock__alarm_wait_time_value:
       accent_color_name_weights:
         red: 0.0
@@ -62,6 +107,21 @@ generation:
       alarm_hour_min: 1
       alarm_hour_max: 12
       min_alarm_hand_gap_deg: 20.0
+      option_label_support:
+      - A
+      - B
+      - C
+      - D
+      - E
+      - F
+      option_count: 6
+      correct_option_label_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
     task_symbolic__clock__time_extremum_label:
       clock_label_support:
       - A
@@ -70,20 +130,8 @@ generation:
       - D
       - E
       - F
-      - G
-      - H
-      - I
-      - J
-      - K
-      - L
       clock_count_support:
       - 6
-      - 7
-      - 8
-      - 9
-      - 10
-      - 11
-      - 12
       min_compare_gap_minutes: 15
     task_symbolic__clock__equivalent_time_label:
       digital_display_palette_weights:
@@ -110,6 +158,21 @@ generation:
         min: 15
         max: 360
         step: 15
+      option_label_support:
+      - A
+      - B
+      - C
+      - D
+      - E
+      - F
+      option_count: 6
+      correct_option_label_weights:
+        A: 1.0
+        B: 1.0
+        C: 1.0
+        D: 1.0
+        E: 1.0
+        F: 1.0
     task_symbolic__clock__sequence_completion_label:
       sequence_step_minutes_support:
       - 15
@@ -182,6 +245,14 @@ rendering:
     inner_ring_width_px_min: 3
     inner_ring_width_px_max: 5
   task_overrides:
+    task_symbolic__clock__offset_readout:
+      canvas_height: 860
+    task_symbolic__clock__hand_angle_value:
+      canvas_height: 860
+    task_symbolic__clock__full_time_readout:
+      canvas_height: 860
+    task_symbolic__clock__alarm_wait_time_value:
+      canvas_height: 860
     task_symbolic__clock__time_extremum_label:
       canvas_width: 960
       canvas_height: 760
@@ -265,7 +336,7 @@ rendering:
       digital_corner_radius_px: 18
     task_symbolic__clock__elapsed_time_value:
       canvas_width: 880
-      canvas_height: 520
+      canvas_height: 760
       outer_margin_px: 40
       face_radius_px: 118
       bezel_width_px: 8

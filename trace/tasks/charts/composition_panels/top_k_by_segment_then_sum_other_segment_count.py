@@ -23,29 +23,47 @@ from .shared.state import DOMAIN
 
 
 T = "task_charts__composition_panels__top_k_by_segment_then_sum_other_segment_count"
+TASK_PARAM_DEFAULTS = {
+    "panel_count_min": 4,
+    "panel_count_max": 6,
+    "segment_count_min": 4,
+    "segment_count_max": 4,
+    "total_values": [100, 200, 400, 500],
+    "top_k_values": [2],
+}
 PGM = "sum(count(panel,target_segment) for panel in top_k(panels, share(panel,rank_segment), k)); output=integer_count; annotation=bbox_set(selected_panels); scene=composition_panels; scope=top_k_by_segment_then_sum_other_segment_count"
 PROMPT_KEY = "top_k_by_segment_then_sum_other_segment_count"
 ANNOTATION_HINT = 'set "annotation" to an array of [x0,y0,x1,y1] pixel boxes around the full selected panels included in the sum'
-JSON_EXAMPLE = '{"annotation":[[120,90,380,520],[460,90,720,520]],"answer":780}'
-JSON_EXAMPLE_ANSWER_ONLY = '{"answer":780}'
+JSON_EXAMPLE = '{"annotation":[[120,90,380,520],[460,90,720,520]],"answer":140}'
+JSON_EXAMPLE_ANSWER_ONLY = '{"answer":140}'
 
 
 def _build_plan(params, seed, _query_id, _probs):
     """Build the rank-then-sum objective plan for this public task."""
 
-    variant, variant_probs = V(params, instance_seed=seed)
-    frame = sample_scene_frame(params, instance_seed=seed)
+    task_params = {**TASK_PARAM_DEFAULTS, **dict(params)}
+    variant, variant_probs = V(task_params, instance_seed=seed)
+    frame = sample_scene_frame(task_params, instance_seed=seed)
     rng = spawn_rng(int(seed), f"{T}.objective")
     rank_segment, target_segment = rng.sample(list(frame.segment_labels), 2)
-    top_k_values = tuple(int(value) for value in params.get("top_k_values", group_default(GEN_DEFAULTS, "top_k_values", [2, 3])))
+    top_k_values = tuple(int(value) for value in task_params.get("top_k_values", group_default(GEN_DEFAULTS, "top_k_values", [2, 3])))
     feasible_k = [value for value in top_k_values if 1 < int(value) < len(frame.panel_labels)]
-    top_k = balanced_int(feasible_k, params=params, instance_seed=seed, namespace=f"{T}.top_k")
+    top_k = balanced_int(feasible_k, params=task_params, instance_seed=seed, namespace=f"{T}.top_k")
     fixed_by_panel = ranked_share_fixtures(
         frame.panel_labels,
         segment=str(rank_segment),
-        support_values=[16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56],
+        support_values=[18, 24, 30, 36, 42, 48],
         rng=rng,
     )
+    ranked_labels = sorted(
+        frame.panel_labels,
+        key=lambda label: int(fixed_by_panel[str(label)][str(rank_segment)]),
+        reverse=True,
+    )
+    for label in frame.panel_labels:
+        fixed_by_panel[str(label)][str(target_segment)] = (
+            int(rng.choice([20, 30])) if str(label) in {str(value) for value in ranked_labels[: int(top_k)]} else 20
+        )
     panels = build_base_panels(frame=frame, instance_seed=seed, fixed_by_panel=fixed_by_panel)
     dataset = package_dataset(frame, panels)
     selected = top_panels_by_share(panels, segment=str(rank_segment), k=int(top_k))
@@ -65,7 +83,7 @@ def _build_plan(params, seed, _query_id, _probs):
     return P(
         dataset=dataset,
         selection=selection,
-        params=params,
+        params=task_params,
         scene_variant=variant,
         scene_variant_probabilities=variant_probs,
         prompt_key=PROMPT_KEY,
@@ -87,7 +105,7 @@ class ChartsCompositionPanelsTopKBySegmentThenSumOtherSegmentCountTask:
     default_dataset_enabled = True
 
     def generate(self, instance_seed, *, params, max_attempts):
-        return R(task=self, instance_seed=instance_seed, params=dict(params), max_attempts=max_attempts, default_query_id=self.default_query_id, build_plan=_build_plan)
+        return R(task=self, instance_seed=instance_seed, params={**TASK_PARAM_DEFAULTS, **dict(params)}, max_attempts=max_attempts, default_query_id=self.default_query_id, build_plan=_build_plan)
 
 
 __all__ = ["ChartsCompositionPanelsTopKBySegmentThenSumOtherSegmentCountTask"]

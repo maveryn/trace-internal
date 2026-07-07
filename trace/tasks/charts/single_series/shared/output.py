@@ -8,6 +8,16 @@ from .rendering import axis_render_metadata, font_assets_payload
 from .state import SCENE_ID, SingleSeriesDataset, SingleSeriesRenderResult
 
 
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, list):
+        return [_json_safe(item) for item in value]
+    return value
+
+
 def render_spec(
     *,
     rendered: SingleSeriesRenderResult,
@@ -43,7 +53,7 @@ def render_spec(
             "mark_fill_rgb": list(rendered.mark_style.get("mark_fill_rgb", [])),
             "mark_outline_rgb": list(rendered.mark_style.get("mark_outline_rgb", [])),
             **{
-                str(key): value
+                str(key): _json_safe(value)
                 for key, value in dict(rendered.mark_style).items()
                 if key not in {"sampling_policy", "mark_fill_rgb", "mark_outline_rgb"}
             },
@@ -79,7 +89,7 @@ def scene_relations(
         "scene_variant": str(scene_variant),
         "answer_value": dataset.answer_value,
         "annotation_labels": list(annotation_labels),
-        **dict(relation_params),
+        **_json_safe(dict(relation_params)),
     }
 
 
@@ -115,8 +125,8 @@ def execution_record(
         "mark_color_sampling_policy": str(rendered.mark_style.get("sampling_policy", "")),
         "mark_fill_rgb": list(rendered.mark_style.get("mark_fill_rgb", [])),
         "mark_outline_rgb": list(rendered.mark_style.get("mark_outline_rgb", [])),
-        **dict(dataset.trace),
-        **dict(relation_params),
+        **_json_safe(dict(dataset.trace)),
+        **_json_safe(dict(relation_params)),
     }
 
 
@@ -132,7 +142,7 @@ def witness_symbolic(
         "answer_value": dataset.answer_value,
         "annotation_type": str(annotation_type),
         "labels": list(annotation_labels),
-        **dict(relation_params),
+        **_json_safe(dict(relation_params)),
     }
 
 

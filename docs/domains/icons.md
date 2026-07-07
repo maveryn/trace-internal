@@ -76,5 +76,5 @@ stack counting remains clean.
 ## Shared Code
 Reusable icon asset loading, color/style sampling, grid layout, relation
 evaluation, and transformation helpers belong under `trace/tasks/icons/shared/`.
-Keep scene-local helpers under the scene package when they are tied to one
+Keep scene-local helpers under the scene source directory when they are tied to one
 scaffold.

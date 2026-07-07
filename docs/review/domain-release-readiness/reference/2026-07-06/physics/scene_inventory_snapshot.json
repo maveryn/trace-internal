@@ -1,0 +1,484 @@
+{
+  "analog_meter": {
+    "config_path": "configs/domains/physics/analog_meter.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/analog_meter",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/analog_meter",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__analog_meter__meter_readout_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "bridge_circuit": {
+    "config_path": "configs/domains/physics/bridge_circuit.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/bridge_circuit",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/bridge_circuit",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__bridge_circuit__bridge_missing_resistance_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "bulb_circuit": {
+    "config_path": "configs/domains/physics/bulb_circuit.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/bulb_circuit",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/bulb_circuit",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__bulb_circuit__brightness_extremum_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "buoyancy_density": {
+    "config_path": "configs/domains/physics/buoyancy_density.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/buoyancy_density",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/buoyancy_density",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__buoyancy_density__object_density_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "circuit_equivalent": {
+    "config_path": "configs/domains/physics/circuit_equivalent.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/circuit_equivalent",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/circuit_equivalent",
+    "task_count": 2,
+    "task_ids": [
+      "task_physics__circuit_equivalent__total_capacitance_value",
+      "task_physics__circuit_equivalent__total_resistance_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "circuit_state_change": {
+    "config_path": "configs/domains/physics/circuit_state_change.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/circuit_state_change",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/circuit_state_change",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__circuit_state_change__bulb_brightness_change_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "collision": {
+    "config_path": "configs/domains/physics/collision.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/collision",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/collision",
+    "task_count": 2,
+    "task_ids": [
+      "task_physics__collision__sticky_collision_direction_choice",
+      "task_physics__collision__sticky_collision_speed_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "electromagnetic_induction": {
+    "config_path": "configs/domains/physics/electromagnetic_induction.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/electromagnetic_induction",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/electromagnetic_induction",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__electromagnetic_induction__induced_current_direction_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "electrostatic_field": {
+    "config_path": "configs/domains/physics/electrostatic_field.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/electrostatic_field",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/electrostatic_field",
+    "task_count": 3,
+    "task_ids": [
+      "task_physics__electrostatic_field__field_direction_choice",
+      "task_physics__electrostatic_field__potential_value",
+      "task_physics__electrostatic_field__zero_field_point_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "fluid_flow": {
+    "config_path": "configs/domains/physics/fluid_flow.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/fluid_flow",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/fluid_flow",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__fluid_flow__continuity_speed_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "free_body_forces": {
+    "config_path": "configs/domains/physics/free_body_forces.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/free_body_forces",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/free_body_forces",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__free_body_forces__net_force_direction_choice"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "gear_train": {
+    "config_path": "configs/domains/physics/gear_train.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/gear_train",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/gear_train",
+    "task_count": 2,
+    "task_ids": [
+      "task_physics__gear_train__output_direction_label",
+      "task_physics__gear_train__output_speed_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "graduated_cylinder": {
+    "config_path": "configs/domains/physics/graduated_cylinder.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/graduated_cylinder",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/graduated_cylinder",
+    "task_count": 2,
+    "task_ids": [
+      "task_physics__graduated_cylinder__displacement_volume_value",
+      "task_physics__graduated_cylinder__volume_readout_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "hydraulic": {
+    "config_path": "configs/domains/physics/hydraulic.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/hydraulic",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/hydraulic",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__hydraulic__hydraulic_missing_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "lens_optics": {
+    "config_path": "configs/domains/physics/lens_optics.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/lens_optics",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/lens_optics",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__lens_optics__image_property_choice"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "lever": {
+    "config_path": "configs/domains/physics/lever.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/lever",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/lever",
+    "task_count": 2,
+    "task_ids": [
+      "task_physics__lever__missing_weight_balance_value",
+      "task_physics__lever__side_torque_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "magnetic_force": {
+    "config_path": "configs/domains/physics/magnetic_force.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/magnetic_force",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/magnetic_force",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__magnetic_force__force_direction_choice"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "manometer": {
+    "config_path": "configs/domains/physics/manometer.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/manometer",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/manometer",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__manometer__pressure_difference_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "motion_graph": {
+    "config_path": "configs/domains/physics/motion_graph.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/motion_graph",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/motion_graph",
+    "task_count": 3,
+    "task_ids": [
+      "task_physics__motion_graph__average_speed_value",
+      "task_physics__motion_graph__interval_displacement_value",
+      "task_physics__motion_graph__speed_change_state_choice"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "orbital_motion": {
+    "config_path": "configs/domains/physics/orbital_motion.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/orbital_motion",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/orbital_motion",
+    "task_count": 2,
+    "task_ids": [
+      "task_physics__orbital_motion__focus_location_label",
+      "task_physics__orbital_motion__orbital_speed_extremum_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "piston_cylinder": {
+    "config_path": "configs/domains/physics/piston_cylinder.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/piston_cylinder",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/piston_cylinder",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__piston_cylinder__boundary_work_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "pulley": {
+    "config_path": "configs/domains/physics/pulley.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/pulley",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/pulley",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__pulley__pulley_mechanical_advantage"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "pv_diagram": {
+    "config_path": "configs/domains/physics/pv_diagram.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/pv_diagram",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/pv_diagram",
+    "task_count": 2,
+    "task_ids": [
+      "task_physics__pv_diagram__pv_process_sign_choice",
+      "task_physics__pv_diagram__pv_work_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "ray_optics": {
+    "config_path": "configs/domains/physics/ray_optics.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/ray_optics",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/ray_optics",
+    "task_count": 2,
+    "task_ids": [
+      "task_physics__ray_optics__ray_bounce_count",
+      "task_physics__ray_optics__ray_target_hit_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "refraction_layers": {
+    "config_path": "configs/domains/physics/refraction_layers.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/refraction_layers",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/refraction_layers",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__refraction_layers__medium_speed_order_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "shadow_cause": {
+    "config_path": "configs/domains/physics/shadow_cause.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/shadow_cause",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/shadow_cause",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__shadow_cause__light_source_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "signal_transform": {
+    "config_path": "configs/domains/physics/signal_transform.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/signal_transform",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/signal_transform",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__signal_transform__periodic_harmonic_spectrum_match_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "spring": {
+    "config_path": "configs/domains/physics/spring.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/spring",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/spring",
+    "task_count": 2,
+    "task_ids": [
+      "task_physics__spring__spring_extension_difference",
+      "task_physics__spring__spring_missing_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "stack_stability": {
+    "config_path": "configs/domains/physics/stack_stability.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/stack_stability",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/stack_stability",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__stack_stability__stability_status_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "switch_circuit": {
+    "config_path": "configs/domains/physics/switch_circuit.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/switch_circuit",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/switch_circuit",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__switch_circuit__lit_bulb_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "thermal_mixing": {
+    "config_path": "configs/domains/physics/thermal_mixing.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/thermal_mixing",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/thermal_mixing",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__thermal_mixing__final_temperature_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "thermometer": {
+    "config_path": "configs/domains/physics/thermometer.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/thermometer",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/thermometer",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__thermometer__temperature_conversion_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "vernier_caliper": {
+    "config_path": "configs/domains/physics/vernier_caliper.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/vernier_caliper",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/vernier_caliper",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__vernier_caliper__length_readout_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "wave_interference": {
+    "config_path": "configs/domains/physics/wave_interference.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/wave_interference",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/wave_interference",
+    "task_count": 2,
+    "task_ids": [
+      "task_physics__wave_interference__interference_point_choice",
+      "task_physics__wave_interference__path_difference_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "waveform_panel": {
+    "config_path": "configs/domains/physics/waveform_panel.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/waveform_panel",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/waveform_panel",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__waveform_panel__wave_property_extremum_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "wire_magnetism": {
+    "config_path": "configs/domains/physics/wire_magnetism.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/physics/wire_magnetism",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/physics/wire_magnetism",
+    "task_count": 1,
+    "task_ids": [
+      "task_physics__wire_magnetism__wire_field_direction_choice"
+    ],
+    "taxonomy_review_pass": true
+  }
+}

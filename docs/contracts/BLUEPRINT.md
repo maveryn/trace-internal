@@ -28,7 +28,7 @@ Rules:
 4. Source layout, config files, prompt bundle paths, registered task classes,
    and registered source scene/group fields are implementation routing, not
    public taxonomy.
-5. Target scene-package layout for migrated and review-candidate scenes uses:
+5. Current source layout uses:
    - `trace/tasks/<domain>/<scene_id>/<objective_contract>.py`
    - `trace/tasks/<domain>/<scene_id>/shared/`
    - `configs/domains/<domain>/<scene_id>.yaml`

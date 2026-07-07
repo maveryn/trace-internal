@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `indoor_room`
-- Implementation scene package: `indoor_room`
+- Implementation source scene: `indoor_room`
 - Implementation source: `trace/tasks/illustrations/indoor_room/missing_patch_label.py`
 
 ## Task Contract

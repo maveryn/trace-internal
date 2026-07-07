@@ -407,6 +407,10 @@ class IconsCountingNamedGridRowColumnShapeExtremeNumberTask:
             },
             answer_slots={"line_kind": str(sample.queried_axis)},
             instance_seed=int(instance_seed),
+            annotation_hint_key="extreme_annotation_hint",
+            answer_hint_key="extreme_answer_hint",
+            json_example_key="extreme_json_example",
+            json_example_answer_only_key="extreme_json_example_answer_only",
         )
 
         serialized_icons = [serialize_named_grid_icon(icon) for icon in scene.icons]

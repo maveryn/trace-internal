@@ -3,7 +3,7 @@
 ## Contract
 1. Domain: `charts`
 2. Scene id: `hexbin_density`
-3. Source implementation scene package: `charts/hexbin_density`
+3. Source implementation scene: `charts/hexbin_density`
 4. Query ids: `above_threshold_bin_count`, `below_threshold_bin_count`
 5. Semantic query details are recorded in `query_id` and trace params.
 

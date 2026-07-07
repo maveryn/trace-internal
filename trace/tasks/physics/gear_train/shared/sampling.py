@@ -63,13 +63,15 @@ def integer_support(
 
 
 def balanced_axis_choice(values: Sequence[Any], *, params: Mapping[str, Any], instance_seed: int, namespace: str) -> Any:
-    """Return one seeded RNG choice for a balanced finite support."""
+    """Return one balanced finite-support choice with review cursor support."""
 
     support = tuple(values)
     if not support:
         raise ValueError(f"cannot sample empty support for {namespace}")
     sample_cursor = params.get("_sample_cursor")
-    choice_namespace = str(namespace) if sample_cursor is None else f"{namespace}.cursor.{int(sample_cursor)}"
+    if sample_cursor is not None:
+        return support[abs(int(sample_cursor)) % len(support)]
+    choice_namespace = str(namespace)
     rng = spawn_rng(int(instance_seed), choice_namespace)
     return rng.choice(support)
 

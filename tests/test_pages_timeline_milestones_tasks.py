@@ -4,8 +4,9 @@ from collections import Counter, defaultdict
 from trace.core.seed import hash64
 from trace.tasks.shared.text_rendering import resolve_text_stroke_fill
 from trace.tasks.shared.time_artifact_style import SUPPORTED_TIME_ARTIFACT_COLOR_NAMES, SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS
-from trace.tasks.pages.timeline.event_date_gap_value import PagesTimelineEventDateGapValueTask
+from trace.tasks.pages.timeline.date_threshold_event_count import PagesTimelineDateThresholdEventCountTask
 from trace.tasks.pages.timeline.interval_membership_count import PagesTimelineIntervalMembershipCountTask
+from trace.tasks.pages.timeline.relative_position_event_label import PagesTimelineRelativePositionEventLabelTask
 from tests.helpers import extract_prompt_json_example
 
 def test_pages_timeline_milestones_contract_matches_trace() -> None:
@@ -43,29 +44,78 @@ def test_pages_timeline_milestones_contract_matches_trace() -> None:
         assert out.annotation_gt.value == expected_boxes
         assert trace['projected_annotation']['bbox_set'] == expected_boxes
 
-def test_pages_timeline_event_date_gap_value_contract_matches_trace() -> None:
-    task = PagesTimelineEventDateGapValueTask()
-    out = task.generate(22632, params={'scene_variant': 'minimal', 'style_variant': 'accented', 'accent_color_name': 'green'}, max_attempts=20)
+def test_pages_timeline_date_threshold_event_count_contract_matches_trace() -> None:
+    task = PagesTimelineDateThresholdEventCountTask()
+    out = task.generate(
+        22632,
+        params={
+            'query_id': 'after_threshold_date_count',
+            'scene_variant': 'minimal',
+            'style_variant': 'accented',
+            'accent_color_name': 'green',
+        },
+        max_attempts=20,
+    )
     trace = out.trace_payload
     execution = trace['execution_trace']
     render_map = trace['render_map']
-    events_by_id = {str(event['event_id']): dict(event) for event in execution['events']}
-    earlier_event_id, later_event_id = [str(value) for value in execution['endpoint_event_ids']]
-    earlier_event = events_by_id[earlier_event_id]
-    later_event = events_by_id[later_event_id]
-    assert out.query_id == 'single'
-    assert str(execution['query_id']) == 'single'
-    assert str(execution['source_query_id']) == 'event_date_gap_value'
-    assert str(execution['interval_relation']) == 'date_gap'
+    threshold_day = int(execution['threshold_day'])
+    assert out.query_id == 'after_threshold_date_count'
+    assert str(execution['query_id']) == 'after_threshold_date_count'
+    assert str(execution['source_query_id']) == 'after_threshold_date_count'
+    assert str(execution['interval_relation']) == 'after'
+    assert execution['reference_event_ids'] == []
+    assert execution['endpoint_event_ids'] == []
     assert out.answer_gt.type == 'integer'
-    assert out.annotation_gt.type == 'bbox_map'
-    assert int(earlier_event['day_of_month']) < int(later_event['day_of_month'])
-    assert int(out.answer_gt.value) == int(later_event['day_of_month']) - int(earlier_event['day_of_month'])
-    assert set(out.annotation_gt.value.keys()) == {'earlier_event', 'later_event'}
-    assert out.annotation_gt.value['earlier_event'] == render_map['event_bboxes_by_id'][earlier_event_id]
-    assert out.annotation_gt.value['later_event'] == render_map['event_bboxes_by_id'][later_event_id]
-    assert trace['projected_annotation']['bbox_map'] == out.annotation_gt.value
-    assert tuple((str(value) for value in render_map['endpoint_event_ids'])) == (earlier_event_id, later_event_id)
+    assert out.annotation_gt.type == 'bbox_set'
+    expected_event_ids = [
+        str(event['event_id'])
+        for event in execution['events']
+        if int(event['day_of_month']) > threshold_day
+    ]
+    assert int(out.answer_gt.value) == len(expected_event_ids)
+    assert expected_event_ids == execution['answer_event_ids']
+    expected_boxes = [
+        render_map['event_bboxes_by_id'][str(event_id)]
+        for event_id in expected_event_ids
+    ]
+    assert out.annotation_gt.value == expected_boxes
+    assert trace['projected_annotation']['bbox_set'] == expected_boxes
+
+def test_pages_timeline_relative_position_event_label_contract_matches_trace() -> None:
+    task = PagesTimelineRelativePositionEventLabelTask()
+    out = task.generate(
+        22636,
+        params={
+            'query_id': 'event_after_dated_event_label',
+            'relative_offset': 4,
+            'scene_variant': 'classic',
+            'style_variant': 'studio',
+            'accent_color_name': 'blue',
+        },
+        max_attempts=20,
+    )
+    trace = out.trace_payload
+    execution = trace['execution_trace']
+    render_map = trace['render_map']
+    assert out.query_id == 'event_after_dated_event_label'
+    assert str(execution['query_id']) == 'event_after_dated_event_label'
+    assert str(execution['source_query_id']) == 'event_after_dated_event_label'
+    assert str(execution['interval_relation']) == 'after'
+    assert int(execution['relative_offset']) == 4
+    assert len(execution['prompt_reference_event_ids']) == 1
+    assert len(execution['answer_event_ids']) == 1
+    reference_id = str(execution['prompt_reference_event_ids'][0])
+    target_id = str(execution['answer_event_ids'][0])
+    events_by_id = {str(event['event_id']): event for event in execution['events']}
+    assert int(events_by_id[target_id]['order_index']) == int(events_by_id[reference_id]['order_index']) + 4
+    assert str(events_by_id[reference_id]['date_text']) == str(execution['reference_date_text'])
+    assert out.answer_gt.type == 'string'
+    assert out.annotation_gt.type == 'bbox'
+    assert str(out.answer_gt.value) == str(events_by_id[target_id]['label'])
+    expected_box = render_map['event_bboxes_by_id'][target_id]
+    assert out.annotation_gt.value == expected_box
+    assert trace['projected_annotation']['bbox'] == expected_box
 
 def test_pages_timeline_milestones_prompt_examples_match_variants() -> None:
     task = PagesTimelineIntervalMembershipCountTask()
@@ -77,13 +127,31 @@ def test_pages_timeline_milestones_prompt_examples_match_variants() -> None:
         assert answer_and_annotation == expected_answer_and_annotation
         assert answer_only == expected_answer_only
 
-def test_pages_timeline_event_date_gap_value_prompt_examples_match_variants() -> None:
-    task = PagesTimelineEventDateGapValueTask()
-    out = task.generate(22643, params={}, max_attempts=20)
-    answer_and_annotation = extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
-    answer_only = extract_prompt_json_example(out.prompt_variants['answer_only'])
-    assert answer_and_annotation == {'annotation': {'earlier_event': [160, 158, 264, 228], 'later_event': [538, 158, 642, 228]}, 'answer': 9}
-    assert answer_only == {'answer': 9}
+def test_pages_timeline_date_threshold_event_count_prompt_examples_match_variants() -> None:
+    task = PagesTimelineDateThresholdEventCountTask()
+    expected = {
+        'before_threshold_date_count': {'annotation': [[160, 158, 264, 228], [286, 410, 390, 480]], 'answer': 2},
+        'after_threshold_date_count': {'annotation': [[664, 410, 768, 480], [790, 158, 894, 228]], 'answer': 2},
+    }
+    for index, (query_id, expected_answer_and_annotation) in enumerate(expected.items(), start=22643):
+        out = task.generate(index, params={'query_id': query_id}, max_attempts=20)
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
+        answer_only = extract_prompt_json_example(out.prompt_variants['answer_only'])
+        assert answer_and_annotation == expected_answer_and_annotation
+        assert answer_only == {'answer': 2}
+
+def test_pages_timeline_relative_position_event_label_prompt_examples_match_variants() -> None:
+    task = PagesTimelineRelativePositionEventLabelTask()
+    expected = {
+        'event_before_dated_event_label': ({'annotation': [286, 410, 390, 480], 'answer': 'B'}, {'answer': 'B'}),
+        'event_after_dated_event_label': ({'annotation': [664, 410, 768, 480], 'answer': 'E'}, {'answer': 'E'}),
+    }
+    for index, (query_id, (expected_answer_and_annotation, expected_answer_only)) in enumerate(expected.items(), start=22646):
+        out = task.generate(index, params={'query_id': query_id}, max_attempts=20)
+        answer_and_annotation = extract_prompt_json_example(out.prompt_variants['answer_and_annotation'])
+        answer_only = extract_prompt_json_example(out.prompt_variants['answer_only'])
+        assert answer_and_annotation == expected_answer_and_annotation
+        assert answer_only == expected_answer_only
 
 def test_pages_timeline_milestones_balanced_sampling_defaults_cover_axes() -> None:
     task = PagesTimelineIntervalMembershipCountTask()
@@ -122,27 +190,49 @@ def test_pages_timeline_milestones_balanced_sampling_defaults_cover_axes() -> No
     for query_id in query_ids:
         assert set(scenes_by_query_id[query_id].keys()) == {'classic', 'roadmap', 'minimal'}
         assert set(styles_by_query_id[query_id].keys()) == set(SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS)
-        assert len(answers_by_query_id[query_id]) >= 5
+        assert len(answers_by_query_id[query_id]) >= 3
 
-def test_pages_timeline_event_date_gap_value_balanced_sampling_covers_answers_and_prompt_order() -> None:
-    task = PagesTimelineEventDateGapValueTask()
+def test_pages_timeline_date_threshold_event_count_balanced_sampling_covers_answers_and_queries() -> None:
+    task = PagesTimelineDateThresholdEventCountTask()
     answers: Counter[int] = Counter()
-    prompt_orders: Counter[str] = Counter()
+    query_ids: Counter[str] = Counter()
     scene_variants: Counter[str] = Counter()
     style_variants: Counter[str] = Counter()
     accent_color_names: Counter[str] = Counter()
     for index in range(90):
-        out = task.generate(hash64(22690, 'pages_timeline_event_date_gap_value', index), params={}, max_attempts=20)
+        out = task.generate(hash64(22690, 'pages_timeline_date_threshold_event_count', index), params={}, max_attempts=20)
         execution = out.trace_payload['execution_trace']
         answers[int(out.answer_gt.value)] += 1
+        query_ids[str(execution['source_query_id'])] += 1
         scene_variants[str(execution['scene_variant'])] += 1
         style_variants[str(execution['style_variant'])] += 1
         accent_color_names[str(execution['accent_color_name'])] += 1
-        endpoint_ids = tuple((str(value) for value in execution['endpoint_event_ids']))
-        prompt_endpoint_ids = tuple((str(value) for value in execution['prompt_endpoint_event_ids']))
-        prompt_orders['later_first' if prompt_endpoint_ids == tuple(reversed(endpoint_ids)) else 'earlier_first'] += 1
-    assert len(answers) >= 8
-    assert set(prompt_orders.keys()) == {'earlier_first', 'later_first'}
+    assert len(answers) >= 5
+    assert set(query_ids.keys()) == {'before_threshold_date_count', 'after_threshold_date_count'}
+    assert set(scene_variants.keys()) == {'classic', 'roadmap', 'minimal'}
+    assert set(style_variants.keys()) == set(SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS)
+    assert set(accent_color_names.keys()) == set(SUPPORTED_TIME_ARTIFACT_COLOR_NAMES)
+
+def test_pages_timeline_relative_position_event_label_balanced_sampling_covers_offsets_and_queries() -> None:
+    task = PagesTimelineRelativePositionEventLabelTask()
+    offsets: Counter[int] = Counter()
+    query_ids: Counter[str] = Counter()
+    answers: Counter[str] = Counter()
+    scene_variants: Counter[str] = Counter()
+    style_variants: Counter[str] = Counter()
+    accent_color_names: Counter[str] = Counter()
+    for index in range(120):
+        out = task.generate(hash64(22700, 'pages_timeline_relative_position_event_label', index), params={}, max_attempts=20)
+        execution = out.trace_payload['execution_trace']
+        offsets[int(execution['relative_offset'])] += 1
+        query_ids[str(execution['source_query_id'])] += 1
+        answers[str(out.answer_gt.value)] += 1
+        scene_variants[str(execution['scene_variant'])] += 1
+        style_variants[str(execution['style_variant'])] += 1
+        accent_color_names[str(execution['accent_color_name'])] += 1
+    assert set(offsets.keys()) == {1, 2, 3, 4}
+    assert set(query_ids.keys()) == {'event_before_dated_event_label', 'event_after_dated_event_label'}
+    assert len(answers) >= 6
     assert set(scene_variants.keys()) == {'classic', 'roadmap', 'minimal'}
     assert set(style_variants.keys()) == set(SUPPORTED_TIME_ARTIFACT_STYLE_VARIANTS)
     assert set(accent_color_names.keys()) == set(SUPPORTED_TIME_ARTIFACT_COLOR_NAMES)

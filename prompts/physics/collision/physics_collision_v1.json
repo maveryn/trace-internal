@@ -37,11 +37,11 @@
         "Which candidate arrow A-D points in the direction of the combined puck after the collision?"
       ],
       "speed_value": [
-        "After the pucks stick together, what is the speed of the combined puck, rounded to one decimal place?",
-        "Using the shown masses, speeds, and approach directions, what is the stuck pucks' final speed rounded to one decimal place?",
-        "The pucks stick at the center. What speed do they have afterward, rounded to one decimal place?",
-        "Conserve horizontal and vertical momentum for the sticky collision. What is the final speed rounded to one decimal place?",
-        "What is the combined puck's speed after the collision, rounded to one decimal place?"
+        "After the pucks stick together, compute the horizontal and vertical final velocity components from momentum divided by total mass, then combine those perpendicular components to get speed. What is the speed of the combined puck, rounded to one decimal place?",
+        "Using the shown masses, speeds, and approach directions, find each final velocity component as that puck's momentum divided by the combined mass, then use the component magnitude for speed. What is the stuck pucks' final speed rounded to one decimal place?",
+        "The pucks stick at the center. Use conservation of horizontal and vertical momentum to get the final components, then combine the perpendicular components. What speed do they have afterward, rounded to one decimal place?",
+        "Conserve horizontal and vertical momentum for the sticky collision: each final component equals the corresponding incoming momentum divided by the combined mass. What is the final speed rounded to one decimal place?",
+        "Find the combined puck's horizontal and vertical final velocity components from the two incoming momenta, then take their perpendicular-vector speed. What is the combined puck's speed after the collision, rounded to one decimal place?"
       ]
     },
     "output": {

@@ -1,4 +1,4 @@
-"""Behavior tests for pages concept-map scene-package tasks."""
+"""Behavior tests for pages concept-map source-layout tasks."""
 
 from __future__ import annotations
 

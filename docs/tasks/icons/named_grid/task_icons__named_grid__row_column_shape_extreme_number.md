@@ -13,7 +13,8 @@ Candidate set: the visible icon instances, icon attributes, fields, grids, paths
 Operands: visible scene state and prompt-bound operands named by `named_grid`, `numbered_rows_or_columns`, `metric`, `target_shape_count`, `extrema`, `most`, `fewest`, `one_based_line_number`.
 Operation: evaluate `selection.extreme_metric_label` over the candidate set using the visible icon attributes, positions, relationships, transforms, counts, comparisons, or option-selection constraints encoded in the program expression; generation enforces a unique final answer.
 Output binding: `answer` uses the `one_based_line_number` schema; generation binds a unique final answer.
-Annotation witnesses: `annotation` uses the `bbox` schema; non-empty.
+Annotation witnesses: `annotation` uses the `bbox_set` schema; non-empty.
+Annotation schema: `bbox_set`.
 Query ids: `single`.
 
 ## Query IDs

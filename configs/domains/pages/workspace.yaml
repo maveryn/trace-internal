@@ -16,7 +16,7 @@ generation:
       file_dialog: 1.0
     balanced_workspace_variant_sampling: true
     context_count_min: 3
-    context_count_max: 5
+    context_count_max: 4
     candidate_label_pool:
     - A
     - B
@@ -56,21 +56,21 @@ rendering:
     control_outline_width_px: 2
     control_outline_width_px_min: 1
     control_outline_width_px_max: 3
-    badge_size_px: 30
-    badge_size_px_min: 28
-    badge_size_px_max: 32
+    badge_size_px: 34
+    badge_size_px_min: 32
+    badge_size_px_max: 36
     title_font_size_px: 24
     title_font_size_px_min: 23
     title_font_size_px_max: 25
     body_font_size_px: 16
     body_font_size_px_min: 15
     body_font_size_px_max: 17
-    small_font_size_px: 13
-    small_font_size_px_min: 12
-    small_font_size_px_max: 14
-    label_font_size_px: 14
-    label_font_size_px_min: 13
-    label_font_size_px_max: 15
+    small_font_size_px: 15
+    small_font_size_px_min: 14
+    small_font_size_px_max: 16
+    label_font_size_px: 18
+    label_font_size_px_min: 17
+    label_font_size_px_max: 19
 prompt:
   shared:
     bundle_id: pages_workspace_v1

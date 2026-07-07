@@ -206,11 +206,11 @@ def render_scatter_points_scene(
     draw.rounded_rectangle(panel_bbox, radius=18, fill=render_params.panel_fill_rgb, outline=render_params.panel_border_rgb, width=2)
     draw_plot_frame(draw, plot_bbox, fill=render_params.plot_fill_rgb, outline=render_params.panel_border_rgb, width=1)
 
-    title_font = load_font(render_params.title_font_size_px, bold=True)
-    label_font = load_font(render_params.label_font_size_px, bold=True)
+    title_font = load_font(render_params.title_font_size_px, bold=False)
+    label_font = load_font(render_params.label_font_size_px, bold=False)
     tick_font = load_font(render_params.tick_font_size_px, bold=False)
-    legend_font = load_font(render_params.legend_font_size_px, bold=True)
-    threshold_font = load_font(max(13, render_params.tick_font_size_px - 1), bold=True)
+    legend_font = load_font(render_params.legend_font_size_px, bold=False)
+    threshold_font = load_font(max(13, render_params.tick_font_size_px - 1), bold=False)
     title_rng = spawn_rng(int(instance_seed), f"{SCENE_NAMESPACE}.title")
     title_probability = float(params.get("scatter_points_title_probability", group_default(RENDER_DEFAULTS, "scatter_points_title_probability", 0.35)))
     title_text = ""
@@ -321,16 +321,34 @@ def render_scatter_points_scene(
             draw_dashed_line(draw, (px, y0), (px, y1), fill=render_params.threshold_line_rgb, width=2)
             label_xy = (px + 8.0, y0 + 12.0)
             text = f"x = {int(value)}"
-            draw_text_traced(draw, label_xy, text, font=threshold_font, fill=render_params.threshold_label_rgb, stroke_fill=render_params.text_stroke_rgb, stroke_width=2, role="readout", required=False)
-            label_box = text_bbox(draw, label_xy, text, threshold_font, stroke_width=2)
+            draw_text_traced(
+                draw,
+                label_xy,
+                text,
+                font=threshold_font,
+                fill=render_params.threshold_label_rgb,
+                stroke_width=0,
+                role="readout",
+                required=False,
+            )
+            label_box = text_bbox(draw, label_xy, text, threshold_font, stroke_width=0)
             threshold_guide_bbox = bbox_union([(px - 3, y0, px + 3, y1), label_box])
         else:
             py = y1 - (value / 100.0) * (y1 - y0)
             draw_dashed_line(draw, (x0, py), (x1, py), fill=render_params.threshold_line_rgb, width=2)
             label_xy = (x1 - 70.0, py - 24.0)
             text = f"y = {int(value)}"
-            draw_text_traced(draw, label_xy, text, font=threshold_font, fill=render_params.threshold_label_rgb, stroke_fill=render_params.text_stroke_rgb, stroke_width=2, role="readout", required=False)
-            label_box = text_bbox(draw, label_xy, text, threshold_font, stroke_width=2)
+            draw_text_traced(
+                draw,
+                label_xy,
+                text,
+                font=threshold_font,
+                fill=render_params.threshold_label_rgb,
+                stroke_width=0,
+                role="readout",
+                required=False,
+            )
+            label_box = text_bbox(draw, label_xy, text, threshold_font, stroke_width=0)
             threshold_guide_bbox = bbox_union([(x0, py - 3, x1, py + 3), label_box])
 
     entities: list[dict[str, Any]] = [

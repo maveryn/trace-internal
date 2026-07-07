@@ -4,6 +4,8 @@ generation:
       single_sector_count_min: 6
       single_sector_count_max: 10
       single_color_pool_size: 5
+      option_count: 6
+      option_label_support: [A, B, C, D, E, F]
       number_min: 1
       number_max: 12
       single_favorable_count_min: 2
@@ -17,6 +19,8 @@ generation:
       single_sector_count_min: 6
       single_sector_count_max: 10
       single_color_pool_size: 5
+      option_count: 6
+      option_label_support: [A, B, C, D, E, F]
       number_min: 1
       number_max: 12
       single_favorable_count_min: 2
@@ -30,6 +34,8 @@ generation:
       single_sector_count_min: 6
       single_sector_count_max: 10
       single_color_pool_size: 5
+      option_count: 6
+      option_label_support: [A, B, C, D, E, F]
       number_min: 1
       number_max: 12
       single_favorable_count_min: 2
@@ -39,10 +45,12 @@ generation:
         spinner_clean: 1.0
         spinner_card: 1.0
         spinner_notebook: 1.0
-    task_symbolic__spinner__spinner_pair_event_value:
+    task_symbolic__spinner__pair_color_event_probability:
       pair_sector_count_min: 3
       pair_sector_count_max: 5
       pair_color_pool_size: 4
+      option_count: 6
+      option_label_support: [A, B, C, D, E, F]
       number_min: 1
       number_max: 12
       pair_favorable_count_min: 1
@@ -87,5 +95,5 @@ prompt:
       task_key: single_probability_query
     task_symbolic__spinner__multi_attribute_or_probability:
       task_key: single_probability_query
-    task_symbolic__spinner__spinner_pair_event_value:
+    task_symbolic__spinner__pair_color_event_probability:
       task_key: pair_probability_query

@@ -23,11 +23,11 @@
     },
     "query": {
       "equal_sum_line_constraint_value": [
-        "Complete the marked node so the side diagram is consistent.",
-        "What integer belongs in the question-mark node?",
-        "Read the numbered side diagram and solve the marked missing value.",
-        "Find the number that completes the marked node.",
-        "What number replaces the question mark in the side diagram?"
+        "Compare the completed sides of the outline, then complete the marked node so the side diagram is consistent.",
+        "Compare the completed sides of the outline. What integer belongs in the question-mark node?",
+        "Read the numbered side diagram, compare the completed sides, and solve the marked missing value.",
+        "Find the number that completes the marked node after comparing the completed sides of the outline.",
+        "What number replaces the question mark in the side diagram? Compare the completed sides of the outline first."
       ],
       "hidden_addition_digit_value": [
         "What digit replaces the question mark in the vertical calculation?",
@@ -44,11 +44,11 @@
         "Find the digit that completes the marked cell."
       ],
       "row_column_total_missing_value": [
-        "Complete the marked grid cell so the edge clues are satisfied.",
-        "What number replaces the question mark in the grid?",
-        "Use the visible grid clues to find the missing value.",
-        "Solve the marked grid cell from the displayed clues.",
-        "What integer belongs in the question-mark grid cell?"
+        "Use the edge clues for the marked cell's row and column, then complete the marked grid cell.",
+        "Use the edge clues for the marked row and column. What number replaces the question mark in the grid?",
+        "Use the visible edge clues for the marked cell's row and column to find the missing value.",
+        "Solve the marked grid cell from the displayed edge clues for its row and column.",
+        "What integer belongs in the question-mark grid cell? Use the edge clues for its row and column."
       ],
       "operation_table_cell_value": [
         "Use the visible headers and corner symbol to complete the marked table cell.",

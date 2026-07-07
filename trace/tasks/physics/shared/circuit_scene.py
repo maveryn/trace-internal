@@ -255,7 +255,7 @@ def render_component_network_scene(
     )
     component_font = load_font(
         int(render_defaults.get("component_label_font_size_px", render_defaults.get("resistor_font_size_px", 22))),
-        bold=True,
+        bold=False,
         font_family=font_family,
     )
     label_stroke_width = int(render_defaults["label_stroke_width_px"])

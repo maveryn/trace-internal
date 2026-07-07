@@ -457,6 +457,10 @@ class IconsNamedGridLineAdjacencyPairCountTask:
                 "line_number": int(sample.queried_index) + 1,
             },
             instance_seed=int(instance_seed),
+            annotation_hint_key="adjacency_annotation_hint",
+            answer_hint_key="adjacency_answer_hint",
+            json_example_key="adjacency_json_example",
+            json_example_answer_only_key="adjacency_json_example_answer_only",
         )
 
         serialized_icons = [serialize_named_grid_icon(icon) for icon in scene.icons]

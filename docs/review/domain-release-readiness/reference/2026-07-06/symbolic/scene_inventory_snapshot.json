@@ -1,0 +1,242 @@
+{
+  "abacus": {
+    "config_path": "configs/domains/symbolic/abacus.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/abacus",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/abacus",
+    "task_count": 3,
+    "task_ids": [
+      "task_symbolic__abacus__displayed_value_readout",
+      "task_symbolic__abacus__place_digit_readout",
+      "task_symbolic__abacus__target_value_match_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "agent_automaton": {
+    "config_path": "configs/domains/symbolic/agent_automaton.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/agent_automaton",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/agent_automaton",
+    "task_count": 2,
+    "task_ids": [
+      "task_symbolic__agent_automaton__agent_final_pose_label",
+      "task_symbolic__agent_automaton__future_grid_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "braille_cell": {
+    "config_path": "configs/domains/symbolic/braille_cell.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/braille_cell",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/braille_cell",
+    "task_count": 3,
+    "task_ids": [
+      "task_symbolic__braille_cell__braille_word_read_label",
+      "task_symbolic__braille_cell__matching_pattern_label",
+      "task_symbolic__braille_cell__word_braille_match_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "chemical_equation": {
+    "config_path": "configs/domains/symbolic/chemical_equation.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/chemical_equation",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/chemical_equation",
+    "task_count": 2,
+    "task_ids": [
+      "task_symbolic__chemical_equation__balanced_option_label",
+      "task_symbolic__chemical_equation__missing_coefficient_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "clock": {
+    "config_path": "configs/domains/symbolic/clock.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/clock",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/clock",
+    "task_count": 9,
+    "task_ids": [
+      "task_symbolic__clock__alarm_wait_time_value",
+      "task_symbolic__clock__elapsed_time_value",
+      "task_symbolic__clock__equivalent_time_label",
+      "task_symbolic__clock__full_time_readout",
+      "task_symbolic__clock__hand_angle_value",
+      "task_symbolic__clock__offset_readout",
+      "task_symbolic__clock__sequence_completion_label",
+      "task_symbolic__clock__time_extremum_label",
+      "task_symbolic__clock__time_order_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "dice": {
+    "config_path": "configs/domains/symbolic/dice.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/dice",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/dice",
+    "task_count": 7,
+    "task_ids": [
+      "task_symbolic__dice__dice_conditional_event_value",
+      "task_symbolic__dice__pair_attribute_combo_probability",
+      "task_symbolic__dice__pair_difference_probability",
+      "task_symbolic__dice__pair_sum_probability",
+      "task_symbolic__dice__pair_sum_threshold_probability",
+      "task_symbolic__dice__single_attribute_probability",
+      "task_symbolic__dice__single_threshold_probability"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "life_automaton": {
+    "config_path": "configs/domains/symbolic/life_automaton.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/life_automaton",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/life_automaton",
+    "task_count": 2,
+    "task_ids": [
+      "task_symbolic__life_automaton__life_future_grid_label",
+      "task_symbolic__life_automaton__one_step_cell_state_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "logic_gate_circuit": {
+    "config_path": "configs/domains/symbolic/logic_gate_circuit.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/logic_gate_circuit",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/logic_gate_circuit",
+    "task_count": 4,
+    "task_ids": [
+      "task_symbolic__logic_gate_circuit__gate_type_count",
+      "task_symbolic__logic_gate_circuit__internal_output_count",
+      "task_symbolic__logic_gate_circuit__output_value_label",
+      "task_symbolic__logic_gate_circuit__satisfying_assignment_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "morse_code": {
+    "config_path": "configs/domains/symbolic/morse_code.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/morse_code",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/morse_code",
+    "task_count": 2,
+    "task_ids": [
+      "task_symbolic__morse_code__morse_word_read_label",
+      "task_symbolic__morse_code__word_morse_match_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "music_staff": {
+    "config_path": "configs/domains/symbolic/music_staff.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/music_staff",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/music_staff",
+    "task_count": 12,
+    "task_ids": [
+      "task_symbolic__music_staff__articulation_symbol_label",
+      "task_symbolic__music_staff__chord_inversion_label",
+      "task_symbolic__music_staff__chord_quality_label",
+      "task_symbolic__music_staff__duration_equivalence_label",
+      "task_symbolic__music_staff__interval_name_label",
+      "task_symbolic__music_staff__key_signature_label",
+      "task_symbolic__music_staff__meter_type_count",
+      "task_symbolic__music_staff__note_name_label",
+      "task_symbolic__music_staff__roman_numeral_label",
+      "task_symbolic__music_staff__scale_degree_function_label",
+      "task_symbolic__music_staff__scale_validation_count",
+      "task_symbolic__music_staff__transposed_pitch_pair_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "organic_structure": {
+    "config_path": "configs/domains/symbolic/organic_structure.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/organic_structure",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/organic_structure",
+    "task_count": 2,
+    "task_ids": [
+      "task_symbolic__organic_structure__bond_order_count",
+      "task_symbolic__organic_structure__ring_size_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "radial_code_wheel": {
+    "config_path": "configs/domains/symbolic/radial_code_wheel.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/radial_code_wheel",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/radial_code_wheel",
+    "task_count": 3,
+    "task_ids": [
+      "task_symbolic__radial_code_wheel__code_output_label",
+      "task_symbolic__radial_code_wheel__missing_code_symbol_label",
+      "task_symbolic__radial_code_wheel__output_code_match_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "spinner": {
+    "config_path": "configs/domains/symbolic/spinner.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/spinner",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/spinner",
+    "task_count": 4,
+    "task_ids": [
+      "task_symbolic__spinner__multi_attribute_and_probability",
+      "task_symbolic__spinner__multi_attribute_or_probability",
+      "task_symbolic__spinner__single_attribute_probability",
+      "task_symbolic__spinner__spinner_pair_event_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "truth_table": {
+    "config_path": "configs/domains/symbolic/truth_table.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/truth_table",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/truth_table",
+    "task_count": 3,
+    "task_ids": [
+      "task_symbolic__truth_table__expression_from_rows_label",
+      "task_symbolic__truth_table__satisfying_row_count",
+      "task_symbolic__truth_table__truth_pattern_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "turing_tape": {
+    "config_path": "configs/domains/symbolic/turing_tape.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/symbolic/turing_tape",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/symbolic/turing_tape",
+    "task_count": 2,
+    "task_ids": [
+      "task_symbolic__turing_tape__final_head_position_value",
+      "task_symbolic__turing_tape__turing_written_symbol_count"
+    ],
+    "taxonomy_review_pass": true
+  }
+}

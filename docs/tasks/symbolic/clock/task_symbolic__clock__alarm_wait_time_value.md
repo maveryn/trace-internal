@@ -8,13 +8,13 @@
 5. Objective: compute the forward wait time until an analog alarm-clock hour.
 
 ## Program Contract
-Program: `clock.alarm_wait_time_value(scene=clock, scope=single_alarm_analog_clock, output=integer_minutes)`
+Program: `clock.alarm_wait_time_value(scene=clock, scope=single_alarm_analog_clock_with_minute_options, output=option_letter)`
 
-Candidate set: the current hour-hand, current minute-hand, and red alarm-hand segments on the single visible analog clock.
+Candidate set: the six labeled minute answer cards below the single visible analog alarm clock.
 Operands: the current time shown by the dark hands and the alarm hour shown by the red hand.
 Operation: read the current time, interpret the red alarm hand on the same 1-12 hour scale as the numerals with alarm minute fixed at `:00`, and compute the forward minutes until the next alarm occurrence.
-Output binding: `answer` is the wait time in minutes as an integer.
-Annotation witnesses: a three-item `segment_set` containing the current hour hand, current minute hand, and red alarm hand.
+Output binding: `answer` is the option label whose card shows the wait time in minutes.
+Annotation witnesses: the scalar `bbox` of the selected answer card.
 Query ids: `single`.
 
 ## 2) Scene + Task Contract
@@ -24,17 +24,18 @@ Query ids: `single`.
    - `scene_variant`: `classic|minimal|outline`
    - `style_variant`: `accented|marker|studio`
    - `accent_color_name`: shared symbolic clock colors, with red-like accents disabled for this task
-4. `answer_gt.type`: `integer`
-5. Answer schema: forward wait time in minutes, `1..720`.
-6. `annotation_gt.type`: `segment_set`
-7. Annotation schema: `segment_set`
+4. `answer_gt.type`: `option_letter`
+5. Answer schema: one visible option label from `A` through `F`.
+6. `annotation_gt.type`: `bbox`
+7. Annotation schema: scalar `bbox` for the selected answer card.
 8. Scene contract:
    - one analog clock is shown,
    - dark hour and minute hands show the current time,
    - the red alarm hand is a distinct semantic hand and points to an hour numeral on the 1-12 hour scale,
+   - six labeled minute answer cards are shown below the clock,
    - the alarm minute is fixed at `:00`,
    - current hands and the red alarm hand are separated by configured angle-gap constraints,
-   - annotation marks the current hour hand, current minute hand, and red alarm hand segments.
+   - annotation marks the selected answer card only.
 
 ## 3) Prompt Contract
 1. Bundle: `symbolic_clock_v1`
@@ -48,11 +49,10 @@ Query ids: `single`.
 6. Modes: `answer_only`, `answer_and_annotation`
 
 ## 4) Annotation + Trace Contract
-1. Prompt-facing annotation is a three-item `segment_set`.
-2. Segment endpoint order is not semantically meaningful.
-3. `projected_annotation` includes `segment_set` and `pixel_segment_set`.
-4. `render_map` includes the clock center, current-hand tips, alarm-hand tip, hand bboxes, and face bbox.
-5. `execution_trace` records shown time, alarm hour, alarm time text, wait minutes, hand angle gaps, and resolved visual axes.
+1. Prompt-facing annotation is the scalar `bbox` of the selected answer card.
+2. `projected_annotation` includes `bbox` and `pixel_bbox`.
+3. `render_map` includes the clock center, current-hand tips, alarm-hand tip, hand bboxes, face bbox, option bboxes, and selected option bbox.
+4. `execution_trace` records shown time, alarm hour, alarm time text, raw wait minutes, answer label, option values, hand angle gaps, and resolved visual axes.
 
 ## 5) Determinism + Tests
 1. Deterministic sampling/rendering from `instance_seed`.

@@ -83,6 +83,28 @@ def integer_binding(
     )
 
 
+def string_binding(
+    *,
+    annotation_kind: str,
+    annotation_value: Any,
+    selected_branch: str,
+    branch_probabilities: Mapping[str, float],
+    answer_value: str,
+    target_payload: Mapping[str, Any],
+    question_format: str,
+) -> ControlBoardAnswerBinding:
+    """Build a string-answer binding from task-owned annotation data."""
+
+    return ControlBoardAnswerBinding(
+        answer_gt=TypedValue(type="string", value=str(answer_value)),
+        annotation_gt=TypedValue(type=str(annotation_kind), value=annotation_value),
+        selected_branch=str(selected_branch),
+        branch_probabilities=dict(branch_probabilities),
+        target_payload=dict(target_payload),
+        question_format=str(question_format),
+    )
+
+
 def build_control_board_response(
     *,
     instance_seed: int,
@@ -110,7 +132,8 @@ def build_control_board_response(
     target_payload = dict(answer_binding.target_payload)
     control_records = [dict(record) for record in rendered.control_records]
     matched_records = matching_control_records(case, rendered)
-    annotation_bboxes = answer_binding.annotation_gt.value
+    annotation_value = answer_binding.annotation_gt.value
+    annotation_type = str(answer_binding.annotation_gt.type)
     information_style_meta = rendered.background_meta.get("style_spec", {})
     if not isinstance(information_style_meta, Mapping):
         information_style_meta = {}
@@ -119,6 +142,7 @@ def build_control_board_response(
         "prompt_query_key": str(prompt_binding.prompt_branch_key),
         "target": dict(target_payload),
         "target_answer": answer_binding.answer_gt.value,
+        "target_state_count": int(case.answer_value),
         "count_mode": str(case.count_mode),
         "scene_variant": str(case.scene_variant),
         "target_group_name": str(case.target_group_name),
@@ -147,7 +171,8 @@ def build_control_board_response(
                 "scene_variant": str(case.scene_variant),
                 "target_group_name": str(case.target_group_name),
                 "target_group_index": int(case.target_group_index),
-                "answer_value": int(case.answer_value),
+                "answer_value": answer_binding.answer_gt.value,
+                "target_state_count": int(case.answer_value),
                 "annotation_control_ids": [str(value) for value in case.annotation_control_ids],
             },
             "frames": {
@@ -198,7 +223,8 @@ def build_control_board_response(
             "prompt_query_key": str(prompt_binding.prompt_branch_key),
             "count_mode": str(case.count_mode),
             "scene_variant": str(case.scene_variant),
-            "answer_value": int(case.answer_value),
+            "answer_value": answer_binding.answer_gt.value,
+            "target_state_count": int(case.answer_value),
             "target_group_name": str(case.target_group_name),
             "target_group_index": int(case.target_group_index),
             "group_records": group_records(case, rendered),
@@ -211,13 +237,15 @@ def build_control_board_response(
             "question_format": str(answer_binding.question_format),
         },
         "witness_symbolic": {
-            "type": "bbox_set",
+            "type": str(annotation_type),
             "annotation_control_ids": [str(value) for value in case.annotation_control_ids],
-            "value": list(annotation_bboxes),
+            "value": list(annotation_value),
         },
-        "projected_annotation": {
-            "bbox_set": list(annotation_bboxes),
-        },
+        "projected_annotation": (
+            {"bbox": list(annotation_value)}
+            if str(annotation_type) == "bbox"
+            else {"bbox_set": list(annotation_value)}
+        ),
         "background": dict(rendered.background_meta),
         "post_image_noise": dict(rendered.post_noise_meta),
     }

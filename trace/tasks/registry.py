@@ -8,7 +8,7 @@ import re
 from functools import wraps
 from typing import Any, Dict, Mapping, Sequence, Type
 
-from ..core.scene_package_migration import is_scene_package_task, parse_public_task_id
+from ..core.source_layout_policy import is_scene_package_task, parse_public_task_id
 from ..core.query_ids import LEGACY_DEFAULT_QUERY_ID, SINGLE_QUERY_ID
 from ..core.taxonomy import resolve_task_query_id
 from .base import Task, TaskOutput
@@ -149,7 +149,7 @@ def _validate_task_id_contract(cls: Type[Task], task_id: str) -> None:
     migrated_task = is_scene_package_task(task_id_text, domain=str(domain))
     if migrated_task:
         if scene_id is not None:
-            raise ValueError(f"migrated scene-package task '{task_id}' must not define 'scene_id'")
+            raise ValueError(f"source-layout task '{task_id}' must not define 'scene_id'")
     if v0_match is not None:
         task_domain = str(v0_match.group("domain"))
         if task_domain != str(domain):

@@ -61,8 +61,3 @@ prompt:
   task_overrides:
     task_icons__named_ring__nearest_marker_target_count:
       task_key: nearest_marker_counting_query
-      question_text: How many "{target_shape_name}" icons are closer to marker A than to marker B? Do not count icons equally far from A and B.
-      annotation_hint: set "annotation" to a JSON array of [x0, y0, x1, y1] bounding boxes in image pixel coordinates for every counted "{target_shape_name}" icon closer to marker A than marker B
-      answer_hint: set "answer" to the count as an integer
-      json_example: '{"annotation":[[176,168,236,228],[384,298,444,358]],"answer":2}'
-      json_example_answer_only: '{"answer":2}'

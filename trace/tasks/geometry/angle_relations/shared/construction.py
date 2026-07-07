@@ -7,6 +7,7 @@ import math
 from .spatial_primitives import (
     RenderContext,
     _add,
+    _angle_label_center,
     _draw_angle_arc,
     _angle_annotation_point,
     _bbox_from_points,
@@ -183,7 +184,10 @@ def make_parallel_supplement_case(given: int, *, parallel_line_count: int = 2) -
         x_top = 300.0
         vertical_gap = float(bot_l[1] - top_l[1])
         target_theta = math.radians(float(answer))
-        x_bot = x_top + (vertical_gap / max(0.25, math.tan(target_theta)))
+        tan_theta = math.tan(target_theta)
+        if abs(tan_theta) < 0.25:
+            tan_theta = 0.25 if tan_theta >= 0.0 else -0.25
+        x_bot = x_top + (vertical_gap / tan_theta)
         p = (x_top, top_l[1])
         q = (x_bot, bot_l[1])
         top_l, top_r, mid_l, mid_r, bot_l, bot_r, p, q = _offset_points(
@@ -365,11 +369,9 @@ def make_parallel_transversal_triangle_case(left_angle: int, right_angle: int) -
     answer = 180 - int(left_angle) - int(right_angle)
     if answer <= 0:
         raise ValueError("parallel transversal triangle angle must be positive")
-    left_exterior_angle = 180 - int(left_angle)
-    right_exterior_angle = 180 - int(right_angle)
 
     def build(ctx: RenderContext) -> RenderedAngleRelationScene:
-        """Render support angles on the triangle opposite the target angle."""
+        """Render support base angles on the triangle opposite the target angle."""
 
         top_y = 142.0
         target_y = 286.0
@@ -400,22 +402,20 @@ def make_parallel_transversal_triangle_case(left_angle: int, right_angle: int) -
             {"P": p, "Q": q, "R": r, "S": s, "T": t},
             offsets={"P": (0.0, -30.0), "R": (0.0, -30.0)},
         )
-        left_extension = _add(s, (-1.0, 0.0), 84.0)
-        right_extension = _add(t, (1.0, 0.0), 84.0)
         left_arc, left_bbox = _draw_angle_label(
             ctx,
-            format_degrees(left_exterior_angle),
+            format_degrees(left_angle),
             s,
-            left_extension,
+            t,
             q,
             radius=64.0,
         )
         right_arc, right_bbox = _draw_angle_label(
             ctx,
-            format_degrees(right_exterior_angle),
+            format_degrees(right_angle),
             t,
             q,
-            right_extension,
+            s,
             radius=64.0,
         )
         target_arc, target_bbox = _draw_angle_label(ctx, "?", q, p, r, radius=68.0)
@@ -437,13 +437,13 @@ def make_parallel_transversal_triangle_case(left_angle: int, right_angle: int) -
                 "point_label_bboxes": labels,
                 "angle_arc_bboxes": {
                     "target_angle": target_arc,
-                    "left_exterior_support_angle": left_arc,
-                    "right_exterior_support_angle": right_arc,
+                    "left_base_support_angle": left_arc,
+                    "right_base_support_angle": right_arc,
                 },
                 "angle_label_bboxes": {
                     "target_angle": target_bbox,
-                    "left_exterior_support_angle": left_bbox,
-                    "right_exterior_support_angle": right_bbox,
+                    "left_base_support_angle": left_bbox,
+                    "right_base_support_angle": right_bbox,
                 },
                 "parallel_marks_bbox": mark_bbox,
                 "intersections": {"P": p, "Q": q, "R": r, "S": s, "T": t},
@@ -451,16 +451,15 @@ def make_parallel_transversal_triangle_case(left_angle: int, right_angle: int) -
             witness={
                 "parallel_line_count": 2,
                 "transversal_count": 2,
-                "relation_id": "parallel_transversal_opposite_triangle_supplement_angle_sum",
-                "displayed_exterior_angles": [int(left_exterior_angle), int(right_exterior_angle)],
-                "derived_lower_triangle_base_angles": [int(left_angle), int(right_angle)],
+                "relation_id": "parallel_transversal_lower_triangle_sum_then_vertical_angle",
+                "displayed_lower_triangle_base_angles": [int(left_angle), int(right_angle)],
                 "answer_angle_PQR": int(answer),
                 "equation": (
                     "target_angle = vertical_opposite_angle = "
-                    "180 - (180 - left_exterior_angle) - (180 - right_exterior_angle)"
+                    "180 - left_lower_triangle_base_angle - right_lower_triangle_base_angle"
                 ),
             },
-            reasoning_steps=4,
+            reasoning_steps=3,
             annotation_keyed_points=annotation_points,
         )
 
@@ -496,11 +495,13 @@ def make_algebraic_single_extension_case(
         _draw_polygon(ctx, [a, b, c])
         _draw_polyline(ctx, [c, d])
         labels = _draw_point_labels(ctx, {"A": a, "B": b, "C": c, "D": d})
-        target_expr = format_angle_expression(target_coeff, target_const)
-        exterior_expr = format_angle_expression(exterior_coeff, exterior_const)
-        target_arc, target_bbox = _draw_angle_label(ctx, target_expr, b, a, c, radius=66.0)
+        target_expr = format_linear_expression(target_coeff, target_const)
+        exterior_expr = format_linear_expression(exterior_coeff, exterior_const)
+        target_arc = _draw_angle_arc(ctx, b, a, c, radius=42.0)
         given_arc, given_bbox = _draw_angle_label(ctx, format_degrees(given_angle_a), a, c, b, radius=64.0)
-        exterior_arc, exterior_bbox = _draw_angle_label(ctx, exterior_expr, c, b, d, radius=76.0)
+        exterior_arc = _draw_angle_arc(ctx, c, b, d, radius=52.0)
+        target_bbox = _draw_text(ctx, target_expr, _angle_label_center(b, a, c, radius=66.0))
+        exterior_bbox = _draw_text(ctx, exterior_expr, _angle_label_center(c, b, d, radius=76.0))
         annotation_points = {POINT_A: a, POINT_B: b, POINT_C: c, POINT_D: d}
         return RenderedAngleRelationScene(
             image=ctx.image,
@@ -562,11 +563,13 @@ def make_algebraic_double_extension_case(
         _draw_polygon(ctx, [a, b, c])
         _draw_polyline(ctx, [c, d])
         labels = _draw_point_labels(ctx, {"E": e, "A": a, "B": b, "C": c, "D": d})
-        target_expr = format_angle_expression(target_coeff, target_const)
-        exterior_expr = format_angle_expression(exterior_coeff, exterior_const)
-        target_arc, target_bbox = _draw_angle_label(ctx, target_expr, b, a, c, radius=66.0)
+        target_expr = format_linear_expression(target_coeff, target_const)
+        exterior_expr = format_linear_expression(exterior_coeff, exterior_const)
+        target_arc = _draw_angle_arc(ctx, b, a, c, radius=42.0)
         given_arc, given_bbox = _draw_angle_label(ctx, format_degrees(given_angle_a), a, c, b, radius=64.0)
-        exterior_c_arc, exterior_c_bbox = _draw_angle_label(ctx, exterior_expr, c, b, d, radius=76.0)
+        exterior_c_arc = _draw_angle_arc(ctx, c, b, d, radius=52.0)
+        target_bbox = _draw_text(ctx, target_expr, _angle_label_center(b, a, c, radius=66.0))
+        exterior_c_bbox = _draw_text(ctx, exterior_expr, _angle_label_center(c, b, d, radius=76.0))
         annotation_points = {POINT_A: a, POINT_B: b, POINT_C: c, POINT_D: d}
         return RenderedAngleRelationScene(
             image=ctx.image,

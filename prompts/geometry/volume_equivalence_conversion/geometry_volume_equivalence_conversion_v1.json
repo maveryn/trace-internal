@@ -29,11 +29,11 @@
     },
     "query": {
       "cuboid_to_cylinder_length": [
-        "If the target cylinder has the same volume as the source cuboid, what target length replaces ?",
-        "Find the missing cylinder length so the target volume equals the source cuboid volume.",
-        "Using the shown dimensions, what is the target cylinder length?",
-        "What integer length makes the cylinder volume equal to the cuboid volume?",
-        "Compute the missing cylinder length in the equal-volume conversion."
+        "If the target cylinder has the same volume as the source cuboid, what target height replaces ?",
+        "Find the missing cylinder height so the target volume equals the source cuboid volume.",
+        "Using the shown dimensions, what is the target cylinder height?",
+        "What integer height makes the cylinder volume equal to the cuboid volume?",
+        "Compute the missing cylinder height in the equal-volume conversion."
       ],
       "cylinder_to_cone_height": [
         "If the target cone has the same volume as the source cylinder, what height replaces ?",

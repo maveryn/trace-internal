@@ -96,6 +96,7 @@ def test_pages_hierarchy_active_org_chart_contracts() -> None:
             assert annotation_bboxes == expected_bboxes
             assert int(out.answer_gt.value) == int(execution["answer_count"])
             assert int(execution["answer_count"]) == int(execution["descendant_count"])
+            assert 3 <= int(execution["answer_count"]) <= 7
             assert len(execution["annotation_node_ids"]) == int(execution["answer_count"])
             assert str(execution["annotation_semantics"]) == "all_reports_under_named_manager"
         else:

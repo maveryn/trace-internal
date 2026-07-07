@@ -24,11 +24,11 @@ from trace.tasks.symbolic.spinner.single_attribute_probability import (
 from trace.tasks.symbolic.spinner.single_attribute_probability import (
     SymbolicSpinnerSingleAttributeProbabilityTask,
 )
-from trace.tasks.symbolic.spinner.spinner_pair_event_value import (
+from trace.tasks.symbolic.spinner.pair_color_event_probability import (
     SUPPORTED_QUERY_IDS as PAIR_QUERY_IDS,
 )
-from trace.tasks.symbolic.spinner.spinner_pair_event_value import (
-    SymbolicSpinnerPairEventValueTask,
+from trace.tasks.symbolic.spinner.pair_color_event_probability import (
+    SymbolicSpinnerPairColorEventProbabilityTask,
 )
 
 
@@ -52,8 +52,8 @@ TASKS = (
         "bbox",
     ),
     (
-        "task_symbolic__spinner__spinner_pair_event_value",
-        SymbolicSpinnerPairEventValueTask,
+        "task_symbolic__spinner__pair_color_event_probability",
+        SymbolicSpinnerPairColorEventProbabilityTask,
         set(PAIR_QUERY_IDS),
         "bbox_map",
     ),
@@ -89,7 +89,7 @@ def test_spinner_tasks_emit_contracts() -> None:
 
         assert out.scene_id == "spinner"
         assert out.query_id in queries
-        assert out.answer_gt.type == "string"
+        assert out.answer_gt.type == "option_letter"
         assert out.annotation_gt.type == annotation_type
         assert trace["query_spec"]["params"]["query_id"] == out.query_id
         assert trace["render_spec"]["scene_id"] == "spinner"
@@ -98,10 +98,22 @@ def test_spinner_tasks_emit_contracts() -> None:
             int(trace["render_spec"]["canvas_width"]),
             int(trace["render_spec"]["canvas_height"]),
         )
-        assert str(out.answer_gt.value) == _reduced_fraction(
+        expected_fraction = _reduced_fraction(
             int(event["favorable_outcome_count"]),
             int(event["total_outcome_count"]),
         )
+        assert execution["probability_fraction"] == expected_fraction
+        assert out.answer_gt.value in execution["option_labels"]
+        assert execution["answer_label"] == out.answer_gt.value
+        assert execution["answer_value"] == out.answer_gt.value
+        assert execution["option_text_by_label"][str(out.answer_gt.value)] == expected_fraction
+        assert len(execution["option_text_by_label"]) == 6
+        assert len(set(execution["option_text_by_label"].values())) == 6
+        assert trace["query_spec"]["params"]["probability_fraction"] == expected_fraction
+        assert trace["query_spec"]["params"]["correct_label"] == out.answer_gt.value
+        assert trace["render_spec"]["option_card_layout"]["option_count"] == 6
+        assert set(trace["render_map"]["option_bboxes_px"]) == set(execution["option_labels"])
+        assert trace["render_map"]["selected_option_label"] == out.answer_gt.value
         assert 0 < int(event["favorable_outcome_count"]) < int(event["total_outcome_count"])
         assert execution["calculation_supporting_item_ids"]
         if execution["mode"] == "single":
@@ -119,7 +131,7 @@ def test_spinner_tasks_emit_contracts() -> None:
 
 
 def test_spinner_generation_is_deterministic() -> None:
-    task = SymbolicSpinnerPairEventValueTask()
+    task = SymbolicSpinnerPairColorEventProbabilityTask()
     params = {"scene_variant": "spinner_card", "query_id": "pair_same_color_probability"}
     out_a = task.generate(2026052599, params=params, max_attempts=30)
     out_b = task.generate(2026052599, params=params, max_attempts=30)

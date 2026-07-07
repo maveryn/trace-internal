@@ -85,7 +85,7 @@ when those keys fill the same witness roles. For example, a segment-length task
 that always annotates the two requested segment endpoints can use keys `A,Y` in
 one sample and `X,B` in another without becoming a new annotation schema.
 
-Every review-candidate task should declare `supported_query_ids`. Tasks with
+Every active public task should declare `supported_query_ids`. Tasks with
 no semantic query branches use the single repo-wide sentinel `("single",)`.
 Do not use `default`, the task id, or the objective-contract name as a
 single-query placeholder; those values blur public task identity with internal
@@ -201,17 +201,16 @@ a variable-size witness set.
 
 Answer and annotation must come from the same execution trace.
 
-## 9) Migration Policy
+## 9) Current Surface Policy
 Retired public ids must be deleted, not kept as compatibility tasks, disabled
 registry entries, alias modules, redirect docs, config stubs, prompt branches,
 absence-only tests, or stale review folders. After a task id is renamed, split,
 merged, or retired, active code, docs, configs, prompts, tests, and review
 surfaces should describe only the current task surface.
 
-Review-candidate migrated scenes should not use source-routing metadata, config
-query weights, retired scalar difficulty gates, or task-review artifacts as
-source contracts. Use the scene-package migration workflow for source-layout
-changes.
+Active scenes should not use source-routing metadata, config query weights,
+retired scalar difficulty gates, or task-review artifacts as source contracts.
+Use `docs/contracts/SOURCE_LAYOUT.md` for source ownership rules.
 
 ## 10) Audit Outcomes
 When reviewing task boundaries, assign one concrete outcome:
@@ -227,6 +226,6 @@ When reviewing task boundaries, assign one concrete outcome:
 - `Blocked Needs Inspection`: code, prompts, docs, or review artifacts disagree
   enough that the contract cannot be classified.
 
-Do not keep a vague "review candidate" bucket for merely related tasks. If a
+Do not keep a vague "related task" bucket for merely related tasks. If a
 required merge condition fails, the decision is `Keep` unless the task itself
 has a concrete split, broaden, retire, or blocked reason.

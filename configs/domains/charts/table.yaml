@@ -13,45 +13,45 @@ generation:
       card_table: 1.0
   task_overrides:
     task_charts__table__threshold_count:
-      row_count_min: 10
-      row_count_max: 20
+      row_count_min: 8
+      row_count_max: 16
       threshold_count_target_count_min: 4
       threshold_count_target_count_max_row_offset: 2
       threshold_count_boundary_distractor_radius: 2
     task_charts__table__interval_value_count:
-      row_count_min: 10
-      row_count_max: 20
+      row_count_min: 8
+      row_count_max: 16
       in_interval_target_count_min: 4
       in_interval_target_count_max_row_offset: 2
       in_interval_boundary_distractor_radius: 2
     task_charts__table__categorical_value_count:
-      row_count_min: 10
-      row_count_max: 20
+      row_count_min: 8
+      row_count_max: 16
     task_charts__table__column_rank_label:
-      row_count_min: 10
-      row_count_max: 20
+      row_count_min: 8
+      row_count_max: 16
     task_charts__table__column_summary_value:
-      row_count_min: 10
-      row_count_max: 20
+      row_count_min: 8
+      row_count_max: 16
     task_charts__table__filtered_column_mean:
-      row_count_min: 10
-      row_count_max: 20
+      row_count_min: 8
+      row_count_max: 16
       selected_row_count_min: 6
       selected_row_count_max: 7
     task_charts__table__absolute_difference_between_rows_over_year_interval:
-      row_count_min: 10
-      row_count_max: 20
+      row_count_min: 8
+      row_count_max: 16
       numeric_column_count_min: 8
-      numeric_column_count_max: 16
+      numeric_column_count_max: 12
       interval_length_min: 4
       interval_length_max: 5
       value_min: 1
       value_max: 99
     task_charts__table__sum_absolute_differences_between_rows_over_year_interval:
-      row_count_min: 10
-      row_count_max: 20
+      row_count_min: 8
+      row_count_max: 16
       numeric_column_count_min: 8
-      numeric_column_count_max: 16
+      numeric_column_count_max: 12
       interval_length_min: 4
       interval_length_max: 5
       value_min: 1

@@ -2,8 +2,8 @@ generation:
   shared:
     balanced_scene_variant_sampling: true
     card_count_support:
-    - 6
     - 9
+    - 12
     rank_position_support:
     - 2
     - 3

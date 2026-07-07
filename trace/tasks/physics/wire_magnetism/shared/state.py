@@ -11,8 +11,9 @@ from PIL import Image
 SCENE_ID = "wire_magnetism"
 SCENE_NAMESPACE = "physics_wire_magnetism"
 SCENE_PROMPT_KEY = "wire_magnetism_diagram"
-OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
-SUPPORTED_ORIENTATIONS: Tuple[str, ...] = ("horizontal", "vertical")
+OPTION_LABELS: Tuple[str, ...] = ("A", "B", "C", "D")
+SUPPORTED_CURRENT_DIRECTIONS: Tuple[str, ...] = ("out_of_page", "into_page")
+SUPPORTED_POINT_POSITIONS: Tuple[str, ...] = ("north", "south", "east", "west")
 
 
 @dataclass(frozen=True)
@@ -27,17 +28,15 @@ class WireMagnetismDefaults:
 class WireScenario:
     """Resolved physical setup and answer binding for one wire diagram."""
 
-    orientation: str
     current_direction: str
-    point_side: str
-    current_vector_phys: Tuple[int, int]
+    current_z_sign: int
+    point_position: str
     point_offset_phys: Tuple[int, int]
     field_direction: str
     option_map: Dict[str, str]
     correct_label: str
-    orientation_probabilities: Dict[str, float]
     current_direction_probabilities: Dict[str, float]
-    point_side_probabilities: Dict[str, float]
+    point_position_probabilities: Dict[str, float]
     target_answer_probabilities: Dict[str, float]
 
 
@@ -58,7 +57,8 @@ __all__ = [
     "SCENE_ID",
     "SCENE_NAMESPACE",
     "SCENE_PROMPT_KEY",
-    "SUPPORTED_ORIENTATIONS",
+    "SUPPORTED_CURRENT_DIRECTIONS",
+    "SUPPORTED_POINT_POSITIONS",
     "WireMagnetismDefaults",
     "WireScenario",
 ]

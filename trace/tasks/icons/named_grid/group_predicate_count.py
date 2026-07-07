@@ -168,6 +168,10 @@ class IconsCountingNamedGridLineConditionCountTask:
             },
             answer_slots={"line_kind_plural": str(line_kind_plural)},
             instance_seed=int(instance_seed),
+            annotation_hint_key="group_annotation_hint",
+            answer_hint_key="group_answer_hint",
+            json_example_key="group_json_example",
+            json_example_answer_only_key="group_json_example_answer_only",
         )
 
         serialized_icons = [serialize_named_grid_icon(icon) for icon in scene.icons]

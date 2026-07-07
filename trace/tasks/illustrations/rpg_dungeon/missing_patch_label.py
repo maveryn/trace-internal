@@ -55,6 +55,16 @@ SUPPORTED_QUERY_IDS: Tuple[str, ...] = (SINGLE_QUERY_ID,)
 PROMPT_QUERY_KEY = "missing_patch_label"
 
 
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, list):
+        return [_json_safe(item) for item in value]
+    return value
+
+
 @dataclass(frozen=True)
 class _Defaults:
     source_chest_count_min: int = 5
@@ -371,16 +381,18 @@ class IllustrationsRpgDungeonMissingPatchLabelTask:
         )
         render_spec = rpg_dungeon_render_spec(source_scene, scene_id=SCENE_ID)
         trace_payload = {
-            "scene_ir": rpg_dungeon_scene_ir(
-                domain=self.domain,
-                scene_id=SCENE_ID,
-                scene=source_scene,
-                relations={
-                    "query_id": str(sample.query_id),
-                    "prompt_query_key": PROMPT_QUERY_KEY,
-                    "answer_label": answer_label,
-                    "patch_mode": PATCH_MODE_PLAIN,
-                },
+            "scene_ir": _json_safe(
+                rpg_dungeon_scene_ir(
+                    domain=self.domain,
+                    scene_id=SCENE_ID,
+                    scene=source_scene,
+                    relations={
+                        "query_id": str(sample.query_id),
+                        "prompt_query_key": PROMPT_QUERY_KEY,
+                        "answer_label": answer_label,
+                        "patch_mode": PATCH_MODE_PLAIN,
+                    },
+                )
             ),
             "query_spec": {
                 "task_id": TASK_ID,
@@ -413,7 +425,7 @@ class IllustrationsRpgDungeonMissingPatchLabelTask:
                     "source_size": [int(sample.render_params["canvas_width"]), int(sample.render_params["canvas_height"])],
                     "canvas_profile": str(sample.render_params.get("canvas_profile", "")),
                     "canvas_profile_probabilities": dict(sample.render_params.get("canvas_profile_probabilities", {})),
-                    "rpg_tile_profile": dict(sample.render_params.get("rpg_tile_profile", {})),
+                    "rpg_tile_profile": _json_safe(dict(sample.render_params.get("rpg_tile_profile", {}))),
                 },
             },
             "render_spec": {
@@ -424,10 +436,10 @@ class IllustrationsRpgDungeonMissingPatchLabelTask:
                     "canvas_profile": str(sample.render_params.get("canvas_profile", "")),
                     "canvas_profile_size": list(sample.render_params.get("canvas_profile_size", [])),
                     "canvas_profile_probabilities": dict(sample.render_params.get("canvas_profile_probabilities", {})),
-                    "rpg_tile_profile": dict(sample.render_params.get("rpg_tile_profile", {})),
+                    "rpg_tile_profile": _json_safe(dict(sample.render_params.get("rpg_tile_profile", {}))),
                 },
                 "style": {
-                    **dict(render_spec["style"]),
+                    **_json_safe(dict(render_spec["style"])),
                     "patch_frame_style": style_trace(frame_style),
                     "patch_label_font": dict(label_font_trace),
                 },
@@ -458,7 +470,7 @@ class IllustrationsRpgDungeonMissingPatchLabelTask:
                 "selected_transform": str(artifacts.selected_transform),
                 "source_crop_box_px": [int(value) for value in artifacts.source_crop_box],
                 "option_labels": list(DEFAULT_OPTION_LABELS[: int(sample.option_count)]),
-                "source_scene": dict(source_scene.trace),
+                "source_scene": _json_safe(dict(source_scene.trace)),
             },
             "witness_symbolic": {
                 "answer_label": answer_label,
@@ -467,8 +479,8 @@ class IllustrationsRpgDungeonMissingPatchLabelTask:
             },
             "projected_annotation": {
                 "type": "bbox_map",
-                "bbox_map": dict(annotation_value),
-                "pixel_bbox_map": dict(annotation_value),
+                "bbox_map": _json_safe(dict(annotation_value)),
+                "pixel_bbox_map": _json_safe(dict(annotation_value)),
             },
         }
         return TaskOutput(

@@ -20,6 +20,10 @@ generation:
     - 5
     - 6
     - 7
+    extremum_state_count_support:
+    - 3
+    - 4
+    - 5
     candidate_label_pool:
     - A
     - B

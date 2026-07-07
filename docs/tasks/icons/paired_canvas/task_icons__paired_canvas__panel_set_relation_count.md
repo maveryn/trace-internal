@@ -3,7 +3,7 @@
 ## Identity
 - domain: `icons`
 - scene_id: `paired_canvas`
-- scene package: `paired_canvas`
+- source scene: `paired_canvas`
 - module: `trace/tasks/icons/paired_canvas/panel_set_relation_count.py`
 - prompt bundle: `icons_paired_canvas_v0`
 

@@ -3,7 +3,7 @@
 ## Summary
 - Domain: `illustrations`
 - Scene id: `isometric_farmstead`
-- Implementation scene package: `isometric_farmstead`
+- Implementation source scene: `isometric_farmstead`
 - Implementation source: `trace/tasks/illustrations/isometric_farmstead/highest_terrain_tile_count.py`
 
 ## Task Contract

@@ -1,4 +1,4 @@
-"""Scene-package contract tests for migrated cell-board puzzle tasks."""
+"""source-layout contract tests for migrated cell-board puzzle tasks."""
 
 from __future__ import annotations
 
@@ -7,6 +7,8 @@ from collections import deque
 import pytest
 
 from trace.tasks.registry import TASK_REGISTRY
+from trace.tasks.shared.color_distance import color_distance
+from trace.tasks.shared.named_colors import named_color
 from trace.tasks.puzzles.cell_board.shared.topology import (
     coord_distance,
     four_neighbors,
@@ -107,6 +109,36 @@ def test_cell_board_tasks_are_deterministic(
     assert out_a.trace_payload["query_spec"] == out_b.trace_payload["query_spec"]
     assert out_a.image.size == out_b.image.size
     assert out_a.image.tobytes() == out_b.image.tobytes()
+
+
+def test_largest_component_target_color_is_separated_from_fillers() -> None:
+    task = TASK_REGISTRY["task_puzzles__cell_board__largest_component_size"]()
+
+    for seed in range(2026070400, 2026070410):
+        output = task.generate(seed, params={}, max_attempts=80)
+        execution = output.trace_payload["execution_trace"]
+        target_name = str(execution["query_color"])
+        target_rgb = named_color(target_name)
+        threshold = float(execution["target_filler_min_color_distance"])
+        distance_space = str(execution["target_filler_color_distance_space"])
+        color_names = {
+            str(color_name)
+            for row in execution["color_grid"]
+            for color_name in row
+            if str(color_name) != target_name
+        }
+
+        assert threshold >= 65.0
+        assert color_names
+        for color_name in color_names:
+            assert (
+                color_distance(
+                    target_rgb,
+                    named_color(str(color_name)),
+                    distance_space=distance_space,
+                )
+                >= threshold
+            )
 
 
 def _has_path_without_edge(

@@ -7,19 +7,19 @@ generation:
     compact_value_min: 2
     compact_value_max: 40
     contiguous_category_count_min: 4
-    contiguous_category_count_max: 8
-    contiguous_span_count_min: 3
-    contiguous_span_count_max: 5
+    contiguous_category_count_max: 6
+    contiguous_span_count_min: 2
+    contiguous_span_count_max: 4
     counterfactual_category_count_min: 4
-    counterfactual_category_count_max: 8
-    counterfactual_transfer_delta_min: 3
-    counterfactual_transfer_delta_max: 10
+    counterfactual_category_count_max: 6
+    counterfactual_transfer_delta_min: 1
+    counterfactual_transfer_delta_max: 5
     part_whole_category_count_min: 4
-    part_whole_category_count_max: 8
+    part_whole_category_count_max: 6
     part_whole_span_count_min: 3
     part_whole_span_count_max: 5
     part_whole_angle_span_count_min: 2
-    part_whole_angle_span_count_max: 5
+    part_whole_angle_span_count_max: 3
     subset_denominator_size_min: 2
     subset_denominator_size_max: 4
     subset_denominator_answer_values:

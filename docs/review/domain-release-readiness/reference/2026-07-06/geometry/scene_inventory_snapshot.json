@@ -1,0 +1,652 @@
+{
+  "angle_relations": {
+    "config_path": "configs/domains/geometry/angle_relations.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/angle_relations",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/angle_relations",
+    "task_count": 5,
+    "task_ids": [
+      "task_geometry__angle_relations__algebraic_angle_value",
+      "task_geometry__angle_relations__parallel_algebraic_angle_value",
+      "task_geometry__angle_relations__parallel_supplement_angle",
+      "task_geometry__angle_relations__parallel_transversal_triangle_angle_value",
+      "task_geometry__angle_relations__triangle_exterior_angle"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "area_partition": {
+    "config_path": "configs/domains/geometry/area_partition.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/area_partition",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/area_partition",
+    "task_count": 1,
+    "task_ids": [
+      "task_geometry__area_partition__total_area_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "bearing_route": {
+    "config_path": "configs/domains/geometry/bearing_route.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/bearing_route",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/bearing_route",
+    "task_count": 2,
+    "task_ids": [
+      "task_geometry__bearing_route__endpoint_position_label",
+      "task_geometry__bearing_route__final_bearing_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "circle_centerline_overlap": {
+    "config_path": "configs/domains/geometry/circle_centerline_overlap.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/circle_centerline_overlap",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/circle_centerline_overlap",
+    "task_count": 1,
+    "task_ids": [
+      "task_geometry__circle_centerline_overlap__segment_length_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "circle_pair_tangents": {
+    "config_path": "configs/domains/geometry/circle_pair_tangents.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/circle_pair_tangents",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/circle_pair_tangents",
+    "task_count": 1,
+    "task_ids": [
+      "task_geometry__circle_pair_tangents__external_tangent_segment_length_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "circle_polygon_composite": {
+    "config_path": "configs/domains/geometry/circle_polygon_composite.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/circle_polygon_composite",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/circle_polygon_composite",
+    "task_count": 2,
+    "task_ids": [
+      "task_geometry__circle_polygon_composite__tangent_angle_value",
+      "task_geometry__circle_polygon_composite__tangential_quadrilateral_side_length_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "circle_theorem": {
+    "config_path": "configs/domains/geometry/circle_theorem.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/circle_theorem",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/circle_theorem",
+    "task_count": 16,
+    "task_ids": [
+      "task_geometry__circle_theorem__chord_length_from_radius_central_angle_value",
+      "task_geometry__circle_theorem__chord_length_from_radius_inscribed_angle_value",
+      "task_geometry__circle_theorem__cyclic_quadrilateral_exterior_angle_value",
+      "task_geometry__circle_theorem__cyclic_quadrilateral_opposite_angle_value",
+      "task_geometry__circle_theorem__diameter_perpendicular_chord_length_value",
+      "task_geometry__circle_theorem__external_secant_angle_value",
+      "task_geometry__circle_theorem__inscribed_angle_value_inscribed_angle_from_arc",
+      "task_geometry__circle_theorem__inscribed_central_angle_value",
+      "task_geometry__circle_theorem__intersecting_chords_arc_measure_value",
+      "task_geometry__circle_theorem__multi_step_angle_value",
+      "task_geometry__circle_theorem__radius_from_external_distance_and_angle_value",
+      "task_geometry__circle_theorem__secant_secant_length_value",
+      "task_geometry__circle_theorem__tangent_chord_angle_value_tangent_chord_angle_from_arc",
+      "task_geometry__circle_theorem__tangent_chord_angle_value_tangent_chord_angle_from_inscribed",
+      "task_geometry__circle_theorem__tangent_length_from_radius_and_external_distance_value",
+      "task_geometry__circle_theorem__tangent_secant_length_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "composite_shape": {
+    "config_path": "configs/domains/geometry/composite_shape.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/composite_shape",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/composite_shape",
+    "task_count": 10,
+    "task_ids": [
+      "task_geometry__composite_shape__house_outline_perimeter",
+      "task_geometry__composite_shape__l_profile_area",
+      "task_geometry__composite_shape__missing_width_from_semicircle_area",
+      "task_geometry__composite_shape__rectangle_quarter_sector_cutout_area",
+      "task_geometry__composite_shape__rectangle_quarter_sector_cutout_perimeter",
+      "task_geometry__composite_shape__rectangle_semicircle_area",
+      "task_geometry__composite_shape__rectangle_semicircle_perimeter",
+      "task_geometry__composite_shape__rectangle_triangle_cutout_area",
+      "task_geometry__composite_shape__sector_angle_value",
+      "task_geometry__composite_shape__tabbed_rectilinear_perimeter"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "concentric_chord": {
+    "config_path": "configs/domains/geometry/concentric_chord.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/concentric_chord",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/concentric_chord",
+    "task_count": 2,
+    "task_ids": [
+      "task_geometry__concentric_chord__chord_length_from_radii",
+      "task_geometry__concentric_chord__inner_radius_from_chord"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "cone_net": {
+    "config_path": "configs/domains/geometry/cone_net.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/cone_net",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/cone_net",
+    "task_count": 2,
+    "task_ids": [
+      "task_geometry__cone_net__base_radius_from_sector_angle",
+      "task_geometry__cone_net__height_from_sector_angle"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "container_volume_transfer": {
+    "config_path": "configs/domains/geometry/container_volume_transfer.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/container_volume_transfer",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/container_volume_transfer",
+    "task_count": 4,
+    "task_ids": [
+      "task_geometry__container_volume_transfer__fill_count_value",
+      "task_geometry__container_volume_transfer__resulting_height_value",
+      "task_geometry__container_volume_transfer__target_capacity_value",
+      "task_geometry__container_volume_transfer__transferred_volume_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "coordinate_composite": {
+    "config_path": "configs/domains/geometry/coordinate_composite.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/coordinate_composite",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/coordinate_composite",
+    "task_count": 3,
+    "task_ids": [
+      "task_geometry__coordinate_composite__boundary_point_match_label",
+      "task_geometry__coordinate_composite__intersection_point_count",
+      "task_geometry__coordinate_composite__region_membership_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "coordinate_panels": {
+    "config_path": "configs/domains/geometry/coordinate_panels.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/coordinate_panels",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/coordinate_panels",
+    "task_count": 3,
+    "task_ids": [
+      "task_geometry__coordinate_panels__point_set_transform_match_label",
+      "task_geometry__coordinate_panels__quadrilateral_shape_match_label",
+      "task_geometry__coordinate_panels__segment_relation_match_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "coordinate_plane": {
+    "config_path": "configs/domains/geometry/coordinate_plane.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/coordinate_plane",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/coordinate_plane",
+    "task_count": 12,
+    "task_ids": [
+      "task_geometry__coordinate_plane__collinear_point_count",
+      "task_geometry__coordinate_plane__locus_panel_match_label",
+      "task_geometry__coordinate_plane__locus_point_label",
+      "task_geometry__coordinate_plane__missing_endpoint_label",
+      "task_geometry__coordinate_plane__point_in_polygon_count",
+      "task_geometry__coordinate_plane__quadrilateral_completion_label",
+      "task_geometry__coordinate_plane__reflected_point_label",
+      "task_geometry__coordinate_plane__rotated_point_label",
+      "task_geometry__coordinate_plane__same_quadrant_point_count",
+      "task_geometry__coordinate_plane__section_point_label",
+      "task_geometry__coordinate_plane__segment_relation_count",
+      "task_geometry__coordinate_plane__translated_point_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "cuboid_views": {
+    "config_path": "configs/domains/geometry/cuboid_views.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/cuboid_views",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/cuboid_views",
+    "task_count": 1,
+    "task_ids": [
+      "task_geometry__cuboid_views__cuboid_projection_surface_area_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "cylinder_wrap": {
+    "config_path": "configs/domains/geometry/cylinder_wrap.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/cylinder_wrap",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/cylinder_wrap",
+    "task_count": 2,
+    "task_ids": [
+      "task_geometry__cylinder_wrap__surface_path_length_value",
+      "task_geometry__cylinder_wrap__wrapped_mark_position_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "function_graph": {
+    "config_path": "configs/domains/geometry/function_graph.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/function_graph",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/function_graph",
+    "task_count": 3,
+    "task_ids": [
+      "task_geometry__function_graph__average_rate_value",
+      "task_geometry__function_graph__extremum_count_local_extremum_count",
+      "task_geometry__function_graph__extremum_count_turning_point_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "function_panels": {
+    "config_path": "configs/domains/geometry/function_panels.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/function_panels",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/function_panels",
+    "task_count": 6,
+    "task_ids": [
+      "task_geometry__function_panels__function_status_label",
+      "task_geometry__function_panels__intersection_property_label",
+      "task_geometry__function_panels__one_to_one_status_label",
+      "task_geometry__function_panels__range_match_label",
+      "task_geometry__function_panels__sign_interval_label",
+      "task_geometry__function_panels__x_axis_symmetry_label"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "graph_paper": {
+    "config_path": "configs/domains/geometry/graph_paper.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/graph_paper",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/graph_paper",
+    "task_count": 14,
+    "task_ids": [
+      "task_geometry__graph_paper__angle_extremum_label",
+      "task_geometry__graph_paper__angle_type_count",
+      "task_geometry__graph_paper__area_extremum_label",
+      "task_geometry__graph_paper__circle_circumference_value",
+      "task_geometry__graph_paper__ellipse_area_value",
+      "task_geometry__graph_paper__length_extremum_label",
+      "task_geometry__graph_paper__line_slope_value",
+      "task_geometry__graph_paper__perimeter_extremum_label",
+      "task_geometry__graph_paper__polygon_area_value",
+      "task_geometry__graph_paper__polygon_convexity_count",
+      "task_geometry__graph_paper__polygon_perimeter_value",
+      "task_geometry__graph_paper__quadrilateral_type_count",
+      "task_geometry__graph_paper__shape_type_count",
+      "task_geometry__graph_paper__triangle_type_count"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "incircle_tangents": {
+    "config_path": "configs/domains/geometry/incircle_tangents.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/incircle_tangents",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/incircle_tangents",
+    "task_count": 2,
+    "task_ids": [
+      "task_geometry__incircle_tangents__incircle_radius_from_area_value",
+      "task_geometry__incircle_tangents__incircle_tangent_perimeter_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "measuring_tools": {
+    "config_path": "configs/domains/geometry/measuring_tools.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/measuring_tools",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/measuring_tools",
+    "task_count": 2,
+    "task_ids": [
+      "task_geometry__measuring_tools__protractor_angle_value",
+      "task_geometry__measuring_tools__ruler_length_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "paper_fold": {
+    "config_path": "configs/domains/geometry/paper_fold.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/paper_fold",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/paper_fold",
+    "task_count": 2,
+    "task_ids": [
+      "task_geometry__paper_fold__folded_segment_length_value",
+      "task_geometry__paper_fold__paper_fold_angle_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "polar_graph_paper": {
+    "config_path": "configs/domains/geometry/polar_graph_paper.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/polar_graph_paper",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/polar_graph_paper",
+    "task_count": 2,
+    "task_ids": [
+      "task_geometry__polar_graph_paper__coordinate_difference_value",
+      "task_geometry__polar_graph_paper__readout_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "polygon_equation_diagram": {
+    "config_path": "configs/domains/geometry/polygon_equation_diagram.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/polygon_equation_diagram",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/polygon_equation_diagram",
+    "task_count": 7,
+    "task_ids": [
+      "task_geometry__polygon_equation_diagram__equal_angle_measure_value",
+      "task_geometry__polygon_equation_diagram__equal_angle_variable_value",
+      "task_geometry__polygon_equation_diagram__equal_side_length_value",
+      "task_geometry__polygon_equation_diagram__equal_side_variable_value",
+      "task_geometry__polygon_equation_diagram__interior_angle_sum_angle_value",
+      "task_geometry__polygon_equation_diagram__interior_angle_sum_variable_value",
+      "task_geometry__polygon_equation_diagram__side_expression_perimeter_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "pythagorean_dissection": {
+    "config_path": "configs/domains/geometry/pythagorean_dissection.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/pythagorean_dissection",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/pythagorean_dissection",
+    "task_count": 1,
+    "task_ids": [
+      "task_geometry__pythagorean_dissection__pythagorean_square_area_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "pythagorean_tree": {
+    "config_path": "configs/domains/geometry/pythagorean_tree.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/pythagorean_tree",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/pythagorean_tree",
+    "task_count": 1,
+    "task_ids": [
+      "task_geometry__pythagorean_tree__missing_square_area_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "rectangular_solid": {
+    "config_path": "configs/domains/geometry/rectangular_solid.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/rectangular_solid",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/rectangular_solid",
+    "task_count": 4,
+    "task_ids": [
+      "task_geometry__rectangular_solid__cube_edge_from_frame_length_value",
+      "task_geometry__rectangular_solid__cuboid_surface_area_value",
+      "task_geometry__rectangular_solid__cuboid_volume_missing_dimension_value",
+      "task_geometry__rectangular_solid__open_box_net_dimension_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "regular_polygon_decomposition": {
+    "config_path": "configs/domains/geometry/regular_polygon_decomposition.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/regular_polygon_decomposition",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/regular_polygon_decomposition",
+    "task_count": 5,
+    "task_ids": [
+      "task_geometry__regular_polygon_decomposition__central_angle_value",
+      "task_geometry__regular_polygon_decomposition__marked_piece_area_value",
+      "task_geometry__regular_polygon_decomposition__perimeter_value",
+      "task_geometry__regular_polygon_decomposition__side_length_value",
+      "task_geometry__regular_polygon_decomposition__wedge_area_from_side_apothem_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "sector": {
+    "config_path": "configs/domains/geometry/sector.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/sector",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/sector",
+    "task_count": 5,
+    "task_ids": [
+      "task_geometry__sector__arc_length_from_sector_area_value",
+      "task_geometry__sector__arc_length_from_supplement_angle_value",
+      "task_geometry__sector__central_angle_from_sector_measure_value",
+      "task_geometry__sector__related_angle_from_sector_measure_value",
+      "task_geometry__sector__sector_area_from_complement_angle_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "shape_reference": {
+    "config_path": "configs/domains/geometry/shape_reference.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/shape_reference",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/shape_reference",
+    "task_count": 5,
+    "task_ids": [
+      "task_geometry__shape_reference__congruent_match",
+      "task_geometry__shape_reference__reflection_match",
+      "task_geometry__shape_reference__rotation_match",
+      "task_geometry__shape_reference__similar_match",
+      "task_geometry__shape_reference__translation_match"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "similar_figure_measure_transfer": {
+    "config_path": "configs/domains/geometry/similar_figure_measure_transfer.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/similar_figure_measure_transfer",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/similar_figure_measure_transfer",
+    "task_count": 3,
+    "task_ids": [
+      "task_geometry__similar_figure_measure_transfer__area_scale_side_length_value",
+      "task_geometry__similar_figure_measure_transfer__corresponding_side_value",
+      "task_geometry__similar_figure_measure_transfer__variable_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "solid_cross_section": {
+    "config_path": "configs/domains/geometry/solid_cross_section.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/solid_cross_section",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/solid_cross_section",
+    "task_count": 2,
+    "task_ids": [
+      "task_geometry__solid_cross_section__cone_parallel_slice_area",
+      "task_geometry__solid_cross_section__square_pyramid_parallel_slice_area"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "solid_formula": {
+    "config_path": "configs/domains/geometry/solid_formula.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/solid_formula",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/solid_formula",
+    "task_count": 4,
+    "task_ids": [
+      "task_geometry__solid_formula__cylinder_cone_height_from_volume_radius",
+      "task_geometry__solid_formula__cylinder_cone_radius_from_volume_heights",
+      "task_geometry__solid_formula__house_prism_length_from_volume",
+      "task_geometry__solid_formula__prism_pyramid_height_from_volume"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "solid_revolution": {
+    "config_path": "configs/domains/geometry/solid_revolution.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/solid_revolution",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/solid_revolution",
+    "task_count": 5,
+    "task_ids": [
+      "task_geometry__solid_revolution__revolution_cone_volume_value",
+      "task_geometry__solid_revolution__revolution_cylinder_volume_from_diagonal_value",
+      "task_geometry__solid_revolution__revolution_cylinder_volume_value",
+      "task_geometry__solid_revolution__revolution_double_cone_volume_value",
+      "task_geometry__solid_revolution__revolution_frustum_volume_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "special_quadrilateral": {
+    "config_path": "configs/domains/geometry/special_quadrilateral.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/special_quadrilateral",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/special_quadrilateral",
+    "task_count": 2,
+    "task_ids": [
+      "task_geometry__special_quadrilateral__algebraic_angle_value",
+      "task_geometry__special_quadrilateral__segment_length_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "survey_traverse": {
+    "config_path": "configs/domains/geometry/survey_traverse.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/survey_traverse",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/survey_traverse",
+    "task_count": 3,
+    "task_ids": [
+      "task_geometry__survey_traverse__outgoing_bearing_from_turn_value",
+      "task_geometry__survey_traverse__station_elevation_value",
+      "task_geometry__survey_traverse__traverse_area_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "tangent_packing": {
+    "config_path": "configs/domains/geometry/tangent_packing.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/tangent_packing",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/tangent_packing",
+    "task_count": 6,
+    "task_ids": [
+      "task_geometry__tangent_packing__circle_in_square_gap_area",
+      "task_geometry__tangent_packing__circle_in_square_radius_from_gap_area",
+      "task_geometry__tangent_packing__square_in_circle_gap_area",
+      "task_geometry__tangent_packing__square_in_circle_side_from_gap_area",
+      "task_geometry__tangent_packing__two_circles_in_rectangle_gap_area",
+      "task_geometry__tangent_packing__two_circles_in_rectangle_radius_from_gap_area"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "trapezoid_extension": {
+    "config_path": "configs/domains/geometry/trapezoid_extension.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/trapezoid_extension",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/trapezoid_extension",
+    "task_count": 5,
+    "task_ids": [
+      "task_geometry__trapezoid_extension__extension_from_parallelogram_area",
+      "task_geometry__trapezoid_extension__extension_from_parallelogram_perimeter",
+      "task_geometry__trapezoid_extension__trapezoid_area_from_extension_and_height",
+      "task_geometry__trapezoid_extension__trapezoid_area_from_parallelogram_area",
+      "task_geometry__trapezoid_extension__trapezoid_area_from_parallelogram_perimeter"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "triangle_relations": {
+    "config_path": "configs/domains/geometry/triangle_relations.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/triangle_relations",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/triangle_relations",
+    "task_count": 12,
+    "task_ids": [
+      "task_geometry__triangle_relations__altitude_to_hypotenuse_value",
+      "task_geometry__triangle_relations__angle_bisector_segment_value",
+      "task_geometry__triangle_relations__angle_bisector_variable_value",
+      "task_geometry__triangle_relations__centroid_median_segment_value",
+      "task_geometry__triangle_relations__leg_projection_length_value",
+      "task_geometry__triangle_relations__parallel_section_segment_value",
+      "task_geometry__triangle_relations__pythagorean_length_value_chained_rectangle_diagonal_length",
+      "task_geometry__triangle_relations__pythagorean_length_value_rectangle_triangle_shared_height_length",
+      "task_geometry__triangle_relations__right_triangle_missing_side_value",
+      "task_geometry__triangle_relations__similar_triangles_side_length",
+      "task_geometry__triangle_relations__split_triangle_angle_value",
+      "task_geometry__triangle_relations__split_triangle_trig_side_length_value"
+    ],
+    "taxonomy_review_pass": true
+  },
+  "volume_equivalence_conversion": {
+    "config_path": "configs/domains/geometry/volume_equivalence_conversion.yaml",
+    "manual_code_audit_pass": true,
+    "review_path": "review/task-reviews/geometry/volume_equivalence_conversion",
+    "source_layout_status": "source_layout",
+    "source_layout_test_pass": true,
+    "source_package": "trace/tasks/geometry/volume_equivalence_conversion",
+    "task_count": 2,
+    "task_ids": [
+      "task_geometry__volume_equivalence_conversion__equal_volume_option_label",
+      "task_geometry__volume_equivalence_conversion__missing_dimension_value"
+    ],
+    "taxonomy_review_pass": true
+  }
+}

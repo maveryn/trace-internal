@@ -95,8 +95,8 @@ class _TaskDefaults:
   minute_max: int = 55
   minute_step: int = 5
   min_hand_angle_gap_deg: float = 10.0
-  clock_label_support: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L")
-  clock_count_support: Tuple[int, ...] = (6, 7, 8, 9, 10, 11, 12)
+  clock_label_support: Tuple[str, ...] = ("A", "B", "C", "D", "E", "F")
+  clock_count_support: Tuple[int, ...] = (6,)
   min_compare_gap_minutes: int = 15
   canvas_width: int = 960
   canvas_height: int = 760

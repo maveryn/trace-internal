@@ -22,6 +22,7 @@ from trace.tasks.shared.time_format import month_name
 
 from .defaults import (
     BACKGROUND_DEFAULTS,
+    EVENT_SLOT_SPECS,
     GENERIC_TITLE_TEXTS,
     NOISE_DEFAULTS,
     RENDER_FALLBACKS,
@@ -200,7 +201,7 @@ def render_event_grid_case(
         year=int(case.year),
         month=int(case.month),
         event_chips=tuple(case.event_chips),
-        slot_order=tuple(slot for slot, _ in (("top", "Top"), ("mid", "Mid"), ("end", "End"))),
+        slot_order=tuple(slot for slot, _label in EVENT_SLOT_SPECS),
         scene_variant=str(case.scene_variant),
         render_params=render_params,
         visual_theme=calendar_theme,

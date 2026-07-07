@@ -13,23 +13,17 @@ workflow doc.
   annotation conventions, prompt constraints, and domain rendering rules.
 - `docs/resources/` — shared resource guidance for fonts, labels, context text,
   and generated rationale targets.
-- `docs/review/` — reviewer-facing task, scene, and domain audit procedures.
-  Review docs explain how to judge task quality; they do not define public
-  contracts or store generated review artifacts.
-- `docs/domain-finalization-review/` — post-migration release-readiness
-  checklists and domain finalization review reports for current training/release
-  surfaces.
-- `docs/domain-migration-report/` — read-only supporting post-migration audit
-  reports and machine outputs from earlier domain sweeps.
+- `docs/review/` — reviewer-facing task, scene, and domain audit procedures,
+  plus dated reference snapshots when a completed review pass should remain
+  useful for future comparison. Review docs explain how to judge task quality;
+  they do not define public contracts or store generated task-review artifacts.
 - `docs/tasks/` — public task contracts at
   `docs/tasks/<domain>/<scene_id>/<task_id>.md`, plus the task-doc template and
   task-doc maintenance guide.
-- `docs/SCENE_PACKAGE_MIGRATION/` — active scene-package migration rules,
-  checklists, receipts, and shared-boundary notes.
 - `docs/ACTIVE_TASK_INVENTORY.md` — generated active task inventory.
 - `docs/RLVR_TRAINING_STRATEGY.md` — current high-level TRACE RLVR training
   strategy notes.
-- `docs/RLVR_TASK_SPLIT_PLAN.md` — planned TRACE RLVR train/test task split.
+- `docs/RLVR_TASK_SPLIT_PLAN.md` — frozen TRACE RLVR train/test task split.
 - `docs/TODO.md` — current project backlog only.
 
 ## What Does Not Belong In Docs
@@ -45,6 +39,9 @@ Do not recreate these roots or link to them from active docs/skills:
 
 - `docs/core/`
 - `docs/project/`
+- `docs/domain-migration-report/`
+- `docs/domain-finalization-review/`
+- `docs/SCENE_PACKAGE_MIGRATION/`
 - `plans/`
 - `review/docs/`
 - `review/code-review/`

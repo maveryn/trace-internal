@@ -23,18 +23,18 @@
     },
     "query": {
       "highest_density_region_label": [
-        "Which region has the {density_extremum_phrase} density?",
-        "Find the labeled density region with the {density_extremum_phrase} peak intensity.",
-        "Comparing the contour regions, which label corresponds to the {density_extremum_phrase} density?",
-        "What visible region label has the {density_extremum_phrase} density level?",
-        "Which labeled region is the {density_extremum_phrase}-density region?"
+        "Density level is shown by the contour marks: more nested rings, and when present more dots or stronger fill, mean higher density. Ignoring footprint size and position, which region has the {density_extremum_phrase} density?",
+        "Use the contour-level marks, not footprint size: more nested rings/dots or stronger fill means higher density. Find the labeled region with the {density_extremum_phrase} density.",
+        "Compare density by contour level. More nested rings, dots, or stronger fill indicate higher density; fewer indicate lower density. Which label corresponds to the {density_extremum_phrase} density?",
+        "Using the visible contour-density levels rather than region area or position, what visible region label has the {density_extremum_phrase} density?",
+        "Which labeled region is the {density_extremum_phrase}-density region? Use nested contour rings, dots, or fill intensity as the density cue."
       ],
       "lowest_density_region_label": [
-        "Which region has the {density_extremum_phrase} density?",
-        "Find the labeled density region with the {density_extremum_phrase} peak intensity.",
-        "Comparing the contour regions, which label corresponds to the {density_extremum_phrase} density?",
-        "What visible region label has the {density_extremum_phrase} density level?",
-        "Which labeled region is the {density_extremum_phrase}-density region?"
+        "Density level is shown by the contour marks: more nested rings, and when present more dots or stronger fill, mean higher density. Ignoring footprint size and position, which region has the {density_extremum_phrase} density?",
+        "Use the contour-level marks, not footprint size: more nested rings/dots or stronger fill means higher density. Find the labeled region with the {density_extremum_phrase} density.",
+        "Compare density by contour level. More nested rings, dots, or stronger fill indicate higher density; fewer indicate lower density. Which label corresponds to the {density_extremum_phrase} density?",
+        "Using the visible contour-density levels rather than region area or position, what visible region label has the {density_extremum_phrase} density?",
+        "Which labeled region is the {density_extremum_phrase}-density region? Use nested contour rings, dots, or fill intensity as the density cue."
       ],
       "point_nearest_region_label": [
         "Which labeled region is {distance_extremum_phrase} the {reference_kind_phrase}?",
@@ -79,18 +79,18 @@
         "From the labeled contour regions, which one is {distance_extremum_phrase} the {reference_kind_phrase}?"
       ],
       "density_at_least_threshold_region_count": [
-        "How many labeled regions have density level {density_threshold_phrase} {density_threshold_level}?",
-        "Count the regions whose visible density level is {density_threshold_phrase} {density_threshold_level}.",
-        "Using the density-level encoding, how many regions are {density_threshold_phrase} level {density_threshold_level}?",
-        "What is the number of labeled regions with density level {density_threshold_phrase} {density_threshold_level}?",
-        "Compare each region's visible density level to {density_threshold_level}. How many regions are {density_threshold_phrase} that level?"
+        "Density level is shown by the contour marks: more nested rings, and when present more dots or stronger fill, mean higher density. Ignoring footprint size and position, how many labeled regions have density level {density_threshold_phrase} {density_threshold_level}?",
+        "Use the contour-level marks, not footprint size: more nested rings/dots or stronger fill means higher density. Count the regions whose visible density level is {density_threshold_phrase} {density_threshold_level}.",
+        "Using the density-level encoding from contour rings, dots, or fill intensity, how many regions are {density_threshold_phrase} level {density_threshold_level}?",
+        "Compare density by contour level. More nested rings, dots, or stronger fill indicate higher density; fewer indicate lower density. How many labeled regions have density level {density_threshold_phrase} {density_threshold_level}?",
+        "Compare each region's visible density level to {density_threshold_level} using the contour marks rather than footprint size or position. How many regions are {density_threshold_phrase} that level?"
       ],
       "density_below_threshold_region_count": [
-        "How many labeled regions have density level {density_threshold_phrase} {density_threshold_level}?",
-        "Count the regions whose visible density level is {density_threshold_phrase} {density_threshold_level}.",
-        "Using the density-level encoding, how many regions are {density_threshold_phrase} level {density_threshold_level}?",
-        "What is the number of labeled regions with density level {density_threshold_phrase} {density_threshold_level}?",
-        "Compare each region's visible density level to {density_threshold_level}. How many regions are {density_threshold_phrase} that level?"
+        "Density level is shown by the contour marks: more nested rings, and when present more dots or stronger fill, mean higher density. Ignoring footprint size and position, how many labeled regions have density level {density_threshold_phrase} {density_threshold_level}?",
+        "Use the contour-level marks, not footprint size: more nested rings/dots or stronger fill means higher density. Count the regions whose visible density level is {density_threshold_phrase} {density_threshold_level}.",
+        "Using the density-level encoding from contour rings, dots, or fill intensity, how many regions are {density_threshold_phrase} level {density_threshold_level}?",
+        "Compare density by contour level. More nested rings, dots, or stronger fill indicate higher density; fewer indicate lower density. How many labeled regions have density level {density_threshold_phrase} {density_threshold_level}?",
+        "Compare each region's visible density level to {density_threshold_level} using the contour marks rather than footprint size or position. How many regions are {density_threshold_phrase} that level?"
       ],
       "widest_spread_region_label": [
         "Which labeled region has the {spread_extremum_phrase} visible footprint?",

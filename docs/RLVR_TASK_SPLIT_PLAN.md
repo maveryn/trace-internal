@@ -5,6 +5,9 @@ active public tasks listed in `docs/ACTIVE_TASK_INVENTORY.md`.
 
 Source snapshot:
 
+- Split id: `trace_rlvr_task_split_v1`
+- Status: finalized
+- Finalized date: `2026-07-07`
 - Inventory file: `docs/ACTIVE_TASK_INVENTORY.md`
 - Inventory SHA-256:
   `a4e6b07c3fba8a24f5efddd70270e95615bfd962c17addf2b25fc31c3d56bd5b`
@@ -13,7 +16,9 @@ Source snapshot:
 - Test tasks: `100`
 
 Train is the complement of the test tasks listed below. No separate train task
-list is needed unless a dataset build script needs a materialized manifest.
+list is needed unless a dataset build script needs a materialized manifest. Any
+future task-surface change should either preserve this frozen v1 split against
+the recorded inventory or create a new explicitly named split.
 
 ## Split Semantics
 
@@ -51,15 +56,15 @@ scene available for an exact 3/3 split.
 
 | Domain | Held-out scenes | Test tasks |
 | --- | --- | ---: |
-| charts | `annotated_series`, `area`, `candlestick`, `matrix` | 9 |
-| games | `backgammon`, `bowling`, `mancala_pit_board` | 9 |
-| geometry | `area_partition`, `circle_centerline_overlap`, `circle_pair_tangents`, `cone_net`, `solid_cross_section`, `bearing_route` | 9 |
-| graph | `flow_network`, `pedigree_chart` | 4 |
+| charts | `hexbin_density`, `error_interval`, `matrix`, `radial_sankey` | 9 |
+| games | `battleship`, `minigolf`, `slot_machine` | 9 |
+| geometry | `area_partition`, `circle_centerline_overlap`, `circle_pair_tangents`, `paper_fold`, `solid_cross_section`, `bearing_route` | 9 |
+| graph | `pipe_network` | 4 |
 | icons | `venn_field` | 2 |
 | illustrations | `isometric_harbor` | 4 |
 | pages | `cycle`, `timeline` | 4 |
-| physics | `collision` | 2 |
-| puzzles | `sheet_transform` | 3 |
+| physics | `analog_meter`, `electromagnetic_induction` | 2 |
+| puzzles | `polyomino_assembly` | 3 |
 | symbolic | `braille_cell` | 3 |
 | three_d | `street` | 3 |
 | **Total** |  | **52** |
@@ -82,15 +87,15 @@ scene available for an exact 3/3 split.
 
 `test_unseen_scene`
 
-- `annotated_series`: `task_charts__annotated_series__callout_endpoint_change_value`
-- `area`: `task_charts__area__interval_area_value`
-- `area`: `task_charts__area__stacked_band_dominance_label`
-- `area`: `task_charts__area__stacked_band_interval_sum_value`
-- `candlestick`: `task_charts__candlestick__counterfactual_close_value`
-- `candlestick`: `task_charts__candlestick__range_extremum_label`
+- `hexbin_density`: `task_charts__hexbin_density__threshold_bin_count`
+- `error_interval`: `task_charts__error_interval__interval_width_rank_label`
+- `error_interval`: `task_charts__error_interval__reference_containment_count`
+- `error_interval`: `task_charts__error_interval__reference_exclusion_side_count`
 - `matrix`: `task_charts__matrix__axis_extremum_label`
 - `matrix`: `task_charts__matrix__off_diagonal_confusion_label`
 - `matrix`: `task_charts__matrix__threshold_cell_count`
+- `radial_sankey`: `task_charts__radial_sankey__dominant_endpoint_label`
+- `radial_sankey`: `task_charts__radial_sankey__transfer_total_value`
 
 ### games
 
@@ -107,15 +112,15 @@ scene available for an exact 3/3 split.
 
 `test_unseen_scene`
 
-- `backgammon`: `task_games__backgammon__destination_count`
-- `backgammon`: `task_games__backgammon__pip_count_value`
-- `backgammon`: `task_games__backgammon__point_state_count`
-- `bowling`: `task_games__bowling__first_pin_hit_label`
-- `bowling`: `task_games__bowling__path_hit_count`
-- `bowling`: `task_games__bowling__spare_path_label`
-- `mancala_pit_board`: `task_games__mancala_pit_board__max_post_sow_option_label`
-- `mancala_pit_board`: `task_games__mancala_pit_board__post_sow_pit_count_value`
-- `mancala_pit_board`: `task_games__mancala_pit_board__sowing_landing_option_label`
+- `battleship`: `task_games__battleship__last_ship_cell_label`
+- `battleship`: `task_games__battleship__remaining_ship_shape_label`
+- `battleship`: `task_games__battleship__ship_cell_status_count`
+- `battleship`: `task_games__battleship__ship_status_count`
+- `minigolf`: `task_games__minigolf__first_obstacle_label`
+- `minigolf`: `task_games__minigolf__shot_path_label`
+- `slot_machine`: `task_games__slot_machine__paytable_score_value`
+- `slot_machine`: `task_games__slot_machine__reel_completion_label`
+- `slot_machine`: `task_games__slot_machine__winning_payline_count`
 
 ### geometry
 
@@ -135,8 +140,8 @@ scene available for an exact 3/3 split.
 - `area_partition`: `task_geometry__area_partition__total_area_value`
 - `circle_centerline_overlap`: `task_geometry__circle_centerline_overlap__segment_length_value`
 - `circle_pair_tangents`: `task_geometry__circle_pair_tangents__external_tangent_segment_length_value`
-- `cone_net`: `task_geometry__cone_net__base_radius_from_sector_angle`
-- `cone_net`: `task_geometry__cone_net__height_from_sector_angle`
+- `paper_fold`: `task_geometry__paper_fold__folded_segment_length_value`
+- `paper_fold`: `task_geometry__paper_fold__paper_fold_angle_value`
 - `solid_cross_section`: `task_geometry__solid_cross_section__cone_parallel_slice_area`
 - `solid_cross_section`: `task_geometry__solid_cross_section__square_pyramid_parallel_slice_area`
 - `bearing_route`: `task_geometry__bearing_route__endpoint_position_label`
@@ -151,10 +156,10 @@ scene available for an exact 3/3 split.
 
 `test_unseen_scene`
 
-- `flow_network`: `task_graph__flow_network__max_flow_value`
-- `flow_network`: `task_graph__flow_network__min_cut_edge_count`
-- `pedigree_chart`: `task_graph__pedigree_chart__relatedness_coefficient_label`
-- `pedigree_chart`: `task_graph__pedigree_chart__relationship_label`
+- `pipe_network`: `task_graph__pipe_network__bridge_count`
+- `pipe_network`: `task_graph__pipe_network__pipe_exact_distance_count`
+- `pipe_network`: `task_graph__pipe_network__pipe_reachable_junction_count`
+- `pipe_network`: `task_graph__pipe_network__shortest_path_length`
 
 ### icons
 
@@ -189,8 +194,8 @@ scene available for an exact 3/3 split.
 
 - `infographic`: `task_pages__infographic__global_metric_ranked_item_label`
 - `mixed_infographic_page`: `task_pages__mixed_infographic_page__module_field_ranked_item_label`
-- `profile_card_grid`: `task_pages__profile_card_grid__filtered_ranked_profile_label`
-- `step_list`: `task_pages__step_list__relative_offset_step_label`
+- `calendar_event_grid`: `task_pages__calendar_event_grid__busiest_date_label`
+- `schema`: `task_pages__schema__join_path_length_value`
 
 `test_unseen_scene`
 
@@ -209,8 +214,8 @@ scene available for an exact 3/3 split.
 
 `test_unseen_scene`
 
-- `collision`: `task_physics__collision__sticky_collision_direction_choice`
-- `collision`: `task_physics__collision__sticky_collision_speed_value`
+- `analog_meter`: `task_physics__analog_meter__meter_readout_value`
+- `electromagnetic_induction`: `task_physics__electromagnetic_induction__induced_current_direction_count`
 
 ### puzzles
 
@@ -222,9 +227,9 @@ scene available for an exact 3/3 split.
 
 `test_unseen_scene`
 
-- `sheet_transform`: `task_puzzles__sheet_transform__fold_cut_result_label`
-- `sheet_transform`: `task_puzzles__sheet_transform__fold_projection_result_label`
-- `sheet_transform`: `task_puzzles__sheet_transform__overlay_union_result_label`
+- `polyomino_assembly`: `task_puzzles__polyomino_assembly__composition_result_label`
+- `polyomino_assembly`: `task_puzzles__polyomino_assembly__decomposition_pair_label`
+- `polyomino_assembly`: `task_puzzles__polyomino_assembly__hole_fill_piece_label`
 
 ### symbolic
 

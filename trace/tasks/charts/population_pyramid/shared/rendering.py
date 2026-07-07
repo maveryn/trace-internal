@@ -15,7 +15,7 @@ from .....core.visual.noise import apply_post_image_noise
 from ....shared.bbox_projection import bbox_union_raw as _bbox_union
 from ....shared.config_defaults import group_default
 from ....shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
-from ....shared.text_legibility import draw_traced_text
+from ....shared.text_legibility import draw_readable_text, draw_traced_text, resolve_readable_text_style
 from ....shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
 from ...shared.information_style import make_chart_information_background, resolve_chart_information_style
 from ...shared.visual_defaults import chart_font_asset_metadata, relative_luminance, sample_chart_font_family
@@ -99,7 +99,7 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
 
 def _readable_chart_text_colors(surface_rgb: Sequence[int]) -> tuple[RGB, RGB, RGB]:
     if relative_luminance(surface_rgb) >= 0.55:
-        return (34, 42, 54), (72, 84, 100), (34, 42, 54)
+        return (10, 14, 22), (36, 45, 64), (10, 14, 22)
     return (246, 250, 255), (205, 218, 232), (18, 24, 32)
 
 
@@ -107,8 +107,34 @@ def _darken(color: RGB, factor: float = 0.70) -> RGB:
     return tuple(max(0, min(255, int(round(float(channel) * float(factor))))) for channel in color)  # type: ignore[return-value]
 
 
+def _lighten(color: RGB, factor: float = 0.18) -> RGB:
+    return tuple(
+        max(0, min(255, int(round(float(channel) + (255.0 - float(channel)) * float(factor)))))
+        for channel in color
+    )  # type: ignore[return-value]
+
+
 def _text_on_bar(color: RGB) -> RGB:
     return (18, 24, 32) if relative_luminance(color) > 0.52 else (248, 250, 252)
+
+
+def _draw_text_backplate(
+    draw: ImageDraw.ImageDraw,
+    *,
+    bbox: Sequence[float],
+    fill_rgb: RGB,
+    border_rgb: RGB,
+    pad_x: float = 5.0,
+    pad_y: float = 3.0,
+) -> None:
+    x0, y0, x1, y1 = [float(value) for value in bbox]
+    draw.rounded_rectangle(
+        (x0 - float(pad_x), y0 - float(pad_y), x1 + float(pad_x), y1 + float(pad_y)),
+        radius=5,
+        fill=tuple(int(value) for value in fill_rgb),
+        outline=tuple(int(value) for value in border_rgb),
+        width=1,
+    )
 
 
 def _draw_text(
@@ -161,6 +187,15 @@ def _render_dataset(dataset: PopulationPyramidDataset, params: Mapping[str, Any]
     axis_rgb = tuple(int(value) for value in style.axis_rgb)
     grid_rgb = tuple(int(value) for value in style.grid_rgb)
     text_rgb, muted_text_rgb, text_stroke_rgb = _readable_chart_text_colors(panel_fill_rgb)
+    required_plate_fill_rgb: RGB = (250, 252, 255)
+    required_plate_border_rgb: RGB = (198, 207, 219)
+    required_label_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{SCENE_NAMESPACE}.required_labels",
+        role="chart_readout",
+        surface_rgbs=(required_plate_fill_rgb, required_plate_border_rgb),
+        preferred_rgbs=((10, 14, 22),),
+    )
     text_stroke_width = dense_stroke_width()
 
     plot_left = float(render_params.plot_margin_left_px)
@@ -197,6 +232,7 @@ def _render_dataset(dataset: PopulationPyramidDataset, params: Mapping[str, Any]
         fill=text_rgb,
         stroke=text_stroke_rgb,
         stroke_width=text_stroke_width,
+        required=False,
     )
 
     legend_y = float(render_params.plot_margin_top_px + 54)
@@ -205,14 +241,25 @@ def _render_dataset(dataset: PopulationPyramidDataset, params: Mapping[str, Any]
     for index, (label, color) in enumerate(legend_items):
         x = float(legend_x + index * 230)
         draw.rounded_rectangle((x, legend_y + 3, x + 28, legend_y + 19), radius=4, fill=color, outline=_darken(color, 0.62), width=1)
-        _draw_text(
+        label_bbox = draw.textbbox(
+            (x + 38, legend_y),
+            str(label),
+            font=legend_font,
+            stroke_width=0,
+        )
+        _draw_text_backplate(
+            draw,
+            bbox=label_bbox,
+            fill_rgb=required_plate_fill_rgb,
+            border_rgb=required_plate_border_rgb,
+        )
+        draw_readable_text(
             draw,
             xy=(x + 38, legend_y),
             text=str(label),
             font=legend_font,
-            fill=text_rgb,
-            stroke=text_stroke_rgb,
-            stroke_width=text_stroke_width,
+            style=required_label_style,
+            stroke_width=0,
         )
 
     for tick in range(0, int(render_params.axis_max) + 1, int(render_params.tick_step)):
@@ -286,18 +333,29 @@ def _render_dataset(dataset: PopulationPyramidDataset, params: Mapping[str, Any]
             min_size_px=9,
             max_size_px=render_params.label_font_size_px,
         )
-        text_bbox = draw.textbbox((0, 0), label, font=label_font_fitted, stroke_width=text_stroke_width)
+        text_bbox = draw.textbbox((0, 0), label, font=label_font_fitted, stroke_width=0)
         label_xy = (plot_left - 16 - float(text_bbox[2] - text_bbox[0]), center_y - 0.5 * float(text_bbox[3] - text_bbox[1]))
-        label_record = draw_traced_text(
+        absolute_label_bbox = (
+            float(label_xy[0]) + float(text_bbox[0]),
+            float(label_xy[1]) + float(text_bbox[1]),
+            float(label_xy[0]) + float(text_bbox[2]),
+            float(label_xy[1]) + float(text_bbox[3]),
+        )
+        _draw_text_backplate(
+            draw,
+            bbox=absolute_label_bbox,
+            fill_rgb=required_plate_fill_rgb,
+            border_rgb=required_plate_border_rgb,
+            pad_x=4.0,
+            pad_y=2.0,
+        )
+        label_record = draw_readable_text(
             draw,
             xy=(float(label_xy[0]), float(label_xy[1])),
             text=label,
             font=label_font_fitted,
-            fill_rgb=text_rgb,
-            stroke_rgb=text_stroke_rgb,
-            stroke_width=text_stroke_width,
-            role="axis_tick",
-            required=True,
+            style=required_label_style,
+            stroke_width=0,
         )
         row_label_bboxes[str(row.row_id)] = _bbox(label_record["bbox_px"])
 

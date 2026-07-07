@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import Image, ImageDraw
 
-from ....shared.text_legibility import draw_text_traced
+from ....shared.text_legibility import draw_text_traced, text_legibility_metadata_for_surfaces
 from ....shared.text_rendering import load_font
 from ...shared.object_scene import POINT_COLORS, POINT_LABELS, _RenderParams
 
@@ -89,7 +89,9 @@ def draw_marked_points(
             float(y + center_radius),
         ]
         draw.ellipse(tuple(inner_bbox), fill=color, outline=(22, 28, 36), width=1)
-        raw_label_bbox = draw.textbbox((0.0, 0.0), label, font=label_font, stroke_width=3)
+        label_fill_rgb = (255, 255, 255)
+        label_backing_rgb = (23, 28, 36)
+        raw_label_bbox = draw.textbbox((0.0, 0.0), label, font=label_font, stroke_width=0)
         label_width = float(raw_label_bbox[2] - raw_label_bbox[0])
         label_height = float(raw_label_bbox[3] - raw_label_bbox[1])
         label_x = x + marker_radius + 5.0
@@ -103,16 +105,23 @@ def draw_marked_points(
             text=label,
             xy=text_xy,
             font=label_font,
-            stroke_width=3,
+            stroke_width=0,
         )
+        backing_bbox = [
+            max(0.0, float(label_bbox[0]) - 4.0),
+            max(0.0, float(label_bbox[1]) - 3.0),
+            min(float(render_params.canvas_width), float(label_bbox[2]) + 4.0),
+            min(float(render_params.canvas_height), float(label_bbox[3]) + 3.0),
+        ]
+        draw.rounded_rectangle(tuple(backing_bbox), radius=5, fill=label_backing_rgb, outline=(255, 255, 255), width=1)
         draw_text_traced(
             draw,
             text_xy,
             label,
             font=label_font,
-            fill=(255, 255, 255),
-            stroke_width=7,
-            stroke_fill=(255, 255, 255),
+            fill=label_fill_rgb,
+            stroke_width=0,
+            stroke_fill=label_backing_rgb,
             role="marked_point_label_halo",
             required=False,
         )
@@ -121,11 +130,15 @@ def draw_marked_points(
             text_xy,
             label,
             font=label_font,
-            fill=color,
-            stroke_width=2,
-            stroke_fill=(23, 28, 36),
+            fill=label_fill_rgb,
+            stroke_width=0,
+            stroke_fill=label_backing_rgb,
             role="marked_point_label",
             required=True,
+            extra_metadata=text_legibility_metadata_for_surfaces(
+                fill_rgb=label_fill_rgb,
+                surface_rgbs=(label_backing_rgb,),
+            ),
         )
         combined_bbox = _bbox_union(glyph_bbox, label_bbox)
         marker_centers[label] = [round(float(x), 3), round(float(y), 3)]

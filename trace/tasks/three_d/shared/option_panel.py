@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Mapping, MutableMapping, Sequence, Tuple
 from PIL import Image, ImageDraw
 
 from ...shared.named_colors import available_named_colors
-from ...shared.text_legibility import draw_text_traced
+from ...shared.text_legibility import draw_text_traced, text_legibility_metadata_for_surfaces
 from ...shared.text_rendering import load_font
 
 
@@ -208,15 +208,18 @@ def append_text_option_panel(
     panel_top = int(height)
     panel_bbox = [0.0, float(panel_top), float(width), float(panel_top + panel_height)]
 
-    out = Image.new("RGB", (int(width), int(height + panel_height)), (246, 248, 250))
+    panel_fill_rgb = (246, 248, 250)
+    out = Image.new("RGB", (int(width), int(height + panel_height)), panel_fill_rgb)
     out.paste(image.convert("RGB"), (0, 0))
     draw = ImageDraw.Draw(out)
-    draw.rectangle((0, panel_top, width, panel_top + panel_height), fill=(246, 248, 250))
+    draw.rectangle((0, panel_top, width, panel_top + panel_height), fill=panel_fill_rgb)
     draw.line((0, panel_top, width, panel_top), fill=(165, 174, 184), width=2)
 
     label_fill = (31, 41, 55)
     label_text_fill = (255, 255, 255)
-    text_fill = tuple(max(0, min(255, int(channel))) for channel in text_rgb[:3])
+    # The option panel owns its light surface, so descriptor ink must be
+    # resolved here rather than inherited from potentially dark scene styles.
+    text_fill = (24, 28, 36)
     text_stroke = tuple(max(0, min(255, int(channel))) for channel in stroke_rgb[:3])
     margin_x = 42
     col_gap = 28
@@ -268,6 +271,10 @@ def append_text_option_panel(
             role="three_d_option_label",
             required=True,
             extra_metadata={
+                **text_legibility_metadata_for_surfaces(
+                    fill_rgb=label_text_fill,
+                    surface_rgbs=(label_fill,),
+                ),
                 "option_label": str(label),
                 "badge_bbox_px": [round(float(value), 3) for value in badge_bbox],
             },
@@ -280,11 +287,15 @@ def append_text_option_panel(
             font=font,
             fill=text_fill,
             stroke_fill=text_stroke,
-            stroke_width=1,
+            stroke_width=0,
             role="three_d_option_descriptor",
             required=True,
+            extra_metadata=text_legibility_metadata_for_surfaces(
+                fill_rgb=text_fill,
+                surface_rgbs=(panel_fill_rgb,),
+            ),
         )
-        text_bbox = draw.textbbox(text_xy, descriptor, font=font, stroke_width=1)
+        text_bbox = draw.textbbox(text_xy, descriptor, font=font, stroke_width=0)
         option_bbox = [
             round(float(x0), 3),
             round(float(min(badge_bbox[1], text_bbox[1])) - 3.0, 3),

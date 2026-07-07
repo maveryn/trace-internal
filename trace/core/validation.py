@@ -1390,3 +1390,224 @@ def validate_dataset(
         },
     }
     return report
+
+
+def validate_candidate_instance(
+    instance: Mapping[str, Any],
+    trace_record: Mapping[str, Any],
+    *,
+    staging_root: str | Path,
+    expected_instance_version: str,
+    dataset_id: str = "candidate",
+) -> Dict[str, Any]:
+    """Validate one candidate before it is accepted into a dataset build.
+
+    This intentionally mirrors the per-instance portions of ``validate_dataset``
+    but uses the in-memory trace record so builders do not have to append
+    rejected candidates to trace shards.
+    """
+
+    root = Path(staging_root)
+    errors: List[_ValidationError] = []
+    inst = dict(instance)
+    record = dict(trace_record)
+    iid = inst.get("instance_id", "<missing>")
+
+    errors.extend(_validate_schema(inst))
+    version = inst.get("instance_version")
+    if version != expected_instance_version:
+        errors.append(
+            _err(
+                error_codes.VERSION_UNSUPPORTED_INSTANCE_VERSION,
+                f"unexpected instance_version {version!r}, expected {expected_instance_version!r}",
+                instance_id=iid,
+                field_path="instance_version",
+            )
+        )
+
+    recomputed_id = compute_instance_id(inst)
+    if recomputed_id != iid:
+        errors.append(
+            _err(
+                error_codes.IDENTITY_INSTANCE_ID_MISMATCH,
+                "instance_id does not match canonical identity payload",
+                instance_id=iid,
+                recomputed_instance_id=recomputed_id,
+            )
+        )
+
+    trace_ref = inst.get("trace_ref")
+    if not isinstance(trace_ref, Mapping):
+        errors.append(
+            _err(
+                error_codes.TRACE_REF_MISSING,
+                "trace_ref is missing or invalid",
+                instance_id=iid,
+                field_path="trace_ref",
+            )
+        )
+    else:
+        actual_hash = blake3_hex(canonical_json_bytes(record))
+        trace_hash = trace_ref.get("trace_record_hash")
+        if actual_hash != trace_hash:
+            errors.append(
+                _err(
+                    error_codes.TRACE_REF_HASH_MISMATCH,
+                    "trace_ref hash mismatch",
+                    instance_id=iid,
+                    expected_trace_hash=trace_hash,
+                    actual_trace_hash=actual_hash,
+                )
+            )
+        if not isinstance(trace_ref.get("line_index"), int) or int(trace_ref.get("line_index")) < 0:
+            errors.append(
+                _err(
+                    error_codes.TRACE_REF_INDEX_OUT_OF_RANGE,
+                    "trace_ref line_index is invalid",
+                    instance_id=iid,
+                    trace_ref=dict(trace_ref),
+                )
+            )
+        if not isinstance(trace_ref.get("shard_id"), str) or not str(trace_ref.get("shard_id")).strip():
+            errors.append(
+                _err(
+                    error_codes.TRACE_REF_MISSING,
+                    "trace_ref shard_id is missing or invalid",
+                    instance_id=iid,
+                    trace_ref=dict(trace_ref),
+                )
+            )
+
+    if record.get("instance_id") != iid:
+        errors.append(
+            _err(
+                error_codes.TRACE_REF_HASH_MISMATCH,
+                "trace record instance_id mismatch",
+                instance_id=iid,
+                trace_instance_id=record.get("instance_id"),
+            )
+        )
+
+    errors.extend(_validate_prompt_contract(inst, record))
+    errors.extend(_validate_text_legibility_contract(record, instance_id=str(iid)))
+    errors.extend(_validate_marker_legibility_contract(record, instance_id=str(iid)))
+
+    trace_reward_contract = record.get("reward_contract")
+    if trace_reward_contract is None:
+        errors.append(
+            _err(
+                error_codes.SCHEMA_MISSING_FIELD,
+                "trace record is missing reward_contract",
+                instance_id=iid,
+                field_path="trace.reward_contract",
+            )
+        )
+    else:
+        reward_contract_error = validate_reward_contract_payload(
+            trace_reward_contract,
+            answer_type=inst.get("answer_gt", {}).get("type") if isinstance(inst.get("answer_gt"), dict) else None,
+            annotation_type=inst.get("annotation_gt", {}).get("type") if isinstance(inst.get("annotation_gt"), dict) else None,
+        )
+        if reward_contract_error is not None:
+            errors.append(
+                _err(
+                    error_codes.SCHEMA_INVALID_VALUE,
+                    reward_contract_error,
+                    instance_id=iid,
+                    field_path="trace.reward_contract",
+                )
+            )
+        elif trace_reward_contract != inst.get("reward_contract"):
+            errors.append(
+                _err(
+                    error_codes.SCHEMA_INVALID_VALUE,
+                    "trace reward_contract must match the training record reward_contract",
+                    instance_id=iid,
+                    field_path="trace.reward_contract",
+                )
+            )
+
+    for i, image in enumerate(inst.get("images", [])):
+        rel_path = image.get("path") if isinstance(image, Mapping) else None
+        image_hash = image.get("image_hash") if isinstance(image, Mapping) else None
+        field_prefix = f"images[{i}]"
+        if not isinstance(rel_path, str):
+            errors.append(
+                _err(
+                    error_codes.IMAGE_FILE_NOT_FOUND,
+                    "image path missing or non-string",
+                    instance_id=iid,
+                    field_path=f"{field_prefix}.path",
+                )
+            )
+            continue
+        rel = Path(rel_path)
+        if rel.is_absolute():
+            errors.append(
+                _err(
+                    error_codes.IMAGE_PATH_NOT_RELATIVE,
+                    "image path must be dataset-root-relative",
+                    instance_id=iid,
+                    field_path=f"{field_prefix}.path",
+                    image_path=rel_path,
+                )
+            )
+            continue
+        full_path = root / rel
+        if not full_path.exists():
+            errors.append(
+                _err(
+                    error_codes.IMAGE_FILE_NOT_FOUND,
+                    "image file not found",
+                    instance_id=iid,
+                    field_path=f"{field_prefix}.path",
+                    image_path=rel_path,
+                )
+            )
+            continue
+        if not image_hash:
+            errors.append(
+                _err(
+                    error_codes.IMAGE_HASH_MISSING,
+                    "image_hash is missing",
+                    instance_id=iid,
+                    field_path=f"{field_prefix}.image_hash",
+                )
+            )
+            continue
+        actual_image_hash = blake3_file(full_path)
+        if actual_image_hash != image_hash:
+            errors.append(
+                _err(
+                    error_codes.IMAGE_HASH_MISMATCH,
+                    "image hash mismatch",
+                    instance_id=iid,
+                    image_path=rel_path,
+                    expected_image_hash=image_hash,
+                    actual_image_hash=actual_image_hash,
+                )
+            )
+
+    ordered = sorted(
+        errors,
+        key=lambda err: (
+            err.error_code,
+            str(err.context.get("instance_id", "")),
+            str(err.context.get("field_path", "")),
+            err.message,
+        ),
+    )
+    error_counts_by_code = Counter(err.error_code for err in ordered)
+    error_counts_by_category = Counter(err.category for err in ordered)
+    return {
+        "total_errors": int(len(ordered)),
+        "error_counts_by_code": dict(sorted(error_counts_by_code.items())),
+        "error_counts_by_category": dict(sorted(error_counts_by_category.items())),
+        "errors": [err.to_dict() for err in ordered],
+        "build_context": {
+            "dataset_id": dataset_id,
+            "temp_path": str(root),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "validation_scope": "candidate",
+        },
+    }

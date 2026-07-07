@@ -98,6 +98,7 @@ def draw_cup(
     style: Any,
     font_family: str,
     render_defaults: Mapping[str, Any],
+    instance_seed: int,
 ) -> Tuple[List[float], Dict[str, Any]]:
     """Draw one initial liquid cup and return its temperature-readout annotation bbox/entity."""
 
@@ -106,7 +107,7 @@ def draw_cup(
     note_font = load_font(int(render_defaults["note_font_size_px"]), bold=True, font_family=font_family)
     stroke_rgb = tuple(int(value) for value in style.stroke_rgb)
     label_rgb = tuple(int(value) for value in style.label_rgb)
-    text_rgb = tuple(int(value) for value in style.label_rgb)
+    readout_rgb = (10, 14, 22)
 
     x0 = float(center_x - cup_width / 2.0)
     x1 = float(center_x + cup_width / 2.0)
@@ -176,12 +177,12 @@ def draw_cup(
         required=False,
     )
     temp_text = f"{int(temperature_c)} C"
-    temp_bbox = text_bbox(draw, temp_text, (center_x, y0 + cup_height * 0.35), temp_font, padding=9.0)
+    temp_bbox = text_bbox(draw, temp_text, (center_x, y0 + cup_height * 0.35), temp_font, padding=13.0)
     draw.rounded_rectangle(
         temp_bbox,
         radius=10,
-        fill=tuple(style.label_fill_rgb),
-        outline=tuple(style.label_border_rgb),
+        fill=(250, 252, 255),
+        outline=(198, 207, 219),
         width=2,
     )
     draw_text_centered_traced(
@@ -189,8 +190,8 @@ def draw_cup(
         text=temp_text,
         center=(center_x, y0 + cup_height * 0.35),
         font=temp_font,
-        fill=text_rgb,
-        stroke_width=1,
+        fill=readout_rgb,
+        stroke_width=0,
         required=True,
     )
     draw_text_centered_traced(
@@ -309,6 +310,7 @@ def render_thermal_mixing_body(
             style=style,
             font_family=str(font_family),
             render_defaults=render_defaults,
+            instance_seed=int(instance_seed),
         )
         annotation_bboxes.append(list(annotation_bbox))
         entities.append(dict(entity))

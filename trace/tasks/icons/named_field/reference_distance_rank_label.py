@@ -308,17 +308,11 @@ def _resolve_render_params(params: Mapping[str, Any], *, instance_seed: int) -> 
         instance_seed=int(instance_seed),
         namespace=f"{TASK_ID}:candidate_label_text",
         role="named_field_candidate_label_text",
-        surface_rgbs=(
-            tuple(int(value) for value in render_params["candidate_label_background_rgb"]),
-            tuple(int(value) for value in render_params["panel_fill_rgb"]),
-            tuple(int(value) for value in render_params["background_color_rgb"]),
-        ),
+        surface_rgbs=(tuple(int(value) for value in render_params["candidate_label_background_rgb"]),),
         preferred_rgbs=(tuple(int(value) for value in render_params["candidate_label_color_rgb"]),),
     )
     render_params["candidate_label_color_rgb"] = tuple(int(value) for value in candidate_label_style.fill_rgb)
-    render_params["candidate_label_stroke_rgb"] = tuple(
-        int(value) for value in render_params["candidate_label_background_rgb"]
-    )
+    render_params["candidate_label_stroke_rgb"] = tuple(int(value) for value in candidate_label_style.stroke_rgb)
     candidate_label_record = candidate_label_style.metadata()
     candidate_label_record["stroke_rgb"] = list(render_params["candidate_label_stroke_rgb"])
     previous_legibility = render_params.get("text_legibility")

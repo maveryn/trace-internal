@@ -646,7 +646,10 @@ def render_lane_runner_scene(
             center=runner_center,
             radius=float(params.runner_radius_px),
             theme=theme,
-            marker_surface=(theme.start_rgb, theme.track_fill_rgb),
+            marker_surface=(
+                theme.runner_rgb,
+                theme.start_rgb,
+            ),
             instance_seed=int(params.instance_seed),
         )
         entity_bboxes[runner_entity_id()] = runner_bbox

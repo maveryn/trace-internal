@@ -21,7 +21,7 @@ from trace.tasks.charts.density_curve.shared.state import (
     DensityCurveRendered,
     RGB,
 )
-from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.shared.text_legibility import draw_readable_text, draw_text_traced, resolve_readable_text_style
 from trace.tasks.shared.text_rendering import load_font
 
 
@@ -560,11 +560,19 @@ def render_density_curve_scene(
     row_h = max(24.0, float(render_params.tick_font_size_px) + 8.0)
     legend_y1 = min(py1, legend_y0 + (row_h * float(len(dataset.curves))) + 16.0)
     legend_bbox = bbox((legend_x0, legend_y0, legend_x1, legend_y1))
+    legend_fill_rgb = tuple(int(value) for value in render_params.plot_fill_rgb)
     draw.rectangle(
         legend_bbox,
-        fill=tuple(render_params.plot_fill_rgb) + (210,),
+        fill=legend_fill_rgb + (235,),
         outline=tuple(render_params.grid_color_rgb) + (255,),
         width=1,
+    )
+    legend_text_style = resolve_readable_text_style(
+        instance_seed=0,
+        namespace="charts.density_curve.legend_label",
+        role="legend_label",
+        surface_rgbs=(legend_fill_rgb,),
+        preferred_rgbs=(tuple(int(value) for value in render_params.text_color_rgb),),
     )
     legend_items: Dict[str, BBox] = {}
     for index, curve in enumerate(dataset.curves):
@@ -579,17 +587,13 @@ def render_density_curve_scene(
             width=max(3, int(render_params.line_width_px)),
             style=str(curve.line_style),
         )
-        label_record = draw_text_traced(
+        label_record = draw_readable_text(
             draw,
-            (legend_x0 + 66.0, row_y),
-            str(curve.label),
+            xy=(legend_x0 + 66.0, row_y),
+            text=str(curve.label),
             font=legend_font,
-            fill=render_params.text_color_rgb,
-            stroke_fill=render_params.text_stroke_rgb,
+            style=legend_text_style,
             stroke_width=1,
-            anchor="la",
-            role="legend_label",
-            required=True,
         )
         legend_items[str(curve.label)] = list(label_record["bbox_px"])
 

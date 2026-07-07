@@ -17,7 +17,7 @@ from trace.tasks.charts.shared.visual_defaults import (
     sample_chart_font_family,
 )
 from trace.tasks.shared.render_variation import apply_layout_jitter_to_margins, resolve_render_int, resolve_render_rgb
-from trace.tasks.shared.text_legibility import draw_traced_text
+from trace.tasks.shared.text_legibility import draw_traced_text, text_legibility_metadata_for_surfaces
 from trace.tasks.shared.text_rendering import draw_text_centered, fit_font_to_box, load_font
 
 from .defaults import POST_IMAGE_NOISE_DEFAULTS, RENDER_DEFAULTS, rendering_default
@@ -110,6 +110,7 @@ def _draw_text(
     fill: RGB,
     stroke: RGB,
     stroke_width: int = 1,
+    surface_rgbs: Sequence[Sequence[int]] | None = None,
 ) -> None:
     draw_traced_text(
         draw,
@@ -121,6 +122,11 @@ def _draw_text(
         stroke_width=int(stroke_width),
         role="chart_text",
         required=True,
+        extra_metadata=(
+            text_legibility_metadata_for_surfaces(fill_rgb=fill, surface_rgbs=surface_rgbs)
+            if surface_rgbs is not None
+            else None
+        ),
     )
 
 
@@ -151,7 +157,7 @@ def _render_chart(dataset: Dataset, params: Mapping[str, Any], *, instance_seed:
     axis_rgb = tuple(int(value) for value in style.axis_rgb)
     grid_rgb = tuple(int(value) for value in style.grid_rgb)
     text_rgb, _muted_text_rgb, text_stroke_rgb = _readable_chart_text_colors(panel_fill_rgb)
-    text_stroke_width = 1
+    text_stroke_width = 0
     if image.mode != "RGB":
         image = image.convert("RGB")
     draw = ImageDraw.Draw(image)
@@ -190,6 +196,7 @@ def _render_chart(dataset: Dataset, params: Mapping[str, Any], *, instance_seed:
         fill=text_rgb,
         stroke=text_stroke_rgb,
         stroke_width=int(text_stroke_width),
+        surface_rgbs=(panel_fill_rgb,),
     )
 
     y_tick_values = range(int(render_params.axis_min), int(render_params.axis_max) + 1, int(render_params.tick_step))
@@ -216,6 +223,7 @@ def _render_chart(dataset: Dataset, params: Mapping[str, Any], *, instance_seed:
             fill=text_rgb,
             stroke=text_stroke_rgb,
             stroke_width=int(text_stroke_width),
+            surface_rgbs=(panel_fill_rgb,),
         )
     draw_axis_lines(draw, plot_bbox, axis_rgb=axis_rgb, axis_width_px=int(render_params.axis_line_width_px))
 

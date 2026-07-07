@@ -19,7 +19,7 @@ from trace.tasks.three_d.shared.object_rendering import (
     render_three_d_object,
 )
 from trace.tasks.three_d.shared.object_scene_rendering import _bbox_union, _draw_line
-from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.shared.text_legibility import draw_text_traced, text_legibility_metadata_for_surfaces
 from trace.tasks.shared.text_rendering import load_font
 
 from .state import BELT_GEOMETRY, BELT_KEYS, BELT_LABELS
@@ -229,7 +229,7 @@ def _draw_anchor_markers(
     draw = ImageDraw.Draw(image)
     font = load_font(26, bold=True)
     outline = (214, 28, 48)
-    badge_fill = (214, 28, 48)
+    badge_fill = (23, 28, 36)
     badge_text = (255, 255, 255)
     image_w, image_h = int(image.width), int(image.height)
     for record in marker_records:
@@ -257,7 +257,7 @@ def _draw_anchor_markers(
             if by0 < 2.0:
                 by0 = min(box[3] + 4.0, float(image_h) - badge_h - 2.0)
             badge = [bx0, by0, bx0 + badge_w, by0 + badge_h]
-            draw.rounded_rectangle(tuple(badge), radius=6, fill=badge_fill, outline=(255, 255, 255), width=2)
+            draw.rounded_rectangle(tuple(badge), radius=6, fill=badge_fill, outline=outline, width=2)
             draw_text_traced(
                 draw,
                 (badge[0] + badge_w * 0.5, badge[1] + badge_h * 0.5),
@@ -269,6 +269,10 @@ def _draw_anchor_markers(
                 anchor="mm",
                 role="three_d_carousel_anchor_label",
                 required=True,
+                extra_metadata=text_legibility_metadata_for_surfaces(
+                    fill_rgb=badge_text,
+                    surface_rgbs=(badge_fill,),
+                ),
             )
         entities.append(
             {

@@ -37,11 +37,36 @@ from .taxonomy import (
 from .trace_store import TraceShardWriter
 from .type_registry import DEFAULT_REGISTRY_PATH, TypeRegistry, load_type_registry
 from .types import CurriculumIndex, ImageRecord, TraceInstance, TrainInstance
-from .validation import validate_dataset
+from .validation import validate_candidate_instance, validate_dataset
 
 
 class BuildError(RuntimeError):
     """Raised when a dataset build fails."""
+
+
+class CandidateValidationError(BuildError):
+    """Raised when a generated candidate fails pre-acceptance validation."""
+
+    def __init__(self, validation_report: Mapping[str, Any]) -> None:
+        self.validation_report = dict(validation_report)
+        error_counts = self.validation_report.get("error_counts_by_code")
+        if isinstance(error_counts, Mapping) and error_counts:
+            summary = ",".join(str(code) for code in sorted(error_counts))
+        else:
+            summary = "unknown"
+        super().__init__(f"candidate validation failed: {summary}")
+
+
+def _candidate_validation_rejection_reason(report: Mapping[str, Any]) -> str:
+    """Return one stable rejection reason key for a failed candidate."""
+
+    counts = report.get("error_counts_by_code")
+    if isinstance(counts, Mapping) and counts:
+        codes = sorted(str(code) for code in counts)
+        if len(codes) == 1:
+            return f"candidate_validation:{codes[0]}"
+        return "candidate_validation:multiple"
+    return "candidate_validation:unknown"
 
 
 @dataclass
@@ -501,7 +526,8 @@ def _finalize_generated_output(
         annotation_gt=generated.annotation_gt,
         reward_contract=reward_contract,
     )
-    trace_ref = trace_writer.append(trace_instance.to_dict())
+    trace_record = trace_instance.to_dict()
+    trace_ref = trace_writer.preview_ref(trace_record)
 
     train = TrainInstance(
         instance_version=config.instance_version,
@@ -524,6 +550,24 @@ def _finalize_generated_output(
             "code_hash": code_hash,
         },
     )
+    train_record = train.to_dict()
+    candidate_report = validate_candidate_instance(
+        train_record,
+        trace_record,
+        staging_root=stage_root,
+        expected_instance_version=config.instance_version,
+        dataset_id="candidate",
+    )
+    if int(candidate_report.get("total_errors", 0)) > 0:
+        try:
+            image_abs_path.unlink(missing_ok=True)
+        except Exception:
+            pass
+        raise CandidateValidationError(candidate_report)
+    appended_ref = trace_writer.append(trace_record)
+    if appended_ref.to_dict() != trace_ref.to_dict():
+        raise BuildError("trace_ref preview did not match appended trace_ref")
+
     curriculum_record = CurriculumIndex(
         instance_id=instance_id,
         domain=canonical_domain,
@@ -531,7 +575,7 @@ def _finalize_generated_output(
         scene_id=scene_id,
         query_id=query_id,
     ).to_dict()
-    return train.to_dict(), curriculum_record, str(generated.annotation_gt.type)
+    return train_record, curriculum_record, str(generated.annotation_gt.type)
 
 
 def _build_task_serial(
@@ -578,17 +622,25 @@ def _build_task_serial(
                 progress_callback(accepted, rejected, accepted + rejected)
             continue
 
-        train_record, curriculum_record, annotation_type = _finalize_generated_output(
-            task=task,
-            generated=generated,
-            accepted_index=accepted,
-            instance_seed=int(attempt.instance_seed),
-            config=config,
-            stage_root=stage_root,
-            code_hash=code_hash,
-            type_registry=type_registry,
-            trace_writer=trace_writer,
-        )
+        try:
+            train_record, curriculum_record, annotation_type = _finalize_generated_output(
+                task=task,
+                generated=generated,
+                accepted_index=accepted,
+                instance_seed=int(attempt.instance_seed),
+                config=config,
+                stage_root=stage_root,
+                code_hash=code_hash,
+                type_registry=type_registry,
+                trace_writer=trace_writer,
+            )
+        except CandidateValidationError as exc:
+            rejected += 1
+            reason = _candidate_validation_rejection_reason(exc.validation_report)
+            rejection_reasons[reason] = rejection_reasons.get(reason, 0) + 1
+            if progress_callback is not None:
+                progress_callback(accepted, rejected, accepted + rejected)
+            continue
         train_records.append(train_record)
         curriculum_records.append(curriculum_record)
         accepted += 1
@@ -692,8 +744,8 @@ def _build_task_parallel(
                     reason = str(outcome.error_reason or "TaskGenerationError")
                     rejection_reasons[reason] = rejection_reasons.get(reason, 0) + 1
                 else:
-                    train_record, curriculum_record, annotation_type = (
-                        _finalize_generated_output(
+                    try:
+                        train_record, curriculum_record, annotation_type = _finalize_generated_output(
                             task=task,
                             generated=outcome.generated,
                             accepted_index=accepted,
@@ -704,10 +756,14 @@ def _build_task_parallel(
                             type_registry=type_registry,
                             trace_writer=trace_writer,
                         )
-                    )
-                    train_records.append(train_record)
-                    curriculum_records.append(curriculum_record)
-                    accepted += 1
+                    except CandidateValidationError as exc:
+                        rejected += 1
+                        reason = _candidate_validation_rejection_reason(exc.validation_report)
+                        rejection_reasons[reason] = rejection_reasons.get(reason, 0) + 1
+                    else:
+                        train_records.append(train_record)
+                        curriculum_records.append(curriculum_record)
+                        accepted += 1
                 if progress_callback is not None:
                     progress_callback(accepted, rejected, accepted + rejected)
                 next_finalize += 1

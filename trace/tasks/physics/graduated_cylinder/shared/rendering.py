@@ -13,7 +13,7 @@ from trace.tasks.physics.shared.diagram_style import prepare_physics_diagram_sty
 from trace.tasks.physics.shared.visual_defaults import load_physics_noise_defaults
 from trace.tasks.shared.drawing import draw_centered_text
 from trace.tasks.shared.font_assets import sample_font_family
-from trace.tasks.shared.text_legibility import draw_traced_text
+from trace.tasks.shared.text_legibility import ReadableTextStyle, draw_readable_text, resolve_readable_text_style
 from trace.tasks.shared.text_rendering import load_font, resolve_text_stroke_fill
 
 from .annotations import bbox
@@ -47,25 +47,39 @@ def draw_label(
     text: str,
     font: Any,
     fill: tuple[int, int, int],
+    label_style: ReadableTextStyle,
 ) -> list[float]:
     """Draw one required readable label and return its bbox."""
 
+    del fill
     text_bbox = draw.textbbox(
         (float(xy[0]), float(xy[1])),
         str(text),
         font=font,
-        stroke_width=1,
+        stroke_width=0,
     )
-    draw_traced_text(
+    backplate = bbox(
+        (
+            float(text_bbox[0]) - 10.0,
+            float(text_bbox[1]) - 7.0,
+            float(text_bbox[2]) + 10.0,
+            float(text_bbox[3]) + 7.0,
+        )
+    )
+    draw.rounded_rectangle(
+        tuple(backplate),
+        radius=4,
+        fill=(250, 252, 255),
+        outline=(198, 207, 219),
+        width=1,
+    )
+    draw_readable_text(
         draw,
         xy=(float(xy[0]), float(xy[1])),
         text=str(text),
         font=font,
-        fill_rgb=fill,
-        stroke_width=1,
-        stroke_rgb=resolve_text_stroke_fill(fill),
-        role="readout",
-        required=True,
+        style=label_style,
+        stroke_width=0,
     )
     return bbox(tuple(float(value) for value in text_bbox))
 
@@ -80,6 +94,7 @@ def draw_cylinder(
     font_family: str,
     style: Any,
     liquid_rgb: tuple[int, int, int],
+    label_style: ReadableTextStyle,
 ) -> dict[str, Any]:
     """Draw one graduated cylinder and return projected scale witnesses."""
 
@@ -128,9 +143,9 @@ def draw_cylinder(
         )
         if is_major:
             scale_bboxes.append(
-                draw_label(draw, (label_x, y_pos - 11.0), str(tick_value), small_font, text_rgb)
+                draw_label(draw, (label_x, y_pos - 11.0), str(tick_value), small_font, text_rgb, label_style)
             )
-    scale_bboxes.append(draw_label(draw, (label_x, bottom + 18.0), "mL", small_font, text_rgb))
+    scale_bboxes.append(draw_label(draw, (label_x, bottom + 18.0), "mL", small_font, text_rgb, label_style))
     title_bbox = draw_centered_text(
         draw,
         text=str(title),
@@ -223,6 +238,13 @@ def render_single_cylinder_scene(
         params=params,
     )
     liquid_rgb = choose_liquid_rgb(int(instance_seed), namespace=str(namespace))
+    label_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.scale_readout",
+        role="readout",
+        surface_rgbs=((250, 252, 255), (198, 207, 219)),
+        preferred_rgbs=((10, 14, 22),),
+    )
     canvas_width, _ = background.size
     geometry = CylinderGeometry(
         left=float(canvas_width * 0.44),
@@ -241,6 +263,7 @@ def render_single_cylinder_scene(
         font_family=str(font_family),
         style=diagram_style,
         liquid_rgb=liquid_rgb,
+        label_style=label_style,
     )
     annotation_map = {"readout": list(rendered["readout_bbox"])}
     image, post_noise_meta = apply_post_image_noise(
@@ -286,6 +309,13 @@ def render_before_after_cylinder_scene(
         params=params,
     )
     liquid_rgb = choose_liquid_rgb(int(instance_seed), namespace=str(namespace))
+    label_style = resolve_readable_text_style(
+        instance_seed=int(instance_seed),
+        namespace=f"{namespace}.scale_readout",
+        role="readout",
+        surface_rgbs=((250, 252, 255), (198, 207, 219)),
+        preferred_rgbs=((10, 14, 22),),
+    )
     left_geometry = CylinderGeometry(210.0, 158.0, 155.0, 405.0, 565.0, True)
     right_geometry = CylinderGeometry(650.0, 158.0, 155.0, 405.0, 565.0, False)
     before_rendered = draw_cylinder(
@@ -297,6 +327,7 @@ def render_before_after_cylinder_scene(
         font_family=str(font_family),
         style=diagram_style,
         liquid_rgb=liquid_rgb,
+        label_style=label_style,
     )
     after_rendered = draw_cylinder(
         draw,
@@ -307,6 +338,7 @@ def render_before_after_cylinder_scene(
         font_family=str(font_family),
         style=diagram_style,
         liquid_rgb=liquid_rgb,
+        label_style=label_style,
     )
     obj_cx = right_geometry.left + right_geometry.width * 0.52
     obj_y = min(right_geometry.bottom - 56.0, float(after_rendered["level_y"]) + 46.0)

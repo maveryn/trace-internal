@@ -79,17 +79,11 @@ def resolve_named_ring_render_params(
         instance_seed=int(instance_seed),
         namespace="icons.named_ring.marker_label_text",
         role="named_ring_marker_label_text",
-        surface_rgbs=(
-            tuple(int(value) for value in render_params["marker_label_background_rgb"]),
-            tuple(int(value) for value in render_params["panel_fill_rgb"]),
-            tuple(int(value) for value in render_params["background_color_rgb"]),
-        ),
+        surface_rgbs=(tuple(int(value) for value in render_params["marker_label_background_rgb"]),),
         preferred_rgbs=(tuple(int(value) for value in render_params["marker_label_color_rgb"]),),
     )
     render_params["marker_label_color_rgb"] = tuple(int(value) for value in marker_label_style.fill_rgb)
-    render_params["marker_label_stroke_rgb"] = tuple(
-        int(value) for value in render_params["marker_label_background_rgb"]
-    )
+    render_params["marker_label_stroke_rgb"] = tuple(int(value) for value in marker_label_style.stroke_rgb)
     marker_label_record = marker_label_style.metadata()
     marker_label_record["stroke_rgb"] = list(render_params["marker_label_stroke_rgb"])
     render_params["text_legibility"] = text_legibility_summary_from_records(

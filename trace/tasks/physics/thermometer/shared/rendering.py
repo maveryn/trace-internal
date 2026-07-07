@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 from PIL import ImageDraw
 
@@ -12,7 +12,7 @@ from trace.tasks.physics.shared.diagram_style import prepare_physics_diagram_sty
 from trace.tasks.physics.shared.visual_defaults import load_physics_noise_defaults
 from trace.tasks.shared.drawing import draw_centered_text
 from trace.tasks.shared.font_assets import font_asset_version, get_font_family_record, sample_font_family
-from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.shared.text_legibility import draw_text_traced, text_legibility_metadata_for_surfaces
 from trace.tasks.shared.text_rendering import load_font, resolve_text_stroke_fill
 
 from .annotations import bbox, bbox_union
@@ -39,6 +39,7 @@ def draw_label(
     fill: Tuple[int, int, int],
     *,
     anchor: str | None = None,
+    surface_rgbs: Sequence[Sequence[int]] | None = None,
 ) -> List[float]:
     """Draw one required readout label and return its pixel bbox."""
 
@@ -55,6 +56,11 @@ def draw_label(
         stroke_fill=resolve_text_stroke_fill(fill),
         role="readout",
         required=True,
+        extra_metadata=(
+            text_legibility_metadata_for_surfaces(fill_rgb=fill, surface_rgbs=surface_rgbs)
+            if surface_rgbs is not None
+            else None
+        ),
         **kwargs,
     )
     raw_bbox = tuple(float(value) for value in record["bbox_px"])
@@ -88,7 +94,8 @@ def draw_thermometer(
     title_font = load_font(int(render_defaults.get("title_font_size_px", defaults.title_font_size_px)), bold=True, font_family=font_family)
     outline = tuple(int(value) for value in style.stroke_rgb)
     guide = tuple(int(value) for value in style.guide_rgb)
-    text_rgb = (14, 20, 32)
+    text_rgb = tuple(int(value) for value in style.label_rgb)
+    panel_fill_rgb = tuple(int(value) for value in style.panel_fill_rgb)
     glass_fill = (239, 248, 252)
     tube_left = float(geometry.center_x - geometry.tube_width * 0.5)
     tube_right = float(geometry.center_x + geometry.tube_width * 0.5)
@@ -145,10 +152,28 @@ def draw_thermometer(
         draw.line((x1, y, x2, y), fill=outline if is_major else guide, width=3 if is_major else 1)
         tick_bboxes.append(bbox((min(x1, x2), y - 2, max(x1, x2), y + 2)))
         if is_major:
-            label_bboxes.append(draw_label(draw, (label_x, y), str(tick_value), tick_font, text_rgb, anchor=label_anchor))
+            label_bboxes.append(
+                draw_label(
+                    draw,
+                    (label_x, y),
+                    str(tick_value),
+                    tick_font,
+                    text_rgb,
+                    anchor=label_anchor,
+                    surface_rgbs=(panel_fill_rgb,),
+                )
+            )
 
     unit_y = float(geometry.scale_top - 42)
-    unit_bbox = draw_label(draw, (scale_x, unit_y), str(profile.source_unit), unit_font, text_rgb, anchor="mm")
+    unit_bbox = draw_label(
+        draw,
+        (scale_x, unit_y),
+        str(profile.source_unit),
+        unit_font,
+        text_rgb,
+        anchor="mm",
+        surface_rgbs=(panel_fill_rgb,),
+    )
     draw_centered_text(
         draw,
         text="Thermometer",

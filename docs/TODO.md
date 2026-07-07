@@ -4,7 +4,7 @@
 1. Keep `docs/ACTIVE_TASK_INVENTORY.md` as the only exhaustive active task and scene inventory.
 2. Keep skills as operational overlays; canonical policy and contracts stay in `docs/`.
 3. When active task, scene, registry, or taxonomy changes land, regenerate the inventory and run the docs consistency checks.
-4. Keep the frozen 1000-task train/test split in `docs/RLVR_TASK_SPLIT_PLAN.md` synchronized with intentional task-surface changes.
+4. Preserve `trace_rlvr_task_split_v1` unless intentionally creating a new named train/test split.
 
 ## Next
 1. Create the real v0 training/eval dataset build config.

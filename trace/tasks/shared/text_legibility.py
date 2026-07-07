@@ -123,6 +123,32 @@ def contrast_ratio(color_a: Sequence[int], color_b: Sequence[int]) -> float:
     return (lighter + 0.05) / (darker + 0.05)
 
 
+def text_legibility_metadata_for_surfaces(
+    *,
+    fill_rgb: Sequence[int],
+    surface_rgbs: Sequence[Sequence[int]],
+    required: bool = True,
+    min_contrast_ratio: float = READ_REQUIRED_TEXT_MIN_CONTRAST_RATIO,
+    min_lab_distance: float = READ_REQUIRED_TEXT_MIN_LAB_DISTANCE,
+) -> dict[str, Any]:
+    """Return explicit text-legibility metadata for known solid text surfaces."""
+
+    fill = normalize_rgb(fill_rgb)
+    surfaces = _unique_colors(surface_rgbs)
+    min_contrast = _min_contrast(fill, surfaces)
+    min_lab = _min_lab_distance(fill, surfaces)
+    return {
+        "required": bool(required),
+        "surface_rgbs": [list(color) for color in surfaces],
+        "surface_sample_method": "declared_solid_surface",
+        "min_contrast_ratio": round(float(min_contrast), 3),
+        "min_lab_distance": round(float(min_lab), 3),
+        "min_contrast_required": round(float(min_contrast_ratio), 3),
+        "min_lab_distance_required": round(float(min_lab_distance), 3),
+        "passes": bool(float(min_contrast) >= float(min_contrast_ratio) and float(min_lab) >= float(min_lab_distance)),
+    }
+
+
 def _unique_colors(colors: Iterable[Sequence[int]]) -> Tuple[Color, ...]:
     seen: set[Color] = set()
     resolved: list[Color] = []

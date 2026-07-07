@@ -10,7 +10,7 @@ from PIL import ImageDraw
 from trace.core.sampling import uniform_choice
 from trace.core.seed import spawn_rng
 from trace.tasks.shared.config_defaults import group_default
-from trace.tasks.shared.text_legibility import draw_text_traced
+from trace.tasks.shared.text_legibility import draw_text_traced, text_legibility_metadata_for_surfaces
 from trace.tasks.shared.text_rendering import load_font
 from trace.tasks.geometry.shared.diagram_style import (
     GEOMETRY_STYLE_PROFILE_ANALYTICAL_DIAGRAM,
@@ -174,7 +174,20 @@ def _draw_text_centered(ctx: CirclePolygonRenderContext, text: str, center: Poin
         str(text),
         anchor="mm",
         font=font,
-        stroke_width=max(0, int(ctx.label_stroke_width)),
+        stroke_width=0,
+    )
+    backing_bbox = (
+        max(0.0, float(bbox[0]) - 5.0),
+        max(0.0, float(bbox[1]) - 4.0),
+        min(float(ctx.width), float(bbox[2]) + 5.0),
+        min(float(ctx.height), float(bbox[3]) + 4.0),
+    )
+    ctx.draw.rounded_rectangle(
+        backing_bbox,
+        radius=4,
+        fill=ctx.label_backing_color,
+        outline=ctx.label_stroke_color,
+        width=1,
     )
     draw_text_traced(
         ctx.draw,
@@ -183,10 +196,14 @@ def _draw_text_centered(ctx: CirclePolygonRenderContext, text: str, center: Poin
         anchor="mm",
         font=font,
         fill=ctx.label_color,
-        stroke_width=max(0, int(ctx.label_stroke_width)),
+        stroke_width=0,
         stroke_fill=ctx.label_stroke_color,
         role="readout",
         required=True,
+        extra_metadata=text_legibility_metadata_for_surfaces(
+            fill_rgb=ctx.label_color,
+            surface_rgbs=(ctx.label_backing_color,),
+        ),
     )
     return pad_bbox(bbox, 4.0, width=ctx.width, height=ctx.height)
 

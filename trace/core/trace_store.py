@@ -28,19 +28,23 @@ class TraceShardWriter:
 
     def append(self, record: Dict[str, Any]) -> TraceRef:
         """Write one trace record and return the corresponding trace ref."""
-        canonical = canonical_json_bytes(record)
-        record_hash = blake3_hex(canonical)
+        ref = self.preview_ref(record)
         line = json.dumps(record, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
         self._compressor.write(line.encode("utf-8"))
         self._compressor.write(b"\n")
 
-        ref = TraceRef(
+        self._line_index += 1
+        return ref
+
+    def preview_ref(self, record: Dict[str, Any]) -> TraceRef:
+        """Return the trace ref that would be assigned to the next appended record."""
+        canonical = canonical_json_bytes(record)
+        record_hash = blake3_hex(canonical)
+        return TraceRef(
             shard_id=self.shard_id,
             line_index=self._line_index,
             trace_record_hash=record_hash,
         )
-        self._line_index += 1
-        return ref
 
     def close(self) -> None:
         """Flush and close the underlying compressed stream."""

@@ -233,6 +233,7 @@ paper/ml-codex-skills/
 /*.pdf
 /*.ipynb
 /kets.txt
+/hf-token.txt
 
 # External asset bundles
 assets/external/kenney/raw/
@@ -246,11 +247,13 @@ assets/illustrations/external/kenney/top_down_shooter/*.zip
 # RLVR generated parquet artifacts
 rlvr/mydata/*.parquet
 rlvr/dataset/validation/*.parquet
+rlvr/dataset/validation/*.parquet.manifest.json
 
 rlvr/val_dataloaders.txt
 rlvr/outputs/
 rlvr/wandb/
 rlvr/dataset/train/*.parquet
+rlvr/dataset/train/*.parquet.manifest.json
 rlvr/dataset/train/*.summary.json
 rlvr/dataset/train/*.task_distribution.csv
 rlvr/dataset/train/*solve_band_task_distribution.csv

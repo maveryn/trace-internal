@@ -31,6 +31,8 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
    - active Vero-derived RLVR port lives under `../rlvr/README.md`
    - tentative TRACE RLVR training strategy lives in
      `docs/RLVR_TRAINING_STRATEGY.md`
+   - operational TRACE RLVR training commands live in
+     `docs/workflows/RLVR_TRAINING_RUNBOOK.md`
    - frozen TRACE RLVR train/test task split lives in
      `docs/RLVR_TASK_SPLIT_PLAN.md`
    - generated task-review artifacts live under `../review/task-reviews/`

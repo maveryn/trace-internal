@@ -1,23 +1,31 @@
 # External Benchmark Evaluation
 
-This workflow runs sampled VERO-supported benchmarks through the shared
-Qwen2.5-VL-7B endpoint, then summarizes incorrect answers into TRACE coverage
-patterns.
+This workflow runs fixed external benchmark subsets for TRACE checkpoint
+comparison and coverage analysis.
 
 ## Scope
 
-- Model: `Qwen/Qwen2.5-VL-7B-Instruct`.
-- Endpoint: `http://127.0.0.1:8002/v1`.
-- Lock: `logs/vllm/locks/qwen25vl7b_8002.lock`.
-- Sample cap: if a benchmark has more than 1000 rows, sample 1000 rows with
-  seed `20260522`; otherwise use all rows. Resume passes may intentionally use a
-  smaller cap; check each benchmark's `run_summary.json` for the exact selected
-  count.
+- For RLVR checkpoint comparison, use the fixed `external_eval_v1` subset:
+  `1000` rows per benchmark with seed `42`.
+- The subset manifest root is:
+
+  ```text
+  benchmark/subsets/external_eval_v1/
+  ```
+
+- The private HF mirror is:
+
+  ```text
+  maveryn/trace-external-eval-subsets
+  ```
+
+- Subsets are manifest-only: source indices and hashes are stored, not benchmark
+  images/media.
 - Image cap: requests are resized to at most 1,000,000 pixels and max side
   1280, then encoded as JPEG payloads so the 4096-token vLLM endpoint is
   usable on high-resolution benchmark images.
-- Judge-required benchmarks are generation-only for final scoring in this pass.
-  Run Qwen3-32B judging later after all responses are collected.
+- Judge-required benchmarks are generation first, then scored with the local
+  judge path after responses are collected.
 
 ## Benchmarks
 
@@ -46,6 +54,38 @@ and let the task utils read `SCREENSPOTPRO_ROOT`. AerialVG is gated on Hugging
 Face, so the token in use must be authorized for `IPEC-COMMUNITY/AerialVG`
 before the runner can download annotations/images.
 
+## TRACE RLVR Subset v1
+
+The current checkpoint-comparison subset is:
+
+| benchmark | selected rows |
+| --- | ---: |
+| `chartqapro` | 1000 |
+| `charxivreason` | 1000 |
+| `mathvista` | 1000 |
+| `mmmu_pro_vision` | 1000 |
+| `countqa` | 1000 |
+| `game_qa_lite` | 1000 |
+| `blink` | 1000 |
+| `screenspotpro` pooled aggregate | 1000 |
+
+`screenspotpro` is selected proportionally across its six VLMEval subsets and
+also writes per-subset manifests so the existing queue jobs can run unchanged.
+
+Create or refresh the local manifests:
+
+```bash
+PYTHONPATH=. python scripts/prepare_external_eval_subset_v1.py --overwrite
+```
+
+Upload the manifest-only subset to the private HF repo:
+
+```bash
+PYTHONPATH=. python scripts/upload_external_eval_subset_v1_to_hf.py
+```
+
+Dry-run either command before a real update when changing the subset policy.
+
 ## Run
 
 Check benchmark aliases:
@@ -70,6 +110,30 @@ Run the full sampled pass:
 
 ```bash
 python scripts/run_vero_sampled_benchmark.py --benchmarks all
+```
+
+For current RLVR checkpoint comparison with the queue runner, use the fixed
+subset root and the v1 benchmark selectors:
+
+```bash
+PYTHONPATH=. python scripts/run_external_benchmark_generation_queue.py \
+  --model <hf-or-local-model-path> \
+  --model-slug <model-slug> \
+  --run-set full \
+  --only chartqapro charxivreason mathvista mmmu_pro_vision countqa game_qa_lite blink screenspotpro \
+  --subset-root benchmark/subsets/external_eval_v1 \
+  --queue-name <model-slug>_external_eval_v1
+```
+
+Then score the same generated outputs:
+
+```bash
+PYTHONPATH=. python scripts/run_external_benchmark_score_queue.py \
+  --model <hf-or-local-model-path> \
+  --model-slug <model-slug> \
+  --run-set full \
+  --only chartqapro charxivreason mathvista mmmu_pro_vision countqa game_qa_lite blink screenspotpro \
+  --queue-name <model-slug>_external_eval_v1
 ```
 
 Run final scoring for judge-deferred benchmarks after responses are cached:

@@ -15,6 +15,8 @@ RLVR training/export/validation docs live under:
 - `../../rlvr/README.md` for the active Vero-derived RLVR port.
 - `../RLVR_TRAINING_STRATEGY.md` for tentative TRACE RLVR training,
   reward-ablation, response-length, and evaluation-cadence strategy.
+- `RLVR_TRAINING_RUNBOOK.md` for the current split-v1 training, validation,
+  checkpoint-merge, resume, and external-benchmark commands.
 - `TASK_REVIEW_WEB_APP.md` for the active task-review workspace.
 - `CALIBRATION_GUIDE.md` for the current per-task acceptance gates,
   model-specific response caps, and split vLLM server commands used by

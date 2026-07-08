@@ -13,31 +13,25 @@ algorithm:
     kl_coef: 0
 
 data:
-  train_files: "${oc.env:TRAIN_FILES,xashru/trace_rlvr_train_128k_all_tasks.parquet@train}"
-  val_files:
-    - "${oc.env:REPO_ROOT}/dataset/validation/mathvista_mini.parquet"
-    - "${oc.env:REPO_ROOT}/dataset/validation/mmstar.parquet"
-    - "${oc.env:REPO_ROOT}/dataset/validation/charxiv_rq.parquet"
-    - "${oc.env:REPO_ROOT}/dataset/validation/embspatialbench.parquet"
-    - "${oc.env:REPO_ROOT}/dataset/validation/mmmu_pro_vision.parquet"
-    - "${oc.env:REPO_ROOT}/dataset/validation/countqa.parquet"
+  train_files: "${oc.env:TRAIN_FILES,maveryn/trace@train}"
+  val_files: "${oc.env:VAL_FILES,maveryn/trace@validation}"
   dataset_mode: trace
   trace_output_mode: "${oc.env:TRACE_OUTPUT_MODE,answer}"
-  validation_style: trace_benchmark
+  validation_style: "${oc.env:VALIDATION_STYLE,standard}"
   trace_validation_exclude_benchmarks: ["mathverse_mini"]
   image_root: null
   system_prompt: "${oc.env:TRACE_SYSTEM_PROMPT,auto}"
   prompt_key: "${oc.env:PROMPT_KEY,auto}"
-  val_prompt_key: prompt_answer
+  val_prompt_key: prompt_answer_only
   val_answer_key: answer_gt
   val_disable_system_prompt: false
   val_format_prompt: null
   val_format_prompt_variant: boxed_only
   shuffle: true
-  train_batch_size: 128
+  train_batch_size: 256
   val_batch_size: 512
-  max_prompt_length: ${oc.decode:${oc.env:MAX_PROMPT_LENGTH,1536}}
-  max_response_length: ${oc.decode:${oc.env:MAX_RESPONSE_LENGTH,2048}}
+  max_prompt_length: ${oc.decode:${oc.env:MAX_PROMPT_LENGTH,2048}}
+  max_response_length: ${oc.decode:${oc.env:MAX_RESPONSE_LENGTH,4096}}
   max_pixels: 4194304
   filter_overlong_prompts: true
   filter_overlong_prompts_workers: 32
@@ -54,7 +48,7 @@ data:
 
 actor_rollout_ref:
   model:
-    path: "${oc.env:MODEL_PATH,Qwen/Qwen3-VL-2B-Instruct}"
+    path: "${oc.env:MODEL_PATH,Qwen/Qwen2.5-VL-3B-Instruct}"
     use_remove_padding: true
     enable_gradient_checkpointing: true
 
@@ -136,19 +130,19 @@ critic:
 
 trainer:
   project_name: trace
-  experiment_name: "${oc.env:TRAINER_EXPERIMENT_NAME,trace_qwen3_2b_answer}"
+  experiment_name: "${oc.env:TRAINER_EXPERIMENT_NAME,trace_qwen25vl3b_split_v1_answer}"
   n_gpus_per_node: 8
   default_local_dir: "${oc.env:ROOT_PATH,/home/jovyan/work/trace}/checkpoints/trace_rlvr/${trainer.experiment_name}"
   validation_data_dir: null
   critic_warmup: 0
   logger: ["console", "wandb"]
-  save_freq: 25
-  test_freq: 25
+  save_freq: 100
+  test_freq: 100
   max_actor_ckpt_to_keep: 1
   max_critic_ckpt_to_keep: 1
   nnodes: 1
   total_epochs: 10
-  total_training_steps: 500
+  total_training_steps: 900
   log_val_generations: 0
   val_before_train: true
   val_only: false

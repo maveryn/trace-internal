@@ -31,6 +31,7 @@ from benchmark_queue_lib import (
     benchmark_specs_for_run_set,
     claim_next_job,
     effective_generation_batch_size,
+    filter_benchmark_specs,
     json_default,
     mark_job,
     run_dir,
@@ -54,6 +55,73 @@ def _limit_frame(frame: pd.DataFrame, limit: int | None, seed: int) -> pd.DataFr
     if limit is not None and limit < len(frame):
         return frame.sample(n=limit, random_state=seed).sort_values("index").reset_index(drop=True)
     return frame
+
+
+def _read_jsonl(path: Path) -> list[dict[str, Any]]:
+    rows = []
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+    return rows
+
+
+def _subset_manifest_path(subset_root: Path | None, spec: BenchmarkSpec) -> Path | None:
+    if subset_root is None:
+        return None
+    path = subset_root / f"{spec.key}.jsonl"
+    if path.exists():
+        return path
+    if spec.aggregate_group:
+        aggregate_path = subset_root / f"{spec.aggregate_group}.jsonl"
+        if aggregate_path.exists():
+            return aggregate_path
+    raise FileNotFoundError(f"No subset manifest for {spec.key} under {subset_root}")
+
+
+def _subset_rank_by_index(path: Path | None, spec: BenchmarkSpec) -> dict[str, int]:
+    if path is None:
+        return {}
+    rank_by_index: dict[str, int] = {}
+    for row in _read_jsonl(path):
+        if row.get("benchmark_key") not in {spec.key, spec.aggregate_group}:
+            continue
+        if spec.aggregate_group and row.get("subset_key") not in {None, spec.key}:
+            continue
+        source_index = row.get("source_index")
+        sample_rank = row.get("sample_rank")
+        if source_index is None or sample_rank is None:
+            raise ValueError(f"Malformed subset row in {path}: {row}")
+        rank_by_index[str(source_index)] = int(sample_rank)
+    if not rank_by_index:
+        raise ValueError(f"Subset manifest {path} selected zero rows for {spec.key}")
+    return rank_by_index
+
+
+def _apply_subset_frame(frame: pd.DataFrame, rank_by_index: dict[str, int]) -> pd.DataFrame:
+    if not rank_by_index:
+        return frame
+    filtered = frame[frame["index"].astype(str).isin(rank_by_index)].copy()
+    filtered["__trace_subset_rank__"] = filtered["index"].astype(str).map(rank_by_index)
+    filtered = filtered.sort_values("__trace_subset_rank__").drop(columns=["__trace_subset_rank__"])
+    if len(filtered) != len(rank_by_index):
+        raise ValueError(
+            f"Subset manifest requested {len(rank_by_index)} rows, but dataset contains {len(filtered)} matching rows"
+        )
+    return filtered.reset_index(drop=True)
+
+
+def _apply_subset_rows(rows: list[dict[str, Any]], rank_by_index: dict[str, int]) -> list[dict[str, Any]]:
+    if not rank_by_index:
+        return rows
+    filtered = [row for row in rows if str(row["index"]) in rank_by_index]
+    filtered.sort(key=lambda row: rank_by_index[str(row["index"])])
+    if len(filtered) != len(rank_by_index):
+        raise ValueError(
+            f"Subset manifest requested {len(rank_by_index)} rows, but dataset contains {len(filtered)} matching rows"
+        )
+    return filtered
 
 
 def _effective_max_tokens(spec: BenchmarkSpec, max_tokens_override: int | None) -> int:
@@ -121,6 +189,7 @@ def _generate_vlmeval_spec(
     max_tokens_override: int | None,
     limit: int | None,
     sample_seed: int,
+    subset_manifest: Path | None,
     no_resume: bool,
     prefetch_workers: int,
     prefetch_batches: int,
@@ -136,7 +205,8 @@ def _generate_vlmeval_spec(
     dataset = build_dataset(spec.alias)
     if dataset is None:
         raise RuntimeError(f"VLMEvalKit could not build dataset {spec.alias}")
-    dataset.data = _limit_frame(dataset.data, limit, sample_seed)
+    rank_by_index = _subset_rank_by_index(subset_manifest, spec)
+    dataset.data = _apply_subset_frame(dataset.data, rank_by_index) if subset_manifest else _limit_frame(dataset.data, limit, sample_seed)
 
     existing = {} if no_resume else runner.load_jsonl_by_index(pred_jsonl)
     pending = dataset.data[~dataset.data["index"].astype(str).isin(existing)].copy()
@@ -212,6 +282,7 @@ def _generate_vlmeval_spec(
             "prefetch_workers": max_workers,
             "prefetch_batches": max_prefetch,
         },
+        "subset_manifest": str(subset_manifest) if subset_manifest else None,
         "finish_reason": dict(finish_reasons),
         "output_token_stats": {
             "mean": sum(token_counts) / len(token_counts) if token_counts else 0,
@@ -236,6 +307,7 @@ def _generate_chartmuseum_spec(
     max_tokens_override: int | None,
     limit: int | None,
     sample_seed: int,
+    subset_manifest: Path | None,
     no_resume: bool,
     prefetch_workers: int,
     prefetch_batches: int,
@@ -248,7 +320,10 @@ def _generate_chartmuseum_spec(
     existing = {} if no_resume else chartmuseum.load_existing(jsonl_path)
 
     split = spec.split or "test"
+    rank_by_index = _subset_rank_by_index(subset_manifest, spec)
     rows = chartmuseum.load_chartmuseum_rows(split, chartmuseum.DEFAULT_DATA_ROOT, limit, sample_seed)
+    if subset_manifest:
+        rows = _apply_subset_rows(rows, rank_by_index)
     pending = [r for r in rows if str(r["index"]) not in existing]
     max_tokens = _effective_max_tokens(spec, max_tokens_override)
     print(
@@ -334,6 +409,7 @@ def _generate_chartmuseum_spec(
             "prefetch_workers": max_workers,
             "prefetch_batches": max_prefetch,
         },
+        "subset_manifest": str(subset_manifest) if subset_manifest else None,
         "finish_reason": dict(finish_reasons),
         "output_token_stats": {
             "mean": sum(token_counts) / len(token_counts) if token_counts else 0,
@@ -353,12 +429,8 @@ def run_worker(args: argparse.Namespace) -> None:
     os.environ.setdefault("VLLM_ATTENTION_BACKEND", args.attention_backend)
 
     specs = benchmark_specs_for_run_set(args.run_set, model_slug=args.model_slug)
-    if args.only:
-        keep = set(args.only)
-        specs = [spec for spec in specs if spec.key in keep or spec.alias in keep]
-    if args.exclude:
-        drop = set(args.exclude)
-        specs = [spec for spec in specs if spec.key not in drop and spec.alias not in drop]
+    specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
+    subset_root = args.subset_root
 
     queue_path = args.queue_root / f"generation_{args.queue_name or args.model_slug + '_' + args.run_set}.json"
     jobs = [(spec.key, run_dir(spec, args.model_slug, args.run_root) / "generation_summary.json") for spec in specs]
@@ -403,9 +475,11 @@ def run_worker(args: argparse.Namespace) -> None:
             spec = spec_by_key(job_id)
             output_dir = run_dir(spec, args.model_slug, args.run_root)
             job_batch_size = effective_generation_batch_size(spec, args.batch_size, args.max_tokens_override)
+            subset_manifest = _subset_manifest_path(subset_root, spec)
             print(
                 f"[worker:claim] {job_id} -> {output_dir} "
-                f"batch_size={job_batch_size} requested_batch_size={args.batch_size}"
+                f"batch_size={job_batch_size} requested_batch_size={args.batch_size} "
+                f"subset_manifest={subset_manifest}"
             )
             try:
                 if spec.kind == "chartmuseum":
@@ -420,6 +494,7 @@ def run_worker(args: argparse.Namespace) -> None:
                         max_tokens_override=args.max_tokens_override,
                         limit=args.limit,
                         sample_seed=args.sample_seed,
+                        subset_manifest=subset_manifest,
                         no_resume=args.no_resume,
                         prefetch_workers=args.prefetch_workers,
                         prefetch_batches=args.prefetch_batches,
@@ -436,6 +511,7 @@ def run_worker(args: argparse.Namespace) -> None:
                         max_tokens_override=args.max_tokens_override,
                         limit=args.limit,
                         sample_seed=args.sample_seed,
+                        subset_manifest=subset_manifest,
                         no_resume=args.no_resume,
                         prefetch_workers=args.prefetch_workers,
                         prefetch_batches=args.prefetch_batches,
@@ -462,6 +538,7 @@ def main() -> None:
     parser.add_argument("--run-root", type=Path, default=REPO_ROOT / "runs")
     parser.add_argument("--only", nargs="*", default=[])
     parser.add_argument("--exclude", nargs="*", default=[])
+    parser.add_argument("--subset-root", type=Path, default=None)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--sample-seed", type=int, default=0)
     parser.add_argument("--batch-size", type=int, default=512)

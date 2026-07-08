@@ -163,6 +163,37 @@ def benchmark_specs_for_run_set(run_set: str, model_slug: str = BASE_MODEL_SLUG)
     raise ValueError(f"Unknown run_set {run_set!r}")
 
 
+def spec_matches_selector(spec: BenchmarkSpec, selector: str) -> bool:
+    """Return whether a CLI selector names this spec or its aggregate group."""
+    values = {
+        spec.key,
+        spec.alias,
+        spec.display,
+        spec.run_name,
+    }
+    if spec.aggregate_group:
+        values.add(spec.aggregate_group)
+    if spec.aggregate_run_name:
+        values.add(spec.aggregate_run_name)
+    return selector in values
+
+
+def filter_benchmark_specs(
+    specs: Iterable[BenchmarkSpec],
+    *,
+    only: Iterable[str] = (),
+    exclude: Iterable[str] = (),
+) -> list[BenchmarkSpec]:
+    out = list(specs)
+    keep = {str(item) for item in only if str(item)}
+    if keep:
+        out = [spec for spec in out if any(spec_matches_selector(spec, selector) for selector in keep)]
+    drop = {str(item) for item in exclude if str(item)}
+    if drop:
+        out = [spec for spec in out if not any(spec_matches_selector(spec, selector) for selector in drop)]
+    return out
+
+
 def effective_generation_batch_size(
     spec: BenchmarkSpec,
     requested_batch_size: int,

@@ -31,6 +31,15 @@ The split is task-level, not sample-level. Generated instances for a test task
 must stay in evaluation splits even if their visual style, prompt variant, or
 generation parameters resemble train instances.
 
+## Export Defaults
+
+The current RLVR dataset export for this split uses seed `42`, stores both
+answer-only and answer-plus-annotation prompt fields, and caps embedded images
+at `1_280_000` pixels.
+
+- Train export: `900` train tasks x `256` samples per task = `230,400` rows.
+- Validation export: `100` test tasks x `25` samples per task = `2,500` rows.
+
 ## Domain Allocation
 
 | Domain | Active tasks | Train tasks | Test tasks | Seen-scene test | Unseen-scene test |

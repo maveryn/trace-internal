@@ -1,9 +1,8 @@
 # Tentative RLVR Training Strategy
 
-This note records the current TRACE RLVR training strategy discussion. It is a
-planning document, not a locked runbook. Final training commands, model keys,
-and reward weights should be promoted into a dedicated runbook only after the
-first ablations are complete.
+This note records the TRACE RLVR training strategy. It explains why the current
+run is staged and what signals matter. Operational commands live in
+`docs/workflows/RLVR_TRAINING_RUNBOOK.md`.
 
 ## Reference: Vero
 
@@ -101,7 +100,9 @@ Preferred initial settings:
 
 | item | tentative value |
 | --- | --- |
-| base model | small VLM first, e.g. Qwen2.5-VL-3B if available |
+| base model | `Qwen/Qwen2.5-VL-3B-Instruct` |
+| training data | `maveryn/trace@train` (`900` tasks x `256` samples = `230,400` rows) |
+| validation data | `maveryn/trace@validation` (`100` held-out tasks x `25` samples = `2,500` rows) |
 | effective batch | 256 prompts/update |
 | rollouts per prompt | 8 |
 | learning rate | start near `1e-6`, adjust only after instability signals |
@@ -115,14 +116,14 @@ The ablation window is adaptive:
 - step 200: normal decision point;
 - step 250: optional tie-breaker if reward curves are still separating.
 
-At batch 256, prompt exposure is:
+At batch 256 over the split-v1 `900` train tasks, prompt exposure is:
 
-| steps | prompts seen | prompts/task if 950 train tasks |
+| steps | prompts seen | prompts/task |
 | ---: | ---: | ---: |
-| 50 | 12.8K | 13 |
-| 100 | 25.6K | 27 |
-| 200 | 51.2K | 54 |
-| 250 | 64.0K | 67 |
+| 50 | 12.8K | 14 |
+| 100 | 25.6K | 28 |
+| 200 | 51.2K | 57 |
+| 250 | 64.0K | 71 |
 
 These runs are not expected to give per-task conclusions. They are meant to
 compare aggregate behavior by domain, answer type, annotation type, and output
@@ -181,6 +182,13 @@ Held-out eval should be fixed-seed and stratified by:
 - task difficulty if available;
 - task/query contract.
 
+Run external benchmarks before training and again at the main ablation decision
+checkpoint. The current fixed subset is `external_eval_v1`: `1000` rows each
+from `chartqapro`, `charxivreason`, `mathvista`, `mmmu_pro_vision`, `countqa`,
+`game_qa_lite`, `blink`, and pooled `screenspotpro`. The manifests live under
+`benchmark/subsets/external_eval_v1/` and are mirrored privately at
+`maveryn/trace-external-eval-subsets`.
+
 ## Data Sampling
 
 TRACE can sample from programmatic generators instead of relying only on a fixed
@@ -200,14 +208,14 @@ training. Candidate sampling policies:
 Task-uniform is the cleanest baseline. Domain-balanced may be better if one
 domain has many more tasks and would otherwise dominate the training signal.
 
-For rough sizing with 950 train tasks:
+For rough sizing with split-v1's `900` train tasks:
 
 | total steps | batch | prompts seen | prompts/task |
 | ---: | ---: | ---: | ---: |
-| 500 | 256 | 128K | 135 |
-| 1000 | 256 | 256K | 269 |
-| 1113 | 256 | 285K | 300 |
-| 2000 | 256 | 512K | 539 |
+| 500 | 256 | 128K | 142 |
+| 900 | 256 | 230K | 256 |
+| 1000 | 256 | 256K | 284 |
+| 2000 | 256 | 512K | 569 |
 
 With 8 rollouts per prompt, multiply prompts seen by 8 to estimate generated
 responses. A 1000-step run at batch 256 consumes about 2.05M rollouts.
@@ -231,9 +239,6 @@ is understood.
 
 ## Current Open Decisions
 
-- Which small model to use for the first ablation.
-- Whether initial response cap should be 2048 or 4096. Current preference is
-  4096 because TRACE still trains reasoning, not only final JSON.
 - Whether the first run uses task-uniform or domain-balanced sampling.
-- Size and composition of the fixed held-out eval set.
-- Whether the final main run should target 500, 1000, or 2000 steps.
+- Whether to run answer-only first to 900 steps or stop after a 200-250 step
+  ablation checkpoint before choosing an answer-plus-annotation reward mix.

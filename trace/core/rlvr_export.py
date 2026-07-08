@@ -6,11 +6,12 @@ import json
 import os
 import math
 import re
+from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Literal, Mapping
+from typing import Any, Callable, Iterable, Literal, Mapping
 
 from tqdm.auto import tqdm
 from PIL import Image
@@ -103,6 +104,19 @@ def _iter_chunks(rows: list[dict[str, Any]], chunk_size: int) -> Iterable[list[d
         yield rows[start : start + chunk_size]
 
 
+def _iter_iterable_chunks(rows: Iterable[Any], chunk_size: int) -> Iterable[list[Any]]:
+    """Yield fixed-size chunks from any row iterable."""
+
+    chunk: list[Any] = []
+    for row in rows:
+        chunk.append(row)
+        if len(chunk) >= chunk_size:
+            yield chunk
+            chunk = []
+    if chunk:
+        yield chunk
+
+
 def _resolve_parquet_cpu_count(parquet_cpu_count: int | None) -> int | None:
     """Normalize the requested parquet CPU count."""
 
@@ -114,6 +128,21 @@ def _resolve_parquet_cpu_count(parquet_cpu_count: int | None) -> int | None:
     if parsed == 0:
         return max(1, int(os.cpu_count() or 1))
     return parsed
+
+
+def _resolve_parquet_row_worker_count(parquet_cpu_count: int | None) -> int:
+    """Resolve Python-side row preparation workers for parquet export."""
+
+    env_value = os.environ.get("TRACE_EXPORT_PARQUET_ROW_WORKERS")
+    if env_value is not None and env_value.strip():
+        parsed = int(env_value)
+        if parsed < 1:
+            raise ValueError("TRACE_EXPORT_PARQUET_ROW_WORKERS must be >= 1")
+        return parsed
+    requested_cpu_count = _resolve_parquet_cpu_count(parquet_cpu_count)
+    if requested_cpu_count is None:
+        return 1
+    return max(1, int(requested_cpu_count))
 
 
 def resolve_train_instances_source(path: str | Path) -> tuple[Path, Path]:
@@ -786,13 +815,47 @@ def _write_jsonl_rows(path: Path, rows: list[dict[str, Any]]) -> None:
             progress_bar.update(1)
 
 
-def _write_parquet_rows(
-    path: Path,
-    rows: list[dict[str, Any]],
+def _prepare_parquet_row(
+    row: dict[str, Any],
     *,
+    image_storage_mode: ImageStorageMode,
+) -> dict[str, Any]:
+    parquet_row = dict(row)
+    if image_storage_mode == "embedded_bytes":
+        image_entries = []
+        for image_entry in parquet_row.get("images") or []:
+            if isinstance(image_entry, Mapping) and image_entry.get("bytes") is not None:
+                image_entries.append(
+                    {
+                        "bytes": image_entry.get("bytes"),
+                        "path": image_entry.get("path"),
+                    }
+                )
+                continue
+            image_entries.append(image_entry)
+        parquet_row["images"] = image_entries
+    for key in _PARQUET_JSON_COLUMNS:
+        if key in parquet_row:
+            parquet_row[key] = json.dumps(
+                parquet_row[key],
+                ensure_ascii=False,
+                allow_nan=False,
+                sort_keys=True,
+            )
+    return parquet_row
+
+
+def _write_parquet_items(
+    path: Path,
+    items: Iterable[Any],
+    *,
+    row_count: int,
+    row_builder: Callable[[Any], dict[str, Any]],
     parquet_cpu_count: int | None = None,
     image_storage_mode: ImageStorageMode = "path_dict",
 ) -> None:
+    """Write parquet from an item stream with optional parallel row preparation."""
+
     import pyarrow as pa
 
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -800,32 +863,8 @@ def _write_parquet_rows(
     if image_storage_mode not in {"path_dict", "embedded_bytes"}:
         raise ValueError(f"unsupported image-storage mode: {image_storage_mode}")
 
-    def prepare_parquet_row(row: dict[str, Any]) -> dict[str, Any]:
-        parquet_row = dict(row)
-        if image_storage_mode == "embedded_bytes":
-            image_entries = []
-            for image_entry in parquet_row.get("images") or []:
-                if isinstance(image_entry, Mapping) and image_entry.get("bytes") is not None:
-                    image_entries.append(
-                        {
-                            "bytes": image_entry.get("bytes"),
-                            "path": image_entry.get("path"),
-                        }
-                    )
-                    continue
-                image_entries.append(image_entry)
-            parquet_row["images"] = image_entries
-        for key in _PARQUET_JSON_COLUMNS:
-            if key in parquet_row:
-                parquet_row[key] = json.dumps(
-                    parquet_row[key],
-                    ensure_ascii=False,
-                    allow_nan=False,
-                    sort_keys=True,
-                )
-        return parquet_row
-
     requested_cpu_count = _resolve_parquet_cpu_count(parquet_cpu_count)
+    row_worker_count = _resolve_parquet_row_worker_count(parquet_cpu_count)
     prior_cpu_count = pa.cpu_count()
     prior_io_thread_count = pa.io_thread_count()
     try:
@@ -837,17 +876,27 @@ def _write_parquet_rows(
 
         writer = None
         features = None
-        chunk_count = max(1, math.ceil(len(rows) / _PARQUET_WRITE_CHUNK_SIZE))
+        executor: ThreadPoolExecutor | None = None
         try:
+            if row_worker_count > 1:
+                executor = ThreadPoolExecutor(max_workers=row_worker_count)
+                if progress_enabled:
+                    tqdm.write(
+                        "Write parquet row preparation workers: "
+                        f"{row_worker_count}"
+                    )
             with tqdm(
-                total=chunk_count,
+                total=int(row_count),
                 desc="Write parquet",
-                unit="chunk",
+                unit="row",
                 dynamic_ncols=True,
                 disable=not progress_enabled,
             ) as progress_bar:
-                for chunk_rows in _iter_chunks(rows, _PARQUET_WRITE_CHUNK_SIZE):
-                    parquet_chunk_rows = [prepare_parquet_row(row) for row in chunk_rows]
+                for chunk in _iter_iterable_chunks(items, _PARQUET_WRITE_CHUNK_SIZE):
+                    if executor is None:
+                        parquet_chunk_rows = [row_builder(item) for item in chunk]
+                    else:
+                        parquet_chunk_rows = list(executor.map(row_builder, chunk))
                     if not parquet_chunk_rows:
                         continue
                     table = pa.Table.from_pylist(parquet_chunk_rows)
@@ -862,13 +911,61 @@ def _write_parquet_rows(
                     if writer is None:
                         writer = pq.ParquetWriter(path, table.schema, compression="snappy")
                     writer.write_table(table, row_group_size=len(parquet_chunk_rows))
-                    progress_bar.update(1)
+                    progress_bar.update(len(chunk))
         finally:
+            if executor is not None:
+                executor.shutdown(wait=True, cancel_futures=True)
             if writer is not None:
                 writer.close()
     finally:
         pa.set_cpu_count(int(prior_cpu_count))
         pa.set_io_thread_count(int(prior_io_thread_count))
+
+
+def _write_parquet_rows(
+    path: Path,
+    rows: list[dict[str, Any]],
+    *,
+    parquet_cpu_count: int | None = None,
+    image_storage_mode: ImageStorageMode = "path_dict",
+) -> None:
+    if image_storage_mode not in {"path_dict", "embedded_bytes"}:
+        raise ValueError(f"unsupported image-storage mode: {image_storage_mode}")
+    _write_parquet_items(
+        path,
+        rows,
+        row_count=len(rows),
+        row_builder=lambda row: _prepare_parquet_row(
+            row,
+            image_storage_mode=image_storage_mode,
+        ),
+        parquet_cpu_count=parquet_cpu_count,
+        image_storage_mode=image_storage_mode,
+    )
+
+
+def _write_parquet_row_iter(
+    path: Path,
+    rows: Iterable[dict[str, Any]],
+    *,
+    row_count: int,
+    parquet_cpu_count: int | None = None,
+    image_storage_mode: ImageStorageMode = "path_dict",
+) -> None:
+    """Write parquet from a row iterator without retaining all rows in memory."""
+    if image_storage_mode not in {"path_dict", "embedded_bytes"}:
+        raise ValueError(f"unsupported image-storage mode: {image_storage_mode}")
+    _write_parquet_items(
+        path,
+        rows,
+        row_count=row_count,
+        row_builder=lambda row: _prepare_parquet_row(
+            row,
+            image_storage_mode=image_storage_mode,
+        ),
+        parquet_cpu_count=parquet_cpu_count,
+        image_storage_mode=image_storage_mode,
+    )
 
 
 def export_trace_dataset_to_rlvr(
@@ -908,16 +1005,28 @@ def export_trace_dataset_to_rlvr(
     if _EXPORT_PROGRESS_ENABLED:
         tqdm.write(f"Recover query fields for {len(records)} rows")
     query_assignments = _build_query_field_assignments(records, dataset_root=dataset_root)
-    rows = []
-    with tqdm(
-        total=len(records),
-        desc="Build RLVR rows",
-        unit="row",
-        dynamic_ncols=True,
-        disable=not _EXPORT_PROGRESS_ENABLED,
-    ) as progress_bar:
+
+    def iter_export_rows() -> Iterable[dict[str, Any]]:
         for record in records:
-            rows.append(
+            instance_id = str(record.get("instance_id", "")).strip()
+            yield {
+                **build_rlvr_row(
+                    record,
+                    dataset_root=dataset_root,
+                    output_parent=output_parent,
+                    prompt_variant=prompt_variant,
+                    image_path_mode=image_path_mode,
+                    image_storage_mode=image_storage_mode,
+                    max_embedded_image_pixels=max_embedded_image_pixels,
+                ),
+                **query_assignments[instance_id],
+                **curriculum_assignments[instance_id],
+            }
+
+    if final_format == "parquet":
+        def build_parquet_row(record: dict[str, Any]) -> dict[str, Any]:
+            instance_id = str(record.get("instance_id", "")).strip()
+            return _prepare_parquet_row(
                 {
                     **build_rlvr_row(
                         record,
@@ -928,20 +1037,32 @@ def export_trace_dataset_to_rlvr(
                         image_storage_mode=image_storage_mode,
                         max_embedded_image_pixels=max_embedded_image_pixels,
                     ),
-                    **query_assignments[str(record.get("instance_id", "")).strip()],
-                    **curriculum_assignments[str(record.get("instance_id", "")).strip()],
-                }
+                    **query_assignments[instance_id],
+                    **curriculum_assignments[instance_id],
+                },
+                image_storage_mode=image_storage_mode,
             )
-            progress_bar.update(1)
 
-    if final_format == "parquet":
-        _write_parquet_rows(
+        _write_parquet_items(
             final_output_path,
-            rows,
+            records,
+            row_count=len(records),
+            row_builder=build_parquet_row,
             parquet_cpu_count=parquet_cpu_count,
             image_storage_mode=image_storage_mode,
         )
     else:
+        rows = []
+        with tqdm(
+            total=len(records),
+            desc="Build RLVR rows",
+            unit="row",
+            dynamic_ncols=True,
+            disable=not _EXPORT_PROGRESS_ENABLED,
+        ) as progress_bar:
+            for row in iter_export_rows():
+                rows.append(row)
+                progress_bar.update(1)
         _write_jsonl_rows(final_output_path, rows)
 
     return RLVRExportResult(
@@ -951,5 +1072,5 @@ def export_trace_dataset_to_rlvr(
         output_format=final_format,
         prompt_variant=prompt_variant,
         image_path_mode=image_path_mode,
-        row_count=len(rows),
+        row_count=len(records),
     )

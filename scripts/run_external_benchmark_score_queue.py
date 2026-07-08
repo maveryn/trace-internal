@@ -28,6 +28,7 @@ from benchmark_queue_lib import (
     benchmark_specs_for_run_set,
     claim_next_job,
     extract_score_and_rows,
+    filter_benchmark_specs,
     json_default,
     local_judge_eval_mode,
     mark_job,
@@ -514,12 +515,7 @@ def run_worker(args: argparse.Namespace) -> None:
     os.environ.setdefault("VLLM_ATTENTION_BACKEND", args.attention_backend)
 
     specs = benchmark_specs_for_run_set(args.run_set, model_slug=args.model_slug)
-    if args.only:
-        keep = set(args.only)
-        specs = [spec for spec in specs if spec.key in keep or spec.alias in keep]
-    if args.exclude:
-        drop = set(args.exclude)
-        specs = [spec for spec in specs if spec.key not in drop and spec.alias not in drop]
+    specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
     queue_path = args.queue_root / f"score_{args.queue_name or args.model_slug + '_' + args.run_set}.json"
     jobs = [(spec.key, score_path(spec, args.model_slug, args.benchmark_root)) for spec in specs]
     print(

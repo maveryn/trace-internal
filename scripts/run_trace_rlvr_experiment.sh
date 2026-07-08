@@ -10,7 +10,7 @@ usage() {
 Usage:
   scripts/run_trace_rlvr_experiment.sh alpha_ablation <0|0.5|1>
   scripts/run_trace_rlvr_experiment.sh annotation_ablation <gated|additive>
-  scripts/run_trace_rlvr_experiment.sh final <qwen3vl4b|qwen3vl8b|qwen25vl7b>
+  scripts/run_trace_rlvr_experiment.sh final <qwen25vl3b|qwen3vl4b|qwen3vl8b|qwen25vl7b>
 
 Environment overrides:
   TRAIN_FILES, MODEL_PATH, TRACE_OUTPUT_MODE, TRACE_ANNOTATION_REWARD_FORMULA,
@@ -34,6 +34,7 @@ alpha_token() {
 
 model_path_for_alias() {
   case "$1" in
+    qwen25vl3b|qwen2_5vl3b) echo "Qwen/Qwen2.5-VL-3B-Instruct" ;;
     qwen3vl4b) echo "Qwen/Qwen3-VL-4B-Instruct" ;;
     qwen3vl8b) echo "Qwen/Qwen3-VL-8B-Instruct" ;;
     qwen25vl7b|qwen2_5vl7b) echo "Qwen/Qwen2.5-VL-7B-Instruct" ;;
@@ -100,13 +101,18 @@ case "$mode" in
     ;;
   final)
     export MODEL_PATH="${MODEL_PATH:-$(model_path_for_alias "$arg")}"
-    token="$(alpha_token "${TRACE_ALPHA:-0_5}")"
     export TRACE_OUTPUT_MODE="${TRACE_OUTPUT_MODE:-answer}"
     export TRACE_ANNOTATION_REWARD_FORMULA="${TRACE_ANNOTATION_REWARD_FORMULA:-gated}"
-    export TOTAL_TRAINING_STEPS="${TOTAL_TRAINING_STEPS:-800}"
-    export TRAIN_FILES="${TRAIN_FILES:-$REPO_ROOT/rlvr/dataset/train/trace_rlvr_train_102400_query_id_alpha${token}_answer_retained_seed20260504.parquet}"
-    export VAL_FILES="${VAL_FILES:-$(validation_files_for_alpha "$token")}"
-    export TRAINER_EXPERIMENT_NAME="${TRAINER_EXPERIMENT_NAME:-trace_${arg}_alpha${token}_${TRACE_OUTPUT_MODE}_800_seed20260504}"
+    export TOTAL_TRAINING_STEPS="${TOTAL_TRAINING_STEPS:-900}"
+    export TRAIN_FILES="${TRAIN_FILES:-maveryn/trace@train}"
+    export VAL_FILES="${VAL_FILES:-maveryn/trace@validation}"
+    export TRAIN_BATCH_SIZE="${TRAIN_BATCH_SIZE:-256}"
+    export ROLLOUT_N="${ROLLOUT_N:-8}"
+    export MAX_RESPONSE_LENGTH="${MAX_RESPONSE_LENGTH:-4096}"
+    export VAL_MAX_RESPONSE_LENGTH="${VAL_MAX_RESPONSE_LENGTH:-2048}"
+    export SAVE_FREQ="${SAVE_FREQ:-100}"
+    export TEST_FREQ="${TEST_FREQ:-100}"
+    export TRAINER_EXPERIMENT_NAME="${TRAINER_EXPERIMENT_NAME:-trace_${arg}_split_v1_${TRACE_OUTPUT_MODE}_900_seed42}"
     ;;
   *)
     usage
@@ -114,7 +120,7 @@ case "$mode" in
     ;;
 esac
 
-if [[ ! -f "$TRAIN_FILES" ]]; then
+if [[ "$TRAIN_FILES" != *@* && ! -f "$TRAIN_FILES" ]]; then
   echo "Training parquet does not exist: $TRAIN_FILES" >&2
   exit 1
 fi

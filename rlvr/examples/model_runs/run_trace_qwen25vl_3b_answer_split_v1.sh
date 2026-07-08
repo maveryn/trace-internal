@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+export MODEL_PATH="${MODEL_PATH:-Qwen/Qwen2.5-VL-3B-Instruct}"
+export TRACE_OUTPUT_MODE="${TRACE_OUTPUT_MODE:-answer}"
+export TRAIN_FILES="${TRAIN_FILES:-maveryn/trace@train}"
+export VAL_FILES="${VAL_FILES:-maveryn/trace@validation}"
+export TRAIN_BATCH_SIZE="${TRAIN_BATCH_SIZE:-256}"
+export ROLLOUT_N="${ROLLOUT_N:-8}"
+export TOTAL_TRAINING_STEPS="${TOTAL_TRAINING_STEPS:-900}"
+export MAX_PROMPT_LENGTH="${MAX_PROMPT_LENGTH:-2048}"
+export MAX_RESPONSE_LENGTH="${MAX_RESPONSE_LENGTH:-4096}"
+export VAL_MAX_RESPONSE_LENGTH="${VAL_MAX_RESPONSE_LENGTH:-2048}"
+export TRACE_VAL_MAX_RESPONSE_LENGTH="${TRACE_VAL_MAX_RESPONSE_LENGTH:-2048}"
+export SAVE_FREQ="${SAVE_FREQ:-100}"
+export TEST_FREQ="${TEST_FREQ:-100}"
+export TRACE_ANSWER_SCORING="${TRACE_ANSWER_SCORING:-exact_json}"
+export TRAINER_EXPERIMENT_SUFFIX="${TRAINER_EXPERIMENT_SUFFIX:-trace_qwen25vl3b_split_v1_answer}"
+export TRAINER_APPEND_TIMESTAMP="${TRAINER_APPEND_TIMESTAMP:-1}"
+
+exec "$SCRIPT_DIR/run_trace_vl_rlvr.sh" "$@"

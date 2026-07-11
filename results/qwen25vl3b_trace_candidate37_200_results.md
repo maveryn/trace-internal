@@ -11,7 +11,7 @@ Each benchmark has exactly one normalized score. Scores are percentages when the
 | MindCubeBench tiny | `vlmevalkit_defaults` | 200 | 35.50 | 32.50 | 31.50 | 36.00 | -3.00 | -4.00 | 0.50 |
 | ScreenSpot | `vlmevalkit_defaults_sample200` | 200 | 43.66 | 41.67 | 43.42 | 40.18 | -1.99 | -0.24 | -3.48 |
 | ScreenSpot-Pro | `vlmevalkit_defaults_sample200` | 158/200/200/200 | 22.88 | 17.03 | 15.21 | 16.37 | -5.85 | -7.66 | -6.50 |
-| ChartQAPro | `vlmevalkit_faithful_cot` | 200 | 29.60 | 15.05 | 13.10 | 10.34 | -14.56 | -16.50 | -19.26 |
+| ChartQAPro | `vlmevalkit_faithful_cot` | 200 | 30.38 | 25.44 | 26.28 | 24.91 | -4.94 | -4.10 | -5.47 |
 | PuzzleVQA | `vlmevalkit_reasoning` | 200 | 31.00 | 33.50 | 41.00 | 34.50 | 2.50 | 10.00 | 3.50 |
 | VStarBench | `vlmevalkit_defaults` | 191 | 71.73 | 72.77 | 75.39 | 71.73 | 1.05 | 3.66 | 0.00 |
 | LogicVista | `vlmevalkit_defaults_qwen32b_judge` | 200 | 34.00 | 41.50 | 43.00 | 39.00 | 7.50 | 9.00 | 5.00 |
@@ -43,8 +43,8 @@ Each benchmark has exactly one normalized score. Scores are percentages when the
 | InfoVQA | `vlmevalkit_defaults_val` | 200 | 75.28 | 75.92 | 74.50 | 75.30 | 0.64 | -0.78 | 0.02 |
 | CharXivDesc | `vlmevalkit_defaults_qwen32b_judge` | 200 | 61.50 | 59.00 | 63.50 | 69.50 | -2.50 | 2.00 | 8.00 |
 | VLMBias | `vlmevalkit_defaults` | 200 | 20.50 | 18.50 | 17.50 | 20.00 | -2.00 | -3.00 | -0.50 |
-| Average |  |  | 33.85 | 34.50 | 35.76 | 34.44 | 0.65 | 1.91 | 0.59 |
-| Average excl. ScreenSpot |  |  | 33.88 | 34.79 | 36.12 | 34.78 | 0.91 | 2.24 | 0.90 |
+| Average |  |  | 33.87 | 34.78 | 36.12 | 34.83 | 0.91 | 2.25 | 0.96 |
+| Average excl. ScreenSpot |  |  | 33.90 | 35.08 | 36.50 | 35.19 | 1.18 | 2.59 | 1.29 |
 
 Normalization notes:
 - `MM-HELIX`: weighted mean over category `items * average_score` from the generated results TSV.

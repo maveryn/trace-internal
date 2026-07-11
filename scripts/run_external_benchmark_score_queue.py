@@ -711,6 +711,32 @@ def _run_chartqapro_extracted_score(
             sys.path.insert(0, str(path))
     import batched_chartqapro_vllm as chartqapro
 
+    def extract_chartqapro_prediction(raw: str, question_type: str = "") -> str:
+        text = str(raw or "").strip()
+        boxed = chartqapro._last_boxed(text) if hasattr(chartqapro, "_last_boxed") else None
+        if boxed:
+            return boxed
+        answer_tag = re.search(r"<answer>(.*?)</answer>", text, flags=re.I | re.S)
+        if answer_tag:
+            return answer_tag.group(1).strip()
+        try:
+            obj = json.loads(text)
+            if isinstance(obj, dict) and "answer" in obj:
+                return str(obj["answer"]).strip()
+        except Exception:
+            pass
+        matches = list(
+            re.finditer(
+                r"\b(?:final\s+answer|answer)\b\s*(?:is|=|:|：)?\s*(.+)",
+                text,
+                flags=re.I | re.S,
+            )
+        )
+        if matches:
+            tail = matches[-1].group(1).strip().splitlines()[0].strip()
+            return tail.rstrip(".").strip()
+        return chartqapro.extract_prediction(text, question_type)
+
     candidates = [
         output_dir / f"{spec.alias}_predictions_table.jsonl",
         output_dir / "predictions.jsonl",
@@ -731,7 +757,7 @@ def _run_chartqapro_extracted_score(
                 if key not in row:
                     missing_fields.append(f"index={row.get('index')} missing={key}")
             raw = row.get("raw_prediction", row.get("prediction", ""))
-            pred = chartqapro.extract_prediction(str(raw), str(row.get("question_type", "")))
+            pred = extract_chartqapro_prediction(str(raw), str(row.get("question_type", "")))
             out = dict(row)
             out["raw_prediction"] = raw
             out["prediction"] = pred
@@ -771,7 +797,7 @@ def _run_chartqapro_extracted_score(
             "source_predictions": str(source_path),
             "changed_predictions": changed,
             "unchanged_predictions": len(rows) - changed,
-            "extractor": "batched_chartqapro_vllm.extract_prediction",
+            "extractor": "TRACE ChartQAPro answer-is extractor",
         },
         "artifacts": {
             "prediction_table": str(source_path),

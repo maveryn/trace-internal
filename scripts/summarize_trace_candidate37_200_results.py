@@ -211,13 +211,11 @@ def _rows_label(row: pd.Series, model_columns: list[tuple[str, str]]) -> str:
 
 def write_markdown(summary: pd.DataFrame, output: Path, model_columns: list[tuple[str, str]]) -> None:
     first_label = model_columns[0][1] if model_columns else ""
-    second_label = model_columns[1][1] if len(model_columns) > 1 else ""
+    delta_labels = [label for _, label in model_columns[1:]] if first_label else []
     headers = ["Benchmark", "Prompt / Dataset", "Rows", *[label for _, label in model_columns]]
-    if first_label and second_label:
-        headers.append(f"{second_label} - {first_label}")
+    headers.extend(f"{label} - {first_label}" for label in delta_labels)
     align = ["---", "---", "---:"] + ["---:"] * len(model_columns)
-    if first_label and second_label:
-        align.append("---:")
+    align.extend(["---:"] * len(delta_labels))
     lines = [
         "# Qwen2.5-VL-3B TRACE Candidate37 200-Row Benchmark Results",
         "",
@@ -235,9 +233,9 @@ def write_markdown(summary: pd.DataFrame, output: Path, model_columns: list[tupl
         cells = [str(row["benchmark"]), f"`{prompt}`" if prompt else "", _rows_label(row, model_columns)]
         for _, label in model_columns:
             cells.append(_fmt(row[label]))
-        if first_label and second_label:
+        for label in delta_labels:
             try:
-                cells.append(_fmt(float(row[second_label]) - float(row[first_label])))
+                cells.append(_fmt(float(row[label]) - float(row[first_label])))
             except Exception:
                 cells.append("")
         lines.append("| " + " | ".join(cells) + " |")

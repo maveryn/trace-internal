@@ -24,6 +24,8 @@ DATASET_DIR="${DATASET_DIR:-$TMPFS_ROOT/datasets}"
 IMAGE_CAP="${IMAGE_CAP:-1280000}"
 RESET="${RESET:-0}"
 CLEAN_SCHEMA="${CLEAN_SCHEMA:-1}"
+SHUFFLE_ROWS="${SHUFFLE_ROWS:-1}"
+ROW_ORDER_SEED="${ROW_ORDER_SEED:-20260711}"
 
 TRAIN_SEED="${TRAIN_SEED:-42}"
 TRAIN_NUM_INSTANCES="${TRAIN_NUM_INSTANCES:-64000}"
@@ -51,12 +53,12 @@ write_manifest() {
   local parquet="$5"
   local manifest="${parquet}.manifest.json"
 
-  "$PYTHON_BIN" - "$role" "$name" "$rows" "$seed" "$parquet" "$manifest" <<'PY'
+  "$PYTHON_BIN" - "$role" "$name" "$rows" "$seed" "$parquet" "$manifest" "$SHUFFLE_ROWS" "$ROW_ORDER_SEED" <<'PY'
 import json
 import sys
 from pathlib import Path
 
-role, name, rows, seed, parquet, manifest = sys.argv[1:]
+role, name, rows, seed, parquet, manifest, shuffle_rows, row_order_seed = sys.argv[1:]
 payload = {
     "dataset_name": name,
     "recipe": "trace_rlvr_all1000_iid_tmpfs",
@@ -70,6 +72,8 @@ payload = {
         "RLVR export stores prompt_answer and prompt_answer_and_annotation."
     ),
     "schema_profile": "trace_rlvr_clean_v1",
+    "row_order": "deterministic_shuffle" if shuffle_rows == "1" else "generation_order",
+    "row_order_seed": int(row_order_seed) if shuffle_rows == "1" else None,
     "image_storage_mode": "embedded_bytes",
     "max_embedded_image_pixels": 1280000,
 }
@@ -83,7 +87,8 @@ clean_schema() {
   if [[ "$CLEAN_SCHEMA" != "1" ]]; then
     return
   fi
-  "$PYTHON_BIN" - "$parquet" <<'PY'
+  "$PYTHON_BIN" - "$parquet" "$SHUFFLE_ROWS" "$ROW_ORDER_SEED" <<'PY'
+import json
 import os
 import sys
 from pathlib import Path
@@ -91,6 +96,8 @@ from pathlib import Path
 import pyarrow.parquet as pq
 
 path = Path(sys.argv[1])
+shuffle_rows = sys.argv[2] == "1"
+row_order_seed = int(sys.argv[3])
 columns = [
     "instance_id",
     "domain",
@@ -112,11 +119,41 @@ schema_names = set(pq.read_schema(path).names)
 missing = [column for column in columns if column not in schema_names]
 if missing:
     raise SystemExit(f"cannot clean {path}: missing columns {missing}")
-table = pq.read_table(path, columns=columns)
+expected_row_order = "deterministic_shuffle" if shuffle_rows else "generation_order"
+manifest_path = path.with_suffix(path.suffix + ".manifest.json")
+manifest = {}
+if manifest_path.exists():
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        manifest = {}
+already_final = (
+    list(pq.read_schema(path).names) == columns
+    and manifest.get("schema_profile") == "trace_rlvr_clean_v1"
+    and manifest.get("row_order") == expected_row_order
+    and (not shuffle_rows or int(manifest.get("row_order_seed", -1)) == row_order_seed)
+)
+if already_final:
+    print(f"[clean-schema] skip already-final {path}")
+    raise SystemExit(0)
 tmp_path = path.with_suffix(path.suffix + ".cleaning")
-pq.write_table(table, tmp_path, compression="zstd")
+if shuffle_rows:
+    os.environ.setdefault("HF_DATASETS_CACHE", str(path.parent / ".hf_datasets_cache"))
+    from datasets import load_dataset
+
+    dataset = load_dataset("parquet", data_files=str(path), split="train")
+    dataset = dataset.select_columns(columns).shuffle(seed=row_order_seed)
+    row_count = dataset.num_rows
+    dataset.to_parquet(str(tmp_path), batch_size=512)
+else:
+    table = pq.read_table(path, columns=columns)
+    row_count = table.num_rows
+    pq.write_table(table, tmp_path, compression="zstd", row_group_size=512)
 os.replace(tmp_path, path)
-print(f"[clean-schema] {path} columns={len(columns)} rows={table.num_rows}")
+print(
+    f"[clean-schema] {path} columns={len(columns)} rows={row_count} "
+    f"row_order={expected_row_order}"
+)
 PY
 }
 
@@ -170,6 +207,7 @@ echo "[all1000-iid] tmpfs_root=${TMPFS_ROOT}"
 echo "[all1000-iid] output_root=${OUTPUT_ROOT}"
 echo "[all1000-iid] dataset_dir=${DATASET_DIR}"
 echo "[all1000-iid] code_hash=${CODE_HASH}"
+echo "[all1000-iid] clean_schema=${CLEAN_SCHEMA} shuffle_rows=${SHUFFLE_ROWS} row_order_seed=${ROW_ORDER_SEED}"
 
 run_dataset train "$TRAIN_NAME" "$TRAIN_NUM_INSTANCES" "$TRAIN_SEED" "$TRAIN_PARQUET"
 run_dataset validation_iid "$VAL_NAME" "$VAL_NUM_INSTANCES" "$VAL_SEED" "$VAL_PARQUET"

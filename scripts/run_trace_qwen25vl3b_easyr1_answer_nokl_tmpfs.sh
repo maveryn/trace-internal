@@ -73,6 +73,8 @@ python3 -m verl.trainer.main \
   algorithm.disable_kl=true \
   algorithm.use_kl_loss=false \
   algorithm.kl_coef=0 \
+  algorithm.perfect_solve_threshold=1.0 \
+  algorithm.zero_solve_threshold=0.0 \
   worker.actor.model.model_path="$MODEL_PATH" \
   worker.actor.model.tokenizer_path="$MODEL_PATH" \
   worker.actor.model.trust_remote_code=false \

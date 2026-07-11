@@ -95,6 +95,10 @@ class AlgorithmConfig:
     """filter out low reward samples if online filtering"""
     filter_high: float = 0.99
     """filter out high reward samples if online filtering"""
+    perfect_solve_threshold: float = 1.0
+    """group is perfect-solve if every rollout score is at least this value"""
+    zero_solve_threshold: float = 0.0
+    """group is zero-solve if every rollout score is at most this value"""
 
 
 @dataclass

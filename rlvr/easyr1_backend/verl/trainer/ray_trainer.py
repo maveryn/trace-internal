@@ -54,7 +54,9 @@ from .core_algos import (
 )
 from .metrics import (
     compute_data_metrics,
+    compute_group_solve_metrics,
     compute_length_metrics,
+    compute_sample_solve_metrics,
     compute_throughout_metrics,
     compute_timing_metrics,
     reduce_reward_metrics,
@@ -446,6 +448,14 @@ class RayPPOTrainer:
             f"val/{key}_reward": value for key, value in reduce_metrics(reward_metrics_lst).items()
         }
         val_reward_metrics.update(reduce_reward_metrics(reward_metrics_lst, prefix="val/reward/"))
+        val_reward_metrics.update(
+            compute_sample_solve_metrics(
+                reward_metrics_lst,
+                perfect_solve_threshold=self.config.algorithm.perfect_solve_threshold,
+                zero_solve_threshold=self.config.algorithm.zero_solve_threshold,
+                prefix="val/",
+            )
+        )
         val_length_metrics = {f"val_{key}": value for key, value in reduce_metrics(length_metrics_lst).items()}
         print("Finish validation.")
         return {"val/reward_score": self.val_reward_score, **val_reward_metrics, **val_length_metrics}
@@ -633,6 +643,15 @@ class RayPPOTrainer:
                         reward_tensor, reward_metrics = ray.get(reward_ref)
                         batch.batch["token_level_scores"] = reward_tensor
                         metrics.update(reduce_reward_metrics(reward_metrics, prefix="reward/"))
+                        metrics.update(
+                            compute_group_solve_metrics(
+                                batch.non_tensor_batch["uid"],
+                                reward_metrics,
+                                perfect_solve_threshold=self.config.algorithm.perfect_solve_threshold,
+                                zero_solve_threshold=self.config.algorithm.zero_solve_threshold,
+                                prefix="rlvr_stats/",
+                            )
+                        )
 
                     # apply kl penalty if available
                     if not self.config.algorithm.use_kl_loss and self.use_reference_policy:

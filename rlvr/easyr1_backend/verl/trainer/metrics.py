@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import defaultdict
 from typing import Any
 
 import numpy as np
@@ -73,6 +74,91 @@ def reduce_reward_metrics(metrics: dict[str, list[Any]], prefix: str = "reward/"
                 np.sum(annotation_values * mask_values) / count
             )
     return reduced
+
+
+def _select_solve_scores(metrics: dict[str, list[Any]], score_key: str | None = None) -> np.ndarray | None:
+    candidate_keys = (
+        [score_key] if score_key else []
+    ) + [
+        "task_reward_effective",
+        "answer_reward",
+        "accuracy",
+        "overall",
+        "score",
+    ]
+    for key in candidate_keys:
+        if not key or key not in metrics:
+            continue
+        try:
+            return np.asarray(metrics[key], dtype=float)
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def compute_group_solve_metrics(
+    uids: Any,
+    metrics: dict[str, list[Any]],
+    *,
+    score_key: str | None = None,
+    perfect_solve_threshold: float = 1.0,
+    zero_solve_threshold: float = 0.0,
+    prefix: str = "rlvr_stats/",
+) -> dict[str, Any]:
+    scores = _select_solve_scores(metrics, score_key=score_key)
+    if scores is None:
+        return {}
+
+    uid_values = np.asarray(uids, dtype=object)
+    if uid_values.shape[0] != scores.shape[0]:
+        return {}
+
+    grouped_scores: dict[Any, list[float]] = defaultdict(list)
+    for uid, score in zip(uid_values, scores):
+        grouped_scores[uid].append(float(score))
+
+    if not grouped_scores:
+        return {}
+
+    zero_solve_count = 0
+    perfect_solve_count = 0
+    for group_scores in grouped_scores.values():
+        group_array = np.asarray(group_scores, dtype=float)
+        if np.all(group_array <= zero_solve_threshold):
+            zero_solve_count += 1
+        if np.all(group_array >= perfect_solve_threshold):
+            perfect_solve_count += 1
+
+    group_count = len(grouped_scores)
+    return {
+        f"{prefix}zero_solve_count": float(zero_solve_count),
+        f"{prefix}zero_solve_rate": float(zero_solve_count / group_count),
+        f"{prefix}perfect_solve_count": float(perfect_solve_count),
+        f"{prefix}perfect_solve_rate": float(perfect_solve_count / group_count),
+    }
+
+
+def compute_sample_solve_metrics(
+    metrics: dict[str, list[Any]],
+    *,
+    score_key: str | None = None,
+    perfect_solve_threshold: float = 1.0,
+    zero_solve_threshold: float = 0.0,
+    prefix: str = "val/",
+) -> dict[str, Any]:
+    scores = _select_solve_scores(metrics, score_key=score_key)
+    if scores is None or scores.size == 0:
+        return {}
+
+    zero_solve_count = float(np.sum(scores <= zero_solve_threshold))
+    perfect_solve_count = float(np.sum(scores >= perfect_solve_threshold))
+    total = float(scores.size)
+    return {
+        f"{prefix}zero_solve_count": zero_solve_count,
+        f"{prefix}zero_solve_rate": float(zero_solve_count / total),
+        f"{prefix}perfect_solve_count": perfect_solve_count,
+        f"{prefix}perfect_solve_rate": float(perfect_solve_count / total),
+    }
 
 
 def compute_length_metrics(batch: DataProto) -> dict[str, Any]:

@@ -104,6 +104,32 @@ SAVE_CHECKPOINT_PATH=/dev/shm/trace_rlvr/easyr1_checkpoints/<experiment>
 
 If the repo is not at `/home/shadeform/trace`, set `REPO_ROOT` explicitly.
 
+## GPU Topology Preflight
+
+Before downloading data or launching a smoke run, report the available GPU count
+and the full peer-connectivity matrix:
+
+```bash
+nvidia-smi --list-gpus
+nvidia-smi topo -m
+```
+
+Include the full `nvidia-smi topo -m` output in the handoff/status update and
+state whether the host is suitable for the planned `N_GPUS` run:
+
+- Good for 8-GPU EasyR1/FSDP training: all or nearly all GPU-to-GPU pairs among
+  `GPU0` through `GPU7` show `NV#` links, for example `NV18`.
+- Good for 4-GPU training: the selected four GPUs have broad `NV#`
+  connectivity to each other. If only some GPUs are NVLink-connected, set
+  `CUDA_VISIBLE_DEVICES` to that connected subset and use `N_GPUS=4`.
+- Risky or unsuitable without confirmation: the selected GPU-to-GPU matrix is
+  mostly `PHB`, `PXB`, `PIX`, or `SYS`. These hosts can be extremely slow for
+  FSDP/NCCL-heavy runs and may fail with NCCL peer-access errors.
+
+Also report the intended values of `CUDA_VISIBLE_DEVICES`, `N_GPUS`, and
+`TENSOR_PARALLEL_SIZE`. Do not start a real ablation until this topology check
+has been reported.
+
 ## Smoke Checks
 
 Verify the HF dataset schema:

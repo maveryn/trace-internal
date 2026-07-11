@@ -47,6 +47,8 @@ Current EasyR1 paper-training path:
 - reward-mode reference: `rlvr/TRACE_REWARD_MODES.md`
 - annotation ablation handoff runbook:
   `docs/workflows/TRACE_ANNOTATION_ABLATION_RUNBOOK.md`
+  - agents must report `nvidia-smi topo -m` first and state whether the host is
+    suitable for the intended 4-GPU or 8-GPU EasyR1/FSDP run
 - generic no-KL Qwen2.5-VL-3B launcher:
   `scripts/run_trace_qwen25vl3b_easyr1_nokl_tmpfs.sh`
 - answer-only wrapper:

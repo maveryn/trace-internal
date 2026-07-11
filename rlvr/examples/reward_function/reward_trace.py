@@ -70,7 +70,7 @@ def _score_single_reward_input(
             bbox_iou_threshold=bbox_iou_threshold,
             point_half_life_px=point_half_life_px,
             image_size=reward_input.get("image_size") or reward_input.get("source_image_size"),
-            image_sizes=reward_input.get("image_sizes"),
+            image_sizes=reward_input.get("image_sizes") or reward_input.get("image_sizes_exported"),
             metadata=reward_input.get("metadata"),
             extra_info=reward_input.get("extra_info"),
             trace_reward_mode=normalized_mode,
@@ -113,6 +113,7 @@ def _build_single_reward_input(
         "prompt",
         "image_size",
         "image_sizes",
+        "image_sizes_exported",
         "source_image_size",
     ):
         if key in extra_info:

@@ -23,6 +23,7 @@ DEFAULT_ROW_ORDER_SEED = 20260711
 
 VIEWER_COLUMNS = [
     "images",
+    "image_sizes",
     "prompt_answer",
     "prompt_answer_and_annotation",
     "answer_gt",
@@ -141,14 +142,19 @@ def _build_viewer_parquet(
     cache_dir: Path,
 ) -> dict[str, Any]:
     schema_names = set(pq.read_schema(src).names)
-    missing = [column for column in VIEWER_COLUMNS if column not in schema_names]
+    required_columns = [column for column in VIEWER_COLUMNS if column != "image_sizes"]
+    missing = [column for column in required_columns if column not in schema_names]
     if missing:
         raise RuntimeError(f"{src} is missing required columns: {missing}")
+    if "image_sizes" not in schema_names and "image_sizes_exported" not in schema_names:
+        raise RuntimeError(f"{src} is missing image_sizes and image_sizes_exported")
 
     dst.parent.mkdir(parents=True, exist_ok=True)
     os.environ["HF_DATASETS_CACHE"] = str(cache_dir)
     original_ids = set(pq.read_table(src, columns=["instance_id"]).column("instance_id").to_pylist())
     dataset = load_dataset("parquet", data_files=str(src), split="train")
+    if "image_sizes" not in dataset.column_names:
+        dataset = dataset.rename_column("image_sizes_exported", "image_sizes")
     dataset = dataset.select_columns(VIEWER_COLUMNS).shuffle(seed=row_order_seed)
     dataset.to_parquet(str(dst), batch_size=512)
 
@@ -239,15 +245,16 @@ The shuffle changes only row order. It does not change prompts, images, answers,
 The main parquet files use `trace_rlvr_viewer_v1`. The first columns are ordered for browsing:
 
 1. `images`
-2. `prompt_answer`
-3. `prompt_answer_and_annotation`
-4. `answer_gt`
-5. `annotation_gt`
-6. `reward_contract`
+2. `image_sizes`
+3. `prompt_answer`
+4. `prompt_answer_and_annotation`
+5. `answer_gt`
+6. `annotation_gt`
+7. `reward_contract`
 
-Additional identity/provenance columns follow: `instance_id`, `domain`, `task`, `scene_id`, `query_id`, `scene_variant`, and `trace_ref`.
+`image_sizes` stores the final exported image dimensions used by annotation rewards. Additional identity/provenance columns follow: `instance_id`, `domain`, `task`, `scene_id`, `query_id`, `scene_variant`, and `trace_ref`.
 
-The previous viewer-noisy compatibility columns were removed from the main parquet: `uid`, `prompt`, `prompt_active`, `prompt_answer_only`, `prompt_mode`, `difficulty_bin`, `bucket_id_str`, `image_sizes_original`, and `image_sizes_exported`.
+The previous viewer-noisy compatibility columns were removed from the main parquet: `uid`, `prompt`, `prompt_active`, `prompt_answer_only`, `prompt_mode`, `difficulty_bin`, `bucket_id_str`, `image_sizes_original`, and `image_sizes_exported`. The canonical size field is `image_sizes`.
 
 ## Sidecars
 

@@ -78,6 +78,7 @@ payload = {
     "max_embedded_image_pixels": 1280000,
     "columns": [
         "images",
+        "image_sizes",
         "prompt_answer",
         "prompt_answer_and_annotation",
         "answer_gt",
@@ -126,6 +127,7 @@ shuffle_rows = sys.argv[2] == "1"
 row_order_seed = int(sys.argv[3])
 columns = [
     "images",
+    "image_sizes",
     "prompt_answer",
     "prompt_answer_and_annotation",
     "answer_gt",
@@ -140,9 +142,12 @@ columns = [
     "trace_ref",
 ]
 schema_names = set(pq.read_schema(path).names)
-missing = [column for column in columns if column not in schema_names]
+required_columns = [column for column in columns if column != "image_sizes"]
+missing = [column for column in required_columns if column not in schema_names]
 if missing:
     raise SystemExit(f"cannot clean {path}: missing columns {missing}")
+if "image_sizes" not in schema_names and "image_sizes_exported" not in schema_names:
+    raise SystemExit(f"cannot clean {path}: missing image_sizes and image_sizes_exported")
 expected_row_order = "deterministic_shuffle" if shuffle_rows else "generation_order"
 manifest_path = path.with_suffix(path.suffix + ".manifest.json")
 manifest = {}
@@ -166,11 +171,17 @@ if shuffle_rows:
     from datasets import load_dataset
 
     dataset = load_dataset("parquet", data_files=str(path), split="train")
+    if "image_sizes" not in dataset.column_names:
+        dataset = dataset.rename_column("image_sizes_exported", "image_sizes")
     dataset = dataset.select_columns(columns).shuffle(seed=row_order_seed)
     row_count = dataset.num_rows
     dataset.to_parquet(str(tmp_path), batch_size=512)
 else:
-    table = pq.read_table(path, columns=columns)
+    table = pq.read_table(path)
+    if "image_sizes" not in table.column_names:
+        image_sizes_index = columns.index("image_sizes")
+        table = table.add_column(image_sizes_index, "image_sizes", table["image_sizes_exported"])
+    table = table.select(columns)
     row_count = table.num_rows
     pq.write_table(table, tmp_path, compression="zstd", row_group_size=512)
 os.replace(tmp_path, path)

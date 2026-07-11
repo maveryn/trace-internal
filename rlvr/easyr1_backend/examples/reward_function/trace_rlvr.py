@@ -85,7 +85,7 @@ def _score_one(
             bbox_iou_threshold=bbox_iou_threshold,
             point_half_life_px=point_half_life_px,
             image_size=reward_input.get("image_size") or reward_input.get("source_image_size"),
-            image_sizes=reward_input.get("image_sizes"),
+            image_sizes=reward_input.get("image_sizes") or reward_input.get("image_sizes_exported"),
             metadata=_jsonish(reward_input.get("metadata")),
             extra_info=_jsonish(reward_input.get("extra_info")),
             trace_reward_mode=trace_reward_mode if trace_reward_mode != "auto" else trace_output_mode,
@@ -134,4 +134,3 @@ def compute_score(
         )
         for reward_input in reward_inputs
     ]
-

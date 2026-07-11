@@ -307,15 +307,164 @@ def _run_vlmbias_rule_score(
 def _extract_option_letter(text: Any, *, choices: str = "ABCD") -> str:
     text = str(text or "").strip()
     braced = _extract_braced_answer(text)
+    answer_patterns = [
+        rf"<\s*answer\s*>\s*[:：]?\s*([{choices}])\b",
+        rf"\b(?:final\s+answer|answer|option|choice|correct)\b\s*(?:is|:|：)?\s*([{choices}])\b",
+    ]
     for candidate in (braced, text):
         stripped = candidate.strip().upper()
         if stripped in set(choices):
             return stripped
-        match = re.search(rf"\b(?:answer|option|choice|correct)\b\s*(?:is|:)?\s*([{choices}])\b", candidate, flags=re.I)
-        if match:
-            return match.group(1).upper()
+        for pattern in answer_patterns:
+            match = re.search(pattern, candidate, flags=re.I)
+            if match:
+                return match.group(1).upper()
     matches = re.findall(rf"\b([{choices}])\b", text, flags=re.I)
     return matches[-1].upper() if matches else ""
+
+
+def _run_wemath_subset_score(
+    args: argparse.Namespace,
+    spec: BenchmarkSpec,
+    model_path: str,
+    output_dir: Path,
+) -> dict[str, Any]:
+    _import_vlmeval_runner()
+    from vlmeval.smp import load
+
+    pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+    if not pred_table.exists():
+        raise FileNotFoundError(pred_table)
+    data = load(str(pred_table))
+    data["eval_pred"] = [_extract_option_letter(x, choices="ABCDEFG") for x in data["prediction"]]
+    data["eval_gt"] = [_extract_option_letter(x, choices="ABCDEFG") for x in data["answer"]]
+    data["hit"] = [float(p != "" and p == g) for p, g in zip(data["eval_pred"], data["eval_gt"])]
+
+    judged = output_dir / f"{spec.alias}_subset_option_judged.xlsx"
+    data.to_excel(judged, index=False)
+    overall = float(data["hit"].mean() * 100.0) if len(data) else 0.0
+    table: list[dict[str, Any]] = [{"Split": "Overall", "Accuracy (%)": overall, "Samples": int(len(data))}]
+    for col in ("key", "split", "knowledge concept"):
+        if col in data:
+            for key, group in data.groupby(col, dropna=False):
+                table.append(
+                    {
+                        "Split": f"{col}/{key}",
+                        "Accuracy (%)": float(group["hit"].mean() * 100.0),
+                        "Samples": int(len(group)),
+                    }
+                )
+
+    score_csv = output_dir / f"{spec.alias}_subset_option_score.csv"
+    pd.DataFrame(table).to_csv(score_csv, index=False)
+    scores = {"accuracy": overall, "Overall": overall, "table": table}
+    summary = {
+        "dataset": spec.alias,
+        "model": model_path,
+        "run_name": spec.run_name,
+        "harness": "TRACE subset-safe WeMath option-letter exact scorer",
+        "rows": len(data),
+        "score": overall,
+        "scores": scores,
+        "artifacts": {"prediction_table": str(pred_table), "judged_table": str(judged), "score_csv": str(score_csv)},
+    }
+    write_json(output_dir / "scores.json", summary)
+    print(json.dumps(summary, indent=2, ensure_ascii=False, default=json_default))
+    return summary
+
+
+def _run_physics_subset_score(
+    args: argparse.Namespace,
+    spec: BenchmarkSpec,
+    model_path: str,
+    output_dir: Path,
+    judge: PersistentJudge,
+) -> dict[str, Any]:
+    _import_vlmeval_runner()
+    from vlmeval.dataset.utils.physic import PHYSIC_acc
+    from vlmeval.dataset.utils.physics_eval_utils import extract_final_answer_allform
+    from vlmeval.smp import load
+
+    pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+    if not pred_table.exists():
+        raise FileNotFoundError(pred_table)
+    data = load(str(pred_table))
+    rows = []
+    prompts = []
+    for _, row in data.iterrows():
+        row = row.copy()
+        extract_error = ""
+        prediction_text = str(row.get("prediction", ""))
+        try:
+            preds = extract_final_answer_allform(prediction_text)
+        except Exception as exc:
+            extract_error = f"{type(exc).__name__}: {exc}"
+            preds = re.findall(r"\\boxed\{([^{}]*)\}", prediction_text, flags=re.S)
+        flat: list[str] = []
+        for item in preds:
+            if isinstance(item, (list, tuple)):
+                flat.extend(str(x).strip() for x in item if str(x).strip())
+            elif str(item).strip():
+                flat.append(str(item).strip())
+        gt = str(row.get("answer", "")).strip()
+        if gt and any(p == gt for p in flat):
+            row["res"] = 1.0
+            row["log"] = "Exact boxed match"
+        elif flat:
+            prompt = (
+                "Compare the model answer to the standard answer for this physics problem. "
+                "Return only True or False.\n\n"
+                f"Question: {row.get('question', '')}\n"
+                f"Standard answer: {gt}\n"
+                f"Model answer: {flat[0]}\n"
+                "Equivalent:"
+            )
+            prompts.append((str(row["index"]), prompt))
+            row["res"] = 0.0
+            row["log"] = "Pending local judge"
+        else:
+            row["res"] = 0.0
+            row["log"] = f"Box extraction failed: {extract_error}" if extract_error else "No boxed answer"
+        rows.append(row.to_dict())
+
+    judged = judge.run_cached(
+        output_dir=output_dir,
+        prompts=prompts,
+        cache_name="physics_qwen3_32b_score.jsonl",
+        max_tokens=16,
+        no_resume=args.no_resume,
+        desc=f"{spec.alias} local judge",
+    )
+    for row in rows:
+        if row["log"] == "Pending local judge":
+            out = str(judged.get(str(row["index"]), {}).get("judge_output", "")).strip().lower()
+            row["res"] = 1.0 if "true" in out or out.startswith("yes") else 0.0
+            row["log"] = f"Judge output: {out}"
+
+    judged_table = output_dir / f"{spec.alias}_judged_qwen3_32b.xlsx"
+    pd.DataFrame(rows).to_excel(judged_table, index=False)
+    score_df = PHYSIC_acc(str(judged_table))
+    score_csv = output_dir / f"{spec.alias}_judged_qwen3_32b_score.csv"
+    score_df.to_csv(score_csv, index=False)
+    scores = {
+        "table": score_df.to_dict(orient="records"),
+        "Overall": float(score_df.loc[score_df["Subject"] == "Overall", "acc"].iloc[0])
+        if "Overall" in set(score_df["Subject"])
+        else None,
+    }
+    summary = {
+        "dataset": spec.alias,
+        "model": model_path,
+        "run_name": spec.run_name,
+        "harness": "TRACE local Physics boxed-answer scorer with timeout-safe extraction",
+        "rows": len(rows),
+        "score": scores["Overall"],
+        "scores": scores,
+        "artifacts": {"prediction_table": str(pred_table), "judged_table": str(judged_table), "score_csv": str(score_csv)},
+    }
+    write_json(output_dir / "scores.json", summary)
+    print(json.dumps(summary, indent=2, ensure_ascii=False, default=json_default))
+    return summary
 
 
 def _run_phyx_option_score(
@@ -659,6 +808,8 @@ def _run_score_for_spec(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
         summary = _run_charxiv_local_judge(args, spec, model_path, output_dir, judge)
     elif mode in {"mathv_local_judge", "mathvista_local_judge", "mathverse_local_judge", "logicvista_local_judge"}:
         summary = _run_local_math_like(args, spec, model_path, output_dir, judge)
+    elif mode == "wemath_local_judge":
+        summary = _run_wemath_subset_score(args, spec, model_path, output_dir)
     elif mode == "seephys_local_judge":
         runner, _ = _import_vlmeval_runner()
         ns = _namespace_for_spec(args, spec, output_dir, model_path)
@@ -682,27 +833,7 @@ def _run_score_for_spec(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
         finally:
             runner._run_local_text_judge = old
     elif mode == "physics_local_judge":
-        runner, _ = _import_vlmeval_runner()
-        ns = _namespace_for_spec(args, spec, output_dir, model_path)
-        old = runner._run_local_text_judge
-
-        def persistent_text_judge(call_args, *, prompts, cache_name, max_tokens=None, temperature=0.0, top_p=1.0):
-            return judge.run_cached(
-                output_dir=call_args.output_dir,
-                prompts=prompts,
-                cache_name=cache_name,
-                max_tokens=max_tokens,
-                temperature=temperature,
-                top_p=top_p,
-                no_resume=call_args.no_resume,
-                desc=f"{call_args.dataset} local judge",
-            )
-
-        runner._run_local_text_judge = persistent_text_judge
-        try:
-            summary = runner.run_physics_local_judge(ns)
-        finally:
-            runner._run_local_text_judge = old
+        summary = _run_physics_subset_score(args, spec, model_path, output_dir, judge)
     else:
         summary = _run_direct_vlmeval(args, spec, model_path, output_dir)
     dst = _copy_score_to_benchmark(spec, model_slug, output_dir, args.benchmark_root)

@@ -300,6 +300,8 @@ def effective_generation_batch_size(
 def local_judge_eval_mode(spec: BenchmarkSpec) -> str | None:
     if spec.kind == "chartmuseum" or spec.key == "chartmuseum" or spec.eval_mode == "chartmuseum_local_judge":
         return "chartmuseum_local_judge"
+    if spec.eval_mode == "wemath_local_judge" or spec.alias.startswith("WeMath"):
+        return "wemath_local_judge"
     if spec.alias.startswith("CharXiv_"):
         return "charxiv_local_judge"
     if spec.alias == "MathVision":

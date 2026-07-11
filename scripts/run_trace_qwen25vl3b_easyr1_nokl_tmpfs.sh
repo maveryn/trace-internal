@@ -23,11 +23,14 @@ mkdir -p "$HF_HOME" "$HF_DATASETS_CACHE" "$TRANSFORMERS_CACHE" "$RAY_TMPDIR" "$W
 RUN_STAMP="${RUN_STAMP:-$(date -u +%Y%m%dT%H%M%SZ)}"
 MODEL_PATH="${MODEL_PATH:-Qwen/Qwen2.5-VL-3B-Instruct}"
 TRACE_HF_REPO_ID="${TRACE_HF_REPO_ID:-maveryn/trace}"
-TRACE_HF_TRAIN_FILE="${TRACE_HF_TRAIN_FILE:-data/train/trace_rlvr_train_64000_all1000_seed42.parquet}"
-TRACE_HF_VAL_FILE="${TRACE_HF_VAL_FILE:-data/validation/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet}"
+TRACE_HF_TRAIN_SPLIT="${TRACE_HF_TRAIN_SPLIT:-train}"
+TRACE_HF_VAL_SPLIT="${TRACE_HF_VAL_SPLIT:-validation}"
+TRACE_HF_TRAIN_FILE="${TRACE_HF_TRAIN_FILE:-}"
+TRACE_HF_VAL_FILE="${TRACE_HF_VAL_FILE:-}"
 if [[ -z "${TRAIN_FILES:-}" ]]; then
-  TRAIN_FILES="$(
-    TRACE_HF_REPO_ID="$TRACE_HF_REPO_ID" TRACE_HF_TRAIN_FILE="$TRACE_HF_TRAIN_FILE" python3 - <<'PY'
+  if [[ -n "$TRACE_HF_TRAIN_FILE" ]]; then
+    TRAIN_FILES="$(
+      TRACE_HF_REPO_ID="$TRACE_HF_REPO_ID" TRACE_HF_TRAIN_FILE="$TRACE_HF_TRAIN_FILE" python3 - <<'PY'
 import os
 from huggingface_hub import hf_hub_download
 
@@ -39,11 +42,15 @@ print(
     )
 )
 PY
-  )"
+    )"
+  else
+    TRAIN_FILES="${TRACE_HF_REPO_ID}@${TRACE_HF_TRAIN_SPLIT}"
+  fi
 fi
 if [[ -z "${VAL_FILES:-}" ]]; then
-  VAL_FILES="$(
-    TRACE_HF_REPO_ID="$TRACE_HF_REPO_ID" TRACE_HF_VAL_FILE="$TRACE_HF_VAL_FILE" python3 - <<'PY'
+  if [[ -n "$TRACE_HF_VAL_FILE" ]]; then
+    VAL_FILES="$(
+      TRACE_HF_REPO_ID="$TRACE_HF_REPO_ID" TRACE_HF_VAL_FILE="$TRACE_HF_VAL_FILE" python3 - <<'PY'
 import os
 from huggingface_hub import hf_hub_download
 
@@ -55,7 +62,10 @@ print(
     )
 )
 PY
-  )"
+    )"
+  else
+    VAL_FILES="${TRACE_HF_REPO_ID}@${TRACE_HF_VAL_SPLIT}"
+  fi
 fi
 REWARD_FUNCTION="${REWARD_FUNCTION:-examples/reward_function/trace_rlvr.py:compute_score}"
 

@@ -62,18 +62,19 @@ Current EasyR1 paper-training path:
 
 Current all-1000-task IID 500-step dataset recipe:
 
-- train: `trace_rlvr_train_64000_all1000_seed42.parquet`
+- train: `trace_rlvr_train_64000_all1000_seed42-*.parquet`
   - `1000` active tasks x `64` samples per task = `64,000` rows
   - supports `500` steps at `data.rollout_batch_size=128` before prompt reuse
+  - sharded on HF for dataset-viewer and range-read stability
 - validation: `trace_rlvr_validation_iid_2000_all1000_seed1042.parquet`
   - `1000` active tasks x `2` samples per task = `2,000` rows
   - uses a different generation seed from train, so it is IID but non-overlapping by construction
-- both parquets store answer-only and answer-and-annotation prompt columns, so
+- both splits store answer-only and answer-and-annotation prompt columns, so
   the same files can drive answer-only, additive annotation, and gated annotation
   EasyR1 runs by changing `PROMPT_KEY` and reward-mode env vars
 - these files are published in the private HF dataset `maveryn/trace`; the
-  generic EasyR1 launcher downloads them by default when `TRAIN_FILES` and
-  `VAL_FILES` are unset
+  generic EasyR1 launcher loads `maveryn/trace@train` and
+  `maveryn/trace@validation` by default when `TRAIN_FILES` and `VAL_FILES` are unset
 - the local builder also writes these files under `/dev/shm/trace_rlvr/datasets`
   when regenerating or debugging the dataset on a source machine
 - if a later run needs more than `500` steps without prompt reuse, build a new
@@ -84,10 +85,8 @@ Active EasyR1 all1000 launcher defaults:
 
 - generic launcher: `scripts/run_trace_qwen25vl3b_easyr1_nokl_tmpfs.sh`
 - default model: `Qwen/Qwen2.5-VL-3B-Instruct`
-- default train file:
-  `maveryn/trace:data/train/trace_rlvr_train_64000_all1000_seed42.parquet`
-- default validation file:
-  `maveryn/trace:data/validation/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet`
+- default train split: `maveryn/trace@train`
+- default validation split: `maveryn/trace@validation`
 - default `MAX_PROMPT_LENGTH=2048`
 - default `MAX_RESPONSE_LENGTH=2048`
 - default reward mode: `answer`

@@ -32,7 +32,7 @@ maveryn/trace
 Files:
 
 ```text
-data/train/trace_rlvr_train_64000_all1000_seed42.parquet
+data/train/trace_rlvr_train_64000_all1000_seed42-*.parquet
 data/validation/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet
 ```
 
@@ -55,9 +55,10 @@ scene_variant
 trace_ref
 ```
 
-The training parquet has `64,000` rows: `1000` active tasks x `64` samples per
-task. At `ROLLOUT_BATCH_SIZE=128`, `500` optimizer steps is one pass over the
-prompt rows before reuse.
+The training split has `64,000` rows: `1000` active tasks x `64` samples per
+task, stored as multiple parquet shards for Hugging Face viewer/range-read
+stability. At `ROLLOUT_BATCH_SIZE=128`, `500` optimizer steps is one pass over
+the prompt rows before reuse.
 
 The validation parquet has `2,000` IID rows: `1000` active tasks x `2` samples
 per task, generated with a different seed.
@@ -68,8 +69,8 @@ per task, generated with a different seed.
 normalized coordinates or model-internal resized tensor coordinates for
 annotation rewards.
 
-The generic EasyR1 launcher downloads these two HF parquets by default when
-`TRAIN_FILES` and `VAL_FILES` are unset.
+The generic EasyR1 launcher loads `maveryn/trace@train` and
+`maveryn/trace@validation` by default when `TRAIN_FILES` and `VAL_FILES` are unset.
 
 ## Host Setup
 

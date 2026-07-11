@@ -20,6 +20,7 @@ DEFAULT_REPO_ID = "maveryn/trace"
 DEFAULT_TOKEN_FILE = "hf-token.txt"
 DEFAULT_TMPFS_ROOT = Path("/dev/shm/trace_rlvr")
 DEFAULT_ROW_ORDER_SEED = 20260711
+DEFAULT_TRAIN_SHARDS = 16
 
 VIEWER_COLUMNS = [
     "images",
@@ -140,6 +141,8 @@ def _build_viewer_parquet(
     row_order_seed: int,
     sidecar_paths: list[str],
     cache_dir: Path,
+    shard_count: int = 1,
+    shard_basename: str | None = None,
 ) -> dict[str, Any]:
     schema_names = set(pq.read_schema(src).names)
     required_columns = [column for column in VIEWER_COLUMNS if column != "image_sizes"]
@@ -149,6 +152,8 @@ def _build_viewer_parquet(
     if "image_sizes" not in schema_names and "image_sizes_exported" not in schema_names:
         raise RuntimeError(f"{src} is missing image_sizes and image_sizes_exported")
 
+    if shard_count < 1:
+        raise RuntimeError(f"shard_count must be positive, got {shard_count}")
     dst.parent.mkdir(parents=True, exist_ok=True)
     os.environ["HF_DATASETS_CACHE"] = str(cache_dir)
     original_ids = set(pq.read_table(src, columns=["instance_id"]).column("instance_id").to_pylist())
@@ -156,16 +161,40 @@ def _build_viewer_parquet(
     if "image_sizes" not in dataset.column_names:
         dataset = dataset.rename_column("image_sizes_exported", "image_sizes")
     dataset = dataset.select_columns(VIEWER_COLUMNS).shuffle(seed=row_order_seed)
-    dataset.to_parquet(str(dst), batch_size=512)
 
-    pf = pq.ParquetFile(dst)
-    if int(pf.metadata.num_rows) != rows:
-        raise RuntimeError(f"{dst} has {pf.metadata.num_rows} rows, expected {rows}")
-    if list(pq.read_schema(dst).names) != VIEWER_COLUMNS:
-        raise RuntimeError(f"{dst} has unexpected columns: {pq.read_schema(dst).names}")
-    uploaded_ids = set(pq.read_table(dst, columns=["instance_id"]).column("instance_id").to_pylist())
+    shard_files: list[Path] = []
+    if shard_count == 1:
+        dataset.to_parquet(str(dst), batch_size=512)
+        shard_files = [dst]
+    else:
+        base = shard_basename or dst.name.removesuffix(".parquet")
+        for shard_idx in range(shard_count):
+            shard_dst = dst.parent / f"{base}-{shard_idx:05d}-of-{shard_count:05d}.parquet"
+            shard = dataset.shard(num_shards=shard_count, index=shard_idx, contiguous=True)
+            shard.to_parquet(str(shard_dst), batch_size=512)
+            shard_files.append(shard_dst)
+
+    uploaded_row_count = 0
+    uploaded_ids: set[str] = set()
+    shard_manifest: list[dict[str, Any]] = []
+    for shard_file in shard_files:
+        pf = pq.ParquetFile(shard_file)
+        shard_rows = int(pf.metadata.num_rows)
+        uploaded_row_count += shard_rows
+        if list(pq.read_schema(shard_file).names) != VIEWER_COLUMNS:
+            raise RuntimeError(f"{shard_file} has unexpected columns: {pq.read_schema(shard_file).names}")
+        uploaded_ids.update(pq.read_table(shard_file, columns=["instance_id"]).column("instance_id").to_pylist())
+        shard_manifest.append(
+            {
+                "path": str(shard_file.relative_to(manifest_dst.parents[2])),
+                "rows": shard_rows,
+                "bytes": shard_file.stat().st_size,
+            }
+        )
+    if uploaded_row_count != rows:
+        raise RuntimeError(f"{dst.parent} has {uploaded_row_count} rows across shards, expected {rows}")
     if uploaded_ids != original_ids:
-        raise RuntimeError(f"{dst} row membership differs from source parquet")
+        raise RuntimeError(f"{dst.parent} row membership differs from source parquet")
 
     manifest = {
         "columns": VIEWER_COLUMNS,
@@ -182,12 +211,18 @@ def _build_viewer_parquet(
         "schema_profile": "trace_rlvr_viewer_v1",
         "seed": generation_seed,
         "sidecars": sidecar_paths,
+        "shard_count": shard_count,
+        "shards": shard_manifest,
         "split_role": split_role,
         "task_count": task_count,
     }
     manifest_dst.parent.mkdir(parents=True, exist_ok=True)
     manifest_dst.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(f"[parquet] {dst} rows={rows} columns={len(VIEWER_COLUMNS)} bytes={dst.stat().st_size}")
+    total_bytes = sum(item["bytes"] for item in shard_manifest)
+    print(
+        f"[parquet] {dst.parent} rows={rows} columns={len(VIEWER_COLUMNS)} "
+        f"shards={shard_count} bytes={total_bytes}"
+    )
     return manifest
 
 
@@ -209,7 +244,7 @@ configs:
 - config_name: default
   data_files:
   - split: train
-    path: data/train/trace_rlvr_train_64000_all1000_seed42.parquet
+    path: data/train/trace_rlvr_train_64000_all1000_seed42-*.parquet
   - split: validation
     path: data/validation/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet
 ---
@@ -220,11 +255,12 @@ Private TRACE RLVR all1000 IID parquet export for Qwen2.5-VL RLVR training.
 
 ## Files
 
-- `data/train/trace_rlvr_train_64000_all1000_seed42.parquet`
+- `data/train/trace_rlvr_train_64000_all1000_seed42-*.parquet`
   - 1,000 training tasks
   - 64 samples per task
   - 64,000 rows
   - generation seed: 42
+  - sharded for Hugging Face viewer stability
 - `data/validation/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet`
   - IID validation over the same 1,000 tasks
   - 2 samples per task
@@ -279,6 +315,7 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_TMPFS_ROOT / "hf_upload_trace_all1000_iid")
     parser.add_argument("--revision", default="main")
     parser.add_argument("--row-order-seed", type=int, default=DEFAULT_ROW_ORDER_SEED)
+    parser.add_argument("--train-shards", type=int, default=DEFAULT_TRAIN_SHARDS)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--skip-upload", action="store_true")
     args = parser.parse_args()
@@ -310,6 +347,8 @@ def main() -> int:
         row_order_seed=args.row_order_seed,
         sidecar_paths=[f"sidecars/train/{item['path']}" for item in train_sidecars["included"]],
         cache_dir=cache_dir,
+        shard_count=args.train_shards,
+        shard_basename=train_src.name.removesuffix(".parquet"),
     )
     _build_viewer_parquet(
         src=val_src,
@@ -340,8 +379,12 @@ def main() -> int:
         revision=args.revision,
         commit_message="Upload TRACE all1000 IID viewer parquet and sidecars",
         delete_patterns=[
+            "data/train/*.parquet",
             "data/train/*.manifest.json",
+            "data/validation/*.parquet",
             "data/validation/*.manifest.json",
+            "metadata/train/*.manifest.json",
+            "metadata/validation_iid/*.manifest.json",
         ],
     )
     print(f"[uploaded] {args.repo_id}")

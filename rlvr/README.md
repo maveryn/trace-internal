@@ -80,7 +80,36 @@ Current all-1000-task IID 500-step dataset recipe:
   train parquet with a different `TRAIN_SEED` instead of continuing to cycle the
   same rows
 
-Training launcher:
+Active EasyR1 all1000 launcher defaults:
+
+- generic launcher: `scripts/run_trace_qwen25vl3b_easyr1_nokl_tmpfs.sh`
+- default model: `Qwen/Qwen2.5-VL-3B-Instruct`
+- default train file:
+  `maveryn/trace:data/train/trace_rlvr_train_64000_all1000_seed42.parquet`
+- default validation file:
+  `maveryn/trace:data/validation/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet`
+- default `MAX_PROMPT_LENGTH=2048`
+- default `MAX_RESPONSE_LENGTH=2048`
+- default reward mode: `answer`
+- default prompt key: `prompt_answer`
+- default output mode: `answer`
+- default train batch: `128` prompts
+- default rollouts per prompt: `8`
+- default total training steps: `600`; set `MAX_STEPS=500` for the current
+  one-epoch all1000 comparison recipe
+- default save/validation frequency: every `100` steps
+- default checkpoint retention: `8` checkpoints
+- default logging: `console` and `wandb` under project `trace_easyr1`
+- default W&B mode is `online`; set `WANDB_MODE=offline` only when you explicitly want a local offline run
+
+Example:
+
+```bash
+cd /home/shadeform/trace
+MAX_STEPS=500 scripts/run_trace_qwen25vl3b_easyr1_answer_nokl_tmpfs.sh
+```
+
+Legacy Vero/split-v1 launchers remain available for reference only:
 
 - generic TRACE VL RLVR launcher: `rlvr/examples/model_runs/run_trace_vl_rlvr.sh`
 - experiment-plan wrapper: `scripts/run_trace_rlvr_experiment.sh`
@@ -89,30 +118,6 @@ Training launcher:
 - operational split-v1 training runbook:
   `docs/workflows/RLVR_TRAINING_RUNBOOK.md`
 - compatibility 8-GPU Qwen3-VL-2B answer launcher: `rlvr/examples/model_runs/run_trace_qwen3vl_2b_answer.sh`
-- generic launcher default model: `Qwen/Qwen2.5-VL-3B-Instruct`
-- active EasyR1 launcher default train file:
-  `maveryn/trace:data/train/trace_rlvr_train_64000_all1000_seed42.parquet`
-- active EasyR1 launcher default validation file:
-  `maveryn/trace:data/validation/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet`
-- default `MAX_PROMPT_LENGTH` is model-aware in the launcher: `1536` for Qwen3-VL models and `2048` for Qwen2.5-VL models; set `MAX_PROMPT_LENGTH` explicitly to override
-- default TRACE training `MAX_RESPONSE_LENGTH` is `4096`; set `MAX_RESPONSE_LENGTH` explicitly to override
-- default validation generation `VAL_MAX_RESPONSE_LENGTH` is `2048`; set `VAL_MAX_RESPONSE_LENGTH` explicitly to override
-- default reward mode: `answer`
-- default prompt key: `prompt_answer`
-- default output mode: `answer`
-- default train batch: `256` prompts
-- default rollouts per prompt: `8`
-- default total training steps: `900`
-- default checkpoint retention remains one actor checkpoint and one critic checkpoint
-- default logging: `console` and `wandb` under project `trace`
-- default W&B mode is `online`; set `WANDB_MODE=offline` only when you explicitly want a local offline run
-
-Example:
-
-```bash
-cd /home/jovyan/work/trace/rlvr
-bash examples/model_runs/run_trace_qwen25vl_3b_answer_split_v1.sh
-```
 
 Legacy curriculum probe:
 
@@ -184,7 +189,7 @@ That launcher defaults to:
 - `TRACE_ANSWER_SCORING=legacy_strict`
 - `MAX_RESPONSE_LENGTH=4096`
 
-Minimal TRACE knobs on the new stack:
+Minimal TRACE knobs on the legacy Vero stack:
 
 - `data.dataset_mode=trace`
 - `data.prompt_key=prompt_answer` or `data.prompt_key=prompt_answer_and_annotation`

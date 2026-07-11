@@ -17,12 +17,26 @@ export HF_DATASETS_CACHE="${HF_DATASETS_CACHE:-/dev/shm/trace_rlvr/cache/hugging
 export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-/dev/shm/trace_rlvr/cache/huggingface/transformers}"
 export RAY_TMPDIR="${RAY_TMPDIR:-/dev/shm/trace_rlvr/ray}"
 export WANDB_DIR="${WANDB_DIR:-/dev/shm/trace_rlvr/wandb}"
-export PYTHONPATH="${BACKEND_DIR}:${PYTHONPATH:-}"
+export PYTHONPATH="${BACKEND_DIR}:${REPO_ROOT}:${PYTHONPATH:-}"
 mkdir -p "$HF_HOME" "$HF_DATASETS_CACHE" "$TRANSFORMERS_CACHE" "$RAY_TMPDIR" "$WANDB_DIR"
 
 RUN_STAMP="${RUN_STAMP:-$(date -u +%Y%m%dT%H%M%SZ)}"
 MODEL_PATH="${MODEL_PATH:-Qwen/Qwen2.5-VL-3B-Instruct}"
-TRAIN_FILES="${TRAIN_FILES:-maveryn/trace@train}"
+if [[ -z "${TRAIN_FILES:-}" ]]; then
+  TRAIN_FILES="$(
+    python3 - <<'PY'
+from huggingface_hub import hf_hub_download
+
+print(
+    hf_hub_download(
+        repo_id="maveryn/trace",
+        filename="data/train/trace_rlvr_train_230400_task_split_v1_seed42.parquet",
+        repo_type="dataset",
+    )
+)
+PY
+  )"
+fi
 VAL_FILES="${VAL_FILES:-/dev/shm/trace_rlvr/datasets/trace_rlvr_validation_500_5_per_task_seed42.parquet}"
 SYSTEM_PROMPT_FILE="${SYSTEM_PROMPT_FILE:-../examples/prompts/trace_vero_json_system_prompt_answer.txt}"
 REWARD_FUNCTION="${REWARD_FUNCTION:-examples/reward_function/trace_rlvr.py:compute_score}"
@@ -54,6 +68,8 @@ echo "[trace-easyr1] experiment=${EXPERIMENT_NAME}"
 echo "[trace-easyr1] checkpoint_path=${SAVE_CHECKPOINT_PATH}"
 echo "[trace-easyr1] max_steps=${MAX_STEPS} save_freq=${SAVE_FREQ} val_freq=${VAL_FREQ}"
 echo "[trace-easyr1] model=${MODEL_PATH}"
+echo "[trace-easyr1] train_files=${TRAIN_FILES}"
+echo "[trace-easyr1] val_files=${VAL_FILES}"
 
 python3 -m verl.trainer.main \
   config=examples/config.yaml \

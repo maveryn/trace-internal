@@ -5,6 +5,7 @@ import argparse
 import json
 import math
 import os
+import re
 import shutil
 import sys
 import time
@@ -21,6 +22,8 @@ from benchmark_queue_lib import (
     DEFAULT_BENCHMARK_ROOT,
     DEFAULT_QUEUE_ROOT,
     REPO_ROOT,
+    TRACE_CANDIDATE37_200_BENCHMARKS,
+    TRACE_CANDIDATE37_200_QUEUE_SUFFIX,
     VLMEVAL_ROOT,
     BenchmarkSpec,
     aggregate_score_path,
@@ -63,6 +66,7 @@ class PersistentJudge:
             os.environ["CUDA_VISIBLE_DEVICES"] = self.args.gpu
         os.environ.setdefault("VLLM_WORKER_MULTIPROC_METHOD", "spawn")
         os.environ.setdefault("VLLM_ATTENTION_BACKEND", self.args.attention_backend)
+        os.environ.setdefault("VLLM_DISABLE_COMPILE_CACHE", "1")
 
         from transformers import AutoTokenizer
         from vllm import LLM
@@ -79,7 +83,6 @@ class PersistentJudge:
             "gpu_memory_utilization": self.args.judge_gpu_memory_utilization,
             "max_num_seqs": self.args.judge_max_num_seqs,
             "max_num_batched_tokens": self.args.judge_max_num_batched_tokens,
-            "attention_backend": self.args.attention_backend,
             "trust_remote_code": True,
             "seed": 0,
         }
@@ -194,6 +197,164 @@ def _run_direct_vlmeval(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
     runner, _ = _import_vlmeval_runner()
     ns = _namespace_for_spec(args, spec, output_dir, model_path)
     return runner.run_vlmeval_evaluate(ns)
+
+
+def _run_vlmeval_evaluate_with_kwargs(
+    args: argparse.Namespace,
+    spec: BenchmarkSpec,
+    model_path: str,
+    output_dir: Path,
+    *,
+    judge_kwargs: dict[str, Any],
+    harness: str,
+) -> dict[str, Any]:
+    runner, _ = _import_vlmeval_runner()
+    from vlmeval.dataset import build_dataset
+    from vlmeval.smp import load
+
+    dataset = build_dataset(spec.alias)
+    if dataset is None:
+        raise RuntimeError(f"VLMEvalKit could not build dataset {spec.alias}")
+    pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+    if not pred_table.exists():
+        raise FileNotFoundError(pred_table)
+    result = dataset.evaluate(str(pred_table), **judge_kwargs)
+    scores = runner._normalize_eval_result(result)
+    summary = {
+        "dataset": spec.alias,
+        "model": model_path,
+        "run_name": spec.run_name,
+        "harness": harness,
+        "rows": len(load(str(pred_table))),
+        "score": runner._primary_score(scores),
+        "scores": scores,
+        "artifacts": {"prediction_table": str(pred_table)},
+    }
+    write_json(output_dir / "scores.json", summary)
+    print(json.dumps(summary, indent=2, ensure_ascii=False, default=json_default))
+    return summary
+
+
+def _extract_braced_answer(text: Any) -> str:
+    text = str(text or "").strip()
+    matches = re.findall(r"\{([^{}]+)\}", text)
+    if matches:
+        return matches[-1].strip()
+    boxed = re.findall(r"\\boxed\{([^{}]+)\}", text)
+    if boxed:
+        return boxed[-1].strip()
+    yes_no = re.findall(r"\b(yes|no)\b", text, flags=re.I)
+    if yes_no:
+        return yes_no[-1].strip()
+    final = list(re.finditer(r"\b(?:final\s+answer|answer)\b\s*[:：]?\s*(.+)", text, flags=re.I | re.S))
+    if final:
+        return final[-1].group(1).strip().splitlines()[0].strip()
+    return text
+
+
+def _normalize_rule_answer(text: Any) -> str:
+    value = _extract_braced_answer(text).lower().strip()
+    value = re.sub(r"^[\"'`]+|[\"'`]+$", "", value)
+    value = re.sub(r"\s+", " ", value)
+    try:
+        from vlmeval.dataset.utils.omni_verifier import _process_digit_article
+
+        value = _process_digit_article(value)
+    except Exception:
+        value = re.sub(r"^(a|an|the)\s+", "", value)
+    return value.strip(" .,:;")
+
+
+def _run_vlmbias_rule_score(
+    args: argparse.Namespace,
+    spec: BenchmarkSpec,
+    model_path: str,
+    output_dir: Path,
+) -> dict[str, Any]:
+    _import_vlmeval_runner()
+    from vlmeval.smp import load
+
+    pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+    if not pred_table.exists():
+        raise FileNotFoundError(pred_table)
+    data = load(str(pred_table))
+    data["eval_pred"] = [_normalize_rule_answer(x) for x in data["prediction"]]
+    data["eval_gt"] = [_normalize_rule_answer(x) for x in data["answer"]]
+    data["hit"] = [float(p == g) for p, g in zip(data["eval_pred"], data["eval_gt"])]
+    judged = output_dir / f"{spec.alias}_rule_judged.xlsx"
+    data.to_excel(judged, index=False)
+    overall = float(data["hit"].mean() * 100.0) if len(data) else 0.0
+    scores: dict[str, Any] = {"Overall": overall, "Accuracy (%)": overall}
+    for col in ("category", "sub_topic", "qtype"):
+        if col in data:
+            for key, group in data.groupby(col):
+                scores[f"{col}/{key}"] = float(group["hit"].mean() * 100.0)
+    summary = {
+        "dataset": spec.alias,
+        "model": model_path,
+        "run_name": spec.run_name,
+        "harness": "local rule-only brace/exact scorer",
+        "rows": len(data),
+        "score": overall,
+        "scores": scores,
+        "artifacts": {"prediction_table": str(pred_table), "judged_table": str(judged)},
+    }
+    write_json(output_dir / "scores.json", summary)
+    print(json.dumps(summary, indent=2, ensure_ascii=False, default=json_default))
+    return summary
+
+
+def _extract_option_letter(text: Any, *, choices: str = "ABCD") -> str:
+    text = str(text or "").strip()
+    braced = _extract_braced_answer(text)
+    for candidate in (braced, text):
+        stripped = candidate.strip().upper()
+        if stripped in set(choices):
+            return stripped
+        match = re.search(rf"\b(?:answer|option|choice|correct)\b\s*(?:is|:)?\s*([{choices}])\b", candidate, flags=re.I)
+        if match:
+            return match.group(1).upper()
+    matches = re.findall(rf"\b([{choices}])\b", text, flags=re.I)
+    return matches[-1].upper() if matches else ""
+
+
+def _run_phyx_option_score(
+    args: argparse.Namespace,
+    spec: BenchmarkSpec,
+    model_path: str,
+    output_dir: Path,
+) -> dict[str, Any]:
+    _import_vlmeval_runner()
+    from vlmeval.smp import load
+
+    pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+    if not pred_table.exists():
+        raise FileNotFoundError(pred_table)
+    data = load(str(pred_table))
+    data["eval_pred"] = [_extract_option_letter(x, choices="ABCD") for x in data["prediction"]]
+    data["eval_gt"] = [_extract_option_letter(x, choices="ABCD") for x in data["answer"]]
+    data["hit"] = [float(p != "" and p == g) for p, g in zip(data["eval_pred"], data["eval_gt"])]
+    judged = output_dir / f"{spec.alias}_option_judged.xlsx"
+    data.to_excel(judged, index=False)
+    overall = float(data["hit"].mean() * 100.0) if len(data) else 0.0
+    scores: dict[str, Any] = {"Overall": overall, "Accuracy (%)": overall}
+    for col in ("category", "subfield", "reasoning_type"):
+        if col in data:
+            for key, group in data.groupby(col):
+                scores[f"{col}/{key}"] = float(group["hit"].mean() * 100.0)
+    summary = {
+        "dataset": spec.alias,
+        "model": model_path,
+        "run_name": spec.run_name,
+        "harness": "local option-letter exact scorer",
+        "rows": len(data),
+        "score": overall,
+        "scores": scores,
+        "artifacts": {"prediction_table": str(pred_table), "judged_table": str(judged)},
+    }
+    write_json(output_dir / "scores.json", summary)
+    print(json.dumps(summary, indent=2, ensure_ascii=False, default=json_default))
+    return summary
 
 
 def _run_local_math_like(
@@ -313,11 +474,14 @@ def _run_chartmuseum_local_judge(
     judge: PersistentJudge,
 ) -> dict[str, Any]:
     _, chartmuseum = _import_vlmeval_runner()
-    jsonl_path = output_dir / "predictions.jsonl"
-    if not jsonl_path.exists():
-        raise FileNotFoundError(jsonl_path)
-    rows = list(chartmuseum.load_existing(jsonl_path).values())
-    rows.sort(key=lambda x: int(x["index"]))
+    from vlmeval.smp import load
+
+    pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+    if not pred_table.exists():
+        raise FileNotFoundError(pred_table)
+    data = load(str(pred_table))
+    rows = [row.to_dict() for _, row in data.iterrows()]
+    rows.sort(key=lambda x: str(x["index"]))
     judge_path = output_dir / "judge_qwen32b.jsonl"
     if args.no_resume and judge_path.exists():
         judge_path.unlink()
@@ -325,7 +489,17 @@ def _run_chartmuseum_local_judge(
     pending = [r for r in rows if str(r["index"]) not in existing]
     print(f"[chartmuseum judge] rows={len(rows)} existing={len(existing)} pending={len(pending)}")
 
-    prompts = [(str(item["index"]), chartmuseum.format_compare_prompt(item["question"], item["answer"], item.get("prediction", ""))) for item in pending]
+    prompts = [
+        (
+            str(item["index"]),
+            chartmuseum.format_compare_prompt(
+                str(item.get("question", "")),
+                str(item.get("answer", "")),
+                chartmuseum.extract_answer(str(item.get("prediction", ""))),
+            ),
+        )
+        for item in pending
+    ]
     raw = judge.run_cached(
         output_dir=output_dir,
         prompts=prompts,
@@ -365,8 +539,7 @@ def _run_chartmuseum_local_judge(
         "accuracy": overall,
         "reasoning_type_accuracy": breakdown,
         "outputs": {
-            "predictions_jsonl": str(jsonl_path),
-            "official_predictions_json": str(output_dir / "official_predictions.json"),
+            "prediction_table": str(pred_table),
             "judge_jsonl": str(judge_path),
             "judged_predictions_json": str(output_dir / "judged_predictions.json"),
             "judged_predictions_xlsx": str(output_dir / "judged_predictions.xlsx"),
@@ -384,8 +557,9 @@ def _run_chartqapro_extracted_score(
     output_dir: Path,
 ) -> dict[str, Any]:
     scripts_root = VLMEVAL_ROOT / "scripts"
-    if str(scripts_root) not in sys.path:
-        sys.path.insert(0, str(scripts_root))
+    for path in (VLMEVAL_ROOT, scripts_root):
+        if str(path) not in sys.path:
+            sys.path.insert(0, str(path))
     import batched_chartqapro_vllm as chartqapro
 
     candidates = [
@@ -466,12 +640,69 @@ def _run_score_for_spec(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
     mode = local_judge_eval_mode(spec)
     if spec.key == "chartqapro":
         summary = _run_chartqapro_extracted_score(args, spec, model_path, output_dir)
+    elif spec.key == "qspatial_plus":
+        summary = _run_vlmeval_evaluate_with_kwargs(
+            args,
+            spec,
+            model_path,
+            output_dir,
+            judge_kwargs={},
+            harness="VLMEvalKit QSpatial regex parser without API judge",
+        )
+    elif spec.key == "phyx_mini_mc":
+        summary = _run_phyx_option_score(args, spec, model_path, output_dir)
+    elif spec.key == "vlmbias":
+        summary = _run_vlmbias_rule_score(args, spec, model_path, output_dir)
     elif mode == "chartmuseum_local_judge":
         summary = _run_chartmuseum_local_judge(args, spec, model_path, output_dir, judge)
     elif mode == "charxiv_local_judge":
         summary = _run_charxiv_local_judge(args, spec, model_path, output_dir, judge)
     elif mode in {"mathv_local_judge", "mathvista_local_judge", "mathverse_local_judge", "logicvista_local_judge"}:
         summary = _run_local_math_like(args, spec, model_path, output_dir, judge)
+    elif mode == "seephys_local_judge":
+        runner, _ = _import_vlmeval_runner()
+        ns = _namespace_for_spec(args, spec, output_dir, model_path)
+        old = runner._run_local_text_judge
+
+        def persistent_text_judge(call_args, *, prompts, cache_name, max_tokens=None, temperature=0.0, top_p=1.0):
+            return judge.run_cached(
+                output_dir=call_args.output_dir,
+                prompts=prompts,
+                cache_name=cache_name,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                no_resume=call_args.no_resume,
+                desc=f"{call_args.dataset} local judge",
+            )
+
+        runner._run_local_text_judge = persistent_text_judge
+        try:
+            summary = runner.run_seephys_local_judge(ns)
+        finally:
+            runner._run_local_text_judge = old
+    elif mode == "physics_local_judge":
+        runner, _ = _import_vlmeval_runner()
+        ns = _namespace_for_spec(args, spec, output_dir, model_path)
+        old = runner._run_local_text_judge
+
+        def persistent_text_judge(call_args, *, prompts, cache_name, max_tokens=None, temperature=0.0, top_p=1.0):
+            return judge.run_cached(
+                output_dir=call_args.output_dir,
+                prompts=prompts,
+                cache_name=cache_name,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                no_resume=call_args.no_resume,
+                desc=f"{call_args.dataset} local judge",
+            )
+
+        runner._run_local_text_judge = persistent_text_judge
+        try:
+            summary = runner.run_physics_local_judge(ns)
+        finally:
+            runner._run_local_text_judge = old
     else:
         summary = _run_direct_vlmeval(args, spec, model_path, output_dir)
     dst = _copy_score_to_benchmark(spec, model_slug, output_dir, args.benchmark_root)
@@ -513,6 +744,7 @@ def run_worker(args: argparse.Namespace) -> None:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
     os.environ.setdefault("VLLM_WORKER_MULTIPROC_METHOD", "spawn")
     os.environ.setdefault("VLLM_ATTENTION_BACKEND", args.attention_backend)
+    os.environ.setdefault("VLLM_DISABLE_COMPILE_CACHE", "1")
 
     specs = benchmark_specs_for_run_set(args.run_set, model_slug=args.model_slug)
     specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
@@ -555,7 +787,12 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=BASE_MODEL_SPEC.path)
     parser.add_argument("--model-slug", default=BASE_MODEL_SPEC.slug)
-    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all"], default="remaining_base")
+    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all", "trace_candidate37_200"], default="remaining_base")
+    parser.add_argument(
+        "--trace-candidate37-200",
+        action="store_true",
+        help="Use the fixed 37-benchmark TRACE-aligned 200-row candidate suite.",
+    )
     parser.add_argument("--gpu", default=os.environ.get("CUDA_VISIBLE_DEVICES", ""))
     parser.add_argument("--worker-id", default=f"score-{os.getpid()}")
     parser.add_argument("--queue-name", default="")
@@ -580,6 +817,12 @@ def main() -> None:
     parser.add_argument("--stop-on-error", action="store_true")
     parser.add_argument("--no-resume", action="store_true")
     args = parser.parse_args()
+    if args.trace_candidate37_200:
+        args.run_set = "trace_candidate37_200"
+        if not args.only:
+            args.only = list(TRACE_CANDIDATE37_200_BENCHMARKS)
+        if not args.queue_name:
+            args.queue_name = f"{args.model_slug}_{TRACE_CANDIDATE37_200_QUEUE_SUFFIX}"
     run_worker(args)
 
 

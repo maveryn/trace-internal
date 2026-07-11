@@ -14,7 +14,16 @@ from typing import Any
 
 import pandas as pd
 
-from benchmark_queue_lib import BENCHMARKS, REPO_ROOT, VLMEVAL_ROOT, BenchmarkSpec, filter_benchmark_specs
+from benchmark_queue_lib import (
+    ALL_BENCHMARKS,
+    BENCHMARKS,
+    REPO_ROOT,
+    TRACE_CANDIDATE37_200_BENCHMARKS,
+    TRACE_CANDIDATE37_200_SUBSET_ROOT,
+    VLMEVAL_ROOT,
+    BenchmarkSpec,
+    filter_benchmark_specs,
+)
 
 
 DEFAULT_OUT_ROOT = REPO_ROOT / "benchmark/subsets/external_eval_v1"
@@ -30,6 +39,20 @@ DEFAULT_BENCHMARKS = (
 )
 DEFAULT_SAMPLE_COUNT = 1000
 DEFAULT_SAMPLE_SEED = 42
+PRESETS = {
+    "external_eval_v1": {
+        "out_root": DEFAULT_OUT_ROOT,
+        "benchmarks": DEFAULT_BENCHMARKS,
+        "sample_count": DEFAULT_SAMPLE_COUNT,
+        "sample_seed": DEFAULT_SAMPLE_SEED,
+    },
+    "trace_candidate37_200": {
+        "out_root": TRACE_CANDIDATE37_200_SUBSET_ROOT,
+        "benchmarks": TRACE_CANDIDATE37_200_BENCHMARKS,
+        "sample_count": 200,
+        "sample_seed": DEFAULT_SAMPLE_SEED,
+    },
+}
 
 MEDIA_KEYS = {
     "image",
@@ -322,14 +345,29 @@ def _write_readme(path: Path, manifest: dict[str, Any], *, overwrite: bool) -> N
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--preset", choices=sorted(PRESETS), default=None)
     parser.add_argument("--out-root", type=Path, default=DEFAULT_OUT_ROOT)
     parser.add_argument("--benchmarks", nargs="*", default=list(DEFAULT_BENCHMARKS))
     parser.add_argument("--sample-count", type=int, default=DEFAULT_SAMPLE_COUNT)
     parser.add_argument("--sample-seed", type=int, default=DEFAULT_SAMPLE_SEED)
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
-    specs = filter_benchmark_specs(BENCHMARKS, only=args.benchmarks)
+    if args.preset:
+        preset = PRESETS[args.preset]
+        args.out_root = Path(preset["out_root"])
+        args.benchmarks = list(preset["benchmarks"])
+        args.sample_count = int(preset["sample_count"])
+        args.sample_seed = int(preset["sample_seed"])
+
+    specs = filter_benchmark_specs(ALL_BENCHMARKS, only=args.benchmarks)
+    if args.dry_run:
+        print(f"[dry-run] out_root={args.out_root}")
+        print(f"[dry-run] sample_count={args.sample_count} sample_seed={args.sample_seed}")
+        for spec in specs:
+            print(f"[dry-run] {spec.key} alias={spec.alias} run={spec.run_name}")
+        return 0
     grouped: dict[str, list[BenchmarkSpec]] = defaultdict(list)
     nonaggregate: list[BenchmarkSpec] = []
     for spec in specs:
@@ -337,6 +375,12 @@ def main() -> int:
             grouped[spec.aggregate_group].append(spec)
         else:
             nonaggregate.append(spec)
+    direct_keys = {spec.key for spec in nonaggregate}
+    grouped = {
+        group: group_specs
+        for group, group_specs in grouped.items()
+        if group not in direct_keys
+    }
 
     summaries = []
     for spec in nonaggregate:

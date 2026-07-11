@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -26,6 +27,9 @@ from benchmark_queue_lib import (
     BASE_MODEL_SPEC,
     DEFAULT_QUEUE_ROOT,
     REPO_ROOT,
+    TRACE_CANDIDATE37_200_BENCHMARKS,
+    TRACE_CANDIDATE37_200_QUEUE_SUFFIX,
+    TRACE_CANDIDATE37_200_SUBSET_ROOT,
     VLMEVAL_ROOT,
     BenchmarkSpec,
     benchmark_specs_for_run_set,
@@ -80,10 +84,38 @@ def _subset_manifest_path(subset_root: Path | None, spec: BenchmarkSpec) -> Path
     raise FileNotFoundError(f"No subset manifest for {spec.key} under {subset_root}")
 
 
-def _subset_rank_by_index(path: Path | None, spec: BenchmarkSpec) -> dict[str, int]:
+MEDIA_KEYS = {
+    "image",
+    "images",
+    "image_path",
+    "image_paths",
+    "img",
+    "picture",
+    "video",
+    "videos",
+    "video_path",
+    "video_paths",
+}
+
+
+def _stable_hash(value: Any) -> str:
+    encoded = json.dumps(value, ensure_ascii=False, sort_keys=True, default=json_default).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _safe_row_mapping(row: Any) -> dict[str, Any]:
+    raw = row.to_dict() if hasattr(row, "to_dict") else dict(row)
+    return {str(key): value for key, value in raw.items() if str(key) not in MEDIA_KEYS}
+
+
+def _row_hash(row: Any) -> str:
+    return _stable_hash(_safe_row_mapping(row))
+
+
+def _subset_entries(path: Path | None, spec: BenchmarkSpec) -> list[dict[str, Any]]:
     if path is None:
-        return {}
-    rank_by_index: dict[str, int] = {}
+        return []
+    entries: list[dict[str, Any]] = []
     for row in _read_jsonl(path):
         if row.get("benchmark_key") not in {spec.key, spec.aggregate_group}:
             continue
@@ -93,33 +125,61 @@ def _subset_rank_by_index(path: Path | None, spec: BenchmarkSpec) -> dict[str, i
         sample_rank = row.get("sample_rank")
         if source_index is None or sample_rank is None:
             raise ValueError(f"Malformed subset row in {path}: {row}")
-        rank_by_index[str(source_index)] = int(sample_rank)
-    if not rank_by_index:
+        entries.append(row)
+    if not entries:
         raise ValueError(f"Subset manifest {path} selected zero rows for {spec.key}")
-    return rank_by_index
+    return sorted(entries, key=lambda row: int(row["sample_rank"]))
 
 
-def _apply_subset_frame(frame: pd.DataFrame, rank_by_index: dict[str, int]) -> pd.DataFrame:
-    if not rank_by_index:
+def _subset_rank_by_index(entries: list[dict[str, Any]]) -> dict[str, int]:
+    return {str(row["source_index"]): int(row["sample_rank"]) for row in entries}
+
+
+def _subset_rank_by_hash(entries: list[dict[str, Any]]) -> dict[str, int]:
+    return {str(row["row_hash"]): int(row["sample_rank"]) for row in entries if row.get("row_hash")}
+
+
+def _apply_subset_frame(frame: pd.DataFrame, entries: list[dict[str, Any]]) -> pd.DataFrame:
+    if not entries:
         return frame
+    rank_by_hash = _subset_rank_by_hash(entries)
+    if len(rank_by_hash) == len(entries):
+        hashed = frame.copy()
+        hashed["__trace_subset_hash__"] = hashed.apply(_row_hash, axis=1)
+        filtered = hashed[hashed["__trace_subset_hash__"].isin(rank_by_hash)].copy()
+        if len(filtered) == len(entries):
+            filtered["__trace_subset_rank__"] = filtered["__trace_subset_hash__"].map(rank_by_hash)
+            filtered = filtered.sort_values("__trace_subset_rank__").drop(
+                columns=["__trace_subset_hash__", "__trace_subset_rank__"]
+            )
+            return filtered.reset_index(drop=True)
+
+    rank_by_index = _subset_rank_by_index(entries)
     filtered = frame[frame["index"].astype(str).isin(rank_by_index)].copy()
     filtered["__trace_subset_rank__"] = filtered["index"].astype(str).map(rank_by_index)
     filtered = filtered.sort_values("__trace_subset_rank__").drop(columns=["__trace_subset_rank__"])
-    if len(filtered) != len(rank_by_index):
+    if len(filtered) != len(entries):
         raise ValueError(
-            f"Subset manifest requested {len(rank_by_index)} rows, but dataset contains {len(filtered)} matching rows"
+            f"Subset manifest requested {len(entries)} rows, but dataset contains {len(filtered)} matching rows"
         )
     return filtered.reset_index(drop=True)
 
 
-def _apply_subset_rows(rows: list[dict[str, Any]], rank_by_index: dict[str, int]) -> list[dict[str, Any]]:
-    if not rank_by_index:
+def _apply_subset_rows(rows: list[dict[str, Any]], entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if not entries:
         return rows
+    rank_by_hash = _subset_rank_by_hash(entries)
+    if len(rank_by_hash) == len(entries):
+        filtered = [row for row in rows if _row_hash(row) in rank_by_hash]
+        if len(filtered) == len(entries):
+            return sorted(filtered, key=lambda row: rank_by_hash[_row_hash(row)])
+
+    rank_by_index = _subset_rank_by_index(entries)
     filtered = [row for row in rows if str(row["index"]) in rank_by_index]
     filtered.sort(key=lambda row: rank_by_index[str(row["index"])])
-    if len(filtered) != len(rank_by_index):
+    if len(filtered) != len(entries):
         raise ValueError(
-            f"Subset manifest requested {len(rank_by_index)} rows, but dataset contains {len(filtered)} matching rows"
+            f"Subset manifest requested {len(entries)} rows, but dataset contains {len(filtered)} matching rows"
         )
     return filtered
 
@@ -205,8 +265,8 @@ def _generate_vlmeval_spec(
     dataset = build_dataset(spec.alias)
     if dataset is None:
         raise RuntimeError(f"VLMEvalKit could not build dataset {spec.alias}")
-    rank_by_index = _subset_rank_by_index(subset_manifest, spec)
-    dataset.data = _apply_subset_frame(dataset.data, rank_by_index) if subset_manifest else _limit_frame(dataset.data, limit, sample_seed)
+    subset_entries = _subset_entries(subset_manifest, spec)
+    dataset.data = _apply_subset_frame(dataset.data, subset_entries) if subset_manifest else _limit_frame(dataset.data, limit, sample_seed)
 
     existing = {} if no_resume else runner.load_jsonl_by_index(pred_jsonl)
     pending = dataset.data[~dataset.data["index"].astype(str).isin(existing)].copy()
@@ -320,10 +380,10 @@ def _generate_chartmuseum_spec(
     existing = {} if no_resume else chartmuseum.load_existing(jsonl_path)
 
     split = spec.split or "test"
-    rank_by_index = _subset_rank_by_index(subset_manifest, spec)
+    subset_entries = _subset_entries(subset_manifest, spec)
     rows = chartmuseum.load_chartmuseum_rows(split, chartmuseum.DEFAULT_DATA_ROOT, limit, sample_seed)
     if subset_manifest:
-        rows = _apply_subset_rows(rows, rank_by_index)
+        rows = _apply_subset_rows(rows, subset_entries)
     pending = [r for r in rows if str(r["index"]) not in existing]
     max_tokens = _effective_max_tokens(spec, max_tokens_override)
     print(
@@ -427,6 +487,7 @@ def run_worker(args: argparse.Namespace) -> None:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
     os.environ.setdefault("VLLM_WORKER_MULTIPROC_METHOD", "spawn")
     os.environ.setdefault("VLLM_ATTENTION_BACKEND", args.attention_backend)
+    os.environ.setdefault("VLLM_DISABLE_COMPILE_CACHE", "1")
 
     specs = benchmark_specs_for_run_set(args.run_set, model_slug=args.model_slug)
     specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
@@ -450,7 +511,6 @@ def run_worker(args: argparse.Namespace) -> None:
         "gpu_memory_utilization": args.gpu_memory_utilization,
         "max_num_seqs": args.max_num_seqs,
         "max_num_batched_tokens": args.max_num_batched_tokens,
-        "attention_backend": args.attention_backend,
         "limit_mm_per_prompt": {"image": args.max_images, "video": args.max_videos},
         "trust_remote_code": True,
         "seed": 0,
@@ -530,7 +590,12 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=BASE_MODEL_SPEC.path)
     parser.add_argument("--model-slug", default=BASE_MODEL_SPEC.slug)
-    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all"], default="remaining_base")
+    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all", "trace_candidate37_200"], default="remaining_base")
+    parser.add_argument(
+        "--trace-candidate37-200",
+        action="store_true",
+        help="Use the fixed 37-benchmark TRACE-aligned 200-row candidate suite.",
+    )
     parser.add_argument("--gpu", default=os.environ.get("CUDA_VISIBLE_DEVICES", ""))
     parser.add_argument("--worker-id", default=f"generation-{os.getpid()}")
     parser.add_argument("--queue-name", default="")
@@ -558,6 +623,14 @@ def main() -> None:
     parser.add_argument("--stop-on-error", action="store_true")
     parser.add_argument("--no-resume", action="store_true")
     args = parser.parse_args()
+    if args.trace_candidate37_200:
+        args.run_set = "trace_candidate37_200"
+        if not args.only:
+            args.only = list(TRACE_CANDIDATE37_200_BENCHMARKS)
+        if args.subset_root is None:
+            args.subset_root = TRACE_CANDIDATE37_200_SUBSET_ROOT
+        if not args.queue_name:
+            args.queue_name = f"{args.model_slug}_{TRACE_CANDIDATE37_200_QUEUE_SUFFIX}"
     run_worker(args)
 
 

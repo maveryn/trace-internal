@@ -12,12 +12,66 @@ from typing import Any, Iterable
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-VLMEVAL_ROOT = Path(os.environ.get("VLMEVAL_ROOT", "/home/jovyan/work/VLMEvalKit"))
+DEFAULT_VLMEVAL_ROOT = REPO_ROOT / "external" / "VLMEvalKit"
+VLMEVAL_ROOT = Path(os.environ.get("VLMEVAL_ROOT", str(DEFAULT_VLMEVAL_ROOT)))
 BASE_MODEL = "Qwen/Qwen3-VL-4B-Instruct"
 BASE_MODEL_SLUG = "qwen3-vl-4b-instruct"
 DEFAULT_RUN_ROOT = REPO_ROOT / "runs"
 DEFAULT_BENCHMARK_ROOT = REPO_ROOT / "benchmark"
 DEFAULT_QUEUE_ROOT = DEFAULT_BENCHMARK_ROOT / "queues"
+EXTERNAL_EVAL_V1_SUBSET_ROOT = DEFAULT_BENCHMARK_ROOT / "subsets" / "external_eval_v1"
+EXTERNAL_EVAL_V1_QUEUE_SUFFIX = "external_eval_v1"
+EXTERNAL_EVAL_V1_BENCHMARKS = (
+    "chartqapro",
+    "charxivreason",
+    "mathvista",
+    "mmmu_pro_vision",
+    "countqa",
+    "game_qa_lite",
+    "blink",
+    "screenspotpro",
+)
+TRACE_CANDIDATE37_200_SUBSET_ROOT = DEFAULT_BENCHMARK_ROOT / "subsets" / "trace_candidate37_200"
+TRACE_CANDIDATE37_200_QUEUE_SUFFIX = "trace_candidate37_200"
+TRACE_CANDIDATE37_200_BENCHMARKS = (
+    "chartmuseum",
+    "game_qa_lite",
+    "mindcubebench_tiny",
+    "screenspot",
+    "screenspotpro",
+    "chartqapro",
+    "puzzlevqa",
+    "vstarbench",
+    "logicvista",
+    "omni3dbench",
+    "mathvista",
+    "visualpuzzles",
+    "cvbench_3d",
+    "omnispatialbench_manual_cot",
+    "wemath",
+    "mathvision",
+    "refspatial",
+    "qspatial_plus",
+    "erqa",
+    "treebench",
+    "countbenchqa",
+    "mathverse",
+    "charxivreason",
+    "countqa",
+    "phyx_mini_mc",
+    "visulogic",
+    "spbench_si_cot",
+    "spatialvizbench_cot",
+    "mmhelix",
+    "physics",
+    "tablevqabench",
+    "mmmu_pro_vision",
+    "blink",
+    "seephys",
+    "infovqa",
+    "charxivdesc",
+    "vlmbias",
+)
 
 
 @dataclass(frozen=True)
@@ -58,7 +112,7 @@ class ModelSpec:
 
 BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     BenchmarkSpec("chartqapro", "ChartQAPro", "ChartQAPro_CoT", "vlmevalkit_faithful_cot"),
-    BenchmarkSpec("chartmuseum", "ChartMuseum", "ChartMuseum", "vlmevalkit_defaults_qwen32b_judge_test", kind="chartmuseum", split="test", eval_mode="chartmuseum_local_judge", max_model_len=32768),
+    BenchmarkSpec("chartmuseum", "ChartMuseum", "ChartMuseum_test", "vlmevalkit_defaults_qwen32b_judge_test", split="test", eval_mode="chartmuseum_local_judge", max_model_len=32768),
     BenchmarkSpec("charxivdesc", "CharXivDesc", "CharXiv_descriptive_val", "vlmevalkit_defaults_qwen32b_judge"),
     BenchmarkSpec("charxivreason", "CharXivReason", "CharXiv_reasoning_val", "vlmevalkit_defaults_qwen32b_judge"),
     BenchmarkSpec("evochart", "EvoChart", "EvoChart_Qwen3_ZS", "vlmevalkit_vero_qwen3_zs", max_tokens=1024, temperature=1.0, top_p=1.0, top_k=40, presence_penalty=2.0),
@@ -68,12 +122,14 @@ BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     BenchmarkSpec("mathvista", "MathVista", "MathVista_MINI", "vlmevalkit_defaults_qwen32b_judge"),
     BenchmarkSpec("mathverse", "MathVerse", "MathVerse_MINI_Vision_Only_cot", "vlmevalkit_defaults_qwen32b_judge"),
     BenchmarkSpec("logicvista", "LogicVista", "LogicVista", "vlmevalkit_defaults_qwen32b_judge"),
+    BenchmarkSpec("wemath", "WeMath", "WeMath_COT", "vlmevalkit_cot_qwen32b_judge", eval_mode="wemath_local_judge", max_tokens=2048),
+    BenchmarkSpec("mmhelix", "MM-HELIX", "MM-HELIX", "vlmevalkit_boxed_defaults", eval_mode="mmhelix_local_score", max_tokens=4096),
     BenchmarkSpec("blink", "Blink", "BLINK", "vlmevalkit_defaults"),
     BenchmarkSpec("erqa", "ERQA", "ERQA", "vlmevalkit_defaults"),
     BenchmarkSpec("embspatial", "EmbSpatial", "EmbSpatialBench", "vlmevalkit_defaults"),
     BenchmarkSpec("robospatialhome", "RoboSpatialHome", "RoboSpatialHome", "vlmevalkit_defaults"),
-    BenchmarkSpec("game_qa_lite", "Game-QA-Lite", "Game-QA-Lite", "vlmevalkit_defaults"),
-    BenchmarkSpec("countqa", "CountQA", "CountQA", "vlmevalkit_defaults"),
+    BenchmarkSpec("game_qa_lite", "Game-QA-Lite", "Game-QA-Lite", "vlmevalkit_cot_boxed"),
+    BenchmarkSpec("countqa", "CountQA", "CountQA", "vlmevalkit_cot_boxed"),
     BenchmarkSpec("vstarbench", "VStarBench", "VStarBench", "vlmevalkit_defaults"),
     BenchmarkSpec("screenspotpro_development", "ScreenSpotPro/Development", "ScreenSpot_Pro_Development", "vlmevalkit_defaults_pooled/development", aggregate_group="screenspotpro", aggregate_run_name="vlmevalkit_defaults_pooled"),
     BenchmarkSpec("screenspotpro_creative", "ScreenSpotPro/Creative", "ScreenSpot_Pro_Creative", "vlmevalkit_defaults_pooled/creative", aggregate_group="screenspotpro", aggregate_run_name="vlmevalkit_defaults_pooled"),
@@ -86,6 +142,30 @@ BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     BenchmarkSpec("treebench", "TreeBench", "TreeBench", "vlmevalkit_defaults"),
     BenchmarkSpec("vlmblind", "VLMBlind", "VLMBlind", "vlmevalkit_defaults"),
 )
+
+TRACE_CANDIDATE37_EXTRA_BENCHMARKS: tuple[BenchmarkSpec, ...] = (
+    BenchmarkSpec("mindcubebench_tiny", "MindCubeBench tiny", "MindCubeBench_tiny_raw_qa", "vlmevalkit_defaults"),
+    BenchmarkSpec("screenspot", "ScreenSpot", "ScreenSpot", "vlmevalkit_defaults_sample200", max_tokens=1024),
+    BenchmarkSpec("screenspotpro", "ScreenSpot-Pro", "ScreenSpot_Pro", "vlmevalkit_defaults_sample200", max_tokens=1024),
+    BenchmarkSpec("puzzlevqa", "PuzzleVQA", "PuzzleVQA", "vlmevalkit_reasoning"),
+    BenchmarkSpec("omni3dbench", "Omni3DBench", "Omni3DBench", "vlmevalkit_defaults"),
+    BenchmarkSpec("visualpuzzles", "VisualPuzzles", "VisualPuzzles", "vlmevalkit_reasoning"),
+    BenchmarkSpec("cvbench_3d", "CV-Bench 3D", "CV-Bench-3D", "vlmevalkit_defaults"),
+    BenchmarkSpec("omnispatialbench_manual_cot", "OmniSpatialBench manual CoT", "OmniSpatialBench_manual_cot", "vlmevalkit_cot"),
+    BenchmarkSpec("refspatial", "RefSpatial-Bench", "RefSpatial-Bench", "vlmevalkit_defaults"),
+    BenchmarkSpec("qspatial_plus", "QSpatial plus", "QSpatial_plus", "vlmevalkit_reasoning"),
+    BenchmarkSpec("countbenchqa", "CountBenchQA", "CountBenchQA", "vlmevalkit_defaults"),
+    BenchmarkSpec("phyx_mini_mc", "PhyX mini MC", "PhyX_mini_MC", "vlmevalkit_defaults"),
+    BenchmarkSpec("visulogic", "VisuLogic", "VisuLogic", "vlmevalkit_reasoning"),
+    BenchmarkSpec("spbench_si_cot", "SPBench SI COT", "SPBench-SI_CoT", "vlmevalkit_cot"),
+    BenchmarkSpec("spatialvizbench_cot", "SpatialVizBench COT", "SpatialVizBench_CoT", "vlmevalkit_cot"),
+    BenchmarkSpec("physics", "Physics", "Physics", "vlmevalkit_reasoning"),
+    BenchmarkSpec("tablevqabench", "TableVQABench", "TableVQABench", "vlmevalkit_defaults"),
+    BenchmarkSpec("seephys", "SEEPhys", "SeePhys", "vlmevalkit_reasoning"),
+    BenchmarkSpec("vlmbias", "VLMBias", "VLMBias", "vlmevalkit_defaults"),
+)
+
+ALL_BENCHMARKS: tuple[BenchmarkSpec, ...] = BENCHMARKS + TRACE_CANDIDATE37_EXTRA_BENCHMARKS
 
 
 ABLATION_MODELS: tuple[ModelSpec, ...] = (
@@ -125,7 +205,7 @@ def all_model_specs(include_base: bool = True, include_ablations: bool = True) -
 
 
 def spec_by_key(key: str) -> BenchmarkSpec:
-    for spec in BENCHMARKS:
+    for spec in ALL_BENCHMARKS:
         if spec.key == key:
             return spec
     raise KeyError(key)
@@ -153,13 +233,15 @@ def aggregate_score_path(group: str, run_name: str, model_slug: str, benchmark_r
 
 
 def benchmark_specs_for_run_set(run_set: str, model_slug: str = BASE_MODEL_SLUG) -> list[BenchmarkSpec]:
-    specs = list(BENCHMARKS)
+    specs = list(ALL_BENCHMARKS)
     if run_set == "full":
         return specs
     if run_set == "remaining_base":
         return [spec for spec in specs if not score_path(spec, model_slug).exists()]
     if run_set == "base_all":
         return specs
+    if run_set == "trace_candidate37_200":
+        return [spec_by_key(key) for key in TRACE_CANDIDATE37_200_BENCHMARKS]
     raise ValueError(f"Unknown run_set {run_set!r}")
 
 
@@ -216,7 +298,7 @@ def effective_generation_batch_size(
 
 
 def local_judge_eval_mode(spec: BenchmarkSpec) -> str | None:
-    if spec.kind == "chartmuseum":
+    if spec.kind == "chartmuseum" or spec.key == "chartmuseum" or spec.eval_mode == "chartmuseum_local_judge":
         return "chartmuseum_local_judge"
     if spec.alias.startswith("CharXiv_"):
         return "charxiv_local_judge"
@@ -228,6 +310,10 @@ def local_judge_eval_mode(spec: BenchmarkSpec) -> str | None:
         return "mathverse_local_judge"
     if spec.alias == "LogicVista":
         return "logicvista_local_judge"
+    if spec.alias == "SeePhys":
+        return "seephys_local_judge"
+    if spec.alias == "Physics":
+        return "physics_local_judge"
     return None
 
 

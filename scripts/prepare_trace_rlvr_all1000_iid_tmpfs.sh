@@ -62,6 +62,7 @@ role, name, rows, seed, parquet, manifest, shuffle_rows, row_order_seed = sys.ar
 payload = {
     "dataset_name": name,
     "recipe": "trace_rlvr_all1000_iid_tmpfs",
+    "schema_profile": "trace_rlvr_viewer_v1",
     "split_role": role,
     "task_count": 1000,
     "rows": int(rows),
@@ -71,11 +72,36 @@ payload = {
     "prompt_storage": (
         "RLVR export stores prompt_answer and prompt_answer_and_annotation."
     ),
-    "schema_profile": "trace_rlvr_clean_v1",
     "row_order": "deterministic_shuffle" if shuffle_rows == "1" else "generation_order",
     "row_order_seed": int(row_order_seed) if shuffle_rows == "1" else None,
     "image_storage_mode": "embedded_bytes",
     "max_embedded_image_pixels": 1280000,
+    "columns": [
+        "images",
+        "prompt_answer",
+        "prompt_answer_and_annotation",
+        "answer_gt",
+        "annotation_gt",
+        "reward_contract",
+        "instance_id",
+        "domain",
+        "task",
+        "scene_id",
+        "query_id",
+        "scene_variant",
+        "trace_ref",
+    ],
+    "dropped_legacy_columns": [
+        "uid",
+        "prompt",
+        "prompt_active",
+        "prompt_answer_only",
+        "prompt_mode",
+        "difficulty_bin",
+        "bucket_id_str",
+        "image_sizes_original",
+        "image_sizes_exported",
+    ],
 }
 Path(manifest).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 print(f"[manifest] {manifest}")
@@ -99,20 +125,18 @@ path = Path(sys.argv[1])
 shuffle_rows = sys.argv[2] == "1"
 row_order_seed = int(sys.argv[3])
 columns = [
+    "images",
+    "prompt_answer",
+    "prompt_answer_and_annotation",
+    "answer_gt",
+    "annotation_gt",
+    "reward_contract",
     "instance_id",
     "domain",
     "task",
     "scene_id",
     "query_id",
     "scene_variant",
-    "prompt_answer",
-    "prompt_answer_and_annotation",
-    "images",
-    "image_sizes_original",
-    "image_sizes_exported",
-    "answer_gt",
-    "annotation_gt",
-    "reward_contract",
     "trace_ref",
 ]
 schema_names = set(pq.read_schema(path).names)
@@ -129,7 +153,7 @@ if manifest_path.exists():
         manifest = {}
 already_final = (
     list(pq.read_schema(path).names) == columns
-    and manifest.get("schema_profile") == "trace_rlvr_clean_v1"
+    and manifest.get("schema_profile") == "trace_rlvr_viewer_v1"
     and manifest.get("row_order") == expected_row_order
     and (not shuffle_rows or int(manifest.get("row_order_seed", -1)) == row_order_seed)
 )

@@ -45,6 +45,8 @@ Current EasyR1 paper-training path:
   `rlvr/easyr1_backend/examples/reward_function/trace_rlvr.py`
 - shared TRACE scorer: `trace/core/reward_scoring.py`
 - reward-mode reference: `rlvr/TRACE_REWARD_MODES.md`
+- annotation ablation handoff runbook:
+  `docs/workflows/TRACE_ANNOTATION_ABLATION_RUNBOOK.md`
 - generic no-KL Qwen2.5-VL-3B launcher:
   `scripts/run_trace_qwen25vl3b_easyr1_nokl_tmpfs.sh`
 - answer-only wrapper:
@@ -69,8 +71,11 @@ Current all-1000-task IID 500-step dataset recipe:
 - both parquets store answer-only and answer-and-annotation prompt columns, so
   the same files can drive answer-only, additive annotation, and gated annotation
   EasyR1 runs by changing `PROMPT_KEY` and reward-mode env vars
-- these files are generated under `/dev/shm/trace_rlvr/datasets` by default;
-  set `TRAIN_FILES` and `VAL_FILES` explicitly when launching training from them
+- these files are published in the private HF dataset `maveryn/trace`; the
+  generic EasyR1 launcher downloads them by default when `TRAIN_FILES` and
+  `VAL_FILES` are unset
+- the local builder also writes these files under `/dev/shm/trace_rlvr/datasets`
+  when regenerating or debugging the dataset on a source machine
 - if a later run needs more than `500` steps without prompt reuse, build a new
   train parquet with a different `TRAIN_SEED` instead of continuing to cycle the
   same rows
@@ -85,8 +90,10 @@ Training launcher:
   `docs/workflows/RLVR_TRAINING_RUNBOOK.md`
 - compatibility 8-GPU Qwen3-VL-2B answer launcher: `rlvr/examples/model_runs/run_trace_qwen3vl_2b_answer.sh`
 - generic launcher default model: `Qwen/Qwen2.5-VL-3B-Instruct`
-- generic launcher default train split: `maveryn/trace@train`
-- generic launcher default validation split: `maveryn/trace@validation`
+- active EasyR1 launcher default train file:
+  `maveryn/trace:data/train/trace_rlvr_train_64000_all1000_seed42.parquet`
+- active EasyR1 launcher default validation file:
+  `maveryn/trace:data/validation/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet`
 - default `MAX_PROMPT_LENGTH` is model-aware in the launcher: `1536` for Qwen3-VL models and `2048` for Qwen2.5-VL models; set `MAX_PROMPT_LENGTH` explicitly to override
 - default TRACE training `MAX_RESPONSE_LENGTH` is `4096`; set `MAX_RESPONSE_LENGTH` explicitly to override
 - default validation generation `VAL_MAX_RESPONSE_LENGTH` is `2048`; set `VAL_MAX_RESPONSE_LENGTH` explicitly to override

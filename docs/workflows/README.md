@@ -17,6 +17,8 @@ RLVR training/export/validation docs live under:
   reward-ablation, response-length, and evaluation-cadence strategy.
 - `RLVR_TRAINING_RUNBOOK.md` for the current split-v1 training, validation,
   checkpoint-merge, resume, and external-benchmark commands.
+- `TRACE_ANNOTATION_ABLATION_RUNBOOK.md` for current EasyR1 all1000
+  answer-and-annotation ablation handoff commands on tmpfs-heavy GPU hosts.
 - `TASK_REVIEW_WEB_APP.md` for the active task-review workspace.
 - `CALIBRATION_GUIDE.md` for the current per-task acceptance gates,
   model-specific response caps, and split vLLM server commands used by

@@ -22,22 +22,41 @@ mkdir -p "$HF_HOME" "$HF_DATASETS_CACHE" "$TRANSFORMERS_CACHE" "$RAY_TMPDIR" "$W
 
 RUN_STAMP="${RUN_STAMP:-$(date -u +%Y%m%dT%H%M%SZ)}"
 MODEL_PATH="${MODEL_PATH:-Qwen/Qwen2.5-VL-3B-Instruct}"
+TRACE_HF_REPO_ID="${TRACE_HF_REPO_ID:-maveryn/trace}"
+TRACE_HF_TRAIN_FILE="${TRACE_HF_TRAIN_FILE:-data/train/trace_rlvr_train_64000_all1000_seed42.parquet}"
+TRACE_HF_VAL_FILE="${TRACE_HF_VAL_FILE:-data/validation/trace_rlvr_validation_iid_2000_all1000_seed1042.parquet}"
 if [[ -z "${TRAIN_FILES:-}" ]]; then
   TRAIN_FILES="$(
-    python3 - <<'PY'
+    TRACE_HF_REPO_ID="$TRACE_HF_REPO_ID" TRACE_HF_TRAIN_FILE="$TRACE_HF_TRAIN_FILE" python3 - <<'PY'
+import os
 from huggingface_hub import hf_hub_download
 
 print(
     hf_hub_download(
-        repo_id="maveryn/trace",
-        filename="data/train/trace_rlvr_train_230400_task_split_v1_seed42.parquet",
+        repo_id=os.environ["TRACE_HF_REPO_ID"],
+        filename=os.environ["TRACE_HF_TRAIN_FILE"],
         repo_type="dataset",
     )
 )
 PY
   )"
 fi
-VAL_FILES="${VAL_FILES:-/dev/shm/trace_rlvr/datasets/trace_rlvr_validation_500_5_per_task_seed42.parquet}"
+if [[ -z "${VAL_FILES:-}" ]]; then
+  VAL_FILES="$(
+    TRACE_HF_REPO_ID="$TRACE_HF_REPO_ID" TRACE_HF_VAL_FILE="$TRACE_HF_VAL_FILE" python3 - <<'PY'
+import os
+from huggingface_hub import hf_hub_download
+
+print(
+    hf_hub_download(
+        repo_id=os.environ["TRACE_HF_REPO_ID"],
+        filename=os.environ["TRACE_HF_VAL_FILE"],
+        repo_type="dataset",
+    )
+)
+PY
+  )"
+fi
 REWARD_FUNCTION="${REWARD_FUNCTION:-examples/reward_function/trace_rlvr.py:compute_score}"
 
 TRACE_OUTPUT_MODE="${TRACE_OUTPUT_MODE:-answer}"

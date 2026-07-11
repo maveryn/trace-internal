@@ -33,6 +33,8 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
      `docs/RLVR_TRAINING_STRATEGY.md`
    - operational TRACE RLVR training commands live in
      `docs/workflows/RLVR_TRAINING_RUNBOOK.md`
+   - current EasyR1 all1000 annotation-ablation handoff commands live in
+     `docs/workflows/TRACE_ANNOTATION_ABLATION_RUNBOOK.md`
    - frozen TRACE RLVR train/test task split lives in
      `docs/RLVR_TASK_SPLIT_PLAN.md`
    - generated task-review artifacts live under `../review/task-reviews/`

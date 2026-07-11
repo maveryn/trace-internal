@@ -10,4 +10,4 @@ If the task asks only for an answer, use this format:
 If the task asks for answer and annotation, use this format:
   {"answer": ..., "annotation": ...}
 
-For answer-and-annotation mode, annotation coordinates must be final rendered image pixel coordinates. The origin is the top-left corner of the image; x increases rightward and y increases downward. Use the exact annotation shape requested in the prompt.
+For answer-and-annotation mode, annotation coordinates must be pixel coordinates in the provided image. The origin is the top-left corner; x increases rightward and y increases downward. Do not use normalized coordinates. Use the exact annotation shape requested in the prompt.

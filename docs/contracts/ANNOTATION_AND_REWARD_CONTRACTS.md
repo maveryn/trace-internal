@@ -85,10 +85,10 @@ Rules:
 ## 4) Annotation Contract Rules
 
 Public annotation contracts are image-level only. Annotation coordinates are
-always final rendered image pixel coordinates, after layout jitter, scaling,
-cropping, and any coordinate-preserving post-processing. Do not use scene-local
-logical coordinates, grid indices, data values, or normalized coordinates in
-`annotation_gt`.
+always pixel coordinates in the provided/exported image, after layout jitter,
+scaling, cropping, and any coordinate-preserving post-processing. Do not use
+scene-local logical coordinates, grid indices, data values, normalized
+coordinates, or model-internal resized tensor coordinates in `annotation_gt`.
 
 The annotation target depends on the task family. The core review question is:
 "Which final-image primitives are minimally sufficient to verify that this

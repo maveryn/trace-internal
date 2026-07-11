@@ -26,7 +26,7 @@ Your response should include two parts:
 
 ### Annotation Instructions
 
-* Annotation coordinates must be final rendered image pixel coordinates.
+* Annotation coordinates must be pixel coordinates in the provided image. Do not use normalized coordinates.
 * The origin is the top-left corner of the image; x increases rightward and y increases downward.
 * Use the exact annotation shape requested in the prompt.
 * Do not use grid coordinates, chart data values, normalized coordinates, or scene-local coordinates.

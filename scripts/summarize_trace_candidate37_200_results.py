@@ -30,6 +30,7 @@ MODEL_COLUMNS = [
     ("trace-qwen25vl3b-easyr1-answer-nokl-step500", "Step 500"),
     ("trace-qwen25vl3b-easyr1-answer-nokl-step600", "Step 600"),
     ("trace-qwen25vl3b-easyr1-answer-nokl-step700", "Step 700"),
+    ("trace-qwen25vl3b-easyr1-all1000-answer-nokl-step200", "All1000 Step 200"),
 ]
 MODEL_LABELS = dict(MODEL_COLUMNS)
 

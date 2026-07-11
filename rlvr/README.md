@@ -58,11 +58,11 @@ Current EasyR1 paper-training path:
 - the older `rlvr/verl/` path remains in-tree for legacy/reference runs; do not
   use it for new paper training unless explicitly requested
 
-Current all-1000-task IID dataset recipe:
+Current all-1000-task IID 500-step dataset recipe:
 
-- train: `trace_rlvr_train_128000_all1000_seed42.parquet`
-  - `1000` active tasks x `128` samples per task = `128,000` rows
-  - supports up to `1000` steps at `data.rollout_batch_size=128` before prompt reuse
+- train: `trace_rlvr_train_64000_all1000_seed42.parquet`
+  - `1000` active tasks x `64` samples per task = `64,000` rows
+  - supports `500` steps at `data.rollout_batch_size=128` before prompt reuse
 - validation: `trace_rlvr_validation_iid_2000_all1000_seed1042.parquet`
   - `1000` active tasks x `2` samples per task = `2,000` rows
   - uses a different generation seed from train, so it is IID but non-overlapping by construction
@@ -71,6 +71,9 @@ Current all-1000-task IID dataset recipe:
   EasyR1 runs by changing `PROMPT_KEY` and reward-mode env vars
 - these files are generated under `/dev/shm/trace_rlvr/datasets` by default;
   set `TRAIN_FILES` and `VAL_FILES` explicitly when launching training from them
+- if a later run needs more than `500` steps without prompt reuse, build a new
+  train parquet with a different `TRAIN_SEED` instead of continuing to cycle the
+  same rows
 
 Training launcher:
 

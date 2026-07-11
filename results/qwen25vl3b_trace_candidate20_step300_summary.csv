@@ -1,0 +1,21 @@
+benchmark_key,benchmark,prompt_run,rows,Step 300,score_path
+chartmuseum,ChartMuseum,vlmevalkit_defaults_qwen32b_judge_test,200,26.0,benchmark/chartmuseum/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_defaults_qwen32b_judge_test/scores.json
+game_qa_lite,Game-QA-Lite,vlmevalkit_cot_boxed,200,22.0,benchmark/game_qa_lite/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_cot_boxed/scores.json
+screenspot,ScreenSpot,vlmevalkit_defaults_sample200,200,40.087288516331675,benchmark/screenspot/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_defaults_sample200/scores.json
+screenspotpro,ScreenSpot-Pro,vlmevalkit_defaults_sample200,200,15.308392454827057,benchmark/screenspotpro/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_defaults_sample200/scores.json
+chartqapro,ChartQAPro,vlmevalkit_faithful_cot,200,27.761296808837795,benchmark/chartqapro/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_faithful_cot/scores.json
+puzzlevqa,PuzzleVQA,vlmevalkit_reasoning,200,33.5,benchmark/puzzlevqa/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_reasoning/scores.json
+logicvista,LogicVista,vlmevalkit_defaults_qwen32b_judge,200,37.5,benchmark/logicvista/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_defaults_qwen32b_judge/scores.json
+mathvista,MathVista,vlmevalkit_defaults_qwen32b_judge,200,66.0,benchmark/mathvista/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_defaults_qwen32b_judge/scores.json
+cvbench_3d,CV-Bench 3D,vlmevalkit_defaults,200,48.5,benchmark/cvbench_3d/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_defaults/scores.json
+wemath,WeMath,vlmevalkit_cot_qwen32b_judge,200,59.5,benchmark/wemath/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_cot_qwen32b_judge/scores.json
+mathvision,MathVision,vlmevalkit_defaults_qwen32b_judge,200,20.5,benchmark/mathvision/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_defaults_qwen32b_judge/scores.json
+erqa,ERQA,vlmevalkit_defaults,200,35.5,benchmark/erqa/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_defaults/scores.json
+treebench,TreeBench,vlmevalkit_defaults,200,38.5,benchmark/treebench/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_defaults/scores.json
+countbenchqa,CountBenchQA,vlmevalkit_defaults,200,75.0,benchmark/countbenchqa/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_defaults/scores.json
+mathverse,MathVerse,vlmevalkit_defaults_qwen32b_judge,200,22.0,benchmark/mathverse/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_defaults_qwen32b_judge/scores.json
+charxivreason,CharXivReason,vlmevalkit_defaults_qwen32b_judge,200,34.5,benchmark/charxivreason/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_defaults_qwen32b_judge/scores.json
+phyx_mini_mc,PhyX mini MC,vlmevalkit_defaults,200,30.5,benchmark/phyx_mini_mc/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_defaults/scores.json
+physics,Physics,vlmevalkit_reasoning,200,13.0,benchmark/physics/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_reasoning/scores.json
+mmmu_pro_vision,MMMU-ProVis,vlmevalkit_cot_max2048,200,32.5,benchmark/mmmu_pro_vision/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_cot_max2048/scores.json
+blink,Blink,vlmevalkit_defaults,200,43.0,benchmark/blink/trace-qwen25vl3b-easyr1-answer-nokl-step300/vlmevalkit_defaults/scores.json

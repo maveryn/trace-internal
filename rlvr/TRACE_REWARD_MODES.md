@@ -52,7 +52,7 @@ For paper curves, compare methods with `answer_reward` / `accuracy`, not
 Prompt key:
 
 ```text
-prompt_answer_only
+prompt_answer
 ```
 
 System prompt:

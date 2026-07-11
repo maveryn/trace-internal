@@ -23,6 +23,7 @@ OUTPUT_ROOT="${OUTPUT_ROOT:-$TMPFS_ROOT/builds/all1000_iid}"
 DATASET_DIR="${DATASET_DIR:-$TMPFS_ROOT/datasets}"
 IMAGE_CAP="${IMAGE_CAP:-1280000}"
 RESET="${RESET:-0}"
+CLEAN_SCHEMA="${CLEAN_SCHEMA:-1}"
 
 TRAIN_SEED="${TRAIN_SEED:-42}"
 TRAIN_NUM_INSTANCES="${TRAIN_NUM_INSTANCES:-64000}"
@@ -66,14 +67,56 @@ payload = {
     "seed": int(seed),
     "parquet": parquet,
     "prompt_storage": (
-        "RLVR export stores prompt_active, prompt_answer, "
-        "prompt_answer_only, and prompt_answer_and_annotation."
+        "RLVR export stores prompt_answer and prompt_answer_and_annotation."
     ),
+    "schema_profile": "trace_rlvr_clean_v1",
     "image_storage_mode": "embedded_bytes",
     "max_embedded_image_pixels": 1280000,
 }
 Path(manifest).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 print(f"[manifest] {manifest}")
+PY
+}
+
+clean_schema() {
+  local parquet="$1"
+  if [[ "$CLEAN_SCHEMA" != "1" ]]; then
+    return
+  fi
+  "$PYTHON_BIN" - "$parquet" <<'PY'
+import os
+import sys
+from pathlib import Path
+
+import pyarrow.parquet as pq
+
+path = Path(sys.argv[1])
+columns = [
+    "instance_id",
+    "domain",
+    "task",
+    "scene_id",
+    "query_id",
+    "scene_variant",
+    "prompt_answer",
+    "prompt_answer_and_annotation",
+    "images",
+    "image_sizes_original",
+    "image_sizes_exported",
+    "answer_gt",
+    "annotation_gt",
+    "reward_contract",
+    "trace_ref",
+]
+schema_names = set(pq.read_schema(path).names)
+missing = [column for column in columns if column not in schema_names]
+if missing:
+    raise SystemExit(f"cannot clean {path}: missing columns {missing}")
+table = pq.read_table(path, columns=columns)
+tmp_path = path.with_suffix(path.suffix + ".cleaning")
+pq.write_table(table, tmp_path, compression="zstd")
+os.replace(tmp_path, path)
+print(f"[clean-schema] {path} columns={len(columns)} rows={table.num_rows}")
 PY
 }
 
@@ -87,6 +130,7 @@ run_dataset() {
 
   if [[ -s "$parquet" && "$RESET" != "1" ]]; then
     echo "[skip] ${role}: existing parquet ${parquet}"
+    clean_schema "$parquet"
     write_manifest "$role" "$name" "$rows" "$seed" "$parquet"
     return
   fi
@@ -118,6 +162,7 @@ run_dataset() {
     --max-embedded-image-pixels "$IMAGE_CAP" \
     "${reset_args[@]}"
 
+  clean_schema "$parquet"
   write_manifest "$role" "$name" "$rows" "$seed" "$parquet"
 }
 

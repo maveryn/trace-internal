@@ -45,7 +45,7 @@ case "$TRACE_OUTPUT_MODE" in
   answer|answer_only)
     TRACE_OUTPUT_MODE="answer"
     DEFAULT_TRACE_REWARD_MODE="answer"
-    DEFAULT_PROMPT_KEY="prompt_answer_only"
+    DEFAULT_PROMPT_KEY="prompt_answer"
     DEFAULT_SYSTEM_PROMPT_FILE="../examples/prompts/trace_vero_json_system_prompt_answer.txt"
     DEFAULT_REWARD_SLUG="answer"
     ;;

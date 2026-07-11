@@ -66,7 +66,7 @@ VAL_FILES="${VAL_FILES:-maveryn/trace@validation}"
 TRACE_OUTPUT_MODE="${TRACE_OUTPUT_MODE:-answer}"
 case "$TRACE_OUTPUT_MODE" in
   answer|answer_only)
-    DEFAULT_PROMPT_KEY="prompt_answer_only"
+    DEFAULT_PROMPT_KEY="prompt_answer"
     DEFAULT_TRACE_REWARD_MODE="answer"
     DEFAULT_TRACE_SYSTEM_PROMPT="$RLVR_ROOT/examples/prompts/trace_vero_json_system_prompt_answer.txt"
     ;;

@@ -91,7 +91,7 @@ Training launcher:
 - default TRACE training `MAX_RESPONSE_LENGTH` is `4096`; set `MAX_RESPONSE_LENGTH` explicitly to override
 - default validation generation `VAL_MAX_RESPONSE_LENGTH` is `2048`; set `VAL_MAX_RESPONSE_LENGTH` explicitly to override
 - default reward mode: `answer`
-- default prompt key: `prompt_answer_only`
+- default prompt key: `prompt_answer`
 - default output mode: `answer`
 - default train batch: `256` prompts
 - default rollouts per prompt: `8`
@@ -180,7 +180,7 @@ That launcher defaults to:
 Minimal TRACE knobs on the new stack:
 
 - `data.dataset_mode=trace`
-- `data.prompt_key=prompt_answer_only` or `data.prompt_key=prompt_answer_and_annotation`
+- `data.prompt_key=prompt_answer` or `data.prompt_key=prompt_answer_and_annotation`
 - `data.trace_output_mode=answer` or `answer_and_annotation`
 - `data.system_prompt=auto` uses the mode-specific system prompt under `./examples/prompts/`
 - `custom_reward_function.path=./examples/reward_function/reward_trace.py`
@@ -200,7 +200,7 @@ Minimal TRACE knobs on the new stack:
 - external benchmark validation can still be enabled explicitly with
   `VALIDATION_STYLE=trace_benchmark` and benchmark parquet `VAL_FILES`.
 - external benchmark validation uses the same answer-mode JSON system prompt as
-  TRACE RLVR training: `data.val_prompt_key=prompt_answer_only`,
+  TRACE RLVR training: `data.val_prompt_key=prompt_answer`,
   `data.val_answer_key=answer_gt`, `data.val_disable_system_prompt=false`, and
   `data.val_format_prompt=null`; legacy rows still load through the dataset
   adapter's `prompt`/`ground_truth` fallback

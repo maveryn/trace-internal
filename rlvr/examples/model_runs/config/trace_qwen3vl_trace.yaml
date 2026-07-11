@@ -22,7 +22,7 @@ data:
   image_root: null
   system_prompt: "${oc.env:TRACE_SYSTEM_PROMPT,auto}"
   prompt_key: "${oc.env:PROMPT_KEY,auto}"
-  val_prompt_key: prompt_answer_only
+  val_prompt_key: prompt_answer
   val_answer_key: answer_gt
   val_disable_system_prompt: false
   val_format_prompt: null

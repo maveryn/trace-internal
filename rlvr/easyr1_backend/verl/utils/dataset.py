@@ -163,8 +163,15 @@ class RLHFDataset(Dataset):
                 num_proc=filter_overlong_prompts_workers,
             )
 
+    def _get_prompt_value(self, example: dict[str, Any]) -> str:
+        if self.prompt_key in example:
+            return example[self.prompt_key]
+        if self.prompt_key == "prompt_answer_only" and "prompt_answer" in example:
+            return example["prompt_answer"]
+        raise KeyError(f"prompt key {self.prompt_key!r} not found in dataset row")
+
     def _build_messages(self, example: dict[str, Any]) -> list[dict[str, Any]]:
-        prompt_str: str = example[self.prompt_key]
+        prompt_str: str = self._get_prompt_value(example)
         if self.format_prompt:
             format_prompt = Template(self.format_prompt.strip())
             prompt_str = format_prompt.render(content=prompt_str)
@@ -234,7 +241,9 @@ class RLHFDataset(Dataset):
 
     def __getitem__(self, index):
         example: dict = self.dataset[index]
-        example["prompt"] = example.get(self.prompt_key)
+        if "uid" not in example and "instance_id" in example:
+            example["uid"] = example["instance_id"]
+        example["prompt"] = self._get_prompt_value(example)
         messages = self._build_messages(example)
         example.pop(self.prompt_key, None)
 

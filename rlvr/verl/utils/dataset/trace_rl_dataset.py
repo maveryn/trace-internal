@@ -344,6 +344,8 @@ class TraceRLHFDataset(Dataset):
             return self.prompt_key, self.answer_key
         if self.prompt_key == "prompt_answer" and "prompt_answer_only" in example and self.answer_key in example:
             return "prompt_answer_only", self.answer_key
+        if self.prompt_key == "prompt_answer_only" and "prompt_answer" in example and self.answer_key in example:
+            return "prompt_answer", self.answer_key
         if "prompt" in example and "answer_gt" in example:
             return "prompt", "answer_gt"
         if "prompt" in example and "ground_truth" in example:

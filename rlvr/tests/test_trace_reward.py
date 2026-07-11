@@ -197,6 +197,70 @@ def test_trace_reward_answer_mode_ignores_annotation_in_overall() -> None:
     assert score["trace_reward_mode_answer_and_annotation"] == 0.0
 
 
+def test_trace_reward_annotation_additive_uses_normalized_fraction_and_format_blend() -> None:
+    reward_contract = _reward_contract("bbox_set_soft_iou_v0", "bbox_set")
+
+    score = score_trace_response(
+        response='Reasoning.\n{"answer":3,"annotation":[[0,0,10,10]]}',
+        answer_gt={"type": "integer", "value": 2},
+        annotation_gt={"type": "bbox_set", "value": [[0, 0, 10, 10]]},
+        reward_contract=reward_contract,
+        trace_reward_mode="answer_and_annotation",
+        trace_annotation_reward_formula="additive",
+        answer_weight=0.75,
+        annotation_weight=0.25,
+        format_weight=0.05,
+    )
+
+    assert score["answer_reward"] == 0.0
+    assert score["annotation_reward"] == 1.0
+    assert score["task_reward_raw"] == 0.25
+    assert score["overall"] == 0.2875
+    assert score["trace_answer_weight"] == 0.75
+    assert score["trace_annotation_weight"] == 0.25
+    assert 0.0 <= score["overall"] <= 1.0
+
+
+def test_trace_reward_annotation_gated_requires_answer_for_annotation_credit() -> None:
+    reward_contract = _reward_contract("bbox_set_soft_iou_v0", "bbox_set")
+
+    wrong_answer = score_trace_response(
+        response='Reasoning.\n{"answer":3,"annotation":[[0,0,10,10]]}',
+        answer_gt={"type": "integer", "value": 2},
+        annotation_gt={"type": "bbox_set", "value": [[0, 0, 10, 10]]},
+        reward_contract=reward_contract,
+        trace_reward_mode="answer_and_annotation",
+        trace_annotation_reward_formula="gated",
+        answer_weight=0.5,
+        annotation_weight=0.5,
+        format_weight=0.05,
+    )
+    correct_answer_bad_annotation = score_trace_response(
+        response='Reasoning.\n{"answer":2,"annotation":[[100,100,110,110]]}',
+        answer_gt={"type": "integer", "value": 2},
+        annotation_gt={"type": "bbox_set", "value": [[0, 0, 10, 10]]},
+        reward_contract=reward_contract,
+        trace_reward_mode="answer_and_annotation",
+        trace_annotation_reward_formula="gated",
+        answer_weight=0.5,
+        annotation_weight=0.5,
+        format_weight=0.05,
+    )
+
+    assert wrong_answer["answer_reward"] == 0.0
+    assert wrong_answer["annotation_reward"] == 1.0
+    assert wrong_answer["task_reward_raw"] == 0.0
+    assert wrong_answer["overall"] == 0.05
+    assert wrong_answer["zero_reward"] == 1.0
+
+    assert correct_answer_bad_annotation["answer_reward"] == 1.0
+    assert correct_answer_bad_annotation["annotation_reward"] == 0.0
+    assert correct_answer_bad_annotation["task_reward_raw"] == 0.5
+    assert correct_answer_bad_annotation["overall"] == 0.525
+    assert correct_answer_bad_annotation["zero_reward"] == 0.0
+    assert 0.0 <= correct_answer_bad_annotation["overall"] <= 1.0
+
+
 def test_trace_reward_format_requires_final_json_object_not_tags() -> None:
     reward_contract = _reward_contract("bbox_set_soft_iou_v0", "bbox_set")
 

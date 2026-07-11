@@ -38,6 +38,24 @@ Temporary boundary:
   `data.validation_style=trace_benchmark`, but the default TRACE launcher now
   validates on the held-out TRACE split-v1 validation parquet.
 
+Current EasyR1 paper-training path:
+
+- active backend: `rlvr/easyr1_backend/`
+- active reward adapter:
+  `rlvr/easyr1_backend/examples/reward_function/trace_rlvr.py`
+- shared TRACE scorer: `trace/core/reward_scoring.py`
+- reward-mode reference: `rlvr/TRACE_REWARD_MODES.md`
+- generic no-KL Qwen2.5-VL-3B launcher:
+  `scripts/run_trace_qwen25vl3b_easyr1_nokl_tmpfs.sh`
+- answer-only wrapper:
+  `scripts/run_trace_qwen25vl3b_easyr1_answer_nokl_tmpfs.sh`
+- answer-and-annotation gated wrapper:
+  `scripts/run_trace_qwen25vl3b_easyr1_annotation_gated_nokl_tmpfs.sh`
+- answer-and-annotation additive wrapper:
+  `scripts/run_trace_qwen25vl3b_easyr1_annotation_additive_nokl_tmpfs.sh`
+- the older `rlvr/verl/` path remains in-tree for legacy/reference runs; do not
+  use it for new paper training unless explicitly requested
+
 Training launcher:
 
 - generic TRACE VL RLVR launcher: `rlvr/examples/model_runs/run_trace_vl_rlvr.sh`

@@ -87,6 +87,7 @@ ensure_merged_step() {
 ensure_merged_step 400
 ensure_merged_step 500
 ensure_merged_step 600
+ensure_merged_step 700
 
 check_queue() {
   local queue_path="$1"
@@ -187,6 +188,7 @@ MODELS=(
   "trace-qwen25vl3b-easyr1-answer-nokl-step400::${MERGED_ROOT}/trace-qwen25vl3b-easyr1-answer-nokl-step400"
   "trace-qwen25vl3b-easyr1-answer-nokl-step500::${MERGED_ROOT}/trace-qwen25vl3b-easyr1-answer-nokl-step500"
   "trace-qwen25vl3b-easyr1-answer-nokl-step600::${MERGED_ROOT}/trace-qwen25vl3b-easyr1-answer-nokl-step600"
+  "trace-qwen25vl3b-easyr1-answer-nokl-step700::${MERGED_ROOT}/trace-qwen25vl3b-easyr1-answer-nokl-step700"
 )
 
 for entry in "${MODELS[@]}"; do

@@ -16,6 +16,7 @@ from benchmark_queue_lib import (
     TRACE_CANDIDATE37_200_SUBSET_ROOT,
     benchmark_specs_for_run_set,
     extract_score_and_rows,
+    filter_benchmark_specs,
     run_dir,
     score_to_percent,
     score_path,
@@ -24,9 +25,11 @@ from benchmark_queue_lib import (
 
 MODEL_COLUMNS = [
     ("qwen25vl3b-base", "Base"),
+    ("trace-qwen25vl3b-easyr1-answer-nokl-step300", "Step 300"),
     ("trace-qwen25vl3b-easyr1-answer-nokl-step400", "Step 400"),
     ("trace-qwen25vl3b-easyr1-answer-nokl-step500", "Step 500"),
     ("trace-qwen25vl3b-easyr1-answer-nokl-step600", "Step 600"),
+    ("trace-qwen25vl3b-easyr1-answer-nokl-step700", "Step 700"),
 ]
 MODEL_LABELS = dict(MODEL_COLUMNS)
 
@@ -125,8 +128,11 @@ def build_tables(
     benchmark_root: Path,
     run_root: Path,
     model_columns: list[tuple[str, str]],
+    only: list[str] | None = None,
+    exclude: list[str] | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     specs = benchmark_specs_for_run_set("trace_candidate37_200")
+    specs = filter_benchmark_specs(specs, only=only or (), exclude=exclude or ())
     summary_rows: list[dict[str, Any]] = []
     detail_rows: list[dict[str, Any]] = []
     gen_rows: list[dict[str, Any]] = []
@@ -209,7 +215,12 @@ def _rows_label(row: pd.Series, model_columns: list[tuple[str, str]]) -> str:
     return "/".join(str(x) for x in values)
 
 
-def write_markdown(summary: pd.DataFrame, output: Path, model_columns: list[tuple[str, str]]) -> None:
+def write_markdown(
+    summary: pd.DataFrame,
+    output: Path,
+    model_columns: list[tuple[str, str]],
+    title: str,
+) -> None:
     first_label = model_columns[0][1] if model_columns else ""
     delta_labels = [label for _, label in model_columns[1:]] if first_label else []
     headers = ["Benchmark", "Prompt / Dataset", "Rows", *[label for _, label in model_columns]]
@@ -217,7 +228,7 @@ def write_markdown(summary: pd.DataFrame, output: Path, model_columns: list[tupl
     align = ["---", "---", "---:"] + ["---:"] * len(model_columns)
     align.extend(["---:"] * len(delta_labels))
     lines = [
-        "# Qwen2.5-VL-3B TRACE Candidate37 200-Row Benchmark Results",
+        f"# {title}",
         "",
         f"Subset manifest root: `{TRACE_CANDIDATE37_200_SUBSET_ROOT.relative_to(REPO_ROOT)}`",
         "",
@@ -282,13 +293,16 @@ def main() -> int:
     parser.add_argument("--benchmark-root", type=Path, default=DEFAULT_BENCHMARK_ROOT)
     parser.add_argument("--run-root", type=Path, default=DEFAULT_RUN_ROOT)
     parser.add_argument("--models", nargs="*", default=[slug for slug, _ in MODEL_COLUMNS])
+    parser.add_argument("--only", nargs="*", default=[])
+    parser.add_argument("--exclude", nargs="*", default=[])
     parser.add_argument("--markdown", type=Path, default=REPO_ROOT / "results/qwen25vl3b_trace_candidate37_200_results.md")
     parser.add_argument("--excel", type=Path, default=REPO_ROOT / "results/qwen25vl3b_trace_candidate37_200_results.xlsx")
+    parser.add_argument("--title", default="Qwen2.5-VL-3B TRACE Candidate37 200-Row Benchmark Results")
     parser.add_argument("--no-excel", action="store_true")
     args = parser.parse_args()
     model_columns = [(slug, MODEL_LABELS.get(slug, slug)) for slug in args.models]
-    summary, details, generation = build_tables(args.benchmark_root, args.run_root, model_columns)
-    write_markdown(summary, args.markdown, model_columns)
+    summary, details, generation = build_tables(args.benchmark_root, args.run_root, model_columns, args.only, args.exclude)
+    write_markdown(summary, args.markdown, model_columns, args.title)
     if not args.no_excel:
         write_excel(summary, details, generation, args.excel, model_columns)
     print(f"[wrote] {args.markdown}")

@@ -465,19 +465,34 @@ def extract_score_and_rows(scores_obj: dict[str, Any]) -> tuple[float | None, in
         return float(scores_obj["Overall_Accuracy"]), rows_int
     for key in ("accuracy", "acc", "score", "Overall", "overall"):
         if key in scores_obj:
-            return score_to_percent(scores_obj[key]), rows_int
+            parsed = score_to_percent(scores_obj[key])
+            if parsed is not None:
+                return parsed, rows_int
     scores = scores_obj.get("scores", {})
     if isinstance(scores, dict):
         if "Overall_Accuracy" in scores:
             return float(scores["Overall_Accuracy"]), rows_int
         for key in ("Overall", "overall", "accuracy", "acc", "val"):
             if key in scores:
-                return score_to_percent(scores[key]), rows_int
+                value = scores[key]
+                if isinstance(value, dict):
+                    for nested_key in ("Accuracy (%)", "accuracy", "acc", "score", "Score", "Overall", "overall"):
+                        if nested_key in value:
+                            parsed = score_to_percent(value[nested_key])
+                            if parsed is not None:
+                                return parsed, rows_int
+                return score_to_percent(value), rows_int
         table = scores.get("table")
         if isinstance(table, list):
+            average_values: list[float] = []
             for row in table:
                 if not isinstance(row, dict):
                     continue
+                if isinstance(row.get("average_scores"), list):
+                    for value in row["average_scores"]:
+                        parsed = score_to_percent(value)
+                        if parsed is not None:
+                            average_values.append(parsed)
                 if any(str(v).lower() == "overall" for v in row.values()):
                     for key in ("acc", "accuracy", "Accuracy (%)", "score", "Score", "Overall", "overall", "1"):
                         if key in row:
@@ -488,6 +503,8 @@ def extract_score_and_rows(scores_obj: dict[str, Any]) -> tuple[float | None, in
                         parsed = score_to_percent(value)
                         if parsed is not None:
                             return parsed, int(row.get("tot", row.get("Samples", rows or 0)) or 0)
+            if average_values:
+                return sum(average_values) / len(average_values), rows_int
 
         numeric_scores: list[float] = []
         skip_keys = {

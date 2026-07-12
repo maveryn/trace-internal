@@ -91,6 +91,7 @@ Active EasyR1 all1000 launcher defaults:
 
 - generic launcher: `scripts/run_trace_qwen25vl3b_easyr1_nokl_tmpfs.sh`
 - default model: `Qwen/Qwen2.5-VL-3B-Instruct`
+- 7B answer-only wrapper: `scripts/run_trace_qwen25vl7b_easyr1_answer_nokl_tmpfs.sh`
 - default train split: `maveryn/trace@train`
 - default validation split: `maveryn/trace@validation`
 - default `MAX_PROMPT_LENGTH=2048`
@@ -106,12 +107,22 @@ Active EasyR1 all1000 launcher defaults:
 - default checkpoint retention: `8` checkpoints
 - default logging: `console` and `wandb` under project `trace_easyr1`
 - default W&B mode is `online`; set `WANDB_MODE=offline` only when you explicitly want a local offline run
+- 7B wrapper defaults: `MAX_STEPS=500`, `SAVE_LIMIT=2`,
+  `GPU_MEMORY_UTILIZATION=0.8`, `MAX_NUM_BATCHED_TOKENS=16384`,
+  `TENSOR_PARALLEL_SIZE=2`
 
 Example:
 
 ```bash
 cd /home/shadeform/trace
 MAX_STEPS=500 scripts/run_trace_qwen25vl3b_easyr1_answer_nokl_tmpfs.sh
+```
+
+Qwen2.5-VL-7B answer-only all1000 recipe:
+
+```bash
+cd /home/shadeform/trace
+scripts/run_trace_qwen25vl7b_easyr1_answer_nokl_tmpfs.sh
 ```
 
 Legacy Vero/split-v1 launchers remain available for reference only:

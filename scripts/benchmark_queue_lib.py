@@ -71,6 +71,7 @@ TRACE_CANDIDATE37_200_BENCHMARKS = (
     "infovqa",
     "charxivdesc",
     "vlmbias",
+    "visiongraph_q3",
 )
 
 

@@ -91,9 +91,9 @@ class VisionGraphQ3(ImageBaseDataset):
     def _extract_archive(cls, archive_path: Path, source_root: Path) -> None:
         source_root.mkdir(parents=True, exist_ok=True)
         extractors = (
-            ("7z", ["7z", "x", "-y", f"-o{source_root}", str(archive_path)]),
-            ("7zz", ["7zz", "x", "-y", f"-o{source_root}", str(archive_path)]),
             ("unrar", ["unrar", "x", "-o+", str(archive_path), str(source_root)]),
+            ("7zz", ["7zz", "x", "-y", f"-o{source_root}", str(archive_path)]),
+            ("7z", ["7z", "x", "-y", f"-o{source_root}", str(archive_path)]),
         )
         for executable, cmd in extractors:
             if shutil.which(executable):

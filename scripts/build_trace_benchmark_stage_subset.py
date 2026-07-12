@@ -31,6 +31,7 @@ from run_external_benchmark_generation_queue import (  # noqa: E402
 
 DEFAULT_KEYS = (
     "chartmuseum",
+    "chartqa",
     "game_qa_lite",
     "screenspot",
     "screenspotpro",
@@ -136,9 +137,11 @@ def _entry_for_row(
     }
 
 
-def _previous_rows(previous_root: Path, spec: BenchmarkSpec) -> list[dict[str, Any]]:
+def _previous_rows(previous_root: Path, spec: BenchmarkSpec, *, allow_missing: bool = False) -> list[dict[str, Any]]:
     path = previous_root / f"{spec.key}.jsonl"
     if not path.exists():
+        if allow_missing:
+            return []
         raise FileNotFoundError(f"Missing previous subset manifest for {spec.key}: {path}")
     rows = [row for row in _read_jsonl(path) if row.get("benchmark_key") in {spec.key, spec.aggregate_group}]
     rows.sort(key=lambda row: int(row["sample_rank"]))
@@ -153,12 +156,13 @@ def build_subset(
     target_size: int,
     sample_seed: int,
     subset_version: str,
+    allow_missing_previous: bool = False,
 ) -> dict[str, Any]:
     benchmark_summaries: list[dict[str, Any]] = []
     out_root.mkdir(parents=True, exist_ok=True)
     for key in keys:
         spec = spec_by_key(key)
-        previous = _previous_rows(previous_root, spec)
+        previous = _previous_rows(previous_root, spec, allow_missing=allow_missing_previous)
         source_rows = _load_source_rows(spec, sample_seed=sample_seed)
         source_by_index = {str(row.get("index")): row for row in source_rows}
         previous_indices = [str(row["source_index"]) for row in previous]
@@ -206,6 +210,7 @@ def build_subset(
                 "dataset_alias": spec.alias,
                 "manifest": f"{spec.key}.jsonl",
                 "previous_rows": len(previous),
+                "previous_manifest_missing": not (previous_root / f"{spec.key}.jsonl").exists(),
                 "added_rows": len(added),
                 "selected_rows": len(rows),
                 "source_rows": len(source_rows),
@@ -225,6 +230,7 @@ def build_subset(
         "subset_root": str(out_root.relative_to(LIB_REPO_ROOT) if out_root.is_relative_to(LIB_REPO_ROOT) else out_root),
         "subset_version": subset_version,
         "target_size": int(target_size),
+        "allow_missing_previous": bool(allow_missing_previous),
     }
     _write_json(out_root / "manifest.json", manifest)
     return manifest
@@ -238,6 +244,11 @@ def main() -> None:
     parser.add_argument("--sample-seed", type=int, default=42)
     parser.add_argument("--subset-version", default="")
     parser.add_argument("--only", nargs="*", default=list(DEFAULT_KEYS))
+    parser.add_argument(
+        "--allow-missing-previous",
+        action="store_true",
+        help="Treat a missing previous-stage manifest as an empty carried subset for newly added benchmarks.",
+    )
     args = parser.parse_args()
     subset_version = args.subset_version or f"trace_candidate{len(args.only)}_{args.target_size}_seed{args.sample_seed}"
     build_subset(
@@ -247,6 +258,7 @@ def main() -> None:
         target_size=int(args.target_size),
         sample_seed=int(args.sample_seed),
         subset_version=subset_version,
+        allow_missing_previous=bool(args.allow_missing_previous),
     )
 
 

@@ -112,6 +112,7 @@ class ModelSpec:
 
 
 BENCHMARKS: tuple[BenchmarkSpec, ...] = (
+    BenchmarkSpec("chartqa", "ChartQA", "ChartQA_TEST", "vlmevalkit_defaults", max_tokens=1024),
     BenchmarkSpec("chartqapro", "ChartQAPro", "ChartQAPro_CoT", "vlmevalkit_faithful_cot"),
     BenchmarkSpec("chartmuseum", "ChartMuseum", "ChartMuseum_test", "vlmevalkit_defaults_qwen32b_judge_test", split="test", eval_mode="chartmuseum_local_judge", max_model_len=32768),
     BenchmarkSpec("charxivdesc", "CharXivDesc", "CharXiv_descriptive_val", "vlmevalkit_defaults_qwen32b_judge"),

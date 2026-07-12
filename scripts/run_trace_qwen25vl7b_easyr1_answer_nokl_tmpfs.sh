@@ -24,10 +24,10 @@ export VAL_BATCH_SIZE="${VAL_BATCH_SIZE:-1024}"
 export MAX_PROMPT_LENGTH="${MAX_PROMPT_LENGTH:-2048}"
 export MAX_RESPONSE_LENGTH="${MAX_RESPONSE_LENGTH:-2048}"
 
-# Qwen2.5-VL-7B needs more rollout headroom than the 3B all1000 recipe on
-# 8x80GB H100. These defaults are conservative and can be raised on H200.
-export GPU_MEMORY_UTILIZATION="${GPU_MEMORY_UTILIZATION:-0.8}"
-export MAX_NUM_BATCHED_TOKENS="${MAX_NUM_BATCHED_TOKENS:-16384}"
+# Match the proven 3B all1000 rollout memory settings first. Raise these only
+# after a stable smoke run on the target hardware.
+export GPU_MEMORY_UTILIZATION="${GPU_MEMORY_UTILIZATION:-0.6}"
+export MAX_NUM_BATCHED_TOKENS="${MAX_NUM_BATCHED_TOKENS:-8192}"
 export TENSOR_PARALLEL_SIZE="${TENSOR_PARALLEL_SIZE:-2}"
 export N_GPUS="${N_GPUS:-8}"
 

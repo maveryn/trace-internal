@@ -108,7 +108,7 @@ Active EasyR1 all1000 launcher defaults:
 - default logging: `console` and `wandb` under project `trace_easyr1`
 - default W&B mode is `online`; set `WANDB_MODE=offline` only when you explicitly want a local offline run
 - 7B wrapper defaults: `MAX_STEPS=500`, `SAVE_LIMIT=2`,
-  `GPU_MEMORY_UTILIZATION=0.8`, `MAX_NUM_BATCHED_TOKENS=16384`,
+  `GPU_MEMORY_UTILIZATION=0.6`, `MAX_NUM_BATCHED_TOKENS=8192`,
   `TENSOR_PARALLEL_SIZE=2`
 
 Example:

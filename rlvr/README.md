@@ -49,6 +49,10 @@ Current EasyR1 paper-training path:
   `docs/workflows/TRACE_ANNOTATION_ABLATION_RUNBOOK.md`
   - agents must report `nvidia-smi topo -m` first and state whether the host is
     suitable for the intended 4-GPU or 8-GPU EasyR1/FSDP run
+- concrete experiment/machine profiles:
+  `rlvr/experiments/`
+  - includes the 8x H200 Qwen2.5-VL-3B EasyR1 annotation profile used for the
+    July 2026 additive 0.50 ablation continuation
 - generic no-KL Qwen2.5-VL-3B launcher:
   `scripts/run_trace_qwen25vl3b_easyr1_nokl_tmpfs.sh`
 - answer-only wrapper:

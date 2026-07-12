@@ -95,6 +95,12 @@ System prompt:
 rlvr/examples/prompts/trace_vero_json_system_prompt_answer_and_annotation.txt
 ```
 
+This prompt keeps the answer-mode reasoning instruction and adds a compact
+annotation contract: the response should include reasoning before the requested
+annotation and answer, the annotation must follow the prompt-requested format
+using image pixel coordinates, and the response must end with
+`{"answer": ..., "annotation": ...}`.
+
 Reward mode:
 
 ```text

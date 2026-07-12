@@ -218,6 +218,7 @@ Minimal TRACE knobs on the legacy Vero stack:
 - `custom_reward_function.reward_kwargs.trace_answer_scoring=exact_json` by default; set `legacy_strict` to recover the older TRACE answer-matching semantics used by `strict_score_response(...)`
 - `custom_reward_function.reward_kwargs.trace_format_weight=0.05` by default; set `TRACE_FORMAT_WEIGHT` to override it for both answer and answer-and-annotation modes
 - RLVR export now strips the generic JSON-schema boilerplate line from `prompt_answer` and `prompt_answer_and_annotation`; the mode-specific system prompt carries the schema contract, while task-specific hints and examples stay in the user prompt
+- The default answer-and-annotation system prompt asks the response to include reasoning before the requested annotation and answer, then end with `{"answer": ..., "annotation": ...}`.
 - RLVR export includes `query_id` and `scene_variant` when trace sidecars are available; retained curriculum parquets also keep per-question staged probe counts and solve rates
 - TRACE format reward is binary: it is `1.0` only when the response ends with a JSON object whose keys match the expected mode-specific contract, otherwise `0.0`; it does not require `<think>` or `<answer>` tags.
 - `reward/zero_reward` and grouped `rlvr_stats/zero_solve_*` / `perfect_solve_*` track task reward correctness, so a wrong but well-formed JSON answer does not count as a solve.

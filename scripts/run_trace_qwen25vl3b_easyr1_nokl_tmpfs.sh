@@ -166,6 +166,13 @@ GPU_MEMORY_UTILIZATION="${GPU_MEMORY_UTILIZATION:-0.6}"
 MAX_NUM_BATCHED_TOKENS="${MAX_NUM_BATCHED_TOKENS:-8192}"
 TENSOR_PARALLEL_SIZE="${TENSOR_PARALLEL_SIZE:-2}"
 N_GPUS="${N_GPUS:-8}"
+ACTOR_MICRO_BATCH_SIZE_PER_DEVICE_FOR_EXPERIENCE="${ACTOR_MICRO_BATCH_SIZE_PER_DEVICE_FOR_EXPERIENCE:-2}"
+ACTOR_MICRO_BATCH_SIZE_PER_DEVICE_FOR_UPDATE="${ACTOR_MICRO_BATCH_SIZE_PER_DEVICE_FOR_UPDATE:-1}"
+
+EXTRA_OVERRIDES=()
+if [[ -n "${REF_MICRO_BATCH_SIZE_PER_DEVICE_FOR_EXPERIENCE:-}" ]]; then
+  EXTRA_OVERRIDES+=("worker.ref.micro_batch_size_per_device_for_experience=${REF_MICRO_BATCH_SIZE_PER_DEVICE_FOR_EXPERIENCE}")
+fi
 
 PROJECT_NAME="${PROJECT_NAME:-trace_easyr1}"
 EXPERIMENT_NAME="${EXPERIMENT_NAME:-trace_qwen25vl3b_easyr1_${TRACE_REWARD_SLUG}_nokl_bsz${ROLLOUT_BATCH_SIZE}_rollout${ROLLOUT_N}_val2000_${RUN_STAMP}}"
@@ -182,6 +189,11 @@ echo "[trace-easyr1] prompt_key=${PROMPT_KEY}"
 echo "[trace-easyr1] system_prompt_file=${SYSTEM_PROMPT_FILE}"
 echo "[trace-easyr1] annotation_formula=${TRACE_ANNOTATION_REWARD_FORMULA}"
 echo "[trace-easyr1] answer_weight=${TRACE_ANSWER_WEIGHT} annotation_weight=${TRACE_ANNOTATION_WEIGHT} format_weight=${TRACE_FORMAT_WEIGHT}"
+echo "[trace-easyr1] actor_micro_batch_experience=${ACTOR_MICRO_BATCH_SIZE_PER_DEVICE_FOR_EXPERIENCE}"
+echo "[trace-easyr1] actor_micro_batch_update=${ACTOR_MICRO_BATCH_SIZE_PER_DEVICE_FOR_UPDATE}"
+if [[ -n "${REF_MICRO_BATCH_SIZE_PER_DEVICE_FOR_EXPERIENCE:-}" ]]; then
+  echo "[trace-easyr1] ref_micro_batch_experience=${REF_MICRO_BATCH_SIZE_PER_DEVICE_FOR_EXPERIENCE}"
+fi
 
 python3 -m verl.trainer.main \
   config=examples/config.yaml \
@@ -208,8 +220,8 @@ python3 -m verl.trainer.main \
   worker.actor.model.trust_remote_code=false \
   worker.actor.model.freeze_vision_tower=false \
   worker.actor.global_batch_size="$ACTOR_GLOBAL_BATCH_SIZE" \
-  worker.actor.micro_batch_size_per_device_for_experience=2 \
-  worker.actor.micro_batch_size_per_device_for_update=1 \
+  worker.actor.micro_batch_size_per_device_for_experience="$ACTOR_MICRO_BATCH_SIZE_PER_DEVICE_FOR_EXPERIENCE" \
+  worker.actor.micro_batch_size_per_device_for_update="$ACTOR_MICRO_BATCH_SIZE_PER_DEVICE_FOR_UPDATE" \
   worker.actor.optim.lr=1e-6 \
   worker.actor.optim.lr_warmup_ratio=0 \
   worker.actor.optim.lr_scheduler_type=constant \
@@ -248,4 +260,5 @@ python3 -m verl.trainer.main \
   trainer.val_before_train="$VAL_BEFORE_TRAIN" \
   trainer.save_checkpoint_path="$SAVE_CHECKPOINT_PATH" \
   trainer.load_checkpoint_path="$LOAD_CHECKPOINT_PATH" \
-  trainer.find_last_checkpoint="$FIND_LAST_CHECKPOINT"
+  trainer.find_last_checkpoint="$FIND_LAST_CHECKPOINT" \
+  "${EXTRA_OVERRIDES[@]}"

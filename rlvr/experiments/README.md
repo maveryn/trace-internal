@@ -12,3 +12,5 @@ Profiles:
 
 - `h200_qwen25vl3b_easyr1_annotation.md` - 8x H200 settings used for
   Qwen2.5-VL-3B TRACE answer-and-annotation EasyR1 ablations.
+- `annotation_system_prompt_response_length.md` - annotation-mode system prompt
+  provenance and response-length behavior before and after the prompt update.

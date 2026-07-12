@@ -17,7 +17,7 @@ Prompt text is externalized, deterministic, and traceable.
 6. All active tasks must provide task-specific JSON-format guidance in both
    output modes:
    - `answer_only` uses `{"answer": ...}`
-   - `answer_and_annotation` uses `{"annotation": ..., "answer": ...}`
+   - `answer_and_annotation` uses `{"answer": ..., "annotation": ...}`
 7. Output-mode instructions should keep task-specific `answer_hint`,
    `annotation_hint`, and JSON examples. The generic final JSON-object
    instruction belongs in the RLVR system prompt layer.

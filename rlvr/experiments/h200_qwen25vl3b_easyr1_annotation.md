@@ -232,17 +232,21 @@ roughly 9-10 seconds versus the original 1/2 settings.
 
 ## Launch Notes
 
-The generic launcher at the time of this run hardcoded:
+The generic launcher used to hardcode the actor microbatch settings. It now
+accepts environment overrides while preserving the same defaults:
 
 ```text
-worker.actor.micro_batch_size_per_device_for_experience=2
-worker.actor.micro_batch_size_per_device_for_update=1
+ACTOR_MICRO_BATCH_SIZE_PER_DEVICE_FOR_EXPERIENCE=2
+ACTOR_MICRO_BATCH_SIZE_PER_DEVICE_FOR_UPDATE=1
 ```
 
-For future H200 runs, either update the launcher to expose these values as
-environment variables or launch through direct EasyR1 config overrides. Do not
-assume setting shell variables named after these knobs will work unless the
-launcher has been changed to pass them through.
+For H200 runs that use the selected 4/8 profile, set:
+
+```text
+ACTOR_MICRO_BATCH_SIZE_PER_DEVICE_FOR_UPDATE=4
+ACTOR_MICRO_BATCH_SIZE_PER_DEVICE_FOR_EXPERIENCE=8
+REF_MICRO_BATCH_SIZE_PER_DEVICE_FOR_EXPERIENCE=8
+```
 
 Minimum override set for this profile:
 

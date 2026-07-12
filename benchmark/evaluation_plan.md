@@ -72,6 +72,7 @@ Queue jobs are reclaimed after 15 minutes if a worker dies before marking comple
 | MME-RealWorld-Lite | `MME-RealWorld-Lite` | Native VLMEvalKit. |
 | TreeBench | `TreeBench` | Native VLMEvalKit. |
 | VLMBlind | `VLMBlind` | Native VLMEvalKit. |
+| VisionGraph-Q3 | `VisionGraph_Q3` | Local VLMEvalKit adapter using only the third graph-reasoning question per image; deterministic task-specific scoring. |
 
 ## ScreenSpotPro Aggregation
 

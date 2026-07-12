@@ -163,6 +163,7 @@ TRACE_CANDIDATE37_EXTRA_BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     BenchmarkSpec("tablevqabench", "TableVQABench", "TableVQABench", "vlmevalkit_defaults"),
     BenchmarkSpec("seephys", "SEEPhys", "SeePhys", "vlmevalkit_reasoning"),
     BenchmarkSpec("vlmbias", "VLMBias", "VLMBias", "vlmevalkit_defaults"),
+    BenchmarkSpec("visiongraph_q3", "VisionGraph-Q3", "VisionGraph_Q3", "vlmevalkit_q3", max_tokens=2048),
 )
 
 ALL_BENCHMARKS: tuple[BenchmarkSpec, ...] = BENCHMARKS + TRACE_CANDIDATE37_EXTRA_BENCHMARKS

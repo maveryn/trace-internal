@@ -75,11 +75,14 @@ def _score_one(
     point_half_life_px: float | None = None,
 ) -> dict[str, float]:
     response = str(reward_input.get("response", "") or "")
+    answer_gt = reward_input.get("answer_gt", reward_input.get("ground_truth"))
 
-    if is_trace_reward_input(reward_input):
+    if is_trace_reward_input(reward_input) or (
+        answer_gt is not None and "annotation_gt" in reward_input and "reward_contract" in reward_input
+    ):
         result = score_trace_response(
             response=response,
-            answer_gt=_jsonish(reward_input["answer_gt"]),
+            answer_gt=_jsonish(answer_gt),
             annotation_gt=_jsonish(reward_input["annotation_gt"]),
             reward_contract=_jsonish(reward_input["reward_contract"]),
             bbox_iou_threshold=bbox_iou_threshold,

@@ -67,10 +67,10 @@ def reduce_reward_metrics(metrics: dict[str, list[Any]], prefix: str = "reward/"
         if mask_values.shape != annotation_values.shape:
             continue
         count = float(np.sum(mask_values))
-        reduced[f"{prefix}annotation_count/{annotation_type}"] = count
-        reduced[f"{prefix}annotation_fraction/{annotation_type}"] = float(count / max(1, len(mask_values)))
+        reduced[f"{prefix}annotation_count_by_type/{annotation_type}"] = count
+        reduced[f"{prefix}annotation_fraction_by_type/{annotation_type}"] = float(count / max(1, len(mask_values)))
         if count > 0:
-            reduced[f"{prefix}annotation_reward/{annotation_type}"] = float(
+            reduced[f"{prefix}annotation_reward_by_type/{annotation_type}"] = float(
                 np.sum(annotation_values * mask_values) / count
             )
     return reduced

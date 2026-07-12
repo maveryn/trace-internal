@@ -38,6 +38,7 @@ from benchmark_queue_lib import (
     run_dir,
     score_path,
     spec_by_key,
+    weighted_prefixed_overall_accuracy,
     write_json,
 )
 
@@ -862,6 +863,10 @@ def _run_score_for_spec(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
         summary = _run_physics_subset_score(args, spec, model_path, output_dir, judge)
     else:
         summary = _run_direct_vlmeval(args, spec, model_path, output_dir)
+    weighted = weighted_prefixed_overall_accuracy(summary.get("scores"))
+    if weighted is not None:
+        summary["score"] = weighted[0]
+        write_json(output_dir / "scores.json", summary)
     dst = _copy_score_to_benchmark(spec, model_slug, output_dir, args.benchmark_root)
     summary["benchmark_score_path"] = str(dst)
     return summary

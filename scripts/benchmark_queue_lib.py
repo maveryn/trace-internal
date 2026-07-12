@@ -461,9 +461,51 @@ def score_to_percent(value: Any) -> float | None:
     return score
 
 
+def weighted_prefixed_overall_accuracy(scores: Any) -> tuple[float, int] | None:
+    """Compute weighted ScreenSpot-style overall accuracy from grouped metrics.
+
+    VLMEvalKit GUI benchmarks return dictionaries like
+    ``ScreenSpot_Mobile:Overall_Accuracy`` plus matching ``*:cnt`` entries.
+    The generic numeric fallback is wrong for these dictionaries because it
+    averages count fields together with accuracy fields.
+    """
+    if not isinstance(scores, dict):
+        return None
+    total = 0.0
+    correct = 0.0
+    for key, value in scores.items():
+        key_str = str(key)
+        if not key_str.endswith(":Overall_Accuracy"):
+            continue
+        try:
+            accuracy = float(value)
+        except Exception:
+            continue
+        prefix = key_str[: -len(":Overall_Accuracy")]
+        count = 0.0
+        for count_key, count_value in scores.items():
+            count_key_str = str(count_key)
+            if count_key_str.startswith(prefix + ":") and count_key_str.endswith(":cnt"):
+                try:
+                    count += float(count_value)
+                except Exception:
+                    pass
+        if count <= 0:
+            continue
+        total += count
+        correct += count * accuracy / 100.0
+    if total <= 0:
+        return None
+    return correct / total * 100.0, int(total)
+
+
 def extract_score_and_rows(scores_obj: dict[str, Any]) -> tuple[float | None, int | None]:
     rows = scores_obj.get("rows")
     rows_int = int(rows) if rows is not None else None
+    weighted = weighted_prefixed_overall_accuracy(scores_obj.get("scores"))
+    if weighted is not None:
+        score, weighted_rows = weighted
+        return score, rows_int or weighted_rows
     if "Overall_Accuracy" in scores_obj:
         return float(scores_obj["Overall_Accuracy"]), rows_int
     for key in ("accuracy", "acc", "score", "Overall", "overall"):

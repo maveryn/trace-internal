@@ -88,8 +88,15 @@ class VisionGraphQ3(ImageBaseDataset):
         return json_path
 
     @classmethod
-    def _extract_archive(cls, archive_path: Path, source_root: Path) -> None:
+    def _extract_archive(cls, archive_path: Path, source_root: Path, task: str | None = None) -> None:
         source_root.mkdir(parents=True, exist_ok=True)
+        if task and shutil.which("unrar"):
+            subprocess.run(
+                ["unrar", "x", "-o+", str(archive_path), f"{task}/graph/test/*", str(source_root)],
+                check=True,
+            )
+            return
+
         extractors = (
             ("unrar", ["unrar", "x", "-o+", str(archive_path), str(source_root)]),
             ("7zz", ["7zz", "x", "-y", f"-o{source_root}", str(archive_path)]),
@@ -108,7 +115,7 @@ class VisionGraphQ3(ImageBaseDataset):
 
     @classmethod
     def _ensure_task_images(cls, task: str, source_root: Path) -> None:
-        if list(source_root.glob(f"**/{task}/test/*.png")):
+        if list(source_root.glob(f"**/{task}/**/test/*.png")):
             return
         if os.environ.get("VISIONGRAPH_ALLOW_MISSING_IMAGES"):
             return
@@ -121,7 +128,7 @@ class VisionGraphQ3(ImageBaseDataset):
             filename=f"{task}.rar",
             local_dir=str(source_root / "archives"),
         )
-        cls._extract_archive(Path(archive_path), source_root)
+        cls._extract_archive(Path(archive_path), source_root, task=task)
 
     @classmethod
     def _resolve_image_path(cls, source_root: Path, image_ref: str, task: str) -> Path:

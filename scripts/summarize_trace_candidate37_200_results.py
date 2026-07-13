@@ -235,15 +235,19 @@ def write_markdown(
     model_columns: list[tuple[str, str]],
     title: str,
     subset_root: Path,
+    subset_label_override: str | None = None,
 ) -> None:
     first_label = model_columns[0][1] if model_columns else ""
     delta_labels = [label for _, label in model_columns[1:]] if first_label else []
     headers = ["Benchmark", "Prompt / Dataset", "Rows", *[label for _, label in model_columns]]
     headers.extend(f"{label} - {first_label}" for label in delta_labels)
-    try:
-        subset_label = str(subset_root.relative_to(REPO_ROOT))
-    except ValueError:
-        subset_label = str(subset_root)
+    if subset_label_override:
+        subset_label = subset_label_override
+    else:
+        try:
+            subset_label = str(subset_root.relative_to(REPO_ROOT))
+        except ValueError:
+            subset_label = str(subset_root)
     align = ["---", "---", "---:"] + ["---:"] * len(model_columns)
     align.extend(["---:"] * len(delta_labels))
     lines = [
@@ -328,12 +332,14 @@ def write_excel(
     model_columns: list[tuple[str, str]],
     suite_name: str,
     subset_root: Path,
+    subset_label_override: str | None = None,
 ) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
+    subset_value = subset_label_override or str(subset_root)
     metadata = pd.DataFrame(
         [
             {"key": "suite", "value": suite_name},
-            {"key": "subset_root", "value": str(subset_root)},
+            {"key": "subset_root", "value": subset_value},
             {"key": "benchmark_count", "value": len([x for x in summary["benchmark_key"] if not str(x).startswith("average")])},
             {"key": "models", "value": ", ".join(slug for slug, _ in model_columns)},
         ]
@@ -363,13 +369,14 @@ def main() -> int:
     parser.add_argument("--title", default="Qwen2.5-VL-3B TRACE Candidate37 200-Row Benchmark Results")
     parser.add_argument("--suite-name", default="trace_candidate37_200")
     parser.add_argument("--subset-root", type=Path, default=TRACE_CANDIDATE37_200_SUBSET_ROOT)
+    parser.add_argument("--subset-label", default=None)
     parser.add_argument("--no-excel", action="store_true")
     args = parser.parse_args()
     model_columns = [(slug, MODEL_LABELS.get(slug, slug)) for slug in args.models]
     summary, details, generation = build_tables(args.benchmark_root, args.run_root, model_columns, args.only, args.exclude)
-    write_markdown(summary, args.markdown, model_columns, args.title, args.subset_root)
+    write_markdown(summary, args.markdown, model_columns, args.title, args.subset_root, args.subset_label)
     if not args.no_excel:
-        write_excel(summary, details, generation, args.excel, model_columns, args.suite_name, args.subset_root)
+        write_excel(summary, details, generation, args.excel, model_columns, args.suite_name, args.subset_root, args.subset_label)
     print(f"[wrote] {args.markdown}")
     if not args.no_excel:
         print(f"[wrote] {args.excel}")

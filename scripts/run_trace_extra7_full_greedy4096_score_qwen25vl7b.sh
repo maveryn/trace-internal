@@ -7,10 +7,7 @@ BENCHMARK_ROOT="${BENCHMARK_ROOT:-/dev/shm/trace_rlvr/${SCORE_TAG}/benchmark}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-/dev/shm/trace_rlvr/${SCORE_TAG}/llm_extracted}"
 LOG_ROOT="${LOG_ROOT:-/home/shadeform/trace/logs/benchmark/${SCORE_TAG}}"
 RESULTS_ROOT="${RESULTS_ROOT:-/home/shadeform/trace/results}"
-SUBSET_ROOT="${SUBSET_ROOT:-/home/shadeform/trace/benchmark/subsets/trace_extra7_full}"
-PREVIOUS_SUBSET_ROOT="${PREVIOUS_SUBSET_ROOT:-/home/shadeform/trace/benchmark/subsets/trace_candidate37_200}"
-SUBSET_TARGET_SIZE="${SUBSET_TARGET_SIZE:-1000000}"
-SAMPLE_SEED="${SAMPLE_SEED:-42}"
+SUBSET_LABEL="${SUBSET_LABEL:-full VLMEvalKit datasets; no subset manifest}"
 
 JUDGE_MODEL="${JUDGE_MODEL:-Qwen/Qwen3-32B}"
 JUDGE_SERVED_MODEL_NAME="${JUDGE_SERVED_MODEL_NAME:-qwen3-32b-judge}"
@@ -57,19 +54,6 @@ LLM_EXTRACT_BENCHMARKS=(
 
 mkdir -p "${LOG_ROOT}" "${BENCHMARK_ROOT}" "${OUTPUT_ROOT}"
 
-if [[ ! -f "${SUBSET_ROOT}/manifest.json" ]]; then
-  echo "[subset:build] subset_root=${SUBSET_ROOT} target_size=${SUBSET_TARGET_SIZE}"
-  python /home/shadeform/trace/scripts/build_trace_benchmark_stage_subset.py \
-    --previous-root "${PREVIOUS_SUBSET_ROOT}" \
-    --out-root "${SUBSET_ROOT}" \
-    --target-size "${SUBSET_TARGET_SIZE}" \
-    --sample-seed "${SAMPLE_SEED}" \
-    --subset-version "trace_extra7_full_seed${SAMPLE_SEED}" \
-    --allow-missing-previous \
-    --only "${BENCHMARKS[@]}" \
-    2>&1 | tee "${LOG_ROOT}/build_subset.log"
-fi
-
 current_pid_file=""
 cleanup_current_pool() {
   if [[ -n "${current_pid_file}" && -f "${current_pid_file}" ]]; then
@@ -84,7 +68,7 @@ echo "[score-suite] benchmark_root=${BENCHMARK_ROOT}"
 echo "[score-suite] output_root=${OUTPUT_ROOT}"
 echo "[score-suite] log_root=${LOG_ROOT}"
 echo "[score-suite] results_root=${RESULTS_ROOT}"
-echo "[score-suite] subset_root=${SUBSET_ROOT}"
+echo "[score-suite] dataset_selection=${SUBSET_LABEL}"
 
 python /home/shadeform/trace/scripts/run_external_benchmark_score_multi_model_queue.py \
   "${MODEL_ARGS[@]}" \
@@ -173,7 +157,7 @@ python /home/shadeform/trace/scripts/summarize_trace_candidate37_200_results.py 
   --benchmark-root "${BENCHMARK_ROOT}" \
   --run-root "${RUN_ROOT}" \
   --suite-name trace_extra7_full_greedy4096_qwen25vl7b \
-  --subset-root "${SUBSET_ROOT}" \
+  --subset-label "${SUBSET_LABEL}" \
   --title "Qwen2.5-VL-7B TRACE Extra7 Full Greedy-4096 Benchmark Results" \
   --markdown "${RESULTS_ROOT}/trace_extra7_full_greedy4096_qwen25vl7b_results.md" \
   --excel "${RESULTS_ROOT}/trace_extra7_full_greedy4096_qwen25vl7b_results.xlsx" \

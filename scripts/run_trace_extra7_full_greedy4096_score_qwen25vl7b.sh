@@ -16,13 +16,16 @@ JUDGE_MODEL="${JUDGE_MODEL:-Qwen/Qwen3-32B}"
 JUDGE_SERVED_MODEL_NAME="${JUDGE_SERVED_MODEL_NAME:-qwen3-32b-judge}"
 JUDGE_PORT_START="${JUDGE_PORT_START:-18100}"
 HOST="${HOST:-127.0.0.1}"
-GPU_GROUPS="${GPU_GROUPS:-0 1 2 3 4 5 6 7}"
+GPU_GROUPS="${GPU_GROUPS:-0,1;2,3;4,5;6,7}"
 GPU_MEMORY_UTILIZATION="${GPU_MEMORY_UTILIZATION:-0.90}"
 MAX_MODEL_LEN="${MAX_MODEL_LEN:-8192}"
 MAX_NUM_SEQS="${MAX_NUM_SEQS:-128}"
-MAX_NUM_BATCHED_TOKENS="${MAX_NUM_BATCHED_TOKENS:-8192}"
+MAX_NUM_BATCHED_TOKENS="${MAX_NUM_BATCHED_TOKENS:-32768}"
 JUDGE_MAX_TOKENS="${JUDGE_MAX_TOKENS:-256}"
-JUDGE_API_PARALLELISM="${JUDGE_API_PARALLELISM:-128}"
+JUDGE_API_PARALLELISM="${JUDGE_API_PARALLELISM:-8}"
+JUDGE_API_BATCH_SIZE="${JUDGE_API_BATCH_SIZE:-16}"
+JUDGE_API_BATCHES_PER_ENDPOINT="${JUDGE_API_BATCHES_PER_ENDPOINT:-1}"
+JUDGE_API_MAX_BATCH_CHARS="${JUDGE_API_MAX_BATCH_CHARS:-24000}"
 
 BENCHMARKS=(
   spbench_si_cot
@@ -93,8 +96,14 @@ python /home/shadeform/trace/scripts/run_external_benchmark_score_multi_model_qu
   --only "${OFFICIAL_DIRECT_BENCHMARKS[@]}" \
   2>&1 | tee "${LOG_ROOT}/score_official_direct.log"
 
+if [[ "${GPU_GROUPS}" == *";"* ]]; then
+  IFS=';' read -r -a JUDGE_GROUP_ARRAY <<< "${GPU_GROUPS}"
+else
+  read -r -a JUDGE_GROUP_ARRAY <<< "${GPU_GROUPS}"
+fi
+
 endpoint_args=()
-for offset in 0 1 2 3 4 5 6 7; do
+for offset in "${!JUDGE_GROUP_ARRAY[@]}"; do
   endpoint_args+=(--api-base "http://${HOST}:$((JUDGE_PORT_START + offset))/v1")
 done
 
@@ -103,6 +112,7 @@ current_pid_file="${pool_log_dir}/pids.txt"
 
 echo "[score-suite] judge=${JUDGE_MODEL} served=${JUDGE_SERVED_MODEL_NAME}"
 echo "[score-suite] judge_api_parallelism=${JUDGE_API_PARALLELISM}"
+echo "[score-suite] judge_api_batch_size=${JUDGE_API_BATCH_SIZE} batches_per_endpoint=${JUDGE_API_BATCHES_PER_ENDPOINT} max_batch_chars=${JUDGE_API_MAX_BATCH_CHARS}"
 MODEL_PATH="${JUDGE_MODEL}" \
 SERVED_MODEL_NAME="${JUDGE_SERVED_MODEL_NAME}" \
 HOST="${HOST}" \
@@ -139,6 +149,9 @@ python /home/shadeform/trace/scripts/run_llm_extracted_benchmark_score_queue.py 
   --api-model "${JUDGE_SERVED_MODEL_NAME}" \
   --api-tokenizer-model "${JUDGE_MODEL}" \
   --api-parallelism "${JUDGE_API_PARALLELISM}" \
+  --api-batch-size "${JUDGE_API_BATCH_SIZE}" \
+  --api-batches-per-endpoint "${JUDGE_API_BATCHES_PER_ENDPOINT}" \
+  --api-max-batch-chars "${JUDGE_API_MAX_BATCH_CHARS}" \
   --judge-model "${JUDGE_MODEL}" \
   --judge-max-tokens "${JUDGE_MAX_TOKENS}" \
   "${endpoint_args[@]}" \

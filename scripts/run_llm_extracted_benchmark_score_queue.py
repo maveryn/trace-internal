@@ -700,10 +700,10 @@ def _render_api_prompt(tokenizer: Any, prompt: str) -> str:
         return tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
 
 
-def _call_completion_endpoint(args: argparse.Namespace, endpoint: str, prompt: str) -> str:
+def _call_completion_endpoint_batch(args: argparse.Namespace, endpoint: str, prompts: list[str]) -> list[str]:
     payload = {
         "model": args.api_model,
-        "prompt": prompt,
+        "prompt": prompts,
         "temperature": 0.0,
         "top_p": 1.0,
         "max_tokens": args.judge_max_tokens,
@@ -714,11 +714,46 @@ def _call_completion_endpoint(args: argparse.Namespace, endpoint: str, prompt: s
             response = requests.post(_completion_url(endpoint), json=payload, timeout=args.api_timeout)
             response.raise_for_status()
             data = response.json()
-            return str(data["choices"][0]["text"]).strip()
+            choices = data.get("choices") or []
+            outputs = [""] * len(prompts)
+            for pos, choice in enumerate(choices):
+                index = int(choice.get("index", pos))
+                if 0 <= index < len(outputs):
+                    outputs[index] = str(choice.get("text", "")).strip()
+            if len(choices) != len(prompts) or any(output == "" for output in outputs):
+                raise RuntimeError(f"expected {len(prompts)} completion choices, got {len(choices)}")
+            return outputs
         except Exception as exc:
             last_error = exc
             time.sleep(min(8.0, 0.5 * (2**attempt)))
     raise RuntimeError(f"{endpoint} failed after {args.api_max_retries} attempts: {last_error}")
+
+
+def _make_api_batches(
+    pending: list[dict[str, Any]],
+    rendered: dict[str, str],
+    *,
+    batch_size: int,
+    max_batch_chars: int,
+) -> list[list[dict[str, Any]]]:
+    batches: list[list[dict[str, Any]]] = []
+    current: list[dict[str, Any]] = []
+    current_chars = 0
+    for item in pending:
+        prompt_chars = len(rendered[item["job_id"]])
+        if current and (len(current) >= batch_size or current_chars + prompt_chars > max_batch_chars):
+            batches.append(current)
+            current = []
+            current_chars = 0
+        current.append(item)
+        current_chars += prompt_chars
+        if prompt_chars >= max_batch_chars:
+            batches.append(current)
+            current = []
+            current_chars = 0
+    if current:
+        batches.append(current)
+    return batches
 
 
 def run_api_pool(args: argparse.Namespace) -> None:
@@ -733,28 +768,58 @@ def run_api_pool(args: argparse.Namespace) -> None:
         return
 
     rendered = {item["job_id"]: _render_api_prompt(tokenizer, item["prompt"]) for item in pending}
+    batches = _make_api_batches(
+        pending,
+        rendered,
+        batch_size=max(1, int(args.api_batch_size)),
+        max_batch_chars=max(1, int(args.api_max_batch_chars)),
+    )
+    batch_workers = min(
+        max(1, int(args.api_parallelism)),
+        max(1, len(args.api_bases) * int(args.api_batches_per_endpoint)),
+        len(batches),
+    )
+    print(
+        "[llm-extract:api-batches] "
+        f"batches={len(batches)} batch_size={args.api_batch_size} "
+        f"max_batch_chars={args.api_max_batch_chars} workers={batch_workers}"
+    )
 
-    def run_one(pos_item: tuple[int, dict[str, Any]]) -> tuple[dict[str, Any], str | None]:
-        pos, item = pos_item
+    def run_batch(pos_batch: tuple[int, list[dict[str, Any]]]) -> tuple[int, list[str]]:
+        pos, batch = pos_batch
         endpoint = args.api_bases[pos % len(args.api_bases)]
+        prompts = [rendered[item["job_id"]] for item in batch]
         try:
-            raw = _call_completion_endpoint(args, endpoint, rendered[item["job_id"]])
-            result = _result_from_judge_output(item, raw)
-            result["judge_model"] = args.judge_model
-            result["api_endpoint"] = endpoint
-            mark_done(args, item, result)
-            return result, None
+            raw_outputs = _call_completion_endpoint_batch(args, endpoint, prompts)
         except Exception as exc:
-            mark_failed(args, item, repr(exc))
-            return item, repr(exc)
+            if len(batch) > 1:
+                mid = len(batch) // 2
+                left_errors, left_messages = run_batch((pos, batch[:mid]))
+                right_errors, right_messages = run_batch((pos, batch[mid:]))
+                return left_errors + right_errors, left_messages + right_messages
+            mark_failed(args, batch[0], repr(exc))
+            return 1, [repr(exc)]
+
+        errors = 0
+        messages: list[str] = []
+        for item, raw in zip(batch, raw_outputs):
+            try:
+                result = _result_from_judge_output(item, raw)
+                result["judge_model"] = args.judge_model
+                result["api_endpoint"] = endpoint
+                mark_done(args, item, result)
+            except Exception as exc:
+                errors += 1
+                messages.append(repr(exc))
+                mark_failed(args, item, repr(exc))
+        return errors, messages
 
     errors = 0
-    with concurrent.futures.ThreadPoolExecutor(max_workers=args.api_parallelism) as pool:
-        futures = [pool.submit(run_one, pair) for pair in enumerate(pending)]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=batch_workers) as pool:
+        futures = [pool.submit(run_batch, pair) for pair in enumerate(batches)]
         for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc=f"{args.queue_name} api"):
-            _, error = future.result()
-            if error:
-                errors += 1
+            batch_errors, _ = future.result()
+            errors += batch_errors
     if errors:
         raise RuntimeError(f"API extraction finished with {errors} failed rows")
 
@@ -999,6 +1064,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--api-model", default="qwen3-32b-judge")
     parser.add_argument("--api-tokenizer-model", default="Qwen/Qwen3-32B")
     parser.add_argument("--api-parallelism", type=int, default=128)
+    parser.add_argument("--api-batch-size", type=int, default=16)
+    parser.add_argument("--api-batches-per-endpoint", type=int, default=1)
+    parser.add_argument("--api-max-batch-chars", type=int, default=24000)
     parser.add_argument("--api-timeout", type=float, default=120.0)
     parser.add_argument("--api-max-retries", type=int, default=5)
     return parser

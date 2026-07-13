@@ -184,22 +184,38 @@ def _apply_subset_rows(rows: list[dict[str, Any]], entries: list[dict[str, Any]]
     return filtered
 
 
-def _effective_max_tokens(spec: BenchmarkSpec, max_tokens_override: int | None) -> int:
+def _effective_max_tokens(spec: BenchmarkSpec, max_tokens_override: int | None, *, force_override: bool = False) -> int:
     if max_tokens_override is not None and max_tokens_override > 0:
+        if force_override:
+            return int(max_tokens_override)
         return min(spec.max_tokens, max_tokens_override)
     return spec.max_tokens
 
 
-def _sampling_params_for_spec(spec: BenchmarkSpec, max_tokens_override: int | None):
+def _sampling_params_for_spec(
+    spec: BenchmarkSpec,
+    max_tokens_override: int | None,
+    *,
+    force_max_tokens_override: bool = False,
+    temperature_override: float | None = None,
+    top_p_override: float | None = None,
+    top_k_override: int | None = None,
+    presence_penalty_override: float | None = None,
+    repetition_penalty_override: float | None = None,
+):
     from vllm import SamplingParams
 
-    max_tokens = _effective_max_tokens(spec, max_tokens_override)
+    max_tokens = _effective_max_tokens(spec, max_tokens_override, force_override=force_max_tokens_override)
     return SamplingParams(
-        temperature=spec.temperature,
-        top_p=spec.top_p,
-        top_k=spec.top_k,
-        presence_penalty=spec.presence_penalty,
-        repetition_penalty=spec.repetition_penalty,
+        temperature=spec.temperature if temperature_override is None else float(temperature_override),
+        top_p=spec.top_p if top_p_override is None else float(top_p_override),
+        top_k=spec.top_k if top_k_override is None else int(top_k_override),
+        presence_penalty=spec.presence_penalty
+        if presence_penalty_override is None
+        else float(presence_penalty_override),
+        repetition_penalty=spec.repetition_penalty
+        if repetition_penalty_override is None
+        else float(repetition_penalty_override),
         max_tokens=max_tokens,
     )
 
@@ -253,6 +269,12 @@ def _generate_vlmeval_spec(
     no_resume: bool,
     prefetch_workers: int,
     prefetch_batches: int,
+    force_max_tokens_override: bool,
+    temperature_override: float | None,
+    top_p_override: float | None,
+    top_k_override: int | None,
+    presence_penalty_override: float | None,
+    repetition_penalty_override: float | None,
 ) -> dict[str, Any]:
     runner, _ = _import_vlmeval_runner()
     from vlmeval.dataset import build_dataset
@@ -270,7 +292,7 @@ def _generate_vlmeval_spec(
 
     existing = {} if no_resume else runner.load_jsonl_by_index(pred_jsonl)
     pending = dataset.data[~dataset.data["index"].astype(str).isin(existing)].copy()
-    max_tokens = _effective_max_tokens(spec, max_tokens_override)
+    max_tokens = _effective_max_tokens(spec, max_tokens_override, force_override=force_max_tokens_override)
     print(
         "[generate:vlmeval] "
         f"dataset={spec.alias} rows={len(dataset.data)} existing={len(existing)} pending={len(pending)} "
@@ -278,7 +300,16 @@ def _generate_vlmeval_spec(
     )
 
     t0 = time.time()
-    sampling = _sampling_params_for_spec(spec, max_tokens_override)
+    sampling = _sampling_params_for_spec(
+        spec,
+        max_tokens_override,
+        force_max_tokens_override=force_max_tokens_override,
+        temperature_override=temperature_override,
+        top_p_override=top_p_override,
+        top_k_override=top_k_override,
+        presence_penalty_override=presence_penalty_override,
+        repetition_penalty_override=repetition_penalty_override,
+    )
     total_batches = math.ceil(len(pending) / batch_size) if len(pending) else 0
     starts = list(range(0, len(pending), batch_size))
     max_workers = max(1, int(prefetch_workers))
@@ -331,13 +362,18 @@ def _generate_vlmeval_spec(
         "rows": len(pred_map),
         "generation_elapsed_sec": time.time() - t0,
         "generation": {
-            "temperature": spec.temperature,
-            "top_p": spec.top_p,
-            "top_k": spec.top_k,
-            "presence_penalty": spec.presence_penalty,
-            "repetition_penalty": spec.repetition_penalty,
+            "temperature": spec.temperature if temperature_override is None else float(temperature_override),
+            "top_p": spec.top_p if top_p_override is None else float(top_p_override),
+            "top_k": spec.top_k if top_k_override is None else int(top_k_override),
+            "presence_penalty": spec.presence_penalty
+            if presence_penalty_override is None
+            else float(presence_penalty_override),
+            "repetition_penalty": spec.repetition_penalty
+            if repetition_penalty_override is None
+            else float(repetition_penalty_override),
             "max_tokens": max_tokens,
             "configured_max_tokens": spec.max_tokens,
+            "force_max_tokens_override": bool(force_max_tokens_override),
             "video_llm": spec.video_llm,
             "prefetch_workers": max_workers,
             "prefetch_batches": max_prefetch,
@@ -371,6 +407,12 @@ def _generate_chartmuseum_spec(
     no_resume: bool,
     prefetch_workers: int,
     prefetch_batches: int,
+    force_max_tokens_override: bool,
+    temperature_override: float | None,
+    top_p_override: float | None,
+    top_k_override: int | None,
+    presence_penalty_override: float | None,
+    repetition_penalty_override: float | None,
 ) -> dict[str, Any]:
     _, chartmuseum = _import_vlmeval_runner()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -385,7 +427,7 @@ def _generate_chartmuseum_spec(
     if subset_manifest:
         rows = _apply_subset_rows(rows, subset_entries)
     pending = [r for r in rows if str(r["index"]) not in existing]
-    max_tokens = _effective_max_tokens(spec, max_tokens_override)
+    max_tokens = _effective_max_tokens(spec, max_tokens_override, force_override=force_max_tokens_override)
     print(
         "[generate:chartmuseum] "
         f"split={split} rows={len(rows)} existing={len(existing)} pending={len(pending)} "
@@ -393,7 +435,16 @@ def _generate_chartmuseum_spec(
     )
 
     t0 = time.time()
-    sampling = _sampling_params_for_spec(spec, max_tokens_override)
+    sampling = _sampling_params_for_spec(
+        spec,
+        max_tokens_override,
+        force_max_tokens_override=force_max_tokens_override,
+        temperature_override=temperature_override,
+        top_p_override=top_p_override,
+        top_k_override=top_k_override,
+        presence_penalty_override=presence_penalty_override,
+        repetition_penalty_override=repetition_penalty_override,
+    )
     total_batches = math.ceil(len(pending) / batch_size) if pending else 0
     starts = list(range(0, len(pending), batch_size))
     max_workers = max(1, int(prefetch_workers))
@@ -459,13 +510,18 @@ def _generate_chartmuseum_spec(
         "rows": len(results),
         "generation_elapsed_sec": time.time() - t0,
         "generation": {
-            "temperature": spec.temperature,
-            "top_p": spec.top_p,
-            "top_k": spec.top_k,
-            "presence_penalty": spec.presence_penalty,
-            "repetition_penalty": spec.repetition_penalty,
+            "temperature": spec.temperature if temperature_override is None else float(temperature_override),
+            "top_p": spec.top_p if top_p_override is None else float(top_p_override),
+            "top_k": spec.top_k if top_k_override is None else int(top_k_override),
+            "presence_penalty": spec.presence_penalty
+            if presence_penalty_override is None
+            else float(presence_penalty_override),
+            "repetition_penalty": spec.repetition_penalty
+            if repetition_penalty_override is None
+            else float(repetition_penalty_override),
             "max_tokens": max_tokens,
             "configured_max_tokens": spec.max_tokens,
+            "force_max_tokens_override": bool(force_max_tokens_override),
             "prefetch_workers": max_workers,
             "prefetch_batches": max_prefetch,
         },
@@ -558,6 +614,12 @@ def run_worker(args: argparse.Namespace) -> None:
                         no_resume=args.no_resume,
                         prefetch_workers=args.prefetch_workers,
                         prefetch_batches=args.prefetch_batches,
+                        force_max_tokens_override=args.force_max_tokens_override,
+                        temperature_override=args.temperature_override,
+                        top_p_override=args.top_p_override,
+                        top_k_override=args.top_k_override,
+                        presence_penalty_override=args.presence_penalty_override,
+                        repetition_penalty_override=args.repetition_penalty_override,
                     )
                 else:
                     summary = _generate_vlmeval_spec(
@@ -575,6 +637,12 @@ def run_worker(args: argparse.Namespace) -> None:
                         no_resume=args.no_resume,
                         prefetch_workers=args.prefetch_workers,
                         prefetch_batches=args.prefetch_batches,
+                        force_max_tokens_override=args.force_max_tokens_override,
+                        temperature_override=args.temperature_override,
+                        top_p_override=args.top_p_override,
+                        top_k_override=args.top_k_override,
+                        presence_penalty_override=args.presence_penalty_override,
+                        repetition_penalty_override=args.repetition_penalty_override,
                     )
                 mark_job(queue_path, job_id, "done", worker=args.worker_id, output_dir=str(output_dir), rows=summary.get("rows"))
             except Exception as exc:
@@ -613,6 +681,16 @@ def main() -> None:
     parser.add_argument("--max-num-seqs", type=int, default=256)
     parser.add_argument("--max-num-batched-tokens", type=int, default=65536)
     parser.add_argument("--max-tokens-override", type=int, default=None)
+    parser.add_argument(
+        "--force-max-tokens-override",
+        action="store_true",
+        help="Use --max-tokens-override exactly instead of min(spec.max_tokens, override).",
+    )
+    parser.add_argument("--temperature-override", type=float, default=None)
+    parser.add_argument("--top-p-override", type=float, default=None)
+    parser.add_argument("--top-k-override", type=int, default=None)
+    parser.add_argument("--presence-penalty-override", type=float, default=None)
+    parser.add_argument("--repetition-penalty-override", type=float, default=None)
     parser.add_argument("--prefetch-workers", type=int, default=2)
     parser.add_argument("--prefetch-batches", type=int, default=2)
     parser.add_argument("--max-images", type=int, default=24)

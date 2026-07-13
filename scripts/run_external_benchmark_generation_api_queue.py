@@ -397,7 +397,10 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
     output_dir = run_dir(spec, args.model_slug, args.run_root)
     pred_map = _prediction_map_from_row_results(output_dir)
     if spec.kind == "chartmuseum" or spec.key == "chartmuseum":
-        rows = sorted(handle.rows or [], key=lambda row: int(row["index"]))
+        # Keep the exact row order used when jobs were created. The row key
+        # includes the per-run rank, so sorting here breaks resume/finalize for
+        # shuffled subset manifests.
+        rows = list(handle.rows or [])
         records = []
         for rank, row in enumerate(rows):
             pred = pred_map.get(_row_key(row, rank), pred_map.get(str(row["index"]), {}))

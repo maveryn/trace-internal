@@ -6,7 +6,7 @@ Each benchmark has exactly one normalized score. Scores are percentages when the
 
 | Benchmark | Prompt / Dataset | Rows | trace-qwen25vl3b-rlvr-ann-additive-0p50-sectioned-step500 |
 | --- | --- | ---: | ---: |
-| ChartMuseum | `vlmevalkit_defaults_qwen32b_judge_test` | 1000 | 0.00 |
+| ChartMuseum | `vlmevalkit_defaults_qwen32b_judge_test` | 1000 | 18.00 |
 | Game-QA-Lite | `vlmevalkit_cot_boxed` | 2633 | 21.31 |
 | ScreenSpot | `vlmevalkit_defaults_sample200` | 1272 | 63.44 |
 | ScreenSpot-Pro | `vlmevalkit_defaults_sample200` | 1581 | 20.68 |
@@ -35,8 +35,8 @@ Each benchmark has exactly one normalized score. Scores are percentages when the
 | MMMU-ProVis | `vlmevalkit_cot_max2048` | 1730 | 27.69 |
 | Blink | `vlmevalkit_defaults` | 1901 | 47.03 |
 | VLMBias | `vlmevalkit_defaults` | 2782 | 23.80 |
-| Average |  |  | 35.65 |
-| Average excl. ScreenSpot |  |  | 35.19 |
+| Average |  |  | 36.27 |
+| Average excl. ScreenSpot |  |  | 35.85 |
 
 Normalization notes:
 - `MM-HELIX`: weighted mean over category `items * average_score` from the generated results TSV.

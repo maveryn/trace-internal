@@ -39,6 +39,7 @@ from benchmark_queue_lib import (  # noqa: E402
     REPO_ROOT as LIB_REPO_ROOT,
     TRACE_CANDIDATE37_200_BENCHMARKS,
     TRACE_GROUNDING_BENCHMARKS,
+    TRACE_GROUNDING_SUBSET_ROOT,
     BenchmarkSpec,
     benchmark_specs_for_run_set,
     effective_generation_batch_size,
@@ -596,6 +597,8 @@ def main() -> None:
             args.only = list(TRACE_CANDIDATE37_200_BENCHMARKS)
     if args.run_set == "trace_grounding" and not args.only:
         args.only = list(TRACE_GROUNDING_BENCHMARKS)
+    if args.run_set == "trace_grounding" and args.subset_root is None:
+        args.subset_root = TRACE_GROUNDING_SUBSET_ROOT
     run(args)
 
 

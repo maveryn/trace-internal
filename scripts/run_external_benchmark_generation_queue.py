@@ -31,6 +31,7 @@ from benchmark_queue_lib import (
     TRACE_CANDIDATE37_200_QUEUE_SUFFIX,
     TRACE_CANDIDATE37_200_SUBSET_ROOT,
     TRACE_GROUNDING_BENCHMARKS,
+    TRACE_GROUNDING_SUBSET_ROOT,
     VLMEVAL_ROOT,
     BenchmarkSpec,
     benchmark_specs_for_run_set,
@@ -714,6 +715,8 @@ def main() -> None:
             args.queue_name = f"{args.model_slug}_{TRACE_CANDIDATE37_200_QUEUE_SUFFIX}"
     if args.run_set == "trace_grounding" and not args.only:
         args.only = list(TRACE_GROUNDING_BENCHMARKS)
+    if args.run_set == "trace_grounding" and args.subset_root is None:
+        args.subset_root = TRACE_GROUNDING_SUBSET_ROOT
     run_worker(args)
 
 

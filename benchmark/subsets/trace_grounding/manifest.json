@@ -1,0 +1,59 @@
+{
+  "benchmarks": [
+    {
+      "benchmark_key": "refspatial_wo_unseen",
+      "dataset_alias": "RefSpatial_wo_unseen",
+      "manifest": "refspatial_wo_unseen.jsonl",
+      "selected_rows": 200,
+      "selection": "all_rows",
+      "source_filter": null,
+      "source_rows": 200,
+      "source_rows_after_filter": 200
+    },
+    {
+      "benchmark_key": "osworld_g",
+      "dataset_alias": "OSWorld_G",
+      "manifest": "osworld_g.jsonl",
+      "selected_rows": 564,
+      "selection": "all_rows",
+      "source_filter": null,
+      "source_rows": 564,
+      "source_rows_after_filter": 564
+    },
+    {
+      "benchmark_key": "refcoco",
+      "dataset_alias": "RefCOCO",
+      "manifest": "refcoco.jsonl",
+      "selected_rows": 1000,
+      "selection": "fixed_random_subset",
+      "source_filter": {
+        "split": "RefCOCOg_test"
+      },
+      "source_rows": 57457,
+      "source_rows_after_filter": 9602,
+      "target_rows": 1000
+    },
+    {
+      "benchmark_key": "groundingme",
+      "dataset_alias": "GroundingME",
+      "manifest": "groundingme.jsonl",
+      "selected_rows": 1005,
+      "selection": "all_rows",
+      "source_filter": null,
+      "source_rows": 1005,
+      "source_rows_after_filter": 1005
+    },
+    {
+      "benchmark_key": "tdbench_grounding",
+      "dataset_alias": "tdbench_grounding_rot0",
+      "manifest": "tdbench_grounding.jsonl",
+      "selected_rows": 200,
+      "selection": "all_rows",
+      "source_filter": null,
+      "source_rows": 200,
+      "source_rows_after_filter": 200
+    }
+  ],
+  "sample_seed": 42,
+  "subset_version": "trace_grounding_v1"
+}

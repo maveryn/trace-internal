@@ -1,0 +1,7 @@
+run_id,reward_formula,window,n_logged_steps,response_length_mean_avg,response_length_max_avg,answer_reward_avg,annotation_reward_avg,overall_avg,gen_s_avg,reward_s_avg,update_actor_s_avg,time_per_step_s_avg,max_memory_allocated_gb_avg,max_memory_reserved_gb_avg
+additive_ann0p50_sectioned_reasoning,additive,1-10,10,145.305,1911.1,0.1721,0.0555,0.1519,19.2367,0.8635,36.5721,71.1966,28.9288,79.4344
+additive_ann0p50_sectioned_reasoning,additive,40-50,11,160.215,1383.64,0.215,0.0762727,0.187636,15.6488,0.900091,36.2316,66.7591,29.5075,106.63
+additive_ann0p50_sectioned_reasoning,additive,90-99,10,155.745,1551.1,0.2671,0.1257,0.2363,15.3201,0.8994,35.6271,65.4517,29.5728,115.056
+gated_ann0p50_sectioned_reasoning,gated,1-10,10,161.256,1861.2,0.1745,0.0538,0.1329,19.0817,0.883,37.0149,71.402,28.892,79.0684
+gated_ann0p50_sectioned_reasoning,gated,40-50,11,163.054,1082.55,0.217182,0.0609091,0.163,14.653,0.838545,36.2407,66.0762,29.403,111.72
+gated_ann0p50_sectioned_reasoning,gated,90-99,10,131.854,547.6,0.2747,0.0653,0.1947,11.1032,0.9002,35.522,62.1475,29.5364,117.178

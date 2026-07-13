@@ -284,6 +284,42 @@ def write_markdown(
     output.write_text("\n".join(lines), encoding="utf-8")
 
 
+def _model_family_sheet(
+    summary: pd.DataFrame,
+    model_columns: list[tuple[str, str]],
+    family: str,
+) -> pd.DataFrame:
+    family_columns = [(slug, label) for slug, label in model_columns if family in slug.lower()]
+    if not family_columns:
+        return pd.DataFrame()
+
+    base_candidates = [(slug, label) for slug, label in family_columns if slug.endswith("-base")]
+    if not base_candidates:
+        return pd.DataFrame()
+    _, base_label = base_candidates[0]
+    trained_columns = [(slug, label) for slug, label in family_columns if label != base_label]
+
+    rows: list[dict[str, Any]] = []
+    for _, row in summary.iterrows():
+        out: dict[str, Any] = {
+            "benchmark_key": row.get("benchmark_key"),
+            "benchmark": row.get("benchmark"),
+            "dataset_alias": row.get("dataset_alias"),
+            "prompt_run": row.get("prompt_run"),
+            "rows": row.get(f"{base_label} rows"),
+            "base_score": row.get(base_label),
+        }
+        for _, label in trained_columns:
+            score = row.get(label)
+            out[f"{label}_score"] = score
+            try:
+                out[f"{label}_delta"] = float(score) - float(row.get(base_label))
+            except Exception:
+                out[f"{label}_delta"] = None
+        rows.append(out)
+    return pd.DataFrame(rows)
+
+
 def write_excel(
     summary: pd.DataFrame,
     details: pd.DataFrame,
@@ -304,6 +340,12 @@ def write_excel(
     )
     with pd.ExcelWriter(output) as writer:
         summary.to_excel(writer, sheet_name="summary", index=False)
+        sheet_3b = _model_family_sheet(summary, model_columns, "qwen25vl3b")
+        if not sheet_3b.empty:
+            sheet_3b.to_excel(writer, sheet_name="3b_model", index=False)
+        sheet_7b = _model_family_sheet(summary, model_columns, "qwen25vl7b")
+        if not sheet_7b.empty:
+            sheet_7b.to_excel(writer, sheet_name="7b_model", index=False)
         details.to_excel(writer, sheet_name="details", index=False)
         generation.to_excel(writer, sheet_name="generation_stats", index=False)
         metadata.to_excel(writer, sheet_name="metadata", index=False)

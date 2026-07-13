@@ -188,7 +188,7 @@ def _question_for(benchmark: str, row: dict[str, Any]) -> str:
 
 def _answer_kind(benchmark: str, row: dict[str, Any]) -> str:
     answer = _clean_cell(row.get("answer"))
-    if benchmark == "countbenchqa":
+    if benchmark in {"countbenchqa", "countqa"}:
         return "number"
     if benchmark == "chartqapro":
         return "short"

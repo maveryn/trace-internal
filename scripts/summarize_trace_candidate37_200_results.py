@@ -35,6 +35,17 @@ MODEL_COLUMNS = [
 MODEL_LABELS = dict(MODEL_COLUMNS)
 
 
+def _score_path_with_fallback(spec: Any, model_slug: str, benchmark_root: Path) -> tuple[Path, str]:
+    path = score_path(spec, model_slug, benchmark_root)
+    if path.exists():
+        return path, spec.run_name
+    key = spec.aggregate_group or spec.key
+    llm_path = benchmark_root / key / model_slug / "llm_extracted" / "scores.json"
+    if llm_path.exists():
+        return llm_path, "llm_extracted"
+    return path, spec.run_name
+
+
 def _load_json(path: Path) -> dict[str, Any] | None:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -146,10 +157,11 @@ def build_tables(
             "prompt_run": spec.run_name,
         }
         for slug, label in model_columns:
-            spath = score_path(spec, slug, benchmark_root)
+            spath, score_run = _score_path_with_fallback(spec, slug, benchmark_root)
             score, n_rows = _score(spath)
             row[label] = score
             row[f"{label} rows"] = n_rows
+            row[f"{label} score run"] = score_run if spath.exists() else ""
             detail_rows.append(
                 {
                     "model_slug": slug,
@@ -158,6 +170,7 @@ def build_tables(
                     "benchmark": spec.display,
                     "dataset_alias": spec.alias,
                     "prompt_run": spec.run_name,
+                    "score_run": score_run if spath.exists() else "",
                     "score": score,
                     "rows": n_rows,
                     "score_path": str(spath) if spath.exists() else "",

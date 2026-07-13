@@ -712,18 +712,41 @@ def _run_chartqapro_extracted_score(
             sys.path.insert(0, str(path))
     import batched_chartqapro_vllm as chartqapro
 
+    def clean_chartqapro_answer(value: str) -> str:
+        text = str(value or "").strip()
+        text = text.splitlines()[0].strip()
+        text = re.sub(r"^(?:[-*]\s+)+", "", text).strip()
+        text = re.sub(r"^(?:the\s+)?(?:final\s+)?answer\s*(?:is|=|:|：)?\s*", "", text, flags=re.I).strip()
+        text = text.strip(" \t\r\n\"'`")
+        text = text.rstrip(".。").strip()
+        # Models often emphasize final answers as **42** or **A**. Strip only
+        # balanced markdown wrappers so multiplication or exponent notation is
+        # not altered inside the answer.
+        changed = True
+        while changed and len(text) >= 2:
+            changed = False
+            for marker in ("**", "__", "*", "_"):
+                if text.startswith(marker) and text.endswith(marker) and len(text) >= 2 * len(marker):
+                    text = text[len(marker) : -len(marker)].strip()
+                    changed = True
+                    break
+        text = text.strip(" \t\r\n\"'`")
+        text = re.sub(r"\s*(?:</s>|<\|im_end\|>)\s*$", "", text).strip()
+        text = text.rstrip(".。").strip()
+        return text
+
     def extract_chartqapro_prediction(raw: str, question_type: str = "") -> str:
         text = str(raw or "").strip()
         boxed = chartqapro._last_boxed(text) if hasattr(chartqapro, "_last_boxed") else None
         if boxed:
-            return boxed
+            return clean_chartqapro_answer(boxed)
         answer_tag = re.search(r"<answer>(.*?)</answer>", text, flags=re.I | re.S)
         if answer_tag:
-            return answer_tag.group(1).strip()
+            return clean_chartqapro_answer(answer_tag.group(1))
         try:
             obj = json.loads(text)
             if isinstance(obj, dict) and "answer" in obj:
-                return str(obj["answer"]).strip()
+                return clean_chartqapro_answer(str(obj["answer"]))
         except Exception:
             pass
         matches = list(
@@ -735,8 +758,8 @@ def _run_chartqapro_extracted_score(
         )
         if matches:
             tail = matches[-1].group(1).strip().splitlines()[0].strip()
-            return tail.rstrip(".").strip()
-        return chartqapro.extract_prediction(text, question_type)
+            return clean_chartqapro_answer(tail)
+        return clean_chartqapro_answer(chartqapro.extract_prediction(text, question_type))
 
     candidates = [
         output_dir / f"{spec.alias}_predictions_table.jsonl",

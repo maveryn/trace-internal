@@ -18,6 +18,8 @@ Artifacts:
 Notes:
 - Generation and scoring completed for all 23 benchmarks.
 - Judge-backed benchmarks were scored with local `Qwen/Qwen3-32B`.
+- ChartQAPro was re-scored after fixing local final-answer cleanup for markdown answers like `**C**`; the corrected step-500 score is `17.81`, not the earlier `8.88` extraction artifact.
+- BLINK uses exact matching. Step-500 produces many verbose responses there, so long-answer rows are heavily penalized by the benchmark scorer.
 - Scoring parallelism is currently benchmark-granularity: one benchmark job per GPU. Once only one or two judge-heavy benchmarks remain, the other GPUs are idle unless we row-shard those benchmark scorers.
 - The final scoring tail also includes CPU/Python row-wise scorer passes after Qwen3 judge generation, during which GPU memory can remain allocated with low SM utilization.
 
@@ -25,9 +27,9 @@ Notes:
 
 | Slice | Benchmarks | Base | Step500 | Delta |
 |---|---:|---:|---:|---:|
-| Overall | 23 | 42.41 | 42.08 | -0.33 |
-| Excluding ScreenSpot and ScreenSpot-Pro | 21 | 42.58 | 42.00 | -0.58 |
-| Excluding ScreenSpot, ScreenSpot-Pro, and VLMBias | 20 | 43.65 | 42.92 | -0.73 |
+| Overall | 23 | 42.41 | 42.47 | +0.06 |
+| Excluding ScreenSpot and ScreenSpot-Pro | 21 | 42.58 | 42.43 | -0.15 |
+| Excluding ScreenSpot, ScreenSpot-Pro, and VLMBias | 20 | 43.65 | 43.37 | -0.28 |
 
 ## Benchmark Scores
 
@@ -37,7 +39,7 @@ Notes:
 | Game-QA-Lite | `vlmevalkit_cot_boxed` | 1000 | 23.30 | 29.60 | +6.30 | 325.09 | 584.46 |
 | ScreenSpot | `vlmevalkit_defaults_sample200` | 1000 | 70.10 | 74.10 | +4.00 | 66.45 | 127.66 |
 | ScreenSpot-Pro | `vlmevalkit_defaults_sample200` | 1000 | 11.10 | 11.70 | +0.60 | 92.64 | 184.41 |
-| ChartQAPro | `vlmevalkit_faithful_cot` | 1000 | 32.50 | 8.88 | -23.62 | 173.69 | 377.36 |
+| ChartQAPro | `vlmevalkit_faithful_cot` | 1000 | 32.50 | 17.81 | -14.69 | 173.69 | 377.36 |
 | PuzzleVQA | `vlmevalkit_reasoning` | 1000 | 45.20 | 43.00 | -2.20 | 244.23 | 364.14 |
 | LogicVista | `vlmevalkit_defaults_qwen32b_judge` | 447 | 44.30 | 48.10 | +3.80 | 267.86 | 446.08 |
 | MathVista | `vlmevalkit_defaults_qwen32b_judge` | 1000 | 69.70 | 74.40 | +4.70 | 189.87 | 310.75 |

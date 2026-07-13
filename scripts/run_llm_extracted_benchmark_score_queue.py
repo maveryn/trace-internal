@@ -205,6 +205,8 @@ def _answer_kind(benchmark: str, row: dict[str, Any]) -> str:
         return "judge_binary"
     if benchmark == "visiongraph_q3":
         return "short"
+    if benchmark == "vlmbias":
+        return "braced"
     return "option"
 
 
@@ -260,6 +262,16 @@ def _build_prompt(item: dict[str, Any]) -> str:
             f"Reference answer:\n{item['answer']}\n\n"
             f"Model response:\n{response}\n\n"
             "Return exactly one JSON object: {\"score\": 1, \"answer\": \"<model final answer>\"} where score is 1 for correct and 0 for incorrect."
+        )
+    if kind == "braced":
+        return (
+            "You are extracting the final answer from a visual reasoning benchmark response.\n"
+            "Do not judge correctness. Extract only the model's final answer value.\n"
+            "The benchmark asks for answers in curly brackets such as {9}, {Yes}, or {No}; if a braced answer is present, use the content inside the final braces.\n"
+            "If no final answer is selected, return an empty string.\n\n"
+            f"Question:\n{question}\n\n"
+            f"Model response:\n{response}\n\n"
+            "Return exactly one JSON object: {\"answer\": \"<final answer>\"}."
         )
     return (
         "You are extracting the final short answer from a visual question answering response.\n"
@@ -563,12 +575,39 @@ def _normalize_short_for_exact(value: str) -> str:
     return text
 
 
+def _normalize_braced_answer(value: str) -> str:
+    text = str(value or "").strip()
+    braced = re.findall(r"\{([^{}]+)\}", text)
+    if braced:
+        text = braced[-1]
+    else:
+        final = list(
+            re.finditer(
+                r"\b(?:final\s+answer|answer)\b\s*(?:is|=|:|：)?\s*(.+)",
+                text,
+                flags=re.I | re.S,
+            )
+        )
+        if final:
+            text = final[-1].group(1).strip().splitlines()[0].strip()
+    text = _normalize_short_for_exact(text)
+    try:
+        from vlmeval.dataset.utils.omni_verifier import _process_digit_article
+
+        text = _process_digit_article(text)
+    except Exception:
+        text = re.sub(r"^(a|an|the)\s+", "", text)
+    return text.strip(" .,:;")
+
+
 def normalize_extracted(item: dict[str, Any], value: str) -> str:
     kind = item["answer_kind"]
     if kind in {"option", "option_value"}:
         return _normalize_option(value, item["valid_letters"])
     if kind == "number":
         return _normalize_number(value)
+    if kind == "braced":
+        return _normalize_braced_answer(value)
     return _clean_short(value)
 
 
@@ -748,6 +787,9 @@ def _score_option_or_number(group: list[dict[str, Any]]) -> tuple[float, list[di
         elif item["answer_kind"] == "number":
             gt = _normalize_number(answer)
             pred = _normalize_number(item.get("extracted", ""))
+        elif item["answer_kind"] == "braced":
+            gt = _normalize_braced_answer(answer)
+            pred = _normalize_braced_answer(item.get("extracted", ""))
         else:
             gt = _normalize_short_for_exact(answer)
             pred = _normalize_short_for_exact(item.get("extracted", ""))

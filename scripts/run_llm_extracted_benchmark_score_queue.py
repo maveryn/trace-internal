@@ -420,10 +420,15 @@ def claim_many(args: argparse.Namespace, items: list[dict[str, Any]]) -> list[di
     return claimed
 
 
-def mark_done(args: argparse.Namespace, item: dict[str, Any], result: dict[str, Any]) -> None:
+def write_done_result(args: argparse.Namespace, item: dict[str, Any], result: dict[str, Any]) -> None:
     done_path = _done_path(args, item["job_id"])
     done_path.parent.mkdir(parents=True, exist_ok=True)
     write_json(done_path, result)
+
+
+def mark_done(args: argparse.Namespace, item: dict[str, Any], result: dict[str, Any]) -> None:
+    write_done_result(args, item, result)
+    done_path = _done_path(args, item["job_id"])
     queue_path = args.queue_root / f"llm_extract_{args.queue_name}.json"
     now = time.time()
     lock_path = queue_path.with_suffix(queue_path.suffix + ".lock")
@@ -807,7 +812,7 @@ def run_api_pool(args: argparse.Namespace) -> None:
                 result = _result_from_judge_output(item, raw)
                 result["judge_model"] = args.judge_model
                 result["api_endpoint"] = endpoint
-                mark_done(args, item, result)
+                write_done_result(args, item, result)
             except Exception as exc:
                 errors += 1
                 messages.append(repr(exc))

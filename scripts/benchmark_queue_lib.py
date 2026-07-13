@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import shutil
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -72,6 +73,14 @@ TRACE_CANDIDATE37_200_BENCHMARKS = (
     "charxivdesc",
     "vlmbias",
     "visiongraph_q3",
+)
+
+TRACE_GROUNDING_BENCHMARKS = (
+    "refspatial_wo_unseen",
+    "osworld_g",
+    "refcoco",
+    "groundingme",
+    "tdbench_grounding",
 )
 
 
@@ -166,6 +175,11 @@ TRACE_CANDIDATE37_EXTRA_BENCHMARKS: tuple[BenchmarkSpec, ...] = (
     BenchmarkSpec("seephys", "SEEPhys", "SeePhys", "vlmevalkit_reasoning"),
     BenchmarkSpec("vlmbias", "VLMBias", "VLMBias", "vlmevalkit_defaults"),
     BenchmarkSpec("visiongraph_q3", "VisionGraph-Q3", "VisionGraph_Q3", "vlmevalkit_q3", max_tokens=2048),
+    BenchmarkSpec("refspatial_wo_unseen", "RefSpatial wo unseen", "RefSpatial_wo_unseen", "vlmevalkit_point_mask", max_tokens=1024),
+    BenchmarkSpec("osworld_g", "OSWorld-G", "OSWorld_G", "vlmevalkit_gui_click", max_tokens=1024),
+    BenchmarkSpec("refcoco", "RefCOCO", "RefCOCO", "vlmevalkit_bbox_iou", max_tokens=1024),
+    BenchmarkSpec("groundingme", "GroundingME", "GroundingME", "vlmevalkit_bbox_iou", max_tokens=1024),
+    BenchmarkSpec("tdbench_grounding", "TDBenchGrounding rot0", "tdbench_grounding_rot0", "vlmevalkit_bbox_centroid", max_tokens=1024),
 )
 
 ALL_BENCHMARKS: tuple[BenchmarkSpec, ...] = BENCHMARKS + TRACE_CANDIDATE37_EXTRA_BENCHMARKS
@@ -245,6 +259,8 @@ def benchmark_specs_for_run_set(run_set: str, model_slug: str = BASE_MODEL_SLUG)
         return specs
     if run_set == "trace_candidate37_200":
         return [spec_by_key(key) for key in TRACE_CANDIDATE37_200_BENCHMARKS]
+    if run_set == "trace_grounding":
+        return [spec_by_key(key) for key in TRACE_GROUNDING_BENCHMARKS]
     raise ValueError(f"Unknown run_set {run_set!r}")
 
 
@@ -499,9 +515,131 @@ def weighted_prefixed_overall_accuracy(scores: Any) -> tuple[float, int] | None:
     return correct / total * 100.0, int(total)
 
 
+GROUNDING_DATASET_ALIASES = {
+    "RefSpatial_wo_unseen",
+    "OSWorld_G",
+    "RefCOCO",
+    "GroundingME",
+    "tdbench_grounding_rot0",
+}
+
+GROUNDING_HF_DATASET_FILES = {
+    "refcoco": ("mjuicem/RefCOCO-VLMEvalKit", "RefCOCO.tsv", "RefCOCO.tsv"),
+    "groundingme": ("lirang04/GroundingME", "groundingme.tsv", "GroundingME.tsv"),
+    "tdbench_grounding": ("Columbia-ICSL/TDBench", "tdbench_grounding_rot0.tsv", "tdbench_grounding_rot0.tsv"),
+}
+
+
+def lmu_data_root() -> Path:
+    env_root = os.environ.get("LMUData")
+    if env_root:
+        root = Path(env_root).expanduser()
+        root.mkdir(parents=True, exist_ok=True)
+        return root
+    root = Path.home() / "LMUData"
+    root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
+def materialize_grounding_benchmark_files(specs: Iterable[BenchmarkSpec], *, root: Path | None = None) -> None:
+    """Pre-download HF TSVs that VLMEvalKit's raw URL downloader cannot fetch reliably."""
+    needed = [spec for spec in specs if spec.key in GROUNDING_HF_DATASET_FILES]
+    if not needed:
+        return
+    data_root = root or lmu_data_root()
+    token = (
+        os.environ.get("HF_TOKEN")
+        or os.environ.get("HUGGING_FACE_HUB_TOKEN")
+        or os.environ.get("HUGGINGFACE_HUB_TOKEN")
+    )
+    from huggingface_hub import hf_hub_download
+
+    for spec in needed:
+        repo_id, hf_filename, local_filename = GROUNDING_HF_DATASET_FILES[spec.key]
+        target = data_root / local_filename
+        if target.exists() and target.stat().st_size > 0:
+            continue
+        print(f"[grounding-data] materializing {spec.key}: {repo_id}/{hf_filename} -> {target}")
+        cached = hf_hub_download(
+            repo_id=repo_id,
+            filename=hf_filename,
+            repo_type="dataset",
+            token=token,
+        )
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(cached, target)
+
+
+def grounding_preferred_score_and_rows(scores_obj: dict[str, Any]) -> tuple[float | None, int | None] | None:
+    """Return the canonical grounding metric for the supported bbox/point tasks."""
+    dataset = str(scores_obj.get("dataset") or "")
+    if dataset not in GROUNDING_DATASET_ALIASES:
+        return None
+
+    rows = scores_obj.get("rows")
+    rows_int = int(rows) if rows is not None else None
+    scores = scores_obj.get("scores", {})
+    if not isinstance(scores, dict):
+        scores = {}
+
+    if dataset == "RefSpatial_wo_unseen":
+        if "overall" in scores:
+            return score_to_percent(scores["overall"]), rows_int
+        if "overall" in scores_obj:
+            return score_to_percent(scores_obj["overall"]), rows_int
+
+    if dataset == "OSWorld_G":
+        weighted = weighted_prefixed_overall_accuracy(scores)
+        if weighted is not None:
+            score, weighted_rows = weighted
+            return score, rows_int or weighted_rows
+        if "Overall_Accuracy" in scores:
+            return score_to_percent(scores["Overall_Accuracy"]), rows_int
+        if "Overall_Accuracy" in scores_obj:
+            return score_to_percent(scores_obj["Overall_Accuracy"]), rows_int
+
+    if dataset == "GroundingME":
+        if "ACC@0.5" in scores:
+            return score_to_percent(scores["ACC@0.5"]), rows_int
+        table = scores.get("table")
+        if isinstance(table, list) and table:
+            row = table[0]
+            if isinstance(row, dict) and "ACC@0.5" in row:
+                return score_to_percent(row["ACC@0.5"]), rows_int
+
+    if dataset == "tdbench_grounding_rot0":
+        metric_key = "Average Centroid Containment"
+        if metric_key in scores:
+            return score_to_percent(scores[metric_key]), rows_int
+        table = scores.get("table")
+        if isinstance(table, list):
+            for row in table:
+                if not isinstance(row, dict):
+                    continue
+                if str(row.get("Metric")) == metric_key and "Score" in row:
+                    return score_to_percent(row["Score"]), rows_int
+
+    if dataset == "RefCOCO":
+        table = scores.get("table")
+        if isinstance(table, list):
+            for row in table:
+                if not isinstance(row, dict):
+                    continue
+                if str(row.get("Split")) == "Average" and "Precision@1" in row:
+                    parsed_rows = row.get("Samples", rows)
+                    return score_to_percent(row["Precision@1"]), int(parsed_rows) if parsed_rows is not None else rows_int
+        if "Precision@1" in scores:
+            return score_to_percent(scores["Precision@1"]), rows_int
+
+    return None
+
+
 def extract_score_and_rows(scores_obj: dict[str, Any]) -> tuple[float | None, int | None]:
     rows = scores_obj.get("rows")
     rows_int = int(rows) if rows is not None else None
+    grounding = grounding_preferred_score_and_rows(scores_obj)
+    if grounding is not None:
+        return grounding
     weighted = weighted_prefixed_overall_accuracy(scores_obj.get("scores"))
     if weighted is not None:
         score, weighted_rows = weighted

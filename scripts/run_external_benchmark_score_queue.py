@@ -26,6 +26,7 @@ from benchmark_queue_lib import (
     REPO_ROOT,
     TRACE_CANDIDATE37_200_BENCHMARKS,
     TRACE_CANDIDATE37_200_QUEUE_SUFFIX,
+    TRACE_GROUNDING_BENCHMARKS,
     VLMEVAL_ROOT,
     BenchmarkSpec,
     aggregate_score_path,
@@ -34,9 +35,11 @@ from benchmark_queue_lib import (
     claim_next_job,
     extract_score_and_rows,
     filter_benchmark_specs,
+    grounding_preferred_score_and_rows,
     json_default,
     local_judge_eval_mode,
     mark_job,
+    materialize_grounding_benchmark_files,
     run_dir,
     score_path,
     spec_by_key,
@@ -358,9 +361,22 @@ def _copy_score_to_benchmark(spec: BenchmarkSpec, model_slug: str, run_output_di
 
 def _run_direct_vlmeval(args: argparse.Namespace, spec: BenchmarkSpec, model_path: str, output_dir: Path) -> dict[str, Any]:
     runner, _ = _import_vlmeval_runner()
+    _patch_refspatial_point_parser(spec)
     _sanitize_prediction_table_for_scoring(spec, output_dir)
     ns = _namespace_for_spec(args, spec, output_dir, model_path)
     return runner.run_vlmeval_evaluate(ns)
+
+
+def _patch_refspatial_point_parser(spec: BenchmarkSpec) -> None:
+    if not str(spec.alias).startswith("RefSpatial"):
+        return
+    try:
+        from vlmeval.dataset.utils.spatial_bench.tools import utils as spatial_utils
+
+        if not hasattr(spatial_utils.Point2DParser, "logger"):
+            spatial_utils.Point2DParser.logger = spatial_utils.logger
+    except Exception:
+        pass
 
 
 def _run_vlmeval_evaluate_with_kwargs(
@@ -1030,6 +1046,15 @@ def _run_score_for_spec(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
         summary = _run_phyx_option_score(args, spec, model_path, output_dir)
     elif spec.key == "vlmbias":
         summary = _run_vlmbias_rule_score(args, spec, model_path, output_dir)
+    elif spec.key == "tdbench_grounding":
+        summary = _run_vlmeval_evaluate_with_kwargs(
+            args,
+            spec,
+            model_path,
+            output_dir,
+            judge_kwargs={"model": "centroid"},
+            harness="VLMEvalKit TDBenchGrounding centroid containment scorer",
+        )
     elif mode == "chartmuseum_local_judge":
         summary = _run_chartmuseum_local_judge(args, spec, model_path, output_dir, judge)
     elif mode == "charxiv_local_judge":
@@ -1064,6 +1089,10 @@ def _run_score_for_spec(args: argparse.Namespace, spec: BenchmarkSpec, model_pat
         summary = _run_physics_subset_score(args, spec, model_path, output_dir, judge)
     else:
         summary = _run_direct_vlmeval(args, spec, model_path, output_dir)
+    grounding_score = grounding_preferred_score_and_rows(summary)
+    if grounding_score is not None and grounding_score[0] is not None:
+        summary["score"] = grounding_score[0]
+        write_json(output_dir / "scores.json", summary)
     weighted = weighted_prefixed_overall_accuracy(summary.get("scores"))
     if weighted is not None:
         summary["score"] = weighted[0]
@@ -1111,6 +1140,7 @@ def run_worker(args: argparse.Namespace) -> None:
 
     specs = benchmark_specs_for_run_set(args.run_set, model_slug=args.model_slug)
     specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
+    materialize_grounding_benchmark_files(specs)
     queue_path = args.queue_root / f"score_{args.queue_name or args.model_slug + '_' + args.run_set}.json"
     jobs = [(spec.key, score_path(spec, args.model_slug, args.benchmark_root)) for spec in specs]
     print(
@@ -1150,7 +1180,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=BASE_MODEL_SPEC.path)
     parser.add_argument("--model-slug", default=BASE_MODEL_SPEC.slug)
-    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all", "trace_candidate37_200"], default="remaining_base")
+    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all", "trace_candidate37_200", "trace_grounding"], default="remaining_base")
     parser.add_argument(
         "--trace-candidate37-200",
         action="store_true",
@@ -1192,6 +1222,8 @@ def main() -> None:
             args.only = list(TRACE_CANDIDATE37_200_BENCHMARKS)
         if not args.queue_name:
             args.queue_name = f"{args.model_slug}_{TRACE_CANDIDATE37_200_QUEUE_SUFFIX}"
+    if args.run_set == "trace_grounding" and not args.only:
+        args.only = list(TRACE_GROUNDING_BENCHMARKS)
     run_worker(args)
 
 

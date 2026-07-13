@@ -30,6 +30,7 @@ from benchmark_queue_lib import (
     TRACE_CANDIDATE37_200_BENCHMARKS,
     TRACE_CANDIDATE37_200_QUEUE_SUFFIX,
     TRACE_CANDIDATE37_200_SUBSET_ROOT,
+    TRACE_GROUNDING_BENCHMARKS,
     VLMEVAL_ROOT,
     BenchmarkSpec,
     benchmark_specs_for_run_set,
@@ -38,6 +39,7 @@ from benchmark_queue_lib import (
     filter_benchmark_specs,
     json_default,
     mark_job,
+    materialize_grounding_benchmark_files,
     run_dir,
     spec_by_key,
     write_json,
@@ -547,6 +549,7 @@ def run_worker(args: argparse.Namespace) -> None:
 
     specs = benchmark_specs_for_run_set(args.run_set, model_slug=args.model_slug)
     specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
+    materialize_grounding_benchmark_files(specs)
     subset_root = args.subset_root
 
     queue_path = args.queue_root / f"generation_{args.queue_name or args.model_slug + '_' + args.run_set}.json"
@@ -658,7 +661,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=BASE_MODEL_SPEC.path)
     parser.add_argument("--model-slug", default=BASE_MODEL_SPEC.slug)
-    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all", "trace_candidate37_200"], default="remaining_base")
+    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all", "trace_candidate37_200", "trace_grounding"], default="remaining_base")
     parser.add_argument(
         "--trace-candidate37-200",
         action="store_true",
@@ -709,6 +712,8 @@ def main() -> None:
             args.subset_root = TRACE_CANDIDATE37_200_SUBSET_ROOT
         if not args.queue_name:
             args.queue_name = f"{args.model_slug}_{TRACE_CANDIDATE37_200_QUEUE_SUFFIX}"
+    if args.run_set == "trace_grounding" and not args.only:
+        args.only = list(TRACE_GROUNDING_BENCHMARKS)
     run_worker(args)
 
 

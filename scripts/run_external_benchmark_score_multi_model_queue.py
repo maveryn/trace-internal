@@ -20,11 +20,13 @@ from benchmark_queue_lib import (  # noqa: E402
     DEFAULT_QUEUE_ROOT,
     REPO_ROOT as LIB_REPO_ROOT,
     TRACE_CANDIDATE37_200_BENCHMARKS,
+    TRACE_GROUNDING_BENCHMARKS,
     benchmark_specs_for_run_set,
     claim_next_job,
     filter_benchmark_specs,
     json_default,
     mark_job,
+    materialize_grounding_benchmark_files,
     spec_by_key,
     write_json,
 )
@@ -92,6 +94,7 @@ def run_worker(args: argparse.Namespace) -> None:
         specs = filter_benchmark_specs(specs, exclude=args.exclude)
     else:
         specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
+    materialize_grounding_benchmark_files(specs)
     queue_path = args.queue_root / f"score_multi_{args.queue_name}.json"
     jobs = [(spec.key, _sentinel_path(args.benchmark_root, args.queue_name, spec.key)) for spec in specs]
     print(
@@ -135,7 +138,7 @@ def run_worker(args: argparse.Namespace) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model-entry", action="append", type=_parse_model, dest="model_entries", required=True)
-    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all", "trace_candidate37_200"], default="trace_candidate37_200")
+    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all", "trace_candidate37_200", "trace_grounding"], default="trace_candidate37_200")
     parser.add_argument("--trace-candidate37-200", action="store_true")
     parser.add_argument("--gpu", default=os.environ.get("CUDA_VISIBLE_DEVICES", ""))
     parser.add_argument("--worker-id", default=f"score-multi-{os.getpid()}")
@@ -172,6 +175,8 @@ def main() -> None:
         args.run_set = "trace_candidate37_200"
         if not args.only:
             args.only = list(TRACE_CANDIDATE37_200_BENCHMARKS)
+    if args.run_set == "trace_grounding" and not args.only:
+        args.only = list(TRACE_GROUNDING_BENCHMARKS)
     run_worker(args)
 
 

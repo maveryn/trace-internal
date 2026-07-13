@@ -38,11 +38,13 @@ from benchmark_queue_lib import (  # noqa: E402
     DEFAULT_QUEUE_ROOT,
     REPO_ROOT as LIB_REPO_ROOT,
     TRACE_CANDIDATE37_200_BENCHMARKS,
+    TRACE_GROUNDING_BENCHMARKS,
     BenchmarkSpec,
     benchmark_specs_for_run_set,
     effective_generation_batch_size,
     filter_benchmark_specs,
     json_default,
+    materialize_grounding_benchmark_files,
     run_dir,
     write_json,
 )
@@ -503,6 +505,7 @@ def run(args: argparse.Namespace) -> None:
         specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
     if not specs:
         raise ValueError("No benchmark specs selected")
+    materialize_grounding_benchmark_files(specs)
     handles, pending = _prepare_handles_and_jobs(args, specs)
     q: queue.Queue[RowJob | None] = queue.Queue()
     for job in pending:
@@ -564,7 +567,7 @@ def main() -> None:
     parser.add_argument("--api-timeout", type=float, default=300.0)
     parser.add_argument("--api-max-retries", type=int, default=5)
     parser.add_argument("--parallelism-per-endpoint", type=int, default=4)
-    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all", "trace_candidate37_200"], default="trace_candidate37_200")
+    parser.add_argument("--run-set", choices=["full", "remaining_base", "base_all", "trace_candidate37_200", "trace_grounding"], default="trace_candidate37_200")
     parser.add_argument("--trace-candidate37-200", action="store_true")
     parser.add_argument("--run-root", type=Path, default=LIB_REPO_ROOT / "runs")
     parser.add_argument("--queue-root", type=Path, default=DEFAULT_QUEUE_ROOT)
@@ -591,6 +594,8 @@ def main() -> None:
         args.run_set = "trace_candidate37_200"
         if not args.only:
             args.only = list(TRACE_CANDIDATE37_200_BENCHMARKS)
+    if args.run_set == "trace_grounding" and not args.only:
+        args.only = list(TRACE_GROUNDING_BENCHMARKS)
     run(args)
 
 

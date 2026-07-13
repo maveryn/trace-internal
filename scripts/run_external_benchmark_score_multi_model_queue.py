@@ -86,7 +86,12 @@ def run_worker(args: argparse.Namespace) -> None:
     os.environ.setdefault("VLLM_DISABLE_COMPILE_CACHE", "1")
 
     specs = benchmark_specs_for_run_set(args.run_set)
-    specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
+    if args.exact_only and args.only:
+        keep = {str(key) for key in args.only}
+        specs = [spec for spec in specs if spec.key in keep]
+        specs = filter_benchmark_specs(specs, exclude=args.exclude)
+    else:
+        specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
     queue_path = args.queue_root / f"score_multi_{args.queue_name}.json"
     jobs = [(spec.key, _sentinel_path(args.benchmark_root, args.queue_name, spec.key)) for spec in specs]
     print(
@@ -140,6 +145,7 @@ def main() -> None:
     parser.add_argument("--benchmark-root", type=Path, default=DEFAULT_BENCHMARK_ROOT)
     parser.add_argument("--only", nargs="*", default=[])
     parser.add_argument("--exclude", nargs="*", default=[])
+    parser.add_argument("--exact-only", action="store_true")
     parser.add_argument("--eval-judge-model", default="exact_matching")
     parser.add_argument("--eval-nproc", type=int, default=16)
     parser.add_argument("--judge-model", default="Qwen/Qwen3-32B")
@@ -150,6 +156,12 @@ def main() -> None:
     parser.add_argument("--judge-max-num-seqs", type=int, default=1024)
     parser.add_argument("--judge-max-num-batched-tokens", type=int, default=65536)
     parser.add_argument("--judge-max-tokens", type=int, default=256)
+    parser.add_argument("--judge-api-base", action="append", dest="judge_api_bases")
+    parser.add_argument("--judge-api-model", default="qwen3-32b-judge")
+    parser.add_argument("--judge-api-tokenizer-model", default="Qwen/Qwen3-32B")
+    parser.add_argument("--judge-api-parallelism", type=int, default=128)
+    parser.add_argument("--judge-api-timeout", type=float, default=120.0)
+    parser.add_argument("--judge-api-max-retries", type=int, default=5)
     parser.add_argument("--attention-backend", default="FLASH_ATTN")
     parser.add_argument("--stale-after-sec", type=float, default=900)
     parser.add_argument("--max-attempts", type=int, default=2)

@@ -950,6 +950,10 @@ def finalize(args: argparse.Namespace) -> None:
                 "judge_model": args.judge_model,
                 "artifacts": {"judged_table": str(score_dir / "llm_extracted_judged.xlsx")},
             }
+            if args.benchmark_root is not None:
+                benchmark_score_dir = args.benchmark_root / benchmark / model_slug / "llm_extracted"
+                summary["benchmark_score_path"] = str(benchmark_score_dir / "scores.json")
+                write_json(benchmark_score_dir / "scores.json", summary)
             write_json(score_dir / "scores.json", summary)
             summary_rows.append(summary)
     write_json(out_root / "summary.json", summary_rows)
@@ -972,6 +976,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--run-root", type=Path, default=DEFAULT_RUN_ROOT)
     parser.add_argument("--queue-root", type=Path, default=DEFAULT_QUEUE_ROOT)
     parser.add_argument("--output-root", type=Path, default=LIB_REPO_ROOT / "benchmark" / "llm_extracted")
+    parser.add_argument("--benchmark-root", type=Path)
     parser.add_argument("--worker-id", default=f"llm-extract-{os.getpid()}")
     parser.add_argument("--gpu", default=os.environ.get("CUDA_VISIBLE_DEVICES", ""))
     parser.add_argument("--claim-batch-size", type=int, default=128)

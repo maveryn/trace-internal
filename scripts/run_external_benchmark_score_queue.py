@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
 import math
 import os
@@ -15,6 +16,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import pandas as pd
+import requests
 from tqdm import tqdm
 
 from benchmark_queue_lib import (
@@ -59,6 +61,14 @@ class PersistentJudge:
         self.args = args
         self.llm = None
         self.tokenizer = None
+        self.api_tokenizer = None
+
+    @property
+    def api_bases(self) -> list[str]:
+        return [str(item).rstrip("/") for item in (getattr(self.args, "judge_api_bases", None) or []) if str(item).strip()]
+
+    def _using_api_pool(self) -> bool:
+        return bool(self.api_bases)
 
     def _ensure_loaded(self) -> None:
         if self.llm is not None:
@@ -105,6 +115,122 @@ class PersistentJudge:
         except TypeError:
             return self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
 
+    def _ensure_api_tokenizer(self) -> None:
+        if self.api_tokenizer is not None:
+            return
+        from transformers import AutoTokenizer
+
+        tokenizer_model = getattr(self.args, "judge_api_tokenizer_model", None) or self.args.judge_model
+        self.api_tokenizer = AutoTokenizer.from_pretrained(tokenizer_model, trust_remote_code=True)
+
+    def api_chat_prompt(self, prompt: str) -> str:
+        self._ensure_api_tokenizer()
+        assert self.api_tokenizer is not None
+        messages = [{"role": "user", "content": prompt}]
+        try:
+            return self.api_tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+                enable_thinking=False,
+            )
+        except TypeError:
+            return self.api_tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+
+    @staticmethod
+    def _completion_url(base: str) -> str:
+        base = base.rstrip("/")
+        if base.endswith("/v1"):
+            return f"{base}/completions"
+        if base.endswith("/v1/completions"):
+            return base
+        return f"{base}/v1/completions"
+
+    def _call_api_completion(
+        self,
+        endpoint: str,
+        prompt: str,
+        *,
+        max_tokens: int | None,
+        temperature: float,
+        top_p: float,
+    ) -> dict[str, Any]:
+        payload = {
+            "model": getattr(self.args, "judge_api_model", "qwen3-32b-judge"),
+            "prompt": prompt,
+            "temperature": temperature,
+            "top_p": top_p,
+            "max_tokens": max_tokens if max_tokens is not None else self.args.judge_max_tokens,
+        }
+        timeout = float(getattr(self.args, "judge_api_timeout", 120.0))
+        max_retries = int(getattr(self.args, "judge_api_max_retries", 5))
+        last_error: Exception | None = None
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(self._completion_url(endpoint), json=payload, timeout=timeout)
+                response.raise_for_status()
+                data = response.json()
+                choice = data["choices"][0]
+                return {
+                    "judge_output": str(choice.get("text", "")).strip(),
+                    "judge_finish_reason": choice.get("finish_reason"),
+                    "judge_output_token_count": (data.get("usage") or {}).get("completion_tokens"),
+                    "judge_api_endpoint": endpoint,
+                }
+            except Exception as exc:
+                last_error = exc
+                time.sleep(min(8.0, 0.5 * (2**attempt)))
+        raise RuntimeError(f"{endpoint} failed after {max_retries} attempts: {last_error}")
+
+    def _run_cached_api(
+        self,
+        *,
+        output_dir: Path,
+        prompts: list[tuple[str, str]],
+        cache_name: str,
+        max_tokens: int | None,
+        temperature: float,
+        top_p: float,
+        no_resume: bool,
+        desc: str,
+    ) -> dict[str, dict[str, Any]]:
+        runner, _ = _import_vlmeval_runner()
+
+        output_dir.mkdir(parents=True, exist_ok=True)
+        cache_path = output_dir / cache_name
+        if no_resume and cache_path.exists():
+            cache_path.unlink()
+        existing = {} if no_resume else runner.load_jsonl_by_index(cache_path)
+        pending = [(idx, prompt) for idx, prompt in prompts if str(idx) not in existing]
+        endpoints = self.api_bases
+        print(
+            "[judge:api-cached] "
+            f"cache={cache_path} rows={len(prompts)} existing={len(existing)} pending={len(pending)} "
+            f"endpoints={len(endpoints)} parallelism={getattr(self.args, 'judge_api_parallelism', 128)}"
+        )
+        if pending:
+            rendered = {str(idx): self.api_chat_prompt(prompt) for idx, prompt in pending}
+
+            def run_one(pos_item: tuple[int, tuple[str, str]]) -> dict[str, Any]:
+                pos, (idx, _) = pos_item
+                endpoint = endpoints[pos % len(endpoints)]
+                result = self._call_api_completion(
+                    endpoint,
+                    rendered[str(idx)],
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    top_p=top_p,
+                )
+                return {"index": str(idx), **result}
+
+            max_workers = int(getattr(self.args, "judge_api_parallelism", 128))
+            with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
+                futures = [pool.submit(run_one, item) for item in enumerate(pending)]
+                for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc=desc):
+                    row = future.result()
+                    runner.append_jsonl(cache_path, [row])
+        return runner.load_jsonl_by_index(cache_path)
+
     def run_cached(
         self,
         *,
@@ -117,6 +243,17 @@ class PersistentJudge:
         no_resume: bool = False,
         desc: str = "local judge",
     ) -> dict[str, dict[str, Any]]:
+        if self._using_api_pool():
+            return self._run_cached_api(
+                output_dir=output_dir,
+                prompts=prompts,
+                cache_name=cache_name,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                no_resume=no_resume,
+                desc=desc,
+            )
         runner, _ = _import_vlmeval_runner()
         from vllm import SamplingParams
 
@@ -157,6 +294,9 @@ class PersistentJudge:
         return runner.load_jsonl_by_index(cache_path)
 
     def cleanup(self) -> None:
+        if self._using_api_pool():
+            self.api_tokenizer = None
+            return
         runner, _ = _import_vlmeval_runner()
         runner.cleanup_vllm_engine(self.llm)
         self.llm = None
@@ -996,6 +1136,12 @@ def main() -> None:
     parser.add_argument("--judge-max-num-seqs", type=int, default=1024)
     parser.add_argument("--judge-max-num-batched-tokens", type=int, default=65536)
     parser.add_argument("--judge-max-tokens", type=int, default=256)
+    parser.add_argument("--judge-api-base", action="append", dest="judge_api_bases")
+    parser.add_argument("--judge-api-model", default="qwen3-32b-judge")
+    parser.add_argument("--judge-api-tokenizer-model", default="Qwen/Qwen3-32B")
+    parser.add_argument("--judge-api-parallelism", type=int, default=128)
+    parser.add_argument("--judge-api-timeout", type=float, default=120.0)
+    parser.add_argument("--judge-api-max-retries", type=int, default=5)
     parser.add_argument("--attention-backend", default="FLASH_ATTN")
     parser.add_argument("--stale-after-sec", type=float, default=900)
     parser.add_argument("--max-attempts", type=int, default=2)

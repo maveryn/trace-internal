@@ -221,17 +221,22 @@ def write_markdown(
     output: Path,
     model_columns: list[tuple[str, str]],
     title: str,
+    subset_root: Path,
 ) -> None:
     first_label = model_columns[0][1] if model_columns else ""
     delta_labels = [label for _, label in model_columns[1:]] if first_label else []
     headers = ["Benchmark", "Prompt / Dataset", "Rows", *[label for _, label in model_columns]]
     headers.extend(f"{label} - {first_label}" for label in delta_labels)
+    try:
+        subset_label = str(subset_root.relative_to(REPO_ROOT))
+    except ValueError:
+        subset_label = str(subset_root)
     align = ["---", "---", "---:"] + ["---:"] * len(model_columns)
     align.extend(["---:"] * len(delta_labels))
     lines = [
         f"# {title}",
         "",
-        f"Subset manifest root: `{TRACE_CANDIDATE37_200_SUBSET_ROOT.relative_to(REPO_ROOT)}`",
+        f"Subset manifest root: `{subset_label}`",
         "",
         "Each benchmark has exactly one normalized score. Scores are percentages when the evaluator reports accuracy-like metrics.",
         "",
@@ -272,13 +277,15 @@ def write_excel(
     generation: pd.DataFrame,
     output: Path,
     model_columns: list[tuple[str, str]],
+    suite_name: str,
+    subset_root: Path,
 ) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     metadata = pd.DataFrame(
         [
-            {"key": "suite", "value": "trace_candidate37_200"},
-            {"key": "subset_root", "value": str(TRACE_CANDIDATE37_200_SUBSET_ROOT)},
-            {"key": "benchmark_count", "value": len(benchmark_specs_for_run_set("trace_candidate37_200"))},
+            {"key": "suite", "value": suite_name},
+            {"key": "subset_root", "value": str(subset_root)},
+            {"key": "benchmark_count", "value": len([x for x in summary["benchmark_key"] if not str(x).startswith("average")])},
             {"key": "models", "value": ", ".join(slug for slug, _ in model_columns)},
         ]
     )
@@ -299,13 +306,15 @@ def main() -> int:
     parser.add_argument("--markdown", type=Path, default=REPO_ROOT / "results/qwen25vl3b_trace_candidate37_200_results.md")
     parser.add_argument("--excel", type=Path, default=REPO_ROOT / "results/qwen25vl3b_trace_candidate37_200_results.xlsx")
     parser.add_argument("--title", default="Qwen2.5-VL-3B TRACE Candidate37 200-Row Benchmark Results")
+    parser.add_argument("--suite-name", default="trace_candidate37_200")
+    parser.add_argument("--subset-root", type=Path, default=TRACE_CANDIDATE37_200_SUBSET_ROOT)
     parser.add_argument("--no-excel", action="store_true")
     args = parser.parse_args()
     model_columns = [(slug, MODEL_LABELS.get(slug, slug)) for slug in args.models]
     summary, details, generation = build_tables(args.benchmark_root, args.run_root, model_columns, args.only, args.exclude)
-    write_markdown(summary, args.markdown, model_columns, args.title)
+    write_markdown(summary, args.markdown, model_columns, args.title, args.subset_root)
     if not args.no_excel:
-        write_excel(summary, details, generation, args.excel, model_columns)
+        write_excel(summary, details, generation, args.excel, model_columns, args.suite_name, args.subset_root)
     print(f"[wrote] {args.markdown}")
     if not args.no_excel:
         print(f"[wrote] {args.excel}")

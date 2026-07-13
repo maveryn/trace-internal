@@ -31,9 +31,14 @@ def apply_extensions(vlmeval_root: Path) -> None:
     dataset_root = vlmeval_root / "vlmeval" / "dataset"
     if not dataset_root.exists():
         raise RuntimeError(f"VLMEvalKit dataset directory does not exist: {dataset_root}")
+    scripts_root = vlmeval_root / "scripts"
+    if not scripts_root.exists():
+        raise RuntimeError(f"VLMEvalKit scripts directory does not exist: {scripts_root}")
 
     for name in ("trace_local_vqa.py", "visiongraph.py"):
         shutil.copy2(EXT_ROOT / name, dataset_root / name)
+    for name in ("batched_chartmuseum_vllm.py", "batched_chartqapro_vllm.py", "batched_vlmevalkit_qwen3vl.py"):
+        shutil.copy2(EXT_ROOT / "scripts" / name, scripts_root / name)
 
     init_path = dataset_root / "__init__.py"
     text = init_path.read_text()

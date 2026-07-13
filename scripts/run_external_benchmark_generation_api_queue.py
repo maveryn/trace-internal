@@ -51,6 +51,7 @@ from run_external_benchmark_generation_queue import (  # noqa: E402
     _apply_subset_rows,
     _import_vlmeval_runner,
     _limit_frame,
+    _row_hash,
     _subset_entries,
     _subset_manifest_path,
 )
@@ -61,6 +62,7 @@ class RowJob:
     spec: BenchmarkSpec
     row: dict[str, Any]
     rank: int
+    row_key: str
     output_dir: Path
     result_path: Path
     kind: str
@@ -91,6 +93,18 @@ def _safe_result_name(index: Any) -> str:
     digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
     safe = "".join(ch if ch.isalnum() or ch in "._-" else "_" for ch in text)[:80]
     return f"{safe}.{digest}.json"
+
+
+def _row_key(row: dict[str, Any], rank: int) -> str:
+    row_hash = _row_hash(row)[:16]
+    return f"{int(rank):08d}:{row.get('index')}:{row_hash}"
+
+
+def _safe_result_name_for_row(row: dict[str, Any], rank: int) -> str:
+    index = str(row.get("index"))
+    safe_index = "".join(ch if ch.isalnum() or ch in "._-" else "_" for ch in index)[:64]
+    digest = hashlib.sha256(_row_key(row, rank).encode("utf-8")).hexdigest()[:16]
+    return f"{int(rank):08d}.{safe_index}.{digest}.json"
 
 
 def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -210,6 +224,7 @@ def _result_from_response(job: RowJob, response: dict[str, Any], endpoint: str) 
     text = message.get("content") or ""
     return {
         "index": str(job.row["index"]),
+        "row_key": job.row_key,
         "prediction": text,
         "finish_reason": choice.get("finish_reason"),
         "output_token_count": usage.get("completion_tokens"),
@@ -227,8 +242,11 @@ def _load_existing_result_paths(output_dir: Path) -> dict[str, Path]:
             row = json.loads(path.read_text(encoding="utf-8"))
         except Exception:
             continue
-        if row.get("index") is not None and not row.get("error"):
-            out[str(row["index"])] = path
+        key = row.get("row_key")
+        if key is None and row.get("index") is not None:
+            key = str(row["index"])
+        if key is not None and not row.get("error"):
+            out[str(key)] = path
     return out
 
 
@@ -237,7 +255,7 @@ def _prepare_handles_and_jobs(args: argparse.Namespace, specs: list[BenchmarkSpe
     from vlmeval.dataset import build_dataset
 
     handles: dict[str, DatasetHandle] = {}
-    jobs: list[RowJob] = []
+    jobs_by_spec: list[list[RowJob]] = []
     for spec in specs:
         output_dir = run_dir(spec, args.model_slug, args.run_root)
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -271,25 +289,35 @@ def _prepare_handles_and_jobs(args: argparse.Namespace, specs: list[BenchmarkSpe
 
         existing = {} if args.no_resume else _load_existing_result_paths(output_dir)
         pending = 0
+        spec_jobs: list[RowJob] = []
         for rank, row in enumerate(row_records):
-            index = str(row["index"])
-            if index in existing:
+            row_key = _row_key(row, rank)
+            legacy_index = str(row["index"])
+            if row_key in existing or legacy_index in existing:
                 continue
-            jobs.append(
+            spec_jobs.append(
                 RowJob(
                     spec=spec,
                     row=row,
                     rank=rank,
+                    row_key=row_key,
                     output_dir=output_dir,
-                    result_path=row_result_dir / _safe_result_name(index),
+                    result_path=row_result_dir / _safe_result_name_for_row(row, rank),
                     kind=kind,
                 )
             )
             pending += 1
+        jobs_by_spec.append(spec_jobs)
         print(
             "[api-generate:prepare] "
             f"{spec.key} rows={len(row_records)} existing={len(existing)} pending={pending} output={output_dir}"
         )
+    jobs: list[RowJob] = []
+    max_len = max((len(spec_jobs) for spec_jobs in jobs_by_spec), default=0)
+    for offset in range(max_len):
+        for spec_jobs in jobs_by_spec:
+            if offset < len(spec_jobs):
+                jobs.append(spec_jobs[offset])
     return handles, jobs
 
 
@@ -318,6 +346,7 @@ def _worker_loop(
             error = {
                 "benchmark_key": job.spec.key,
                 "index": str(job.row.get("index")),
+                "row_key": job.row_key,
                 "error": repr(exc),
                 "endpoint": endpoint,
                 "result_path": str(job.result_path),
@@ -337,8 +366,11 @@ def _prediction_map_from_row_results(output_dir: Path) -> dict[str, dict[str, An
             row = json.loads(path.read_text(encoding="utf-8"))
         except Exception:
             continue
-        if row.get("index") is not None and not row.get("error"):
-            pred_map[str(row["index"])] = row
+        key = row.get("row_key")
+        if key is None and row.get("index") is not None:
+            key = str(row["index"])
+        if key is not None and not row.get("error"):
+            pred_map[str(key)] = row
     return pred_map
 
 
@@ -365,8 +397,8 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
     if spec.kind == "chartmuseum" or spec.key == "chartmuseum":
         rows = sorted(handle.rows or [], key=lambda row: int(row["index"]))
         records = []
-        for row in rows:
-            pred = pred_map.get(str(row["index"]), {})
+        for rank, row in enumerate(rows):
+            pred = pred_map.get(_row_key(row, rank), pred_map.get(str(row["index"]), {}))
             raw = pred.get("prediction", "")
             records.append(
                 {
@@ -395,18 +427,27 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
         expected_rows = len(rows)
     else:
         pred_jsonl = output_dir / "predictions.jsonl"
+        records = []
         with pred_jsonl.open("w", encoding="utf-8") as f:
-            for _, row in handle.dataset.data.iterrows():
-                pred = pred_map.get(str(row["index"]), {})
+            for rank, (_, row) in enumerate(handle.dataset.data.iterrows()):
+                row_dict = row.to_dict()
+                pred = pred_map.get(_row_key(row_dict, rank), pred_map.get(str(row_dict["index"]), {}))
                 record = {
-                    "index": str(row["index"]),
+                    "index": str(row_dict["index"]),
                     "prediction": pred.get("prediction", ""),
                     "finish_reason": pred.get("finish_reason", ""),
                     "output_token_count": pred.get("output_token_count"),
                     "prompt_token_count": pred.get("prompt_token_count"),
                 }
+                records.append({**row_dict, **record})
                 f.write(json.dumps(record, ensure_ascii=False, default=json_default) + "\n")
-        eval_file = runner.write_eval_files(handle.dataset, pred_map, output_dir)
+        frame = pd.DataFrame(records)
+        eval_file = output_dir / f"{handle.dataset.dataset_name}_predictions.xlsx"
+        frame.to_excel(eval_file, index=False)
+        table_jsonl = output_dir / f"{handle.dataset.dataset_name}_predictions_table.jsonl"
+        with table_jsonl.open("w", encoding="utf-8") as f:
+            for record in records:
+                f.write(json.dumps(record, ensure_ascii=False, default=json_default) + "\n")
         expected_rows = len(handle.dataset.data)
 
     finish_reasons = Counter(str(v.get("finish_reason")) for v in pred_map.values())

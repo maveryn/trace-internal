@@ -198,6 +198,8 @@ def _call_endpoint(args: argparse.Namespace, endpoint: str, messages: list[dict[
         payload["top_k"] = int(args.top_k)
     if args.repetition_penalty is not None:
         payload["repetition_penalty"] = float(args.repetition_penalty)
+    if args.seed is not None:
+        payload["seed"] = int(args.seed)
     headers = {"Authorization": f"Bearer {args.api_key}"}
     last_error: Exception | None = None
     for attempt in range(int(args.api_max_retries)):
@@ -466,6 +468,7 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
             "presence_penalty": float(args.presence_penalty),
             "repetition_penalty": float(args.repetition_penalty) if args.repetition_penalty is not None else None,
             "max_tokens": int(args.max_tokens),
+            "seed": int(args.seed) if args.seed is not None else None,
             "api_model": args.api_model,
             "endpoint_count": len(args.api_bases),
             "parallelism_per_endpoint": int(args.parallelism_per_endpoint),
@@ -578,6 +581,7 @@ def main() -> None:
     parser.add_argument("--presence-penalty", type=float, default=0.0)
     parser.add_argument("--repetition-penalty", type=float, default=1.0)
     parser.add_argument("--max-tokens", type=int, default=4096)
+    parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--no-resume", action="store_true")
     args = parser.parse_args()
     if args.trace_candidate37_200:

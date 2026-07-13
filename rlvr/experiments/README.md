@@ -14,3 +14,6 @@ Profiles:
   Qwen2.5-VL-3B TRACE answer-and-annotation EasyR1 ablations.
 - `annotation_system_prompt_response_length.md` - annotation-mode system prompt
   provenance and response-length behavior before and after the prompt update.
+- `annotation_ablation_summary_20260713.md` - summary of completed 8x H200
+  annotation reward and prompt ablations, plus the selected sectioned-reasoning
+  follow-up run.

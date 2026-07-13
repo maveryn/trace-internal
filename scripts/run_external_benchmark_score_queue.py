@@ -356,7 +356,14 @@ def _run_vlmeval_evaluate_with_kwargs(
     dataset = build_dataset(spec.alias)
     if dataset is None:
         raise RuntimeError(f"VLMEvalKit could not build dataset {spec.alias}")
-    pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+    candidates = [
+        output_dir / f"{spec.alias}_predictions.xlsx",
+        output_dir / "predictions.xlsx",
+    ]
+    pred_table = next((path for path in candidates if path.exists()), None)
+    if pred_table is None:
+        matches = sorted(output_dir.glob("*_predictions.xlsx"))
+        pred_table = matches[0] if matches else candidates[0]
     if not pred_table.exists():
         raise FileNotFoundError(pred_table)
     result = dataset.evaluate(str(pred_table), **judge_kwargs)
@@ -766,7 +773,14 @@ def _run_chartmuseum_local_judge(
     _, chartmuseum = _import_vlmeval_runner()
     from vlmeval.smp import load
 
-    pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+    candidates = [
+        output_dir / f"{spec.alias}_predictions.xlsx",
+        output_dir / "predictions.xlsx",
+    ]
+    pred_table = next((path for path in candidates if path.exists()), None)
+    if pred_table is None:
+        matches = sorted(output_dir.glob("*_predictions.xlsx"))
+        pred_table = matches[0] if matches else candidates[0]
     if not pred_table.exists():
         raise FileNotFoundError(pred_table)
     data = load(str(pred_table))

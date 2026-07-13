@@ -14,6 +14,7 @@ from benchmark_queue_lib import (
     DEFAULT_RUN_ROOT,
     REPO_ROOT,
     TRACE_CANDIDATE37_200_SUBSET_ROOT,
+    TRACE_GROUNDING_SUBSET_ROOT,
     benchmark_specs_for_run_set,
     extract_score_and_rows,
     filter_benchmark_specs,
@@ -31,6 +32,10 @@ MODEL_COLUMNS = [
     ("trace-qwen25vl3b-easyr1-answer-nokl-step600", "Step 600"),
     ("trace-qwen25vl3b-easyr1-answer-nokl-step700", "Step 700"),
     ("trace-qwen25vl3b-easyr1-all1000-answer-nokl-step200", "All1000 Step 200"),
+    ("trace-qwen25vl3b-easyr1-all1000-answer-nokl-step500", "Answer GRPO 500"),
+    ("trace-qwen25vl3b-rlvr-ann-additive-0p50-sectioned-step500", "Annotation GRPO 500"),
+    ("qwen25vl7b-base", "7B Base"),
+    ("trace-qwen25vl7b-easyr1-all1000-answer-nokl-step500", "7B Answer GRPO 500"),
 ]
 MODEL_LABELS = dict(MODEL_COLUMNS)
 
@@ -140,10 +145,11 @@ def build_tables(
     benchmark_root: Path,
     run_root: Path,
     model_columns: list[tuple[str, str]],
+    run_set: str = "trace_candidate37_200",
     only: list[str] | None = None,
     exclude: list[str] | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    specs = benchmark_specs_for_run_set("trace_candidate37_200")
+    specs = benchmark_specs_for_run_set(run_set)
     specs = filter_benchmark_specs(specs, only=only or (), exclude=exclude or ())
     summary_rows: list[dict[str, Any]] = []
     detail_rows: list[dict[str, Any]] = []
@@ -194,7 +200,9 @@ def build_tables(
         summary_rows.append(row)
 
     summary = pd.DataFrame(summary_rows)
-    for exclude_screenspot in (False, True):
+    has_screenspot = summary["benchmark_key"].str.contains("screenspot", case=False, na=False).any()
+    average_modes = [False, True] if has_screenspot else [False]
+    for exclude_screenspot in average_modes:
         label = "Average excl. ScreenSpot" if exclude_screenspot else "Average"
         mask = pd.Series([True] * len(summary))
         if exclude_screenspot:
@@ -368,12 +376,22 @@ def main() -> int:
     parser.add_argument("--excel", type=Path, default=REPO_ROOT / "results/qwen25vl3b_trace_candidate37_200_results.xlsx")
     parser.add_argument("--title", default="Qwen2.5-VL-3B TRACE Candidate37 200-Row Benchmark Results")
     parser.add_argument("--suite-name", default="trace_candidate37_200")
-    parser.add_argument("--subset-root", type=Path, default=TRACE_CANDIDATE37_200_SUBSET_ROOT)
+    parser.add_argument("--run-set", default="trace_candidate37_200")
+    parser.add_argument("--subset-root", type=Path, default=None)
     parser.add_argument("--subset-label", default=None)
     parser.add_argument("--no-excel", action="store_true")
     args = parser.parse_args()
+    if args.subset_root is None:
+        args.subset_root = TRACE_GROUNDING_SUBSET_ROOT if args.run_set == "trace_grounding" else TRACE_CANDIDATE37_200_SUBSET_ROOT
     model_columns = [(slug, MODEL_LABELS.get(slug, slug)) for slug in args.models]
-    summary, details, generation = build_tables(args.benchmark_root, args.run_root, model_columns, args.only, args.exclude)
+    summary, details, generation = build_tables(
+        args.benchmark_root,
+        args.run_root,
+        model_columns,
+        args.run_set,
+        args.only,
+        args.exclude,
+    )
     write_markdown(summary, args.markdown, model_columns, args.title, args.subset_root, args.subset_label)
     if not args.no_excel:
         write_excel(summary, details, generation, args.excel, model_columns, args.suite_name, args.subset_root, args.subset_label)

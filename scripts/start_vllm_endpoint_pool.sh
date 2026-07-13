@@ -13,6 +13,7 @@ MAX_NUM_SEQS="${MAX_NUM_SEQS:-256}"
 MAX_NUM_BATCHED_TOKENS="${MAX_NUM_BATCHED_TOKENS:-65536}"
 MAX_IMAGES="${MAX_IMAGES:-24}"
 MAX_VIDEOS="${MAX_VIDEOS:-3}"
+LIMIT_MM_PER_PROMPT="${LIMIT_MM_PER_PROMPT:-{\"image\":${MAX_IMAGES},\"video\":${MAX_VIDEOS}}}"
 WAIT_READY="${WAIT_READY:-1}"
 READY_TIMEOUT_SEC="${READY_TIMEOUT_SEC:-900}"
 LOG_DIR="${LOG_DIR:-logs/vllm/endpoints/${SERVED_MODEL_NAME}_$(date -u +%Y%m%dT%H%M%SZ)}"
@@ -54,7 +55,7 @@ for i in "${!GROUP_ARRAY[@]}"; do
     --max-model-len "${MAX_MODEL_LEN}" \
     --max-num-seqs "${MAX_NUM_SEQS}" \
     --max-num-batched-tokens "${MAX_NUM_BATCHED_TOKENS}" \
-    --limit-mm-per-prompt "image=${MAX_IMAGES},video=${MAX_VIDEOS}" \
+    --limit-mm-per-prompt "${LIMIT_MM_PER_PROMPT}" \
     > "${log}" 2>&1 &
   echo "$! ${port} ${group} ${log}" >> "${PID_FILE}"
 done
@@ -79,4 +80,3 @@ if [[ "${WAIT_READY}" == "1" ]]; then
     echo "[ready] port=${port}"
   done
 fi
-

@@ -109,6 +109,7 @@ for i in "${!MODEL_SLUGS[@]}"; do
     --run-set full \
     --subset-root "${SUBSET_ROOT}" \
     --run-root "${RUN_ROOT}" \
+    --exact-only \
     "${benchmark_args[@]}" \
     --temperature 0 \
     --top-p 1 \
@@ -124,4 +125,3 @@ for i in "${!MODEL_SLUGS[@]}"; do
 done
 
 echo "[suite:done] run_root=${RUN_ROOT}"
-

@@ -448,7 +448,12 @@ def _finalize_spec(args: argparse.Namespace, handle: DatasetHandle) -> dict[str,
 
 def run(args: argparse.Namespace) -> None:
     specs = benchmark_specs_for_run_set(args.run_set, model_slug=args.model_slug)
-    specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
+    if args.exact_only and args.only:
+        keep = {str(key) for key in args.only}
+        specs = [spec for spec in specs if spec.key in keep]
+        specs = filter_benchmark_specs(specs, exclude=args.exclude)
+    else:
+        specs = filter_benchmark_specs(specs, only=args.only, exclude=args.exclude)
     if not specs:
         raise ValueError("No benchmark specs selected")
     handles, pending = _prepare_handles_and_jobs(args, specs)
@@ -518,6 +523,11 @@ def main() -> None:
     parser.add_argument("--queue-root", type=Path, default=DEFAULT_QUEUE_ROOT)
     parser.add_argument("--only", nargs="*", default=[])
     parser.add_argument("--exclude", nargs="*", default=[])
+    parser.add_argument(
+        "--exact-only",
+        action="store_true",
+        help="Interpret --only as exact BenchmarkSpec.key values, not aliases or aggregate groups.",
+    )
     parser.add_argument("--subset-root", type=Path, default=None)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--sample-seed", type=int, default=0)
@@ -538,4 +548,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

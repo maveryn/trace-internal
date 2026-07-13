@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import argparse
+import ast
+import concurrent.futures
 import json
 import math
 import os
@@ -12,6 +14,8 @@ from pathlib import Path
 from typing import Any, Iterable
 
 import pandas as pd
+import requests
+from tqdm import tqdm
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS_ROOT = REPO_ROOT / "scripts"
@@ -41,6 +45,14 @@ DEFAULT_BENCHMARKS = (
     "vstarbench",
     "cvbench_3d",
 )
+HIGH_RISK_DIRECT_BENCHMARKS = (
+    "puzzlevqa",
+    "treebench",
+    "phyx_mini_mc",
+    "physics",
+    "mmmu_pro_vision",
+    "visiongraph_q3",
+)
 DEFAULT_MODELS = (
     ("qwen25vl7b-base", "Qwen/Qwen2.5-VL-7B-Instruct"),
     (
@@ -48,6 +60,7 @@ DEFAULT_MODELS = (
         "/dev/shm/trace_rlvr/merged_hf/trace-qwen25vl7b-easyr1-all1000-answer-nokl-step500",
     ),
 )
+LETTERS = "ABCDEFGHIJK"
 
 
 def _load_prediction_table(path: Path) -> pd.DataFrame:
@@ -101,7 +114,7 @@ def _embedded_option_columns(question: str) -> dict[str, str]:
     options: dict[str, str] = {}
     lines = str(question or "").splitlines()
     for i, line in enumerate(lines):
-        match = re.match(r"^\s*([A-H])\s*[\.\)]\s*(.+?)\s*$", line)
+        match = re.match(r"^\s*([A-K])\s*[\.\)]\s*(.+?)\s*$", line)
         if not match:
             continue
         letter, text = match.groups()
@@ -109,7 +122,7 @@ def _embedded_option_columns(question: str) -> dict[str, str]:
         # this conservative so normal prompt text is not pulled into a choice.
         extra = []
         for nxt in lines[i + 1 :]:
-            if re.match(r"^\s*[A-H]\s*[\.\)]\s+", nxt):
+            if re.match(r"^\s*[A-K]\s*[\.\)]\s+", nxt):
                 break
             if not nxt.startswith((" ", "\t")):
                 break
@@ -118,18 +131,51 @@ def _embedded_option_columns(question: str) -> dict[str, str]:
     return options
 
 
+def _inline_option_columns(question: str) -> dict[str, str]:
+    text = str(question or "")
+    if not re.search(r"\bOPTION(?:S)?\s*:", text, flags=re.I):
+        return {}
+    tail = re.split(r"\bOPTION(?:S)?\s*:", text, maxsplit=1, flags=re.I)[-1]
+    out: dict[str, str] = {}
+    for match in re.finditer(r"\b([A-K])\s*:\s*(.*?)(?=\s+\b[A-K]\s*:|$)", tail, flags=re.S):
+        letter, value = match.groups()
+        value = re.sub(r"\s+", " ", value).strip()
+        if value:
+            out[letter] = value
+    return out
+
+
+def _literal_options(row: dict[str, Any]) -> dict[str, str]:
+    raw = _clean_cell(row.get("options") or row.get("multi-choice options"))
+    if not raw:
+        return {}
+    try:
+        parsed = ast.literal_eval(raw)
+    except Exception:
+        return {}
+    if not isinstance(parsed, (list, tuple)):
+        return {}
+    return {LETTERS[i]: _clean_cell(value) for i, value in enumerate(parsed) if i < len(LETTERS)}
+
+
 def _valid_letters_for(benchmark: str, row: dict[str, Any]) -> str:
-    explicit = "".join(_option_columns(row, "ABCDEFG").keys())
+    explicit = "".join(_option_columns(row, LETTERS).keys())
     if explicit:
         return explicit
+    literal = "".join(_literal_options(row).keys())
+    if literal:
+        return literal
     embedded = "".join(_embedded_option_columns(_question_for(benchmark, row)).keys())
     if embedded:
         return embedded
+    inline = "".join(_inline_option_columns(_question_for(benchmark, row)).keys())
+    if inline:
+        return inline
     answer = _clean_cell(row.get("answer")).upper()
     if benchmark == "erqa":
         return "ABCD"
-    if len(answer) == 1 and answer in "ABCDEFG":
-        return "ABCDEFG"[: max("ABCDEFG".index(answer) + 1, 4)]
+    if len(answer) == 1 and answer in LETTERS:
+        return LETTERS[: max(LETTERS.index(answer) + 1, 4)]
     return "ABCDEFG"
 
 
@@ -152,6 +198,12 @@ def _answer_kind(benchmark: str, row: dict[str, Any]) -> str:
             return "option"
         if re.fullmatch(r"-?\d+(?:\.\d+)?", answer.strip()):
             return "number"
+        return "short"
+    if benchmark == "puzzlevqa":
+        return "option_value"
+    if benchmark == "physics":
+        return "judge_binary"
+    if benchmark == "visiongraph_q3":
         return "short"
     return "option"
 
@@ -176,6 +228,20 @@ def _build_prompt(item: dict[str, Any]) -> str:
             "Return exactly one JSON object: {\"answer\": \"A\"}\n"
             f"The answer must be one of: {', '.join(item['valid_letters'])}, Z."
         )
+    if kind == "option_value":
+        options = item.get("options") or {}
+        option_text = "\n".join(f"{letter}. {text}" for letter, text in options.items())
+        return (
+            "You are extracting the final selected option from a multiple-choice visual reasoning response.\n"
+            "Use the question, choices, and model response to infer which option the model selected. Do not judge correctness.\n"
+            "Return the selected option letter. If the response gives only the option value, map it back to the matching option letter.\n"
+            "If no option is selected, return Z.\n\n"
+            f"Question:\n{question}\n\n"
+            f"Choices:\n{option_text}\n\n"
+            f"Model response:\n{response}\n\n"
+            "Return exactly one JSON object: {\"answer\": \"A\"}\n"
+            f"The answer must be one of: {', '.join(item['valid_letters'])}, Z."
+        )
     if kind == "number":
         return (
             "You are extracting the final numeric answer from a visual counting benchmark response.\n"
@@ -184,6 +250,16 @@ def _build_prompt(item: dict[str, Any]) -> str:
             f"Question:\n{question}\n\n"
             f"Model response:\n{response}\n\n"
             "Return exactly one JSON object: {\"answer\": \"<integer>\"}."
+        )
+    if kind == "judge_binary":
+        return (
+            "You are judging whether a model response is correct for a physics problem.\n"
+            "Compare the model response against the reference answer. Accept mathematically equivalent formulas, units, and approximations when they mean the same thing.\n"
+            "Do not require the same wording. Mark incorrect if the final answer is missing, contradicts the reference, or only solves a different subproblem.\n\n"
+            f"Question:\n{question}\n\n"
+            f"Reference answer:\n{item['answer']}\n\n"
+            f"Model response:\n{response}\n\n"
+            "Return exactly one JSON object: {\"score\": 1, \"answer\": \"<model final answer>\"} where score is 1 for correct and 0 for incorrect."
         )
     return (
         "You are extracting the final short answer from a visual question answering response.\n"
@@ -209,7 +285,11 @@ def _build_items(args: argparse.Namespace) -> list[dict[str, Any]]:
                 valid_letters = _valid_letters_for(benchmark, row)
                 options = _option_columns(row, valid_letters)
                 if not options:
+                    options = _literal_options(row)
+                if not options:
                     options = _embedded_option_columns(_question_for(benchmark, row))
+                if not options:
+                    options = _inline_option_columns(_question_for(benchmark, row))
                 item = {
                     "job_id": f"{benchmark}__{model_slug}__{index}",
                     "benchmark": benchmark,
@@ -391,6 +471,46 @@ def _parse_json_answer(text: str) -> str:
     return raw.splitlines()[0].strip()
 
 
+def _parse_json_object(text: str) -> dict[str, Any]:
+    raw = str(text or "").strip()
+    if not raw:
+        return {}
+    try:
+        obj = json.loads(raw)
+        if isinstance(obj, dict):
+            return obj
+    except Exception:
+        pass
+    match = re.search(r"\{.*?\}", raw, flags=re.S)
+    if match:
+        try:
+            obj = json.loads(match.group(0))
+            if isinstance(obj, dict):
+                return obj
+        except Exception:
+            pass
+    answer = _parse_json_answer(raw)
+    return {"answer": answer} if answer else {}
+
+
+def _parse_binary_score(value: Any) -> float:
+    if isinstance(value, bool):
+        return 1.0 if value else 0.0
+    if isinstance(value, (int, float)):
+        return 1.0 if float(value) >= 0.5 else 0.0
+    text = str(value or "").strip().lower()
+    if text in {"1", "true", "yes", "correct"}:
+        return 1.0
+    if text in {"0", "false", "no", "incorrect"}:
+        return 0.0
+    match = re.search(r"\b(score|judg(?:e)?ment|correct)\b\s*[:=]\s*([01])\b", text)
+    if match:
+        return float(match.group(2))
+    if re.search(r"\b(correct|equivalent|matches)\b", text):
+        return 1.0
+    return 0.0
+
+
 def _normalize_option(value: str, valid_letters: Iterable[str]) -> str:
     letters = "".join(valid_letters)
     text = str(value or "").strip().upper()
@@ -445,11 +565,30 @@ def _normalize_short_for_exact(value: str) -> str:
 
 def normalize_extracted(item: dict[str, Any], value: str) -> str:
     kind = item["answer_kind"]
-    if kind == "option":
+    if kind in {"option", "option_value"}:
         return _normalize_option(value, item["valid_letters"])
     if kind == "number":
         return _normalize_number(value)
     return _clean_short(value)
+
+
+def _result_from_judge_output(item: dict[str, Any], raw: str) -> dict[str, Any]:
+    obj = _parse_json_object(raw)
+    parsed = _clean_cell(obj.get("answer", obj.get("extracted_answer", "")))
+    normalized = normalize_extracted(item, parsed)
+    out = {
+        **{k: item[k] for k in ("job_id", "benchmark", "model_slug", "index", "ordinal", "answer", "answer_kind")},
+        "valid_letters": item.get("valid_letters"),
+        "options": item.get("options"),
+        "extracted_raw": parsed,
+        "extracted": normalized,
+        "judge_output": raw,
+        "prediction": item["prediction"],
+    }
+    if item["answer_kind"] == "judge_binary":
+        score_value = obj.get("score", obj.get("judgement", obj.get("judgment", raw)))
+        out["judge_score"] = _parse_binary_score(score_value)
+    return out
 
 
 def run_worker(args: argparse.Namespace) -> None:
@@ -479,25 +618,106 @@ def run_worker(args: argparse.Namespace) -> None:
             for item in batch:
                 try:
                     raw = outputs[str(item["job_id"])]["judge_output"]
-                    parsed = _parse_json_answer(raw)
-                    normalized = normalize_extracted(item, parsed)
                     mark_done(
                         args,
                         item,
                         {
-                            **{k: item[k] for k in ("job_id", "benchmark", "model_slug", "index", "ordinal", "answer", "answer_kind")},
-                            "valid_letters": item.get("valid_letters"),
-                            "extracted_raw": parsed,
-                            "extracted": normalized,
+                            **_result_from_judge_output(item, raw),
                             "judge_output": raw,
                             "judge_model": args.judge_model,
-                            "prediction": item["prediction"],
                         },
                     )
                 except Exception as exc:
                     mark_failed(args, item, repr(exc))
     finally:
         judge.cleanup()
+
+
+def _completion_url(base: str) -> str:
+    base = base.rstrip("/")
+    if base.endswith("/v1"):
+        return f"{base}/completions"
+    if base.endswith("/v1/completions"):
+        return base
+    return f"{base}/v1/completions"
+
+
+def _load_api_tokenizer(args: argparse.Namespace):
+    from transformers import AutoTokenizer
+
+    return AutoTokenizer.from_pretrained(args.api_tokenizer_model, trust_remote_code=True)
+
+
+def _render_api_prompt(tokenizer: Any, prompt: str) -> str:
+    messages = [{"role": "user", "content": prompt}]
+    try:
+        return tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=False,
+        )
+    except TypeError:
+        return tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+
+
+def _call_completion_endpoint(args: argparse.Namespace, endpoint: str, prompt: str) -> str:
+    payload = {
+        "model": args.api_model,
+        "prompt": prompt,
+        "temperature": 0.0,
+        "top_p": 1.0,
+        "max_tokens": args.judge_max_tokens,
+    }
+    last_error = None
+    for attempt in range(args.api_max_retries):
+        try:
+            response = requests.post(_completion_url(endpoint), json=payload, timeout=args.api_timeout)
+            response.raise_for_status()
+            data = response.json()
+            return str(data["choices"][0]["text"]).strip()
+        except Exception as exc:
+            last_error = exc
+            time.sleep(min(8.0, 0.5 * (2**attempt)))
+    raise RuntimeError(f"{endpoint} failed after {args.api_max_retries} attempts: {last_error}")
+
+
+def run_api_pool(args: argparse.Namespace) -> None:
+    items = load_manifest(args)
+    tokenizer = _load_api_tokenizer(args)
+    pending = [item for item in items if not _done_path(args, item["job_id"]).exists()]
+    print(
+        "[llm-extract:api] "
+        f"queue={args.queue_name} total={len(items)} pending={len(pending)} endpoints={len(args.api_bases)}"
+    )
+    if not pending:
+        return
+
+    rendered = {item["job_id"]: _render_api_prompt(tokenizer, item["prompt"]) for item in pending}
+
+    def run_one(pos_item: tuple[int, dict[str, Any]]) -> tuple[dict[str, Any], str | None]:
+        pos, item = pos_item
+        endpoint = args.api_bases[pos % len(args.api_bases)]
+        try:
+            raw = _call_completion_endpoint(args, endpoint, rendered[item["job_id"]])
+            result = _result_from_judge_output(item, raw)
+            result["judge_model"] = args.judge_model
+            result["api_endpoint"] = endpoint
+            mark_done(args, item, result)
+            return result, None
+        except Exception as exc:
+            mark_failed(args, item, repr(exc))
+            return item, repr(exc)
+
+    errors = 0
+    with concurrent.futures.ThreadPoolExecutor(max_workers=args.api_parallelism) as pool:
+        futures = [pool.submit(run_one, pair) for pair in enumerate(pending)]
+        for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc=f"{args.queue_name} api"):
+            _, error = future.result()
+            if error:
+                errors += 1
+    if errors:
+        raise RuntimeError(f"API extraction finished with {errors} failed rows")
 
 
 def _load_results(args: argparse.Namespace, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -522,6 +742,9 @@ def _score_option_or_number(group: list[dict[str, Any]]) -> tuple[float, list[di
         if item["answer_kind"] == "option":
             gt = _normalize_option(answer, item.get("valid_letters") or "ABCDEFG")
             pred = _normalize_option(item.get("extracted", ""), item.get("valid_letters") or "ABCDEFG")
+        elif item["answer_kind"] == "option_value":
+            gt = _option_value_to_letter(item)
+            pred = _normalize_option(item.get("extracted", ""), item.get("valid_letters") or "ABCDEFG")
         elif item["answer_kind"] == "number":
             gt = _normalize_number(answer)
             pred = _normalize_number(item.get("extracted", ""))
@@ -532,6 +755,95 @@ def _score_option_or_number(group: list[dict[str, Any]]) -> tuple[float, list[di
         correct += hit
         rows.append({**item, "eval_gt": gt, "eval_pred": pred, "eval_score": hit})
     return (correct / len(rows) * 100.0 if rows else 0.0), rows
+
+
+def _option_value_to_letter(item: dict[str, Any]) -> str:
+    answer = _clean_cell(item.get("answer"))
+    direct = _normalize_option(answer, item.get("valid_letters") or "ABCDEFG")
+    if direct:
+        return direct
+    norm_answer = _normalize_short_for_exact(answer)
+    for letter, value in (item.get("options") or {}).items():
+        if _normalize_short_for_exact(value) == norm_answer:
+            return letter
+    return ""
+
+
+def _score_binary_judge(group: list[dict[str, Any]]) -> tuple[float, list[dict[str, Any]], dict[str, Any]]:
+    rows = []
+    scores = []
+    for item in group:
+        score = float(item.get("judge_score", 0.0))
+        score = 1.0 if score >= 0.5 else 0.0
+        rows.append({**item, "eval_gt": item.get("answer", ""), "eval_pred": item.get("extracted", ""), "eval_score": score})
+        scores.append(score)
+    overall = float(sum(scores) / len(scores) * 100.0) if scores else 0.0
+    return overall, rows, {"Overall": overall}
+
+
+def _score_with_category_breakdowns(
+    group: list[dict[str, Any]],
+    args: argparse.Namespace,
+    benchmark: str,
+    score: float,
+    rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    df_by_model: dict[str, pd.DataFrame] = {}
+    for model_slug, _ in args.model_entries:
+        df_by_model[model_slug] = _load_prediction_table(_prediction_path(args.run_root, benchmark, model_slug))
+    scores: dict[str, Any] = {"Overall": score}
+    enriched = []
+    for row in rows:
+        original = df_by_model[row["model_slug"]].iloc[int(row["ordinal"])].to_dict()
+        enriched.append({**original, **row})
+    for col in ("category", "subfield", "reasoning_type", "task", "l2-category"):
+        vals: dict[str, list[float]] = {}
+        for row in enriched:
+            if col in row and _clean_cell(row.get(col)):
+                vals.setdefault(_clean_cell(row.get(col)), []).append(float(row.get("eval_score", 0.0)))
+        for key, values in sorted(vals.items()):
+            scores[f"{col}/{key}"] = float(sum(values) / len(values) * 100.0) if values else 0.0
+    return scores
+
+
+def _score_visiongraph(group: list[dict[str, Any]], args: argparse.Namespace) -> tuple[float, list[dict[str, Any]], dict[str, Any]]:
+    vlmeval_root = REPO_ROOT / "external" / "VLMEvalKit"
+    if str(vlmeval_root) not in sys.path:
+        sys.path.insert(0, str(vlmeval_root))
+    from vlmeval.dataset.visiongraph import _score_row
+
+    by_model: dict[str, pd.DataFrame] = {}
+    for model_slug, _ in args.model_entries:
+        by_model[model_slug] = _load_prediction_table(_prediction_path(args.run_root, "visiongraph_q3", model_slug))
+    rows = []
+    scores_by_task: dict[str, list[float]] = {}
+    for item in group:
+        original = by_model[item["model_slug"]].iloc[int(item["ordinal"])].to_dict()
+        original["prediction"] = item.get("extracted", "")
+        score, parsed_pred, parsed_gt, error = _score_row(pd.Series(original))
+        score_f = float(score)
+        task = _clean_cell(original.get("task")) or "unknown"
+        scores_by_task.setdefault(task, []).append(score_f)
+        rows.append(
+            {
+                **original,
+                **item,
+                "eval_pred": parsed_pred,
+                "eval_gt": parsed_gt,
+                "eval_error": error,
+                "eval_score": score_f,
+            }
+        )
+    table = []
+    for task, values in sorted(scores_by_task.items()):
+        table.append({"split": task, "tot": len(values), "hit": sum(values), "acc": sum(values) / len(values) * 100.0})
+    task_acc = [row["acc"] for row in table]
+    macro = float(sum(task_acc) / len(task_acc)) if task_acc else 0.0
+    micro_values = [float(row["eval_score"]) for row in rows]
+    micro = float(sum(micro_values) / len(micro_values) * 100.0) if micro_values else 0.0
+    table.append({"split": "Macro Avg", "tot": len(task_acc), "hit": sum(task_acc), "acc": macro})
+    table.append({"split": "Micro Avg", "tot": len(micro_values), "hit": sum(micro_values), "acc": micro})
+    return macro, rows, {"Overall": macro, "Micro Avg": micro, "table": table}
 
 
 def _score_chartqapro(group: list[dict[str, Any]], args: argparse.Namespace) -> tuple[float, list[dict[str, Any]], dict[str, Any]]:
@@ -572,9 +884,14 @@ def finalize(args: argparse.Namespace) -> None:
                 continue
             if benchmark == "chartqapro":
                 score, rows, extra_scores = _score_chartqapro(group, args)
+            elif benchmark == "physics":
+                score, rows, extra_scores = _score_binary_judge(group)
+                extra_scores = _score_with_category_breakdowns(group, args, benchmark, score, rows)
+            elif benchmark == "visiongraph_q3":
+                score, rows, extra_scores = _score_visiongraph(group, args)
             else:
                 score, rows = _score_option_or_number(group)
-                extra_scores = {"Overall": score}
+                extra_scores = _score_with_category_breakdowns(group, args, benchmark, score, rows)
             detailed_rows_by_key[(benchmark, model_slug)] = rows
             score_dir = out_root / benchmark / model_slug / "llm_extracted"
             score_dir.mkdir(parents=True, exist_ok=True)
@@ -608,6 +925,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("--queue-name", required=True)
     parser.add_argument("--benchmarks", nargs="*", default=list(DEFAULT_BENCHMARKS))
+    parser.add_argument("--high-risk-direct", action="store_true", help="Use the six high-risk direct-scored benchmarks.")
     parser.add_argument("--model-entry", action="append", type=parse_model_entry, dest="model_entries")
     parser.add_argument("--run-root", type=Path, default=DEFAULT_RUN_ROOT)
     parser.add_argument("--queue-root", type=Path, default=DEFAULT_QUEUE_ROOT)
@@ -628,21 +946,34 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--attention-backend", default="FLASH_ATTN")
     parser.add_argument("--prepare", action="store_true")
     parser.add_argument("--worker", action="store_true")
+    parser.add_argument("--api-run", action="store_true")
     parser.add_argument("--finalize", action="store_true")
+    parser.add_argument("--api-base", action="append", dest="api_bases")
+    parser.add_argument("--api-model", default="qwen3-32b-judge")
+    parser.add_argument("--api-tokenizer-model", default="Qwen/Qwen3-32B")
+    parser.add_argument("--api-parallelism", type=int, default=128)
+    parser.add_argument("--api-timeout", type=float, default=120.0)
+    parser.add_argument("--api-max-retries", type=int, default=5)
     return parser
 
 
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
+    if args.high_risk_direct:
+        args.benchmarks = list(HIGH_RISK_DIRECT_BENCHMARKS)
     if not args.model_entries:
         args.model_entries = list(DEFAULT_MODELS)
+    if args.api_bases is None:
+        args.api_bases = [f"http://127.0.0.1:{18100 + i}" for i in range(8)]
     if args.prepare:
         items = _build_items(args)
         write_manifest(args, items)
         print(f"[llm-extract:prepare] rows={len(items)} manifest={_manifest_path(args)}")
     if args.worker:
         run_worker(args)
+    if args.api_run:
+        run_api_pool(args)
     if args.finalize:
         finalize(args)
 

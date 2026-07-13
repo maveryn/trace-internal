@@ -324,6 +324,28 @@ def _namespace_for_spec(args: argparse.Namespace, spec: BenchmarkSpec, output_di
     )
 
 
+def _sanitize_prediction_table_for_scoring(spec: BenchmarkSpec, output_dir: Path) -> None:
+    """Normalize evaluator input cells that some VLMEvalKit scorers assume are strings."""
+    if spec.alias != "TableVQABench":
+        return
+    pred_table = output_dir / f"{spec.alias}_predictions.xlsx"
+    if not pred_table.exists():
+        return
+    data = pd.read_excel(pred_table)
+    changed = False
+    for col in ("prediction", "answer"):
+        if col not in data:
+            continue
+        fill_value = "__missing_prediction__" if col == "prediction" else "__missing_answer__"
+        normalized = data[col].fillna(fill_value).map(str)
+        if not normalized.equals(data[col]):
+            data[col] = normalized
+            changed = True
+    if changed:
+        data.to_excel(pred_table, index=False)
+        print(f"[score:sanitize] {spec.alias} cast prediction/answer cells to strings: {pred_table}")
+
+
 def _copy_score_to_benchmark(spec: BenchmarkSpec, model_slug: str, run_output_dir: Path, benchmark_root: Path) -> Path:
     src = run_output_dir / "scores.json"
     if not src.exists():
@@ -336,6 +358,7 @@ def _copy_score_to_benchmark(spec: BenchmarkSpec, model_slug: str, run_output_di
 
 def _run_direct_vlmeval(args: argparse.Namespace, spec: BenchmarkSpec, model_path: str, output_dir: Path) -> dict[str, Any]:
     runner, _ = _import_vlmeval_runner()
+    _sanitize_prediction_table_for_scoring(spec, output_dir)
     ns = _namespace_for_spec(args, spec, output_dir, model_path)
     return runner.run_vlmeval_evaluate(ns)
 
@@ -366,6 +389,7 @@ def _run_vlmeval_evaluate_with_kwargs(
         pred_table = matches[0] if matches else candidates[0]
     if not pred_table.exists():
         raise FileNotFoundError(pred_table)
+    _sanitize_prediction_table_for_scoring(spec, output_dir)
     result = dataset.evaluate(str(pred_table), **judge_kwargs)
     scores = runner._normalize_eval_result(result)
     summary = {

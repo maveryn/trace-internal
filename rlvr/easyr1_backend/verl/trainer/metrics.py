@@ -35,6 +35,8 @@ TRACE_ANNOTATION_LOG_TYPES = (
     "point_set",
 )
 
+TRACE_LENGTH_LOG_MODES = ("answer", "answer_and_annotation")
+
 
 def reduce_metrics(metrics: dict[str, list[Any]]) -> dict[str, Any]:
     return {key: np.mean(value) for key, value in metrics.items()}
@@ -204,7 +206,7 @@ def compute_length_metrics(batch: DataProto) -> dict[str, Any]:
     prompt_length = batch.batch["attention_mask"][:, :-max_response_length].sum(-1).float()
     response_length = batch.batch["attention_mask"][:, -max_response_length:].sum(-1).float()
 
-    return {
+    metrics = {
         # response length
         "response_length/mean": torch.mean(response_length).detach().item(),
         "response_length/max": torch.max(response_length).detach().item(),
@@ -216,6 +218,23 @@ def compute_length_metrics(batch: DataProto) -> dict[str, Any]:
         "prompt_length/min": torch.min(prompt_length).detach().item(),
         "prompt_length/clip_ratio": torch.eq(prompt_length, max_prompt_length).float().mean().detach().item(),
     }
+
+    raw_modes = batch.non_tensor_batch.get("trace_output_mode")
+    if raw_modes is None:
+        return metrics
+
+    modes = np.asarray(raw_modes, dtype=object)
+    if modes.shape[0] != response_length.shape[0]:
+        return metrics
+
+    for mode in TRACE_LENGTH_LOG_MODES:
+        mask_np = modes == mode
+        if not np.any(mask_np):
+            continue
+        mask = torch.as_tensor(mask_np, device=response_length.device, dtype=torch.bool)
+        metrics[f"response_length/by_mode/{mode}/mean"] = torch.mean(response_length[mask]).detach().item()
+
+    return metrics
 
 
 def compute_data_metrics(batch: DataProto, use_critic: bool = False) -> dict[str, Any]:

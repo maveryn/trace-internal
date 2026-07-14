@@ -2,8 +2,14 @@ from __future__ import annotations
 
 import json
 
+import numpy as np
+import torch
+from tensordict import TensorDict
+
 from examples.reward_function.trace_rlvr import compute_score
+from verl.protocol import DataProto
 from verl.trainer.metrics import reduce_reward_metrics
+from verl.trainer.metrics import compute_length_metrics
 from verl.utils.py_functional import unflatten_dict
 
 
@@ -107,3 +113,37 @@ def test_task_conditioned_metrics_report_mode_specific_rewards() -> None:
     assert reduced["reward/mode_count/answer_and_annotation"] == 2.0
     assert reduced["reward/by_mode/answer/overall"] == 0.5
     assert reduced["reward/by_mode/answer_and_annotation/overall"] == 0.75
+
+
+def test_length_metrics_report_mode_specific_response_means() -> None:
+    responses = torch.zeros((4, 4), dtype=torch.long)
+    attention_mask = torch.tensor(
+        [
+            [1, 1, 1, 1, 1, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1],
+        ],
+        dtype=torch.long,
+    )
+    batch = DataProto(
+        batch=TensorDict(
+            {
+                "responses": responses,
+                "attention_mask": attention_mask,
+            },
+            batch_size=[4],
+        ),
+        non_tensor_batch={
+            "trace_output_mode": np.array(
+                ["answer", "answer_and_annotation", "answer", "answer_and_annotation"],
+                dtype=object,
+            )
+        },
+    )
+
+    metrics = compute_length_metrics(batch)
+
+    assert metrics["response_length/mean"] == 2.5
+    assert metrics["response_length/by_mode/answer/mean"] == 2.0
+    assert metrics["response_length/by_mode/answer_and_annotation/mean"] == 3.0

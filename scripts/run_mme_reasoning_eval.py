@@ -417,7 +417,7 @@ def run_score(args: argparse.Namespace) -> dict[str, Any]:
         },
     }
     write_json(benchmark_output_dir / "scores.json", scores)
-    dump(score_dict, benchmark_output_dir / "scores_raw.json")
+    dump(score_dict, str(benchmark_output_dir / "scores_raw.json"))
     judge.cleanup()
     print(f"[mme-score:done] slug={args.model_slug} rows={len(data)} accuracy={scores['accuracy']:.2f} output={benchmark_output_dir}")
     return scores

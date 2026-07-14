@@ -44,7 +44,20 @@ sampled online or materialized deterministically from seeds.
 
 ## TRACE Training Objective
 
-TRACE responses should include reasoning plus a final structured payload:
+TRACE responses should include reasoning plus the structured payload selected
+for that task by
+`docs/workflows/RLVR_TASK_SUPERVISION_POLICY.md`. Answer-only tasks end with:
+
+```text
+<think>
+Reasoning over the image and task.
+</think>
+<answer>
+{"answer": ...}
+</answer>
+```
+
+Tasks whose natural supervision includes grounding end with:
 
 ```text
 <think>
@@ -55,9 +68,10 @@ Grounded reasoning over the image and task.
 </answer>
 ```
 
-The final payload is verifier-facing. The reasoning section is still part of the
-training target because the model should learn to solve the visual reasoning
-problem, not merely emit a short answer object.
+The final payload is verifier-facing. A task uses one stable supervision mode;
+different tasks in one scene may use different modes. The reasoning section is
+still part of the training target because the model should learn to solve the
+visual reasoning problem, not merely emit a short answer object.
 
 Reward components should be logged separately:
 
@@ -240,5 +254,6 @@ is understood.
 ## Current Open Decisions
 
 - Whether the first run uses task-uniform or domain-balanced sampling.
-- Whether to run answer-only first to 900 steps or stop after a 200-250 step
-  ablation checkpoint before choosing an answer-plus-annotation reward mix.
+- The final manually reviewed task assignments for
+  `task_conditioned_v1`; assignment rules live in
+  `docs/workflows/RLVR_TASK_SUPERVISION_POLICY.md`.

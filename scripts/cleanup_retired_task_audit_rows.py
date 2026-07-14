@@ -118,8 +118,8 @@ def _render_markdown_report(report: dict[str, Any]) -> str:
     else:
         lines.extend(
             [
-                "| scene_id | task_id | prompt | image | annotation | distribution | code | taxonomy | solve_rate | updated_at | updated_by |",
-                "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |",
+                "| scene_id | task_id | prompt | image | annotation | distribution | code | taxonomy | supervision | solve_rate | updated_at | updated_by |",
+                "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |",
             ]
         )
         for row in stale_rows:
@@ -135,6 +135,7 @@ def _render_markdown_report(report: dict[str, Any]) -> str:
                         str(int(row.get("distribution_pass") or 0)),
                         str(int(row.get("code_review_pass") or 0)),
                         str(int(row.get("taxonomy_review_pass") or 0)),
+                        str(int(row.get("supervision_review_pass") or 0)),
                         str(int(row.get("solve_rate_pass") or 0)),
                         str(row.get("updated_at", "")),
                         str(row.get("updated_by", "")),

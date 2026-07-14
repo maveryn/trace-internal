@@ -14,6 +14,7 @@ import pytest
 from trace.review_app.artifact_index import build_review_index
 from trace.review_app.feedback import FeedbackStore
 from trace.review_app.locks import ReviewFileLock, ReviewLockError, review_app_lock_path, scene_publish_lock_path
+from trace.core.task_supervision_policy import TASK_SUPERVISION_POLICY_REL_PATH
 
 
 TASK_ID = "task_pages__workspace__control_label"
@@ -564,6 +565,7 @@ def test_feedback_store_persists_task_audit_status(tmp_path: Path) -> None:
         distribution_pass=True,
         code_review_pass=True,
         taxonomy_review_pass=True,
+        supervision_review_pass=True,
         solve_rate_pass=True,
         updated_by="reviewer",
     )
@@ -572,8 +574,9 @@ def test_feedback_store_persists_task_audit_status(tmp_path: Path) -> None:
     assert updated.review_pass is True
     assert updated.code_review_pass is True
     assert updated.taxonomy_review_pass is True
-    assert updated.review_count == 6
-    assert updated.passed_count == 7
+    assert updated.supervision_review_pass is True
+    assert updated.review_count == 7
+    assert updated.passed_count == 8
     assert store.task_audits_by_task()[f"pages/workspace/{TASK_ID}"].updated_by == "reviewer"
 
     illustration_review = store.update_illustration_object_review(
@@ -628,16 +631,19 @@ def test_feedback_store_migrates_task_audit_code_review_gate(tmp_path: Path) -> 
         distribution_pass=True,
         code_review_pass=True,
         taxonomy_review_pass=True,
+        supervision_review_pass=True,
         solve_rate_pass=True,
     )
 
     assert updated.code_review_pass is True
     assert updated.taxonomy_review_pass is True
+    assert updated.supervision_review_pass is True
     assert updated.review_pass is True
     with sqlite3.connect(db_path) as conn:
         columns = {row[1] for row in conn.execute("PRAGMA table_info(task_audit)").fetchall()}
     assert "code_review_pass" in columns
     assert "taxonomy_review_pass" in columns
+    assert "supervision_review_pass" in columns
 
 
 def test_illustration_object_review_uses_variant_pixel_footprints() -> None:
@@ -747,6 +753,52 @@ def test_review_app_requires_token_and_serves_index(tmp_path: Path) -> None:
     page = client.get("/", headers={"Authorization": "Bearer secret"})
     assert page.status_code == 200
     assert "TRACE Review" in page.text
+
+
+def test_scene_page_shows_task_supervision_schema(tmp_path: Path) -> None:
+    __import__("pytest").importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    from trace.review_app.server import create_app
+
+    root = _make_review_fixture(tmp_path)
+    _write_json(
+        tmp_path / TASK_SUPERVISION_POLICY_REL_PATH,
+        {
+            "schema": "trace_task_supervision_policy_v1",
+            "policy_id": "task_conditioned_v1",
+            "status": "draft",
+            "mode_field": "trace_supervision_mode",
+            "reviewed_scenes": ["pages/workspace"],
+            "assignments": {
+                TASK_ID: {
+                    "mode": "answer",
+                    "rationale": "redundant_option_annotation",
+                    "notes": "The selected option box duplicates the answer.",
+                }
+            },
+        },
+    )
+    app = create_app(
+        review_root=root,
+        enforce_review_target_registry=False,
+        repo_root=tmp_path,
+        feedback_db=tmp_path / "feedback.sqlite",
+        token="secret",
+    )
+    client = TestClient(app)
+
+    page = client.get(
+        "/domains/pages/scenes/workspace",
+        headers={"Authorization": "Bearer secret"},
+    )
+
+    assert page.status_code == 200
+    assert "Supervision Schema" in page.text
+    assert "<code>answer</code>" in page.text
+    assert "redundant option annotation" in page.text
+    assert "The selected option box duplicates the answer." in page.text
+    assert 'name="supervision_review_pass" value="1"' in page.text
+    assert 'name="supervision_review_pass" value="1" checked' not in page.text
 
 
 def test_review_file_lock_reports_current_owner(tmp_path: Path) -> None:
@@ -1413,8 +1465,9 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
     assert old_gate_update.json()["status"]["review_pass"] is False
     assert old_gate_update.json()["status"]["code_review_pass"] is False
     assert old_gate_update.json()["status"]["taxonomy_review_pass"] is False
+    assert old_gate_update.json()["status"]["supervision_review_pass"] is False
     assert old_gate_update.json()["status"]["review_count"] == 4
-    assert old_gate_update.json()["status"]["review_total"] == 6
+    assert old_gate_update.json()["status"]["review_total"] == 7
 
     update = client.patch(
         f"/api/tasks/pages/workspace/{TASK_ID}/audit",
@@ -1426,6 +1479,7 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
             "distribution_pass": True,
             "code_review_pass": True,
             "taxonomy_review_pass": True,
+            "supervision_review_pass": True,
             "solve_rate_pass": True,
             "updated_by": "reviewer",
         },
@@ -1435,6 +1489,7 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
     assert update.json()["status"]["review_pass"] is True
     assert update.json()["status"]["code_review_pass"] is True
     assert update.json()["status"]["taxonomy_review_pass"] is True
+    assert update.json()["status"]["supervision_review_pass"] is True
     assert update.json()["status"]["solve_rate_pass"] is True
     assert update.json()["status"]["solve_artifact_pass"] is True
 
@@ -1446,7 +1501,7 @@ def test_review_app_shows_and_updates_task_audit_status(tmp_path: Path) -> None:
     scene_page = client.get("/domains/pages/scenes/workspace", headers={"Authorization": "Bearer secret"})
     assert scene_page.status_code == 200
     assert "review done" in scene_page.text
-    assert "6/6" in scene_page.text
+    assert "7/7" in scene_page.text
     assert "solve rate done" in scene_page.text
 
 

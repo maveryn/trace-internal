@@ -102,6 +102,7 @@ class TaskAuditRecord:
     distribution_pass: bool = False
     code_review_pass: bool = False
     taxonomy_review_pass: bool = False
+    supervision_review_pass: bool = False
     solve_rate_pass: bool = False
     notes: str = ""
     updated_at: str = ""
@@ -118,6 +119,7 @@ class TaskAuditRecord:
             and self.distribution_pass
             and self.code_review_pass
             and self.taxonomy_review_pass
+            and self.supervision_review_pass
         )
 
     @property
@@ -129,11 +131,12 @@ class TaskAuditRecord:
             + int(self.distribution_pass)
             + int(self.code_review_pass)
             + int(self.taxonomy_review_pass)
+            + int(self.supervision_review_pass)
         )
 
     @property
     def review_total(self) -> int:
-        return 6
+        return 7
 
     @property
     def solve_rate_review_pass(self) -> bool:
@@ -153,7 +156,7 @@ class TaskAuditRecord:
 
     @property
     def total_count(self) -> int:
-        return 7
+        return 8
 
     @classmethod
     def empty(cls, *, domain: str, scene_id: str, task_id: str) -> "TaskAuditRecord":
@@ -171,6 +174,7 @@ class TaskAuditRecord:
             distribution_pass=bool(int(row["distribution_pass"] or 0)),
             code_review_pass=bool(int(row.get("code_review_pass", 0) or 0)),
             taxonomy_review_pass=bool(int(row.get("taxonomy_review_pass", 0) or 0)),
+            supervision_review_pass=bool(int(row.get("supervision_review_pass", 0) or 0)),
             solve_rate_pass=bool(int(row.get("solve_rate_pass", 0) or 0)),
             notes=str(row["notes"] or ""),
             updated_at=str(row["updated_at"] or ""),

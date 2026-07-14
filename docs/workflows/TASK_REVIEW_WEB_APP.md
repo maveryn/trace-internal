@@ -49,8 +49,9 @@ Then use this review loop:
 6. Save sample-specific issues in the app so comments are keyed to the exact
    sample identity; do not use Excel notes as the default issue channel.
 7. Mark the review checkboxes only after prompt, image, annotation,
-   distribution, code review, and taxonomy review are acceptable. This is the
-   non-solve-rate review completion status shown in domain and scene views.
+   distribution, code review, taxonomy review, and supervision mapping are
+   acceptable. This is the non-solve-rate review completion status shown in
+   domain and scene views.
 8. Mark the solve-rate checkbox separately after solve-rate artifacts have been
    inspected. Domain and scene views show solve-rate completion separately
    because solve-rate review often happens after visual/manual review.
@@ -182,6 +183,10 @@ The app scans:
   domain, scene id, query ids, answer schema, annotation schema, and program
   contract. If the task doc is missing, the app falls back to indexed sample
   query ids and observed answer/annotation schemas.
+- `rlvr/task_supervision/trace_supervision_policy_v1.json` for each task's
+  fixed RLVR supervision schema and review rationale. Scene task tables show
+  `unreviewed` when the draft policy has not assigned that task; the app does
+  not silently treat an unmapped task as answer-only.
 
 Domain discovery is registry-driven: only public active domains listed in
 `trace.core.taxonomy.ACTIVE_DOMAINS` are eligible for task-review indexing.
@@ -308,11 +313,12 @@ review status passes when the reviewer has checked all non-solve-rate gates:
 - distribution check
 - code review
 - taxonomy review
+- supervision mapping
 
 The solve-rate review checkbox records that a human has inspected the displayed
 solve-rate status and accepted it as operationally sufficient for the task. It
 does not replace the generated solve-rate artifact. Domain and scene pages show
-two completion counts: review completion from the six non-solve-rate gates,
+two completion counts: review completion from the seven non-solve-rate gates,
 and solve-rate completion from the separate solve-rate checkbox. Reviewers can
 uncheck either status later; the affected completion count immediately becomes
 pending again.
@@ -352,7 +358,7 @@ The `/issues` page is the minimal issue work queue. It groups actionable
 tasks by domain, scene, and task, and shows only these blockers:
 
 - missing manual audit gates for prompt, image, annotation, distribution,
-  code review, or taxonomy review;
+  code review, taxonomy review, or supervision mapping;
 - solve-rate manual checkbox not checked;
 - automated solve-rate artifact missing;
 - automated solve-rate artifact present but not accepted;

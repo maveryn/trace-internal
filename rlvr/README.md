@@ -18,6 +18,9 @@ Current scope:
 - TRACE JSON system prompts under `rlvr/examples/prompts/`
 - TRACE grouped solve metrics wired into the Vero PPO trainer path
 - TRACE-style benchmark validation ported into the Vero PPO trainer path
+- draft task-conditioned supervision decisions under
+  `task_supervision/trace_supervision_policy_v1.json`; assignment rules live in
+  `docs/workflows/RLVR_TASK_SUPERVISION_POLICY.md`
 
 TRACE-specific behavior now integrated on top of the Vero stack:
 

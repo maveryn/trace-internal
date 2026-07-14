@@ -25,6 +25,7 @@ from fastapi.templating import Jinja2Templates
 from PIL import Image as PILImage
 
 from trace.core.review_overlays import render_annotation_overlay, resolve_overlay_annotation
+from trace.core.task_supervision_policy import load_task_supervision_policy
 
 from .artifact_index import (
     PUBLISH_IN_PROGRESS_ERROR,
@@ -1004,6 +1005,7 @@ def create_app(
         if scene is None:
             raise HTTPException(status_code=404, detail="unknown scene")
         tasks = [index.tasks[ReviewIndex.task_key(domain, scene_id, task_id)] for task_id in scene.tasks]
+        supervision_policy = load_task_supervision_policy(state.repo_root, required=False)
         scene_feedback = state.feedback.list_scene_feedback(domain=domain, scene_id=scene_id)
         return templates.TemplateResponse(
             request,
@@ -1014,6 +1016,8 @@ def create_app(
                 title=f"Scene: {scene_id}",
                 scene=scene,
                 tasks=tasks,
+                supervision_policy=supervision_policy,
+                supervision_by_task=supervision_policy.assignments,
                 scene_level_feedback=scene_feedback,
                 scene_open_feedback=[record for record in scene_feedback if record.status == "open"],
             ),
@@ -1272,6 +1276,7 @@ def create_app(
             distribution_pass=_truthy(data.get("distribution_pass")),
             code_review_pass=_truthy(data.get("code_review_pass")),
             taxonomy_review_pass=_truthy(data.get("taxonomy_review_pass")),
+            supervision_review_pass=_truthy(data.get("supervision_review_pass")),
             solve_rate_pass=_truthy(data.get("solve_rate_pass")),
             notes=str(data.get("notes", "")),
             updated_by=str(data.get("updated_by", "")),
@@ -1389,6 +1394,9 @@ def create_app(
             distribution_pass=_truthy(data.get("distribution_pass", existing.distribution_pass)),
             code_review_pass=_truthy(data.get("code_review_pass", existing.code_review_pass)),
             taxonomy_review_pass=_truthy(data.get("taxonomy_review_pass", existing.taxonomy_review_pass)),
+            supervision_review_pass=_truthy(
+                data.get("supervision_review_pass", existing.supervision_review_pass)
+            ),
             solve_rate_pass=_truthy(data.get("solve_rate_pass", existing.solve_rate_pass)),
             notes=str(data.get("notes", existing.notes)),
             updated_by=str(data.get("updated_by", existing.updated_by)),
@@ -2249,16 +2257,17 @@ def _task_status_payload(*, task: Any, audit: Any) -> Dict[str, Any]:
     return {
         "review_pass": review_pass,
         "review_count": int(getattr(audit, "review_count", 0)),
-        "review_total": int(getattr(audit, "review_total", 6)),
+        "review_total": int(getattr(audit, "review_total", 7)),
         "code_review_pass": bool(getattr(audit, "code_review_pass", False)),
         "taxonomy_review_pass": bool(getattr(audit, "taxonomy_review_pass", False)),
+        "supervision_review_pass": bool(getattr(audit, "supervision_review_pass", False)),
         "solve_rate_pass": solve_rate_pass,
         "solve_artifact_pass": solve_artifact_pass,
         "complete": complete,
         # Backward-compatible API aliases.
         "manual_pass": review_pass,
         "manual_count": int(getattr(audit, "review_count", 0)),
-        "manual_total": int(getattr(audit, "review_total", 6)),
+        "manual_total": int(getattr(audit, "review_total", 7)),
         "solve_pass": solve_artifact_pass,
     }
 

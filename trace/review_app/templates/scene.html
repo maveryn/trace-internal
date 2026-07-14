@@ -144,6 +144,7 @@
         <th>Task</th>
         <th>Answer Schema</th>
         <th>Annotation Schema</th>
+        <th>Supervision Schema</th>
         <th>Audit Status</th>
         <th>Queries</th>
         <th>Issues</th>
@@ -173,12 +174,27 @@
           </td>
           <td><code>{{ task.taxonomy_summary.get('answer_schema') or 'n/a' }}</code></td>
           <td><code>{{ task.taxonomy_summary.get('annotation_schema') or 'n/a' }}</code></td>
+          {% set supervision = supervision_by_task.get(task.task_id) %}
+          <td class="supervision-cell">
+            {% if supervision %}
+              <code>{{ supervision.mode }}</code>
+              <p class="muted">{{ supervision.rationale|replace('_', ' ') }}</p>
+              {% if supervision.notes %}
+                <p class="muted">{{ supervision.notes }}</p>
+              {% endif %}
+            {% else %}
+              <span class="status warn">unreviewed</span>
+              {% if supervision_policy.policy_id %}
+                <p class="muted">{{ supervision_policy.policy_id }}</p>
+              {% endif %}
+            {% endif %}
+          </td>
           <td class="audit-cell">
             <div class="task-state-row">
               <span class="{% if task_status.review_pass %}status ok{% else %}status warn{% endif %}">
                 review {% if task_status.review_pass %}done{% else %}pending{% endif %}
               </span>
-              <span class="muted">{{ task_status.review_count|default(0) }}/{{ task_status.review_total|default(6) }}</span>
+              <span class="muted">{{ task_status.review_count|default(0) }}/{{ task_status.review_total|default(7) }}</span>
               <span class="{% if task_status.solve_rate_pass %}status ok{% else %}status warn{% endif %}">
                 solve rate {% if task_status.solve_rate_pass %}done{% else %}pending{% endif %}
               </span>
@@ -191,6 +207,7 @@
               <label><input type="checkbox" name="distribution_pass" value="1" {% if audit.distribution_pass %}checked{% endif %}> Distribution</label>
               <label><input type="checkbox" name="code_review_pass" value="1" {% if audit.code_review_pass %}checked{% endif %}> Code review</label>
               <label><input type="checkbox" name="taxonomy_review_pass" value="1" {% if audit.taxonomy_review_pass %}checked{% endif %}> Taxonomy review</label>
+              <label><input type="checkbox" name="supervision_review_pass" value="1" {% if audit.supervision_review_pass %}checked{% endif %}> Supervision mapping</label>
               <label><input type="checkbox" name="solve_rate_pass" value="1" {% if audit.solve_rate_pass %}checked{% endif %}> Solve rate</label>
               <button type="submit">Save</button>
             </form>

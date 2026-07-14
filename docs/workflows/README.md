@@ -15,6 +15,8 @@ RLVR training/export/validation docs live under:
 - `../../rlvr/README.md` for the active Vero-derived RLVR port.
 - `../RLVR_TRAINING_STRATEGY.md` for tentative TRACE RLVR training,
   reward-ablation, response-length, and evaluation-cadence strategy.
+- `RLVR_TASK_SUPERVISION_POLICY.md` for assigning each task a stable
+  answer-only or answer-and-annotation training mode.
 - `RLVR_TRAINING_RUNBOOK.md` for the current split-v1 training, validation,
   checkpoint-merge, resume, and external-benchmark commands.
 - `TRACE_ANNOTATION_ABLATION_RUNBOOK.md` for current EasyR1 all1000

@@ -120,7 +120,7 @@ A domain is done only when every active task has:
 
 - current browser-visible task-review sidecars under `review/task-reviews`;
 - manual audit passing in the web app for prompt, image, annotation,
-  distribution, and solve-rate review;
+  distribution, code, taxonomy, supervision mapping, and solve-rate review;
 - accepted `qwen25vl7b` solve-rate status;
 - current docs and task inventory for the active public task surface.
 

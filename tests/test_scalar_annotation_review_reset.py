@@ -9,7 +9,8 @@ from trace.review_app.feedback import FeedbackStore
 
 TARGET_TASK_ID = "task_charts__contour_density__reference_distance_extremum_label"
 TARGET_TASK_ID_2 = "task_charts__curve_panels__endpoint_rank_panel_label"
-NON_TARGET_TASK_ID = "task_charts__population_pyramid__side_gap_extremum_label"
+NON_TARGET_SCENE_ID = "legacy_population_pyramid"
+NON_TARGET_TASK_ID = "task_charts__legacy_population_pyramid__side_gap_extremum_label"
 
 
 def _write_inventory(path: Path) -> None:
@@ -28,7 +29,7 @@ def _write_inventory(path: Path) -> None:
                 "",
                 f"- `{TARGET_TASK_ID_2}`",
                 "",
-                "#### population_pyramid (1)",
+                f"#### {NON_TARGET_SCENE_ID} (1)",
                 "",
                 f"- `{NON_TARGET_TASK_ID}`",
                 "",
@@ -60,6 +61,7 @@ def test_stage4_reset_dry_run_preserves_database(tmp_path: Path) -> None:
         distribution_pass=True,
         code_review_pass=True,
         taxonomy_review_pass=True,
+        supervision_review_pass=True,
         solve_rate_pass=False,
         notes="keep me",
         updated_by="reviewer",
@@ -96,13 +98,14 @@ def test_stage4_reset_flips_only_existing_target_annotation_gate(tmp_path: Path)
         distribution_pass=True,
         code_review_pass=True,
         taxonomy_review_pass=True,
+        supervision_review_pass=True,
         solve_rate_pass=False,
         notes="target notes",
         updated_by="reviewer",
     )
     store.update_task_audit(
         domain="charts",
-        scene_id="population_pyramid",
+        scene_id=NON_TARGET_SCENE_ID,
         task_id=NON_TARGET_TASK_ID,
         prompt_pass=True,
         image_pass=True,
@@ -110,6 +113,7 @@ def test_stage4_reset_flips_only_existing_target_annotation_gate(tmp_path: Path)
         distribution_pass=True,
         code_review_pass=True,
         taxonomy_review_pass=True,
+        supervision_review_pass=True,
         solve_rate_pass=True,
         notes="non-target notes",
         updated_by="reviewer",
@@ -136,6 +140,7 @@ def test_stage4_reset_flips_only_existing_target_annotation_gate(tmp_path: Path)
     assert target["distribution_pass"] == 1
     assert target["code_review_pass"] == 1
     assert target["taxonomy_review_pass"] == 1
+    assert target["supervision_review_pass"] == 1
     assert target["solve_rate_pass"] == 0
     assert target["notes"] == "target notes"
     assert target["updated_by"] == "scalar_annotation_stage4"

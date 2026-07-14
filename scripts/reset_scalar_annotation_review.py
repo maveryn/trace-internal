@@ -180,6 +180,9 @@ def reset_annotation_reviews(
                     "distribution_pass": int(item["previous"]["distribution_pass"] or 0),
                     "code_review_pass": int(item["previous"]["code_review_pass"] or 0),
                     "taxonomy_review_pass": int(item["previous"]["taxonomy_review_pass"] or 0),
+                    "supervision_review_pass": int(
+                        item["previous"].get("supervision_review_pass", 0) or 0
+                    ),
                     "solve_rate_pass": int(item["previous"]["solve_rate_pass"] or 0),
                 },
             }

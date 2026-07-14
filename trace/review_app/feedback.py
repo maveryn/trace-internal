@@ -523,6 +523,7 @@ class FeedbackStore:
         distribution_pass: bool,
         code_review_pass: bool = False,
         taxonomy_review_pass: bool = False,
+        supervision_review_pass: bool = False,
         solve_rate_pass: bool = False,
         notes: str = "",
         updated_by: str = "",
@@ -540,6 +541,7 @@ class FeedbackStore:
             int(bool(distribution_pass)),
             int(bool(code_review_pass)),
             int(bool(taxonomy_review_pass)),
+            int(bool(supervision_review_pass)),
             int(bool(solve_rate_pass)),
             str(notes).strip(),
             now,
@@ -550,10 +552,11 @@ class FeedbackStore:
                 """
                 INSERT INTO task_audit (
                     domain, scene_id, task_id, prompt_pass, image_pass,
-                    annotation_pass, distribution_pass, code_review_pass, taxonomy_review_pass, solve_rate_pass,
+                    annotation_pass, distribution_pass, code_review_pass, taxonomy_review_pass,
+                    supervision_review_pass, solve_rate_pass,
                     notes, updated_at, updated_by
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(domain, scene_id, task_id) DO UPDATE SET
                     prompt_pass = excluded.prompt_pass,
                     image_pass = excluded.image_pass,
@@ -561,6 +564,7 @@ class FeedbackStore:
                     distribution_pass = excluded.distribution_pass,
                     code_review_pass = excluded.code_review_pass,
                     taxonomy_review_pass = excluded.taxonomy_review_pass,
+                    supervision_review_pass = excluded.supervision_review_pass,
                     solve_rate_pass = excluded.solve_rate_pass,
                     notes = excluded.notes,
                     updated_at = excluded.updated_at,
@@ -971,6 +975,7 @@ class FeedbackStore:
                     distribution_pass INTEGER NOT NULL DEFAULT 0,
                     code_review_pass INTEGER NOT NULL DEFAULT 0,
                     taxonomy_review_pass INTEGER NOT NULL DEFAULT 0,
+                    supervision_review_pass INTEGER NOT NULL DEFAULT 0,
                     solve_rate_pass INTEGER NOT NULL DEFAULT 0,
                     notes TEXT NOT NULL DEFAULT '',
                     updated_at TEXT NOT NULL,
@@ -986,6 +991,8 @@ class FeedbackStore:
                 conn.execute("ALTER TABLE task_audit ADD COLUMN code_review_pass INTEGER NOT NULL DEFAULT 0")
             if "taxonomy_review_pass" not in columns:
                 conn.execute("ALTER TABLE task_audit ADD COLUMN taxonomy_review_pass INTEGER NOT NULL DEFAULT 0")
+            if "supervision_review_pass" not in columns:
+                conn.execute("ALTER TABLE task_audit ADD COLUMN supervision_review_pass INTEGER NOT NULL DEFAULT 0")
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS taxonomy_decision_review (

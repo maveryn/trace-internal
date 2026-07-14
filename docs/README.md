@@ -31,6 +31,8 @@ Repo-local skills live under `skills/`, but skills are operational overlays. Can
    - active Vero-derived RLVR port lives under `../rlvr/README.md`
    - tentative TRACE RLVR training strategy lives in
      `docs/RLVR_TRAINING_STRATEGY.md`
+   - task-conditioned answer/annotation selection policy lives in
+     `docs/workflows/RLVR_TASK_SUPERVISION_POLICY.md`
    - operational TRACE RLVR training commands live in
      `docs/workflows/RLVR_TRAINING_RUNBOOK.md`
    - current EasyR1 all1000 annotation-ablation handoff commands live in

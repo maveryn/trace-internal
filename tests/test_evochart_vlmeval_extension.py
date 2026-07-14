@@ -1,0 +1,82 @@
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import pandas as pd
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+VLMEVAL_ROOT = REPO_ROOT / "external" / "VLMEvalKit"
+if str(VLMEVAL_ROOT) not in sys.path:
+    sys.path.insert(0, str(VLMEVAL_ROOT))
+
+
+from vlmeval.dataset.evochart import EvoChart, score_prediction  # noqa: E402
+
+
+def test_evochart_aliases_are_registered() -> None:
+    assert set(EvoChart.supported_datasets()) == {
+        "EvoChart",
+        "EvoChart_Qwen25_ZS",
+        "EvoChart_Qwen3_ZS",
+        "EvoChart_reasoning",
+    }
+
+
+def test_evochart_qwen3_prompt_suffix() -> None:
+    dataset = object.__new__(EvoChart)
+    dataset.dataset_name = "EvoChart_Qwen3_ZS"
+    dataset.meta_only = True
+    row = pd.Series(
+        {
+            "index": "0",
+            "question": "What is the value of December?",
+            "image_path": "/tmp/fake.png",
+        }
+    )
+
+    prompt = dataset.build_prompt(row)
+
+    assert prompt[-1]["value"].endswith("Answer the question using a single word or phrase.")
+
+
+def test_evochart_scoring_matches_vero_style_cases() -> None:
+    assert score_prediction("<answer>32</answer>", "32", True) == 1.0
+    assert score_prediction("The answer is 33", "32", True) == 0.0
+    assert score_prediction("The value is 31", "32", False) == 1.0
+    assert score_prediction("The value is 28", "32", False) == 0.0
+    assert score_prediction("0.38", "38", False) == 1.0
+
+
+def test_evochart_evaluate_outputs_overall_and_breakdowns(tmp_path: Path) -> None:
+    pred_file = tmp_path / "EvoChart_Qwen3_ZS_predictions.xlsx"
+    pd.DataFrame(
+        [
+            {
+                "index": "0",
+                "prediction": "<answer>32</answer>",
+                "answer": "32",
+                "is_clear": True,
+                "chart_type": "linechart",
+                "attribute": "Direct Retrieval",
+            },
+            {
+                "index": "1",
+                "prediction": "31",
+                "answer": "32",
+                "is_clear": False,
+                "chart_type": "linechart",
+                "attribute": "Direct Retrieval",
+            },
+        ]
+    ).to_excel(pred_file, index=False)
+
+    dataset = object.__new__(EvoChart)
+    result = dataset.evaluate(str(pred_file))
+
+    overall = result[result["split"] == "Overall"].iloc[0]
+    assert overall["tot"] == 2
+    assert overall["acc"] == 100.0
+    assert (tmp_path / "EvoChart_Qwen3_ZS_predictions_results.xlsx").exists()
+    assert (tmp_path / "EvoChart_Qwen3_ZS_predictions_acc.csv").exists()

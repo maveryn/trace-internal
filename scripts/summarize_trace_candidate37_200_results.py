@@ -200,24 +200,17 @@ def build_tables(
         summary_rows.append(row)
 
     summary = pd.DataFrame(summary_rows)
-    has_screenspot = summary["benchmark_key"].str.contains("screenspot", case=False, na=False).any()
-    average_modes = [False, True] if has_screenspot else [False]
-    for exclude_screenspot in average_modes:
-        label = "Average excl. ScreenSpot" if exclude_screenspot else "Average"
-        mask = pd.Series([True] * len(summary))
-        if exclude_screenspot:
-            mask = ~summary["benchmark_key"].str.contains("screenspot", case=False, na=False)
-        avg: dict[str, Any] = {
-            "benchmark_key": "average_excluding_screenspot" if exclude_screenspot else "average",
-            "benchmark": label,
-            "dataset_alias": "",
-            "prompt_run": "",
-        }
-        for _, model_label in model_columns:
-            values = pd.to_numeric(summary.loc[mask, model_label], errors="coerce")
-            avg[model_label] = values.mean(skipna=True)
-            avg[f"{model_label} rows"] = ""
-        summary = pd.concat([summary, pd.DataFrame([avg])], ignore_index=True)
+    avg: dict[str, Any] = {
+        "benchmark_key": "average",
+        "benchmark": "Average",
+        "dataset_alias": "",
+        "prompt_run": "",
+    }
+    for _, model_label in model_columns:
+        values = pd.to_numeric(summary[model_label], errors="coerce")
+        avg[model_label] = values.mean(skipna=True)
+        avg[f"{model_label} rows"] = ""
+    summary = pd.concat([summary, pd.DataFrame([avg])], ignore_index=True)
 
     details = pd.DataFrame(detail_rows)
     generation = pd.DataFrame(gen_rows)

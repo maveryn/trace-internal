@@ -27,7 +27,6 @@ Each benchmark has exactly one normalized score. Scores are percentages when the
 | MMMU-ProVis | `vlmevalkit_cot_max2048` | 1730 | 35.84 |
 | Blink | `vlmevalkit_defaults` | 1901 | 54.08 |
 | Average |  |  | 47.19 |
-| Average excl. ScreenSpot |  |  | 45.79 |
 
 Normalization notes:
 - `MM-HELIX`: weighted mean over category `items * average_score` from the generated results TSV.

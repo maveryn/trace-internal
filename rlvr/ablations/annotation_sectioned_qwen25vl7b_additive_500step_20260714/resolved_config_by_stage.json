@@ -1,0 +1,155 @@
+{
+  "qwen25vl7b_additive_ann0p50_sectioned_resume100_to200": {
+    "actor": {
+      "dynamic_batching": true,
+      "global_batch_size": 128,
+      "micro_batch_size_per_device_for_experience": 8,
+      "micro_batch_size_per_device_for_update": 4,
+      "padding_free": true,
+      "ppo_epochs": 1,
+      "use_torch_compile": true
+    },
+    "actor_model": {
+      "enable_gradient_checkpointing": true,
+      "freeze_vision_tower": false,
+      "model_path": "Qwen/Qwen2.5-VL-7B-Instruct",
+      "trust_remote_code": false
+    },
+    "data": {
+      "max_prompt_length": 2048,
+      "max_response_length": 2048,
+      "prompt_key": "prompt_answer_and_annotation",
+      "rollout_batch_size": 128,
+      "system_prompt_file": "/home/shadeform/trace/rlvr/examples/prompts/trace_vero_json_system_prompt_answer_and_annotation_sectioned_reasoning.txt",
+      "train_files": "maveryn/trace@train",
+      "val_batch_size": 1024,
+      "val_files": "maveryn/trace@validation"
+    },
+    "ref": {
+      "micro_batch_size_per_device_for_experience": 8
+    },
+    "rollout": {
+      "gpu_memory_utilization": 0.9,
+      "max_num_batched_tokens": 32768,
+      "n": 8,
+      "tensor_parallel_size": 2
+    },
+    "source_log": "logs/rlvr/trace_annotation_additive_ann0p50_sectioned_reasoning_qwen25vl7b_h200_resume100_to200_20260713T173224Z.log",
+    "stage": "100-200",
+    "trainer": {
+      "experiment_name": "trace_annotation_additive_ann0p50_sectioned_reasoning_qwen25vl7b_h200_100step_20260713T140237Z",
+      "find_last_checkpoint": false,
+      "load_checkpoint_path": "/dev/shm/trace_rlvr/easyr1_checkpoints/trace_annotation_additive_ann0p50_sectioned_reasoning_qwen25vl7b_h200_100step_20260713T140237Z/global_step_100",
+      "max_steps": 200,
+      "n_gpus_per_node": 8,
+      "nnodes": 1,
+      "project_name": "trace_easyr1",
+      "save_checkpoint_path": "/home/shadeform/trace/checkpoints/rlvr/easyr1_checkpoints/trace_annotation_additive_ann0p50_sectioned_reasoning_qwen25vl7b_h200_resume100_to200_20260713T173224Z",
+      "save_freq": 100,
+      "save_limit": 1,
+      "val_freq": 100
+    }
+  },
+  "qwen25vl7b_additive_ann0p50_sectioned_resume200_to500": {
+    "actor": {
+      "dynamic_batching": true,
+      "global_batch_size": 128,
+      "micro_batch_size_per_device_for_experience": 8,
+      "micro_batch_size_per_device_for_update": 4,
+      "padding_free": true,
+      "ppo_epochs": 1,
+      "use_torch_compile": true
+    },
+    "actor_model": {
+      "enable_gradient_checkpointing": true,
+      "freeze_vision_tower": false,
+      "model_path": "Qwen/Qwen2.5-VL-7B-Instruct",
+      "trust_remote_code": false
+    },
+    "data": {
+      "max_prompt_length": 2048,
+      "max_response_length": 2048,
+      "prompt_key": "prompt_answer_and_annotation",
+      "rollout_batch_size": 128,
+      "system_prompt_file": "/home/shadeform/trace/rlvr/examples/prompts/trace_vero_json_system_prompt_answer_and_annotation_sectioned_reasoning.txt",
+      "train_files": "maveryn/trace@train",
+      "val_batch_size": 1024,
+      "val_files": "maveryn/trace@validation"
+    },
+    "ref": {
+      "micro_batch_size_per_device_for_experience": 8
+    },
+    "rollout": {
+      "gpu_memory_utilization": 0.9,
+      "max_num_batched_tokens": 32768,
+      "n": 8,
+      "tensor_parallel_size": 2
+    },
+    "source_log": "logs/rlvr/trace_annotation_additive_ann0p50_sectioned_reasoning_qwen25vl7b_h200_resume200_to500_20260713T201436Z.log",
+    "stage": "200-500",
+    "trainer": {
+      "experiment_name": "trace_annotation_additive_ann0p50_sectioned_reasoning_qwen25vl7b_h200_100step_20260713T140237Z",
+      "find_last_checkpoint": false,
+      "load_checkpoint_path": "/home/shadeform/trace/checkpoints/rlvr/easyr1_checkpoints/trace_annotation_additive_ann0p50_sectioned_reasoning_qwen25vl7b_h200_resume100_to200_20260713T173224Z/global_step_200",
+      "max_steps": 500,
+      "n_gpus_per_node": 8,
+      "nnodes": 1,
+      "project_name": "trace_easyr1",
+      "save_checkpoint_path": "/home/shadeform/trace/checkpoints/rlvr/easyr1_checkpoints/trace_annotation_additive_ann0p50_sectioned_reasoning_qwen25vl7b_h200_resume200_to500_20260713T201436Z",
+      "save_freq": 100,
+      "save_limit": 2,
+      "val_freq": 100
+    }
+  },
+  "qwen25vl7b_additive_ann0p50_sectioned_step100": {
+    "actor": {
+      "dynamic_batching": true,
+      "global_batch_size": 128,
+      "micro_batch_size_per_device_for_experience": 8,
+      "micro_batch_size_per_device_for_update": 4,
+      "padding_free": true,
+      "ppo_epochs": 1,
+      "use_torch_compile": true
+    },
+    "actor_model": {
+      "enable_gradient_checkpointing": true,
+      "freeze_vision_tower": false,
+      "model_path": "Qwen/Qwen2.5-VL-7B-Instruct",
+      "trust_remote_code": false
+    },
+    "data": {
+      "max_prompt_length": 2048,
+      "max_response_length": 2048,
+      "prompt_key": "prompt_answer_and_annotation",
+      "rollout_batch_size": 128,
+      "system_prompt_file": "/home/shadeform/trace/rlvr/examples/prompts/trace_vero_json_system_prompt_answer_and_annotation_sectioned_reasoning.txt",
+      "train_files": "maveryn/trace@train",
+      "val_batch_size": 1024,
+      "val_files": "maveryn/trace@validation"
+    },
+    "ref": {
+      "micro_batch_size_per_device_for_experience": 8
+    },
+    "rollout": {
+      "gpu_memory_utilization": 0.9,
+      "max_num_batched_tokens": 32768,
+      "n": 8,
+      "tensor_parallel_size": 2
+    },
+    "source_log": "logs/rlvr/annotation_additive_ann0p50_sectioned_reasoning_qwen25vl7b_h200_100step_20260713T140237Z.log",
+    "stage": "0-100",
+    "trainer": {
+      "experiment_name": "trace_annotation_additive_ann0p50_sectioned_reasoning_qwen25vl7b_h200_100step_20260713T140237Z",
+      "find_last_checkpoint": false,
+      "load_checkpoint_path": null,
+      "max_steps": 100,
+      "n_gpus_per_node": 8,
+      "nnodes": 1,
+      "project_name": "trace_easyr1",
+      "save_checkpoint_path": "/dev/shm/trace_rlvr/easyr1_checkpoints/trace_annotation_additive_ann0p50_sectioned_reasoning_qwen25vl7b_h200_100step_20260713T140237Z",
+      "save_freq": 100,
+      "save_limit": 1,
+      "val_freq": 100
+    }
+  }
+}

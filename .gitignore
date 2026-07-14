@@ -234,6 +234,8 @@ paper/ml-codex-skills/
 /*.ipynb
 /kets.txt
 /hf-token.txt
+/gh-token.txt
+/wandb-token.txt
 
 # External asset bundles
 assets/external/kenney/raw/

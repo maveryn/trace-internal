@@ -694,6 +694,95 @@ def _run_phyx_option_score(
     return summary
 
 
+def _parse_binary_judgement_output(value: Any) -> int | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    match = re.search(r"(?i)\bjudg(?:e)?ment\s*:\s*([01])\b", text)
+    if match:
+        return int(match.group(1))
+    match = re.search(r"\b([01])\b", text)
+    if match:
+        return int(match.group(1))
+    return None
+
+
+def _truthy_score(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return bool(value)
+    return str(value).strip().lower() in {"true", "1", "yes"}
+
+
+def _normalize_mathverse_score_table(score_df: pd.DataFrame) -> dict[str, Any]:
+    records = json.loads(score_df.to_json(orient="records"))
+    scores: dict[str, Any] = {"table": records}
+    if records:
+        row = records[0]
+        for key, value in row.items():
+            if key != "split":
+                scores[key] = value
+    return scores
+
+
+def _repair_mathverse_binary_judgement_summary(
+    spec: BenchmarkSpec,
+    model_path: str,
+    output_dir: Path,
+    summary: dict[str, Any],
+) -> dict[str, Any]:
+    if spec.key != "mathverse":
+        return summary
+    judged_table = output_dir / f"{spec.alias}_judged_qwen3_32b.xlsx"
+    if not judged_table.exists():
+        return summary
+
+    from vlmeval.dataset.utils.mathverse import MathVerse_acc
+    from vlmeval.smp import dump, get_intermediate_file_path
+
+    df = pd.read_excel(judged_table)
+    if "score" not in df or "log_score" not in df:
+        return summary
+
+    repaired: list[bool] = []
+    changed = 0
+    for _, row in df.iterrows():
+        current = _truthy_score(row["score"])
+        if current:
+            repaired.append(True)
+            continue
+        judgement = _parse_binary_judgement_output(row.get("log_score"))
+        fixed = judgement == 1 if judgement is not None else False
+        if fixed != current:
+            changed += 1
+        repaired.append(fixed)
+
+    if changed == 0:
+        return summary
+
+    df["score"] = repaired
+    df.to_excel(judged_table, index=False)
+    score_df = MathVerse_acc(str(judged_table))
+    dump(score_df, str(get_intermediate_file_path(str(judged_table), "_score", "csv")))
+    scores = _normalize_mathverse_score_table(score_df)
+    repaired_summary = {
+        "dataset": spec.alias,
+        "model": model_path,
+        "rows": len(df),
+        "score": float(scores.get("Overall", 0.0)),
+        "scores": scores,
+        "artifacts": {
+            **(summary.get("artifacts") or {}),
+            "judged_table": str(judged_table),
+            "mathverse_repaired_binary_judgement_rows": changed,
+        },
+    }
+    write_json(output_dir / "scores.json", repaired_summary)
+    print(json.dumps(repaired_summary, indent=2, ensure_ascii=False, default=json_default))
+    return repaired_summary
+
+
 def _run_local_math_like(
     args: argparse.Namespace,
     spec: BenchmarkSpec,
@@ -725,7 +814,8 @@ def _run_local_math_like(
         if mode == "mathvista_local_judge":
             return runner.run_mathvista_local_judge(ns)
         if mode == "mathverse_local_judge":
-            return runner.run_mathverse_local_judge(ns)
+            summary = runner.run_mathverse_local_judge(ns)
+            return _repair_mathverse_binary_judgement_summary(spec, model_path, output_dir, summary)
         if mode == "logicvista_local_judge":
             return runner.run_logicvista_local_judge(ns)
         raise ValueError(f"Unsupported math-like local judge mode for {spec.key}: {mode}")

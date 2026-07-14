@@ -21,7 +21,7 @@ Each benchmark has exactly one normalized score. Scores are percentages when the
 | ERQA | `vlmevalkit_defaults` | 400 | 35.50 | 35.50 | 38.00 | 39.50 | 0.00 | 2.50 | 4.00 |
 | TreeBench | `vlmevalkit_defaults` | 405 | 37.53 | 40.74 | 40.99 | 41.98 | 3.21 | 3.46 | 4.44 |
 | CountBenchQA | `vlmevalkit_defaults` | 487 | 62.42 | 67.15 | 82.96 | 84.60 | 4.72 | 20.53 | 22.18 |
-| MathVerse | `vlmevalkit_defaults_qwen32b_judge` | 788 | 19.80 | 22.46 | 23.60 | 24.87 | 2.66 | 3.81 | 5.08 |
+| MathVerse | `vlmevalkit_defaults_qwen32b_judge` | 788 | 34.14 | 40.74 | 43.65 | 46.70 | 6.60 | 9.52 | 12.56 |
 | CharXivReason | `vlmevalkit_defaults_qwen32b_judge` | 1000 | 28.60 | 33.50 | 40.30 | 46.90 | 4.90 | 11.70 | 18.30 |
 | CountQA | `vlmevalkit_cot_boxed` | 1528 | 14.66 | 15.97 | 21.53 | 22.12 | 1.31 | 6.87 | 7.46 |
 | PhyX mini MC | `vlmevalkit_defaults` | 1000 | 43.40 | 43.20 | 43.40 | 49.40 | -0.20 | 0.00 | 6.00 |
@@ -31,11 +31,12 @@ Each benchmark has exactly one normalized score. Scores are percentages when the
 | TableVQABench | `vlmevalkit_defaults` | 1500 | 69.81 | 72.37 | 75.39 | 77.44 | 2.56 | 5.57 | 7.63 |
 | MMMU-ProVis | `vlmevalkit_cot_max2048` | 1730 | 26.01 | 29.71 | 35.32 | 39.88 | 3.70 | 9.31 | 13.87 |
 | Blink | `vlmevalkit_defaults` | 1901 | 46.66 | 46.98 | 54.02 | 59.13 | 0.32 | 7.36 | 12.47 |
-| Average |  |  | 36.48 | 39.33 | 43.94 | 47.62 | 2.85 | 7.46 | 11.14 |
-| Average excl. ScreenSpot |  |  | 35.38 | 38.71 | 42.97 | 46.40 | 3.33 | 7.59 | 11.03 |
+| Average |  |  | 37.06 | 40.07 | 44.74 | 48.49 | 3.01 | 7.69 | 11.44 |
+| Average excl. ScreenSpot |  |  | 35.93 | 39.44 | 43.77 | 47.26 | 3.52 | 7.84 | 11.34 |
 
 Normalization notes:
 - `MM-HELIX`: weighted mean over category `items * average_score` from the generated results TSV.
 - `TableVQABench`: macro mean over the reported split `average_scores` values.
 - `SEEPhys`: nested `Overall / Accuracy (%)` value.
 - Judge-backed datasets use the local Qwen3-32B judge configured by the queue.
+- `MathVerse`: local Qwen3-32B binary judge outputs such as `Judgement: 1` are counted as correct.

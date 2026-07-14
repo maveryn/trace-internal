@@ -21,7 +21,7 @@ Each benchmark has exactly one normalized score. Scores are percentages when the
 | ERQA | `vlmevalkit_defaults` | 400 | 34.75 | 36.50 | 38.75 | 40.00 | 1.75 | 4.00 | 5.25 |
 | TreeBench | `vlmevalkit_defaults` | 405 | 41.73 | 41.73 | 42.47 | 44.94 | 0.00 | 0.74 | 3.21 |
 | CountBenchQA | `vlmevalkit_defaults` | 487 | 65.50 | 68.79 | 81.93 | 84.80 | 3.29 | 16.43 | 19.30 |
-| MathVerse | `vlmevalkit_defaults_qwen32b_judge` | 788 | 20.56 | 20.43 | 22.84 | 25.00 | -0.13 | 2.28 | 4.44 |
+| MathVerse | `vlmevalkit_defaults_qwen32b_judge` | 788 | 34.01 | 39.97 | 44.16 | 47.34 | 5.96 | 10.15 | 13.32 |
 | CharXivReason | `vlmevalkit_defaults_qwen32b_judge` | 1000 | 29.10 | 35.60 | 38.70 | 46.90 | 6.50 | 9.60 | 17.80 |
 | CountQA | `vlmevalkit_cot_boxed` | 1528 | 13.55 | 15.25 | 20.16 | 23.04 | 1.70 | 6.61 | 9.49 |
 | PhyX mini MC | `vlmevalkit_defaults` | 1000 | 22.60 | 32.90 | 38.80 | 47.40 | 10.30 | 16.20 | 24.80 |
@@ -31,11 +31,12 @@ Each benchmark has exactly one normalized score. Scores are percentages when the
 | TableVQABench | `vlmevalkit_defaults` | 1500 | 69.09 | 71.97 | 75.73 | 78.40 | 2.88 | 6.64 | 9.31 |
 | MMMU-ProVis | `vlmevalkit_cot_max2048` | 1730 | 27.34 | 30.98 | 34.39 | 39.42 | 3.64 | 7.05 | 12.08 |
 | Blink | `vlmevalkit_defaults` | 1901 | 42.35 | 46.03 | 52.29 | 58.50 | 3.68 | 9.94 | 16.15 |
-| Average |  |  | 35.61 | 38.97 | 43.35 | 47.50 | 3.36 | 7.74 | 11.89 |
-| Average excl. ScreenSpot |  |  | 34.29 | 37.80 | 42.11 | 46.26 | 3.52 | 7.83 | 11.97 |
+| Average |  |  | 36.15 | 39.75 | 44.21 | 48.39 | 3.60 | 8.06 | 12.25 |
+| Average excl. ScreenSpot |  |  | 34.85 | 38.62 | 43.00 | 47.19 | 3.77 | 8.16 | 12.34 |
 
 Normalization notes:
-- `MM-HELIX`: weighted mean over category `items * average_score` from the generated results TSV; seed44 3B-base had two row-level evaluator exceptions, counted as zero.
+- `MM-HELIX`: weighted mean over category `items * average_score` from the generated results TSV.
 - `TableVQABench`: macro mean over the reported split `average_scores` values.
 - `SEEPhys`: nested `Overall / Accuracy (%)` value.
 - Judge-backed datasets use the local Qwen3-32B judge configured by the queue.
+- `MathVerse`: local Qwen3-32B binary judge outputs such as `Judgement: 1` are counted as correct.

@@ -88,6 +88,22 @@ def test_task_conditioned_dataset_selects_prompt_and_system_contract_per_row() -
     }
 
 
+def test_task_conditioned_dataset_drops_all_stored_prompt_variants() -> None:
+    dataset = RLHFDataset.__new__(RLHFDataset)
+    row = {
+        "prompt_answer": "Answer prompt",
+        "prompt_answer_and_annotation": "Annotation prompt",
+        "prompt_answer_only": "Legacy answer prompt",
+        "prompt_active": "Legacy active prompt",
+        "prompt_mode": "answer",
+        "answer_gt": "1",
+    }
+
+    dataset._drop_stored_prompt_variants(row)
+
+    assert row == {"answer_gt": "1"}
+
+
 def test_task_conditioned_dataset_rejects_missing_row_contract() -> None:
     dataset = RLHFDataset.__new__(RLHFDataset)
     dataset.trace_output_mode = "task_conditioned"

@@ -39,6 +39,15 @@ from trace.core.task_supervision_runtime import (
 from . import torch_functional as VF
 
 
+STORED_PROMPT_VARIANT_KEYS = (
+    "prompt_answer",
+    "prompt_answer_and_annotation",
+    "prompt_answer_only",
+    "prompt_active",
+    "prompt_mode",
+)
+
+
 def collate_fn(features: list[dict[str, Any]]) -> dict[str, Any]:
     tensors = defaultdict(list)
     non_tensors = defaultdict(list)
@@ -226,6 +235,10 @@ class RLHFDataset(Dataset):
             return self.system_prompts_by_output_mode[output_mode]
         return self.system_prompt
 
+    def _drop_stored_prompt_variants(self, example: dict[str, Any]) -> None:
+        for prompt_key in STORED_PROMPT_VARIANT_KEYS:
+            example.pop(prompt_key, None)
+
     def _build_messages(self, example: dict[str, Any]) -> list[dict[str, Any]]:
         prompt_str: str = self._get_prompt_value(example)
         if self.format_prompt:
@@ -299,14 +312,13 @@ class RLHFDataset(Dataset):
     def __getitem__(self, index):
         example: dict = self.dataset[index]
         effective_output_mode = self._resolve_example_output_mode(example)
-        selected_prompt_key = self._resolve_prompt_key(example)
         if self.trace_output_mode == TRACE_OUTPUT_MODE_TASK_CONDITIONED:
             example["trace_output_mode"] = effective_output_mode
         if "uid" not in example and "instance_id" in example:
             example["uid"] = example["instance_id"]
         example["prompt"] = self._get_prompt_value(example)
         messages = self._build_messages(example)
-        example.pop(selected_prompt_key, None)
+        self._drop_stored_prompt_variants(example)
 
         if self.image_key in example:
             prompt = self.processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)

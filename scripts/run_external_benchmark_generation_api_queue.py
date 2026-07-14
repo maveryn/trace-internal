@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
+import inspect
 import io
 import json
 import os
@@ -155,7 +156,11 @@ def _vlmeval_messages(handle: DatasetHandle, row: dict[str, Any]) -> list[dict[s
     # Some VLMEvalKit datasets materialize cached images in build_prompt. Keep that
     # per-dataset call serialized while allowing image encoding/API calls to run in parallel.
     with handle.lock:
-        struct = runner.build_prompt_for_runner(handle.dataset, row_series, video_llm=handle.spec.video_llm)
+        parameters = inspect.signature(handle.dataset.build_prompt).parameters
+        if "video_llm" in parameters:
+            struct = handle.dataset.build_prompt(row_series, handle.spec.video_llm)
+        else:
+            struct = runner.build_prompt_for_runner(handle.dataset, row_series, video_llm=handle.spec.video_llm)
     content: list[dict[str, Any]] = []
     for item in struct:
         typ = item.get("type")

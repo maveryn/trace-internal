@@ -161,6 +161,26 @@ def _load_eval_table(output_dir: Path) -> pd.DataFrame:
     return pd.read_excel(eval_file).replace({float("nan"): None})
 
 
+def _mme_reasoning_acc(data: pd.DataFrame) -> pd.DataFrame:
+    capabilities = [
+        "planning and exploring",
+        "calculation",
+        "spatial-temporal",
+        "casual chaining analysis",
+        "pattern analysis",
+    ]
+    reasoning_types = ["inductive", "deductive", "abductive"]
+
+    result: dict[str, list[float]] = {"Overall": [float(data["score"].mean() * 100)]}
+    for capability in capabilities:
+        sub = data[data["capability"].apply(lambda value: capability in str(value))]
+        result[capability] = [float(sub["score"].mean() * 100) if len(sub) else float("nan")]
+    for reasoning_type in reasoning_types:
+        sub = data[data["reasoning_type"].apply(lambda value: reasoning_type in str(value))]
+        result[reasoning_type] = [float(sub["score"].mean() * 100) if len(sub) else float("nan")]
+    return pd.DataFrame(result)
+
+
 def run_prepare(args: argparse.Namespace) -> None:
     _patch_mme_reasoning_dataset()
     from vlmeval.dataset import build_dataset
@@ -226,7 +246,7 @@ def run_generation(args: argparse.Namespace) -> None:
 
 
 def run_score(args: argparse.Namespace) -> dict[str, Any]:
-    from vlmeval.dataset.utils.mme_reasoning import FAIL_MSG, MMEReasoning_acc, mme_reasoning_eval_functions
+    from vlmeval.dataset.utils.mme_reasoning import FAIL_MSG, mme_reasoning_eval_functions
     from vlmeval.smp import dump
 
     _patch_mme_reasoning_dataset()
@@ -370,7 +390,7 @@ def run_score(args: argparse.Namespace) -> dict[str, Any]:
     score_file = benchmark_output_dir / f"{MME_REASONING_SPEC.alias}_predictions_qwen3_32b_score.xlsx"
     data.to_excel(score_file, index=False)
 
-    acc_df = MMEReasoning_acc(str(score_file))
+    acc_df = _mme_reasoning_acc(data)
     acc_csv = benchmark_output_dir / "MME-Reasoning_acc.csv"
     acc_xlsx = benchmark_output_dir / "MME-Reasoning_acc.xlsx"
     acc_df.to_csv(acc_csv, index=False)

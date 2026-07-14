@@ -11,6 +11,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import pandas as pd
+from PIL import Image
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS_ROOT = REPO_ROOT / "scripts"
@@ -158,6 +159,30 @@ def _load_eval_table(output_dir: Path) -> pd.DataFrame:
     if not eval_file.exists():
         raise FileNotFoundError(f"Missing prediction table: {eval_file}")
     return pd.read_excel(eval_file).replace({float("nan"): None})
+
+
+def run_prepare(args: argparse.Namespace) -> None:
+    _patch_mme_reasoning_dataset()
+    from vlmeval.dataset import build_dataset
+
+    dataset = build_dataset(MME_REASONING_SPEC.alias)
+    if dataset is None:
+        raise RuntimeError(f"VLMEvalKit could not build dataset {MME_REASONING_SPEC.alias}")
+    if args.limit is not None:
+        dataset.data = dataset.data.sample(n=min(int(args.limit), len(dataset.data)), random_state=args.sample_seed)
+
+    materialized: list[str] = []
+    for _, row in dataset.data.iterrows():
+        for item in dataset.build_prompt(row):
+            if item.get("type") == "image":
+                path = str(item.get("value"))
+                with Image.open(path) as image:
+                    image.verify()
+                materialized.append(path)
+    print(
+        "[mme-prepare:done] "
+        f"rows={len(dataset.data)} images={len(materialized)} root={getattr(dataset, 'img_root', '')}"
+    )
 
 
 def run_generation(args: argparse.Namespace) -> None:
@@ -448,6 +473,11 @@ def build_parser() -> argparse.ArgumentParser:
     gen.add_argument("--seed", type=int, default=42)
     gen.add_argument("--no-resume", action="store_true")
     gen.set_defaults(func=run_generation)
+
+    prepare = sub.add_parser("prepare")
+    prepare.add_argument("--limit", type=int, default=None)
+    prepare.add_argument("--sample-seed", type=int, default=0)
+    prepare.set_defaults(func=run_prepare)
 
     score = sub.add_parser("score")
     score.add_argument("--model", required=True)

@@ -161,6 +161,9 @@ echo "[suite] benchmark_root=${BENCHMARK_ROOT}"
 echo "[suite] results_root=${RESULTS_ROOT}"
 echo "[suite] decoding temp=${GEN_TEMPERATURE} top_p=${GEN_TOP_P} top_k=${GEN_TOP_K} max_tokens=${GEN_MAX_TOKENS} seed=${GENERATION_SEED}"
 
+python /home/shadeform/trace/scripts/run_mme_reasoning_eval.py prepare \
+  2>&1 | tee "${LOG_ROOT}/prepare_mme_reasoning.log"
+
 base_api_args=()
 answer_api_args=()
 endpoint_args "${BASE_PORT_START}" "${BASE_GPU_GROUPS}" "--api-base" base_api_args

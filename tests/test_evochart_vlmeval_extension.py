@@ -18,6 +18,7 @@ from vlmeval.dataset.evochart import EvoChart, score_prediction  # noqa: E402
 def test_evochart_aliases_are_registered() -> None:
     assert set(EvoChart.supported_datasets()) == {
         "EvoChart",
+        "EvoChart_boxed",
         "EvoChart_Qwen25_ZS",
         "EvoChart_Qwen3_ZS",
         "EvoChart_reasoning",
@@ -39,6 +40,23 @@ def test_evochart_qwen3_prompt_suffix() -> None:
     prompt = dataset.build_prompt(row)
 
     assert prompt[-1]["value"].endswith("Answer the question using a single word or phrase.")
+
+
+def test_evochart_boxed_prompt_suffix() -> None:
+    dataset = object.__new__(EvoChart)
+    dataset.dataset_name = "EvoChart_boxed"
+    dataset.meta_only = True
+    row = pd.Series(
+        {
+            "index": "0",
+            "question": "What is the value of December?",
+            "image_path": "/tmp/fake.png",
+        }
+    )
+
+    prompt = dataset.build_prompt(row)
+
+    assert prompt[-1]["value"].endswith("Put the final answer inside \\boxed{}.")
 
 
 def test_evochart_scoring_matches_vero_style_cases() -> None:

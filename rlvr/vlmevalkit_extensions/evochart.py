@@ -14,6 +14,7 @@ from .image_base import ImageBaseDataset
 _NUMBER_PATTERN = re.compile(
     r"[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|[-+]?\d*\.\d+"
 )
+BOXED_POST_PROMPT = "\nPut the final answer inside \\boxed{}."
 
 
 def _last_boxed(text: str) -> str | None:
@@ -222,6 +223,7 @@ class EvoChart(ImageBaseDataset):
     TYPE = "VQA"
     DATASET_URL = {
         "EvoChart": "",
+        "EvoChart_boxed": "",
         "EvoChart_Qwen25_ZS": "",
         "EvoChart_Qwen3_ZS": "",
         "EvoChart_reasoning": "",
@@ -265,7 +267,9 @@ class EvoChart(ImageBaseDataset):
         msgs = super().build_prompt(line)
         assert msgs[-1]["type"] == "text"
         question = str(msgs[-1]["value"]).strip()
-        if self.dataset_name == "EvoChart_Qwen25_ZS":
+        if self.dataset_name == "EvoChart_boxed":
+            question += BOXED_POST_PROMPT
+        elif self.dataset_name == "EvoChart_Qwen25_ZS":
             question += "\nAnswer the question with a single word."
         elif self.dataset_name == "EvoChart_Qwen3_ZS":
             question += "\nAnswer the question using a single word or phrase."

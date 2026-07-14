@@ -1,35 +1,35 @@
-# TRACE Final20 Temp0.6 Seed42 Benchmark Results: pcgrpo-qwen25vl7b-jigsaw-care
+# pcgrpo-qwen25vl7b-jigsaw-care TRACE Final20 Temp0.6 Results
 
-Subset manifest root: `final20 full eval; candidate benchmarks use trace_candidate24_full subset manifests; SpatialVizBench/TableVQABench/VisualPuzzles use full VLMEvalKit datasets`
+Deterministic repair note: ScreenSpot/TableVQABench cached predictions are re-parsed for final-answer wrappers and positional `pyautogui.click(x, y)` calls; no generation or judge rerun was used.
 
-Each benchmark has exactly one normalized score. Scores are percentages when the evaluator reports accuracy-like metrics.
+| benchmark_key       | benchmark           | dataset_alias         | prompt_run                             |   pcgrpo-qwen25vl7b-jigsaw-care |   pcgrpo-qwen25vl7b-jigsaw-care rows | pcgrpo-qwen25vl7b-jigsaw-care score run   |
+|:--------------------|:--------------------|:----------------------|:---------------------------------------|--------------------------------:|-------------------------------------:|:------------------------------------------|
+| chartmuseum         | ChartMuseum         | ChartMuseum_test      | vlmevalkit_defaults_qwen32b_judge_test |                           25.10 |                              1000.00 | vlmevalkit_defaults_qwen32b_judge_test    |
+| game_qa_lite        | Game-QA-Lite        | Game-QA-Lite          | vlmevalkit_cot_boxed                   |                           25.94 |                              2633.00 | llm_extracted                             |
+| screenspot          | ScreenSpot          | ScreenSpot            | vlmevalkit_defaults_sample200          |                            8.25 |                              1272.00 | vlmevalkit_defaults_sample200             |
+| chartqapro          | ChartQAPro          | ChartQAPro_CoT        | vlmevalkit_faithful_cot                |                           41.27 |                              1948.00 | llm_extracted                             |
+| puzzlevqa           | PuzzleVQA           | PuzzleVQA             | vlmevalkit_reasoning                   |                           50.05 |                              2000.00 | llm_extracted                             |
+| logicvista          | LogicVista          | LogicVista            | vlmevalkit_defaults_qwen32b_judge      |                           43.18 |                               447.00 | vlmevalkit_defaults_qwen32b_judge         |
+| mathvista           | MathVista           | MathVista_MINI        | vlmevalkit_defaults_qwen32b_judge      |                           71.10 |                              1000.00 | vlmevalkit_defaults_qwen32b_judge         |
+| visualpuzzles       | VisualPuzzles       | VisualPuzzles         | vlmevalkit_reasoning                   |                           20.21 |                              1168.00 | llm_extracted                             |
+| cvbench_3d          | CV-Bench 3D         | CV-Bench-3D           | vlmevalkit_defaults                    |                           81.08 |                              1200.00 | llm_extracted                             |
+| wemath              | WeMath              | WeMath_COT            | vlmevalkit_cot_qwen32b_judge           |                           65.06 |                              1740.00 | llm_extracted                             |
+| mathvision          | MathVision          | MathVision            | vlmevalkit_defaults_qwen32b_judge      |                           25.39 |                              3040.00 | vlmevalkit_defaults_qwen32b_judge         |
+| treebench           | TreeBench           | TreeBench             | vlmevalkit_defaults                    |                           40.74 |                               405.00 | llm_extracted                             |
+| countbenchqa        | CountBenchQA        | CountBenchQA          | vlmevalkit_defaults                    |                           82.96 |                               487.00 | llm_extracted                             |
+| charxivreason       | CharXivReason       | CharXiv_reasoning_val | vlmevalkit_defaults_qwen32b_judge      |                           40.80 |                              1000.00 | vlmevalkit_defaults_qwen32b_judge         |
+| phyx_mini_mc        | PhyX mini MC        | PhyX_mini_MC          | vlmevalkit_defaults                    |                           42.70 |                              1000.00 | llm_extracted                             |
+| spatialvizbench_cot | SpatialVizBench COT | SpatialVizBench_CoT   | vlmevalkit_cot                         |                           29.49 |                              1180.00 | llm_extracted                             |
+| physics             | Physics             | Physics               | vlmevalkit_reasoning                   |                           16.73 |                              1297.00 | llm_extracted                             |
+| tablevqabench       | TableVQABench       | TableVQABench         | vlmevalkit_defaults                    |                           69.68 |                              1500.00 | vlmevalkit_defaults                       |
+| mmmu_pro_vision     | MMMU-ProVis         | MMMU_Pro_V_COT        | vlmevalkit_cot_max2048                 |                           34.28 |                              1730.00 | llm_extracted                             |
+| blink               | Blink               | BLINK                 | vlmevalkit_defaults                    |                           56.23 |                              1901.00 | llm_extracted                             |
+| average             | Average             | nan                   | nan                                    |                           43.52 |                               nan    | nan                                       |
 
-| Benchmark | Prompt / Dataset | Rows | pcgrpo-qwen25vl7b-jigsaw-care |
-| --- | --- | ---: | ---: |
-| ChartMuseum | `vlmevalkit_defaults_qwen32b_judge_test` | 1000 | 25.10 |
-| Game-QA-Lite | `vlmevalkit_cot_boxed` | 2633 | 25.94 |
-| ScreenSpot | `vlmevalkit_defaults_sample200` | 1272 | 8.41 |
-| ChartQAPro | `vlmevalkit_faithful_cot` | 1948 | 41.27 |
-| PuzzleVQA | `vlmevalkit_reasoning` | 2000 | 50.05 |
-| LogicVista | `vlmevalkit_defaults_qwen32b_judge` | 447 | 43.18 |
-| MathVista | `vlmevalkit_defaults_qwen32b_judge` | 1000 | 71.10 |
-| VisualPuzzles | `vlmevalkit_reasoning` | 1168 | 20.21 |
-| CV-Bench 3D | `vlmevalkit_defaults` | 1200 | 81.08 |
-| WeMath | `vlmevalkit_cot_qwen32b_judge` | 1740 | 65.06 |
-| MathVision | `vlmevalkit_defaults_qwen32b_judge` | 3040 | 25.39 |
-| TreeBench | `vlmevalkit_defaults` | 405 | 40.74 |
-| CountBenchQA | `vlmevalkit_defaults` | 487 | 82.96 |
-| CharXivReason | `vlmevalkit_defaults_qwen32b_judge` | 1000 | 40.80 |
-| PhyX mini MC | `vlmevalkit_defaults` | 1000 | 42.70 |
-| SpatialVizBench COT | `vlmevalkit_cot` | 1180 | 29.49 |
-| Physics | `vlmevalkit_reasoning` | 1297 | 16.73 |
-| TableVQABench | `vlmevalkit_defaults` | 1500 | 69.68 |
-| MMMU-ProVis | `vlmevalkit_cot_max2048` | 1730 | 34.28 |
-| Blink | `vlmevalkit_defaults` | 1901 | 56.23 |
-| Average |  |  | 43.52 |
-
-Normalization notes:
-- `MM-HELIX`: weighted mean over category `items * average_score` from the generated results TSV.
-- `TableVQABench`: macro mean over the reported split `average_scores` values.
-- `SEEPhys`: nested `Overall / Accuracy (%)` value.
-- Judge-backed datasets use the local Qwen3-32B judge configured by the queue.
+## Metadata
+| key             | value                                                                                                                                                         |
+|:----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| suite           | trace_final20_temp06_seed42                                                                                                                                   |
+| subset_root     | final20 full eval; candidate benchmarks use trace_candidate24_full subset manifests; SpatialVizBench/TableVQABench/VisualPuzzles use full VLMEvalKit datasets |
+| benchmark_count | 20                                                                                                                                                            |
+| models          | pcgrpo-qwen25vl7b-jigsaw-care                                                                                                                                 |

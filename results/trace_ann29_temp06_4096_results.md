@@ -1,45 +1,45 @@
-# TRACE Annotation Additive 0.50 Step500 Ann29 temp06_4096 Benchmark Results
+# TRACE Ann29 Temp0.6 3B Annotation Results
 
-Subset manifest root: `trace_candidate24_full minus chartqa/visiongraph_q3 plus full extra7`
+Deterministic repair note: ScreenSpot/TableVQABench cached predictions are re-parsed for final-answer wrappers and positional `pyautogui.click(x, y)` calls; no generation or judge rerun was used.
 
-Each benchmark has exactly one normalized score. Scores are percentages when the evaluator reports accuracy-like metrics.
+| benchmark_key                | benchmark                | dataset_alias                  | prompt_run                             |   trace-qwen25vl3b-rlvr-ann-additive-0p50-sectioned-step500 |   trace-qwen25vl3b-rlvr-ann-additive-0p50-sectioned-step500 rows | trace-qwen25vl3b-rlvr-ann-additive-0p50-sectioned-step500 score run   |
+|:-----------------------------|:-------------------------|:-------------------------------|:---------------------------------------|------------------------------------------------------------:|-----------------------------------------------------------------:|:----------------------------------------------------------------------|
+| chartmuseum                  | ChartMuseum              | ChartMuseum_test               | vlmevalkit_defaults_qwen32b_judge_test |                                                       18.00 |                                                          1000.00 | vlmevalkit_defaults_qwen32b_judge_test                                |
+| game_qa_lite                 | Game-QA-Lite             | Game-QA-Lite                   | vlmevalkit_cot_boxed                   |                                                       21.31 |                                                          2633.00 | llm_extracted                                                         |
+| screenspot                   | ScreenSpot               | ScreenSpot                     | vlmevalkit_defaults_sample200          |                                                       77.52 |                                                          1272.00 | vlmevalkit_defaults_sample200                                         |
+| screenspotpro                | ScreenSpot-Pro           | ScreenSpot_Pro                 | vlmevalkit_defaults_sample200          |                                                       20.68 |                                                          1581.00 | vlmevalkit_defaults_sample200                                         |
+| chartqapro                   | ChartQAPro               | ChartQAPro_CoT                 | vlmevalkit_faithful_cot                |                                                       33.82 |                                                          1948.00 | llm_extracted                                                         |
+| puzzlevqa                    | PuzzleVQA                | PuzzleVQA                      | vlmevalkit_reasoning                   |                                                       37.85 |                                                          2000.00 | llm_extracted                                                         |
+| vstarbench                   | VStarBench               | VStarBench                     | vlmevalkit_defaults                    |                                                       71.73 |                                                           191.00 | llm_extracted                                                         |
+| logicvista                   | LogicVista               | LogicVista                     | vlmevalkit_defaults_qwen32b_judge      |                                                       36.47 |                                                           447.00 | vlmevalkit_defaults_qwen32b_judge                                     |
+| omni3dbench                  | Omni3DBench              | Omni3DBench                    | vlmevalkit_defaults                    |                                                       34.73 |                                                           501.00 | vlmevalkit_defaults                                                   |
+| mathvista                    | MathVista                | MathVista_MINI                 | vlmevalkit_defaults_qwen32b_judge      |                                                       64.00 |                                                          1000.00 | vlmevalkit_defaults_qwen32b_judge                                     |
+| visualpuzzles                | VisualPuzzles            | VisualPuzzles                  | vlmevalkit_reasoning                   |                                                       17.38 |                                                          1168.00 | llm_extracted                                                         |
+| cvbench_3d                   | CV-Bench 3D              | CV-Bench-3D                    | vlmevalkit_defaults                    |                                                       62.58 |                                                          1200.00 | llm_extracted                                                         |
+| wemath                       | WeMath                   | WeMath_COT                     | vlmevalkit_cot_qwen32b_judge           |                                                       51.67 |                                                          1740.00 | llm_extracted                                                         |
+| mathvision                   | MathVision               | MathVision                     | vlmevalkit_defaults_qwen32b_judge      |                                                       21.88 |                                                          3040.00 | vlmevalkit_defaults_qwen32b_judge                                     |
+| erqa                         | ERQA                     | ERQA                           | vlmevalkit_defaults                    |                                                       36.75 |                                                           400.00 | llm_extracted                                                         |
+| treebench                    | TreeBench                | TreeBench                      | vlmevalkit_defaults                    |                                                       38.27 |                                                           405.00 | llm_extracted                                                         |
+| countbenchqa                 | CountBenchQA             | CountBenchQA                   | vlmevalkit_defaults                    |                                                       73.31 |                                                           487.00 | llm_extracted                                                         |
+| mathverse                    | MathVerse                | MathVerse_MINI_Vision_Only_cot | vlmevalkit_defaults_qwen32b_judge      |                                                       22.59 |                                                           788.00 | vlmevalkit_defaults_qwen32b_judge                                     |
+| charxivreason                | CharXivReason            | CharXiv_reasoning_val          | vlmevalkit_defaults_qwen32b_judge      |                                                       32.70 |                                                          1000.00 | vlmevalkit_defaults_qwen32b_judge                                     |
+| countqa                      | CountQA                  | CountQA                        | vlmevalkit_cot_boxed                   |                                                       17.54 |                                                          1528.00 | llm_extracted                                                         |
+| phyx_mini_mc                 | PhyX mini MC             | PhyX_mini_MC                   | vlmevalkit_defaults                    |                                                       33.80 |                                                          1000.00 | llm_extracted                                                         |
+| spbench_si_cot               | SPBench SI COT           | SPBench-SI_CoT                 | vlmevalkit_cot                         |                                                       18.63 |                                                          1009.00 | llm_extracted                                                         |
+| spatialvizbench_cot          | SpatialVizBench COT      | SpatialVizBench_CoT            | vlmevalkit_cot                         |                                                       28.14 |                                                          1180.00 | llm_extracted                                                         |
+| mmhelix                      | MM-HELIX                 | MM-HELIX                       | vlmevalkit_boxed_defaults              |                                                        3.33 |                                                          1290.00 | vlmevalkit_boxed_defaults                                             |
+| physics                      | Physics                  | Physics                        | vlmevalkit_reasoning                   |                                                       20.20 |                                                          1297.00 | llm_extracted                                                         |
+| tablevqabench                | TableVQABench            | TableVQABench                  | vlmevalkit_defaults                    |                                                       72.48 |                                                          1500.00 | vlmevalkit_defaults                                                   |
+| mmmu_pro_vision              | MMMU-ProVis              | MMMU_Pro_V_COT                 | vlmevalkit_cot_max2048                 |                                                       27.69 |                                                          1730.00 | llm_extracted                                                         |
+| blink                        | Blink                    | BLINK                          | vlmevalkit_defaults                    |                                                       47.03 |                                                          1901.00 | llm_extracted                                                         |
+| vlmbias                      | VLMBias                  | VLMBias                        | vlmevalkit_defaults                    |                                                       23.80 |                                                          2782.00 | llm_extracted                                                         |
+| average                      | Average                  | nan                            | nan                                    |                                                       36.27 |                                                           nan    | nan                                                                   |
+| average_excluding_screenspot | Average excl. ScreenSpot | nan                            | nan                                    |                                                       35.85 |                                                           nan    | nan                                                                   |
 
-| Benchmark | Prompt / Dataset | Rows | trace-qwen25vl3b-rlvr-ann-additive-0p50-sectioned-step500 |
-| --- | --- | ---: | ---: |
-| ChartMuseum | `vlmevalkit_defaults_qwen32b_judge_test` | 1000 | 18.00 |
-| Game-QA-Lite | `vlmevalkit_cot_boxed` | 2633 | 21.31 |
-| ScreenSpot | `vlmevalkit_defaults_sample200` | 1272 | 63.44 |
-| ScreenSpot-Pro | `vlmevalkit_defaults_sample200` | 1581 | 20.68 |
-| ChartQAPro | `vlmevalkit_faithful_cot` | 1948 | 33.82 |
-| PuzzleVQA | `vlmevalkit_reasoning` | 2000 | 37.85 |
-| VStarBench | `vlmevalkit_defaults` | 191 | 71.73 |
-| LogicVista | `vlmevalkit_defaults_qwen32b_judge` | 447 | 36.47 |
-| Omni3DBench | `vlmevalkit_defaults` | 501 | 34.73 |
-| MathVista | `vlmevalkit_defaults_qwen32b_judge` | 1000 | 64.00 |
-| VisualPuzzles | `vlmevalkit_reasoning` | 1168 | 17.38 |
-| CV-Bench 3D | `vlmevalkit_defaults` | 1200 | 62.58 |
-| WeMath | `vlmevalkit_cot_qwen32b_judge` | 1740 | 51.67 |
-| MathVision | `vlmevalkit_defaults_qwen32b_judge` | 3040 | 21.88 |
-| ERQA | `vlmevalkit_defaults` | 400 | 36.75 |
-| TreeBench | `vlmevalkit_defaults` | 405 | 38.27 |
-| CountBenchQA | `vlmevalkit_defaults` | 487 | 73.31 |
-| MathVerse | `vlmevalkit_defaults_qwen32b_judge` | 788 | 22.59 |
-| CharXivReason | `vlmevalkit_defaults_qwen32b_judge` | 1000 | 32.70 |
-| CountQA | `vlmevalkit_cot_boxed` | 1528 | 17.54 |
-| PhyX mini MC | `vlmevalkit_defaults` | 1000 | 33.80 |
-| SPBench SI COT | `vlmevalkit_cot` | 1009 | 18.63 |
-| SpatialVizBench COT | `vlmevalkit_cot` | 1180 | 28.14 |
-| MM-HELIX | `vlmevalkit_boxed_defaults` | 1290 | 3.33 |
-| Physics | `vlmevalkit_reasoning` | 1297 | 20.20 |
-| TableVQABench | `vlmevalkit_defaults` | 1500 | 72.48 |
-| MMMU-ProVis | `vlmevalkit_cot_max2048` | 1730 | 27.69 |
-| Blink | `vlmevalkit_defaults` | 1901 | 47.03 |
-| VLMBias | `vlmevalkit_defaults` | 2782 | 23.80 |
-| Average |  |  | 36.27 |
-| Average excl. ScreenSpot |  |  | 35.85 |
-
-Normalization notes:
-- `MM-HELIX`: weighted mean over category `items * average_score` from the generated results TSV.
-- `TableVQABench`: macro mean over the reported split `average_scores` values.
-- `SEEPhys`: nested `Overall / Accuracy (%)` value.
-- Judge-backed datasets use the local Qwen3-32B judge configured by the queue.
+## Metadata
+| key             | value                                                                |
+|:----------------|:---------------------------------------------------------------------|
+| suite           | trace_ann29_temp06_4096                                              |
+| subset_root     | trace_candidate24_full minus chartqa/visiongraph_q3 plus full extra7 |
+| benchmark_count | 29                                                                   |
+| models          | trace-qwen25vl3b-rlvr-ann-additive-0p50-sectioned-step500            |
